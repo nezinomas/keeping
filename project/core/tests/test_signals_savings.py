@@ -45,9 +45,9 @@ def fixture_expenses():
 def fixture_have():
     return [
         {'id': 1, 'year': 1999, 'have': Decimal('75'), 'latest_check': datetime(1999, 1, 1)},
-        {'id': 1, 'year': 2000, 'have': Decimal('300'), 'latest_check': datetime(2000, 1, 1)},
-        {'id': 2, 'year': 1999, 'have': Decimal('100'), 'latest_check': datetime(1999, 1, 1)},
-        {'id': 2, 'year': 2000, 'have': Decimal('250'), 'latest_check': datetime(2000, 1, 1)},
+        {'id': 1, 'year': 2000, 'have': Decimal('300'), 'latest_check': datetime(2000, 1, 2)},
+        {'id': 2, 'year': 1999, 'have': Decimal('100'), 'latest_check': datetime(1999, 1, 3)},
+        {'id': 2, 'year': 2000, 'have': Decimal('250'), 'latest_check': datetime(2000, 1, 4)},
     ]
 
 
@@ -82,7 +82,7 @@ def test_table(incomes, expenses, have, types):
     assert actual[0]['market_value'] == 0.0
     assert round(actual[0]['profit_proc'], 2) == -100.0
     assert actual[0]['profit_sum'] == -4.0
-    assert actual[0]['latest_check'] == 0.0
+    assert not actual[0]['latest_check']
 
     assert actual[1]['id'] == 1
     assert actual[1]['year'] == 1998
@@ -98,7 +98,7 @@ def test_table(incomes, expenses, have, types):
     assert actual[1]['market_value'] == 0.0
     assert round(actual[1]['profit_proc'], 2) == -100.0
     assert actual[1]['profit_sum'] == -18.0
-    assert actual[1]['latest_check'] == 0.0
+    assert not actual[1]['latest_check']
 
     assert actual[2]['id'] == 1
     assert actual[2]['year'] == 1999
@@ -130,7 +130,7 @@ def test_table(incomes, expenses, have, types):
     assert actual[3]['market_value'] == 300.0
     assert round(actual[3]['profit_proc'], 2) == 97.37
     assert actual[3]['profit_sum'] == 148.0
-    assert actual[3]['latest_check'] == datetime(2000, 1, 1)
+    assert actual[3]['latest_check'] == datetime(2000, 1, 2)
 
     assert actual[4]['id'] == 1
     assert actual[4]['year'] == 2001
@@ -146,7 +146,7 @@ def test_table(incomes, expenses, have, types):
     assert actual[4]['market_value'] == 300.0
     assert round(actual[4]['profit_proc'], 2) == 97.37
     assert actual[4]['profit_sum'] == 148.0
-    assert actual[4]['latest_check'] == datetime(2000, 1, 1)
+    assert actual[4]['latest_check'] == datetime(2000, 1, 2)
 
     assert actual[5]['id'] == 2
     assert actual[5]['year'] == 1999
@@ -162,7 +162,7 @@ def test_table(incomes, expenses, have, types):
     assert actual[5]['market_value'] == 100.0
     assert round(actual[5]['profit_proc'], 2) == -3.85
     assert actual[5]['profit_sum'] == -4.0
-    assert actual[5]['latest_check'] == datetime(1999, 1, 1)
+    assert actual[5]['latest_check'] == datetime(1999, 1, 3)
 
     assert actual[6]['id'] == 2
     assert actual[6]['year'] == 2000
@@ -178,7 +178,7 @@ def test_table(incomes, expenses, have, types):
     assert actual[6]['market_value'] == 250.0
     assert round(actual[6]['profit_proc'], 2) == 22.55
     assert actual[6]['profit_sum'] == 46.0
-    assert actual[6]['latest_check'] == datetime(2000, 1, 1)
+    assert actual[6]['latest_check'] == datetime(2000, 1, 4)
 
     assert actual[7]['id'] == 2
     assert actual[7]['year'] == 2001
@@ -194,7 +194,7 @@ def test_table(incomes, expenses, have, types):
     assert actual[7]['market_value'] == 250.0
     assert round(actual[7]['profit_proc'], 2) == 22.55
     assert actual[7]['profit_sum'] == 46.0
-    assert actual[7]['latest_check'] == datetime(2000, 1, 1)
+    assert actual[7]['latest_check'] == datetime(2000, 1, 4)
 
 
 @time_machine.travel('1999-1-1')
@@ -234,6 +234,33 @@ def test_table_with_types(types):
     ]
     data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
     actual = Savings(data).table
+
+    assert actual[0]['id'] == 1
+    assert actual[0]['year'] == 1998
+    assert actual[0]['incomes'] == 1.0
+    assert actual[0]['fee'] == 0.1
+    assert actual[0]['past_amount'] == 0.0
+    assert actual[0]['past_fee'] == 0.0
+    assert actual[0]['per_year_incomes'] == 1.0
+    assert actual[0]['per_year_fee'] == 0.1
+
+    assert actual[1]['id'] == 1
+    assert actual[1]['year'] == 1999
+    assert actual[1]['incomes'] == 4.0
+    assert actual[1]['fee'] == 0.4
+    assert actual[1]['past_amount'] == 1.0
+    assert actual[1]['past_fee'] == 0.1
+    assert actual[1]['per_year_incomes'] == 3.0
+    assert actual[1]['per_year_fee'] == 0.3
+
+    assert actual[2]['id'] == 1
+    assert actual[2]['year'] == 2000
+    assert actual[2]['incomes'] == 4.0
+    assert actual[2]['fee'] == 0.4
+    assert actual[2]['past_amount'] == 4.0
+    assert actual[2]['past_fee'] == 0.4
+    assert actual[2]['per_year_incomes'] == 0.0
+    assert actual[2]['per_year_fee'] == 0.0
 
     assert actual[3]['id'] == 2
     assert actual[3]['year'] == 1998
@@ -334,7 +361,7 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[0]['market_value'] == 0.0
     assert round(actual[0]['profit_proc'], 2) == -100.0
     assert actual[0]['profit_sum'] == -42.0
-    assert actual[0]['latest_check'] == 0.0
+    assert not actual[0]['latest_check']
 
     assert actual[1]['id'] == 1
     assert actual[1]['year'] == 2000
@@ -350,7 +377,7 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[1]['market_value'] == 0.0
     assert round(actual[1]['profit_proc'], 2) == -100.0
     assert actual[1]['profit_sum'] == -134.0
-    assert actual[1]['latest_check'] == 0.0
+    assert not actual[1]['latest_check']
 
     assert actual[2]['id'] == 1
     assert actual[2]['year'] == 2001
@@ -366,7 +393,7 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[2]['market_value'] == 0.0
     assert round(actual[2]['profit_proc'], 2) == -100.0
     assert actual[2]['profit_sum'] == -134.0
-    assert actual[2]['latest_check'] == 0.0
+    assert not actual[2]['latest_check']
 
 
 @time_machine.travel('2000-12-31')
@@ -388,7 +415,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[0]['market_value'] == 0.0
     assert round(actual[0]['profit_proc'], 2) == 0.0
     assert actual[0]['profit_sum'] == 0.0
-    assert actual[0]['latest_check'] == 0.0
+    assert not actual[0]['latest_check']
 
     assert actual[1]['id'] == 1
     assert actual[1]['year'] == 2000
@@ -404,7 +431,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[1]['market_value'] == 0.0
     assert round(actual[1]['profit_proc'], 2) == 0.0
     assert actual[1]['profit_sum'] == 0.0
-    assert actual[1]['latest_check'] == 0.0
+    assert not actual[1]['latest_check']
 
     assert actual[2]['id'] == 1
     assert actual[2]['year'] == 2001
@@ -420,7 +447,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[2]['market_value'] == 0.0
     assert round(actual[2]['profit_proc'], 2) == 0.0
     assert actual[2]['profit_sum'] == 0.0
-    assert actual[2]['latest_check'] == 0.0
+    assert not actual[2]['latest_check']
 
 
 @time_machine.travel('2000-12-31')
@@ -442,7 +469,7 @@ def test_table_expenses_empty(incomes, types):
     assert actual[0]['market_value'] == 0.0
     assert round(actual[0]['profit_proc'], 2) == -100.0
     assert actual[0]['profit_sum'] == -98.0
-    assert actual[0]['latest_check'] == 0.0
+    assert not actual[0]['latest_check']
 
     assert actual[1]['id'] == 1
     assert actual[1]['year'] == 2000
@@ -458,7 +485,7 @@ def test_table_expenses_empty(incomes, types):
     assert actual[1]['market_value'] == 0.0
     assert round(actual[1]['profit_proc'], 2) == -100.0
     assert actual[1]['profit_sum'] == -294.0
-    assert actual[1]['latest_check'] == 0.0
+    assert not actual[1]['latest_check']
 
     assert actual[2]['id'] == 1
     assert actual[2]['year'] == 2001
@@ -474,7 +501,7 @@ def test_table_expenses_empty(incomes, types):
     assert actual[2]['market_value'] == 0.0
     assert round(actual[2]['profit_proc'], 2) == -100.0
     assert actual[2]['profit_sum'] == -294.0
-    assert actual[2]['latest_check'] == 0.0
+    assert not actual[2]['latest_check']
 
 
 @time_machine.travel('2000-12-31')
@@ -512,7 +539,7 @@ def test_table_only_have(have, types):
     assert actual[1]['market_value'] == 300.0
     assert round(actual[1]['profit_proc'], 2) == 0.0
     assert actual[1]['profit_sum'] == 300.0
-    assert actual[1]['latest_check'] == datetime(2000, 1, 1)
+    assert actual[1]['latest_check'] == datetime(2000, 1, 2)
 
     assert actual[2]['id'] == 1
     assert actual[2]['year'] == 2001
@@ -528,4 +555,4 @@ def test_table_only_have(have, types):
     assert actual[2]['market_value'] == 300.0
     assert round(actual[2]['profit_proc'], 2) == 0.0
     assert actual[2]['profit_sum'] == 300.0
-    assert actual[2]['latest_check'] == datetime(2000, 1, 1)
+    assert actual[2]['latest_check'] == datetime(2000, 1, 2)
