@@ -100,13 +100,13 @@ class SignalBase(ABC):
         last_year_type_list = row_diff[1, 1]
         row_diff = list(set(prev_year_type_list) ^ set(last_year_type_list))
 
-        df = (
+        df = df.vstack(
             df.filter(
                 (pl.col("year") == prev_year)
                 & (pl.col("id").is_in(types))
                 & (pl.col("id").is_in(row_diff))
             )
-            .with_columns(pl.lit(last_year).cast(pl.UInt16).alias("year"))
+            .with_columns(year=pl.lit(last_year).cast(pl.UInt16))
             .pipe(self._reset_values, year=last_year)
         )
         return df
@@ -116,11 +116,8 @@ class SignalBase(ABC):
         prev_year = years[-2]
         last_year = years[-1]
         df = (
-            df.vstack(
-                df.pipe(
-                    self._get_past_records, prev_year=prev_year, last_year=last_year
-                )
-            )
+            df
+            .pipe(self._get_past_records, prev_year=prev_year, last_year=last_year)
             .sort(["id", "year"])
             .pipe(self._copy_cell_from_previous_year, field_name=field_name)
             .sort(["year", "id"])
