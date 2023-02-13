@@ -1,7 +1,7 @@
 from datetime import date
 
 import pytest
-from freezegun import freeze_time
+import time_machine
 from mock import patch
 
 from ...users.factories import UserFactory
@@ -37,7 +37,7 @@ def test_drink_help_text():
     assert 'Įvedus daugiau nei 20, bus manoma kad tai yra mL' in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel("1974-1-1")
 def test_drink_year_initial_value():
     UserFactory()
 
@@ -73,7 +73,7 @@ def test_drink_valid_data():
 
 
 @patch('project.drinks.forms.App_name', 'Counter Type')
-@freeze_time('1999-2-2')
+@time_machine.travel('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]
@@ -117,7 +117,7 @@ def test_drink_target_init_fields():
     assert '<select name="user"' not in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel("1974-1-1")
 def test_drink_target_year_initial_value():
     UserFactory()
 
@@ -208,7 +208,7 @@ def test_drink_filter_init_fields():
     assert '<input type="number" name="year2"' in form
 
 
-@freeze_time('1999-01-01')
+@time_machine.travel('1999-01-01')
 def test_drink_filter_initial_values():
     form = DrinkCompareForm().as_p()
 

@@ -2,8 +2,8 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+import time_machine
 from django.urls import reverse
-from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
@@ -232,7 +232,7 @@ def test_saving_day_saving_query_count(django_assert_max_num_queries):
         Saving.objects.sum_by_day(1999, 1).values()
 
 
-@freeze_time('1999-06-01')
+@time_machine.travel('1999-06-01')
 def test_saving_last_months():
     SavingFactory(date=date(1998, 11, 30), price=3)
     SavingFactory(date=date(1998, 12, 31), price=4)
@@ -243,7 +243,7 @@ def test_saving_last_months():
     assert actual['sum'] == 11.0
 
 
-@freeze_time('1999-06-01')
+@time_machine.travel('1999-06-01')
 def test_saving_last_months_qs_count(django_assert_max_num_queries):
     SavingFactory(date=date(1999, 1, 1), price=2)
 
@@ -756,7 +756,7 @@ def test_saving_balance_filter_by_few_types():
     assert actual[1].saving_type.title == '2'
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_sum_by_type_funds():
     f = SavingTypeFactory(title='F', type='funds')
 
@@ -771,7 +771,7 @@ def test_sum_by_type_funds():
     ]
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_sum_by_type_shares():
     f = SavingTypeFactory(title='F', type='shares')
 
@@ -786,7 +786,7 @@ def test_sum_by_type_shares():
     ]
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_sum_by_type_pensions():
     f = SavingTypeFactory(title='F', type='pensions')
 
@@ -801,7 +801,7 @@ def test_sum_by_type_pensions():
     ]
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_sum_by_year():
     f = SavingTypeFactory(title='F', type='funds')
     p = SavingTypeFactory(title='P', type='pensions')

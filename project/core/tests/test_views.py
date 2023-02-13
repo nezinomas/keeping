@@ -1,8 +1,9 @@
 from datetime import date
 
 import pytest
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
+from mock import patch
 
 from ...accounts.factories import AccountBalance
 from ...expenses.factories import ExpenseFactory
@@ -14,6 +15,7 @@ from .. import views
 from .utils import setup_view
 
 pytestmark = pytest.mark.django_db
+from datetime import datetime
 
 
 @pytest.mark.parametrize(
@@ -23,8 +25,10 @@ pytestmark = pytest.mark.django_db
         (1000, 1999),
         (3000, 1999),
     ])
-@freeze_time('2020-01-01')
-def test_set_year(year, expect, get_user, client_logged):
+@patch('project.bookkeeping.lib.year_balance.datetime')
+def test_set_year(dt_mock, year, expect, get_user, client_logged):
+    dt_mock.now.return_value = datetime(2020, 1, 1)
+
     get_user.journal.first_record = date(1974, 1, 1)
     url = reverse(
         'core:set_year',
@@ -71,7 +75,7 @@ def test_view_regenerate_balances_status_200(client_logged):
     assert response.status_code == 204
 
 
-@freeze_time('1999-01-01')
+@time_machine.travel('1999-01-01')
 def test_view_regenerate_balances_all_year(client_logged, get_user):
     ExpenseFactory()
     ExpenseFactory(date=date(1998, 1, 1))

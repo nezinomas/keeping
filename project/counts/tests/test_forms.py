@@ -2,8 +2,8 @@ import tempfile
 from datetime import date
 
 import pytest
+import time_machine
 from django.test import override_settings
-from freezegun import freeze_time
 from mock import patch
 
 from ...users.factories import UserFactory
@@ -29,7 +29,7 @@ def test_form_init_fields():
     assert '<select name="count_type"' in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_form_year_initial_value():
     UserFactory()
 
@@ -61,7 +61,7 @@ def test_form_valid_data():
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@freeze_time('1999-2-2')
+@time_machine.travel('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]

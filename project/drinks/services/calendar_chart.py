@@ -14,8 +14,7 @@ class CalendarChart:
     data: DrinkQuerySet.sum_by_day
     latest_past_date: date = None
 
-    chart_data: CountStats.chart_calendar = \
-        field(init=False, default_factory=list)
+    chart_data: CountStats.chart_calendar = field(init=False, default_factory=list)
 
     def __post_init__(self):
         if not self.data:

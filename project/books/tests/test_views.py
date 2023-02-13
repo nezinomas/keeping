@@ -2,8 +2,8 @@ import re
 from datetime import date
 
 import pytest
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 
 from ...users.factories import UserFactory
 from .. import models, views
@@ -92,7 +92,7 @@ def test_info_row_200(client_logged):
     assert response.status_code == 200
 
 
-@freeze_time('1999-07-18')
+@time_machine.travel('1999-07-18')
 def test_info_row_html(client_logged):
     BookFactory()
     BookFactory()
@@ -110,7 +110,7 @@ def test_info_row_html(client_logged):
     assert re.findall(reading, content) == ['2']
 
 
-@freeze_time('1999-07-18')
+@time_machine.travel('1999-07-18')
 def test_info_row_no_data(client_logged):
     url = reverse('books:info_row')
     response = client_logged.get(url)
@@ -204,7 +204,7 @@ def test_view_update_func():
     assert views.Update == view.func.view_class
 
 
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_load_books_form(client_logged):
     url = reverse('books:new')
 
@@ -296,7 +296,7 @@ def test_book_update_to_another_year(client_logged):
     assert '2010-12-31' not in actual
 
 
-@freeze_time('2000-03-03')
+@time_machine.travel('2000-03-03')
 def test_books_update_past_record(get_user, client_logged):
     get_user.year = 2000
     i = BookFactory(started=date(1974, 12, 12))

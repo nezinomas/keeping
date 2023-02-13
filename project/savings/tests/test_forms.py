@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from freezegun import freeze_time
+import time_machine
 
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
@@ -138,7 +138,7 @@ def test_saving_init():
     SavingForm()
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_saving_year_initial_value():
     UserFactory()
 
@@ -177,7 +177,7 @@ def test_saving_select_first_account(main_user, second_user):
     assert expect in form
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_saving_valid_data():
     a = AccountFactory()
     t = SavingTypeFactory()
@@ -203,7 +203,7 @@ def test_saving_valid_data():
     assert data.saving_type.title == t.title
 
 
-@freeze_time('1999-2-2')
+@time_machine.travel('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]

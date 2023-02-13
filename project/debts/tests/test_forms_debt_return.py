@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from freezegun import freeze_time
+import time_machine
 from mock import patch
 
 from ...accounts.factories import AccountFactory
@@ -42,7 +42,7 @@ def test_debt_name_field_label_for_borrow(mck):
     assert '<label for="id_debt">Paskolos davėjas:</label>' in form
 
 
-@freeze_time('2-2-2')
+@time_machine.travel('2-2-2')
 def test_borrow_return_year_initial_value():
     UserFactory()
 
@@ -122,7 +122,7 @@ def test_borrow_return_valid_data(mck):
     assert e.remark == 'Rm'
 
 
-@freeze_time('1999-2-2')
+@time_machine.travel('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]

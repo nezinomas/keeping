@@ -1,108 +1,99 @@
-from datetime import datetime
-from typing import Dict, List
-
-import numpy as np
-from pandas import DataFrame as DF
+import polars as pl
+from polars import DataFrame as DF
 
 
-class BalanceBase():
-    def __init__(self, balance: DF = DF()):
-        self._balance = balance
+class BalanceBase:
+    def __init__(self, data: DF = DF()):
+        self._data = data
 
     @property
-    def balance(self) -> List[Dict]:
-        '''
+    def balance(self) -> list[dict]:
+        """
         Return [{'date': datetime.datetime, 'title': float}]
-        '''
-        if not isinstance(self._balance, DF):
+        """
+        if not isinstance(self._data, DF):
             return []
 
-        if self._balance.empty:
-            return []
-
-        arr = self._balance.copy()
-        arr.reset_index(inplace=True)
-
-        return arr.to_dict('records')
+        return [] if self._data.is_empty() else self._data.to_dicts()
 
     @property
-    def types(self) -> List:
-        return sorted(self._balance.columns.tolist())
+    def types(self) -> list:
+        return sorted(self._data.select(pl.exclude("date")).columns)
 
     @property
     def total(self) -> float:
-        '''
+        """
         Return total sum of all columns
-        '''
-        if not isinstance(self._balance, DF) or self._balance.empty:
+        """
+        if not isinstance(self._data, DF) or self._data.is_empty():
             return 0.0
 
-        return self._balance.sum().sum()
+        return self._data.select(pl.sum(pl.exclude("date")).sum())[0, 0]
 
-    def make_total_column(self, df = DF()) -> DF:
-        '''
+    def make_total_column(self, df=DF()) -> DF:
+        """
         calculate total column for balance DataFrame
 
         return filtered DataFrame with date and total column
-        '''
+        """
 
-        df = self._balance if df.empty else df
-
-        if not isinstance(df, DF):
+        if not isinstance(self._data, DF):
             return DF()
 
-        if df.empty:
+        if self._data.is_empty():
             return DF()
 
-        df = df.copy()
-
-        df['total'] = df.sum(axis=1)
-
-        return df.reset_index()[['date', 'total']]
+        return self._data.select(
+            [pl.col("date"), pl.sum(pl.exclude("date")).alias("total")]
+        )
 
     @property
-    def total_column(self) -> Dict[str, float]:
-        return self.make_total_column().to_dict('records')
+    def total_column(self) -> dict[str, float]:
+        return self.make_total_column().to_dicts()
 
     @property
-    def total_row(self) -> Dict[str, float]:
-        if not isinstance(self._balance, DF):
+    def total_row(self) -> dict[str, float]:
+        if not isinstance(self._data, DF):
             return {}
 
-        if self._balance.empty:
+        if self._data.is_empty():
             return {}
 
-        arr = self._balance.copy()
+        df = self._data.select(pl.exclude("date")).sum().head(1)
 
-        return arr.sum().to_dict()
+        return {} if df.is_empty() else df.to_dicts()[0]
 
     @property
-    def average(self) -> Dict[str, float]:
-        if not isinstance(self._balance, DF):
+    def average(self) -> dict[str, float]:
+        """Calculate mean of every column, null values ignored
+
+        Returns:
+            dict[str, float]
+        """
+        if not isinstance(self._data, DF):
             return {}
 
-        if self._balance.empty:
+        if self._data.is_empty():
             return {}
 
-        # replace 0.0 to None
-        # average will be calculated only for months with non zero values
-        arr = self._balance.copy()
-        arr.replace(0.0, np.nan, inplace=True)
-        # calculate average
-        arr = arr.mean(skipna=True, numeric_only=True)
-        # replace nan -> 0.0
-        return arr.fillna(0.0).to_dict()
+        cols = self._data.select(pl.exclude("date")).columns
 
-    def _calc_avg(self, df: DF,
-                  year: int, month: int, day: int) -> DF:
+        def col_sum(col_name) -> pl.Expr:
+            return pl.col(col_name).sum()
 
-        # sort index, in case if dates not ordered
-        df.sort_index(inplace=True)
+        def count_not_nulls(col_name):
+            return pl.col(col_name).filter(pl.col(col_name) != 0).count()
 
-        to_date = datetime(year, month, day)
-
-        sum_ = df.loc[:to_date, :].sum()
-
-        df.loc['total', :] = sum_ / day
-
-        return df
+        df = (
+            self._data.select(cols)
+            .fill_null(0)
+            .with_columns(
+                [
+                    pl.when(col_sum(col_name) != 0)
+                    .then(col_sum(col_name) / count_not_nulls(col_name))
+                    .otherwise(pl.lit(0.0))
+                    for col_name in cols
+                ]
+            )
+        )
+        return {} if df.is_empty() else df.to_dicts()[0]

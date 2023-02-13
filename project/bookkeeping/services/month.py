@@ -35,30 +35,29 @@ class MonthServiceData:
         field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = \
-            Income.objects \
-            .sum_by_month(self.year, self.month)
+        self.incomes = list(
+            Income.objects
+            .sum_by_month(self.year, self.month))
 
-        self.expenses = \
-            Expense.objects \
-            .sum_by_day_ant_type(self.year, self.month)
+        self.expenses = list(
+                Expense.objects
+                .sum_by_day_ant_type(self.year, self.month))
 
-        self.expense_types = \
-            list(
-                ExpenseType.objects \
-                .items() \
+        self.expense_types = list(
+                ExpenseType.objects
+                .items()
                 .values_list('title', flat=True)
             )
 
-        self.necessary_expense_types =  \
-            ExpenseType.objects \
-            .items() \
-            .filter(necessary=True) \
-            .values_list('title', flat=True)
+        self.necessary_expense_types = list(
+            ExpenseType.objects
+            .items()
+            .filter(necessary=True)
+            .values_list('title', flat=True))
 
-        self.savings = \
-            Saving.objects \
-            .sum_by_day(self.year, self.month)
+        self.savings = list(
+            Saving.objects
+            .sum_by_day(self.year, self.month))
 
 
 class MonthService():

@@ -3,7 +3,7 @@ from itertools import zip_longest
 
 import pytest
 from mock import MagicMock
-
+import time_machine
 from ..services.month import MonthService
 
 
@@ -24,7 +24,7 @@ def test_month_table_context_keys():
     assert 'total_savings' in actual
 
 
-@pytest.mark.freeze_time('2017-05-21')
+@time_machine.travel('2017-05-21')
 def test_month_table_context_day():
     obj = MonthService(
         data=MagicMock(year=2017, month=5),
@@ -37,7 +37,7 @@ def test_month_table_context_day():
     assert actual['day'] == 21
 
 
-@pytest.mark.freeze_time('1999-1-21')
+@time_machine.travel('1999-1-21')
 def test_month_table_context_expenses():
     obj = MonthService(
         data=MagicMock(),
@@ -124,7 +124,7 @@ def test_month_table_context_total_savings():
     assert actual == 'savings.total'
 
 
-@pytest.mark.freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_info_context():
     obj = MonthService(
         data=MagicMock(

@@ -2,8 +2,8 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 from mock import patch
 
 from ...accounts.factories import AccountFactory
@@ -99,7 +99,7 @@ def test_borrow_new_200(client_logged):
     assert response.status_code == 200
 
 
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_borrow_load_form(client_logged):
     url = reverse('debts:new', kwargs={'debt_type': 'borrow'})
     response = client_logged.get(url)

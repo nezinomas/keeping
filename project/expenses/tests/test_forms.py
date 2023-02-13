@@ -4,9 +4,8 @@ from io import BytesIO
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from freezegun import freeze_time
 from PIL import Image
-
+import time_machine
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
 from ..factories import ExpenseNameFactory, ExpenseTypeFactory
@@ -47,7 +46,7 @@ def test_expense_init_fields():
     assert '<input type="file" name="attachment"' in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_expense_year_initial_value():
     UserFactory()
 
@@ -115,7 +114,7 @@ def test_exepense_form_valid_data():
     assert e.quantity == 1
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_exepense_insert_only_three_years_to_past():
     a = AccountFactory()
     t = ExpenseTypeFactory()
@@ -139,7 +138,7 @@ def test_exepense_insert_only_three_years_to_past():
     assert 'Metai negali būti mažesni nei 1996' in form.errors['date']
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_exepense_insert_only_one_year_to_futur():
     a = AccountFactory()
     t = ExpenseTypeFactory()

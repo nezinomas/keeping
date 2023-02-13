@@ -1,8 +1,8 @@
-import json
 import re
-from datetime import timedelta
+from datetime import date, timedelta
 
 import pytest
+import time_machine
 from django.conf import settings
 from django.contrib.auth.forms import (PasswordChangeForm, PasswordResetForm,
                                        SetPasswordForm)
@@ -13,7 +13,6 @@ from django.core.signing import TimestampSigner
 from django.urls import resolve, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from freezegun import freeze_time
 from mock import patch
 
 from ...journals.models import Journal
@@ -52,9 +51,11 @@ def test_user_journal(client):
     assert response.context['user'].journal.title == 'bob Journal'
 
 
-@freeze_time('2000-12-01')
 @pytest.mark.disable_get_user_patch
-def test_user_year_month_values_fill_on_login_if_empty(client):
+@patch('project.users.views.datetime')
+def test_user_year_month_values_fill_on_login_if_empty(dt_mock, client):
+    dt_mock.now.return_value = date(2000, 12, 1)
+
     UserFactory(year=None, month=None)
 
     url = reverse('users:login')
@@ -699,14 +700,13 @@ def test_invite_signup_status_code(client, signer):
     assert response.status_code == 200
 
 
-@freeze_time('1974-1-1')
 def test_invite_signup_expired_link(client, get_user):
-    with freeze_time('1974-1-1 1:0:0'):
+    with time_machine.travel('1974-1-1 1:0:0'):
         s_ = TimestampSigner(salt=settings.SALT)
         token_ = s_.sign_object(
             {'jrn': get_user.journal.pk, 'usr': get_user.pk})
 
-    with freeze_time('1974-1-4 1:0:1'):
+    with time_machine.travel('1974-1-4 1:0:1'):
         url = reverse('users:invite_signup', kwargs={'token': token_})
         response = client.get(url)
         content = response.content.decode('utf-8')

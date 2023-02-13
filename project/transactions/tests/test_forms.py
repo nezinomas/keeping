@@ -2,13 +2,14 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from freezegun import freeze_time
+import time_machine
 
 from ...accounts.factories import AccountFactory
 from ...savings.factories import SavingTypeFactory
 from ...savings.models import SavingType
 from ...users.factories import UserFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
+
 pytestmark = pytest.mark.django_db
 
 
@@ -28,7 +29,7 @@ def test_transaction_init_fields():
     assert '<select name="to_account"' in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_transaction_year_initial_value():
     UserFactory()
 
@@ -80,7 +81,7 @@ def test_transaction_valid_data():
     assert data.to_account == a_to
 
 
-@freeze_time('1999-2-2')
+@time_machine.travel('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]
@@ -146,7 +147,7 @@ def test_saving_change_fields():
     assert '<input type="checkbox" name="close"' in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_saving_change_year_initial_value():
     UserFactory()
 
@@ -200,7 +201,7 @@ def test_saving_change_valid_data():
     assert data.to_account == a_to
 
 
-@freeze_time('1999-2-2')
+@time_machine.travel('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]
@@ -294,7 +295,7 @@ def test_saving_change_form_type_closed_in_current_year(get_user):
     assert 'S2' in str(form['to_account'])
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_saving_change_save_and_close_from_account():
     a_from = SavingTypeFactory(title='From')
     a_to = SavingTypeFactory(title='To')
@@ -334,7 +335,7 @@ def test_saving_close_fields():
     assert '<input type="checkbox" name="close"' in form
 
 
-@freeze_time('1000-01-01')
+@time_machine.travel('1974-01-01')
 def test_saving_close_year_initial_value():
     UserFactory()
 
@@ -386,7 +387,7 @@ def test_saving_close_valid_data():
     assert data.to_account == a_to
 
 
-@freeze_time('1999-2-2')
+@time_machine.travel('1999-2-2')
 @pytest.mark.parametrize(
     'year',
     [1998, 2001]
@@ -471,7 +472,7 @@ def test_saving_close_form_type_closed_in_current_year(get_user):
     assert 'S2' in str(form['from_account'])
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_saving_close_save_and_close_saving_account():
     a_from = SavingTypeFactory()
     a_to = AccountFactory(title='Account2')

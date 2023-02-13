@@ -1,8 +1,8 @@
 from datetime import date
 
 import pytest
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from .. import models, views
@@ -65,7 +65,7 @@ def test_incomes_index_context(client_logged):
     assert 'income_type' in context
 
 
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_income_load_form(client_logged):
     url = reverse('incomes:new')
 
@@ -181,7 +181,7 @@ def test_income_update(client_logged):
     assert 'Pastaba' in actual
 
 
-@freeze_time('2000-03-03')
+@time_machine.travel('2000-03-03')
 def test_incomes_update_past_record(get_user, client_logged):
     get_user.year = 2000
     i = IncomeFactory(date=date(1974, 12, 12))
@@ -279,7 +279,7 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
 # ----------------------------------------------------------------------------
 #                                                                 Income Type
 # ----------------------------------------------------------------------------
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_type_load_form(client_logged):
     url = reverse('incomes:type_new')
 

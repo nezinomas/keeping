@@ -1,70 +1,103 @@
-import numpy as np
-import pandas as pd
+from datetime import date
+
+import polars as pl
 import pytest
 
 from ..lib.balance_base import BalanceBase
 
 
-def create_df():
-    df = pd.DataFrame({'t': [1.1], 'date': ['x']})
-    df.set_index('date', inplace=True)
-
-    return df
-
-
-data_balance = [
-    (create_df(), [{'t': 1.1, 'date': 'x'}]),
-    (pd.DataFrame(), []),
-    (None, [])
-]
+@pytest.fixture(name="df")
+def fixture_df():
+    arr = [
+        {"date": date(1999, 1, 1), "x": 1.1, "y": 2.1},
+        {"date": date(1999, 1, 2), "x": 1.1, "y": 2.1},
+        {"date": date(1999, 1, 3), "x": 0.0, "y": 2.1},
+        {"date": date(1999, 1, 4), "x": 1.1, "y": 0.0},
+    ]
+    return pl.DataFrame(arr)
 
 
-@pytest.mark.parametrize("df,expected", data_balance)
+@pytest.mark.parametrize(
+    "df, expected",
+    [
+        (None, []),
+        (pl.DataFrame(), []),
+        (pl.DataFrame({"t": [1.1], "date": ["x"]}), [{"t": 1.1, "date": "x"}]),
+    ],
+)
 def test_balance(df, expected):
-    o = BalanceBase()
-    o._balance = df
+    actual = BalanceBase(df).balance
 
-    assert o.balance == expected
-
-
-@pytest.mark.parametrize("df,expected", data_balance)
-def test_balance_then_before_was_called_total_row(df, expected):
-    o = BalanceBase()
-    o._balance = df
-
-    o.total_row
-
-    assert o.balance == expected
+    assert actual == expected
 
 
-data_average = [
-    (pd.DataFrame({'t': [1.1, 2.2]}), {'t': 1.65}),
-    (pd.DataFrame({'t': [0.0, 1.1, 0, 2.2]}), {'t': 1.65}),
-    (pd.DataFrame({'t': pd.Series([0.0, np.nan], dtype='float64')}), {'t': 0.0}),
-    (pd.DataFrame(), {}),
-    (None, {}),
-    (pd.DataFrame({'t1': [1.1, 2.2], 't2': [0, 0]}), {'t1': 1.65, 't2': 0.0}),
-]
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        (None, []),
+        (pl.DataFrame(), []),
+        (pl.DataFrame({"t": [1.1], "date": ["x"]}), [{"t": 1.1, "date": "x"}]),
+    ],
+)
+def test_balance_then_before_was_called_total_row(data, expected):
+    obj = BalanceBase(data)
+
+    obj.total_row
+
+    assert obj.balance == expected
 
 
-@pytest.mark.parametrize('df,expected', data_average)
-def test_average(df, expected):
-    o = BalanceBase()
-    o._balance = df
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        (None, {}),
+        (pytest.lazy_fixture("df"), {"x": 1.1, "y": 2.1}),
+        (pl.DataFrame({"x": [1.1, 2.2]}), {"x": 1.65}),
+        (pl.DataFrame({"x": [0.0, 1.1, 0, 2.2]}), {"x": 1.65}),
+        (pl.DataFrame({"x": pl.Series([0.0, None], dtype=pl.Float32)}), {"x": 0.0}),
+        (pl.DataFrame({"t1": [1.1, 2.2], "t2": [0, 0]}), {"t1": 1.65, "t2": 0.0}),
+    ],
+)
+def test_average(data, expected):
+    actual = BalanceBase(data).average
 
-    assert pytest.approx(o.average, rel=1e-2) == expected
+    assert pytest.approx(actual, rel=1e-2) == expected
 
 
-data_total_row = [
-    (pd.DataFrame({'x': [1.05, 2.05]}), {'x': 3.1}),
-    (pd.DataFrame(), {}),
-    (None, {}),
-]
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        (pytest.lazy_fixture("df"), {"x": 3.3, "y": 6.3}),
+        (pl.DataFrame(), {}),
+        (None, {}),
+    ],
+)
+def test_total_row(data, expected):
+    actual = BalanceBase(data).total_row
+
+    assert pytest.approx(actual, rel=1e-2) == expected
 
 
-@pytest.mark.parametrize('df,expected', data_total_row)
-def test_total_row(df, expected):
-    o = BalanceBase()
-    o._balance = df
+def test_total_column(df):
+    actual = BalanceBase(df).total_column
 
-    assert pytest.approx(o.total_row, rel=1e-2) == expected
+    expect = [
+        {"date": date(1999, 1, 1), "total": 3.2},
+        {"date": date(1999, 1, 2), "total": 3.2},
+        {"date": date(1999, 1, 3), "total": 2.1},
+        {"date": date(1999, 1, 4), "total": 1.1},
+    ]
+
+    assert actual == expect
+
+
+def test_total(df):
+    actual = BalanceBase(df).total
+
+    assert actual == 9.6
+
+
+def test_types(df):
+    actual = BalanceBase(df).types
+
+    assert actual == ["x", "y"]

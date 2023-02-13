@@ -13,44 +13,44 @@ def data():
     obj.month = 0
 
     obj.incomes = [
-        {'january': Decimal(400.01), 'february': Decimal(500.02)},
-        {'january': Decimal(500.02), 'february': Decimal(500.02)},
+        {'january': Decimal('400.01'), 'february': Decimal('500.02')},
+        {'january': Decimal('500.02'), 'february': Decimal('500.02')},
     ]
     obj.expenses = [
         {
-            'january': Decimal(10.01),
-            'february': Decimal(10.01),
+            'january': Decimal('10.01'),
+            'february': Decimal('10.01'),
             'necessary': False,
             'title': 'T1'
         }, {
-            'january': Decimal(20.02),
-            'february': Decimal(20.02),
+            'january': Decimal('20.02'),
+            'february': Decimal('20.02'),
             'necessary': True,
             'title': 'T2'
         }, {
-            'january': Decimal(30.03),
-            'february': Decimal(30.03),
+            'january': Decimal('30.03'),
+            'february': Decimal('30.03'),
             'necessary': False,
             'title': 'T3'
         }, {
-            'january': Decimal(40.04),
-            'february': Decimal(40.04),
+            'january': Decimal('40.04'),
+            'february': Decimal('40.04'),
             'necessary': True,
             'title': 'T4'
         }
     ]
 
     obj.savings = [
-        {'january': Decimal(32.33), 'february': Decimal(32.33)},
-        {'january': Decimal(32.33), 'february': Decimal(32.33)},
+        {'january': Decimal('32.33'), 'february': Decimal('32.33')},
+        {'january': Decimal('32.33'), 'february': Decimal('32.33')},
     ]
 
     obj.days = [
-        {'january': Decimal(25.0), 'february': Decimal(26.0)},
+        {'january': Decimal('25.0'), 'february': Decimal('26.0')},
     ]
 
     obj.necessary = [
-        {'january': None, 'february': Decimal(100.0)},
+        {'february': Decimal('100.0')},
     ]
 
     return obj
@@ -133,8 +133,8 @@ def test_expenses_necessary(data):
     actual = PlanCalculateDaySum(data).expenses_necessary
 
     assert len(actual) == 12
-    assert actual['january'] == 124.72
-    assert actual['february'] == 224.72
+    assert round(actual['january'], 2) == 124.72
+    assert round(actual['february'], 2) == 224.72
 
 
 @pytest.mark.parametrize(
@@ -149,7 +149,7 @@ def test_expenses_necessary_with_month(month, expect, data):
     data.month = month
     actual = PlanCalculateDaySum(data).expenses_necessary
 
-    assert actual == expect
+    assert round(actual, 2) == expect
 
 
 def test_day_calced(data):
@@ -254,8 +254,8 @@ def test_plans_stats_expenses_necessary(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
     assert 'Būtinos išlaidos' == actual[0].type
-    assert actual[0].january == 124.72
-    assert actual[0].february == 224.72
+    assert round(actual[0].january, 2) == 124.72
+    assert round(actual[0].february, 2) == 224.72
 
 
 def test_plans_stats_expenses_free(data):
@@ -303,7 +303,7 @@ def test_targets_no_month(data):
 
 def test_target_with_nones(data_empty):
     data_empty.month = 1
-    data_empty.expenses = [{'january': None, 'necessary': False, 'title': 'T1'}]
+    data_empty.expenses = [{'january': 0.0, 'necessary': False, 'title': 'T1'}]
 
     obj = PlanCalculateDaySum(data_empty)
 

@@ -2,14 +2,13 @@ from collections import namedtuple
 from dataclasses import dataclass, field
 from typing import Union
 
-import pandas as pd
+import polars as pl
 from django.db.models import F
 from django.utils.translation import gettext as _
-from pandas import DataFrame as DF
+from polars import DataFrame as DF
 
 from ...core.lib.date import monthlen, monthname, monthnames
-from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
-                      SavingPlan)
+from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 
 
 @dataclass
@@ -17,108 +16,95 @@ class PlanCollectData:
     year: int = 1970
     month: int = 0
 
-    incomes: list[dict] = \
-        field(init=False, default_factory=list)
-    expenses: list[dict] = \
-        field(init=False, default_factory=list)
-    savings: list[dict] = \
-        field(init=False, default_factory=list)
-    days: list[dict] = \
-        field(init=False, default_factory=list)
-    necessary: list[dict] = \
-        field(init=False, default_factory=list)
+    incomes: list[dict] = field(init=False, default_factory=list)
+    expenses: list[dict] = field(init=False, default_factory=list)
+    savings: list[dict] = field(init=False, default_factory=list)
+    days: list[dict] = field(init=False, default_factory=list)
+    necessary: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = \
-                IncomePlan.objects \
-                .year(self.year) \
-                .values(*monthnames())
+        self.incomes = IncomePlan.objects.year(self.year).values(*monthnames())
 
-        self.expenses = \
-            ExpensePlan.objects \
-            .year(self.year) \
-            .values(
-                *monthnames(),
-                necessary=F('expense_type__necessary'),
-                title=F('expense_type__title'))
+        self.expenses = ExpensePlan.objects.year(self.year).values(
+            *monthnames(),
+            necessary=F("expense_type__necessary"),
+            title=F("expense_type__title")
+        )
 
-        self.savings = \
-                SavingPlan.objects \
-                .year(self.year) \
-                .values(*monthnames())
-
-        self.days = \
-                DayPlan.objects \
-                .year(self.year) \
-                .values(*monthnames())
-
-        self.necessary = \
-                NecessaryPlan.objects \
-                .year(self.year) \
-                .values(*monthnames())
+        self.savings = SavingPlan.objects.year(self.year).values(*monthnames())
+        self.days = DayPlan.objects.year(self.year).values(*monthnames())
+        self.necessary = NecessaryPlan.objects.year(self.year).values(*monthnames())
 
 
-class PlanCalculateDaySum():
+class PlanCalculateDaySum:
+    std_columns = (
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december",
+    )
+
     def __init__(self, data: PlanCollectData):
         self._data = data
         self._year = data.year
-
         self._df = self._calc_df()
-
-        # filter data for current month
-        if self._data.month:
-            month = monthname(data.month)  # convert int to month name
-            self._df = self._df.loc[:, month]
 
     @property
     def incomes(self) -> dict[str, float]:
-        data = self._df.loc['incomes']
+        data = self._df.filter(pl.col("name") == "incomes")
         return self._return_data(data)
 
     @property
     def savings(self) -> dict[str, float]:
-        data = self._df.loc['savings']
+        data = self._df.filter(pl.col("name") == "savings")
         return self._return_data(data)
 
     @property
     def expenses_free(self) -> dict[str, float]:
-        data = self._df.loc['expenses_free']
+        data = self._df.filter(pl.col("name") == "expenses_free")
         return self._return_data(data)
 
     @property
     def expenses_necessary(self) -> dict[str, float]:
-        data = self._df.loc['expenses_necessary']
+        data = self._df.filter(pl.col("name") == "expenses_necessary")
         return self._return_data(data)
 
     @property
     def day_calced(self) -> dict[str, float]:
-        data = self._df.loc['day_calced']
+        data = self._df.filter(pl.col("name") == "day_calced")
         return self._return_data(data)
 
     @property
     def day_input(self) -> dict[str, float]:
-        data = self._df.loc['day_input']
+        data = self._df.filter(pl.col("name") == "day_input")
         return self._return_data(data)
 
     @property
     def remains(self) -> dict[str, float]:
-        data = self._df.loc['remains']
+        data = self._df.filter(pl.col("name") == "remains")
         return self._return_data(data)
 
     @property
     def necessary(self) -> dict[str, float]:
-        data = self._df.loc['necessary']
+        data = self._df.filter(pl.col("name") == "necessary")
         return self._return_data(data)
 
     @property
     def plans_stats(self):
         dicts = [
-            dict({'type': _('Necessary expenses')}, **self.expenses_necessary),
-            dict({'type': _('Remains for everyday'), **self.expenses_free}),
-            dict({'type': _('Sum per day, max possible')}, **self.day_calced),
-            dict({'type': _('Residual')}, **self.remains),
+            dict({"type": _("Necessary expenses")}, **self.expenses_necessary),
+            dict({"type": _("Remains for everyday"), **self.expenses_free}),
+            dict({"type": _("Sum per day, max possible")}, **self.day_calced),
+            dict({"type": _("Residual")}, **self.remains),
         ]
-
         # list of dictionaries convert to list of objects
         return [namedtuple("Items", item.keys())(*item.values()) for item in dicts]
 
@@ -134,65 +120,80 @@ class PlanCalculateDaySum():
 
         for item in arr:
             val = item.get(month, 0.0) or 0.0
-            rtn[item.get('title', 'unknown')] = float(val)
+            rtn[item.get("title", "unknown")] = float(val)
 
         return rtn
 
-    def _return_data(self, data: Union[pd.Series, float]) -> Union[dict, float]:
-        ''' If data is pandas Serries convert data to dictionary '''
-        return data.to_dict() if isinstance(data, pd.Series) else data
+    def _return_data(self, data: Union[pl.Series, float]) -> Union[dict, float]:
+        """If data is polars Serries convert data to dictionary"""
+        select = monthname(self._data.month) if self._data.month else self.std_columns
+        data = data.select(select)
+        return data[0, 0] if self._data.month else data.to_dicts()[0]
 
-    def _sum(self, arr: list):
-        df = pd.DataFrame(arr)
-        # convert to_numeric decimal values
-        df = df.apply(pd.to_numeric, errors='ignore')
-        # return sum column as pd.Serries
-        return df.sum(axis=0)
+    def _sum(self, name: str, data) -> pl.Expr:
+        data = data if isinstance(data, list) else list(data)
 
-    def _create_df(self) -> pd.DataFrame:
-        df = pd.DataFrame(columns=monthnames(), dtype=float)
-        # create month_len column
-        df.loc['month_len', :] = list(
-            map(lambda col_name: monthlen(self._year, col_name), df.columns))
-        return df
+        def insert_missing_columns(df: DF) -> pl.Expr:
+            diff = set(self.std_columns) - set(df.columns)
+            return (
+                df
+                .with_columns([pl.lit(0.0).alias(col_name) for col_name in diff])
+                .select(self.std_columns))
 
-    def _sum_data(self, df: DF) -> DF:
-        # split expenses into expenses_necessary and expenses_free
-        necessary, free = [], []
+        return (
+            pl.DataFrame(data)
+            .sum()
+            .pipe(insert_missing_columns)
+            .with_columns(pl.lit(name).alias("name"))
+        )
+
+    def _create_df(self) -> DF:
+        expenses_necessary, expenses_free = [], []
         for item in self._data.expenses:
-            necessary.append(item) if item['necessary'] else free.append(item)
-        # sum all data
-        df.loc['expenses_necessary', :] = self._sum(necessary)
-        df.loc['expenses_free', :] = self._sum(free)
-        df.loc['incomes', :] = self._sum(self._data.incomes)
-        df.loc['savings', :] = self._sum(self._data.savings)
-        df.loc['day_input', :] = self._sum(self._data.days)
-        df.loc['necessary', :] = self._sum(self._data.necessary)
+            expenses_necessary.append(item) if item["necessary"] else expenses_free.append(item)
 
-        return df
+        rows = {
+            "month_len": [
+                {x: float(monthlen(self._year, x)) for x in self.std_columns}
+            ],
+            "incomes": self._data.incomes,
+            "savings": self._data.savings,
+            "day_input": self._data.days,
+            "necessary": self._data.necessary,
+            "expenses_necessary": expenses_necessary,
+            "expenses_free": expenses_free,
+        }
+        list_of_df = [self._sum(k, v) for k, v in rows.items()]
+        return pl.concat(list_of_df, how="vertical")
 
     def _calc_df(self) -> None:
-        df = self._create_df()
-        df = self._sum_data(df)
+        df = self._create_df().clone()
 
-        df.loc['expenses_necessary'] = \
-            0 \
-            + df.loc['expenses_necessary'] \
-            + df.loc['savings'] \
-            + df.loc['necessary'] \
-
-        df.loc['expenses_free'] = \
-            0 \
-            + df.loc['incomes'] \
-            - df.loc['expenses_necessary'] \
-
-        df.loc['day_calced'] = \
-            0 \
-            + (df.loc['expenses_free'] / df.loc['month_len'])
-
-        df.loc['remains'] = \
-            0 \
-            + df.loc['expenses_free'] \
-            - (df.loc['day_input'] * df.loc['month_len'])
-
-        return df.fillna(0.0)
+        df = (
+            df.transpose(include_header=False, column_names=df["name"])
+            .limit(12)
+            .with_columns(pl.all().cast(pl.Float32))
+            .with_columns((
+                pl.col("expenses_necessary")
+                + pl.col("savings")
+                + pl.col("necessary"))
+                .alias("expenses_necessary")
+            )
+            .with_columns(
+                (pl.col("incomes") - pl.col("expenses_necessary"))
+                .alias("expenses_free")
+            )
+            .with_columns(
+                (pl.col("expenses_free") / pl.col("month_len"))
+                .alias("day_calced")
+            )
+            .with_columns((
+                pl.col("expenses_free")
+                - (pl.col("day_input") * pl.col("month_len")))
+                .alias("remains")
+            )
+            .transpose(
+                include_header=True, header_name="name", column_names=self.std_columns
+            )
+        )
+        return df

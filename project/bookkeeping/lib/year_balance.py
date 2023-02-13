@@ -1,23 +1,21 @@
 from datetime import datetime
 
-from pandas import DataFrame as DF
+import polars as pl
+from polars import DataFrame as DF
 
 from ..lib.make_dataframe import MakeDataFrame
 from .balance_base import BalanceBase
 
 
 class YearBalance(BalanceBase):
-    def __init__(self,
-                 data: MakeDataFrame,
-                 amount_start: float = 0.0):
-
-        '''
+    def __init__(self, data: MakeDataFrame, amount_start: float = 0.0):
+        """
         data: MakeDataFrame object
 
         amount_start: year start worth amount
 
         awailable keys in data: incomes, expenses, savings, savings_close, borrow, borrow_return, lend, lend_return
-        '''
+        """
 
         try:
             self._amount_start = float(amount_start)
@@ -36,7 +34,7 @@ class YearBalance(BalanceBase):
     @property
     def amount_end(self) -> float:
         try:
-            val = self._balance['money_flow'].values[-1]
+            val = self._balance["money_flow"][-1]
         except (KeyError, IndexError):
             val = 0.0
 
@@ -46,13 +44,13 @@ class YearBalance(BalanceBase):
     def amount_balance(self) -> float:
         t = super().total_row
 
-        return t.get('balance', 0.0)
+        return t.get("balance", 0.0)
 
     @property
     def avg_incomes(self) -> float:
         avg = super().average
 
-        return avg.get('incomes', 0.0)
+        return avg.get("incomes", 0.0)
 
     @property
     def avg_expenses(self) -> float:
@@ -62,58 +60,64 @@ class YearBalance(BalanceBase):
         # if  now().year == user.profile.year
         # calculate average till current month
         if self._year == _year:
-            avg = 0.0
-            arr = super().balance
+            # self._data is from base class
+            df = self._data.select(
+                pl.col("expenses").filter(pl.col("date").dt.month() <= _month).sum()
+            )
+            return df[0, 0] / _month
 
-            for x in range(_month):
-                avg += arr[x]['expenses']
-
-            return avg / _month
-
-        # else return default average from super()
         avg = super().average
-        return avg.get('expenses', 0.0)
+        return avg.get("expenses", 0.0)
 
     @property
     def income_data(self) -> list[float]:
-        return self._balance.incomes.tolist()
+        return self._balance["incomes"].to_list()
 
     @property
     def expense_data(self) -> list[float]:
-        return self._balance.expenses.tolist()
+        return self._balance["expenses"].to_list()
 
     @property
     def borrow_data(self) -> list[float]:
-        return self._balance.borrow.tolist()
+        return self._balance["borrow"].to_list()
 
     @property
     def borrow_return_data(self) -> list[float]:
-        return self._balance.borrow_return.tolist()
+        return self._balance["borrow_return"].to_list()
 
     @property
     def lend_data(self) -> list[float]:
-        return self._balance.lend.tolist()
+        return self._balance["lend"].to_list()
 
     @property
     def lend_return_data(self) -> list[float]:
-        return self._balance.lend_return.tolist()
+        return self._balance["lend_return"].to_list()
 
     @property
     def money_flow(self) -> list[float]:
-        return self._balance.money_flow.tolist()
+        return self._balance["money_flow"].to_list()
 
     def _calc_balance_and_money_flow(self, df: DF) -> DF:
-        # calculate balance
-        df['balance'] = df.incomes - df.expenses
-        # calculate money_float
-        df['money_flow'] = \
-            0 \
-            + df.balance + df.savings_close + df.borrow + df.lend_return \
-            - df.savings - df.borrow_return - df.lend
-        # to first money_flow cell add last year money
-        cell = (datetime(self._year, 1, 1), "money_flow")
-        df.at[cell] = df.at[cell] + self.amount_start
-        # cumulative sum for rest money_flow cells
-        df['money_flow'] = df.money_flow.cumsum()
+        def add_amount_start_to_money_flow_first_cell(df):
+            df[0, "money_flow"] = df[0, "money_flow"] + self.amount_start
+            return df
 
+        df = (
+            df.sort("date")
+            .with_columns((pl.col("incomes") - pl.col("expenses")).alias("balance"))
+            .with_columns(
+                (
+                    pl.lit(0.0)
+                    + pl.col("balance")
+                    + pl.col("savings_close")
+                    + pl.col("borrow")
+                    + pl.col("lend_return")
+                    - pl.col("savings")
+                    - pl.col("borrow_return")
+                    - pl.col("lend")
+                ).alias("money_flow")
+            )
+            .pipe(add_amount_start_to_money_flow_first_cell)
+            .with_columns(pl.col("money_flow").cumsum())
+        )
         return df

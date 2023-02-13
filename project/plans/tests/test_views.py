@@ -1,8 +1,8 @@
 import json
 
 import pytest
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
@@ -12,7 +12,6 @@ from ..factories import (DayPlan, DayPlanFactory, ExpensePlan,
                          ExpensePlanFactory, IncomePlan, IncomePlanFactory,
                          NecessaryPlan, NecessaryPlanFactory, SavingPlan,
                          SavingPlanFactory)
-
 
 pytestmark = pytest.mark.django_db
 
@@ -71,7 +70,7 @@ def test_incomes_update_func():
     assert views.IncomesUpdate == view.func.view_class
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_incomes_load_form(client_logged):
     url = reverse('plans:income_new')
     response = client_logged.get(url)
@@ -212,7 +211,7 @@ def test_expenses_update_func():
     assert views.ExpensesUpdate == view.func.view_class
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_expenses_load_form(client_logged):
     url = reverse('plans:expense_new')
     response = client_logged.get(url)
@@ -355,7 +354,7 @@ def test_savings_update_func():
     assert views.SavingsUpdate == view.func.view_class
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_savings(client_logged):
     url = reverse('plans:saving_new')
     response = client_logged.get(url)
@@ -496,7 +495,7 @@ def test_day_update_func():
     assert views.DayUpdate == view.func.view_class
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_day(client_logged):
     url = reverse('plans:day_new')
     response = client_logged.get(url)
@@ -633,7 +632,7 @@ def test_necessary_update_func():
     assert views.NecessaryUpdate == view.func.view_class
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_necessary(client_logged):
     url = reverse('plans:necessary_new')
     response = client_logged.get(url)

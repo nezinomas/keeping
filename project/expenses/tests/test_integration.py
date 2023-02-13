@@ -1,13 +1,13 @@
-from datetime import datetime
 from time import sleep
 
 import pytest
+import time_machine
 from django.test import LiveServerTestCase
-from freezegun import freeze_time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
+
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
@@ -77,7 +77,7 @@ class Expenses(LiveServerTestCase):
         assert n.title in page
         assert '123.45' in page
 
-    @freeze_time('1999-12-1')
+    @time_machine.travel('1999-12-1')
     def test_add_two_expenses(self):
         self.browser.get(f'{self.live_server_url}/expenses/')
 
@@ -140,7 +140,7 @@ class Expenses(LiveServerTestCase):
         assert n1.title in page
         assert '65.78' in page
 
-    @freeze_time('1999-1-1')
+    @time_machine.travel('1999-1-1')
     def test_empty_required_fields(self):
         self.browser.get(f'{self.live_server_url}/expenses/')
 
@@ -158,7 +158,7 @@ class Expenses(LiveServerTestCase):
         assert e1.text == e2.text == 'This field is required.'
         assert e3.text == 'Ensure this value is greater than or equal to 0.01.'
 
-    @freeze_time('1999-1-1')
+    @time_machine.travel('1999-1-1')
     def test_search(self):
         ExpenseFactory(remark='xxxx')
         ExpenseFactory(remark='yyyy')

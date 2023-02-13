@@ -1,6 +1,6 @@
 import pytest
+import time_machine
 from django.urls import resolve, reverse
-from freezegun import freeze_time
 
 from ...accounts.factories import AccountFactory
 from .. import models, views
@@ -62,7 +62,7 @@ def test_index_view_context(client_logged):
     assert 'pension_type' in context
 
 
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_saving_load_form(client_logged):
     url = reverse('savings:new')
 
@@ -73,7 +73,7 @@ def test_saving_load_form(client_logged):
     assert '1999-01-01' in actual
 
 
-@freeze_time('1999-1-1')
+@time_machine.travel('1999-1-1')
 def test_saving_save(client_logged):
     a = AccountFactory()
     i = SavingTypeFactory()
@@ -117,7 +117,7 @@ def test_saving_save_invalid_data(client_logged):
     assert not actual.is_valid()
 
 
-@freeze_time('2011-1-1')
+@time_machine.travel('2011-1-1')
 def test_saving_update_to_another_year(client_logged):
     saving = SavingFactory()
 
@@ -137,7 +137,7 @@ def test_saving_update_to_another_year(client_logged):
     assert '2010-12-31' not in actual
 
 
-@freeze_time('1999-12-31')
+@time_machine.travel('1999-12-31')
 def test_saving_update(client_logged):
     saving = SavingFactory()
 
@@ -244,7 +244,7 @@ def test_savings_delete_other_journal_post_form(client_logged, second_user):
 # ----------------------------------------------------------------------------
 #                                                                  Saving Type
 # ----------------------------------------------------------------------------
-@freeze_time('2000-01-01')
+@time_machine.travel('2000-01-01')
 def test_type_load_form(client_logged):
     url = reverse('savings:type_new')
 
