@@ -181,7 +181,8 @@ class Accounts(SignalBase):
             return df
 
         df = (
-            df.pipe(self._insert_missing_values, field_name="have")
+            df
+            .pipe(self._insert_missing_values, field_name="have")
             .lazy()
             .with_columns(balance=pl.lit(0.0), past=pl.lit(0.0), delta=pl.lit(0.0))
             .sort(["id", "year"])
@@ -228,7 +229,8 @@ class Savings(SignalBase):
             return df
 
         df = (
-            df.pipe(self._insert_missing_values, field_name="market_value")
+            df
+            .pipe(self._insert_missing_values, field_name="market_value")
             .lazy()
             .sort(["id", "year"])
             .with_columns(
