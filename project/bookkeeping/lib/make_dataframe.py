@@ -70,10 +70,10 @@ class MakeDataFrame:
             )
 
         return df_empty.with_columns(
-                title=pl.lit("__tmp_to_drop__"),
-                sum=pl.lit(0.0),
-                exception_sum=pl.lit(0.0),
-            )
+            title=pl.lit("__tmp_to_drop__"),
+            sum=pl.lit(0.0),
+            exception_sum=pl.lit(0.0),
+        )
 
     def _empty_df(self) -> DF:
         if self.month:
