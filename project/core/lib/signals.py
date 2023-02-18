@@ -181,7 +181,9 @@ class Accounts(SignalBase):
             return df
 
         df = (
-            df.pipe(self._insert_missing_values, field_name="have")
+            df
+            .pipe(self._insert_missing_values, field_name="have")
+            .lazy()
             .with_columns(balance=pl.lit(0.0), past=pl.lit(0.0), delta=pl.lit(0.0))
             .sort(["id", "year"])
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
@@ -197,7 +199,7 @@ class Accounts(SignalBase):
             .with_columns(delta=(pl.col("have") - pl.col("balance")))
             .drop("tmp_balance")
         )
-        return df
+        return df.collect()
 
     def _join_df(self, df: DF, hv: DF) -> DF:
         df = (
@@ -227,7 +229,9 @@ class Savings(SignalBase):
             return df
 
         df = (
-            df.pipe(self._insert_missing_values, field_name="market_value")
+            df
+            .pipe(self._insert_missing_values, field_name="market_value")
+            .lazy()
             .sort(["id", "year"])
             .with_columns(
                 per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
@@ -260,7 +264,7 @@ class Savings(SignalBase):
             .with_columns(profit_sum=(pl.col("market_value") - pl.col("invested")))
             .pipe(self._calc_percent)
         )
-        return df
+        return df.collect()
 
     def _calc_past(self, df: DF) -> pl.Expr:
         df = (

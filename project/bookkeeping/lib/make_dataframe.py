@@ -30,7 +30,7 @@ class MakeDataFrame:
         self.year = year
         self.month = month
         self._columns = columns
-        self._data = self._transform_data(data)
+        self._data = data
 
     @property
     def exceptions(self):
@@ -47,10 +47,10 @@ class MakeDataFrame:
     def create_data(self, sum_col_name: str = "sum") -> DF:
         return (
             pl.DataFrame(self._data)
+            .pipe(self._insert_missing_rows)
             .select(["date", "title", sum_col_name])
             .sort(["title", "date"])
             .with_columns(pl.col(sum_col_name).cast(pl.Float32))
-            .pipe(self._insert_missing_rows)
             .pivot(values=sum_col_name, index="date", columns="title")
             .pipe(self._insert_missing_columns)
             .pipe(self._drop_columns)
@@ -59,29 +59,42 @@ class MakeDataFrame:
             .sort("date")
         )
 
+    def _insert_missing_rows(self, df) -> pl.Expr:
+        df_empty = self._empty_df()
+
+        if not df.is_empty():
+            return (
+                df_empty.join(df, on="date", how="outer")
+                .fill_null(0.0)
+                .select(pl.all().forward_fill())
+            )
+
+        return df_empty.with_columns(
+                title=pl.lit("__tmp_to_drop__"),
+                sum=pl.lit(0.0),
+                exception_sum=pl.lit(0.0),
+            )
+
+    def _empty_df(self) -> DF:
+        if self.month:
+            start = date(self.year, self.month, 1)
+            end = date(
+                self.year, self.month, calendar.monthrange(self.year, self.month)[1]
+            )
+            every = "1d"
+        else:
+            start = date(self.year, 1, 1)
+            end = date(self.year, 12, 31)
+            every = "1mo"
+
+        rng = pl.date_range(start, end, every, name="date")
+        return pl.DataFrame(rng)
+
     def _drop_columns(self, df: DF) -> pl.Expr:
         col_to_drop = [
             "__tmp_to_drop__",
         ]
         return df.drop([name for name in col_to_drop if name in df.columns])
-
-    def _transform_data(self, data: list[dict]) -> list[dict]:
-        """Add first and last dates if data is empty"""
-        data = data or []
-        data = data if isinstance(data, list) else list(data)
-
-        if self.month:
-            first_date = date(self.year, self.month, 1)
-            last_date = date(
-                self.year, self.month, calendar.monthrange(self.year, self.month)[1]
-            )
-        else:
-            first_date = date(self.year, 1, 1)
-            last_date = date(self.year, 12, 31)
-
-        common = {"title": "__tmp_to_drop__", "sum": 0.0, "exception_sum": 0.0}
-        data.extend(({"date": first_date, **common}, {"date": last_date, **common}))
-        return data
 
     def _insert_missing_columns(self, df: DF) -> pl.Expr:
         """Insert missing columns"""
@@ -91,12 +104,6 @@ class MakeDataFrame:
         cols_diff = set(self._columns) - set(df.columns)
         cols = [pl.lit(0.0).alias(col_name) for col_name in cols_diff]
         return df.select([pl.all(), *cols])
-
-    def _insert_missing_rows(self, df: DF) -> pl.Expr:
-        every = "1d" if self.month else "1mo"
-        return df.upsample(
-            time_column="date", every=every, by="title", maintain_order=True
-        ).with_columns(pl.col("title").forward_fill())
 
     def _sort_columns(self, df: DF) -> pl.Expr:
         cols = [pl.col(x) for x in sorted(df.columns[1:])]
