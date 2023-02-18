@@ -21,7 +21,7 @@ def fixture_month_data():
             'sum': Decimal('2'),
             'exception_sum': Decimal('0')
         }, {
-            'date': date(1999, 1, 30),
+            'date': date(1999, 1, 1),
             'title': 'T1',
             'sum': Decimal('3'),
             'exception_sum': Decimal('0')
