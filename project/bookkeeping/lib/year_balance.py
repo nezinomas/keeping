@@ -16,10 +16,8 @@ class YearBalance(BalanceBase):
 
         awailable keys in data: incomes, expenses, savings, savings_close, borrow, borrow_return, lend, lend_return
         """
-
-        self._amount_start = amount_start or 0.0
-
         self._year = data.year
+        self._amount_start = amount_start or 0.0
         self._balance = self._calc_balance_and_money_flow(data.data)
 
         super().__init__(self._balance)
@@ -101,9 +99,9 @@ class YearBalance(BalanceBase):
 
         df = (
             df.sort("date")
-            .with_columns((pl.col("incomes") - pl.col("expenses")).alias("balance"))
+            .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
             .with_columns(
-                (
+                money_flow=(
                     pl.lit(0.0)
                     + pl.col("balance")
                     + pl.col("savings_close")
@@ -112,7 +110,7 @@ class YearBalance(BalanceBase):
                     - pl.col("savings")
                     - pl.col("borrow_return")
                     - pl.col("lend")
-                ).alias("money_flow")
+                )
             )
             .pipe(add_amount_start_to_money_flow_first_cell)
             .with_columns(pl.col("money_flow").cumsum())
