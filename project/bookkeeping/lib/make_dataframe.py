@@ -62,17 +62,17 @@ class MakeDataFrame:
     def _insert_missing_rows(self, df) -> pl.Expr:
         df_empty = self._empty_df()
 
-        if not df.is_empty():
-            return (
-                df_empty.join(df, on="date", how="outer")
-                .fill_null(0.0)
-                .select(pl.all().forward_fill())
+        if df.is_empty():
+            return df_empty.with_columns(
+                title=pl.lit("__tmp_to_drop__"),
+                sum=pl.lit(0.0),
+                exception_sum=pl.lit(0.0),
             )
 
-        return df_empty.with_columns(
-            title=pl.lit("__tmp_to_drop__"),
-            sum=pl.lit(0.0),
-            exception_sum=pl.lit(0.0),
+        return (
+            df_empty.join(df, on="date", how="outer")
+            .fill_null(0.0)
+            .select(pl.all().forward_fill())
         )
 
     def _empty_df(self) -> DF:
