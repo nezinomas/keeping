@@ -77,10 +77,9 @@ class MakeDataFrame:
 
     def _empty_df(self) -> DF:
         if self.month:
+            days = calendar.monthrange(self.year, self.month)[1]
             start = date(self.year, self.month, 1)
-            end = date(
-                self.year, self.month, calendar.monthrange(self.year, self.month)[1]
-            )
+            end = date(self.year, self.month, days)
             every = "1d"
         else:
             start = date(self.year, 1, 1)
