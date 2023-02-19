@@ -39,7 +39,7 @@ class IndexServiceData:
             'money_flow',
         )
 
-    def get_amount_start(self):
+    def get_amount_start(self) -> float:
         _sum = \
             AccountBalance.objects \
             .related() \

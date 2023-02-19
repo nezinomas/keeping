@@ -17,10 +17,7 @@ class YearBalance(BalanceBase):
         awailable keys in data: incomes, expenses, savings, savings_close, borrow, borrow_return, lend, lend_return
         """
 
-        try:
-            self._amount_start = float(amount_start)
-        except TypeError:
-            self._amount_start = 0.0
+        self._amount_start = amount_start or 0.0
 
         self._year = data.year
         self._balance = self._calc_balance_and_money_flow(data.data)

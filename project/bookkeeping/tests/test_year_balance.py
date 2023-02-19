@@ -55,7 +55,7 @@ def fixture_data():
 
 @pytest.fixture(name="amount_start")
 def fixture_amount_start():
-    return Decimal(1)
+    return 1.0
 
 
 @pytest.fixture(name="expect")
