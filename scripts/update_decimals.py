@@ -1,14 +1,14 @@
 from django.db.models import F
 
-from ..bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
-from ..debts.models import Debt, DebtReturn
-from ..expenses.models import Expense
-from ..incomes.models import Income
-from ..pensions.models import Pension
-from ..plans.models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
+from project.bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
+from project.debts.models import Debt, DebtReturn
+from project.expenses.models import Expense
+from project.incomes.models import Income
+from project.pensions.models import Pension
+from project.plans.models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
                              SavingPlan)
-from ..savings.models import Saving
-from ..transactions.models import SavingChange, SavingClose, Transaction
+from project.savings.models import Saving
+from project.transactions.models import SavingChange, SavingClose, Transaction
 
 
 def run():
