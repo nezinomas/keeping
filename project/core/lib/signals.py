@@ -54,11 +54,11 @@ class SignalBase(ABC):
         schema = {
             "id": pl.UInt16,
             "year": pl.UInt16,
-            "incomes": pl.Float64,
-            "expenses": pl.Float64,
+            "incomes": pl.UInt32,
+            "expenses": pl.UInt32,
         }
         if self.signal_type == "savings":
-            schema |= {"fee": pl.Float64}
+            schema |= {"fee": pl.UInt32}
 
         df = pl.DataFrame(arr, schema=schema)
         if df.is_empty():
@@ -77,7 +77,7 @@ class SignalBase(ABC):
         schema = {
             "id": pl.UInt16,
             "year": pl.UInt16,
-            "have": pl.Float64,
+            "have": pl.UInt32,
             "latest_check": pl.Datetime,
         }
         df = pl.DataFrame(have, schema=schema)
