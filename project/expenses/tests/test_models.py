@@ -209,7 +209,7 @@ def test_expense_str():
 
 def test_expense_fields_types():
     assert isinstance(Expense._meta.get_field('date'), models.DateField)
-    assert isinstance(Expense._meta.get_field('price'), models.DecimalField)
+    assert isinstance(Expense._meta.get_field('price'), models.PositiveIntegerField)
     assert isinstance(Expense._meta.get_field('quantity'), models.IntegerField)
     assert isinstance(Expense._meta.get_field('expense_type'), models.ForeignKey)
     assert isinstance(Expense._meta.get_field('expense_name'), models.ForeignKey)
