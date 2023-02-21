@@ -107,7 +107,7 @@ class SavingBalance(models.Model):
     invested = models.PositiveIntegerField(default=0)
     incomes = models.PositiveIntegerField(default=0)
     market_value = models.PositiveIntegerField(default=0)
-    profit_proc = models.PositiveIntegerField(default=0)
+    profit_proc = models.FloatField(default=0.0)
     profit_sum = models.PositiveIntegerField(default=0)
 
     # Managers
