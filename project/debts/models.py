@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse_lazy
@@ -26,14 +24,10 @@ class Debt(models.Model):
         max_length=100,
         validators=[MinLengthValidator(3)]
     )
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+    price = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)]
     )
-    returned = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    returned = models.PositiveIntegerField(
         null=True,
         default=0,
     )
@@ -81,10 +75,8 @@ class Debt(models.Model):
 
 class DebtReturn(models.Model):
     date = models.DateField()
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+    price = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)]
     )
     remark = models.TextField(
         max_length=500,
@@ -133,11 +125,11 @@ class DebtReturn(models.Model):
         qs = Debt.objects.filter(id=self.debt_id)
         obj = qs[0]
 
-        _returned = obj.returned if obj.returned else Decimal('0')
+        _returned = obj.returned or 0
         _closed = False
 
         if not self.pk:
-            _returned += Decimal(self.price)
+            _returned += self.price
         else:
             old = DebtReturn.objects.get(pk=self.pk)
             dif = self.price - old.price
@@ -158,6 +150,6 @@ class DebtReturn(models.Model):
             raise e
 
         qs = Debt.objects.filter(id=self.debt_id)
-        _returned = qs[0].returned - Decimal(self.price)
+        _returned = qs[0].returned - self.price
 
         qs.update(returned=_returned)

@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse_lazy
@@ -21,10 +19,8 @@ class Transaction(models.Model):
         on_delete=models.CASCADE,
         related_name='transactions_to'
     )
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+    price = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)]
     )
 
     objects = managers.TransactionQuerySet.as_manager()
@@ -61,16 +57,12 @@ class SavingClose(models.Model):
         on_delete=models.PROTECT,
         related_name='savings_close_to'
     )
-    fee = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    fee = models.PositiveIntegerField(
         null=True,
         blank=True,
     )
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+    price = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)]
     )
 
     objects = managers.SavingCloseQuerySet.as_manager()
@@ -107,16 +99,12 @@ class SavingChange(models.Model):
         on_delete=models.PROTECT,
         related_name='savings_change_to'
     )
-    fee = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    fee = models.PositiveIntegerField(
         null=True,
         blank=True,
     )
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+    price = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)]
     )
 
     objects = managers.SavingChangeQuerySet.as_manager()

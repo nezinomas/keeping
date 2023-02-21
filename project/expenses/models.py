@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.db.models import F
@@ -62,10 +60,8 @@ class ExpenseName(TitleAbstract):
 
 class Expense(models.Model):
     date = models.DateField()
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+    price = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)]
     )
     quantity = models.IntegerField(
         default=1,

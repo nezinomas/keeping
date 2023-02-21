@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
@@ -31,87 +29,63 @@ class MonthAbstract(models.Model):
     class Meta:
         abstract = True
 
-    january = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    january = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    february = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    february = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    march = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    march = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    april = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    april = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    may = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    may = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    june = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    june = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    july = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    july = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    august = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    august = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    september = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    september = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    october = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    october = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    november = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    november = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
-    december = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    december = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(1)],
     )
