@@ -31,7 +31,7 @@
             {% for category in ctx.categories %}{% table_cell value=ctx.avg_row|get_item:category tag='th' %}{% endfor %}
             {% table_cell value=ctx.avg tag='th' css_class="left-blue-border" %}
         </tr>
-        <tr >
+        <tr>
             <th class="text-start">{% translate 'Total' %}</th>
             {% for category in ctx.categories %}{% table_cell value=ctx.total_row|get_item:category tag='th' %}{% endfor %}
             {% table_cell value=ctx.total tag='th' css_class="left-blue-border" %}
