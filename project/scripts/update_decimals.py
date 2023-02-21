@@ -1,17 +1,17 @@
 from django.db.models import F
 
-from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
-from ...debts.models import Debt, DebtReturn
-from ...expenses.models import Expense
-from ...incomes.models import Income
-from ...pensions.models import Pension
-from ...plans.models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
+from ..bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
+from ..debts.models import Debt, DebtReturn
+from ..expenses.models import Expense
+from ..incomes.models import Income
+from ..pensions.models import Pension
+from ..plans.models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
                              SavingPlan)
-from ...savings.models import Saving
-from ...transactions.models import SavingChange, SavingClose, Transaction
+from ..savings.models import Saving
+from ..transactions.models import SavingChange, SavingClose, Transaction
 
 
-def update_fields():
+def run():
     Income.objects.all().update(price=F('price')*100)
     Expense.objects.all().update(price=F('price')*100)
     Saving.objects.all().update(price=F('price')*100, fee=F('fee')*100)
