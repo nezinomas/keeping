@@ -1,6 +1,4 @@
 
-from decimal import Decimal
-
 from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory
 from django.utils.translation import gettext as _
@@ -75,7 +73,7 @@ class FormsetMixin():
             for form in formset:
                 price = form.cleaned_data.get('price')
 
-                if not isinstance(price, Decimal):
+                if not isinstance(price, int):
                     continue
 
                 form.save()

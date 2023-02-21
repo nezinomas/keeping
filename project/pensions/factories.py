@@ -1,6 +1,5 @@
 from datetime import date as dt
 from datetime import datetime
-from decimal import Decimal
 
 import factory
 import pytz
@@ -39,8 +38,8 @@ class PensionFactory(factory.django.DjangoModelFactory):
         model = Pension
 
     date = dt(1999, 1, 1)
-    price = Decimal(100)
-    fee = Decimal(1.01)
+    price = 100
+    fee = 1
     remark = 'remark'
     pension_type = factory.SubFactory(PensionTypeFactory)
 

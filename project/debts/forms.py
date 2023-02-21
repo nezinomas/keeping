@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -171,7 +169,7 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
 
         price_sum = qs.get('price__sum')
         if not price_sum:
-            price_sum = Decimal('0')
+            price_sum = 0
 
         if price > (debt.price - price_sum):
             msg = _('The amount to be paid is more than the debt!')

@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from decimal import Decimal
 from typing import List
 
 from dateutil.relativedelta import relativedelta
@@ -73,7 +72,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
         Sums expense_types by month
 
         return:
-        list of dictionaries: {'date': date.datete, 'sum': Decimal, 'title': str}
+        list of dictionaries: {'date': date.datete, 'sum': int, 'title': str}
         """
 
         return \
@@ -126,7 +125,7 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .annotate(
                 exception_sum=Sum(
                     Case(
-                        When(exception=1, then='price'), default=Decimal(0)))) \
+                        When(exception=1, then='price'), default=0))) \
             .order_by('date') \
             .values(
                 'date',
