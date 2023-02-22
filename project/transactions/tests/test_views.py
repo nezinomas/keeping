@@ -73,7 +73,7 @@ def test_transactions_save(client_logged):
 
     data = {
         'date': '1999-01-01',
-        'price': '1.05',
+        'price': '1',
         'from_account': a1.pk,
         'to_account': a2.pk
     }
@@ -83,7 +83,7 @@ def test_transactions_save(client_logged):
     actual = response.content.decode('utf-8')
 
     assert '1999-01-01' in actual
-    assert '1,05' in actual
+    assert '1' in actual
     assert 'Account1' in actual
     assert 'Account2' in actual
 
@@ -177,7 +177,7 @@ def test_view_transactions_delete_load_form(client_logged):
     actual = response.content.decode('utf-8')
 
     assert '<form method="POST"' in actual
-    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01 Account1-&gt;Account2: 200.00</strong>?' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01 Account1-&gt;Account2: 200</strong>?' in actual
 
 
 def test_view_transactions_delete(client_logged):
@@ -250,7 +250,7 @@ def test_savings_close_save(client_logged):
 
     data = {
         'date': '1999-01-01',
-        'price': '1.05',
+        'price': '1',
         'from_account': a1.pk,
         'to_account': a2.pk
     }
@@ -259,7 +259,7 @@ def test_savings_close_save(client_logged):
     actual = response.content.decode('utf-8')
 
     assert '1999-01-01' in actual
-    assert '1,05' in actual
+    assert '1' in actual
     assert 'Account1' in actual
     assert 'Savings' in actual
 
@@ -445,7 +445,7 @@ def test_view_savings_close_delete_load_form(client_logged):
 
     assert '<form method="POST"' in form
     assert f'hx-post="{url}"' in form
-    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From-&gt;Account To: 10.00</strong>?' in form
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From-&gt;Account To: 10</strong>?' in form
 
 
 def test_view_savings_close_delete(client_logged):
@@ -518,7 +518,7 @@ def test_savings_change_save(client_logged):
 
     data = {
         'date': '1999-01-01',
-        'price': '1.05',
+        'price': '1',
         'from_account': a1.pk,
         'to_account': a2.pk
     }
@@ -527,7 +527,7 @@ def test_savings_change_save(client_logged):
     actual = response.content.decode('utf-8')
 
     assert '1999-01-01' in actual
-    assert '1,05' in actual
+    assert '1' in actual
     assert 'Savings' in actual
     assert 'Savings2' in actual
 
@@ -788,7 +788,7 @@ def test_view_savings_change_delete_load_form(client_logged):
 
     assert '<form method="POST"' in actual
     assert f'hx-post="{ url }"' in actual
-    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From-&gt;Savings To: 10.00</strong>?' in actual
+    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From-&gt;Savings To: 10</strong>?' in actual
 
 
 def test_view_savings_change_delete(client_logged):

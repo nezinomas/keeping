@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 import time_machine
@@ -76,7 +75,7 @@ def test_transaction_valid_data():
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.price == Decimal(1.0)
+    assert data.price == 1
     assert data.from_account == a_from
     assert data.to_account == a_to
 
@@ -186,8 +185,8 @@ def test_saving_change_valid_data():
         'date': '1999-01-01',
         'from_account': a_from.pk,
         'to_account': a_to.pk,
-        'price': '1.0',
-        'fee': '0.25'
+        'price': '10',
+        'fee': '2'
     })
 
     assert form.is_valid()
@@ -195,8 +194,8 @@ def test_saving_change_valid_data():
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.price == Decimal(1.0)
-    assert data.fee == Decimal(0.25)
+    assert data.price == 10
+    assert data.fee == 2
     assert data.from_account == a_from
     assert data.to_account == a_to
 
@@ -304,8 +303,8 @@ def test_saving_change_save_and_close_from_account():
         'date': '1999-01-01',
         'from_account': a_from.pk,
         'to_account': a_to.pk,
-        'price': '1.0',
-        'fee': '0.25',
+        'price': '10',
+        'fee': '0',
         'close': True,
     })
 
@@ -372,8 +371,8 @@ def test_saving_close_valid_data():
         'date': '1999-01-01',
         'from_account': a_from.pk,
         'to_account': a_to.pk,
-        'price': '1.0',
-        'fee': '0.25'
+        'price': '10',
+        'fee': '8'
     })
 
     assert form.is_valid()
@@ -381,8 +380,8 @@ def test_saving_close_valid_data():
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.price == Decimal(1.0)
-    assert data.fee == Decimal(0.25)
+    assert data.price == 10
+    assert data.fee == 8
     assert data.from_account == a_from
     assert data.to_account == a_to
 
@@ -481,8 +480,8 @@ def test_saving_close_save_and_close_saving_account():
         'date': '1999-01-01',
         'from_account': a_from.pk,
         'to_account': a_to.pk,
-        'price': '1.0',
-        'fee': '0.25',
+        'price': '1',
+        'fee': '0',
         'close': True,
     })
 

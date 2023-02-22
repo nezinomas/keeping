@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 from django.urls import reverse
@@ -95,15 +94,15 @@ def test_transaction_new_post_save():
     assert actual.count() == 4
 
     assert actual[0].account.title == 'Account2'
-    assert actual[0].incomes == 200.0
-    assert actual[0].expenses == 0.0
-    assert actual[0].balance == 200.0
+    assert actual[0].incomes == 200
+    assert actual[0].expenses == 0
+    assert actual[0].balance == 200
     assert actual[0].delta == -200
 
     assert actual[2].account.title == 'Account1'
-    assert actual[2].incomes == 0.0
-    assert actual[2].expenses == 200.0
-    assert actual[2].balance == -200.0
+    assert actual[2].incomes == 0
+    assert actual[2].expenses == 200
+    assert actual[2].balance == -200
     assert actual[2].delta == 200
 
 
@@ -126,16 +125,16 @@ def test_transaction_update_post_save():
 
     actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.incomes == 10.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 10.0
+    assert actual.incomes == 10
+    assert actual.expenses == 0
+    assert actual.balance == 10
     assert actual.delta == -10
 
     actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
     assert actual.account.title == 'From'
-    assert actual.incomes == 0.0
-    assert actual.expenses == 10.0
-    assert actual.balance == -10.0
+    assert actual.incomes == 0
+    assert actual.expenses == 10
+    assert actual.balance == -10
     assert actual.delta == 10
 
 
@@ -160,35 +159,35 @@ def test_transaction_post_save_first_record():
 
     actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.past == 2.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 3.0
-    assert actual.delta == -3.0
+    assert actual.past == 2
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 3
+    assert actual.delta == -3
 
     actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
     assert actual.account.title == 'From'
-    assert actual.past == 1.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 1.0
-    assert actual.balance == 0.0
-    assert actual.delta == 0.0
+    assert actual.past == 1
+    assert actual.incomes == 0
+    assert actual.expenses == 1
+    assert actual.balance == 0
+    assert actual.delta == 0
 
     actual = AccountBalance.objects.get(account_id=a_to.pk, year=1998)
     assert actual.account.title == 'To'
-    assert actual.past == 0.0
-    assert actual.incomes == 5.0
-    assert actual.expenses == 3.0
-    assert actual.balance == 2.0
-    assert actual.delta == -2.0
+    assert actual.past == 0
+    assert actual.incomes == 5
+    assert actual.expenses == 3
+    assert actual.balance == 2
+    assert actual.delta == -2
 
     actual = AccountBalance.objects.get(account_id=a_from.pk, year=1998)
     assert actual.account.title == 'From'
-    assert actual.past == 0.0
-    assert actual.incomes == 6.0
-    assert actual.expenses == 5.0
-    assert actual.balance == 1.0
-    assert actual.delta == -1.0
+    assert actual.past == 0
+    assert actual.incomes == 6
+    assert actual.expenses == 5
+    assert actual.balance == 1
+    assert actual.delta == -1
 
 
 def test_transaction_post_save_new(get_user):
@@ -212,19 +211,19 @@ def test_transaction_post_save_new(get_user):
 
     actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.past == 2.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 3.0
-    assert actual.delta == -3.0
+    assert actual.past == 2
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 3
+    assert actual.delta == -3
 
     actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
     assert actual.account.title == 'From'
-    assert actual.past == 1.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 1.0
-    assert actual.balance == 0.0
-    assert actual.delta == 0.0
+    assert actual.past == 1
+    assert actual.incomes == 0
+    assert actual.expenses == 1
+    assert actual.balance == 0
+    assert actual.delta == 0
 
 
 def test_transaction_post_save_update_with_nothing_changed():
@@ -238,16 +237,16 @@ def test_transaction_post_save_update_with_nothing_changed():
 
     actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.incomes == 5.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 5.0
+    assert actual.incomes == 5
+    assert actual.expenses == 0
+    assert actual.balance == 5
 
 
     actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
     assert actual.account.title == 'From'
-    assert actual.incomes == 0.0
-    assert actual.expenses == 5.0
-    assert actual.balance == -5.0
+    assert actual.incomes == 0
+    assert actual.expenses == 5
+    assert actual.balance == -5
 
 
 def test_transaction_post_save_change_from_account():
@@ -258,9 +257,9 @@ def test_transaction_post_save_change_from_account():
     obj = TransactionFactory(from_account=a_from, to_account=a_to, price=5)
     actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
     assert actual.account.title == 'From'
-    assert actual.incomes == 0.0
-    assert actual.expenses == 5.0
-    assert actual.balance == -5.0
+    assert actual.incomes == 0
+    assert actual.expenses == 5
+    assert actual.balance == -5
 
     obj_update = Transaction.objects.get(pk=obj.pk)
     obj_update.from_account = a_from_new
@@ -268,23 +267,18 @@ def test_transaction_post_save_change_from_account():
 
     actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.incomes == 5.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 5.0
+    assert actual.incomes == 5
+    assert actual.expenses == 0
+    assert actual.balance == 5
 
-    fail = False
-    try:
-        AccountBalance.objects.get(account_id=a_from.pk, year=1999)
-    except AccountBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = AccountBalance.objects.filter(account_id=a_from.pk, year=1999)
+    assert actual.count() == 0
 
     actual = AccountBalance.objects.get(account_id=a_from_new.pk, year=1999)
     assert actual.account.title == 'From-New'
-    assert actual.incomes == 0.0
-    assert actual.expenses == 5.0
-    assert actual.balance == -5.0
+    assert actual.incomes == 0
+    assert actual.expenses == 5
+    assert actual.balance == -5
 
 
 def test_transaction_post_save_change_to_account():
@@ -296,33 +290,28 @@ def test_transaction_post_save_change_to_account():
 
     actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.incomes == 5.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 5.0
+    assert actual.incomes == 5
+    assert actual.expenses == 0
+    assert actual.balance == 5
 
     obj_update = Transaction.objects.get(pk=obj.pk)
     obj_update.to_account = a_to_new
     obj_update.save()
 
-    fail = False
-    try:
-        actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
-    except AccountBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = AccountBalance.objects.filter(account_id=a_to.pk, year=1999)
+    assert actual.count() == 0
 
     actual = AccountBalance.objects.get(account_id=a_to_new.pk, year=1999)
     assert actual.account.title == 'To-New'
-    assert actual.incomes == 5.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 5.0
+    assert actual.incomes == 5
+    assert actual.expenses == 0
+    assert actual.balance == 5
 
     actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
     assert actual.account.title == 'From'
-    assert actual.incomes == 0.0
-    assert actual.expenses == 5.0
-    assert actual.balance == -5.0
+    assert actual.incomes == 0
+    assert actual.expenses == 5
+    assert actual.balance == -5
 
 
 def test_transaction_post_save_change_from_and_to_account():
@@ -336,16 +325,16 @@ def test_transaction_post_save_change_from_and_to_account():
     # from_account
     actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
     assert actual.account.title == 'From'
-    assert actual.incomes == 0.0
-    assert actual.expenses == 5.0
-    assert actual.balance == -5.0
+    assert actual.incomes == 0
+    assert actual.expenses == 5
+    assert actual.balance == -5
 
     # to_account
     actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.incomes == 5.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 5.0
+    assert actual.incomes == 5
+    assert actual.expenses == 0
+    assert actual.balance == 5
 
     # update from and to
     obj_update = Transaction.objects.get(pk=obj.pk)
@@ -354,34 +343,26 @@ def test_transaction_post_save_change_from_and_to_account():
     obj_update.save()
 
     # to_account old
-    fail = False
-    try:
-        actual = AccountBalance.objects.get(account_id=a_to.pk, year=1999)
-    except AccountBalance.DoesNotExist:
-        fail = True
-    assert fail
+    actual = AccountBalance.objects.filter(account_id=a_to.pk, year=1999)
+    assert actual.count() == 0
 
     # to_account new
     actual = AccountBalance.objects.get(account_id=a_to_new.pk, year=1999)
     assert actual.account.title == 'To-New'
-    assert actual.incomes == 5.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 5.0
+    assert actual.incomes == 5
+    assert actual.expenses == 0
+    assert actual.balance == 5
 
     # from_account old
-    fail = False
-    try:
-        actual = AccountBalance.objects.get(account_id=a_from.pk, year=1999)
-    except AccountBalance.DoesNotExist:
-        fail = True
-    assert fail
+    actual = AccountBalance.objects.filter(account_id=a_from.pk, year=1999)
+    assert actual.count() == 0
 
     # from_account new
     actual = AccountBalance.objects.get(account_id=a_from_new.pk, year=1999)
     assert actual.account.title == 'From-New'
-    assert actual.incomes == 0.0
-    assert actual.expenses == 5.0
-    assert actual.balance == -5.0
+    assert actual.incomes == 0
+    assert actual.expenses == 5
+    assert actual.balance == -5
 
 
 def test_transaction_post_delete():
@@ -406,15 +387,15 @@ def test_transaction_post_delete_with_update():
     assert actual.count() == 4
 
     assert actual[0].account.title == 'Account2'
-    assert actual[0].incomes == 10.0
-    assert actual[0].expenses == 0.0
-    assert actual[0].balance == 10.0
+    assert actual[0].incomes == 10
+    assert actual[0].expenses == 0
+    assert actual[0].balance == 10
     assert actual[0].delta == -10
 
     assert actual[2].account.title == 'Account1'
-    assert actual[2].incomes == 0.0
-    assert actual[2].expenses == 10.0
-    assert actual[2].balance == -10.0
+    assert actual[2].incomes == 0
+    assert actual[2].expenses == 10
+    assert actual[2].balance == -10
     assert actual[2].delta == 10
 
     assert Transaction.objects.all().count() == 1
@@ -425,20 +406,20 @@ def test_transaction_balance_incomes(transactions):
 
     # 1974
     assert actual[0]['year'] == 1970
-    assert actual[0]['incomes'] == 5.25
+    assert actual[0]['incomes'] == 525
     assert actual[0]['id'] == 1
 
     assert actual[1]['year'] == 1970
-    assert actual[1]['incomes'] == 1.25
+    assert actual[1]['incomes'] == 125
     assert actual[1]['id'] == 2
 
     # 1999
     assert actual[2]['year'] == 1999
-    assert actual[2]['incomes'] == 3.25
+    assert actual[2]['incomes'] == 325
     assert actual[2]['id'] == 1
 
     assert actual[3]['year'] == 1999
-    assert actual[3]['incomes'] == 4.5
+    assert actual[3]['incomes'] == 450
     assert actual[3]['id'] == 2
 
 
@@ -447,20 +428,20 @@ def test_transaction_balance_expenses(transactions):
 
     # 1974
     assert actual[0]['year'] == 1970
-    assert actual[0]['expenses'] == 1.25
+    assert actual[0]['expenses'] == 125
     assert actual[0]['id'] == 1
 
     assert actual[1]['year'] == 1970
-    assert actual[1]['expenses'] == 5.25
+    assert actual[1]['expenses'] == 525
     assert actual[1]['id'] == 2
 
     # 1999
     assert actual[2]['year'] == 1999
-    assert actual[2]['expenses'] == 4.5
+    assert actual[2]['expenses'] == 450
     assert actual[2]['id'] == 1
 
     assert actual[3]['year'] == 1999
-    assert actual[3]['expenses'] == 3.25
+    assert actual[3]['expenses'] == 325
     assert actual[3]['id'] == 2
 
 
@@ -497,7 +478,7 @@ def test_saving_close_related(main_user, second_user):
 
 
 def test_saving_close_month_sums(savings_close):
-    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25), 'title': 'savings_close'}]
+    expect = [{'date': date(1999, 1, 1), 'sum': 26, 'title': 'savings_close'}]
 
     actual = list(SavingClose.objects.sum_by_month(1999))
 
@@ -505,7 +486,7 @@ def test_saving_close_month_sums(savings_close):
 
 
 def test_saving_close_month_sums_only_january(savings_close):
-    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(0.25), 'title': 'savings_close'}]
+    expect = [{'date': date(1999, 1, 1), 'sum': 26, 'title': 'savings_close'}]
 
     actual = list(SavingClose.objects.sum_by_month(1999, 1))
 
@@ -524,20 +505,20 @@ def test_saving_close_post_save():
 
     assert actual.count() == 1
     assert actual[0].account.title == 'Account To'
-    assert actual[0].past == 0.0
-    assert actual[0].incomes == 10.0
-    assert actual[0].expenses == 0.0
-    assert actual[0].balance == 10.0
+    assert actual[0].past == 0
+    assert actual[0].incomes == 10
+    assert actual[0].expenses == 0
+    assert actual[0].balance == 10
 
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
     assert actual[0].saving_type.title == 'Savings From'
-    assert actual[0].past_amount == 0.0
-    assert actual[0].past_fee == 0.0
-    assert actual[0].fee == 0.0
-    assert actual[0].invested == 0.0
-    assert actual[0].incomes == 0.0
+    assert actual[0].past_amount == 0
+    assert actual[0].past_fee == 0
+    assert actual[0].fee == 0
+    assert actual[0].invested == 0
+    assert actual[0].incomes == 0
 
 
 def test_saving_close_post_save_multiple():
@@ -547,11 +528,11 @@ def test_saving_close_post_save_multiple():
     actual = SavingBalance.objects.year(1999)
     assert actual.count() == 1
     assert actual[0].saving_type.title == 'Savings From'
-    assert actual[0].past_amount == 0.0
-    assert actual[0].past_fee == 0.0
+    assert actual[0].past_amount == 0
+    assert actual[0].past_fee == 0
     assert actual[0].fee == 0
-    assert actual[0].invested == 0.0
-    assert actual[0].incomes == 0.0
+    assert actual[0].invested == 0
+    assert actual[0].incomes == 0
 
 
 def test_saving_close_post_save_update():
@@ -565,27 +546,27 @@ def test_saving_close_post_save_update():
     actual = AccountBalance.objects.year(1999)
     assert actual.count() == 1
     assert actual[0].account.title == 'Account To'
-    assert actual[0].past == 0.0
-    assert actual[0].incomes == 1.0
-    assert actual[0].expenses == 0.0
-    assert actual[0].balance == 1.0
+    assert actual[0].past == 0
+    assert actual[0].incomes == 1
+    assert actual[0].expenses == 0
+    assert actual[0].balance == 1
 
     actual = SavingBalance.objects.year(1999)
     assert actual.count() == 1
     assert actual[0].saving_type.title == 'Savings From'
-    assert actual[0].past_amount == 0.0
-    assert actual[0].past_fee == 0.0
-    assert actual[0].fee == 0.0
-    assert actual[0].invested == 0.0
-    assert actual[0].incomes == 0.0
+    assert actual[0].past_amount == 0
+    assert actual[0].past_fee == 0
+    assert actual[0].fee == 0
+    assert actual[0].invested == 0
+    assert actual[0].incomes == 0
 
 
 def test_saving_close_post_save_first_record():
     _to = AccountFactory(title='To')
     _from = SavingTypeFactory(title='From')
 
-    SavingFactory(saving_type=_from, price=4, date=date(1998, 1, 1), fee=0.25)
-    IncomeFactory(account=_to, price=1, date=date(1998, 1, 1))
+    SavingFactory(saving_type=_from, price=40, date=date(1998, 1, 1), fee=2)
+    IncomeFactory(account=_to, price=10, date=date(1998, 1, 1))
 
     # truncate table
     SavingBalance.objects.all().delete()
@@ -595,18 +576,18 @@ def test_saving_close_post_save_first_record():
 
     actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.past == 1.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 2.0
+    assert actual.past == 10
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 11
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 4.0
-    assert actual.past_fee == 0.25
-    assert actual.fee == 0.25
-    assert actual.invested == 2.5
-    assert actual.incomes == 4.0
+    assert actual.past_amount == 40
+    assert actual.past_fee == 2
+    assert actual.fee == 2
+    assert actual.invested == 35
+    assert actual.incomes == 40
 
 
 def test_saving_close_post_save_new():
@@ -620,21 +601,21 @@ def test_saving_close_post_save_new():
 
     actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.past == 0.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 1.0
+    assert actual.past == 0
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 1
 
     actual = SavingBalance.objects.year(1999)
     assert actual.count() == 1
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
 
 def test_saving_close_post_save_nothing_changed():
@@ -655,18 +636,18 @@ def test_saving_close_post_save_nothing_changed():
 
     actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.past == 0.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 1.0
+    assert actual.past == 0
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 1
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
 
 def test_saving_close_post_save_changed_from():
@@ -677,11 +658,11 @@ def test_saving_close_post_save_changed_from():
     obj = SavingCloseFactory(to_account=_to, from_account=_from, price=1)
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
     # update saving change
     obj_update = SavingClose.objects.get(pk=obj.pk)
@@ -690,26 +671,21 @@ def test_saving_close_post_save_changed_from():
 
     actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.past == 0.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 1.0
+    assert actual.past == 0
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 1
 
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    except SavingBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = SavingBalance.objects.filter(saving_type_id=_from.pk, year=1999)
+    assert actual.count() == 0
 
     actual = SavingBalance.objects.get(saving_type_id=_from_new.pk, year=1999)
     assert actual.saving_type.title == 'From-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
 
 def test_saving_close_post_save_changed_to():
@@ -721,37 +697,33 @@ def test_saving_close_post_save_changed_to():
 
     actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.past == 0.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 1.0
+    assert actual.past == 0
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 1
 
     # update saving change
     obj_update = SavingClose.objects.get(pk=obj.pk)
     obj_update.to_account = _to_new
     obj_update.save()
 
-    fail = False
-    try:
-        actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
-    except AccountBalance.DoesNotExist:
-        fail = True
-    assert fail
+    actual = AccountBalance.objects.filter(account_id=_to.pk, year=1999)
+    assert actual.count() == 0
 
     actual = AccountBalance.objects.get(account_id=_to_new.pk, year=1999)
     assert actual.account.title == 'To-New'
-    assert actual.past == 0.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 1.0
+    assert actual.past == 0
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 1
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
 
 def test_saving_close_post_save_changed_from_and_to():
@@ -764,18 +736,18 @@ def test_saving_close_post_save_changed_from_and_to():
 
     actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
     assert actual.account.title == 'To'
-    assert actual.past == 0.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 1.0
+    assert actual.past == 0
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 1
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
     # update saving change
     obj_update = SavingClose.objects.get(pk=obj.pk)
@@ -783,36 +755,26 @@ def test_saving_close_post_save_changed_from_and_to():
     obj_update.from_account = _from_new
     obj_update.save()
 
-    fail = False
-    try:
-        actual = AccountBalance.objects.get(account_id=_to.pk, year=1999)
-    except AccountBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = AccountBalance.objects.filter(account_id=_to.pk, year=1999)
+    assert actual.count() == 0
 
     actual = AccountBalance.objects.get(account_id=_to_new.pk, year=1999)
     assert actual.account.title == 'To-New'
-    assert actual.past == 0.0
-    assert actual.incomes == 1.0
-    assert actual.expenses == 0.0
-    assert actual.balance == 1.0
+    assert actual.past == 0
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 1
 
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    except SavingBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = SavingBalance.objects.filter(saving_type_id=_from.pk, year=1999)
+    assert actual.count() == 0
 
     actual = SavingBalance.objects.get(saving_type_id=_from_new.pk, year=1999)
     assert actual.saving_type.title == 'From-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
 
 def test_saving_close_post_delete():
@@ -838,15 +800,15 @@ def test_saving_close_post_delete_with_update():
 
     assert actual.count() == 1
     assert actual[0].account.title == 'Account To'
-    assert actual[0].incomes == 1.0
-    assert actual[0].balance == 1.0
+    assert actual[0].incomes == 1
+    assert actual[0].balance == 1
 
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0].invested == 0.0
-    assert actual[0].fee == 0.0
-    assert actual[0].incomes == 0.0
+    assert actual[0].invested == 0
+    assert actual[0].fee == 0
+    assert actual[0].incomes == 0
 
     assert SavingClose.objects.all().count() == 1
 
@@ -856,16 +818,16 @@ def test_saving_close_balance_incomes(savings_close):
 
     # 1974
     assert actual[0]['year'] == 1970
-    assert actual[0]['incomes'] == 0.25
+    assert actual[0]['incomes'] == 25
     assert actual[0]['id'] == 1
 
     # 1999
     assert actual[1]['year'] == 1999
-    assert actual[1]['incomes'] == 0.25
+    assert actual[1]['incomes'] == 25
     assert actual[1]['id'] == 1
 
     assert actual[2]['year'] == 1999
-    assert actual[2]['incomes'] == 0.0
+    assert actual[2]['incomes'] == 1
     assert actual[2]['id'] == 2
 
 
@@ -874,14 +836,14 @@ def test_saving_close_balance_expenses(savings_close):
 
     # 1974
     assert actual[0]['year'] == 1970
-    assert actual[0]['expenses'] == 0.25
-    assert actual[0]['fee'] == Decimal('0.05')
+    assert actual[0]['expenses'] == 25
+    assert actual[0]['fee'] == 5
     assert actual[0]['id'] == 1
 
     # 1999
     assert actual[1]['year'] == 1999
-    assert actual[1]['expenses'] == 0.25
-    assert actual[1]['fee'] == Decimal('0.05')
+    assert actual[1]['expenses'] == 26
+    assert actual[1]['fee'] == 6
     assert actual[1]['id'] == 1
 
 
@@ -930,14 +892,14 @@ def test_saving_change_post_save():
     assert actual.count() == 2
 
     assert actual[0].saving_type.title == 'Savings From'
-    assert actual[0].invested == 0.0
-    assert actual[0].fee == 0.0
-    assert actual[0].incomes == 0.0
+    assert actual[0].invested == 0
+    assert actual[0].fee == 0
+    assert actual[0].incomes == 0
 
     assert actual[1].saving_type.title == 'Savings To'
-    assert actual[1].invested == 10.0
-    assert actual[1].fee == 0.0
-    assert actual[1].incomes == 10.0
+    assert actual[1].invested == 10
+    assert actual[1].fee == 0
+    assert actual[1].incomes == 10
 
 
 def test_saving_change_post_save_update():
@@ -956,23 +918,23 @@ def test_saving_change_post_save_update():
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.invested == 0.0
-    assert actual.fee == 0.0
-    assert actual.incomes == 0.0
+    assert actual.invested == 0
+    assert actual.fee == 0
+    assert actual.incomes == 0
 
     actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
     assert actual.saving_type.title == 'To'
-    assert actual.invested == 1.0
-    assert actual.fee == 0.0
-    assert actual.incomes == 1.0
+    assert actual.invested == 1
+    assert actual.fee == 0
+    assert actual.incomes == 1
 
 
 def test_saving_change_post_save_first_record():
     _to = SavingTypeFactory(title='To')
     _from = SavingTypeFactory(title='From')
 
-    SavingFactory(saving_type=_to, price=5, date=date(1998, 1, 1), fee=0.25)
-    SavingFactory(saving_type=_from, price=4, date=date(1998, 1, 1), fee=0.25)
+    SavingFactory(saving_type=_to, price=50, date=date(1998, 1, 1), fee=2)
+    SavingFactory(saving_type=_from, price=40, date=date(1998, 1, 1), fee=2)
 
     # truncate table
     SavingBalance.objects.all().delete()
@@ -984,27 +946,27 @@ def test_saving_change_post_save_first_record():
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 4.0
-    assert actual.past_fee == 0.25
-    assert actual.fee == 0.25
-    assert actual.invested == 2.5
-    assert actual.incomes == 4.0
+    assert actual.past_amount == 40
+    assert actual.past_fee == 2
+    assert actual.fee == 2
+    assert actual.invested == 35
+    assert actual.incomes == 40
 
     actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
     assert actual.saving_type.title == 'To'
-    assert actual.past_amount == 5.0
-    assert actual.past_fee == 0.25
-    assert actual.fee == 0.25
-    assert actual.invested == 5.75
-    assert actual.incomes == 6.0
+    assert actual.past_amount == 50
+    assert actual.past_fee == 2
+    assert actual.fee == 2
+    assert actual.invested == 49
+    assert actual.incomes == 51
 
 
 def test_saving_change_post_save_new():
     _to = SavingTypeFactory(title='To')
     _from = SavingTypeFactory(title='From')
 
-    SavingFactory(saving_type=_to, price=5, date=date(1998, 1, 1), fee=0.25)
-    SavingFactory(saving_type=_from, price=4, date=date(1998, 1, 1), fee=0.25)
+    SavingFactory(saving_type=_to, price=50, date=date(1998, 1, 1), fee=2)
+    SavingFactory(saving_type=_from, price=40, date=date(1998, 1, 1), fee=2)
 
     SavingChangeFactory(to_account=_to, from_account=_from, price=1)
 
@@ -1013,27 +975,27 @@ def test_saving_change_post_save_new():
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 4.0
-    assert actual.past_fee == 0.25
-    assert actual.fee == 0.25
-    assert actual.invested == 2.5
-    assert actual.incomes == 4.0
+    assert actual.past_amount == 40
+    assert actual.past_fee == 2
+    assert actual.fee == 2
+    assert actual.invested == 35
+    assert actual.incomes == 40
 
     actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
     assert actual.saving_type.title == 'To'
-    assert actual.past_amount == 5.0
-    assert actual.past_fee == 0.25
-    assert actual.fee == 0.25
-    assert actual.invested == 5.75
-    assert actual.incomes == 6.0
+    assert actual.past_amount == 50
+    assert actual.past_fee == 2
+    assert actual.fee == 2
+    assert actual.invested == 49
+    assert actual.incomes == 51
 
 
 def test_saving_change_post_save_update_nothing_changed():
     _to = SavingTypeFactory(title='To')
     _from = SavingTypeFactory(title='From')
 
-    SavingFactory(saving_type=_to, price=5, date=date(1998, 1, 1), fee=0.25)
-    SavingFactory(saving_type=_from, price=4, date=date(1998, 1, 1), fee=0.25)
+    SavingFactory(saving_type=_to, price=50, date=date(1998, 1, 1), fee=2)
+    SavingFactory(saving_type=_from, price=40, date=date(1998, 1, 1), fee=2)
 
     # create saving change
     obj = SavingChangeFactory(to_account=_to, from_account=_from, price=1)
@@ -1047,19 +1009,19 @@ def test_saving_change_post_save_update_nothing_changed():
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 4.0
-    assert actual.past_fee == 0.25
-    assert actual.fee == 0.25
-    assert actual.invested == 2.5
-    assert actual.incomes == 4.0
+    assert actual.past_amount == 40
+    assert actual.past_fee == 2
+    assert actual.fee == 2
+    assert actual.invested == 35
+    assert actual.incomes == 40
 
     actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
     assert actual.saving_type.title == 'To'
-    assert actual.past_amount == 5.0
-    assert actual.past_fee == 0.25
-    assert actual.fee == 0.25
-    assert actual.invested == 5.75
-    assert actual.incomes == 6.0
+    assert actual.past_amount == 50
+    assert actual.past_fee == 2
+    assert actual.fee == 2
+    assert actual.invested == 49
+    assert actual.incomes == 51
 
 
 def test_saving_change_post_save_changed_from():
@@ -1071,40 +1033,35 @@ def test_saving_change_post_save_changed_from():
 
     actual = SavingBalance.objects.get(saving_type_id=_from, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
     # update
     obj_update = SavingChange.objects.get(pk=obj.pk)
     obj_update.from_account = _from_new
     obj_update.save()
 
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    except SavingBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = SavingBalance.objects.filter(saving_type_id=_from.pk, year=1999)
+    assert actual.count() == 0
 
     actual = SavingBalance.objects.get(saving_type_id=_from_new.pk, year=1999)
     assert actual.saving_type.title == 'From-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
     actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
     assert actual.saving_type.title == 'To'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 1.0
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 1
+    assert actual.incomes == 1
 
 
 def test_saving_change_post_save_changed_to():
@@ -1116,40 +1073,35 @@ def test_saving_change_post_save_changed_to():
 
     actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
     assert actual.saving_type.title == 'To'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 1.0
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 1
+    assert actual.incomes == 1
 
     # update
     obj_update = SavingChange.objects.get(pk=obj.pk)
     obj_update.to_account = _to_new
     obj_update.save()
 
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
-    except SavingBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = SavingBalance.objects.filter(saving_type_id=_to.pk, year=1999)
+    assert actual.count() == 0
 
     actual = SavingBalance.objects.get(saving_type_id=_to_new.pk, year=1999)
     assert actual.saving_type.title == 'To-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 1.0
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 1
+    assert actual.incomes == 1
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
 
 def test_saving_change_post_save_changed_to_and_from():
@@ -1162,19 +1114,19 @@ def test_saving_change_post_save_changed_to_and_from():
 
     actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
     assert actual.saving_type.title == 'To'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 1.0
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 1
+    assert actual.incomes == 1
 
     actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
     assert actual.saving_type.title == 'From'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
     # update
     obj_update = SavingChange.objects.get(pk=obj.pk)
@@ -1182,37 +1134,27 @@ def test_saving_change_post_save_changed_to_and_from():
     obj_update.from_account = _from_new
     obj_update.save()
 
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_to.pk, year=1999)
-    except SavingBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = SavingBalance.objects.filter(saving_type_id=_to.pk, year=1999)
+    assert actual.count() == 0
 
     actual = SavingBalance.objects.get(saving_type_id=_to_new.pk, year=1999)
     assert actual.saving_type.title == 'To-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 1.0
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 1
+    assert actual.incomes == 1
 
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_from.pk, year=1999)
-    except SavingBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = SavingBalance.objects.filter(saving_type_id=_from.pk, year=1999)
+    assert actual.count() == 0
 
     actual = SavingBalance.objects.get(saving_type_id=_from_new.pk, year=1999)
     assert actual.saving_type.title == 'From-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
 
 
 def test_saving_change_post_delete():
@@ -1237,13 +1179,13 @@ def test_saving_change_post_delete_with_update():
     assert actual.count() == 2
 
     assert actual[0].saving_type.title == 'Savings From'
-    assert actual[0].invested == 0.0
-    assert actual[0].fee == 0.0
-    assert actual[0].incomes == 0.0
+    assert actual[0].invested == 0
+    assert actual[0].fee == 0
+    assert actual[0].incomes == 0
 
     assert actual[1].saving_type.title == 'Savings To'
-    assert actual[1].invested == 1.0
-    assert actual[1].fee == 0.0
-    assert actual[1].incomes == 1.0
+    assert actual[1].invested == 1
+    assert actual[1].fee == 0
+    assert actual[1].incomes == 1
 
     assert SavingChange.objects.all().count() == 1
