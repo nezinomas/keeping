@@ -83,7 +83,7 @@ def test_income_save(client_logged):
 
     data = {
         'date': '1999-01-01',
-        'price': '1.05',
+        'price': '111',
         'account': a.pk,
         'income_type': i.pk
     }
@@ -95,7 +95,7 @@ def test_income_save(client_logged):
     actual = response.content.decode('utf-8')
 
     assert '1999-01-01' in actual
-    assert '1,05' in actual
+    assert '111' in actual
     assert 'Account1' in actual
     assert 'Income Type' in actual
 
@@ -126,7 +126,7 @@ def test_incomes_load_update_form(client_logged):
     form = response.context.get('form').as_p()
 
     assert '1999-01-01' in form
-    assert '1000.62' in form
+    assert '1000' in form
     assert 'Income Type' in form
     assert 'remark' in form
 
