@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 import time_machine
@@ -184,8 +183,8 @@ def test_saving_valid_data():
 
     form = SavingForm(data={
         'date': '1999-01-01',
-        'price': '1.0',
-        'fee': '0.25',
+        'price': '10',
+        'fee': '2',
         'remark': 'remark',
         'account': a.pk,
         'saving_type': t.pk,
@@ -196,8 +195,8 @@ def test_saving_valid_data():
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.price == Decimal(1.0)
-    assert data.fee == Decimal(0.25)
+    assert data.price == 10
+    assert data.fee == 2
     assert data.remark == 'remark'
     assert data.account.title == a.title
     assert data.saving_type.title == t.title
@@ -214,8 +213,8 @@ def test_saving_invalid_date(year):
 
     form = SavingForm(data={
         'date': f'{year}-01-01',
-        'price': '1.0',
-        'fee': '0.25',
+        'price': '10',
+        'fee': '2',
         'remark': 'remark',
         'account': a.pk,
         'saving_type': t.pk,

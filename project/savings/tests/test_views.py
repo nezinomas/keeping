@@ -80,8 +80,8 @@ def test_saving_save(client_logged):
 
     data = {
         'date': '1999-01-01',
-        'price': '1.05',
-        'fee': '0.25',
+        'price': '10',
+        'fee': '2',
         'account': a.pk,
         'saving_type': i.pk
     }
@@ -93,8 +93,8 @@ def test_saving_save(client_logged):
     actual = response.content.decode('utf-8')
 
     assert '1999-01-01' in actual
-    assert '1,05' in actual
-    assert '0,25' in actual
+    assert '10' in actual
+    assert '2' in actual
     assert 'Account1' in actual
     assert 'Savings' in actual
 
