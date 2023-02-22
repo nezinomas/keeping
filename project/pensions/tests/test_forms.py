@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 import time_machine
@@ -115,19 +114,18 @@ def test_pension_valid_data():
 
     form = PensionForm(data={
         'date': '2000-01-01',
-        'price': '1.0',
-        'fee': '0.0',
+        'price': '1',
+        'fee': '0',
         'remark': 'remark',
         'pension_type': t.pk
     })
-
     assert form.is_valid()
 
     data = form.save()
 
     assert data.date == date(2000, 1, 1)
-    assert data.price == Decimal(1.0)
-    assert data.fee == Decimal(0.0)
+    assert data.price == 1
+    assert data.fee == 0
     assert data.remark == 'remark'
     assert data.pension_type.title == t.title
 

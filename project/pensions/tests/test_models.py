@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 import time_machine
@@ -69,8 +68,8 @@ def test_pension_object():
     actual = Pension.objects.get(pk=p.id)
 
     assert actual.date == date(1999, 1, 1)
-    assert actual.price == Decimal(100)
-    assert actual.fee == pytest.approx(Decimal(1.01))
+    assert actual.price == 100
+    assert actual.fee == 1
     assert actual.remark == 'remark'
     assert actual.pension_type.title == 'PensionType'
 
@@ -109,7 +108,7 @@ def test_pension_year_query_count(pensions,
 
 
 def test_pension_post_save_new():
-    PensionFactory(price=1)
+    PensionFactory()
 
     actual = PensionBalance.objects.year(1999)
 
@@ -119,16 +118,16 @@ def test_pension_post_save_new():
 
     assert actual.pension_type.title == 'PensionType'
 
-    assert round(actual.incomes, 2) == 1.0
-    assert round(actual.fee, 2) == 1.01
-    assert round(actual.invested, 2) == 0.0
+    assert actual.incomes == 100
+    assert actual.fee == 1
+    assert actual.invested == 99
 
 
 def test_pension_post_save_update():
     u = PensionFactory()
 
     obj_update = Pension.objects.get(pk=u.pk)
-    obj_update.price = 1
+    obj_update.price = 101
     obj_update.save()
 
     actual = PensionBalance.objects.year(1999)
@@ -139,9 +138,9 @@ def test_pension_post_save_update():
 
     assert actual.pension_type.title == 'PensionType'
 
-    assert round(actual.incomes, 2) == 1.0
-    assert round(actual.fee, 2) == 1.01
-    assert round(actual.invested, 2) == 0.0
+    assert actual.incomes == 101
+    assert actual.fee == 1
+    assert actual.invested == 100
 
 
 def test_pension_post_save_first_record():
@@ -159,9 +158,9 @@ def test_pension_post_save_first_record():
 
     assert actual.pension_type.title == 'PensionType'
 
-    assert round(actual.incomes, 2) == 200.0
-    assert round(actual.fee, 2) == 2.02
-    assert round(actual.invested, 2) == 197.98
+    assert actual.incomes == 200
+    assert actual.fee == 2
+    assert actual.invested == 198
 
 
 def test_pension_post_save_different_types():
@@ -178,65 +177,60 @@ def test_pension_post_save_different_types():
     assert actual.count() == 4
 
     actual = PensionBalance.objects.get(year=1999, pension_type_id=t1.pk)
-    assert actual.incomes == 150.0
-    assert actual.fee == 15.0
-    assert actual.invested == 135.0
+    assert actual.incomes == 150
+    assert actual.fee == 15
+    assert actual.invested == 135
 
     actual = PensionBalance.objects.get(year=1999, pension_type_id=t2.pk)
-    assert actual.incomes == 250.0
-    assert actual.fee == 25.0
-    assert actual.invested == 225.0
+    assert actual.incomes == 250
+    assert actual.fee == 25
+    assert actual.invested == 225
 
 
 def test_pension_post_save_update_nothing_changed():
     _p = PensionTypeFactory()
-    obj = PensionFactory(pension_type=_p, price=1, fee=0.25)
+    obj = PensionFactory(pension_type=_p, price=10, fee=2)
 
     obj_update = Pension.objects.get(pk=obj.pk)
     obj_update.save()
 
     actual = PensionBalance.objects.get(pension_type_id=_p.pk, year=1999)
     assert actual.pension_type.title == _p.title
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.75
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 2
+    assert actual.invested == 8
+    assert actual.incomes == 10
 
 
 def test_pension_post_save_update_changed_pension_type():
     _p = PensionTypeFactory(title='P')
     _p_new = PensionTypeFactory(title='P_New')
 
-    obj = PensionFactory(pension_type=_p, price=1, fee=0.25)
+    obj = PensionFactory(pension_type=_p, price=10, fee=2)
 
     actual = PensionBalance.objects.get(pension_type_id=_p.pk, year=1999)
     assert actual.pension_type.title == 'P'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.75
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 2
+    assert actual.invested == 8
+    assert actual.incomes == 10
 
     obj_update = Pension.objects.get(pk=obj.pk)
     obj_update.pension_type = _p_new
     obj_update.save()
 
-    fail = False
-    try:
-        actual = PensionBalance.objects.get(pension_type_id=_p.pk, year=1999)
-    except PensionBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = PensionBalance.objects.filter(pension_type_id=_p.pk, year=1999)
+    assert actual.count() == 0
 
     actual = PensionBalance.objects.get(pension_type_id=_p_new.pk, year=1999)
     assert actual.pension_type.title == 'P_New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.75
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 2
+    assert actual.invested == 8
+    assert actual.incomes == 10
 
 
 def test_pension_post_delete():
@@ -251,7 +245,7 @@ def test_pension_post_delete():
 
 
 def test_pension_post_delete_with_update():
-    PensionFactory(price=1)
+    PensionFactory()
 
     obj = PensionFactory(price=15)
     Pension.objects.get(pk=obj.pk).delete()
@@ -260,9 +254,9 @@ def test_pension_post_delete_with_update():
 
     assert actual.count() == 1
     assert actual[0].pension_type.title == 'PensionType'
-    assert round(actual[0].incomes, 2) == 1.0
-    assert round(actual[0].fee, 2) == 1.01
-    assert round(actual[0].invested, 2) == 0.0
+    assert round(actual[0].incomes, 2) == 100
+    assert round(actual[0].fee, 2) == 1
+    assert round(actual[0].invested, 2) == 99
 
     assert Pension.objects.all().count() == 1
 
@@ -272,11 +266,11 @@ def test_pension_update_post_save_count_queries(django_assert_max_num_queries):
 
     obj = Pension.objects.first()
     with django_assert_max_num_queries(7):
-        obj.price = Decimal('2')
+        obj.price = 2
         obj.save()
 
     actual = PensionBalance.objects.last()
-    assert actual.incomes == Decimal('2')
+    assert actual.incomes == 2
 
 
 # ----------------------------------------------------------------------------
@@ -287,14 +281,14 @@ def test_pension_balance_init():
 
     assert str(actual.pension_type) == 'PensionType'
 
-    assert actual.past_amount == 2.0
-    assert actual.past_fee == 2.1
-    assert actual.fee == 2.2
-    assert actual.invested == 2.3
-    assert actual.incomes == 2.4
-    assert actual.market_value == 2.5
-    assert actual.profit_proc == 2.8
-    assert actual.profit_sum == 2.9
+    assert actual.past_amount == 20
+    assert actual.past_fee == 21
+    assert actual.fee == 22
+    assert actual.invested == 23
+    assert actual.incomes == 24
+    assert actual.market_value == 25
+    assert actual.profit_proc == 28
+    assert actual.profit_sum == 29
 
 
 def test_pension_balance_str():
@@ -348,6 +342,6 @@ def test_sum_by_year():
     actual = list(PensionBalance.objects.sum_by_year())
 
     assert actual == [
-        {'year': 1999, 'invested': 3.0, 'profit': -3.0},
-        {'year': 2000, 'invested': 3.0, 'profit': -3.0},
+        {'year': 1999, 'invested': 3, 'profit': -3},
+        {'year': 2000, 'invested': 3, 'profit': -3},
     ]

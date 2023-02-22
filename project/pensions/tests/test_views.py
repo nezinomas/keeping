@@ -1,5 +1,3 @@
-import json
-
 import pytest
 import time_machine
 from django.urls import resolve, reverse
@@ -64,7 +62,7 @@ def test_pensions_save(client_logged):
 
     data = {
         'date': '1999-01-01',
-        'price': '1.05',
+        'price': '10',
         'pension_type': i.pk
     }
 
@@ -75,7 +73,7 @@ def test_pensions_save(client_logged):
     actual = response.content.decode('utf-8')
 
     assert '1999-01-01' in actual
-    assert '1,05' in actual
+    assert '10' in actual
     assert 'PensionType' in actual
 
 

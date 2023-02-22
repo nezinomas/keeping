@@ -38,7 +38,7 @@ class Pension(models.Model):
     fee = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)]
+        validators=[MinValueValidator(0)]
     )
     remark = models.TextField(
         max_length=1000,
