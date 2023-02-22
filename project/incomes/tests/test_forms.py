@@ -151,7 +151,7 @@ def test_income_valid_data():
 
     form = IncomeForm(data={
         'date': '2000-01-01',
-        'price': 0.1,
+        'price': 0.01,
         'remark': 'remark',
         'account': a.pk,
         'income_type': t.pk
@@ -162,7 +162,7 @@ def test_income_valid_data():
     data = form.save()
 
     assert data.date == date(2000, 1, 1)
-    assert data.price == 10
+    assert data.price == 1
     assert data.remark == 'remark'
     assert data.account.title == a.title
     assert data.income_type.title == t.title

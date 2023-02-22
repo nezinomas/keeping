@@ -14,7 +14,7 @@ from .models import Income, IncomeType
 
 
 class IncomeForm(forms.ModelForm):
-    price = forms.FloatField(validators=[MinValueValidator(0.1)])
+    price = forms.FloatField(validators=[MinValueValidator(0.01)])
 
     class Meta:
         model = Income
