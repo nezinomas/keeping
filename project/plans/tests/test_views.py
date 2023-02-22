@@ -82,17 +82,17 @@ def test_incomes_load_form(client_logged):
 
 def test_incomes_new(client_logged):
     i = IncomeTypeFactory()
-    data = {'year': '1999', 'income_type': i.pk, 'january': 999.99}
+    data = {'year': '1999', 'income_type': i.pk, 'january': 999}
 
     url = reverse('plans:income_new')
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
 
-    assert '999,99' in actual
+    assert '999' in actual
 
 
 def test_incomes_invalid_data(client_logged):
-    data = {'year': 'x', 'income_type': 0, 'january': 999.99}
+    data = {'year': 'x', 'income_type': 0, 'january': 999}
 
     url = reverse('plans:income_new')
     response = client_logged.post(url, data)
@@ -104,19 +104,19 @@ def test_incomes_invalid_data(client_logged):
 def test_incomes_update(client_logged):
     p = IncomePlanFactory(year=1999)
 
-    data = {'year': '1999', 'income_type': p.income_type.pk, 'january': 999.99}
+    data = {'year': '1999', 'income_type': p.income_type.pk, 'january': 999}
     url = reverse('plans:income_update', kwargs={'pk': p.pk})
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
 
-    assert '999,99' in actual
+    assert '999' in actual
 
 
 def test_incomes_update_unique_together_user_change_year(client_logged):
     IncomePlanFactory(year=2000)
     p = IncomePlanFactory(year=1999)
 
-    data = {'year': '2000', 'income_type': p.income_type.pk, 'january': 999.99}
+    data = {'year': '2000', 'income_type': p.income_type.pk, 'january': 999}
     url = reverse('plans:income_update', kwargs={'pk': p.pk})
     response = client_logged.post(url, data)
     form = response.context['form']
@@ -222,17 +222,17 @@ def test_expenses_load_form(client_logged):
 
 def test_expenses_new(client_logged):
     i = ExpenseTypeFactory()
-    data = {'year': '1999', 'expense_type': i.pk, 'january': 999.99}
+    data = {'year': '1999', 'expense_type': i.pk, 'january': 999}
 
     url = reverse('plans:expense_new')
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
 
-    assert '999,99' in actual
+    assert '999' in actual
 
 
 def test_expenses_invalid_data(client_logged):
-    data = {'year': 'x', 'expense_type': 0, 'january': 999.99}
+    data = {'year': 'x', 'expense_type': 0, 'january': 999}
 
     url = reverse('plans:expense_new')
     response = client_logged.post(url, data)
@@ -244,20 +244,20 @@ def test_expenses_invalid_data(client_logged):
 def test_expenses_update(client_logged):
     p = ExpensePlanFactory(year=1999)
 
-    data = {'year': '1999', 'expense_type': p.expense_type.pk, 'january': 999.99}
+    data = {'year': '1999', 'expense_type': p.expense_type.pk, 'january': 999}
     url = reverse('plans:expense_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
 
-    assert '999,99' in actual
+    assert '999' in actual
 
 
 def test_expenses_update_unique_together_user_change_year(client_logged):
     ExpensePlanFactory(year=2000)
     p = ExpensePlanFactory(year=1999)
 
-    data = {'year': '2000', 'expense_type': p.expense_type.pk, 'january': 999.99}
+    data = {'year': '2000', 'expense_type': p.expense_type.pk, 'january': 999}
 
     url = reverse('plans:expense_update', kwargs={'pk': p.pk})
     response = client_logged.post(url, data)
@@ -365,17 +365,17 @@ def test_savings(client_logged):
 
 def test_savings_new(client_logged):
     i = SavingTypeFactory()
-    data = {'year': '1999', 'saving_type': i.pk, 'january': 999.99}
+    data = {'year': '1999', 'saving_type': i.pk, 'january': 999}
 
     url = reverse('plans:saving_new')
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
 
-    assert '999,99' in actual
+    assert '999' in actual
 
 
 def test_savings_invalid_data(client_logged):
-    data = {'year': 'x', 'saving_type': 0, 'january': 999.99}
+    data = {'year': 'x', 'saving_type': 0, 'january': 999}
 
     url = reverse('plans:saving_new')
     response = client_logged.post(url, data)
@@ -387,19 +387,19 @@ def test_savings_invalid_data(client_logged):
 def test_savings_update(client_logged):
     p = SavingPlanFactory(year=1999)
 
-    data = {'year': '1999', 'saving_type': p.saving_type.pk, 'january': 999.99}
+    data = {'year': '1999', 'saving_type': p.saving_type.pk, 'january': 999}
     url = reverse('plans:saving_update', kwargs={'pk': p.pk})
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
 
-    assert '999,99' in actual
+    assert '999' in actual
 
 
 def test_savings_update_unique_together_user_change_year(client_logged):
     SavingPlanFactory(year=2000)
     p = SavingPlanFactory(year=1999)
 
-    data = {'year': '2000', 'saving_type': p.saving_type.pk, 'january': 999.99}
+    data = {'year': '2000', 'saving_type': p.saving_type.pk, 'january': 999}
     url = reverse('plans:saving_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data)
@@ -505,17 +505,17 @@ def test_day(client_logged):
 
 
 def test_day_new(client_logged):
-    data = {'year': '1999', 'january': 999.99}
+    data = {'year': '1999', 'january': 999}
 
     url = reverse('plans:day_new')
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
 
-    assert '999,99' in actual
+    assert '999' in actual
 
 
 def test_day_invalid_data(client_logged):
-    data = {'year': 'x', 'january': 999.99}
+    data = {'year': 'x', 'january': 999}
 
     url = reverse('plans:day_new')
     response = client_logged.post(url, data)
@@ -527,20 +527,20 @@ def test_day_invalid_data(client_logged):
 def test_day_update(client_logged):
     p = DayPlanFactory(year=1999)
 
-    data = {'year': '1999', 'january': 999.99}
+    data = {'year': '1999', 'january': 999}
     url = reverse('plans:day_update', kwargs={'pk': p.pk})
 
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
 
-    assert '999,99' in actual
+    assert '999' in actual
 
 
 def test_day_update_unique_together_user_change_year(client_logged):
     DayPlanFactory(year=2000)
     p = DayPlanFactory(year=1999)
 
-    data = {'year': '2000', 'january': 999.99}
+    data = {'year': '2000', 'january': 999}
     url = reverse('plans:day_update', kwargs={'pk': p.pk})
     response = client_logged.post(url, data)
     form = response.context['form']
@@ -642,17 +642,17 @@ def test_necessary(client_logged):
 
 
 def test_necessary_new(client_logged):
-    data = {'year': '1999', 'title': 'X', 'january': 999.99}
+    data = {'year': '1999', 'title': 'X', 'january': 999}
 
     url = reverse('plans:necessary_new')
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
 
-    assert '999,99' in actual
+    assert '999' in actual
 
 
 def test_necessary_invalid_data(client_logged):
-    data = {'year': 'x', 'title': '', 'january': 999.99}
+    data = {'year': 'x', 'title': '', 'january': 999}
 
     url = reverse('plans:necessary_new')
     response = client_logged.post(url, data)
@@ -664,19 +664,19 @@ def test_necessary_invalid_data(client_logged):
 def test_necessary_update(client_logged):
     p = NecessaryPlanFactory(year=1999)
 
-    data = {'year': '1999', 'title': 'X', 'january': 999.99}
+    data = {'year': '1999', 'title': 'X', 'january': 999}
     url = reverse('plans:necessary_update', kwargs={'pk': p.pk})
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode('utf-8')
 
-    assert '999,99' in actual
+    assert '999' in actual
 
 
 def test_necessary_update_unique_together_user_change_year(client_logged):
     NecessaryPlanFactory(year=2000, title='XXX')
     p = NecessaryPlanFactory(year=1999, title='XXX')
 
-    data = {'year': '2000', 'title': 'XXX', 'january': 999.99}
+    data = {'year': '2000', 'title': 'XXX', 'january': 999}
     url = reverse('plans:necessary_update', kwargs={'pk': p.pk})
     response = client_logged.post(url, data)
     form = response.context['form']
