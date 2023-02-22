@@ -159,4 +159,4 @@ def test_view_last_check_empty(client_logged):
     actual = response.context['accounts']
 
     assert 'data-bs-title="Nenurodyta"' in actual
-    assert '0,2' in actual
+    assert '20' in actual

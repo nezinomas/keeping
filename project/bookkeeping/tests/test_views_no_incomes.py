@@ -72,11 +72,11 @@ def _data():
 @pytest.mark.parametrize(
     'savings, unnecessary, months, expect',
     [
-        ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 1, 9.0),
+        ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 1, 9),
         ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 6, 1.5),
-        ({'sum': Decimal('2')}, ['Taupymas'], 1, 9.0),
+        ({'sum': Decimal('2')}, ['Taupymas'], 1, 9),
         ({'sum': Decimal('2')}, ['Taupymas'], 6, 1.5),
-        ({}, [], 1, 7.0),
+        ({}, [], 1, 7),
         ({}, [], 6, 1.17),
     ]
 )
@@ -92,12 +92,12 @@ def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, _data):
 @pytest.mark.parametrize(
     'savings, unnecessary, months, expect',
     [
-        ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 1, 6.0),
-        ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 6, 1.0),
-        ({'sum': Decimal('2')}, ['Taupymas'], 1, 2.0),
+        ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 1, 6),
+        ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 6, 1),
+        ({'sum': Decimal('2')}, ['Taupymas'], 1, 2),
         ({'sum': Decimal('2')}, ['Taupymas'], 6, 0.33),
-        ({}, [], 1, 0.0),
-        ({}, [], 6, 0.0),
+        ({}, [], 1, 0),
+        ({}, [], 6, 0),
     ]
 )
 def test_no_incomes_cut_sum(savings, unnecessary, months, expect, _data):
@@ -116,13 +116,13 @@ def test_no_incomes_summary(_data):
     actual = NoIncomes(_data).summary
 
     assert actual[0]['label'] == 'money'
-    assert actual[0]['money_fund'] == 6.0
-    assert actual[0]['money_fund_pension'] == 7.0
+    assert actual[0]['money_fund'] == 6
+    assert actual[0]['money_fund_pension'] == 7
 
     assert actual[1]['label'] == 'no_cut'
-    assert round(actual[1]['money_fund'], 2) == 4.0
+    assert round(actual[1]['money_fund'], 2) == 4
     assert round(actual[1]['money_fund_pension'], 2) == 4.67
 
     assert actual[2]['label'] == 'cut'
-    assert round(actual[2]['money_fund'], 2) == 12.0
-    assert round(actual[2]['money_fund_pension'], 2) == 14.0
+    assert round(actual[2]['money_fund'], 2) == 12
+    assert round(actual[2]['money_fund_pension'], 2) == 14

@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import polars as pl
 import pytest
@@ -13,28 +12,28 @@ def fixture_month_data():
         {
             'date': date(1999, 1, 1),
             'title': 'T1',
-            'sum': Decimal('4'),
-            'exception_sum': Decimal('0.5')
+            'sum': 4,
+            'exception_sum': 3,
         }, {
             'date': date(1999, 1, 1),
             'title': 'T2',
-            'sum': Decimal('2'),
-            'exception_sum': Decimal('0')
+            'sum': 2,
+            'exception_sum': 0,
         }, {
             'date': date(1999, 1, 1),
             'title': 'T1',
-            'sum': Decimal('3'),
-            'exception_sum': Decimal('0')
+            'sum': 3,
+            'exception_sum': 0,
         }, {
             'date': date(1999, 12, 1),
             'title': 'T1',
-            'sum': Decimal('4'),
-            'exception_sum': Decimal('0')
+            'sum': 4,
+            'exception_sum': 0,
         }, {
             'date': date(1999, 12, 1),
             'title': 'T2',
-            'sum': Decimal('5'),
-            'exception_sum': Decimal('0')
+            'sum': 5,
+            'exception_sum': 0,
         },
     ])
 
@@ -45,18 +44,18 @@ def fixture_day_data():
         {
             'date': date(1999, 1, 1),
             'title': 'T1',
-            'sum': Decimal('5'),
-            'exception_sum': Decimal('0.5')
+            'sum': 5,
+            'exception_sum': 4
         }, {
             'date': date(1999, 1, 1),
             'title': 'T2',
-            'sum': Decimal('2'),
-            'exception_sum': Decimal('0')
+            'sum': 2,
+            'exception_sum': 0
         }, {
             'date': date(1999, 1, 30),
             'title': 'T1',
-            'sum': Decimal('3'),
-            'exception_sum': Decimal('0')
+            'sum': 3,
+            'exception_sum': 0
         },
     ])
 
@@ -95,7 +94,7 @@ def test_month_no_data_expenses(columns):
 def test_month_dtype(month_data, columns):
     for i in range(2, 12):
         month_data.extend([
-            {'date': date(1999, i, 1), 'title': 'T1', 'sum': Decimal('1.1'), 'exception_sum': Decimal('0.5')},
+            {'date': date(1999, i, 1), 'title': 'T1', 'sum': 11, 'exception_sum': 5},
         ])
     actual = make_dataframe.MakeDataFrame(year=1999, data=month_data, columns=columns).data
 
@@ -121,7 +120,7 @@ def test_month_exceptions(month_data, columns):
     assert isinstance(actual, pl.DataFrame)
     assert actual.shape == (12, 2)
     assert actual.columns == ['date', 'sum']
-    assert actual[0, 'sum'] == 0.5
+    assert actual[0, 'sum'] == 3
 
 
 @pytest.mark.parametrize('data', [([]), (None)])
@@ -189,7 +188,7 @@ def test_day_exceptions(day_data, columns):
 
     assert isinstance(actual, pl.DataFrame)
     assert actual.shape == (31, 2)
-    assert actual[0, 'sum'] == 0.5
+    assert actual[0, 'sum'] == 4
 
 
 @pytest.mark.parametrize('data', [([]), (None)])

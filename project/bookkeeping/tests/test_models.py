@@ -45,23 +45,23 @@ def test_account_worth_post_save():
     actual = AccountBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0].incomes == 0.0
-    assert actual[0].expenses == 0.0
-    assert actual[0].balance == 0.0
-    assert actual[0].have == 0.5
-    assert actual[0].delta == 0.5
+    assert actual[0].incomes == 0
+    assert actual[0].expenses == 0
+    assert actual[0].balance == 0
+    assert actual[0].have == 5
+    assert actual[0].delta == 5
 
 
 def test_account_worth_post_save_new():
     AccountBalanceFactory()
 
     actual = AccountBalance.objects.first()
-    assert actual.have == 0.2
+    assert actual.have == 20
 
     AccountWorthFactory(price=5)
 
     actual = AccountBalance.objects.first()
-    assert actual.have == 5.0
+    assert actual.have == 5
 
 
 def test_account_worth_have():
@@ -111,34 +111,34 @@ def test_saving_worth_post_save():
 
     actual = SavingBalance.objects.first()
     assert actual.saving_type.title == 'Savings'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
-    assert actual.market_value == 0.5
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
+    assert actual.market_value == 5
 
 
 def test_saving_worth_post_save_new():
-    SavingFactory(price=2, fee=0.5)
+    SavingFactory(price=20, fee=5)
 
     actual = SavingBalance.objects.first()
     assert actual.saving_type.title == 'Savings'
-    assert actual.fee == 0.5
-    assert actual.invested == 1.5
-    assert actual.incomes == 2.0
-    assert actual.market_value == 0.0
+    assert actual.fee == 5
+    assert actual.invested == 15
+    assert actual.incomes == 20
+    assert actual.market_value == 0
 
-    SavingWorthFactory(price=3)
+    SavingWorthFactory(price=30)
 
     assert SavingBalance.objects.count() == 2
 
     actual = SavingBalance.objects.first()
     assert actual.saving_type.title == 'Savings'
-    assert actual.fee == 0.5
-    assert actual.invested == 1.5
-    assert actual.incomes == 2.0
-    assert actual.market_value == 3.0
+    assert actual.fee == 5
+    assert actual.invested == 15
+    assert actual.incomes == 20
+    assert actual.market_value == 30
 
 
 def test_saving_worth_have():
@@ -188,12 +188,12 @@ def test_pension_worth_post_save():
 
     actual = PensionBalance.objects.first()
     assert actual.pension_type.title == 'PensionType'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.0
-    assert actual.invested == 0.0
-    assert actual.incomes == 0.0
-    assert actual.market_value == 0.5
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 0
+    assert actual.invested == 0
+    assert actual.incomes == 0
+    assert actual.market_value == 5
 
 
 def test_pension_worth_post_save_new():
@@ -201,7 +201,7 @@ def test_pension_worth_post_save_new():
 
     actual = PensionBalance.objects.first()
     assert actual.pension_type.title == 'PensionType'
-    assert actual.market_value == 2.5
+    assert actual.market_value == 25
 
     PensionWorthFactory(price=3)
 
@@ -209,7 +209,7 @@ def test_pension_worth_post_save_new():
 
     actual = PensionBalance.objects.first()
     assert actual.pension_type.title == 'PensionType'
-    assert actual.market_value == 3.0
+    assert actual.market_value == 3
 
 
 def test_pension_worth_have():

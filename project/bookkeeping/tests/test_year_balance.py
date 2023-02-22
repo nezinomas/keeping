@@ -14,18 +14,18 @@ def fixture_data():
     arr = [
         {
             "date": date(1999, 1, 1),
-            "incomes": 5.5,
-            "expenses": 1.75,
-            "savings": 1.0,
-            "savings_close": 0.5,
-            "borrow": 0.25,
-            "borrow_return": 0.15,
-            "lend": 1,
-            "lend_return": 0.5,
+            "incomes": 55,
+            "expenses": 15,
+            "savings": 1,
+            "savings_close": 5,
+            "borrow": 25,
+            "borrow_return": 15,
+            "lend": 10,
+            "lend_return": 5,
         },
         {
             "date": date(1999, 2, 1),
-            "incomes": 1.25,
+            "incomes": 125,
             "expenses": 0,
             "savings": 0,
             "savings_close": 0,
@@ -55,7 +55,7 @@ def fixture_data():
 
 @pytest.fixture(name="amount_start")
 def fixture_amount_start():
-    return 1.0
+    return 1
 
 
 @pytest.fixture(name="expect")
@@ -63,29 +63,29 @@ def fixture_expect():
     val = [
         {
             "date": date(1999, 1, 1),
-            "incomes": 5.5,
-            "expenses": 1.75,
-            "balance": 3.75,
-            "savings": 1.0,
-            "savings_close": 0.5,
-            "borrow": 0.25,
-            "borrow_return": 0.15,
-            "lend": 1.0,
-            "lend_return": 0.5,
-            "money_flow": 3.85,
+            "incomes": 55,
+            "expenses": 15,
+            "balance": 40,
+            "savings": 1,
+            "savings_close": 5,
+            "borrow": 25,
+            "borrow_return": 15,
+            "lend": 10,
+            "lend_return": 5,
+            "money_flow": 50,
         },
         {
             "date": date(1999, 2, 1),
-            "incomes": 1.25,
-            "expenses": 0.0,
-            "balance": 1.25,
-            "savings": 0.0,
-            "savings_close": 0.0,
-            "borrow": 0.0,
-            "borrow_return": 0.0,
-            "lend": 0.0,
-            "lend_return": 0.0,
-            "money_flow": 5.1,
+            "incomes": 125,
+            "expenses": 0,
+            "balance": 125,
+            "savings": 0,
+            "savings_close": 0,
+            "borrow": 0,
+            "borrow_return": 0,
+            "lend": 0,
+            "lend_return": 0,
+            "money_flow": 175,
         },
     ]
 
@@ -93,16 +93,16 @@ def fixture_expect():
     for i in range(3, 13):
         item = {
             "date": date(1999, i, 1),
-            "incomes": 0.0,
-            "expenses": 0.0,
-            "balance": 0.0,
-            "savings": 0.0,
-            "savings_close": 0.0,
-            "borrow": 0.0,
-            "borrow_return": 0.0,
-            "lend": 0.0,
-            "lend_return": 0.0,
-            "money_flow": 5.1,
+            "incomes": 0,
+            "expenses": 0,
+            "balance": 0,
+            "savings": 0,
+            "savings_close": 0,
+            "borrow": 0,
+            "borrow_return": 0,
+            "lend": 0,
+            "lend_return": 0,
+            "money_flow": 175,
         }
         val.append(item)
 
@@ -118,16 +118,16 @@ def test_months_balance_total_row(data, amount_start):
     actual = YearBalance(data=data, amount_start=amount_start).total_row
 
     expect = {
-        "incomes": 6.75,
-        "expenses": 1.75,
-        "balance": 5.0,
-        "savings": 1.0,
-        "savings_close": 0.5,
-        "borrow": 0.25,
-        "borrow_return": 0.15,
-        "lend": 1.0,
-        "lend_return": 0.5,
-        "money_flow": 59.95,
+        "incomes": 180,
+        "expenses": 15,
+        "balance": 165,
+        "savings": 1,
+        "savings_close": 5,
+        "borrow": 25,
+        "borrow_return": 15,
+        "lend": 10,
+        "lend_return": 5,
+        "money_flow": 1975,
     }
 
     assert actual == expect
@@ -137,16 +137,16 @@ def test_months_balance_average(data, amount_start):
     actual = YearBalance(data=data, amount_start=amount_start).average
 
     expect = {
-        "incomes": 3.38,
-        "expenses": 1.75,
-        "balance": 2.5,
-        "savings": 1.0,
-        "savings_close": 0.5,
-        "borrow": 0.25,
-        "borrow_return": 0.15,
-        "lend": 1.0,
-        "lend_return": 0.5,
-        "money_flow": 5.0,
+        "incomes": 90,
+        "expenses": 15,
+        "balance": 82.5,
+        "savings": 1,
+        "savings_close": 5,
+        "borrow": 25,
+        "borrow_return": 15,
+        "lend": 10,
+        "lend_return": 5,
+        "money_flow": 164.58,
     }
 
     assert expect == pytest.approx(actual, rel=1e-2)
@@ -161,19 +161,19 @@ def test_amount_start(data):
 def test_amount_start_none(data):
     actual = YearBalance(data=data, amount_start=None).amount_start
 
-    assert actual == 0.0
+    assert actual == 0
 
 
 def test_amount_end(data, amount_start):
     actual = YearBalance(data=data, amount_start=amount_start).amount_end
 
-    assert actual == 5.1
+    assert actual == 175
 
 
 def test_amount_balance(data, amount_start):
     actual = YearBalance(data=data, amount_start=amount_start).amount_balance
 
-    assert actual == 5.0
+    assert actual == 165
 
 
 def test_balance_income_data(data, expect):
@@ -235,7 +235,7 @@ def test_balance_money_flow(data, amount_start, expect):
 def test_avg_incomes(data):
     actual = YearBalance(data=data, amount_start=None).avg_incomes
 
-    assert pytest.approx(actual, rel=1e-2) == 3.38
+    assert actual == 90
 
 
 def test_avg_incomes_none(data):
@@ -243,20 +243,20 @@ def test_avg_incomes_none(data):
 
     actual = YearBalance(data=data, amount_start=None).avg_incomes
 
-    assert actual == 0.0
+    assert actual == 0
 
 
 def test_avg_expenses(data):
     actual = YearBalance(data=data, amount_start=None).avg_expenses
 
-    assert actual == 1.75
+    assert actual == 15
 
 
 def test_avg_expenses_none(data):
     data.data = data.data.with_columns(pl.col("expenses") * 0)
     actual = YearBalance(data=data, amount_start=None).avg_expenses
 
-    assert actual == 0.0
+    assert actual == 0
 
 
 @time_machine.travel("1999-2-1")
@@ -278,4 +278,4 @@ def test_avg_expenses_not_current_year(data):
 
     actual = YearBalance(data=data, amount_start=None).avg_expenses
 
-    assert actual == 2.0
+    assert actual == 2

@@ -37,4 +37,4 @@ def test_content(client_logged):
 
     assert 'Pinigai' in content
     assert 'Turtas' in content
-    assert '1.000,62' in content
+    assert '1.000,00' in content

@@ -10,18 +10,18 @@ def fixture_balance():
     return \
         SimpleNamespace(
             types=['T1', 'T2'],
-            total=0.0,
-            total_row={'T1': 1.0, 'T2': 0.85},
+            total=0,
+            total_row={'T1': 1, 'T2': 85},
             total_column={},
             balance=[],
-            average={'T1': 0.5, 'T2': 0.425},
+            average={'T1': 5, 'T2': 425},
         )
 
 
 def test_chart_data(balance):
     expect = [
-        {'name': 'T1', 'y': 1.0},
-        {'name': 'T2', 'y': 0.85}
+        {'name': 'T2', 'y': 85},
+        {'name': 'T1', 'y': 1},
     ]
 
     obj = ExpenseService(data=balance)
@@ -78,7 +78,7 @@ def test_chart_no_data_truncate_long_title(balance):
 
 def test_chart_data_truncate_long_title(balance):
     balance.types = ['X'*12]
-    balance.total_row = {'X'*12: 0.25}
+    balance.total_row = {'X'*12: 25}
 
     obj = ExpenseService(data=balance)
     actual = obj.chart_context()

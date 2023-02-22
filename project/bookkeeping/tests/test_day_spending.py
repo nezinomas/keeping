@@ -11,15 +11,15 @@ from ..lib.day_spending import DaySpending
 @pytest.fixture(name="df")
 def fixture_df():
     exp = [
-        {'date': date(1999, 1, 1), 'N': 9.99, 'O1': 1.0, 'O2': 1.25},
-        {'date': date(1999, 1, 2), 'N': 9.99, 'O1': 0.0, 'O2': 1.05},
-        {'date': date(1999, 1, 3), 'N': 9.99, 'O1': 0.0, 'O2': 0.0},]
+        {'date': date(1999, 1, 1), 'N': 999, 'O1': 10, 'O2': 125},
+        {'date': date(1999, 1, 2), 'N': 999, 'O1': 0, 'O2': 105},
+        {'date': date(1999, 1, 3), 'N': 999, 'O1': 0, 'O2': 0},]
     exp = pl.DataFrame(exp)
 
     exc = [
-        {'date': date(1999, 1, 1), 'sum': 1.0},
-        {'date': date(1999, 1, 2), 'sum': 0.0},
-        {'date': date(1999, 1, 3), 'sum': 0.0},
+        {'date': date(1999, 1, 1), 'sum': 10},
+        {'date': date(1999, 1, 2), 'sum': 0},
+        {'date': date(1999, 1, 3), 'sum': 0},
     ]
     exc = pl.DataFrame(exc)
 
@@ -34,10 +34,10 @@ def fixture_necessary():
 @pytest.fixture(name="df_for_average_calculation")
 def fixture_df_for_average_calculation():
     return pl.DataFrame([
-        {'total': 1.1, 'date': date(1999, 1, 1)},
-        {'total': 2.1, 'date': date(1999, 1, 2)},
-        {'total': 3.1, 'date': date(1999, 1, 3)},
-        {'total': 4.1, 'date': date(1999, 1, 31)},
+        {'total': 11, 'date': date(1999, 1, 1)},
+        {'total': 21, 'date': date(1999, 1, 2)},
+        {'total': 31, 'date': date(1999, 1, 3)},
+        {'total': 41, 'date': date(1999, 1, 31)},
     ])
 
 
@@ -46,73 +46,73 @@ def test_avg_per_day(df, necessary):
     obj = DaySpending(
         df=df,
         necessary=necessary,
-        day_input=0.25,
-        expenses_free=20.0,
+        day_input=25,
+        expenses_free=200,
     )
 
     actual = obj.avg_per_day
 
-    assert 1.15 == actual
+    assert 115 == actual
 
 
 def test_spending_first_day(df, necessary):
     obj = DaySpending(
         df=df,
         necessary=necessary,
-        day_input=0.25,
-        expenses_free=20.0,
+        day_input=25,
+        expenses_free=200,
     )
 
     actual = obj.spending
 
     assert actual[0]['date'] == date(1999, 1, 1)
-    assert actual[0]['day'] == -1.0
-    assert actual[0]['full'] == -1.0
+    assert actual[0]['day'] == -100
+    assert actual[0]['full'] == -100
 
 
 def test_spending_second_day(df, necessary):
     obj = DaySpending(
         df=df,
         necessary=necessary,
-        day_input=0.25,
-        expenses_free=20.0,
+        day_input=25,
+        expenses_free=200,
     )
 
     actual = obj.spending
 
     assert actual[1]['date'] == date(1999, 1, 2)
-    assert actual[1]['day'] == -0.80
-    assert round(actual[1]['full'], 2) == -1.80
+    assert actual[1]['day'] == -80
+    assert actual[1]['full'] == -180
 
 
 def test_spending_first_day_necessary_empty(df):
     obj = DaySpending(
         df=df,
         necessary=[],
-        day_input=0.25,
-        expenses_free=20.0,
+        day_input=25,
+        expenses_free=200,
     )
 
     actual = obj.spending
 
     assert actual[0]['date'] == date(1999, 1, 1)
-    assert actual[0]['day'] == -10.99
-    assert actual[0]['full'] == -10.99
+    assert actual[0]['day'] == -1099
+    assert actual[0]['full'] == -1099
 
 
 def test_spending_first_day_necessary_none(df):
     obj = DaySpending(
         df=df,
         necessary=None,
-        day_input=0.25,
-        expenses_free=20.0,
+        day_input=25,
+        expenses_free=200,
     )
 
     actual = obj.spending
 
     assert actual[0]['date'] == date(1999, 1, 1)
-    assert actual[0]['day'] == -10.99
-    assert actual[0]['full'] == -10.99
+    assert actual[0]['day'] == -1099
+    assert actual[0]['full'] == -1099
 
 
 def test_spending_first_day_all_empty(df):
@@ -126,8 +126,8 @@ def test_spending_first_day_all_empty(df):
     actual = obj.spending
 
     assert actual[0]['date'] == date(1999, 1, 1)
-    assert actual[0]['day'] == -11.24
-    assert actual[0]['full'] == -11.24
+    assert actual[0]['day'] == -1124
+    assert actual[0]['full'] == -1124
 
 
 def test_spending_balance_expenses_empty():
@@ -141,11 +141,11 @@ def test_spending_balance_expenses_empty():
     actual = obj.spending
 
     for x in actual:
-        assert x['total'] == 0.0
-        assert x['teoretical'] == 0.0
-        assert x['real'] == 0.0
-        assert x['day'] == 0.0
-        assert x['full'] == 0.0
+        assert x['total'] == 0
+        assert x['teoretical'] == 0
+        assert x['real'] == 0
+        assert x['day'] == 0
+        assert x['full'] == 0
 
 
 @time_machine.travel("1999-1-2")
@@ -160,7 +160,7 @@ def test_average_month_two_days(df_for_average_calculation):
     o._spending = df_for_average_calculation
 
     actual = o.avg_per_day
-    assert 1.6 == round(actual, 2)
+    assert 16 == actual
 
 
 @time_machine.travel("1999-1-31")
@@ -175,7 +175,7 @@ def test_average_month_last_day(df_for_average_calculation):
     o._spending = df_for_average_calculation
     actual = o.avg_per_day
 
-    assert round(actual, 2) == 0.34
+    assert round(actual, 2) == 3.35
 
 
 @time_machine.travel("1974-1-1")
@@ -190,7 +190,7 @@ def test_average_month_other_year(df_for_average_calculation):
     o._spending = df_for_average_calculation
     actual = o.avg_per_day
 
-    assert round(actual, 2) == 0.34
+    assert round(actual, 2) == 3.35
 
 
 def test_average_month_empty_dataframe():
@@ -204,4 +204,4 @@ def test_average_month_empty_dataframe():
     o._spending = pl.DataFrame()
     actual = o.avg_per_day
 
-    assert actual == 0.0
+    assert actual == 0
