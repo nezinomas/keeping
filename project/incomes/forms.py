@@ -3,6 +3,7 @@ from datetime import datetime
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.core.validators import MinValueValidator
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
@@ -13,9 +14,11 @@ from .models import Income, IncomeType
 
 
 class IncomeForm(forms.ModelForm):
+    price = forms.FloatField(validators=[MinValueValidator(0.1)])
+
     class Meta:
         model = Income
-        fields = ['date', 'price', 'remark', 'account', 'income_type']
+        fields = ('date', 'price', 'remark', 'account', 'income_type')
 
     field_order = ['date', 'income_type', 'account', 'price', 'remark']
 
@@ -45,6 +48,13 @@ class IncomeForm(forms.ModelForm):
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
+
+    def save(self, *args, **kwargs):
+        instance = super().save(commit=False)
+        instance.price = int(self.cleaned_data.get('price') * 100)
+        instance.save()
+
+        return instance
 
     def clean_date(self):
         dt = self.cleaned_data['date']

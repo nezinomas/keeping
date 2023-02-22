@@ -40,9 +40,7 @@ class IncomeType(TitleAbstract):
 
 class Income(models.Model):
     date = models.DateField()
-    price = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField()
     remark = models.TextField(
         max_length=1000,
         blank=True
