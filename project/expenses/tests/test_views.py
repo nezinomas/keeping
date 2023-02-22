@@ -1,6 +1,5 @@
 import json
 from datetime import date
-from decimal import Decimal
 
 import pytest
 import time_machine
@@ -93,7 +92,7 @@ def test_expenses_save(client_logged):
 
     data = {
         'date': '1999-01-01',
-        'price': '1.05',
+        'price': '1',
         'quantity': 33,
         'account': a.pk,
         'expense_type': t.pk,
@@ -105,7 +104,7 @@ def test_expenses_save(client_logged):
 
     actual = models.Expense.objects.last()
     assert actual.date == date(1999, 1, 1)
-    assert actual.price == Decimal('1.05')
+    assert actual.price == 1
     assert actual.quantity == 33
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'
@@ -138,7 +137,7 @@ def test_expenses_load_update_form(client_logged):
     assert 'Atnaujinti ir uždaryti</button>' in form
 
     assert '1999-01-01' in form
-    assert '1.12' in form
+    assert '112' in form
     assert '13' in form
     assert 'Expense Type' in form
     assert 'Expense Name' in form
@@ -184,7 +183,7 @@ def test_expenses_update(client_logged):
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(1999, 12, 31)
-    assert actual.price == Decimal('150')
+    assert actual.price == 150
     assert actual.quantity == 33
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'
@@ -231,7 +230,7 @@ def test_expenses_update_past_record(get_user, client_logged):
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(1998, 12, 12)
-    assert actual.price == Decimal('150')
+    assert actual.price == 150
     assert actual.quantity == 33
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'

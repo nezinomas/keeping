@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import mock
 import pytest
@@ -24,7 +23,7 @@ pytestmark = pytest.mark.django_db
 def expenses_more():
     ExpenseFactory(
         date=date(1999, 1, 1),
-        price=0.30,
+        price=3,
         account=AccountFactory(title='Account1'),
         exception=True
     )
@@ -47,8 +46,8 @@ def test_expense_type_get_absolute_url():
 
 def test_month_expense_type(expenses):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(0.5), 'title': 'Expense Type'},
-        {'date': date(1999, 12, 1), 'sum': Decimal(1.25), 'title': 'Expense Type'},
+        {'date': date(1999, 1, 1), 'sum': 50, 'title': 'Expense Type'},
+        {'date': date(1999, 12, 1), 'sum': 125, 'title': 'Expense Type'},
     ]
 
     actual = [*Expense.objects.sum_by_month_and_type(1999)]
@@ -60,14 +59,14 @@ def test_day_expense_type(expenses_january):
     expect = [
         {
             'date': date(1999, 1, 1),
-            'sum': Decimal(0.5),
+            'sum': 50,
             'title': 'Expense Type',
-            'exception_sum': Decimal(0.25),
+            'exception_sum': 25,
         }, {
             'date': date(1999, 1, 11),
-            'sum': Decimal(0.5),
+            'sum': 50,
             'title': 'Expense Type',
-            'exception_sum': Decimal(0),
+            'exception_sum': 0,
         },
     ]
 
@@ -312,9 +311,9 @@ def test_month_name_sum():
     )
 
     expect = [
-        {'date': date(1999, 1, 1), 'title': 'N1', 'type_title': 'T1', 'sum': Decimal(2)},
-        {'date': date(1999, 1, 1), 'title': 'N1', 'type_title': 'T2', 'sum': Decimal(3)},
-        {'date': date(1999, 2, 1), 'title': 'N1', 'type_title': 'T1', 'sum': Decimal(9)},
+        {'date': date(1999, 1, 1), 'title': 'N1', 'type_title': 'T1', 'sum': 2},
+        {'date': date(1999, 1, 1), 'title': 'N1', 'type_title': 'T2', 'sum': 3},
+        {'date': date(1999, 2, 1), 'title': 'N1', 'type_title': 'T1', 'sum': 9},
     ]
 
     actual = Expense.objects.sum_by_month_and_name(1999)
@@ -367,8 +366,8 @@ def test_expense_sum_by_month():
     actual = Expense.objects.sum_by_month(1999)
 
     assert list(actual) == [
-        {'sum': Decimal('3'), 'date': date(1999, 1, 1), 'title': 'expenses'},
-        {'sum': Decimal('6'), 'date': date(1999, 2, 1), 'title': 'expenses'}
+        {'sum': 3, 'date': date(1999, 1, 1), 'title': 'expenses'},
+        {'sum': 6, 'date': date(1999, 2, 1), 'title': 'expenses'}
     ]
 
 
@@ -495,11 +494,11 @@ def test_expense_post_delete_with_update():
 
     # check before delete
     actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert actual.past == Decimal('-5')
-    assert actual.incomes == Decimal('0')
-    assert actual.expenses == Decimal('1')
-    assert actual.balance == Decimal('-6')
-    assert actual.delta == Decimal('6')
+    assert actual.past == -5
+    assert actual.incomes == 0
+    assert actual.expenses == 1
+    assert actual.balance == -6
+    assert actual.delta == 6
 
     # delete Expense object
     Expense.objects.get(pk=obj.pk).delete()
@@ -522,18 +521,18 @@ def test_expense_post_save_first_year_record():
 
 
     actual = AccountBalance.objects.get(account_id=obj2.account.pk, year=1999)
-    assert actual.past == Decimal('-5')
-    assert actual.incomes == Decimal('0')
-    assert actual.expenses == Decimal('1')
-    assert actual.balance == Decimal('-6')
-    assert actual.delta == Decimal('6')
+    assert actual.past == -5
+    assert actual.incomes == 0
+    assert actual.expenses == 1
+    assert actual.balance == -6
+    assert actual.delta == 6
 
     actual = AccountBalance.objects.get(account_id=obj1.account.pk, year=1974)
-    assert actual.past == Decimal('0')
-    assert actual.incomes == Decimal('0')
-    assert actual.expenses == Decimal('5')
-    assert actual.balance == Decimal('-5')
-    assert actual.delta == Decimal('5')
+    assert actual.past == 0
+    assert actual.incomes == 0
+    assert actual.expenses == 5
+    assert actual.balance == -5
+    assert actual.delta == 5
 
 
 def test_expense_post_save_update_balance_row():
@@ -541,11 +540,11 @@ def test_expense_post_save_update_balance_row():
     obj = ExpenseFactory(date=date(1999, 1, 1), price=1)
 
     actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert actual.past == Decimal('-5')
-    assert actual.incomes == Decimal('0')
-    assert actual.expenses == Decimal('1')
-    assert actual.balance == Decimal('-6')
-    assert actual.delta == Decimal('6')
+    assert actual.past == -5
+    assert actual.incomes == 0
+    assert actual.expenses == 1
+    assert actual.balance == -6
+    assert actual.delta == 6
 
 
 def test_expense_post_delete_empty_account_balance_table():
@@ -563,11 +562,11 @@ def test_expense_post_delete_empty_account_balance_table():
     assert actual.count() == 2
     assert actual[0].account_id == obj_stay.account.pk
     assert actual[0].year == 1974
-    assert actual[0].past == Decimal('0')
-    assert actual[0].incomes == Decimal('0')
-    assert actual[0].expenses == Decimal('5')
-    assert actual[0].balance == Decimal('-5')
-    assert actual[0].delta == Decimal('5')
+    assert actual[0].past == 0
+    assert actual[0].incomes == 0
+    assert actual[0].expenses == 5
+    assert actual[0].balance == -5
+    assert actual[0].delta == 5
 
 
 def test_expense_sum_by_year_type():
@@ -580,10 +579,10 @@ def test_expense_sum_by_year_type():
 
     assert actual[0]['year'] == 1111
     assert actual[0]['title'] == 'Expense Type'
-    assert actual[0]['sum'] == Decimal('5')
+    assert actual[0]['sum'] == 5
     assert actual[1]['year'] == 1999
     assert actual[1]['title'] == 'Expense Type'
-    assert actual[1]['sum'] == Decimal('12')
+    assert actual[1]['sum'] == 12
 
 
 def test_expense_sum_by_year_type_filtering():
@@ -604,10 +603,10 @@ def test_expense_sum_by_year_type_filtering():
 
     assert actual[0]['year'] == 1111
     assert actual[0]['title'] == 'X'
-    assert actual[0]['sum'] == Decimal('5')
+    assert actual[0]['sum'] == 5
     assert actual[1]['year'] == 1999
     assert actual[1]['title'] == 'X'
-    assert actual[1]['sum'] == Decimal('12')
+    assert actual[1]['sum'] == 12
 
 
 def test_expense_sum_by_year_name():
@@ -620,11 +619,11 @@ def test_expense_sum_by_year_name():
 
     assert actual[0]['year'] == 1111
     assert actual[0]['title'] == 'Expense Type / Expense Name'
-    assert actual[0]['sum'] == Decimal('5')
+    assert actual[0]['sum'] == 5
 
     assert actual[1]['year'] == 1999
     assert actual[1]['title'] == 'Expense Type / Expense Name'
-    assert actual[1]['sum'] == Decimal('12')
+    assert actual[1]['sum'] == 12
 
 
 def test_expense_sum_by_year_name_filtering():
@@ -645,11 +644,11 @@ def test_expense_sum_by_year_name_filtering():
 
     assert actual[0]['year'] == 1111
     assert actual[0]['title'] == 'Expense Type / X'
-    assert actual[0]['sum'] == Decimal('5')
+    assert actual[0]['sum'] == 5
 
     assert actual[1]['year'] == 1999
     assert actual[1]['title'] == 'Expense Type / X'
-    assert actual[1]['sum'] == Decimal('12')
+    assert actual[1]['sum'] == 12
 
 
 def test_expenses(expenses):
@@ -657,16 +656,16 @@ def test_expenses(expenses):
 
     assert actual[0]['year'] == 1970
     assert actual[0]['id'] == 1
-    assert actual[0]['expenses'] == 2.5
+    assert actual[0]['expenses'] == 250
 
     assert actual[1]['year'] == 1970
     assert actual[1]['id'] == 2
-    assert actual[1]['expenses'] == 2.25
+    assert actual[1]['expenses'] == 225
 
     assert actual[2]['year'] == 1999
     assert actual[2]['id'] == 1
-    assert actual[2]['expenses'] == 0.5
+    assert actual[2]['expenses'] == 50
 
     assert actual[3]['year'] == 1999
     assert actual[3]['id'] == 2
-    assert actual[3]['expenses'] == 1.25
+    assert actual[3]['expenses'] == 125
