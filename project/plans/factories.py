@@ -24,8 +24,8 @@ class IncomePlanFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ('year', 'income_type', 'journal', )
 
     year = 1999
-    january = 111.11
-    february = 222.11
+    january = 111
+    february = 222
 
     income_type = factory.SubFactory(IncomeTypeFactory)
     journal = factory.SubFactory(JournalFactory)
@@ -37,8 +37,8 @@ class SavingPlanFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ('year', 'saving_type', 'journal', )
 
     year = 1999
-    january = 32.33
-    february = 32.33
+    january = 32
+    february = 32
 
     saving_type = factory.SubFactory(SavingTypeFactory)
     journal = factory.SubFactory(JournalFactory)
@@ -49,8 +49,8 @@ class DayPlanFactory(factory.django.DjangoModelFactory):
         model = DayPlan
 
     year = 1999
-    january = 32.33
-    february = 32.33
+    january = 32
+    february = 32
     journal = factory.SubFactory(JournalFactory)
 
 
@@ -60,6 +60,6 @@ class NecessaryPlanFactory(factory.django.DjangoModelFactory):
 
     year = 1999
     title = 'other'
-    january = 15.0
-    february = 15.0
+    january = 15
+    february = 15
     journal = factory.SubFactory(JournalFactory)
