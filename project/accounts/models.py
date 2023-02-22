@@ -45,12 +45,12 @@ class AccountBalance(models.Model):
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
     latest_check = models.DateTimeField(null=True, blank=True)
-    past = models.PositiveIntegerField(default=0)
-    incomes = models.PositiveIntegerField(default=0)
-    expenses = models.PositiveIntegerField(default=0)
-    balance = models.PositiveIntegerField(default=0)
-    have = models.PositiveIntegerField(default=0)
-    delta = models.PositiveIntegerField(default=0)
+    past = models.IntegerField(default=0)
+    incomes = models.IntegerField(default=0)
+    expenses = models.IntegerField(default=0)
+    balance = models.IntegerField(default=0)
+    have = models.IntegerField(default=0)
+    delta = models.IntegerField(default=0)
 
     # Managers
     objects = managers.AccountBalanceQuerySet.as_manager()
