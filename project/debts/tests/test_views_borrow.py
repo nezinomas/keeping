@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 import time_machine
@@ -53,14 +52,14 @@ def test_borrow_list_with_data(client_logged):
 
     assert '1999-01-01' in content
     assert obj1.name in content
-    assert '100,0' in content
-    assert '25,0' in content
+    assert '1,00' in content
+    assert '0,25' in content
     assert 'Account1' in content
     assert 'Borrow Remark' in content
     assert '<i class="bi bi-check-circle-fill"></i>' in content
 
     assert obj2.name not in content
-    assert '666,0' not in content
+    assert '6,66' not in content
 
 
 def test_borrow_list_edit_button(client_logged):
@@ -113,7 +112,7 @@ def test_borrow_load_form(client_logged):
 def test_borrow_save(mck, client_logged):
     a = AccountFactory()
 
-    data = {'date': '1999-01-01', 'name': 'AAA', 'price': '1.1', 'account': a.pk}
+    data = {'date': '1999-01-01', 'name': 'AAA', 'price': '1', 'account': a.pk}
     url = reverse('debts:new', kwargs={'debt_type': 'borrow'})
     client_logged.post(url, data)
 
@@ -121,7 +120,7 @@ def test_borrow_save(mck, client_logged):
     assert actual.date == date(1999, 1, 1)
     assert actual.account.title == 'Account1'
     assert actual.name == 'AAA'
-    assert actual.price == Decimal('1.1')
+    assert actual.price == 1
     assert actual.debt_type == 'borrow'
 
 
@@ -182,7 +181,7 @@ def test_borrow_update(mck, client_logged):
     actual = actual[0]
     assert actual.name == 'XXX'
     assert actual.date == date(1999, 12, 31)
-    assert actual.price == Decimal('150')
+    assert actual.price == 150
     assert actual.account.title == 'Account1'
     assert actual.remark == 'Pastaba'
     assert not actual.closed
@@ -205,7 +204,7 @@ def test_borrow_update_not_closed(client_logged):
     actual = models.Debt.objects.get(pk=e.pk)
     assert actual.name == 'XXX'
     assert actual.date == date(1999, 12, 31)
-    assert actual.price == Decimal('150')
+    assert actual.price == 150
     assert actual.account.title == 'Account1'
     assert actual.remark == 'Pastaba'
     assert not actual.closed

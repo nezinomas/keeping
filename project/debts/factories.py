@@ -51,7 +51,7 @@ class LendReturnFactory(factory.django.DjangoModelFactory):
         model = models.DebtReturn
 
     date = dt(1999, 1, 2)
-    price = 5
+    price = 6
     remark = 'Lend Return Remark'
     account = factory.SubFactory(AccountFactory)
     debt = factory.SubFactory(LendFactory)

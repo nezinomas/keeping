@@ -1,6 +1,7 @@
 {% load humanize %}
 {% load i18n %}
 {% load slippers %}
+{% load math %}
 
 {% if object_list %}
 
@@ -28,7 +29,7 @@
         <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#dialog" class="{% ifchanged object.debt.name or ifchanged object.debt.closed %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
             <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ object.debt.name }}</td>
-            <td class="text-start">{{ object.price|intcomma }}</td>
+            {% table_cell value=object.price|price css_class="text-center" %}
             <td class="text-start">{{ object.account }}</td>
             <td class="text-start">{{ object.remark }}</td>
             <td class="text-center">{% if object.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>

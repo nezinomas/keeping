@@ -1,5 +1,4 @@
 from datetime import date as dt
-from decimal import Decimal
 
 import pytest
 from mock import patch
@@ -94,7 +93,7 @@ def test_debt_year(mck):
     assert str(actual[0]) == str(o)
     assert actual[0].name == o.name
     assert actual[0].date == dt(1999, 2, 3)
-    assert actual[0].price == Decimal('100')
+    assert actual[0].price == 100
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
@@ -430,16 +429,16 @@ def test_debt_unique_users(main_user, second_user):
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
 def test_debt_sum_all_months(mck):
-    LendFactory(date=dt(1999, 1, 1), price=1, returned=0.5)
-    LendFactory(date=dt(1999, 1, 2), price=2, returned=0.5)
+    LendFactory(date=dt(1999, 1, 1), price=1, returned=1)
+    LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
     LendFactory(date=dt(1999, 2, 1), price=4, returned=1)
-    LendFactory(date=dt(1999, 2, 2), price=1, returned=0.5)
+    LendFactory(date=dt(1999, 2, 2), price=1, returned=1)
     LendFactory(date=dt(1999, 1, 1), closed=True)
     LendFactory(date=dt(1974, 1, 1))
 
     expect = [
-        {'date': dt(1999, 1, 1), 'sum_debt': Decimal('3'), 'sum_return': Decimal('1'), 'title': 'lend'},
-        {'date': dt(1999, 2, 1), 'sum_debt': Decimal('5'), 'sum_return': Decimal('1.5'), 'title': 'lend'},
+        {'date': dt(1999, 1, 1), 'sum_debt': 3, 'sum_return': 2, 'title': 'lend'},
+        {'date': dt(1999, 2, 1), 'sum_debt': 5, 'sum_return': 2, 'title': 'lend'},
     ]
 
     actual = list(Debt.objects.sum_by_month(1999, 'lend'))
@@ -465,11 +464,11 @@ def test_debt_sum_all_months_ordering(mck, second_user):
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
 def test_debt_sum_all_not_closed(mck):
     LendFactory(date=dt(1999, 1, 1), price=12, closed=True)
-    LendFactory(date=dt(1999, 1, 1), price=1, returned=0.5)
-    LendFactory(date=dt(1999, 1, 2), price=1, returned=0.5)
+    LendFactory(date=dt(1999, 1, 1), price=2, returned=1)
+    LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
     LendFactory(date=dt(1974, 1, 2), price=3, returned=2)
 
-    expect = {'debt': Decimal('5'), 'debt_return': Decimal('3')}
+    expect = {'debt': 7, 'debt_return': 4}
 
     actual = Debt.objects.sum_all()
 
