@@ -76,6 +76,14 @@ class Update(UpdateViewMixin):
     success_url = reverse_lazy('expenses:list')
     hx_trigger_django = 'reload'
 
+    def get_object(self):
+        obj = super().get_object()
+
+        if obj:
+            obj.price = obj.price / 100
+
+        return obj
+
 
 class Delete(DeleteViewMixin):
     model = models.Expense

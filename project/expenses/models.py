@@ -1,4 +1,4 @@
-from django.core.validators import MinLengthValidator, MinValueValidator
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import F
 from django.urls import reverse_lazy
@@ -60,9 +60,7 @@ class ExpenseName(TitleAbstract):
 
 class Expense(models.Model):
     date = models.DateField()
-    price = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField()
     quantity = models.IntegerField(
         default=1,
     )
