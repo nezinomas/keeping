@@ -336,6 +336,17 @@ def test_expenses_list_price_converted(client_logged):
     assert '77,77' in actual
 
 
+@time_machine.travel('1999-1-1')
+def test_expenses_list_price_converted_with_thousands(client_logged):
+    ExpenseFactory(price=100_000)
+
+    url = reverse('expenses:list')
+    response = client_logged.get(url, {'month': 1})
+    actual = response.content.decode('utf-8')
+
+    assert '1.000,00' in actual
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                          Expense Delete
 # ---------------------------------------------------------------------------------------
