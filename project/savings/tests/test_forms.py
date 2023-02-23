@@ -203,6 +203,31 @@ def test_saving_valid_data():
     assert data.saving_type.title == t.title
 
 
+@time_machine.travel('1999-1-1')
+def test_saving_valid_data_with_no_fee():
+    a = AccountFactory()
+    t = SavingTypeFactory()
+
+    form = SavingForm(data={
+        'date': '1999-01-01',
+        'price': 0.01,
+        'remark': 'remark',
+        'account': a.pk,
+        'saving_type': t.pk,
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.date == date(1999, 1, 1)
+    assert data.price == 1
+    assert not data.fee
+    assert data.remark == 'remark'
+    assert data.account.title == a.title
+    assert data.saving_type.title == t.title
+
+
 @time_machine.travel('1999-2-2')
 @pytest.mark.parametrize(
     'year',
