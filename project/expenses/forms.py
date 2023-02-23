@@ -4,7 +4,6 @@ from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
@@ -16,7 +15,7 @@ from .models import Expense, ExpenseName, ExpenseType
 
 
 class ExpenseForm(forms.ModelForm):
-    price = forms.FloatField(validators=[MinValueValidator(0.01)])
+    price = forms.FloatField(min_value=0.01)
     total_sum = forms.CharField(required=False)
 
     class Meta:
