@@ -1,5 +1,7 @@
-{% load slippers %}
 {% load i18n %}
+{% load slippers %}
+{% load math%}
+
 
 <table class="table table-sm table-striped table-hover">
     <thead>
@@ -16,7 +18,7 @@
         <tr>
             <td class="text-start">{{ item.title }}</td>
             {% for i in item.data %}
-                {% table_cell value=i %}
+                {% table_cell value=i|price %}
             {% endfor %}
         </tr>
         {% endfor %}
@@ -24,7 +26,7 @@
     <tfoot>
         <tr>
             <th class="text-start">{% translate 'Total' %}</th>
-            {% for i in total_row %}{% table_cell value=i tag='th' %}{% endfor %}
+            {% for i in total_row %}{% table_cell value=i|price tag='th' %}{% endfor %}
         </tr>
     </tfoot>
 </table>
