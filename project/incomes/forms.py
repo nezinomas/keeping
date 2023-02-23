@@ -49,13 +49,6 @@ class IncomeForm(forms.ModelForm):
         self.helper = FormHelper()
         add_css_class(self, self.helper)
 
-    def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
-        instance.price = int(self.cleaned_data.get('price') * 100)
-        instance.save()
-
-        return instance
-
     def clean_date(self):
         dt = self.cleaned_data['date']
 
@@ -81,6 +74,12 @@ class IncomeForm(forms.ModelForm):
                 )
 
         return dt
+
+    def save(self, *args, **kwargs):
+        instance = super().save(commit=False)
+        instance.price = int(self.cleaned_data.get('price') * 100)
+        instance.save()
+        return instance
 
 
 class IncomeTypeForm(forms.ModelForm):
