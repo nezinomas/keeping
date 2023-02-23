@@ -149,6 +149,21 @@ def test_savings_load_update_form_field_values(client_logged):
     assert form.instance.remark == 'remark'
 
 
+def test_savings_load_update_form_field_values_fee_none(client_logged):
+    obj = SavingFactory(price=1, fee=None)
+
+    url = reverse('savings:update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
+
+    assert form.instance.date == date(1999, 1, 1)
+    assert form.instance.price == 0.01
+    assert not form.instance.fee
+    assert form.instance.account.title == 'Account1'
+    assert form.instance.saving_type.title == 'Savings'
+    assert form.instance.remark == 'remark'
+
+
 @time_machine.travel('2011-1-1')
 def test_saving_update_to_another_year(client_logged):
     saving = SavingFactory()

@@ -44,9 +44,12 @@ class Update(UpdateViewMixin):
     def get_object(self):
         obj = super().get_object()
 
-        if obj:
+        if obj.price:
             obj.price = obj.price / 100
+
+        if obj.fee:
             obj.fee = obj.fee / 100
+
         return obj
 
 

@@ -119,6 +119,34 @@ def test_pensions_load_update_form_field_values(client_logged):
     assert form.instance.remark == 'remark'
 
 
+def test_pensions_load_update_form_field_values_no_fee(client_logged):
+    obj = PensionFactory(price=1, fee=None)
+
+    url = reverse('pensions:update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
+
+    assert form.instance.date == date(1999, 1, 1)
+    assert form.instance.price == 0.01
+    assert not form.instance.fee
+    assert form.instance.pension_type.title == 'PensionType'
+    assert form.instance.remark == 'remark'
+
+
+def test_pensions_load_update_form_field_values_no_price(client_logged):
+    obj = PensionFactory(price=None, fee=1)
+
+    url = reverse('pensions:update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
+
+    assert form.instance.date == date(1999, 1, 1)
+    assert not form.instance.price
+    assert form.instance.fee == 0.01
+    assert form.instance.pension_type.title == 'PensionType'
+    assert form.instance.remark == 'remark'
+
+
 def test_pensions_update_to_another_year(client_logged):
     pension = PensionFactory()
 
