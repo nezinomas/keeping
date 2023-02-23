@@ -3,6 +3,12 @@ $(function () {
         document.getElementById('chart-balance-data').textContent
     );
 
+    // convert data
+    for(i = 0; i < chartData.incomes.length; i++) {
+        chartData.incomes[i] /= 100
+        chartData.expenses[i] /= 100
+    }
+
     Highcharts.setOptions({
         lang: {
             thousandsSep: '.',
