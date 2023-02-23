@@ -12,6 +12,14 @@ function annotationLabels(list) {
 function chartSavings(container) {
     const chartData = JSON.parse(document.getElementById(`${container}_data`).textContent);
 
+    // convert data
+    chartData.max /= 100;
+    for (i = 0; i < chartData.categories.length; i++) {
+        chartData.invested[i] /= 100;
+        chartData.profit[i] /= 100;
+        chartData.total[i] /= 100;
+    }
+
     Highcharts.setOptions({
         lang: {
             thousandsSep: '.',
