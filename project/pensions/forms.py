@@ -3,7 +3,6 @@ from datetime import datetime
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
-from django.core.validators import MinValueValidator
 from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import add_css_class
