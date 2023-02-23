@@ -46,9 +46,7 @@ class SavingType(TitleAbstract):
 
 class Saving(models.Model):
     date = models.DateField()
-    price = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField()
     fee = models.PositiveIntegerField(
         null=True,
         blank=True,

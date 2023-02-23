@@ -1,6 +1,7 @@
 from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.core.validators import MinValueValidator
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
@@ -43,6 +44,9 @@ class SavingTypeForm(forms.ModelForm):
 
 
 class SavingForm(YearBetweenMixin, forms.ModelForm):
+    price = forms.FloatField(validators=[MinValueValidator(0.01)])
+    fee = forms.FloatField()
+
     class Meta:
         model = Saving
         fields = ['date', 'price', 'fee', 'remark', 'saving_type', 'account']
@@ -78,3 +82,12 @@ class SavingForm(YearBetweenMixin, forms.ModelForm):
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
+
+    def save(self, *args, **kwargs):
+        instance = super().save(commit=False)
+
+        instance.price = int(self.cleaned_data.get('price') * 100)
+        instance.fee = int(self.cleaned_data.get('fee') * 100)
+
+        instance.save()
+        return instance

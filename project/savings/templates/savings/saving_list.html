@@ -2,6 +2,8 @@
 {% load i18n %}
 {% load humanize %}
 {% load slippers %}
+{% load math %}
+
 
 {% if object_list %}
 
@@ -27,8 +29,8 @@
             <td class="text-start">{{ object.saving_type }}</td>
             <td class="text-start">{{ object.account }}</td>
             <td class="text-start">{{ object.remark }}</td>
-            <td>{{ object.price|intcomma }}</td>
-            <td>{{ object.fee|default_if_none:'-'|intcomma }}</td>
+            {% table_cell value=object.price|price %}
+            {% table_cell value=object.fee|price %}
             {% edit_cell url=url_update %}
             {% delete_cell url=url_delete %}
         </tr>

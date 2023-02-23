@@ -5,6 +5,7 @@ from ..templatetags import math
     'value, expect',
     [
         (1, 0.01),
+        (.1, 0.001),
         (None, None),
         ('-', '-'),
     ]
