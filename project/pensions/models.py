@@ -32,13 +32,11 @@ class Pension(models.Model):
     date = models.DateField()
     price = models.PositiveIntegerField(
         null=True,
-        blank=True,
-        validators=[MinValueValidator(1)]
+        blank=True
     )
     fee = models.PositiveIntegerField(
         null=True,
-        blank=True,
-        validators=[MinValueValidator(0)]
+        blank=True
     )
     remark = models.TextField(
         max_length=1000,

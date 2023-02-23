@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 import time_machine
 from django.urls import resolve, reverse
@@ -62,19 +64,19 @@ def test_pensions_save(client_logged):
 
     data = {
         'date': '1999-01-01',
-        'price': '10',
+        'price': '0.01',
+        'fee': '0.01',
         'pension_type': i.pk
     }
 
     url = reverse('pensions:new')
+    client_logged.post(url, data, follow=True)
+    actual = Pension.objects.get(pk=i.pk)
 
-    response = client_logged.post(url, data, follow=True)
-
-    actual = response.content.decode('utf-8')
-
-    assert '1999-01-01' in actual
-    assert '10' in actual
-    assert 'PensionType' in actual
+    assert actual.date == date(1999, 1, 1)
+    assert actual.price == 1
+    assert actual.fee == 1
+    assert actual.pension_type.title == 'PensionType'
 
 
 def test_pensions_save_invalid_data(client_logged):
@@ -93,8 +95,32 @@ def test_pensions_save_invalid_data(client_logged):
     assert not form.is_valid()
 
 
+def test_pensions_load_update_form_button(client_logged):
+    obj = PensionFactory()
+
+    url = reverse('pensions:update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.content.decode('utf-8')
+
+    assert 'Atnaujinti ir uždaryti</button>' in form
+
+
+def test_pensions_load_update_form_field_values(client_logged):
+    obj = PensionFactory(price=1, fee=1)
+
+    url = reverse('pensions:update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
+
+    assert form.instance.date == date(1999, 1, 1)
+    assert form.instance.price == 0.01
+    assert form.instance.fee == 0.01
+    assert form.instance.pension_type.title == 'PensionType'
+    assert form.instance.remark == 'remark'
+
+
 def test_pensions_update_to_another_year(client_logged):
-    income = PensionFactory()
+    pension = PensionFactory()
 
     data = {
         'price': '150',
@@ -103,7 +129,7 @@ def test_pensions_update_to_another_year(client_logged):
         'account': 1,
         'pension_type': 1,
     }
-    url = reverse('pensions:update', kwargs={'pk': income.pk})
+    url = reverse('pensions:update', kwargs={'pk': pension.pk})
 
     response = client_logged.post(url, data, follow=True)
 
@@ -115,25 +141,27 @@ def test_pensions_update_to_another_year(client_logged):
 
 
 def test_pensions_update(client_logged):
-    income = PensionFactory()
+    pension = PensionFactory()
 
     data = {
-        'price': '150',
+        'price': '0.01',
+        'fee': '0.01',
         'date': '1999-12-31',
         'remark': 'Pastaba',
         'pension_type': 1
     }
-    url = reverse('pensions:update', kwargs={'pk': income.pk})
+    url = reverse('pensions:update', kwargs={'pk': pension.pk})
 
     response = client_logged.post(url, data, follow=True)
 
     assert response.status_code == 200
 
-    actual = response.content.decode('utf-8')
+    actual = Pension.objects.get(pk=pension.pk)
 
-    assert '1999-12-31' in actual
-    assert '150' in actual
-    assert 'Pastaba' in actual
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == 1
+    assert actual.fee == 1
+    assert actual.remark == 'Pastaba'
 
 
 def test_pensions_not_load_other_journal(client_logged, main_user, second_user):
@@ -147,6 +175,29 @@ def test_pensions_not_load_other_journal(client_logged, main_user, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_pensions_list_price_converted(client_logged):
+    PensionFactory(price=7777, fee=8888)
+
+    url = reverse('pensions:list')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert '77,77' in actual
+    assert '88,88' in actual
+
+
+@time_machine.travel('1999-1-1')
+def test_pensions_list_price_converted_with_thousands(client_logged):
+    PensionFactory(price=100_000_000, fee=100_000)
+
+    url = reverse('pensions:list')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert '1.000.000,00' in actual
+    assert '1.000,00' in actual
 
 
 # ---------------------------------------------------------------------------------------
@@ -247,10 +298,10 @@ def test_type_save_invalid_data(client_logged):
 
 
 def test_type_update(client_logged):
-    income = PensionTypeFactory()
+    pension = PensionTypeFactory()
 
     data = {'title': 'TTT'}
-    url = reverse('pensions:type_update', kwargs={'pk': income.pk})
+    url = reverse('pensions:type_update', kwargs={'pk': pension.pk})
 
     response = client_logged.post(url, data, follow=True)
 

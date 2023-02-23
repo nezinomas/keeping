@@ -3,6 +3,7 @@ from datetime import datetime
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.core.validators import MinValueValidator
 from django.utils.translation import gettext as _
 
 from ..core.helpers.helper_forms import add_css_class
@@ -12,6 +13,9 @@ from .models import Pension, PensionType
 
 
 class PensionForm(YearBetweenMixin, forms.ModelForm):
+    price = forms.FloatField(required=False, min_value=0)
+    fee = forms.FloatField(required=False, min_value=0)
+
     class Meta:
         model = Pension
         fields = ['date', 'price', 'fee', 'remark', 'pension_type']
@@ -26,7 +30,6 @@ class PensionForm(YearBetweenMixin, forms.ModelForm):
         )
 
         # form inputs settings
-        self.fields['price'].widget.attrs = {'step': '0.01'}
         self.fields['remark'].widget.attrs['rows'] = 3
 
         # inital values
@@ -43,6 +46,18 @@ class PensionForm(YearBetweenMixin, forms.ModelForm):
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
+
+    def save(self, *args, **kwargs):
+        instance = super().save(commit=False)
+
+        if price := self.cleaned_data.get('price'):
+            instance.price = int(price * 100)
+
+        if fee := self.cleaned_data.get('fee'):
+            instance.fee = int(fee * 100)
+
+        instance.save()
+        return instance
 
     def clean(self):
         cleaned_data = super().clean()
