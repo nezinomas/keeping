@@ -183,7 +183,7 @@ def test_saving_update(client_logged):
     }
     url = reverse('savings:update', kwargs={'pk': saving.pk})
 
-    response = client_logged.post(url, data, follow=True)
+    client_logged.post(url, data, follow=True)
     actual = Saving.objects.get(pk=saving.pk)
 
     assert actual.date == date(1999, 12, 31)
