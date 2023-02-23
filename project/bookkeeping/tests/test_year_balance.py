@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 from types import SimpleNamespace
 
 import polars as pl

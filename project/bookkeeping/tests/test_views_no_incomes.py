@@ -1,5 +1,4 @@
 import json
-from decimal import Decimal
 from types import SimpleNamespace
 
 import pytest
@@ -60,9 +59,9 @@ def _data():
             fund_sum=2,
             pension_sum=1,
             expenses=[
-                {'title': 'X', 'sum': Decimal('1')},
-                {'title': 'Y', 'sum': Decimal('2')},
-                {'title': 'Z', 'sum': Decimal('4')},
+                {'title': 'X', 'sum': 1},
+                {'title': 'Y', 'sum': 2},
+                {'title': 'Z', 'sum': 4},
             ],
             savings={},
             unnecessary=[],
@@ -72,10 +71,10 @@ def _data():
 @pytest.mark.parametrize(
     'savings, unnecessary, months, expect',
     [
-        ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 1, 9),
-        ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 6, 1.5),
-        ({'sum': Decimal('2')}, ['Taupymas'], 1, 9),
-        ({'sum': Decimal('2')}, ['Taupymas'], 6, 1.5),
+        ({'sum': 2}, ['Z', 'Taupymas'], 1, 9),
+        ({'sum': 2}, ['Z', 'Taupymas'], 6, 1.5),
+        ({'sum': 2}, ['Taupymas'], 1, 9),
+        ({'sum': 2}, ['Taupymas'], 6, 1.5),
         ({}, [], 1, 7),
         ({}, [], 6, 1.17),
     ]
@@ -92,10 +91,10 @@ def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, _data):
 @pytest.mark.parametrize(
     'savings, unnecessary, months, expect',
     [
-        ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 1, 6),
-        ({'sum': Decimal('2')}, ['Z', 'Taupymas'], 6, 1),
-        ({'sum': Decimal('2')}, ['Taupymas'], 1, 2),
-        ({'sum': Decimal('2')}, ['Taupymas'], 6, 0.33),
+        ({'sum': 2}, ['Z', 'Taupymas'], 1, 6),
+        ({'sum': 2}, ['Z', 'Taupymas'], 6, 1),
+        ({'sum': 2}, ['Taupymas'], 1, 2),
+        ({'sum': 2}, ['Taupymas'], 6, 0.33),
         ({}, [], 1, 0),
         ({}, [], 6, 0),
     ]
@@ -110,7 +109,7 @@ def test_no_incomes_cut_sum(savings, unnecessary, months, expect, _data):
 
 
 def test_no_incomes_summary(_data):
-    _data.savings = {'sum': Decimal('2')}
+    _data.savings = {'sum': 2}
     _data.unnecessary = ['Z', 'Taupymas']
 
     actual = NoIncomes(_data).summary
