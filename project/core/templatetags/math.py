@@ -5,4 +5,7 @@ register = template.Library()
 
 @register.filter
 def price(value: int) -> float:
-    return value / 100
+    try:
+        return value / 100
+    except TypeError:
+        return value
