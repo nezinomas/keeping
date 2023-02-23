@@ -1,5 +1,9 @@
 function chartExpensesOnly(idData, idContainer) {
-    const chartData = JSON.parse(document.getElementById(idData).textContent);
+    var chartData = JSON.parse(document.getElementById(idData).textContent);
+    // convert data
+    for (var key in chartData) {
+        chartData[key]['y'] /= 100;
+    }
 
     Highcharts.chart(idContainer, {
         chart: {

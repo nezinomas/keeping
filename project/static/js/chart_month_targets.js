@@ -1,5 +1,17 @@
 function chartExpensesTarget(idData, idContainer) {
-    const chartData = JSON.parse(document.getElementById(idData).textContent);
+    var chartData = JSON.parse(document.getElementById(idData).textContent);
+
+    // convert targets
+    for(var i = 0; i < chartData.target.length; i++) {
+        chartData.target[i] /= 100;
+    }
+
+    // convert data
+    for (var key in chartData.fact) {
+        chartData.fact[key]['y'] /= 100;
+        chartData.fact[key]['target'] /= 100;
+    }
+
 
     Highcharts.chart(idContainer, {
         chart: {
