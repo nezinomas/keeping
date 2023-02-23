@@ -1,6 +1,7 @@
 {% load cell_format %}
 {% load slippers %}
 {% load i18n %}
+{% load math %}
 
 <table class="table table-sm table-hover">
     <thead>
@@ -15,15 +16,15 @@
         {% for item in ctx %}
         <tr>
             {% table_cell value=item.title %}
-            {% table_cell value=item.plan|floatformat:'2g' %}
+            {% table_cell value=item.plan|price %}
 
             {% if item.title == _('Incomes') or item.title == _('Balance') %}
-                {% table_cell value=item.fact css_class=item.fact|compare:item.plan %}
+                {% table_cell value=item.fact|price css_class=item.fact|compare:item.plan %}
             {% else %}
-                {% table_cell value=item.fact css_class=item.plan|compare:item.fact %}
+                {% table_cell value=item.fact|price css_class=item.plan|compare:item.fact %}
             {% endif %}
 
-            {% table_cell value=item.delta highlight_value=True %}
+            {% table_cell value=item.delta|price highlight_value=True %}
         </tr>
         {% endfor %}
 
