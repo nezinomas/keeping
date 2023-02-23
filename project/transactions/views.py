@@ -63,6 +63,14 @@ class Update(UpdateViewMixin):
     hx_trigger_django = 'afterTransaction'
     success_url = reverse_lazy('transactions:list')
 
+    def get_object(self):
+        obj = super().get_object()
+
+        if obj:
+            obj.price = obj.price / 100
+
+        return obj
+
 
 class Delete(DeleteViewMixin):
     model = models.Transaction
@@ -92,6 +100,17 @@ class SavingsCloseUpdate(UpdateViewMixin):
     hx_trigger_django = 'afterClose'
     success_url = reverse_lazy('transactions:savings_close_list')
 
+    def get_object(self):
+        obj = super().get_object()
+
+        if obj.price:
+            obj.price = obj.price / 100
+
+        if obj.fee:
+            obj.fee = obj.fee / 100
+
+        return obj
+
 
 class SavingsCloseDelete(DeleteViewMixin):
     model = models.SavingClose
@@ -120,6 +139,17 @@ class SavingsChangeUpdate(UpdateViewMixin):
     form_class = forms.SavingChangeForm
     hx_trigger_django = 'afterChange'
     success_url = reverse_lazy('transactions:savings_change_list')
+
+    def get_object(self):
+        obj = super().get_object()
+
+        if obj.price:
+            obj.price = obj.price / 100
+
+        if obj.fee:
+            obj.fee = obj.fee / 100
+
+        return obj
 
 
 class SavingsChangeDelete(DeleteViewMixin):

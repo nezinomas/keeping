@@ -67,7 +67,7 @@ def test_transaction_valid_data():
         'date': '1999-01-01',
         'from_account': a_from.pk,
         'to_account': a_to.pk,
-        'price': '1.0'
+        'price': '0.01'
     })
 
     assert form.is_valid()
@@ -185,8 +185,8 @@ def test_saving_change_valid_data():
         'date': '1999-01-01',
         'from_account': a_from.pk,
         'to_account': a_to.pk,
-        'price': '10',
-        'fee': '2'
+        'price': '0.01',
+        'fee': '0.01'
     })
 
     assert form.is_valid()
@@ -194,8 +194,30 @@ def test_saving_change_valid_data():
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.price == 10
-    assert data.fee == 2
+    assert data.price == 1
+    assert data.fee == 1
+    assert data.from_account == a_from
+    assert data.to_account == a_to
+
+
+def test_saving_change_valid_data_with_no_fee():
+    a_from = SavingTypeFactory()
+    a_to = SavingTypeFactory(title='Savings2')
+
+    form = SavingChangeForm(data={
+        'date': '1999-01-01',
+        'from_account': a_from.pk,
+        'to_account': a_to.pk,
+        'price': '0.01',
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.date == date(1999, 1, 1)
+    assert data.price == 1
+    assert not data.fee
     assert data.from_account == a_from
     assert data.to_account == a_to
 
@@ -303,11 +325,10 @@ def test_saving_change_save_and_close_from_account():
         'date': '1999-01-01',
         'from_account': a_from.pk,
         'to_account': a_to.pk,
-        'price': '10',
-        'fee': '0',
+        'price': '0.01',
+        'fee': '0.01',
         'close': True,
     })
-
     assert form.is_valid()
 
     form.save()
@@ -371,8 +392,8 @@ def test_saving_close_valid_data():
         'date': '1999-01-01',
         'from_account': a_from.pk,
         'to_account': a_to.pk,
-        'price': '10',
-        'fee': '8'
+        'price': '0.01',
+        'fee': '0.01'
     })
 
     assert form.is_valid()
@@ -380,8 +401,30 @@ def test_saving_close_valid_data():
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.price == 10
-    assert data.fee == 8
+    assert data.price == 1
+    assert data.fee == 1
+    assert data.from_account == a_from
+    assert data.to_account == a_to
+
+
+def test_saving_close_valid_data_no_fee():
+    a_from = SavingTypeFactory()
+    a_to = AccountFactory(title='Account2')
+
+    form = SavingCloseForm(data={
+        'date': '1999-01-01',
+        'from_account': a_from.pk,
+        'to_account': a_to.pk,
+        'price': '0.01',
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.date == date(1999, 1, 1)
+    assert data.price == 1
+    assert not data.fee
     assert data.from_account == a_from
     assert data.to_account == a_to
 
@@ -480,8 +523,8 @@ def test_saving_close_save_and_close_saving_account():
         'date': '1999-01-01',
         'from_account': a_from.pk,
         'to_account': a_to.pk,
-        'price': '1',
-        'fee': '0',
+        'price': '0.01',
+        'fee': '0.01',
         'close': True,
     })
 

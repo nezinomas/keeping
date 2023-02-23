@@ -19,9 +19,7 @@ class Transaction(models.Model):
         on_delete=models.CASCADE,
         related_name='transactions_to'
     )
-    price = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField()
 
     objects = managers.TransactionQuerySet.as_manager()
 
@@ -61,9 +59,7 @@ class SavingClose(models.Model):
         null=True,
         blank=True,
     )
-    price = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField()
 
     objects = managers.SavingCloseQuerySet.as_manager()
 
@@ -103,9 +99,7 @@ class SavingChange(models.Model):
         null=True,
         blank=True,
     )
-    price = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField()
 
     objects = managers.SavingChangeQuerySet.as_manager()
 
