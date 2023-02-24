@@ -104,6 +104,13 @@ class DebtReturnUpdate(DebtReturnMixin, UpdateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
 
+    def get_object(self):
+        obj = super().get_object()
+
+        if obj:
+            obj.price = obj.price / 100
+
+        return obj
 
 class DebtReturnDelete(DebtReturnMixin, DeleteViewMixin):
     model = models.DebtReturn
