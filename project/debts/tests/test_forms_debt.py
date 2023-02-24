@@ -140,6 +140,7 @@ def test_debt_valid_data_type_from_request(mck):
             'remark': 'Rm'
         },
     )
+    assert form.is_valid()
 
     form.save()
 

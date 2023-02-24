@@ -65,14 +65,10 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.helper = FormHelper()
         add_css_class(self, self.helper)
 
-
     def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
-
         # set debt_type
         if not self.instance.pk:
-            instance.debt_type = utils.get_request_kwargs('debt_type') or 'lend'
-
+            self.instance.debt_type = utils.get_request_kwargs('debt_type') or 'lend'
         return super().save(*args, **kwargs)
 
     def clean(self):
