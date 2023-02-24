@@ -2,23 +2,13 @@ import calendar
 
 from django.urls import reverse_lazy
 
+from ..core.lib.convert_price import PlansConvertToCents
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  FormViewMixin, ListViewMixin,
                                  TemplateViewMixin, UpdateViewMixin,
                                  httpHtmxResponse, rendered_content)
 from . import forms, models
 from .lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
-
-
-class UpdateObjectMixin:
-    def get_object(self):
-        obj = super().get_object()
-
-        months = list(calendar.month_name[1:])
-        for month in months:
-            if value := getattr(obj, month.lower()):
-                setattr(obj, month.lower(), value / 100)
-        return obj
 
 
 class Stats(TemplateViewMixin):
@@ -67,7 +57,7 @@ class ExpensesNew(CreateViewMixin):
     hx_trigger_django = 'reloadExpenses'
 
 
-class ExpensesUpdate(UpdateObjectMixin, UpdateViewMixin):
+class ExpensesUpdate(PlansConvertToCents, UpdateViewMixin):
     model = models.ExpensePlan
     form_class = forms.ExpensePlanForm
     success_url = reverse_lazy('plans:expense_list')
@@ -98,7 +88,7 @@ class IncomesNew(CreateViewMixin):
     hx_trigger_django = 'reloadIncomes'
 
 
-class IncomesUpdate(UpdateObjectMixin, UpdateViewMixin):
+class IncomesUpdate(PlansConvertToCents, UpdateViewMixin):
     model = models.IncomePlan
     form_class = forms.IncomePlanForm
     success_url = reverse_lazy('plans:income_list')
@@ -129,7 +119,7 @@ class SavingsNew(CreateViewMixin):
     hx_trigger_django = 'reloadSavings'
 
 
-class SavingsUpdate(UpdateObjectMixin, UpdateViewMixin):
+class SavingsUpdate(PlansConvertToCents, UpdateViewMixin):
     model = models.SavingPlan
     form_class = forms.SavingPlanForm
     success_url = reverse_lazy('plans:saving_list')
@@ -160,7 +150,7 @@ class DayNew(CreateViewMixin):
     hx_trigger_django = 'reloadDay'
 
 
-class DayUpdate(UpdateObjectMixin, UpdateViewMixin):
+class DayUpdate(PlansConvertToCents, UpdateViewMixin):
     model = models.DayPlan
     form_class = forms.DayPlanForm
     success_url = reverse_lazy('plans:day_list')
@@ -191,7 +181,7 @@ class NecessaryNew(CreateViewMixin):
     hx_trigger_django = 'reloadNecessary'
 
 
-class NecessaryUpdate(UpdateObjectMixin, UpdateViewMixin):
+class NecessaryUpdate(PlansConvertToCents, UpdateViewMixin):
     model = models.NecessaryPlan
     form_class = forms.NecessaryPlanForm
     success_url = reverse_lazy('plans:necessary_list')
