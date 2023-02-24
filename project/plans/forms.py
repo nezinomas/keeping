@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import calendar
 from bootstrap_datepicker_plus.widgets import YearPickerInput
 from crispy_forms.helper import FormHelper
 from dateutil.relativedelta import relativedelta
@@ -33,17 +33,41 @@ def set_journal_field(fields):
     fields['journal'].widget = forms.HiddenInput()
 
 
-class YearCleanMixin:
+class YearFormMixin(forms.ModelForm):
+    january = forms.FloatField(min_value=0.01, required=False)
+    february = forms.FloatField(min_value=0.01, required=False)
+    march = forms.FloatField(min_value=0.01, required=False)
+    april = forms.FloatField(min_value=0.01, required=False)
+    may = forms.FloatField(min_value=0.01, required=False)
+    june = forms.FloatField(min_value=0.01, required=False)
+    july = forms.FloatField(min_value=0.01, required=False)
+    august = forms.FloatField(min_value=0.01, required=False)
+    september = forms.FloatField(min_value=0.01, required=False)
+    october = forms.FloatField(min_value=0.01, required=False)
+    november = forms.FloatField(min_value=0.01, required=False)
+    december = forms.FloatField(min_value=0.01, required=False)
+
     def clean(self):
         cleaned_data = super().clean()
         utils.clean_year_picker_input('year', self.data, cleaned_data, self.errors)
         return cleaned_data
 
+    def save(self, *args, **kwargs):
+        instance = super().save(commit=False)
+
+        months = list(calendar.month_name[1:])
+        for month in months:
+            if value := self.cleaned_data.get(month.lower()):
+                setattr(instance, month.lower(), int(value * 100))
+
+        instance.save()
+        return instance
+
 
 # ----------------------------------------------------------------------------
 #                                                             Income Plan Form
 # ----------------------------------------------------------------------------
-class IncomePlanForm(YearCleanMixin, forms.ModelForm):
+class IncomePlanForm(YearFormMixin):
     class Meta:
         model = IncomePlan
         fields = ['journal', 'year', 'income_type'] + monthnames()
@@ -77,7 +101,7 @@ class IncomePlanForm(YearCleanMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                            Expense Plan Form
 # ----------------------------------------------------------------------------
-class ExpensePlanForm(YearCleanMixin, forms.ModelForm):
+class ExpensePlanForm(YearFormMixin, forms.ModelForm):
     class Meta:
         model = ExpensePlan
         fields = ['journal', 'year', 'expense_type'] + monthnames()
@@ -111,7 +135,7 @@ class ExpensePlanForm(YearCleanMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                              Saving Plan Form
 # ----------------------------------------------------------------------------
-class SavingPlanForm(YearCleanMixin, forms.ModelForm):
+class SavingPlanForm(YearFormMixin, forms.ModelForm):
     class Meta:
         model = SavingPlan
         fields = ['journal', 'year', 'saving_type'] + monthnames()
@@ -147,7 +171,7 @@ class SavingPlanForm(YearCleanMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                                Day Plan Form
 # ----------------------------------------------------------------------------
-class DayPlanForm(YearCleanMixin, forms.ModelForm):
+class DayPlanForm(YearFormMixin, forms.ModelForm):
     class Meta:
         model = DayPlan
         fields = ['journal', 'year'] + monthnames()
@@ -177,7 +201,7 @@ class DayPlanForm(YearCleanMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                          Necessary Plan Form
 # ----------------------------------------------------------------------------
-class NecessaryPlanForm(YearCleanMixin, forms.ModelForm):
+class NecessaryPlanForm(YearFormMixin, forms.ModelForm):
     class Meta:
         model = NecessaryPlan
         fields = ['journal', 'year', 'title'] + monthnames()
