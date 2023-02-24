@@ -251,21 +251,19 @@ class CopyPlanForm(forms.Form):
     necessary = forms.BooleanField(required=False)
 
     def _get_cleaned_checkboxes(self, cleaned_data):
-        dict_ = {
+        return {
             'income': cleaned_data.get("income"),
             'expense': cleaned_data.get("expense"),
             'saving': cleaned_data.get("saving"),
             'day': cleaned_data.get("day"),
             'necessary': cleaned_data.get("necessary"),
         }
-        return dict_
 
     def _get_model(self, name):
         return apps.get_model(f'plans.{name.title()}Plan')
 
     def _append_error_message(self, msg, errors, key):
-        err = errors.get(key)
-        if err:
+        if err := errors.get(key):
             err.append(msg)
             errors[key] = err
         else:
