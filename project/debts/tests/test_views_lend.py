@@ -35,8 +35,8 @@ def test_lend_list_empty(client_logged):
 
 
 def test_lend_list_with_data(client_logged):
-    obj1 = factories.LendFactory(closed=True, returned=25)
-    obj2 = factories.BorrowFactory(price=666)
+    obj1 = factories.LendFactory(closed=True, price=777_777, returned=250)
+    obj2 = factories.BorrowFactory(price=666_666)
 
     url = reverse('debts:list', kwargs={'debt_type': 'lend'})
     response = client_logged.get(url)
@@ -52,14 +52,14 @@ def test_lend_list_with_data(client_logged):
 
     assert '1999-01-01' in content
     assert obj1.name in content
-    assert '1,00' in content
-    assert '0,25' in content
+    assert '7.777,77' in content
+    assert '2,50' in content
     assert 'Account1' in content
     assert 'Lend Remark' in content
     assert '<i class="bi bi-check-circle-fill"></i>' in content
 
     assert obj2.name not in content
-    assert '6,66' not in content
+    assert '6.666,66' not in content
 
 
 def test_lend_list_edit_button(client_logged):
@@ -120,7 +120,7 @@ def test_lend_save(mck, client_logged):
     assert actual.date == date(1999, 1, 1)
     assert actual.account.title == 'Account1'
     assert actual.name == 'AAA'
-    assert actual.price == 1
+    assert actual.price == 100
     assert actual.debt_type == 'lend'
 
 
@@ -149,15 +149,15 @@ def test_lend_update_200(client_logged):
 
 
 def test_lend_load_update_form(client_logged):
-    f = factories.LendFactory()
+    f = factories.LendFactory(price=1)
     url = reverse('debts:update', kwargs={'pk': f.pk, 'debt_type': 'lend'})
     response = client_logged.get(url)
-    form = response.context['form'].as_p()
+    form = response.context['form']
 
-    assert '1999-01-01' in form
-    assert '100' in form
-    assert 'Account1' in form
-    assert 'Lend Remark' in form
+    assert form.instance.date == date(1999, 1, 1)
+    assert form.instance.price == 0.01
+    assert form.instance.account.title == 'Account1'
+    assert form.instance.remark == 'Lend Remark'
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
@@ -166,7 +166,7 @@ def test_lend_update(mck, client_logged):
 
     data = {
         'name': 'XXX',
-        'price': '150',
+        'price': '0.01',
         'date': '1999-12-31',
         'remark': 'Pastaba',
         'account': 1,
@@ -181,7 +181,7 @@ def test_lend_update(mck, client_logged):
     actual = actual[0]
     assert actual.name == 'XXX'
     assert actual.date == date(1999, 12, 31)
-    assert actual.price == 150
+    assert actual.price == 1
     assert actual.account.title == 'Account1'
     assert actual.remark == 'Pastaba'
     assert not actual.closed
@@ -192,7 +192,7 @@ def test_lend_update_not_closed(client_logged):
 
     data = {
         'name': 'XXX',
-        'price': '150',
+        'price': '0.01',
         'date': '1999-12-31',
         'remark': 'Pastaba',
         'account': 1,
@@ -204,7 +204,7 @@ def test_lend_update_not_closed(client_logged):
     actual = models.Debt.objects.get(pk=e.pk)
     assert actual.name == 'XXX'
     assert actual.date == date(1999, 12, 31)
-    assert actual.price == 150
+    assert actual.price == 1
     assert actual.account.title == 'Account1'
     assert actual.remark == 'Pastaba'
     assert not actual.closed

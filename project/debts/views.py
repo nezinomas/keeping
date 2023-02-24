@@ -72,6 +72,13 @@ class DebtUpdate(DebtMixin, UpdateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
 
+    def get_object(self):
+        obj = super().get_object()
+
+        if obj:
+            obj.price = obj.price / 100
+
+        return obj
 
 class DebtDelete(DebtMixin, DeleteViewMixin):
     model = models.Debt
