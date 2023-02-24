@@ -107,7 +107,7 @@ def test_debt_valid_data():
         data={
             'date': '1999-01-01',
             'name': 'Name',
-            'price': '1',
+            'price': '0.01',
             'account': a.pk,
             'closed': False,
             'remark': 'Rm'
@@ -134,7 +134,7 @@ def test_debt_valid_data_type_from_request(mck):
         data={
             'date': '1999-01-01',
             'name': 'Name',
-            'price': '1',
+            'price': '0.01',
             'account': a.pk,
             'closed': False,
             'remark': 'Rm'

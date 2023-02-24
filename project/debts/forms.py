@@ -14,6 +14,8 @@ from . import models
 
 
 class DebtForm(YearBetweenMixin, forms.ModelForm):
+    price = forms.FloatField(min_value=0.01)
+
     class Meta:
         model = models.Debt
         fields = ['journal', 'date', 'name', 'price', 'closed', 'account', 'remark']
@@ -64,18 +66,18 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
 
 
     def save(self, *args, **kwargs):
+        instance = super().save(commit=False)
+
+        # set debt_type
         if not self.instance.pk:
-            instance = super().save(commit=False)
+            instance.debt_type = utils.get_request_kwargs('debt_type') or 'lend'
 
-            _debt_type = utils.get_request_kwargs('debt_type')
-            _debt_type = _debt_type if _debt_type else 'lend'
-            instance.debt_type = _debt_type
+        # update price
+        instance.price = int(self.cleaned_data.get('price') * 100)
 
-            instance.save()
+        instance.save()
+        return instance
 
-            return instance
-
-        super().save()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -106,6 +108,8 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
 
 
 class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
+    price = forms.FloatField(min_value=0.01)
+
     class Meta:
         model = models.DebtReturn
         fields = ['date', 'price', 'remark', 'account', 'debt']
@@ -181,3 +185,11 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
         if debt := cleaned_data.get('debt'):
             if date < debt.date:
                 self.add_error('date', _('The date is earlier than the date of the debt.'))
+
+        return cleaned_data
+
+    def save(self, *args, **kwargs):
+        instance = super().save(commit=False)
+        instance.price = int(self.cleaned_data.get('price') * 100)
+        instance.save()
+        return instance
