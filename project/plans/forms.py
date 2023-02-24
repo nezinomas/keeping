@@ -101,7 +101,7 @@ class IncomePlanForm(YearFormMixin):
 # ----------------------------------------------------------------------------
 #                                                            Expense Plan Form
 # ----------------------------------------------------------------------------
-class ExpensePlanForm(YearFormMixin, forms.ModelForm):
+class ExpensePlanForm(YearFormMixin):
     class Meta:
         model = ExpensePlan
         fields = ['journal', 'year', 'expense_type'] + monthnames()
@@ -135,7 +135,7 @@ class ExpensePlanForm(YearFormMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                              Saving Plan Form
 # ----------------------------------------------------------------------------
-class SavingPlanForm(YearFormMixin, forms.ModelForm):
+class SavingPlanForm(YearFormMixin):
     class Meta:
         model = SavingPlan
         fields = ['journal', 'year', 'saving_type'] + monthnames()
@@ -171,7 +171,7 @@ class SavingPlanForm(YearFormMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                                Day Plan Form
 # ----------------------------------------------------------------------------
-class DayPlanForm(YearFormMixin, forms.ModelForm):
+class DayPlanForm(YearFormMixin):
     class Meta:
         model = DayPlan
         fields = ['journal', 'year'] + monthnames()
@@ -201,7 +201,7 @@ class DayPlanForm(YearFormMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                          Necessary Plan Form
 # ----------------------------------------------------------------------------
-class NecessaryPlanForm(YearFormMixin, forms.ModelForm):
+class NecessaryPlanForm(YearFormMixin):
     class Meta:
         model = NecessaryPlan
         fields = ['journal', 'year', 'title'] + monthnames()
