@@ -24,9 +24,7 @@ class Debt(models.Model):
         max_length=100,
         validators=[MinLengthValidator(3)]
     )
-    price = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField()
     returned = models.PositiveIntegerField(
         null=True,
         default=0,
@@ -75,9 +73,7 @@ class Debt(models.Model):
 
 class DebtReturn(models.Model):
     date = models.DateField()
-    price = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField()
     remark = models.TextField(
         max_length=500,
         blank=True

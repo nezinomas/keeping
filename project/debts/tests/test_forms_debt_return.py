@@ -80,7 +80,7 @@ def test_lend_return_valid_data(mck):
         data={
             'date': '1999-12-02',
             'debt': b.pk,
-            'price': '1',
+            'price': '0.01',
             'account': a.pk,
             'remark': 'Rm'
         },
@@ -105,7 +105,7 @@ def test_borrow_return_valid_data(mck):
         data={
             'date': '1999-12-02',
             'debt': b.pk,
-            'price': '1',
+            'price': '0.01',
             'account': a.pk,
             'remark': 'Rm'
         },

@@ -109,7 +109,7 @@ def test_lend_return_save(mck, client_logged):
     actual = models.DebtReturn.objects.items()[0]
     assert actual.date == date(1999, 1, 3)
     assert actual.account.title == 'Account1'
-    assert actual.price == 1
+    assert actual.price == 100
 
 
 def test_lend_return_save_invalid_data(client_logged):
@@ -137,19 +137,20 @@ def test_lend_return_update_200(client_logged):
 
 
 def test_lend_return_load_update_form(client_logged):
-    f = factories.LendReturnFactory()
+    f = factories.LendReturnFactory(price=1)
     url = reverse('debts:return_update', kwargs={'pk': f.pk, 'debt_type': 'lend'})
     response = client_logged.get(url)
-    form = response.context['form'].as_p()
+    form = response.context['form']
 
-    assert '5' in form
-    assert 'Account1' in form
-    assert 'Lend Return Remark' in form
+    assert form.instance.date == date(1999, 1, 2)
+    assert form.instance.price == 0.01
+    assert form.instance.account.title == 'Account1'
+    assert form.instance.remark == 'Lend Return Remark'
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
 def test_lend_return_update(mck, client_logged):
-    debt = factories.LendFactory()
+    debt = factories.LendFactory(price=200)
     e = factories.LendReturnFactory(debt=debt)
     a = AccountFactory(title='AAA')
 
@@ -157,7 +158,7 @@ def test_lend_return_update(mck, client_logged):
 
     data = {
         'date': '1999-1-2',
-        'price': '15',
+        'price': '1',
         'remark': 'Pastaba',
         'account': a.pk,
         'debt': debt.pk
@@ -168,10 +169,10 @@ def test_lend_return_update(mck, client_logged):
     actual = models.DebtReturn.objects.get(pk=e.pk)
     assert actual.debt == debt
     assert actual.date == date(1999, 1, 2)
-    assert actual.price == 15
+    assert actual.price == 100
     assert actual.account.title == 'AAA'
     assert actual.remark == 'Pastaba'
-    assert models.Debt.objects.get(pk=debt.pk).returned == 15
+    assert models.Debt.objects.get(pk=debt.pk).returned == 100
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
