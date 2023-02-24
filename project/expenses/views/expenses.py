@@ -4,9 +4,11 @@ from django.db.models import F
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
+from ...core.lib.convert_price import ConvertToCents
 from ...core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                   ListViewMixin, SearchViewMixin,
-                                  TemplateViewMixin, UpdateViewMixin, rendered_content)
+                                  TemplateViewMixin, UpdateViewMixin,
+                                  rendered_content)
 from .. import forms, models
 from . import expenses_type
 
@@ -70,19 +72,11 @@ class New(CreateViewMixin):
     hx_trigger_form = 'reload'
 
 
-class Update(UpdateViewMixin):
+class Update(ConvertToCents, UpdateViewMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
     success_url = reverse_lazy('expenses:list')
     hx_trigger_django = 'reload'
-
-    def get_object(self):
-        obj = super().get_object()
-
-        if obj:
-            obj.price = obj.price / 100
-
-        return obj
 
 
 class Delete(DeleteViewMixin):

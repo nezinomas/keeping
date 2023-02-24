@@ -1,6 +1,7 @@
 from django.urls import reverse_lazy
 
 from ..accounts import views as accounts_views
+from ..core.lib.convert_price import ConvertToCents
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, TemplateViewMixin,
                                  UpdateViewMixin, rendered_content)
@@ -57,19 +58,11 @@ class New(CreateViewMixin):
     success_url = reverse_lazy('transactions:list')
 
 
-class Update(UpdateViewMixin):
+class Update(ConvertToCents, UpdateViewMixin):
     model = models.Transaction
     form_class = forms.TransactionForm
     hx_trigger_django = 'afterTransaction'
     success_url = reverse_lazy('transactions:list')
-
-    def get_object(self):
-        obj = super().get_object()
-
-        if obj:
-            obj.price = obj.price / 100
-
-        return obj
 
 
 class Delete(DeleteViewMixin):
@@ -94,22 +87,11 @@ class SavingsCloseNew(CreateViewMixin):
     success_url = reverse_lazy('transactions:savings_close_list')
 
 
-class SavingsCloseUpdate(UpdateViewMixin):
+class SavingsCloseUpdate(ConvertToCents, UpdateViewMixin):
     model = models.SavingClose
     form_class = forms.SavingCloseForm
     hx_trigger_django = 'afterClose'
     success_url = reverse_lazy('transactions:savings_close_list')
-
-    def get_object(self):
-        obj = super().get_object()
-
-        if obj.price:
-            obj.price = obj.price / 100
-
-        if obj.fee:
-            obj.fee = obj.fee / 100
-
-        return obj
 
 
 class SavingsCloseDelete(DeleteViewMixin):
@@ -134,22 +116,11 @@ class SavingsChangeNew(CreateViewMixin):
     url = reverse_lazy('transactions:savings_change_new')
 
 
-class SavingsChangeUpdate(UpdateViewMixin):
+class SavingsChangeUpdate(ConvertToCents, UpdateViewMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
     hx_trigger_django = 'afterChange'
     success_url = reverse_lazy('transactions:savings_change_list')
-
-    def get_object(self):
-        obj = super().get_object()
-
-        if obj.price:
-            obj.price = obj.price / 100
-
-        if obj.fee:
-            obj.fee = obj.fee / 100
-
-        return obj
 
 
 class SavingsChangeDelete(DeleteViewMixin):

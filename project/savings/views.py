@@ -1,5 +1,6 @@
 from django.urls import reverse_lazy
 
+from ..core.lib.convert_price import ConvertToCents
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, TemplateViewMixin,
                                  UpdateViewMixin, rendered_content)
@@ -35,22 +36,11 @@ class New(CreateViewMixin):
     success_url = reverse_lazy('savings:list')
 
 
-class Update(UpdateViewMixin):
+class Update(ConvertToCents, UpdateViewMixin):
     model = models.Saving
     form_class = forms.SavingForm
     hx_trigger_django = 'reload'
     success_url = reverse_lazy('savings:list')
-
-    def get_object(self):
-        obj = super().get_object()
-
-        if obj.price:
-            obj.price = obj.price / 100
-
-        if obj.fee:
-            obj.fee = obj.fee / 100
-
-        return obj
 
 
 class Delete(DeleteViewMixin):
