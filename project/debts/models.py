@@ -1,4 +1,4 @@
-from django.core.validators import MinLengthValidator, MinValueValidator
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -122,8 +122,6 @@ class DebtReturn(models.Model):
         obj = qs[0]
 
         _returned = obj.returned or 0
-        _closed = False
-
         if not self.pk:
             _returned += self.price
         else:
@@ -131,9 +129,7 @@ class DebtReturn(models.Model):
             dif = self.price - old.price
             _returned += dif
 
-        if obj.price == _returned:
-            _closed = True
-
+        _closed = obj.price == _returned
         qs.update(returned=_returned, closed=_closed)
 
         super().save(*args, **kwargs)
