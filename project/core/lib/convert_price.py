@@ -1,5 +1,6 @@
 import calendar
 
+
 class ConvertToCents:
     def get_object(self):
         obj = super().get_object()
@@ -22,3 +23,14 @@ class PlansConvertToCents:
             if value := getattr(obj, month.lower()):
                 setattr(obj, month.lower(), value / 100)
         return obj
+
+
+class ConvertToPrice:
+    def save(self, *args, **kwargs):
+        if price := self.cleaned_data.get('price'):
+            self.instance.price = int(price * 100)
+
+        if fee := self.cleaned_data.get('fee'):
+            self.instance.fee = int(fee * 100)
+
+        return super().save(*args, **kwargs)

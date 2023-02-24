@@ -8,12 +8,13 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
+from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
 from . import models
 
 
-class DebtForm(YearBetweenMixin, forms.ModelForm):
+class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
 
     class Meta:
@@ -72,12 +73,7 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         if not self.instance.pk:
             instance.debt_type = utils.get_request_kwargs('debt_type') or 'lend'
 
-        # update price
-        instance.price = int(self.cleaned_data.get('price') * 100)
-
-        instance.save()
-        return instance
-
+        return super().save(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -107,7 +103,7 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         return cleaned_data
 
 
-class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
+class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
 
     class Meta:
@@ -187,9 +183,3 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
                 self.add_error('date', _('The date is earlier than the date of the debt.'))
 
         return cleaned_data
-
-    def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
-        instance.price = int(self.cleaned_data.get('price') * 100)
-        instance.save()
-        return instance

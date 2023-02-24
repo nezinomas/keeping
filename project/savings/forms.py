@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import date, utils
+from ..core.lib.convert_price import ConvertToPrice
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Saving, SavingType
 
@@ -42,7 +43,7 @@ class SavingTypeForm(forms.ModelForm):
         return cleaned_data
 
 
-class SavingForm(YearBetweenMixin, forms.ModelForm):
+class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
     fee = forms.FloatField(min_value=0.01, required=False)
 
@@ -81,14 +82,3 @@ class SavingForm(YearBetweenMixin, forms.ModelForm):
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
-
-    def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
-
-        instance.price = int(self.cleaned_data.get('price') * 100)
-
-        if fee := self.cleaned_data.get('fee'):
-            instance.fee = int(fee * 100)
-
-        instance.save()
-        return instance
