@@ -85,27 +85,24 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         price = cleaned_data.get('price')
 
         # can't update name
-        if not closed:
-            if name != self.instance.name:
-                qs = models.Debt.objects.items().filter(name=name)
-                if qs.exists():
-                    self.add_error('name', _('The name of the lender must be unique.'))
+        if not closed and name != self.instance.name:
+            qs = models.Debt.objects.items().filter(name=name)
+            if qs.exists():
+                self.add_error('name', _('The name of the lender must be unique.'))
 
         # can't close not returned debt
         _msg_cant_close = _("You can't close a debt that hasn't been returned.")
         if not self.instance.pk and closed:
             self.add_error('closed', _msg_cant_close)
 
-        if self.instance.pk and closed:
-            if self.instance.returned != price:
-                self.add_error('closed', _msg_cant_close)
+        if self.instance.pk and closed and self.instance.returned != price:
+            self.add_error('closed', _msg_cant_close)
 
         # can't update to smaller price
-        if self.instance.pk:
-            if price < self.instance.returned:
-                self.add_error('price', _("You cannot update to an amount lower than the amount already returned."))
+        if self.instance.pk and price < self.instance.returned:
+            self.add_error('price', _("You cannot update to an amount lower than the amount already returned."))
 
-        return
+        return cleaned_data
 
 
 class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
@@ -179,9 +176,8 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        date = cleaned_data.get('date')
-        debt = cleaned_data.get('debt')
 
-        if debt:
+        date = cleaned_data.get('date')
+        if debt := cleaned_data.get('debt'):
             if date < debt.date:
                 self.add_error('date', _('The date is earlier than the date of the debt.'))
