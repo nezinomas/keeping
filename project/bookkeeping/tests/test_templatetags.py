@@ -17,21 +17,21 @@ def test_info_table_no_data(_info_table, arr):
 
     actual = _info_table.render(ctx)
 
-    assert actual == '\n\n\n\n'
+    assert actual == '\n\n\n\n\n'
 
 
 def test_info_table_with_data(_info_table):
-    ctx = Context({'arr': {'data': [66]}})
+    ctx = Context({'arr': {'data': [1]}})
 
     actual = _info_table.render(ctx)
 
-    assert '66,0' in actual
+    assert '0,01' in actual
 
 
 def test_info_table_with_data_and_title(_info_table):
-    ctx = Context({'arr': {'data': [66], 'title': ['xxx']}})
+    ctx = Context({'arr': {'data': [1], 'title': ['xxx']}})
 
     actual = _info_table.render(ctx)
 
-    assert '66,0' in actual
+    assert '0,01' in actual
     assert 'xxx' in actual
