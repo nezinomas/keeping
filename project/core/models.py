@@ -31,61 +31,49 @@ class MonthAbstract(models.Model):
 
     january = models.PositiveIntegerField(
         null=True,
-        blank=True,
-        validators=[MinValueValidator(1)],
+        blank=True
     )
     february = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )
     march = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )
     april = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )
     may = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )
     june = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )
     july = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )
     august = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )
     september = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )
     october = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )
     november = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )
     december = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(1)],
     )

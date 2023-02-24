@@ -1,5 +1,3 @@
-import json
-
 import pytest
 import time_machine
 from django.urls import resolve, reverse
@@ -58,20 +56,20 @@ def test_stats_200(client_logged):
 # ---------------------------------------------------------------------------------------
 #                                                                IncomePlan create/update
 # ---------------------------------------------------------------------------------------
-def test_incomes_new_func():
+def test_income_new_func():
     view = resolve('/plans/incomes/new/')
 
     assert views.IncomesNew == view.func.view_class
 
 
-def test_incomes_update_func():
+def test_income_update_func():
     view = resolve('/plans/incomes/update/1/')
 
     assert views.IncomesUpdate == view.func.view_class
 
 
 @time_machine.travel('1999-1-1')
-def test_incomes_load_form(client_logged):
+def test_income_load_form(client_logged):
     url = reverse('plans:income_new')
     response = client_logged.get(url)
     actual = response.context['form'].as_p()
@@ -80,18 +78,18 @@ def test_incomes_load_form(client_logged):
     assert '<input type="text" name="year" value="1999"' in actual
 
 
-def test_incomes_new(client_logged):
+def test_income_new(client_logged):
     i = IncomeTypeFactory()
-    data = {'year': '1999', 'income_type': i.pk, 'january': 999}
+    data = {'year': '1999', 'income_type': i.pk, 'january': 0.01}
 
     url = reverse('plans:income_new')
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    client_logged.post(url, data, follow=True)
+    actual = IncomePlan.objects.first()
 
-    assert '999' in actual
+    assert actual.january == 1
 
 
-def test_incomes_invalid_data(client_logged):
+def test_income_invalid_data(client_logged):
     data = {'year': 'x', 'income_type': 0, 'january': 999}
 
     url = reverse('plans:income_new')
@@ -101,18 +99,41 @@ def test_incomes_invalid_data(client_logged):
     assert not form.is_valid()
 
 
-def test_incomes_update(client_logged):
-    p = IncomePlanFactory(year=1999)
+def test_income_load_update_form_field_values(client_logged):
+    obj = IncomePlanFactory()
 
-    data = {'year': '1999', 'income_type': p.income_type.pk, 'january': 999}
-    url = reverse('plans:income_update', kwargs={'pk': p.pk})
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    url = reverse('plans:income_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
 
-    assert '999' in actual
+    assert form.instance.year == 1999
+    assert form.instance.january == 0.01
+    assert form.instance.february == 0.01
+    assert form.instance.march == 0.01
+    assert form.instance.april == 0.01
+    assert form.instance.may == 0.01
+    assert form.instance.june == 0.01
+    assert form.instance.july == 0.01
+    assert form.instance.august == 0.01
+    assert form.instance.september == 0.01
+    assert form.instance.october == 0.01
+    assert form.instance.november == 0.01
+    assert form.instance.december == 0.01
+    assert form.instance.income_type.title == 'Income Type'
 
 
-def test_incomes_update_unique_together_user_change_year(client_logged):
+def test_income_update(client_logged):
+    obj = IncomePlanFactory(year=1999)
+
+    data = {'year': '1999', 'income_type': obj.income_type.pk, 'january': 0.01}
+    url = reverse('plans:income_update', kwargs={'pk': obj.pk})
+    client_logged.post(url, data)
+    actual = IncomePlan.objects.get(pk=obj.pk)
+
+    assert actual.january == 1
+
+
+def test_income_update_unique_together_user_change_year(client_logged):
     IncomePlanFactory(year=2000)
     p = IncomePlanFactory(year=1999)
 
@@ -124,7 +145,7 @@ def test_incomes_update_unique_together_user_change_year(client_logged):
     assert not form.is_valid()
 
 
-def test_incomes_update_not_load_other_journal(client_logged, second_user):
+def test_income_update_not_load_other_journal(client_logged, second_user):
     j = second_user.journal
     t = IncomeTypeFactory(title='yyy', journal=j)
     obj = IncomePlanFactory(income_type=t, journal=j, january=666)
@@ -133,6 +154,17 @@ def test_incomes_update_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_income_list_price_converted_in_template(client_logged):
+    IncomePlanFactory()
+
+    url = reverse('plans:income_list')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert '0,01' in actual
+    assert actual.count('0,01') == 12
 
 
 # ---------------------------------------------------------------------------------------
@@ -199,20 +231,20 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
 # ---------------------------------------------------------------------------------------
 #                                                              ExpensesPlan create/update
 # ---------------------------------------------------------------------------------------
-def test_expenses_new_func():
+def test_expense_new_func():
     view = resolve('/plans/expenses/new/')
 
     assert views.ExpensesNew == view.func.view_class
 
 
-def test_expenses_update_func():
+def test_expense_update_func():
     view = resolve('/plans/expenses/update/1/')
 
     assert views.ExpensesUpdate == view.func.view_class
 
 
 @time_machine.travel('1999-1-1')
-def test_expenses_load_form(client_logged):
+def test_expense_load_form(client_logged):
     url = reverse('plans:expense_new')
     response = client_logged.get(url)
     actual = response.content.decode('utf-8')
@@ -220,18 +252,19 @@ def test_expenses_load_form(client_logged):
     assert '<input type="text" name="year" value="1999"' in actual
 
 
-def test_expenses_new(client_logged):
+def test_expense_new(client_logged):
     i = ExpenseTypeFactory()
-    data = {'year': '1999', 'expense_type': i.pk, 'january': 999}
+    data = {'year': '1999', 'expense_type': i.pk, 'january': 0.01}
 
     url = reverse('plans:expense_new')
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    client_logged.post(url, data, follow=True)
+    client_logged.post(url, data, follow=True)
+    actual = ExpensePlan.objects.first()
 
-    assert '999' in actual
+    assert actual.january == 1
 
 
-def test_expenses_invalid_data(client_logged):
+def test_expense_invalid_data(client_logged):
     data = {'year': 'x', 'expense_type': 0, 'january': 999}
 
     url = reverse('plans:expense_new')
@@ -241,19 +274,42 @@ def test_expenses_invalid_data(client_logged):
     assert not form.is_valid()
 
 
-def test_expenses_update(client_logged):
-    p = ExpensePlanFactory(year=1999)
+def test_expense_load_update_form_field_values(client_logged):
+    obj = ExpensePlanFactory()
 
-    data = {'year': '1999', 'expense_type': p.expense_type.pk, 'january': 999}
-    url = reverse('plans:expense_update', kwargs={'pk': p.pk})
+    url = reverse('plans:expense_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
 
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    assert form.instance.year == 1999
+    assert form.instance.january == 0.01
+    assert form.instance.february == 0.01
+    assert form.instance.march == 0.01
+    assert form.instance.april == 0.01
+    assert form.instance.may == 0.01
+    assert form.instance.june == 0.01
+    assert form.instance.july == 0.01
+    assert form.instance.august == 0.01
+    assert form.instance.september == 0.01
+    assert form.instance.october == 0.01
+    assert form.instance.november == 0.01
+    assert form.instance.december == 0.01
+    assert form.instance.expense_type.title == 'Expense Type'
 
-    assert '999' in actual
+
+def test_expense_update(client_logged):
+    obj = ExpensePlanFactory(year=1999)
+
+    data = {'year': '1999', 'expense_type': obj.expense_type.pk, 'january': 0.01}
+    url = reverse('plans:expense_update', kwargs={'pk': obj.pk})
+
+    client_logged.post(url, data, follow=True)
+    actual = ExpensePlan.objects.get(pk=obj.pk)
+
+    assert actual.january == 1
 
 
-def test_expenses_update_unique_together_user_change_year(client_logged):
+def test_expense_update_unique_together_user_change_year(client_logged):
     ExpensePlanFactory(year=2000)
     p = ExpensePlanFactory(year=1999)
 
@@ -266,7 +322,7 @@ def test_expenses_update_unique_together_user_change_year(client_logged):
     assert not form.is_valid()
 
 
-def test_expenses_update_not_load_other_journal(client_logged, second_user):
+def test_expense_update_not_load_other_journal(client_logged, second_user):
     j = second_user.journal
     t = ExpenseTypeFactory(title='yyy', journal=j)
     obj = ExpensePlanFactory(expense_type=t, journal=j, january=666)
@@ -277,16 +333,27 @@ def test_expenses_update_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
+def test_expense_list_price_converted_in_template(client_logged):
+    ExpensePlanFactory()
+
+    url = reverse('plans:expense_list')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert '0,01' in actual
+    assert actual.count('0,01') == 12
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                     ExpensesPlan delete
 # ---------------------------------------------------------------------------------------
-def test_expenses_delete_func():
+def test_expense_delete_func():
     view = resolve('/plans/expenses/delete/1/')
 
     assert views.ExpensesDelete == view.func.view_class
 
 
-def test_expenses_delete_200(client_logged):
+def test_expense_delete_200(client_logged):
     p = ExpensePlanFactory()
 
     url = reverse('plans:expense_delete', kwargs={'pk': p.pk})
@@ -296,7 +363,7 @@ def test_expenses_delete_200(client_logged):
     assert response.status_code == 200
 
 
-def test_expenses_delete_load_form(client_logged):
+def test_expense_delete_load_form(client_logged):
     p = ExpensePlanFactory(year=1999)
 
     url = reverse('plans:expense_delete', kwargs={'pk': p.pk})
@@ -307,7 +374,7 @@ def test_expenses_delete_load_form(client_logged):
 
 
 
-def test_expenses_delete(client_logged):
+def test_expense_delete(client_logged):
     p = ExpensePlanFactory(year=1999)
 
     assert models.ExpensePlan.objects.all().count() == 1
@@ -317,7 +384,7 @@ def test_expenses_delete(client_logged):
     assert models.ExpensePlan.objects.all().count() == 0
 
 
-def test_expenses_delete_other_journal_get_form(client_logged, second_user):
+def test_expense_delete_other_journal_get_form(client_logged, second_user):
     j = second_user.journal
     t = ExpenseTypeFactory(title='yyy', journal=j)
     obj = ExpensePlanFactory(expense_type=t, journal=j, january=666)
@@ -328,7 +395,7 @@ def test_expenses_delete_other_journal_get_form(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_expenses_delete_other_journal_post_form(client_logged, second_user):
+def test_expense_delete_other_journal_post_form(client_logged, second_user):
     j = second_user.journal
     t = ExpenseTypeFactory(title='yyy', journal=j)
     obj = ExpensePlanFactory(expense_type=t, journal=j, january=666)
@@ -342,20 +409,20 @@ def test_expenses_delete_other_journal_post_form(client_logged, second_user):
 # ---------------------------------------------------------------------------------------
 #                                                                SavingPlan create/update
 # ---------------------------------------------------------------------------------------
-def test_savings_new_func():
+def test_saving_new_func():
     view = resolve('/plans/savings/new/')
 
     assert views.SavingsNew == view.func.view_class
 
 
-def test_savings_update_func():
+def test_saving_update_func():
     view = resolve('/plans/savings/update/1/')
 
     assert views.SavingsUpdate == view.func.view_class
 
 
 @time_machine.travel('1999-1-1')
-def test_savings(client_logged):
+def test_saving_year_input(client_logged):
     url = reverse('plans:saving_new')
     response = client_logged.get(url)
     actual = response.content.decode('utf-8')
@@ -363,18 +430,18 @@ def test_savings(client_logged):
     assert '<input type="text" name="year" value="1999"' in actual
 
 
-def test_savings_new(client_logged):
+def test_saving_new(client_logged):
     i = SavingTypeFactory()
-    data = {'year': '1999', 'saving_type': i.pk, 'january': 999}
+    data = {'year': '1999', 'saving_type': i.pk, 'january': 0.01}
 
     url = reverse('plans:saving_new')
     response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    actual = SavingPlan.objects.first()
 
-    assert '999' in actual
+    assert actual.january == 1
 
 
-def test_savings_invalid_data(client_logged):
+def test_saving_invalid_data(client_logged):
     data = {'year': 'x', 'saving_type': 0, 'january': 999}
 
     url = reverse('plans:saving_new')
@@ -384,18 +451,41 @@ def test_savings_invalid_data(client_logged):
     assert not form.is_valid()
 
 
-def test_savings_update(client_logged):
-    p = SavingPlanFactory(year=1999)
+def test_saving_load_update_form_field_values(client_logged):
+    obj = SavingPlanFactory()
 
-    data = {'year': '1999', 'saving_type': p.saving_type.pk, 'january': 999}
-    url = reverse('plans:saving_update', kwargs={'pk': p.pk})
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    url = reverse('plans:saving_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
 
-    assert '999' in actual
+    assert form.instance.year == 1999
+    assert form.instance.january == 0.01
+    assert form.instance.february == 0.01
+    assert form.instance.march == 0.01
+    assert form.instance.april == 0.01
+    assert form.instance.may == 0.01
+    assert form.instance.june == 0.01
+    assert form.instance.july == 0.01
+    assert form.instance.august == 0.01
+    assert form.instance.september == 0.01
+    assert form.instance.october == 0.01
+    assert form.instance.november == 0.01
+    assert form.instance.december == 0.01
+    assert form.instance.saving_type.title == 'Savings'
 
 
-def test_savings_update_unique_together_user_change_year(client_logged):
+def test_saving_update(client_logged):
+    obj = SavingPlanFactory(year=1999)
+
+    data = {'year': '1999', 'saving_type': obj.saving_type.pk, 'january': 0.01}
+    url = reverse('plans:saving_update', kwargs={'pk': obj.pk})
+    client_logged.post(url, data, follow=True)
+    actual = SavingPlan.objects.get(pk=obj.pk)
+
+    assert actual.january == 1
+
+
+def test_saving_update_unique_together_user_change_year(client_logged):
     SavingPlanFactory(year=2000)
     p = SavingPlanFactory(year=1999)
 
@@ -408,7 +498,7 @@ def test_savings_update_unique_together_user_change_year(client_logged):
     assert not form.is_valid()
 
 
-def test_savings_update_not_load_other_journal(client_logged, second_user):
+def test_saving_update_not_load_other_journal(client_logged, second_user):
     j = second_user.journal
     t = SavingTypeFactory(title='yyy', journal=j)
     obj = SavingPlanFactory(saving_type=t, journal=j, january=666)
@@ -419,16 +509,27 @@ def test_savings_update_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
+def test_saving_list_price_converted_in_template(client_logged):
+    SavingPlanFactory()
+
+    url = reverse('plans:saving_list')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert '0,01' in actual
+    assert actual.count('0,01') == 12
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                       SavingPlan delete
 # ---------------------------------------------------------------------------------------
-def test_savings_delete_func():
+def test_saving_delete_func():
     view = resolve('/plans/savings/delete/1/')
 
     assert views.SavingsDelete == view.func.view_class
 
 
-def test_savings_delete_200(client_logged):
+def test_saving_delete_200(client_logged):
     p = SavingPlanFactory()
 
     url = reverse('plans:saving_delete', kwargs={'pk': p.pk})
@@ -437,7 +538,7 @@ def test_savings_delete_200(client_logged):
     assert response.status_code == 200
 
 
-def test_savings_delete_load_form(client_logged):
+def test_saving_delete_load_form(client_logged):
     p = SavingPlanFactory(year=1999)
 
     url = reverse('plans:saving_delete', kwargs={'pk': p.pk})
@@ -447,7 +548,7 @@ def test_savings_delete_load_form(client_logged):
     assert f'Ar tikrai norite ištrinti: <strong>{p}</strong>?' in actual
 
 
-def test_savings_delete(client_logged):
+def test_saving_delete(client_logged):
     p = SavingPlanFactory(year=1999)
 
     assert models.SavingPlan.objects.all().count() == 1
@@ -458,7 +559,7 @@ def test_savings_delete(client_logged):
     assert models.SavingPlan.objects.all().count() == 0
 
 
-def test_savings_delete_other_journal_get_form(client_logged, second_user):
+def test_saving_delete_other_journal_get_form(client_logged, second_user):
     j = second_user.journal
     t = SavingTypeFactory(title='yyy', journal=j)
     obj = SavingPlanFactory(saving_type=t, journal=j, january=666)
@@ -469,7 +570,7 @@ def test_savings_delete_other_journal_get_form(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_savings_delete_other_journal_post_form(client_logged, second_user):
+def test_saving_delete_other_journal_post_form(client_logged, second_user):
     j = second_user.journal
     t = SavingTypeFactory(title='yyy', journal=j)
     obj = SavingPlanFactory(saving_type=t, journal=j, january=666)
@@ -505,13 +606,13 @@ def test_day(client_logged):
 
 
 def test_day_new(client_logged):
-    data = {'year': '1999', 'january': 999}
+    data = {'year': '1999', 'january': 0.01}
 
     url = reverse('plans:day_new')
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    client_logged.post(url, data, follow=True)
+    actual = DayPlan.objects.first()
 
-    assert '999' in actual
+    assert actual.january == 1
 
 
 def test_day_invalid_data(client_logged):
@@ -524,16 +625,38 @@ def test_day_invalid_data(client_logged):
     assert not form.is_valid()
 
 
+def test_day_load_update_form_field_values(client_logged):
+    obj = DayPlanFactory()
+
+    url = reverse('plans:day_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
+
+    assert form.instance.year == 1999
+    assert form.instance.january == 0.01
+    assert form.instance.february == 0.01
+    assert form.instance.march == 0.01
+    assert form.instance.april == 0.01
+    assert form.instance.may == 0.01
+    assert form.instance.june == 0.01
+    assert form.instance.july == 0.01
+    assert form.instance.august == 0.01
+    assert form.instance.september == 0.01
+    assert form.instance.october == 0.01
+    assert form.instance.november == 0.01
+    assert form.instance.december == 0.01
+
+
 def test_day_update(client_logged):
-    p = DayPlanFactory(year=1999)
+    obj = DayPlanFactory(year=1999)
 
-    data = {'year': '1999', 'january': 999}
-    url = reverse('plans:day_update', kwargs={'pk': p.pk})
+    data = {'year': '1999', 'january': 0.01}
+    url = reverse('plans:day_update', kwargs={'pk': obj.pk})
 
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    client_logged.post(url, data, follow=True)
+    actual = DayPlan.objects.get(pk=obj.pk)
 
-    assert '999' in actual
+    assert actual.january == 1
 
 
 def test_day_update_unique_together_user_change_year(client_logged):
@@ -556,6 +679,17 @@ def test_day_update_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_day_list_price_converted_in_template(client_logged):
+    DayPlanFactory()
+
+    url = reverse('plans:day_list')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert '0,01' in actual
+    assert actual.count('0,01') == 12
 
 
 # ---------------------------------------------------------------------------------------
@@ -642,13 +776,13 @@ def test_necessary(client_logged):
 
 
 def test_necessary_new(client_logged):
-    data = {'year': '1999', 'title': 'X', 'january': 999}
+    data = {'year': '1999', 'title': 'X', 'january': 0.01}
 
     url = reverse('plans:necessary_new')
     response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    actual = NecessaryPlan.objects.first()
 
-    assert '999' in actual
+    assert actual.january == 1
 
 
 def test_necessary_invalid_data(client_logged):
@@ -661,15 +795,37 @@ def test_necessary_invalid_data(client_logged):
     assert not form.is_valid()
 
 
+def test_necessary_load_update_form_field_values(client_logged):
+    obj = NecessaryPlanFactory()
+
+    url = reverse('plans:necessary_update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
+
+    assert form.instance.year == 1999
+    assert form.instance.january == 0.01
+    assert form.instance.february == 0.01
+    assert form.instance.march == 0.01
+    assert form.instance.april == 0.01
+    assert form.instance.may == 0.01
+    assert form.instance.june == 0.01
+    assert form.instance.july == 0.01
+    assert form.instance.august == 0.01
+    assert form.instance.september == 0.01
+    assert form.instance.october == 0.01
+    assert form.instance.november == 0.01
+    assert form.instance.december == 0.01
+
+
 def test_necessary_update(client_logged):
-    p = NecessaryPlanFactory(year=1999)
+    obj = NecessaryPlanFactory(year=1999)
 
-    data = {'year': '1999', 'title': 'X', 'january': 999}
-    url = reverse('plans:necessary_update', kwargs={'pk': p.pk})
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    data = {'year': '1999', 'title': 'X', 'january': 0.01}
+    url = reverse('plans:necessary_update', kwargs={'pk': obj.pk})
+    client_logged.post(url, data, follow=True)
+    actual = NecessaryPlan.objects.get(pk=obj.pk)
 
-    assert '999' in actual
+    assert actual.january == 1
 
 
 def test_necessary_update_unique_together_user_change_year(client_logged):
@@ -692,6 +848,17 @@ def test_necessary_update_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_necessary_list_price_converted_in_template(client_logged):
+    NecessaryPlanFactory()
+
+    url = reverse('plans:necessary_list')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert '0,01' in actual
+    assert actual.count('0,01') == 12
 
 
 # ---------------------------------------------------------------------------------------
