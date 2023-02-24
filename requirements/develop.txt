@@ -12,13 +12,13 @@ pytest-cov==4.0.0
 pytest-diff==0.1.14
 pytest-django==4.5.2
 pytest-factoryboy==2.5.1
-pytest-forked==1.4.0
-pytest-lazy-fixture==0.6.3
+pytest-forked==1.6.0
 pytest-icdiff==0.6
+pytest-lazy-fixture==0.6.3
 pytest-mock==3.10.0
 pytest-raises==0.11
 pytest-randomly==3.12.0
 pytest-sugar==0.9.6
-pytest-xdist==3.1.0
-selenium==4.7.2
+pytest-xdist==3.2.0
+selenium==4.8.2
 time-machine==2.9.0

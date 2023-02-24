@@ -3,6 +3,13 @@ function chartExpenses(idData, idContainer) {
         document.getElementById(idData).textContent
     );
 
+    // convert data
+    for(i = 0; i < chartData.data.length; i++) {
+        for(y = 0; y < chartData.data[i]['data'].length; y++) {
+            chartData.data[i]['data'][y] /= 100
+        }
+    }
+
     Highcharts.setOptions({ lang: { decimalPoint: ',', thousandsSep: '.' } });
 
     Highcharts.chart(idContainer, {

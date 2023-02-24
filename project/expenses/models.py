@@ -1,6 +1,4 @@
-from decimal import Decimal
-
-from django.core.validators import MinLengthValidator, MinValueValidator
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import F
 from django.urls import reverse_lazy
@@ -62,11 +60,7 @@ class ExpenseName(TitleAbstract):
 
 class Expense(models.Model):
     date = models.DateField()
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
-    )
+    price = models.PositiveIntegerField()
     quantity = models.IntegerField(
         default=1,
     )

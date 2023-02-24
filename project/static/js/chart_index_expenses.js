@@ -1,7 +1,11 @@
 $(function () {
-    const chartData = JSON.parse(
+    var chartData = JSON.parse(
         document.getElementById('chart-expenses-data').textContent
     );
+    // convert data
+    for (var key in chartData) {
+        chartData[key]['y'] /= 100;
+    }
 
     Highcharts.chart('chart-expenses-container', {
         chart: {

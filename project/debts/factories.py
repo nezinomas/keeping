@@ -1,5 +1,4 @@
 from datetime import date as dt
-from decimal import Decimal
 
 import factory
 
@@ -15,7 +14,7 @@ class BorrowFactory(factory.django.DjangoModelFactory):
     date = dt(1999, 1, 1)
     debt_type = 'borrow'
     name = factory.Faker('first_name')
-    price = Decimal('100')
+    price = 100
     closed = False
     remark = 'Borrow Remark'
     account = factory.SubFactory(AccountFactory)
@@ -27,7 +26,7 @@ class BorrowReturnFactory(factory.django.DjangoModelFactory):
         model = models.DebtReturn
 
     date = dt(1999, 1, 2)
-    price = Decimal('5')
+    price = 5
     remark = 'Borrow Return Remark'
     account = factory.SubFactory(AccountFactory)
     debt = factory.SubFactory(BorrowFactory)
@@ -40,7 +39,7 @@ class LendFactory(factory.django.DjangoModelFactory):
     date = dt(1999, 1, 1)
     debt_type = 'lend'
     name = factory.Faker('first_name')
-    price = Decimal('100')
+    price = 100
     closed = False
     remark = 'Lend Remark'
     account = factory.SubFactory(AccountFactory)
@@ -52,7 +51,7 @@ class LendReturnFactory(factory.django.DjangoModelFactory):
         model = models.DebtReturn
 
     date = dt(1999, 1, 2)
-    price = Decimal('5')
+    price = 6
     remark = 'Lend Return Remark'
     account = factory.SubFactory(AccountFactory)
     debt = factory.SubFactory(LendFactory)

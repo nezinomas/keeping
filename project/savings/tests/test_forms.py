@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 import time_machine
@@ -25,6 +24,7 @@ def test_saving_type_init_fields():
     assert '<input type="text" name="title"' in form
     assert '<input type="text" name="closed"' in form
     assert '<select name="user"' not in form
+
 
 @pytest.mark.parametrize(
     'closed',
@@ -184,8 +184,8 @@ def test_saving_valid_data():
 
     form = SavingForm(data={
         'date': '1999-01-01',
-        'price': '1.0',
-        'fee': '0.25',
+        'price': 0.01,
+        'fee': 0.01,
         'remark': 'remark',
         'account': a.pk,
         'saving_type': t.pk,
@@ -196,8 +196,33 @@ def test_saving_valid_data():
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.price == Decimal(1.0)
-    assert data.fee == Decimal(0.25)
+    assert data.price == 1
+    assert data.fee == 1
+    assert data.remark == 'remark'
+    assert data.account.title == a.title
+    assert data.saving_type.title == t.title
+
+
+@time_machine.travel('1999-1-1')
+def test_saving_valid_data_with_no_fee():
+    a = AccountFactory()
+    t = SavingTypeFactory()
+
+    form = SavingForm(data={
+        'date': '1999-01-01',
+        'price': 0.01,
+        'remark': 'remark',
+        'account': a.pk,
+        'saving_type': t.pk,
+    })
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.date == date(1999, 1, 1)
+    assert data.price == 1
+    assert not data.fee
     assert data.remark == 'remark'
     assert data.account.title == a.title
     assert data.saving_type.title == t.title
@@ -214,8 +239,8 @@ def test_saving_invalid_date(year):
 
     form = SavingForm(data={
         'date': f'{year}-01-01',
-        'price': '1.0',
-        'fee': '0.25',
+        'price': '10',
+        'fee': '2',
         'remark': 'remark',
         'account': a.pk,
         'saving_type': t.pk,

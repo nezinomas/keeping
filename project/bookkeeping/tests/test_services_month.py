@@ -1,4 +1,3 @@
-from decimal import Decimal
 from itertools import zip_longest
 
 import pytest
@@ -128,48 +127,48 @@ def test_month_table_context_total_savings():
 def test_info_context():
     obj = MonthService(
         data=MagicMock(
-            incomes=[{'date': 'x', 'sum': Decimal('15')}]
+            incomes=[{'date': 'x', 'sum': 15}]
         ),
         plans=MagicMock(
-            incomes=10,
-            savings=1.2,
+            incomes=100,
+            savings=12,
             day_input=3,
-            remains=-85.3
+            remains=-85
         ),
         savings=MagicMock(
-            total=0.2
+            total=2
         ),
         spending=MagicMock(
-            total=0.5,
-            avg_per_day=0.02
+            total=5,
+            avg_per_day=2
         )
     )
     actual = obj.info_context()
 
     assert actual[0]['title'] == 'Pajamos'
-    assert actual[0]['plan'] == 10.0
-    assert actual[0]['fact'] == 15.0
-    assert actual[0]['delta'] == 5.0
+    assert actual[0]['plan'] == 100
+    assert actual[0]['fact'] == 15
+    assert actual[0]['delta'] == -85
 
     assert actual[1]['title'] == 'Išlaidos'
-    assert actual[1]['plan'] == 8.8
-    assert actual[1]['fact'] == 0.5
-    assert actual[1]['delta'] == 8.3
+    assert actual[1]['plan'] == 88
+    assert actual[1]['fact'] == 5
+    assert actual[1]['delta'] == 83
 
     assert actual[2]['title'] == 'Taupymas'
-    assert actual[2]['plan'] == 1.2
-    assert actual[2]['fact'] == 0.2
-    assert actual[2]['delta'] == 1.0
+    assert actual[2]['plan'] == 12
+    assert actual[2]['fact'] == 2
+    assert actual[2]['delta'] == 10
 
     assert actual[3]['title'] == 'Pinigai dienai'
-    assert actual[3]['plan'] == 3.0
-    assert actual[3]['fact'] == 0.02
-    assert actual[3]['delta'] == 2.98
+    assert actual[3]['plan'] == 3
+    assert actual[3]['fact'] == 2
+    assert actual[3]['delta'] == 1
 
     assert actual[4]['title'] == 'Balansas'
-    assert actual[4]['plan'] == -85.3
-    assert actual[4]['fact'] == 14.3
-    assert actual[4]['delta'] == 99.6
+    assert actual[4]['plan'] == -85
+    assert actual[4]['fact'] == 8
+    assert actual[4]['delta'] == 93
 
 
 def test_chart_expenses_context():
@@ -199,13 +198,13 @@ def test_chart_expenses():
         savings=MagicMock(),
         spending=MagicMock()
     )
-    total_row = {'T1': 0.25, 'T2': 0.5}
+    total_row = {'T1': 25, 'T2': 50}
 
     actual = obj._chart_expenses(total_row, ['#1', '#2'])
 
     expect = [
-        {'name': 'T2', 'y': 0.5, 'color': '#1'},
-        {'name': 'T1', 'y': 0.25, 'color': '#2'},
+        {'name': 'T2', 'y': 50, 'color': '#1'},
+        {'name': 'T1', 'y': 25, 'color': '#2'},
     ]
 
     assert actual == expect
@@ -218,14 +217,14 @@ def test_chart_expenses_colors_shorter_then_data():
         savings=MagicMock(),
         spending=MagicMock()
     )
-    total_row = {'T1': 0.25, 'T2': 0.5, 'T3': 0.1}
+    total_row = {'T1': 2, 'T2': 5, 'T3': 1}
 
     actual = obj._chart_expenses(total_row, ['#1', '#2'])
 
     expect = [
-        {'name': 'T2', 'y': 0.5, 'color': '#1'},
-        {'name': 'T1', 'y': 0.25, 'color': '#2'},
-        {'name': 'T3', 'y': 0.1, 'color': '#1'},
+        {'name': 'T2', 'y': 5, 'color': '#1'},
+        {'name': 'T1', 'y': 2, 'color': '#2'},
+        {'name': 'T3', 'y': 1, 'color': '#1'},
     ]
 
     assert actual == expect
@@ -268,8 +267,8 @@ def test_chart_targets_categories():
         spending=MagicMock()
     )
 
-    total_row = {'T1': 0.25, 'T2': 0.5}
-    targets = {'T1': 0.3, 'T2': 0.4}
+    total_row = {'T1': 2, 'T2': 5}
+    targets = {'T1': 3, 'T2': 4}
 
     actual, _, _ = obj._chart_targets(total_row, targets)
 
@@ -286,12 +285,12 @@ def test_chart_targets_data_target():
         spending=MagicMock()
     )
 
-    total_row = {'T1': 0.25, 'T2': 0.5}
-    targets = {'T1': 0.3, 'T2': 0.4}
+    total_row = {'T1': 2, 'T2': 5}
+    targets = {'T1': 3, 'T2': 4}
 
     _, actual, _ = obj._chart_targets(total_row, targets)
 
-    expect = [0.4, 0.3]
+    expect = [4, 3]
 
     assert actual == expect
 
@@ -304,12 +303,12 @@ def test_chart_targets_data_target_empty():
         spending=MagicMock()
     )
 
-    total_row = {'T1': 0.25, 'T2': 0.5}
+    total_row = {'T1': 2, 'T2': 5}
     targets = {}
 
     _, actual, _ = obj._chart_targets(total_row, targets)
 
-    expect = [0.0, 0.0]
+    expect = [0, 0]
 
     assert actual == expect
 
@@ -321,14 +320,14 @@ def test_chart_targets_data_fact():
         savings=MagicMock(),
         spending=MagicMock()
     )
-    total_row = {'T1': 0.25, 'T2': 0.5}
-    targets = {'T1': 0.3, 'T2': 0.4}
+    total_row = {'T1': 2, 'T2': 5}
+    targets = {'T1': 3, 'T2': 4}
 
     _, _, actual = obj._chart_targets(total_row, targets)
 
     expect = [
-        {'y': 0.5, 'target': 0.4},
-        {'y': 0.25, 'target': 0.3},
+        {'y': 5, 'target': 4},
+        {'y': 2, 'target': 3},
     ]
 
     assert actual == expect
@@ -342,14 +341,14 @@ def test_chart_targets_data_fact_no_target():
         spending=MagicMock()
     )
 
-    total_row = {'T1': 0.25, 'T2': 0.5}
+    total_row = {'T1': 2, 'T2': 5}
     targets = {}
 
     _, _, actual = obj._chart_targets(total_row, targets)
 
     expect = [
-        {'y': 0.5, 'target': 0.0},
-        {'y': 0.25, 'target': 0.0},
+        {'y': 5, 'target': 0},
+        {'y': 2, 'target': 0},
     ]
 
     assert actual == expect
@@ -360,7 +359,7 @@ def test_chart_targets_data_fact_no_target():
     [
         ('x', None, 'x'),
         (['x'], None, ['x']),
-        ({'x': 1}, None, {'x': 1, 'Taupymas': 0.0}),
+        ({'x': 1}, None, {'x': 1, 'Taupymas': 0}),
         ({'x': 1}, 2, {'x': 1, 'Taupymas': 2}),
     ]
 )

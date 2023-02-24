@@ -1,7 +1,12 @@
 $(function () {
-    const chartData = JSON.parse(
+    var chartData = JSON.parse(
         document.getElementById('chart-balance-data').textContent
     );
+    // convert data
+    for(i = 0; i < 12; i++) {
+        chartData.incomes[i] /= 100
+        chartData.expenses[i] /= 100
+    }
 
     Highcharts.setOptions({
         lang: {

@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 from io import BytesIO
 
 import pytest
@@ -93,7 +92,7 @@ def test_exepense_form_valid_data():
     form = ExpenseForm(
         data={
             'date': '1999-01-01',
-            'price': 1.12,
+            'price': 0.01,
             'quantity': 1,
             'expense_type': t.pk,
             'expense_name': n.pk,
@@ -107,7 +106,7 @@ def test_exepense_form_valid_data():
 
     e = form.save()
     assert e.date == date(1999, 1, 1)
-    assert e.price == round(Decimal(1.12), 2)
+    assert e.price == 1
     assert e.expense_type == t
     assert e.expense_name == n
     assert e.account == a
@@ -123,7 +122,7 @@ def test_exepense_insert_only_three_years_to_past():
     form = ExpenseForm(
         data={
             'date': '1995-01-01',
-            'price': 1.12,
+            'price': 112,
             'quantity': 1,
             'expense_type': t.pk,
             'expense_name': n.pk,
@@ -139,7 +138,7 @@ def test_exepense_insert_only_three_years_to_past():
 
 
 @time_machine.travel('1999-1-1')
-def test_exepense_insert_only_one_year_to_futur():
+def test_exepense_insert_only_one_year_to_future():
     a = AccountFactory()
     t = ExpenseTypeFactory()
     n = ExpenseNameFactory(parent=t)
@@ -147,7 +146,7 @@ def test_exepense_insert_only_one_year_to_futur():
     form = ExpenseForm(
         data={
             'date': '2001-01-01',
-            'price': 1.12,
+            'price': 112,
             'quantity': 1,
             'expense_type': t.pk,
             'expense_name': n.pk,
@@ -200,7 +199,7 @@ def test_expenses_form_filefield(file, ext, valid):
     form = ExpenseForm(
         data={
             'date': '1999-01-01',
-            'price': 1.12,
+            'price': 112,
             'quantity': 1,
             'expense_type': t.pk,
             'expense_name': n.pk,
@@ -229,7 +228,7 @@ def test_exepense_form_attachment_too_big():
     form = ExpenseForm(
         data={
             'date': '1999-01-01',
-            'price': 1.12,
+            'price': 112,
             'quantity': 1,
             'expense_type': t.pk,
             'expense_name': n.pk,
@@ -253,7 +252,7 @@ def test_exepense_form_necessary_type_and_exception():
     form = ExpenseForm(
         data={
             'date': '1999-01-01',
-            'price': 1.12,
+            'price': 112,
             'quantity': 1,
             'expense_type': t.pk,
             'expense_name': n.pk,

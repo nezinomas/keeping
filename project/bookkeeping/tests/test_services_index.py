@@ -38,14 +38,14 @@ def test_balance_short_context_data():
     actual = obj.balance_short_context()
 
     assert actual['title'] == ['Metų pradžioje', 'Metų pabaigoje', 'Metų balansas']
-    assert actual['data'] == [5.0, 70.0, 65.0]
+    assert actual['data'] == [5, 70, 65]
 
 
 def test_balance_short_highlighted():
     obj = IndexService(balance=MagicMock(amount_start=5, amount_end=-20))
     actual = obj.balance_short_context()
 
-    assert actual['data'] == [5.0, -20.0, -25.0]
+    assert actual['data'] == [5, -20, -25]
     assert actual['highlight'] == [False, False, True]
 
 
@@ -77,7 +77,7 @@ def test_borrow_context():
 
     assert 'Pasiskolinta' in actual['title']
     assert 'Grąžinau' in actual['title']
-    assert actual['data'] == [99.0, 66.0]
+    assert actual['data'] == [99, 66]
 
 
 def test_borrow_context_no_data():
@@ -103,4 +103,4 @@ def test_lend_context():
 
     assert 'Paskolinta' in actual['title']
     assert 'Grąžino' in actual['title']
-    assert actual['data'] == [9.0, 3.0]
+    assert actual['data'] == [9, 3]

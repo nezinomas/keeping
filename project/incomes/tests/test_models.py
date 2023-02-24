@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 from django.urls import reverse
@@ -79,8 +78,8 @@ def test_income_related(main_user, second_user):
 
 def test_sum_all_months(incomes):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(5.5), 'title': 'incomes'},
-        {'date': date(1999, 2, 1), 'sum': Decimal(1.25), 'title': 'incomes'},
+        {'date': date(1999, 1, 1), 'sum': 550, 'title': 'incomes'},
+        {'date': date(1999, 2, 1), 'sum': 125, 'title': 'incomes'},
     ]
 
     actual = list(Income.objects.sum_by_month(1999))
@@ -97,7 +96,7 @@ def test_sum_all_months_ordering(incomes):
 
 def test_sum_one_month(incomes):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(5.5), 'title': 'incomes'}
+        {'date': date(1999, 1, 1), 'sum': 550, 'title': 'incomes'}
     ]
 
     actual = list(Income.objects.sum_by_month(1999, 1))
@@ -133,10 +132,10 @@ def test_incomes_income_sum_query_count(django_assert_max_num_queries):
 def test_balance(incomes):
     qs = Income.objects.incomes()
 
-    assert qs[0] == {'year': 1970, 'incomes': Decimal('5.25'), 'id': 1}
-    assert qs[1] == {'year': 1970, 'incomes': Decimal('4.5'), 'id': 2}
-    assert qs[2] == {'year': 1999, 'incomes': Decimal('3.25'), 'id': 1}
-    assert qs[3] == {'year': 1999, 'incomes': Decimal('3.5'), 'id': 2}
+    assert qs[0] == {'year': 1970, 'incomes': 525, 'id': 1}
+    assert qs[1] == {'year': 1970, 'incomes': 450, 'id': 2}
+    assert qs[2] == {'year': 1999, 'incomes': 325, 'id': 1}
+    assert qs[3] == {'year': 1999, 'incomes': 350, 'id': 2}
 
 
 def test_income_month_type_sum():
@@ -167,8 +166,8 @@ def test_income_month_type_sum():
     )
 
     expect = [
-        {'date': date(1999, 1, 1), 'title': 'I-1', 'sum': Decimal(3)},
-        {'date': date(1999, 1, 1), 'title': 'I-2', 'sum': Decimal(7)},
+        {'date': date(1999, 1, 1), 'title': 'I-1', 'sum': 3},
+        {'date': date(1999, 1, 1), 'title': 'I-2', 'sum': 7},
     ]
     actual = Income.objects.sum_by_month_and_type(1999)
 
@@ -185,8 +184,8 @@ def test_income_new_post_save():
     actual = actual[0]
 
     assert actual.account.title == 'Account1'
-    assert actual.incomes == 1000.62
-    assert actual.balance == 1000.62
+    assert actual.incomes == 1000
+    assert actual.balance == 1000
 
 
 def test_income_update_post_save():
@@ -304,7 +303,7 @@ def test_income_post_save_update_account_balance_count_qs(django_assert_max_num_
     with django_assert_max_num_queries(17):
         Income.objects.create(
             date=date(1999, 1, 1),
-            price=Decimal('2'),
+            price=2,
             account=a,
             income_type=t
         )
@@ -319,7 +318,7 @@ def test_income_post_save_new_account_balance_count_qs(django_assert_max_num_que
     with django_assert_max_num_queries(24):
         Income.objects.create(
             date = date(1999, 1, 1),
-            price = Decimal('2'),
+            price = 2,
             account = a,
             income_type = t
         )
@@ -332,15 +331,15 @@ def test_income_update_post_save_count_qs(django_assert_max_num_queries):
 
     obj_update = Income.objects.get(pk=obj.pk)
     with django_assert_max_num_queries(17):
-        obj_update.price = Decimal('6')
+        obj_update.price = 6
         obj_update.save()
 
     assert AccountBalance.objects.all().count() == 2
 
     actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert actual.incomes == Decimal('6')
-    assert actual.balance == Decimal('6')
-    assert actual.delta == Decimal('-6')
+    assert actual.incomes == 6
+    assert actual.balance == 6
+    assert actual.delta == -6
 
 
 def test_income_post_save_first_year_record():
@@ -351,18 +350,18 @@ def test_income_post_save_first_year_record():
     obj2 = IncomeFactory(date=date(1999, 1, 1), price=1)
 
     actual = AccountBalance.objects.get(account_id=obj2.account.pk, year=1999)
-    assert actual.past == Decimal('5')
-    assert actual.incomes == Decimal('1')
-    assert actual.expenses == Decimal('0')
-    assert actual.balance == Decimal('6')
-    assert actual.delta == Decimal('-6')
+    assert actual.past == 5
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 6
+    assert actual.delta == -6
 
     actual = AccountBalance.objects.get(account_id=obj1.account.pk, year=1974)
-    assert actual.past == Decimal('0')
-    assert actual.incomes == Decimal('5')
-    assert actual.expenses == Decimal('0')
-    assert actual.balance == Decimal('5')
-    assert actual.delta == Decimal('-5')
+    assert actual.past == 0
+    assert actual.incomes == 5
+    assert actual.expenses == 0
+    assert actual.balance == 5
+    assert actual.delta == -5
 
 
 def test_income_post_save_update_balance_row():
@@ -371,11 +370,11 @@ def test_income_post_save_update_balance_row():
 
     actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
 
-    assert actual.past == Decimal('5')
-    assert actual.incomes == Decimal('1')
-    assert actual.expenses == Decimal('0')
-    assert actual.balance == Decimal('6')
-    assert actual.delta == Decimal('-6')
+    assert actual.past == 5
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 6
+    assert actual.delta == -6
 
 
 def test_income_post_delete_new_signal():
@@ -384,11 +383,11 @@ def test_income_post_delete_new_signal():
 
     # check before delete
     actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert actual.past == Decimal('5')
-    assert actual.incomes == Decimal('1')
-    assert actual.expenses == Decimal('0')
-    assert actual.balance == Decimal('6')
-    assert actual.delta == Decimal('-6')
+    assert actual.past == 5
+    assert actual.incomes == 1
+    assert actual.expenses == 0
+    assert actual.balance == 6
+    assert actual.delta == -6
 
     # delete Income object
     Income.objects.get(pk=obj.pk).delete()
@@ -416,11 +415,11 @@ def test_income_post_delete_empty_account_balance_table():
     assert actual.count() == 2
     assert actual[0].account_id == obj_stay.account.pk
     assert actual[0].year == 1974
-    assert actual[0].past == Decimal('0')
-    assert actual[0].incomes == Decimal('5')
-    assert actual[0].expenses == Decimal('0')
-    assert actual[0].balance == Decimal('5')
-    assert actual[0].delta == Decimal('-5')
+    assert actual[0].past == 0
+    assert actual[0].incomes == 5
+    assert actual[0].expenses == 0
+    assert actual[0].balance == 5
+    assert actual[0].delta == -5
 
 
 def test_income_years_sum():

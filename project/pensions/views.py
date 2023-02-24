@@ -1,5 +1,6 @@
 from django.urls import reverse_lazy
 
+from ..core.lib.convert_price import ConvertToCents
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, UpdateViewMixin)
 from . import forms, models
@@ -19,7 +20,7 @@ class New(CreateViewMixin):
     success_url = reverse_lazy('pensions:list')
 
 
-class Update(UpdateViewMixin):
+class Update(ConvertToCents, UpdateViewMixin):
     model = models.Pension
     form_class = forms.PensionForm
     hx_trigger_django = 'afterPension'

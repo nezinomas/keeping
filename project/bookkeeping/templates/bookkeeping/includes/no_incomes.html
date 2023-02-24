@@ -1,21 +1,31 @@
 {% load i18n %}
+{% load slippers %}
+{% load math %}
 
 <table class="table table-sm table-striped">
     <thead>
         <tr>
-            <th data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="<p>{% translate 'Unnecessary expenses that can be avoided' %}:<br />{% for i in not_use %}- {{ i }}<br />{% endfor %}</p>" class="text-start exception">{{ save_sum|floatformat:'0g' }}</th>
+            <th data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="<p>{% translate 'Unnecessary expenses that can be avoided' %}:<br />{% for i in not_use %}- {{ i }}<br />{% endfor %}</p>" class="text-start exception">{{ save_sum|price|floatformat:'0g' }}</th>
             <th>€ + F</th>
             <th>€ + F + P</th>
         </tr>
     </thead>
     <tbody>
-        {% for item in no_incomes %}
         <tr>
-            <td>{% if item.label == 'money' %}{% translate 'Money' %}, € {% endif %}{% if item.label == 'no_cut' %}{% translate 'No change in spending, month' %}{% endif %}{% if item.label == 'cut' %}{% translate 'After spending cuts, month' %}{% endif %}</td>
-            <td>{{ item.money_fund|floatformat:'1g' }}</td>
-            <td>{{ item.money_fund_pension|floatformat:'1g' }}</td>
+            <td>{% translate 'Money' %}, €</td>
+            {% table_cell value=no_incomes.0.money_fund|price %}
+            {% table_cell value=no_incomes.0.money_fund_pension|price %}
         </tr>
-        {% endfor %}
+        <tr>
+            <td>{% translate 'No change in spending, month' %}</td>
+            <td>{{no_incomes.1.money_fund|floatformat:'1g'}}</td>
+            <td>{{no_incomes.1.money_fund_pension|floatformat:'1g'}}</td>
+        </tr>
+        <tr>
+            <td>{% translate 'After spending cuts, month' %}</td>
+            <td>{{no_incomes.2.money_fund|floatformat:'1g'}}</td>
+            <td>{{no_incomes.2.money_fund_pension|floatformat:'1g'}}</td>
+        </tr>
     </tbody>
 </table>
 <p>

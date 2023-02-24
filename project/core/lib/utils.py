@@ -1,5 +1,4 @@
 from collections import Counter
-from decimal import Decimal
 from typing import Any, Dict, List
 
 from crequest.middleware import CrequestMiddleware
@@ -35,7 +34,7 @@ def sum_all(arr, keys=None):
     result = Counter()
     for item in arr:
         for k, v in item.items():
-            if isinstance(v, (int, float, Decimal)) and (keys is None or k in keys):
+            if isinstance(v, (int, float)) and (keys is None or k in keys):
                 result[k] += v
     return dict(result)
 

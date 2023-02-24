@@ -83,7 +83,7 @@ def test_income_save(client_logged):
 
     data = {
         'date': '1999-01-01',
-        'price': '1.05',
+        'price': '111',
         'account': a.pk,
         'income_type': i.pk
     }
@@ -95,7 +95,7 @@ def test_income_save(client_logged):
     actual = response.content.decode('utf-8')
 
     assert '1999-01-01' in actual
-    assert '1,05' in actual
+    assert '111' in actual
     assert 'Account1' in actual
     assert 'Income Type' in actual
 
@@ -117,21 +117,22 @@ def test_income_save_invalid_data(client_logged):
     assert not actual.is_valid()
 
 
-def test_incomes_load_update_form(client_logged):
-    i = IncomeFactory()
+def test_income_load_update_form(client_logged):
+    i = IncomeFactory(price=7777)
     url = reverse('incomes:update', kwargs={'pk': i.pk})
 
     response = client_logged.get(url)
 
     form = response.context.get('form').as_p()
 
-    assert '1999-01-01' in form
-    assert '1000.62' in form
-    assert 'Income Type' in form
+    assert '<input type="text" name="date" value="1999-01-01"' in form
+    assert f'<input type="number" name="price" value="77.77"' in form
+    assert '<option value="1" selected>Account1</option>' in form
+    assert '<option value="1" selected>Income Type</option>' in form
     assert 'remark' in form
 
 
-def test_incomes_not_load_other_journal(client_logged, second_user):
+def test_income_not_load_other_journal(client_logged, second_user):
     j = second_user.journal
     a = AccountFactory(journal = j, title='a')
     it = IncomeTypeFactory(title='yyy', journal=j)
@@ -154,11 +155,10 @@ def test_income_update_to_another_year(client_logged):
         'income_type': 1
     }
     url = reverse('incomes:update', kwargs={'pk': income.pk})
+    client_logged.post(url, data, follow=True)
 
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
-
-    assert '2010-12-31' not in actual
+    actual = models.Income.objects.get(pk=income.pk)
+    assert actual.date == date(2010, 12, 31)
 
 
 def test_income_update(client_logged):
@@ -172,17 +172,16 @@ def test_income_update(client_logged):
         'income_type': 1
     }
     url = reverse('incomes:update', kwargs={'pk': income.pk})
+    client_logged.post(url, data, follow=True)
 
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
-
-    assert '1999-12-31' in actual
-    assert '150' in actual
-    assert 'Pastaba' in actual
+    actual = models.Income.objects.get(pk=income.pk)
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == 150 * 100
+    assert actual.remark == 'Pastaba'
 
 
 @time_machine.travel('2000-03-03')
-def test_incomes_update_past_record(get_user, client_logged):
+def test_income_update_past_record(get_user, client_logged):
     get_user.year = 2000
     i = IncomeFactory(date=date(1974, 12, 12))
 
@@ -198,7 +197,7 @@ def test_incomes_update_past_record(get_user, client_logged):
 
     actual = models.Income.objects.get(pk=i.pk)
     assert actual.date == date(1997, 12, 12)
-    assert float(150) == 150
+    assert actual.price == 150 * 100
     assert actual.account.title == 'Account1'
     assert actual.income_type.title == 'Income Type'
     assert actual.remark == 'Pastaba'
@@ -210,6 +209,15 @@ def test_incomes_index_search_form(client_logged):
 
     assert '<input type="search" name="search"' in response
     assert reverse('incomes:search') in response
+
+
+def test_incomes_list_price_value(client_logged):
+    IncomeFactory()
+
+    url = reverse('incomes:list')
+    response = client_logged.get(url).content.decode('utf-8')
+
+    assert "10,00</td>" in response
 
 
 # ---------------------------------------------------------------------------------------

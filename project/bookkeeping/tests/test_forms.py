@@ -1,6 +1,5 @@
 import pytz
 from datetime import datetime, timezone
-from decimal import Decimal
 import time_machine
 import pytest
 
@@ -50,7 +49,7 @@ def test_saving_worth_valid_data():
     data = form.save()
 
     assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
-    assert data.price == Decimal(1.0)
+    assert data.price == 1
     assert data.saving_type.title == t.title
 
 
@@ -162,7 +161,7 @@ def test_account_worth_valid_data():
     data = form.save()
 
     assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
-    assert data.price == Decimal(1.0)
+    assert data.price == 1
     assert data.account.title == a.title
 
 
@@ -239,7 +238,7 @@ def test_pension_worth_valid_data():
 
 
     assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
-    assert data.price == Decimal(1.0)
+    assert data.price == 1
     assert data.pension_type.title == p.title
 
 

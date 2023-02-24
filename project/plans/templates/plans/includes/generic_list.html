@@ -2,6 +2,8 @@
 {% load slippers %}
 {% load i18n %}
 {% load slippers %}
+{% load math %}
+
 
 <table class="table table-sm table-striped table-hover">
     <thead>
@@ -19,18 +21,18 @@
         {% with item|get_obj_attr:type as name %}
         <tr hx-get="{{url_update}}" hx-target="#dialog" hx-trigger="dblclick" class="{% if name == _('Residual') %} bg-warning{% endif %}">
             <td class="text-start">{{ name }}{% if item.expense_type.necessary or item.saving_type or item.title %} <i class="bi bi-star plans-star"></i>{% endif %}</td>
-            {% table_cell value=item.january %}
-            {% table_cell value=item.february %}
-            {% table_cell value=item.march %}
-            {% table_cell value=item.april %}
-            {% table_cell value=item.may %}
-            {% table_cell value=item.june %}
-            {% table_cell value=item.july %}
-            {% table_cell value=item.august %}
-            {% table_cell value=item.september %}
-            {% table_cell value=item.october %}
-            {% table_cell value=item.november %}
-            {% table_cell value=item.december %}
+            {% table_cell value=item.january|price %}
+            {% table_cell value=item.february|price %}
+            {% table_cell value=item.march|price %}
+            {% table_cell value=item.april|price %}
+            {% table_cell value=item.may|price %}
+            {% table_cell value=item.june|price %}
+            {% table_cell value=item.july|price %}
+            {% table_cell value=item.august|price %}
+            {% table_cell value=item.september|price %}
+            {% table_cell value=item.october|price %}
+            {% table_cell value=item.november|price %}
+            {% table_cell value=item.december|price %}
             {% edit_cell url=url_update %}
             {% delete_cell url=url_delete %}
         </tr>{% endwith %}

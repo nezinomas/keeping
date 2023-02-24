@@ -1,5 +1,4 @@
 from datetime import date as dt
-from decimal import Decimal
 
 import factory
 
@@ -34,7 +33,7 @@ class ExpenseFactory(factory.django.DjangoModelFactory):
     account = factory.SubFactory(AccountFactory)
     expense_type = factory.SubFactory(ExpenseTypeFactory)
     expense_name = factory.SubFactory(ExpenseNameFactory)
-    price = Decimal(1.12)
+    price = 112
     quantity = 13
     remark = 'Remark'
     exception = False

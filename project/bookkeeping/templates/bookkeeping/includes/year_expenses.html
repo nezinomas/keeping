@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load slippers %}
 {% load get_item %}
+{% load math %}
 
 <table class="table table-sm table-striped table-hover">
     <thead>
@@ -19,22 +20,22 @@
         <tr>
             <td class="text-start">{{ item.date|date:"F"|title }}</td>
             {% for category in ctx.categories %}
-            {% table_cell value=item|get_item:category %}
+            {% table_cell value=item|get_item:category|price %}
             {% endfor %}
-            {% table_cell value=total_column.total css_class="left-blue-border" %}
+            {% table_cell value=total_column.total|price css_class="left-blue-border" %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <th class="text-start">Avg</th>
-            {% for category in ctx.categories %}{% table_cell value=ctx.avg_row|get_item:category tag='th' %}{% endfor %}
-            {% table_cell value=ctx.avg tag='th' css_class="left-blue-border" %}
+            {% for category in ctx.categories %}{% table_cell value=ctx.avg_row|get_item:category|price tag='th' %}{% endfor %}
+            {% table_cell value=ctx.avg|price tag='th' css_class="left-blue-border" %}
         </tr>
-        <tr >
+        <tr>
             <th class="text-start">{% translate 'Total' %}</th>
-            {% for category in ctx.categories %}{% table_cell value=ctx.total_row|get_item:category tag='th' %}{% endfor %}
-            {% table_cell value=ctx.total tag='th' css_class="left-blue-border" %}
+            {% for category in ctx.categories %}{% table_cell value=ctx.total_row|get_item:category|price tag='th' %}{% endfor %}
+            {% table_cell value=ctx.total|price tag='th' css_class="left-blue-border" %}
         </tr>
     </tfoot>
 </table>

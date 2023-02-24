@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -11,12 +9,10 @@ from . import managers
 
 class SavingWorth(models.Model):
     date = models.DateTimeField()
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    price = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0.0'))]
+        validators=[MinValueValidator(1)]
     )
     saving_type = models.ForeignKey(
         SavingType,
@@ -37,12 +33,10 @@ class SavingWorth(models.Model):
 
 class AccountWorth(models.Model):
     date = models.DateTimeField()
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    price = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0.0'))]
+        validators=[MinValueValidator(1)]
     )
     account = models.ForeignKey(
         Account,
@@ -63,12 +57,10 @@ class AccountWorth(models.Model):
 
 class PensionWorth(models.Model):
     date = models.DateTimeField()
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    price = models.PositiveIntegerField(
         null=True,
         blank=True,
-        validators=[MinValueValidator(Decimal('0.0'))]
+        validators=[MinValueValidator(1)]
     )
     pension_type = models.ForeignKey(
         PensionType,

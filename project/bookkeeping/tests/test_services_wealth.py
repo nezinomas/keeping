@@ -14,9 +14,9 @@ def test_data_service_empty_db():
     obj = WealthServiceData(1999)
 
     assert obj.year == 1999
-    assert obj.account_balance == 0.0
-    assert obj.saving_balance == 0.0
-    assert obj.pension_balance == 0.0
+    assert obj.account_balance == 0
+    assert obj.saving_balance == 0
+    assert obj.pension_balance == 0
 
 
 def test_data_service_account_balance():
@@ -25,7 +25,7 @@ def test_data_service_account_balance():
 
     obj = WealthServiceData(1999)
 
-    assert obj.account_balance == 2.5
+    assert obj.account_balance == 250
 
 
 def test_data_service_saving_balance():
@@ -34,7 +34,7 @@ def test_data_service_saving_balance():
 
     obj = WealthServiceData(1999)
 
-    assert obj.saving_balance == 5.0
+    assert obj.saving_balance == 50
 
 
 def test_data_service_pension_balance():
@@ -43,7 +43,7 @@ def test_data_service_pension_balance():
 
     obj = WealthServiceData(1999)
 
-    assert obj.pension_balance == 5.0
+    assert obj.pension_balance == 50
 
 
 def test_data():
@@ -57,9 +57,9 @@ def test_data():
     )
 
     assert obj.data.year == 1111
-    assert obj.data.account_balance == 1.0
-    assert obj.data.saving_balance == 2.0
-    assert obj.data.pension_balance == 4.0
+    assert obj.data.account_balance == 1
+    assert obj.data.saving_balance == 2
+    assert obj.data.pension_balance == 4
 
 
 def test_money():
@@ -72,7 +72,7 @@ def test_money():
     )
     actual = obj.money
 
-    assert actual == 3.0
+    assert actual == 3
 
 
 def test_wealth():
@@ -85,4 +85,4 @@ def test_wealth():
     )
     actual = obj.wealth
 
-    assert actual == 7.0
+    assert actual == 7

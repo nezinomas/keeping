@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 import time_machine
@@ -81,7 +80,7 @@ def test_lend_return_valid_data(mck):
         data={
             'date': '1999-12-02',
             'debt': b.pk,
-            'price': '1.1',
+            'price': '0.01',
             'account': a.pk,
             'remark': 'Rm'
         },
@@ -93,7 +92,7 @@ def test_lend_return_valid_data(mck):
     assert e.date == date(1999, 12, 2)
     assert e.account == a
     assert e.debt == b
-    assert e.price == Decimal('1.1')
+    assert e.price == 1
     assert e.remark == 'Rm'
 
 
@@ -106,7 +105,7 @@ def test_borrow_return_valid_data(mck):
         data={
             'date': '1999-12-02',
             'debt': b.pk,
-            'price': '1.1',
+            'price': '0.01',
             'account': a.pk,
             'remark': 'Rm'
         },
@@ -118,7 +117,7 @@ def test_borrow_return_valid_data(mck):
     assert e.date == date(1999, 12, 2)
     assert e.account == a
     assert e.debt == b
-    assert e.price == Decimal('1.1')
+    assert e.price == 1
     assert e.remark == 'Rm'
 
 
@@ -135,7 +134,7 @@ def test_debt_return_invalid_date(year):
         data={
             'date': f'{year}-12-02',
             'debt': b.pk,
-            'price': '1.1',
+            'price': '1',
             'account': a.pk,
             'remark': 'Rm'
         },

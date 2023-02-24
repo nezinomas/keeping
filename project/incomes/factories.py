@@ -1,5 +1,4 @@
 from datetime import date as dt
-from decimal import Decimal
 
 import factory
 
@@ -22,7 +21,7 @@ class IncomeFactory(factory.django.DjangoModelFactory):
         model = Income
 
     date = dt(1999, 1, 1)
-    price = Decimal(1000.62)
+    price = 1000
     remark = 'remark'
     account = factory.SubFactory(AccountFactory)
     income_type = factory.SubFactory(IncomeTypeFactory)

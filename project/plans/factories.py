@@ -12,10 +12,21 @@ class ExpensePlanFactory(factory.django.DjangoModelFactory):
         model = ExpensePlan
         django_get_or_create = ('year', 'expense_type', 'journal', )
 
-    year = 1999
-
-    expense_type = factory.SubFactory(ExpenseTypeFactory)
     journal = factory.SubFactory(JournalFactory)
+    expense_type = factory.SubFactory(ExpenseTypeFactory)
+    year = 1999
+    january = 1
+    february = 1
+    march = 1
+    april = 1
+    may = 1
+    june = 1
+    july = 1
+    august = 1
+    september = 1
+    october = 1
+    november = 1
+    december = 1
 
 
 class IncomePlanFactory(factory.django.DjangoModelFactory):
@@ -23,12 +34,21 @@ class IncomePlanFactory(factory.django.DjangoModelFactory):
         model = IncomePlan
         django_get_or_create = ('year', 'income_type', 'journal', )
 
-    year = 1999
-    january = 111.11
-    february = 222.11
-
-    income_type = factory.SubFactory(IncomeTypeFactory)
     journal = factory.SubFactory(JournalFactory)
+    income_type = factory.SubFactory(IncomeTypeFactory)
+    year = 1999
+    january = 1
+    february = 1
+    march = 1
+    april = 1
+    may = 1
+    june = 1
+    july = 1
+    august = 1
+    september = 1
+    october = 1
+    november = 1
+    december = 1
 
 
 class SavingPlanFactory(factory.django.DjangoModelFactory):
@@ -36,30 +56,59 @@ class SavingPlanFactory(factory.django.DjangoModelFactory):
         model = SavingPlan
         django_get_or_create = ('year', 'saving_type', 'journal', )
 
-    year = 1999
-    january = 32.33
-    february = 32.33
-
-    saving_type = factory.SubFactory(SavingTypeFactory)
     journal = factory.SubFactory(JournalFactory)
+    saving_type = factory.SubFactory(SavingTypeFactory)
+    year = 1999
+    january = 1
+    february = 1
+    march = 1
+    april = 1
+    may = 1
+    june = 1
+    july = 1
+    august = 1
+    september = 1
+    october = 1
+    november = 1
+    december = 1
 
 
 class DayPlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = DayPlan
 
-    year = 1999
-    january = 32.33
-    february = 32.33
     journal = factory.SubFactory(JournalFactory)
+    year = 1999
+    january = 1
+    february = 1
+    march = 1
+    april = 1
+    may = 1
+    june = 1
+    july = 1
+    august = 1
+    september = 1
+    october = 1
+    november = 1
+    december = 1
 
 
 class NecessaryPlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = NecessaryPlan
 
+    journal = factory.SubFactory(JournalFactory)
     year = 1999
     title = 'other'
-    january = 15.0
-    february = 15.0
-    journal = factory.SubFactory(JournalFactory)
+    january = 1
+    february = 1
+    march = 1
+    april = 1
+    may = 1
+    june = 1
+    july = 1
+    august = 1
+    september = 1
+    october = 1
+    november = 1
+    december = 1

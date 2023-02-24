@@ -1,4 +1,3 @@
-from decimal import Decimal
 from types import SimpleNamespace
 
 import time_machine
@@ -10,7 +9,7 @@ def test_chart_incomes_context():
     data = SimpleNamespace(
         incomes=[],
         salary=[
-            {'sum': Decimal('12'), 'year': 1998},
+            {'sum': 12, 'year': 1998},
         ],
         expenses=[]
     )
@@ -30,8 +29,8 @@ def test_chart_incomes_salary_years():
     data = SimpleNamespace(
         incomes=[],
         salary=[
-            {'sum': Decimal('12'), 'year': 1998},
-            {'sum': Decimal('10'), 'year': 1999},
+            {'sum': 12, 'year': 1998},
+            {'sum': 10, 'year': 1999},
         ],
         expenses=[]
     )
@@ -45,44 +44,44 @@ def test_chart_incomes_salary():
     data = SimpleNamespace(
         incomes=[],
         salary=[
-            {'sum': Decimal('12'), 'year': 1998},
-            {'sum': Decimal('10'), 'year': 1999},
+            {'sum': 12, 'year': 1998},
+            {'sum': 10, 'year': 1999},
         ],
         expenses=[]
     )
     actual = ChartSummaryService(data).chart_incomes()
 
 
-    assert actual['salary'] == [1.0, 10.0]
+    assert actual['salary'] == [1, 10]
 
 
 @time_machine.travel('1999-1-1')
 def test_chart_incomes_incomes():
     data = SimpleNamespace(
         incomes=[
-            {'sum': Decimal('24'), 'year': 1998},
-            {'sum': Decimal('12'), 'year': 1999},
+            {'sum': 24, 'year': 1998},
+            {'sum': 12, 'year': 1999},
         ],
         salary=[
-            {'sum': Decimal('12'), 'year': 1998},
-            {'sum': Decimal('10'), 'year': 1999},
+            {'sum': 12, 'year': 1998},
+            {'sum': 10, 'year': 1999},
         ],
         expenses=[]
     )
     actual = ChartSummaryService(data).chart_incomes()
 
 
-    assert actual['incomes'] == [2.0, 12.0]
+    assert actual['incomes'] == [2, 12]
 
 
 @time_machine.travel('1999-1-1')
 def test_chart_incomes_records():
     data = SimpleNamespace(
         incomes=[
-            {'sum': Decimal('12'), 'year': 1999},
+            {'sum': 12, 'year': 1999},
         ],
         salary=[
-            {'sum': Decimal('10'), 'year': 1999},
+            {'sum': 10, 'year': 1999},
         ],
         expenses=[]
     )
@@ -114,7 +113,7 @@ def test_chart_balance_context():
     data = SimpleNamespace(
         salary=[],
         incomes=[
-            {'sum': Decimal('12'), 'year': 1998},
+            {'sum': 12, 'year': 1998},
         ],
         expenses=[]
     )
@@ -150,7 +149,7 @@ def test_chart_balance_records_only_incomes():
     data = SimpleNamespace(
         salary=[],
         incomes=[
-            {'sum': Decimal('12'), 'year': 1998},
+            {'sum': 12, 'year': 1998},
         ],
         expenses=[]
     )
@@ -164,7 +163,7 @@ def test_chart_balance_records_only_expenses():
         salary=[],
         incomes=[],
         expenses=[
-            {'sum': Decimal('12'), 'year': 1998},
+            {'sum': 12, 'year': 1998},
         ]
     )
     actual = ChartSummaryService(data).chart_balance()
@@ -176,11 +175,11 @@ def test_chart_balance_records():
     data = SimpleNamespace(
         salary=[],
         incomes=[
-            {'sum': Decimal('12'), 'year': 1998},
+            {'sum': 12, 'year': 1998},
         ],
         expenses=[
-            {'sum': Decimal('12'), 'year': 1998},
-            {'sum': Decimal('24'), 'year': 1999},
+            {'sum': 12, 'year': 1998},
+            {'sum': 24, 'year': 1999},
         ]
     )
     actual = ChartSummaryService(data).chart_balance()
@@ -192,8 +191,8 @@ def test_chart_balance_categories_only_incomes():
     data = SimpleNamespace(
         salary=[],
         incomes=[
-            {'sum': Decimal('12'), 'year': 1998},
-            {'sum': Decimal('24'), 'year': 1999},
+            {'sum': 12, 'year': 1998},
+            {'sum': 24, 'year': 1999},
         ],
         expenses=[]
     )
@@ -207,8 +206,8 @@ def test_chart_balance_categories_only_expenses():
         salary=[],
         incomes=[],
         expenses=[
-            {'sum': Decimal('12'), 'year': 1998},
-            {'sum': Decimal('24'), 'year': 1999},
+            {'sum': 12, 'year': 1998},
+            {'sum': 24, 'year': 1999},
         ]
     )
     actual = ChartSummaryService(data).chart_balance()
@@ -220,11 +219,11 @@ def test_chart_balance_categories():
     data = SimpleNamespace(
         salary=[],
         incomes=[
-            {'sum': Decimal('12'), 'year': 1998},
-            {'sum': Decimal('24'), 'year': 1999},
+            {'sum': 12, 'year': 1998},
+            {'sum': 24, 'year': 1999},
         ],
         expenses=[
-            {'sum': Decimal('12'), 'year': 2000},
+            {'sum': 12, 'year': 2000},
         ]
     )
     actual = ChartSummaryService(data).chart_balance()
@@ -236,14 +235,14 @@ def test_chart_balance_incomes():
     data = SimpleNamespace(
         salary=[],
         incomes=[
-            {'sum': Decimal('12'), 'year': 1998},
-            {'sum': Decimal('24'), 'year': 1999},
+            {'sum': 12, 'year': 1998},
+            {'sum': 24, 'year': 1999},
         ],
         expenses=[]
     )
     actual = ChartSummaryService(data).chart_balance()
 
-    assert actual['incomes'] == [12.0, 24.0]
+    assert actual['incomes'] == [12, 24]
 
 
 def test_chart_balance_expenses():
@@ -251,10 +250,10 @@ def test_chart_balance_expenses():
         salary=[],
         incomes=[],
         expenses=[
-            {'sum': Decimal('12'), 'year': 1998},
-            {'sum': Decimal('24'), 'year': 1999},
+            {'sum': 12, 'year': 1998},
+            {'sum': 24, 'year': 1999},
         ]
     )
     actual = ChartSummaryService(data).chart_balance()
 
-    assert actual['expenses'] == [12.0, 24.0]
+    assert actual['expenses'] == [12, 24]

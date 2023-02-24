@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 import time_machine
@@ -108,7 +107,7 @@ def test_debt_valid_data():
         data={
             'date': '1999-01-01',
             'name': 'Name',
-            'price': '1.1',
+            'price': '0.01',
             'account': a.pk,
             'closed': False,
             'remark': 'Rm'
@@ -120,8 +119,8 @@ def test_debt_valid_data():
     e = form.save()
 
     assert e.date == date(1999, 1, 1)
-    assert e.price == Decimal('1.1')
-    assert e.returned == Decimal('0')
+    assert e.price == 1
+    assert e.returned == 0
     assert e.account == a
     assert e.remark == 'Rm'
     assert not e.closed
@@ -135,12 +134,13 @@ def test_debt_valid_data_type_from_request(mck):
         data={
             'date': '1999-01-01',
             'name': 'Name',
-            'price': '1.1',
+            'price': '0.01',
             'account': a.pk,
             'closed': False,
             'remark': 'Rm'
         },
     )
+    assert form.is_valid()
 
     form.save()
 
@@ -148,7 +148,7 @@ def test_debt_valid_data_type_from_request(mck):
 
     assert actual.date == date(1999, 1, 1)
     assert actual.name == 'Name'
-    assert actual.price == Decimal('1.1')
+    assert actual.price == 1
     assert actual.account == a
     assert not actual.closed
     assert actual.remark == 'Rm'
@@ -167,7 +167,7 @@ def test_debt_invalid_date(year):
         data={
             'date': f'{year}-01-01',
             'name': 'Name',
-            'price': '1.1',
+            'price': '1',
             'account': a.pk,
             'closed': False,
             'remark': 'Rm'

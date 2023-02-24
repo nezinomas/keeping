@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Dict
 
 from django.db.models import Sum
-from django.db.models.fields import FloatField
+from django.db.models.fields import IntegerField
 
 from ...core.lib import utils
 from ...core.signals import Savings as signal_savings
@@ -25,7 +25,7 @@ class SavingServiceData:
             Income.objects \
             .related() \
             .year(year=self.year) \
-            .aggregate(Sum('price', output_field=FloatField())) \
+            .aggregate(Sum('price', output_field=IntegerField())) \
             ['price__sum']
 
         # data

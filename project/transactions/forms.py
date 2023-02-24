@@ -10,12 +10,15 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
+from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
 from .models import SavingChange, SavingClose, SavingType, Transaction
 
 
-class TransactionForm(YearBetweenMixin, forms.ModelForm):
+class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
+    price = forms.FloatField(min_value=0.01)
+
     class Meta:
         model = Transaction
         fields = ['date', 'from_account', 'to_account', 'price']
@@ -76,7 +79,9 @@ class TransactionForm(YearBetweenMixin, forms.ModelForm):
         self.fields['to_account'].label = _('To account')
 
 
-class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
+class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
+    price = forms.FloatField(min_value=0.01)
+    fee = forms.FloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
 
     class Meta:
@@ -102,9 +107,6 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
             options={"locale": utils.get_user().journal.lang,}
         )
 
-        self.fields['price'].widget.attrs = {'step': '0.01'}
-        self.fields['fee'].widget.attrs = {'step': '0.01'}
-
         self.fields['date'].initial = set_year_for_form()
 
     def _overwrite_default_queries(self):
@@ -124,8 +126,8 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         self.helper = FormHelper()
         add_css_class(self, self.helper)
 
-
-    def save(self):
+    def save(self, *args, **kwargs):
+        # update saving type if close checkbox is selected
         close = self.cleaned_data.get('close')
 
         obj = SavingType.objects.get(pk=self.instance.from_account.pk)
@@ -135,10 +137,12 @@ class SavingCloseForm(YearBetweenMixin, forms.ModelForm):
         obj.closed = self.instance.date.year if close else None
         obj.save()
 
-        return super().save()
+        return super().save(*args, **kwargs)
 
 
-class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
+class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
+    price = forms.FloatField(min_value=0.01)
+    fee = forms.FloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
 
     class Meta:
@@ -164,10 +168,6 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].widget = DatePickerInput(
             options={"locale": utils.get_user().journal.lang,}
         )
-
-        # form input settings
-        self.fields['price'].widget.attrs = {'step': '0.01'}
-        self.fields['fee'].widget.attrs = {'step': '0.01'}
 
         # initial values
         self.fields['date'].initial = set_year_for_form()
@@ -212,8 +212,8 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         self.helper = FormHelper()
         add_css_class(self, self.helper)
 
-
-    def save(self):
+    def save(self, *args, **kwargs):
+        # update related model if close checkbox selected
         close = self.cleaned_data.get('close')
 
         obj = SavingType.objects.get(pk=self.instance.from_account.pk)
@@ -223,4 +223,4 @@ class SavingChangeForm(YearBetweenMixin, forms.ModelForm):
         obj.closed = self.instance.date.year if close else None
         obj.save()
 
-        return super().save()
+        return super().save(*args, **kwargs)

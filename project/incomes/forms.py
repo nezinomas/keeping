@@ -8,14 +8,17 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
+from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
 from .models import Income, IncomeType
 
 
-class IncomeForm(forms.ModelForm):
+class IncomeForm(ConvertToPrice, forms.ModelForm):
+    price = forms.FloatField(min_value=0.01)
+
     class Meta:
         model = Income
-        fields = ['date', 'price', 'remark', 'account', 'income_type']
+        fields = ('date', 'price', 'remark', 'account', 'income_type')
 
     field_order = ['date', 'income_type', 'account', 'price', 'remark']
 

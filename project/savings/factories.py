@@ -1,6 +1,5 @@
 from datetime import date as dt
 from datetime import datetime
-from decimal import Decimal
 
 import factory
 import pytz
@@ -41,8 +40,8 @@ class SavingFactory(factory.django.DjangoModelFactory):
         model = Saving
 
     date = dt(1999, 1, 1)
-    price = Decimal(150)
-    fee = Decimal(5.55)
+    price = 150
+    fee = 5
     remark = 'remark'
     saving_type = factory.SubFactory(SavingTypeFactory)
     account = factory.SubFactory(AccountFactory)
@@ -56,11 +55,11 @@ class SavingBalanceFactory(factory.django.DjangoModelFactory):
     year = 1999
     saving_type = factory.SubFactory(SavingTypeFactory)
 
-    past_amount = 2.0
-    past_fee = 2.1
-    fee = 2.2
-    invested = 2.3
-    incomes = 2.4
-    market_value = 2.5
-    profit_proc = 2.8
-    profit_sum = 2.9
+    past_amount = 20
+    past_fee = 21
+    fee = 22
+    invested = 23
+    incomes = 24
+    market_value = 25
+    profit_proc = 28
+    profit_sum = 29

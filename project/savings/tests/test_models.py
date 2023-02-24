@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 import pytest
 import time_machine
@@ -20,14 +19,14 @@ pytestmark = pytest.mark.django_db
 def _savings_extra():
     SavingFactory(
         date=date(1999, 1, 1),
-        price=1.0,
+        price=1,
         fee=0.25,
         account=AccountFactory(title='Account1'),
         saving_type=SavingTypeFactory(title='Saving1')
     )
     SavingFactory(
         date=date(1999, 1, 1),
-        price=1.0,
+        price=1,
         fee=0.25,
         account=AccountFactory(title='Account2'),
         saving_type=SavingTypeFactory(title='Saving1')
@@ -164,8 +163,8 @@ def test_saving_items():
 
 def test_saving_month_sum(savings):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
-        {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
+        {'date': date(1999, 1, 1), 'sum': 350, 'title': 'Saving1'},
+        {'date': date(1999, 1, 1), 'sum': 225, 'title': 'Saving2'},
     ]
 
     actual = list(Saving.objects.sum_by_month_and_type(1999))
@@ -175,8 +174,8 @@ def test_saving_month_sum(savings):
 
 def test_saving_type_day_sum(savings):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(3.5), 'title': 'Saving1'},
-        {'date': date(1999, 1, 1), 'sum': Decimal(2.25), 'title': 'Saving2'},
+        {'date': date(1999, 1, 1), 'sum': 350, 'title': 'Saving1'},
+        {'date': date(1999, 1, 1), 'sum': 225, 'title': 'Saving2'},
     ]
 
     actual = list(Saving.objects.sum_by_day_and_type(1999, 1))
@@ -186,7 +185,7 @@ def test_saving_type_day_sum(savings):
 
 def test_saving_day_sum(_savings_extra):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': Decimal(2.0), 'title': 'Taupymas'},
+        {'date': date(1999, 1, 1), 'sum': 2, 'title': 'Taupymas'},
     ]
 
     actual = list(Saving.objects.sum_by_day(1999, 1))
@@ -195,7 +194,7 @@ def test_saving_day_sum(_savings_extra):
 
 
 def test_saving_months_sum(savings):
-    expect = [{'date': date(1999, 1, 1), 'sum': Decimal(5.75), 'title': 'savings'}]
+    expect = [{'date': date(1999, 1, 1), 'sum': 575, 'title': 'savings'}]
 
     actual = list(Saving.objects.sum_by_month(1999))
 
@@ -240,7 +239,7 @@ def test_saving_last_months():
 
     actual = Saving.objects.last_months(6)
 
-    assert actual['sum'] == 11.0
+    assert actual['sum'] == 11
 
 
 @time_machine.travel('1999-06-01')
@@ -258,15 +257,15 @@ def test_saving_post_save():
 
     assert actual.count() == 1
     assert actual[0].account.title == 'Account1'
-    assert actual[0].expenses == 150.0
-    assert actual[0].balance == -150.0
+    assert actual[0].expenses == 150
+    assert actual[0].balance == -150
 
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0].invested == 144.45
-    assert actual[0].fee == 5.55
-    assert actual[0].incomes == 150.0
+    assert actual[0].invested == 145
+    assert actual[0].fee == 5
+    assert actual[0].incomes == 150
 
 
 def test_saving_post_save_update():
@@ -279,64 +278,64 @@ def test_saving_post_save_update():
     obj_update.save()
 
     actual = AccountBalance.objects.get(account_id=obj.account.pk, year=1999)
-    assert actual.expenses == 10.0
-    assert actual.balance == -10.0
+    assert actual.expenses == 10
+    assert actual.balance == -10
 
     actual = SavingBalance.objects.get(saving_type_id=obj.saving_type.pk, year=1999)
-    assert actual.invested == 9.0
-    assert actual.fee == 1.0
-    assert actual.incomes == 10.0
+    assert actual.invested == 9
+    assert actual.fee == 1
+    assert actual.incomes == 10
 
 
 def test_saving_post_save_first_record():
     _a = AccountFactory(title='A')
     _s = SavingTypeFactory(title='S')
 
-    SavingFactory(saving_type=_s, account=_a, price=4, date=date(1998, 1, 1), fee=0.25)
+    SavingFactory(saving_type=_s, account=_a, price=4, date=date(1998, 1, 1), fee=2)
     IncomeFactory(account=_a, price=3, date=date(1998, 1, 1))
 
     # truncate table
     SavingBalance.objects.all().delete()
     AccountBalance.objects.all().delete()
 
-    SavingFactory(saving_type=_s, account=_a, price=1, fee=0.25)
+    SavingFactory(saving_type=_s, account=_a, price=10, fee=2)
 
     actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
     assert actual.account.title == 'A'
-    assert actual.past == -1.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 1.0
-    assert actual.balance == -2.0
+    assert actual.past == -1
+    assert actual.incomes == 0
+    assert actual.expenses == 10
+    assert actual.balance == -11
 
     actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
     assert actual.saving_type.title == 'S'
-    assert actual.past_amount == 4.0
-    assert actual.past_fee == 0.25
-    assert actual.fee == 0.5
-    assert actual.invested == 4.5
-    assert actual.incomes == 5.0
+    assert actual.past_amount == 4
+    assert actual.past_fee == 2
+    assert actual.fee == 4
+    assert actual.invested == 10
+    assert actual.incomes == 14
 
 
 def test_saving_post_save_new():
     _a = AccountFactory(title='A')
     _s = SavingTypeFactory(title='S')
 
-    SavingFactory(saving_type=_s, account=_a, price=1, fee=0.25)
+    SavingFactory(saving_type=_s, account=_a, price=10, fee=2)
 
     actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
     assert actual.account.title == 'A'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 1.0
-    assert actual.balance == -1.0
+    assert actual.past == 0
+    assert actual.incomes == 0
+    assert actual.expenses == 10
+    assert actual.balance == -10
 
     actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
     assert actual.saving_type.title == 'S'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.75
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 2
+    assert actual.invested == 8
+    assert actual.incomes == 10
 
 
 def test_saving_post_save_different_types():
@@ -353,28 +352,28 @@ def test_saving_post_save_different_types():
     assert actual.count() == 2
 
     actual = AccountBalance.objects.first()
-    assert actual.incomes == 0.0
-    assert actual.expenses == 400.0
+    assert actual.incomes == 0
+    assert actual.expenses == 400
 
     actual = SavingBalance.objects.all()
     assert actual.count() == 4
 
     actual = SavingBalance.objects.get(year=1999, saving_type_id=s1.pk)
-    assert actual.incomes == 150.0
-    assert actual.fee == 5.55
-    assert actual.invested == 144.45
+    assert actual.incomes == 150
+    assert actual.fee == 5
+    assert actual.invested == 145
 
     actual = SavingBalance.objects.get(year=1999, saving_type_id=s2.pk)
-    assert actual.incomes == 250.0
-    assert actual.fee == 5.55
-    assert actual.invested == 244.45
+    assert actual.incomes == 250
+    assert actual.fee == 5
+    assert actual.invested == 245
 
 
 def test_saving_post_save_update_nothing_changed():
     _a = AccountFactory(title='A')
     _s = SavingTypeFactory(title='S')
 
-    obj = SavingFactory(saving_type=_s, account=_a, price=1, fee=0.25)
+    obj = SavingFactory(saving_type=_s, account=_a, price=10, fee=2)
 
     # update saving change
     obj_update = Saving.objects.get(pk=obj.pk)
@@ -382,18 +381,18 @@ def test_saving_post_save_update_nothing_changed():
 
     actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
     assert actual.account.title == 'A'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 1.0
-    assert actual.balance == -1.0
+    assert actual.past == 0
+    assert actual.incomes == 0
+    assert actual.expenses == 10
+    assert actual.balance == -10
 
     actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
     assert actual.saving_type.title == 'S'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.75
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 2
+    assert actual.invested == 8
+    assert actual.incomes == 10
 
 
 def test_saving_post_save_update_changed_saving_type():
@@ -401,15 +400,15 @@ def test_saving_post_save_update_changed_saving_type():
     _s = SavingTypeFactory(title='S')
     _s_new = SavingTypeFactory(title='S-New')
 
-    obj = SavingFactory(saving_type=_s, account=_a, price=1, fee=0.25)
+    obj = SavingFactory(saving_type=_s, account=_a, price=10, fee=2)
 
     actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
     assert actual.saving_type.title == 'S'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.75
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 2
+    assert actual.invested == 8
+    assert actual.incomes == 10
 
     # update saving change
     obj_update = Saving.objects.get(pk=obj.pk)
@@ -418,25 +417,21 @@ def test_saving_post_save_update_changed_saving_type():
 
     actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
     assert actual.account.title == 'A'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 1.0
-    assert actual.balance == -1.0
+    assert actual.past == 0
+    assert actual.incomes == 0
+    assert actual.expenses == 10
+    assert actual.balance == -10
 
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
-    except SavingBalance.DoesNotExist:
-        fail = True
-    assert fail
+    actual = SavingBalance.objects.filter(saving_type_id=_s.pk, year=1999)
+    assert actual.count() == 0
 
     actual = SavingBalance.objects.get(saving_type_id=_s_new.pk, year=1999)
     assert actual.saving_type.title == 'S-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.75
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 2
+    assert actual.invested == 8
+    assert actual.incomes == 10
 
 
 def test_saving_post_save_update_changed_account():
@@ -444,42 +439,37 @@ def test_saving_post_save_update_changed_account():
     _a_new = AccountFactory(title='A-New')
     _s = SavingTypeFactory(title='S')
 
-    obj = SavingFactory(saving_type=_s, account=_a, price=1, fee=0.25)
+    obj = SavingFactory(saving_type=_s, account=_a, price=10, fee=2)
 
     actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
     assert actual.account.title == 'A'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 1.0
-    assert actual.balance == -1.0
+    assert actual.past == 0
+    assert actual.incomes == 0
+    assert actual.expenses == 10
+    assert actual.balance == -10
 
     # update saving change
     obj_update = Saving.objects.get(pk=obj.pk)
     obj_update.account = _a_new
     obj_update.save()
 
-    fail = False
-    try:
-        actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
-    except AccountBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = AccountBalance.objects.filter(account_id=_a.pk, year=1999)
+    assert actual.count() == 0
 
     actual = AccountBalance.objects.get(account_id=_a_new.pk, year=1999)
     assert actual.account.title == 'A-New'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 1.0
-    assert actual.balance == -1.0
+    assert actual.past == 0
+    assert actual.incomes == 0
+    assert actual.expenses == 10
+    assert actual.balance == -10
 
     actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
     assert actual.saving_type.title == 'S'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.75
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 2
+    assert actual.invested == 8
+    assert actual.incomes == 10
 
 
 def test_saving_post_save_update_changed_account_and_saving_type():
@@ -488,22 +478,22 @@ def test_saving_post_save_update_changed_account_and_saving_type():
     _s = SavingTypeFactory(title='S')
     _s_new = SavingTypeFactory(title='S-New')
 
-    obj = SavingFactory(saving_type=_s, account=_a, price=1, fee=0.25)
+    obj = SavingFactory(saving_type=_s, account=_a, price=10, fee=2)
 
     actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
     assert actual.account.title == 'A'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 1.0
-    assert actual.balance == -1.0
+    assert actual.past == 0
+    assert actual.incomes == 0
+    assert actual.expenses == 10
+    assert actual.balance == -10
 
     actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
     assert actual.saving_type.title == 'S'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.75
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 2
+    assert actual.invested == 8
+    assert actual.incomes == 10
 
     # update saving change
     obj_update = Saving.objects.get(pk=obj.pk)
@@ -511,36 +501,26 @@ def test_saving_post_save_update_changed_account_and_saving_type():
     obj_update.saving_type = _s_new
     obj_update.save()
 
-    fail = False
-    try:
-        actual = AccountBalance.objects.get(account_id=_a.pk, year=1999)
-    except AccountBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = AccountBalance.objects.filter(account_id=_a.pk, year=1999)
+    assert actual.count() == 0
 
     actual = AccountBalance.objects.get(account_id=_a_new.pk, year=1999)
     assert actual.account.title == 'A-New'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 1.0
-    assert actual.balance == -1.0
+    assert actual.past == 0
+    assert actual.incomes == 0
+    assert actual.expenses == 10
+    assert actual.balance == -10
 
-    fail = False
-    try:
-        actual = SavingBalance.objects.get(saving_type_id=_s.pk, year=1999)
-    except SavingBalance.DoesNotExist:
-        fail = True
-
-    assert fail
+    actual = SavingBalance.objects.filter(saving_type_id=_s.pk, year=1999)
+    assert actual.count() == 0
 
     actual = SavingBalance.objects.get(saving_type_id=_s_new.pk, year=1999)
     assert actual.saving_type.title == 'S-New'
-    assert actual.past_amount == 0.0
-    assert actual.past_fee == 0.0
-    assert actual.fee == 0.25
-    assert actual.invested == 0.75
-    assert actual.incomes == 1.0
+    assert actual.past_amount == 0
+    assert actual.past_fee == 0
+    assert actual.fee == 2
+    assert actual.invested == 8
+    assert actual.incomes == 10
 
 
 def test_saving_post_delete():
@@ -567,15 +547,15 @@ def test_saving_post_delete_with_update():
 
     assert actual.count() == 1
     assert actual[0].account.title == 'Account1'
-    assert actual[0].expenses == 10.0
-    assert actual[0].balance == -10.0
+    assert actual[0].expenses == 10
+    assert actual[0].balance == -10
 
     actual = SavingBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0].invested == 4.45
-    assert actual[0].fee == 5.55
-    assert actual[0].incomes == 10.0
+    assert actual[0].invested == 5
+    assert actual[0].fee == 5
+    assert actual[0].incomes == 10
 
     assert Saving.objects.all().count() == 1
 
@@ -583,8 +563,8 @@ def test_saving_post_delete_with_update():
 def test_savings_incomes(savings):
     SavingFactory(
         date=date(1999, 1, 1),
-        price=2.25,
-        fee=0.25,
+        price=225,
+        fee=25,
         account=AccountFactory(title='Account1'),
         saving_type=SavingTypeFactory(title='Saving2')
     )
@@ -593,23 +573,23 @@ def test_savings_incomes(savings):
 
     assert actual[0]['year'] == 1970
     assert actual[0]['id'] == 1
-    assert actual[0]['incomes'] == 1.25
-    assert actual[0]['fee'] == 0.25
+    assert actual[0]['incomes'] == 125
+    assert actual[0]['fee'] == 25
 
     assert actual[1]['year'] == 1970
     assert actual[1]['id'] == 2
-    assert actual[1]['incomes'] == 0.25
-    assert actual[1]['fee'] == 0.0
+    assert actual[1]['incomes'] == 25
+    assert actual[1]['fee'] == 0
 
     assert actual[2]['year'] == 1999
     assert actual[2]['id'] == 1
-    assert actual[2]['incomes'] == 3.5
-    assert actual[2]['fee'] == 0.5
+    assert actual[2]['incomes'] == 350
+    assert actual[2]['fee'] == 50
 
     assert actual[3]['year'] == 1999
     assert actual[3]['id'] == 2
-    assert actual[3]['incomes'] == 4.5
-    assert actual[3]['fee'] == 0.5
+    assert actual[3]['incomes'] == 450
+    assert actual[3]['fee'] == 50
 
 
 def test_savings_expenses(savings):
@@ -617,19 +597,19 @@ def test_savings_expenses(savings):
 
     assert actual[0]['year'] == 1970
     assert actual[0]['id'] == 1
-    assert actual[0]['expenses'] == 1.25
+    assert actual[0]['expenses'] == 125
 
     assert actual[1]['year'] == 1970
     assert actual[1]['id'] == 2
-    assert actual[1]['expenses'] == 0.25
+    assert actual[1]['expenses'] == 25
 
     assert actual[2]['year'] == 1999
     assert actual[2]['id'] == 1
-    assert actual[2]['expenses'] == 3.5
+    assert actual[2]['expenses'] == 350
 
     assert actual[3]['year'] == 1999
     assert actual[3]['id'] == 2
-    assert actual[3]['expenses'] == 2.25
+    assert actual[3]['expenses'] == 225
 
 
 # ----------------------------------------------------------------------------
@@ -640,14 +620,14 @@ def test_saving_balance_init():
 
     assert str(actual.saving_type) == 'Savings'
 
-    assert actual.past_amount == 2.0
-    assert actual.past_fee == 2.1
-    assert actual.fee == 2.2
-    assert actual.invested == 2.3
-    assert actual.incomes == 2.4
-    assert actual.market_value == 2.5
-    assert actual.profit_proc == 2.8
-    assert actual.profit_sum == 2.9
+    assert actual.past_amount == 20
+    assert actual.past_fee == 21
+    assert actual.fee == 22
+    assert actual.invested == 23
+    assert actual.incomes == 24
+    assert actual.market_value == 25
+    assert actual.profit_proc == 28
+    assert actual.profit_sum == 29
 
 
 def test_saving_balance_str():
@@ -704,10 +684,10 @@ def test_saving_balance_new_post_save_account_balace():
     actual = actual[0]
 
     assert actual.account.title == 'Account1'
-    assert actual.past == 0.0
-    assert actual.incomes == 0.0
-    assert actual.expenses == 150.0
-    assert actual.balance == -150.0
+    assert actual.past == 0
+    assert actual.incomes == 0
+    assert actual.expenses == 150
+    assert actual.balance == -150
 
 
 def test_saving_balance_new_post_save_saving_balance():
@@ -721,9 +701,9 @@ def test_saving_balance_new_post_save_saving_balance():
 
     assert actual.saving_type.title == 'Savings'
 
-    assert round(actual.incomes, 2) == 150
-    assert round(actual.fee, 2) == 5.55
-    assert round(actual.invested, 2) == 144.45
+    assert actual.incomes == 150
+    assert actual.fee == 5
+    assert actual.invested == 145
 
 
 def test_saving_balance_filter_by_one_type():
@@ -738,9 +718,9 @@ def test_saving_balance_filter_by_one_type():
 
     assert actual.saving_type.title == '1'
 
-    assert round(actual.incomes, 2) == 150
-    assert round(actual.fee, 2) == 5.55
-    assert round(actual.invested, 2) == 144.45
+    assert actual.incomes == 150
+    assert actual.fee == 5
+    assert actual.invested == 145
 
 
 def test_saving_balance_filter_by_few_types():
@@ -766,8 +746,8 @@ def test_sum_by_type_funds():
     actual = list(SavingBalance.objects.sum_by_type())
 
     assert actual == [
-        {'year': 1999, 'invested': 9.0, 'profit': -9.0, 'type': 'funds'},
-        {'year': 2000, 'invested': 9.0, 'profit': -9.0, 'type': 'funds'},
+        {'year': 1999, 'invested': 9, 'profit': -9, 'type': 'funds'},
+        {'year': 2000, 'invested': 9, 'profit': -9, 'type': 'funds'},
     ]
 
 
@@ -781,8 +761,8 @@ def test_sum_by_type_shares():
     actual = list(SavingBalance.objects.sum_by_type())
 
     assert actual == [
-        {'year': 1999, 'invested': 9.0, 'profit': -9.0, 'type': 'shares'},
-        {'year': 2000, 'invested': 9.0, 'profit': -9.0, 'type': 'shares'},
+        {'year': 1999, 'invested': 9, 'profit': -9, 'type': 'shares'},
+        {'year': 2000, 'invested': 9, 'profit': -9, 'type': 'shares'},
     ]
 
 
@@ -796,8 +776,8 @@ def test_sum_by_type_pensions():
     actual = list(SavingBalance.objects.sum_by_type())
 
     assert actual == [
-        {'year': 1999, 'invested': 9.0, 'profit': -9.0, 'type': 'pensions'},
-        {'year': 2000, 'invested': 9.0, 'profit': -9.0, 'type': 'pensions'},
+        {'year': 1999, 'invested': 9, 'profit': -9, 'type': 'pensions'},
+        {'year': 2000, 'invested': 9, 'profit': -9, 'type': 'pensions'},
     ]
 
 
@@ -814,6 +794,6 @@ def test_sum_by_year():
     actual = list(SavingBalance.objects.sum_by_year())
 
     assert actual == [
-        {'year': 1999, 'invested': 7.0, 'profit': -7.0},
-        {'year': 2000, 'invested': 7.0, 'profit': -7.0},
+        {'year': 1999, 'invested': 7, 'profit': -7},
+        {'year': 2000, 'invested': 7, 'profit': -7},
     ]

@@ -73,18 +73,38 @@ def test_income_valid_data(year):
     form = IncomePlanForm({
         'year': year,
         'income_type': type_.pk,
-        'january': 15.0,
+        'january': 0.01,
+        'february': 0.01,
+        'march': 0.01,
+        'april': 0.01,
+        'may': 0.01,
+        'june': 0.01,
+        'july': 0.01,
+        'august': 0.01,
+        'september': 0.01,
+        'october': 0.01,
+        'november': 0.01,
+        'december': 0.01,
     })
-
     assert form.is_valid()
 
     data = form.save()
 
     assert data.year == 1999
-    assert data.january == 15.0
+    assert data.january == 1
+    assert data.february == 1
+    assert data.march == 1
+    assert data.april == 1
+    assert data.may == 1
+    assert data.june == 1
+    assert data.july == 1
+    assert data.august == 1
+    assert data.september == 1
+    assert data.october == 1
+    assert data.november == 1
+    assert data.december == 1
     assert str(data.income_type) == 'Income Type'
     assert data.journal.users.first().username == 'bob'
-    assert not data.february
 
 
 @time_machine.travel('1999-01-01')
@@ -121,7 +141,7 @@ def test_income_unique_together_validation_more_than_one():
     form = IncomePlanForm({
         'year': 1999,
         'income_type': type_.pk,
-        'january': 15.0,
+        'january': 15,
     })
 
     assert form.is_valid()
@@ -139,7 +159,7 @@ def test_income_negative_number():
 
     # add negative numbet to earch month
     for key, _ in month_names().items():
-        data[key.lower()] = -0.01
+        data[key.lower()] = -1
 
     form = IncomePlanForm(data=data)
 
@@ -225,18 +245,38 @@ def test_expense_valid_data(year):
     form = ExpensePlanForm({
         'year': year,
         'expense_type': type_.pk,
-        'january': 15.0,
+        'january': 0.01,
+        'february': 0.01,
+        'march': 0.01,
+        'april': 0.01,
+        'may': 0.01,
+        'june': 0.01,
+        'july': 0.01,
+        'august': 0.01,
+        'september': 0.01,
+        'october': 0.01,
+        'november': 0.01,
+        'december': 0.01,
     })
-
     assert form.is_valid()
 
     data = form.save()
 
     assert data.year == 1999
-    assert data.january == 15.0
+    assert data.january == 1
+    assert data.february == 1
+    assert data.march == 1
+    assert data.april == 1
+    assert data.may == 1
+    assert data.june == 1
+    assert data.july == 1
+    assert data.august == 1
+    assert data.september == 1
+    assert data.october == 1
+    assert data.november == 1
+    assert data.december == 1
     assert str(data.expense_type) == 'Expense Type'
     assert data.journal.users.first().username == 'bob'
-    assert not data.february
 
 
 @time_machine.travel('1999-01-01')
@@ -272,7 +312,7 @@ def test_expense_unique_together_validation_more_than_one():
     form = ExpensePlanForm({
         'year': 1999,
         'expense_type': t.pk,
-        'january': 15.0,
+        'january': 15,
     })
 
     assert form.is_valid()
@@ -337,18 +377,38 @@ def test_saving_valid_data(year):
     form = SavingPlanForm({
         'year': year,
         'saving_type': type_.pk,
-        'january': 15.0,
+        'january': 0.01,
+        'february': 0.01,
+        'march': 0.01,
+        'april': 0.01,
+        'may': 0.01,
+        'june': 0.01,
+        'july': 0.01,
+        'august': 0.01,
+        'september': 0.01,
+        'october': 0.01,
+        'november': 0.01,
+        'december': 0.01,
     })
-
     assert form.is_valid()
 
     data = form.save()
 
     assert data.year == 1999
-    assert data.january == 15.0
+    assert data.january == 1
+    assert data.february == 1
+    assert data.march == 1
+    assert data.april == 1
+    assert data.may == 1
+    assert data.june == 1
+    assert data.july == 1
+    assert data.august == 1
+    assert data.september == 1
+    assert data.october == 1
+    assert data.november == 1
+    assert data.december == 1
     assert str(data.saving_type) == 'Savings'
     assert data.journal.users.first().username == 'bob'
-    assert not data.february
 
 
 @time_machine.travel('1999-01-01')
@@ -385,7 +445,7 @@ def test_saving_unique_together_validation_more_than_on():
     form = SavingPlanForm({
         'year': 1999,
         'saving_type': t.pk,
-        'january': 15.0,
+        'january': 15,
     })
 
 
@@ -474,17 +534,37 @@ def test_day_year_initial_value():
 def test_day_valid_data(year):
     form = DayPlanForm({
         'year': year,
-        'january': 15.0,
+        'january': 0.01,
+        'february': 0.01,
+        'march': 0.01,
+        'april': 0.01,
+        'may': 0.01,
+        'june': 0.01,
+        'july': 0.01,
+        'august': 0.01,
+        'september': 0.01,
+        'october': 0.01,
+        'november': 0.01,
+        'december': 0.01,
     })
-
     assert form.is_valid()
 
     data = form.save()
 
     assert data.year == 1999
-    assert data.january == 15.0
+    assert data.january == 1
+    assert data.february == 1
+    assert data.march == 1
+    assert data.april == 1
+    assert data.may == 1
+    assert data.june == 1
+    assert data.july == 1
+    assert data.august == 1
+    assert data.september == 1
+    assert data.october == 1
+    assert data.november == 1
+    assert data.december == 1
     assert data.journal.users.first().username == 'bob'
-    assert not data.february
 
 
 @time_machine.travel('1999-01-01')
@@ -561,18 +641,38 @@ def test_necessary_valid_data(year):
     form = NecessaryPlanForm({
         'year': year,
         'title': 'XXX',
-        'january': 15.0,
+        'january': 0.01,
+        'february': 0.01,
+        'march': 0.01,
+        'april': 0.01,
+        'may': 0.01,
+        'june': 0.01,
+        'july': 0.01,
+        'august': 0.01,
+        'september': 0.01,
+        'october': 0.01,
+        'november': 0.01,
+        'december': 0.01,
     })
-
     assert form.is_valid()
 
     data = form.save()
 
     assert data.year == 1999
-    assert data.january == 15.0
+    assert data.january == 1
+    assert data.february == 1
+    assert data.march == 1
+    assert data.april == 1
+    assert data.may == 1
+    assert data.june == 1
+    assert data.july == 1
+    assert data.august == 1
+    assert data.september == 1
+    assert data.october == 1
+    assert data.november == 1
+    assert data.december == 1
     assert data.title == 'XXX'
     assert data.journal.users.first().username == 'bob'
-    assert not data.february
 
 
 @time_machine.travel('1999-01-01')
@@ -608,7 +708,7 @@ def test_necessary_unique_together_validation_more_than_one():
     form = NecessaryPlanForm({
         'year': 1999,
         'title': 'XXX',
-        'january': 15.0,
+        'january': 15,
     })
 
     assert form.is_valid()

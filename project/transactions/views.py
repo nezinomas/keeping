@@ -1,6 +1,7 @@
 from django.urls import reverse_lazy
 
 from ..accounts import views as accounts_views
+from ..core.lib.convert_price import ConvertToCents
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  ListViewMixin, TemplateViewMixin,
                                  UpdateViewMixin, rendered_content)
@@ -57,7 +58,7 @@ class New(CreateViewMixin):
     success_url = reverse_lazy('transactions:list')
 
 
-class Update(UpdateViewMixin):
+class Update(ConvertToCents, UpdateViewMixin):
     model = models.Transaction
     form_class = forms.TransactionForm
     hx_trigger_django = 'afterTransaction'
@@ -86,7 +87,7 @@ class SavingsCloseNew(CreateViewMixin):
     success_url = reverse_lazy('transactions:savings_close_list')
 
 
-class SavingsCloseUpdate(UpdateViewMixin):
+class SavingsCloseUpdate(ConvertToCents, UpdateViewMixin):
     model = models.SavingClose
     form_class = forms.SavingCloseForm
     hx_trigger_django = 'afterClose'
@@ -115,7 +116,7 @@ class SavingsChangeNew(CreateViewMixin):
     url = reverse_lazy('transactions:savings_change_new')
 
 
-class SavingsChangeUpdate(UpdateViewMixin):
+class SavingsChangeUpdate(ConvertToCents, UpdateViewMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
     hx_trigger_django = 'afterChange'

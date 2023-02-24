@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse_lazy
@@ -48,14 +46,8 @@ class SavingType(TitleAbstract):
 
 class Saving(models.Model):
     date = models.DateField()
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
-    )
-    fee = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    price = models.PositiveIntegerField()
+    fee = models.PositiveIntegerField(
         null=True,
         blank=True,
     )
@@ -103,18 +95,18 @@ class SavingBalance(models.Model):
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
     latest_check = models.DateTimeField(null=True, blank=True)
-    past_amount = models.FloatField(default=0.0)
-    past_fee = models.FloatField(default=0.0)
-    fee = models.FloatField(default=0.0)
-    per_year_incomes = models.FloatField(default=0.0)
-    per_year_fee = models.FloatField(default=0.0)
-    sold = models.FloatField(default=0.0)
-    sold_fee = models.FloatField(default=0.0)
-    invested = models.FloatField(default=0.0)
-    incomes = models.FloatField(default=0.0)
-    market_value = models.FloatField(default=0.0)
+    past_amount = models.IntegerField(default=0)
+    past_fee = models.IntegerField(default=0)
+    fee = models.IntegerField(default=0)
+    per_year_incomes = models.IntegerField(default=0)
+    per_year_fee = models.IntegerField(default=0)
+    sold = models.IntegerField(default=0)
+    sold_fee = models.IntegerField(default=0)
+    invested = models.IntegerField(default=0)
+    incomes = models.IntegerField(default=0)
+    market_value = models.IntegerField(default=0)
     profit_proc = models.FloatField(default=0.0)
-    profit_sum = models.FloatField(default=0.0)
+    profit_sum = models.IntegerField(default=0)
 
     # Managers
     objects = managers.SavingBalanceQuerySet.as_manager()

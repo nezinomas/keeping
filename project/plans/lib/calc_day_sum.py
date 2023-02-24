@@ -119,7 +119,7 @@ class PlanCalculateDaySum:
         arr = self._data.expenses
 
         for item in arr:
-            val = item.get(month, 0.0) or 0.0
+            val = item.get(month, 0) or 0
             rtn[item.get("title", "unknown")] = float(val)
 
         return rtn
@@ -137,13 +137,14 @@ class PlanCalculateDaySum:
             diff = set(self.std_columns) - set(df.columns)
             return (
                 df
-                .with_columns([pl.lit(0.0).alias(col_name) for col_name in diff])
+                .with_columns([pl.lit(0).alias(col_name) for col_name in diff])
                 .select(self.std_columns))
 
         return (
             pl.DataFrame(data)
             .sum()
             .pipe(insert_missing_columns)
+            .with_columns(pl.all().cast(pl.Int32))
             .with_columns(pl.lit(name).alias("name"))
         )
 
@@ -172,7 +173,7 @@ class PlanCalculateDaySum:
         df = (
             df.transpose(include_header=False, column_names=df["name"])
             .limit(12)
-            .with_columns(pl.all().cast(pl.Float32))
+            .with_columns(pl.all().cast(pl.Int32))
             .with_columns((
                 pl.col("expenses_necessary")
                 + pl.col("savings")

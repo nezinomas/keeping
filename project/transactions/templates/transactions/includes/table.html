@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load static %}
 {% load slippers %}
+{% load math %}
 
 {% if object_list %}
 
@@ -13,7 +14,7 @@
             <th class="text-start">{% translate 'To account' %}</th>
             <th>{% translate 'Amount' %}</th>
             {% if fee %}<th>{% translate 'Fees' %}</th>{% endif %}
-            <th colspan="2"></th>
+            <th colspan="{% if fee %}3{% else %}2{% endif %}"></th>
         </tr>
     </thead>
     <tbody>
@@ -24,8 +25,8 @@
             <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ object.from_account }}</td>
             <td class="text-start">{{ object.to_account }}</td>
-            <td>{{ object.price|floatformat:'2g' }}</td>
-            {% if fee %}<td>{{ object.fee }}</td>{% endif %}
+            {% table_cell value=object.price|price %}
+            {% if fee %}<td>{% table_cell value=object.fee|price %}</td>{% endif %}
             {% edit_cell url=url__update %}
             {% delete_cell url=url__delete %}
         </tr>

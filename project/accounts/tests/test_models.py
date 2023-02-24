@@ -139,12 +139,12 @@ def test_account_balance_init():
     assert str(actual.account) == 'Account1'
 
     assert actual.year == 1999
-    assert actual.past == 1.0
-    assert actual.incomes == 6.75
-    assert actual.expenses == 6.5
-    assert actual.balance == 1.25
-    assert actual.have == 0.20
-    assert actual.delta == -1.05
+    assert actual.past == 1
+    assert actual.incomes == 675
+    assert actual.expenses == 65
+    assert actual.balance == 125
+    assert actual.have == 20
+    assert actual.delta == -105
 
 
 def test_account_balance_items():

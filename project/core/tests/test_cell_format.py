@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 import pytest
 
 from ..templatetags.cell_format import (cellformat, compare, negative,
@@ -105,12 +103,6 @@ def test_compare_smaller_str():
 
 def test_compare_smaller_int():
     actual = compare(1, 0)
-
-    assert actual == 'table-success'
-
-
-def test_compare_smaller_decimal():
-    actual = compare(1, Decimal(0.1))
 
     assert actual == 'table-success'
 

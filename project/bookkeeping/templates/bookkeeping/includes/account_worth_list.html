@@ -1,5 +1,7 @@
 {% load i18n %}
 {% load slippers %}
+{% load math %}
+
 
 <table class="table table-sm table-striped table-hover">
     <thead>
@@ -20,24 +22,24 @@
                 {{ item.account.title }}
             </td>
             <td class="no-left-border w5"></td>
-            {% table_cell value=item.past css_class='w7' %}
-            {% table_cell value=item.incomes css_class='w7' %}
-            {% table_cell value=item.expenses css_class='w7' %}
-            {% table_cell value=item.balance css_class='w7' %}
-            {% table_cell value=item.have css_class='left-blue-border w7' %}
-            {% table_cell value=item.delta css_class='w7' highlight_value=True default_if_empty='ok' %}
+            {% table_cell value=item.past|price css_class='w7' %}
+            {% table_cell value=item.incomes|price css_class='w7' %}
+            {% table_cell value=item.expenses|price css_class='w7' %}
+            {% table_cell value=item.balance|price css_class='w7' %}
+            {% table_cell value=item.have|price css_class='left-blue-border w7' %}
+            {% table_cell value=item.delta|price css_class='w7' highlight_value=True default_if_empty='ok' %}
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <th class="text-start" colspan="2">{% translate 'Total' %}</th>
-            {% table_cell value=total_row.past tag="th" %}
-            {% table_cell value=total_row.incomes tag="th" %}
-            {% table_cell value=total_row.expenses tag="th" %}
-            {% table_cell value=total_row.balance css_class="check" tag="th" %}
-            {% table_cell value=total_row.have tag="th" css_class='left-blue-border' %}
-            {% table_cell value=total_row.delta tag="th" %}
+            {% table_cell value=total_row.past|price tag="th" %}
+            {% table_cell value=total_row.incomes|price tag="th" %}
+            {% table_cell value=total_row.expenses|price tag="th" %}
+            {% table_cell value=total_row.balance|price css_class="check" tag="th" %}
+            {% table_cell value=total_row.have|price tag="th" css_class='left-blue-border' %}
+            {% table_cell value=total_row.delta|price tag="th" %}
         </tr>
     </tfoot>
 </table>

@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 import time_machine
 from django.urls import resolve, reverse
@@ -63,7 +65,7 @@ def test_index_view_context(client_logged):
 
 
 @time_machine.travel('2000-01-01')
-def test_saving_load_form(client_logged):
+def test_saving_load_new_form(client_logged):
     url = reverse('savings:new')
 
     response = client_logged.get(url)
@@ -80,8 +82,8 @@ def test_saving_save(client_logged):
 
     data = {
         'date': '1999-01-01',
-        'price': '1.05',
-        'fee': '0.25',
+        'price': '0.01',
+        'fee': '2',
         'account': a.pk,
         'saving_type': i.pk
     }
@@ -93,8 +95,8 @@ def test_saving_save(client_logged):
     actual = response.content.decode('utf-8')
 
     assert '1999-01-01' in actual
-    assert '1,05' in actual
-    assert '0,25' in actual
+    assert '1' in actual
+    assert '2' in actual
     assert 'Account1' in actual
     assert 'Savings' in actual
 
@@ -115,6 +117,51 @@ def test_saving_save_invalid_data(client_logged):
     actual = response.context['form']
 
     assert not actual.is_valid()
+    assert 'date' in actual.errors
+    assert 'price' in actual.errors
+    assert 'fee' in actual.errors
+    assert 'account' in actual.errors
+    assert 'saving_type' in actual.errors
+
+
+def test_savings_load_update_form_button(client_logged):
+    obj = SavingFactory()
+
+    url = reverse('savings:update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.content.decode('utf-8')
+
+    assert 'Atnaujinti ir uždaryti</button>' in form
+
+
+def test_savings_load_update_form_field_values(client_logged):
+    obj = SavingFactory(price=1, fee=1)
+
+    url = reverse('savings:update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
+
+    assert form.instance.date == date(1999, 1, 1)
+    assert form.instance.price == 0.01
+    assert form.instance.fee == 0.01
+    assert form.instance.account.title == 'Account1'
+    assert form.instance.saving_type.title == 'Savings'
+    assert form.instance.remark == 'remark'
+
+
+def test_savings_load_update_form_field_values_fee_none(client_logged):
+    obj = SavingFactory(price=1, fee=None)
+
+    url = reverse('savings:update', kwargs={'pk': obj.pk})
+    response = client_logged.get(url)
+    form = response.context['form']
+
+    assert form.instance.date == date(1999, 1, 1)
+    assert form.instance.price == 0.01
+    assert not form.instance.fee
+    assert form.instance.account.title == 'Account1'
+    assert form.instance.saving_type.title == 'Savings'
+    assert form.instance.remark == 'remark'
 
 
 @time_machine.travel('2011-1-1')
@@ -142,8 +189,8 @@ def test_saving_update(client_logged):
     saving = SavingFactory()
 
     data = {
-        'price': '150',
-        'fee': '25',
+        'price': '0.01',
+        'fee': '0.01',
         'date': '1999-12-31',
         'remark': 'Pastaba',
         'account': 1,
@@ -151,13 +198,13 @@ def test_saving_update(client_logged):
     }
     url = reverse('savings:update', kwargs={'pk': saving.pk})
 
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode('utf-8')
+    client_logged.post(url, data, follow=True)
+    actual = Saving.objects.get(pk=saving.pk)
 
-    assert '1999-12-31' in actual
-    assert '150' in actual
-    assert '25' in actual
-    assert 'Pastaba' in actual
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == 1
+    assert actual.fee == 1
+    assert actual.remark == 'Pastaba'
 
 
 def test_savings_not_load_other_journal(client_logged, main_user, second_user):
@@ -176,6 +223,29 @@ def test_savings_not_load_other_journal(client_logged, main_user, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_savings_list_price_converted(client_logged):
+    SavingFactory(price=7777, fee=8888)
+
+    url = reverse('savings:list')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert '77,77' in actual
+    assert '88,88' in actual
+
+
+@time_machine.travel('1999-1-1')
+def test_savings_list_price_converted_with_thousands(client_logged):
+    SavingFactory(price=100_000_000, fee=100_000)
+
+    url = reverse('savings:list')
+    response = client_logged.get(url)
+    actual = response.content.decode('utf-8')
+
+    assert '1.000.000,00' in actual
+    assert '1.000,00' in actual
 
 
 # ---------------------------------------------------------------------------------------

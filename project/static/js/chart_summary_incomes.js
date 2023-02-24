@@ -3,6 +3,12 @@ $(function () {
         document.getElementById('chart-incomes-data').textContent
     );
 
+    // convert data
+    for (i = 0; i < chartData.incomes.length; i++) {
+        chartData.incomes[i] /= 100
+        chartData.salary[i] /= 100
+    }
+
     Highcharts.setOptions({
         lang: {
             thousandsSep: '.',

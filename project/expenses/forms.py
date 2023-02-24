@@ -10,11 +10,13 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
+from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
 from .models import Expense, ExpenseName, ExpenseType
 
 
-class ExpenseForm(forms.ModelForm):
+class ExpenseForm(ConvertToPrice, forms.ModelForm):
+    price = forms.FloatField(min_value=0.01)
     total_sum = forms.CharField(required=False)
 
     class Meta:

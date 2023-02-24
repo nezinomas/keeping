@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -10,12 +8,15 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.helpers.helper_forms import add_css_class
 from ..core.lib import utils
+from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
 from . import models
 
 
-class DebtForm(YearBetweenMixin, forms.ModelForm):
+class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
+    price = forms.FloatField(min_value=0.01)
+
     class Meta:
         model = models.Debt
         fields = ['journal', 'date', 'name', 'price', 'closed', 'account', 'remark']
@@ -64,20 +65,11 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         self.helper = FormHelper()
         add_css_class(self, self.helper)
 
-
     def save(self, *args, **kwargs):
+        # set debt_type
         if not self.instance.pk:
-            instance = super().save(commit=False)
-
-            _debt_type = utils.get_request_kwargs('debt_type')
-            _debt_type = _debt_type if _debt_type else 'lend'
-            instance.debt_type = _debt_type
-
-            instance.save()
-
-            return instance
-
-        super().save()
+            self.instance.debt_type = utils.get_request_kwargs('debt_type') or 'lend'
+        return super().save(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -87,30 +79,29 @@ class DebtForm(YearBetweenMixin, forms.ModelForm):
         price = cleaned_data.get('price')
 
         # can't update name
-        if not closed:
-            if name != self.instance.name:
-                qs = models.Debt.objects.items().filter(name=name)
-                if qs.exists():
-                    self.add_error('name', _('The name of the lender must be unique.'))
+        if not closed and name != self.instance.name:
+            qs = models.Debt.objects.items().filter(name=name)
+            if qs.exists():
+                self.add_error('name', _('The name of the lender must be unique.'))
 
         # can't close not returned debt
         _msg_cant_close = _("You can't close a debt that hasn't been returned.")
         if not self.instance.pk and closed:
             self.add_error('closed', _msg_cant_close)
 
-        if self.instance.pk and closed:
-            if self.instance.returned != price:
-                self.add_error('closed', _msg_cant_close)
+        if self.instance.pk and closed and self.instance.returned != price:
+            self.add_error('closed', _msg_cant_close)
 
         # can't update to smaller price
-        if self.instance.pk:
-            if price < self.instance.returned:
-                self.add_error('price', _("You cannot update to an amount lower than the amount already returned."))
+        if self.instance.pk and price < self.instance.returned:
+            self.add_error('price', _("You cannot update to an amount lower than the amount already returned."))
 
-        return
+        return cleaned_data
 
 
-class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
+class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
+    price = forms.FloatField(min_value=0.01)
+
     class Meta:
         model = models.DebtReturn
         fields = ['date', 'price', 'remark', 'account', 'debt']
@@ -171,7 +162,7 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
 
         price_sum = qs.get('price__sum')
         if not price_sum:
-            price_sum = Decimal('0')
+            price_sum = 0
 
         if price > (debt.price - price_sum):
             msg = _('The amount to be paid is more than the debt!')
@@ -181,9 +172,10 @@ class DebtReturnForm(YearBetweenMixin, forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        date = cleaned_data.get('date')
-        debt = cleaned_data.get('debt')
 
-        if debt:
+        date = cleaned_data.get('date')
+        if debt := cleaned_data.get('debt'):
             if date < debt.date:
                 self.add_error('date', _('The date is earlier than the date of the debt.'))
+
+        return cleaned_data

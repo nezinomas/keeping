@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse_lazy
@@ -29,21 +27,16 @@ class PensionType(TitleAbstract):
     def get_absolute_url(self):
         return reverse_lazy("pensions:type_update", kwargs={"pk": self.pk})
 
+
 class Pension(models.Model):
     date = models.DateField()
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    price = models.PositiveIntegerField(
         null=True,
-        blank=True,
-        validators=[MinValueValidator(Decimal('0'))]
+        blank=True
     )
-    fee = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+    fee = models.PositiveIntegerField(
         null=True,
-        blank=True,
-        validators=[MinValueValidator(Decimal('0'))]
+        blank=True
     )
     remark = models.TextField(
         max_length=1000,
@@ -80,18 +73,18 @@ class PensionBalance(models.Model):
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
     latest_check = models.DateTimeField(null=True, blank=True)
-    past_amount = models.FloatField(default=0.0)
-    past_fee = models.FloatField(default=0.0)
-    fee = models.FloatField(default=0.0)
-    per_year_incomes = models.FloatField(default=0.0)
-    per_year_fee = models.FloatField(default=0.0)
-    sold = models.FloatField(default=0.0)
-    sold_fee = models.FloatField(default=0.0)
-    invested = models.FloatField(default=0.0)
-    incomes = models.FloatField(default=0.0)
-    market_value = models.FloatField(default=0.0)
+    past_amount = models.IntegerField(default=0)
+    past_fee = models.IntegerField(default=0)
+    fee = models.IntegerField(default=0)
+    per_year_incomes = models.IntegerField(default=0)
+    per_year_fee = models.IntegerField(default=0)
+    sold = models.IntegerField(default=0)
+    sold_fee = models.IntegerField(default=0)
+    invested = models.IntegerField(default=0)
+    incomes = models.IntegerField(default=0)
+    market_value = models.IntegerField(default=0)
     profit_proc = models.FloatField(default=0.0)
-    profit_sum = models.FloatField(default=0.0)
+    profit_sum = models.IntegerField(default=0)
 
     # Managers
     objects = managers.PensionBalanceQuerySet.as_manager()
