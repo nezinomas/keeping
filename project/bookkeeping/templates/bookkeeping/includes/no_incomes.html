@@ -11,13 +11,21 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in no_incomes %}
         <tr>
-            <td>{% if item.label == 'money' %}{% translate 'Money' %}, € {% endif %}{% if item.label == 'no_cut' %}{% translate 'No change in spending, month' %}{% endif %}{% if item.label == 'cut' %}{% translate 'After spending cuts, month' %}{% endif %}</td>
-            {% table_cell value=item.money_fund|price %}
-            {% table_cell value=item.money_fund_pension|price %}
+            <td>{% translate 'Money' %}, €</td>
+            {% table_cell value=no_incomes.0.money_fund|price %}
+            {% table_cell value=no_incomes.0.money_fund_pension|price %}
         </tr>
-        {% endfor %}
+        <tr>
+            <td>{% translate 'No change in spending, month' %}</td>
+            <td>{{no_incomes.1.money_fund|floatformat:'1g'}}</td>
+            <td>{{no_incomes.1.money_fund_pension|floatformat:'1g'}}</td>
+        </tr>
+        <tr>
+            <td>{% translate 'After spending cuts, month' %}</td>
+            <td>{{no_incomes.2.money_fund|floatformat:'1g'}}</td>
+            <td>{{no_incomes.2.money_fund_pension|floatformat:'1g'}}</td>
+        </tr>
     </tbody>
 </table>
 <p>
