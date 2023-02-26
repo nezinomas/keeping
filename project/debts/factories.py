@@ -12,11 +12,11 @@ class BorrowFactory(factory.django.DjangoModelFactory):
         model = models.Debt
 
     date = dt(1999, 1, 1)
-    debt_type = 'borrow'
-    name = factory.Faker('first_name')
+    debt_type = "borrow"
+    name = factory.Faker("first_name")
     price = 100
     closed = False
-    remark = 'Borrow Remark'
+    remark = "Borrow Remark"
     account = factory.SubFactory(AccountFactory)
     journal = factory.SubFactory(JournalFactory)
 
@@ -27,7 +27,7 @@ class BorrowReturnFactory(factory.django.DjangoModelFactory):
 
     date = dt(1999, 1, 2)
     price = 5
-    remark = 'Borrow Return Remark'
+    remark = "Borrow Return Remark"
     account = factory.SubFactory(AccountFactory)
     debt = factory.SubFactory(BorrowFactory)
 
@@ -37,11 +37,11 @@ class LendFactory(factory.django.DjangoModelFactory):
         model = models.Debt
 
     date = dt(1999, 1, 1)
-    debt_type = 'lend'
-    name = factory.Faker('first_name')
+    debt_type = "lend"
+    name = factory.Faker("first_name")
     price = 100
     closed = False
-    remark = 'Lend Remark'
+    remark = "Lend Remark"
     account = factory.SubFactory(AccountFactory)
     journal = factory.SubFactory(JournalFactory)
 
@@ -52,6 +52,6 @@ class LendReturnFactory(factory.django.DjangoModelFactory):
 
     date = dt(1999, 1, 2)
     price = 6
-    remark = 'Lend Return Remark'
+    remark = "Lend Return Remark"
     account = factory.SubFactory(AccountFactory)
     debt = factory.SubFactory(LendFactory)

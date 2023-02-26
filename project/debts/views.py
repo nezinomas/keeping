@@ -1,55 +1,58 @@
 from django.urls import reverse_lazy
 
 from ..core.lib.convert_price import ConvertToCents
-from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 ListViewMixin, TemplateViewMixin,
-                                 UpdateViewMixin, rendered_content)
+from ..core.mixins.views import (
+    CreateViewMixin,
+    DeleteViewMixin,
+    ListViewMixin,
+    TemplateViewMixin,
+    UpdateViewMixin,
+    rendered_content,
+)
 from . import forms, models
 
 
-class DebtMixin():
+class DebtMixin:
     def get_success_url(self):
-        debt_type = self.kwargs.get('debt_type')
-        return reverse_lazy('debts:list', kwargs={'debt_type': debt_type})
+        debt_type = self.kwargs.get("debt_type")
+        return reverse_lazy("debts:list", kwargs={"debt_type": debt_type})
 
     def get_hx_trigger_django(self):
-        debt_type = self.kwargs.get('debt_type')
-        return f'after_{debt_type}'
+        debt_type = self.kwargs.get("debt_type")
+        return f"after_{debt_type}"
 
 
-class DebtReturnMixin():
+class DebtReturnMixin:
     def get_success_url(self):
-        debt_type = self.kwargs.get('debt_type')
-        return reverse_lazy('debts:return_list', kwargs={'debt_type': debt_type})
+        debt_type = self.kwargs.get("debt_type")
+        return reverse_lazy("debts:return_list", kwargs={"debt_type": debt_type})
 
     def get_hx_trigger_django(self):
-        debt_type = self.kwargs.get('debt_type')
-        return f'after_{debt_type}_return'
+        debt_type = self.kwargs.get("debt_type")
+        return f"after_{debt_type}_return"
 
 
 class Index(TemplateViewMixin):
-    template_name = 'debts/index.html'
+    template_name = "debts/index.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            'borrow': rendered_content(
-                self.request,
-                DebtLists,
-                **{'debt_type': 'borrow'}),
-            'borrow_return': rendered_content(
-                self.request,
-                DebtReturnLists,
-                **{'debt_type': 'borrow'}),
-            'lend': rendered_content(
-                self.request,
-                DebtLists,
-                **{'debt_type': 'lend'}),
-            'lend_return': rendered_content(
-                self.request,
-                DebtReturnLists,
-                **{'debt_type': 'lend'}),
-        })
+        context.update(
+            {
+                "borrow": rendered_content(
+                    self.request, DebtLists, **{"debt_type": "borrow"}
+                ),
+                "borrow_return": rendered_content(
+                    self.request, DebtReturnLists, **{"debt_type": "borrow"}
+                ),
+                "lend": rendered_content(
+                    self.request, DebtLists, **{"debt_type": "lend"}
+                ),
+                "lend_return": rendered_content(
+                    self.request, DebtReturnLists, **{"debt_type": "lend"}
+                ),
+            }
+        )
         return context
 
 
@@ -65,8 +68,8 @@ class DebtNew(DebtMixin, CreateViewMixin):
     form_class = forms.DebtForm
 
     def url(self):
-        debt_type = self.kwargs.get('debt_type')
-        return reverse_lazy('debts:new', kwargs={'debt_type': debt_type})
+        debt_type = self.kwargs.get("debt_type")
+        return reverse_lazy("debts:new", kwargs={"debt_type": debt_type})
 
 
 class DebtUpdate(ConvertToCents, DebtMixin, UpdateViewMixin):
@@ -90,8 +93,8 @@ class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
     form_class = forms.DebtReturnForm
 
     def url(self):
-        debt_type = self.kwargs.get('debt_type')
-        return reverse_lazy('debts:return_new', kwargs={'debt_type': debt_type})
+        debt_type = self.kwargs.get("debt_type")
+        return reverse_lazy("debts:return_new", kwargs={"debt_type": debt_type})
 
 
 class DebtReturnUpdate(ConvertToCents, DebtReturnMixin, UpdateViewMixin):
