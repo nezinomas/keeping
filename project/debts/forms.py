@@ -160,9 +160,7 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
             .aggregate(Sum('price'))
         )
 
-        price_sum = qs.get('price__sum')
-        if not price_sum:
-            price_sum = 0
+        price_sum = qs.get('price__sum') or 0
 
         if price > (debt.price - price_sum):
             msg = _('The amount to be paid is more than the debt!')
