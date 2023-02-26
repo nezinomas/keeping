@@ -172,8 +172,8 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         cleaned_data = super().clean()
 
         date = cleaned_data.get('date')
-        if debt := cleaned_data.get('debt'):
-            if date < debt.date:
-                self.add_error('date', _('The date is earlier than the date of the debt.'))
+        debt = cleaned_data.get('debt')
+        if debt and date < debt.date:
+            self.add_error('date', _('The date is earlier than the date of the debt.'))
 
         return cleaned_data
