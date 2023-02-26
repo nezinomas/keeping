@@ -61,7 +61,7 @@ def clean_year_picker_input(field_name, data, cleaned_data, errors):
         return cleaned_data
     # try split field by '-'
     try:
-        field, *_ = field.split('-')
+        field, *_ = field.split("-")
     except AttributeError:
         return cleaned_data
     # try convert field to int
