@@ -76,6 +76,8 @@ class DebtReturn(models.Model):
         if self.debt.debt_type == "borrow":
             return f'{_("Borrow return")} {_price}'
 
+        return f'{_("Debt")} {_price}'
+
     def get_absolute_url(self):
         debt_type = utils.get_request_kwargs("debt_type")
         return reverse_lazy(
