@@ -109,9 +109,8 @@ class Compare(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year + 1
-        qty = kwargs.get('qty', 0)
+        qty = self.kwargs.get('qty', 0)
         chart_serries = H.several_years_consumption(range(year - qty, year))
-
         return {
             'chart': {
                 'categories': list(month_names().values()),
