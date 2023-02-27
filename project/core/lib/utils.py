@@ -4,8 +4,6 @@ from typing import Any, Dict, List
 from crequest.middleware import CrequestMiddleware
 from django.db.models.query import QuerySet
 
-from .date import monthname
-
 
 def get_user():
     request = CrequestMiddleware.get_request()
@@ -21,10 +19,6 @@ def get_request_kwargs(name):
         return crequest.resolver_match.kwargs.get(name)
     except KeyError:
         return None
-
-
-def get_value_from_dict(arr: Dict, month: int) -> float:
-    return float(arr.get(monthname(month), 0)) if arr else 0
 
 
 def sum_all(arr, keys=None):
@@ -43,13 +37,6 @@ def sum_col(arr: List[Dict], key: Any) -> float:
     rtn = sum_all(arr)
 
     return rtn.get(key, 0)
-
-
-def getattr_(obj, name, default=None):
-    try:
-        return getattr(obj, name)
-    except AttributeError:
-        return default
 
 
 def clean_year_picker_input(field_name, data, cleaned_data, errors):
