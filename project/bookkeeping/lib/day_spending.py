@@ -33,7 +33,7 @@ class DaySpending(BalanceBase):
     @property
     def avg_per_day(self) -> float:
         if self._spending.is_empty():
-            return 0.0
+            return 0
         day = current_day(self._year, self._month)
         df = (
             self._spending.select(["date", "total"])

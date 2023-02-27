@@ -99,7 +99,7 @@ class MonthService():
 
     def info_context(self):
         fact_incomes = self._data.incomes
-        fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0.0
+        fact_incomes = float(fact_incomes[0]['sum']) if fact_incomes else 0
         fact_savings = self._savings.total
         fact_expenses = self._spending.total
         fact_per_day = self._spending.avg_per_day
@@ -182,7 +182,7 @@ class MonthService():
 
         for arr in data:
             category = arr['name']
-            target = float(targets.get(category, 0.0))
+            target = float(targets.get(category, 0))
             fact = float(arr['y'])
 
             rtn_categories.append(category.upper())
@@ -191,11 +191,11 @@ class MonthService():
 
         return (rtn_categories, rtn_data_target, rtn_data_fact)
 
-    def _append_savings(self, data: dict, value: float = 0.0):
+    def _append_savings(self, data: dict, value: float = 0):
         title = _('Savings')
 
         if isinstance(data, dict):
-            value = value or 0.0
+            value = value or 0
             data[title] = value
 
         return data

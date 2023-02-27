@@ -7,7 +7,7 @@ register = template.Library()
 
 @register.filter
 def get_item(dictionary, key):
-    return dictionary.get(key, 0.0) if dictionary else None
+    return dictionary.get(key, 0) if dictionary else None
 
 
 @register.filter

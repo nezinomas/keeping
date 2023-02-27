@@ -66,7 +66,7 @@ class SummarySavingsService:
             'invested': [],
             'profit': [],
             'total': [],
-            'max': 0.0,
+            'max': 0,
         }
 
         # from tuple[list[dict]] make list[dict]

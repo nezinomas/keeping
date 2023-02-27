@@ -15,7 +15,7 @@ from .index import IndexService
 class SavingServiceData:
     year: int
 
-    incomes: float = field(init=False, default=0.0)
+    incomes: float = field(init=False, default=0)
     savings: list = field(init=False, default_factory=list)
     data: list = field(init=False, default_factory=list)
 

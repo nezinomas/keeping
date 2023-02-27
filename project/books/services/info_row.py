@@ -21,7 +21,7 @@ class InfoRow():
             .readed() \
             .filter(year=self.year)
 
-        return qs[0]['cnt'] if qs.exists() else 0.0
+        return qs[0]['cnt'] if qs.exists() else 0
 
     def _reading(self):
         return \

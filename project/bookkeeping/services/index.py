@@ -17,7 +17,7 @@ from ..lib.year_balance import YearBalance
 @dataclass
 class IndexServiceData:
     year: int
-    amount_start: float = 0.0
+    amount_start: int = 0
     data: dict = field(default_factory=dict)
 
     def __post_init__(self):
@@ -44,7 +44,7 @@ class IndexServiceData:
             AccountBalance.objects \
             .related() \
             .filter(year=self.year) \
-            .aggregate(Sum('past'))['past__sum'] or 0.0
+            .aggregate(Sum('past'))['past__sum'] or 0
 
         return float(_sum)
 

@@ -53,7 +53,6 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         )
         self.fields['price'].widget.attrs = {
             'readonly': True,
-            'step': '0.01',
             'class': 'sum-prices-field form-control-sm'
         }
         self.fields['remark'].widget.attrs['rows'] = 3

@@ -24,7 +24,7 @@ def get_request_kwargs(name):
 
 
 def get_value_from_dict(arr: Dict, month: int) -> float:
-    return float(arr.get(monthname(month), 0.0)) if arr else 0.0
+    return float(arr.get(monthname(month), 0)) if arr else 0
 
 
 def sum_all(arr, keys=None):
@@ -42,7 +42,7 @@ def sum_all(arr, keys=None):
 def sum_col(arr: List[Dict], key: Any) -> float:
     rtn = sum_all(arr)
 
-    return rtn.get(key, 0.0)
+    return rtn.get(key, 0)
 
 
 def getattr_(obj, name, default=None):

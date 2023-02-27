@@ -8,7 +8,7 @@ from .balance_base import BalanceBase
 
 
 class YearBalance(BalanceBase):
-    def __init__(self, data: MakeDataFrame, amount_start: float = 0.0):
+    def __init__(self, data: MakeDataFrame, amount_start: int = 0):
         """
         data: MakeDataFrame object
 
@@ -17,7 +17,7 @@ class YearBalance(BalanceBase):
         awailable keys in data: incomes, expenses, savings, savings_close, borrow, borrow_return, lend, lend_return
         """
         self._year = data.year
-        self._amount_start = amount_start or 0.0
+        self._amount_start = amount_start or 0
         self._balance = self._calc_balance_and_money_flow(data.data)
 
         super().__init__(self._balance)
@@ -31,7 +31,7 @@ class YearBalance(BalanceBase):
         try:
             val = self._balance["money_flow"][-1]
         except (KeyError, IndexError):
-            val = 0.0
+            val = 0
 
         return val
 
@@ -39,13 +39,13 @@ class YearBalance(BalanceBase):
     def amount_balance(self) -> float:
         t = super().total_row
 
-        return t.get("balance", 0.0)
+        return t.get("balance", 0)
 
     @property
     def avg_incomes(self) -> float:
         avg = super().average
 
-        return avg.get("incomes", 0.0)
+        return avg.get("incomes", 0)
 
     @property
     def avg_expenses(self) -> float:
@@ -62,7 +62,7 @@ class YearBalance(BalanceBase):
             return df[0, 0] / _month
 
         avg = super().average
-        return avg.get("expenses", 0.0)
+        return avg.get("expenses", 0)
 
     @property
     def income_data(self) -> list[float]:
@@ -102,7 +102,7 @@ class YearBalance(BalanceBase):
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
             .with_columns(
                 money_flow=(
-                    pl.lit(0.0)
+                    pl.lit(0)
                     + pl.col("balance")
                     + pl.col("savings_close")
                     + pl.col("borrow")

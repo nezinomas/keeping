@@ -45,7 +45,7 @@ class ChartSummaryExpensesService:
     data: ChartSummaryExpensesServiceData = field(default_factory=list)
 
     categories: list = field(init=False, default_factory=list)
-    total: float = field(init=False, default=0.0)
+    total: float = field(init=False, default=0)
     total_col: dict = field(init=False, default_factory=dict)
     total_row: list = field(init=False, default_factory=list)
     serries_data: list = field(init=False, default_factory=list)
@@ -68,7 +68,7 @@ class ChartSummaryExpensesService:
 
         for title, group in itertools.groupby(data, key=operator.itemgetter("title")):
             # make empty data list for each title
-            _item = {'name': title, 'data': [0.0] * len(categories)}
+            _item = {'name': title, 'data': [0] * len(categories)}
 
             # fill data
             for x in group:
