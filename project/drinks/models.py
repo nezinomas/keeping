@@ -11,35 +11,30 @@ MAX_BOTTLES = 20
 
 
 class DrinkType(models.TextChoices):
-    BEER = 'beer', _l('Beer')
-    WINE = 'wine', _l('Wine')
-    VODKA = 'vodka', _l('Vodka')
-    STDAV = 'stdav', 'Std Av'
+    BEER = "beer", _l("Beer")
+    WINE = "wine", _l("Wine")
+    VODKA = "vodka", _l("Vodka")
+    STDAV = "stdav", "Std Av"
 
 
 class Drink(models.Model):
     date = models.DateField()
-    quantity = models.FloatField(
-        validators=[MinValueValidator(0.1)]
-    )
+    quantity = models.FloatField(validators=[MinValueValidator(0.1)])
     option = models.CharField(
         max_length=7,
         choices=DrinkType.choices,
         default=DrinkType.BEER,
     )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     objects = managers.DrinkQuerySet.as_manager()
 
     class Meta:
-        get_latest_by = ['date']
+        get_latest_by = ["date"]
 
     def __str__(self):
         qty = DrinksOptions().ratio
-        return f'{self.date}: {round(self.quantity * qty, 2)}'
+        return f"{self.date}: {round(self.quantity * qty, 2)}"
 
     def save(self, *args, **kwargs):
         obj = DrinksOptions(drink_type=self.option)
@@ -55,17 +50,15 @@ class Drink(models.Model):
 
     def get_absolute_url(self):
         pk = self.pk
-        kwargs = {'pk': pk}
+        kwargs = {"pk": pk}
 
-        return \
-            reverse_lazy('drinks:update', kwargs=kwargs)
+        return reverse_lazy("drinks:update", kwargs=kwargs)
 
     def get_delete_url(self):
         pk = self.pk
-        kwargs = {'pk': pk}
+        kwargs = {"pk": pk}
 
-        return \
-            reverse_lazy('drinks:delete', kwargs=kwargs)
+        return reverse_lazy("drinks:delete", kwargs=kwargs)
 
 
 class DrinkTarget(models.Model):
@@ -79,9 +72,7 @@ class DrinkTarget(models.Model):
         default=DrinkType.BEER,
     )
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='drink_targets'
+        User, on_delete=models.CASCADE, related_name="drink_targets"
     )
 
     objects = managers.DrinkTargetQuerySet.as_manager()
@@ -90,22 +81,23 @@ class DrinkTarget(models.Model):
         obj = DrinksOptions()
         ml = obj.stdav_to_ml(drink_type=self.drink_type, stdav=self.quantity)
 
-        return f'{self.year}: {ml}'
+        return f"{self.year}: {ml}"
 
     class Meta:
-        ordering = ['-year']
-        unique_together = ['year', 'user']
+        ordering = ["-year"]
+        unique_together = ["year", "user"]
 
     def save(self, *args, **kwargs):
-        if self.drink_type != 'stdav':
+        if self.drink_type != "stdav":
             obj = DrinksOptions()
-            self.quantity = obj.ml_to_stdav(drink_type=self.drink_type, ml=self.quantity)
+            self.quantity = obj.ml_to_stdav(
+                drink_type=self.drink_type, ml=self.quantity
+            )
 
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         pk = self.pk
-        kwargs = {'pk': pk}
+        kwargs = {"pk": pk}
 
-        return \
-            reverse_lazy('drinks:target_update', kwargs=kwargs)
+        return reverse_lazy("drinks:target_update", kwargs=kwargs)
