@@ -26,7 +26,7 @@ class BalanceBase:
         Return total sum of all columns
         """
         if not isinstance(self._data, DF) or self._data.is_empty():
-            return 0.0
+            return 0
 
         return self._data.select(pl.sum(pl.exclude("date")).sum())[0, 0]
 
@@ -91,7 +91,7 @@ class BalanceBase:
                 [
                     pl.when(col_sum(col_name) != 0)
                     .then(col_sum(col_name) / count_not_nulls(col_name))
-                    .otherwise(pl.lit(0.0))
+                    .otherwise(pl.lit(0))
                     for col_name in cols
                 ]
             )
