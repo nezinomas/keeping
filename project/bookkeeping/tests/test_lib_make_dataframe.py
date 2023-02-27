@@ -98,8 +98,8 @@ def test_month_dtype(month_data, columns):
         ])
     actual = make_dataframe.MakeDataFrame(year=1999, data=month_data, columns=columns).data
 
-    assert actual.dtypes[2] == pl.Float32  # T1
-    assert actual.dtypes[3] == pl.Float32  # T2
+    assert actual.dtypes[2] == pl.Int32  # T1
+    assert actual.dtypes[3] == pl.Int32  # T2
 
 
 @pytest.mark.parametrize(

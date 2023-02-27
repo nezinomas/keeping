@@ -50,12 +50,12 @@ class MakeDataFrame:
             .pipe(self._insert_missing_rows)
             .select(["date", "title", sum_col_name])
             .sort(["title", "date"])
-            .with_columns(pl.col(sum_col_name).cast(pl.Float32))
+            .with_columns(pl.col(sum_col_name).cast(pl.Int32))
             .pivot(values=sum_col_name, index="date", columns="title")
             .pipe(self._insert_missing_columns)
             .pipe(self._drop_columns)
             .pipe(self._sort_columns)
-            .fill_null(0.0)
+            .fill_null(0)
             .sort("date")
         )
 
@@ -65,13 +65,13 @@ class MakeDataFrame:
         if df.is_empty():
             return df_empty.with_columns(
                 title=pl.lit("__tmp_to_drop__"),
-                sum=pl.lit(0.0),
-                exception_sum=pl.lit(0.0),
+                sum=pl.lit(0),
+                exception_sum=pl.lit(0),
             )
 
         return (
             df_empty.join(df, on="date", how="outer")
-            .fill_null(0.0)
+            .fill_null(0)
             .select(pl.all().forward_fill())
         )
 
@@ -101,7 +101,7 @@ class MakeDataFrame:
             return df
 
         cols_diff = set(self._columns) - set(df.columns)
-        cols = [pl.lit(0.0).alias(col_name) for col_name in cols_diff]
+        cols = [pl.lit(0).alias(col_name) for col_name in cols_diff]
         return df.select([pl.all(), *cols])
 
     def _sort_columns(self, df: DF) -> pl.Expr:
