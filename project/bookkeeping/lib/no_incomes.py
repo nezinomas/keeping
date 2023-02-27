@@ -17,9 +17,9 @@ class NoIncomesData:
     unnecessary_expenses: list = field(default_factory=list)
     unnecessary_savings: bool = field(default=False)
 
-    account_sum: float = field(init=False, default=0.0)
-    fund_sum: float = field(init=False, default=0.0)
-    pension_sum: float = field(init=False, default=0.0)
+    account_sum: float = field(init=False, default=0)
+    fund_sum: float = field(init=False, default=0)
+    pension_sum: float = field(init=False, default=0)
 
     expenses: list = \
         field(init=False, default_factory=list)
@@ -34,19 +34,19 @@ class NoIncomesData:
             AccountBalance.objects \
             .related() \
             .filter(year=self.year) \
-            .aggregate(Sum('balance'))['balance__sum'] or 0.0
+            .aggregate(Sum('balance'))['balance__sum'] or 0
 
         self.fund_sum = \
             SavingBalance.objects \
             .related() \
             .filter(year=self.year, saving_type__type__in=['shares', 'funds']) \
-            .aggregate(Sum('market_value'))['market_value__sum'] or 0.0
+            .aggregate(Sum('market_value'))['market_value__sum'] or 0
 
         self.pension_sum = \
             SavingBalance.objects \
             .related() \
             .filter(year=self.year, saving_type__type='pensions') \
-            .aggregate(Sum('market_value'))['market_value__sum'] or 0.0
+            .aggregate(Sum('market_value'))['market_value__sum'] or 0
 
         if self.unnecessary_expenses:
             arr = json.loads(self.unnecessary_expenses)
@@ -65,8 +65,8 @@ class NoIncomesData:
 @dataclass
 class NoIncomes:
     data: NoIncomesData
-    cut_sum: float = field(init=False, default=0.0)
-    avg_expenses: float = field(init=False, default=0.0)
+    cut_sum: float = field(init=False, default=0)
+    avg_expenses: float = field(init=False, default=0)
 
     def __post_init__(self):
         self._calc()
@@ -95,8 +95,8 @@ class NoIncomes:
         }]
 
     def _calc(self):
-        expenses_sum = 0.0
-        cut_sum = 0.0
+        expenses_sum = 0
+        cut_sum = 0
         for r in self.data.expenses:
             _sum = float(r['sum'])
 
@@ -106,7 +106,7 @@ class NoIncomes:
                 cut_sum += _sum
 
         try:
-            savings_sum = self.data.savings.get('sum', 0.0)
+            savings_sum = self.data.savings.get('sum', 0)
             savings_sum = float(savings_sum)
         except (AttributeError, TypeError):
             savings_sum = 0
@@ -117,4 +117,4 @@ class NoIncomes:
 
     def _div(self, incomes: float, expenses: float) -> float:
         return \
-            incomes / expenses if expenses else 0.0
+            incomes / expenses if expenses else 0
