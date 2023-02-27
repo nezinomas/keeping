@@ -18,29 +18,24 @@ class DrinksOptions():
 
     @property
     def ratio(self) -> float:
-        return 1 / self.ratios.get(self.drink_type, {}).get('stdav', 1)
+        node = self.get_node()
+        return 1 / node.get('stdav', 1)
 
     @property
     def stdav(self) -> float:
-        return self.ratios.get(self.drink_type, {}).get('stdav', 1)
+        return self.get_node().get('stdav', 1)
 
-    def convert(self, qty: float, to: str) -> float:
+    def convert(self, qty: float, drink_type: str) -> float:
         stdav = qty * self.stdav
-
-        return stdav / self.ratios.get(to, {}).get('stdav', 1)
+        node = self.get_node(drink_type)
+        return stdav / node.get('stdav', 1)
 
     def ml_to_stdav(self, ml: int, drink_type: str = None) -> float:
-        if not drink_type:
-            drink_type = self.drink_type
-
-        node = self.ratios.get(drink_type, {})
+        node = self.get_node(drink_type)
         return (ml * node['stdav']) / node['ml'] if node else ml
 
     def stdav_to_ml(self, stdav: float, drink_type: str = None) -> float:
-        if not drink_type:
-            drink_type = self.drink_type
-
-        node = self.ratios.get(drink_type, {})
+        node = self.get_node(drink_type)
         return (stdav * node['ml']) / node['stdav'] if node else stdav
 
     def stdav_to_alcohol(self, stdav: float) -> float:
@@ -49,6 +44,11 @@ class DrinksOptions():
 
     def stdav_to_bottles(self, year: int, max_stdav: float) -> float:
         days = ydays(year)
-
         node = self.ratios.get(self.drink_type, {})
         return (max_stdav * days) / node['stdav'] if node else max_stdav * days
+
+    def get_node(self, drink_type: str = None):
+        if not drink_type:
+            drink_type = self.drink_type
+
+        return self.ratios.get(drink_type, {})
