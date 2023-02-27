@@ -7,11 +7,10 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import (
     CreateView,
-    RedirectView,
     UpdateView,
     FormView,
 )
-from vanilla import ListView, DeleteView, TemplateView
+from vanilla import ListView, DeleteView, TemplateView, RedirectView
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
 from ...core.lib import search
