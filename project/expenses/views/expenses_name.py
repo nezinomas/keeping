@@ -4,7 +4,7 @@ from ...core.mixins.views import CreateViewMixin, UpdateViewMixin
 from .. import forms, models
 
 
-class QuerySetMixin():
+class QuerySetMixin:
     def get_queryset(self):
         return models.ExpenseName.objects.items()
 
@@ -12,15 +12,15 @@ class QuerySetMixin():
 class New(QuerySetMixin, CreateViewMixin):
     model = models.ExpenseName
     form_class = forms.ExpenseNameForm
-    success_url = reverse_lazy('expenses:type_list')
+    success_url = reverse_lazy("expenses:type_list")
 
-    url = reverse_lazy('expenses:name_new')
-    hx_trigger_django = 'afterName'
+    url = reverse_lazy("expenses:name_new")
+    hx_trigger_django = "afterName"
 
 
 class Update(QuerySetMixin, UpdateViewMixin):
     model = models.ExpenseName
     form_class = forms.ExpenseNameForm
-    success_url = reverse_lazy('expenses:type_list')
+    success_url = reverse_lazy("expenses:type_list")
 
-    hx_trigger_django = 'afterName'
+    hx_trigger_django = "afterName"
