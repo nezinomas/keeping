@@ -39,7 +39,6 @@ class Index(GetMonthMixin, TemplateViewMixin):
 
 class Lists(GetMonthMixin, ListViewMixin):
     model = models.Expense
-    template_name = 'expenses/includes/list.html'
 
     def get_queryset(self):
         month = self.get_month()

@@ -8,12 +8,12 @@ from django.utils.translation import gettext as _
 from django.views.generic import (
     CreateView,
     DeleteView,
-    ListView,
     RedirectView,
     TemplateView,
     UpdateView,
     FormView,
 )
+from vanilla import ListView
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
 from ...core.lib import search

@@ -43,6 +43,8 @@ class Index(TemplateViewMixin):
 #                                                                           Expense Plans
 # ---------------------------------------------------------------------------------------
 class ExpensesLists(ListViewMixin):
+    model = models.ExpensePlan
+
     def get_queryset(self):
         return \
             models.ExpensePlan.objects \
@@ -74,6 +76,8 @@ class ExpensesDelete(DeleteViewMixin):
 #                                                                            Income Plans
 # ---------------------------------------------------------------------------------------
 class IncomesLists(ListViewMixin):
+    model = models.IncomePlan
+
     def get_queryset(self):
         return \
             models.IncomePlan.objects \
@@ -105,6 +109,8 @@ class IncomesDelete(DeleteViewMixin):
 #                                                                            Saving Plans
 # ---------------------------------------------------------------------------------------
 class SavingsLists(ListViewMixin):
+    model = models.SavingPlan
+
     def get_queryset(self):
         return \
             models.SavingPlan.objects \
@@ -136,6 +142,8 @@ class SavingsDelete(DeleteViewMixin):
 #                                                                               Day Plans
 # ---------------------------------------------------------------------------------------
 class DayLists(ListViewMixin):
+    model = models.DayPlan
+
     def get_queryset(self):
         return \
             models.DayPlan.objects \
@@ -167,6 +175,8 @@ class DayDelete(DeleteViewMixin):
 #                                                                         Necessary Plans
 # ---------------------------------------------------------------------------------------
 class NecessaryLists(ListViewMixin):
+    model = models.NecessaryPlan
+
     def get_queryset(self):
         return \
             models.NecessaryPlan.objects \
