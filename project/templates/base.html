@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="{% static 'bootstrap_datepicker/css/bootstrap-datetimepicker.min.css' %}" />
     <link rel="stylesheet" href="{% static 'bootstrap_datepicker_plus/css/datepicker-widget.css' %}" />
     <link rel="stylesheet" href="{% static 'css/app_global.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/expand_table_row.css' %}">
+    <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
 
     {% block head %}{% endblock head %}
 
@@ -65,14 +67,14 @@
                 {% for m in context_months %}
                 {% with m|date:'n' as m_num %}
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'expenses:index'%}?month={{ forloop.counter }}">{{ m|date:'F'|title }}</a>
+                  <a class="dropdown-item btn-sm" hx-get="{% url 'expenses:index'%}?month={{ forloop.counter }}" hx-target="body">{{ m|date:'F'|title }}</a>
                 </li>
                 {% endwith %}{% endfor %}
                 <li>
                   <hr class="dropdown-divider">
                 </li>
                 <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'expenses:index' %}?month=13">{% translate 'All records' %}</a>
+                  <a class="dropdown-item btn-sm" hx-get="{% url 'expenses:index' %}?month=13" hx-target="body">{% translate 'All records' %}</a>
                 </li>
               </ul>
             </div>

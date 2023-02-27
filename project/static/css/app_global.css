@@ -478,3 +478,16 @@ caption {
     margin-top: -.35rem;
     height: 1.35em;
 }
+
+
+.expenses-edit-icon {
+    position: absolute;
+    top: 0.15rem;
+    right: 30px;
+    display: block;
+    z-index: 99;
+}
+
+.accordion-body .expenses-edit-icon {
+    top: .25rem;
+}

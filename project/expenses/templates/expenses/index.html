@@ -4,28 +4,13 @@
 {% load static %}
 {% load slippers %}
 
-{% block head %}
-<link rel="stylesheet" href="{% static 'css/expand_table_row.css' %}">
-<link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
-<style>
-    .expenses-edit-icon {
-        position: absolute;
-        top: 0.15rem;
-        right: 30px;
-        display: block;
-        z-index: 99;
-    }
-    .accordion-body .expenses-edit-icon {
-        top: .25rem;
-    }
-</style>
-
-{% endblock head %}
+{% block head %}{% endblock head %}
 
 {% block content %}
 
 <!-- Loader -->
 <div class="htmx-indicator loader loader-default is-active" id="indicator"></div>
+
 
 {% url 'expenses:new' as url_expense_new %}
 {% url 'expenses:type_new' as url_type_new %}
