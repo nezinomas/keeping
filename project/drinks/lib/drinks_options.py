@@ -33,31 +33,22 @@ class DrinksOptions():
         if not drink_type:
             drink_type = self.drink_type
 
-        _node = self.ratios.get(drink_type, {})
-        _ml = _node.get('ml', 1)
-        _stdav = _node.get('stdav', 1)
-
-        return (ml * _stdav) / _ml
+        node = self.ratios.get(drink_type, {})
+        return (ml * node['stdav']) / node['ml'] if node else ml
 
     def stdav_to_ml(self, stdav: float, drink_type: str = None) -> float:
         if not drink_type:
             drink_type = self.drink_type
 
-        _node = self.ratios.get(drink_type, {})
-        _ml = _node.get('ml', 1)
-        _stdav = _node.get('stdav', 1)
-
-        return (stdav * _ml) / _stdav
+        node = self.ratios.get(drink_type, {})
+        return (stdav * node['ml']) / node['stdav'] if node else stdav
 
     def stdav_to_alcohol(self, stdav: float) -> float:
         # one stdav = 10g pure alkohol (100%)
         return stdav * 0.01
 
     def stdav_to_bottles(self, year: int, max_stdav: float) -> float:
-        _days = ydays(year)
+        days = ydays(year)
 
-        _node = self.ratios.get(self.drink_type, {})
-        _ml = _node.get('ml', 1)
-        _stdav = _node.get('stdav', 1)
-
-        return (max_stdav * _days) / _stdav
+        node = self.ratios.get(self.drink_type, {})
+        return (max_stdav * days) / node['stdav'] if node else max_stdav * days
