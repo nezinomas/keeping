@@ -5,16 +5,16 @@ from django.core.paginator import Paginator
 from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
-from django.views.generic import (
+from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
+from vanilla import (
     CreateView,
     DeleteView,
+    FormView,
     ListView,
     RedirectView,
     TemplateView,
     UpdateView,
-    FormView,
 )
-from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
 from ...core.lib import search
 

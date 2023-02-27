@@ -296,6 +296,6 @@ class ExpandDayExpenses(TemplateViewMixin):
     template_name = "bookkeeping/includes/expand_day_expenses.html"
 
     def get_context_data(self, **kwargs):
-        obj = services.ExpandDayService(kwargs.get("date"))
+        obj = services.ExpandDayService(self.kwargs.get("date"))
 
         return super().get_context_data(**kwargs) | obj.context()
