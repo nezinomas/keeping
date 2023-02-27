@@ -5,8 +5,15 @@ from django.core.paginator import Paginator
 from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
-from django.views.generic import (CreateView, DeleteView, ListView,
-                                  RedirectView, TemplateView, UpdateView, FormView)
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    ListView,
+    RedirectView,
+    TemplateView,
+    UpdateView,
+    FormView,
+)
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
 from ...core.lib import search
@@ -16,18 +23,14 @@ def rendered_content(request, view_class, **kwargs):
     # update request kwargs
     request.resolver_match.kwargs.update({**kwargs})
 
-    return (
-        view_class
-        .as_view()(request, **kwargs)
-        .rendered_content
-    )
+    return view_class.as_view()(request, **kwargs).rendered_content
 
 
-def httpHtmxResponse(hx_trigger_name = None, status_code = 204):
+def httpHtmxResponse(hx_trigger_name=None, status_code=204):
     headers = {}
     if hx_trigger_name:
         headers = {
-            'HX-Trigger': json.dumps({hx_trigger_name: None}),
+            "HX-Trigger": json.dumps({hx_trigger_name: None}),
         }
 
     return HttpResponse(
@@ -41,13 +44,15 @@ def httpHtmxResponse(hx_trigger_name = None, status_code = 204):
 # ---------------------------------------------------------------------------------------
 class GetQuerysetMixin:
     object = None
+
     def get_queryset(self):
         try:
             qs = self.model.objects.related()
         except AttributeError as e:
             raise Http404(
-                _("No %(verbose_name)s found matching the query") % \
-                {'verbose_name': self.model._meta.verbose_name}) from e
+                _("No %(verbose_name)s found matching the query")
+                % {"verbose_name": self.model._meta.verbose_name}
+            ) from e
 
         return qs
 
@@ -72,9 +77,9 @@ class CreateUpdateMixin:
 
     def get_context_data(self, **kwargs):
         context = {
-            'form_action': self.form_action,
-            'url': self.url,
-            'hx_trigger_form': self.get_hx_trigger_form(),
+            "form_action": self.form_action,
+            "url": self.url,
+            "hx_trigger_form": self.get_hx_trigger_form(),
         }
         return super().get_context_data(**kwargs) | context
 
@@ -98,7 +103,7 @@ class CreateUpdateMixin:
 
 
 class DeleteMixin:
-    hx_trigger_django = 'reload'
+    hx_trigger_django = "reload"
     hx_redirect = None
 
     def get_hx_trigger_django(self):
@@ -111,7 +116,7 @@ class DeleteMixin:
         return self.object.get_delete_url() if self.object else None
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {'url': self.url}
+        return super().get_context_data(**kwargs) | {"url": self.url}
 
     def post(self, *args, **kwargs):
         if self.get_object():
@@ -133,38 +138,42 @@ class SearchMixin:
         return getattr(search, self.search_method)
 
     def search(self):
-        search_str = self.request.GET.get('search')
+        search_str = self.request.GET.get("search")
 
         sql = self.get_search_method()(search_str)
 
-        page = self.request.GET.get('page', 1)
+        page = self.request.GET.get("page", 1)
         paginator = Paginator(sql, self.per_page)
         page_range = paginator.get_elided_page_range(number=page)
 
         app = self.request.resolver_match.app_name
 
         return {
-            'notice': _('No data found'),
-            'object_list': paginator.get_page(page),
-            'search': search_str,
-            'url': reverse(f"{app}:search"),
-            'page_range': page_range,
+            "notice": _("No data found"),
+            "object_list": paginator.get_page(page),
+            "search": search_str,
+            "url": reverse(f"{app}:search"),
+            "page_range": page_range,
         }
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                            Views Mixins
 # ---------------------------------------------------------------------------------------
-class CreateViewMixin(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView):
-    form_action = 'insert'
+class CreateViewMixin(
+    LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView
+):
+    form_action = "insert"
 
     def url(self):
         app = self.request.resolver_match.app_name
-        return reverse_lazy(f'{app}:new')
+        return reverse_lazy(f"{app}:new")
 
 
-class UpdateViewMixin(LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView):
-    form_action = 'update'
+class UpdateViewMixin(
+    LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
+):
+    form_action = "update"
 
     def url(self):
         return self.object.get_absolute_url() if self.object else None
