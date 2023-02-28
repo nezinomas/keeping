@@ -6,5 +6,6 @@ register = template.Library()
 
 
 @register.filter
-def convert(stdav: float, to: str):
-    return stdav / DrinksOptions().ratios.get(to, {}).get("stdav", 1)
+def convert(stdav: float, drink_type: str):
+    node = DrinksOptions().get_node(drink_type)
+    return stdav / node.get("stdav", 1)
