@@ -256,7 +256,7 @@ def test_pension_worth_valid_data():
     form = PensionWorthForm(
         data={
             "date": "1999-1-2",
-            "price": "1.0",
+            "price": "0.01",
             "pension_type": p.pk,
         }
     )
@@ -268,6 +268,25 @@ def test_pension_worth_valid_data():
     assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
     assert data.price == 1
     assert data.pension_type.title == p.title
+
+
+@time_machine.travel("1999-12-12 3:2:1")
+def test_pension_worth_valid_data_reset():
+    p = PensionTypeFactory()
+
+    form = PensionWorthForm(
+        data={
+            "date": "1999-1-2",
+            "price": "0",
+            "pension_type": p.pk,
+        }
+    )
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.price == 0
 
 
 def test_pension_worth_blank_data():

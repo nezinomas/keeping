@@ -1,4 +1,3 @@
-from django.core.validators import MinValueValidator
 from django.db import models
 
 from ..accounts.models import Account
@@ -45,9 +44,7 @@ class AccountWorth(models.Model):
 
 class PensionWorth(models.Model):
     date = models.DateTimeField()
-    price = models.PositiveIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField(null=True, blank=True)
     pension_type = models.ForeignKey(
         PensionType, on_delete=models.CASCADE, related_name="pensions_worth"
     )

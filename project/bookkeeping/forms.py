@@ -105,7 +105,9 @@ class AccountWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         return clean_date_and_closed("account", cleaned, self.add_error)
 
 
-class PensionWorthForm(forms.ModelForm, DateFieldMixin):
+class PensionWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
+    price = forms.FloatField(min_value=0, required=False)
+
     class Meta:
         model = PensionWorth
         fields = ["date", "pension_type", "price"]
