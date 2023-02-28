@@ -9,20 +9,16 @@ from . import managers
 
 class PensionType(TitleAbstract):
     journal = models.ForeignKey(
-        Journal,
-        on_delete=models.CASCADE,
-        related_name='pension_types'
+        Journal, on_delete=models.CASCADE, related_name="pension_types"
     )
-    created = models.DateTimeField(
-        auto_now_add=True
-    )
+    created = models.DateTimeField(auto_now_add=True)
 
     # Managers
     objects = managers.PensionTypeQuerySet.as_manager()
 
     class Meta:
-        unique_together = ['journal', 'title']
-        ordering = ['title']
+        unique_together = ["journal", "title"]
+        ordering = ["title"]
 
     def get_absolute_url(self):
         return reverse_lazy("pensions:type_update", kwargs={"pk": self.pk})
@@ -30,31 +26,19 @@ class PensionType(TitleAbstract):
 
 class Pension(models.Model):
     date = models.DateField()
-    price = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
-    fee = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
-    remark = models.TextField(
-        max_length=1000,
-        blank=True
-    )
-    pension_type = models.ForeignKey(
-        PensionType,
-        on_delete=models.CASCADE
-    )
+    price = models.PositiveIntegerField(null=True, blank=True)
+    fee = models.PositiveIntegerField(null=True, blank=True)
+    remark = models.TextField(max_length=1000, blank=True)
+    pension_type = models.ForeignKey(PensionType, on_delete=models.CASCADE)
 
     # managers
     objects = managers.PensionQuerySet.as_manager()
 
     class Meta:
-        ordering = ['-date', 'price']
+        ordering = ["-date", "price"]
 
     def __str__(self):
-        return f'{(self.date)}: {self.pension_type}'
+        return f"{(self.date)}: {self.pension_type}"
 
     def get_absolute_url(self):
         return reverse_lazy("pensions:update", kwargs={"pk": self.pk})
@@ -65,9 +49,7 @@ class Pension(models.Model):
 
 class PensionBalance(models.Model):
     pension_type = models.ForeignKey(
-        PensionType,
-        on_delete=models.CASCADE,
-        related_name='pensions_balance'
+        PensionType, on_delete=models.CASCADE, related_name="pensions_balance"
     )
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
@@ -90,4 +72,4 @@ class PensionBalance(models.Model):
     objects = managers.PensionBalanceQuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.pension_type.title}'
+        return f"{self.pension_type.title}"

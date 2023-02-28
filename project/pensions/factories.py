@@ -13,14 +13,14 @@ from .models import Pension, PensionBalance, PensionType
 class PensionTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PensionType
-        django_get_or_create = ('title',)
+        django_get_or_create = ("title",)
 
-    title = 'PensionType'
+    title = "PensionType"
     journal = factory.SubFactory(JournalFactory)
 
     @classmethod
     def _create(cls, target_class, *args, **kwargs):
-        created = kwargs.pop('created', None)
+        created = kwargs.pop("created", None)
 
         obj = super()._create(target_class, *args, **kwargs)
 
@@ -33,6 +33,7 @@ class PensionTypeFactory(factory.django.DjangoModelFactory):
 
         return obj
 
+
 class PensionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Pension
@@ -40,7 +41,7 @@ class PensionFactory(factory.django.DjangoModelFactory):
     date = dt(1999, 1, 1)
     price = 100
     fee = 1
-    remark = 'remark'
+    remark = "remark"
     pension_type = factory.SubFactory(PensionTypeFactory)
 
 

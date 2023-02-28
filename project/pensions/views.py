@@ -1,8 +1,12 @@
 from django.urls import reverse_lazy
 
 from ..core.lib.convert_price import ConvertToCents
-from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 ListViewMixin, UpdateViewMixin)
+from ..core.mixins.views import (
+    CreateViewMixin,
+    DeleteViewMixin,
+    ListViewMixin,
+    UpdateViewMixin,
+)
 from . import forms, models
 
 
@@ -16,21 +20,21 @@ class Lists(ListViewMixin):
 class New(CreateViewMixin):
     model = models.Pension
     form_class = forms.PensionForm
-    hx_trigger_form = 'afterPension'
-    success_url = reverse_lazy('pensions:list')
+    hx_trigger_form = "afterPension"
+    success_url = reverse_lazy("pensions:list")
 
 
 class Update(ConvertToCents, UpdateViewMixin):
     model = models.Pension
     form_class = forms.PensionForm
-    hx_trigger_django = 'afterPension'
-    success_url = reverse_lazy('pensions:list')
+    hx_trigger_django = "afterPension"
+    success_url = reverse_lazy("pensions:list")
 
 
 class Delete(DeleteViewMixin):
     model = models.Pension
-    hx_trigger_django = 'afterPension'
-    success_url = reverse_lazy('pensions:list')
+    hx_trigger_django = "afterPension"
+    success_url = reverse_lazy("pensions:list")
 
 
 class TypeLists(ListViewMixin):
@@ -40,14 +44,14 @@ class TypeLists(ListViewMixin):
 class TypeNew(CreateViewMixin):
     model = models.PensionType
     form_class = forms.PensionTypeForm
-    hx_trigger_django = 'afterPensionType'
+    hx_trigger_django = "afterPensionType"
 
-    url = reverse_lazy('pensions:type_new')
-    success_url = reverse_lazy('pensions:type_list')
+    url = reverse_lazy("pensions:type_new")
+    success_url = reverse_lazy("pensions:type_list")
 
 
 class TypeUpdate(UpdateViewMixin):
     model = models.PensionType
     form_class = forms.PensionTypeForm
-    hx_trigger_django = 'afterPensionType'
-    success_url = reverse_lazy('pensions:type_list')
+    hx_trigger_django = "afterPensionType"
+    success_url = reverse_lazy("pensions:type_list")
