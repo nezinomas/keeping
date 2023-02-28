@@ -15,8 +15,13 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView
 from project.users import models
 
-from ..core.mixins.views import (DeleteViewMixin, FormViewMixin, ListViewMixin,
-                                 TemplateViewMixin, rendered_content)
+from ..core.mixins.views import (
+    DeleteViewMixin,
+    FormViewMixin,
+    ListViewMixin,
+    TemplateViewMixin,
+    rendered_content,
+)
 from ..journals.forms import SettingsForm, UnnecessaryForm
 from ..users.models import User
 from . import forms
@@ -37,17 +42,16 @@ def _user_settings(user):
 
 
 class Login(auth_views.LoginView):
-    template_name = 'users/login.html'
+    template_name = "users/login.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['submit_button_text'] = _('Log in')
-        context['card_title'] = _('Log in')
-        context['reset_link'] = True
-        context['signup_link'] = True
-        context['valid_link'] = True
+        context["submit_button_text"] = _("Log in")
+        context["card_title"] = _("Log in")
+        context["reset_link"] = True
+        context["signup_link"] = True
+        context["valid_link"] = True
         return context
-
 
     def form_valid(self, form):
         user = form.get_user()
@@ -70,16 +74,16 @@ class Logout(auth_views.LogoutView):
 
 
 class Signup(CreateView):
-    template_name = 'users/login.html'
-    success_url = reverse_lazy('bookkeeping:index')
+    template_name = "users/login.html"
+    success_url = reverse_lazy("bookkeeping:index")
     form_class = forms.SignUpForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['submit_button_text'] = _('Sign up')
-        context['card_title'] = _('Sign up')
-        context['login_link'] = True
-        context['valid_link'] = True
+        context["submit_button_text"] = _("Sign up")
+        context["card_title"] = _("Sign up")
+        context["login_link"] = True
+        context["valid_link"] = True
         return context
 
     def form_valid(self, form):
@@ -94,66 +98,70 @@ class Signup(CreateView):
 
 
 class PasswordReset(auth_views.PasswordResetView):
-    template_name = 'users/login.html'
-    email_template_name = 'users/password_reset_email.html',
-    subject_template_name = 'users/password_reset_subject.txt'
-    success_url = reverse_lazy('users:password_reset_done')
+    template_name = "users/login.html"
+    email_template_name = ("users/password_reset_email.html",)
+    subject_template_name = "users/password_reset_subject.txt"
+    success_url = reverse_lazy("users:password_reset_done")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['submit_button_text'] = _('Send password reset email')
-        context['card_title'] = _('Reset your password')
-        context['card_text'] = _('Enter your email address and system will send you a link to reset your pasword.')
-        context['valid_link'] = True
+        context["submit_button_text"] = _("Send password reset email")
+        context["card_title"] = _("Reset your password")
+        context["card_text"] = _(
+            "Enter your email address and system will send you a link to reset your pasword."
+        )
+        context["valid_link"] = True
         return context
 
 
 class PasswordResetComplete(auth_views.PasswordResetCompleteView):
-    template_name = 'users/password_reset_complete.html'
+    template_name = "users/password_reset_complete.html"
 
 
 class PasswordResetDone(auth_views.PasswordResetDoneView):
-    template_name = 'users/password_reset_done.html'
+    template_name = "users/password_reset_done.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['card_title'] = _('Reset your password')
-        context['card_text'] = _('Check your email for a link to reset your password. If it doesn\'t appear within a few minutes, check your spam folder.')
+        context["card_title"] = _("Reset your password")
+        context["card_text"] = _(
+            "Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder."
+        )
         return context
 
 
 class PasswordResetConfirm(auth_views.PasswordResetConfirmView):
-    template_name ='users/password_reset_confirm.html'
-    success_url = reverse_lazy('users:password_reset_complete')
+    template_name = "users/password_reset_confirm.html"
+    success_url = reverse_lazy("users:password_reset_complete")
 
 
 class PasswordChange(auth_views.PasswordChangeView):
-    template_name = 'users/login.html'
-    success_url = reverse_lazy('users:password_change_done')
+    template_name = "users/login.html"
+    success_url = reverse_lazy("users:password_change_done")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['submit_button_text'] = _('Change password')
-        context['card_title'] = _('Change password')
-        context['valid_link'] = True
+        context["submit_button_text"] = _("Change password")
+        context["card_title"] = _("Change password")
+        context["valid_link"] = True
 
         return context
 
 
 class PasswordChangeDone(auth_views.PasswordChangeDoneView):
-    template_name = 'users/password_change_done.html'
+    template_name = "users/password_change_done.html"
 
 
 class Invite(FormViewMixin):
-    template_name = 'users/invite.html'
+    template_name = "users/invite.html"
     form_class = forms.InviteForm
-    success_url = reverse_lazy('users:invite_done')
+    success_url = reverse_lazy("users:invite_done")
 
     def dispatch(self, request, *args, **kwargs):
         user = request.user
 
         if not user.is_superuser:
-            return redirect('bookkeeping:index')
+            return redirect("bookkeeping:index")
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -167,27 +175,27 @@ class Invite(FormViewMixin):
 
         if form.is_valid():
             signer = TimestampSigner(salt=settings.SALT)
-            secret = signer.sign_object({'jrn': user.journal.pk, 'usr': user.pk })
-            to_ = form.cleaned_data.get('email')
+            secret = signer.sign_object({"jrn": user.journal.pk, "usr": user.pk})
+            to_ = form.cleaned_data.get("email")
             from_ = user.email
             mail_context = {
-                'username': user.username,
-                'link': self.request.build_absolute_uri() + secret,
+                "username": user.username,
+                "link": self.request.build_absolute_uri() + secret,
             }
-            body_ = render_to_string('users/invite_email.html', mail_context)
+            body_ = render_to_string("users/invite_email.html", mail_context)
 
             EmailMessage(
-                subject=f'{user.username} invitation',
+                subject=f"{user.username} invitation",
                 body=body_,
                 from_email=from_,
-                to=[to_]
+                to=[to_],
             ).send()
 
         return super().form_valid(form)
 
 
 class InviteDone(TemplateViewMixin):
-    template_name = 'users/invite.html'
+    template_name = "users/invite.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -196,13 +204,13 @@ class InviteDone(TemplateViewMixin):
 
 
 class InviteSignup(CreateView):
-    template_name = 'users/login.html'
+    template_name = "users/login.html"
     form_class = forms.SignUpForm
     valid_link = False
     valid_days = 3
 
     def dispatch(self, request, *args, **kwargs):
-        token = kwargs.get('token')
+        token = kwargs.get("token")
         signer = TimestampSigner(salt=settings.SALT)
 
         try:
@@ -216,21 +224,20 @@ class InviteSignup(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['submit_button_text'] = _('Sign up')
-        context['card_title'] = _('Sign up')
-        context['login_link'] = True
-        context['valid_link'] = self.valid_link
+        context["submit_button_text"] = _("Sign up")
+        context["card_title"] = _("Sign up")
+        context["login_link"] = True
+        context["valid_link"] = self.valid_link
         return context
-
 
     def form_valid(self, form, **kwargs):
         user = None
-        token = self.kwargs.get('token')
+        token = self.kwargs.get("token")
         signer = TimestampSigner(salt=settings.SALT)
         orig = signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
 
         try:
-            user = User.objects.related().get(pk=orig['usr'])
+            user = User.objects.related().get(pk=orig["usr"])
         except (AttributeError, ObjectDoesNotExist):
             pass
 
@@ -239,61 +246,61 @@ class InviteSignup(CreateView):
             obj.journal = user.journal
             obj.save()
 
-        return HttpResponseRedirect(reverse('users:login'))
+        return HttpResponseRedirect(reverse("users:login"))
 
 
 class SettingsIndex(TemplateViewMixin):
-    template_name = 'users/settings_index.html'
+    template_name = "users/settings_index.html"
 
     def dispatch(self, request, *args, **kwargs):
         user = request.user
 
         if not user.is_superuser:
-            return redirect('bookkeeping:index')
+            return redirect("bookkeeping:index")
 
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            'users': \
-                rendered_content(self.request, SettingsUsers, **kwargs),
-            'settings_unnecessary': \
-                rendered_content(self.request, SettingsUnnecessary, **kwargs),
-            'settings_journal': \
-                rendered_content(self.request, SettingsJournal, **kwargs),
-        })
+        context.update(
+            {
+                "users": rendered_content(self.request, SettingsUsers, **kwargs),
+                "settings_unnecessary": rendered_content(
+                    self.request, SettingsUnnecessary, **kwargs
+                ),
+                "settings_journal": rendered_content(
+                    self.request, SettingsJournal, **kwargs
+                ),
+            }
+        )
 
         return context
 
 
-class SettingsQueryMixin():
+class SettingsQueryMixin:
     def get_queryset(self):
         user = self.request.user
 
-        return \
-            models.User.objects \
-            .related() \
-            .exclude(pk=user.pk)
+        return models.User.objects.related().exclude(pk=user.pk)
 
 
 class SettingsUsers(SettingsQueryMixin, ListViewMixin):
     model = models.User
-    template_name = 'users/includes/users_lists.html'
+    template_name = "users/includes/users_lists.html"
 
 
 class SettingsUsersDelete(SettingsQueryMixin, DeleteViewMixin):
     model = models.User
-    template_name = 'users/includes/users_delete.html'
-    hx_trigger_django = 'delete_user'
-    success_url = reverse_lazy('users:settings_users')
+    template_name = "users/includes/users_delete.html"
+    hx_trigger_django = "delete_user"
+    success_url = reverse_lazy("users:settings_users")
 
 
 class SettingsUnnecessary(FormViewMixin):
     form_class = UnnecessaryForm
-    template_name = 'users/includes/settings_form.html'
-    url = reverse_lazy('users:settings_unnecessary')
-    success_url = reverse_lazy('users:settings_unnecessary')
+    template_name = "users/includes/settings_form.html"
+    url = reverse_lazy("users:settings_unnecessary")
+    success_url = reverse_lazy("users:settings_unnecessary")
 
     def form_valid(self, form, **kwargs):
         form.save()
@@ -302,25 +309,21 @@ class SettingsUnnecessary(FormViewMixin):
 
 class SettingsJournal(FormViewMixin):
     form_class = SettingsForm
-    template_name = 'users/includes/settings_form.html'
-    url = reverse_lazy('users:settings_journal')
-    success_url = reverse_lazy('users:settings_index')
+    template_name = "users/includes/settings_form.html"
+    url = reverse_lazy("users:settings_journal")
+    success_url = reverse_lazy("users:settings_index")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["reload_site"] = True
         return context
 
-
     def form_valid(self, form, **kwargs):
         form.save()
 
-        response = HttpResponse(
-            status=200,
-            headers={'HX-Redirect': self.success_url}
-        )
+        response = HttpResponse(status=200, headers={"HX-Redirect": self.success_url})
 
-        lang = form.cleaned_data.get('lang')
+        lang = form.cleaned_data.get("lang")
         activate(lang)
 
         response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)

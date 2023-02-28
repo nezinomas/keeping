@@ -8,43 +8,38 @@ from .models import User
 
 
 class SignUpForm(UserCreationForm):
-    email = forms.CharField(
-        max_length=254,
-        required=True,
-        widget=forms.EmailInput()
-    )
+    email = forms.CharField(max_length=254, required=True, widget=forms.EmailInput())
+
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2')
+        fields = ("username", "email", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['email'].label = _('Email')
+        self.fields["email"].label = _("Email")
 
 
 class InviteForm(forms.Form):
-    email = forms.EmailField(
-        max_length=254,
-        required=True
-    )
+    email = forms.EmailField(max_length=254, required=True)
+
     class Meta:
-        fields = ('email')
+        fields = "email"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['email'].label = _('Email')
+        self.fields["email"].label = _("Email")
 
     def clean_email(self):
-        email = self.cleaned_data['email']
+        email = self.cleaned_data["email"]
         admin_email = utils.get_user().email
 
         if email == admin_email:
-            raise ValidationError(_('You entered your own Email.'))
+            raise ValidationError(_("You entered your own Email."))
 
-        emails = User.objects.exclude(email=admin_email).values_list('email', flat=True)
+        emails = User.objects.exclude(email=admin_email).values_list("email", flat=True)
         if email in emails:
-            raise ValidationError(_('User with this Email already exists.'))
+            raise ValidationError(_("User with this Email already exists."))
 
         return email

@@ -9,14 +9,14 @@ pytestmark = pytest.mark.django_db
 def test_user_str():
     actual = UserFactory.build()
 
-    assert str(actual) == 'bob'
+    assert str(actual) == "bob"
 
 
 def test_user_reversed():
     actual = User.objects.first()
 
     assert User.objects.count() == 1
-    assert str(actual.journal) == 'bob Journal'
+    assert str(actual.journal) == "bob Journal"
 
 
 def test_user_related_queries(django_assert_max_num_queries):
