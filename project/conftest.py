@@ -4,21 +4,27 @@ import pytest
 import pytz
 
 from .accounts.factories import AccountFactory
-from .bookkeeping.factories import (AccountWorthFactory, PensionWorthFactory,
-                                    SavingWorthFactory)
+from .bookkeeping.factories import (
+    AccountWorthFactory,
+    PensionWorthFactory,
+    SavingWorthFactory,
+)
 from .debts.factories import LendFactory, LendReturnFactory
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
 from .pensions.factories import PensionFactory
 from .savings.factories import SavingFactory, SavingTypeFactory
-from .transactions.factories import (SavingChangeFactory, SavingCloseFactory,
-                                     TransactionFactory)
+from .transactions.factories import (
+    SavingChangeFactory,
+    SavingCloseFactory,
+    TransactionFactory,
+)
 from .users.factories import UserFactory
 
 
 @pytest.fixture()
 def main_user(request):
-    if 'django_db' in request.keywords:
+    if "django_db" in request.keywords:
         user = UserFactory()
 
         jr = user.journal
@@ -32,21 +38,21 @@ def main_user(request):
 
 @pytest.fixture()
 def second_user(request):
-    if 'django_db' in request.keywords:
-        user = UserFactory(username='X', email='x@x.xx')
+    if "django_db" in request.keywords:
+        user = UserFactory(username="X", email="x@x.xx")
 
         jr = user.journal
         jr.first_record = date(1999, 1, 1)
         jr.save()
     else:
-        user = UserFactory.build(username='X', email='x@x.xx')
+        user = UserFactory.build(username="X", email="x@x.xx")
 
     return user
 
 
 @pytest.fixture()
 def fake_request(rf):
-    request = rf.get('/fake/')
+    request = rf.get("/fake/")
     request.user = UserFactory.build()
 
     return request
@@ -54,10 +60,10 @@ def fake_request(rf):
 
 @pytest.fixture(autouse=True)
 def get_user(monkeypatch, request):
-    if 'disable_get_user_patch' in request.keywords:
+    if "disable_get_user_patch" in request.keywords:
         return
 
-    if 'django_db' in request.keywords:
+    if "django_db" in request.keywords:
         user = UserFactory()
 
         jr = user.journal
@@ -66,7 +72,7 @@ def get_user(monkeypatch, request):
     else:
         user = UserFactory.build()
 
-    mock_func = 'project.core.lib.utils.get_user'
+    mock_func = "project.core.lib.utils.get_user"
     monkeypatch.setattr(mock_func, lambda: user)
 
     return user
@@ -74,7 +80,7 @@ def get_user(monkeypatch, request):
 
 @pytest.fixture()
 def client_logged(client):
-    client.login(username='bob', password='123')
+    client.login(username="bob", password="123")
 
     return client
 
@@ -82,68 +88,44 @@ def client_logged(client):
 @pytest.fixture()
 def incomes():
     IncomeFactory(
-        price=525,
-        date=date(1970, 1, 1),
-        account=AccountFactory(title='Account1')
+        price=525, date=date(1970, 1, 1), account=AccountFactory(title="Account1")
     )
     IncomeFactory(
-        price=225,
-        date=date(1970, 1, 1),
-        account=AccountFactory(title='Account2')
+        price=225, date=date(1970, 1, 1), account=AccountFactory(title="Account2")
     )
     IncomeFactory(
-        price=225,
-        date=date(1970, 1, 31),
-        account=AccountFactory(title='Account2')
+        price=225, date=date(1970, 1, 31), account=AccountFactory(title="Account2")
     )
     IncomeFactory(
-        price=325,
-        date=date(1999, 1, 1),
-        account=AccountFactory(title='Account1')
+        price=325, date=date(1999, 1, 1), account=AccountFactory(title="Account1")
     )
     IncomeFactory(
-        price=225,
-        date=date(1999, 1, 1),
-        account=AccountFactory(title='Account2')
+        price=225, date=date(1999, 1, 1), account=AccountFactory(title="Account2")
     )
     IncomeFactory(
-        price=125,
-        date=date(1999, 2, 1),
-        account=AccountFactory(title='Account2')
+        price=125, date=date(1999, 2, 1), account=AccountFactory(title="Account2")
     )
 
 
 @pytest.fixture()
 def expenses():
     ExpenseFactory(
-        date=date(1999, 1, 1),
-        price=25,
-        account=AccountFactory(title='Account1')
+        date=date(1999, 1, 1), price=25, account=AccountFactory(title="Account1")
     )
     ExpenseFactory(
-        date=date(1999, 1, 1),
-        price=25,
-        account=AccountFactory(title='Account1')
+        date=date(1999, 1, 1), price=25, account=AccountFactory(title="Account1")
     )
     ExpenseFactory(
-        date=date(1999, 12, 1),
-        price=125,
-        account=AccountFactory(title='Account2')
+        date=date(1999, 12, 1), price=125, account=AccountFactory(title="Account2")
     )
     ExpenseFactory(
-        date=date(1970, 1, 1),
-        price=125,
-        account=AccountFactory(title='Account1')
+        date=date(1970, 1, 1), price=125, account=AccountFactory(title="Account1")
     )
     ExpenseFactory(
-        date=date(1970, 1, 1),
-        price=125,
-        account=AccountFactory(title='Account1')
+        date=date(1970, 1, 1), price=125, account=AccountFactory(title="Account1")
     )
     ExpenseFactory(
-        date=date(1970, 1, 1),
-        price=225,
-        account=AccountFactory(title='Account2')
+        date=date(1970, 1, 1), price=225, account=AccountFactory(title="Account2")
     )
 
 
@@ -152,28 +134,20 @@ def expenses_january():
     ExpenseFactory(
         date=date(1999, 1, 1),
         price=25,
-        account=AccountFactory(title='Account1'),
-        exception=True
+        account=AccountFactory(title="Account1"),
+        exception=True,
     )
     ExpenseFactory(
-        date=date(1999, 1, 1),
-        price=25,
-        account=AccountFactory(title='Account1')
+        date=date(1999, 1, 1), price=25, account=AccountFactory(title="Account1")
     )
     ExpenseFactory(
-        date=date(1999, 1, 11),
-        price=25,
-        account=AccountFactory(title='Account1')
+        date=date(1999, 1, 11), price=25, account=AccountFactory(title="Account1")
     )
     ExpenseFactory(
-        date=date(1999, 1, 11),
-        price=25,
-        account=AccountFactory(title='Account1')
+        date=date(1999, 1, 11), price=25, account=AccountFactory(title="Account1")
     )
     ExpenseFactory(
-        date=date(1970, 1, 1),
-        price=225,
-        account=AccountFactory(title='Account2')
+        date=date(1970, 1, 1), price=225, account=AccountFactory(title="Account2")
     )
 
 
@@ -182,32 +156,32 @@ def transactions():
     TransactionFactory(
         date=date(1999, 1, 1),
         price=225,
-        from_account=AccountFactory(title='Account1'),
-        to_account=AccountFactory(title='Account2')
+        from_account=AccountFactory(title="Account1"),
+        to_account=AccountFactory(title="Account2"),
     )
     TransactionFactory(
         date=date(1999, 1, 1),
         price=225,
-        from_account=AccountFactory(title='Account1'),
-        to_account=AccountFactory(title='Account2')
+        from_account=AccountFactory(title="Account1"),
+        to_account=AccountFactory(title="Account2"),
     )
     TransactionFactory(
         date=date(1999, 1, 1),
         price=325,
-        from_account=AccountFactory(title='Account2'),
-        to_account=AccountFactory(title='Account1')
+        from_account=AccountFactory(title="Account2"),
+        to_account=AccountFactory(title="Account1"),
     )
     TransactionFactory(
         date=date(1970, 1, 1),
         price=125,
-        from_account=AccountFactory(title='Account1'),
-        to_account=AccountFactory(title='Account2')
+        from_account=AccountFactory(title="Account1"),
+        to_account=AccountFactory(title="Account2"),
     )
     TransactionFactory(
         date=date(1970, 1, 1),
         price=525,
-        from_account=AccountFactory(title='Account2'),
-        to_account=AccountFactory(title='Account1')
+        from_account=AccountFactory(title="Account2"),
+        to_account=AccountFactory(title="Account1"),
     )
 
 
@@ -217,36 +191,36 @@ def savings():
         date=date(1970, 1, 1),
         price=125,
         fee=25,
-        account=AccountFactory(title='Account1'),
-        saving_type=SavingTypeFactory(title='Saving1')
+        account=AccountFactory(title="Account1"),
+        saving_type=SavingTypeFactory(title="Saving1"),
     )
     SavingFactory(
         date=date(1970, 1, 1),
         price=25,
         fee=0,
-        account=AccountFactory(title='Account2'),
-        saving_type=SavingTypeFactory(title='Saving2')
+        account=AccountFactory(title="Account2"),
+        saving_type=SavingTypeFactory(title="Saving2"),
     )
     SavingFactory(
         date=date(1999, 1, 1),
         price=125,
         fee=25,
-        account=AccountFactory(title='Account1'),
-        saving_type=SavingTypeFactory(title='Saving1')
+        account=AccountFactory(title="Account1"),
+        saving_type=SavingTypeFactory(title="Saving1"),
     )
     SavingFactory(
         date=date(1999, 1, 1),
         price=225,
         fee=25,
-        account=AccountFactory(title='Account1'),
-        saving_type=SavingTypeFactory(title='Saving1')
+        account=AccountFactory(title="Account1"),
+        saving_type=SavingTypeFactory(title="Saving1"),
     )
     SavingFactory(
         date=date(1999, 1, 1),
         price=225,
         fee=25,
-        account=AccountFactory(title='Account2'),
-        saving_type=SavingTypeFactory(title='Saving2')
+        account=AccountFactory(title="Account2"),
+        saving_type=SavingTypeFactory(title="Saving2"),
     )
 
 
@@ -256,22 +230,22 @@ def savings_close():
         date=date(1999, 1, 1),
         price=25,
         fee=5,
-        to_account=AccountFactory(title='Account1'),
-        from_account=SavingTypeFactory(title='Saving1')
+        to_account=AccountFactory(title="Account1"),
+        from_account=SavingTypeFactory(title="Saving1"),
     )
     SavingCloseFactory(
         date=date(1999, 1, 1),
         price=1,
         fee=1,
-        to_account=AccountFactory(title='Account2'),
-        from_account=SavingTypeFactory(title='Saving1')
+        to_account=AccountFactory(title="Account2"),
+        from_account=SavingTypeFactory(title="Saving1"),
     )
     SavingCloseFactory(
         date=date(1970, 1, 1),
         price=25,
         fee=5,
-        to_account=AccountFactory(title='Account1'),
-        from_account=SavingTypeFactory(title='Saving1')
+        to_account=AccountFactory(title="Account1"),
+        from_account=SavingTypeFactory(title="Saving1"),
     )
 
 
@@ -281,15 +255,15 @@ def savings_change():
         date=date(1999, 1, 1),
         price=125,
         fee=5,
-        to_account=SavingTypeFactory(title='Saving2'),
-        from_account=SavingTypeFactory(title='Saving1'),
+        to_account=SavingTypeFactory(title="Saving2"),
+        from_account=SavingTypeFactory(title="Saving1"),
     )
     SavingChangeFactory(
         date=date(1970, 1, 1),
         price=225,
         fee=15,
-        to_account=SavingTypeFactory(title='Saving2'),
-        from_account=SavingTypeFactory(title='Saving1'),
+        to_account=SavingTypeFactory(title="Saving2"),
+        from_account=SavingTypeFactory(title="Saving1"),
     )
 
 
@@ -322,23 +296,23 @@ def accounts_worth():
     AccountWorthFactory(
         date=datetime(1970, 1, 1, tzinfo=pytz.utc),
         price=10,
-        account=AccountFactory(title='Account1')
+        account=AccountFactory(title="Account1"),
     )
     AccountWorthFactory(
         date=datetime(1970, 1, 1, tzinfo=pytz.utc),
         price=20,
-        account=AccountFactory(title='Account2')
+        account=AccountFactory(title="Account2"),
     )
 
     AccountWorthFactory(
         date=datetime(1999, 1, 2, tzinfo=pytz.utc),
         price=3,
-        account=AccountFactory(title='Account1')
+        account=AccountFactory(title="Account1"),
     )
     AccountWorthFactory(
         date=datetime(1999, 1, 1, tzinfo=pytz.utc),
         price=8,
-        account=AccountFactory(title='Account2')
+        account=AccountFactory(title="Account2"),
     )
 
 
@@ -347,18 +321,18 @@ def savings_worth():
     SavingWorthFactory(
         date=datetime(1970, 1, 1, tzinfo=pytz.utc),
         price=10,
-        saving_type=SavingTypeFactory(title='Saving1')
+        saving_type=SavingTypeFactory(title="Saving1"),
     )
 
     SavingWorthFactory(
         date=datetime(1999, 1, 2, tzinfo=pytz.utc),
         price=15,
-        saving_type=SavingTypeFactory(title='Saving1')
+        saving_type=SavingTypeFactory(title="Saving1"),
     )
     SavingWorthFactory(
         date=datetime(1999, 1, 1, tzinfo=pytz.utc),
         price=6,
-        saving_type=SavingTypeFactory(title='Saving2')
+        saving_type=SavingTypeFactory(title="Saving2"),
     )
 
 
@@ -370,8 +344,8 @@ def pensions_worth():
 
 @pytest.fixture
 def lend_fixture():
-    a1 = AccountFactory(title='A1')
-    a2 = AccountFactory(title='A2')
+    a1 = AccountFactory(title="A1")
+    a2 = AccountFactory(title="A2")
 
     LendFactory(date=date(1999, 1, 2), price=1, account=a1)
     LendFactory(date=date(1999, 2, 3), price=2, account=a1)
@@ -383,8 +357,8 @@ def lend_fixture():
 
 @pytest.fixture
 def lend_return_fixture():
-    a1 = AccountFactory(title='A1')
-    a2 = AccountFactory(title='A2')
+    a1 = AccountFactory(title="A1")
+    a2 = AccountFactory(title="A2")
 
     LendReturnFactory(date=date(1999, 1, 2), price=5, account=a1)
     LendReturnFactory(date=date(1999, 2, 3), price=15, account=a1)
