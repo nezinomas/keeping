@@ -12,15 +12,15 @@ from .models import Account, AccountBalance
 class AccountFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Account
-        django_get_or_create = ('title', )
+        django_get_or_create = ("title",)
 
     journal = factory.SubFactory(JournalFactory)
-    title = 'Account1'
+    title = "Account1"
     closed = None
 
     @classmethod
     def _create(cls, target_class, *args, **kwargs):
-        created = kwargs.pop('created', None)
+        created = kwargs.pop("created", None)
 
         obj = super()._create(target_class, *args, **kwargs)
 

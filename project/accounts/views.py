@@ -1,7 +1,6 @@
 from django.urls import reverse_lazy
 
-from ..core.mixins.views import (CreateViewMixin, ListViewMixin,
-                                  UpdateViewMixin)
+from ..core.mixins.views import CreateViewMixin, ListViewMixin, UpdateViewMixin
 from . import forms, models
 
 
@@ -15,29 +14,29 @@ class Lists(ListViewMixin):
 class New(CreateViewMixin):
     model = models.Account
     form_class = forms.AccountForm
-    success_url = reverse_lazy('accounts:list')
+    success_url = reverse_lazy("accounts:list")
 
-    url = reverse_lazy('accounts:new')
-    hx_trigger_django = 'afterAccount'
+    url = reverse_lazy("accounts:new")
+    hx_trigger_django = "afterAccount"
 
 
 class Update(UpdateViewMixin):
     model = models.Account
     form_class = forms.AccountForm
-    success_url = reverse_lazy('accounts:list')
+    success_url = reverse_lazy("accounts:list")
 
-    hx_trigger_django = 'afterAccount'
+    hx_trigger_django = "afterAccount"
 
     def get_queryset(self):
         return models.Account.objects.related()
 
 
 class LoadAccount(ListViewMixin):
-    template_name = 'core/dropdown.html'
+    template_name = "core/dropdown.html"
     object_list = []
 
     def get(self, request, *args, **kwargs):
-        pk = request.GET.get('from_account')
+        pk = request.GET.get("from_account")
 
         try:
             pk = int(pk)
@@ -45,10 +44,6 @@ class LoadAccount(ListViewMixin):
             pk = None
 
         if pk:
-            self.object_list = \
-                models.Account \
-                .objects \
-                .items() \
-                .exclude(pk=pk)
+            self.object_list = models.Account.objects.items().exclude(pk=pk)
 
-        return self.render_to_response({'object_list': self.object_list})
+        return self.render_to_response({"object_list": self.object_list})
