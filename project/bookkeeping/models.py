@@ -9,9 +9,7 @@ from . import managers
 
 class SavingWorth(models.Model):
     date = models.DateTimeField()
-    price = models.PositiveIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField(null=True, blank=True)
     saving_type = models.ForeignKey(
         SavingType, on_delete=models.CASCADE, related_name="savings_worth"
     )

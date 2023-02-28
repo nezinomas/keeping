@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.lib import date as core_date
 from ..core.lib import form_utils, utils
+from ..core.lib.convert_price import ConvertToPrice
 from ..expenses.models import ExpenseType
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
@@ -44,7 +45,9 @@ class DateFieldMixin:
         )
 
 
-class SavingWorthForm(forms.ModelForm, DateFieldMixin):
+class SavingWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
+    price = forms.FloatField(min_value=0.01, required=False)
+
     class Meta:
         model = SavingWorth
         fields = ["date", "saving_type", "price"]
