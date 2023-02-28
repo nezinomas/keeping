@@ -43,7 +43,7 @@ def test_formset_new(client_logged):
         'form-TOTAL_FORMS': 1,
         'form-INITIAL_FORMS': 0,
         'form-0-date': '1999-9-9',
-        'form-0-price': '999',
+        'form-0-price': '0.01',
         'form-0-account': i.pk
     }
 
@@ -54,7 +54,7 @@ def test_formset_new(client_logged):
     assert actual.date.year == 1999
     assert actual.date.month == 9
     assert actual.date.day == 9
-    assert actual.price == 999
+    assert actual.price == 1
 
 
 def test_formset_dublicated(client_logged):

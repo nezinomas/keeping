@@ -69,7 +69,7 @@ class FormsetMixin:
             for form in formset:
                 price = form.cleaned_data.get("price")
 
-                if not isinstance(price, int):
+                if not isinstance(price, float):
                     continue
 
                 form.save()
