@@ -46,7 +46,7 @@ class DateFieldMixin:
 
 
 class SavingWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
-    price = forms.FloatField(min_value=0.01, required=False)
+    price = forms.FloatField(min_value=0, required=False)
 
     class Meta:
         model = SavingWorth

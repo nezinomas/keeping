@@ -55,6 +55,24 @@ def test_saving_worth_valid_data():
     assert data.saving_type.title == t.title
 
 
+@time_machine.travel("1999-2-2 03:02:01")
+def test_saving_worth_valid_data_reset():
+    t = SavingTypeFactory()
+
+    form = SavingWorthForm(
+        data={
+            "date": "1999-1-2",
+            "price": "0",
+            "saving_type": t.pk,
+        }
+    )
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.price == 0
+
+
 def test_saving_blank_data():
     form = SavingWorthForm({})
 
