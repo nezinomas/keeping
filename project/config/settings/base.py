@@ -4,24 +4,24 @@ import environ
 from django.utils.translation import gettext_lazy as _
 
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = "users.User"
 
 PROJECT_APPS = [
-    'users',
-    'accounts',
-    'bookkeeping',
-    'books',
-    'core',
-    'debts',
-    'drinks',
-    'expenses',
-    'incomes',
-    'journals',
-    'counts',
-    'savings',
-    'pensions',
-    'plans',
-    'transactions',
+    "users",
+    "accounts",
+    "bookkeeping",
+    "books",
+    "core",
+    "debts",
+    "drinks",
+    "expenses",
+    "incomes",
+    "journals",
+    "counts",
+    "savings",
+    "pensions",
+    "plans",
+    "transactions",
 ]
 
 
@@ -36,23 +36,23 @@ PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
 # Take environment variables from .env file
 env = environ.Env()
-environ.Env.read_env(os.path.join(PROJECT_ROOT, '.env'))
+environ.Env.read_env(os.path.join(PROJECT_ROOT, ".env"))
 
 
 # ================   SITE CONFIGURATION
-LOGOUT_REDIRECT_URL = 'bookkeeping:index'
-LOGIN_REDIRECT_URL = 'bookkeeping:index'
-LOGIN_URL = 'users:login'
+LOGOUT_REDIRECT_URL = "bookkeeping:index"
+LOGIN_REDIRECT_URL = "bookkeeping:index"
+LOGIN_URL = "users:login"
 
 
 # ================   MEDIA CONFIGURATION
-MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(PROJECT_ROOT, 'media'))
+MEDIA_ROOT = env("MEDIA_ROOT", default=os.path.join(PROJECT_ROOT, "media"))
 MEDIA_URL = "/media/"
 
 
 # ================   STATIC FILE CONFIGURATION
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(SITE_ROOT, 'static')
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(SITE_ROOT, "static")
 
 
 # ================   DEBUG CONFIGURATION
@@ -61,35 +61,35 @@ TEMPLATE_DEBUG = DEBUG
 
 
 # ================   SECRET CONFIGURATION
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = env("SECRET_KEY")
 
 
 # ================   SITE CONFIGURATION
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 # ================   DATABASE CONFIGURATION
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': os.path.join(PROJECT_ROOT, '.db'),
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "OPTIONS": {
+            "read_default_file": os.path.join(PROJECT_ROOT, ".db"),
         },
     }
 }
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # ================   GENERAL CONFIGURATION
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = "en"
 
 LANGUAGES = [
-    ('en', _('English')),
-    ('lt', _('Lithuanian')),
+    ("en", _("English")),
+    ("lt", _("Lithuanian")),
 ]
-LOCALE_PATHS = [os.path.join(SITE_ROOT, 'locale')]
+LOCALE_PATHS = [os.path.join(SITE_ROOT, "locale")]
 
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -98,19 +98,19 @@ USE_TZ = True
 # ================   TEMPLATE CONFIGURATION
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(SITE_ROOT, 'templates')],
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.static',
-                'project.core.context.years',
-                'project.core.context.yday',
-                'project.core.context.context_months',
-                'project.core.context.context_counts_menu',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(SITE_ROOT, "templates")],
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.static",
+                "project.core.context.years",
+                "project.core.context.yday",
+                "project.core.context.context_months",
+                "project.core.context.context_counts_menu",
             ],
         },
     },
@@ -119,62 +119,62 @@ TEMPLATES = [
 
 # ================   MIDDLEWARE CONFIGURATION
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_htmx.middleware.HtmxMiddleware',
-    'crequest.middleware.CrequestMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_htmx.middleware.HtmxMiddleware",
+    "crequest.middleware.CrequestMiddleware",
 ]
 
 
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
+SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
 
 
 # ================   APP CONFIGURATION
 INSTALLED_APPS = [
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.humanize',
-    'bootstrap_datepicker_plus',
-    'crispy_forms',
-    'crispy_bootstrap5',
-    'crequest',
-    'slippers',
-    'django_htmx',
-    'widget_tweaks',
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.humanize",
+    "bootstrap_datepicker_plus",
+    "crispy_forms",
+    "crispy_bootstrap5",
+    "crequest",
+    "slippers",
+    "django_htmx",
+    "widget_tweaks",
 ]
 
-INSTALLED_APPS.extend(f'project.{app}' for app in PROJECT_APPS)
+INSTALLED_APPS.extend(f"project.{app}" for app in PROJECT_APPS)
 
 # ================   URL CONFIGURATION
-ROOT_URLCONF = 'project.config.urls'
+ROOT_URLCONF = "project.config.urls"
 
 
 # ================   WSGI CONFIGURATION
-WSGI_APPLICATION = 'project.config.wsgi.application'
+WSGI_APPLICATION = "project.config.wsgi.application"
 
 
 # ================   PASSWORD VALIDATORS CONFIGURATION
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -183,7 +183,7 @@ AUTH_PASSWORD_VALIDATORS = [
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-SALT = env('SALT')
+SALT = env("SALT")
 
 
 BOOTSTRAP_DATEPICKER_PLUS = {
