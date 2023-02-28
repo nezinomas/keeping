@@ -20,9 +20,9 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
     class Meta:
         model = Transaction
-        fields = ['date', 'from_account', 'to_account', 'price']
+        fields = ["date", "from_account", "to_account", "price"]
 
-    field_order = ['date', 'from_account', 'to_account', 'price']
+    field_order = ["date", "from_account", "to_account", "price"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,25 +38,29 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
-        self.fields['date'].widget = DatePickerInput(
-            options={"locale": utils.get_user().journal.lang,}
+        self.fields["date"].widget = DatePickerInput(
+            options={
+                "locale": utils.get_user().journal.lang,
+            }
         )
 
         # initial values
-        self.fields['price'].widget.attrs = {'step': '0.01'}
-        self.fields['price'].label = _('Amount')
-        self.fields['date'].initial = set_year_for_form()
+        self.fields["price"].widget.attrs = {"step": "0.01"}
+        self.fields["price"].label = _("Amount")
+        self.fields["date"].initial = set_year_for_form()
 
     def _overwrite_default_queries(self):
-        from_account = self.fields['from_account']
-        to_account = self.fields['to_account']
+        from_account = self.fields["from_account"]
+        to_account = self.fields["to_account"]
 
         from_account.queryset = Account.objects.items()
         to_account.queryset = Account.objects.items()
 
-        from_account_pk = \
-            self.instance.from_account.pk \
-            if self.instance.pk else self.data.get('from_account')
+        from_account_pk = (
+            self.instance.from_account.pk
+            if self.instance.pk
+            else self.data.get("from_account")
+        )
 
         try:
             from_account_pk = int(from_account_pk)
@@ -67,17 +71,17 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
             to_account.queryset = Account.objects.items().exclude(pk=from_account_pk)
 
     def _set_htmx_attributes(self):
-        url = reverse('accounts:load')
+        url = reverse("accounts:load")
 
-        field = self.fields['from_account']
-        field.widget.attrs['hx-get'] = url
-        field.widget.attrs['hx-target'] = '#id_to_account'
-        field.widget.attrs['hx-trigger'] = 'change'
+        field = self.fields["from_account"]
+        field.widget.attrs["hx-get"] = url
+        field.widget.attrs["hx-target"] = "#id_to_account"
+        field.widget.attrs["hx-trigger"] = "change"
 
     def _translate_fields(self):
-        self.fields['date'].label = _('Date')
-        self.fields['from_account'].label = _('From account')
-        self.fields['to_account'].label = _('To account')
+        self.fields["date"].label = _("Date")
+        self.fields["from_account"].label = _("From account")
+        self.fields["to_account"].label = _("To account")
 
 
 class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
@@ -87,9 +91,9 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
     class Meta:
         model = SavingClose
-        fields = ['date', 'from_account', 'to_account', 'price', 'fee', 'close']
+        fields = ["date", "from_account", "to_account", "price", "fee", "close"]
 
-    field_order = ['date', 'from_account', 'to_account', 'price', 'fee', 'close']
+    field_order = ["date", "from_account", "to_account", "price", "fee", "close"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -99,8 +103,8 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self._translate_fields()
 
         # if from_account is closed, update close checkbox value
-        if hasattr(self.instance, 'from_account') and self.instance.from_account.closed:
-            self.fields['close'].initial = True
+        if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
+            self.fields["close"].initial = True
 
         form_utils.add_css_class(self)
 
@@ -108,28 +112,32 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
-        self.fields['date'].widget = DatePickerInput(
-            options={"locale": utils.get_user().journal.lang,}
+        self.fields["date"].widget = DatePickerInput(
+            options={
+                "locale": utils.get_user().journal.lang,
+            }
         )
 
-        self.fields['date'].initial = set_year_for_form()
+        self.fields["date"].initial = set_year_for_form()
 
     def _overwrite_default_queries(self):
-        self.fields['from_account'].queryset = SavingType.objects.items()
-        self.fields['to_account'].queryset = Account.objects.items()
+        self.fields["from_account"].queryset = SavingType.objects.items()
+        self.fields["to_account"].queryset = Account.objects.items()
 
     def _translate_fields(self):
-        self.fields['price'].label = _('Amount')
-        self.fields['price'].help_text = _('Amount left after fee')
-        self.fields['fee'].label = _('Fees')
-        self.fields['date'].label = _('Date')
-        self.fields['from_account'].label = _('From account')
-        self.fields['to_account'].label = _('To account')
-        self.fields['close'].label = mark_safe(f"{_('Close')} <b>{_('From account')}</b>")
+        self.fields["price"].label = _("Amount")
+        self.fields["price"].help_text = _("Amount left after fee")
+        self.fields["fee"].label = _("Fees")
+        self.fields["date"].label = _("Date")
+        self.fields["from_account"].label = _("From account")
+        self.fields["to_account"].label = _("To account")
+        self.fields["close"].label = mark_safe(
+            f"{_('Close')} <b>{_('From account')}</b>"
+        )
 
     def save(self, *args, **kwargs):
         # update saving type if close checkbox is selected
-        close = self.cleaned_data.get('close')
+        close = self.cleaned_data.get("close")
 
         obj = SavingType.objects.get(pk=self.instance.from_account.pk)
         if obj.closed and close:
@@ -148,9 +156,9 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
     class Meta:
         model = SavingChange
-        fields = ['date', 'from_account', 'to_account', 'price', 'fee', 'close']
+        fields = ["date", "from_account", "to_account", "price", "fee", "close"]
 
-    field_order = ['date', 'from_account', 'to_account', 'price', 'fee', 'close']
+    field_order = ["date", "from_account", "to_account", "price", "fee", "close"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -161,8 +169,8 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self._translate_fields()
 
         # if from_account is closed, update close checkbox value
-        if hasattr(self.instance, 'from_account') and self.instance.from_account.closed:
-            self.fields['close'].initial = True
+        if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
+            self.fields["close"].initial = True
 
         form_utils.add_css_class(self)
 
@@ -170,23 +178,27 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
-        self.fields['date'].widget = DatePickerInput(
-            options={"locale": utils.get_user().journal.lang,}
+        self.fields["date"].widget = DatePickerInput(
+            options={
+                "locale": utils.get_user().journal.lang,
+            }
         )
 
         # initial values
-        self.fields['date'].initial = set_year_for_form()
+        self.fields["date"].initial = set_year_for_form()
 
     def _overwrite_default_queries(self):
-        from_account = self.fields['from_account']
-        to_account = self.fields['to_account']
+        from_account = self.fields["from_account"]
+        to_account = self.fields["to_account"]
 
         from_account.queryset = SavingType.objects.items()
         to_account.queryset = SavingType.objects.items()
 
-        from_account_pk = \
-            self.instance.from_account.pk \
-            if self.instance.pk else self.data.get('from_account')
+        from_account_pk = (
+            self.instance.from_account.pk
+            if self.instance.pk
+            else self.data.get("from_account")
+        )
 
         try:
             from_account_pk = int(from_account_pk)
@@ -197,25 +209,27 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
             to_account.queryset = SavingType.objects.items().exclude(pk=from_account_pk)
 
     def _set_htmx_attributes(self):
-        url = reverse('transactions:load_saving_type')
+        url = reverse("transactions:load_saving_type")
 
-        field = self.fields['from_account']
-        field.widget.attrs['hx-get'] = url
-        field.widget.attrs['hx-target'] = '#id_to_account'
-        field.widget.attrs['hx-trigger'] = 'change'
+        field = self.fields["from_account"]
+        field.widget.attrs["hx-get"] = url
+        field.widget.attrs["hx-target"] = "#id_to_account"
+        field.widget.attrs["hx-trigger"] = "change"
 
     def _translate_fields(self):
-        self.fields['price'].label = _('Amount')
-        self.fields['price'].help_text = _('Amount left after fee')
-        self.fields['fee'].label = _('Fees')
-        self.fields['date'].label = _('Date')
-        self.fields['from_account'].label = _('From account')
-        self.fields['to_account'].label = _('To account')
-        self.fields['close'].label = mark_safe(f"{_('Close')} <b>{_('From account')}</b>")
+        self.fields["price"].label = _("Amount")
+        self.fields["price"].help_text = _("Amount left after fee")
+        self.fields["fee"].label = _("Fees")
+        self.fields["date"].label = _("Date")
+        self.fields["from_account"].label = _("From account")
+        self.fields["to_account"].label = _("To account")
+        self.fields["close"].label = mark_safe(
+            f"{_('Close')} <b>{_('From account')}</b>"
+        )
 
     def save(self, *args, **kwargs):
         # update related model if close checkbox selected
-        close = self.cleaned_data.get('close')
+        close = self.cleaned_data.get("close")
 
         obj = SavingType.objects.get(pk=self.instance.from_account.pk)
         if obj.closed and close:

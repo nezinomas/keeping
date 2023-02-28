@@ -15,12 +15,18 @@ from ..core.lib.translation import month_names
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..savings.models import SavingType
-from .models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
-                     SavingPlan, SavingType)
+from .models import (
+    DayPlan,
+    ExpensePlan,
+    IncomePlan,
+    NecessaryPlan,
+    SavingPlan,
+    SavingType,
+)
 
 
 def common_field_transalion(self):
-    self.fields['year'].label = _('Years')
+    self.fields["year"].label = _("Years")
 
     for key, val in month_names().items():
         self.fields[key.lower()].label = val
@@ -28,9 +34,9 @@ def common_field_transalion(self):
 
 def set_journal_field(fields):
     # journal input
-    fields['journal'].initial = utils.get_user().journal
-    fields['journal'].disabled = True
-    fields['journal'].widget = forms.HiddenInput()
+    fields["journal"].initial = utils.get_user().journal
+    fields["journal"].disabled = True
+    fields["journal"].widget = forms.HiddenInput()
 
 
 class YearFormMixin(forms.ModelForm):
@@ -49,7 +55,7 @@ class YearFormMixin(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        form_utils.clean_year_picker_input('year', self.data, cleaned_data, self.errors)
+        form_utils.clean_year_picker_input("year", self.data, cleaned_data, self.errors)
         return cleaned_data
 
     def save(self, *args, **kwargs):
@@ -70,13 +76,13 @@ class YearFormMixin(forms.ModelForm):
 class IncomePlanForm(YearFormMixin):
     class Meta:
         model = IncomePlan
-        fields = ['journal', 'year', 'income_type'] + monthnames()
+        fields = ["journal", "year", "income_type"] + monthnames()
 
         widgets = {
-            'year': YearPickerInput(),
+            "year": YearPickerInput(),
         }
 
-    field_order = ['year', 'income_type'] + monthnames()
+    field_order = ["year", "income_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -85,13 +91,13 @@ class IncomePlanForm(YearFormMixin):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = set_year_for_form().year
+        self.fields["year"].initial = set_year_for_form().year
 
         # overwrite ForeignKey expense_type queryset
-        self.fields['income_type'].queryset = IncomeType.objects.items()
+        self.fields["income_type"].queryset = IncomeType.objects.items()
 
         # field translation
-        self.fields['income_type'].label = _('Income type')
+        self.fields["income_type"].label = _("Income type")
         common_field_transalion(self)
 
         form_utils.add_css_class(self)
@@ -106,13 +112,13 @@ class IncomePlanForm(YearFormMixin):
 class ExpensePlanForm(YearFormMixin):
     class Meta:
         model = ExpensePlan
-        fields = ['journal', 'year', 'expense_type'] + monthnames()
+        fields = ["journal", "year", "expense_type"] + monthnames()
 
         widgets = {
-            'year': YearPickerInput(),
+            "year": YearPickerInput(),
         }
 
-    field_order = ['year', 'expense_type'] + monthnames()
+    field_order = ["year", "expense_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -121,13 +127,13 @@ class ExpensePlanForm(YearFormMixin):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = set_year_for_form().year
+        self.fields["year"].initial = set_year_for_form().year
 
         # overwrite ForeignKey expense_type queryset
-        self.fields['expense_type'].queryset = ExpenseType.objects.items()
+        self.fields["expense_type"].queryset = ExpenseType.objects.items()
 
         # field translation
-        self.fields['expense_type'].label = ('Expense type')
+        self.fields["expense_type"].label = "Expense type"
         common_field_transalion(self)
 
         form_utils.add_css_class(self)
@@ -142,13 +148,13 @@ class ExpensePlanForm(YearFormMixin):
 class SavingPlanForm(YearFormMixin):
     class Meta:
         model = SavingPlan
-        fields = ['journal', 'year', 'saving_type'] + monthnames()
+        fields = ["journal", "year", "saving_type"] + monthnames()
 
         widgets = {
-            'year': YearPickerInput(),
+            "year": YearPickerInput(),
         }
 
-    field_order = ['year', 'saving_type'] + monthnames()
+    field_order = ["year", "saving_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -157,13 +163,13 @@ class SavingPlanForm(YearFormMixin):
         set_journal_field(self.fields)
 
         # overwrite ForeignKey expense_type queryset
-        self.fields['saving_type'].queryset = SavingType.objects.items()
+        self.fields["saving_type"].queryset = SavingType.objects.items()
 
         # inital values
-        self.fields['year'].initial = set_year_for_form().year
+        self.fields["year"].initial = set_year_for_form().year
 
         # field translation
-        self.fields['saving_type'].label = _('Saving type')
+        self.fields["saving_type"].label = _("Saving type")
         common_field_transalion(self)
 
         form_utils.add_css_class(self)
@@ -178,13 +184,13 @@ class SavingPlanForm(YearFormMixin):
 class DayPlanForm(YearFormMixin):
     class Meta:
         model = DayPlan
-        fields = ['journal', 'year'] + monthnames()
+        fields = ["journal", "year"] + monthnames()
 
         widgets = {
-            'year': YearPickerInput(),
+            "year": YearPickerInput(),
         }
 
-    field_order = ['year'] + monthnames()
+    field_order = ["year"] + monthnames()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -193,7 +199,7 @@ class DayPlanForm(YearFormMixin):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = set_year_for_form().year
+        self.fields["year"].initial = set_year_for_form().year
 
         # field translation
         common_field_transalion(self)
@@ -210,13 +216,13 @@ class DayPlanForm(YearFormMixin):
 class NecessaryPlanForm(YearFormMixin):
     class Meta:
         model = NecessaryPlan
-        fields = ['journal', 'year', 'title'] + monthnames()
+        fields = ["journal", "year", "title"] + monthnames()
 
         widgets = {
-            'year': YearPickerInput(),
+            "year": YearPickerInput(),
         }
 
-    field_order = ['year', 'title'] + monthnames()
+    field_order = ["year", "title"] + monthnames()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -225,7 +231,7 @@ class NecessaryPlanForm(YearFormMixin):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields['year'].initial = set_year_for_form().year
+        self.fields["year"].initial = set_year_for_form().year
 
         # field translation
         common_field_transalion(self)
@@ -242,15 +248,11 @@ class NecessaryPlanForm(YearFormMixin):
 class CopyPlanForm(forms.Form):
     year_from = forms.IntegerField(
         widget=YearPickerInput(),
-        validators=[
-            MinValueValidator(1974),
-            MaxValueValidator(2050)],
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
     year_to = forms.IntegerField(
         widget=YearPickerInput(),
-        validators=[
-            MinValueValidator(1974),
-            MaxValueValidator(2050)],
+        validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
     income = forms.BooleanField(required=False)
     expense = forms.BooleanField(required=False)
@@ -260,15 +262,15 @@ class CopyPlanForm(forms.Form):
 
     def _get_cleaned_checkboxes(self, cleaned_data):
         return {
-            'income': cleaned_data.get("income"),
-            'expense': cleaned_data.get("expense"),
-            'saving': cleaned_data.get("saving"),
-            'day': cleaned_data.get("day"),
-            'necessary': cleaned_data.get("necessary"),
+            "income": cleaned_data.get("income"),
+            "expense": cleaned_data.get("expense"),
+            "saving": cleaned_data.get("saving"),
+            "day": cleaned_data.get("day"),
+            "necessary": cleaned_data.get("necessary"),
         }
 
     def _get_model(self, name):
-        return apps.get_model(f'plans.{name.title()}Plan')
+        return apps.get_model(f"plans.{name.title()}Plan")
 
     def _append_error_message(self, msg, errors, key):
         if err := errors.get(key):
@@ -281,11 +283,15 @@ class CopyPlanForm(forms.Form):
         cleaned_data = super().clean()
         dict_ = self._get_cleaned_checkboxes(cleaned_data)
 
-        form_utils.clean_year_picker_input('year_from', self.data, cleaned_data, self.errors)
-        form_utils.clean_year_picker_input('year_to', self.data, cleaned_data, self.errors)
+        form_utils.clean_year_picker_input(
+            "year_from", self.data, cleaned_data, self.errors
+        )
+        form_utils.clean_year_picker_input(
+            "year_to", self.data, cleaned_data, self.errors
+        )
 
-        year_from = cleaned_data.get('year_from')
-        year_to = cleaned_data.get('year_to')
+        year_from = cleaned_data.get("year_from")
+        year_to = cleaned_data.get("year_to")
 
         if not year_to or not year_from:
             return cleaned_data
@@ -294,13 +300,11 @@ class CopyPlanForm(forms.Form):
         chk = [v for k, v in dict_.items() if v]
 
         if not chk:
-            raise forms.ValidationError(
-                _('At least one plan needs to be selected.')
-            )
+            raise forms.ValidationError(_("At least one plan needs to be selected."))
 
         # copy from table must contain data
         errors = {}
-        msg = _('There is nothing to copy.')
+        msg = _("There is nothing to copy.")
         for k, v in dict_.items():
             if v:
                 model = self._get_model(k)
@@ -309,7 +313,7 @@ class CopyPlanForm(forms.Form):
                     self._append_error_message(msg, errors, k)
 
         # copy to table must be empty
-        msg = _('%(year)s year already has plans.') % ({'year': year_to})
+        msg = _("%(year)s year already has plans.") % ({"year": year_to})
 
         for k, v in dict_.items():
             if v:
@@ -323,13 +327,13 @@ class CopyPlanForm(forms.Form):
 
     def save(self):
         dict_ = self._get_cleaned_checkboxes(self.cleaned_data)
-        year_from = self.cleaned_data.get('year_from')
-        year_to = self.cleaned_data.get('year_to')
+        year_from = self.cleaned_data.get("year_from")
+        year_to = self.cleaned_data.get("year_to")
 
         for k, v in dict_.items():
             if v:
                 model = self._get_model(k)
-                qs = model.objects.year(year_from).values_list('pk', flat=True)
+                qs = model.objects.year(year_from).values_list("pk", flat=True)
 
                 for i in qs:
                     obj = model.objects.get(pk=i)
@@ -337,28 +341,26 @@ class CopyPlanForm(forms.Form):
                     obj.year = year_to
                     obj.save()
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # initail values
-        self.fields['year_from'].initial = datetime.now()
-        self.fields['year_to'].initial = datetime.now() + relativedelta(years=1)
-        self.fields['income'].initial = True
-        self.fields['expense'].initial = True
-        self.fields['saving'].initial = True
-        self.fields['day'].initial = True
-        self.fields['necessary'].initial = True
-
+        self.fields["year_from"].initial = datetime.now()
+        self.fields["year_to"].initial = datetime.now() + relativedelta(years=1)
+        self.fields["income"].initial = True
+        self.fields["expense"].initial = True
+        self.fields["saving"].initial = True
+        self.fields["day"].initial = True
+        self.fields["necessary"].initial = True
 
         # labels
-        self.fields['year_from'].label = _('Copy from')
-        self.fields['year_to'].label = _('Copy to')
-        self.fields['income'].label = _('Incomes plans')
-        self.fields['expense'].label = _('Expenses plans')
-        self.fields['saving'].label = _('Savings plans')
-        self.fields['day'].label = _('Day plans')
-        self.fields['necessary'].label = _('Plans for additional necessary expenses')
+        self.fields["year_from"].label = _("Copy from")
+        self.fields["year_to"].label = _("Copy to")
+        self.fields["income"].label = _("Incomes plans")
+        self.fields["expense"].label = _("Expenses plans")
+        self.fields["saving"].label = _("Savings plans")
+        self.fields["day"].label = _("Day plans")
+        self.fields["necessary"].label = _("Plans for additional necessary expenses")
 
         form_utils.add_css_class(self)
 

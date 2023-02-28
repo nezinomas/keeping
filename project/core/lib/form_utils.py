@@ -6,7 +6,7 @@ def add_css_class(instance):
         if isinstance(instance.fields[field_name], BooleanField):
             continue
 
-        instance.fields[field_name].widget.attrs['class'] = 'form-control-sm'
+        instance.fields[field_name].widget.attrs["class"] = "form-control-sm"
 
 
 def clean_year_picker_input(field_name, data, cleaned_data, errors):
