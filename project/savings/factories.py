@@ -14,14 +14,14 @@ from .models import Saving, SavingBalance, SavingType
 class SavingTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingType
-        django_get_or_create = ('title',)
+        django_get_or_create = ("title",)
 
-    title = 'Savings'
+    title = "Savings"
     journal = factory.SubFactory(JournalFactory)
 
     @classmethod
     def _create(cls, target_class, *args, **kwargs):
-        created = kwargs.pop('created', None)
+        created = kwargs.pop("created", None)
 
         obj = super()._create(target_class, *args, **kwargs)
 
@@ -42,7 +42,7 @@ class SavingFactory(factory.django.DjangoModelFactory):
     date = dt(1999, 1, 1)
     price = 150
     fee = 5
-    remark = 'remark'
+    remark = "remark"
     saving_type = factory.SubFactory(SavingTypeFactory)
     account = factory.SubFactory(AccountFactory)
 

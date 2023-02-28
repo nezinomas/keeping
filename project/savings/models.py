@@ -11,21 +11,17 @@ from . import managers
 
 class SavingType(TitleAbstract):
     class Types(models.TextChoices):
-        SHARES = 'shares', _('Shares')
-        FUNDS = 'funds', _('Funds')
-        PENSIONS = 'pensions', _('Pensions')
+        SHARES = "shares", _("Shares")
+        FUNDS = "funds", _("Funds")
+        PENSIONS = "pensions", _("Pensions")
 
-    created = models.DateTimeField(
-        auto_now_add=True
-    )
+    created = models.DateTimeField(auto_now_add=True)
     closed = models.PositiveIntegerField(
         blank=True,
         null=True,
     )
     journal = models.ForeignKey(
-        Journal,
-        on_delete=models.CASCADE,
-        related_name='saving_types'
+        Journal, on_delete=models.CASCADE, related_name="saving_types"
     )
     type = models.CharField(
         max_length=12,
@@ -37,8 +33,8 @@ class SavingType(TitleAbstract):
     objects = managers.SavingTypeQuerySet.as_manager()
 
     class Meta:
-        unique_together = ['journal', 'title']
-        ordering = ['type', 'title']
+        unique_together = ["journal", "title"]
+        ordering = ["type", "title"]
 
     def get_absolute_url(self):
         return reverse_lazy("savings:type_update", kwargs={"pk": self.pk})
@@ -51,32 +47,24 @@ class Saving(models.Model):
         null=True,
         blank=True,
     )
-    remark = models.TextField(
-        max_length=1000,
-        blank=True
-    )
-    saving_type = models.ForeignKey(
-        SavingType,
-        on_delete=models.CASCADE
-    )
+    remark = models.TextField(max_length=1000, blank=True)
+    saving_type = models.ForeignKey(SavingType, on_delete=models.CASCADE)
     account = models.ForeignKey(
-        Account,
-        on_delete=models.CASCADE,
-        related_name='savings'
+        Account, on_delete=models.CASCADE, related_name="savings"
     )
 
     # Managers
     objects = managers.SavingQuerySet.as_manager()
 
     class Meta:
-        ordering = ['-date', 'saving_type']
+        ordering = ["-date", "saving_type"]
         indexes = [
-            models.Index(fields=['account', 'saving_type']),
-            models.Index(fields=['saving_type']),
+            models.Index(fields=["account", "saving_type"]),
+            models.Index(fields=["saving_type"]),
         ]
 
     def __str__(self):
-        return f'{self.date}: {self.saving_type}'
+        return f"{self.date}: {self.saving_type}"
 
     def get_absolute_url(self):
         return reverse_lazy("savings:update", kwargs={"pk": self.pk})
@@ -87,9 +75,7 @@ class Saving(models.Model):
 
 class SavingBalance(models.Model):
     saving_type = models.ForeignKey(
-        SavingType,
-        on_delete=models.CASCADE,
-        related_name='savings_balance'
+        SavingType, on_delete=models.CASCADE, related_name="savings_balance"
     )
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
@@ -112,4 +98,4 @@ class SavingBalance(models.Model):
     objects = managers.SavingBalanceQuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.saving_type.title}'
+        return f"{self.saving_type.title}"
