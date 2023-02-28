@@ -3,6 +3,14 @@ from django.forms.models import modelformset_factory
 from django.utils.translation import gettext as _
 
 from ...core.mixins.views import httpHtmxResponse
+from ...core import signals
+from ...bookkeeping.models import AccountWorth, SavingWorth, PensionWorth
+
+SIGNALS = {
+    AccountWorth: signals.accounts_signal,
+    SavingWorth: signals.savings_signal,
+    PensionWorth: signals.pensions_signal,
+}
 
 
 class BaseTypeFormSet(BaseFormSet):
@@ -64,15 +72,22 @@ class FormsetMixin:
 
     def post(self, request, *args, **kwargs):
         formset = self.get_formset(request.POST or None)
-
         if formset.is_valid():
+            objects = []
             for form in formset:
                 price = form.cleaned_data.get("price")
 
                 if not isinstance(price, float):
                     continue
 
-                form.save()
+                model = form.instance._meta.model  # get worth model
+                form.cleaned_data["price"] *= 100  # convert price to cents
+                objects.append(model(**form.cleaned_data))  # create worth object
+
+            # if any objects, bulk_create and call signal method
+            if objects:
+                model.objects.bulk_create(objects)
+                SIGNALS.get(model)(None, None)
 
             return httpHtmxResponse(self.get_hx_trigger_django())
 
