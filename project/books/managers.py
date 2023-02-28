@@ -9,17 +9,14 @@ from ..core.mixins.queryset_sum import SumMixin
 class BooksQuerySet(SumMixin, models.QuerySet):
     def related(self):
         user = utils.get_user()
-        return \
-            self \
-            .select_related('user') \
-            .filter(user=user)
+        return self.select_related("user").filter(user=user)
 
     def year(self, year):
-        return \
-            self \
-            .related() \
-            .filter(Q(ended__year=year) | Q(ended__isnull=True)) \
+        return (
+            self.related()
+            .filter(Q(ended__year=year) | Q(ended__isnull=True))
             .filter(started__year__lte=year)
+        )
 
     def items(self):
         return self.related()
@@ -28,43 +25,37 @@ class BooksQuerySet(SumMixin, models.QuerySet):
         """
         Returns <QuerySet [{'year': int, 'cnt': int}]>
         """
-        return \
-            self \
-            .related() \
-            .exclude(ended__isnull=True) \
-            .year_filter(year=year, field='ended') \
-            .annotate(date=TruncYear('ended')) \
-            .values('date') \
-            .annotate(year=ExtractYear(F('date'))) \
-            .annotate(cnt=Count('id')) \
-            .order_by('year') \
-            .values('year', 'cnt')
+        return (
+            self.related()
+            .exclude(ended__isnull=True)
+            .year_filter(year=year, field="ended")
+            .annotate(date=TruncYear("ended"))
+            .values("date")
+            .annotate(year=ExtractYear(F("date")))
+            .annotate(cnt=Count("id"))
+            .order_by("year")
+            .values("year", "cnt")
+        )
 
     def reading(self, year):
         """
         Returns {'reading: int}
         """
-        return \
-            self \
-            .related() \
-            .filter(ended__isnull=True) \
-            .filter(started__year__lte=year) \
-            .aggregate(reading=Count('id'))
+        return (
+            self.related()
+            .filter(ended__isnull=True)
+            .filter(started__year__lte=year)
+            .aggregate(reading=Count("id"))
+        )
 
 
 class BookTargetQuerySet(SumMixin, models.QuerySet):
     def related(self):
         user = utils.get_user()
-        return \
-            self \
-            .select_related('user') \
-            .filter(user=user)
+        return self.select_related("user").filter(user=user)
 
     def year(self, year):
-        return \
-            self \
-            .related() \
-            .filter(year=year)
+        return self.related().filter(year=year)
 
     def items(self):
         return self.related()
