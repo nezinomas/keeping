@@ -1,3 +1,4 @@
+import contextlib
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -160,10 +161,11 @@ class Invite(FormViewMixin):
     def dispatch(self, request, *args, **kwargs):
         user = request.user
 
-        if not user.is_superuser:
-            return redirect("bookkeeping:index")
-
-        return super().dispatch(request, *args, **kwargs)
+        return (
+            super().dispatch(request, *args, **kwargs)
+            if user.is_superuser
+            else redirect("bookkeeping:index")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -213,11 +215,9 @@ class InviteSignup(CreateView):
         token = kwargs.get("token")
         signer = TimestampSigner(salt=settings.SALT)
 
-        try:
+        with contextlib.suppress(SignatureExpired, BadSignature):
             signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
             self.valid_link = True
-        except (SignatureExpired, BadSignature):
-            pass
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -236,10 +236,8 @@ class InviteSignup(CreateView):
         signer = TimestampSigner(salt=settings.SALT)
         orig = signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
 
-        try:
+        with contextlib.suppress(AttributeError, ObjectDoesNotExist):
             user = User.objects.related().get(pk=orig["usr"])
-        except (AttributeError, ObjectDoesNotExist):
-            pass
 
         if user:
             obj = form.save(commit=False)
@@ -255,10 +253,11 @@ class SettingsIndex(TemplateViewMixin):
     def dispatch(self, request, *args, **kwargs):
         user = request.user
 
-        if not user.is_superuser:
-            return redirect("bookkeeping:index")
-
-        return super().dispatch(request, *args, **kwargs)
+        return (
+            super().dispatch(request, *args, **kwargs)
+            if user.is_superuser
+            else redirect("bookkeeping:index")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
