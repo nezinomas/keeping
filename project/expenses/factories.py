@@ -10,18 +10,21 @@ from .models import Expense, ExpenseName, ExpenseType
 class ExpenseTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpenseType
-        django_get_or_create = ('title',)
+        django_get_or_create = ("title",)
 
     journal = factory.SubFactory(JournalFactory)
-    title = 'Expense Type'
+    title = "Expense Type"
 
 
 class ExpenseNameFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpenseName
-        django_get_or_create = ('title', 'parent',)
+        django_get_or_create = (
+            "title",
+            "parent",
+        )
 
-    title = 'Expense Name'
+    title = "Expense Name"
     parent = factory.SubFactory(ExpenseTypeFactory)
 
 
@@ -35,5 +38,5 @@ class ExpenseFactory(factory.django.DjangoModelFactory):
     expense_name = factory.SubFactory(ExpenseNameFactory)
     price = 112
     quantity = 13
-    remark = 'Remark'
+    remark = "Remark"
     exception = False

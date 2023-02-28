@@ -13,20 +13,16 @@ from .managers import ExpenseNameQuerySet, ExpenseQuerySet, ExpenseTypeQuerySet
 
 class ExpenseType(TitleAbstract):
     journal = models.ForeignKey(
-        Journal,
-        on_delete=models.CASCADE,
-        related_name='expense_types'
+        Journal, on_delete=models.CASCADE, related_name="expense_types"
     )
-    necessary = models.BooleanField(
-        default=False
-    )
+    necessary = models.BooleanField(default=False)
 
     # Managers
     objects = ExpenseTypeQuerySet.as_manager()
 
     class Meta:
-        unique_together = ['journal', 'title']
-        ordering = ['title']
+        unique_together = ["journal", "title"]
+        ordering = ["title"]
 
     def get_absolute_url(self):
         return reverse_lazy("expenses:type_update", kwargs={"pk": self.pk})
@@ -34,22 +30,17 @@ class ExpenseType(TitleAbstract):
 
 class ExpenseName(TitleAbstract):
     title = models.CharField(
-        max_length=254,
-        blank=False,
-        validators=[MinLengthValidator(3)]
+        max_length=254, blank=False, validators=[MinLengthValidator(3)]
     )
     valid_for = models.PositiveIntegerField(
         blank=True,
         null=True,
     )
-    parent = models.ForeignKey(
-        ExpenseType,
-        on_delete=models.CASCADE
-    )
+    parent = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('title', 'parent')
-        ordering = [F('valid_for').desc(nulls_first=True), 'title']
+        unique_together = ("title", "parent")
+        ordering = [F("valid_for").desc(nulls_first=True), "title"]
 
     # Managers
     objects = ExpenseNameQuerySet.as_manager()
@@ -64,25 +55,12 @@ class Expense(models.Model):
     quantity = models.IntegerField(
         default=1,
     )
-    expense_type = models.ForeignKey(
-        ExpenseType,
-        on_delete=models.CASCADE
-    )
-    expense_name = models.ForeignKey(
-        ExpenseName,
-        on_delete=models.CASCADE
-    )
-    remark = models.TextField(
-        max_length=1000,
-        blank=True
-    )
-    exception = models.BooleanField(
-        default=False
-    )
+    expense_type = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
+    expense_name = models.ForeignKey(ExpenseName, on_delete=models.CASCADE)
+    remark = models.TextField(max_length=1000, blank=True)
+    exception = models.BooleanField(default=False)
     account = models.ForeignKey(
-        Account,
-        on_delete=models.CASCADE,
-        related_name='expenses'
+        Account, on_delete=models.CASCADE, related_name="expenses"
     )
     attachment = models.ImageField(
         blank=True,
@@ -91,16 +69,16 @@ class Expense(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['date']),
-            models.Index(fields=['expense_type']),
-            models.Index(fields=['expense_name']),
+            models.Index(fields=["date"]),
+            models.Index(fields=["expense_type"]),
+            models.Index(fields=["expense_name"]),
         ]
 
     # Managers
     objects = ExpenseQuerySet.as_manager()
 
     def __str__(self):
-        return f'{(self.date)}/{self.expense_type}/{self.expense_name}'
+        return f"{(self.date)}/{self.expense_type}/{self.expense_name}"
 
     def get_absolute_url(self):
         return reverse_lazy("expenses:update", kwargs={"pk": self.pk})
