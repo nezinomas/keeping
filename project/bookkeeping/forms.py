@@ -17,7 +17,7 @@ from .models import AccountWorth, PensionWorth, SavingWorth
 
 
 def clean_date_and_closed(account: str, cleaned: dict, add_error: Callable) -> dict:
-    dt = cleaned.get('date')
+    dt = cleaned.get("date")
     if not dt:
         return cleaned
 
@@ -26,93 +26,101 @@ def clean_date_and_closed(account: str, cleaned: dict, add_error: Callable) -> d
         return cleaned
 
     if dt.year > account.closed:
-        add_error(
-            'date',
-            _('Account closed %(year)s.') % ({'year': account.closed})
-        )
+        add_error("date", _("Account closed %(year)s.") % ({"year": account.closed}))
     return cleaned
 
 
 class DateFieldMixin:
     def clean_date(self):
-        dt = self.cleaned_data['date']
+        dt = self.cleaned_data["date"]
         now = datetime.now()
-        return datetime(dt.year, dt.month, dt.day, now.hour,
-                        now.minute, now.second, tzinfo=timezone.utc)
+        return datetime(
+            dt.year,
+            dt.month,
+            dt.day,
+            now.hour,
+            now.minute,
+            now.second,
+            tzinfo=timezone.utc,
+        )
 
 
 class SavingWorthForm(forms.ModelForm, DateFieldMixin):
     class Meta:
         model = SavingWorth
-        fields = ['date', 'saving_type', 'price']
+        fields = ["date", "saving_type", "price"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['date'].widget = DatePickerInput(
-            options={"locale": utils.get_user().journal.lang, }
+        self.fields["date"].widget = DatePickerInput(
+            options={
+                "locale": utils.get_user().journal.lang,
+            }
         )
-        self.fields['date'].initial = core_date.set_year_for_form()
+        self.fields["date"].initial = core_date.set_year_for_form()
 
         # overwrite FK
-        self.fields['saving_type'].queryset = SavingType.objects.items()
+        self.fields["saving_type"].queryset = SavingType.objects.items()
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
 
     def clean(self):
         cleaned = super().clean()
-        return clean_date_and_closed('saving_type', cleaned, self.add_error)
+        return clean_date_and_closed("saving_type", cleaned, self.add_error)
 
 
 class AccountWorthForm(forms.ModelForm, DateFieldMixin):
     class Meta:
         model = AccountWorth
-        fields = ['date', 'account', 'price']
+        fields = ["date", "account", "price"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['date'].widget = DatePickerInput(
-            options={"locale": utils.get_user().journal.lang, }
+        self.fields["date"].widget = DatePickerInput(
+            options={
+                "locale": utils.get_user().journal.lang,
+            }
         )
-        self.fields['date'].initial = core_date.set_year_for_form()
+        self.fields["date"].initial = core_date.set_year_for_form()
 
         # overwrite FK
-        self.fields['account'].queryset = Account.objects.items()
+        self.fields["account"].queryset = Account.objects.items()
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
 
     def clean(self):
         cleaned = super().clean()
-        return clean_date_and_closed('account', cleaned, self.add_error)
+        return clean_date_and_closed("account", cleaned, self.add_error)
 
 
 class PensionWorthForm(forms.ModelForm, DateFieldMixin):
     class Meta:
         model = PensionWorth
-        fields = ['date', 'pension_type', 'price']
+        fields = ["date", "pension_type", "price"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['date'].widget = DatePickerInput(
-            options={"locale": utils.get_user().journal.lang, }
+        self.fields["date"].widget = DatePickerInput(
+            options={
+                "locale": utils.get_user().journal.lang,
+            }
         )
-        self.fields['date'].initial = core_date.set_year_for_form()
+        self.fields["date"].initial = core_date.set_year_for_form()
 
         # overwrite FK
-        self.fields['pension_type'].queryset = PensionType.objects.items()
+        self.fields["pension_type"].queryset = PensionType.objects.items()
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
 
 
 class SummaryExpensesForm(forms.Form):
-    types = forms.MultipleChoiceField(
-        required=False
-    )
+    types = forms.MultipleChoiceField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -122,12 +130,12 @@ class SummaryExpensesForm(forms.Form):
             choices.append((_type.id, _type.title))
 
             choices.extend(
-                (f'{_type.id}:{_name.id}', _name.title)
+                (f"{_type.id}:{_name.id}", _name.title)
                 for _name in _type.expensename_set.all()
             )
 
-        self.fields['types'].choices = choices
-        self.fields['types'].label = None
+        self.fields["types"].choices = choices
+        self.fields["types"].label = None
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
@@ -135,9 +143,9 @@ class SummaryExpensesForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
 
-        if cleaned_data.get('types'):
+        if cleaned_data.get("types"):
             return cleaned_data
         else:
             raise forms.ValidationError(
-                _('At least one category needs to be selected.')
+                _("At least one category needs to be selected.")
             )

@@ -6,8 +6,8 @@ def average(qs):
     arr = []
 
     for r in qs:
-        year = r['year']
-        sum_val = float(r['sum'])
+        year = r["year"]
+        sum_val = float(r["sum"])
 
         cnt = now.month if year == now.year else 12
 

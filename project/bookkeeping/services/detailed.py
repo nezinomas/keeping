@@ -22,13 +22,11 @@ class DetailerServiceData:
         self.savings = Saving.objects.sum_by_month_and_type(self.year)
         self.expenses = Expense.objects.sum_by_month_and_name(self.year)
         self.expenses_types = list(
-            ExpenseType.objects
-            .items()
-            .values_list('title', flat=True)
+            ExpenseType.objects.items().values_list("title", flat=True)
         )
 
 
-class DetailedService():
+class DetailedService:
     def __init__(self, data: DetailerServiceData):
         self._incomes = data.incomes
         self._expenses = data.expenses
@@ -36,41 +34,45 @@ class DetailedService():
         self._expenses_types = data.expenses_types
 
     def incomes_context(self) -> list[dict]:
-        return [self._context(_('Incomes'), self._incomes)]
+        return [self._context(_("Incomes"), self._incomes)]
 
     def savings_context(self) -> list[dict]:
-        return [self._context(_('Savings'), self._savings)]
+        return [self._context(_("Savings"), self._savings)]
 
     def expenses_context(self) -> list[dict]:
         context = []
         for title in self._expenses_types:
-            if filtered := [*filter(lambda x: title in x['type_title'], self._expenses)]:
+            if filtered := [
+                *filter(lambda x: title in x["type_title"], self._expenses)
+            ]:
                 context.append(
                     self._context(
-                        name=_('Expenses / %(title)s') % ({'title': title}),
-                        data=filtered))
+                        name=_("Expenses / %(title)s") % ({"title": title}),
+                        data=filtered,
+                    )
+                )
         return context
 
     def _context(self, name, data) -> dict:
         items = dict(name=name, items=[], total_row=[0] * 13)
 
         # sort data by title and date
-        data = sorted(data, key=operator.itemgetter("title", 'date'))
+        data = sorted(data, key=operator.itemgetter("title", "date"))
 
         # group data by title and calculate totals
         for title, group in itertools.groupby(data, key=operator.itemgetter("title")):
-            items['items'].append({'title': title, 'data': [0] * 13})
+            items["items"].append({"title": title, "data": [0] * 13})
 
             for r in group:
-                i = r['date'].month - 1
-                sum_ = float(r['sum'])
+                i = r["date"].month - 1
+                sum_ = float(r["sum"])
 
                 # last array
-                item = items['items'][-1]
-                item['data'][i] = sum_
-                item['data'][12] += sum_  # total column
+                item = items["items"][-1]
+                item["data"][i] = sum_
+                item["data"][12] += sum_  # total column
 
-                items['total_row'][i] += sum_
-                items['total_row'][12] += sum_  # total column
+                items["total_row"][i] += sum_
+                items["total_row"][12] += sum_  # total column
 
         return items

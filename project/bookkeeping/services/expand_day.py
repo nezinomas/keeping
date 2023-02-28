@@ -24,15 +24,15 @@ class ExpandDayService:
         return date
 
     def _get_expenses(self) -> list[dict]:
-        return \
-            Expense.objects \
-            .items() \
-            .filter(date=self.date) \
-            .order_by('expense_type', F('expense_name').asc(), 'price')
+        return (
+            Expense.objects.items()
+            .filter(date=self.date)
+            .order_by("expense_type", F("expense_name").asc(), "price")
+        )
 
     def context(self) -> dict:
         return {
-            'day': self.date.day,
-            'object_list': self.data,
-            'notice': _('No records on day %(day)s') % ({'day': f'{self.date:%F}'}),
+            "day": self.date.day,
+            "object_list": self.data,
+            "notice": _("No records on day %(day)s") % ({"day": f"{self.date:%F}"}),
         }

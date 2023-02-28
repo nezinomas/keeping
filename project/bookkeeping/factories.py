@@ -16,7 +16,7 @@ class SavingWorthFactory(DjangoModelFactory):
 
     saving_type = factory.SubFactory(SavingTypeFactory)
     price = 5
-    date = datetime(1999, 1, 1, 2, 3, 4, tzinfo=ZoneInfo('Europe/Vilnius'))
+    date = datetime(1999, 1, 1, 2, 3, 4, tzinfo=ZoneInfo("Europe/Vilnius"))
 
 
 class AccountWorthFactory(DjangoModelFactory):
@@ -25,7 +25,7 @@ class AccountWorthFactory(DjangoModelFactory):
 
     account = factory.SubFactory(AccountFactory)
     price = 5
-    date = datetime(1999, 1, 1, 2, 3, 4, tzinfo=ZoneInfo('Europe/Vilnius'))
+    date = datetime(1999, 1, 1, 2, 3, 4, tzinfo=ZoneInfo("Europe/Vilnius"))
 
 
 class PensionWorthFactory(DjangoModelFactory):
@@ -34,4 +34,4 @@ class PensionWorthFactory(DjangoModelFactory):
 
     pension_type = factory.SubFactory(PensionTypeFactory)
     price = 5
-    date = datetime(1999, 1, 1, 2, 3, 4, tzinfo=ZoneInfo('Europe/Vilnius'))
+    date = datetime(1999, 1, 1, 2, 3, 4, tzinfo=ZoneInfo("Europe/Vilnius"))

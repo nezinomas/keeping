@@ -21,12 +21,12 @@ class AccountService:
     @property
     def total_row(self) -> dict:
         fields = [
-            'past',
-            'incomes',
-            'expenses',
-            'balance',
-            'have',
-            'delta',
+            "past",
+            "incomes",
+            "expenses",
+            "balance",
+            "have",
+            "delta",
         ]
 
         return utils.sum_all(self.data, fields)

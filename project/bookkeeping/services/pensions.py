@@ -22,14 +22,20 @@ class PensionsService:
     @property
     def total_row(self) -> dict:
         fields = [
-            'past_amount', 'past_fee',
-            'per_year_incomes', 'per_year_fee',
-            'fee', 'incomes',
-            'sold', 'sold_fee',
-            'invested', 'market_value',
-            'profit_sum',
+            "past_amount",
+            "past_fee",
+            "per_year_incomes",
+            "per_year_fee",
+            "fee",
+            "incomes",
+            "sold",
+            "sold_fee",
+            "invested",
+            "market_value",
+            "profit_sum",
         ]
         total_row = utils.sum_all(self.data, fields)
-        total_row['profit_proc'] = signal_savings.calc_percent(
-            total_row.get('market_value', 0), total_row.get('invested', 0))
+        total_row["profit_proc"] = signal_savings.calc_percent(
+            total_row.get("market_value", 0), total_row.get("invested", 0)
+        )
         return total_row

@@ -7,82 +7,38 @@ from .apps import App_name
 
 app_name = App_name
 
-register_converter(converters.DateConverter, 'date')
+register_converter(converters.DateConverter, "date")
 
 urlpatterns = [
+    path("", views.Index.as_view(), name="index"),
+    path("bookkeeping/accounts/", views.Accounts.as_view(), name="accounts"),
     path(
-        '',
-        views.Index.as_view(),
-        name='index'
-    ),
-    path(
-        'bookkeeping/accounts/',
-        views.Accounts.as_view(),
-        name='accounts'
-    ),
-    path(
-        'bookkeeping/accounts_worth/new/',
+        "bookkeeping/accounts_worth/new/",
         views.AccountsWorthNew.as_view(),
-        name='accounts_worth_new'
+        name="accounts_worth_new",
     ),
+    path("bookkeeping/savings/", views.Savings.as_view(), name="savings"),
     path(
-        'bookkeeping/savings/',
-        views.Savings.as_view(),
-        name='savings'
-    ),
-    path(
-        'bookkeeping/savings_worth/new/',
+        "bookkeeping/savings_worth/new/",
         views.SavingsWorthNew.as_view(),
-        name='savings_worth_new'
+        name="savings_worth_new",
     ),
+    path("bookkeeping/pensions/", views.Pensions.as_view(), name="pensions"),
     path(
-        'bookkeeping/pensions/',
-        views.Pensions.as_view(),
-        name='pensions'
-    ),
-    path(
-        'bookkeeping/pensions_worth/new/',
+        "bookkeeping/pensions_worth/new/",
         views.PensionsWorthNew.as_view(),
-        name='pensions_worth_new'
+        name="pensions_worth_new",
     ),
+    path("bookkeeping/wealth/", views.Wealth.as_view(), name="wealth"),
+    path("bookkeeping/no_incomes/", views.NoIncomes.as_view(), name="no_incomes"),
+    path("detailed/", views.Detailed.as_view(), name="detailed"),
+    path("summary/", views.Summary.as_view(), name="summary"),
+    path("summary/savings/", views.SummarySavings.as_view(), name="summary_savings"),
+    path("summary/expenses/", views.SummaryExpenses.as_view(), name="summary_expenses"),
+    path("month/", views.Month.as_view(), name="month"),
     path(
-        'bookkeeping/wealth/',
-        views.Wealth.as_view(),
-        name='wealth'
-    ),
-    path(
-        'bookkeeping/no_incomes/',
-        views.NoIncomes.as_view(),
-        name='no_incomes'
-    ),
-    path(
-        'detailed/',
-        views.Detailed.as_view(),
-        name='detailed'
-    ),
-    path(
-        'summary/',
-        views.Summary.as_view(),
-        name='summary'
-    ),
-    path(
-        'summary/savings/',
-        views.SummarySavings.as_view(),
-        name='summary_savings'
-    ),
-    path(
-        'summary/expenses/',
-        views.SummaryExpenses.as_view(),
-        name='summary_expenses'
-    ),
-    path(
-        'month/',
-        views.Month.as_view(),
-        name='month'
-    ),
-    path(
-        'month/<date:date>/',
+        "month/<date:date>/",
         views.ExpandDayExpenses.as_view(),
-        name='expand_day_expenses'
+        name="expand_day_expenses",
     ),
 ]
