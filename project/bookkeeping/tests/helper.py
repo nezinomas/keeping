@@ -1,17 +1,16 @@
-def assert_(expected, actual):
+import contextlib
+def assert_(expected, actual):  # sourcery skip: raise-specific-error
     for saving_type, arr in expected.items():
         for _k, expected_val in expected[saving_type].items():
             try:
                 actual_val = actual[saving_type][_k]
             except:
-                raise Exception(f'No \'{_k}\' key in {actual[saving_type]}.')
+                raise Exception(f"No '{_k}' key in {actual[saving_type]}.")
 
-            try:
+            with contextlib.suppress(Exception):
                 actual_val = round(float(actual_val), 2)
-            except:
-                pass
 
-            msg = f'{saving_type}->{_k}. Expected={expected_val} Actual={actual_val}'
+            msg = f"{saving_type}->{_k}. Expected={expected_val} Actual={actual_val}"
 
             assert expected_val == actual_val, msg
 

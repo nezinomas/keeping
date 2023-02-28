@@ -2,36 +2,32 @@ import pytest
 from django.template import Context, Template
 
 
-@pytest.fixture
-def _info_table():
-    template = Template(
-        '{% load tables %}'
-        '{% info_table arr %}'
-    )
-    return template
+@pytest.fixture(name="info_table")
+def fixture_info_table():
+    return Template("{% load tables %}" "{% info_table arr %}")
 
 
-@pytest.mark.parametrize('arr', [({'arr': {}}), ({}), ({'arr': {'xxx': 'yyy'}})])
-def test_info_table_no_data(_info_table, arr):
+@pytest.mark.parametrize("arr", [({"arr": {}}), ({}), ({"arr": {"xxx": "yyy"}})])
+def test_info_table_no_data(info_table, arr):
     ctx = Context(arr)
 
-    actual = _info_table.render(ctx)
+    actual = info_table.render(ctx)
 
-    assert actual == '\n\n\n\n\n'
-
-
-def test_info_table_with_data(_info_table):
-    ctx = Context({'arr': {'data': [1]}})
-
-    actual = _info_table.render(ctx)
-
-    assert '0,01' in actual
+    assert actual == "\n\n\n\n\n"
 
 
-def test_info_table_with_data_and_title(_info_table):
-    ctx = Context({'arr': {'data': [1], 'title': ['xxx']}})
+def test_info_table_with_data(info_table):
+    ctx = Context({"arr": {"data": [1]}})
 
-    actual = _info_table.render(ctx)
+    actual = info_table.render(ctx)
 
-    assert '0,01' in actual
-    assert 'xxx' in actual
+    assert "0,01" in actual
+
+
+def test_info_table_with_data_and_title(info_table):
+    ctx = Context({"arr": {"data": [1], "title": ["xxx"]}})
+
+    actual = info_table.render(ctx)
+
+    assert "0,01" in actual
+    assert "xxx" in actual

@@ -49,10 +49,7 @@ def test_data_service_pension_balance():
 def test_data():
     obj = WealthService(
         data=SimpleNamespace(
-            year = 1111,
-            account_balance=1,
-            saving_balance=2,
-            pension_balance=4
+            year=1111, account_balance=1, saving_balance=2, pension_balance=4
         )
     )
 
@@ -64,11 +61,7 @@ def test_data():
 
 def test_money():
     obj = WealthService(
-        data=SimpleNamespace(
-            account_balance=1,
-            saving_balance=2,
-            pension_balance=4
-        )
+        data=SimpleNamespace(account_balance=1, saving_balance=2, pension_balance=4)
     )
     actual = obj.money
 
@@ -77,11 +70,7 @@ def test_money():
 
 def test_wealth():
     obj = WealthService(
-        data=SimpleNamespace(
-            account_balance=1,
-            saving_balance=2,
-            pension_balance=4
-        )
+        data=SimpleNamespace(account_balance=1, saving_balance=2, pension_balance=4)
     )
     actual = obj.wealth
 

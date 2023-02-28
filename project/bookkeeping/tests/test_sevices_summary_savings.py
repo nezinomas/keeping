@@ -9,88 +9,88 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def _a():
-    return ([
-        {'year': 1999, 'invested': 0, 'profit': 0},
-        {'year': 2000, 'invested': 1, 'profit': 1},
-        {'year': 2001, 'invested': 2, 'profit': 2},
-    ])
+    return [
+        {"year": 1999, "invested": 0, "profit": 0},
+        {"year": 2000, "invested": 1, "profit": 1},
+        {"year": 2001, "invested": 2, "profit": 2},
+    ]
 
 
 @pytest.fixture
 def _b():
-    return ([
-        {'year': 1999, 'invested': 0, 'profit': 0},
-        {'year': 2000, 'invested': 4, 'profit': 4},
-        {'year': 2001, 'invested': 5, 'profit': 5},
-    ])
+    return [
+        {"year": 1999, "invested": 0, "profit": 0},
+        {"year": 2000, "invested": 4, "profit": 4},
+        {"year": 2001, "invested": 5, "profit": 5},
+    ]
 
 
 def test_chart_data_1(_a):
     actual = SummarySavingsService.chart_data(_a)
 
-    assert actual['categories'] == [2000, 2001]
-    assert actual['invested'] == [1, 2]
-    assert actual['profit'] == [1, 2]
-    assert actual['total'] == [2, 4]
+    assert actual["categories"] == [2000, 2001]
+    assert actual["invested"] == [1, 2]
+    assert actual["profit"] == [1, 2]
+    assert actual["total"] == [2, 4]
 
 
-@time_machine.travel('2000-1-1')
+@time_machine.travel("2000-1-1")
 def test_chart_data_2(_a):
     actual = SummarySavingsService.chart_data(_a)
 
-    assert actual['categories'] == [2000]
-    assert actual['invested'] == [1]
-    assert actual['profit'] == [1]
-    assert actual['total'] == [2]
+    assert actual["categories"] == [2000]
+    assert actual["invested"] == [1]
+    assert actual["profit"] == [1]
+    assert actual["total"] == [2]
 
 
 def test_chart_data_3(_a, _b):
     actual = SummarySavingsService.chart_data(_a, _b)
 
-    assert actual['categories'] == [2000, 2001]
-    assert actual['invested'] == [5, 7]
-    assert actual['profit'] == [5, 7]
-    assert actual['total'] == [10, 14]
+    assert actual["categories"] == [2000, 2001]
+    assert actual["invested"] == [5, 7]
+    assert actual["profit"] == [5, 7]
+    assert actual["total"] == [10, 14]
 
 
 def test_chart_data_5(_a):
     actual = SummarySavingsService.chart_data(_a, [])
 
-    assert actual['categories'] == [2000, 2001]
-    assert actual['invested'] == [1, 2]
-    assert actual['profit'] == [1, 2]
-    assert actual['total'] == [2, 4]
+    assert actual["categories"] == [2000, 2001]
+    assert actual["invested"] == [1, 2]
+    assert actual["profit"] == [1, 2]
+    assert actual["total"] == [2, 4]
 
 
 def test_chart_data_6():
     actual = SummarySavingsService.chart_data([])
 
-    assert not actual['categories']
-    assert not actual['invested']
-    assert not actual['profit']
-    assert not actual['total']
+    assert not actual["categories"]
+    assert not actual["invested"]
+    assert not actual["profit"]
+    assert not actual["total"]
 
 
-@time_machine.travel('2000-1-1')
+@time_machine.travel("2000-1-1")
 def test_chart_data_4(_a, _b):
     actual = SummarySavingsService.chart_data(_a, _b)
 
-    assert actual['categories'] == [2000]
-    assert actual['invested'] == [5]
-    assert actual['profit'] == [5]
-    assert actual['total'] == [10]
+    assert actual["categories"] == [2000]
+    assert actual["invested"] == [5]
+    assert actual["profit"] == [5]
+    assert actual["total"] == [10]
 
 
 def test_chart_data_max_value(_a, _b):
     actual = SummarySavingsService.chart_data(_a, _b)
 
-    assert actual['max'] == 14
+    assert actual["max"] == 14
 
 
 def test_chart_data_max_value_empty():
     actual = SummarySavingsService.chart_data([])
 
-    assert actual['max'] == 0
+    assert actual["max"] == 0
 
 
 @pytest.mark.django_db
@@ -101,9 +101,9 @@ def test_chart_data_db1():
 
     qs = SavingBalance.objects.sum_by_type()
 
-    actual = SummarySavingsService.chart_data(list(qs.filter(type='funds')))
+    actual = SummarySavingsService.chart_data(list(qs.filter(type="funds")))
 
-    assert actual['categories'] == [2000, 2001]
-    assert actual['invested'] == [1, 2]
-    assert actual['profit'] == [1, 2]
-    assert actual['total'] == [2, 4]
+    assert actual["categories"] == [2000, 2001]
+    assert actual["invested"] == [1, 2]
+    assert actual["profit"] == [1, 2]
+    assert actual["total"] == [2, 4]

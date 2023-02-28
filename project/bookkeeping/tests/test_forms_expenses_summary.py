@@ -30,7 +30,7 @@ def test_form_load():
 
 
 def test_form_empty_error():
-    form = SummaryExpensesForm(data={'types':[], 'names':[]})
+    form = SummaryExpensesForm(data={"types": [], "names": []})
 
     assert not form.is_valid()
-    assert form.errors['__all__'] == ['Reikia pasirinkti bent vieną kategoriją.']
+    assert form.errors["__all__"] == ["Reikia pasirinkti bent vieną kategoriją."]
