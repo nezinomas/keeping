@@ -1,5 +1,6 @@
-from datetime import datetime
 import calendar
+from datetime import datetime
+
 from bootstrap_datepicker_plus.widgets import YearPickerInput
 from crispy_forms.helper import FormHelper
 from dateutil.relativedelta import relativedelta
@@ -8,9 +9,9 @@ from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import add_css_class
-from ..core.lib import utils
+from ..core.lib import form_utils, utils
 from ..core.lib.date import monthnames, set_year_for_form
+from ..core.lib.form_utils import add_css_class
 from ..core.lib.translation import month_names
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
@@ -49,7 +50,7 @@ class YearFormMixin(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        utils.clean_year_picker_input('year', self.data, cleaned_data, self.errors)
+        form_utils.clean_year_picker_input('year', self.data, cleaned_data, self.errors)
         return cleaned_data
 
     def save(self, *args, **kwargs):
@@ -273,8 +274,8 @@ class CopyPlanForm(forms.Form):
         cleaned_data = super().clean()
         dict_ = self._get_cleaned_checkboxes(cleaned_data)
 
-        utils.clean_year_picker_input('year_from', self.data, cleaned_data, self.errors)
-        utils.clean_year_picker_input('year_to', self.data, cleaned_data, self.errors)
+        form_utils.clean_year_picker_input('year_from', self.data, cleaned_data, self.errors)
+        form_utils.clean_year_picker_input('year_to', self.data, cleaned_data, self.errors)
 
         year_from = cleaned_data.get('year_from')
         year_to = cleaned_data.get('year_to')

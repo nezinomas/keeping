@@ -3,8 +3,8 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import add_css_class
-from ..core.lib import utils
+from ..core.lib import form_utils, utils
+from ..core.lib.form_utils import add_css_class
 from .models import Account
 
 
@@ -40,6 +40,6 @@ class AccountForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        utils.clean_year_picker_input("closed", self.data, cleaned_data, self.errors)
+        form_utils.clean_year_picker_input("closed", self.data, cleaned_data, self.errors)
 
         return cleaned_data

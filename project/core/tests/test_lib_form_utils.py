@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from ..helpers.helper_forms import add_css_class
+from ..lib.form_utils import add_css_class
 
 
 # ----------------------------------------------------------------------------

@@ -8,10 +8,10 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.helpers.helper_forms import add_css_class
-from ..core.lib import utils
+from ..core.lib import form_utils, utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
+from ..core.lib.form_utils import add_css_class
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -217,6 +217,6 @@ class ExpenseNameForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        utils.clean_year_picker_input('valid_for', self.data, cleaned_data, self.errors)
+        form_utils.clean_year_picker_input('valid_for', self.data, cleaned_data, self.errors)
 
         return cleaned_data

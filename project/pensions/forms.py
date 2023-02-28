@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import add_css_class
+from ..core.lib.form_utils import add_css_class
 from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.mixins.forms import YearBetweenMixin

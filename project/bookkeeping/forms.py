@@ -7,7 +7,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.helpers.helper_forms import add_css_class
+from ..core.lib.form_utils import add_css_class
 from ..core.lib import date as core_date
 from ..core.lib import utils
 from ..expenses.models import ExpenseType

@@ -7,9 +7,9 @@ from django.db.models import F
 from django.db.models.functions import ExtractYear
 from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import add_css_class
-from ..core.lib import utils
+from ..core.lib import form_utils, utils
 from ..core.lib.date import set_year_for_form
+from ..core.lib.form_utils import add_css_class
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
 from .models import MAX_BOTTLES, Drink, DrinkTarget
@@ -100,7 +100,7 @@ class DrinkTargetForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        utils.clean_year_picker_input("year", self.data, cleaned_data, self.errors)
+        form_utils.clean_year_picker_input("year", self.data, cleaned_data, self.errors)
         return cleaned_data
 
     def clean_year(self):

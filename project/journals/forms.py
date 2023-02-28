@@ -6,7 +6,7 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from ..core.helpers.helper_forms import add_css_class
+from ..core.lib.form_utils import add_css_class
 from ..core.lib import utils
 from ..expenses.models import ExpenseType
 
