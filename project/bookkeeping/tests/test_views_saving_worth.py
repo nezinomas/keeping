@@ -4,6 +4,7 @@ from django.urls import resolve, reverse
 
 from ...core.tests.utils import setup_view
 from ...savings.factories import SavingTypeFactory
+from ...savings.models import SavingBalance
 from .. import views
 from ..models import SavingWorth
 
@@ -53,6 +54,23 @@ def test_formset_new(client_logged):
     assert actual.date.month == 2
     assert actual.date.day == 3
     assert actual.price == 1
+
+
+def test_formset_new_post_save(client_logged):
+    i = SavingTypeFactory()
+    data = {
+        'form-TOTAL_FORMS': 1,
+        'form-INITIAL_FORMS': 0,
+        'form-0-date': '1999-2-3',
+        'form-0-price': '0.01',
+        'form-0-saving_type': i.pk
+    }
+
+    url = reverse('bookkeeping:savings_worth_new')
+    client_logged.post(url, data)
+
+    actual = SavingBalance.objects.get(year=1999)
+    assert actual.market_value == 1
 
 
 def test_formset_invalid_data(client_logged):
