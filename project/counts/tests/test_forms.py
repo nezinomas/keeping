@@ -29,7 +29,7 @@ def test_form_init_fields():
     assert '<select name="count_type"' in form
 
 
-@time_machine.travel('1974-01-01')
+@time_machine.travel("1974-01-01")
 def test_form_year_initial_value():
     UserFactory()
 
@@ -41,13 +41,9 @@ def test_form_year_initial_value():
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_form_valid_data():
-    obj = CountTypeFactory(title='Xxx')
+    obj = CountTypeFactory(title="Xxx")
 
-    form = CountForm(data={
-        'date': '1999-01-01',
-        'count_type': obj,
-        'quantity': 1.0
-    })
+    form = CountForm(data={"date": "1999-01-01", "count_type": obj, "quantity": 1.0})
 
     assert form.is_valid()
 
@@ -55,29 +51,22 @@ def test_form_valid_data():
 
     assert data.date == date(1999, 1, 1)
     assert data.quantity == 1.0
-    assert data.user.username == 'bob'
-    assert data.count_type.title == 'Xxx'
-    assert data.count_type.slug == 'xxx'
+    assert data.user.username == "bob"
+    assert data.count_type.title == "Xxx"
+    assert data.count_type.slug == "xxx"
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@time_machine.travel('1999-2-2')
-@pytest.mark.parametrize(
-    'year',
-    [1998, 2001]
-)
+@time_machine.travel("1999-2-2")
+@pytest.mark.parametrize("year", [1998, 2001])
 def test_form_invalid_date(year):
-    obj = CountTypeFactory(title='xxx')
+    obj = CountTypeFactory(title="xxx")
 
-    form = CountForm(data={
-        'date': f'{year}-01-01',
-        'count_type': obj,
-        'quantity': 1.0
-    })
+    form = CountForm(data={"date": f"{year}-01-01", "count_type": obj, "quantity": 1.0})
 
     assert not form.is_valid()
-    assert 'date' in form.errors
-    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
+    assert "date" in form.errors
+    assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
 def test_form_blank_data():
@@ -86,21 +75,18 @@ def test_form_blank_data():
     assert not form.is_valid()
 
     assert len(form.errors) == 3
-    assert 'date' in form.errors
-    assert 'quantity' in form.errors
-    assert 'count_type' in form.errors
+    assert "date" in form.errors
+    assert "quantity" in form.errors
+    assert "count_type" in form.errors
 
 
 def test_form_no_count_type():
-    form = CountForm(data={
-        'date': '1999-01-01',
-        'quantity': 1.0
-    })
+    form = CountForm(data={"date": "1999-01-01", "quantity": 1.0})
 
     assert not form.is_valid()
     assert len(form.errors) == 1
-    assert 'count_type' in form.errors
-    assert 'Šis laukas yra privalomas.' in form.errors['count_type']
+    assert "count_type" in form.errors
+    assert "Šis laukas yra privalomas." in form.errors["count_type"]
 
 
 # ---------------------------------------------------------------------------------------
@@ -119,14 +105,14 @@ def test_count_type_init_fields():
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_valid_data():
-    form = CountTypeForm(data={'title': 'XXXXX'})
+    form = CountTypeForm(data={"title": "XXXXX"})
 
     assert form.is_valid()
 
     data = form.save()
 
-    assert data.user.username == 'bob'
-    assert data.title == 'XXXXX'
+    assert data.user.username == "bob"
+    assert data.title == "XXXXX"
 
 
 def test_count_type_blank_data():
@@ -135,45 +121,45 @@ def test_count_type_blank_data():
     assert not form.is_valid()
 
     assert len(form.errors) == 1
-    assert 'title' in form.errors
+    assert "title" in form.errors
 
 
 @pytest.mark.parametrize(
-    'reserved_title',
+    "reserved_title",
     [
-        ('none'),
-        ('None'),
-        ('type'),
-        ('Type'),
-        ('update'),
-        ('Update'),
-        ('delete'),
-        ('Delete'),
-        ('info_row'),
-        ('Info_row'),
-        ('index'),
-        ('Index'),
-        ('data'),
-        ('Data'),
-        ('history'),
-        ('History'),
-        ('empty'),
-        ('Empty'),
-    ]
+        ("none"),
+        ("None"),
+        ("type"),
+        ("Type"),
+        ("update"),
+        ("Update"),
+        ("delete"),
+        ("Delete"),
+        ("info_row"),
+        ("Info_row"),
+        ("index"),
+        ("Index"),
+        ("data"),
+        ("Data"),
+        ("history"),
+        ("History"),
+        ("empty"),
+        ("Empty"),
+    ],
 )
 def test_count_type_reserved_title(reserved_title):
-    form = CountTypeForm(data={'title': reserved_title})
+    form = CountTypeForm(data={"title": reserved_title})
 
     assert not form.is_valid()
     assert len(form.errors) == 1
-    assert 'title' in form.errors
-    assert 'Šis pavadinimas rezervuotas sistemai.' in form.errors['title']
+    assert "title" in form.errors
+    assert "Šis pavadinimas rezervuotas sistemai." in form.errors["title"]
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_form_count_type_and_second_user(main_user, second_user):
-    CountTypeFactory(title='T1', user=main_user)
-    CountTypeFactory(title='T2', user=second_user)
+    CountTypeFactory(title="T1", user=main_user)
+    CountTypeFactory(title="T2", user=second_user)
 
     form = CountForm({}).as_p()
 
@@ -182,10 +168,10 @@ def test_form_count_type_and_second_user(main_user, second_user):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@patch('project.core.lib.utils.get_request_kwargs', return_value='t1')
+@patch("project.core.lib.utils.get_request_kwargs", return_value="t1")
 def test_form_load_select_count_type(mck):
-    CountTypeFactory(title='T1')
-    CountTypeFactory(title='T2')
+    CountTypeFactory(title="T1")
+    CountTypeFactory(title="T2")
 
     form = CountForm().as_p()
 

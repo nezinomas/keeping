@@ -9,10 +9,13 @@ from .models import Count, CountType
 class CountTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CountType
-        django_get_or_create = ('title','user',)
+        django_get_or_create = (
+            "title",
+            "user",
+        )
 
     user = factory.SubFactory(UserFactory)
-    title = 'Count Type'
+    title = "Count Type"
 
 
 class CountFactory(factory.django.DjangoModelFactory):

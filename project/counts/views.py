@@ -4,10 +4,15 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import weeknumber
-from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 ListViewMixin, RedirectViewMixin,
-                                 TemplateViewMixin, UpdateViewMixin,
-                                 rendered_content)
+from ..core.mixins.views import (
+    CreateViewMixin,
+    DeleteViewMixin,
+    ListViewMixin,
+    RedirectViewMixin,
+    TemplateViewMixin,
+    UpdateViewMixin,
+    rendered_content,
+)
 from .forms import CountForm, CountTypeForm
 from .lib.stats import Stats
 from .lib.views_helper import CountTypetObjectMixin, InfoRowData
@@ -18,22 +23,22 @@ from .services.index import IndexService
 class Redirect(RedirectViewMixin):
     def get_redirect_url(self, *args, **kwargs):
         try:
-            qs = CountType.objects.related().get(slug=kwargs.get('slug'))
+            qs = CountType.objects.related().get(slug=kwargs.get("slug"))
         except CountType.DoesNotExist:
             qs = CountType.objects.related().first()
 
         if qs:
-            return reverse('counts:index', kwargs={'slug': qs.slug})
+            return reverse("counts:index", kwargs={"slug": qs.slug})
 
-        return reverse('counts:empty')
+        return reverse("counts:empty")
 
 
 class Empty(TemplateViewMixin):
-    template_name = 'counts/empty.html'
+    template_name = "counts/empty.html"
 
 
 class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
-    template_name = 'counts/info_row.html'
+    template_name = "counts/info_row.html"
 
     def get_context_data(self, **kwargs):
         super().get_object()
@@ -43,17 +48,17 @@ class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
         data = InfoRowData(year, self.object.slug)
 
         context = {
-            'title': self.object.title,
-            'week': week,
-            'total': data.total,
-            'ratio': data.total / week,
-            'current_gap': data.gap,
+            "title": self.object.title,
+            "week": week,
+            "total": data.total,
+            "ratio": data.total / week,
+            "current_gap": data.gap,
         }
         return super().get_context_data(**kwargs) | context
 
 
 class Index(CountTypetObjectMixin, TemplateViewMixin):
-    template_name = 'counts/index.html'
+    template_name = "counts/index.html"
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -62,7 +67,7 @@ class Index(CountTypetObjectMixin, TemplateViewMixin):
         super().get_object()
 
         if not self.object:
-            return redirect(reverse('counts:redirect'))
+            return redirect(reverse("counts:redirect"))
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -70,17 +75,15 @@ class Index(CountTypetObjectMixin, TemplateViewMixin):
         super().get_object()
 
         context = {
-            'info_row': \
-                rendered_content(self.request, InfoRow, **self.kwargs),
-            'tab_content': \
-                rendered_content(self.request, TabIndex, **self.kwargs),
+            "info_row": rendered_content(self.request, InfoRow, **self.kwargs),
+            "tab_content": rendered_content(self.request, TabIndex, **self.kwargs),
         }
 
         return super().get_context_data(**self.kwargs) | context
 
 
 class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
-    template_name = 'counts/tab_index.html'
+    template_name = "counts/tab_index.html"
 
     def get_context_data(self, **kwargs):
         super().get_object()
@@ -88,20 +91,16 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
         year = self.request.user.year
         count_type = self.object.slug
 
-        qs = \
-            Count.objects \
-            .sum_by_day(year=year, count_type=count_type)
+        qs = Count.objects.sum_by_day(year=year, count_type=count_type)
 
         past_last_record = None
         with contextlib.suppress(Count.DoesNotExist, AttributeError):
-            past_last_record = \
-                Count.objects \
-                .related() \
-                .filter(
-                    date__year__lt=year,
-                    count_type=self.object) \
-                .latest() \
+            past_last_record = (
+                Count.objects.related()
+                .filter(date__year__lt=year, count_type=self.object)
+                .latest()
                 .date
+            )
 
         stats = Stats(year=year, data=qs, past_latest=past_last_record)
         srv = IndexService(year, stats)
@@ -109,11 +108,11 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
         calendar_data = srv.calendar_data
 
         context = {
-            'chart_calendar_1H': srv.chart_calendar(calendar_data[:6]),
-            'chart_calendar_2H': srv.chart_calendar(calendar_data[6:]),
-            'chart_weekdays': srv.chart_weekdays(),
-            'chart_months': srv.chart_months(),
-            'chart_histogram': srv.chart_histogram(),
+            "chart_calendar_1H": srv.chart_calendar(calendar_data[:6]),
+            "chart_calendar_2H": srv.chart_calendar(calendar_data[6:]),
+            "chart_weekdays": srv.chart_weekdays(),
+            "chart_months": srv.chart_months(),
+            "chart_histogram": srv.chart_histogram(),
         }
 
         return super().get_context_data(**self.kwargs) | context
@@ -121,42 +120,40 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
 
 class TabData(ListViewMixin):
     model = Count
-    template_name = 'counts/tab_data.html'
+    template_name = "counts/tab_data.html"
 
     def get_queryset(self):
         year = self.request.user.year
-        slug = self.kwargs.get('slug')
+        slug = self.kwargs.get("slug")
 
-        return \
-            Count.objects \
-            .year(year=year, count_type=slug)
+        return Count.objects.year(year=year, count_type=slug)
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**self.kwargs)
 
 
 class TabHistory(TemplateViewMixin):
-    template_name = 'counts/tab_history.html'
+    template_name = "counts/tab_history.html"
 
     def get_context_data(self, **kwargs):
-        slug = self.kwargs.get('slug')
-        qs = Count.objects.items(count_type=slug).values('date', 'quantity')
+        slug = self.kwargs.get("slug")
+        qs = Count.objects.items(count_type=slug).values("date", "quantity")
         srv = IndexService(self.request.user.year, Stats(data=qs))
 
         context = {
-            'records': srv.records,
-            'chart_weekdays': srv.chart_weekdays(_('Days of week')),
-            'chart_years': srv.chart_years(),
-            'chart_histogram': srv.chart_histogram(),
+            "records": srv.records,
+            "chart_weekdays": srv.chart_weekdays(_("Days of week")),
+            "chart_years": srv.chart_years(),
+            "chart_histogram": srv.chart_histogram(),
         }
 
         return super().get_context_data(**self.kwargs) | context
 
 
-class CountUrlMixin():
+class CountUrlMixin:
     def get_success_url(self):
         slug = self.object.count_type.slug
-        return reverse_lazy('counts:tab_data', kwargs={'slug': slug})
+        return reverse_lazy("counts:tab_data", kwargs={"slug": slug})
 
 
 class New(CountUrlMixin, CreateViewMixin):
@@ -164,62 +161,60 @@ class New(CountUrlMixin, CreateViewMixin):
     form_class = CountForm
 
     def get_hx_trigger_django(self):
-        tab = self.kwargs.get('tab')
+        tab = self.kwargs.get("tab")
 
-        if tab in ['index', 'data', 'history']:
-            return f'reload{tab.title()}'
+        if tab in ["index", "data", "history"]:
+            return f"reload{tab.title()}"
 
-        return 'reloadData'
+        return "reloadData"
 
     def url(self):
-        count_type_slug = self.kwargs.get('slug')
-        tab = self.kwargs.get('tab')
+        count_type_slug = self.kwargs.get("slug")
+        tab = self.kwargs.get("tab")
 
-        if tab not in ['index', 'data', 'history']:
-            tab = 'index'
+        if tab not in ["index", "data", "history"]:
+            tab = "index"
 
-        return \
-            reverse_lazy('counts:new',
-                         kwargs={'slug': count_type_slug, 'tab': tab})
+        return reverse_lazy("counts:new", kwargs={"slug": count_type_slug, "tab": tab})
 
 
 class Update(CountUrlMixin, UpdateViewMixin):
     model = Count
     form_class = CountForm
-    hx_trigger_django = 'reloadData'
+    hx_trigger_django = "reloadData"
 
 
 class Delete(CountUrlMixin, DeleteViewMixin):
     model = Count
-    hx_trigger_django = 'reloadData'
+    hx_trigger_django = "reloadData"
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                             Count Types
 # ---------------------------------------------------------------------------------------
-class TypeUrlMixin():
+class TypeUrlMixin:
     def get_hx_redirect(self):
         return self.get_success_url()
 
     def get_success_url(self):
         slug = self.object.slug
-        return reverse_lazy('counts:index', kwargs={'slug': slug})
+        return reverse_lazy("counts:index", kwargs={"slug": slug})
 
 
 class TypeNew(TypeUrlMixin, CreateViewMixin):
     model = CountType
     form_class = CountTypeForm
-    hx_trigger_django = 'afterType'
-    url = reverse_lazy('counts:type_new')
+    hx_trigger_django = "afterType"
+    url = reverse_lazy("counts:type_new")
 
 
 class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
     model = CountType
     form_class = CountTypeForm
-    hx_trigger_django = 'afterType'
+    hx_trigger_django = "afterType"
 
 
 class TypeDelete(TypeUrlMixin, DeleteViewMixin):
     model = CountType
-    hx_trigger_django = 'afterType'
-    hx_redirect = reverse_lazy('counts:redirect')
+    hx_trigger_django = "afterType"
+    hx_redirect = reverse_lazy("counts:redirect")
