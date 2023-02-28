@@ -157,7 +157,7 @@ def test_account_worth_valid_data():
     form = AccountWorthForm(
         data={
             "date": "1999-1-2",
-            "price": "1.0",
+            "price": "0.01",
             "account": a.pk,
         }
     )
@@ -169,6 +169,25 @@ def test_account_worth_valid_data():
     assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
     assert data.price == 1
     assert data.account.title == a.title
+
+
+@time_machine.travel("1999-01-02 03:02:01")
+def test_account_worth_valid_data_reset():
+    a = AccountFactory()
+
+    form = AccountWorthForm(
+        data={
+            "date": "1999-1-2",
+            "price": "0",
+            "account": a.pk,
+        }
+    )
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.price == 0
 
 
 def test_account_worth_blank_data():

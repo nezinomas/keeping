@@ -75,7 +75,9 @@ class SavingWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         return clean_date_and_closed("saving_type", cleaned, self.add_error)
 
 
-class AccountWorthForm(forms.ModelForm, DateFieldMixin):
+class AccountWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
+    price = forms.FloatField(min_value=0, required=False)
+
     class Meta:
         model = AccountWorth
         fields = ["date", "account", "price"]

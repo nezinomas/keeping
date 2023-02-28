@@ -27,9 +27,7 @@ class SavingWorth(models.Model):
 
 class AccountWorth(models.Model):
     date = models.DateTimeField()
-    price = models.PositiveIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1)]
-    )
+    price = models.PositiveIntegerField(null=True, blank=True)
     account = models.ForeignKey(
         Account, on_delete=models.CASCADE, related_name="accounts_worth"
     )
