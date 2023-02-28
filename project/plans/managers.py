@@ -10,21 +10,15 @@ class YearManager(models.Manager):
 
     def related(self):
         journal = utils.get_user().journal
-        related = ['journal']
+        related = ["journal"]
 
         if self._prefetch:
             related.append(self._prefetch)
 
-        return \
-            self \
-            .select_related(*related) \
-            .filter(journal=journal)
+        return self.select_related(*related).filter(journal=journal)
 
     def year(self, year):
-        return \
-            self \
-            .related() \
-            .filter(year=year)
+        return self.related().filter(year=year)
 
     def items(self):
         return self.related()

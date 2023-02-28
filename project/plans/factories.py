@@ -10,7 +10,11 @@ from .models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 class ExpensePlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpensePlan
-        django_get_or_create = ('year', 'expense_type', 'journal', )
+        django_get_or_create = (
+            "year",
+            "expense_type",
+            "journal",
+        )
 
     journal = factory.SubFactory(JournalFactory)
     expense_type = factory.SubFactory(ExpenseTypeFactory)
@@ -32,7 +36,11 @@ class ExpensePlanFactory(factory.django.DjangoModelFactory):
 class IncomePlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = IncomePlan
-        django_get_or_create = ('year', 'income_type', 'journal', )
+        django_get_or_create = (
+            "year",
+            "income_type",
+            "journal",
+        )
 
     journal = factory.SubFactory(JournalFactory)
     income_type = factory.SubFactory(IncomeTypeFactory)
@@ -54,7 +62,11 @@ class IncomePlanFactory(factory.django.DjangoModelFactory):
 class SavingPlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingPlan
-        django_get_or_create = ('year', 'saving_type', 'journal', )
+        django_get_or_create = (
+            "year",
+            "saving_type",
+            "journal",
+        )
 
     journal = factory.SubFactory(JournalFactory)
     saving_type = factory.SubFactory(SavingTypeFactory)
@@ -99,7 +111,7 @@ class NecessaryPlanFactory(factory.django.DjangoModelFactory):
 
     journal = factory.SubFactory(JournalFactory)
     year = 1999
-    title = 'other'
+    title = "other"
     january = 1
     february = 1
     march = 1
