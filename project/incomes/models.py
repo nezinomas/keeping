@@ -11,14 +11,12 @@ from .managers import IncomeQuerySet, IncomeTypeQuerySet
 
 class IncomeType(TitleAbstract):
     class Types(models.TextChoices):
-        SALARY = 'salary', _('Salary')
-        DIVIDENTS = 'dividents', _('Dividents')
-        OTHER = 'other', _('Other')
+        SALARY = "salary", _("Salary")
+        DIVIDENTS = "dividents", _("Dividents")
+        OTHER = "other", _("Other")
 
     journal = models.ForeignKey(
-        Journal,
-        on_delete=models.CASCADE,
-        related_name='income_types'
+        Journal, on_delete=models.CASCADE, related_name="income_types"
     )
     type = models.CharField(
         max_length=12,
@@ -30,8 +28,8 @@ class IncomeType(TitleAbstract):
     objects = IncomeTypeQuerySet.as_manager()
 
     class Meta:
-        unique_together = ['journal', 'title']
-        ordering = ['title']
+        unique_together = ["journal", "title"]
+        ordering = ["title"]
 
     def get_absolute_url(self):
         return reverse_lazy("incomes:type_update", kwargs={"pk": self.pk})
@@ -40,31 +38,23 @@ class IncomeType(TitleAbstract):
 class Income(models.Model):
     date = models.DateField()
     price = models.PositiveIntegerField()
-    remark = models.TextField(
-        max_length=1000,
-        blank=True
-    )
+    remark = models.TextField(max_length=1000, blank=True)
     account = models.ForeignKey(
-        Account,
-        on_delete=models.CASCADE,
-        related_name='incomes'
+        Account, on_delete=models.CASCADE, related_name="incomes"
     )
-    income_type = models.ForeignKey(
-        IncomeType,
-        on_delete=models.CASCADE
-    )
+    income_type = models.ForeignKey(IncomeType, on_delete=models.CASCADE)
 
     # managers
     objects = IncomeQuerySet.as_manager()
 
     class Meta:
         indexes = [
-            models.Index(fields=['account', 'income_type']),
-            models.Index(fields=['income_type']),
+            models.Index(fields=["account", "income_type"]),
+            models.Index(fields=["income_type"]),
         ]
 
     def __str__(self):
-        return f'{(self.date)}: {self.income_type}'
+        return f"{(self.date)}: {self.income_type}"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

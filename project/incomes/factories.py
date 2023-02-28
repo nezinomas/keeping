@@ -10,9 +10,9 @@ from .models import Income, IncomeType
 class IncomeTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = IncomeType
-        django_get_or_create = ('title',)
+        django_get_or_create = ("title",)
 
-    title = 'Income Type'
+    title = "Income Type"
     journal = factory.SubFactory(JournalFactory)
 
 
@@ -22,6 +22,6 @@ class IncomeFactory(factory.django.DjangoModelFactory):
 
     date = dt(1999, 1, 1)
     price = 1000
-    remark = 'remark'
+    remark = "remark"
     account = factory.SubFactory(AccountFactory)
     income_type = factory.SubFactory(IncomeTypeFactory)
