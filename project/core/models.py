@@ -8,9 +8,7 @@ class TitleAbstract(models.Model):
         abstract = True
 
     title = models.CharField(
-        max_length=25,
-        blank=False,
-        validators=[MinLengthValidator(3)]
+        max_length=25, blank=False, validators=[MinLengthValidator(3)]
     )
     slug = models.SlugField(
         editable=False,
@@ -29,10 +27,7 @@ class MonthAbstract(models.Model):
     class Meta:
         abstract = True
 
-    january = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
+    january = models.PositiveIntegerField(null=True, blank=True)
     february = models.PositiveIntegerField(
         null=True,
         blank=True,

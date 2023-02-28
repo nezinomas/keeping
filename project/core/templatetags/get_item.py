@@ -24,17 +24,17 @@ def get_obj_attr(obj, attr):
 @register.filter
 def get_sum_by_month(lst: List[Dict], month: int):
     for _dict in lst:
-        if dt := _dict.get('date'):
+        if dt := _dict.get("date"):
             if dt.month == month:
-                return _dict.get('sum')
+                return _dict.get("sum")
 
 
 @register.filter
 def get_sum_by_title(lst: List[Dict], title: str):
     for _dict in lst:
-        _title = _dict.get('title')
+        _title = _dict.get("title")
         if _title == title:
-            return _dict.get('sum')
+            return _dict.get("sum")
 
 
 @register.filter

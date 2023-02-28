@@ -14,7 +14,7 @@ from .lib.date import years as Year
 def years(context):
     _years = Year()
 
-    return {'years': _years[::-1]}
+    return {"years": _years[::-1]}
 
 
 def yday(context):
@@ -25,11 +25,11 @@ def yday(context):
 
     _yday, _ydays = Yday(_year)
 
-    return {'yday': _yday, 'ydays': _ydays}
+    return {"yday": _yday, "ydays": _ydays}
 
 
 def context_months(context):
-    return {'context_months': year_month_list()}
+    return {"context_months": year_month_list()}
 
 
 def context_counts_menu(context):
@@ -37,8 +37,8 @@ def context_counts_menu(context):
 
     with contextlib.suppress(AttributeError):
         journal_pk = context.user.journal.pk
-        file = Path(settings.MEDIA_ROOT, str(journal_pk), 'menu.html')
+        file = Path(settings.MEDIA_ROOT, str(journal_pk), "menu.html")
 
-    menu = file.read_text(encoding='utf-8') if file and file.exists() else ''
+    menu = file.read_text(encoding="utf-8") if file and file.exists() else ""
 
-    return {'counts_menu': mark_safe(menu) }
+    return {"counts_menu": mark_safe(menu)}

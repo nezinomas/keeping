@@ -14,7 +14,7 @@ def set_year(request, year):
         user.year = year
         user.save()
 
-    url = request.META.get('HTTP_REFERER', '/')
+    url = request.META.get("HTTP_REFERER", "/")
 
     return redirect(url)
 
@@ -26,7 +26,7 @@ def set_month(request, month):
         user.month = month
         user.save()
 
-    url = request.META.get('HTTP_REFERER', '/')
+    url = request.META.get("HTTP_REFERER", "/")
 
     return redirect(url)
 
@@ -34,16 +34,19 @@ def set_month(request, month):
 class RegenerateBalances(TemplateViewMixin):
     # @timer
     def get(self, request, *args, **kwargs):
-        _type = request.GET.get('type')
-        _types = ['accounts', 'savings', 'pensions']
-        _kwargs = {'sender': None, 'instance': None,}
+        _type = request.GET.get("type")
+        _types = ["accounts", "savings", "pensions"]
+        _kwargs = {
+            "sender": None,
+            "instance": None,
+        }
 
-        hx_trigger_name = 'afterSignal'
+        hx_trigger_name = "afterSignal"
         if _type and _type in _types:
             _types = [_type]
             hx_trigger_name += _type.title()
 
         for _type in _types:
-           getattr(signals, f'{_type}_signal')(**_kwargs)
+            getattr(signals, f"{_type}_signal")(**_kwargs)
 
         return httpHtmxResponse(hx_trigger_name)

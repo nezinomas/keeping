@@ -21,10 +21,10 @@ def current_day(year: int, month: int, return_past_day: bool = True) -> int:
 
 
 def year_month_list(year: int = None) -> List[date]:
-    '''
+    """
     returns: list of months for selected year e.g.
     [datetime.date(1970, 1, 1), datetime.date(1970, 2, 1), ...]
-    '''
+    """
     year = year or datetime.now().year
     return [date(year, i, 1) for i in range(1, 13)]
 
@@ -33,7 +33,7 @@ def monthname(month: int) -> str:
     try:
         _month = calendar.month_name[month]
     except (TypeError, IndexError):
-        return 'january'
+        return "january"
 
     return _month.lower()
 

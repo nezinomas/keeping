@@ -11,4 +11,4 @@ class TitleDummyFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = TitleDummy
 
-    title = 'Title'
+    title = "Title"

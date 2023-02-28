@@ -1,5 +1,5 @@
 class DateConverter:
-    regex = r'(\d{8})'
+    regex = r"(\d{8})"
 
     def to_python(self, value):
         return value
@@ -9,7 +9,7 @@ class DateConverter:
 
 
 class SignerConverter:
-    regex = r'([\w\-]{23,}:[\w\-]{5,}:[\w\-]{43})'
+    regex = r"([\w\-]{23,}:[\w\-]{5,}:[\w\-]{43})"
 
     def to_python(self, value):
         return value

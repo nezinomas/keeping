@@ -37,24 +37,25 @@ def accounts_signal(sender: object, instance: object, *args, **kwargs):
     objects = create_objects(account.AccountBalance, data.types, data.table)
     save_objects(account.AccountBalance, objects)
 
+
 def accounts_data() -> SignalBase:
     conf = {
-        'incomes': (
+        "incomes": (
             income.Income,
             debt.Debt,
             debt.DebtReturn,
             transaction.Transaction,
             transaction.SavingClose,
         ),
-        'expenses': (
+        "expenses": (
             expense.Expense,
             debt.Debt,
             debt.DebtReturn,
             transaction.Transaction,
             saving.Saving,
         ),
-        'have': (bookkeeping.AccountWorth,),
-        'types': (account.Account,),
+        "have": (bookkeeping.AccountWorth,),
+        "types": (account.Account,),
     }
     return Accounts(GetData(conf))
 
@@ -74,18 +75,19 @@ def savings_signal(sender: object, instance: object, *args, **kwargs):
     objects = create_objects(saving.SavingBalance, data.types, data.table)
     save_objects(saving.SavingBalance, objects)
 
+
 def savings_data() -> SignalBase:
     conf = {
-        'incomes': (
+        "incomes": (
             saving.Saving,
             transaction.SavingChange,
         ),
-        'expenses': (
+        "expenses": (
             transaction.SavingClose,
             transaction.SavingChange,
         ),
-        'have': (bookkeeping.SavingWorth,),
-        'types': (saving.SavingType,),
+        "have": (bookkeeping.SavingWorth,),
+        "types": (saving.SavingType,),
     }
     return Savings(GetData(conf))
 
@@ -101,11 +103,12 @@ def pensions_signal(sender: object, instance: object, *args, **kwargs):
     objects = create_objects(pension.PensionBalance, data.types, data.table)
     save_objects(pension.PensionBalance, objects)
 
+
 def pensions_data() -> SignalBase:
     conf = {
-        'incomes': (pension.Pension,),
-        'have': (bookkeeping.PensionWorth,),
-        'types': (pension.PensionType,),
+        "incomes": (pension.Pension,),
+        "have": (bookkeeping.PensionWorth,),
+        "types": (pension.PensionType,),
     }
     return Savings(GetData(conf))
 
@@ -119,12 +122,12 @@ def create_objects(balance_model: Model, categories: dict, data: list[dict]):
     objects = []
     for x in data:
         # extract account/saving_type/pension_type id from dict
-        cid = x.pop('id')
+        cid = x.pop("id")
         # drop latest_check if empty
-        if not x['latest_check']:
-            x.pop('latest_check')
+        if not x["latest_check"]:
+            x.pop("latest_check")
         else:
-            x['latest_check'] = make_aware(x['latest_check'])
+            x["latest_check"] = make_aware(x["latest_check"])
         # create fk_field account|saving_type|pension_type object
         x[fk_field] = categories.get(cid)
         # create AccountBalance/SavingBalance/PensionBalance object
