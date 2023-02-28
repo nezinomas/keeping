@@ -2,32 +2,39 @@ from django.urls import reverse_lazy
 
 from ..accounts import views as accounts_views
 from ..core.lib.convert_price import ConvertToCents
-from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 ListViewMixin, TemplateViewMixin,
-                                 UpdateViewMixin, rendered_content)
+from ..core.mixins.views import (
+    CreateViewMixin,
+    DeleteViewMixin,
+    ListViewMixin,
+    TemplateViewMixin,
+    UpdateViewMixin,
+    rendered_content,
+)
 from . import forms, models
 
 
 class Index(TemplateViewMixin):
-    template_name = 'transactions/index.html'
+    template_name = "transactions/index.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            'transaction': rendered_content(self.request, Lists),
-            'saving_close': rendered_content(self.request, SavingsCloseLists),
-            'saving_change': rendered_content(self.request, SavingsChangeLists),
-            'account': rendered_content(self.request, accounts_views.Lists),
-        })
+        context.update(
+            {
+                "transaction": rendered_content(self.request, Lists),
+                "saving_close": rendered_content(self.request, SavingsCloseLists),
+                "saving_change": rendered_content(self.request, SavingsChangeLists),
+                "account": rendered_content(self.request, accounts_views.Lists),
+            }
+        )
         return context
 
 
 class LoadSavingType(ListViewMixin):
-    template_name = 'core/dropdown.html'
+    template_name = "core/dropdown.html"
     object_list = []
 
     def get(self, request, *args, **kwargs):
-        pk = request.GET.get('from_account')
+        pk = request.GET.get("from_account")
 
         try:
             pk = int(pk)
@@ -35,13 +42,9 @@ class LoadSavingType(ListViewMixin):
             pk = None
 
         if pk:
-            self.object_list = \
-                models.SavingType \
-                .objects \
-                .items() \
-                .exclude(pk=pk)
+            self.object_list = models.SavingType.objects.items().exclude(pk=pk)
 
-        return self.render_to_response({'object_list': self.object_list})
+        return self.render_to_response({"object_list": self.object_list})
 
 
 class Lists(ListViewMixin):
@@ -54,21 +57,21 @@ class Lists(ListViewMixin):
 class New(CreateViewMixin):
     model = models.Transaction
     form_class = forms.TransactionForm
-    hx_trigger_form = 'afterTransaction'
-    success_url = reverse_lazy('transactions:list')
+    hx_trigger_form = "afterTransaction"
+    success_url = reverse_lazy("transactions:list")
 
 
 class Update(ConvertToCents, UpdateViewMixin):
     model = models.Transaction
     form_class = forms.TransactionForm
-    hx_trigger_django = 'afterTransaction'
-    success_url = reverse_lazy('transactions:list')
+    hx_trigger_django = "afterTransaction"
+    success_url = reverse_lazy("transactions:list")
 
 
 class Delete(DeleteViewMixin):
     model = models.Transaction
-    hx_trigger_django = 'afterTransaction'
-    success_url = reverse_lazy('transactions:list')
+    hx_trigger_django = "afterTransaction"
+    success_url = reverse_lazy("transactions:list")
 
 
 class SavingsCloseLists(ListViewMixin):
@@ -81,23 +84,23 @@ class SavingsCloseLists(ListViewMixin):
 class SavingsCloseNew(CreateViewMixin):
     model = models.SavingClose
     form_class = forms.SavingCloseForm
-    hx_trigger_form = 'afterClose'
+    hx_trigger_form = "afterClose"
 
-    url = reverse_lazy('transactions:savings_close_new')
-    success_url = reverse_lazy('transactions:savings_close_list')
+    url = reverse_lazy("transactions:savings_close_new")
+    success_url = reverse_lazy("transactions:savings_close_list")
 
 
 class SavingsCloseUpdate(ConvertToCents, UpdateViewMixin):
     model = models.SavingClose
     form_class = forms.SavingCloseForm
-    hx_trigger_django = 'afterClose'
-    success_url = reverse_lazy('transactions:savings_close_list')
+    hx_trigger_django = "afterClose"
+    success_url = reverse_lazy("transactions:savings_close_list")
 
 
 class SavingsCloseDelete(DeleteViewMixin):
     model = models.SavingClose
-    hx_trigger_django = 'afterClose'
-    success_url = reverse_lazy('transactions:savings_close_list')
+    hx_trigger_django = "afterClose"
+    success_url = reverse_lazy("transactions:savings_close_list")
 
 
 class SavingsChangeLists(ListViewMixin):
@@ -110,20 +113,20 @@ class SavingsChangeLists(ListViewMixin):
 class SavingsChangeNew(CreateViewMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
-    hx_trigger_form = 'afterChange'
+    hx_trigger_form = "afterChange"
 
-    success_url = reverse_lazy('transactions:savings_change_list')
-    url = reverse_lazy('transactions:savings_change_new')
+    success_url = reverse_lazy("transactions:savings_change_list")
+    url = reverse_lazy("transactions:savings_change_new")
 
 
 class SavingsChangeUpdate(ConvertToCents, UpdateViewMixin):
     model = models.SavingChange
     form_class = forms.SavingChangeForm
-    hx_trigger_django = 'afterChange'
-    success_url = reverse_lazy('transactions:savings_change_list')
+    hx_trigger_django = "afterChange"
+    success_url = reverse_lazy("transactions:savings_change_list")
 
 
 class SavingsChangeDelete(DeleteViewMixin):
     model = models.SavingChange
-    hx_trigger_django = 'afterChange'
-    success_url = reverse_lazy('transactions:savings_change_list')
+    hx_trigger_django = "afterChange"
+    success_url = reverse_lazy("transactions:savings_change_list")

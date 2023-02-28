@@ -13,7 +13,7 @@ class TransactionFactory(factory.django.DjangoModelFactory):
 
     date = dt(1999, 1, 1)
     price = 200
-    to_account = factory.SubFactory(AccountFactory, title='Account2')
+    to_account = factory.SubFactory(AccountFactory, title="Account2")
     from_account = factory.SubFactory(AccountFactory)
 
 
@@ -24,8 +24,8 @@ class SavingChangeFactory(factory.django.DjangoModelFactory):
     date = dt(1999, 1, 1)
     price = 10
     fee = 2
-    to_account = factory.SubFactory(SavingTypeFactory, title='Savings To')
-    from_account = factory.SubFactory(SavingTypeFactory, title='Savings From')
+    to_account = factory.SubFactory(SavingTypeFactory, title="Savings To")
+    from_account = factory.SubFactory(SavingTypeFactory, title="Savings From")
 
 
 class SavingCloseFactory(factory.django.DjangoModelFactory):
@@ -35,5 +35,5 @@ class SavingCloseFactory(factory.django.DjangoModelFactory):
     date = dt(1999, 1, 1)
     price = 10
     fee = 2
-    to_account = factory.SubFactory(AccountFactory, title='Account To')
-    from_account = factory.SubFactory(SavingTypeFactory, title='Savings From')
+    to_account = factory.SubFactory(AccountFactory, title="Account To")
+    from_account = factory.SubFactory(SavingTypeFactory, title="Savings From")
