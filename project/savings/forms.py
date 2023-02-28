@@ -6,7 +6,6 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.lib import date, form_utils, utils
 from ..core.lib.convert_price import ConvertToPrice
-from ..core.lib.form_utils import add_css_class
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Saving, SavingType
 
@@ -33,8 +32,10 @@ class SavingTypeForm(forms.ModelForm):
         self.fields['closed'].label = _('Closed')
         self.fields['type'].label = _('Type')
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()
@@ -80,5 +81,7 @@ class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields['remark'].label = _('Remark')
         self.fields['saving_type'].label = _('Fund')
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False

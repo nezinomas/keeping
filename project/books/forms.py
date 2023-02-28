@@ -7,7 +7,6 @@ from django.utils.translation import gettext as _
 
 from ..core.lib import form_utils, utils
 from ..core.lib.date import set_year_for_form, years
-from ..core.lib.form_utils import add_css_class
 from .models import Book, BookTarget
 
 
@@ -51,8 +50,10 @@ class BookForm(forms.ModelForm):
         self.fields["author"].label = _("Author")
         self.fields["remark"].label = _("Remark")
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean_started(self):
         dt = self.cleaned_data["started"]
@@ -115,8 +116,10 @@ class BookTargetForm(forms.ModelForm):
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("How many")
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()

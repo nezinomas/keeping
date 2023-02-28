@@ -3,8 +3,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib.form_utils import add_css_class
-from ..core.lib import utils
+from ..core.lib import form_utils, utils
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Count, CountType
@@ -24,8 +23,10 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
         self._overwrite_default_queries()
         self._translate_fields()
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
@@ -34,9 +35,7 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
         self.fields['date'].initial = set_year_for_form()
         self.fields['quantity'].initial = 1
 
-        # initial value for count_type
-        slug = utils.get_request_kwargs('slug')
-        if slug:
+        if slug := utils.get_request_kwargs('slug'):
             obj = CountType.objects.filter(slug=slug).first()
             self.fields['count_type'].initial = obj
 
@@ -69,8 +68,10 @@ class CountTypeForm(forms.ModelForm):
 
         self.fields['title'].label = _('Title')
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean_title(self):
         reserved_titles = [

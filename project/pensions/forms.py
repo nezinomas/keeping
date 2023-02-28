@@ -5,8 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib.form_utils import add_css_class
-from ..core.lib import utils
+from ..core.lib import form_utils, utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Pension, PensionType
@@ -44,8 +43,10 @@ class PensionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields['remark'].label = _('Remark')
         self.fields['pension_type'].label = _('Fund')
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()
@@ -76,5 +77,7 @@ class PensionTypeForm(forms.ModelForm):
 
         self.fields['title'].label = _('Fund title')
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False

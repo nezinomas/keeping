@@ -22,5 +22,7 @@ class SearchForm(forms.Form):
 
         self.fields['search'].label = None
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        form_utils.add_css_class(self, self.helper)
+        self.helper.form_show_labels = False

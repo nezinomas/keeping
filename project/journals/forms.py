@@ -1,3 +1,4 @@
+import contextlib
 import json
 from json.decoder import JSONDecodeError
 
@@ -6,8 +7,7 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from ..core.lib.form_utils import add_css_class
-from ..core.lib import utils
+from ..core.lib import form_utils, utils
 from ..expenses.models import ExpenseType
 
 
@@ -28,21 +28,17 @@ class UnnecessaryForm(forms.Form):
         user = utils.get_user()
         checked_expenses = []
 
-        try:
+        with contextlib.suppress(JSONDecodeError, TypeError):
             checked_expenses = json.loads(user.journal.unnecessary_expenses)
-        except (JSONDecodeError, TypeError):
-            pass
 
         self.initial['choices'] = checked_expenses
         self.initial['savings'] = user.journal.unnecessary_savings
 
-        self.helper = FormHelper()
-        add_css_class(self, self.helper)
-
         self.fields['savings'].label = _('Savings')
-
         self.fields['choices'].label = False
 
+        form_utils.add_css_class(self)
+        self.helper = FormHelper()
         self.helper.form_show_labels = True
 
 
@@ -78,24 +74,21 @@ class SettingsForm(forms.Form):
         self.fields['lang'].initial = journal.lang
         self.fields['title'].initial = journal.title
 
-        self.helper = FormHelper()
-        add_css_class(self, self.helper)
-
         self.fields['lang'].label = _('Journal language')
         self.fields['title'].label = _('Journal title')
 
+        form_utils.add_css_class(self)
+
+        self.helper = FormHelper()
         self.helper.form_show_labels = True
 
     def save(self):
         journal = utils.get_user().journal
 
-        lang = self.cleaned_data.get('lang')
-
-        if lang:
+        if lang := self.cleaned_data.get('lang'):
             journal.lang = lang
 
-        title = self.cleaned_data.get('title')
-        if title:
+        if title := self.cleaned_data.get('title'):
             journal.title = title
 
         journal.save()

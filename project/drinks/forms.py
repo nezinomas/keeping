@@ -9,7 +9,6 @@ from django.utils.translation import gettext as _
 
 from ..core.lib import form_utils, utils
 from ..core.lib.date import set_year_for_form
-from ..core.lib.form_utils import add_css_class
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
 from .models import MAX_BOTTLES, Drink, DrinkTarget
@@ -52,8 +51,10 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
         self.fields["quantity"].help_text = _help_text
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
@@ -95,8 +96,10 @@ class DrinkTargetForm(forms.ModelForm):
         help_text = f"{h1}</br>{h2}"
         self.fields["quantity"].help_text = help_text
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()
@@ -134,8 +137,10 @@ class DrinkCompareForm(forms.Form):
         # inital values
         self.fields["year2"].initial = datetime.now().year
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean_year1(self):
         return self._clean_year_field("year1")

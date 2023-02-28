@@ -11,7 +11,6 @@ from django.utils.translation import gettext as _
 
 from ..core.lib import form_utils, utils
 from ..core.lib.date import monthnames, set_year_for_form
-from ..core.lib.form_utils import add_css_class
 from ..core.lib.translation import month_names
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
@@ -95,8 +94,10 @@ class IncomePlanForm(YearFormMixin):
         self.fields['income_type'].label = _('Income type')
         common_field_transalion(self)
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -129,8 +130,10 @@ class ExpensePlanForm(YearFormMixin):
         self.fields['expense_type'].label = ('Expense type')
         common_field_transalion(self)
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -163,10 +166,10 @@ class SavingPlanForm(YearFormMixin):
         self.fields['saving_type'].label = _('Saving type')
         common_field_transalion(self)
 
-
+        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -195,8 +198,10 @@ class DayPlanForm(YearFormMixin):
         # field translation
         common_field_transalion(self)
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -225,8 +230,10 @@ class NecessaryPlanForm(YearFormMixin):
         # field translation
         common_field_transalion(self)
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -353,5 +360,7 @@ class CopyPlanForm(forms.Form):
         self.fields['day'].label = _('Day plans')
         self.fields['necessary'].label = _('Plans for additional necessary expenses')
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False

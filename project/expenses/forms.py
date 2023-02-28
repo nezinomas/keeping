@@ -11,7 +11,6 @@ from ..accounts.models import Account
 from ..core.lib import form_utils, utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
-from ..core.lib.form_utils import add_css_class
 from .models import Expense, ExpenseName, ExpenseType
 
 
@@ -45,7 +44,6 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         self._overwrite_default_queries()
         self._set_htmx_attributes()
         self._translate_fields()
-        self._set_css_classes()
 
         # form inputs settings
         self.fields['date'].widget = DatePickerInput(
@@ -57,18 +55,16 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         }
         self.fields['remark'].widget.attrs['rows'] = 3
 
+        form_utils.add_css_class(self)
+
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
+
     def _initial_fields_values(self):
         if not self.instance.pk:
             self.fields['date'].initial = set_year_for_form()
             self.fields['account'].initial = Account.objects.items().first()
             self.fields['price'].initial = '0.00'
-
-    def _set_css_classes(self):
-        self.helper = FormHelper()
-
-        # add css classes to fields
-        add_css_class(self, self.helper)
-
 
     def _overwrite_default_queries(self):
         user = utils.get_user()
@@ -182,12 +178,13 @@ class ExpenseTypeForm(forms.ModelForm):
         self.fields['journal'].disabled = True
         self.fields['journal'].widget = forms.HiddenInput()
 
-        self.helper = FormHelper()
-        add_css_class(self, self.helper)
-
         self.fields['title'].label = _('Title')
         self.fields['necessary'].label = _('Necessary')
 
+        form_utils.add_css_class(self)
+
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
 
 class ExpenseNameForm(forms.ModelForm):
     class Meta:
@@ -211,9 +208,10 @@ class ExpenseNameForm(forms.ModelForm):
         self.fields['title'].label = _('Expense name')
         self.fields['valid_for'].label = _('Valid for')
 
-        # crispy forms settings
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()

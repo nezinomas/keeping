@@ -8,8 +8,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.lib.form_utils import add_css_class
-from ..core.lib import utils
+from ..core.lib import form_utils, utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
@@ -33,8 +32,10 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self._set_htmx_attributes()
         self._translate_fields()
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
@@ -96,11 +97,15 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self._initial_fields_values()
         self._overwrite_default_queries()
         self._translate_fields()
-        self._set_css_classes()
 
         # if from_account is closed, update close checkbox value
         if hasattr(self.instance, 'from_account') and self.instance.from_account.closed:
             self.fields['close'].initial = True
+
+        form_utils.add_css_class(self)
+
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
@@ -121,10 +126,6 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
         self.fields['close'].label = mark_safe(f"{_('Close')} <b>{_('From account')}</b>")
-
-    def _set_css_classes(self):
-        self.helper = FormHelper()
-        add_css_class(self, self.helper)
 
     def save(self, *args, **kwargs):
         # update saving type if close checkbox is selected
@@ -158,11 +159,15 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self._overwrite_default_queries()
         self._set_htmx_attributes()
         self._translate_fields()
-        self._set_css_classes()
 
         # if from_account is closed, update close checkbox value
         if hasattr(self.instance, 'from_account') and self.instance.from_account.closed:
             self.fields['close'].initial = True
+
+        form_utils.add_css_class(self)
+
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields['date'].widget = DatePickerInput(
@@ -207,10 +212,6 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields['from_account'].label = _('From account')
         self.fields['to_account'].label = _('To account')
         self.fields['close'].label = mark_safe(f"{_('Close')} <b>{_('From account')}</b>")
-
-    def _set_css_classes(self):
-        self.helper = FormHelper()
-        add_css_class(self, self.helper)
 
     def save(self, *args, **kwargs):
         # update related model if close checkbox selected

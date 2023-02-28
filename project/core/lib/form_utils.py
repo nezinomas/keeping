@@ -1,13 +1,12 @@
 from django.forms import BooleanField
 
 
-def add_css_class(self, helper):
-    for field_name in self.fields:
-        if isinstance(self.fields[field_name], BooleanField):
+def add_css_class(instance):
+    for field_name in instance.fields:
+        if isinstance(instance.fields[field_name], BooleanField):
             continue
-        self.fields[field_name].widget.attrs['class'] = 'form-control-sm'
 
-    helper.form_show_labels = False
+        instance.fields[field_name].widget.attrs['class'] = 'form-control-sm'
 
 
 def clean_year_picker_input(field_name, data, cleaned_data, errors):

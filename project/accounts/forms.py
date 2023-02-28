@@ -4,7 +4,6 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib import form_utils, utils
-from ..core.lib.form_utils import add_css_class
 from .models import Account
 
 
@@ -31,12 +30,14 @@ class AccountForm(forms.ModelForm):
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
 
-        self.helper = FormHelper()
-        add_css_class(self, self.helper)
-
         self.fields["title"].label = _("Account title")
         self.fields["closed"].label = _("Closed")
         self.fields["order"].label = _("Sorting")
+
+        form_utils.add_css_class(self)
+
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()

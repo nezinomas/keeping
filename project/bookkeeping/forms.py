@@ -7,9 +7,8 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.lib.form_utils import add_css_class
 from ..core.lib import date as core_date
-from ..core.lib import utils
+from ..core.lib import form_utils, utils
 from ..expenses.models import ExpenseType
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
@@ -63,8 +62,10 @@ class SavingWorthForm(forms.ModelForm, DateFieldMixin):
         # overwrite FK
         self.fields["saving_type"].queryset = SavingType.objects.items()
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned = super().clean()
@@ -89,8 +90,10 @@ class AccountWorthForm(forms.ModelForm, DateFieldMixin):
         # overwrite FK
         self.fields["account"].queryset = Account.objects.items()
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned = super().clean()
@@ -115,8 +118,10 @@ class PensionWorthForm(forms.ModelForm, DateFieldMixin):
         # overwrite FK
         self.fields["pension_type"].queryset = PensionType.objects.items()
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
 
 class SummaryExpensesForm(forms.Form):
@@ -137,8 +142,10 @@ class SummaryExpensesForm(forms.Form):
         self.fields["types"].choices = choices
         self.fields["types"].label = None
 
+        form_utils.add_css_class(self)
+
         self.helper = FormHelper()
-        add_css_class(self, self.helper)
+        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()
