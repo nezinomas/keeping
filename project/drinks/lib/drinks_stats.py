@@ -15,21 +15,14 @@ def empty_list():
 @dataclass
 class DrinkStats:
     data: DrinkQuerySet.sum_by_month = None
-    per_month: list[float] = \
-        field(init=False, default_factory=empty_list)
-    per_day_of_month: list[float] = \
-        field(init=False, default_factory=empty_list)
-    per_day_of_year: float = \
-        field(init=False, default=0.0)
-    qty_of_month: list[float] = \
-        field(init=False, default_factory=empty_list)
-    qty_of_year: float = \
-        field(init=False, default=0.0)
-    options: DrinksOptions = \
-        field(init=False, default_factory=DrinksOptions)
+    per_month: list[float] = field(init=False, default_factory=empty_list)
+    per_day_of_month: list[float] = field(init=False, default_factory=empty_list)
+    per_day_of_year: float = field(init=False, default=0.0)
+    qty_of_month: list[float] = field(init=False, default_factory=empty_list)
+    qty_of_year: float = field(init=False, default=0.0)
+    options: DrinksOptions = field(init=False, default_factory=DrinksOptions)
 
-    year: int = \
-        field(init=False, default=None)
+    year: int = field(init=False, default=None)
 
     def __post_init__(self):
         if not self.data:
@@ -40,10 +33,10 @@ class DrinkStats:
 
     def _calc_month(self) -> None:
         for row in self.data:
-            _stdav = row.get('stdav')
+            _stdav = row.get("stdav")
             _ml = self.options.stdav_to_ml(_stdav)
 
-            _date = row.get('date')
+            _date = row.get("date")
             _year = _date.year
             _month = _date.month
             _monthlen = calendar.monthrange(_year, _month)[1]
@@ -55,7 +48,7 @@ class DrinkStats:
 
             self.per_month[idx] = _ml
             self.per_day_of_month[idx] = _ml / _monthlen
-            self.qty_of_month[idx] = row.get('qty')
+            self.qty_of_month[idx] = row.get("qty")
 
     def _calc_year(self):
         dt = datetime.now().date()

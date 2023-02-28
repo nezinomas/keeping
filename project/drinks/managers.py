@@ -9,10 +9,7 @@ from .lib.drinks_options import DrinksOptions
 class DrinkQuerySet(SumMixin, models.QuerySet):
     def related(self):
         return (
-            self
-            .select_related('user')
-            .filter(user=utils.get_user())
-            .order_by('-date')
+            self.select_related("user").filter(user=utils.get_user()).order_by("-date")
         )
 
     def year(self, year):
@@ -29,14 +26,12 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
 
         ratio = DrinksOptions().ratio
 
-        return self \
-            .related() \
-            .year_sum(
-                year=year,
-                sum_annotation='stdav',
-                sum_column='quantity') \
-            .annotate(qty=F('stdav') * ratio) \
-            .order_by('date')
+        return (
+            self.related()
+            .year_sum(year=year, sum_annotation="stdav", sum_column="quantity")
+            .annotate(qty=F("stdav") * ratio)
+            .order_by("date")
+        )
 
     def sum_by_month(self, year: int, month: int = None) -> list[dict]:
         """
@@ -46,16 +41,14 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
 
         ratio = DrinksOptions().ratio
 
-        return \
-            self \
-            .related() \
+        return (
+            self.related()
             .month_sum(
-                year=year,
-                month=month,
-                sum_annotation='stdav',
-                sum_column='quantity') \
-            .annotate(qty=F('stdav') * ratio) \
-            .order_by('date')
+                year=year, month=month, sum_annotation="stdav", sum_column="quantity"
+            )
+            .annotate(qty=F("stdav") * ratio)
+            .order_by("date")
+        )
 
     def sum_by_day(self, year: int, month: int = None) -> list[dict]:
         """
@@ -65,34 +58,30 @@ class DrinkQuerySet(SumMixin, models.QuerySet):
 
         ratio = DrinksOptions().ratio
 
-        return self \
-            .related() \
+        return (
+            self.related()
             .day_sum(
-                year=year,
-                month=month,
-                sum_annotation='stdav',
-                sum_column='quantity') \
-            .annotate(qty=F('stdav') * ratio) \
-            .order_by('date')
+                year=year, month=month, sum_annotation="stdav", sum_column="quantity"
+            )
+            .annotate(qty=F("stdav") * ratio)
+            .order_by("date")
+        )
 
 
 class DrinkTargetQuerySet(SumMixin, models.QuerySet):
     def related(self):
         user = utils.get_user()
-        return \
-            self \
-            .select_related('user') \
-            .filter(user=user)
+        return self.select_related("user").filter(user=user)
 
     def year(self, year):
         obj = DrinksOptions()
-        return \
-            self \
-            .related() \
-            .filter(year=year) \
-            .annotate(stdav=F('quantity')) \
-            .annotate(qty=obj.stdav_to_ml(stdav=F('stdav'))) \
-            .annotate(max_bottles=obj.stdav_to_bottles(year, F('stdav')))
+        return (
+            self.related()
+            .filter(year=year)
+            .annotate(stdav=F("quantity"))
+            .annotate(qty=obj.stdav_to_ml(stdav=F("stdav")))
+            .annotate(max_bottles=obj.stdav_to_bottles(year, F("stdav")))
+        )
 
     def items(self):
         return self.related()

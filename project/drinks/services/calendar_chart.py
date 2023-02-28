@@ -20,21 +20,18 @@ class CalendarChart:
         if not self.data:
             return
 
-        self.chart_data = \
-            CountStats(
-                year=self.year,
-                data=self.data,
-                past_latest=self.latest_past_date
-            ).chart_calendar()
+        self.chart_data = CountStats(
+            year=self.year, data=self.data, past_latest=self.latest_past_date
+        ).chart_calendar()
 
     def full_calendar(self, data: list[dict]) -> dict:
         return {
-            'data': data,
-            'categories': [x[0] for x in list(weekday_names().values())],
-            'text': {
-                'gap': _('Gap'),
-                'quantity': _('Quantity'),
-            }
+            "data": data,
+            "categories": [x[0] for x in list(weekday_names().values())],
+            "text": {
+                "gap": _("Gap"),
+                "quantity": _("Quantity"),
+            },
         }
 
     def first_half_of_year(self):

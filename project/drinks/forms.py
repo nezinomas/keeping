@@ -18,35 +18,39 @@ from .models import MAX_BOTTLES, Drink, DrinkTarget
 class DrinkForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Drink
-        fields = ['user', 'date', 'quantity', 'option']
+        fields = ["user", "date", "quantity", "option"]
 
-    field_order = ['date', 'option', 'quantity']
+    field_order = ["date", "option", "quantity"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['date'].widget = DatePickerInput(
-            options={"locale": utils.get_user().journal.lang,}
+        self.fields["date"].widget = DatePickerInput(
+            options={
+                "locale": utils.get_user().journal.lang,
+            }
         )
 
         # user input
-        self.fields['user'].initial = utils.get_user()
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        self.fields["user"].initial = utils.get_user()
+        self.fields["user"].disabled = True
+        self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields['date'].initial = set_year_for_form()
+        self.fields["date"].initial = set_year_for_form()
 
-        self.fields['date'].label = _('Date')
-        self.fields['option'].label = _('Drink type')
-        self.fields['quantity'].label = _('Quantity')
+        self.fields["date"].label = _("Date")
+        self.fields["option"].label = _("Drink type")
+        self.fields["quantity"].label = _("Quantity")
 
-        _h1 = _('1 Beer = 0.5L')
-        _h2 = _('1 Wine = 0.75L')
-        _h3 = _('1 Vodka = 1L')
-        _h4 = _('If more than %(cnt)s is entered, it will be assumed to be mL') % {'cnt': MAX_BOTTLES}
-        _help_text = f'{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}'
-        self.fields['quantity'].help_text = _help_text
+        _h1 = _("1 Beer = 0.5L")
+        _h2 = _("1 Wine = 0.75L")
+        _h3 = _("1 Vodka = 1L")
+        _h4 = _("If more than %(cnt)s is entered, it will be assumed to be mL") % {
+            "cnt": MAX_BOTTLES
+        }
+        _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
+        self.fields["quantity"].help_text = _help_text
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
@@ -62,45 +66,45 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 class DrinkTargetForm(forms.ModelForm):
     class Meta:
         model = DrinkTarget
-        fields = ['user', 'year', 'drink_type', 'quantity']
+        fields = ["user", "year", "drink_type", "quantity"]
 
         widgets = {
-            'year': YearPickerInput(),
+            "year": YearPickerInput(),
         }
 
-    field_order = ['year', 'drink_type', 'quantity']
+    field_order = ["year", "drink_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # user input
-        self.fields['user'].initial = utils.get_user()
-        self.fields['user'].disabled = True
-        self.fields['user'].widget = forms.HiddenInput()
+        self.fields["user"].initial = utils.get_user()
+        self.fields["user"].disabled = True
+        self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields['year'].initial = set_year_for_form().year
+        self.fields["year"].initial = set_year_for_form().year
 
-        self.fields['year'].label = _('Year')
-        self.fields['quantity'].label = _('Quantity')
-        self.fields['drink_type'].label = _('Drink type')
+        self.fields["year"].label = _("Year")
+        self.fields["quantity"].label = _("Quantity")
+        self.fields["drink_type"].label = _("Drink type")
 
         _type = _("if the type of drink is")
         h1 = f'<b>ml</b> - {_type} {_("Beer")} / {_("Wine")} / {_("Vodka")}'
         h2 = f'<b>{_("pcs")}</b> - {_type} Std Av'
-        help_text = f'{h1}</br>{h2}'
-        self.fields['quantity'].help_text = help_text
+        help_text = f"{h1}</br>{h2}"
+        self.fields["quantity"].help_text = help_text
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
 
     def clean(self):
         cleaned_data = super().clean()
-        utils.clean_year_picker_input('year', self.data, cleaned_data, self.errors)
+        utils.clean_year_picker_input("year", self.data, cleaned_data, self.errors)
         return cleaned_data
 
     def clean_year(self):
-        year = self.cleaned_data['year']
+        year = self.cleaned_data["year"]
 
         # if update
         if self.instance.pk:
@@ -109,8 +113,8 @@ class DrinkTargetForm(forms.ModelForm):
         # if new record
         qs = DrinkTarget.objects.year(year)
         if qs.exists():
-            msg = _('already has a goal.')
-            raise forms.ValidationError(f'{year} {msg}')
+            msg = _("already has a goal.")
+            raise forms.ValidationError(f"{year} {msg}")
 
         return year
 
@@ -119,55 +123,55 @@ class DrinkCompareForm(forms.Form):
     year1 = forms.IntegerField()
     year2 = forms.IntegerField()
 
-    field_order = ['year1', 'year2']
+    field_order = ["year1", "year2"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['year1'].label = None
-        self.fields['year2'].label = None
+        self.fields["year1"].label = None
+        self.fields["year2"].label = None
 
         # inital values
-        self.fields['year2'].initial = datetime.now().year
+        self.fields["year2"].initial = datetime.now().year
 
         self.helper = FormHelper()
         add_css_class(self, self.helper)
 
     def clean_year1(self):
-        return self._clean_year_field('year1')
+        return self._clean_year_field("year1")
 
     def clean_year2(self):
-        return self._clean_year_field('year2')
+        return self._clean_year_field("year2")
 
     def clean(self):
         cleaned = super().clean()
-        year1 = cleaned.get('year1')
-        year2 = cleaned.get('year2')
+        year1 = cleaned.get("year1")
+        year2 = cleaned.get("year2")
 
-        years = \
-            Drink.objects \
-            .items() \
-            .dates('date', 'year') \
-            .annotate(year=ExtractYear(F('date'))) \
-            .values_list('year', flat=True)
+        years = (
+            Drink.objects.items()
+            .dates("date", "year")
+            .annotate(year=ExtractYear(F("date")))
+            .values_list("year", flat=True)
+        )
 
-        msg_no_records = _('No records this year')
-        if year1 not in years and not self.errors.get('year1'):
-            self.add_error('year1', msg_no_records)
+        msg_no_records = _("No records this year")
+        if year1 not in years and not self.errors.get("year1"):
+            self.add_error("year1", msg_no_records)
 
-        if year2 not in years and not self.errors.get('year2'):
-            self.add_error('year2', msg_no_records)
+        if year2 not in years and not self.errors.get("year2"):
+            self.add_error("year2", msg_no_records)
 
-        msg_different = _('Years must be different')
+        msg_different = _("Years must be different")
         if year1 == year2:
-            self.add_error('year1', msg_different)
-            self.add_error('year2', msg_different)
+            self.add_error("year1", msg_different)
+            self.add_error("year2", msg_different)
 
         return cleaned
 
     def _validation_error(self, field):
         if len(str(abs(field))) != 4:
-            raise forms.ValidationError(_('Must be 4 digits.'))
+            raise forms.ValidationError(_("Must be 4 digits."))
 
     def _clean_year_field(self, field_name):
         year = self.cleaned_data[field_name]
