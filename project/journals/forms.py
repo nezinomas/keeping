@@ -36,7 +36,6 @@ class UnnecessaryForm(forms.Form):
 
         form_utils.add_css_class(self)
         self.helper = FormHelper()
-        self.helper.form_show_labels = True
 
     def save(self):
         journal = utils.get_user().journal
@@ -70,7 +69,6 @@ class SettingsForm(forms.Form):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = True
 
     def save(self):
         journal = utils.get_user().journal
