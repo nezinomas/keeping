@@ -55,7 +55,7 @@ class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         model = Saving
         fields = ["date", "price", "fee", "remark", "saving_type", "account"]
 
-    field_order = ["date", "saving_type", "account", "price", "fee", "remark"]
+    field_order = ["date", "account", "saving_type", "price", "fee", "remark"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

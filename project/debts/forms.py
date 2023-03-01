@@ -20,7 +20,7 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         model = models.Debt
         fields = ["journal", "date", "name", "price", "closed", "account", "remark"]
 
-    field_order = ["date", "name", "price", "account", "remark", "closed"]
+    field_order = ["date", "account", "name", "price", "remark", "closed"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -114,7 +114,7 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         model = models.DebtReturn
         fields = ["date", "price", "remark", "account", "debt"]
 
-    field_order = ["date", "debt", "account", "price", "remark"]
+    field_order = ["date", "account", "debt", "price", "remark"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

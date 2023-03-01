@@ -19,7 +19,7 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
         model = Income
         fields = ("date", "price", "remark", "account", "income_type")
 
-    field_order = ["date", "income_type", "account", "price", "remark"]
+    field_order = ["date", "account", "income_type", "price", "remark"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
