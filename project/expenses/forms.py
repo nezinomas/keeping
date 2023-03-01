@@ -60,15 +60,13 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
                 "locale": journal.lang,
             }
         )
-
-        form_utils.add_css_class(self)
-
         self.fields["price"].widget.attrs = {
             "readonly": True,
-            "class": "sum-prices-field form-control-sm",
+            "class": "sum-prices-field",
         }
         self.fields["remark"].widget.attrs["rows"] = 3
 
+        form_utils.add_css_class(self)
         self.helper = FormHelper()
         self.helper.form_show_labels = False
 
