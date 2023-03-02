@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
+
 {% load static %}
 {% load i18n %}
-{% block head %}
 
+
+{% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/bullet.js"></script>
 <script src="{% static 'js/chart_month_expenses.js' %}"></script>
@@ -13,12 +15,10 @@
     font-weight: bold;
 }
 </style>
-
 {% endblock head %}
 
 
 {% block content %}
-
 <div x-data="{show_chart: true}">
     <div id="month_content" hx-ext="alpine-morph" hx-swap="morph" hx-target="this">
         <div class="row mt-2 gx-2">
@@ -67,5 +67,4 @@
 </div>
 
 <div hx-get="{% url 'bookkeeping:month' %}" hx-target="body" hx-trigger="reload from:body"></div>
-
 {% endblock content%}
