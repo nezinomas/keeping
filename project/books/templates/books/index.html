@@ -19,9 +19,6 @@
 
 {% block content %}
 
-<!-- Loader -->
-<div class="htmx-indicator loader loader-default is-active" id="indicator"></div>
-
 <div class="row my-2">
     {% url 'books:search' as search_url %}
     {% url 'books:list' as reset_url %}
