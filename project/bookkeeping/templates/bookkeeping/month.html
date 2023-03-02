@@ -30,7 +30,7 @@
             {% with request.user.month as month %}
             {% for m in context_months %}
             {% with m|date:'n' as m_num %}
-            <a role="button" hx-get="{% url 'bookkeeping:month' %}?month={{m_num}}" hx-target="body" class="btn btn-sm btn-month {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
+            <a role="button" hx-get="{% url 'bookkeeping:month' %}?month={{m_num}}" hx-target="body" hx-indicator="#indicator" class="btn btn-sm btn-month {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
             {% endwith %}{% endfor %}{% endwith %}
             </div>
         </div>
