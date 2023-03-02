@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
+
 {% load static %}
 {% load i18n %}
-{% block head %}
 
+
+{% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/bullet.js"></script>
 <script src="{% static 'js/chart_month_expenses.js' %}"></script>
@@ -13,15 +15,34 @@
     font-weight: bold;
 }
 </style>
-
 {% endblock head %}
 
 
 {% block content %}
-
 <div x-data="{show_chart: true}">
     <div id="month_content" hx-ext="alpine-morph" hx-swap="morph" hx-target="this">
-        {% include 'bookkeeping/includes/month_content.html' %}
+        <div class="row mt-2 gx-2">
+            <div class="col-lg-8 table-responsive" id="month_table">
+                {% include 'bookkeeping/includes/month_table.html' with ctx=month_table %}
+            </div>
+            <div class="col-lg-4">
+                <div class="d-flex flex-column align-items-start h-100">
+                    <div class="w-100 mb-auto">
+                        <div x-show="show_chart"><div id="chart-targets-container"></div></div>
+                        <div x-show="!show_chart"><div id="chart-expenses-container"></div></div>
+                        {{ chart_targets|json_script:"chart-targets-data" }}
+                        {{ chart_expenses|json_script:"chart-expenses-data" }}
+                        <script>
+                            chartExpensesTarget('chart-targets-data', 'chart-targets-container');
+                            chartExpensesOnly('chart-expenses-data', 'chart-expenses-container');
+                        </script>
+                    </div>
+                    <div class="w-100" id="info">
+                        {% include 'bookkeeping/includes/spending_info.html' with ctx=info %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row gx-2">
@@ -30,7 +51,7 @@
             {% with request.user.month as month %}
             {% for m in context_months %}
             {% with m|date:'n' as m_num %}
-            <a href="{% url 'core:set_month' m_num %}" class="btn btn-sm btn-month {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
+            <a role="button" hx-get="{% url 'bookkeeping:month' %}?month={{m_num}}" hx-target="body" hx-indicator="#indicator" class="btn btn-sm btn-month {% if month|slugify == m_num %}btn-primary{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</a>
             {% endwith %}{% endfor %}{% endwith %}
             </div>
         </div>
@@ -45,6 +66,5 @@
     </div>
 </div>
 
-<div hx-get="{% url 'bookkeeping:month' %}" hx-target="#month_content" hx-trigger="reload from:body"></div>
-
+<div hx-get="{% url 'bookkeeping:month' %}" hx-target="body" hx-trigger="reload from:body"></div>
 {% endblock content%}

@@ -40,25 +40,6 @@ def test_set_year(dt_mock, year, expect, get_user, client_logged):
     assert response.wsgi_request.user.year == expect
 
 
-@pytest.mark.parametrize(
-    'month, expect',
-    [
-        (1, 1),
-        (12, 12),
-        (13, 12),
-    ])
-def test_set_month(month, expect, client_logged):
-    url = reverse(
-        'core:set_month',
-        kwargs={'month': month}
-    )
-
-    response = client_logged.get(url, follow=True)
-
-    assert response.status_code == 200
-    assert response.wsgi_request.user.month == expect
-
-
 # ---------------------------------------------------------------------------------------
 #                                                                     Regenerate Balances
 # ---------------------------------------------------------------------------------------
