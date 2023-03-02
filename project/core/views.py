@@ -19,18 +19,6 @@ def set_year(request, year):
     return redirect(url)
 
 
-@login_required
-def set_month(request, month):
-    if month in range(1, 13):
-        user = request.user
-        user.month = month
-        user.save()
-
-    url = request.META.get("HTTP_REFERER", "/")
-
-    return redirect(url)
-
-
 class RegenerateBalances(TemplateViewMixin):
     # @timer
     def get(self, request, *args, **kwargs):
