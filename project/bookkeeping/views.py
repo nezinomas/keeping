@@ -23,6 +23,7 @@ from .lib.make_dataframe import MakeDataFrame
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .lib.no_incomes import NoIncomesData
 from .lib.year_balance import YearBalance
+from .mixins.month import MonthMixin
 
 
 class Index(TemplateViewMixin):
@@ -167,15 +168,14 @@ class NoIncomes(TemplateViewMixin):
         return super().get_context_data(**kwargs) | context
 
 
-class Month(TemplateViewMixin):
+class Month(MonthMixin, TemplateViewMixin):
     template_name = "bookkeeping/month.html"
 
     def get_context_data(self, **kwargs):
-        if self.request.htmx:
-            self.template_name = "bookkeeping/includes/month_content.html"
+        self.set_month()
 
         year = self.request.user.year
-        month = self.request.user.month
+        month = self.get_month()
         data = MonthServiceData(year, month)
         df_expenses = MakeDataFrame(year, data.expenses, data.expense_types, month)
         df_savings = MakeDataFrame(year, data.savings, None, month)
