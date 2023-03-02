@@ -6,7 +6,7 @@ app_name = App_name
 
 
 urlpatterns = [
-    path("set/year/<int:year>/", views.set_year, name="set_year"),
+    path("year/<int:year>/", views.set_year, name="set_year"),
     path(
         "set/balances/", views.RegenerateBalances.as_view(), name="regenerate_balances"
     ),
