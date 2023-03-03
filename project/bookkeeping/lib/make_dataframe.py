@@ -33,16 +33,16 @@ class MakeDataFrame:
         self._data = data
 
     @property
+    def data(self):
+        return self.create_data(sum_col_name="sum")
+
+    @property
     def exceptions(self):
         df = self.create_data(sum_col_name="exception_sum")
         if df.is_empty():
             return df
 
         return df.select([pl.col("date"), pl.sum(pl.exclude("date")).alias("sum")])
-
-    @property
-    def data(self):
-        return self.create_data(sum_col_name="sum")
 
     def create_data(self, sum_col_name: str = "sum") -> DF:
         return (
