@@ -175,7 +175,7 @@ class Month(MonthMixin, TemplateViewMixin):
         self.set_month()
 
         year = self.request.user.year
-        month = self.get_month()
+        month = self.request.user.month
         data = MonthServiceData(year, month)
         df_expenses = MakeDataFrame(year, data.expenses, data.expense_types, month)
         df_savings = MakeDataFrame(year, data.savings, None, month)
