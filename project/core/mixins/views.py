@@ -119,15 +119,12 @@ class DeleteMixin:
         return super().get_context_data(**kwargs) | {"url": self.url}
 
     def post(self, *args, **kwargs):
-        if self.get_object():
-            super().post(*args, **kwargs)
+        super().post(*args, **kwargs)
 
-            if hx_redirect := self.get_hx_redirect():
-                return HttpResponseClientRedirect(hx_redirect)
+        if hx_redirect := self.get_hx_redirect():
+            return HttpResponseClientRedirect(hx_redirect)
 
-            return httpHtmxResponse(self.get_hx_trigger_django())
-
-        return HttpResponse()
+        return httpHtmxResponse(self.get_hx_trigger_django())
 
 
 class SearchMixin:
