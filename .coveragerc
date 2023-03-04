@@ -11,3 +11,7 @@ omit =
   manage.py,
   *i18n.py,
   *factories.py,
+[report]
+exclude_lines =
+    pragma: no cover
+    @abstract

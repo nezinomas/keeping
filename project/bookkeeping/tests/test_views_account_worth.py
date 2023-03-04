@@ -75,6 +75,27 @@ def test_formset_new_post_save(client_logged):
     assert actual.have == 1
 
 
+def test_formset_new_post_save_empty_price(client_logged):
+    a1 = AccountFactory()
+    a2 = AccountFactory(title='X')
+    data = {
+        "form-TOTAL_FORMS": 2,
+        "form-INITIAL_FORMS": 0,
+        "form-0-date": "1999-9-9",
+        "form-0-price": "0.01",
+        "form-0-account": a1.pk,
+        "form-1-date": "1999-9-9",
+        "form-1-price": "",
+        "form-1-account": a2.pk,
+    }
+
+    url = reverse("bookkeeping:accounts_worth_new")
+    client_logged.post(url, data, follow=True)
+
+    actual = AccountBalance.objects.get(year=1999)
+    assert actual.have == 1
+
+
 def test_formset_dublicated(client_logged):
     i = AccountFactory()
     data = {
@@ -83,6 +104,7 @@ def test_formset_dublicated(client_logged):
         "form-0-date": "1999-9-9",
         "form-0-price": "999",
         "form-0-account": i.pk,
+        "form-1-date": "1999-9-9",
         "form-1-price": "666",
         "form-1-account": i.pk,
     }

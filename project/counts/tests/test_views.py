@@ -320,6 +320,16 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_index_not_logged(client):
+    obj = CountTypeFactory()
+
+    url = reverse("counts:index", kwargs={"slug": obj.slug})
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
 def test_index_redirect_no_count_type(client_logged):
     url = reverse("counts:index", kwargs={"slug": "XXX"})
     response = client_logged.get(url, follow=True)

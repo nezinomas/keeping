@@ -12,13 +12,7 @@ def get_user():
 
 def get_request_kwargs(name):
     crequest = CrequestMiddleware.get_request()
-    if not crequest:
-        return None
-
-    try:
-        return crequest.resolver_match.kwargs.get(name)
-    except KeyError:
-        return None
+    return crequest.resolver_match.kwargs.get(name) if crequest else None
 
 
 def sum_all(arr, keys=None):

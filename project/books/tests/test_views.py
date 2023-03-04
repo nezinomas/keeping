@@ -189,6 +189,40 @@ def test_list_200(client_logged):
     assert response.status_code == 200
 
 
+def test_list_with_data(client_logged):
+    BookFactory()
+
+    url = reverse('books:list')
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert "1999-01-01" in actual
+    assert "Author" in actual
+    assert "Book Title" in actual
+    assert "Remark" in actual
+
+
+def test_list_only_current_year(client_logged):
+    BookFactory()
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31))
+
+    url = reverse('books:list')
+    response = client_logged.get(url)
+    actual = response.context['object_list']
+
+    assert len(actual) == 1
+
+
+def test_list_all_books(client_logged):
+    BookFactory()
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31))
+
+    url = reverse('books:list')
+    response = client_logged.get(url, {'tab': 'all'})
+    actual = response.context['object_list']
+    assert len(actual) == 2
+
+
 # ----------------------------------------------------------------------------
 #                                                        Books New/Update View
 # ----------------------------------------------------------------------------
@@ -233,7 +267,7 @@ def test_save_book(client_logged):
 
 
 def test_books_save_invalid_data(client_logged):
-    data = {'started': 'x', 'author': 'A', 'title': 'T'}
+    data = {'started': '', 'author': 'A', 'title': 'T'}
 
     url = reverse('books:new')
 
@@ -326,6 +360,24 @@ def test_books_update_not_load_other_user(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_book_update_invalid_start_date(client_logged):
+    income = BookFactory()
+
+    data = {
+        'started': '',
+        'ended': '2010-12-31',
+        'author': 'Author',
+        'title': 'Book Title',
+        'remark': 'Pastaba',
+    }
+    url = reverse('books:update', kwargs={'pk': income.pk})
+
+    response = client_logged.post(url, data)
+    actual = response.context['form']
+
+    assert not actual.is_valid()
 
 
 # ---------------------------------------------------------------------------------------

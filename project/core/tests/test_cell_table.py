@@ -3,7 +3,7 @@ import re
 import pytest
 from django.template import Context, Template
 
-from .utils import _remove_line_end
+from .utils import clean_content
 
 
 @pytest.fixture()
@@ -28,7 +28,7 @@ def test_cell_positive_and_negative_neg(_template_positive_and_negative):
     actual = _template_positive_and_negative.render(context)
     expect = '<td class="table-danger">-0,50</td>'
 
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
@@ -40,7 +40,7 @@ def test_cell_positive_and_negative_pos(_template_positive_and_negative):
     expect = '<td class="table-success">0,50</td>'
 
     actual = _template_positive_and_negative.render(context)
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
@@ -52,7 +52,7 @@ def test_cell_intcomma(_template):
     expect = '<td class="">1.200,00</td>'
 
     actual = _template.render(context)
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
@@ -64,7 +64,7 @@ def test_cell_empty(_template):
     actual = _template.render(context)
     expect = '<td class=" dash">-</td>'
 
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
@@ -84,7 +84,7 @@ def test_cell_empty_with_default_if_empty(value):
     actual = template.render(context)
     expect = '<td class="">OK</td>'
 
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
@@ -96,7 +96,7 @@ def test_cell_float_zero(_template):
     actual = _template.render(context)
     expect = '<td class=" dash">-</td>'
 
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
@@ -108,7 +108,7 @@ def test_cell_string_zero(_template):
     actual = _template.render(context)
     expect = '<td class=" dash">-</td>'
 
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
@@ -124,7 +124,7 @@ def test_cell_tag_th():
     expect = '<th class="">1,00</th>'
 
     actual = tmpl.render(context)
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
@@ -140,7 +140,7 @@ def test_cell_tag_td():
     expect = '<td class="">1,00</td>'
 
     actual = tmpl.render(context)
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
@@ -156,7 +156,7 @@ def test_cell_css_class_one():
     expect = '<td class=" X">1,00</td>'
 
     actual = tmpl.render(context)
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
@@ -172,7 +172,7 @@ def test_cell_css_class_many():
     expect = '<td class=" X Y Z">1,00</td>'
 
     actual = tmpl.render(context)
-    actual = _remove_line_end(actual)
+    actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect

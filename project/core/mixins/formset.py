@@ -15,8 +15,8 @@ SIGNALS = {
 
 class BaseTypeFormSet(BaseFormSet):
     def clean(self):
+        # if forms have errors, don't run formset clean
         if any(self.errors):
-            # if forms have errors, don't run formset clean
             return
 
         dublicates = {}
@@ -25,13 +25,7 @@ class BaseTypeFormSet(BaseFormSet):
         ][0]
 
         for i, form in enumerate(self.forms):
-            if not form.cleaned_data:
-                continue
-
             account = form.cleaned_data.get(account_name)
-            if not account:
-                continue
-
             if account in dublicates:
                 msg = _("The same accounts are selected.")
                 if not self.forms[dublicates[account]].errors:
@@ -75,9 +69,7 @@ class FormsetMixin:
         if formset.is_valid():
             objects = []
             for form in formset:
-                price = form.cleaned_data.get("price")
-
-                if not isinstance(price, float):
+                if not form.cleaned_data.get("price"):
                     continue
 
                 model = form.instance._meta.model  # get worth model

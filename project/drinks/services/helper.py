@@ -15,13 +15,10 @@ def several_years_consumption(years):
     serries = []
     for y in years:
         qs_drinks = models.Drink.objects.sum_by_month(int(y))
-        if not qs_drinks:
+        if not qs_drinks.exists():
             continue
 
         data = DrinkStats(qs_drinks).per_day_of_month
-
-        if not any(data):
-            continue
 
         serries.append({"name": y, "data": data})
 
