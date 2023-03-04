@@ -55,11 +55,7 @@ def positive(value):
 
 @register.filter
 def positive_negative(value):
-    try:
-        value = _to_float(value)
-    except ValueError:
-        return str()
-
+    value = _to_float(value)
     return "table-success" if value >= 0 else "table-danger"
 
 
