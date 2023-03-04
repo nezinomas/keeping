@@ -25,38 +25,24 @@ class BalanceBase:
         """
         Return total sum of all columns
         """
-        if not isinstance(self._data, DF) or self._data.is_empty():
+        if self._data_empty(self._data):
             return 0
 
         return self._data.select(pl.sum(pl.exclude("date")).sum())[0, 0]
 
-    def make_total_column(self, df=DF()) -> DF:
-        """
-        calculate total column for balance DataFrame
-
-        return filtered DataFrame with date and total column
-        """
-
-        if not isinstance(self._data, DF):
-            return DF()
-
-        if self._data.is_empty():
-            return DF()
-
-        return self._data.select(
-            [pl.col("date"), pl.sum(pl.exclude("date")).alias("total")]
-        )
-
     @property
     def total_column(self) -> dict[str, float]:
-        return self.make_total_column().to_dicts()
+        if self._data_empty(self._data):
+            return []
+
+        df = self._data.select(
+            [pl.col("date"), pl.sum(pl.exclude("date")).alias("total")]
+        )
+        return [] if df.is_empty() else df.to_dicts()
 
     @property
     def total_row(self) -> dict[str, float]:
-        if not isinstance(self._data, DF):
-            return {}
-
-        if self._data.is_empty():
+        if self._data_empty(self._data):
             return {}
 
         df = self._data.select(pl.exclude("date")).sum().head(1)
@@ -70,10 +56,7 @@ class BalanceBase:
         Returns:
             dict[str, float]
         """
-        if not isinstance(self._data, DF):
-            return {}
-
-        if self._data.is_empty():
+        if self._data_empty(self._data):
             return {}
 
         cols = self._data.select(pl.exclude("date")).columns
@@ -97,3 +80,6 @@ class BalanceBase:
             )
         )
         return {} if df.is_empty() else df.to_dicts()[0]
+
+    def _data_empty(self, df: DF) -> bool:
+        return df.is_empty() if isinstance(df, DF) else True
