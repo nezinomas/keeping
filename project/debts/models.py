@@ -69,14 +69,15 @@ class DebtReturn(models.Model):
         ordering = ["debt__closed", "debt__name", "-date"]
 
     def __str__(self):
-        _price = round(self.price, 1)
+        price = round(self.price, 1)
+        text = ''
         if self.debt.debt_type == "lend":
-            return f'{_("Lend return")} {_price}'
+            text = f'{_("Lend return")} {price}'
 
         if self.debt.debt_type == "borrow":
-            return f'{_("Borrow return")} {_price}'
+            text = f'{_("Borrow return")} {price}'
 
-        return f'{_("Debt")} {_price}'
+        return text
 
     def get_absolute_url(self):
         debt_type = utils.get_request_kwargs("debt_type")
