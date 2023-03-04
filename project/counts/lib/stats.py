@@ -82,12 +82,12 @@ class Stats:
         arr = map(func, range(1, 13))
         data = map(day_info, it.chain(*arr), it.count(0))
         # month names list
-        month_names = self.months()
+        names = self.months()
 
         # groupby year-month e.g. 1999-01
         return [
             {
-                "name": month_names[int(key[6:]) - 1],
+                "name": names[int(key[6:]) - 1],
                 "keys": ["x", "y", "value", "week", "date", "qty", "gap"],
                 "data": list(group),
             }
