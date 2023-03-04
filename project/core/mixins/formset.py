@@ -15,8 +15,8 @@ SIGNALS = {
 
 class BaseTypeFormSet(BaseFormSet):
     def clean(self):
+        # if forms have errors, don't run formset clean
         if any(self.errors):
-            # if forms have errors, don't run formset clean
             return
 
         dublicates = {}
