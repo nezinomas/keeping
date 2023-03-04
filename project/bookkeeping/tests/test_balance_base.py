@@ -42,7 +42,7 @@ def test_balance(df, expected):
 def test_balance_then_before_was_called_total_row(data, expected):
     obj = BalanceBase(data)
 
-    obj.total_row
+    _ = obj.total_row
 
     assert obj.balance == expected
 
