@@ -189,6 +189,40 @@ def test_list_200(client_logged):
     assert response.status_code == 200
 
 
+def test_list_with_data(client_logged):
+    BookFactory()
+
+    url = reverse('books:list')
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert "1999-01-01" in actual
+    assert "Author" in actual
+    assert "Book Title" in actual
+    assert "Remark" in actual
+
+
+def test_list_only_current_year(client_logged):
+    BookFactory()
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31))
+
+    url = reverse('books:list')
+    response = client_logged.get(url)
+    actual = response.context['object_list']
+
+    assert len(actual) == 1
+
+
+def test_list_all_books(client_logged):
+    BookFactory()
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31))
+
+    url = reverse('books:list')
+    response = client_logged.get(url, {'tab': 'all'})
+    actual = response.context['object_list']
+    assert len(actual) == 2
+
+
 # ----------------------------------------------------------------------------
 #                                                        Books New/Update View
 # ----------------------------------------------------------------------------
