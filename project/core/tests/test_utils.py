@@ -1,6 +1,8 @@
 from datetime import datetime
+from types import SimpleNamespace
 
 import pytest
+from mock import patch
 
 from ...accounts.factories import AccountBalanceFactory
 from ...accounts.models import AccountBalance
@@ -82,3 +84,17 @@ def test_sum_all_query_set():
     actual = T.sum_all(qs)
 
     assert actual['past'] == 1
+
+
+@patch('project.core.lib.utils.CrequestMiddleware')
+def test_get_request_kwargs(mck):
+    mck.get_request.return_value = SimpleNamespace(resolver_match=SimpleNamespace(kwargs={'Foo': 'Boo'}))
+    actual = T.get_request_kwargs('Foo')
+    assert actual == 'Boo'
+
+
+@patch('project.core.lib.utils.CrequestMiddleware')
+def test_get_request_kwargs_no_name(mck):
+    mck.get_request.return_value = SimpleNamespace(resolver_match=SimpleNamespace(kwargs={}))
+    actual = T.get_request_kwargs('Foo')
+    assert not actual
