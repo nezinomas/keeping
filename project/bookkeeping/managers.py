@@ -9,13 +9,6 @@ from ..core.lib import utils
 
 
 class QsMixin:
-    def filter_by_year(self, year):
-        return (
-            self.filter(**{"date__year__gte": (year - 1), "date__year__lte": year})
-            if year
-            else self
-        )
-
     def latest_have(self, field):
         qs = [
             *(
@@ -45,16 +38,6 @@ class QsMixin:
 
 
 class AccountWorthQuerySet(QsMixin, models.QuerySet):
-    def filter_created_and_closed(self, year):
-        return (
-            self.filter(
-                Q(account__closed__isnull=True)
-                | Q(account__closed__gte=year) & Q(account__created__year__lte=year)
-            )
-            if year
-            else self
-        )
-
     def related(self):
         journal = utils.get_user().journal
         return self.select_related("account").filter(account__journal=journal)
@@ -64,17 +47,6 @@ class AccountWorthQuerySet(QsMixin, models.QuerySet):
 
 
 class SavingWorthQuerySet(QsMixin, models.QuerySet):
-    def filter_created_and_closed(self, year):
-        return (
-            self.filter(
-                Q(saving_type__closed__isnull=True)
-                | Q(saving_type__closed__gte=year)
-                & Q(saving_type__created__year__lte=year)
-            )
-            if year
-            else self
-        )
-
     def related(self):
         journal = utils.get_user().journal
         return self.select_related("saving_type").filter(saving_type__journal=journal)
@@ -84,9 +56,6 @@ class SavingWorthQuerySet(QsMixin, models.QuerySet):
 
 
 class PensionWorthQuerySet(QsMixin, models.QuerySet):
-    def filter_created(self, year):
-        return self.filter(Q(pension_type__created__year__lte=year)) if year else self
-
     def related(self):
         journal = utils.get_user().journal
         return self.select_related("pension_type").filter(pension_type__journal=journal)
