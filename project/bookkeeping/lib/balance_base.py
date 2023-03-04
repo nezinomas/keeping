@@ -68,6 +68,7 @@ class BalanceBase:
 
         df = (
             self._data.select(cols)
+            .lazy()
             .fill_null(0)
             .with_columns(
                 [
@@ -77,7 +78,7 @@ class BalanceBase:
                     for col_name in cols
                 ]
             )
-        )
+        ).collect()
         return empty if self.is_empty(df) else df.to_dicts()[0]
 
     def is_empty(self, df: DF) -> bool:
