@@ -169,6 +169,13 @@ def test_amount_end(data, amount_start):
     assert actual == 175
 
 
+def test_amount_end_no_data(data):
+    data.data = pl.DataFrame()
+    actual = YearBalance(data=data, amount_start=0).amount_end
+
+    assert actual == 0
+
+
 def test_amount_balance(data, amount_start):
     actual = YearBalance(data=data, amount_start=amount_start).amount_balance
 

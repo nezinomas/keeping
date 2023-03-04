@@ -30,7 +30,7 @@ class YearBalance(BalanceBase):
     def amount_end(self) -> float:
         try:
             val = self._balance["money_flow"][-1]
-        except (KeyError, IndexError):
+        except (pl.exceptions.ColumnNotFoundError):
             val = 0
 
         return val
@@ -93,6 +93,9 @@ class YearBalance(BalanceBase):
         return self._balance["money_flow"].to_list()
 
     def _calc_balance_and_money_flow(self, df: DF) -> DF:
+        if self.is_empty(df):
+            return df
+
         def add_amount_start_to_money_flow_first_cell(df):
             df[0, "money_flow"] = df[0, "money_flow"] + self.amount_start
             return df
