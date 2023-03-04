@@ -91,10 +91,31 @@ def test_total_column(df):
     assert actual == expect
 
 
-def test_total(df):
-    actual = BalanceBase(df).total
+@pytest.mark.parametrize(
+    'data, expect',
+    [
+        (None, []),
+        (pl.DataFrame(), [])
+    ]
+)
+def test_total_column_empty_data(data, expect):
+    actual = BalanceBase(data).total_column
 
-    assert actual == 96
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
+    'data, expect',
+    [
+        (pytest.lazy_fixture('df'), 96),
+        (None, 0),
+        (pl.DataFrame(), 0)
+    ]
+)
+def test_total(data, expect):
+    actual = BalanceBase(data).total
+
+    assert actual == expect
 
 
 def test_types(df):
