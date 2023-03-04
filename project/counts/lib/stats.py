@@ -109,13 +109,10 @@ class Stats:
             .sort("date")
         )
 
-        if not self._year:
-            return {row["date"]: row["qty"] for row in df.to_dicts()}
-
-        try:
+        if self._year:
             return df.to_dicts()[0].get("qty", 0)
-        except IndexError:
-            return 0
+
+        return {row["date"]: row["qty"] for row in df.to_dicts()}
 
     def gaps(self) -> dict[int, int]:
         """Returns dictionary(int: int) = {gap: count}"""
