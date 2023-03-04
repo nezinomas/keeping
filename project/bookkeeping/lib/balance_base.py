@@ -29,13 +29,14 @@ class BalanceBase:
 
     @property
     def total_column(self) -> dict[str, float]:
+        empty = []
         if self.is_empty(self._data):
-            return []
+            return empty
 
         df = self._data.select(
             [pl.col("date"), pl.sum(pl.exclude("date")).alias("total")]
         )
-        return [] if df.is_empty() else df.to_dicts()
+        return empty if df.is_empty() else df.to_dicts()
 
     @property
     def total_row(self) -> dict[str, float]:
