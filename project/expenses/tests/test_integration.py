@@ -2,42 +2,19 @@ from time import sleep
 
 import pytest
 import time_machine
-from django.test import LiveServerTestCase
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 
 from ...accounts.factories import AccountFactory
-from ...users.factories import UserFactory
+from ...core.tests.utils import Browser
 from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 
 
 @pytest.mark.webtest
-class Expenses(LiveServerTestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.browser = webdriver.Chrome('../chromedriver')
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.browser.quit()
-        super().tearDownClass()
-
-    def setUp(self):
-        super().setUp()
-
-        UserFactory()
-        self.client.login(username='bob', password='123')
-        cookie = self.client.cookies['sessionid']
-
-        self.browser.get(self.live_server_url)
-        self.browser.add_cookie({'name': 'sessionid', 'value': cookie.value, 'secure': False, 'path': '/'})
-        self.browser.refresh()
-
+class Expenses(Browser):
     def test_add_one_expense_and_close_modal_form(self):
         self.browser.get(
             f'{self.live_server_url}/expenses/'
