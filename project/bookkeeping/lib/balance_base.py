@@ -11,7 +11,7 @@ class BalanceBase:
         """
         Return [{'date': datetime.datetime, 'title': float}]
         """
-        return [] if self._data_empty(self._data) else self._data.to_dicts()
+        return [] if self.is_empty(self._data) else self._data.to_dicts()
 
     @property
     def types(self) -> list:
@@ -22,14 +22,14 @@ class BalanceBase:
         """
         Return total sum of all columns
         """
-        if self._data_empty(self._data):
+        if self.is_empty(self._data):
             return 0
 
         return self._data.select(pl.sum(pl.exclude("date")).sum())[0, 0]
 
     @property
     def total_column(self) -> dict[str, float]:
-        if self._data_empty(self._data):
+        if self.is_empty(self._data):
             return []
 
         df = self._data.select(
@@ -40,11 +40,11 @@ class BalanceBase:
     @property
     def total_row(self) -> dict[str, float]:
         empty = {}
-        if self._data_empty(self._data):
+        if self.is_empty(self._data):
             return empty
 
         df = self._data.select(pl.exclude("date")).sum().head(1)
-        return empty if self._data_empty(df) else df.to_dicts()[0]
+        return empty if self.is_empty(df) else df.to_dicts()[0]
 
     @property
     def average(self) -> dict[str, float]:
@@ -54,7 +54,7 @@ class BalanceBase:
             dict[str, float]
         """
         empty = {}
-        if self._data_empty(self._data):
+        if self.is_empty(self._data):
             return empty
 
         cols = self._data.select(pl.exclude("date")).columns
@@ -77,7 +77,7 @@ class BalanceBase:
                 ]
             )
         )
-        return empty if self._data_empty(df) else df.to_dicts()[0]
+        return empty if self.is_empty(df) else df.to_dicts()[0]
 
-    def _data_empty(self, df: DF) -> bool:
+    def is_empty(self, df: DF) -> bool:
         return df.is_empty() if isinstance(df, DF) else True
