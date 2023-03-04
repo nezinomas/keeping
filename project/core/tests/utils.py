@@ -8,7 +8,7 @@ from selenium import webdriver
 from ...users.factories import UserFactory
 
 
-def _remove_line_end(rendered):
+def clean_content(rendered):
     return str(rendered).replace('\n', '').replace('\t', '')
 
 
