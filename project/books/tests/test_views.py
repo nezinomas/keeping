@@ -233,7 +233,7 @@ def test_save_book(client_logged):
 
 
 def test_books_save_invalid_data(client_logged):
-    data = {'started': 'x', 'author': 'A', 'title': 'T'}
+    data = {'started': '', 'author': 'A', 'title': 'T'}
 
     url = reverse('books:new')
 
@@ -326,6 +326,24 @@ def test_books_update_not_load_other_user(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
+
+
+def test_book_update_invalid_start_date(client_logged):
+    income = BookFactory()
+
+    data = {
+        'started': '',
+        'ended': '2010-12-31',
+        'author': 'Author',
+        'title': 'Book Title',
+        'remark': 'Pastaba',
+    }
+    url = reverse('books:update', kwargs={'pk': income.pk})
+
+    response = client_logged.post(url, data)
+    actual = response.context['form']
+
+    assert not actual.is_valid()
 
 
 # ---------------------------------------------------------------------------------------

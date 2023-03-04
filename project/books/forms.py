@@ -57,9 +57,6 @@ class BookForm(forms.ModelForm):
 
     def clean_started(self):
         dt = self.cleaned_data["started"]
-        if not dt:
-            return dt
-
         year_instance = dt.year
         years_ = years()[:-1]
         if year_instance not in years_:
@@ -86,11 +83,11 @@ class BookForm(forms.ModelForm):
         cleaned = super().clean()
 
         started = cleaned.get("started")
-        if ended := cleaned.get("ended"):
-            if ended < started:
-                self.add_error(
-                    "ended", _("Ended reading cannot precede started reading")
-                )
+        ended = cleaned.get("ended")
+        if ended and started and ended < started:
+            self.add_error(
+                "ended", _("Ended reading cannot precede started reading")
+            )
 
 
 class BookTargetForm(forms.ModelForm):
