@@ -30,7 +30,7 @@ class YearBalance(BalanceBase):
     def amount_end(self) -> float:
         try:
             val = self._balance["money_flow"][-1]
-        except (pl.exceptions.ColumnNotFoundError):
+        except pl.exceptions.ColumnNotFoundError:
             val = 0
 
         return val
