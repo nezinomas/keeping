@@ -100,6 +100,24 @@ def test_income_save(client_logged):
     assert 'Income Type' in actual
 
 
+def test_income_save_status_code(client_logged):
+    a = AccountFactory()
+    i = IncomeTypeFactory()
+
+    data = {
+        'date': '1999-01-01',
+        'price': '111',
+        'account': a.pk,
+        'income_type': i.pk
+    }
+
+    url = reverse('incomes:new')
+
+    response = client_logged.post(url, data, **{'HTTP_HX-Request': 'true'})
+
+    assert response.status_code == 204
+
+
 def test_income_save_invalid_data(client_logged):
     data = {
         'date': 'x',
@@ -178,6 +196,38 @@ def test_income_update(client_logged):
     assert actual.date == date(1999, 12, 31)
     assert actual.price == 150 * 100
     assert actual.remark == 'Pastaba'
+
+
+def test_income_update_status_code(client_logged):
+    income = IncomeFactory()
+
+    data = {
+        'price': '150',
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'income_type': 1
+    }
+    url = reverse('incomes:update', kwargs={'pk': income.pk})
+    request = client_logged.post(url, data, **{'HTTP_HX-Request': 'true'})
+
+    assert request.status_code == 204
+
+
+def test_income_update_htmx_trigger_value(client_logged):
+    income = IncomeFactory()
+
+    data = {
+        'price': '150',
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'income_type': 1
+    }
+    url = reverse('incomes:update', kwargs={'pk': income.pk})
+    request = client_logged.post(url, data, **{'HTTP_HX-Request': 'true'})
+
+    assert request.headers['HX-Trigger'] == '{"reload": {}}'
 
 
 @time_machine.travel('2000-03-03')
