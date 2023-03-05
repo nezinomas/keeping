@@ -3,7 +3,7 @@ from time import sleep
 import pytest
 from selenium.webdriver.common.by import By
 
-from ...core.tests.utils import Browser
+from ...core.tests.test_integration_browser import Browser
 from ..factories import CountTypeFactory
 
 pytestmark = pytest.mark.django_db
