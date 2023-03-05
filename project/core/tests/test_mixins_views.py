@@ -15,8 +15,8 @@ def test_queryset_fail():
 
 def test_queryset_retun_qs():
     class Dummy(views.GetQuerysetMixin):
-        model = SimpleNamespace(objects=SimpleNamespace(related=lambda: 'xxx'))
+        model = SimpleNamespace(objects=SimpleNamespace(related=lambda: "xxx"))
 
     actual = Dummy().get_queryset()
 
-    assert actual == 'xxx'
+    assert actual == "xxx"
