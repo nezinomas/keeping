@@ -9,11 +9,11 @@ from ...users.factories import UserFactory
 
 
 def clean_content(rendered):
-    return str(rendered).replace('\n', '').replace('\t', '')
+    return str(rendered).replace("\n", "").replace("\t", "")
 
 
 def change_profile_year(client, year=1):
-    url = reverse('bookkeeping:index')
+    url = reverse("bookkeeping:index")
     response = client.get(url)
 
     u = response.wsgi_request.user
@@ -40,9 +40,10 @@ def timer(func):
         start = time.perf_counter()
         return_value = func(*args, **kwargs)
         end = time.perf_counter()
-        total = end-start
-        print(f'Finished function: {func.__name__} in {total:.4f} sec')
+        total = end - start
+        print(f"Finished function: {func.__name__} in {total:.4f} sec")
         return return_value
+
     return wrap_func
 
 
@@ -55,7 +56,9 @@ class Timer:
         r_val = self.original_func(*args, **kwargs)
         end = time.perf_counter()
         total = end - start
-        print(f'Finished function form class: {self.original_func.__name__} in {total:.5f} sec')
+        print(
+            f"Finished function form class: {self.original_func.__name__} in {total:.5f} sec"
+        )
         return r_val
 
 
@@ -63,7 +66,7 @@ class Browser(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.browser = webdriver.Chrome('../chromedriver')
+        cls.browser = webdriver.Chrome("../chromedriver")
 
     @classmethod
     def tearDownClass(cls):
@@ -74,10 +77,11 @@ class Browser(LiveServerTestCase):
         super().setUp()
 
         UserFactory()
-        self.client.login(username='bob', password='123')
-        cookie = self.client.cookies['sessionid']
+        self.client.login(username="bob", password="123")
+        cookie = self.client.cookies["sessionid"]
 
         self.browser.get(self.live_server_url)
         self.browser.add_cookie(
-            {'name': 'sessionid', 'value': cookie.value, 'secure': False, 'path': '/'})
+            {"name": "sessionid", "value": cookie.value, "secure": False, "path": "/"}
+        )
         self.browser.refresh()
