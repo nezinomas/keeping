@@ -657,6 +657,26 @@ def test_count_type_new_valid_data(client_logged):
     assert actual.title == "XXX"
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_count_type_htmx_status_code(client_logged):
+    data = {"title": "XXX"}
+    url = reverse("counts:type_new")
+    response = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
+
+    assert response.status_code == 200
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_count_type_htmx_redirect_header(client_logged):
+    data = {"title": "XXX"}
+    url = reverse("counts:type_new")
+    response = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
+
+    assert response.headers["HX-Redirect"] == reverse(
+        "counts:index", kwargs={"slug": "xxx"}
+    )
+
+
 def test_count_type_new_invalid_data(client_logged):
     data = {"title": "X"}
     url = reverse("counts:type_new")
@@ -676,6 +696,19 @@ def test_count_type_update(client_logged):
 
     assert CountType.objects.count() == 1
     assert CountType.objects.first().title == "YYY"
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_count_type_update_htmx_redirect_header(client_logged):
+    obj = CountFactory()
+
+    data = {"title": "YYY"}
+    url = reverse("counts:type_update", kwargs={"pk": obj.pk})
+    response = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
+
+    assert response.headers["HX-Redirect"] == reverse(
+        "counts:index", kwargs={"slug": "yyy"}
+    )
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -724,14 +757,26 @@ def test_count_type_delete_load_form(client_logged):
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_delete(client_logged):
     _type = CountTypeFactory()
-    _obj = CountFactory(count_type=_type)
+    CountFactory(count_type=_type)
 
-    url = reverse("counts:type_delete", kwargs={"pk": _obj.pk})
+    url = reverse("counts:type_delete", kwargs={"pk": _type.pk})
 
     client_logged.post(url)
 
     assert CountType.objects.count() == 0
     assert Count.objects.count() == 0
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_count_type_delete_htmx_redirect_header(client_logged):
+    _type = CountTypeFactory()
+
+    url = reverse("counts:type_delete", kwargs={"pk": _type.pk})
+    response = client_logged.post(url, **{"HTTP_HX-Request": "true"})
+
+    assert response.headers["HX-Redirect"] == reverse(
+        "counts:index", kwargs={"slug": "count-type"}
+    )
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
