@@ -1,5 +1,6 @@
 [run]
 omit =
+  *test_integration_browser.py*,
   *apps.py,
   */__init__.py,
   */migrations/*.py,
