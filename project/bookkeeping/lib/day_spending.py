@@ -64,14 +64,12 @@ class DaySpending(BalanceBase):
 
     def _calc_spending(self, df: DF) -> pl.Expr:
         return (
-            df.with_columns((self._day_input - pl.col("total")).alias("day"))
+            df.with_columns(day=self._day_input - pl.col("total"))
             .with_columns(
-                (
+                teoretical=(
                     self._expenses_free - (self._day_input * pl.col("date").dt.day())
-                ).alias("teoretical")
+                )
             )
-            .with_columns(
-                (self._expenses_free - pl.col("total").cumsum()).alias("real")
-            )
-            .with_columns((pl.col("real") - pl.col("teoretical")).alias("full"))
+            .with_columns(real=self._expenses_free - pl.col("total").cumsum())
+            .with_columns(full=pl.col("real") - pl.col("teoretical"))
         )
