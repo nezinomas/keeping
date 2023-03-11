@@ -182,8 +182,8 @@ def test_expenses_update(client_logged):
         'date': '1999-12-31',
         'remark': 'Pastaba',
         'account': 1,
-        'expense_type': 1,
-        'expense_name': 1,
+        'expense_type': e.expense_type.pk,
+        'expense_name': e.expense_name.pk,
     }
     url = reverse('expenses:update', kwargs={'pk': e.pk})
 
