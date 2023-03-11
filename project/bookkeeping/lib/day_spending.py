@@ -53,7 +53,7 @@ class DaySpending(BalanceBase):
             .with_columns(pl.sum(pl.exclude("date")).alias("total"))
             .select(["date", "total"])
             .with_columns(pl.Series(name="exceptions", values=exceptions["sum"]))
-            .with_columns(pl.col("total") - pl.col("exceptions"))
+            .with_columns(total=(pl.col("total") - pl.col("exceptions")))
             .drop("exceptions")
             .pipe(self._calc_spending)
         )
