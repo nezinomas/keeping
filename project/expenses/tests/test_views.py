@@ -182,8 +182,8 @@ def test_expenses_update(client_logged):
         'date': '1999-12-31',
         'remark': 'Pastaba',
         'account': 1,
-        'expense_type': 1,
-        'expense_name': 1,
+        'expense_type': e.expense_type.pk,
+        'expense_name': e.expense_name.pk,
     }
     url = reverse('expenses:update', kwargs={'pk': e.pk})
 
@@ -196,6 +196,34 @@ def test_expenses_update(client_logged):
     assert actual.account.title == 'Account1'
     assert actual.expense_type.title == 'Expense Type'
     assert actual.expense_name.title == 'Expense Name'
+    assert actual.remark == 'Pastaba'
+
+
+def test_expenses_update_type_and_name(client_logged):
+    e = ExpenseFactory()
+    t = ExpenseTypeFactory(title='XXX')
+    n = ExpenseNameFactory(title='YYY', parent=t)
+
+    data = {
+        'price': 150,
+        'quantity': 33,
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': t.pk,
+        'expense_name': n.pk,
+    }
+    url = reverse('expenses:update', kwargs={'pk': e.pk})
+
+    client_logged.post(url, data, follow=True)
+
+    actual = models.Expense.objects.get(pk=e.pk)
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == 15_000
+    assert actual.quantity == 33
+    assert actual.account.title == 'Account1'
+    assert actual.expense_type.title == 'XXX'
+    assert actual.expense_name.title == 'YYY'
     assert actual.remark == 'Pastaba'
 
 

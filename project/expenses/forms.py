@@ -86,12 +86,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         expense_type.queryset = ExpenseType.objects.items()
         expense_name.queryset = ExpenseName.objects.none()
 
-        # expense_name query
-        expense_type_pk = (
-            self.instance.expense_type.pk
-            if self.instance.pk
-            else self.data.get("expense_type")
-        )
+        expense_type_pk = self.data.get("expense_type")
 
         try:
             expense_type_pk = int(expense_type_pk)
