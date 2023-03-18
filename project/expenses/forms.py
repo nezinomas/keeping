@@ -88,7 +88,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
         expense_type_pk = self.instance.expense_type.pk if self.instance.pk else None
         expense_type_pk = self.data.get("expense_type") or expense_type_pk
-        print(f'------------------------------->\n{self.data}\n')
+
         try:
             expense_type_pk = int(expense_type_pk)
         except (TypeError, ValueError):
