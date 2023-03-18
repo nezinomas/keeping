@@ -148,9 +148,6 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
     def clean_date(self):
         dt = self.cleaned_data["date"]
 
-        if not dt:
-            return dt
-
         year_user = utils.get_user().year
         year_instance = dt.year
         year_now = datetime.now().year

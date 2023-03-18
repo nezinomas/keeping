@@ -7,9 +7,6 @@ class YearBetweenMixin:
     def clean_date(self):
         dt = self.cleaned_data["date"]
 
-        if not dt:
-            return dt
-
         year_instance = dt.year
         years_ = years()
 
