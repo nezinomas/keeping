@@ -28,9 +28,9 @@ class PlansConvertToCents:
 class ConvertToPrice:
     def save(self, *args, **kwargs):
         if price := self.cleaned_data.get("price"):
-            self.instance.price = int(price * 100)
+            self.instance.price = round(price * 100)
 
         if fee := self.cleaned_data.get("fee"):
-            self.instance.fee = int(fee * 100)
+            self.instance.fee = round(fee * 100)
 
         return super().save(*args, **kwargs)

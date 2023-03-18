@@ -207,6 +207,29 @@ def test_saving_update(client_logged):
     assert actual.remark == 'Pastaba'
 
 
+@time_machine.travel('1999-12-31')
+def test_saving_update_fee_with_489(client_logged):
+    saving = SavingFactory()
+
+    data = {
+        'price': '0.01',
+        'fee': '4.89',
+        'date': '1999-12-31',
+        'remark': 'Pastaba',
+        'account': 1,
+        'saving_type': 1
+    }
+    url = reverse('savings:update', kwargs={'pk': saving.pk})
+
+    client_logged.post(url, data, follow=True)
+    actual = Saving.objects.get(pk=saving.pk)
+
+    assert actual.date == date(1999, 12, 31)
+    assert actual.price == 1
+    assert actual.fee == 489
+    assert actual.remark == 'Pastaba'
+
+
 def test_savings_not_load_other_journal(client_logged, main_user, second_user):
     j1 = main_user.journal
     j2 = second_user.journal

@@ -214,6 +214,33 @@ def test_expenses_update(client_logged):
     assert actual.remark == 'Pastaba'
 
 
+# @time_machine.travel("2000-03-04")
+def test_expenses_update_price_with_489(client_logged):
+    e = ExpenseFactory(date=date.today(), price=477)
+
+    data = {
+        'price': 4.89,
+        'quantity': 33,
+        'date': '2000-03-04',
+        'remark': 'Pastaba',
+        'account': 1,
+        'expense_type': e.expense_type.pk,
+        'expense_name': e.expense_name.pk,
+    }
+    url = reverse('expenses:update', kwargs={'pk': e.pk})
+
+    client_logged.post(url, data, follow=True)
+
+    actual = models.Expense.objects.get(pk=e.pk)
+    assert actual.date == date(2000, 3, 4)
+    assert actual.price == 489
+    assert actual.quantity == 33
+    assert actual.account.title == 'Account1'
+    assert actual.expense_type.title == 'Expense Type'
+    assert actual.expense_name.title == 'Expense Name'
+    assert actual.remark == 'Pastaba'
+
+
 def test_expenses_update_type_and_name(client_logged):
     e = ExpenseFactory()
     t = ExpenseTypeFactory(title='XXX')
