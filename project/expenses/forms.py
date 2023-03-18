@@ -88,7 +88,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
         expense_type_pk = self.instance.expense_type.pk if self.instance.pk else None
         expense_type_pk = self.data.get("expense_type") or expense_type_pk
-
+        print(f'------------------------------->\n{self.data}\n')
         try:
             expense_type_pk = int(expense_type_pk)
         except (TypeError, ValueError):
@@ -148,26 +148,28 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
     def clean_date(self):
         dt = self.cleaned_data["date"]
 
-        if dt:
-            year_user = utils.get_user().year
-            year_instance = dt.year
-            year_now = datetime.now().year
+        if not dt:
+            return dt
 
-            diff = 3
-            if (year_user - year_instance) > diff:
-                year_msg = year_user - diff
-                self.add_error(
-                    "date",
-                    _("Year cannot be less than %(year)s") % ({"year": year_msg}),
-                )
+        year_user = utils.get_user().year
+        year_instance = dt.year
+        year_now = datetime.now().year
 
-            diff = 1
-            if (year_instance - year_now) > diff:
-                year_msg = year_user + diff
-                self.add_error(
-                    "date",
-                    _("Year cannot be greater than %(year)s") % ({"year": year_msg}),
-                )
+        diff = 3
+        if (year_user - year_instance) > diff:
+            year_msg = year_user - diff
+            self.add_error(
+                "date",
+                _("Year cannot be less than %(year)s") % ({"year": year_msg}),
+            )
+
+        diff = 1
+        if (year_instance - year_now) > diff:
+            year_msg = year_user + diff
+            self.add_error(
+                "date",
+                _("Year cannot be greater than %(year)s") % ({"year": year_msg}),
+            )
 
         return dt
 
