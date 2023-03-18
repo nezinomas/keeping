@@ -137,7 +137,7 @@ def test_expenses_load_update_form_button(client_logged):
     assert 'Atnaujinti ir uždaryti</button>' in form
 
 
-def test_expenses_load_update_form_field_values(client_logged):
+def test_expenses_load_update_form_instance_field_values(client_logged):
     e = ExpenseFactory(price=1)
 
     url = reverse('expenses:update', kwargs={'pk': e.pk})
@@ -150,6 +150,21 @@ def test_expenses_load_update_form_field_values(client_logged):
     assert form.instance.expense_type.title == 'Expense Type'
     assert form.instance.expense_name.title == 'Expense Name'
     assert form.instance.remark == 'Remark'
+
+
+def test_expenses_load_update_form_field_values(client_logged):
+    e = ExpenseFactory(price=1)
+
+    url = reverse('expenses:update', kwargs={'pk': e.pk})
+    response = client_logged.get(url)
+    form = response.context['form'].as_p()
+
+    assert '<input type="text" name="date" value="1999-01-01"' in form
+    assert '<option value="1" selected>Account1</option>' in form
+    assert '<option value="1" selected>Expense Type</option>' in form
+    assert '<option value="1" selected>Expense Name</option>' in form
+    assert '<input type="number" name="quantity" value="13"' in form
+    assert '<input type="number" name="price" value="0.01"' in form
 
 
 def test_expenses_update_to_another_year(client_logged):
