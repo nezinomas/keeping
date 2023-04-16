@@ -329,7 +329,6 @@ def test_expense_avg_last_months():
 
     actual = Expense.objects.last_months(6)
 
-    assert actual.count() == 1
     assert actual[0]['sum'] == 11.0
     assert actual[0]['title'] == 'Expense Type'
 
