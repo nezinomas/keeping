@@ -58,7 +58,7 @@ LOGGING = {
         # Log to a text file that can be rotated by logrotate
         "logfile": {
             "class": "logging.handlers.WatchedFileHandler",
-            "filename": f"/data/django_projects/{ENV('LOG_FILE')}",
+            "filename": ENV('LOG_FILE'),
         },
     },
     "loggers": {
