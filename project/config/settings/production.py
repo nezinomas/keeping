@@ -3,7 +3,7 @@ from .base import *
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+ALLOWED_HOSTS = ENV.list("ALLOWED_HOSTS")
 
 INSTALLED_APPS += []
 
@@ -58,7 +58,7 @@ LOGGING = {
         # Log to a text file that can be rotated by logrotate
         "logfile": {
             "class": "logging.handlers.WatchedFileHandler",
-            "filename": "/data/django_projects/_keeping.log",
+            "filename": f"/data/django_projects/{ENV('LOG_FILE')}",
         },
     },
     "loggers": {

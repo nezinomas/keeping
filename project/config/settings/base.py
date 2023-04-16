@@ -35,7 +35,7 @@ PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
 
 # Take environment variables from .env file
-env = environ.Env()
+ENV = environ.Env()
 environ.Env.read_env(os.path.join(PROJECT_ROOT, ".env"))
 
 
@@ -46,7 +46,7 @@ LOGIN_URL = "users:login"
 
 
 # ================   MEDIA CONFIGURATION
-MEDIA_ROOT = env("MEDIA_ROOT", default=os.path.join(PROJECT_ROOT, "media"))
+MEDIA_ROOT = ENV("MEDIA_ROOT", default=os.path.join(PROJECT_ROOT, "media"))
 MEDIA_URL = "/media/"
 
 
@@ -61,7 +61,7 @@ TEMPLATE_DEBUG = DEBUG
 
 
 # ================   SECRET CONFIGURATION
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = ENV("SECRET_KEY")
 
 
 # ================   SITE CONFIGURATION
@@ -183,7 +183,7 @@ AUTH_PASSWORD_VALIDATORS = [
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-SALT = env("SALT")
+SALT = ENV("SALT")
 
 
 BOOTSTRAP_DATEPICKER_PLUS = {
