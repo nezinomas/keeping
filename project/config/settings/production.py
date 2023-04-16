@@ -3,7 +3,7 @@ from .base import *
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+ALLOWED_HOSTS = ENV.list("ALLOWED_HOSTS")
 
 INSTALLED_APPS += []
 
