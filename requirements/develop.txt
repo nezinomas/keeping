@@ -6,7 +6,7 @@ django-webtest==1.9.10
 factory-boy==3.2.1
 mock==5.0.1
 pyinstrument==4.4.0
-pytest==7.2.1
+pytest==7.3.1
 pytest-clarity==1.0.1
 pytest-cov==4.0.0
 pytest-diff==0.1.14
@@ -18,7 +18,7 @@ pytest-lazy-fixture==0.6.3
 pytest-mock==3.10.0
 pytest-raises==0.11
 pytest-randomly==3.12.0
-pytest-sugar==0.9.6
-pytest-xdist==3.2.0
+pytest-sugar==0.9.7
+pytest-xdist==3.2.1
 selenium==4.8.2
 time-machine==2.9.0
