@@ -84,12 +84,12 @@ class ChartSummaryExpensesService:
         return _items
 
     def _calc_total_column(self, data):
-        _matrix = [x["data"] for x in data]
-        _col = [sum(idx) for idx in _matrix]
+        matrix = [x["data"] for x in data]
+        col = [sum(idx) for idx in matrix]
 
-        for _i, _v in enumerate(_col):
-            self.total_col[data[_i]["name"]] = _v
+        for i, val in enumerate(col):
+            self.total_col[data[i]["name"]] = val
 
     def _calc_total_row(self, data):
-        _matrix = [x["data"] for x in data]
-        self.total_row = [sum(idx) for idx in zip(*_matrix)]
+        matrix = [x["data"] for x in data]
+        self.total_row = [sum(idx) for idx in zip(*matrix)]
