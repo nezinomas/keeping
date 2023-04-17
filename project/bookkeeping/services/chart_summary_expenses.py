@@ -2,8 +2,6 @@ import itertools
 import operator
 from dataclasses import dataclass, field
 
-import numpy as np
-
 from ...expenses.models import Expense
 
 
@@ -82,13 +80,12 @@ class ChartSummaryExpensesService:
         return _items
 
     def _calc_totals(self, data):
-        _matrix = np.array([x["data"] for x in data])
-        _col = _matrix.sum(axis=1)
-        _row = _matrix.sum(axis=0)
+        _matrix1 = [x["data"] for x in data]
+        _col1 = [sum(idx) for idx in _matrix1]
 
-        for _i, _v in enumerate(_col):
+        for _i, _v in enumerate(_col1):
             self.total_col[data[_i]["name"]] = _v
 
-        self.total_row = _row.tolist()
+        self.total_row = [sum(idx) for idx in zip(*_matrix1)]
 
-        self.total = _row.sum()
+        self.total = sum(self.total_row)
