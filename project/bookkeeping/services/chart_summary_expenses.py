@@ -80,12 +80,12 @@ class ChartSummaryExpensesService:
         return _items
 
     def _calc_totals(self, data):
-        _matrix1 = [x["data"] for x in data]
-        _col1 = [sum(idx) for idx in _matrix1]
+        _matrix = [x["data"] for x in data]
+        _col = [sum(idx) for idx in _matrix]
 
-        for _i, _v in enumerate(_col1):
+        for _i, _v in enumerate(_col):
             self.total_col[data[_i]["name"]] = _v
 
-        self.total_row = [sum(idx) for idx in zip(*_matrix1)]
+        self.total_row = [sum(idx) for idx in zip(*_matrix)]
 
         self.total = sum(self.total_row)
