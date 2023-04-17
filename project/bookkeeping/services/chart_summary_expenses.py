@@ -55,7 +55,9 @@ class ChartSummaryExpensesService:
         self.categories = sorted({r["year"] for r in self.data.data})
         self.serries_data = self._make_serries_data(self.categories, self.data.data)
 
-        self._calc_totals(self.serries_data)
+        self._calc_total_column(self.serries_data)
+        self._calc_total_row(self.serries_data)
+        self._calc_total()
 
     def _make_serries_data(self, categories, data):
         _items = []
@@ -79,13 +81,16 @@ class ChartSummaryExpensesService:
 
         return _items
 
-    def _calc_totals(self, data):
+    def _calc_total_column(self, data):
         _matrix = [x["data"] for x in data]
         _col = [sum(idx) for idx in _matrix]
 
         for _i, _v in enumerate(_col):
             self.total_col[data[_i]["name"]] = _v
 
+    def _calc_total_row(self, data):
+        _matrix = [x["data"] for x in data]
         self.total_row = [sum(idx) for idx in zip(*_matrix)]
 
+    def _calc_total(self):
         self.total = sum(self.total_row)
