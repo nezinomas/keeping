@@ -2,8 +2,6 @@ import itertools
 import operator
 from dataclasses import dataclass, field
 
-import numpy as np
-
 from ...expenses.models import Expense
 
 
@@ -45,7 +43,6 @@ class ChartSummaryExpensesService:
     data: ChartSummaryExpensesServiceData = field(default_factory=list)
 
     categories: list = field(init=False, default_factory=list)
-    total: float = field(init=False, default=0)
     total_col: dict = field(init=False, default_factory=dict)
     total_row: list = field(init=False, default_factory=list)
     serries_data: list = field(init=False, default_factory=list)
@@ -57,7 +54,12 @@ class ChartSummaryExpensesService:
         self.categories = sorted({r["year"] for r in self.data.data})
         self.serries_data = self._make_serries_data(self.categories, self.data.data)
 
-        self._calc_totals(self.serries_data)
+        self._calc_total_column(self.serries_data)
+        self._calc_total_row(self.serries_data)
+
+    @property
+    def total(self):
+        return sum(self.total_row)
 
     def _make_serries_data(self, categories, data):
         _items = []
@@ -81,14 +83,13 @@ class ChartSummaryExpensesService:
 
         return _items
 
-    def _calc_totals(self, data):
-        _matrix = np.array([x["data"] for x in data])
-        _col = _matrix.sum(axis=1)
-        _row = _matrix.sum(axis=0)
+    def _calc_total_column(self, data):
+        matrix = [x["data"] for x in data]
+        col = [sum(idx) for idx in matrix]
 
-        for _i, _v in enumerate(_col):
-            self.total_col[data[_i]["name"]] = _v
+        for i, val in enumerate(col):
+            self.total_col[data[i]["name"]] = val
 
-        self.total_row = _row.tolist()
-
-        self.total = _row.sum()
+    def _calc_total_row(self, data):
+        matrix = [x["data"] for x in data]
+        self.total_row = [sum(idx) for idx in zip(*matrix)]
