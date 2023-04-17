@@ -43,7 +43,6 @@ class ChartSummaryExpensesService:
     data: ChartSummaryExpensesServiceData = field(default_factory=list)
 
     categories: list = field(init=False, default_factory=list)
-    total: float = field(init=False, default=0)
     total_col: dict = field(init=False, default_factory=dict)
     total_row: list = field(init=False, default_factory=list)
     serries_data: list = field(init=False, default_factory=list)
@@ -57,7 +56,10 @@ class ChartSummaryExpensesService:
 
         self._calc_total_column(self.serries_data)
         self._calc_total_row(self.serries_data)
-        self._calc_total()
+
+    @property
+    def total(self):
+        return sum(self.total_row)
 
     def _make_serries_data(self, categories, data):
         _items = []
@@ -91,6 +93,3 @@ class ChartSummaryExpensesService:
     def _calc_total_row(self, data):
         _matrix = [x["data"] for x in data]
         self.total_row = [sum(idx) for idx in zip(*_matrix)]
-
-    def _calc_total(self):
-        self.total = sum(self.total_row)
