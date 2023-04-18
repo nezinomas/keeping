@@ -40,7 +40,6 @@
     Enter disabled on rest of form inputs
     */
     document.getElementById("dialog-form").addEventListener('keypress', function (e) {
-        alert('jp')
         if (e.keyCode === 13 || e.which === 13) {
             if (e.target.matches("textarea")) {
                 return;
