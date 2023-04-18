@@ -167,22 +167,23 @@ def test_income_valid_data():
     assert data.income_type.title == t.title
 
 
-@time_machine.travel('1999-1-1')
-def test_income_insert_only_three_years_to_past():
-    a = AccountFactory()
-    t = IncomeTypeFactory()
+# Todo: delete this test by deleteing commented code in form
+# @time_machine.travel('1999-1-1')
+# def test_income_insert_only_three_years_to_past():
+#     a = AccountFactory()
+#     t = IncomeTypeFactory()
 
-    form = IncomeForm(data={
-        'date': '1995-01-01',
-        'price': '1.0',
-        'remark': 'remark',
-        'account': a.pk,
-        'income_type': t.pk
-    })
+#     form = IncomeForm(data={
+#         'date': '1995-01-01',
+#         'price': '1.0',
+#         'remark': 'remark',
+#         'account': a.pk,
+#         'income_type': t.pk
+#     })
 
-    assert not form.is_valid()
-    assert 'date' in form.errors
-    assert 'Metai negali būti mažesni nei 1996' in form.errors['date']
+#     assert not form.is_valid()
+#     assert 'date' in form.errors
+#     assert 'Metai negali būti mažesni nei 1996' in form.errors['date']
 
 
 @time_machine.travel('1999-1-1')

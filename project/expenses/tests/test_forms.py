@@ -113,28 +113,29 @@ def test_exepense_form_valid_data():
     assert e.quantity == 1
 
 
-@time_machine.travel('1999-1-1')
-def test_exepense_insert_only_three_years_to_past():
-    a = AccountFactory()
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(parent=t)
+# Todo: delete this test by deleteing commented code in form
+# @time_machine.travel('1999-1-1')
+# def test_exepense_insert_only_three_years_to_past():
+#     a = AccountFactory()
+#     t = ExpenseTypeFactory()
+#     n = ExpenseNameFactory(parent=t)
 
-    form = ExpenseForm(
-        data={
-            'date': '1995-01-01',
-            'price': 112,
-            'quantity': 1,
-            'expense_type': t.pk,
-            'expense_name': n.pk,
-            'account': a.pk,
-            'remark': None,
-            'exception': None
-        },
-    )
+#     form = ExpenseForm(
+#         data={
+#             'date': '1995-01-01',
+#             'price': 112,
+#             'quantity': 1,
+#             'expense_type': t.pk,
+#             'expense_name': n.pk,
+#             'account': a.pk,
+#             'remark': None,
+#             'exception': None
+#         },
+#     )
 
-    assert not form.is_valid()
-    assert 'date' in form.errors
-    assert 'Metai negali būti mažesni nei 1996' in form.errors['date']
+#     assert not form.is_valid()
+#     assert 'date' in form.errors
+#     assert 'Metai negali būti mažesni nei 1996' in form.errors['date']
 
 
 @time_machine.travel('1999-1-1')

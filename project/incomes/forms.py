@@ -60,13 +60,15 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
             year_instance = dt.year
             year_now = datetime.now().year
 
-            diff = 3
-            if (year_user - year_instance) > diff:
-                year_msg = year_user - diff
-                self.add_error(
-                    "date",
-                    _("Year cannot be less than %(year)s") % ({"year": year_msg}),
-                )
+            # disabled update past expenses redords on 2022.04.18
+            # Todo: delete this code chunck after some time
+            # diff = 3
+            # if (year_user - year_instance) > diff:
+            #     year_msg = year_user - diff
+            #     self.add_error(
+            #         "date",
+            #         _("Year cannot be less than %(year)s") % ({"year": year_msg}),
+            #     )
 
             diff = 1
             if (year_instance - year_now) > diff:
