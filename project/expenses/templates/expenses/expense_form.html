@@ -34,20 +34,23 @@
         sum_prices();
     });
 
-    /* Enter key on price field */
-    var input = document.getElementById("id_total_sum");
-    input.addEventListener("keyup", function (event) {
-        event.preventDefault();
-        if (event.keyCode === 13) {
-            sum_prices();
-        }
-    });
-
-    /* disable Enter key on form */
-    document.addEventListener('keypress', function (e) {
+    /*
+    Enter allowed in texarea
+    Enter on id_total_sum input calls sum_prices()
+    Enter disabled on rest of form inputs
+    */
+    document.getElementById("dialog-form").addEventListener('keypress', function (e) {
+        alert('jp')
         if (e.keyCode === 13 || e.which === 13) {
-            e.preventDefault();
-            return false;
+            if (e.target.matches("textarea")) {
+                return;
+            } else {
+                if (e.target.id == "id_total_sum") {
+                    sum_prices();
+                }
+                e.preventDefault();
+                return false;
+            }
         }
     });
 </script>

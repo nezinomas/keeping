@@ -1,7 +1,7 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-<form method="POST" class="modal-content form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted">
+<form method="POST" id="dialog-form" class="modal-content form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted">
     {% csrf_token %}
     {% include 'core/includes/form_date_scripts.html' %}
     <div class="modal-header">

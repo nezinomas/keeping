@@ -22,35 +22,21 @@ htmx.on("htmx:beforeSwap", (e) => {
         $('.is-invalid').removeClass('is-invalid');
 
         if(subbmiter == '_new') {
-            var price = $('#id_price');
-            if (price) {
-                price.val('');
-            }
+            const price = $('#id_price');
+            const qty = $('#id_quantity');
+            const title = $('#id_title');
+            const remark = $('#id_remark');
+            const exception = $('#id_exception');
 
-            var price_sum_field = $('.sum-prices-field');
-            if (price_sum_field) {
-                price_sum_field.val('0.0');
-            }
+            if (price) price.val('0.0');
 
-            var qty = $('#id_quantity');
-            if (qty) {
-                qty.val('1');
-            }
+            if (qty) qty.val('1');
 
-            var title = $('#id_title');
-            if (title) {
-                title.val('');
-            }
+            if (title) title.val('');
 
-            var remark = $('#id_remark');
-            if (remark) {
-                remark.val('');
-            }
+            if (remark) remark.val('');
 
-            var exception = $('#id_exception');
-            if (exception) {
-                exception.prop('checked', false);
-            }
+            if (exception) exception.prop('checked', false);
         }
 
         if(subbmiter == '_close') {
