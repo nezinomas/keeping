@@ -39,7 +39,8 @@
     Enter on id_total_sum input calls sum_prices()
     Enter disabled on rest of form inputs
     */
-    document.addEventListener('keypress', function (e) {
+    document.getElementById("dialog-form").addEventListener('keypress', function (e) {
+        alert('jp')
         if (e.keyCode === 13 || e.which === 13) {
             if (e.target.matches("textarea")) {
                 return;
