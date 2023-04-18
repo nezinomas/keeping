@@ -48,7 +48,7 @@ class MakeDataFrame:
             .select(["date", "title", sum_col_name])
             .sort(["title", "date"])
             .with_columns(pl.col(sum_col_name).cast(pl.Int32))
-            .pivot(values=sum_col_name, index="date", columns="title")
+            .pivot(values=sum_col_name, index="date", columns="title", aggregate_function="first")
             .pipe(self._insert_missing_columns)
             .pipe(self._drop_columns)
             .pipe(self._sort_columns)
