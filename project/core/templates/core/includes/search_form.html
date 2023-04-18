@@ -16,9 +16,11 @@
             placeholder="{% translate 'Search' %}..."
             aria-label="{% translate 'Search' %}"
             x-model="message"
+            @keyup.enter="alert(message)"
             {% if hightlight_tab %}@keyup.enter="openTab = '13'"{% endif %}>
     </div>
     <div class="col-auto">
+        <button type="submit" class="btn btn-secondary btn-sm search_click" name="search" x-model="message">{% translate 'Search' %}</button>
         <button type="button"
             class="btn btn-sm btn-secondary"
             hx-get="{{ reset_url }}"
