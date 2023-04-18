@@ -37,15 +37,11 @@ class YearBalance(BalanceBase):
 
     @property
     def amount_balance(self) -> float:
-        t = super().total_row
-
-        return t.get("balance", 0)
+        return super().total_row.get("balance", 0)
 
     @property
     def avg_incomes(self) -> float:
-        avg = super().average
-
-        return avg.get("incomes", 0)
+        return super().average.get("incomes", 0)
 
     @property
     def avg_expenses(self) -> float:
@@ -61,8 +57,7 @@ class YearBalance(BalanceBase):
             )
             return df[0, 0] / _month
 
-        avg = super().average
-        return avg.get("expenses", 0)
+        return super().average.get("expenses", 0)
 
     @property
     def income_data(self) -> list[float]:
