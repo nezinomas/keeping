@@ -39,15 +39,13 @@ class IndexServiceData:
             "money_flow",
         )
 
-    def get_amount_start(self) -> float:
-        _sum = (
+    def get_amount_start(self) -> int:
+        return (
             AccountBalance.objects.related()
             .filter(year=self.year)
             .aggregate(Sum("past"))["past__sum"]
             or 0
         )
-
-        return float(_sum)
 
     def get_data(self) -> list[dict]:
         qs_borrow = Debt.objects.sum_by_month(self.year, debt_type="borrow")
