@@ -16,7 +16,6 @@
             placeholder="{% translate 'Search' %}..."
             aria-label="{% translate 'Search' %}"
             x-model="message"
-            @keyup.enter="alert(message)"
             {% if hightlight_tab %}@keyup.enter="openTab = '13'"{% endif %}>
     </div>
     <div class="col-auto">
