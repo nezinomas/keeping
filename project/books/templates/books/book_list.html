@@ -5,38 +5,43 @@
 {% if object_list %}
 
 <script src="{% static 'js/sticky-table-headers.js' %}"></script>
-<table class="table table-sm table-striped table-hover sticky-table">
-    <thead>
-        <tr>
-            <th class="text-start">Nr</th>
-            <th class="text-start">{% translate 'Author' %}</th>
-            <th class="text-start">{% translate 'Title' %}</th>
-            <th class="text-start">{% translate 'Remark' %}</th>
-            <th class="text-center">{% translate 'Started reading' %}</th>
-            <th class="text-center">{% translate 'Ended reading' %}</th>
-            <th colspan="2"></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for object in object_list %}
-        {% url 'books:update' object.id as url_update %}
-        {% url 'books:delete' object.id as url_delete %}
+<div class="row">
+    <div class="col-lg-12" hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
+        <table class="table table-sm table-striped table-hover sticky-table">
+            <thead>
+                <tr>
+                    <th class="text-start">Nr</th>
+                    <th class="text-start">{% translate 'Author' %}</th>
+                    <th class="text-start">{% translate 'Title' %}</th>
+                    <th class="text-start">{% translate 'Remark' %}</th>
+                    <th class="text-center">{% translate 'Started reading' %}</th>
+                    <th class="text-center">{% translate 'Ended reading' %}</th>
+                    <th colspan="2"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for object in object_list %}
+                {% url 'books:update' object.id as url_update %}
+                {% url 'books:delete' object.id as url_delete %}
 
-        <tr hx-get="{{ url_update }}{% if tab %}?tab={{ tab }}{% endif %}" hx-trigger="dblclick" hx-target="#dialog" class="{% if not object.ended %} teal{% endif %}">
-            <td class="text-start">{{ forloop.revcounter }}</td>
-            <td class="text-start">{{ object.author }}</td>
-            <td class="text-start">„{{ object.title }}”</td>
-            <td class="text-start">{{ object.remark }}</td>
-            <td class="text-center">{{ object.started|date:"Y-m-d" }}</td>
-            <td class="text-center">{{ object.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
-            {% edit_cell url=url_update %}
-            {% delete_cell url=url_delete %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                <tr hx-get="{{ url_update }}{% if tab %}?tab={{ tab }}{% endif %}" hx-trigger="dblclick" hx-target="#dialog" class="{% if not object.ended %} teal{% endif %}">
+                    <td class="text-start">{{ forloop.revcounter }}</td>
+                    <td class="text-start">{{ object.author }}</td>
+                    <td class="text-start">„{{ object.title }}”</td>
+                    <td class="text-start">{{ object.remark }}</td>
+                    <td class="text-center">{{ object.started|date:"Y-m-d" }}</td>
+                    <td class="text-center">{{ object.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
+                    {% edit_cell url=url_update %}
+                    {% delete_cell url=url_delete %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <script>$('.sticky-table').stickyTableHeaders();</script>
-{% paging url=url page_obj=object_list page_range=page_range search=search tab=tab %}
+{% paging url=url page_obj=object_list page_range=page_range search=search tab=tab target="#data" %}
 
 {% else %}
 
