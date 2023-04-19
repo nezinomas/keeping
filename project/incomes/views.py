@@ -19,7 +19,6 @@ class Index(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         context = {
             "income": rendered_content(self.request, Lists),
-            "income_type": rendered_content(self.request, TypeLists),
         }
         return super().get_context_data(**kwargs) | context
 

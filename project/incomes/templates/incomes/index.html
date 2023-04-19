@@ -40,7 +40,7 @@
         </div>
 
         <div class="row incomes-types-col">
-            <div id="incometype_list" class="col" hx-trigger="afterType from:body" hx-get="{% url 'incomes:type_list' %}" hx-target="this">{{income_type|safe}}</div>
+            <div id="incometype_list" class="col" hx-trigger="load, afterType from:body" hx-get="{% url 'incomes:type_list' %}" hx-target="this"></div>
         </div>
     </div>
 </div>
