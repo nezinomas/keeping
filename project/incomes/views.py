@@ -8,19 +8,12 @@ from ..core.mixins.views import (
     SearchViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
 from . import forms, models
 
 
 class Index(TemplateViewMixin):
     template_name = "incomes/index.html"
-
-    def get_context_data(self, **kwargs):
-        context = {
-            "income": rendered_content(self.request, Lists),
-        }
-        return super().get_context_data(**kwargs) | context
 
 
 class Lists(ListViewMixin):
