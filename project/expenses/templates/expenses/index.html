@@ -27,7 +27,7 @@
                 <button type="button"
                     class="btn btn-sm"
                     hx-get="{% url 'expenses:list' %}?month={{month_number}}"
-                    hx-target="#list"
+                    hx-target="#data"
                     hx-swap="innerHTML"
                     hx-indicator="#indicator"
                     :class="openTab === '{{month_number}}' ? activeClass : inactiveClass"
@@ -40,7 +40,7 @@
                 <button type="button"
                     class="btn btn-sm ms-2"
                     hx-get="{% url 'expenses:list' %}?month=13"
-                    hx-target="#list"
+                    hx-target="#data"
                     hx-swap="innerHTML"
                     hx-indicator="#indicator"
                     :class="openTab === '13' ? activeClass : inactiveClass"
@@ -62,18 +62,16 @@
         <div class="row mb-2">
             {% url 'expenses:search' as search_url %}
             {% url 'expenses:list' as reset_url %}
-            <div id="search_form_data" class="col">{% search_form url=search_url reset_url=reset_url target="#list" hightlight_tab=current_month %}</div>
+            <div id="search_form_data" class="col">{% search_form url=search_url reset_url=reset_url target="#data" hightlight_tab=current_month %}</div>
         </div>
 
-        <div class="row">
-            <div id="list" class="col"
-                hx-trigger="reload from:body, afterType from:body, afterName from:body"
-                hx-get="{% url 'expenses:list' %}{% if current_month %}?month={{current_month}}{% endif %}"
-                hx-target="this"
-                hx-indicator="#indicator">
-                {{expenses}}
-            </div>
-        </div>
+        {% if request.GET.month %}
+            {% var month_number=request.GET.month %}
+        {% else %}
+            {% now 'n' as month_number %}
+        {% endif %}
+
+        <div id="data" hx-trigger="load" hx-get="{% url 'expenses:list' %}?month={{month_number}}"></div>
     </div>
 
     <div class="col-lg-4">

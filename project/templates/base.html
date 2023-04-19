@@ -59,7 +59,7 @@
 
           <li class="nav-item">
             <div class="btn-group">
-              <a class="btn nav-link {% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}" href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
+              <a class="btn nav-link {% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}" href="{% url 'expenses:index' %}?month={% now 'n' %}">{% translate 'Expenses' %}</a>
               <button type="button" class="btn dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
