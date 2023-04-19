@@ -27,9 +27,8 @@
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Incomes' context 'incomes button' %}</button>
             </div>
         </div>
-        <div class="row">
-            <div id="data" hx-get="{% url 'incomes:list' %}" hx-trigger="load"></div>
-        </div>
+
+        <div id="data" hx-get="{% url 'incomes:list' %}" hx-trigger="load"></div>
     </div>
 
     <div class="col-lg-4">
