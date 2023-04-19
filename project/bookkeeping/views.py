@@ -11,7 +11,6 @@ from ..core.mixins.views import (
     CreateViewMixin,
     FormViewMixin,
     TemplateViewMixin,
-    rendered_content,
 )
 from ..pensions.models import PensionType
 from ..plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
@@ -46,11 +45,6 @@ class Index(TemplateViewMixin):
 
         context = {
             "year": year,
-            "accounts": rendered_content(self.request, Accounts, **kwargs),
-            "savings": rendered_content(self.request, Savings, **kwargs),
-            "pensions": rendered_content(self.request, Pensions, **kwargs),
-            "wealth": rendered_content(self.request, Wealth, **kwargs),
-            "no_incomes": rendered_content(self.request, NoIncomes, **kwargs),
             "averages": ind.averages_context(),
             "borrow": ind.borrow_context(),
             "lend": ind.lend_context(),
