@@ -12,10 +12,8 @@ from ...core.mixins.views import (
     SearchViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
 from .. import forms, models
-from . import expenses_type
 
 
 class GetMonthMixin:
@@ -33,13 +31,6 @@ class GetMonthMixin:
 
 class Index(GetMonthMixin, TemplateViewMixin):
     template_name = "expenses/index.html"
-
-    def get_context_data(self, **kwargs):
-        context = {
-            "types": rendered_content(self.request, expenses_type.Lists),
-            "expenses": rendered_content(self.request, Lists),
-        }
-        return super().get_context_data(**kwargs) | context
 
 
 class Lists(GetMonthMixin, ListViewMixin):
