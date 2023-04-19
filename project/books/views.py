@@ -20,7 +20,6 @@ class Index(TemplateViewMixin):
             "year": self.request.user.year,
             "tab": self.request.GET.get("tab"),
         }
-
         return super().get_context_data(**kwargs) | context
 
 
