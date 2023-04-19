@@ -7,36 +7,41 @@
 {% if object_list %}
 
 <script src="{% static 'js/sticky-table-headers.js' %}"></script>
-<table class="table table-sm table-striped table-hover sticky-table">
-    <thead>
-        <tr>
-            <th class="text-start">{% translate 'Date' %}</th>
-            <th class="text-start">{% translate 'Incomes type' %}</th>
-            <th class="text-start">{% translate 'Account' %}</th>
-            <th class="text-start">{% translate 'Remark' %}</th>
-            <th>{% translate 'Amount' %}</th>
-            <th colspan="2"></th>
-         </tr>
-    </thead>
-    <tbody>
-        {% for object in object_list %}
-        {% url 'incomes:update' object.id as url_update %}
-        {% url 'incomes:delete' object.id as url_delete %}
-        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog" class="{% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
-            <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
-            <td class="text-start">{{ object.income_type }}</td>
-            <td class="text-start">{{ object.account }}</td>
-            <td class="text-start">{{ object.remark }}</td>
-            {% table_cell value=object.price|price %}
-            {% edit_cell url=url_update %}
-            {% delete_cell url=url_delete %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="row">
+    <div class="col" hx-trigger="reload from:body, afterType from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
+        <table class="table table-sm table-striped table-hover sticky-table">
+            <thead>
+                <tr>
+                    <th class="text-start">{% translate 'Date' %}</th>
+                    <th class="text-start">{% translate 'Incomes type' %}</th>
+                    <th class="text-start">{% translate 'Account' %}</th>
+                    <th class="text-start">{% translate 'Remark' %}</th>
+                    <th>{% translate 'Amount' %}</th>
+                    <th colspan="2"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for object in object_list %}
+                {% url 'incomes:update' object.id as url_update %}
+                {% url 'incomes:delete' object.id as url_delete %}
+                <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog" class="{% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+                    <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
+                    <td class="text-start">{{ object.income_type }}</td>
+                    <td class="text-start">{{ object.account }}</td>
+                    <td class="text-start">{{ object.remark }}</td>
+                    {% table_cell value=object.price|price %}
+                    {% edit_cell url=url_update %}
+                    {% delete_cell url=url_delete %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
-{% paging url=url page_obj=object_list page_range=page_range search=search %}
+{% paging url=url page_obj=object_list page_range=page_range search=search target="#data" %}
 
 {% else %}
 
