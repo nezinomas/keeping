@@ -22,7 +22,7 @@
 <div class="row my-2">
     {% url 'books:search' as search_url %}
     {% url 'books:list' as reset_url %}
-    <div class="col-3 text-start" id="search_form_data" hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#book_list" %}</div>
+    <div class="col-3 text-start" id="search_form_data" hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#data" %}</div>
 
     <div class="col text-center" id="info_row" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}" hx-target="this"></div>
 
@@ -32,9 +32,8 @@
     </div>
 </div>
 
-<div class="row">
-    <div id="book_list" class="col-lg-12" hx-trigger="load, reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-target="this" hx-indicator="#indicator"></div>
-</div>
+<div id="data" hx-trigger="load" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}"></div>
+
 
 <div class="row my-2">
     <div class="col-lg-12" id="chart_readed_books" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:chart_readed' %}" hx-target="this"></div>
