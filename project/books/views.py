@@ -21,7 +21,6 @@ class Index(TemplateViewMixin):
             "year": self.request.user.year,
             "tab": self.request.GET.get("tab"),
             "books": rendered_content(self.request, Lists),
-            "chart": rendered_content(self.request, ChartReaded),
         }
 
         return super().get_context_data(**kwargs) | context

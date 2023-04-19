@@ -37,7 +37,7 @@
 </div>
 
 <div class="row my-2">
-    <div class="col-lg-12" id="chart_readed_books" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:chart_readed' %}" hx-target="this">{{chart}}</div>
+    <div class="col-lg-12" id="chart_readed_books" hx-trigger="load, reload from:body, afterTarget from:body" hx-get="{% url 'books:chart_readed' %}" hx-target="this"></div>
 </div>
 
 {% endblock content %}
