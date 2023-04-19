@@ -22,17 +22,17 @@
         }">
         <div class="row my-2">
             <div class="col">
-                {% for m in context_months %}
-                {% with m|date:'n' as m_num %}
+                {% for month in context_months %}
+                {% with month|date:'n' as month_number %}
                 <button type="button"
                     class="btn btn-sm"
-                    hx-get="{% url 'expenses:list' %}?month={{m_num}}"
+                    hx-get="{% url 'expenses:list' %}?month={{month_number}}"
                     hx-target="#list"
                     hx-swap="innerHTML"
                     hx-indicator="#indicator"
-                    :class="openTab === '{{m_num}}' ? activeClass : inactiveClass"
-                    @click="openTab = '{{m_num}}'">
-                    {{m|date:'F'|title}}
+                    :class="openTab === '{{month_number}}' ? activeClass : inactiveClass"
+                    @click="openTab = '{{month_number}}'">
+                    {{month|date:'F'|title}}
                 </button>
                 {{" "}}
                 {% endwith %}
