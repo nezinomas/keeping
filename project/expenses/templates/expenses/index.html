@@ -95,10 +95,9 @@
 
         <div class="row">
             <div class="col-lg-12"
-                hx-trigger="afterType from:body, afterName from:body"
+                hx-trigger="load, afterType from:body, afterName from:body"
                 hx-get="{% url 'expenses:type_list' %}"
                 hx-target="this">
-                {{types}}
             </div>
         </div>
     </div>
