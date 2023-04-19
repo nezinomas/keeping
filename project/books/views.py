@@ -22,7 +22,6 @@ class Index(TemplateViewMixin):
             "tab": self.request.GET.get("tab"),
             "books": rendered_content(self.request, Lists),
             "chart": rendered_content(self.request, ChartReaded),
-            "info": rendered_content(self.request, InfoRow),
         }
 
         return super().get_context_data(**kwargs) | context
