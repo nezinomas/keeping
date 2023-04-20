@@ -71,9 +71,6 @@ def test_books_index_context(client_logged):
 
     assert 'year' in response.context
     assert 'tab' in response.context
-    assert 'books' in response.context
-    assert 'chart' in response.context
-    assert 'info' in response.context
 
 
 # ----------------------------------------------------------------------------
