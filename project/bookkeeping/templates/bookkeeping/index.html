@@ -45,14 +45,14 @@
 
 <!-- accounts stats -->
 <div class="row gx-2">
-    <div id="accounts_worth" class="col-lg-7" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body" hx-indicator="#indicator">{{ accounts|safe }}</div>
+    <div id="accounts_worth" class="col-lg-7" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="load, afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body"></div>
     <div class="col-lg-3">
         <div class="row">
             <div class="col-lg-12 col-md-6">
                 <div>{% info_table balance_short %}</div>
             </div>
             <div class="col-lg-12 col-md-6">
-                <div id="no_incomes" hx-get="{% url 'bookkeeping:no_incomes' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{no_incomes|safe}}</div>
+                <div id="no_incomes" hx-get="{% url 'bookkeeping:no_incomes' %}" hx-trigger="load, afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body"></div>
             </div>
         </div>
     </div>
@@ -61,7 +61,7 @@
         <div class="row">
             <div class="col-lg-12 col-md-3">
                 <!-- Wealth -->
-                <div id="wealth" hx-get="{% url 'bookkeeping:wealth' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{wealth|safe}}</div>
+                <div id="wealth" hx-get="{% url 'bookkeeping:wealth' %}" hx-trigger="load, afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body"></div>
             </div>
 
             <div class="col-lg-12 col-md-3">
@@ -85,12 +85,12 @@
 
 <!-- savings -->
 <div class="row mt-3">
-    <div id="savings_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body" hx-indicator="#indicator">{{savings|safe}}</div>
+    <div id="savings_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="load delay:200ms, afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body"></div>
 </div>
 
 <!-- pensions -->
 <div class="row mt-3">
-    <div id="pensions_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:pensions' %}" hx-trigger="afterPensionWorthNew from:body, afterSignalPensions from:body, afterSignal from:body" hx-indicator="#indicator">{{pensions|safe}}</div>
+    <div id="pensions_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:pensions' %}" hx-trigger="load delay:350ms, afterPensionWorthNew from:body, afterSignalPensions from:body, afterSignal from:body"></div>
 </div>
 
 <script>

@@ -8,7 +8,6 @@ from ..core.mixins.views import (
     SearchViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
 from . import forms, models, services
 
@@ -20,11 +19,7 @@ class Index(TemplateViewMixin):
         context = {
             "year": self.request.user.year,
             "tab": self.request.GET.get("tab"),
-            "books": rendered_content(self.request, Lists),
-            "chart": rendered_content(self.request, ChartReaded),
-            "info": rendered_content(self.request, InfoRow),
         }
-
         return super().get_context_data(**kwargs) | context
 
 
