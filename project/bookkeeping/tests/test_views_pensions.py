@@ -39,9 +39,21 @@ def test_view_latest_check(client_logged):
     PensionWorthFactory()
     PensionWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
 
-    url = reverse("bookkeeping:index")
+    url = reverse("bookkeeping:pensions")
     response = client_logged.get(url)
+    items = response.context["items"]
 
-    exp = [x["items"] for x in response.context if x.get("title") == "Pensijos"][0][0]
+    assert items[0].latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
 
-    assert exp.latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
+
+def test_regenerate_buttons(client_logged):
+    PensionFactory()
+
+    url = reverse("bookkeeping:pensions")
+    response = client_logged.get(url)
+    content = response.content.decode("utf-8")
+
+    url = reverse("core:regenerate_balances")
+
+    assert f'hx-get="{ url }?type=pensions"' in content
+    assert "Bus atnaujinti tik šios lentelės balansai." in content
