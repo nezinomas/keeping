@@ -34,6 +34,7 @@ class DaySpending(BalanceBase):
     def avg_per_day(self) -> float:
         if self._spending.is_empty():
             return 0
+
         day = current_day(self._year, self._month)
         df = (
             self._spending.select(["date", "total"])
@@ -50,12 +51,14 @@ class DaySpending(BalanceBase):
 
         df = (
             df.pipe(self._remove_necessary_if_any)
+            .lazy()
             .with_columns(pl.sum(pl.exclude("date")).alias("total"))
             .select(["date", "total"])
             .with_columns(pl.Series(name="exceptions", values=exceptions["sum"]))
             .with_columns(total=(pl.col("total") - pl.col("exceptions")))
             .drop("exceptions")
             .pipe(self._calc_spending)
+            .collect()
         )
         return df
 
