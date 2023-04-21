@@ -203,12 +203,13 @@ class Accounts(SignalBase):
     def _join_df(self, df: DF, hv: DF) -> DF:
         df = (
             df.join(hv, on=["id", "year"], how="outer")
+            .lazy()
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
             .sort(["year", "id"])
         )
-        return df
+        return df.collect()
 
 
 class Savings(SignalBase):
@@ -300,13 +301,16 @@ class Savings(SignalBase):
         ]
 
         return (
-            inc.join(exp, on=["id", "year"], how="outer")
+            inc
+            .join(exp, on=["id", "year"], how="outer")
             .join(hv, on=["id", "year"], how="outer")
+            .lazy()
             .rename({"have": "market_value"})
             .with_columns(
                 pl.exclude(["id", "year", "latest_check", "market_value"]).fill_null(0)
             )
             .with_columns([pl.lit(0).alias(col) for col in cols])
+            .collect()
         )
 
     @staticmethod
