@@ -20,7 +20,7 @@ def set_year(request, year):
 
 
 class RegenerateBalances(TemplateViewMixin):
-    # @timer
+    # @timer(**{'iterations': 3})
     def get(self, request, *args, **kwargs):
         _type = request.GET.get("type")
         _types = ["accounts", "savings", "pensions"]
