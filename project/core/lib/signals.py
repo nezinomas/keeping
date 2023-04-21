@@ -65,12 +65,15 @@ class SignalBase(ABC):
             return df
 
         return (
-            df.with_columns(
+            df
+            .lazy()
+            .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
             .groupby(["id", "year"])
             .agg(pl.all().sum())
             .sort(["year", "id"])
+            .collect()
         )
 
     def _make_have(self, have: list[dict]) -> DF:
