@@ -323,13 +323,17 @@ class Savings(SignalBase):
             return 0
 
     def _calc_percent(self, df):
-        df = df.with_columns(
-            profit_proc=Savings.calc_percent(
-                pl.col("market_value"), pl.col("invested")
-            ).fill_nan(0)
-        ).with_columns(
-            profit_proc=pl.when(pl.col("profit_proc").is_infinite())
-            .then(0)
-            .otherwise(pl.col("profit_proc"))
+        df = (
+            df
+            .lazy()
+            .with_columns(
+                profit_proc=Savings.calc_percent(
+                    pl.col("market_value"), pl.col("invested")
+                ).fill_nan(0)
+            ).with_columns(
+                profit_proc=pl.when(pl.col("profit_proc").is_infinite())
+                .then(0)
+                .otherwise(pl.col("profit_proc"))
+            )
         )
         return df
