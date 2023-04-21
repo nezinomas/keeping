@@ -30,17 +30,20 @@ def setup_view(view, request, *args, **kwargs):
     return view
 
 
-def timer(func):
-    @functools.wraps(func)
-    def wrap_func(*args, **kwargs):
-        start = time.perf_counter()
-        return_value = func(*args, **kwargs)
-        end = time.perf_counter()
-        total = end - start
-        print(f"Finished function: {func.__name__} in {total:.4f} sec")
-        return return_value
-
-    return wrap_func
+def timer(*a, **kw):
+    def timer_innder(func):
+        @functools.wraps(func)
+        def wrap_func(*args, **kwargs):
+            items = []
+            for _ in range(kw.get('iterations', 3)):
+                start = time.perf_counter()
+                return_value = func(*args, **kwargs)
+                end = time.perf_counter()
+                items.append(end - start)
+            print(f"Finished function: {func.__name__} average: {(sum(items) / len(items)):.4f} sec.\nRaw data: {items}")
+            return return_value
+        return wrap_func
+    return timer_innder
 
 
 class Timer:
