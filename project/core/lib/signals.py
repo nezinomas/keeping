@@ -267,7 +267,9 @@ class Savings(SignalBase):
 
     def _calc_past(self, df: DF) -> pl.Expr:
         df = (
-            df.with_columns(tmp=pl.col("per_year_incomes").cumsum().over("id"))
+            df
+            .lazy()
+            .with_columns(tmp=pl.col("per_year_incomes").cumsum().over("id"))
             .with_columns(
                 past_amount=pl.col("tmp")
                 .shift_and_fill(periods=1, fill_value=0)
