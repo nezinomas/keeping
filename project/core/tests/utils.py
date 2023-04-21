@@ -40,7 +40,7 @@ def timer(*a, **kw):
                 return_value = func(*args, **kwargs)
                 end = time.perf_counter()
                 items.append(end - start)
-            print(f"Finished function: {func.__name__} average: {(sum(items) / len(items)):.4f} sec.\nRaw data: {items}")
+            print(f"Finished function: <{func.__name__}>\nFull: {sum(items):.4f}, Average: {(sum(items) / len(items)):.4f} sec.\nRaw data: {items}")
             return return_value
         return wrap_func
     return timer_innder
