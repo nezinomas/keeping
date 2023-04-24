@@ -15,8 +15,8 @@
                 {% if target == 'lend' %}{% translate 'Borrower' %}{% endif %}
                 {% if target == 'borrow' %}{% translate 'Lender' %}{% endif %}
             </th>
-            <th class="w10 text-end">{% translate 'Sum' %}</th>
-            <th class="w10 text-start">{% translate 'Account' %}</th>
+            <th class="w10 text-end cell-padding">{% translate 'Sum' %}</th>
+            <th class="w10 text-start cell-padding">{% translate 'Account' %}</th>
             <th class="text-start">{% translate 'Remark' %}</th>
             <th class="text-center w3">{% translate 'Closed' %}</th>
             <th colspan="2"></th>
@@ -29,8 +29,8 @@
         <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#dialog" class="{% ifchanged object.debt.name or ifchanged object.debt.closed %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
             <td class="text-center">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-center">{{ object.debt.name }}</td>
-            {% table_cell value=object.price|price css_class="text-end" %}
-            <td class="text-start">{{ object.account }}</td>
+            {% table_cell value=object.price|price css_class="text-endcell-padding" %}
+            <td class="text-start cell-padding">{{ object.account }}</td>
             <td class="text-start">{{ object.remark }}</td>
             <td class="text-center">{% if object.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
             {% if not object.debt.closed %}
