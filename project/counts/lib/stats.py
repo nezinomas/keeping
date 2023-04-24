@@ -42,11 +42,13 @@ class Stats:
 
         df = (
             self._insert_empty_rows(self._df)
+            .lazy()
             .fill_null(0)
             .groupby(pl.col("date").dt.weekday() - 1)
             .agg(pl.col("qty").sum())
             .rename({"date": "weekday", "qty": "count"})
             .sort("weekday")
+            .collect()
         )
         return df.to_dicts()
 
@@ -57,10 +59,12 @@ class Stats:
 
         df = (
             self._insert_empty_rows(self._df)
+            .lazy()
             .fill_null(0)
             .groupby(pl.col("date").dt.month())
             .agg(pl.col("qty").sum())
             .sort("date")
+            .collect()
         )
         return df["qty"].to_list()
 
@@ -104,9 +108,12 @@ class Stats:
             return 0 if self._year else {}
 
         df = (
-            self._df.groupby(pl.col("date").dt.year())
+            self._df
+            .lazy()
+            .groupby(pl.col("date").dt.year())
             .agg(pl.col("qty").sum())
             .sort("date")
+            .collect()
         )
 
         if self._year:
@@ -122,7 +129,14 @@ class Stats:
         if df.is_empty():
             return {}
 
-        df = df.groupby("duration").agg(pl.col("qty").count()).sort("duration")
+        df = (
+            df
+            .lazy()
+            .groupby("duration")
+            .agg(pl.col("qty").count())
+            .sort("duration")
+            .collect()
+        )
         return {x["duration"]: x["qty"] for x in df.to_dicts()}
 
     def _make_dataframe(self, data):
@@ -161,9 +175,12 @@ class Stats:
             return df
 
         return (
-            self._df.with_columns((pl.col("date").diff().dt.days()).alias("duration"))
+            self._df
+            .lazy()
+            .with_columns((pl.col("date").diff().dt.days()).alias("duration"))
             .fill_null(0)
             .sort("date")
+            .collect()
             .pipe(first_gap)
         )
 
