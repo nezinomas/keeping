@@ -11,14 +11,14 @@
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
-            <th class="w5 text-start">{% translate 'Date' %}</th>
-            <th class="w8 text-start">
+            <th class="w5 text-center">{% translate 'Date' %}</th>
+            <th class="w8 text-center">
                 {% if target == 'lend' %}{% translate 'Borrower' %}{% endif %}
                 {% if target == 'borrow' %}{% translate 'Lender' %}{% endif %}
             </th>
-            <th class="w5 text-start">{% translate 'Sum' %}</th>
-            <th class="w5 text-start">{% translate 'Returned' %}</th>
-            <th class="w10 text-start">{% translate 'Account' %}</th>
+            <th class="w5 text-end cell-padding">{% translate 'Sum' %}</th>
+            <th class="w5 text-end cell-padding">{% translate 'Returned' %}</th>
+            <th class="w10 text-start cell-padding">{% translate 'Account' %}</th>
             <th class="text-start">{% translate 'Remark' %}</th>
             <th class="text-center w3">{% translate 'Closed' %}</th>
             <th colspan="2"></th>
@@ -31,9 +31,9 @@
         <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#dialog">
             {% table_cell value=object.date|date:"Y-m-d" css_class="text-center" %}
             {% table_cell value=object.name css_class="text-center" %}
-            {% table_cell value=object.price|price css_class="text-center" %}
-            {% table_cell value=object.returned|price css_class="text-center" %}
-            <td class="text-start">{{ object.account }}</td>
+            {% table_cell value=object.price|price css_class="text-end cell-padding" %}
+            {% table_cell value=object.returned|price css_class="text-end cell-padding" %}
+            <td class="text-start cell-padding">{{ object.account }}</td>
             <td class="text-start">{{ object.remark }}</td>
             <td class="text-center">{% if object.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
             {% edit_cell url=url_update %}

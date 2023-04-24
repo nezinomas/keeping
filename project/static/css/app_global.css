@@ -241,6 +241,10 @@ div[class*="col"]>h6 {
     border-left: 5px solid red !important;
 }
 
+.table td.cell-padding, .table th.cell-padding {
+    padding-right: .35rem!important;
+    padding-left: .35rem!important;
+}
 
 /*
                                                                     Month View
