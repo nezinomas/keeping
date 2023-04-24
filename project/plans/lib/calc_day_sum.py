@@ -142,10 +142,12 @@ class PlanCalculateDaySum:
 
         return (
             pl.DataFrame(data)
+            .lazy()
             .sum()
             .pipe(insert_missing_columns)
             .with_columns(pl.all().cast(pl.Int32))
             .with_columns(pl.lit(name).alias("name"))
+            .collect()
         )
 
     def _create_df(self) -> DF:
@@ -173,6 +175,7 @@ class PlanCalculateDaySum:
         df = (
             df.transpose(include_header=False, column_names=df["name"])
             .limit(12)
+            .lazy()
             .with_columns(pl.all().cast(pl.Int32))
             .with_columns((
                 pl.col("expenses_necessary")
@@ -193,6 +196,7 @@ class PlanCalculateDaySum:
                 - (pl.col("day_input") * pl.col("month_len")))
                 .alias("remains")
             )
+            .collect()
             .transpose(
                 include_header=True, header_name="name", column_names=self.std_columns
             )
