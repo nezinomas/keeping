@@ -177,24 +177,23 @@ class PlanCalculateDaySum:
             .limit(12)
             .lazy()
             .with_columns(pl.all().cast(pl.Int32))
-            .with_columns((
-                pl.col("expenses_necessary")
-                + pl.col("savings")
-                + pl.col("necessary"))
-                .alias("expenses_necessary")
+            .with_columns(
+                expenses_necessary=(
+                    pl.lit(0)
+                    + pl.col("expenses_necessary")
+                    + pl.col("savings")
+                    + pl.col("necessary")
+                )
             )
             .with_columns(
-                (pl.col("incomes") - pl.col("expenses_necessary"))
-                .alias("expenses_free")
+                expenses_free=(pl.col("incomes") - pl.col("expenses_necessary"))
             )
+            .with_columns(day_calced=(pl.col("expenses_free") / pl.col("month_len")))
             .with_columns(
-                (pl.col("expenses_free") / pl.col("month_len"))
-                .alias("day_calced")
-            )
-            .with_columns((
-                pl.col("expenses_free")
-                - (pl.col("day_input") * pl.col("month_len")))
-                .alias("remains")
+                remains=(
+                    pl.col("expenses_free")
+                    - (pl.col("day_input") * pl.col("month_len"))
+                )
             )
             .collect()
             .transpose(
