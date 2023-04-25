@@ -182,10 +182,11 @@ def test_view(client_logged):
     AccountWorthFactory(date=datetime(1111, 1, 1, tzinfo=pytz.utc), price=2)
     AccountWorthFactory(date=datetime(1999, 2, 2, tzinfo=pytz.utc), price=555)
 
-    url = reverse("bookkeeping:index")
+    url = reverse("bookkeeping:accounts")
     response = client_logged.get(url)
 
-    actual = response.context["accounts"]
+    actual = response.content.decode("utf-8")
+
     assert 'title="1999 m. vasario 2 d., 00:00"' in actual
     assert "5,55" in actual
 
@@ -193,10 +194,10 @@ def test_view(client_logged):
 def test_view_last_check_empty(client_logged):
     AccountBalanceFactory()
 
-    url = reverse("bookkeeping:index")
+    url = reverse("bookkeeping:accounts")
     response = client_logged.get(url)
 
-    actual = response.context["accounts"]
+    actual = response.content.decode("utf-8")
 
     assert 'data-bs-title="Nenurodyta"' in actual
     assert "20" in actual

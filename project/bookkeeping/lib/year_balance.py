@@ -96,7 +96,9 @@ class YearBalance(BalanceBase):
             return df
 
         df = (
-            df.sort("date")
+            df
+            .lazy()
+            .sort("date")
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
             .with_columns(
                 money_flow=(
@@ -110,7 +112,9 @@ class YearBalance(BalanceBase):
                     - pl.col("lend")
                 )
             )
+            .collect()
             .pipe(add_amount_start_to_money_flow_first_cell)
+            .lazy()
             .with_columns(pl.col("money_flow").cumsum())
         )
-        return df
+        return df.collect()

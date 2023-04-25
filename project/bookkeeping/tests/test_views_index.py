@@ -25,11 +25,6 @@ def test_view_index_context(client_logged):
     response = client_logged.get(url)
 
     assert "year" in response.context
-    assert "accounts" in response.context
-    assert "savings" in response.context
-    assert "pensions" in response.context
-    assert "wealth" in response.context
-    assert "no_incomes" in response.context
     assert "balance" in response.context
     assert "balance_short" in response.context
     assert "expenses" in response.context
@@ -51,10 +46,4 @@ def test_view_index_regenerate_buttons(client_logged):
     url = reverse("core:regenerate_balances")
 
     assert f'hx-get="{ url }"' in content
-    assert f'hx-get="{ url }?type=accounts"' in content
-    assert f'hx-get="{ url }?type=savings"' in content
-    assert f'hx-get="{ url }?type=pensions"' in content
-
     assert "Bus atnaujinti visų metų balansai." in content
-    assert "Bus atnaujinti tik šios lentelės balansai." in content
-    assert content.count("Bus atnaujinti tik šios lentelės balansai.") == 3

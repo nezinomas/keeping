@@ -65,12 +65,15 @@ class SignalBase(ABC):
             return df
 
         return (
-            df.with_columns(
+            df
+            .lazy()
+            .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
             .groupby(["id", "year"])
             .agg(pl.all().sum())
             .sort(["year", "id"])
+            .collect()
         )
 
     def _make_have(self, have: list[dict]) -> DF:
@@ -203,12 +206,13 @@ class Accounts(SignalBase):
     def _join_df(self, df: DF, hv: DF) -> DF:
         df = (
             df.join(hv, on=["id", "year"], how="outer")
+            .lazy()
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
             .sort(["year", "id"])
         )
-        return df
+        return df.collect()
 
 
 class Savings(SignalBase):
@@ -266,7 +270,9 @@ class Savings(SignalBase):
 
     def _calc_past(self, df: DF) -> pl.Expr:
         df = (
-            df.with_columns(tmp=pl.col("per_year_incomes").cumsum().over("id"))
+            df
+            .lazy()
+            .with_columns(tmp=pl.col("per_year_incomes").cumsum().over("id"))
             .with_columns(
                 past_amount=pl.col("tmp")
                 .shift_and_fill(periods=1, fill_value=0)
@@ -300,13 +306,16 @@ class Savings(SignalBase):
         ]
 
         return (
-            inc.join(exp, on=["id", "year"], how="outer")
+            inc
+            .join(exp, on=["id", "year"], how="outer")
             .join(hv, on=["id", "year"], how="outer")
+            .lazy()
             .rename({"have": "market_value"})
             .with_columns(
                 pl.exclude(["id", "year", "latest_check", "market_value"]).fill_null(0)
             )
             .with_columns([pl.lit(0).alias(col) for col in cols])
+            .collect()
         )
 
     @staticmethod
@@ -317,13 +326,17 @@ class Savings(SignalBase):
             return 0
 
     def _calc_percent(self, df):
-        df = df.with_columns(
-            profit_proc=Savings.calc_percent(
-                pl.col("market_value"), pl.col("invested")
-            ).fill_nan(0)
-        ).with_columns(
-            profit_proc=pl.when(pl.col("profit_proc").is_infinite())
-            .then(0)
-            .otherwise(pl.col("profit_proc"))
+        df = (
+            df
+            .lazy()
+            .with_columns(
+                profit_proc=Savings.calc_percent(
+                    pl.col("market_value"), pl.col("invested")
+                ).fill_nan(0)
+            ).with_columns(
+                profit_proc=pl.when(pl.col("profit_proc").is_infinite())
+                .then(0)
+                .otherwise(pl.col("profit_proc"))
+            )
         )
         return df

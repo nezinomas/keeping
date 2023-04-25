@@ -56,15 +56,6 @@ def test_types_update_func():
     assert views.TypeUpdate == view.func.view_class
 
 
-def test_incomes_index_context(client_logged):
-    url = reverse("incomes:index")
-    response = client_logged.get(url)
-    context = response.context
-
-    assert "income" in context
-    assert "income_type" in context
-
-
 @time_machine.travel("2000-01-01")
 def test_income_load_form(client_logged):
     url = reverse("incomes:new")
@@ -384,9 +375,6 @@ def test_view_index_200(client_logged):
     response = client_logged.get("/incomes/")
 
     assert response.status_code == 200
-
-    assert "income" in response.context
-    assert "income_type" in response.context
 
 
 # ---------------------------------------------------------------------------------------
