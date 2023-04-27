@@ -1,7 +1,5 @@
 function chartCalender (idData, idContainer) {
-    const chartData = JSON.parse(
-        document.getElementById(idData).textContent
-    );
+    const chartData = JSON.parse(document.getElementById(idData).textContent);
     const ratio = chartData.ratio || 2.5;
 
     Highcharts.chart(idContainer, {
