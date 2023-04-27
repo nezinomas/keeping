@@ -109,10 +109,11 @@ function chartCalender (idData, idContainer) {
     tooltip: {
     	useHTML: true,
       formatter: function () {
-        if(this.point.value==0) return false;
+        if (this.point.value==0) {
+          return false;
+        }
         var s = this.point.date;
-        if(this.point.value >= 0.1)
-        {
+        if(this.point.value >= 0.1) {
         	s += `<div class="gap">${chartData.text.gap} ${this.point.gap}d.</div>`;
           s += `<div class="qty">${chartData.text.quantity} ${this.point.qty.toFixed(1)}</div>`;
         }
@@ -132,13 +133,15 @@ function chartCalender (idData, idContainer) {
           crop: false,
           overflow: 'allow',
           formatter: function() {
-            if(this.point.y == 6 || this.point.y == 16)
+            if(this.point.y == 6 || this.point.y == 16) {
               return this.point.week;
-            else
+            }
+            else {
               return null;
+            }
           },
           style: {
-            fontSize: '9px',
+            fontSize: '10px',
             color: '#999999',
             fontWeight: 'normal',
             textOutline: 'none'
