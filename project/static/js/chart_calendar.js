@@ -9,30 +9,27 @@ function chartCalender (idData, idContainer) {
         plotBorderWidth: 0,
         height: 200,
         events: {
-        		/*
-            show the month name (series.name) as label of every block
-            add text element to the BBox - using SVGRenderer
-            */
-            load: function() {
-                var series = this.series;
-                var bbox;
-                series.forEach(function(s) {
-                    bbox = s.dataLabelsGroup.getBBox(true);
-                    this.renderer.text(
-                            s.name,
-                            bbox.x + this.plotLeft + bbox.width / 2,
-                            bbox.height + 20
-                        )
-                        .attr({
-                            align: 'center'
-                        })
-                        .css({
-                            color: '#666666',
-                            fontSize: '11px'
-                        })
-                        .add();
-                }, this);
-            }
+          _load: function () {
+            let {series} = this;
+            let bbox;
+            series.forEach(function (serie) {
+              bbox = serie.dataLabelsGroup.getBBox(true);
+              this.renderer.text(
+                serie.name,
+                bbox.x + this.plotLeft + bbox.width / 2,
+                bbox.height + 20
+              )
+              .attr({align: 'center'})
+              .css({color: '#666666', fontSize: '11px'})
+              .add();
+            }, this);
+          },
+          get load() {
+            return this._load;
+          },
+          set load(value) {
+            this._load = value;
+          },
         }
     },
     title: {
