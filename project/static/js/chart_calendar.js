@@ -9,27 +9,25 @@ function chartCalender (idData, idContainer) {
         plotBorderWidth: 0,
         height: 200,
         events: {
-          _load: function () {
-            let {series} = this;
-            let bbox;
-            series.forEach(function (serie) {
-              bbox = serie.dataLabelsGroup.getBBox(true);
-              this.renderer.text(
-                serie.name,
-                bbox.x + this.plotLeft + bbox.width / 2,
-                bbox.height + 20
-              )
-              .attr({align: 'center'})
-              .css({color: '#666666', fontSize: '11px'})
-              .add();
-            }, this);
-          },
-          get load() {
-            return this._load;
-          },
-          set load(value) {
-            this._load = value;
-          },
+            _load: function () {
+                this.series.forEach(function (serie) {
+                    let bbox = serie.dataLabelsGroup.getBBox(true);
+                    this.renderer.text(
+                        serie.name,
+                        bbox.x + this.plotLeft + bbox.width / 2,
+                        bbox.height + 20
+                    )
+                    .attr({align: 'center'})
+                    .css({color: '#666666', fontSize: '11px'})
+                    .add();
+                    }, this);
+                },
+            get load() {
+                return this._load;
+            },
+            set load(value) {
+                this._load = value;
+            },
         }
     },
     title: {
