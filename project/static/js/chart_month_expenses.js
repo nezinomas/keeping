@@ -1,5 +1,5 @@
 function chartExpensesOnly(idData, idContainer) {
-    var chartData = JSON.parse(document.getElementById(idData).textContent);
+    const chartData = JSON.parse(document.getElementById(idData).textContent);
 
     // convert data
     for (var key in chartData) {
@@ -45,6 +45,7 @@ function chartExpensesOnly(idData, idContainer) {
         plotOptions: {
             series: {
                 borderWidth: 0,
+                colorByPoint: true,
                 dataLabels: {
                     enabled: true,
                     format: '{point.y:.1f}'
