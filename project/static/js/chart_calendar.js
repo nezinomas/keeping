@@ -54,18 +54,18 @@ function chartCalender (idData, idContainer) {
     },
 
     yAxis: {
-    		type: 'category',
+        type: 'category',
         categories: chartData.categories,
         title: null,
         reversed: true,
         lineWidth: 0,
         gridLineWidth: 0,
         minorGridLineWidth: 0,
-				minTickInterval: 1,
+        minTickInterval: 1,
         labels: {
-        	style: {
-            fontSize: '9px'
-          }
+            style: {
+                fontSize: '9px'
+            }
         },
     },
 
@@ -90,7 +90,7 @@ function chartCalender (idData, idContainer) {
     },
 
     legend: {
-    		enabled: false,
+        enabled: false,
         verticalAlign: 'bottom',
         layout: 'horizontal',
         margin: 30,
@@ -102,21 +102,21 @@ function chartCalender (idData, idContainer) {
     },
 
     tooltip: {
-      style: {
-        fontSize: '12px',
-      },
-    	useHTML: true,
-      formatter: function () {
-        if (this.point.value==0) {
-          return false;
+        style: {
+            fontSize: '12px',
+        },
+        useHTML: true,
+        formatter: function () {
+            if (this.point.value==0) {
+                return false;
+            }
+            var s = this.point.date;
+            if(this.point.value >= 0.1) {
+                s += `<div class="gap">${chartData.text.gap} ${this.point.gap}d.</div>`;
+                s += `<div class="qty">${chartData.text.quantity} ${this.point.qty.toFixed(1)}</div>`;
+            }
+            return s;
         }
-        var s = this.point.date;
-        if(this.point.value >= 0.1) {
-        	s += `<div class="gap">${chartData.text.gap} ${this.point.gap}d.</div>`;
-          s += `<div class="qty">${chartData.text.quantity} ${this.point.qty.toFixed(1)}</div>`;
-        }
-        return s;
-      }
     },
 
     plotOptions: {
