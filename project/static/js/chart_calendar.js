@@ -107,6 +107,9 @@ function chartCalender (idData, idContainer) {
     },
 
     tooltip: {
+      style: {
+        fontSize: '12px',
+      },
     	useHTML: true,
       formatter: function () {
         if (this.point.value==0) {
