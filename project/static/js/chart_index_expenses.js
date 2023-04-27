@@ -1,7 +1,5 @@
 $(function () {
-    var chartData = JSON.parse(
-        document.getElementById('chart-expenses-data').textContent
-    );
+    const chartData = JSON.parse(document.getElementById('chart-expenses-data').textContent);
     // convert data
     for (var key in chartData) {
         chartData[key]['y'] /= 100;
@@ -48,8 +46,8 @@ $(function () {
         tooltip: {
             shared: true,
             formatter: function () {
-                var rtn = '';
-                var pcnt = ((this.points[0].y / this.points[0].series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100);
+                let rtn = '';
+                const pcnt = ((this.points[0].y / this.points[0].series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100);
                 rtn = '<b>' + this.points[0].key + '</b>';
                 rtn += '<br>' + Highcharts.numberFormat(this.points[0].y, 0) + '€<br>';
                 rtn += Highcharts.numberFormat(pcnt, 1) + '%';
@@ -76,7 +74,7 @@ $(function () {
                     textOutline: false
                 },
                 formatter: function() {
-                    var pcnt = (this.y / this.series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100;
+                    const pcnt = (this.y / this.series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100;
                     return Highcharts.numberFormat(pcnt, 1) + '%';
                 },
             }
