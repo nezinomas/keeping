@@ -72,10 +72,10 @@ function chartCalender (idData, idContainer) {
             max: 10,
             stops: [
                 [0,   '#ffffff'],	 /* empty cell */
-                [0.001, '#f4f4f4'],  /* day without record */
-                [0.002, '#dfdfdf'],  /* saturday */
-                [0.003, '#c3c4c2'],  /*	sunday */
-                [0.005, '#c9edff'],  /*	current day */
+                [0.00001, '#f4f4f4'],  /* day without record */
+                [0.00002, '#dfdfdf'],  /* saturday */
+                [0.00003, '#c3c4c2'],  /*	sunday */
+                [0.00005, '#c9edff'],  /*	current day */
                 [0.01, '#58a70f'],
                 [0.4, '#FFFE55'],
                 [0.6, '#F5C142'],

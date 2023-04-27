@@ -219,6 +219,6 @@ class Stats:
 
         # current day -> #c9edff
         if dt == self._now_date:
-            return 0.05  # highlight current day
+            return 0.0005  # highlight current day
 
-        return (0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.03)[weekday]
+        return (0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0003)[weekday]
