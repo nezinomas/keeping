@@ -9,7 +9,11 @@ function chartCalender (idData, idContainer) {
         plotBorderWidth: 0,
         height: 200,
         events: {
-            _load: function () {
+            /*
+                show the month name (series.name) as label of every block
+                add text element to the BBox - using SVGRenderer
+            */
+            load: function () {
                 this.series.forEach(function (serie) {
                     let bbox = serie.dataLabelsGroup.getBBox(true);
                     this.renderer.text(
@@ -20,14 +24,8 @@ function chartCalender (idData, idContainer) {
                     .attr({align: 'center'})
                     .css({color: '#666666', fontSize: '11px'})
                     .add();
-                    }, this);
-                },
-            get load() {
-                return this._load;
-            },
-            set load(value) {
-                this._load = value;
-            },
+                }, this);
+            }
         }
     },
     title: {
@@ -46,9 +44,9 @@ function chartCalender (idData, idContainer) {
     		opposite: true,
         labels: {
         	/*
-          don't show the axis label : it's the category id
-          see plotOptions -> dataLabels to show the week number
-          */
+            don't show the axis label : it's the category id
+            see plotOptions -> dataLabels to show the week number
+            */
         	enabled: false
         }
     },
