@@ -46,12 +46,12 @@ $(function () {
         tooltip: {
             shared: true,
             formatter: function () {
-                let rtn = '';
                 const pcnt = ((this.points[0].y / this.points[0].series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100);
-                rtn = '<b>' + this.points[0].key + '</b>';
-                rtn += '<br>' + Highcharts.numberFormat(this.points[0].y, 0) + '€<br>';
-                rtn += Highcharts.numberFormat(pcnt, 1) + '%';
-                return rtn;
+                return `
+                    <b>${this.points[0].key}</b><br>
+                    ${Highcharts.numberFormat(this.points[0].y, 0)}€<br>
+                    ${Highcharts.numberFormat(pcnt, 1)}%
+                `;
             }
         },
         plotOptions: {
