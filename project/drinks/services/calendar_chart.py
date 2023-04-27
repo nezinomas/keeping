@@ -5,8 +5,9 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.translation import weekday_names
 from ...counts.lib.stats import Stats as CountStats
-from ..managers import DrinkQuerySet
 from ..lib.drinks_options import DrinksOptions
+from ..managers import DrinkQuerySet
+
 
 @dataclass
 class CalendarChart:
