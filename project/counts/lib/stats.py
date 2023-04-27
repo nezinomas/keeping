@@ -215,7 +215,7 @@ class Stats:
         # other days 0-5 -> #f4f4f4
         # float convert to color code in chart_calendar.js
         if not dt:
-            return 0.0
+            return 0
 
         # current day -> #c9edff
         if dt == self._now_date:
