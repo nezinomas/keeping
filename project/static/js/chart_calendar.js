@@ -76,7 +76,7 @@ function chartCalender (idData, idContainer) {
                 [0.00002, '#dfdfdf'],  /* saturday */
                 [0.00003, '#c3c4c2'],  /*	sunday */
                 [0.00005, '#c9edff'],  /*	current day */
-                [0.01, '#58a70f'],
+                [0.1, '#58a70f'],
                 [0.4, '#FFFE55'],
                 [0.6, '#F5C142'],
                 [0.8, '#DF8244'],
