@@ -478,7 +478,7 @@ def test_index_chart_calendar_gap_from_previous_year(client_logged):
     context = response.context
     chart_data = context["chart_calendar_1H"]["data"][0]["data"]
 
-    assert chart_data[4] == [0, 4, 0.05, 53, "1999-01-01"]
+    assert chart_data[4] == [0, 4, 0.0005, 53, "1999-01-01"]
     assert chart_data[5] == [0, 5, 1.0, 53, "1999-01-02", 1.0, 366.0]
 
 

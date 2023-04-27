@@ -229,7 +229,7 @@ def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
     response = client_logged.get(url)
     context = response.context['chart_calendar_1H']['data'][0]['data']
 
-    assert context[4] == [0, 4, 0.05, 53, '1999-01-01']
+    assert context[4] == [0, 4, 0.0005, 53, '1999-01-01']
     assert context[5] == [0, 5, 1.0, 53, '1999-01-02', 1.0, 366.0]
 
 
