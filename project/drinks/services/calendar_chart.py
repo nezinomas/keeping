@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from ...core.lib.translation import weekday_names
 from ...counts.lib.stats import Stats as CountStats
 from ..managers import DrinkQuerySet
-
+from ..lib.drinks_options import DrinksOptions
 
 @dataclass
 class CalendarChart:
@@ -28,6 +28,7 @@ class CalendarChart:
         return {
             "data": data,
             "categories": [x[0] for x in list(weekday_names().values())],
+            "ratio": DrinksOptions().stdav,
             "text": {
                 "gap": _("Gap"),
                 "quantity": _("Quantity"),
