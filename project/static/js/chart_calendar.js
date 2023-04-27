@@ -109,7 +109,7 @@ function chartCalender (idData, idContainer) {
                     return false;
                 }
                 let s = this.point.date;
-                if(this.point.value >= 0.1) {
+                if(this.point.value >= 0.0001) {
                     s += `<div class="gap">${chartData.text.gap} ${this.point.gap}d.</div>`;
                     s += `<div class="qty">${chartData.text.quantity} ${this.point.qty.toFixed(1)}</div>`;
                 }
