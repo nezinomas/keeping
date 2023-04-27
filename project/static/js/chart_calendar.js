@@ -2,6 +2,7 @@ function chartCalender (idData, idContainer) {
     const chartData = JSON.parse(
         document.getElementById(idData).textContent
     );
+    const ratio = chartData.ratio || 2.5;
 
     Highcharts.chart(idContainer, {
         chart: {
@@ -72,15 +73,15 @@ function chartCalender (idData, idContainer) {
             max: 10,
             stops: [
                 [0,   '#ffffff'],	 /* empty cell */
-                [0.001, '#f4f4f4'],  /* day without record */
-                [0.002, '#dfdfdf'],  /* saturday */
-                [0.003, '#c3c4c2'],  /*	sunday */
-                [0.005, '#c9edff'],  /*	current day */
-                [0.01, '#58a70f'],
-                [0.4, '#FFFE55'],
-                [0.6, '#F5C142'],
-                [0.8, '#DF8244'],
-                [1, '#B02418']
+                [0.00001, '#f4f4f4'],  /* day without record */
+                [0.00002, '#dfdfdf'],  /* saturday */
+                [0.00003, '#c3c4c2'],  /*	sunday */
+                [0.00005, '#c9edff'],  /*	current day */
+                [0.25 / ratio, '#58a70f'],
+                [1.0 / ratio, '#FFFE55'],
+                [1.5 / ratio, '#F5C142'],
+                [2.0 / ratio, '#DF8244'],
+                [2.5 / ratio, '#B02418']
             ],
             labels: {
                 enabled: true
@@ -109,7 +110,7 @@ function chartCalender (idData, idContainer) {
                     return false;
                 }
                 let s = this.point.date;
-                if(this.point.value >= 0.1) {
+                if(this.point.value >= 0.0001) {
                     s += `<div class="gap">${chartData.text.gap} ${this.point.gap}d.</div>`;
                     s += `<div class="qty">${chartData.text.quantity} ${this.point.qty.toFixed(1)}</div>`;
                 }
