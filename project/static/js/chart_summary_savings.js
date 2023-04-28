@@ -1,8 +1,8 @@
 function annotationLabels(list) {
     list.forEach(function (element, index, list) {
-        var val = Math.round(element);
+        let val = Math.round(element);
         list[index] = {
-            point: {xAxis: 0, yAxis:0, x: index, y: val},
+            point: { xAxis: 0, yAxis: 0, x: index, y: val },
             text: Highcharts.numberFormat(val, 0),
         };
     });
@@ -92,8 +92,8 @@ function chartSavings(container) {
         tooltip: {
             pointFormat: '{point.y:,.0f}',
             formatter: function () {
-                var sum = 0;
-                var series = this.series.chart.series;
+                let sum = 0;
+                let {series} = this.series.chart;
                 for (i in [1,2]) {
                     sum += series[i].yData[this.point.x];
                 }
@@ -151,10 +151,10 @@ function chartSavings(container) {
         }]
     }, function (chartObj) {
         // paint in red negative profit
-        var series = chartObj.series[0];
+        let series = chartObj.series[0];
         $.each(series.data, function (i, point) {
-                if (point.negative) {
-                var c = '#c0504d';
+            if (point.negative) {
+                let c = '#c0504d';
                 point.color = c; /* + tooltip border color */
                 point.graphic.css({stroke: c, color: 'rgba(192,80,77,0.5)'});
                 point.dataLabel.css({ color: c });
