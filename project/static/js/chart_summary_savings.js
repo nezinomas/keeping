@@ -113,6 +113,7 @@ function chartSavings(container) {
             color: 'rgba(84,130,53,0.5)',
             borderColor: '#548235',
             borderWidth: '0.5',
+            borderRadius: 0,
             dataLabels: {
                 enabled: true,
                 formatter: function () {
@@ -134,6 +135,7 @@ function chartSavings(container) {
             color: 'rgba(222,176,40,0.5)',
             borderColor: '#bf8f00',
             borderWidth: '0.5',
+            borderRadius: 0,
             dataLabels: {
                 enabled: true,
                 verticalAlign: 'top',
