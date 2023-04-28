@@ -87,6 +87,7 @@ function chartExpensesTarget(idData, idContainer) {
             opacity: '0.7',
             data: chartData.fact,
             pointWidth: 13,
+            borderRadius: 0,
             targetOptions: {
                 borderWidth: 0,
                 height: 2,

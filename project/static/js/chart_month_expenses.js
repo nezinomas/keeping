@@ -63,6 +63,7 @@ function chartExpensesOnly(idData, idContainer) {
         series: [
             {
                 data: chartData,
+                borderRadius: 0,
                 dataLabels: {
                     enabled: true,
                     rotation: 0,
