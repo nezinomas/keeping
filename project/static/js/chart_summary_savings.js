@@ -117,10 +117,12 @@ function chartSavings(container) {
             dataLabels: {
                 enabled: true,
                 formatter: function () {
-                    if (this.y == 0) {
+                    let val = Highcharts.numberFormat(this.y, 0)
+                    if (val == 0) {
                         return '';
                     } else {
-                        return `${Highcharts.numberFormat(this.y, 0)}`;
+                        let color = (val < 0) ? '#c0504d' : '#548235';
+                        return `<span style="color:${color};">${val}</span>`;
                     }
                 },
                 style: {
@@ -157,7 +159,7 @@ function chartSavings(container) {
                 let c = '#c0504d';
                 point.color = c; /* + tooltip border color */
                 point.graphic.css({stroke: c, color: 'rgba(192,80,77,0.5)'});
-                point.dataLabel.css({ color: c });
+                // point.dataLabel.css({ color: c });
             }
         });
     });
