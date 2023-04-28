@@ -15,7 +15,7 @@ htmx.on("htmx:afterSwap", (e) => {
 htmx.on("htmx:beforeSwap", (e) => {
     if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
         /* find submit button id */
-        var subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id;
+        let subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id;
 
         /* remove error messages */
         $('.invalid-feedback').remove();
@@ -28,15 +28,25 @@ htmx.on("htmx:beforeSwap", (e) => {
             const remark = $('#id_remark');
             const exception = $('#id_exception');
 
-            if (price) price.val('0.0');
+            if (price) {
+                price.val('0.0');
+            }
 
-            if (qty) qty.val('1');
+            if (qty) {
+                qty.val('1');
+            }
 
-            if (title) title.val('');
+            if (title) {
+                title.val('');
+            }
 
-            if (remark) remark.val('');
+            if (remark) {
+                remark.val('');
+            }
 
-            if (exception) exception.prop('checked', false);
+            if (exception) {
+                exception.prop('checked', false);
+            }
         }
 
         if(subbmiter == '_close') {
@@ -50,11 +60,13 @@ htmx.on("htmx:beforeSwap", (e) => {
 
 
 $(document).on('hidden.bs.modal', '#modal', function () {
-    var form = $('.form');
-    var trigger_name = form.attr("data-hx-trigger-form");
-    var data_inserted = form.attr('data-hx-inserted');
+    let form = $('.form');
+    let trigger_name = form.attr("data-hx-trigger-form");
+    let data_inserted = form.attr('data-hx-inserted');
 
-    if (trigger_name === 'None' || trigger_name == undefined) return;
+    if (trigger_name === 'None' || trigger_name == undefined) {
+        return;
+    }
 
     if(trigger_name && data_inserted) {
         htmx.trigger("body", trigger_name, { });
