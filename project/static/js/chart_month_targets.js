@@ -1,17 +1,16 @@
 function chartExpensesTarget(idData, idContainer) {
-    var chartData = JSON.parse(document.getElementById(idData).textContent);
+    const chartData = JSON.parse(document.getElementById(idData).textContent);
 
     // convert targets
-    for(var i = 0; i < chartData.target.length; i++) {
+    for(i = 0; i < chartData.target.length; i++) {
         chartData.target[i] /= 100;
     }
 
     // convert data
-    for (var key in chartData.fact) {
+    for (key in chartData.fact) {
         chartData.fact[key]['y'] /= 100;
         chartData.fact[key]['target'] /= 100;
     }
-
 
     Highcharts.chart(idContainer, {
         chart: {
@@ -87,6 +86,7 @@ function chartExpensesTarget(idData, idContainer) {
             opacity: '0.7',
             data: chartData.fact,
             pointWidth: 13,
+            borderRadius: 0,
             targetOptions: {
                 borderWidth: 0,
                 height: 2,
@@ -110,41 +110,26 @@ function chartExpensesTarget(idData, idContainer) {
     ]
     }, function (chartObj) {
         /* align datalabels for expenses that exceeds targets */
-        var series = chartObj.series[1];
-        $.each(series.data, function (i, point) {
-            var max = chartObj.series[0].data[point.x].y;
-            var y = point.y;
+        $.each(chartObj.series[1].data, function (i, point) {
+            let max = chartObj.series[0].data[point.x].y;
+            let {y} = point;
 
             max = parseFloat(max.toFixed(1));
             y = parseFloat(y.toFixed(1));
 
             if (y <= max) {
-                var clr = 'green';
-
-                point.dataLabel.css({color: clr });
-
-                point.color = clr;
-                point.graphic.attr({ fill: clr });
+                color = 'green';
             }
             else {
-                var p = 28;
+                p = 28;
                 if (y < 100) { p = 21; }
                 if (y < 10) { p = -2; }
-
-                var clr_bar = 'red';
-                var clr_label = '#b4010d';
-
-                if(y <= max * 1.1) {
-                    clr_bar = '#ffcc00';
-                    clr_label = '#efbf00';
-                }
-
                 point.dataLabel.attr({ x: point.dataLabel.x + p });
-                point.dataLabel.css({color: clr_label });
 
-                point.color = clr_bar;
-                point.graphic.attr({ fill: clr_bar });
+                color = (y <= max * 1.1) ? '#ffcc00' : 'red';
             }
+            point.color = color;
+            point.graphic.attr({ fill: color });
         });
     });
 };

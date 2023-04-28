@@ -59,6 +59,7 @@ function chartQuantity(idData, idContainer) {
             data: chartData.data,
             pointPadding: 0,
             pointPlacement: 0,
+            borderRadius: 0,
             dataLabels: {
                 enabled: true,
                 rotation: 0,

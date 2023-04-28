@@ -59,6 +59,7 @@ function chartReaded(idData, idContainer) {
             data: chartData.data,
             color: `rgba(${chartData.chart_column_color}, 0.65)`,
             borderColor: `rgba(${chartData.chart_column_color}, 1)`,
+            borderRadius: 0,
             dataLabels: [{
                 enabled: true,
                 color: `rgba(${chartData.chart_column_color}, 1)`,
