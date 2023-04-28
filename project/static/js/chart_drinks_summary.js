@@ -1,7 +1,5 @@
-$(function () {
-    const chartData = JSON.parse(
-        document.getElementById('chart-summary-data').textContent
-    );
+function chart_drinks_summary(idData, idContainer) {
+    const chartData = JSON.parse(document.getElementById(idData).textContent);
 
     Highcharts.setOptions({
         lang: {
@@ -10,7 +8,7 @@ $(function () {
         }
     });
 
-    Highcharts.chart('chart-summary-container', {
+    Highcharts.chart(idContainer, {
         chart: {
             marginBottom: 67,
         },
@@ -116,4 +114,4 @@ $(function () {
             enableMouseTracking: false,
         }],
     });
-});
+};
