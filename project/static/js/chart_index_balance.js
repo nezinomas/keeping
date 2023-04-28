@@ -47,7 +47,9 @@ $(function () {
         yAxis: {
             labels: {
                 formatter: function () {
-                    if (this.value >= 100) return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+                    if (this.value >= 100) {
+                        return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+                    }
                     return Highcharts.numberFormat(this.value, 0);
                 },
                 style: {
