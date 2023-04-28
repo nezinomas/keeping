@@ -118,32 +118,18 @@ function chartExpensesTarget(idData, idContainer) {
             y = parseFloat(y.toFixed(1));
 
             if (y <= max) {
-                clr = 'green';
-
-                point.dataLabel.css({color: clr });
-
-                point.color = clr;
-                point.graphic.attr({ fill: clr });
+                color = 'green';
             }
             else {
                 p = 28;
                 if (y < 100) { p = 21; }
                 if (y < 10) { p = -2; }
-
-                clr_bar = 'red';
-                clr_label = '#b4010d';
-
-                if(y <= max * 1.1) {
-                    clr_bar = '#ffcc00';
-                    clr_label = '#efbf00';
-                }
-
                 point.dataLabel.attr({ x: point.dataLabel.x + p });
-                point.dataLabel.css({color: clr_label });
 
-                point.color = clr_bar;
-                point.graphic.attr({ fill: clr_bar });
+                color = (y <= max * 1.1) ? '#ffcc00' : 'red';
             }
+            point.color = color;
+            point.graphic.attr({ fill: color });
         });
     });
 };
