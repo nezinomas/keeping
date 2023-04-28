@@ -10,6 +10,8 @@ function annotationLabels(list) {
 };
 
 function chartSavings(container) {
+    const positive = '#548235';
+    const negative = '#c0504d';
     const chartData = JSON.parse(document.getElementById(`${container}_data`).textContent);
 
     // convert data
@@ -121,14 +123,13 @@ function chartSavings(container) {
                     if (val == 0) {
                         return '';
                     } else {
-                        let color = (val < 0) ? '#c0504d' : '#548235';
+                        let color = (val < 0) ? negative : positive;
                         return `<span style="color:${color};">${val}</span>`;
                     }
                 },
                 style: {
                     fontWeight: 'bold',
                     textOutline: false,
-                    color: '#548235'
                 },
             }
         }, {
@@ -156,10 +157,8 @@ function chartSavings(container) {
         let series = chartObj.series[0];
         $.each(series.data, function (i, point) {
             if (point.negative) {
-                let c = '#c0504d';
-                point.color = c; /* + tooltip border color */
-                point.graphic.css({stroke: c, color: 'rgba(192,80,77,0.5)'});
-                // point.dataLabel.css({ color: c });
+                point.color = negative; /* + tooltip border color */
+                point.graphic.css({stroke: negative, color: 'rgba(192,80,77,0.5)'});
             }
         });
     });
