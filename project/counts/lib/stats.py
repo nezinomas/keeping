@@ -160,7 +160,7 @@ class Stats:
     def _insert_empty_rows(self, df: DF) -> DF:
         first_date = date(df.head(1)[0, "date"].year, 1, 1)
         last_date = date(df.tail(1)[0, "date"].year, 12, 31)
-        date_range = pl.date_range(first_date, last_date, "1d")
+        date_range = pl.date_range(first_date, last_date, "1d", eager=True)
         df_empty = pl.DataFrame({"date": date_range, "qty": [0.0] * len(date_range)})
         return pl.concat([df, df_empty], how="vertical")
 
