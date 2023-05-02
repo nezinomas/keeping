@@ -92,7 +92,7 @@ class MakeDataFrame:
             end = date(self.year, 12, 31)
             every = "1mo"
 
-        rng = pl.date_range(start, end, every, name="date")
+        rng = pl.date_range(start, end, every, name="date", eager=True)
         return pl.DataFrame(rng)
 
     def _drop_columns(self, df: DF) -> pl.Expr:
