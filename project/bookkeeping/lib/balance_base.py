@@ -22,19 +22,18 @@ class BalanceBase:
         """
         Return total sum of all columns
         """
+
         if self.is_empty(self._data):
             return 0
 
-        return self._data.select(pl.sum(pl.exclude("date")).sum())[0, 0]
+        return self.sum_cols(self._data)[0, 0]
 
     @property
     def total_column(self) -> dict[str, float]:
         if self.is_empty(self._data):
             return []
 
-        df = self._data.select(
-            [pl.col("date"), pl.sum(pl.exclude("date")).alias("total")]
-        )
+        df = self.sum_cols(self._data, "total")
         return [] if df.is_empty() else df.to_dicts()
 
     @property
@@ -81,3 +80,9 @@ class BalanceBase:
 
     def is_empty(self, df: DF) -> bool:
         return df.is_empty() if isinstance(df, DF) else True
+
+    def sum_cols(self, df: DF, sum_col_name: str = "sum") -> DF:
+        if df.shape[1] <= 1:
+            return df.with_columns(sum_col_name=pl.lit(0))
+
+        return df.select([pl.col("date"), pl.sum(pl.exclude("date")).alias(sum_col_name)])
