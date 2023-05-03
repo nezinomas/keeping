@@ -74,19 +74,19 @@ $(function () {
         },
         plotOptions: {
             area: {
-                fillOpacity: 0.5
+                fillOpacity: 0.6
             }
         },
         series: [{
             type: 'area',
             name: chartData.incomes_title,
             data: chartData.incomes,
-            color: '#77933c'
+            color: '#00e272'
         }, {
             type: 'area',
             name: chartData.expenses_title,
             data: chartData.expenses,
-            color: '#c0504d'
+            color: '#fa4b42'
         }]
     });
 });
