@@ -35,7 +35,6 @@ function chart_drinks_summary(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
         },
@@ -44,7 +43,6 @@ function chart_drinks_summary(idData, idContainer) {
                 format: '{value:.0f}',
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                     color: '#46ab9d',
                 },
             },
@@ -60,7 +58,6 @@ function chart_drinks_summary(idData, idContainer) {
                 format: '{value:.0f}',
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                     color: '#d13572',
                 },
             },
@@ -74,8 +71,7 @@ function chart_drinks_summary(idData, idContainer) {
         tooltip: {
             pointFormat: '<b>{point.y:,.0f} ml</b><br/>',
                 style: {
-                    fontSize: '13px',
-                    fontFamily: 'Calibri, Verdana',
+                    fontSize: '12px',
                 },
         },
         series: [{
