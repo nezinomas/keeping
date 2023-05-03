@@ -11,7 +11,6 @@ function chartReaded(idData, idContainer) {
             text: chartData.chart_title,
             style: {
                 fontSize: '16px',
-                fontFamily: 'Calibri, Verdana',
             },
         },
         xAxis: {
@@ -22,7 +21,6 @@ function chartReaded(idData, idContainer) {
                 useHTML: true,
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
                 rotation: -45,
             }
@@ -34,7 +32,6 @@ function chartReaded(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -64,9 +61,8 @@ function chartReaded(idData, idContainer) {
                 enabled: true,
                 color: `rgba(${chartData.chart_column_color}, 1)`,
                 style: {
-                    fontSize: '7px',
+                    fontSize: '11px',
                     fontWeight: 'bold',
-                    fontFamily: 'Verdana, sans-serif',
                     textOutline: false
                 }
             }]
@@ -79,13 +75,12 @@ function chartReaded(idData, idContainer) {
                 enabled: true,
                 color: 'green',
                 align: 'left',
-                x: -23,
-                y: -11.5,
+                x: -28,
+                y: -13,
                 verticalAlign: 'top',
                 style: {
-                    fontSize: '7px',
+                    fontSize: '11px',
                     fontWeight: 'bold',
-                    fontFamily: 'Verdana, sans-serif',
                     textOutline: false
                 }
             }]
