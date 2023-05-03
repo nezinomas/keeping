@@ -38,15 +38,12 @@ function chartReaded(idData, idContainer) {
         legend: {
             enabled: false
         },
-        tooltip: {
-            enabled: false,
-        },
         plotOptions: {
             series: {
                 enableMouseTracking: false,
                 targetOptions: {
                     borderWidth: 0,
-                    height:2,
+                    height: 2,
                     color: 'green',
                     width: '110%'
                 }
