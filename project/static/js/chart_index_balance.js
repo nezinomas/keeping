@@ -15,7 +15,7 @@ $(function () {
 
     Highcharts.chart('chart-balance-container', {
         chart: {
-            marginBottom: 67,
+            marginBottom: 74,
         },
         title: {
             text: '',
@@ -39,7 +39,6 @@ $(function () {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
                 rotation: -45,
             },
@@ -54,7 +53,6 @@ $(function () {
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
             title: {
@@ -66,7 +64,6 @@ $(function () {
             pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>',
                 style: {
                     fontSize: '13px',
-                    fontFamily: 'Calibri, Verdana',
                 },
         },
         credits: {
