@@ -21,7 +21,7 @@ function chartCalender (idData, idContainer) {
                             bbox.height + 20
                         )
                         .attr({align: 'center'})
-                        .css({color: '#666666', fontSize: '11px'})
+                        .css({color: '#666666', fontSize: '12px'})
                         .add();
                     }, this);
                 }
@@ -61,7 +61,7 @@ function chartCalender (idData, idContainer) {
             minTickInterval: 1,
             labels: {
                 style: {
-                    fontSize: '9px'
+                    fontSize: '10px'
                 }
             },
         },
@@ -129,6 +129,12 @@ function chartCalender (idData, idContainer) {
                     y: 20,
                     crop: false,
                     overflow: 'allow',
+                    style: {
+                        fontSize: '10px',
+                        color: '#999999',
+                        fontWeight: 'normal',
+                        textOutline: 'none'
+                    },
                     formatter: function() {
                         if(this.point.y == 6 || this.point.y == 16) {
                             return this.point.week;
@@ -136,12 +142,6 @@ function chartCalender (idData, idContainer) {
                         else {
                             return null;
                         }
-                    },
-                    style: {
-                    fontSize: '10px',
-                    color: '#999999',
-                    fontWeight: 'normal',
-                    textOutline: 'none'
                     },
                 },
             },
