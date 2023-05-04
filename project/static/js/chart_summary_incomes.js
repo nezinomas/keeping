@@ -1,7 +1,5 @@
 $(function () {
-    const chartData = JSON.parse(
-        document.getElementById('chart-incomes-data').textContent
-    );
+    const chartData = JSON.parse(document.getElementById('chart-incomes-data').textContent);
 
     // convert data
     for (i = 0; i < chartData.incomes.length; i++) {
@@ -22,6 +20,9 @@ $(function () {
         },
         title: {
             text: chartData.chart_title,
+            style: {
+                fontSize: '14px',
+            }
         },
         legend: {
             layout: 'horizontal',
@@ -43,19 +44,19 @@ $(function () {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
         },
         yAxis: {
             labels: {
                 formatter: function () {
-                    if (this.value >= 100) return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+                    if (this.value >= 100) {
+                        return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+                    }
                     return Highcharts.numberFormat(this.value, 0);
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
             title: {
@@ -66,9 +67,11 @@ $(function () {
         tooltip: {
             pointFormat: '<b>{point.y:,.0f}</b><br/>',
                 style: {
-                    fontSize: '13px',
-                    fontFamily: 'Calibri, Verdana',
+                    fontSize: '12px',
                 },
+        },
+        credits: {
+            enabled: false
         },
         plotOptions: {
             area: {

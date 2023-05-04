@@ -22,6 +22,9 @@ $(function () {
         },
         title: {
             text: chartData.chart_title,
+            style: {
+                fontSize: '14px',
+            }
         },
         legend: {
             layout: 'horizontal',
@@ -43,19 +46,19 @@ $(function () {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
         },
         yAxis: {
             labels: {
                 formatter: function () {
-                    if (this.value >= 100) return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+                    if (this.value >= 100) {
+                        return Highcharts.numberFormat(this.value / 1000, 1) + "k";
+                    }
                     return Highcharts.numberFormat(this.value, 0);
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
             title: {
@@ -67,16 +70,15 @@ $(function () {
             split: true,
             pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>',
                 style: {
-                    fontSize: '13px',
-                    fontFamily: 'Calibri, Verdana',
+                    fontSize: '12px',
                 },
+        },
+        credits: {
+            enabled: false
         },
         plotOptions: {
             area: {
                 fillOpacity: 0.5
-            },
-            area: {
-                fillOpacity: 0.5,
             }
         },
         series: [{

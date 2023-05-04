@@ -1,5 +1,5 @@
 function chartExpensesOnly(idData, idContainer) {
-    var chartData = JSON.parse(document.getElementById(idData).textContent);
+    const chartData = JSON.parse(document.getElementById(idData).textContent);
 
     // convert data
     for (var key in chartData) {
@@ -23,7 +23,7 @@ function chartExpensesOnly(idData, idContainer) {
             lineWidth: 2,
             labels: {
                 style: {
-                    fontSize: '10px',
+                    fontSize: '11px',
                     fontFamily: 'Calibri, Verdana',
                 }
             }
@@ -35,16 +35,19 @@ function chartExpensesOnly(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
         legend: {
             enabled: false
         },
+        credits: {
+            enabled: false
+        },
         plotOptions: {
             series: {
                 borderWidth: 0,
+                colorByPoint: true,
                 dataLabels: {
                     enabled: true,
                     format: '{point.y:.1f}'
@@ -62,6 +65,7 @@ function chartExpensesOnly(idData, idContainer) {
         series: [
             {
                 data: chartData,
+                borderRadius: 0,
                 dataLabels: {
                     enabled: true,
                     rotation: 0,

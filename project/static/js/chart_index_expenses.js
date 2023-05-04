@@ -1,7 +1,5 @@
 $(function () {
-    var chartData = JSON.parse(
-        document.getElementById('chart-expenses-data').textContent
-    );
+    const chartData = JSON.parse(document.getElementById('chart-expenses-data').textContent);
     // convert data
     for (var key in chartData) {
         chartData[key]['y'] /= 100;
@@ -10,6 +8,7 @@ $(function () {
     Highcharts.chart('chart-expenses-container', {
         chart: {
             type: 'column',
+            marginBottom: 74,
         },
         title: {
             text: ''
@@ -23,7 +22,6 @@ $(function () {
                 rotation: -45,
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -38,7 +36,6 @@ $(function () {
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -48,39 +45,22 @@ $(function () {
         tooltip: {
             shared: true,
             formatter: function () {
-                var rtn = '';
-                var pcnt = ((this.points[0].y / this.points[0].series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100);
-                rtn = '<b>' + this.points[0].key + '</b>';
-                rtn += '<br>' + Highcharts.numberFormat(this.points[0].y, 0) + '€<br>';
-                rtn += Highcharts.numberFormat(pcnt, 1) + '%';
-                return rtn;
+                const pcnt = ((this.points[0].y / this.points[0].series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100);
+                return `
+                    <b>${this.points[0].key}</b><br>
+                    ${Highcharts.numberFormat(this.points[0].y, 0)}€<br>
+                    ${Highcharts.numberFormat(pcnt, 1)}%
+                `;
             }
+        },
+        credits: {
+            enabled: false
         },
         plotOptions: {
             column: {
                 colorByPoint: true,
             }
         },
-        colors: [
-            '#6994c7',
-            '#c86967',
-            '#a9c471',
-            '#927aaf',
-            '#64b6cc',
-            '#f5a35f',
-            '#577aa3',
-            '#874746',
-            '#72854a',
-            '#417a8a',
-            '#ba6926',
-            '#81a3cc',
-            '#ce8280',
-            '#b4ca87',
-            '#a08db8',
-            '#f3ba8a',
-            '#c7d7a5',
-            '#8dc7d6',
-        ],
         series: [{
             data: chartData,
             dataLabels: {
@@ -92,11 +72,10 @@ $(function () {
                 style: {
                     fontSize: '10px',
                     fontWeight: 'bold',
-                    fontFamily: 'Verdana, sans-serif',
                     textOutline: false
                 },
                 formatter: function() {
-                    var pcnt = (this.y / this.series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100;
+                    const pcnt = (this.y / this.series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100;
                     return Highcharts.numberFormat(pcnt, 1) + '%';
                 },
             }

@@ -5,7 +5,6 @@ from operator import itemgetter
 from django.utils.translation import gettext as _
 
 from ..lib.balance_base import BalanceBase
-from ...core.lib.colors import CHART
 from ...core.lib.date import current_day
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
@@ -78,13 +77,13 @@ class MonthService:
             "factTitle": _("Fact"),
         }
 
-    def chart_expenses_context(self, color: tuple = CHART):
+    def chart_expenses_context(self):
         total_row = self._spending.total_row
 
         # append savings
         self._append_savings(total_row, self._savings.total)
 
-        return self._chart_expenses(total_row, color)
+        return self._chart_expenses(total_row)
 
     def info_context(self):
         fact_incomes = self._data.incomes
@@ -148,16 +147,8 @@ class MonthService:
             "total_savings": self._savings.total,
         }
 
-    def _chart_expenses(self, total_row: dict, colors: tuple) -> list[dict]:
+    def _chart_expenses(self, total_row: dict) -> list[dict]:
         data = self._make_chart_data(total_row)
-
-        # add colors
-        for key, item in enumerate(data):
-            # if colors is shorter then categories
-            if key >= len(colors):
-                colors *= 2
-
-            item["color"] = colors[key]
 
         # categories upper case
         for x in data:

@@ -34,7 +34,6 @@ function chartConsumption(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
                 rotation: -45,
             }
@@ -77,7 +76,6 @@ function chartConsumption(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -105,9 +103,9 @@ function chartConsumption(idData, idContainer) {
                 align: 'left',
                 format: '{point.y:.0f}',
                 style: {
-                    fontSize: '9px',
+                    fontSize: '12px',
                     fontWeight: 'bold',
-                    fontFamily: 'Verdana, sans-serif',
+                    fontFamily: 'Calibri, sans-serif',
                     textOutline: false
                 }
             }

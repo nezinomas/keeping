@@ -160,7 +160,7 @@ class Stats:
     def _insert_empty_rows(self, df: DF) -> DF:
         first_date = date(df.head(1)[0, "date"].year, 1, 1)
         last_date = date(df.tail(1)[0, "date"].year, 12, 31)
-        date_range = pl.date_range(first_date, last_date, "1d")
+        date_range = pl.date_range(first_date, last_date, "1d", eager=True)
         df_empty = pl.DataFrame({"date": date_range, "qty": [0.0] * len(date_range)})
         return pl.concat([df, df_empty], how="vertical")
 
@@ -215,10 +215,10 @@ class Stats:
         # other days 0-5 -> #f4f4f4
         # float convert to color code in chart_calendar.js
         if not dt:
-            return 0.0
+            return 0
 
         # current day -> #c9edff
         if dt == self._now_date:
-            return 0.05  # highlight current day
+            return 0.0005  # highlight current day
 
-        return (0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.03)[weekday]
+        return (0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0003)[weekday]

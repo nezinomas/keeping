@@ -39,6 +39,10 @@ class MakeDataFrame:
     @property
     def exceptions(self):
         df = self.create_data(sum_col_name="exception_sum")
+
+        if df.shape[1] <= 1:
+            return df.with_columns(sum=pl.lit(0))
+
         return df.select([pl.col("date"), pl.sum(pl.exclude("date")).alias("sum")])
 
     def create_data(self, sum_col_name: str = "sum") -> DF:
@@ -88,7 +92,7 @@ class MakeDataFrame:
             end = date(self.year, 12, 31)
             every = "1mo"
 
-        rng = pl.date_range(start, end, every, name="date")
+        rng = pl.date_range(start, end, every, name="date", eager=True)
         return pl.DataFrame(rng)
 
     def _drop_columns(self, df: DF) -> pl.Expr:

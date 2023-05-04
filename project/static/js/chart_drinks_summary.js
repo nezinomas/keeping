@@ -1,7 +1,5 @@
-$(function () {
-    const chartData = JSON.parse(
-        document.getElementById('chart-summary-data').textContent
-    );
+function chart_drinks_summary(idData, idContainer) {
+    const chartData = JSON.parse(document.getElementById(idData).textContent);
 
     Highcharts.setOptions({
         lang: {
@@ -10,7 +8,7 @@ $(function () {
         }
     });
 
-    Highcharts.chart('chart-summary-container', {
+    Highcharts.chart(idContainer, {
         chart: {
             marginBottom: 67,
         },
@@ -37,7 +35,6 @@ $(function () {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
         },
@@ -46,7 +43,6 @@ $(function () {
                 format: '{value:.0f}',
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                     color: '#46ab9d',
                 },
             },
@@ -62,7 +58,6 @@ $(function () {
                 format: '{value:.0f}',
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                     color: '#d13572',
                 },
             },
@@ -73,11 +68,13 @@ $(function () {
                 }
             },
         }],
+        credits: {
+            enabled: false
+        },
         tooltip: {
             pointFormat: '<b>{point.y:,.0f} ml</b><br/>',
                 style: {
-                    fontSize: '13px',
-                    fontFamily: 'Calibri, Verdana',
+                    fontSize: '12px',
                 },
         },
         series: [{
@@ -116,4 +113,4 @@ $(function () {
             enableMouseTracking: false,
         }],
     });
-});
+};

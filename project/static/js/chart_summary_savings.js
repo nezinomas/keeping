@@ -1,8 +1,8 @@
 function annotationLabels(list) {
     list.forEach(function (element, index, list) {
-        var val = Math.round(element);
+        let val = Math.round(element);
         list[index] = {
-            point: {xAxis: 0, yAxis:0, x: index, y: val},
+            point: { xAxis: 0, yAxis: 0, x: index, y: val },
             text: Highcharts.numberFormat(val, 0),
         };
     });
@@ -10,6 +10,8 @@ function annotationLabels(list) {
 };
 
 function chartSavings(container) {
+    const positive = '#548235';
+    const negative = '#c0504d';
     const chartData = JSON.parse(document.getElementById(`${container}_data`).textContent);
 
     // convert data
@@ -35,9 +37,7 @@ function chartSavings(container) {
         title: {
             text: chartData.chart_title,
             style: {
-                fontSize: '16px',
-                fontFamily: 'Calibri, Verdana',
-                fontWeight: 'bold',
+                fontSize: '14px',
             },
         },
         annotations: [{
@@ -54,7 +54,6 @@ function chartSavings(container) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
         },
@@ -73,7 +72,6 @@ function chartSavings(container) {
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
             stackLabels: {
@@ -90,17 +88,26 @@ function chartSavings(container) {
             y: -5,
         },
         tooltip: {
+            useHTML: true,
             pointFormat: '{point.y:,.0f}',
+            style: {
+                fontSize: '12px',
+            },
             formatter: function () {
-                var sum = 0;
-                var series = this.series.chart.series;
+                let sum = 0;
+                let {series} = this.series.chart;
                 for (i in [1,2]) {
                     sum += series[i].yData[this.point.x];
                 }
-                return '<b>' + this.x + '</b><br/>' +
-                    `${this.series.name}: ${Highcharts.numberFormat(this.point.y, 0)}€<br/>` +
-                    `${chartData.text_total}: ${Highcharts.numberFormat(sum, 0)}€`;
+                return `
+                    <div><b>${this.x}</b></div>
+                    <div class="my-2">${this.series.name}: ${Highcharts.numberFormat(this.point.y, 0)}€</div>
+                    <div>${chartData.text_total}: ${Highcharts.numberFormat(sum, 0)}€</div>
+                `
             }
+        },
+        credits: {
+            enabled: false
         },
         plotOptions: {
             column: {
@@ -113,19 +120,21 @@ function chartSavings(container) {
             color: 'rgba(84,130,53,0.5)',
             borderColor: '#548235',
             borderWidth: '0.5',
+            borderRadius: 0,
             dataLabels: {
                 enabled: true,
                 formatter: function () {
-                    if (this.y == 0) {
+                    let val = Highcharts.numberFormat(this.y, 0)
+                    if (val == 0) {
                         return '';
                     } else {
-                        return `${Highcharts.numberFormat(this.y, 0)}`;
+                        let color = (val < 0) ? negative : positive;
+                        return `<span style="color:${color};">${val}</span>`;
                     }
                 },
                 style: {
                     fontWeight: 'bold',
                     textOutline: false,
-                    color: '#548235'
                 },
             }
         }, {
@@ -134,6 +143,7 @@ function chartSavings(container) {
             color: 'rgba(222,176,40,0.5)',
             borderColor: '#bf8f00',
             borderWidth: '0.5',
+            borderRadius: 0,
             dataLabels: {
                 enabled: true,
                 verticalAlign: 'top',
@@ -149,13 +159,11 @@ function chartSavings(container) {
         }]
     }, function (chartObj) {
         // paint in red negative profit
-        var series = chartObj.series[0];
+        let series = chartObj.series[0];
         $.each(series.data, function (i, point) {
-                if (point.negative) {
-                var c = '#c0504d';
-                point.color = c; /* + tooltip border color */
-                point.graphic.css({stroke: c, color: 'rgba(192,80,77,0.5)'});
-                point.dataLabel.css({ color: c });
+            if (point.negative) {
+                point.color = negative; /* + tooltip border color */
+                point.graphic.css({stroke: negative, color: 'rgba(192,80,77,0.5)'});
             }
         });
     });

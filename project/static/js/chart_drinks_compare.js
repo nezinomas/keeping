@@ -34,7 +34,6 @@ function chartCompare(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
                 rotation: -45,
             }
@@ -48,7 +47,6 @@ function chartCompare(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -56,10 +54,6 @@ function chartCompare(idData, idContainer) {
             shared: true,
             crosshairs: true,
             pointFormat: '<span style="color: {series.color}"><b>{series.name}</b>:</span> {point.y:,.0f}ml<br>',
-            style: {
-                fontSize: '13px',
-                fontFamily: 'Calibri, Verdana',
-            },
         },
         credits: {
             enabled: false

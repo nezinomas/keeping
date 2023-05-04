@@ -168,11 +168,11 @@ def test_chart_expenses():
     )
     total_row = {"T1": 25, "T2": 50}
 
-    actual = obj._chart_expenses(total_row, ["#1", "#2"])
+    actual = obj._chart_expenses(total_row)
 
     expect = [
-        {"name": "T2", "y": 50, "color": "#1"},
-        {"name": "T1", "y": 25, "color": "#2"},
+        {"name": "T2", "y": 50},
+        {"name": "T1", "y": 25},
     ]
 
     assert actual == expect
@@ -184,12 +184,12 @@ def test_chart_expenses_colors_shorter_then_data():
     )
     total_row = {"T1": 2, "T2": 5, "T3": 1}
 
-    actual = obj._chart_expenses(total_row, ["#1", "#2"])
+    actual = obj._chart_expenses(total_row)
 
     expect = [
-        {"name": "T2", "y": 5, "color": "#1"},
-        {"name": "T1", "y": 2, "color": "#2"},
-        {"name": "T3", "y": 1, "color": "#1"},
+        {"name": "T2", "y": 5},
+        {"name": "T1", "y": 2},
+        {"name": "T3", "y": 1},
     ]
 
     assert actual == expect
@@ -200,7 +200,7 @@ def test_chart_expenses_no_expenes_data():
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
 
-    actual = obj._chart_expenses(total_row={}, colors=[])
+    actual = obj._chart_expenses(total_row={})
 
     assert actual == []
 
