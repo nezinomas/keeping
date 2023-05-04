@@ -42,6 +42,9 @@ function chartExpensesOnly(idData, idContainer) {
         legend: {
             enabled: false
         },
+        credits: {
+            enabled: false
+        },
         plotOptions: {
             series: {
                 borderWidth: 0,
