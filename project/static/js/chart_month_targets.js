@@ -27,7 +27,6 @@ function chartExpensesTarget(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -38,7 +37,6 @@ function chartExpensesTarget(idData, idContainer) {
             labels: {
                     style: {
                         fontSize: '10px',
-                        fontFamily: 'Calibri, Verdana',
                     }
                 }
         },
@@ -51,7 +49,6 @@ function chartExpensesTarget(idData, idContainer) {
             pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
             style: {
                 fontSize: '12px',
-                fontFamily: 'Calibri, Verdana',
             }
         },
         plotOptions: {
@@ -83,7 +80,6 @@ function chartExpensesTarget(idData, idContainer) {
         }, {
             name: chartData.factTitle,
             type: 'bullet',
-            opacity: '0.7',
             data: chartData.fact,
             pointWidth: 13,
             borderRadius: 0,
@@ -98,11 +94,11 @@ function chartExpensesTarget(idData, idContainer) {
                 enabled: true,
                 rotation: 0,
                 align: 'right',
-                y: -2,
+                y: -0.5,
                 style: {
-                    fontSize: '9px',
+                    fontSize: '11px',
                     fontWeight: 'bold',
-                    fontFamily: 'Verdana, sans-serif',
+                    fontFamily: 'Calibri, sans-serif',
                     textOutline: false,
                 },
             },
@@ -118,7 +114,7 @@ function chartExpensesTarget(idData, idContainer) {
             y = parseFloat(y.toFixed(1));
 
             if (y <= max) {
-                color = 'green';
+                color = '#00e272';
             }
             else {
                 p = 28;
@@ -126,7 +122,7 @@ function chartExpensesTarget(idData, idContainer) {
                 if (y < 10) { p = -2; }
                 point.dataLabel.attr({ x: point.dataLabel.x + p });
 
-                color = (y <= max * 1.1) ? '#ffcc00' : 'red';
+                color = (y <= max * 1.1) ? '#feb56a' : '#fa4b42';
             }
             point.color = color;
             point.graphic.attr({ fill: color });
