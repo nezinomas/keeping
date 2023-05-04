@@ -37,9 +37,7 @@ function chartSavings(container) {
         title: {
             text: chartData.chart_title,
             style: {
-                fontSize: '16px',
-                fontFamily: 'Calibri, Verdana',
-                fontWeight: 'bold',
+                fontSize: '14px',
             },
         },
         annotations: [{
@@ -56,7 +54,6 @@ function chartSavings(container) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
         },
@@ -75,7 +72,6 @@ function chartSavings(container) {
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
             stackLabels: {

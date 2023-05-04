@@ -23,7 +23,7 @@ function chartExpenses(idData, idContainer) {
             panKey: 'shift'
         },
         title: {
-            text: ''
+            text: '',
         },
 
         xAxis: {
@@ -34,7 +34,6 @@ function chartExpenses(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
         },
@@ -51,7 +50,6 @@ function chartExpenses(idData, idContainer) {
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -70,7 +68,8 @@ function chartExpenses(idData, idContainer) {
         plotOptions: {
             column: {
                 pointPadding: 0.2,
-                borderWidth: 0
+                borderWidth: 0,
+                borderRadius: 0,
             }
         },
         series: chartData.data,
