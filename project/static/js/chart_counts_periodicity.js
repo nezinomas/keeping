@@ -48,6 +48,9 @@ function chartPeriodicity(idData, idContainer) {
                 fontSize: '12px',
             }
         },
+        credits: {
+            enabled: false
+        },
         plotOptions: {
             bar: {
                 grouping: false,

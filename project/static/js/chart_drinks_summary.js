@@ -68,6 +68,9 @@ function chart_drinks_summary(idData, idContainer) {
                 }
             },
         }],
+        credits: {
+            enabled: false
+        },
         tooltip: {
             pointFormat: '<b>{point.y:,.0f} ml</b><br/>',
                 style: {

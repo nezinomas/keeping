@@ -70,6 +70,9 @@ $(function () {
                     fontSize: '12px',
                 },
         },
+        credits: {
+            enabled: false
+        },
         plotOptions: {
             area: {
                 dataLabels: {

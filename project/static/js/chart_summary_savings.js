@@ -106,6 +106,9 @@ function chartSavings(container) {
                 `
             }
         },
+        credits: {
+            enabled: false
+        },
         plotOptions: {
             column: {
                 stacking: 'normal',

@@ -38,6 +38,9 @@ function chartReaded(idData, idContainer) {
         legend: {
             enabled: false
         },
+        credits: {
+            enabled: false
+        },
         plotOptions: {
             series: {
                 enableMouseTracking: false,
