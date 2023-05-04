@@ -8,6 +8,7 @@ $(function () {
     Highcharts.chart('chart-expenses-container', {
         chart: {
             type: 'column',
+            marginBottom: 74,
         },
         title: {
             text: ''
@@ -21,7 +22,6 @@ $(function () {
                 rotation: -45,
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -36,7 +36,6 @@ $(function () {
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -54,6 +53,9 @@ $(function () {
                 `;
             }
         },
+        credits: {
+            enabled: false
+        },
         plotOptions: {
             column: {
                 colorByPoint: true,
@@ -70,7 +72,6 @@ $(function () {
                 style: {
                     fontSize: '10px',
                     fontWeight: 'bold',
-                    fontFamily: 'Verdana, sans-serif',
                     textOutline: false
                 },
                 formatter: function() {

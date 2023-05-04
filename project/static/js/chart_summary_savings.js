@@ -37,9 +37,7 @@ function chartSavings(container) {
         title: {
             text: chartData.chart_title,
             style: {
-                fontSize: '16px',
-                fontFamily: 'Calibri, Verdana',
-                fontWeight: 'bold',
+                fontSize: '14px',
             },
         },
         annotations: [{
@@ -56,7 +54,6 @@ function chartSavings(container) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
         },
@@ -75,7 +72,6 @@ function chartSavings(container) {
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
             stackLabels: {
@@ -92,17 +88,26 @@ function chartSavings(container) {
             y: -5,
         },
         tooltip: {
+            useHTML: true,
             pointFormat: '{point.y:,.0f}',
+            style: {
+                fontSize: '12px',
+            },
             formatter: function () {
                 let sum = 0;
                 let {series} = this.series.chart;
                 for (i in [1,2]) {
                     sum += series[i].yData[this.point.x];
                 }
-                return '<b>' + this.x + '</b><br/>' +
-                    `${this.series.name}: ${Highcharts.numberFormat(this.point.y, 0)}€<br/>` +
-                    `${chartData.text_total}: ${Highcharts.numberFormat(sum, 0)}€`;
+                return `
+                    <div><b>${this.x}</b></div>
+                    <div class="my-2">${this.series.name}: ${Highcharts.numberFormat(this.point.y, 0)}€</div>
+                    <div>${chartData.text_total}: ${Highcharts.numberFormat(sum, 0)}€</div>
+                `
             }
+        },
+        credits: {
+            enabled: false
         },
         plotOptions: {
             column: {

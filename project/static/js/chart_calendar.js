@@ -21,7 +21,7 @@ function chartCalender (idData, idContainer) {
                             bbox.height + 20
                         )
                         .attr({align: 'center'})
-                        .css({color: '#666666', fontSize: '11px'})
+                        .css({color: '#666666', fontSize: '12px'})
                         .add();
                     }, this);
                 }
@@ -61,7 +61,7 @@ function chartCalender (idData, idContainer) {
             minTickInterval: 1,
             labels: {
                 style: {
-                    fontSize: '9px'
+                    fontSize: '10px'
                 }
             },
         },
@@ -107,12 +107,13 @@ function chartCalender (idData, idContainer) {
                 if (this.point.value==0) {
                     return false;
                 }
-                let s = this.point.date;
-                if(this.point.value >= 0.0001) {
-                    s += `<div class="gap">${chartData.text.gap} ${this.point.gap}d.</div>`;
-                    s += `<div class="qty">${chartData.text.quantity} ${this.point.qty.toFixed(1)}</div>`;
+
+                let text = `<div>${this.point.date}</div>`;
+                if(this.point.value >= 0.01) {
+                    text += `<div class="gap my-2">${chartData.text.gap} ${this.point.gap}d.</div>`;
+                    text += `<div class="qty">${chartData.text.quantity} ${this.point.qty.toFixed(1)}</div>`;
                 }
-                return s;
+                return text;
             }
         },
 
@@ -129,6 +130,12 @@ function chartCalender (idData, idContainer) {
                     y: 20,
                     crop: false,
                     overflow: 'allow',
+                    style: {
+                        fontSize: '10px',
+                        color: '#999999',
+                        fontWeight: 'normal',
+                        textOutline: 'none'
+                    },
                     formatter: function() {
                         if(this.point.y == 6 || this.point.y == 16) {
                             return this.point.week;
@@ -136,12 +143,6 @@ function chartCalender (idData, idContainer) {
                         else {
                             return null;
                         }
-                    },
-                    style: {
-                    fontSize: '10px',
-                    color: '#999999',
-                    fontWeight: 'normal',
-                    textOutline: 'none'
                     },
                 },
             },

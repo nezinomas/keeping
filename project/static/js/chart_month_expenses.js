@@ -23,7 +23,7 @@ function chartExpensesOnly(idData, idContainer) {
             lineWidth: 2,
             labels: {
                 style: {
-                    fontSize: '10px',
+                    fontSize: '11px',
                     fontFamily: 'Calibri, Verdana',
                 }
             }
@@ -35,11 +35,13 @@ function chartExpensesOnly(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
         legend: {
+            enabled: false
+        },
+        credits: {
             enabled: false
         },
         plotOptions: {

@@ -15,7 +15,7 @@ $(function () {
 
     Highcharts.chart('chart-balance-container', {
         chart: {
-            marginBottom: 67,
+            marginBottom: 74,
         },
         title: {
             text: '',
@@ -39,7 +39,6 @@ $(function () {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
                 rotation: -45,
             },
@@ -54,7 +53,6 @@ $(function () {
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
             title: {
@@ -66,7 +64,6 @@ $(function () {
             pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>',
                 style: {
                     fontSize: '13px',
-                    fontFamily: 'Calibri, Verdana',
                 },
         },
         credits: {
@@ -74,19 +71,19 @@ $(function () {
         },
         plotOptions: {
             area: {
-                fillOpacity: 0.5
+                fillOpacity: 0.6
             }
         },
         series: [{
             type: 'area',
             name: chartData.incomes_title,
             data: chartData.incomes,
-            color: '#77933c'
+            color: '#00e272'
         }, {
             type: 'area',
             name: chartData.expenses_title,
             data: chartData.expenses,
-            color: '#c0504d'
+            color: '#fa4b42'
         }]
     });
 });

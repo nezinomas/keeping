@@ -23,7 +23,7 @@ function chartExpenses(idData, idContainer) {
             panKey: 'shift'
         },
         title: {
-            text: ''
+            text: '',
         },
 
         xAxis: {
@@ -34,7 +34,6 @@ function chartExpenses(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
             },
         },
@@ -51,23 +50,29 @@ function chartExpenses(idData, idContainer) {
                 },
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
         tooltip: {
-            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            style: {
+                fontSize: '12px',
+            },
+            headerFormat: '<div class="mb-2">{point.key}</div>',
             pointFormat:
-                '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f}€</b></td></tr>',
-            footerFormat: '</table>',
+                '<div class="mb-2"><span style="color:{series.color};">{series.name}:</span> ' +
+                '<span> <b>{point.y:,.1f}€</b></span></div>',
+            footerFormat: '',
             shared: true,
             useHTML: true
+        },
+        credits: {
+            enabled: false
         },
         plotOptions: {
             column: {
                 pointPadding: 0.2,
-                borderWidth: 0
+                borderWidth: 0,
+                borderRadius: 0,
             }
         },
         series: chartData.data,

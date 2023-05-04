@@ -17,7 +17,6 @@ function chartQuantity(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
                 rotation: -45,
             }
@@ -29,7 +28,6 @@ function chartQuantity(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -42,8 +40,10 @@ function chartQuantity(idData, idContainer) {
             pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
             style: {
                 fontSize: '12px',
-                fontFamily: 'Calibri, Verdana',
             }
+        },
+        credits: {
+            enabled: false
         },
         plotOptions: {
             bar: {
@@ -66,9 +66,8 @@ function chartQuantity(idData, idContainer) {
                 color: '#000',
                 format: '{point.y:.1f}',
                 style: {
-                    fontSize: '9px',
-                    fontWeight: 'bold',
-                    fontFamily: 'Verdana, sans-serif',
+                    fontSize: '12px',
+                    fontFamily: 'Calibri, sans-serif',
                     textOutline: false
                 }
             }
