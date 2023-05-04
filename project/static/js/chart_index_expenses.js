@@ -53,6 +53,9 @@ $(function () {
                 `;
             }
         },
+        credits: {
+            enabled: false
+        },
         plotOptions: {
             column: {
                 colorByPoint: true,
