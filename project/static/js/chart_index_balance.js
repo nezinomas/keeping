@@ -69,11 +69,6 @@ $(function () {
         credits: {
             enabled: false
         },
-        plotOptions: {
-            area: {
-                fillOpacity: 0.6
-            }
-        },
         series: [{
             type: 'area',
             name: chartData.incomes_title,
