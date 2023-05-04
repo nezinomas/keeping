@@ -10,10 +10,6 @@ function chartPeriodicity(idData, idContainer) {
         },
         title: {
             text: chartData.title,
-            style: {
-                fontSize: '16px',
-                fontFamily: 'Calibri, Verdana',
-            },
         },
         xAxis: {
             lineColor: '#000',
@@ -24,7 +20,6 @@ function chartPeriodicity(idData, idContainer) {
                 useHTML: true,
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 },
                 formatter: function () { /* use formatter to break word. */
                     return '<div style="word-wrap: break-word; word-break:break-all; width:40px; text-align: right">' + this.value + '</div>';
@@ -39,7 +34,6 @@ function chartPeriodicity(idData, idContainer) {
             labels: {
                 style: {
                     fontSize: '10px',
-                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
@@ -52,7 +46,6 @@ function chartPeriodicity(idData, idContainer) {
             pointFormat: '<b>{point.y:.0f}</b>',
             style: {
                 fontSize: '12px',
-                fontFamily: 'Calibri, Verdana',
             }
         },
         plotOptions: {
@@ -62,7 +55,6 @@ function chartPeriodicity(idData, idContainer) {
             }
         },
         series: [{
-            name: 'Kiekis',
             data: chartData.data,
             color: `rgba(${chartData.chart_column_color}, 0.65)`,
             borderColor: `rgba(${chartData.chart_column_color}, 1)`,
@@ -75,9 +67,8 @@ function chartPeriodicity(idData, idContainer) {
                     return (this.y != 0) ? this.y : "";
                 },
                 style: {
-                    fontSize: '9px',
+                    fontSize: '11px',
                     fontWeight: 'bold',
-                    fontFamily: 'Verdana, sans-serif',
                     textOutline: false
                 }
             }
