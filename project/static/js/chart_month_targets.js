@@ -26,7 +26,8 @@ function chartExpensesTarget(idData, idContainer) {
             lineWidth: 2,
             labels: {
                 style: {
-                    fontSize: '10px',
+                    fontSize: '11px',
+                    fontFamily: 'Calibri, Verdana',
                 }
             }
         },
