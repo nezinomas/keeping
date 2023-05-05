@@ -118,7 +118,7 @@ function chartExpensesTarget(idData, idContainer) {
             y = parseFloat(y.toFixed(1));
 
             if (y <= max) {
-                color = '#00e272';
+                color = '#5D9C59';
             }
             else {
                 p = 28;
@@ -126,7 +126,7 @@ function chartExpensesTarget(idData, idContainer) {
                 if (y < 10) { p = -2; }
                 point.dataLabel.attr({ x: point.dataLabel.x + p });
 
-                color = (y <= max * 1.1) ? '#feb56a' : '#fa4b42';
+                color = (y <= max * 1.1) ? '#feb56a' : '#EB5353';
             }
             point.color = color;
             point.graphic.attr({ fill: color });
