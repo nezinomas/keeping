@@ -78,12 +78,12 @@ $(function () {
             type: 'area',
             name: chartData.incomes_title,
             data: chartData.incomes,
-            color: '#00e272'
+            color: '#5D9C59'
         }, {
             type: 'area',
             name: chartData.expenses_title,
             data: chartData.expenses,
-            color: '#fa4b42'
+            color: '#EB5353'
         }]
     });
 });
