@@ -3,33 +3,30 @@
 {% load tables %}
 {% load i18n %}
 
-{% block head %}
 
-<style>
-    tfoot > tr > th {
-        font-weight: bold!important;
-        color: gray;
-        background-color: aliceblue!important;
-    }
-</style>
+{% block head %}
+    <style>
+        tfoot > tr > th {
+            font-weight: bold!important;
+            color: gray;
+            background-color: aliceblue!important;
+        }
+    </style>
 {% endblock head %}
 
+
 {% block content %}
-
-{% if data %}
-
-{% for row in data %}
-<div class="row mt-2">
-    <div class="col-lg-12">
-        {% detailed_table row.name row.items row.total_row %}
-    </div>
-</div>
-{% endfor %}
-
-{% else %}
-<div class="mx-auto text-center alert alert-warning py-2">
-    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
-</div>
-{% endif %}
-
+    {% if data %}
+        {% for row in data %}
+        <div class="row mt-2">
+            <div class="col-lg-12">
+                {% detailed_table row.name row.items row.total_row %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="mx-auto text-center alert alert-warning py-2">
+            {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+        </div>
+    {% endif %}
 {% endblock content %}
