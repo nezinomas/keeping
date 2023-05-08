@@ -4,15 +4,26 @@
 
 
 <table class="table table-sm table-striped table-hover">
+    {% cache 500 toprow %}
     <thead>
         <tr>
             <th class="text-start">{{ name }}</th>
-            {% for month_name in month_names %}
-            <th class="w7p">{% translate month_name %}</th>
-            {% endfor %}
+            <th class="w7p">{% translate 'January' %}</th>
+            <th class="w7p">{% translate 'February' %}</th>
+            <th class="w7p">{% translate 'March' %}</th>
+            <th class="w7p">{% translate 'April' %}</th>
+            <th class="w7p">{% translate 'May' %}</th>
+            <th class="w7p">{% translate 'June' %}</th>
+            <th class="w7p">{% translate 'July' %}</th>
+            <th class="w7p">{% translate 'August' %}</th>
+            <th class="w7p">{% translate 'September' %}</th>
+            <th class="w7p">{% translate 'October' %}</th>
+            <th class="w7p">{% translate 'November' %}</th>
+            <th class="w7p">{% translate 'December' %}</th>
             <th class="w7p">{% translate 'Total' %}</th>
         </tr>
     </thead>
+    {% endcache %}
     <tbody>
         {% for item in items %}
         <tr>

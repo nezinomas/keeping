@@ -5,7 +5,6 @@ from django.utils.translation import gettext as _
 from project.bookkeeping.services.month import MonthServiceData
 
 from ..accounts.models import Account
-from ..core.lib.translation import month_names
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -202,7 +201,6 @@ class Detailed(TemplateViewMixin):
         year = self.request.user.year
 
         context = {
-            "month_names": month_names(),
             "data": [],
         }
 
