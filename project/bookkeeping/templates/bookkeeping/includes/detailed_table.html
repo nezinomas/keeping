@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load slippers %}
 {% load math%}
+{% load cache %}
 
 
 <table class="table table-sm table-striped table-hover">
@@ -27,7 +28,7 @@
     <tbody>
         {% for item in items %}
         <tr>
-            <td class="text-start">{{ item.title }}</td>
+            <td class="text-start">{{ item.title|safe }}</td>
             {% for i in item.data %}
                 {% table_cell value=i|price %}
             {% endfor %}
