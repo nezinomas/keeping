@@ -13,5 +13,4 @@ def generic_list(year, items, type=None, update=None, delete=None):
         "type": type,
         "update": update,
         "delete": delete,
-        "months": list(month_names().values()),
     }
