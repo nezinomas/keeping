@@ -117,7 +117,8 @@ function chartSavings(container) {
         series: [{
             name: chartData.text_profit,
             data: chartData.profit,
-            color: 'rgba(84,130,53,0.5)',
+            color: '#5D9C59',
+            opacity: 0.8,
             borderColor: '#548235',
             borderWidth: '0.5',
             borderRadius: 0,
@@ -163,7 +164,7 @@ function chartSavings(container) {
         $.each(series.data, function (i, point) {
             if (point.negative) {
                 point.color = negative; /* + tooltip border color */
-                point.graphic.css({stroke: negative, color: 'rgba(192,80,77,0.5)'});
+                point.graphic.css({ stroke: negative, color: '#EB5353'});
             }
         });
     });
