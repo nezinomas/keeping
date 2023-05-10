@@ -84,12 +84,12 @@ $(function () {
         series: [{
             'name': chartData.incomes_title,
             'data': chartData.incomes,
-            color: '#77933c',
+            color: '#5D9C59',
             'type': 'area'
         }, {
             'name': chartData.expenses_title,
             'data': chartData.expenses,
-            color: '#c0504d',
+            color: '#EB5353',
             'type': 'area'
         }]
     });

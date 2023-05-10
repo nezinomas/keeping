@@ -104,7 +104,7 @@ $(function () {
             name: chartData.salary_title,
             data: chartData.salary,
             type: 'area',
-            color: '#98bc62',
+            color: '#5D9C59',
         }, {
             name: chartData.incomes_title,
             data: chartData.incomes,
