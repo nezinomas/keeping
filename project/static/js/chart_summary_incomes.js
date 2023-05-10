@@ -109,6 +109,7 @@ $(function () {
             name: chartData.incomes_title,
             data: chartData.incomes,
             type: 'line',
+            lineWidth: 2,
             color: '#2d5f2e',
         }],
     });
