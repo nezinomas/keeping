@@ -78,7 +78,7 @@ $(function () {
         },
         plotOptions: {
             area: {
-                fillOpacity: 0.5
+                fillOpacity: 0.6
             }
         },
         series: [{

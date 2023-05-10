@@ -85,7 +85,7 @@ $(function () {
                     },
                 },
                 enableMouseTracking: false,
-                fillOpacity: 0.65,
+                fillOpacity: 0.6,
             },
             line: {
                 dataLabels: {
