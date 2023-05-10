@@ -79,7 +79,7 @@ $(function () {
                     enabled: true,
                     format: '{point.y:,.0f}',
                     verticalAlign:'top',
-                    color: '#77933c',
+                    color: '#2d5f2e',
                     style: {
                         textOutline: 0,
                     },
