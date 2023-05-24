@@ -5,10 +5,10 @@
 
 
 <table class="table table-sm table-striped table-hover">
-    {% cache 500 toprow %}
     <thead>
         <tr>
             <th class="text-start">{{ name }}</th>
+            {% cache 500 toprow %}
             <th class="w7p">{% translate 'January' %}</th>
             <th class="w7p">{% translate 'February' %}</th>
             <th class="w7p">{% translate 'March' %}</th>
@@ -22,9 +22,9 @@
             <th class="w7p">{% translate 'November' %}</th>
             <th class="w7p">{% translate 'December' %}</th>
             <th class="w7p">{% translate 'Total' %}</th>
+            {% endcache %}
         </tr>
     </thead>
-    {% endcache %}
     <tbody>
         {% for item in items %}
         <tr>
