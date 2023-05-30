@@ -45,7 +45,7 @@ def timer(*a, **kw):
             func_name = f"Finished function: < {func.__name__} >"
             stats = f"Runs: {iterations}, Full time: {sum(items):.3f}s, Average time: {(sum(items) / len(items)):.3f}s, Standard deviation: {stdev(items):.3f}"
             raw = f"Raw data: {items}"
-            print(f"{func_name}\n{stats}\n{raw}")
+            print(f"\n\n{func_name}\n{stats}\n{raw}")
             return return_value
 
         return wrap_func

@@ -79,13 +79,13 @@ $(function () {
                     enabled: true,
                     format: '{point.y:,.0f}',
                     verticalAlign:'top',
-                    color: '#77933c',
+                    color: '#2d5f2e',
                     style: {
                         textOutline: 0,
                     },
                 },
                 enableMouseTracking: false,
-                fillOpacity: 0.65,
+                fillOpacity: 0.6,
             },
             line: {
                 dataLabels: {
@@ -104,11 +104,12 @@ $(function () {
             name: chartData.salary_title,
             data: chartData.salary,
             type: 'area',
-            color: '#98bc62',
+            color: '#5D9C59',
         }, {
             name: chartData.incomes_title,
             data: chartData.incomes,
             type: 'line',
+            lineWidth: 2,
             color: '#2d5f2e',
         }],
     });

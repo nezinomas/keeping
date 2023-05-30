@@ -1,5 +1,3 @@
-import calendar
-
 from django.urls import reverse_lazy
 
 from ..core.lib.convert_price import PlansConvertToCents

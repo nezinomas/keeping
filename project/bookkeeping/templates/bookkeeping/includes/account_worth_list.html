@@ -6,7 +6,7 @@
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
-            <th class="text-start" colspan="2">{% regenerate_balances type='accounts' %} {% translate 'Accounts' %}</th>
+            <th class="text-start">{% regenerate_balances type='accounts' %} {% translate 'Accounts' %}</th>
             <th>{% translate 'Past years' %}</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
@@ -18,10 +18,9 @@
     <tbody>
         {% for item in items %}
         <tr>
-            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" data-bs-title="{{ item.latest_check|default:_('Not specified') }}" class="text-start no-right-border">
+            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="left" data-bs-title="{{ item.latest_check|default:_('Not specified') }}" class="text-start no-right-border">
                 {{ item.account.title }}
             </td>
-            <td class="no-left-border w5"></td>
             {% table_cell value=item.past|price css_class='w7' %}
             {% table_cell value=item.incomes|price css_class='w7' %}
             {% table_cell value=item.expenses|price css_class='w7' %}
@@ -33,7 +32,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-start" colspan="2">{% translate 'Total' %}</th>
+            <th class="text-start">{% translate 'Total' %}</th>
             {% table_cell value=total_row.past|price tag="th" %}
             {% table_cell value=total_row.incomes|price tag="th" %}
             {% table_cell value=total_row.expenses|price tag="th" %}

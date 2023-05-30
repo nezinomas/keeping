@@ -3,14 +3,28 @@
 {% load i18n %}
 {% load slippers %}
 {% load math %}
+{% load cache %}
 
 
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
             <th class="text-start">{% translate 'Title' %}</th>
-            {% for month in months %}<th class="w7p">{{ month }}</th>{% endfor %}
+            {% cache 500 toprow %}
+            <th class="w7p">{% translate 'January' %}</th>
+            <th class="w7p">{% translate 'February' %}</th>
+            <th class="w7p">{% translate 'March' %}</th>
+            <th class="w7p">{% translate 'April' %}</th>
+            <th class="w7p">{% translate 'May' %}</th>
+            <th class="w7p">{% translate 'June' %}</th>
+            <th class="w7p">{% translate 'July' %}</th>
+            <th class="w7p">{% translate 'August' %}</th>
+            <th class="w7p">{% translate 'September' %}</th>
+            <th class="w7p">{% translate 'October' %}</th>
+            <th class="w7p">{% translate 'November' %}</th>
+            <th class="w7p">{% translate 'December' %}</th>
             <th colspan="2"></th>
+            {% endcache %}
         </tr>
     </thead>
     <tbody>

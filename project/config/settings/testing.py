@@ -20,8 +20,7 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "",
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     }
 }
 
