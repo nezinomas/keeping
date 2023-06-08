@@ -149,7 +149,7 @@ div[class*="col"]>h6 {
     border-bottom: #000 solid .15rem !important;
 }
 
-.table tfoot {
+.table tfoot th {
     background-color: #f8f9fa;
     border-top: double #0359b0 !important;
 }
