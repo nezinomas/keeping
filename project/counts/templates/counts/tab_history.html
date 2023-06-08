@@ -16,6 +16,13 @@
         chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
     </script>
 </div>
+
+<div class="row">
+    <div class="col-lg"></div>
+    <div class="col-lg text-center"><h6>{% translate "Total" %}: {{records|floatformat:"0g"}}</h6></div>
+    <div class="col-lg"></div>
+</div>
+
 {% else %}
 
 {% include 'core/no_records.html' with data_missing=True %}
