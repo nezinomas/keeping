@@ -154,7 +154,7 @@ div[class*="col"]>h6 {
     border-top: double #0359b0 !important;
 }
 
-.table tfoot tr:not(:last-child) th{
+.table tfoot tr:not(:last-child) th {
     font-weight: normal;
 }
 
