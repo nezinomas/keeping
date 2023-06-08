@@ -33,7 +33,10 @@ class Stats:
 
     @property
     def number_of_records(self):
-        return self._df.select(pl.col("qty").sum())[0,0]
+        try:
+            return self._df.select(pl.col("qty").sum())[0,0]
+        except pl.ColumnNotFoundError:
+            return self._df.shape[0]
 
     def weekdays_stats(self) -> list[dict[int, float]]:
         """Returns [{'weekday': int, 'count': float}]"""
