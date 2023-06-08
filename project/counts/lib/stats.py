@@ -91,7 +91,7 @@ class Stats:
         # groupby year-month e.g. 1999-01
         return [
             {
-                "name": names[int(key[6:]) - 1],
+                "name": names[int(key[5:]) - 1],
                 "keys": ["x", "y", "value", "week", "date", "qty", "gap"],
                 "data": list(group),
             }
