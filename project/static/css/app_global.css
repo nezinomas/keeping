@@ -250,23 +250,23 @@ div[class*="col"]>h6 {
                                                                     Month View
 */
 .weekend-col {
-    --bs-table-accent-bg: rgb(202, 235, 204) !important;
+    --bs-table-bg-type: rgb(202, 235, 204) !important;
 }
 
 tr.current-day>td,
 tr.current-day>td.weekend-col {
-    --bs-table-accent-bg: #ffc107 !important;
+    --bs-table-bg-type: #ffc107 !important;
 }
 
 .table-hover tr:hover td,
 .table-hover tr.current-day:hover td {
-    --bs-table-accent-bg: #f9f6cf !important;
+    --bs-table-bg-type: #f9f6cf !important;
 }
 
 .table-hover tr.expand-expenses:hover,
 .table-hover tr.expand-expenses:hover td
 {
-    --bs-table-accent-bg: transparent !important;
+    --bs-table-bg-type: transparent !important;
 }
 
 .table td.expand-expenses {
@@ -298,11 +298,11 @@ tr.current-day>td.weekend-col {
 }
 
 .table-danger {
-    --bs-table-accent-bg: #f8d7da !important;
+    --bs-table-bg-type: #f8d7da !important;
 }
 
 .table-danger.-full {
-    --bs-table-accent-bg: #fe536a !important;
+    --bs-table-bg-type: #fe536a !important;
 }
 
 .table .empty-column {
