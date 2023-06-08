@@ -142,7 +142,7 @@ div[class*="col"]>h6 {
 }
 
 .table thead tr:last-child th {
-    background-color: #add8e6!important;
+    background-color: rgb(44, 175, 254, 0.35);
 }
 
 .table thead  {
