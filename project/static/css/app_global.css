@@ -246,6 +246,12 @@ div[class*="col"]>h6 {
     padding-left: .35rem!important;
 }
 
+.currently-reading-book {
+    --bs-table-bg: rgb(202, 235, 204) !important;
+    --bs-table-bg-type: rgb(202, 235, 204) !important;
+    --bs-table-striped-bg: rgb(202, 235, 204) !important;
+}
+
 /*
                                                                     Month View
 */
