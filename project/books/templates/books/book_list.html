@@ -24,7 +24,7 @@
                 {% url 'books:update' object.id as url_update %}
                 {% url 'books:delete' object.id as url_delete %}
 
-                <tr hx-get="{{ url_update }}{% if tab %}?tab={{ tab }}{% endif %}" hx-trigger="dblclick" hx-target="#dialog" class="{% if not object.ended %} teal{% endif %}">
+                <tr hx-get="{{ url_update }}{% if tab %}?tab={{ tab }}{% endif %}" hx-trigger="dblclick" hx-target="#dialog" class="{% if not object.ended %} currently-reading-book{% endif %}">
                     <td class="text-start">{{ forloop.revcounter }}</td>
                     <td class="text-start">{{ object.author }}</td>
                     <td class="text-start">„{{ object.title }}”</td>
