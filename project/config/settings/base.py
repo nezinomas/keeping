@@ -1,6 +1,6 @@
 import os
 
-import environ
+import tomllib
 from django.utils.translation import gettext_lazy as _
 
 
@@ -34,9 +34,12 @@ SITE_ROOT = os.path.dirname(BASE_DIR)
 PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
 
-# Take environment variables from .env file
-ENV = environ.Env()
-environ.Env.read_env(os.path.join(PROJECT_ROOT, ".env"))
+# Take environment variables from .conf file
+with open(os.path.join(PROJECT_ROOT, '.conf'), "rb") as f:
+    toml = tomllib.load(f)
+
+    ENV = toml["django"]
+    DB = toml["database"]
 
 
 # ================   SITE CONFIGURATION
@@ -46,7 +49,7 @@ LOGIN_URL = "users:login"
 
 
 # ================   MEDIA CONFIGURATION
-MEDIA_ROOT = ENV("MEDIA_ROOT", default=os.path.join(PROJECT_ROOT, "media"))
+MEDIA_ROOT = ENV["MEDIA_ROOT"]
 MEDIA_URL = "/media/"
 
 
@@ -61,7 +64,7 @@ TEMPLATE_DEBUG = DEBUG
 
 
 # ================   SECRET CONFIGURATION
-SECRET_KEY = ENV("SECRET_KEY")
+SECRET_KEY = ENV["SECRET_KEY"]
 
 
 # ================   SITE CONFIGURATION
@@ -69,15 +72,9 @@ ALLOWED_HOSTS = ["*"]
 
 
 # ================   DATABASE CONFIGURATION
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "OPTIONS": {
-            "read_default_file": os.path.join(PROJECT_ROOT, ".db"),
-        },
-    }
-}
+DATABASES = {"default": DB}
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
 
 # ================   GENERAL CONFIGURATION
 LANGUAGE_CODE = "en"
@@ -183,7 +180,7 @@ AUTH_PASSWORD_VALIDATORS = [
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-SALT = ENV("SALT")
+SALT = ENV["SALT"]
 
 
 BOOTSTRAP_DATEPICKER_PLUS = {

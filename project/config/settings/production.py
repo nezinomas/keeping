@@ -3,7 +3,7 @@ from .base import *
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
-ALLOWED_HOSTS = ENV.list("ALLOWED_HOSTS")
+ALLOWED_HOSTS = ENV["ALLOWED_HOSTS"]
 
 INSTALLED_APPS += []
 
@@ -58,7 +58,7 @@ LOGGING = {
         # Log to a text file that can be rotated by logrotate
         "logfile": {
             "class": "logging.handlers.WatchedFileHandler",
-            "filename": ENV('LOG_FILE'),
+            "filename": ENV["LOG_FILE"],
         },
     },
     "loggers": {
