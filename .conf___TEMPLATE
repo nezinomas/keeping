@@ -1,0 +1,15 @@
+[django]
+SECRET_KEY = "django secret key"
+SALT = "some password for additional security"
+DJANGO_SETTINGS_MODULE = "project.config.settings.develop"
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+MEDIA_ROOT = "\path\to\media\folder\"
+LOG_FILE = "path\to\log_file"
+
+[database]
+NAME = "database name"
+USER = "user"
+PASSWORD = "password"
+ENGINE = "django.db.backends.mysql"
+DEFAULT-CHARACTER-SET = "utf8"
+CONN_MAX_AGE = 600

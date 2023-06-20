@@ -27,7 +27,7 @@ profiles/
 *.egg
 .env
 .db
-*___TEMPLATE
+.conf
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

@@ -6,7 +6,7 @@ TEMPLATE_DEBUG = DEBUG
 
 
 # ================   project CONFIGURATION
-ALLOWED_HOSTS = ENV.list("ALLOWED_HOSTS")
+ALLOWED_HOSTS = ENV["ALLOWED_HOSTS"]
 
 
 # ================   APP CONFIGURATION
