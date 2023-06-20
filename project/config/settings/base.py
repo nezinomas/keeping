@@ -62,7 +62,7 @@ SECRET_KEY = ENV["SECRET_KEY"]
 SALT = ENV["SALT"]
 
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = []
 
 
 DATABASES = {"default": DB}
