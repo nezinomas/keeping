@@ -48,17 +48,14 @@ CONN_MAX_AGE = 600
 pip install -r requirements/develop.txt
 ```
 
-6. If you are using python version lower than 3.11 you must install tomli and tweak
+6. If you are using python version lower than 3.11 you must install tomli
 ```
 pip install toml
-```
 
-and change in files manage.py, wsgi.py, base.py
+change import in files manage.py, wsgi.py, base.py
 
-```
 import tomllib as toml > import tomli as toml
 ```
-
 
 7. Migrate the database (make sure you have mysql server running)
 ```
