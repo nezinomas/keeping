@@ -30,7 +30,7 @@ SALT = "some password for additional security"
 DJANGO_SETTINGS_MODULE = "project.config.settings.develop"
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 MEDIA_ROOT = "\path\to\media\folder\"
-LOG_FILE = "path\to\log_file"
+LOG_FILE = "\path\to\log_file.log"
 ```
 
 4. Define database connection parameters in `.conf` [database] section:
