@@ -27,6 +27,7 @@ profiles/
 *.egg
 .env
 .db
+.conf
 *___TEMPLATE
 
 # PyInstaller
