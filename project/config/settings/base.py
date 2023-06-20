@@ -1,6 +1,6 @@
 import os
 
-import tomllib
+import tomllib as toml
 from django.utils.translation import gettext_lazy as _
 
 
@@ -36,7 +36,7 @@ PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
 # Take environment variables from .conf file
 with open(os.path.join(PROJECT_ROOT, '.conf'), "rb") as f:
-    toml = tomllib.load(f)
+    toml = toml.load(f)
 
     ENV = toml["django"]
     DB = toml["database"]

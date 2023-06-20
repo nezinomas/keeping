@@ -48,17 +48,29 @@ CONN_MAX_AGE = 600
 pip install -r requirements/develop.txt
 ```
 
-6. Migrate the database (make sure you have mysql server running)
+6. If you are using python version lower than 3.11 you must install tomli and tweak
+```
+pip install toml
+```
+
+and change in files manage.py, wsgi.py, base.py
+
+```
+import tomllib as toml > import tomli as toml
+```
+
+
+7. Migrate the database (make sure you have mysql server running)
 ```
 python manage.py migrate
 ```
 
-7. Create a folder for media uploads if it is not created. Set permissions:
+8. Create a folder for media uploads if it is not created. Set permissions:
 ```
 mkdir media; chmod -R 755 media
 ```
 
-8. Run tests:
+9. Run tests:
 ```
 pytest -n auto -k "not webtest"
 ```

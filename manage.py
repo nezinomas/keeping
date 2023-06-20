@@ -2,7 +2,7 @@
 import os
 import sys
 
-import tomllib
+import tomllib as toml
 
 
 if __name__ == "__main__":
@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     # Take environment variables from .conf file
     with open(os.path.join(BASE_DIR, '.conf'), "rb") as f:
-        conf = tomllib.load(f)["django"]
+        conf = toml.load(f)["django"]
 
     # set settings file develop/productions/test
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", conf["DJANGO_SETTINGS_MODULE"])
