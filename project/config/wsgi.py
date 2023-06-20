@@ -10,7 +10,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 with open(os.path.join(BASE_DIR, '.conf'), "rb") as f:
     conf = toml.load(f)["django"]
 
-
 os.environ["DJANGO_SETTINGS_MODULE"] = conf["DJANGO_SETTINGS_MODULE"]
 
 application = get_wsgi_application()
