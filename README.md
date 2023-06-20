@@ -5,8 +5,8 @@
 
 https://stats.unknownbug.net
 ```
-username: *demo*
-password: *9J4wj#^zD0eFwS*
+username: demo
+password: 9J4wj#^zD0eFwS
 ```
 
 ***
