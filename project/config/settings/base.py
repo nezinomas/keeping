@@ -4,8 +4,6 @@ import tomllib as toml
 from django.utils.translation import gettext_lazy as _
 
 
-AUTH_USER_MODEL = "users.User"
-
 PROJECT_APPS = [
     "users",
     "accounts",
@@ -23,6 +21,9 @@ PROJECT_APPS = [
     "plans",
     "transactions",
 ]
+
+
+AUTH_USER_MODEL = "users.User"
 
 
 # ..\root_catalog\project_catalog\config
