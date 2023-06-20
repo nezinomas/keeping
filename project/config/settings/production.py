@@ -3,9 +3,12 @@ from .base import *
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
+
 ALLOWED_HOSTS = ENV["ALLOWED_HOSTS"]
 
+
 INSTALLED_APPS += []
+
 
 TEMPLATES[0]["OPTIONS"]["loaders"] = [
     [
@@ -31,7 +34,6 @@ CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"
 
 
-# EMAIL settings
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "localhost"
 EMAIL_PORT = 25

@@ -1,15 +1,12 @@
 from .base import *
 
-# ================   DEBUG CONFIGURATION
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 
-# ================   project CONFIGURATION
 ALLOWED_HOSTS = ENV["ALLOWED_HOSTS"]
 
 
-# ================   APP CONFIGURATION
 INSTALLED_APPS += [
     "debug_toolbar",
     "django_extensions",
@@ -25,15 +22,14 @@ STATICFILES_DIRS = [
 SHELL_PLUS_PRINT_SQL = True
 
 
-# ================   MIDDLEWARE CONFIGURATION
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     # 'pyinstrument.middleware.ProfilerMiddleware',
 ] + MIDDLEWARE
 
+
 # PYINSTRUMENT_PROFILE_DIR = 'profiles'
 
-# Overwriten TEMPLATE OPTION
 # disabled template cashing
 TEMPLATES[0]["OPTIONS"]["loaders"] = [
     "django.template.loaders.filesystem.Loader",
@@ -45,6 +41,7 @@ INTERNAL_IPS = (
     "127.0.0.1",
     "localhost",
 )
+
 
 DEBUG_TOOLBAR_PANELS = [
     "debug_toolbar.panels.versions.VersionsPanel",
@@ -71,11 +68,11 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 
-# ================   DUMMY CASHE
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     }
 }
+
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

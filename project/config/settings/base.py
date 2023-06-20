@@ -25,7 +25,6 @@ PROJECT_APPS = [
 ]
 
 
-# ================   PATH CONFIGURATION
 # ..\root_catalog\project_catalog\config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # ..\root_catalog\project_catalog
@@ -42,43 +41,34 @@ with open(os.path.join(PROJECT_ROOT, '.conf'), "rb") as f:
     DB = toml["database"]
 
 
-# ================   SITE CONFIGURATION
 LOGOUT_REDIRECT_URL = "bookkeeping:index"
 LOGIN_REDIRECT_URL = "bookkeeping:index"
 LOGIN_URL = "users:login"
 
 
-# ================   MEDIA CONFIGURATION
 MEDIA_ROOT = ENV["MEDIA_ROOT"]
 MEDIA_URL = "/media/"
 
 
-# ================   STATIC FILE CONFIGURATION
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(SITE_ROOT, "static")
 
 
-# ================   DEBUG CONFIGURATION
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 
-# ================   SECRET CONFIGURATION
 SECRET_KEY = ENV["SECRET_KEY"]
 
 
-# ================   SITE CONFIGURATION
 ALLOWED_HOSTS = ["*"]
 
 
-# ================   DATABASE CONFIGURATION
 DATABASES = {"default": DB}
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 
-# ================   GENERAL CONFIGURATION
 LANGUAGE_CODE = "en"
-
 LANGUAGES = [
     ("en", _("English")),
     ("lt", _("Lithuanian")),
@@ -92,7 +82,6 @@ USE_L10N = True
 USE_TZ = True
 
 
-# ================   TEMPLATE CONFIGURATION
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -114,7 +103,6 @@ TEMPLATES = [
 ]
 
 
-# ================   MIDDLEWARE CONFIGURATION
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -132,7 +120,6 @@ MIDDLEWARE = [
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
 
 
-# ================   APP CONFIGURATION
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -148,18 +135,15 @@ INSTALLED_APPS = [
     "django_htmx",
     "widget_tweaks",
 ]
-
 INSTALLED_APPS.extend(f"project.{app}" for app in PROJECT_APPS)
 
-# ================   URL CONFIGURATION
+
 ROOT_URLCONF = "project.config.urls"
 
 
-# ================   WSGI CONFIGURATION
 WSGI_APPLICATION = "project.config.wsgi.application"
 
 
-# ================   PASSWORD VALIDATORS CONFIGURATION
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -176,7 +160,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# ================   CRISPY FORMS
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
