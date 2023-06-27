@@ -15,7 +15,7 @@ INSTALLED_APPS += [
 
 STATIC_ROOT = None
 STATICFILES_DIRS = [
-    os.path.join(SITE_ROOT, "static"),
+    SITE_ROOT / "static",
 ]
 
 # print SQL queries in shell_plus

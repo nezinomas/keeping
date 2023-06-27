@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import tomllib as toml
 from django.utils.translation import gettext_lazy as _
@@ -26,16 +26,12 @@ PROJECT_APPS = [
 AUTH_USER_MODEL = "users.User"
 
 
-# ..\root_catalog\project_catalog\config
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# ..\root_catalog\project_catalog
-SITE_ROOT = os.path.dirname(BASE_DIR)
-# ..\project_catalog
-PROJECT_ROOT = os.path.dirname(SITE_ROOT)
+PROJECT_ROOT = Path().cwd()
+SITE_ROOT = PROJECT_ROOT / "project"
 
 
 # Take environment variables from .conf file
-with open(os.path.join(PROJECT_ROOT, '.conf'), "rb") as f:
+with open(PROJECT_ROOT / ".conf", "rb") as f:
     toml = toml.load(f)
 
     ENV = toml["django"]
@@ -52,7 +48,7 @@ MEDIA_URL = "/media/"
 
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(SITE_ROOT, "static")
+STATIC_ROOT = SITE_ROOT / "static"
 
 
 DEBUG = False
@@ -75,7 +71,7 @@ LANGUAGES = [
     ("en", _("English")),
     ("lt", _("Lithuanian")),
 ]
-LOCALE_PATHS = [os.path.join(SITE_ROOT, "locale")]
+LOCALE_PATHS = [SITE_ROOT / "locale"]
 
 
 TIME_ZONE = "UTC"
@@ -87,7 +83,7 @@ USE_TZ = True
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(SITE_ROOT, "templates")],
+        "DIRS": [SITE_ROOT / "templates"],
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
