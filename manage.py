@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 import os
 import sys
+from pathlib import Path
 
 import tomllib as toml
 
 
 if __name__ == "__main__":
     # Set the project base directory
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    BASE_DIR = Path().cwd()
 
     # Take environment variables from .conf file
-    with open(os.path.join(BASE_DIR, '.conf'), "rb") as f:
+    with open(BASE_DIR / ".conf", "rb") as f:
         conf = toml.load(f)["django"]
 
     # set settings file develop/productions/test
