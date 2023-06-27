@@ -1,7 +1,9 @@
 import os
 from pathlib import Path
+
 import tomllib as toml
 from django.core.wsgi import get_wsgi_application
+
 
 # Set the project base directory
 BASE_DIR = Path().cwd()
