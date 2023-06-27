@@ -29,7 +29,7 @@ AUTH_USER_MODEL = "users.User"
 PROJECT_ROOT = Path().cwd()
 SITE_ROOT = PROJECT_ROOT / "project"
 
-
+print(f'baes.py: {PROJECT_ROOT=} {SITE_ROOT=}')
 # Take environment variables from .conf file
 with open(PROJECT_ROOT / ".conf", "rb") as f:
     toml = toml.load(f)
