@@ -25,9 +25,9 @@ PROJECT_APPS = [
 
 AUTH_USER_MODEL = "users.User"
 
-
-PROJECT_ROOT = Path().cwd()
-SITE_ROOT = PROJECT_ROOT / "project"
+BASE_DIR = Path(__file__).absolute()
+PROJECT_ROOT = BASE_DIR.parent.parent.parent.parent
+SITE_ROOT = BASE_DIR.parent.parent.parent
 
 print(f'baes.py: {PROJECT_ROOT=} {SITE_ROOT=}')
 # Take environment variables from .conf file
