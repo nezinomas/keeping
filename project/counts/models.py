@@ -1,10 +1,11 @@
-import os
+from pathlib import Path
 
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
+
 from project.core.models import TitleAbstract
 
 from ..core.lib import utils
@@ -79,17 +80,19 @@ def _generate_counts_menu():
     journal = utils.get_user().journal
     qs = CountType.objects.related()
 
-    if qs:
-        journal_pk = str(journal.pk)
-        folder = os.path.join(settings.MEDIA_ROOT, journal_pk)
-        file = os.path.join(folder, "menu.html")
+    if not qs:
+        return
 
-        if not os.path.isdir(folder):
-            os.mkdir(folder)
+    journal_pk = str(journal.pk)
+    folder = Path(settings.MEDIA_ROOT) / journal_pk
+    file = folder / "menu.html"
 
-        content = render_to_string(
-            template_name="counts/menu.html", context={"slugs": qs}, request=None
-        )
+    if not folder.is_dir():
+        folder.mkdir()
 
-        with open(file, "w+", encoding="utf-8") as f:
-            f.write(content)
+    content = render_to_string(
+        template_name="counts/menu.html", context={"slugs": qs}, request=None
+    )
+
+    with open(file, "w+", encoding="utf-8") as f:
+        f.write(content)

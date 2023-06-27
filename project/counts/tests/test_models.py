@@ -1,7 +1,7 @@
-import os
 import shutil
 import tempfile
 from datetime import date
+from pathlib import Path
 
 import pytest
 from django.conf import settings
@@ -259,18 +259,18 @@ def test_count_type_update():
 @patch("project.counts.models.render_to_string")
 @patch("builtins.open")
 def test_menu_create_journal_id_folder(open_mock, render_mock, get_user):
-    journal_pk = str(get_user.journal.pk)
-    folder = os.path.join(settings.MEDIA_ROOT, journal_pk)
+    journal_pk = get_user.journal.pk
+    folder = Path(settings.MEDIA_ROOT) / str(journal_pk)
 
     # delete journal_pk folder
-    if os.path.isdir(folder):
+    if folder.is_dir():
         shutil.rmtree(folder)
 
-    assert not os.path.isdir(folder)
+    assert not folder.is_dir()
 
     CountTypeFactory()
 
-    assert os.path.isdir(folder)
+    assert folder.is_dir()
     assert render_mock.call_count == 1
     assert open_mock.call_count == 1
 
