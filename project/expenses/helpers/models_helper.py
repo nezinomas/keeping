@@ -8,7 +8,7 @@ def upload_attachment(instance, filename):
     if instance.pk:
         now = instance.date
 
-    f = f'{now.year}.{now.strftime("%m")}_{filename}'
+    file = f'{now.year}.{now.strftime("%m")}_{filename}'
 
     journal = str(instance.expense_type.journal.pk)
-    return os.path.join(journal, instance.expense_type.slug, f)
+    return os.path.join(journal, instance.expense_type.slug, file)
