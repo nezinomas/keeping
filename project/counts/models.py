@@ -80,17 +80,19 @@ def _generate_counts_menu():
     journal = utils.get_user().journal
     qs = CountType.objects.related()
 
-    if qs:
-        journal_pk = str(journal.pk)
-        folder = Path(settings.MEDIA_ROOT) / journal_pk
-        file = folder / "menu.html"
+    if not qs:
+        return
 
-        if not folder.is_dir():
-            folder.mkdir()
+    journal_pk = str(journal.pk)
+    folder = Path(settings.MEDIA_ROOT) / journal_pk
+    file = folder / "menu.html"
 
-        content = render_to_string(
-            template_name="counts/menu.html", context={"slugs": qs}, request=None
-        )
+    if not folder.is_dir():
+        folder.mkdir()
 
-        with open(file, "w+", encoding="utf-8") as f:
-            f.write(content)
+    content = render_to_string(
+        template_name="counts/menu.html", context={"slugs": qs}, request=None
+    )
+
+    with open(file, "w+", encoding="utf-8") as f:
+        f.write(content)
