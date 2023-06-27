@@ -8,7 +8,7 @@ import tomllib as toml
 
 if __name__ == "__main__":
     # Set the project base directory
-    BASE_DIR = Path().cwd()
+    BASE_DIR = Path(__file__).cwd()
 
     # Take environment variables from .conf file
     with open(BASE_DIR / ".conf", "rb") as f:
