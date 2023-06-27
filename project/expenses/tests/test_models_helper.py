@@ -1,5 +1,5 @@
-import os
 from datetime import date
+from pathlib import Path
 
 import pytest
 from django.core.files import File
@@ -19,7 +19,7 @@ def test_upload_attachment(get_user):
 
     actual = T.upload_attachment(e, f)
 
-    assert actual == os.path.join(str(get_user.journal.pk), e.expense_type.slug, '1000.01_x.jpg')
+    assert actual == Path(str(get_user.journal.pk)) / e.expense_type.slug / '1000.01_x.jpg'
 
 
 @override_storage()
