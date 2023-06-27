@@ -25,9 +25,11 @@ PROJECT_APPS = [
 
 AUTH_USER_MODEL = "users.User"
 
+
 BASE_DIR = Path(__file__).absolute()
 PROJECT_ROOT = BASE_DIR.parent.parent.parent.parent
 SITE_ROOT = BASE_DIR.parent.parent.parent
+
 
 # Take environment variables from .conf file
 with open(PROJECT_ROOT / ".conf", "rb") as f:
