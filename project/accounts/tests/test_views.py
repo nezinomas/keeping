@@ -58,8 +58,8 @@ def test_account_update(client_logged):
     assert "Title" in actual
 
 
-def test_account_not_load_other_journal(client_logged, main_user, second_user):
-    AccountFactory(title="xxx", journal=main_user.journal)
+def test_account_not_load_other_journal(client_logged, second_user):
+    AccountFactory(title="xxx")
     a2 = AccountFactory(title="yyy", journal=second_user.journal)
 
     url = reverse("accounts:update", kwargs={"pk": a2.pk})
@@ -109,9 +109,9 @@ def test_load_to_account_must_logged(client):
     assert response.resolver_match.func.view_class is Login
 
 
-def test_load_to_account(client_logged, main_user, second_user):
-    a1 = AccountFactory(title="A1", journal=main_user.journal)
-    AccountFactory(title="A2", journal=main_user.journal)
+def test_load_to_account(client_logged, second_user):
+    a1 = AccountFactory(title="A1")
+    AccountFactory(title="A2")
     AccountFactory(title="A3", journal=second_user.journal)
 
     url = reverse("accounts:load")

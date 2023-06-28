@@ -83,9 +83,9 @@ def test_index_context(client_logged):
         ('stdav', 'Std Av'),
     ]
 )
-def test_index_select_drink_drop_down_title(drink_type, expect, main_user, client_logged):
-    main_user.drink_type = drink_type
-    main_user.save()
+def test_index_select_drink_drop_down_title(drink_type, expect, get_user, client_logged):
+    get_user.drink_type = drink_type
+    get_user.save()
 
     url = reverse('drinks:index')
     response = client_logged.get(url)
@@ -866,9 +866,9 @@ def test_select_drinks_set_drink_type(client_logged):
     assert actual.drink_type == 'wine'
 
 
-def test_select_drinks_set_default_drink_type(main_user, client_logged):
-    main_user.drink_type = 'wine'
-    main_user.save()
+def test_select_drinks_set_default_drink_type(get_user, client_logged):
+    get_user.drink_type = 'wine'
+    get_user.save()
 
     assert User.objects.first().drink_type == 'wine'
 

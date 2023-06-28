@@ -99,8 +99,8 @@ def test_pension_init_fields():
     assert '<textarea name="remark"' in form
 
 
-def test_saving_current_user_types(main_user, second_user):
-    PensionTypeFactory(title='T1', journal=main_user.journal)  # user bob, current user
+def test_saving_current_user_types(second_user):
+    PensionTypeFactory(title='T1')  # user bob, current user
     PensionTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     form = PensionForm().as_p()

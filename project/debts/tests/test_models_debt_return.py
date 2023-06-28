@@ -34,8 +34,8 @@ def test_debt_return_fields():
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
-def test_lend_return_related(mck, main_user, second_user):
-    b1 = LendFactory(name='B1', price=1, journal=main_user.journal)
+def test_lend_return_related(mck, second_user):
+    b1 = LendFactory(name='B1', price=1)
     b2 = LendFactory(name='B2', price=2, journal=second_user.journal)
 
     LendReturnFactory(debt=b1, price=1.1)
@@ -48,8 +48,8 @@ def test_lend_return_related(mck, main_user, second_user):
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
-def test_borrow_return_related(mck, main_user, second_user):
-    b1 = BorrowFactory(name='B1', price=1, journal=main_user.journal)
+def test_borrow_return_related(mck, second_user):
+    b1 = BorrowFactory(name='B1', price=1)
     b2 = BorrowFactory(name='B2', price=2, journal=second_user.journal)
 
     BorrowReturnFactory(debt=b1, price=1.1)

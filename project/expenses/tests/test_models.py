@@ -102,8 +102,8 @@ def test_expense_type_related_qs_count(django_assert_max_num_queries):
         list(q.title for q in ExpenseType.objects.items())
 
 
-def test_post_save_expense_type_insert_new(main_user):
-    obj = ExpenseType(title='e1', journal=main_user.journal)
+def test_post_save_expense_type_insert_new(get_user):
+    obj = ExpenseType(title='e1', journal=get_user.journal)
     obj.save()
 
     actual = AccountBalance.objects.items()
@@ -117,8 +117,8 @@ def test_expense_type_unique_user():
     ExpenseType.objects.create(title='T1', user=UserFactory())
 
 
-def test_expense_type_unique_users(main_user, second_user):
-    ExpenseType.objects.create(title='T1', journal=main_user.journal)
+def test_expense_type_unique_users(get_user, second_user):
+    ExpenseType.objects.create(title='T1', journal=get_user.journal)
     ExpenseType.objects.create(title='T1', journal=second_user.journal)
 
 
@@ -145,8 +145,8 @@ def test_expense_name_items():
     assert actual.count() == 2
 
 
-def test_expense_name_related_different_users(main_user, second_user):
-    t1 = ExpenseTypeFactory(title='T1', journal=main_user.journal) # user bob
+def test_expense_name_related_different_users(second_user):
+    t1 = ExpenseTypeFactory(title='T1') # user bob
     t2 = ExpenseTypeFactory(title='T2', journal=second_user.journal) # user X
 
     ExpenseNameFactory(title='N1', parent=t1)

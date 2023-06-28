@@ -26,8 +26,8 @@ def _drinks(second_user):
 # ----------------------------------------------------------------------------
 #                                                                        Drink
 # ----------------------------------------------------------------------------
-def test_drink_related(main_user, second_user):
-    DrinkFactory(user=main_user)
+def test_drink_related(second_user):
+    DrinkFactory()
     DrinkFactory(user=second_user)
 
     actual = Drink.objects.related()
@@ -36,8 +36,8 @@ def test_drink_related(main_user, second_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_items(main_user, second_user):
-    DrinkFactory(user=main_user)
+def test_drink_items(second_user):
+    DrinkFactory()
     DrinkFactory(user=second_user)
 
     actual = Drink.objects.items()
@@ -46,8 +46,8 @@ def test_drink_items(main_user, second_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_items_different_counters(main_user, second_user):
-    DrinkFactory(user=main_user)
+def test_drink_items_different_counters(second_user):
+    DrinkFactory()
     DrinkFactory(user=second_user)
 
     actual = Drink.objects.items()
@@ -55,8 +55,8 @@ def test_drink_items_different_counters(main_user, second_user):
     assert len(actual) == 1
 
 
-def test_drink_items_different_counters_default_value(main_user, second_user):
-    DrinkFactory(user=main_user)
+def test_drink_items_different_counters_default_value(second_user):
+    DrinkFactory()
     DrinkFactory(user=second_user)
 
     actual = Drink.objects.items()
@@ -64,8 +64,8 @@ def test_drink_items_different_counters_default_value(main_user, second_user):
     assert len(actual) == 1
 
 
-def test_drink_year(main_user, second_user):
-    DrinkFactory(user=main_user)
+def test_drink_year(second_user):
+    DrinkFactory()
     DrinkFactory(user=second_user)
 
     actual = list(Drink.objects.year(1999))

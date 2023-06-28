@@ -361,8 +361,8 @@ def test_type_update(client_logged):
     assert "TTT" in actual
 
 
-def test_income_type_not_load_other_journal(client_logged, main_user, second_user):
-    IncomeTypeFactory(title="xxx", journal=main_user.journal)
+def test_income_type_not_load_other_journal(client_logged, second_user):
+    IncomeTypeFactory(title="xxx")
     obj = IncomeTypeFactory(title="yyy", journal=second_user.journal)
 
     url = reverse("incomes:type_update", kwargs={"pk": obj.pk})

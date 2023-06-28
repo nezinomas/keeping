@@ -346,8 +346,8 @@ def test_expense_type_unique_name():
     assert not form.is_valid()
 
 
-def test_form_expense_type_and_second_user(main_user, second_user):
-    ExpenseTypeFactory(title='T1', journal=main_user.journal)
+def test_form_expense_type_and_second_user(second_user):
+    ExpenseTypeFactory(title='T1')
     ExpenseTypeFactory(title='T2', journal=second_user.journal)
 
     form = ExpenseForm().as_p()

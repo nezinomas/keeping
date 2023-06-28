@@ -48,8 +48,8 @@ def test_saving_type_get_absolute_url():
     assert obj.get_absolute_url() == reverse('savings:type_update', kwargs={'pk': obj.pk})
 
 
-def test_saving_type_items_user(main_user, second_user):
-    SavingTypeFactory(title='T1', journal=main_user.journal)
+def test_saving_type_items_user(second_user):
+    SavingTypeFactory(title='T1')
     SavingTypeFactory(title='T2', journal=second_user.journal)
 
     actual = SavingType.objects.items()
@@ -117,13 +117,13 @@ def test_saving_type_items_closed_in_current_year(get_user):
 
 
 @pytest.mark.xfail
-def test_saving_type_unique_for_journal(main_user):
-    SavingType.objects.create(title='T1', journal=main_user.journal)
-    SavingType.objects.create(title='T1', journal=main_user.journal)
+def test_saving_type_unique_for_journal(get_user):
+    SavingType.objects.create(title='T1', journal=get_user.journal)
+    SavingType.objects.create(title='T1', journal=get_user.journal)
 
 
-def test_saving_type_unique_for_journals(main_user, second_user):
-    SavingType.objects.create(title='T1', journal=main_user.journal)
+def test_saving_type_unique_for_journals(get_user, second_user):
+    SavingType.objects.create(title='T1', journal=get_user.journal)
     SavingType.objects.create(title='T1', journal=second_user.journal)
 
 
@@ -142,8 +142,8 @@ def test_saving_get_absolute_url():
     assert obj.get_absolute_url() == reverse('savings:update', kwargs={'pk': obj.pk})
 
 
-def test_saving_related(main_user, second_user):
-    t1 = SavingTypeFactory(title='T1', journal=main_user.journal)
+def test_saving_related(second_user):
+    t1 = SavingTypeFactory(title='T1')
     t2 = SavingTypeFactory(title='T2', journal=second_user.journal)
 
     SavingFactory(saving_type=t1)
@@ -637,8 +637,8 @@ def test_saving_balance_str():
 
 
 @pytest.mark.django_db
-def test_saving_balance_related_for_user(main_user, second_user):
-    s1 = SavingTypeFactory(title='S1', journal=main_user.journal)
+def test_saving_balance_related_for_user(second_user):
+    s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', journal=second_user.journal)
 
     SavingFactory(saving_type=s1)

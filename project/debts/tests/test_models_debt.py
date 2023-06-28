@@ -422,8 +422,8 @@ def test_borrow_post_delete_with_updt():
     assert actual.balance == 1.0
 
 
-def test_debt_unique_users(main_user, second_user):
-    LendFactory(name='T1', journal=main_user.journal)
+def test_debt_unique_users(second_user):
+    LendFactory(name='T1')
     LendFactory(name='T1', journal=second_user.journal)
 
 
