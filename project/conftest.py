@@ -22,6 +22,26 @@ from .transactions.factories import (
 from .users.factories import UserFactory
 
 
+@pytest.fixture(autouse=True)
+def main_user(monkeypatch, request):
+    if "disable_get_user_patch" in request.keywords:
+        return
+
+    if "django_db" in request.keywords:
+        user = UserFactory()
+
+        jr = user.journal
+        jr.first_record = date(1999, 1, 1)
+        jr.save()
+    else:
+        user = UserFactory.build()
+
+    mock_func = "project.core.lib.utils.get_user"
+    monkeypatch.setattr(mock_func, lambda: user)
+
+    return user
+
+
 @pytest.fixture()
 def second_user(request):
     if "django_db" in request.keywords:
@@ -42,26 +62,6 @@ def fake_request(rf):
     request.user = UserFactory.build()
 
     return request
-
-
-@pytest.fixture(autouse=True)
-def main_user(monkeypatch, request):
-    if "disable_get_user_patch" in request.keywords:
-        return
-
-    if "django_db" in request.keywords:
-        user = UserFactory()
-
-        jr = user.journal
-        jr.first_record = date(1999, 1, 1)
-        jr.save()
-    else:
-        user = UserFactory.build()
-
-    mock_func = "project.core.lib.utils.get_user"
-    monkeypatch.setattr(mock_func, lambda: user)
-
-    return user
 
 
 @pytest.fixture()
