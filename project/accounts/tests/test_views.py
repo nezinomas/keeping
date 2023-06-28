@@ -92,12 +92,13 @@ def test_load_to_account_func():
     assert views.LoadAccount is view.func.view_class
 
 
-def test_load_to_account_form(client_logged):
-    url = reverse("accounts:new")
+def test_load_to_account_form_200(tp, client_logged):
+    assert tp.get_check_200("accounts:new")
 
-    response = client_logged.get(url)
 
-    assert response.status_code == 200
+def test_load_to_account_form_302(tp, client):
+    response = tp.get("accounts:new", follow=False)
+    assert response.status_code == 302
 
 
 def test_load_to_account_must_logged(client):
