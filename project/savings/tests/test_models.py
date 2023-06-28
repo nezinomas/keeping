@@ -86,8 +86,8 @@ def test_saving_type_day_sum_empty_month(savings):
     assert expect == actual
 
 
-def test_saving_type_items_closed_in_past(get_user):
-    get_user.year = 3000
+def test_saving_type_items_closed_in_past(main_user):
+    main_user.year = 3000
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
@@ -96,8 +96,8 @@ def test_saving_type_items_closed_in_past(get_user):
     assert actual.count() == 1
 
 
-def test_saving_type_items_closed_in_future(get_user):
-    get_user.year = 1000
+def test_saving_type_items_closed_in_future(main_user):
+    main_user.year = 1000
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
@@ -106,8 +106,8 @@ def test_saving_type_items_closed_in_future(get_user):
     assert actual.count() == 2
 
 
-def test_saving_type_items_closed_in_current_year(get_user):
-    get_user.year = 2000
+def test_saving_type_items_closed_in_current_year(main_user):
+    main_user.year = 2000
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
@@ -117,13 +117,13 @@ def test_saving_type_items_closed_in_current_year(get_user):
 
 
 @pytest.mark.xfail
-def test_saving_type_unique_for_journal(get_user):
-    SavingType.objects.create(title='T1', journal=get_user.journal)
-    SavingType.objects.create(title='T1', journal=get_user.journal)
+def test_saving_type_unique_for_journal(main_user):
+    SavingType.objects.create(title='T1', journal=main_user.journal)
+    SavingType.objects.create(title='T1', journal=main_user.journal)
 
 
-def test_saving_type_unique_for_journals(get_user, second_user):
-    SavingType.objects.create(title='T1', journal=get_user.journal)
+def test_saving_type_unique_for_journals(main_user, second_user):
+    SavingType.objects.create(title='T1', journal=main_user.journal)
     SavingType.objects.create(title='T1', journal=second_user.journal)
 
 

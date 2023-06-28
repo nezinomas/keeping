@@ -209,8 +209,8 @@ def test_std_av_past_recods():
         ('stdav', 10, 0.1),
     ]
 )
-def test_tbl_alcohol(drink_type, qty, expect, get_user):
-    get_user.drink_type = drink_type
+def test_tbl_alcohol(drink_type, qty, expect, main_user):
+    main_user.drink_type = drink_type
 
     stats = SimpleNamespace(
         year=1999,

@@ -42,8 +42,8 @@ def test_pension_type_unique_for_journal():
     PensionType.objects.create(title='T1')
 
 
-def test_pension_type_unique_for_journals(get_user, second_user):
-    PensionType.objects.create(title='T1', journal=get_user.journal)
+def test_pension_type_unique_for_journals(main_user, second_user):
+    PensionType.objects.create(title='T1', journal=main_user.journal)
     PensionType.objects.create(title='T1', journal=second_user.journal)
 
 

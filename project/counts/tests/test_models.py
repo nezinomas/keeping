@@ -175,8 +175,8 @@ def test_count_type_unique_for_user():
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_count_type_unique_for_users(get_user, second_user):
-    CountType.objects.create(title="T", user=get_user)
+def test_count_type_unique_for_users(main_user, second_user):
+    CountType.objects.create(title="T", user=main_user)
     CountType.objects.create(title="T", user=second_user)
 
 
@@ -258,8 +258,8 @@ def test_count_type_update():
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch("project.counts.models.render_to_string")
 @patch("builtins.open")
-def test_menu_create_journal_id_folder(open_mock, render_mock, get_user):
-    journal_pk = get_user.journal.pk
+def test_menu_create_journal_id_folder(open_mock, render_mock, main_user):
+    journal_pk = main_user.journal.pk
     folder = Path(settings.MEDIA_ROOT) / str(journal_pk)
 
     # delete journal_pk folder

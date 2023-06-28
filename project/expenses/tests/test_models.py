@@ -102,8 +102,8 @@ def test_expense_type_related_qs_count(django_assert_max_num_queries):
         list(q.title for q in ExpenseType.objects.items())
 
 
-def test_post_save_expense_type_insert_new(get_user):
-    obj = ExpenseType(title='e1', journal=get_user.journal)
+def test_post_save_expense_type_insert_new(main_user):
+    obj = ExpenseType(title='e1', journal=main_user.journal)
     obj.save()
 
     actual = AccountBalance.objects.items()
@@ -117,8 +117,8 @@ def test_expense_type_unique_user():
     ExpenseType.objects.create(title='T1', user=UserFactory())
 
 
-def test_expense_type_unique_users(get_user, second_user):
-    ExpenseType.objects.create(title='T1', journal=get_user.journal)
+def test_expense_type_unique_users(main_user, second_user):
+    ExpenseType.objects.create(title='T1', journal=main_user.journal)
     ExpenseType.objects.create(title='T1', journal=second_user.journal)
 
 
@@ -220,12 +220,12 @@ def test_expense_fields_types():
 
 @override_storage()
 @time_machine.travel("1974-1-1")
-def test_expense_attachment_field(get_user):
+def test_expense_attachment_field(main_user):
     file_mock = mock.MagicMock(spec=File, name='FileMock')
     file_mock.name = 'test1.jpg'
 
     e = ExpenseFactory(attachment=file_mock)
-    pk = str(get_user.journal.pk)
+    pk = str(main_user.journal.pk)
 
     assert str(e.attachment) == f'{pk}/expense-type/1974.01_test1.jpg'
 

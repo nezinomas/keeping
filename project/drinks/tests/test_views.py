@@ -83,9 +83,9 @@ def test_index_context(client_logged):
         ('stdav', 'Std Av'),
     ]
 )
-def test_index_select_drink_drop_down_title(drink_type, expect, get_user, client_logged):
-    get_user.drink_type = drink_type
-    get_user.save()
+def test_index_select_drink_drop_down_title(drink_type, expect, main_user, client_logged):
+    main_user.drink_type = drink_type
+    main_user.save()
 
     url = reverse('drinks:index')
     response = client_logged.get(url)
@@ -187,8 +187,8 @@ def test_tab_index_drinked_date(client_logged):
     ]
 )
 @time_machine.travel("1999-12-31")
-def test_tab_index_chart_consumption_avg(user_drink_type, drink_type, expect, get_user, client_logged):
-    get_user.drink_type = user_drink_type
+def test_tab_index_chart_consumption_avg(user_drink_type, drink_type, expect, main_user, client_logged):
+    main_user.drink_type = user_drink_type
 
     DrinkFactory(quantity=10, option=drink_type)
 
@@ -207,8 +207,8 @@ def test_tab_index_chart_consumption_avg(user_drink_type, drink_type, expect, ge
         ('beer', 'vodka', 4000),
     ]
 )
-def test_tab_index_chart_consumption_limit(user_drink_type, drink_type, expect, get_user, client_logged):
-    get_user.drink_type = user_drink_type
+def test_tab_index_chart_consumption_limit(user_drink_type, drink_type, expect, main_user, client_logged):
+    main_user.drink_type = user_drink_type
 
     DrinkFactory()
     DrinkTargetFactory(quantity=500, drink_type=drink_type)
@@ -344,8 +344,8 @@ def test_tab_history_drinks_years(client_logged):
     ]
 )
 @time_machine.travel('1999-12-31')
-def test_tab_history_drinks_data_ml(user_drink_type, drink_type, ml, get_user, client_logged):
-    get_user.drink_type = user_drink_type
+def test_tab_history_drinks_data_ml(user_drink_type, drink_type, ml, main_user, client_logged):
+    main_user.drink_type = user_drink_type
 
     DrinkFactory(date=date(1999, 1, 1), quantity=1, option=drink_type)
     DrinkFactory(date=date(1998, 1, 1), quantity=2, option=drink_type)
@@ -365,8 +365,8 @@ def test_tab_history_drinks_data_ml(user_drink_type, drink_type, ml, get_user, c
         ('beer', 'vodka', [0.8, 0.4]),
     ]
 )
-def test_tab_history_drinks_data_alcohol(user_drink_type, drink_type, expect, get_user, client_logged):
-    get_user.drink_type = user_drink_type
+def test_tab_history_drinks_data_alcohol(user_drink_type, drink_type, expect, main_user, client_logged):
+    main_user.drink_type = user_drink_type
 
     DrinkFactory(quantity=1, option=drink_type)
     DrinkFactory(date=date(1998, 1, 1), quantity=2, option=drink_type)
@@ -403,8 +403,8 @@ def test_tab_history_categories_with_empty_year_in_between(fake_request):
         ('beer', 'vodka', [21.92, 0.0], [0.4, 0.0]),
     ]
 )
-def test_tab_history_categories_with_empty_current_year(user_drink_type, drink_type, ml, alcohol, get_user, fake_request):
-    get_user.drink_type = user_drink_type
+def test_tab_history_categories_with_empty_current_year(user_drink_type, drink_type, ml, alcohol, main_user, fake_request):
+    main_user.drink_type = user_drink_type
 
     DrinkFactory(date=date(1998, 1, 1), quantity=1, option=drink_type)
 
@@ -804,8 +804,8 @@ def test_target_update(drink_type, ml, expect, client_logged):
         ('vodka', 'vodka', 1000, '1.000,0', '365'),
     ]
 )
-def test_target_lists(user_drink_type, drink_type, ml, expect_ml, expect_pcs, get_user, client_logged):
-    get_user.drink_type = user_drink_type
+def test_target_lists(user_drink_type, drink_type, ml, expect_ml, expect_pcs, main_user, client_logged):
+    main_user.drink_type = user_drink_type
 
     DrinkTargetFactory(drink_type=drink_type, quantity=ml)
 
@@ -866,9 +866,9 @@ def test_select_drinks_set_drink_type(client_logged):
     assert actual.drink_type == 'wine'
 
 
-def test_select_drinks_set_default_drink_type(get_user, client_logged):
-    get_user.drink_type = 'wine'
-    get_user.save()
+def test_select_drinks_set_default_drink_type(main_user, client_logged):
+    main_user.drink_type = 'wine'
+    main_user.save()
 
     assert User.objects.first().drink_type == 'wine'
 

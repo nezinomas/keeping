@@ -13,18 +13,18 @@ pytestmark = pytest.mark.django_db
 
 
 
-def test_upload_attachment(get_user):
+def test_upload_attachment(main_user):
     e = ExpenseFactory(date=date(1000, 1, 1))
     f = 'x.jpg'
 
     actual = T.upload_attachment(e, f)
 
-    assert actual == Path(str(get_user.journal.pk)) / e.expense_type.slug / '1000.01_x.jpg'
+    assert actual == Path(str(main_user.journal.pk)) / e.expense_type.slug / '1000.01_x.jpg'
 
 
 @override_storage()
 @pytest.mark.django_db
-def test_upload_attachment_on_update(get_user):
+def test_upload_attachment_on_update(main_user):
     e = ExpenseFactory()
 
     file_mock = MagicMock(spec=File, name='FileMock')
@@ -34,4 +34,4 @@ def test_upload_attachment_on_update(get_user):
 
     e.save()
 
-    assert e.attachment.name == f'{get_user.journal.pk}/expense-type/1999.01_x.jpg'
+    assert e.attachment.name == f'{main_user.journal.pk}/expense-type/1999.01_x.jpg'

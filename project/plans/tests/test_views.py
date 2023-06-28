@@ -956,11 +956,11 @@ def test_copy_fails(client_logged):
     assert not form.is_valid()
 
 
-def test_copy_year_to_same_as_user_year(get_user, client_logged):
+def test_copy_year_to_same_as_user_year(main_user, client_logged):
     IncomePlanFactory(year=1999)
 
-    get_user.year = 2000
-    get_user.save()
+    main_user.year = 2000
+    main_user.save()
 
     data = {'year_from': '1999', 'year_to': '2000', 'income': True}
 

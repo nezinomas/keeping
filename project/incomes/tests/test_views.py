@@ -207,8 +207,8 @@ def test_income_update_htmx_trigger_value(client_logged):
 
 
 @time_machine.travel("2000-03-03")
-def test_income_update_past_record(get_user, client_logged):
-    get_user.year = 2000
+def test_income_update_past_record(main_user, client_logged):
+    main_user.year = 2000
     i = IncomeFactory(date=date(1974, 12, 12))
 
     data = {

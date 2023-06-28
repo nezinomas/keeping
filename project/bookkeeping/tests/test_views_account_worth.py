@@ -136,11 +136,11 @@ def test_formset_invalid_data(client_logged):
     assert "account" in actual.errors[0]
 
 
-def test_formset_closed_in_past(get_user, fake_request):
+def test_formset_closed_in_past(main_user, fake_request):
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=1000)
 
-    get_user.year = 2000
+    main_user.year = 2000
 
     view = setup_view(views.AccountsWorthNew(), fake_request)
 
@@ -150,11 +150,11 @@ def test_formset_closed_in_past(get_user, fake_request):
     assert "S2" not in actual
 
 
-def test_formset_closed_in_current(get_user, fake_request):
+def test_formset_closed_in_current(main_user, fake_request):
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=1000)
 
-    get_user.year = 1000
+    main_user.year = 1000
 
     view = setup_view(views.AccountsWorthNew(), fake_request)
 
@@ -164,11 +164,11 @@ def test_formset_closed_in_current(get_user, fake_request):
     assert "S2" in actual
 
 
-def test_formset_closed_in_future(get_user, fake_request):
+def test_formset_closed_in_future(main_user, fake_request):
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=1000)
 
-    get_user.year = 1
+    main_user.year = 1
 
     view = setup_view(views.AccountsWorthNew(), fake_request)
 

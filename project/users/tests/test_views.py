@@ -559,9 +559,9 @@ def test_invite_func():
     assert view.func.view_class is views.Invite
 
 
-def test_invite_user_must_be_superuser(get_user, client_logged):
-    get_user.is_superuser = False
-    get_user.save()
+def test_invite_user_must_be_superuser(main_user, client_logged):
+    main_user.is_superuser = False
+    main_user.save()
 
     url = reverse("users:invite")
 
@@ -582,9 +582,9 @@ def test_invite_link_is_superuser(client_logged):
     assert link in content
 
 
-def test_invite_no_link_ordinary_user(get_user, client_logged):
-    get_user.is_superuser = False
-    get_user.save()
+def test_invite_no_link_ordinary_user(main_user, client_logged):
+    main_user.is_superuser = False
+    main_user.save()
 
     url = reverse("users:settings_index")
 
@@ -630,16 +630,16 @@ def test_invite_form_inputs(client_logged):
     assert form.count('type="email"') == 1
 
 
-def test_invite_email_subject(client_logged, get_user):
+def test_invite_email_subject(client_logged, main_user):
     url = reverse("users:invite")
     client_logged.post(url, {"email": "john@test.com"})
 
     email = mail.outbox[0].subject
 
-    assert email == f"{get_user.username} invitation"
+    assert email == f"{main_user.username} invitation"
 
 
-def test_invite_crypted_link(client_logged, get_user):
+def test_invite_crypted_link(client_logged, main_user):
     url = reverse("users:invite")
     client_logged.post(url, {"email": "john@test.com"})
     email = mail.outbox[0].body
@@ -647,17 +647,17 @@ def test_invite_crypted_link(client_logged, get_user):
     token = re.findall(r"http://.*?\/([\w\-]{23,}:[\w\-]{6}:[\w\-]{43})", email)[0]
     signer = TimestampSigner(salt=settings.SALT)
     actual = signer.unsign_object(token, max_age=timedelta(days=3))
-    expect = {"jrn": get_user.journal.pk, "usr": get_user.pk}
+    expect = {"jrn": main_user.journal.pk, "usr": main_user.pk}
 
     assert expect == actual
 
 
-def test_invite_body(client_logged, get_user):
+def test_invite_body(client_logged, main_user):
     url = reverse("users:invite")
     client_logged.post(url, {"email": "john@test.com"})
     email = mail.outbox[0].body
 
-    assert get_user.username in email
+    assert main_user.username in email
     assert reverse("users:invite") in email
 
 
@@ -687,9 +687,9 @@ def test_invite_done_context(client_logged):
 #                                                                           Invite Signup
 # ---------------------------------------------------------------------------------------
 @pytest.fixture()
-def signer(get_user):
+def signer(main_user):
     signer_ = TimestampSigner(salt=settings.SALT)
-    token_ = signer_.sign_object({"jrn": get_user.journal.pk, "usr": get_user.pk})
+    token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
     return (signer_, token_)
 
 
@@ -708,10 +708,10 @@ def test_invite_signup_status_code(client, signer):
     assert response.status_code == 200
 
 
-def test_invite_signup_expired_link(client, get_user):
+def test_invite_signup_expired_link(client, main_user):
     with time_machine.travel("1974-1-1 1:0:0"):
         s_ = TimestampSigner(salt=settings.SALT)
-        token_ = s_.sign_object({"jrn": get_user.journal.pk, "usr": get_user.pk})
+        token_ = s_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
 
     with time_machine.travel("1974-1-4 1:0:1"):
         url = reverse("users:invite_signup", kwargs={"token": token_})
@@ -754,9 +754,9 @@ def test_invite_signup_edited_token(client):
 
 
 @pytest.fixture
-def _invite_client(get_user, client):
+def _invite_client(main_user, client):
     signer_ = TimestampSigner(salt=settings.SALT)
-    token_ = signer_.sign_object({"jrn": get_user.journal.pk, "usr": get_user.pk})
+    token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
     url = reverse("users:invite_signup", kwargs={"token": token_})
 
     data = {
@@ -774,11 +774,11 @@ def test_invite_signup_redirection(_invite_client):
 
 
 @patch("project.users.views.User")
-def test_invite_signup_broken_user(mck, client, get_user):
+def test_invite_signup_broken_user(mck, client, main_user):
     mck.objects.related.side_effect = AttributeError
 
     signer_ = TimestampSigner(salt=settings.SALT)
-    token_ = signer_.sign_object({"jrn": get_user.journal.pk, "usr": get_user.pk})
+    token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
     url = reverse("users:invite_signup", kwargs={"token": token_})
 
     data = {
@@ -794,11 +794,11 @@ def test_invite_signup_broken_user(mck, client, get_user):
 
 
 @patch("project.users.views.User")
-def test_invite_signup_broken_user_no_object(mck, client, get_user):
+def test_invite_signup_broken_user_no_object(mck, client, main_user):
     mck.objects.related.return_value.get.side_effect = ObjectDoesNotExist
 
     signer_ = TimestampSigner(salt=settings.SALT)
-    token_ = signer_.sign_object({"jrn": get_user.journal.pk, "usr": get_user.pk})
+    token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
     url = reverse("users:invite_signup", kwargs={"token": token_})
 
     data = {

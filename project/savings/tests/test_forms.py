@@ -83,8 +83,8 @@ def test_saving_type_title_too_short():
     assert 'title' in form.errors
 
 
-def test_saving_type_closed_in_past(get_user):
-    get_user.year = 3000
+def test_saving_type_closed_in_past(main_user):
+    main_user.year = 3000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -95,8 +95,8 @@ def test_saving_type_closed_in_past(get_user):
     assert 'S2' not in str(form['saving_type'])
 
 
-def test_saving_type_closed_in_future(get_user):
-    get_user.year = 1000
+def test_saving_type_closed_in_future(main_user):
+    main_user.year = 1000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -107,8 +107,8 @@ def test_saving_type_closed_in_future(get_user):
     assert 'S2' in str(form['saving_type'])
 
 
-def test_saving_type_closed_in_current_year(get_user):
-    get_user.year = 2000
+def test_saving_type_closed_in_current_year(main_user):
+    main_user.year = 2000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)

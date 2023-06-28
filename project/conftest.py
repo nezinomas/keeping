@@ -45,7 +45,7 @@ def fake_request(rf):
 
 
 @pytest.fixture(autouse=True)
-def get_user(monkeypatch, request):
+def main_user(monkeypatch, request):
     if "disable_get_user_patch" in request.keywords:
         return
 

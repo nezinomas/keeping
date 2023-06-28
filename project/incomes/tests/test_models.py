@@ -49,8 +49,8 @@ def test_income_type_unique_for_journal():
     IncomeType.objects.create(title='T')
 
 
-def test_income_type_unique_for_journals(get_user, second_user):
-    IncomeType.objects.create(title='T', journal=get_user.journal)
+def test_income_type_unique_for_journals(main_user, second_user):
+    IncomeType.objects.create(title='T', journal=main_user.journal)
     IncomeType.objects.create(title='T', journal=second_user.journal)
 
 

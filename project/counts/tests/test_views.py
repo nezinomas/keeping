@@ -855,8 +855,8 @@ def test_info_row(client_logged):
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @time_machine.travel(datetime(2000, 7, 12))
-def test_info_row_gap_in_past_view(client_logged, get_user):
-    get_user.year = 1999
+def test_info_row_gap_in_past_view(client_logged, main_user):
+    main_user.year = 1999
 
     CountFactory(date=date(1999, 1, 1), quantity=1)
     CountFactory(date=date(2000, 1, 1), quantity=1)

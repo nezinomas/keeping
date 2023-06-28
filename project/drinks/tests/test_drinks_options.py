@@ -168,8 +168,8 @@ def test_convert(qty, from_, to, expect):
         (1, 'vodka', 'stdav', 40),
     ]
 )
-def test_convert_from_user(qty, from_, to, expect, get_user):
-    get_user.drink_type = from_
+def test_convert_from_user(qty, from_, to, expect, main_user):
+    main_user.drink_type = from_
 
     actual = DrinksOptions().convert(qty, to)
     round(actual, 2) == expect
@@ -184,8 +184,8 @@ def test_convert_from_user(qty, from_, to, expect, get_user):
         ('stdav', 1, 0.01),
     ]
 )
-def test_stdav_to_alkohol(drink_type, stdav, expect, get_user):
-    get_user.drink_type = drink_type
+def test_stdav_to_alkohol(drink_type, stdav, expect, main_user):
+    main_user.drink_type = drink_type
 
     actual = DrinksOptions().stdav_to_alcohol(stdav)
 
@@ -216,8 +216,8 @@ def test_stdav_to_alkohol_01(drink_type, stdav, expect):
         ('stdav', 1999, 1, 365),
     ]
 )
-def test_stdav_to_bottles(drink_type, year, stdav, expect, get_user):
-    get_user.drink_type = drink_type
+def test_stdav_to_bottles(drink_type, year, stdav, expect, main_user):
+    main_user.drink_type = drink_type
 
     actual = DrinksOptions().stdav_to_bottles(year=year, max_stdav=stdav)
 

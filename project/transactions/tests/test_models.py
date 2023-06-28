@@ -189,9 +189,9 @@ def test_transaction_post_save_first_record():
     assert actual.delta == -1
 
 
-def test_transaction_post_save_new(get_user):
+def test_transaction_post_save_new(main_user):
     # ToDo: after refactore signals, remove get_user
-    get_user.year = 1998
+    main_user.year = 1998
 
     a_from = AccountFactory(title="From")
     a_to = AccountFactory(title="To")
