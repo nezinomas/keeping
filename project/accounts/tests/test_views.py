@@ -96,7 +96,7 @@ def test_load_to_account_form_200(tp, client_logged):
     assert tp.get_check_200("accounts:new")
 
 
-def test_load_to_account_form_302(tp, client):
+def test_load_to_account_form_302(tp):
     response = tp.get("accounts:new", follow=False)
     assert response.status_code == 302
 
