@@ -26,8 +26,8 @@ def test_income_type_get_absolute_url():
     assert obj.get_absolute_url() == reverse('incomes:type_update', kwargs={'pk': obj.pk})
 
 
-def test_income_type_items_journal(main_user, second_user):
-    IncomeTypeFactory(title='T1', journal=main_user.journal)
+def test_income_type_items_journal(second_user):
+    IncomeTypeFactory(title='T1')
     IncomeTypeFactory(title='T2', journal=second_user.journal)
 
     actual = IncomeType.objects.items()
@@ -44,9 +44,9 @@ def test_income_type_items_journal_queries(django_assert_max_num_queries):
 
 
 @pytest.mark.xfail
-def test_income_type_unique_for_journal(main_user):
-    IncomeType.objects.create(title='T', journal=main_user.journal)
-    IncomeType.objects.create(title='T', journal=main_user.journal)
+def test_income_type_unique_for_journal():
+    IncomeType.objects.create(title='T')
+    IncomeType.objects.create(title='T')
 
 
 def test_income_type_unique_for_journals(main_user, second_user):
@@ -63,8 +63,8 @@ def test_income_str():
     assert str(i) == '1999-01-01: Income Type'
 
 
-def test_income_related(main_user, second_user):
-    t1 = IncomeTypeFactory(title='T1', journal=main_user.journal)
+def test_income_related(second_user):
+    t1 = IncomeTypeFactory(title='T1')
     t2 = IncomeTypeFactory(title='T2', journal=second_user.journal)
 
     IncomeFactory(income_type=t1)

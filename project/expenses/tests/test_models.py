@@ -145,8 +145,8 @@ def test_expense_name_items():
     assert actual.count() == 2
 
 
-def test_expense_name_related_different_users(main_user, second_user):
-    t1 = ExpenseTypeFactory(title='T1', journal=main_user.journal) # user bob
+def test_expense_name_related_different_users(second_user):
+    t1 = ExpenseTypeFactory(title='T1') # user bob
     t2 = ExpenseTypeFactory(title='T2', journal=second_user.journal) # user X
 
     ExpenseNameFactory(title='N1', parent=t1)
@@ -220,12 +220,12 @@ def test_expense_fields_types():
 
 @override_storage()
 @time_machine.travel("1974-1-1")
-def test_expense_attachment_field(get_user):
+def test_expense_attachment_field(main_user):
     file_mock = mock.MagicMock(spec=File, name='FileMock')
     file_mock.name = 'test1.jpg'
 
     e = ExpenseFactory(attachment=file_mock)
-    pk = str(get_user.journal.pk)
+    pk = str(main_user.journal.pk)
 
     assert str(e.attachment) == f'{pk}/expense-type/1974.01_test1.jpg'
 

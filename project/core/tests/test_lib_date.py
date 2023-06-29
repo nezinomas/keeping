@@ -44,8 +44,8 @@ def test_current_day(year, month, return_past_day, expect):
 
 @time_machine.travel("2001-01-01")
 @pytest.mark.django_db
-def test_years_user_logged(get_user):
-    get_user.journal.first_record = datetime(1999, 1, 1, tzinfo=pytz.utc)
+def test_years_user_logged(main_user):
+    main_user.journal.first_record = datetime(1999, 1, 1, tzinfo=pytz.utc)
 
     actual = T.years()
 
@@ -103,7 +103,7 @@ def test_monthlen_wrong_input():
 
 @time_machine.travel('1974-01-01')
 @pytest.mark.django_db
-def test_set_year_for_month(get_user):
+def test_set_year_for_month(main_user):
     UserFactory()
 
     actual = T.set_year_for_form()

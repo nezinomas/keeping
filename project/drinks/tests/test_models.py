@@ -26,8 +26,8 @@ def _drinks(second_user):
 # ----------------------------------------------------------------------------
 #                                                                        Drink
 # ----------------------------------------------------------------------------
-def test_drink_related(main_user, second_user):
-    DrinkFactory(user=main_user)
+def test_drink_related(second_user):
+    DrinkFactory()
     DrinkFactory(user=second_user)
 
     actual = Drink.objects.related()
@@ -36,8 +36,8 @@ def test_drink_related(main_user, second_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_items(main_user, second_user):
-    DrinkFactory(user=main_user)
+def test_drink_items(second_user):
+    DrinkFactory()
     DrinkFactory(user=second_user)
 
     actual = Drink.objects.items()
@@ -46,8 +46,8 @@ def test_drink_items(main_user, second_user):
     assert actual[0].user.username == 'bob'
 
 
-def test_drink_items_different_counters(main_user, second_user):
-    DrinkFactory(user=main_user)
+def test_drink_items_different_counters(second_user):
+    DrinkFactory()
     DrinkFactory(user=second_user)
 
     actual = Drink.objects.items()
@@ -55,8 +55,8 @@ def test_drink_items_different_counters(main_user, second_user):
     assert len(actual) == 1
 
 
-def test_drink_items_different_counters_default_value(main_user, second_user):
-    DrinkFactory(user=main_user)
+def test_drink_items_different_counters_default_value(second_user):
+    DrinkFactory()
     DrinkFactory(user=second_user)
 
     actual = Drink.objects.items()
@@ -64,8 +64,8 @@ def test_drink_items_different_counters_default_value(main_user, second_user):
     assert len(actual) == 1
 
 
-def test_drink_year(main_user, second_user):
-    DrinkFactory(user=main_user)
+def test_drink_year(second_user):
+    DrinkFactory()
     DrinkFactory(user=second_user)
 
     actual = list(Drink.objects.year(1999))
@@ -83,8 +83,8 @@ def test_drink_year(main_user, second_user):
         ('vodka', 'beer', 0.06),
     ]
 )
-def test_drink_str(user_drink_type, drink_type, expect, get_user):
-    get_user.drink_type = user_drink_type
+def test_drink_str(user_drink_type, drink_type, expect, main_user):
+    main_user.drink_type = user_drink_type
     p = DrinkFactory(quantity=1, option=drink_type)
 
     p.full_clean()
@@ -111,8 +111,8 @@ def test_drink_order():
         ('stdav', [13.75, 6.25], [13.75, 6.25]),
     ]
 )
-def test_drink_sum_by_year(drink_type, stdav, qty, get_user):
-    get_user.drink_type = drink_type
+def test_drink_sum_by_year(drink_type, stdav, qty, main_user):
+    main_user.drink_type = drink_type
 
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option='beer')
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option='beer')
@@ -140,8 +140,8 @@ def test_drink_sum_by_year(drink_type, stdav, qty, get_user):
         ('stdav', [6.25, 7.5], [6.25, 7.5]),
     ]
 )
-def test_drink_sum_by_month(drink_type, stdav, qty, get_user):
-    get_user.drink_type = drink_type
+def test_drink_sum_by_month(drink_type, stdav, qty, main_user):
+    main_user.drink_type = drink_type
 
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option='beer')
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option='beer')
@@ -179,8 +179,8 @@ def test_drink_months_sum_no_records_for_current_year(second_user):
         ('stdav', [6.25], [6.25]),
     ]
 )
-def test_drink_sum_by_day(drink_type, stdav, qty, get_user):
-    get_user.drink_type = drink_type
+def test_drink_sum_by_day(drink_type, stdav, qty, main_user):
+    main_user.drink_type = drink_type
 
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option='beer')
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option='beer')
@@ -207,8 +207,8 @@ def test_drink_sum_by_day(drink_type, stdav, qty, get_user):
         ('stdav', [6.25, 7.5], [6.25, 7.5]),
     ]
 )
-def test_drink_sum_by_day_all_months(drink_type, stdav, qty, get_user):
-    get_user.drink_type = drink_type
+def test_drink_sum_by_day_all_months(drink_type, stdav, qty, main_user):
+    main_user.drink_type = drink_type
 
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option='beer')
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option='beer')

@@ -230,14 +230,12 @@ def test_saving_update_fee_with_489(client_logged):
     assert actual.remark == 'Pastaba'
 
 
-def test_savings_not_load_other_journal(client_logged, main_user, second_user):
-    j1 = main_user.journal
-    j2 = second_user.journal
-    a1 = AccountFactory(journal=j1, title='a1')
-    a2 = AccountFactory(journal=j2, title='a2')
+def test_savings_not_load_other_journal(client_logged, second_user):
+    a1 = AccountFactory(title='a1')
+    a2 = AccountFactory(journal=second_user.journal, title='a2')
 
-    it1 = SavingTypeFactory(title='xxx', journal=j1)
-    it2 = SavingTypeFactory(title='yyy', journal=j2)
+    it1 = SavingTypeFactory(title='xxx')
+    it2 = SavingTypeFactory(title='yyy', journal=second_user.journal)
 
     SavingFactory(saving_type=it1, account=a1)
     i2 = SavingFactory(saving_type=it2, account=a2, price=666)
@@ -420,8 +418,8 @@ def test_type_update_return_list_with_closed(client_logged):
     assert 'XXX' not in actual
 
 
-def test_saving_type_not_load_other_journal(client_logged, main_user, second_user):
-    SavingTypeFactory(title='xxx', journal=main_user.journal)
+def test_saving_type_not_load_other_journal(client_logged, second_user):
+    SavingTypeFactory(title='xxx')
     obj = SavingTypeFactory(title='yyy', journal=second_user.journal)
 
     url = reverse('savings:type_update', kwargs={'pk': obj.pk})

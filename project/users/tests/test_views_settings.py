@@ -33,9 +33,9 @@ def test_settings_link_if_user_is_superuser(client_logged):
     assert link in content
 
 
-def test_settings_no_link_ordinary_user(get_user, client_logged):
-    get_user.is_superuser = False
-    get_user.save()
+def test_settings_no_link_ordinary_user(main_user, client_logged):
+    main_user.is_superuser = False
+    main_user.save()
 
     url = reverse("bookkeeping:index")
 
@@ -56,9 +56,9 @@ def test_index_func():
     assert views.SettingsIndex == view.func.view_class
 
 
-def test_index_user_must_be_superuser(get_user, client_logged):
-    get_user.is_superuser = False
-    get_user.save()
+def test_index_user_must_be_superuser(main_user, client_logged):
+    main_user.is_superuser = False
+    main_user.save()
 
     url = reverse("users:settings_index")
 
@@ -108,9 +108,9 @@ def test_users_no_additional_users(client_logged):
     assert "Nėra papildomų vartotojų." in actual
 
 
-def test_users_one_additional_user(get_user, client_logged):
+def test_users_one_additional_user(main_user, client_logged):
     UserFactory(
-        username="X", email="x@x.x", is_superuser=False, journal=get_user.journal
+        username="X", email="x@x.x", is_superuser=False, journal=main_user.journal
     )
     UserFactory(username="Y", email="y@y.y", journal=JournalFactory(title="YY"))
 
@@ -129,8 +129,8 @@ def test_users_delete_func():
     assert views.SettingsUsersDelete is view.func.view_class
 
 
-def test_users_delete_status_200(get_user, client_logged):
-    u = UserFactory(username="X", email="x@x.x", journal=get_user.journal)
+def test_users_delete_status_200(main_user, client_logged):
+    u = UserFactory(username="X", email="x@x.x", journal=main_user.journal)
 
     url = reverse("users:settings_users_delete", kwargs={"pk": u.pk})
     response = client_logged.get(url)
@@ -138,8 +138,8 @@ def test_users_delete_status_200(get_user, client_logged):
     assert response.status_code == 200
 
 
-def test_users_delete_load_form(get_user, client_logged):
-    u1 = UserFactory(username="X", email="x@x.x", journal=get_user.journal)
+def test_users_delete_load_form(main_user, client_logged):
+    u1 = UserFactory(username="X", email="x@x.x", journal=main_user.journal)
 
     url = reverse("users:settings_users_delete", kwargs={"pk": u1.pk})
     response = client_logged.get(url, {})
@@ -149,8 +149,8 @@ def test_users_delete_load_form(get_user, client_logged):
     assert f"Ar tikrai norite ištrinti: <strong>{ u1 }</strong>?" in actual
 
 
-def test_users_delete(get_user, client_logged):
-    u1 = UserFactory(username="X", email="x@x.x", journal=get_user.journal)
+def test_users_delete(main_user, client_logged):
+    u1 = UserFactory(username="X", email="x@x.x", journal=main_user.journal)
 
     url = reverse("users:settings_users_delete", kwargs={"pk": u1.pk})
     client_logged.post(url, {})
@@ -158,15 +158,15 @@ def test_users_delete(get_user, client_logged):
     assert User.objects.all().count() == 1
 
 
-def test_users_get_cant_delete_self(get_user, client_logged):
-    url = reverse("users:settings_users_delete", kwargs={"pk": get_user.pk})
+def test_users_get_cant_delete_self(main_user, client_logged):
+    url = reverse("users:settings_users_delete", kwargs={"pk": main_user.pk})
     response = client_logged.get(url, {})
 
     assert response.status_code == 404
 
 
-def test_users_post_cant_delete_self(get_user, client_logged):
-    url = reverse("users:settings_users_delete", kwargs={"pk": get_user.pk})
+def test_users_post_cant_delete_self(main_user, client_logged):
+    url = reverse("users:settings_users_delete", kwargs={"pk": main_user.pk})
     response = client_logged.post(url)
     response.content.decode()
 

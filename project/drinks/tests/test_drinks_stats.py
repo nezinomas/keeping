@@ -18,8 +18,8 @@ pytestmark = pytest.mark.django_db
     ]
 )
 @time_machine.travel('1999-12-01')
-def test_qty_of_month(drink_type, stdav, qty, expect, get_user):
-    get_user.drink_type = drink_type
+def test_qty_of_month(drink_type, stdav, qty, expect, main_user):
+    main_user.drink_type = drink_type
 
     data = [
         {'date': date(1999, 1, 1), 'qty': qty, 'stdav': stdav},
@@ -41,8 +41,8 @@ def test_qty_of_month(drink_type, stdav, qty, expect, get_user):
     ]
 )
 @time_machine.travel('1999-12-01')
-def test_qty_of_month_no_data(drink_type, expect, get_user):
-    get_user.drink_type = drink_type
+def test_qty_of_month_no_data(drink_type, expect, main_user):
+    main_user.drink_type = drink_type
 
     data = []
 
@@ -61,8 +61,8 @@ def test_qty_of_month_no_data(drink_type, expect, get_user):
     ]
 )
 @time_machine.travel('1999-12-01')
-def test_per_day_of_month(drink_type, qty, stdav, expect, get_user):
-    get_user.drink_type = drink_type
+def test_per_day_of_month(drink_type, qty, stdav, expect, main_user):
+    main_user.drink_type = drink_type
 
     data = [
         {'date': date(1999, 1, 1), 'qty': qty, 'stdav': stdav},
@@ -84,8 +84,8 @@ def test_per_day_of_month(drink_type, qty, stdav, expect, get_user):
     ]
 )
 @time_machine.travel('1999-12-01')
-def test_per_day_of_month_no_data(drink_type, expect, get_user):
-    get_user.drink_type = drink_type
+def test_per_day_of_month_no_data(drink_type, expect, main_user):
+    main_user.drink_type = drink_type
 
     data = []
 

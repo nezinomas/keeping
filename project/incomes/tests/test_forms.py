@@ -88,8 +88,8 @@ def test_income_type_unique_name():
     assert not form.is_valid()
 
 
-def test_form_income_type_and_second_user(main_user, second_user):
-    IncomeTypeFactory(title='T1', journal=main_user.journal)
+def test_form_income_type_and_second_user(second_user):
+    IncomeTypeFactory(title='T1')
     IncomeTypeFactory(title='T2', journal=second_user.journal)
 
     form = IncomeForm().as_p()
@@ -114,8 +114,8 @@ def test_income_year_initial_value():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_income_current_user_types(main_user, second_user):
-    IncomeTypeFactory(title='T1', journal=main_user.journal)  # user bob, current user
+def test_income_current_user_types(second_user):
+    IncomeTypeFactory(title='T1')  # user bob, current user
     IncomeTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     form = IncomeForm().as_p()
@@ -124,8 +124,8 @@ def test_income_current_user_types(main_user, second_user):
     assert 'T2' not in form
 
 
-def test_income_current_user_accounts(main_user, second_user):
-    AccountFactory(title='A1', journal=main_user.journal)  # user bob, current user
+def test_income_current_user_accounts(second_user):
+    AccountFactory(title='A1')  # user bob, current user
     AccountFactory(title='A2', journal=second_user.journal)  # user X
 
     form = IncomeForm().as_p()
@@ -134,8 +134,8 @@ def test_income_current_user_accounts(main_user, second_user):
     assert 'A2' not in form
 
 
-def test_expense_select_first_account(main_user, second_user):
-    a2 = AccountFactory(title='A2', journal=main_user.journal)
+def test_expense_select_first_account(second_user):
+    a2 = AccountFactory(title='A2')
     AccountFactory(title='A1', journal=second_user.journal)
 
     form = IncomeForm().as_p()

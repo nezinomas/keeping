@@ -41,9 +41,9 @@ def test_books_index_add_button(client_logged):
     assert res[0] == 'Knygą'
 
 
-def test_books_index_add_target_button(get_user, client_logged):
-    get_user.year = 1111
-    get_user.save()
+def test_books_index_add_target_button(main_user, client_logged):
+    main_user.year = 1111
+    main_user.save()
 
     url = reverse('books:index')
     response = client_logged.get(url)
@@ -328,8 +328,8 @@ def test_book_update_to_another_year(client_logged):
 
 
 @time_machine.travel('2000-03-03')
-def test_books_update_past_record(get_user, client_logged):
-    get_user.year = 2000
+def test_books_update_past_record(main_user, client_logged):
+    main_user.year = 2000
     i = BookFactory(started=date(1974, 12, 12))
 
     data = {

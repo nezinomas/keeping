@@ -169,9 +169,9 @@ def test_count_type_str():
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @pytest.mark.xfail
-def test_count_type_unique_for_user(main_user):
-    CountType.objects.create(title="T", user=main_user)
-    CountType.objects.create(title="T", user=main_user)
+def test_count_type_unique_for_user():
+    CountType.objects.create(title="T")
+    CountType.objects.create(title="T")
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -181,8 +181,8 @@ def test_count_type_unique_for_users(main_user, second_user):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_count_type_related(main_user, second_user):
-    CountTypeFactory(title="X1", user=main_user)
+def test_count_type_related(second_user):
+    CountTypeFactory(title="X1")
     CountTypeFactory(title="X2", user=second_user)
 
     actual = CountType.objects.related()
@@ -192,8 +192,8 @@ def test_count_type_related(main_user, second_user):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_count_type_items(main_user, second_user):
-    CountTypeFactory(title="X1", user=main_user)
+def test_count_type_items(second_user):
+    CountTypeFactory(title="X1")
     CountTypeFactory(title="X2", user=second_user)
 
     actual = CountType.objects.items()
@@ -204,11 +204,11 @@ def test_count_type_items(main_user, second_user):
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch("project.core.lib.utils.get_request_kwargs", return_value="x1")
-def test_count_type_not_update_other_user_count(mck, main_user, second_user):
-    u1 = CountTypeFactory(title="X1", user=main_user)
+def test_count_type_not_update_other_user_count(mck, second_user):
+    u1 = CountTypeFactory(title="X1")
     u2 = CountTypeFactory(title="X1", user=second_user)
 
-    obj1 = CountFactory(count_type=u1, user=main_user)
+    obj1 = CountFactory(count_type=u1)
     obj2 = CountFactory(count_type=u2, user=second_user)
 
     u1.title = "X2"
@@ -220,11 +220,11 @@ def test_count_type_not_update_other_user_count(mck, main_user, second_user):
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch("project.core.lib.utils.get_request_kwargs", return_value="x1")
-def test_count_type_not_delete_other_user_count(mck, main_user, second_user):
-    u1 = CountTypeFactory(title="X1", user=main_user)
+def test_count_type_not_delete_other_user_count(mck, second_user):
+    u1 = CountTypeFactory(title="X1")
     u2 = CountTypeFactory(title="X1", user=second_user)
 
-    CountFactory(count_type=u1, user=main_user)
+    CountFactory(count_type=u1)
     CountFactory(count_type=u2, user=second_user)
 
     u1.delete()
@@ -258,8 +258,8 @@ def test_count_type_update():
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch("project.counts.models.render_to_string")
 @patch("builtins.open")
-def test_menu_create_journal_id_folder(open_mock, render_mock, get_user):
-    journal_pk = get_user.journal.pk
+def test_menu_create_journal_id_folder(open_mock, render_mock, main_user):
+    journal_pk = main_user.journal.pk
     folder = Path(settings.MEDIA_ROOT) / str(journal_pk)
 
     # delete journal_pk folder

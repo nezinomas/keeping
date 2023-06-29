@@ -24,8 +24,8 @@ def test_years():
     ]
 )
 @time_machine.travel('2000-01-01')
-def test_pure_alcohol(drink_type, qty, stdav, expect, get_user):
-    get_user.drink_type = drink_type
+def test_pure_alcohol(drink_type, qty, stdav, expect, main_user):
+    main_user.drink_type = drink_type
 
     qs = [{'year': 1999, 'qty': qty, 'stdav': stdav}]
 
@@ -44,8 +44,8 @@ def test_pure_alcohol(drink_type, qty, stdav, expect, get_user):
     ]
 )
 @time_machine.travel('2000-01-01')
-def test_per_day(drink_type, qty, stdav, expect, get_user):
-    get_user.drink_type = drink_type
+def test_per_day(drink_type, qty, stdav, expect, main_user):
+    main_user.drink_type = drink_type
 
     qs = [{'year': 1999, 'qty': qty, 'stdav': stdav}]
 
@@ -64,8 +64,8 @@ def test_per_day(drink_type, qty, stdav, expect, get_user):
     ]
 )
 @time_machine.travel('2000-01-01')
-def test_per_day_adjusted_for_current_year(drink_type, qty, stdav, expect, get_user):
-    get_user.drink_type = drink_type
+def test_per_day_adjusted_for_current_year(drink_type, qty, stdav, expect, main_user):
+    main_user.drink_type = drink_type
 
     qs = [
         {'year': 1999, 'qty': qty, 'stdav': stdav},
@@ -87,8 +87,8 @@ def test_per_day_adjusted_for_current_year(drink_type, qty, stdav, expect, get_u
     ]
 )
 @time_machine.travel('2000-01-01')
-def test_quantity(drink_type, qty, stdav, expect, get_user):
-    get_user.drink_type = drink_type
+def test_quantity(drink_type, qty, stdav, expect, main_user):
+    main_user.drink_type = drink_type
 
     qs = [{'year': 1999, 'qty': qty, 'stdav': stdav}]
 

@@ -48,8 +48,8 @@ def test_saving_type_get_absolute_url():
     assert obj.get_absolute_url() == reverse('savings:type_update', kwargs={'pk': obj.pk})
 
 
-def test_saving_type_items_user(main_user, second_user):
-    SavingTypeFactory(title='T1', journal=main_user.journal)
+def test_saving_type_items_user(second_user):
+    SavingTypeFactory(title='T1')
     SavingTypeFactory(title='T2', journal=second_user.journal)
 
     actual = SavingType.objects.items()
@@ -86,8 +86,8 @@ def test_saving_type_day_sum_empty_month(savings):
     assert expect == actual
 
 
-def test_saving_type_items_closed_in_past(get_user):
-    get_user.year = 3000
+def test_saving_type_items_closed_in_past(main_user):
+    main_user.year = 3000
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
@@ -96,8 +96,8 @@ def test_saving_type_items_closed_in_past(get_user):
     assert actual.count() == 1
 
 
-def test_saving_type_items_closed_in_future(get_user):
-    get_user.year = 1000
+def test_saving_type_items_closed_in_future(main_user):
+    main_user.year = 1000
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
@@ -106,8 +106,8 @@ def test_saving_type_items_closed_in_future(get_user):
     assert actual.count() == 2
 
 
-def test_saving_type_items_closed_in_current_year(get_user):
-    get_user.year = 2000
+def test_saving_type_items_closed_in_current_year(main_user):
+    main_user.year = 2000
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
 
@@ -142,8 +142,8 @@ def test_saving_get_absolute_url():
     assert obj.get_absolute_url() == reverse('savings:update', kwargs={'pk': obj.pk})
 
 
-def test_saving_related(main_user, second_user):
-    t1 = SavingTypeFactory(title='T1', journal=main_user.journal)
+def test_saving_related(second_user):
+    t1 = SavingTypeFactory(title='T1')
     t2 = SavingTypeFactory(title='T2', journal=second_user.journal)
 
     SavingFactory(saving_type=t1)
@@ -637,8 +637,8 @@ def test_saving_balance_str():
 
 
 @pytest.mark.django_db
-def test_saving_balance_related_for_user(main_user, second_user):
-    s1 = SavingTypeFactory(title='S1', journal=main_user.journal)
+def test_saving_balance_related_for_user(second_user):
+    s1 = SavingTypeFactory(title='S1')
     s2 = SavingTypeFactory(title='S2', journal=second_user.journal)
 
     SavingFactory(saving_type=s1)

@@ -192,8 +192,8 @@ def test_pensions_update(client_logged):
     assert actual.remark == 'Pastaba'
 
 
-def test_pensions_not_load_other_journal(client_logged, main_user, second_user):
-    it1 = PensionTypeFactory(title='xxx', journal=main_user.journal)
+def test_pensions_not_load_other_journal(client_logged, second_user):
+    it1 = PensionTypeFactory(title='xxx')
     it2 = PensionTypeFactory(title='yyy', journal=second_user.journal)
 
     PensionFactory(pension_type=it1)
@@ -340,8 +340,8 @@ def test_type_update(client_logged):
     assert 'TTT' in actual
 
 
-def test_pension_type_not_load_other_journal(client_logged, main_user, second_user):
-    PensionTypeFactory(title='xxx', journal=main_user.journal)
+def test_pension_type_not_load_other_journal(client_logged, second_user):
+    PensionTypeFactory(title='xxx')
     obj = PensionTypeFactory(title='yyy', journal=second_user.journal)
 
     url = reverse('pensions:type_update', kwargs={'pk': obj.pk})

@@ -157,8 +157,8 @@ def test_count_type_reserved_title(reserved_title):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_form_count_type_and_second_user(main_user, second_user):
-    CountTypeFactory(title="T1", user=main_user)
+def test_form_count_type_and_second_user(second_user):
+    CountTypeFactory(title="T1")
     CountTypeFactory(title="T2", user=second_user)
 
     form = CountForm({}).as_p()

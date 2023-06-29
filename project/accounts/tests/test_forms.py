@@ -72,8 +72,8 @@ def test_account_unique_name():
     assert not form.is_valid()
 
 
-def test_account_closed_in_past_incomes(get_user):
-    get_user.year = 3000
+def test_account_closed_in_past_incomes(main_user):
+    main_user.year = 3000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -84,8 +84,8 @@ def test_account_closed_in_past_incomes(get_user):
     assert "S2" not in str(form["account"])
 
 
-def test_account_closed_in_future_incomes(get_user):
-    get_user.year = 1000
+def test_account_closed_in_future_incomes(main_user):
+    main_user.year = 1000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -96,8 +96,8 @@ def test_account_closed_in_future_incomes(get_user):
     assert "S2" in str(form["account"])
 
 
-def test_account_closed_in_current_year_incomes(get_user):
-    get_user.year = 2000
+def test_account_closed_in_current_year_incomes(main_user):
+    main_user.year = 2000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -108,8 +108,8 @@ def test_account_closed_in_current_year_incomes(get_user):
     assert "S2" in str(form["account"])
 
 
-def test_account_closed_in_past_expenses(get_user):
-    get_user.year = 3000
+def test_account_closed_in_past_expenses(main_user):
+    main_user.year = 3000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -120,8 +120,8 @@ def test_account_closed_in_past_expenses(get_user):
     assert "S2" not in str(form["account"])
 
 
-def test_account_closed_in_future_expenses(get_user):
-    get_user.year = 1000
+def test_account_closed_in_future_expenses(main_user):
+    main_user.year = 1000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -132,8 +132,8 @@ def test_account_closed_in_future_expenses(get_user):
     assert "S2" in str(form["account"])
 
 
-def test_account_closed_in_current_year_expenses(get_user):
-    get_user.year = 2000
+def test_account_closed_in_current_year_expenses(main_user):
+    main_user.year = 2000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -144,8 +144,8 @@ def test_account_closed_in_current_year_expenses(get_user):
     assert "S2" in str(form["account"])
 
 
-def test_account_closed_in_past_transactions(get_user):
-    get_user.year = 3000
+def test_account_closed_in_past_transactions(main_user):
+    main_user.year = 3000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -159,8 +159,8 @@ def test_account_closed_in_past_transactions(get_user):
     assert "S2" not in str(form["to_account"])
 
 
-def test_account_closed_in_future_transactions(get_user):
-    get_user.year = 1000
+def test_account_closed_in_future_transactions(main_user):
+    main_user.year = 1000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -174,8 +174,8 @@ def test_account_closed_in_future_transactions(get_user):
     assert "S2" in str(form["to_account"])
 
 
-def test_account_closed_in_current_year_transactions(get_user):
-    get_user.year = 2000
+def test_account_closed_in_current_year_transactions(main_user):
+    main_user.year = 2000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -189,8 +189,8 @@ def test_account_closed_in_current_year_transactions(get_user):
     assert "S2" in str(form["to_account"])
 
 
-def test_account_closed_in_past_saving_close(get_user):
-    get_user.year = 3000
+def test_account_closed_in_past_saving_close(main_user):
+    main_user.year = 3000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -201,8 +201,8 @@ def test_account_closed_in_past_saving_close(get_user):
     assert "S2" not in str(form["to_account"])
 
 
-def test_account_closed_in_future_saving_close(get_user):
-    get_user.year = 1000
+def test_account_closed_in_future_saving_close(main_user):
+    main_user.year = 1000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -213,8 +213,8 @@ def test_account_closed_in_future_saving_close(get_user):
     assert "S2" in str(form["to_account"])
 
 
-def test_account_closed_in_current_year_saving_close(get_user):
-    get_user.year = 2000
+def test_account_closed_in_current_year_saving_close(main_user):
+    main_user.year = 2000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -225,8 +225,8 @@ def test_account_closed_in_current_year_saving_close(get_user):
     assert "S2" in str(form["to_account"])
 
 
-def test_account_closed_in_past_saving(get_user):
-    get_user.year = 3000
+def test_account_closed_in_past_saving(main_user):
+    main_user.year = 3000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -237,8 +237,8 @@ def test_account_closed_in_past_saving(get_user):
     assert "S2" not in str(form["account"])
 
 
-def test_account_closed_in_future_saving(get_user):
-    get_user.year = 1000
+def test_account_closed_in_future_saving(main_user):
+    main_user.year = 1000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -249,8 +249,8 @@ def test_account_closed_in_future_saving(get_user):
     assert "S2" in str(form["account"])
 
 
-def test_account_closed_in_current_year_saving(get_user):
-    get_user.year = 2000
+def test_account_closed_in_current_year_saving(main_user):
+    main_user.year = 2000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -261,8 +261,8 @@ def test_account_closed_in_current_year_saving(get_user):
     assert "S2" in str(form["account"])
 
 
-def test_account_closed_in_past_account_worth(get_user):
-    get_user.year = 3000
+def test_account_closed_in_past_account_worth(main_user):
+    main_user.year = 3000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -273,8 +273,8 @@ def test_account_closed_in_past_account_worth(get_user):
     assert "S2" not in str(form["account"])
 
 
-def test_account_closed_in_future_account_worth(get_user):
-    get_user.year = 1000
+def test_account_closed_in_future_account_worth(main_user):
+    main_user.year = 1000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
@@ -285,8 +285,8 @@ def test_account_closed_in_future_account_worth(get_user):
     assert "S2" in str(form["account"])
 
 
-def test_account_closed_in_current_year_account_worth(get_user):
-    get_user.year = 2000
+def test_account_closed_in_current_year_account_worth(main_user):
+    main_user.year = 2000
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)

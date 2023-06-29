@@ -64,8 +64,8 @@ def test_expenses_update_func():
 
 
 @time_machine.travel('1974-08-08')
-def test_expenses_load_new_form(get_user, client_logged):
-    get_user.year = 3000
+def test_expenses_load_new_form(main_user, client_logged):
+    main_user.year = 3000
     url = reverse('expenses:new')
 
     response = client_logged.get(url)
@@ -260,13 +260,11 @@ def test_expenses_update_type_and_name(client_logged):
     assert actual.remark == 'Pastaba'
 
 
-def test_expenses_not_load_other_journal(client_logged, main_user, second_user):
-    j1 = main_user.journal
-    j2 = second_user.journal
-    a1 = AccountFactory(journal = j1, title='a1')
-    a2 = AccountFactory(journal = j2, title='a2')
-    et1 = ExpenseTypeFactory(title='xxx', journal=j1)
-    et2 = ExpenseTypeFactory(title='yyy', journal=j2)
+def test_expenses_not_load_other_journal(client_logged, second_user):
+    a1 = AccountFactory(title='a1')
+    a2 = AccountFactory(journal=second_user.journal, title='a2')
+    et1 = ExpenseTypeFactory(title='xxx')
+    et2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
 
     ExpenseFactory(expense_type=et1, account=a1)
     e2 = ExpenseFactory(expense_type=et2, account=a2, price=666)
@@ -281,8 +279,8 @@ def test_expenses_not_load_other_journal(client_logged, main_user, second_user):
 
 
 @time_machine.travel('2000-03-03')
-def test_expenses_update_past_record(get_user, client_logged):
-    get_user.year = 2000
+def test_expenses_update_past_record(main_user, client_logged):
+    main_user.year = 2000
     e = ExpenseFactory(date=date(1974, 12, 12))
 
     data = {
@@ -486,8 +484,8 @@ def test_expenses_type_update_func():
     assert expenses_type.Update == view.func.view_class
 
 
-def test_expense_type_not_load_other_journal(client_logged, main_user, second_user):
-    ExpenseTypeFactory(title='xxx', journal=main_user.journal)
+def test_expense_type_not_load_other_journal(client_logged, second_user):
+    ExpenseTypeFactory(title='xxx')
     obj = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
 
     url = reverse('expenses:type_update', kwargs={'pk': obj.pk})
@@ -571,8 +569,8 @@ def test_expense_name_update(client_logged):
     assert 'TTT' in actual
 
 
-def test_expense_name_not_load_other_journal(client_logged, main_user, second_user):
-    et1 = ExpenseTypeFactory(title='xxx', journal=main_user.journal)
+def test_expense_name_not_load_other_journal(client_logged, second_user):
+    et1 = ExpenseTypeFactory(title='xxx')
     et2 = ExpenseTypeFactory(title='yyy', journal=second_user.journal)
 
     ExpenseNameFactory(parent=et1)

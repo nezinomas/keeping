@@ -83,8 +83,8 @@ def test_saving_type_title_too_short():
     assert 'title' in form.errors
 
 
-def test_saving_type_closed_in_past(get_user):
-    get_user.year = 3000
+def test_saving_type_closed_in_past(main_user):
+    main_user.year = 3000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -95,8 +95,8 @@ def test_saving_type_closed_in_past(get_user):
     assert 'S2' not in str(form['saving_type'])
 
 
-def test_saving_type_closed_in_future(get_user):
-    get_user.year = 1000
+def test_saving_type_closed_in_future(main_user):
+    main_user.year = 1000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -107,8 +107,8 @@ def test_saving_type_closed_in_future(get_user):
     assert 'S2' in str(form['saving_type'])
 
 
-def test_saving_type_closed_in_current_year(get_user):
-    get_user.year = 2000
+def test_saving_type_closed_in_current_year(main_user):
+    main_user.year = 2000
 
     SavingTypeFactory(title='S1')
     SavingTypeFactory(title='S2', closed=2000)
@@ -147,8 +147,8 @@ def test_saving_year_initial_value():
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_saving_current_user_types(main_user, second_user):
-    SavingTypeFactory(title='T1', journal=main_user.journal)  # user bob, current user
+def test_saving_current_user_types(second_user):
+    SavingTypeFactory(title='T1')  # user bob, current user
     SavingTypeFactory(title='T2', journal=second_user.journal)  # user X
 
     form = SavingForm().as_p()
@@ -157,8 +157,8 @@ def test_saving_current_user_types(main_user, second_user):
     assert 'T2' not in form
 
 
-def test_saving_current_user_accounts(main_user, second_user):
-    AccountFactory(title='S1', journal=main_user.journal)  # user bob, current user
+def test_saving_current_user_accounts(second_user):
+    AccountFactory(title='S1')  # user bob, current user
     AccountFactory(title='S2', journal=second_user.journal)  # user X
 
     form = SavingForm().as_p()
@@ -167,9 +167,9 @@ def test_saving_current_user_accounts(main_user, second_user):
     assert 'S2' not in form
 
 
-def test_saving_select_first_account(main_user, second_user):
+def test_saving_select_first_account(second_user):
     AccountFactory(title='S1', journal=second_user.journal)
-    s2 = AccountFactory(title='S2', journal=main_user.journal)
+    s2 = AccountFactory(title='S2')
 
     form = SavingForm().as_p()
 

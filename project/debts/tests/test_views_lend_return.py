@@ -196,13 +196,11 @@ def test_lend_return_update_with_returns(mck, client_logged):
     assert not response.context.get('form')
 
 
-def test_lend_return_update_not_load_other_journal(client_logged, main_user, second_user):
-    j1 = main_user.journal
-    j2 = second_user.journal
-    a1 = AccountFactory(journal=j1, title='a1')
-    a2 = AccountFactory(journal=j2, title='a2')
-    d1 = factories.LendFactory(account=a1, journal=j1)
-    d2 = factories.LendFactory(account=a2, journal=j2)
+def test_lend_return_update_not_load_other_journal(client_logged, second_user):
+    a1 = AccountFactory(title='a1')
+    a2 = AccountFactory(journal=second_user.journal, title='a2')
+    d1 = factories.LendFactory(account=a1)
+    d2 = factories.LendFactory(account=a2, journal=second_user.journal)
 
     factories.LendReturnFactory(debt=d1, account=a1)
     obj = factories.LendReturnFactory(debt=d2, account=a2, price=666)

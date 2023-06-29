@@ -31,9 +31,9 @@ def test_transaction_get_absolute_url():
     )
 
 
-def test_transaction_related(main_user, second_user):
-    t1 = AccountFactory(title="T1", journal=main_user.journal)
-    f1 = AccountFactory(title="F1", journal=main_user.journal)
+def test_transaction_related(second_user):
+    t1 = AccountFactory(title="T1")
+    f1 = AccountFactory(title="F1")
 
     t2 = AccountFactory(title="T2", journal=second_user.journal)
     f2 = AccountFactory(title="F2", journal=second_user.journal)
@@ -48,9 +48,9 @@ def test_transaction_related(main_user, second_user):
     assert str(actual[0].to_account) == "T1"
 
 
-def test_transaction_items(main_user, second_user):
-    t1 = AccountFactory(title="T1", journal=main_user.journal)
-    f1 = AccountFactory(title="F1", journal=main_user.journal)
+def test_transaction_items(second_user):
+    t1 = AccountFactory(title="T1")
+    f1 = AccountFactory(title="F1")
 
     t2 = AccountFactory(title="T2", journal=second_user.journal)
     f2 = AccountFactory(title="F2", journal=second_user.journal)
@@ -189,9 +189,9 @@ def test_transaction_post_save_first_record():
     assert actual.delta == -1
 
 
-def test_transaction_post_save_new(get_user):
+def test_transaction_post_save_new(main_user):
     # ToDo: after refactore signals, remove get_user
-    get_user.year = 1998
+    main_user.year = 1998
 
     a_from = AccountFactory(title="From")
     a_to = AccountFactory(title="To")
@@ -459,11 +459,11 @@ def test_saving_close_get_absolute_url():
     )
 
 
-def test_saving_close_related(main_user, second_user):
-    a1 = AccountFactory(title="A1", journal=main_user.journal)
+def test_saving_close_related(second_user):
+    a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2", journal=second_user.journal)
 
-    s1 = SavingTypeFactory(title="S1", journal=main_user.journal)
+    s1 = SavingTypeFactory(title="S1")
     s2 = SavingTypeFactory(title="S2", journal=second_user.journal)
 
     SavingCloseFactory(to_account=a1, from_account=s1)
@@ -863,11 +863,11 @@ def test_savings_change_get_absolute_url():
     )
 
 
-def test_saving_change_related(main_user, second_user):
-    f1 = SavingTypeFactory(title="F1", journal=main_user.journal)
+def test_saving_change_related(second_user):
+    f1 = SavingTypeFactory(title="F1")
     f2 = SavingTypeFactory(title="F2", journal=second_user.journal)
 
-    t1 = SavingTypeFactory(title="T1", journal=main_user.journal)
+    t1 = SavingTypeFactory(title="T1")
     t2 = SavingTypeFactory(title="T2", journal=second_user.journal)
 
     SavingChangeFactory(from_account=f1, to_account=t1)

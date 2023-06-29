@@ -249,14 +249,12 @@ def test_lend_update_cant_close(client_logged):
     assert 'Negalite uždaryti dar negražintos skolos.' in form.as_p()
 
 
-def test_lend_update_not_load_other_journal(client_logged, main_user, second_user):
-    j1 = main_user.journal
-    j2 = second_user.journal
-    a1 = AccountFactory(journal=j1, title='a1')
-    a2 = AccountFactory(journal=j2, title='a2')
+def test_lend_update_not_load_other_journal(client_logged, second_user):
+    a1 = AccountFactory(title='a1')
+    a2 = AccountFactory(journal=second_user.journal, title='a2')
 
-    factories.LendFactory(name='xxx', journal=j1, account=a1)
-    obj = factories.LendFactory(name='yyy', price=666, journal=j2, account=a2)
+    factories.LendFactory(name='xxx', account=a1)
+    obj = factories.LendFactory(name='yyy', price=666, journal=second_user.journal, account=a2)
 
     url = reverse('debts:update', kwargs={'pk': obj.pk, 'debt_type': 'lend'})
     response = client_logged.get(url)

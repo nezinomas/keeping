@@ -21,33 +21,33 @@ def test_form_fields():
     assert form.count('<input type="checkbox"') == 3
 
 
-def test_form_selected_expenses(get_user):
+def test_form_selected_expenses(main_user):
     e1 = ExpenseTypeFactory(title='X')
     e2 = ExpenseTypeFactory(title='Y')
 
-    get_user.journal.unnecessary_expenses = json.dumps([e1.pk, e2.pk])
-    get_user.journal.save()
+    main_user.journal.unnecessary_expenses = json.dumps([e1.pk, e2.pk])
+    main_user.journal.save()
 
     form = UnnecessaryForm().as_p()
 
     assert form.count('checked') == 2
 
 
-def test_form_bad_json_for_expenses(get_user):
+def test_form_bad_json_for_expenses(main_user):
     e1 = ExpenseTypeFactory(title='X')
     e2 = ExpenseTypeFactory(title='Y')
 
-    get_user.journal.unnecessary_expenses = 'None'
-    get_user.journal.save()
+    main_user.journal.unnecessary_expenses = 'None'
+    main_user.journal.save()
 
     form = UnnecessaryForm().as_p()
 
     assert form.count('checked') == 0
 
 
-def test_form_selected_savings(get_user):
-    get_user.journal.unnecessary_savings = True
-    get_user.journal.save()
+def test_form_selected_savings(main_user):
+    main_user.journal.unnecessary_savings = True
+    main_user.journal.save()
 
     form = UnnecessaryForm().as_p()
 
@@ -88,11 +88,11 @@ def test_form_save_checked_none():
     assert not actual.unnecessary_savings
 
 
-def test_form_save_unchecked_expenses(get_user):
+def test_form_save_unchecked_expenses(main_user):
     e1 = ExpenseTypeFactory(title='X')
 
-    get_user.journal.unnecessary_expenses = json.dumps([e1.pk])
-    get_user.journal.save()
+    main_user.journal.unnecessary_expenses = json.dumps([e1.pk])
+    main_user.journal.save()
 
     form = UnnecessaryForm(data={
         'savings': False,

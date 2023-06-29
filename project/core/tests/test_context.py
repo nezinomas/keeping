@@ -49,8 +49,8 @@ def test_year_first_record_from_journal(mck, rf):
         (2020, {'yday': 158, 'ydays': 366}),
     ]
 )
-def test_yday(year, expect, rf, get_user):
-    get_user.year = year
+def test_yday(year, expect, rf, main_user):
+    main_user.year = year
 
     r = rf.get('fake')
 

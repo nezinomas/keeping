@@ -26,8 +26,8 @@ def test_pension_type_get_absolute_url():
     assert obj.get_absolute_url() == reverse('pensions:type_update', kwargs={'pk': obj.pk})
 
 
-def test_pension_type_items_user(main_user, second_user):
-    PensionTypeFactory(title='T1', journal=main_user.journal)
+def test_pension_type_items_user(second_user):
+    PensionTypeFactory(title='T1')
     PensionTypeFactory(title='T2', journal=second_user.journal)
 
     actual = PensionType.objects.items()
@@ -37,9 +37,9 @@ def test_pension_type_items_user(main_user, second_user):
 
 
 @pytest.mark.xfail
-def test_pension_type_unique_for_journal(main_user):
-    PensionType.objects.create(title='T1', journal=main_user.journal)
-    PensionType.objects.create(title='T1', journal=main_user.journal)
+def test_pension_type_unique_for_journal():
+    PensionType.objects.create(title='T1')
+    PensionType.objects.create(title='T1')
 
 
 def test_pension_type_unique_for_journals(main_user, second_user):
@@ -74,8 +74,8 @@ def test_pension_object():
     assert actual.pension_type.title == 'PensionType'
 
 
-def test_pension_related(main_user, second_user):
-    t1 = PensionTypeFactory(title='T1', journal=main_user.journal)
+def test_pension_related(second_user):
+    t1 = PensionTypeFactory(title='T1')
     t2 = PensionTypeFactory(title='T2', journal=second_user.journal)
 
     PensionFactory(pension_type=t1)
@@ -297,8 +297,8 @@ def test_pension_balance_str():
     assert str(actual) == 'PensionType'
 
 
-def test_pension_balance_related_for_user(main_user, second_user):
-    p1 = PensionTypeFactory(title='P1', journal=main_user.journal)
+def test_pension_balance_related_for_user(second_user):
+    p1 = PensionTypeFactory(title='P1')
     p2 = PensionTypeFactory(title='P2', journal=second_user.journal)
 
     PensionFactory(pension_type=p1)

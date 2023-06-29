@@ -1,5 +1,3 @@
-import json
-
 import pytest
 from django.urls import resolve, reverse
 
@@ -58,8 +56,8 @@ def test_account_update(client_logged):
     assert "Title" in actual
 
 
-def test_account_not_load_other_journal(client_logged, main_user, second_user):
-    AccountFactory(title="xxx", journal=main_user.journal)
+def test_account_not_load_other_journal(client_logged, second_user):
+    AccountFactory(title="xxx")
     a2 = AccountFactory(title="yyy", journal=second_user.journal)
 
     url = reverse("accounts:update", kwargs={"pk": a2.pk})
@@ -92,36 +90,36 @@ def test_load_to_account_func():
     assert views.LoadAccount is view.func.view_class
 
 
-def test_load_to_account_form(client_logged):
+def test_load_to_account_form_200(client_logged):
     url = reverse("accounts:new")
-
     response = client_logged.get(url)
-
     assert response.status_code == 200
 
 
-def test_load_to_account_must_logged(client):
-    url = reverse("accounts:load")
-    response = client.get(url, follow=True)
+def test_load_to_account_form_302(tp):
+    response = tp.get("accounts:new")
+    assert response.status_code == 302
+
+
+def test_load_to_account_must_logged(tp):
+    response = tp.get("accounts:load", follow=True)
 
     from ...users.views import Login
 
     assert response.resolver_match.func.view_class is Login
 
 
-def test_load_to_account(client_logged, main_user, second_user):
-    a1 = AccountFactory(title="A1", journal=main_user.journal)
-    AccountFactory(title="A2", journal=main_user.journal)
+def test_load_to_account(tp, client_logged, second_user):
+    a1 = AccountFactory(title="A1")
+    AccountFactory(title="A2")
     AccountFactory(title="A3", journal=second_user.journal)
 
-    url = reverse("accounts:load")
-    response = client_logged.get(url, {"from_account": a1.pk})
+    tp.get("accounts:load", data={"from_account": a1.pk})
 
-    assert len(response.context["object_list"]) == 1
+    assert len(tp.get_context("object_list")) == 1
 
 
-def test_load_to_account_empty_parent(client_logged):
-    url = reverse("accounts:load")
-    response = client_logged.get(url, {"from_account": ""})
+def test_load_to_account_empty_parent(tp, client_logged):
+    tp.get("accounts:load", data={"from_account": ""})
 
-    assert response.context["object_list"] == []
+    assert tp.get_context("object_list") == []

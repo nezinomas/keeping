@@ -26,10 +26,10 @@ from datetime import datetime
         (3000, 1999),
     ])
 @patch('project.bookkeeping.lib.year_balance.datetime')
-def test_set_year(dt_mock, year, expect, get_user, client_logged):
+def test_set_year(dt_mock, year, expect, main_user, client_logged):
     dt_mock.now.return_value = datetime(2020, 1, 1)
 
-    get_user.journal.first_record = date(1974, 1, 1)
+    main_user.journal.first_record = date(1974, 1, 1)
     url = reverse(
         'core:set_year',
         kwargs={'year': year}
@@ -57,7 +57,7 @@ def test_view_regenerate_balances_status_200(client_logged):
 
 
 @time_machine.travel('1999-01-01')
-def test_view_regenerate_balances_all_year(client_logged, get_user):
+def test_view_regenerate_balances_all_year(client_logged, main_user):
     ExpenseFactory()
     ExpenseFactory(date=date(1998, 1, 1))
 
@@ -67,8 +67,8 @@ def test_view_regenerate_balances_all_year(client_logged, get_user):
     SavingFactory()
     PensionFactory()
 
-    get_user.journal.first_record = date(1998, 1, 1)
-    get_user.journal.save()
+    main_user.journal.first_record = date(1998, 1, 1)
+    main_user.journal.save()
 
     AccountBalance.objects.all().delete()
     SavingBalance.objects.all().delete()
