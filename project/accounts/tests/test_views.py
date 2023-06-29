@@ -109,19 +109,17 @@ def test_load_to_account_must_logged(tp):
     assert response.resolver_match.func.view_class is Login
 
 
-def test_load_to_account(client_logged, second_user):
+def test_load_to_account(tp, client_logged, second_user):
     a1 = AccountFactory(title="A1")
     AccountFactory(title="A2")
     AccountFactory(title="A3", journal=second_user.journal)
 
-    url = reverse("accounts:load")
-    response = client_logged.get(url, {"from_account": a1.pk})
+    tp.get("accounts:load", data={"from_account": a1.pk})
 
-    assert len(response.context["object_list"]) == 1
+    assert len(tp.get_context("object_list")) == 1
 
 
-def test_load_to_account_empty_parent(client_logged):
-    url = reverse("accounts:load")
-    response = client_logged.get(url, {"from_account": ""})
+def test_load_to_account_empty_parent(tp, client_logged):
+    tp.get("accounts:load", data={"from_account": ""})
 
-    assert response.context["object_list"] == []
+    assert tp.get_context("object_list") == []
