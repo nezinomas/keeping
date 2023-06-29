@@ -101,9 +101,8 @@ def test_load_to_account_form_302(tp):
     assert response.status_code == 302
 
 
-def test_load_to_account_must_logged(client):
-    url = reverse("accounts:load")
-    response = client.get(url, follow=True)
+def test_load_to_account_must_logged(tp):
+    response = tp.get("accounts:load", follow=True)
 
     from ...users.views import Login
 
