@@ -199,7 +199,7 @@ class Stats:
 
         # calendar_df dataframe is made in self._make_calandar_dataframe()
         qty_and_duration = []
-        if not calendar_df.is_empty() and dt in calendar_df["date"]:
+        if not calendar_df.is_empty() and dt in calendar_df["date"].to_list():
             flt = calendar_df.filter(pl.col("date") == dt).row(0, named=True)
             color = flt["qty"]  # color depends on qty
             qty_and_duration = [flt["qty"], flt["duration"]]
