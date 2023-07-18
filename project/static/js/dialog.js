@@ -22,26 +22,13 @@ htmx.on("htmx:beforeSwap", (e) => {
         $('.is-invalid').removeClass('is-invalid');
 
         if(subbmiter == '_new') {
-            const price = $('#id_price');
-            const qty = $('#id_quantity');
-            const title = $('#id_title');
-            const remark = $('#id_remark');
-            const exception = $('#id_exception');
-
-            if (price) {
-                price.val('0.0');
-            }
-
-            if (qty) {
-                qty.val('1');
-            }
-
-            if (title) {
-                title.val('');
-            }
-
-            if (remark) {
-                remark.val('');
+            // reset fields values after submit
+            let fields = ["price", "fee", "quantity", "title", "remark", "exception"];
+            for (let i in fields) {
+                let field = $(`#id_${fields[i]}`);
+                if(field) {
+                    field.val('');
+                }
             }
 
             if (exception) {
