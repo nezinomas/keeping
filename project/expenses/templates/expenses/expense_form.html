@@ -47,4 +47,23 @@
             }
         }
     });
+
+    htmx.on("htmx:beforeSwap", (e) => {
+        if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+            /* find submit button id */
+            let subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id;
+
+            if(subbmiter == '_new') {
+                // reset fields values after submit
+                const fields = {"quantity": 1, "price": 0};
+                for (const [key, value] of Object.entries(fields)) {
+                    const field = $(`#id_${key}`);
+                    if(field) {
+                        field.val(value);
+                    }
+                }
+            }
+        }
+    })
+
 </script>
