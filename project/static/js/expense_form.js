@@ -1,9 +1,9 @@
 /* sum prices */
 function sum_prices() {
-    var input_total = document.getElementById("id_price");
-    var input_price = document.getElementById("id_total_sum");
-    var price = String(input_price.value).replaceAll(',', '.');
-    var total = eval(input_total.value);
+    let input_total = document.getElementById("id_price");
+    let input_price = document.getElementById("id_total_sum");
+    let price = String(input_price.value).replaceAll(',', '.');
+    let total = eval(input_total.value);
 
     price = eval(price.replace(/[^\d\-\.\+\/\*]/g, ''));
 
@@ -11,7 +11,7 @@ function sum_prices() {
         price = 0;
     }
 
-    var res = total + price;
+    let res = total + price;
     if (!res || res <= 0) {
         res = 0;
     }
