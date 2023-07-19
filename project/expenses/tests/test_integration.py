@@ -2,6 +2,7 @@ from time import sleep
 
 import pytest
 import time_machine
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
@@ -52,7 +53,48 @@ class Expenses(Browser):
         assert n.title in page
         assert "123.45" in page
 
-    @time_machine.travel("1999-12-1")
+    def test_add_one_expense_and_hit_enter_key(self):
+        self.browser.get(f"{self.live_server_url}/expenses/")
+
+        a = AccountFactory()
+        t = ExpenseTypeFactory()
+        n = ExpenseNameFactory()
+
+        # click Add Expenses button
+        self.browser.find_element(By.ID, "insert_expense").click()
+        sleep(0.5)
+
+        # select expense type
+        elem = Select(self.browser.find_element(By.ID, "id_expense_type"))
+        elem.select_by_value(f"{t.id}")
+
+        # select expense name
+        elem = Select(self.browser.find_element(By.ID, "id_expense_name"))
+        elem.select_by_value(f"{n.id}")
+
+        # select Account
+        elem = Select(self.browser.find_element(By.ID, "id_account"))
+        elem.select_by_value(f"{a.id}")
+
+        price = self.browser.find_element(By.ID, "id_total_sum")
+        price.send_keys("123.45")
+        price.send_keys(Keys.RETURN)
+
+        qty = self.browser.find_element(By.ID, "id_quantity")
+        qty.send_keys(Keys.RETURN)
+
+        # click Esc button
+        ActionChains(self.browser).send_keys(Keys.ESCAPE).perform()
+
+        # wait while form is closing
+        sleep(0.5)
+
+        page = self.browser.page_source
+        assert t.title in page
+        assert n.title in page
+        assert "123.45" in page
+
+    @time_machine.travel("1999-12-01 10:11:12")
     def test_add_two_expenses(self):
         self.browser.get(f"{self.live_server_url}/expenses/")
 
@@ -74,7 +116,7 @@ class Expenses(Browser):
         elem = Select(self.browser.find_element(By.ID, "id_expense_name"))
         elem.select_by_value(f"{n.id}")
 
-        # # select Account
+        # select Account
         elem = Select(self.browser.find_element(By.ID, "id_account"))
         elem.select_by_value(f"{a.id}")
 
@@ -86,7 +128,7 @@ class Expenses(Browser):
         sleep(1)
 
         # ----------------------------- Second expense
-        # # select ExpenseType
+        # select ExpenseType
         elem = Select(self.browser.find_element(By.ID, "id_expense_type"))
         elem.select_by_value(f"{t1.id}")
 
@@ -103,7 +145,7 @@ class Expenses(Browser):
 
         # click Insert button
         self.browser.find_element(By.ID, "_close").click()
-        sleep(1)
+        sleep(0.5)
 
         page = self.browser.page_source
 
@@ -115,7 +157,7 @@ class Expenses(Browser):
         assert n1.title in page
         assert "65.78" in page
 
-    @time_machine.travel("1999-1-1")
+    @time_machine.travel("1999-1-1 10:11:12")
     def test_empty_required_fields(self):
         self.browser.get(f"{self.live_server_url}/expenses/")
 
@@ -133,16 +175,17 @@ class Expenses(Browser):
         assert e1.text == e2.text == "This field is required."
         assert e3.text == "Ensure this value is greater than or equal to 0.01."
 
-    @time_machine.travel("1999-1-1")
+    @time_machine.travel("1999-1-1 10:11:12")
     def test_search(self):
+        self.browser.get(f"{self.live_server_url}/expenses")
+
         ExpenseFactory(remark="xxxx")
         ExpenseFactory(remark="yyyy")
         ExpenseFactory(remark="zzzz")
 
-        self.browser.get(f"{self.live_server_url}/expenses/")
-
         search = self.browser.find_element(by=By.ID, value="id_search")
         search.send_keys("xxxx")
+
         search.send_keys(Keys.RETURN)
 
         sleep(0.1)

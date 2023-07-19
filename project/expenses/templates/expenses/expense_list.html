@@ -65,7 +65,13 @@
 
 <div class="mx-auto text-center alert alert-warning py-2">
 {% if notice %}
-    {{ notice|safe }}
+    <div
+        hx-trigger="reload from:body"
+        hx-get="{{request.get_full_path}}"
+        hx-target="#data"
+        hx-indicator="#indicator">
+        {{ notice|safe }}
+    </div>
 {% else %}
     {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 {% endif %}
