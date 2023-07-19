@@ -1,24 +1,24 @@
 /* sum prices */
 function sum_prices() {
-    let input_total = document.getElementById("id_price");
-    let input_price = document.getElementById("id_total_sum");
-    let price = String(input_price.value).replaceAll(',', '.');
-    let total = parseFloat(input_total.value);
+    let total_field = document.getElementById("id_price");
+    let total_value = parseFloat(total_field.value);
+    let price_field = document.getElementById("id_total_sum");
+    let price_value = String(price_field.value).replaceAll(',', '.');
 
-    price = eval(price.replace(/[^\d\-\.\+\/\*]/g, ''));
+    price_value = eval(price_value.replace(/[^\d\-\.\+\/\*]/g, ''));
 
 
-    if (!price || price === Infinity) {
-        price = 0;
+    if (!price_value || price_value === Infinity) {
+        price_value = 0;
     }
 
-    let res = total + price;
+    let res = total_value + price_value;
     if (!res || res <= 0) {
         res = 0;
     }
 
-    input_total.value = res.toFixed(2);
-    input_price.value = '';
+    total_field.value = res.toFixed(2);
+    price_field.value = '';
 };
 
 $("#add_price").click(function () {
@@ -44,7 +44,7 @@ htmx.on("htmx:beforeSwap", (e) => {
 
         if(subbmiter == '_new') {
             // reset fields values after submit
-            const fields = {"quantity": 1, "price": 0};
+            const fields = {"quantity": 1, "price_value": 0};
             for (const [key, value] of Object.entries(fields)) {
                 const field = $(`#id_${key}`);
                 if(field) {
