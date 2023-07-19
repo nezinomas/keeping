@@ -116,7 +116,7 @@ class Expenses(Browser):
         elem = Select(self.browser.find_element(By.ID, "id_expense_name"))
         elem.select_by_value(f"{n.id}")
 
-        # # select Account
+        # select Account
         elem = Select(self.browser.find_element(By.ID, "id_account"))
         elem.select_by_value(f"{a.id}")
 
@@ -128,7 +128,7 @@ class Expenses(Browser):
         sleep(1)
 
         # ----------------------------- Second expense
-        # # select ExpenseType
+        # select ExpenseType
         elem = Select(self.browser.find_element(By.ID, "id_expense_type"))
         elem.select_by_value(f"{t1.id}")
 
@@ -145,7 +145,7 @@ class Expenses(Browser):
 
         # click Insert button
         self.browser.find_element(By.ID, "_close").click()
-        sleep(1)
+        sleep(0.5)
 
         page = self.browser.page_source
 
