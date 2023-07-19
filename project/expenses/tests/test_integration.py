@@ -2,6 +2,7 @@ from time import sleep
 
 import pytest
 import time_machine
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
@@ -43,6 +44,47 @@ class Expenses(Browser):
 
         # click 'Save and Close' button
         self.browser.find_element(By.ID, "_close").click()
+
+        # wait while form is closing
+        sleep(0.5)
+
+        page = self.browser.page_source
+        assert t.title in page
+        assert n.title in page
+        assert "123.45" in page
+
+    def test_add_one_expense_and_hit_enter_key(self):
+        self.browser.get(f"{self.live_server_url}/expenses/")
+
+        a = AccountFactory()
+        t = ExpenseTypeFactory()
+        n = ExpenseNameFactory()
+
+        # click Add Expenses button
+        self.browser.find_element(By.ID, "insert_expense").click()
+        sleep(0.5)
+
+        # select expense type
+        elem = Select(self.browser.find_element(By.ID, "id_expense_type"))
+        elem.select_by_value(f"{t.id}")
+
+        # select expense name
+        elem = Select(self.browser.find_element(By.ID, "id_expense_name"))
+        elem.select_by_value(f"{n.id}")
+
+        # select Account
+        elem = Select(self.browser.find_element(By.ID, "id_account"))
+        elem.select_by_value(f"{a.id}")
+
+        price = self.browser.find_element(By.ID, "id_total_sum")
+        price.send_keys("123.45")
+        price.send_keys(Keys.RETURN)
+
+        qty = self.browser.find_element(By.ID, "id_quantity")
+        qty.send_keys(Keys.RETURN)
+
+        # click Esc button
+        ActionChains(self.browser).send_keys(Keys.ESCAPE).perform()
 
         # wait while form is closing
         sleep(0.5)
