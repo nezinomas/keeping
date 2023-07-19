@@ -20,9 +20,11 @@ function sum_prices() {
     price_field.value = '';
 };
 
+
 $("#add_price").click(function () {
     sum_prices();
 });
+
 
 /*
 Enter allowed in texarea
