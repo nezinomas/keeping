@@ -1,3 +1,15 @@
+$(document).keydown(function (event) {
+    if (event.keyCode == 27) {
+        $('#modal').modal("hide");
+    }
+});
+
+
+$(document).on('submit', '.js-form', function (e) {
+    e.preventDefault();
+});
+
+
 /* focus on [autofocus] attribute */
 $(document).on('shown.bs.modal', '#modal', function () {
     $(this).find('[autofocus]').focus();
