@@ -52,7 +52,7 @@ class Expenses(Browser):
         assert n.title in page
         assert "123.45" in page
 
-    @time_machine.travel("1999-12-01")
+    @time_machine.travel("1999-12-01 10:11:12")
     def test_add_two_expenses(self):
         self.browser.get(f"{self.live_server_url}/expenses/")
 
@@ -115,7 +115,7 @@ class Expenses(Browser):
         assert n1.title in page
         assert "65.78" in page
 
-    @time_machine.travel("1999-1-1")
+    @time_machine.travel("1999-1-1 10:11:12")
     def test_empty_required_fields(self):
         self.browser.get(f"{self.live_server_url}/expenses/")
 
