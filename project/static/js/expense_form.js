@@ -30,7 +30,6 @@ Enter on id_total_sum input calls sum_prices()
 Enter disabled on rest of form inputs
 */
 document.getElementById("dialog-form").addEventListener('keypress', function (e) {
-    alert("fwt")
     if (e.keyCode === 13 || e.which === 13) {
         if (e.target.id == "id_total_sum") {
             e.preventDefault();
