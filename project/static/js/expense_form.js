@@ -3,9 +3,10 @@ function sum_prices() {
     let input_total = document.getElementById("id_price");
     let input_price = document.getElementById("id_total_sum");
     let price = String(input_price.value).replaceAll(',', '.');
-    let total = eval(input_total.value);
+    let total = parseFloat(input_total.value);
 
     price = eval(price.replace(/[^\d\-\.\+\/\*]/g, ''));
+
 
     if (!price || price === Infinity) {
         price = 0;
