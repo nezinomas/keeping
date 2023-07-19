@@ -1,5 +1,6 @@
 from django.test import LiveServerTestCase
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 
 from ...users.factories import UserFactory
 
@@ -8,7 +9,9 @@ class Browser(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.browser = webdriver.Chrome("../chromedriver")
+
+        options = webdriver.ChromeOptions()
+        cls.browser = webdriver.Chrome(service=Service('../chromedriver.exe'), options=options)
 
     @classmethod
     def tearDownClass(cls):
