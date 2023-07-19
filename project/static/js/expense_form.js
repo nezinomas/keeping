@@ -7,17 +7,16 @@ function sum_prices() {
 
     price_value = eval(price_value.replace(/[^\d\-\.\+\/\*]/g, ''));
 
-
     if (!price_value || price_value === Infinity) {
         price_value = 0;
     }
 
-    let res = total_value + price_value;
-    if (!res || res <= 0) {
-        res = 0;
+    let final_price = total_value + price_value;
+    if (!final_price || final_price <= 0) {
+        final_price = 0;
     }
 
-    total_field.value = res.toFixed(2);
+    total_field.value = final_price.toFixed(2);
     price_field.value = '';
 };
 
