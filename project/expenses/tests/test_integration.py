@@ -175,16 +175,17 @@ class Expenses(Browser):
         assert e1.text == e2.text == "This field is required."
         assert e3.text == "Ensure this value is greater than or equal to 0.01."
 
-    @time_machine.travel("1999-1-1")
+    @time_machine.travel("1999-1-1 10:11:12")
     def test_search(self):
+        self.browser.get(f"{self.live_server_url}/expenses")
+
         ExpenseFactory(remark="xxxx")
         ExpenseFactory(remark="yyyy")
         ExpenseFactory(remark="zzzz")
 
-        self.browser.get(f"{self.live_server_url}/expenses/")
-
         search = self.browser.find_element(by=By.ID, value="id_search")
         search.send_keys("xxxx")
+
         search.send_keys(Keys.RETURN)
 
         sleep(0.1)
