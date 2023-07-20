@@ -45,7 +45,7 @@
 
 {% else %}
 
-<div class="mx-auto text-center alert alert-warning py-2">
+<div class="mx-auto text-center alert alert-warning py-2" hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
 {% if notice %}
     {{ notice|safe }}
 {% else %}
