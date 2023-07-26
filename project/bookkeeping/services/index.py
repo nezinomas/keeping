@@ -57,12 +57,12 @@ class IndexServiceData:
                 Expense.objects.sum_by_month(self.year),
                 Saving.objects.sum_by_month(self.year),
                 SavingClose.objects.sum_by_month(self.year),
-                self.get_debt_data(qs_borrow),
-                self.get_debt_data(qs_lend),
+                self.separate_debt_data(qs_borrow),
+                self.separate_debt_data(qs_lend),
             )
         )
 
-    def get_debt_data(self, data):
+    def separate_debt_data(self, data):
         debt = []
         for row in data:
             date = row["date"]
