@@ -63,20 +63,22 @@ class IndexServiceData:
         )
 
     def separate_debt_data(self, data):
-        debt = []
+        final = []
         for row in data:
             date = row["date"]
-            debt.extend(
-                [
-                    {"date": date, "sum": row["sum_debt"], "title": row["title"]},
-                    {
-                        "date": date,
-                        "sum": row["sum_return"],
-                        "title": f"{row['title']}_return",
-                    },
-                ]
-            )
-        return debt
+            debt = {
+                "date": date,
+                "sum": row["sum_debt"],
+                "title": row["title"]
+            }
+            debt_return = {
+                "date": date,
+                "sum": row["sum_return"],
+                "title": f"{row['title']}_return",
+            }
+            final.extend((debt, debt_return))
+
+        return final
 
 
 class IndexService:
