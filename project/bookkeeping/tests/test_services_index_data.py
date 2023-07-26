@@ -58,7 +58,7 @@ def test_get_debt_data(amount_start, data):
         {"date": "xxxx-yy-zz", "sum_debt": 999, "sum_return": 111, "title": "debt"}
     ]
 
-    debt = IndexServiceData(1111).separate_debt_data(_data)
+    debt = IndexServiceData(1111).split_debt_data(_data)
 
     assert debt[0] == {"date": "xxxx-yy-zz", "sum": 999, "title": "debt"}
     assert debt[1] == {"date": "xxxx-yy-zz", "sum": 111, "title": "debt_return"}
