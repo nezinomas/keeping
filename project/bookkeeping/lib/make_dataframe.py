@@ -43,7 +43,7 @@ class MakeDataFrame:
         if df.shape[1] <= 1:
             return df.with_columns(sum=pl.lit(0))
 
-        return df.select([pl.col("date"), pl.sum(pl.exclude("date")).alias("sum")])
+        return df.select([pl.col("date"), pl.sum_horizontal(pl.exclude("date")).alias("sum")])
 
     def create_data(self, sum_col_name: str = "sum") -> DF:
         return (
