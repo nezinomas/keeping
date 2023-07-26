@@ -57,26 +57,28 @@ class IndexServiceData:
                 Expense.objects.sum_by_month(self.year),
                 Saving.objects.sum_by_month(self.year),
                 SavingClose.objects.sum_by_month(self.year),
-                self.get_debt_data(qs_borrow),
-                self.get_debt_data(qs_lend),
+                self.split_debt_data(qs_borrow),
+                self.split_debt_data(qs_lend),
             )
         )
 
-    def get_debt_data(self, data):
-        debt = []
+    def split_debt_data(self, data):
+        final = []
         for row in data:
             date = row["date"]
-            debt.extend(
-                [
-                    {"date": date, "sum": row["sum_debt"], "title": row["title"]},
-                    {
-                        "date": date,
-                        "sum": row["sum_return"],
-                        "title": f"{row['title']}_return",
-                    },
-                ]
-            )
-        return debt
+            debt = {
+                "date": date,
+                "sum": row["sum_debt"],
+                "title": row["title"]
+            }
+            debt_return = {
+                "date": date,
+                "sum": row["sum_return"],
+                "title": f"{row['title']}_return",
+            }
+            final.extend((debt, debt_return))
+
+        return final
 
 
 class IndexService:
