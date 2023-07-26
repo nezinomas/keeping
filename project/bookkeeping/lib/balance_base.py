@@ -29,7 +29,7 @@ class BalanceBase:
         if self._data.shape[1] <= 1:
             return 0
 
-        return self._data.select(pl.sum(pl.exclude("date")).sum())[0, 0]
+        return self._data.select(pl.sum_horizontal(pl.exclude("date")).sum())[0, 0]
 
     @property
     def total_column(self) -> dict[str, float]:
@@ -90,5 +90,5 @@ class BalanceBase:
             return df.with_columns(sum_col_name=pl.lit(0))
 
         return df.select(
-            [pl.col("date"), pl.sum(pl.exclude("date")).alias(sum_col_name)]
+            [pl.col("date"), pl.sum_horizontal(pl.exclude("date")).alias(sum_col_name)]
         )

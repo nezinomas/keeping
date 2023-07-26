@@ -55,7 +55,7 @@ class DaySpending(BalanceBase):
         df = (
             df.pipe(self._remove_necessary_if_any)
             .lazy()
-            .with_columns(total=pl.sum(pl.exclude("date")))
+            .with_columns(total=pl.sum_horizontal(pl.exclude("date")))
             .select(["date", "total"])
             .with_columns(pl.Series(name="exceptions", values=exceptions["sum"]))
             .with_columns(total=(pl.col("total") - pl.col("exceptions")))
