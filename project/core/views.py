@@ -1,5 +1,8 @@
+from urllib.parse import urlparse
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
+from django.urls import resolve
 
 from . import signals
 from .lib.date import years
@@ -14,9 +17,9 @@ def set_year(request, year):
         user.year = year
         user.save()
 
-    url = request.META.get("HTTP_REFERER", "/")
+    parsed = urlparse(request.META.get("HTTP_REFERER"))
 
-    return redirect(url)
+    return redirect(parsed.path) if resolve(parsed.path) else redirect("/")
 
 
 class RegenerateBalances(TemplateViewMixin):
