@@ -128,7 +128,6 @@ class Expenses(Browser):
 
         sleep(0.5)
 
-        s = self.browser.find_element(By.ID, "id_price")
         assert self.browser.find_element(By.ID, "id_price").get_attribute("value") == "0.0"
         assert self.browser.find_element(By.ID, "id_quantity").get_attribute("value") == "1"
 
