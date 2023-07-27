@@ -94,6 +94,44 @@ class Expenses(Browser):
         assert n.title in page
         assert "123.45" in page
 
+    def test_add_one_expense_check_quantity_and_price_fields_values(self):
+        self.browser.get(f"{self.live_server_url}/expenses/")
+
+        a = AccountFactory()
+        t = ExpenseTypeFactory()
+        n = ExpenseNameFactory()
+
+        # click Add Expenses button
+        self.browser.find_element(By.ID, "insert_expense").click()
+        sleep(0.5)
+
+        # select expense type
+        elem = Select(self.browser.find_element(By.ID, "id_expense_type"))
+        elem.select_by_value(f"{t.id}")
+
+        # select expense name
+        elem = Select(self.browser.find_element(By.ID, "id_expense_name"))
+        elem.select_by_value(f"{n.id}")
+
+        # select Account
+        elem = Select(self.browser.find_element(By.ID, "id_account"))
+        elem.select_by_value(f"{a.id}")
+
+        price = self.browser.find_element(By.ID, "id_total_sum")
+        price.send_keys("123.45")
+        price.send_keys(Keys.RETURN)
+
+        qty = self.browser.find_element(By.ID, "id_quantity")
+        qty.clear()
+        qty.send_keys("66")
+        qty.send_keys(Keys.ENTER)
+
+        sleep(0.5)
+
+        s = self.browser.find_element(By.ID, "id_price")
+        assert self.browser.find_element(By.ID, "id_price").get_attribute("value") == "0.0"
+        assert self.browser.find_element(By.ID, "id_quantity").get_attribute("value") == "1"
+
     @time_machine.travel("1999-12-01 10:11:12")
     def test_add_two_expenses(self):
         self.browser.get(f"{self.live_server_url}/expenses/")
