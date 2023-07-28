@@ -52,6 +52,8 @@ htmx.on("htmx:beforeSwap", (e) => {
                     field.val(value);
                 }
             }
+            // reset exception checkbox
+            $("#id_exception").prop("checked", false);
         }
     }
 })

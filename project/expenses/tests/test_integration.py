@@ -131,6 +131,42 @@ class Expenses(Browser):
         assert self.browser.find_element(By.ID, "id_price").get_attribute("value") == "0.0"
         assert self.browser.find_element(By.ID, "id_quantity").get_attribute("value") == "1"
 
+    def test_exclude_expense_reset_after_submit(self):
+        self.browser.get(f"{self.live_server_url}/expenses/")
+
+        a = AccountFactory()
+        t = ExpenseTypeFactory()
+        n = ExpenseNameFactory()
+
+        # click Add Expenses button
+        self.browser.find_element(By.ID, "insert_expense").click()
+        sleep(0.5)
+
+        # select expense type
+        elem = Select(self.browser.find_element(By.ID, "id_expense_type"))
+        elem.select_by_value(f"{t.id}")
+
+        # select expense name
+        elem = Select(self.browser.find_element(By.ID, "id_expense_name"))
+        elem.select_by_value(f"{n.id}")
+
+        # select Account
+        elem = Select(self.browser.find_element(By.ID, "id_account"))
+        elem.select_by_value(f"{a.id}")
+
+        self.browser.find_element(By.ID, "id_total_sum").send_keys("123.45")
+        self.browser.find_element(By.ID, "add_price").click()
+
+        self.browser.find_element(By.ID, "id_exception").click()
+
+        # click 'Save and Close' button
+        self.browser.find_element(By.ID, "_new").click()
+
+        # wait while form is closing
+        sleep(0.5)
+
+        assert not self.browser.find_element(By.ID, "id_exception").is_selected()
+
     @time_machine.travel("1999-12-01 10:11:12")
     def test_add_two_expenses(self):
         self.browser.get(f"{self.live_server_url}/expenses/")
