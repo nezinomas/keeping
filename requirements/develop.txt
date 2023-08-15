@@ -1,5 +1,5 @@
 -r base.txt
-django-debug-toolbar==4.1.0
+django-debug-toolbar==4.2.0
 django-override-storage==0.3.2
 django-test-plus==2.2.3
 django-test-without-migrations==0.6
@@ -18,9 +18,9 @@ pytest-icdiff==0.6
 pytest-lazy-fixture==0.6.3
 pytest-mock==3.11.1
 pytest-raises==0.11
-pytest-randomly==3.13.0
+pytest-randomly==3.14.0
 pytest-sugar==0.9.7
 pytest-xdist==3.3.1
 pytz==2023.3
-selenium==4.10.0
-time-machine==2.11.0
+selenium==4.11.2
+time-machine==2.12.0
