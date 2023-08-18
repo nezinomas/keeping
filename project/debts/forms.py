@@ -173,7 +173,7 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
         price_sum = qs.get("price__sum") or 0
 
-        if price > (debt.price - price_sum):
+        if price > (debt.price / 100 - price_sum / 100):
             msg = _("The amount to be paid is more than the debt!")
             raise ValidationError(msg)
 
