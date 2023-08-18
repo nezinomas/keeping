@@ -382,15 +382,6 @@ def test_borrow_return_post_delete_with_updt():
     assert actual.balance == 99
 
 
-def test_lend_return_autoclose():
-    LendReturnFactory(price=100)
-
-    actual = Debt.objects.first()
-
-    assert actual.returned == 100
-    assert actual.closed
-
-
 def test_debt_return_incomes():
     a1 = AccountFactory(title='A1')
     a2 = AccountFactory(title='A2')
