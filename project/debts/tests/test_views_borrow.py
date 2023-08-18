@@ -212,7 +212,7 @@ def test_borrow_update_not_closed(client_logged):
 
 def test_borrow_update_price_smaller_then_returned(client_logged):
     debt = factories.BorrowFactory(name='XXX', price=5)
-    factories.BorrowReturnFactory(debt=debt, price=4)
+    factories.BorrowReturnFactory(debt=debt, price=4 * 100)
 
     data = {
         'name': 'XXX',

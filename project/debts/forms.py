@@ -92,11 +92,11 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         if not self.instance.pk and closed:
             self.add_error("closed", _msg_cant_close)
 
-        if self.instance.pk and closed and self.instance.returned != price:
+        if self.instance.pk and closed and self.instance.returned / 100 != price:
             self.add_error("closed", _msg_cant_close)
 
         # can't update to smaller price
-        if self.instance.pk and price < self.instance.returned:
+        if self.instance.pk and price < self.instance.returned / 100:
             self.add_error(
                 "price",
                 _(
@@ -173,7 +173,7 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
         price_sum = qs.get("price__sum") or 0
 
-        if price > (debt.price - price_sum):
+        if price > (debt.price / 100 - price_sum / 100):
             msg = _("The amount to be paid is more than the debt!")
             raise ValidationError(msg)
 
