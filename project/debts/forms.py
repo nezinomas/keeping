@@ -92,11 +92,11 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         if not self.instance.pk and closed:
             self.add_error("closed", _msg_cant_close)
 
-        if self.instance.pk and closed and self.instance.returned != price:
+        if self.instance.pk and closed and self.instance.returned / 100 != price:
             self.add_error("closed", _msg_cant_close)
 
         # can't update to smaller price
-        if self.instance.pk and price < self.instance.returned:
+        if self.instance.pk and price < self.instance.returned / 100:
             self.add_error(
                 "price",
                 _(
