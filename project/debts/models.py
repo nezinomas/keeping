@@ -103,8 +103,7 @@ class DebtReturn(models.Model):
             dif = self.price - old.price
             _returned += dif
 
-        _closed = obj.price == _returned
-        qs.update(returned=_returned, closed=_closed)
+        qs.update(returned=_returned)
 
         super().save(*args, **kwargs)
 
