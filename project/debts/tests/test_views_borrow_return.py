@@ -177,10 +177,10 @@ def test_borrow_return_update(mck, client_logged):
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
 def test_borrow_return_update_with_returns(mck, client_logged):
-    debt = factories.BorrowFactory()
-    factories.BorrowReturnFactory(debt=debt, price=40)
-    factories.BorrowReturnFactory(debt=debt, price=50)
-    e = factories.BorrowReturnFactory(debt=debt, price=5)
+    debt = factories.BorrowFactory(price=100 * 100)
+    factories.BorrowReturnFactory(debt=debt, price=40 * 100)
+    factories.BorrowReturnFactory(debt=debt, price=50 * 100)
+    e = factories.BorrowReturnFactory(debt=debt, price=5 * 100)
     a = AccountFactory(title='AAA')
 
     data = {
