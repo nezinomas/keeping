@@ -33,8 +33,12 @@
             <td class="text-start cell-padding">{{ object.account }}</td>
             <td class="text-start">{{ object.remark }}</td>
             <td class="text-center">{% if object.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
+            {% if not object.debt.closed %}
             {% edit_cell url=url_update %}
             {% delete_cell url=url_delete %}
+            {% else %}
+            <td colspan="2"></td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
