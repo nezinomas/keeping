@@ -1,0 +1,5 @@
+{% load i18n %}
+
+<div class="alert alert-info text-center py-2" role="alert">{% translate 'Part of the incomes is transferred to savings' %}: <b>{{ percentage_from_incomes|floatformat:'1g' }}</b>%</div>
+
+{% include 'bookkeeping/includes/funds_table.html' %}
