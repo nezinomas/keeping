@@ -7,7 +7,7 @@ from django.db.models.fields import IntegerField
 from ...core.lib import utils
 from ...core.signals import Savings as signal_savings
 from ...incomes.models import Income
-from ...savings.models import SavingBalance
+from ...savings.models import Saving, SavingBalance
 from .index import IndexService
 
 
@@ -17,6 +17,7 @@ class SavingServiceData:
 
     incomes: float = field(init=False, default=0)
     savings: list = field(init=False, default_factory=list)
+    total_savings: float = field(init=False, default=0)
     data: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
@@ -27,14 +28,24 @@ class SavingServiceData:
             .aggregate(Sum("price", output_field=IntegerField()))["price__sum"]
         )
 
+        self.total_savings = (
+            Saving.objects.related()
+            .year(self.year)
+            .aggregate(Sum("price", output_field=IntegerField()))["price__sum"]
+            or 0
+        )
+
         # data
-        self.data = SavingBalance.objects.year(self.year).exclude(saving_type__type = 'pensions')
+        self.data = SavingBalance.objects.year(self.year).exclude(
+            saving_type__type="pensions"
+        )
 
 
 class SavingsService:
     def __init__(self, data: SavingServiceData):
         self.data = data.data
         self.incomes = data.incomes
+        self.total_savings = data.total_savings
 
     def context(self) -> Dict:
         fields = [
@@ -55,16 +66,12 @@ class SavingsService:
             total_row.get("market_value", 0), total_row.get("invested", 0)
         )
 
-        total_past = total_row.get("past_amount", 0)
-        total_savings = total_row.get("incomes", 0)
-        total_savings_current_year = total_savings - total_past
-
         calculate_percent = IndexService.percentage_from_incomes
 
         return {
             "items": self.data,
             "total_row": total_row,
             "percentage_from_incomes": calculate_percent(
-                self.incomes, total_savings_current_year
+                self.incomes, self.total_savings
             ),
         }
