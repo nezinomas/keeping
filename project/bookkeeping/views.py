@@ -80,7 +80,7 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
 
 
 class Savings(TemplateViewMixin):
-    template_name = "bookkeeping/includes/funds_table.html"
+    template_name = "bookkeeping/savings.html"
 
     def get_context_data(self, **kwargs):
         data = services.SavingServiceData(self.request.user.year)
