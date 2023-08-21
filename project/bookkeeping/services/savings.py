@@ -28,7 +28,7 @@ class SavingServiceData:
         )
 
         # data
-        self.data = SavingBalance.objects.year(self.year)
+        self.data = SavingBalance.objects.year(self.year).exclude(saving_type__type = 'pensions')
 
 
 class SavingsService:
