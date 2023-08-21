@@ -3,7 +3,9 @@ from datetime import datetime
 import pytest
 import pytz
 from django.urls import resolve, reverse
+
 from ...pensions.factories import PensionFactory
+from ...savings.factories import SavingFactory, SavingTypeFactory
 from .. import views
 from ..factories import PensionWorthFactory
 
@@ -32,6 +34,31 @@ def test_view_context(client_logged):
     assert actual["type"] == "pensions"
     assert "items" in actual
     assert "total_row" in actual
+
+
+def test_view_context_with_saving_type_pension(client_logged):
+    PensionFactory()
+    SavingFactory(saving_type=SavingTypeFactory(title="AAA", type="pensions"))
+
+    url = reverse("bookkeeping:pensions")
+    response = client_logged.get(url)
+    actual = response.context["items"]
+
+    assert len(actual) == 2
+    assert actual[0].saving_type.title == "AAA"
+    assert actual[1].pension_type.title == "PensionType"
+
+
+def test_view_context_with_saving_type_pension_title_in_template(client_logged):
+    PensionFactory()
+    SavingFactory(saving_type=SavingTypeFactory(title="AAA", type="pensions"))
+
+    url = reverse("bookkeeping:pensions")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert "AAA" in actual
+    assert "PensionType" in actual
 
 
 def test_view_latest_check(client_logged):

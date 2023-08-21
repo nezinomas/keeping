@@ -5,7 +5,7 @@ import pytz
 from django.urls import resolve, reverse
 
 from ...incomes.factories import IncomeFactory
-from ...savings.factories import SavingFactory
+from ...savings.factories import SavingFactory, SavingTypeFactory
 from .. import views
 from ..factories import SavingWorthFactory
 
@@ -35,6 +35,18 @@ def test_view_context(client_logged):
     assert "items" in actual
     assert "total_row" in actual
     assert "percentage_from_incomes" in actual
+
+
+def test_view_context_no_pensions_type(client_logged):
+    SavingFactory(saving_type=SavingTypeFactory(title='FFF', type='funds'))
+    SavingFactory(saving_type=SavingTypeFactory(title='PPP', type='pensions'))
+
+    url = reverse("bookkeeping:savings")
+    response = client_logged.get(url)
+    actual = response.context["items"]
+
+    assert len(actual) == 1
+    assert actual[0].saving_type.title == 'FFF'
 
 
 def test_percentage_from_incomes(client_logged):
