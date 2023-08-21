@@ -1,8 +1,11 @@
+import itertools as it
 from dataclasses import dataclass, field
 
 from ...core.lib import utils
 from ...core.signals import Savings as signal_savings
 from ...pensions.models import PensionBalance
+from ...savings.models import SavingBalance
+from operator import attrgetter
 
 
 @dataclass
@@ -12,7 +15,9 @@ class PensionServiceData:
     data: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.data = PensionBalance.objects.year(self.year)
+        pensions = PensionBalance.objects.year(self.year)
+        savings_as_pensions = SavingBalance.objects.year(self.year).filter(saving_type__type="pensions")
+        self.data = list(it.chain(savings_as_pensions, pensions))
 
 
 class PensionsService:
@@ -34,7 +39,7 @@ class PensionsService:
             "market_value",
             "profit_sum",
         ]
-        total_row = utils.sum_all(self.data, fields)
+        total_row = utils.sum_all([x.__dict__ for x in self.data], fields)
         total_row["profit_proc"] = signal_savings.calc_percent(
             total_row.get("market_value", 0), total_row.get("invested", 0)
         )
