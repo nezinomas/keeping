@@ -31,6 +31,7 @@ def test_view_context(client_logged):
     actual = response.context
 
     assert actual["title"] == "Fondai"
+    assert actual["type"] == "savings"
     assert "items" in actual
     assert "total_row" in actual
     assert "percentage_from_incomes" in actual
