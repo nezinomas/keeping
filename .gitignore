@@ -28,6 +28,7 @@ profiles/
 .env
 .db
 .conf
+*.sqlite
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
