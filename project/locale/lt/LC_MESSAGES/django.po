@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-21 14:33+0300\n"
-"PO-Revision-Date: 2023-08-21 14:34+0300\n"
+"POT-Creation-Date: 2023-08-22 09:00+0300\n"
+"PO-Revision-Date: 2023-08-22 09:01+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -510,8 +510,8 @@ msgstr "Gertynės"
 msgid "Show other chart"
 msgstr "Rodyti kitą grafiką"
 
-#: .\project\bookkeeping\templates\bookkeeping\savings.html:2
-msgid "Part of the incomes is transferred to savings"
+#: .\project\bookkeeping\templates\bookkeeping\savings.html:3
+msgid "Part of the income is transferred to savings"
 msgstr "Pajamų dalis pervedama taupymui"
 
 #: .\project\bookkeeping\views.py:89 .\project\bookkeeping\views.py:243
