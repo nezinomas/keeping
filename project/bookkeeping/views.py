@@ -243,7 +243,7 @@ class SummarySavings(TemplateViewMixin):
             funds=obj.make_chart_data("funds") | dict(chart_title=_("Funds")),
             shares=obj.make_chart_data("shares") | dict(chart_title=_("Shares")),
             funds_shares=obj.make_chart_data("funds", "shares")
-            | dict(chart_title=f"{_('Funds')} {_('Shares')}"),
+            | dict(chart_title=f"{_('Funds')}, {_('Shares')}"),
             pensions3=obj.make_chart_data("pensions3")
             | dict(chart_title=f"{_('Pensions')} III"),
             pensions2=obj.make_chart_data("pensions2")
