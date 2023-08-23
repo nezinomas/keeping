@@ -16,7 +16,7 @@ $(function () {
 
     Highcharts.chart('chart-container', {
         title: {
-            text: 'Pajmos ir taupymas'
+            text: chartData.text.title
         },
         xAxis: {
             categories: chartData.categories,
@@ -51,9 +51,9 @@ $(function () {
                 return `
                     <table class="hightcharts-tooltip">
                     <tr><td class="head" colspan="2"><b>${this.x}</b></td></tr>
-                    <tr><td>Pajamos:</td><td>${Highcharts.numberFormat(chartData.incomes[i], 0)}€</td></tr>
-                    <tr><td>Taupymas:</td><td>${Highcharts.numberFormat(chartData.savings[i], 0)}€</td></tr>
-                    <tr><td>Procentai:</td><td>${Highcharts.numberFormat(chartData.percents[i], 1)}%</td></tr>
+                    <tr><td>${chartData.text.incomes}:</td><td>${Highcharts.numberFormat(chartData.incomes[i], 0)}€</td></tr>
+                    <tr><td>${chartData.text.savings}:</td><td>${Highcharts.numberFormat(chartData.savings[i], 0)}€</td></tr>
+                    <tr><td>${chartData.text.percents}:</td><td>${Highcharts.numberFormat(chartData.percents[i], 1)}%</td></tr>
                     </table>
                 `
             }
@@ -65,7 +65,7 @@ $(function () {
             }
         },
         series: [{
-            name: 'Pajamos',
+            name: chartData.text.incomes,
             data: chartData.incomes,
             opacity: 0.85,
             type: 'column',
@@ -77,7 +77,7 @@ $(function () {
                 },
             },
         }, {
-            name: 'Taupymas',
+            name: chartData.text.savings,
             data: chartData.savings,
             type: 'line',
             lineWidth: 2,
