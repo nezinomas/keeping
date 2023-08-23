@@ -16,7 +16,10 @@ $(function () {
 
     Highcharts.chart('chart-container', {
         title: {
-            text: chartData.text.title
+            text: chartData.text.title,
+            style: {
+                fontSize: '14px',
+            }
         },
         xAxis: {
             categories: chartData.categories,
