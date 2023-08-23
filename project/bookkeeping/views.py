@@ -255,6 +255,27 @@ class SummarySavings(TemplateViewMixin):
         return super_context | context
 
 
+class SummarySavingsAndIncomes(TemplateViewMixin):
+    template_name = "bookkeeping/summary_savings_and_incomes.html"
+
+    def get_context_data(self, **kwargs):
+        data = services.ServiceSummarySavingsAndIncomesData()
+        obj = services.ServiceSummarySavingsAndIncomes(data=data)
+
+        text = {
+            "text": {
+                "title": _("Incomes and Savings"),
+                "incomes": _("Incomes"),
+                "savings": _("Savings"),
+                "percents": _("Percents"),
+            }
+        }
+
+        return {
+            "chart_data": obj.chart_data() | text,
+        }
+
+
 class SummaryExpenses(FormViewMixin):
     form_class = forms.SummaryExpensesForm
     template_name = "bookkeeping/summary_expenses.html"

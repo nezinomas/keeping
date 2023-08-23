@@ -160,6 +160,28 @@ def test_saving_items():
 
     assert len(Saving.objects.items()) == 1
 
+def test_saving_years_sum():
+    SavingFactory(date=date(1998, 1, 1), price=4.0)
+    SavingFactory(date=date(1998, 1, 1), price=4.0)
+    SavingFactory(date=date(1999, 1, 1), price=5.0)
+    SavingFactory(date=date(1999, 1, 1), price=5.0)
+
+    actual = Saving.objects.sum_by_year()
+
+    assert actual[0]['year'] == 1998
+    assert actual[0]['sum'] == 8.0
+
+    assert actual[1]['year'] == 1999
+    assert actual[1]['sum'] == 10.0
+
+
+def test_saving_year_sum_count_qs(django_assert_max_num_queries):
+    SavingFactory()
+
+    with django_assert_max_num_queries(1):
+        actual = [x['year'] for x in Saving.objects.sum_by_year()]
+        assert len(list(actual)) == 1
+
 
 def test_saving_month_sum(savings):
     expect = [

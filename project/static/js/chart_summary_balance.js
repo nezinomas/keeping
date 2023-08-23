@@ -64,7 +64,6 @@ $(function () {
             title: {
                 text: ''
             },
-
         },
         tooltip: {
             split: true,
