@@ -441,7 +441,8 @@ def test_income_year_sum_count_qs(django_assert_max_num_queries):
     IncomeFactory()
 
     with django_assert_max_num_queries(1):
-        list([x['year'] for x in Income.objects.sum_by_year()])
+        actual = [x['year'] for x in Income.objects.sum_by_year()]
+        assert len(list(actual)) == 1
 
 
 def test_income_year_sum_filter():
