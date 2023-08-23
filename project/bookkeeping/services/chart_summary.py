@@ -37,7 +37,7 @@ class ChartSummaryService:
             return context
 
         context |= {
-            "chart_title": _("Incomes/Expenses"),
+            "chart_title": _("Incomes and Expenses"),
             "categories": balance_years,
             "incomes": [*map(lambda x: float(x["sum"]), self._incomes)],
             "incomes_title": _("Incomes"),
