@@ -25,8 +25,19 @@ class ServiceSummarySavingsAndIncomes:
         _incomes = {x["year"]: x["sum"] for x in self._incomes}
         _savings = {x["year"]: x["sum"] for x in self._savings}
 
+        _income_values, _saving_values, _percent_values = [], [], []
+        for year in _categories:
+            _income = _incomes.get(year, 0)
+            _saving = _savings.get(year, 0)
+            _percent = (_saving * 100) / _income if _income else 0
+
+            _income_values.append(_income)
+            _saving_values.append(_saving)
+            _percent_values.append(_percent)
+
         return {
             "categories": _categories,
-            "incomes": [_incomes.get(year, 0) for year in _categories],
-            "savings": [_savings.get(year, 0) for year in _categories],
+            "incomes": _income_values,
+            "savings": _saving_values,
+            "percents": _percent_values,
         }
