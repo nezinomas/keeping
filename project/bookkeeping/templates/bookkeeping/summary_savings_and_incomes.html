@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+{% endblock head %}
+
+
+{% block content %}
+
+<div class="row">
+    <div class="col"><div id="chart-container"></div></div>
+</div>
+
+<script src="{% static 'js/chart_summary_savings_and_incomes.js' %}" defer></script>
+{{ chart_data|json_script:"chart-data" }}
+
+{% endblock content %}
