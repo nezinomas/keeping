@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
+{% load slippers %}
+{% load math %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -10,6 +13,33 @@
 
 <div class="row">
     <div class="col"><div id="chart-container"></div></div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <table class="table table-sm table-striped table-hover sticky-table">
+        <thead>
+            <tr>
+                <th class="text-start">{% translate "Year" %}</th>
+                {% for obj in chart_data.categories %}<th>{{obj}}</th>{% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-start">{{chart_data.text.incomes}}</td>
+                {% for obj in chart_data.incomes %}{% table_cell value=obj|price %}{% endfor %}
+            </tr>
+            <tr>
+                <td class="text-start">{{chart_data.text.savings}}</td>
+                {% for obj in chart_data.savings %}{% table_cell value=obj|price %}{% endfor %}
+            </tr>
+            <tr>
+                <td class="text-start">{{chart_data.text.percents}}</td>
+                {% for obj in chart_data.percents %}{% table_cell value=obj %}{% endfor %}
+            </tr>
+        </tbody>
+        </table>
+    </div>
 </div>
 
 <script src="{% static 'js/chart_summary_savings_and_incomes.js' %}" defer></script>
