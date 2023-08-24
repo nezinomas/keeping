@@ -15,9 +15,8 @@
     <div class="col"><div id="chart-container"></div></div>
 </div>
 
-<div class="row">
-    <div class="col">
-        <table class="table table-sm table-striped table-hover sticky-table">
+<div class="mt-2 table-responsive">
+    <table class="table table-sm table-striped table-hover sticky-table">
         <thead>
             <tr>
                 <th class="text-start">{% translate "Year" %}</th>
@@ -38,9 +37,9 @@
                 {% for obj in chart_data.percents %}{% table_cell value=obj %}{% endfor %}
             </tr>
         </tbody>
-        </table>
-    </div>
+    </table>
 </div>
+
 
 <script src="{% static 'js/chart_summary_savings_and_incomes.js' %}" defer></script>
 {{ chart_data|json_script:"chart-data" }}
