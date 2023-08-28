@@ -7,7 +7,7 @@
 
 
 {% if object_list %}
-<script src="{% static 'js/sticky-table-headers.js' %}"></script>
+
 <div class="row">
     <div class="col"
         hx-trigger="reload from:body, afterType from:body, afterName from:body"
@@ -57,6 +57,7 @@
         </table>
     </div>
 </div>
+
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
 {% paging url=url page_obj=object_list page_range=page_range search=search target="#data" %}
