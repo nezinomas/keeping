@@ -99,37 +99,36 @@ class MonthService:
         plan_per_day = self._plans.day_input
         plan_balance = self._plans.remains
 
+        delta_incomes = fact_incomes - plan_incomes
+        delta_expenses = plan_expenses - fact_expenses
+        delta_savings = plan_savings - fact_savings
+        delta_per_day = plan_per_day - fact_per_day
+        delta_balance = fact_balance - plan_balance
+
+        def push(title, plan, fact, delta, /):
+            return {
+                "title": title,
+                "plan": plan,
+                "fact": fact,
+                "delta": delta,
+            }
+
         return [
-            dict(
-                title=_("Incomes"),
-                plan=plan_incomes,
-                fact=fact_incomes,
-                delta=fact_incomes - plan_incomes,
+            push(_("Incomes"), plan_incomes, fact_incomes, delta_incomes),
+            push(
+                _("Expenses"),
+                plan_expenses,
+                fact_expenses,
+                delta_expenses,
             ),
-            dict(
-                title=_("Expenses"),
-                plan=plan_expenses,
-                fact=fact_expenses,
-                delta=plan_expenses - fact_expenses,
+            push(_("Savings"), plan_savings, fact_savings, delta_savings),
+            push(
+                _("Money for a day"),
+                plan_per_day,
+                fact_per_day,
+                delta_per_day,
             ),
-            dict(
-                title=_("Savings"),
-                plan=plan_savings,
-                fact=fact_savings,
-                delta=plan_savings - fact_savings,
-            ),
-            dict(
-                title=_("Money for a day"),
-                plan=plan_per_day,
-                fact=fact_per_day,
-                delta=plan_per_day - fact_per_day,
-            ),
-            dict(
-                title=_("Balance"),
-                plan=plan_balance,
-                fact=fact_balance,
-                delta=fact_balance - plan_balance,
-            ),
+            push(_("Balance"), plan_balance, fact_balance, delta_balance),
         ]
 
     def month_table_context(self) -> dict:
