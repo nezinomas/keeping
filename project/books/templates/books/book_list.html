@@ -4,7 +4,6 @@
 
 {% if object_list %}
 
-<script src="{% static 'js/sticky-table-headers.js' %}"></script>
 <div class="row">
     <div class="col-lg-12" hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
         <table class="table table-sm table-striped table-hover sticky-table">
