@@ -9,3 +9,8 @@ def price(value: int) -> float:
         return value / 100
     except TypeError:
         return value
+
+
+@register.filter
+def sub(a: int, b: int) -> int:
+    return a - b
