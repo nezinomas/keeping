@@ -73,7 +73,7 @@
             {% now 'n' as month_number %}
         {% endif %}
 
-        <div id="data" hx-trigger="load" hx-get="{% url 'expenses:list' %}?month={{month_number}}"></div>
+        <div id="data" hx-trigger="load" hx-indicator="#indicator" hx-get="{% url 'expenses:list' %}?month={{month_number}}"></div>
     </div>
 
     <div class="col-lg-4">
