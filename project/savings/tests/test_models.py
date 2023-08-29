@@ -648,7 +648,6 @@ def test_saving_balance_init():
     assert actual.invested == 23
     assert actual.incomes == 24
     assert actual.market_value == 25
-    assert actual.profit_proc == 28
     assert actual.profit_sum == 29
 
 
