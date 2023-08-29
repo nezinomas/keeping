@@ -20,11 +20,12 @@
 
             {% if item.title == _('Incomes') or item.title == _('Balance') %}
                 {% table_cell value=item.fact|price css_class=item.fact|compare:item.plan %}
+                {% table_cell value=item.fact|sub:item.plan|price highlight_value=True %}
             {% else %}
                 {% table_cell value=item.fact|price css_class=item.plan|compare:item.fact %}
+                {% table_cell value=item.plan|sub:item.fact|price highlight_value=True %}
             {% endif %}
 
-            {% table_cell value=item.delta|price highlight_value=True %}
         </tr>
         {% endfor %}
 
