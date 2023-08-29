@@ -61,17 +61,10 @@ class SavingsService:
             "market_value",
             "profit_sum",
         ]
-        total_row = utils.sum_all(self.data, fields)
-        total_row["profit_proc"] = signal_savings.calc_percent(
-            total_row.get("market_value", 0), total_row.get("invested", 0)
-        )
-
-        calculate_percent = IndexService.percentage_from_incomes
 
         return {
             "items": self.data,
-            "total_row": total_row,
-            "percentage_from_incomes": calculate_percent(
-                self.incomes, self.total_savings
-            ),
+            "total_row": utils.sum_all(self.data, fields),
+            "incomes": self.incomes,
+            "savings": self.total_savings,
         }
