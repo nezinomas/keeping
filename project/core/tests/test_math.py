@@ -33,6 +33,8 @@ def test_sub(a, b, expect):
     [
         (10, 1, 10),
         (1, 10, 1_000),
+        (0, 1, 0),
+        (1, 0, 0),
     ]
 )
 def test_percent(a, b, expect):
