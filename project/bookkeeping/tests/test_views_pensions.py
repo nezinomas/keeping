@@ -73,6 +73,17 @@ def test_view_latest_check(client_logged):
     assert items[0].latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
 
 
+def test_table_percentage(client_logged):
+    PensionFactory(price=660)
+
+    url = reverse("bookkeeping:pensions")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert '6,60</td>' in actual # row
+    assert '6,60</th>' in actual # total_row
+
+
 def test_regenerate_buttons(client_logged):
     PensionFactory()
 

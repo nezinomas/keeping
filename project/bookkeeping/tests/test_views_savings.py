@@ -81,6 +81,18 @@ def test_percentage_from_incomes_yellow_alert(client_logged):
     assert "alert alert-warning" in actual
 
 
+def test_table_percentage(client_logged):
+    IncomeFactory(price=1000)
+    SavingFactory(price=660)
+
+    url = reverse("bookkeeping:savings")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert '6,60</td>' in actual # row
+    assert '6,60</th>' in actual # total_row
+
+
 def test_percentage_from_incomes_red_alert(client_logged):
     IncomeFactory(price=10)
 
