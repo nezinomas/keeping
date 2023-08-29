@@ -163,7 +163,7 @@ def test_chart_expenses():
     )
     total_row = {"T1": 25, "T2": 50}
 
-    actual = obj._chart_expenses(total_row)
+    actual = obj._chart_data_for_expenses(total_row)
 
     expect = [
         {"name": "T2", "y": 50},
@@ -179,7 +179,7 @@ def test_chart_expenses_colors_shorter_then_data():
     )
     total_row = {"T1": 2, "T2": 5, "T3": 1}
 
-    actual = obj._chart_expenses(total_row)
+    actual = obj._chart_data_for_expenses(total_row)
 
     expect = [
         {"name": "T2", "y": 5},
@@ -195,7 +195,7 @@ def test_chart_expenses_no_expenes_data():
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
 
-    actual = obj._chart_expenses(total_row={})
+    actual = obj._chart_data_for_expenses(total_row={})
 
     assert actual == []
 
@@ -221,7 +221,7 @@ def test_chart_targets_categories():
     total_row = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
 
-    actual, _, _ = obj._chart_targets(total_row, targets)
+    actual, _, _ = obj._chart_data_for_targets(total_row, targets)
 
     expect = ["T2", "T1"]
 
@@ -236,7 +236,7 @@ def test_chart_targets_data_target():
     total_row = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
 
-    _, actual, _ = obj._chart_targets(total_row, targets)
+    _, actual, _ = obj._chart_data_for_targets(total_row, targets)
 
     expect = [4, 3]
 
@@ -251,7 +251,7 @@ def test_chart_targets_data_target_empty():
     total_row = {"T1": 2, "T2": 5}
     targets = {}
 
-    _, actual, _ = obj._chart_targets(total_row, targets)
+    _, actual, _ = obj._chart_data_for_targets(total_row, targets)
 
     expect = [0, 0]
 
@@ -265,7 +265,7 @@ def test_chart_targets_data_fact():
     total_row = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
 
-    _, _, actual = obj._chart_targets(total_row, targets)
+    _, _, actual = obj._chart_data_for_targets(total_row, targets)
 
     expect = [
         {"y": 5, "target": 4},
@@ -283,7 +283,7 @@ def test_chart_targets_data_fact_no_target():
     total_row = {"T1": 2, "T2": 5}
     targets = {}
 
-    _, _, actual = obj._chart_targets(total_row, targets)
+    _, _, actual = obj._chart_data_for_targets(total_row, targets)
 
     expect = [
         {"y": 5, "target": 0},
