@@ -59,6 +59,38 @@ def test_percentage_from_incomes(client_logged):
     assert "Pajamų dalis pervedama taupymui: <b>200,0</b>%" in actual
 
 
+def test_percentage_from_incomes_green_alert(client_logged):
+    IncomeFactory(price=10)
+    SavingFactory(price=1)
+
+    url = reverse("bookkeeping:savings")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert "alert alert-success" in actual
+
+
+def test_percentage_from_incomes_yellow_alert(client_logged):
+    IncomeFactory(price=100)
+    SavingFactory(price=1)
+
+    url = reverse("bookkeeping:savings")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert "alert alert-warning" in actual
+
+
+def test_percentage_from_incomes_red_alert(client_logged):
+    IncomeFactory(price=10)
+
+    url = reverse("bookkeeping:savings")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert "alert alert-danger" in actual
+
+
 def test_latest_check(client_logged):
     SavingFactory()
     SavingWorthFactory()

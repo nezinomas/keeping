@@ -4,6 +4,6 @@
 
 {% var percent_val=incomes|percent:savings %}
 
-<div class="alert {% if percent_val <= 0 %}alert-danger{% elif percent_val <= 10 %}alert-warning{% else %}alert-success{% endif %} text-center py-2" role="alert">{% translate 'Part of the income is transferred to savings' %}: <b>{{percent_val|floatformat:"1g"}}</b>%</div>
+<div class="alert {% if percent_val <= 0 %}alert-danger{% elif percent_val < 10 %}alert-warning{% else %}alert-success{% endif %} text-center py-2" role="alert">{% translate 'Part of the income is transferred to savings' %}: <b>{{percent_val|floatformat:"1g"}}</b>%</div>
 
 {% include 'bookkeeping/includes/funds_table.html' %}
