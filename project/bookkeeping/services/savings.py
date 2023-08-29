@@ -5,10 +5,8 @@ from django.db.models import Sum
 from django.db.models.fields import IntegerField
 
 from ...core.lib import utils
-from ...core.signals import Savings as signal_savings
 from ...incomes.models import Income
 from ...savings.models import Saving, SavingBalance
-from .index import IndexService
 
 
 @dataclass

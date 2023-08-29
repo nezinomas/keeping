@@ -2,10 +2,8 @@ import itertools as it
 from dataclasses import dataclass, field
 
 from ...core.lib import utils
-from ...core.signals import Savings as signal_savings
 from ...pensions.models import PensionBalance
 from ...savings.models import SavingBalance
-from operator import attrgetter
 
 
 @dataclass
