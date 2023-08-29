@@ -134,6 +134,16 @@ class MonthService:
 
         return (rtn_categories, rtn_data_target, rtn_data_fact)
 
+    def _make_chart_data(self, data: dict) -> list[dict]:
+        rtn = []
+        for key, val in data.items():
+            rtn.append({"name": key, "y": val})
+
+        if rtn:
+            rtn = sorted(rtn, key=itemgetter("y"), reverse=True)
+
+        return rtn
+
     def _generate_expenses_table(self) -> list[tuple]:
         return it.zip_longest(
             self._spending.balance,
@@ -145,25 +155,15 @@ class MonthService:
     def _get_total_row_with_savings(self, total_row: dict) -> dict:
         return self._append_to_data_dict(total_row, _("Savings"), self._savings.total)
 
-    def _get_fact_income(self) -> float:
-        fact_incomes = self._data.incomes
-        return float(fact_incomes[0]["sum"]) if fact_incomes else 0
-
     def _append_to_data_dict(self, data: dict, title: str, value: float) -> dict:
         if isinstance(data, dict):
             value = value or 0
             data[title] = value
         return data
 
-    def _make_chart_data(self, data: dict) -> list[dict]:
-        rtn = []
-        for key, val in data.items():
-            rtn.append({"name": key, "y": val})
-
-        if rtn:
-            rtn = sorted(rtn, key=itemgetter("y"), reverse=True)
-
-        return rtn
+    def _get_fact_income(self) -> float:
+        fact_incomes = self._data.incomes
+        return float(fact_incomes[0]["sum"]) if fact_incomes else 0
 
     def _generate_info_entries(self, *entries) -> list[dict]:
         return [
