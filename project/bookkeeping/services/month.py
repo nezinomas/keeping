@@ -19,13 +19,9 @@ class MonthServiceData:
     month: int
 
     incomes: list[dict] = field(init=False, default_factory=list)
-
     expenses: list[dict] = field(init=False, default_factory=list)
-
     expense_types: list = field(init=False, default_factory=list)
-
     necessary_expense_types: list = field(init=False, default_factory=list)
-
     savings: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
