@@ -125,27 +125,22 @@ def test_info_context():
     assert actual[0]["title"] == "Pajamos"
     assert actual[0]["plan"] == 100
     assert actual[0]["fact"] == 15
-    assert actual[0]["delta"] == -85
 
     assert actual[1]["title"] == "Išlaidos"
     assert actual[1]["plan"] == 88
     assert actual[1]["fact"] == 5
-    assert actual[1]["delta"] == 83
 
     assert actual[2]["title"] == "Taupymas"
     assert actual[2]["plan"] == 12
     assert actual[2]["fact"] == 2
-    assert actual[2]["delta"] == 10
 
     assert actual[3]["title"] == "Pinigai dienai"
     assert actual[3]["plan"] == 3
     assert actual[3]["fact"] == 2
-    assert actual[3]["delta"] == 1
 
     assert actual[4]["title"] == "Balansas"
     assert actual[4]["plan"] == -85
     assert actual[4]["fact"] == 8
-    assert actual[4]["delta"] == 93
 
 
 def test_chart_expenses_context():
