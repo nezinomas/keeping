@@ -150,8 +150,11 @@ div[class*="col"]>h6 {
 }
 
 .table tfoot th {
-    background-color: #f8f9fa;
     border-top: double #0359b0 !important;
+}
+
+.table tfoot th:not([class^="table-"]) {
+    background-color: #f8f9fa!important;
 }
 
 .table tfoot tr:not(:last-child) th {
