@@ -14,3 +14,8 @@ def price(value: int) -> float:
 @register.filter
 def sub(a: int, b: int) -> int:
     return a - b
+
+
+@register.filter
+def percent(a: int|float, b: int|float) -> float:
+    return (100 * b) / a
