@@ -26,3 +26,20 @@ def test_price(value, expect):
 def test_sub(a, b, expect):
     actual = math.sub(a, b)
     assert actual == expect
+
+
+@pytest.mark.parametrize(
+    'a, b, expect',
+    [
+        (10, 1, 10),
+        (1, 10, 1_000),
+        (0, 1, 0),
+        (1, 0, 0),
+        (1, None, 0),
+        (None, 0, 0),
+        (None, None, 0),
+    ]
+)
+def test_percent(a, b, expect):
+    actual = math.percent(a, b)
+    assert actual == expect

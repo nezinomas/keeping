@@ -264,7 +264,6 @@ class Savings(SignalBase):
                 )
             )
             .with_columns(profit_sum=(pl.col("market_value") - pl.col("invested")))
-            .pipe(self._calc_percent)
         )
         return df.collect()
 
@@ -301,7 +300,6 @@ class Savings(SignalBase):
             "per_year_incomes",
             "per_year_fee",
             "invested",
-            "profit_proc",
             "profit_sum",
         ]
 
@@ -317,26 +315,3 @@ class Savings(SignalBase):
             .with_columns([pl.lit(0).alias(col) for col in cols])
             .collect()
         )
-
-    @staticmethod
-    def calc_percent(market, invested):
-        try:
-            return ((market * 100) / invested) - 100
-        except ZeroDivisionError:
-            return 0
-
-    def _calc_percent(self, df):
-        df = (
-            df
-            .lazy()
-            .with_columns(
-                profit_proc=Savings.calc_percent(
-                    pl.col("market_value"), pl.col("invested")
-                ).fill_nan(0)
-            ).with_columns(
-                profit_proc=pl.when(pl.col("profit_proc").is_infinite())
-                .then(0)
-                .otherwise(pl.col("profit_proc"))
-            )
-        )
-        return df

@@ -52,7 +52,7 @@
             {% table_cell value=item.invested|price css_class='w6' %}
             {% table_cell value=item.market_value|price css_class='right-blue-border w6' %}
             {% table_cell value=item.profit_sum|price text_after='€' highlight_value=True css_class='w6' %}
-            {% table_cell value=item.profit_proc text_after='%' highlight_value=True css_class='w6' %}
+            {% table_cell value=item.invested|percent:item.market_value|sub:100 text_after='%' highlight_value=True css_class='w6' %}
         </tr>
         {% endfor %}
     </tbody>
@@ -70,7 +70,7 @@
             {% table_cell value=total_row.invested|price tag='th' %}
             {% table_cell value=total_row.market_value|price tag='th' css_class='right-blue-border' %}
             {% table_cell value=total_row.profit_sum|price text_after='€' highlight_value=True tag='th' %}
-            {% table_cell value=total_row.profit_proc text_after='%' highlight_value=True tag='th' %}
+            {% table_cell value=total_row.invested|percent:total_row.market_value|sub:100 text_after='%' highlight_value=True tag='th' %}
         </tr>
     </tfoot>
 </table>

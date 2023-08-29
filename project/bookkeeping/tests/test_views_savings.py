@@ -34,7 +34,6 @@ def test_view_context(client_logged):
     assert actual["type"] == "savings"
     assert "items" in actual
     assert "total_row" in actual
-    assert "percentage_from_incomes" in actual
 
 
 def test_view_context_no_pensions_type(client_logged):
@@ -55,9 +54,9 @@ def test_percentage_from_incomes(client_logged):
 
     url = reverse("bookkeeping:savings")
     response = client_logged.get(url)
-    actual = response.context
+    actual = response.content.decode("utf-8")
 
-    assert actual["percentage_from_incomes"] == 200.0
+    assert "Pajamų dalis pervedama taupymui: <b>200,0</b>%" in actual
 
 
 def test_latest_check(client_logged):
