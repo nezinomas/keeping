@@ -56,14 +56,10 @@ class MonthService:
         self._savings = savings
 
     def chart_targets_context(self):
-        total_row = self._spending.total_row
-        targets = self._plans.targets
-
-        # append savings
-        self._append_savings(total_row, self._savings.total)
-        self._append_savings(targets, self._plans.savings)
-
-        categories, data_target, data_fact = self._chart_targets(total_row, targets)
+        total_row = self._get_total_row_with_savings(self._spending.total_row)
+        categories, data_target, data_fact = self._chart_data_for_targets(
+            total_row, self._plans.targets
+        )
 
         return {
             "categories": categories,
@@ -74,75 +70,51 @@ class MonthService:
         }
 
     def chart_expenses_context(self):
-        total_row = self._spending.total_row
-
-        # append savings
-        self._append_savings(total_row, self._savings.total)
-
-        return self._chart_expenses(total_row)
+        total_row_with_savings = self._get_total_row_with_savings(
+            self._spending.total_row
+        )
+        return self._chart_data_for_expenses(total_row_with_savings)
 
     def info_context(self):
-        fact_incomes = self._data.incomes
-        fact_incomes = float(fact_incomes[0]["sum"]) if fact_incomes else 0
+        fact_incomes = self._get_fact_income()
         fact_savings = self._savings.total
         fact_expenses = self._spending.total
         fact_per_day = self._spending.avg_per_day
-        fact_balance = fact_incomes - fact_expenses - fact_savings
+        fact_balance = self._calculate_balance(
+            fact_incomes, fact_expenses, fact_savings
+        )
 
         plan_incomes = self._plans.incomes
         plan_savings = self._plans.savings
-        plan_expenses = plan_incomes - plan_savings
+        plan_expenses = self._calculate_expenses(plan_incomes, plan_savings)
         plan_per_day = self._plans.day_input
         plan_balance = self._plans.remains
 
-        def push(title: str, plan: float, fact: float, /):
-            return {
-                "title": title,
-                "plan": plan,
-                "fact": fact,
-            }
-
-        return [
-            push(_("Incomes"), plan_incomes, fact_incomes),
-            push(
-                _("Expenses"),
-                plan_expenses,
-                fact_expenses,
-            ),
-            push(_("Savings"), plan_savings, fact_savings),
-            push(
-                _("Money for a day"),
-                plan_per_day,
-                fact_per_day,
-            ),
-            push(_("Balance"), plan_balance, fact_balance),
-        ]
+        return self._generate_info_entries(
+            (_("Incomes"), plan_incomes, fact_incomes),
+            (_("Expenses"), plan_expenses, fact_expenses),
+            (_("Savings"), plan_savings, fact_savings),
+            (_("Money for a day"), plan_per_day, fact_per_day),
+            (_("Balance"), plan_balance, fact_balance),
+        )
 
     def month_table_context(self) -> dict:
         return {
             "day": current_day(self._data.year, self._data.month, False),
-            "expenses": it.zip_longest(
-                self._spending.balance,
-                self._spending.total_column,
-                self._spending.spending,
-                self._savings.total_column,
-            ),
+            "expenses": self._generate_expenses_table(),
             "expense_types": self._data.expense_types,
             "total": self._spending.total,
             "total_row": self._spending.total_row,
             "total_savings": self._savings.total,
         }
 
-    def _chart_expenses(self, total_row: dict) -> list[dict]:
+    def _chart_data_for_expenses(self, total_row: dict) -> list[dict]:
         data = self._make_chart_data(total_row)
-
-        # categories upper case
-        for x in data:
-            x["name"] = x["name"].upper()
-
+        for entry in data:
+            entry["name"] = entry["name"].upper()
         return data
 
-    def _chart_targets(
+    def _chart_data_for_targets(
         self, total_row: dict, targets: dict
     ) -> tuple[list[str], list[float], list[dict]]:
         data = self._make_chart_data(total_row)
@@ -151,25 +123,16 @@ class MonthService:
         rtn_data_fact = []
         rtn_data_target = []
 
-        for arr in data:
-            category = arr["name"]
+        for entry in data:
+            category = entry["name"]
             target = float(targets.get(category, 0))
-            fact = float(arr["y"])
+            fact = float(entry["y"])
 
             rtn_categories.append(category.upper())
             rtn_data_target.append(target)
             rtn_data_fact.append({"y": fact, "target": target})
 
         return (rtn_categories, rtn_data_target, rtn_data_fact)
-
-    def _append_savings(self, data: dict, value: float = 0):
-        title = _("Savings")
-
-        if isinstance(data, dict):
-            value = value or 0
-            data[title] = value
-
-        return data
 
     def _make_chart_data(self, data: dict) -> list[dict]:
         rtn = []
@@ -180,3 +143,38 @@ class MonthService:
             rtn = sorted(rtn, key=itemgetter("y"), reverse=True)
 
         return rtn
+
+    def _generate_expenses_table(self) -> list[tuple]:
+        return it.zip_longest(
+            self._spending.balance,
+            self._spending.total_column,
+            self._spending.spending,
+            self._savings.total_column,
+        )
+
+    def _get_total_row_with_savings(self, total_row: dict) -> dict:
+        return self._append_to_data_dict(total_row, _("Savings"), self._savings.total)
+
+    def _append_to_data_dict(self, data: dict, title: str, value: float) -> dict:
+        if isinstance(data, dict):
+            value = value or 0
+            data[title] = value
+        return data
+
+    def _get_fact_income(self) -> float:
+        fact_incomes = self._data.incomes
+        return float(fact_incomes[0]["sum"]) if fact_incomes else 0
+
+    def _generate_info_entries(self, *entries) -> list[dict]:
+        return [
+            {"title": title, "plan": plan, "fact": fact}
+            for title, plan, fact in entries
+        ]
+
+    def _calculate_balance(
+        self, incomes: float, expenses: float, savings: float
+    ) -> float:
+        return incomes - expenses - savings
+
+    def _calculate_expenses(self, incomes: float, savings: float) -> float:
+        return incomes - savings
