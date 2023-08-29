@@ -1,5 +1,9 @@
+{% load slippers %}
+{% load math %}
 {% load i18n %}
 
-<div class="alert {% if percentage_from_incomes <= 0 %}alert-danger{% elif percentage_from_incomes <= 10 %}alert-warning{% else %}alert-success{% endif %} text-center py-2" role="alert">{% translate 'Part of the income is transferred to savings' %}: <b>{{ percentage_from_incomes|floatformat:'1g' }}</b>%</div>
+{% var percent_val=incomes|percent:savings %}
+
+<div class="alert {% if percent_val <= 0 %}alert-danger{% elif ppercent_val <= 10 %}alert-warning{% else %}alert-success{% endif %} text-center py-2" role="alert">{% translate 'Part of the income is transferred to savings' %}: <b>{{percent_val|floatformat:"1g"}}</b>%</div>
 
 {% include 'bookkeeping/includes/funds_table.html' %}
