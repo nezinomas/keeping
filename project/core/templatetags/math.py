@@ -20,5 +20,5 @@ def sub(a: int, b: int) -> int:
 def percent(a: int|float, b: int|float) -> float:
     try:
         return (100 * b) / a
-    except ZeroDivisionError:
+    except (ZeroDivisionError, TypeError):
         return 0
