@@ -21,6 +21,7 @@ def test_price(value, expect):
         (1, -1, 2),
         (-1, 1, -2),
         (1, 1, 0),
+        (None, None, 0),
     ]
 )
 def test_sub(a, b, expect):

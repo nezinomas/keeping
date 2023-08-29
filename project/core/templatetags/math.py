@@ -13,7 +13,10 @@ def price(value: int) -> float:
 
 @register.filter
 def sub(a: int, b: int) -> int:
-    return a - b
+    try:
+        return a - b
+    except TypeError:
+        return 0
 
 
 @register.filter
