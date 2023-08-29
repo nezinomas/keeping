@@ -99,36 +99,28 @@ class MonthService:
         plan_per_day = self._plans.day_input
         plan_balance = self._plans.remains
 
-        delta_incomes = fact_incomes - plan_incomes
-        delta_expenses = plan_expenses - fact_expenses
-        delta_savings = plan_savings - fact_savings
-        delta_per_day = plan_per_day - fact_per_day
-        delta_balance = fact_balance - plan_balance
-
-        def push(title, plan, fact, delta, /):
+        def push(title: str, plan: float, fact: float, /, delta: str = "plan-fact"):
             return {
                 "title": title,
                 "plan": plan,
                 "fact": fact,
-                "delta": delta,
+                "delta": plan - fact if delta == "plan-fact" else fact - plan,
             }
 
         return [
-            push(_("Incomes"), plan_incomes, fact_incomes, delta_incomes),
+            push(_("Incomes"), plan_incomes, fact_incomes, "fact-plan"),
             push(
                 _("Expenses"),
                 plan_expenses,
                 fact_expenses,
-                delta_expenses,
             ),
-            push(_("Savings"), plan_savings, fact_savings, delta_savings),
+            push(_("Savings"), plan_savings, fact_savings),
             push(
                 _("Money for a day"),
                 plan_per_day,
                 fact_per_day,
-                delta_per_day,
             ),
-            push(_("Balance"), plan_balance, fact_balance, delta_balance),
+            push(_("Balance"), plan_balance, fact_balance, "fact-plan"),
         ]
 
     def month_table_context(self) -> dict:
