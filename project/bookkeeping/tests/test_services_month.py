@@ -306,7 +306,7 @@ def test_append_savings(data, value, expect):
     obj = MonthService(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
-    obj._append_savings(data, value)
+    obj._append_to_data_dict(data, "Taupymas", value)
 
     assert data == expect
 
