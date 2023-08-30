@@ -79,6 +79,20 @@ $(function () {
                     opacity: 1,
                 },
             },
+            dataLabels: {
+                enabled: true,
+                style: {
+                    fontFamily: 'Calibri, sans-serif',
+                    fontSize: '12px',
+                    fontWeight: 'normal',
+                    color: 'green',
+                    textOutline: false
+                },
+                formatter: function () {
+                    let i = this.series.data.indexOf(this.point);
+                    return `${Highcharts.numberFormat(chartData.incomes[i] / 1000, 1)}k`;
+                },
+            }
         }, {
             name: chartData.text.savings,
             data: chartData.savings,
