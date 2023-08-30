@@ -119,9 +119,7 @@ class MonthService:
     ) -> tuple[list[str], list[float], list[dict]]:
         data = self._make_chart_data(total_row)
 
-        rtn_categories = []
-        rtn_data_fact = []
-        rtn_data_target = []
+        rtn_categories, rtn_data_fact, rtn_data_target = [], [], []
 
         for entry in data:
             category = entry["name"]
