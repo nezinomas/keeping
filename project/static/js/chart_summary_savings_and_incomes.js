@@ -95,6 +95,19 @@ $(function () {
                     opacity: 1,
                 },
             },
+            dataLabels: {
+                enabled: true,
+                style: {
+                    fontFamily: 'Calibri, sans-serif',
+                    fontSize: '12px',
+                    fontWeight: 'normal',
+                    textOutline: false
+                },
+                formatter: function () {
+                    let i = this.series.data.indexOf(this.point);
+                    return `${Highcharts.numberFormat(chartData.percents[i], 1)}%`;
+                },
+            }
         }]
     });
 });
