@@ -95,11 +95,11 @@ def test_month_table_context_total_row():
         data=MagicMock(),
         plans=MagicMock(),
         savings=MagicMock(),
-        spending=MagicMock(total_row="spending.total_row"),
+        spending=MagicMock(total_row={"xxx": 0}),
     )
     actual = obj.month_table_context()["total_row"]
 
-    assert actual == "spending.total_row"
+    assert actual == {"xxx": 0}
 
 
 def test_month_table_context_total_savings():
@@ -307,24 +307,6 @@ def test_chart_targets_data_fact_no_target():
     ]
 
     assert actual == expect
-
-
-@pytest.mark.parametrize(
-    "data, value, expect",
-    [
-        ("x", None, "x"),
-        (["x"], None, ["x"]),
-        ({"x": 1}, None, {"x": 1, "Taupymas": 0}),
-        ({"x": 1}, 2, {"x": 1, "Taupymas": 2}),
-    ],
-)
-def test_append_savings(data, value, expect):
-    obj = MonthService(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
-    obj._append_to_data_dict(data, "Taupymas", value)
-
-    assert data == expect
 
 
 @pytest.mark.parametrize(

@@ -56,12 +56,8 @@ class MonthService:
         self._savings = savings
 
         # push savings data
-        self._totals_with_savings = self._append_to_data_dict(
-            spending.total_row, _("Savings"), savings.total
-        )
-        self._targets_with_savings = self._append_to_data_dict(
-            plans.targets, _("Savings"), plans.savings
-        )
+        self._totals_with_savings = spending.total_row | {_("Savings"): savings.total}
+        self._targets_with_savings = plans.targets | {_("Savings"): plans.savings}
 
     def chart_targets_context(self):
         categories, data_target, data_fact = self._chart_data_for_targets(
@@ -153,12 +149,6 @@ class MonthService:
             self._spending.spending,
             self._savings.total_column,
         )
-
-    def _append_to_data_dict(self, data: dict, title: str, value: float) -> dict:
-        if isinstance(data, dict):
-            value = value or 0
-            data[title] = value
-        return data
 
     def _get_fact_income(self) -> float:
         fact_incomes = self._data.incomes
