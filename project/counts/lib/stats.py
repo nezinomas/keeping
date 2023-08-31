@@ -47,7 +47,7 @@ class Stats:
             self._insert_empty_rows(self._df)
             .lazy()
             .fill_null(0)
-            .groupby(pl.col("date").dt.weekday() - 1)
+            .group_by(pl.col("date").dt.weekday() - 1)
             .agg(pl.col("qty").sum())
             .rename({"date": "weekday", "qty": "count"})
             .sort("weekday")
@@ -64,7 +64,7 @@ class Stats:
             self._insert_empty_rows(self._df)
             .lazy()
             .fill_null(0)
-            .groupby(pl.col("date").dt.month())
+            .group_by(pl.col("date").dt.month())
             .agg(pl.col("qty").sum())
             .sort("date")
             .collect()
@@ -113,7 +113,7 @@ class Stats:
         df = (
             self._df
             .lazy()
-            .groupby(pl.col("date").dt.year())
+            .group_by(pl.col("date").dt.year())
             .agg(pl.col("qty").sum())
             .sort("date")
             .collect()
@@ -135,7 +135,7 @@ class Stats:
         df = (
             df
             .lazy()
-            .groupby("duration")
+            .group_by("duration")
             .agg(pl.col("qty").count())
             .sort("duration")
             .collect()

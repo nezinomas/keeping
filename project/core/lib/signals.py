@@ -70,7 +70,7 @@ class SignalBase(ABC):
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
-            .groupby(["id", "year"])
+            .group_by(["id", "year"])
             .agg(pl.all().sum())
             .sort(["year", "id"])
             .collect()
