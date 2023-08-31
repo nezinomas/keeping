@@ -57,9 +57,9 @@ class MonthService:
 
     def chart_targets_context(self):
         total_row = self._get_total_row_with_savings(self._spending.total_row)
-
-        targets = self._plans.targets
-        targets = self._append_to_data_dict(targets, _("Savings"), self._plans.savings)
+        targets = self._append_to_data_dict(
+            self._plans.targets, _("Savings"), self._plans.savings
+        )
 
         categories, data_target, data_fact = self._chart_data_for_targets(
             total_row, targets

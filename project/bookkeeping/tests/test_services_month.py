@@ -1,8 +1,10 @@
 from itertools import zip_longest
+from types import SimpleNamespace
 
 import pytest
-from mock import MagicMock
 import time_machine
+from mock import MagicMock
+
 from ..services.month import MonthService
 
 
@@ -211,6 +213,20 @@ def test_chart_targets_context():
     assert "targetTitle" in actual
     assert "fact" in actual
     assert "factTitle" in actual
+
+
+def test_chart_targets_context_with_savings():
+    obj = MonthService(
+        data=MagicMock(),
+        plans=SimpleNamespace(targets={'XXX': 6}, savings=9),
+        savings=SimpleNamespace(total=99),
+        spending=SimpleNamespace(total_row={'XXX': 66})
+    )
+    actual = obj.chart_targets_context()
+
+    assert actual["categories"] == ["TAUPYMAS", "XXX"]
+    assert actual["target"] == [9, 6]
+    assert actual["fact"] == [{"y": 99, "target": 9}, {"y": 66, "target": 6}]
 
 
 def test_chart_targets_categories():
