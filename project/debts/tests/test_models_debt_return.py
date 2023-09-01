@@ -16,13 +16,13 @@ pytestmark = pytest.mark.django_db
 def test_lend_return_str():
     v = LendReturnFactory.build()
 
-    assert str(v) == 'Grąžino 6'
+    assert str(v) == 'Grąžino 0.06'
 
 
 def test_borrow_return_str():
     v = BorrowReturnFactory.build()
 
-    assert str(v) == 'Grąžinau 5'
+    assert str(v) == 'Grąžinau 0.05'
 
 
 def test_debt_return_fields():
@@ -44,7 +44,7 @@ def test_lend_return_related(mck, second_user):
     actual = DebtReturn.objects.related()
 
     assert actual.count() == 1
-    assert str(actual[0]) == 'Grąžino 1'
+    assert str(actual[0]) == 'Grąžino 0.01'
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
@@ -58,7 +58,7 @@ def test_borrow_return_related(mck, second_user):
     actual = DebtReturn.objects.related()
 
     assert actual.count() == 1
-    assert str(actual[0]) == 'Grąžinau 1'
+    assert str(actual[0]) == 'Grąžinau 0.01'
 
 
 def test_lend_return_related_queries(django_assert_num_queries):

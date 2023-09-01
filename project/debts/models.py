@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
 from ..core.lib import utils
+from ..core.templatetags.math import price as convert_price
 from ..journals.models import Journal
 from . import managers
 
@@ -70,12 +71,13 @@ class DebtReturn(models.Model):
 
     def __str__(self):
         price = round(self.price, 1)
-        text = ''
+
+        text = ""
         if self.debt.debt_type == "lend":
-            text = f'{_("Lend return")} {price}'
+            text = f'{_("Lend return")} {convert_price(price)}'
 
         if self.debt.debt_type == "borrow":
-            text = f'{_("Borrow return")} {price}'
+            text = f'{_("Borrow return")} {convert_price(price)}'
 
         return text
 
