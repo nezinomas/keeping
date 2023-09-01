@@ -101,7 +101,7 @@ class SignalBase(ABC):
         row_diff = (
             df.filter(pl.col("year").is_in([prev_year, last_year]))
             .select([pl.all()])
-            .groupby(["year"])
+            .group_by(["year"])
             .agg([pl.col("id").alias("tmp")])
         )
         prev_year_type_list = row_diff[0, 1]
