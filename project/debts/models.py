@@ -66,7 +66,7 @@ class DebtReturn(models.Model):
     objects = managers.DebtReturnQuerySet.as_manager()
 
     class Meta:
-        ordering = ["debt__closed", "debt__name", "-date"]
+        ordering = ["-debt__date", "debt__name", "-date"]
 
     def __str__(self):
         price = round(self.price, 1)
