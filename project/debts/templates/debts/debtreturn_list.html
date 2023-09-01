@@ -37,7 +37,8 @@
             {% edit_cell url=url_update %}
             {% delete_cell url=url_delete %}
             {% else %}
-            <td colspan="2"></td>
+            <td class="edit-cell"></td>
+            <td class="delete-cell"></td>
             {% endif %}
         </tr>
         {% endfor %}
