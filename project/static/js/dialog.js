@@ -35,7 +35,7 @@ htmx.on("htmx:beforeSwap", (e) => {
 
         if(subbmiter == '_new') {
             // reset fields values after submit
-            let fields = ["price", "fee", "quantity", "title", "remark", "exception"];
+            let fields = ["price", "fee", "quantity", "title", "remark"];
             for (let i in fields) {
                 let field = $(`#id_${fields[i]}`);
                 if(field) {
@@ -43,8 +43,13 @@ htmx.on("htmx:beforeSwap", (e) => {
                 }
             }
 
-            if (exception) {
-                exception.prop('checked', false);
+            // reset checkboxes
+            let boolean_fields = ["exception"];
+            for (let i in boolean_fields) {
+                let field = $(`#id_${fields[i]}`);
+                if(field) {
+                    field.checked = false;
+                }
             }
         }
 
