@@ -20,6 +20,12 @@ def test_view_index_200(client_logged):
     assert response.status_code == 200
 
 
+def test_view_count_queries(client_logged, django_assert_max_num_queries):
+    url = reverse("bookkeeping:index")
+    with django_assert_max_num_queries(12):
+        client_logged.get(url)
+
+
 def test_view_index_context(client_logged):
     url = reverse("bookkeeping:index")
     response = client_logged.get(url)
