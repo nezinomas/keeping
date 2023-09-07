@@ -46,3 +46,11 @@ def test_percent(a, b):
 
     assume(a and b)
     assert math.percent(a, b) == (b / a) * 100
+
+
+@given(numbers_strategy, numbers_strategy)
+def test_percent_proportion(a, b):
+    assume(a and b)
+    left = a / b
+    right = 100 / math.percent(a, b)
+    assert pytest.approx(left, 0.01) == pytest.approx(right, 0.01)
