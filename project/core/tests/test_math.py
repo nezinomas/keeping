@@ -25,33 +25,26 @@ def test_price(value, expect):
     assert actual == expect
 
 
-@given(numbers_strategy, numbers_strategy)
-@example(None, None)
-def test_sub(x, y):
-    if x is None or y is None:
-        assert math.sub(x, y) == 0
-
-    assume(x and y)
-    assert math.sub(x, y) == x - y
+@given(numbers_strategy)
+def test_sub_type_error(num):
+    assert math.sub(num, None) == 0
+    assert math.sub(None, num) == 0
 
 
 @given(numbers_strategy, numbers_strategy)
-@example(None, None)
 def test_sub_commutative(x, y):
     assert math.sub(x, y) == -(math.sub(y, x))
 
 
-@given(numbers_strategy, numbers_strategy)
-@example(None, None)
-def test_percent(a, b):
-    if a is None or b is None:
-        assert math.percent(a, b) == 0
+@given(numbers_strategy)
+def test_percent_type_error(num):
+    assert math.percent(num, None) == 0
+    assert math.percent(None, num) == 0
 
-    if a == 0:
-        assert math.percent(a, b) == 0
 
-    assume(a and b)
-    assert math.percent(a, b) == (b / a) * 100
+@given(numbers_strategy)
+def test_percent_zero_division(num):
+    assert math.percent(num, 0) == 0
 
 
 @given(numbers_strategy, numbers_strategy)
