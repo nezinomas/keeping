@@ -1,5 +1,5 @@
 import pytest
-from hypothesis import assume, example, given
+from hypothesis import assume, given
 from hypothesis import strategies as st
 
 from ..templatetags import math
