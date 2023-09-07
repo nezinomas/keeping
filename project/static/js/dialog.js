@@ -35,7 +35,7 @@ htmx.on("htmx:beforeSwap", (e) => {
 
         if(subbmiter == '_new') {
             // reset fields values after submit
-            let fields = ["price", "fee", "quantity", "title", "remark"];
+            let fields = ["price", "fee", "quantity", "title", "remark", "attachment"];
             for (let i in fields) {
                 let field = $(`#id_${fields[i]}`);
                 if(field) {
