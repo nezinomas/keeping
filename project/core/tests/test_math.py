@@ -4,17 +4,21 @@ from hypothesis import strategies as st
 
 from ..templatetags import math
 
-numbers_strategy = st.one_of(st.floats(allow_nan=False, allow_infinity=False), st.integers())
+
+numbers_strategy = st.one_of(
+    st.integers(),
+    st.floats(allow_nan=False, allow_infinity=False)
+)
 
 
 @pytest.mark.parametrize(
-    'value, expect',
+    "value, expect",
     [
         (1, 0.01),
-        (.1, 0.001),
+        (0.1, 0.001),
         (None, None),
-        ('-', '-'),
-    ]
+        ("-", "-"),
+    ],
 )
 def test_price(value, expect):
     actual = math.price(value)
