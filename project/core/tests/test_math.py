@@ -33,18 +33,13 @@ def test_sub(x, y):
     assert math.sub(x, y) == x - y
 
 
-@pytest.mark.parametrize(
-    'a, b, expect',
-    [
-        (10, 1, 10),
-        (1, 10, 1_000),
-        (0, 1, 0),
-        (1, 0, 0),
-        (1, None, 0),
-        (None, 0, 0),
-        (None, None, 0),
-    ]
-)
-def test_percent(a, b, expect):
-    actual = math.percent(a, b)
-    assert actual == expect
+@given(numbers_strategy(), numbers_strategy())
+def test_percent(a, b):
+    if a is None or b is None:
+        assert math.percent(a, b) == 0
+
+    if a == 0:
+        assert math.percent(a, b) == 0
+
+    assume(a and b)
+    assert math.percent(a, b) == (b / a) * 100
