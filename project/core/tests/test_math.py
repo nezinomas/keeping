@@ -37,6 +37,12 @@ def test_sub(x, y):
 
 @given(numbers_strategy, numbers_strategy)
 @example(None, None)
+def test_sub_commutative(x, y):
+    assert math.sub(x, y) == -(math.sub(y, x))
+
+
+@given(numbers_strategy, numbers_strategy)
+@example(None, None)
 def test_percent(a, b):
     if a is None or b is None:
         assert math.percent(a, b) == 0
