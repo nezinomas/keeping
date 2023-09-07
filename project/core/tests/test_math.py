@@ -53,3 +53,7 @@ def test_percent_proportion(a, b):
     left = b / a
     right = math.percent(a, b) / 100
     assert pytest.approx(left) == pytest.approx(right)
+
+
+def test_percent_unit_test():
+    assert math.percent(75, 15) == 20
