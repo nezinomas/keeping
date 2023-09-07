@@ -5,6 +5,7 @@ django-test-plus==2.2.3
 django-test-without-migrations==0.6
 django-webtest==1.9.10
 factory-boy==3.3.0
+hypothesis==6.84.2
 mock==5.1.0
 pyinstrument==4.5.0
 pytest==7.4.1

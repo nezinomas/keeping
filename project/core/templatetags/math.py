@@ -22,6 +22,6 @@ def sub(a: int, b: int) -> int:
 @register.filter
 def percent(a: int|float, b: int|float) -> float:
     try:
-        return (100 * b) / a
+        return (b / a) * 100
     except (ZeroDivisionError, TypeError):
         return 0
