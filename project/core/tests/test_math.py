@@ -33,7 +33,6 @@ def test_sub(x, y):
     assert math.sub(x, y) == x - y
 
 
-
 @pytest.mark.parametrize(
     'a, b, expect',
     [
