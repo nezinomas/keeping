@@ -1,13 +1,10 @@
 import pytest
-from hypothesis import given, assume
+from hypothesis import assume, example, given
 from hypothesis import strategies as st
 
 from ..templatetags import math
 
-
-@st.composite
-def numbers_strategy(draw):
-    return draw(st.none() | st.integers() | st.floats(allow_nan=False, allow_infinity=False))
+numbers_strategy = st.one_of(st.floats(allow_nan=False, allow_infinity=False), st.integers())
 
 
 @pytest.mark.parametrize(
@@ -24,7 +21,8 @@ def test_price(value, expect):
     assert actual == expect
 
 
-@given(numbers_strategy(), numbers_strategy())
+@given(numbers_strategy, numbers_strategy)
+@example(None, None)
 def test_sub(x, y):
     if x is None or y is None:
         assert math.sub(x, y) == 0
@@ -33,7 +31,8 @@ def test_sub(x, y):
     assert math.sub(x, y) == x - y
 
 
-@given(numbers_strategy(), numbers_strategy())
+@given(numbers_strategy, numbers_strategy)
+@example(None, None)
 def test_percent(a, b):
     if a is None or b is None:
         assert math.percent(a, b) == 0
