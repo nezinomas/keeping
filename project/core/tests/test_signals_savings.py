@@ -199,20 +199,17 @@ def test_copy_market_value_and_latest_from_previous_year(types):
     data = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
     actual = Savings(data).table
 
-    assert actual[1]['id'] == 1
-    assert actual[1]['year'] == 1999
-    assert actual[1]['past_amount'] == 10
-    assert actual[1]['past_fee'] == 1
-    assert actual[1]['fee'] == 3
-    assert actual[1]['per_year_incomes'] == 20
-    assert actual[1]['per_year_fee'] == 2
-    assert actual[1]['sold'] == 0
-    assert actual[1]['sold_fee'] == 0
-    assert actual[1]['incomes'] == 30
-    assert actual[1]['invested'] == 27
-    assert actual[1]['market_value'] == 33
-    assert actual[1]['profit_sum'] == 6
-    assert actual[1]['latest_check'] == datetime(1998, 1, 1)
+    assert actual[0] == {'id': 1, 'year': 1998, 'incomes': 10, 'fee': 1, 'sold': 0, 'sold_fee': 0, 'market_value': 33, 'latest_check': datetime(1998, 1, 1, 0, 0), 'past_amount': 0, 'past_fee': 0, 'per_year_incomes': 10, 'per_year_fee': 1, 'invested': 9, 'profit_sum': 24}
+
+    assert actual[1] == {'id': 1, 'year': 1999, 'incomes': 30, 'fee': 3, 'sold': 0, 'sold_fee': 0, 'market_value': 33, 'latest_check': datetime(1998, 1, 1, 0, 0), 'past_amount': 10, 'past_fee': 1, 'per_year_incomes': 20, 'per_year_fee': 2, 'invested': 27, 'profit_sum': 6}
+
+    assert actual[2] == {'id': 1, 'year': 2000, 'incomes': 30, 'fee': 3, 'sold': 0, 'sold_fee': 0, 'market_value': 33, 'latest_check': datetime(1998, 1, 1, 0, 0), 'past_amount': 30, 'past_fee': 3, 'per_year_incomes': 0, 'per_year_fee': 0, 'invested': 27, 'profit_sum': 6}
+
+    assert actual[3] == {'id': 2, 'year': 1998, 'incomes': 50, 'fee': 5, 'sold': 0, 'sold_fee': 0, 'market_value': 0, 'latest_check': None, 'past_amount': 0, 'past_fee': 0, 'per_year_incomes': 50, 'per_year_fee': 5, 'invested': 45, 'profit_sum': -45}
+
+    assert actual[4] == {'id': 2, 'year': 1999, 'incomes': 50, 'fee': 5, 'sold': 0, 'sold_fee': 0, 'market_value': 0, 'latest_check': None, 'past_amount': 50, 'past_fee': 5, 'per_year_incomes': 0, 'per_year_fee': 0, 'invested': 45, 'profit_sum': -45}
+
+    assert actual[5] == {'id': 2, 'year': 2000, 'incomes': 50, 'fee': 5, 'sold': 0, 'sold_fee': 0, 'market_value': 0, 'latest_check': None, 'past_amount': 50, 'past_fee': 5, 'per_year_incomes': 0, 'per_year_fee': 0, 'invested': 45, 'profit_sum': -45}
 
 
 @time_machine.travel('1999-1-1')

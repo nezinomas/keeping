@@ -183,35 +183,17 @@ def test_copy_have_and_latest_from_previous_year(types):
     data = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
     actual = Accounts(data).table
 
-    assert actual[0]['id'] == 1
-    assert actual[0]['year'] == 1998
-    assert actual[0]['past'] == 0
-    assert actual[0]['incomes'] == 1
-    assert actual[0]['expenses'] == 0
-    assert actual[0]['balance'] == 1
-    assert actual[0]['have'] == 10
-    assert actual[0]['delta'] == 9
-    assert actual[0]['latest_check'] == datetime(1998, 1, 1, 3, 2, 1)
+    assert actual[0] == {'id': 1, 'year': 1998, 'incomes': 1, 'expenses': 0, 'have': 10, 'latest_check': datetime(1998, 1, 1, 3, 2, 1), 'balance': 1, 'past': 0, 'delta': 9}
 
-    assert actual[1]['id'] == 1
-    assert actual[1]['year'] == 1999
-    assert actual[1]['past'] == 1
-    assert actual[1]['incomes'] == 2
-    assert actual[1]['expenses'] == 0
-    assert actual[1]['balance'] == 3
-    assert actual[1]['have'] == 10
-    assert actual[1]['delta'] == 7
-    assert actual[1]['latest_check'] == datetime(1998, 1, 1, 3, 2, 1)
+    assert actual[1] == {'id': 1, 'year': 1999, 'incomes': 2, 'expenses': 0, 'have': 10, 'latest_check': datetime(1998, 1, 1, 3, 2, 1), 'balance': 3, 'past': 1, 'delta': 7}
 
-    assert actual[2]['id'] == 1
-    assert actual[2]['year'] == 2000
-    assert actual[2]['past'] == 3
-    assert actual[2]['incomes'] == 0
-    assert actual[2]['expenses'] == 0
-    assert actual[2]['balance'] == 3
-    assert actual[2]['have'] == 10
-    assert actual[2]['delta'] == 7
-    assert actual[2]['latest_check'] == datetime(1998, 1, 1, 3, 2, 1)
+    assert actual[2] == {'id': 1, 'year': 2000, 'incomes': 0, 'expenses': 0, 'have': 10, 'latest_check': datetime(1998, 1, 1, 3, 2, 1), 'balance': 3, 'past': 3, 'delta': 7}
+
+    assert actual[3] == {'id': 2, 'year': 1998, 'incomes': 2, 'expenses': 0, 'have': 0, 'latest_check': None, 'balance': 2, 'past': 0, 'delta': -2}
+
+    assert actual[4] == {'id': 2, 'year': 1999, 'incomes': 0, 'expenses': 0, 'have': 0, 'latest_check': None, 'balance': 2, 'past': 2, 'delta': -2}
+
+    assert actual[5] == {'id': 2, 'year': 2000, 'incomes': 0, 'expenses': 0, 'have': 0, 'latest_check': None, 'balance': 2, 'past': 2, 'delta': -2}
 
 
 @time_machine.travel('1999-1-1')
