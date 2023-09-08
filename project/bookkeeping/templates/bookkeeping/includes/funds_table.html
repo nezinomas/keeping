@@ -40,7 +40,7 @@
         {% for item in items %}
         <tr>
             {% if item.saving_type_id %}{% var obj_type='saving_type'%}{% else %}{% var obj_type='pension_type' %}{% endif %}
-            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="left" title="{{ item.latest_check|default_if_none:_('No market value entered') }}" class="text-start right-grey-border">{{ item|get_obj_attr:obj_type }}</td>
+            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="left" title="{{ item.latest_check|default_if_none:_('No record of account amount') }}" class="text-start right-grey-border">{{ item|get_obj_attr:obj_type }}</td>
             {% table_cell value=item.past_amount|price css_class='w6' %}
             {% table_cell value=item.past_fee|price css_class='w6 right-grey-border' %}
             {% table_cell value=item.per_year_incomes|price css_class='w6' %}
