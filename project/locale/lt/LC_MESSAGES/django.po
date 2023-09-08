@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-08 16:54+0300\n"
-"PO-Revision-Date: 2023-09-08 16:54+0300\n"
+"POT-Creation-Date: 2023-09-08 16:59+0300\n"
+"PO-Revision-Date: 2023-09-08 17:00+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -258,8 +258,8 @@ msgid "Delta"
 msgstr "Delta"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:21
-msgid "Not specified"
-msgstr "Nenurodyta"
+msgid "No record of account amount"
+msgstr "Nėra įrašo apie sąskaitos lėšas"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\detailed_table.html:12
 #: .\project\core\lib\translation.py:6
@@ -1738,6 +1738,9 @@ msgstr ""
 "Patikrinkite el. pašto dėžutę, joje turi būti laiškas su slaptažodžio "
 "atstatymo nuoroda. Jei laiško negausite per kelias minutes, patikrinkite "
 "šlamšto aplanką."
+
+#~ msgid "Not specified"
+#~ msgstr "Nenurodyta"
 
 #~ msgid "Not verified"
 #~ msgstr "Netikrinta"
