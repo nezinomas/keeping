@@ -131,8 +131,8 @@ class SignalBase(ABC):
 
     def _copy_cell_from_previous_year(self, df: DF, field_name: str) -> pl.Expr:
         return df.with_columns(
-            pl.col("latest_check").forward_fill(),
-            pl.col(field_name).forward_fill(),
+            pl.col("latest_check").forward_fill().over("id"),
+            pl.col(field_name).forward_fill().over("id"),
         ).with_columns(pl.col(field_name).fill_null(0))
 
     def _insert_future_data(self, df: DF) -> DF:
