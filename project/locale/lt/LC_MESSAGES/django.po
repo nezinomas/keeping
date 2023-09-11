@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-11 08:53+0300\n"
-"PO-Revision-Date: 2023-09-11 08:53+0300\n"
+"POT-Creation-Date: 2023-09-11 17:03+0300\n"
+"PO-Revision-Date: 2023-09-11 17:04+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -75,6 +75,19 @@ msgstr "Reikia pasirinkti bent vieną kategoriją."
 #: .\project\templates\base.html:153
 msgid "Savings"
 msgstr "Taupymas"
+
+#: .\project\bookkeeping\lib\no_incomes.py:85
+#: .\project\bookkeeping\views.py:136
+msgid "Money"
+msgstr "Pinigai"
+
+#: .\project\bookkeeping\lib\no_incomes.py:90
+msgid "No change in spending, month"
+msgstr "Nekeičiant išlaidų, mėn"
+
+#: .\project\bookkeeping\lib\no_incomes.py:95
+msgid "After spending cuts, month"
+msgstr "Sumažinus išlaidas, mėn"
 
 #: .\project\bookkeeping\services\chart_summary.py:40
 msgid "Incomes and Expenses"
@@ -397,28 +410,15 @@ msgstr "Diena"
 msgid "Unnecessary expenses that can be avoided"
 msgstr "Nebūtinos išlaidos, kurių galima atsisakyti"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:15
-#: .\project\bookkeeping\views.py:136
-msgid "Money"
-msgstr "Pinigai"
-
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:20
-msgid "No change in spending, month"
-msgstr "Nekeičiant išlaidų, mėn"
-
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:25
-msgid "After spending cuts, month"
-msgstr "Sumažinus išlaidas, mėn"
-
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:32
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:24
 msgid "Money in accounts"
 msgstr "Sąskaitose esantys pinigai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:33
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:25
 msgid "Funds/Stocks"
 msgstr "Fondai/Akcijos"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:34
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:26
 msgid "Pension funds"
 msgstr "Pensijų fondai"
 
@@ -569,7 +569,7 @@ msgstr "Baigta skaityti"
 
 #: .\project\books\forms.py:49
 #: .\project\books\templates\books\book_list.html:14
-#: .\project\counts\forms.py:71 .\project\expenses\forms.py:189
+#: .\project\counts\forms.py:71 .\project\expenses\forms.py:179
 #: .\project\plans\templates\plans\includes\generic_list.html:12
 msgid "Title"
 msgstr "Pavadinimas"
@@ -1167,13 +1167,13 @@ msgstr "Per metus gryno alkoholio, L"
 msgid "Full price"
 msgstr "Visa kaina"
 
-#: .\project\expenses\forms.py:118 .\project\expenses\forms.py:216
+#: .\project\expenses\forms.py:118 .\project\expenses\forms.py:206
 #: .\project\expenses\templates\expenses\expense_list.html:21
 #: .\project\expenses\templates\expenses\expensetype_form.html:4
 msgid "Expense type"
 msgstr "Išlaidų rūšis"
 
-#: .\project\expenses\forms.py:119 .\project\expenses\forms.py:217
+#: .\project\expenses\forms.py:119 .\project\expenses\forms.py:207
 #: .\project\expenses\templates\expenses\expense_list.html:22
 #: .\project\expenses\templates\expenses\expensename_form.html:4
 msgid "Expense name"
@@ -1202,16 +1202,16 @@ msgstr "%(title)s yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimti
 msgid "Image file too large ( > 4Mb )"
 msgstr "Per didelis vaizdo failas ( > 4Mb)"
 
-#: .\project\expenses\forms.py:170 .\project\incomes\forms.py:77
+#: .\project\expenses\forms.py:160 .\project\incomes\forms.py:67
 #, python-format
 msgid "Year cannot be greater than %(year)s"
 msgstr "Metai negali būti didesni nei %(year)s"
 
-#: .\project\expenses\forms.py:190
+#: .\project\expenses\forms.py:180
 msgid "Necessary"
 msgstr "Būtina"
 
-#: .\project\expenses\forms.py:218
+#: .\project\expenses\forms.py:208
 msgid "Valid for"
 msgstr "Galioja"
 
@@ -1262,14 +1262,14 @@ msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 msgid "Amount"
 msgstr "Suma"
 
-#: .\project\incomes\forms.py:48 .\project\incomes\forms.py:96
+#: .\project\incomes\forms.py:48 .\project\incomes\forms.py:86
 #: .\project\incomes\templates\incomes\income_list.html:15
 #: .\project\incomes\templates\incomes\incometype_form.html:3
 #: .\project\incomes\templates\incomes\incometype_list.html:4
 msgid "Incomes type"
 msgstr "Pajamų rūšis"
 
-#: .\project\incomes\forms.py:97 .\project\savings\forms.py:34
+#: .\project\incomes\forms.py:87 .\project\savings\forms.py:34
 msgid "Type"
 msgstr "Tipas"
 
