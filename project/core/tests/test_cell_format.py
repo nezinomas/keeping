@@ -4,125 +4,75 @@ from ..templatetags.cell_format import (cellformat, compare, negative,
                                         positive, positive_negative)
 
 
-def test_value_positive_str():
-    actual = negative('12.2')
+@pytest.mark.parametrize(
+    'value, expect',
+    [
+        (0, ''),
+        (12, ''),
+        (12.2, ''),
+        ('12.2', ''),
+        ('xxx', ''),
+        (-0, ''),
+        (-12, 'table-danger'),
+        (-12.2, 'table-danger'),
+        ('-12.2', 'table-danger'),
+    ]
+)
+def test_negative(value, expect):
+    actual = negative(value)
 
-    assert not actual
-
-
-def test_value_positive_float():
-    actual = negative(12.2)
-
-    assert not actual
-
-
-def test_value_positive_int():
-    actual = negative(12)
-
-    assert not actual
-
-
-def test_value_negative_str():
-    actual = negative('-12.2')
-
-    assert actual == 'table-danger'
+    assert actual == expect
 
 
-def test_value_negative_float():
-    actual = negative(-12.2)
-
-    assert actual == 'table-danger'
-
-
-def test_value_negative_int():
-    actual = negative(-12)
-
-    assert actual == 'table-danger'
-
-
-def test_value_str():
-    actual = negative('xxx')
-
-    assert not actual
-
-
+@pytest.mark.parametrize(
+    'value, expect',
+    [
+        (-12, ''),
+        (-12.2, ''),
+        ('-12.2', ''),
+        ('xxx', ''),
+        (0, 'table-success'),
+        (12, 'table-success'),
+        (12.2, 'table-success'),
+        ('12.2', 'table-success'),
+    ]
+)
 # postive custom template filter tests
-def test_value_negative_float_1():
-    actual = positive(-12.2)
+def test_positive(value, expect):
+    actual = positive(value)
 
-    assert not actual
-
-
-def test_value_negative_str_1():
-    actual = positive('-12.2')
-
-    assert not actual
+    assert actual == expect
 
 
-def test_value_negative_int_1():
-    actual = positive(-12)
+@pytest.mark.parametrize(
+    'value1, value2, expect',
+    [
+        (1, 2, 'table-danger'),
+        ('1', '2', 'table-danger'),
+        (1, 0, 'table-success'),
+        ('1', '0', 'table-success'),
+        (None, None, ''),
+    ]
+)
+def test_compare(value1, value2, expect):
+    actual = compare(value1, value2)
 
-    assert not actual
-
-
-def test_value_positive_float_1():
-    actual = positive(12.2)
-
-    assert actual == 'table-success'
-
-
-def test_value_positive_int_1():
-    actual = positive(12)
-
-    assert actual == 'table-success'
+    assert actual == expect
 
 
-def test_value_str_1():
-    actual = positive('xxx')
+@pytest.mark.parametrize(
+    'value, expect',
+    [
+        (1, 'table-success'),
+        ('1', 'table-success'),
+        (-1, 'table-danger'),
+        ('-1', 'table-danger'),
+    ]
+)
+def test_positive_negative_positive(value, expect):
+    actual = positive_negative(value)
 
-    assert not actual
-
-
-def test_compare_bigger_str():
-    actual = compare('1', '2')
-
-    assert actual == 'table-danger'
-
-
-def test_compare_bigger_int():
-    actual = compare(1, 2)
-
-    assert actual == 'table-danger'
-
-
-def test_compare_smaller_str():
-    actual = compare('1', '0')
-
-    assert actual == 'table-success'
-
-
-def test_compare_smaller_int():
-    actual = compare(1, 0)
-
-    assert actual == 'table-success'
-
-
-def test_compare_none():
-    actual = compare(None, None)
-
-    assert not actual
-
-
-def test_positive_negative_positive():
-    actual = positive_negative('1')
-
-    assert actual == 'table-success'
-
-
-def test_positive_negative_negative():
-    actual = positive_negative('-1')
-
-    assert actual == 'table-danger'
+    assert actual == expect
 
 
 @pytest.mark.parametrize(
