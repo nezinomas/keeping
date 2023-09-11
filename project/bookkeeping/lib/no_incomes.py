@@ -80,22 +80,32 @@ class NoIncomes:
         money_fund_pension = money_fund + self.data.pension_sum
         cut_sum = self.avg_expenses - self.cut_sum
 
+        return self._generate_dict(
+            (
+                _("Money") + ", €",
+                money_fund,
+                money_fund_pension
+            ),
+            (
+                _("No change in spending, month"),
+                self._div(money_fund, self.avg_expenses),
+                self._div(money_fund_pension, self.avg_expenses),
+            ),
+            (
+                _("After spending cuts, month"),
+                self._div(money_fund, cut_sum),
+                self._div(money_fund_pension, cut_sum),
+            ),
+        )
+
+    def _generate_dict(self, *entries) -> list[dict]:
         return [
             {
-                "title": _("Money") + ", €",
+                "title": title,
                 "money_fund": money_fund,
-                "money_fund_pension": money_fund_pension
-            },
-            {
-                "title": _("No change in spending, month"),
-                "money_fund": self._div(money_fund, self.avg_expenses),
-                "money_fund_pension": self._div(money_fund_pension, self.avg_expenses),
-            },
-            {
-                "title": _("After spending cuts, month"),
-                "money_fund": self._div(money_fund, cut_sum),
-                "money_fund_pension": self._div(money_fund_pension, cut_sum),
-            },
+                "money_fund_pension": money_fund_pension,
+            }
+            for title, money_fund, money_fund_pension in entries
         ]
 
     def _calc(self):
