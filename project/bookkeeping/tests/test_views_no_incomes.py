@@ -116,15 +116,15 @@ def test_no_incomes_summary(no_incomes_data):
 
     actual = NoIncomes(no_incomes_data).summary
 
-    assert actual[0]["label"] == "money"
+    assert actual[0]["title"] == "Pinigai, €"
     assert actual[0]["money_fund"] == 6
     assert actual[0]["money_fund_pension"] == 7
 
-    assert actual[1]["label"] == "no_cut"
+    assert actual[1]["title"] == "Nekeičiant išlaidų, mėn"
     assert round(actual[1]["money_fund"], 2) == 4
     assert round(actual[1]["money_fund_pension"], 2) == 4.67
 
-    assert actual[2]["label"] == "cut"
+    assert actual[2]["title"] == "Sumažinus išlaidas, mėn"
     assert round(actual[2]["money_fund"], 2) == 12
     assert round(actual[2]["money_fund_pension"], 2) == 14
 
@@ -157,15 +157,15 @@ def test_summary_property(no_incomes_data_class):
 
     # Assert
     assert len(summary) == 3
-    assert summary[0]["label"] == "money"
+    assert summary[0]["title"] == "Pinigai, €"
     assert summary[0]["money_fund"] == 1500
     assert summary[0]["money_fund_pension"] == 1700
 
-    assert summary[1]["label"] == "no_cut"
+    assert summary[1]["title"] == "Nekeičiant išlaidų, mėn"
     assert summary[1]["money_fund"] == 1500 / no_incomes.avg_expenses
     assert summary[1]["money_fund_pension"] == 1700 / no_incomes.avg_expenses
 
-    assert summary[2]["label"] == "cut"
+    assert summary[2]["title"] == "Sumažinus išlaidas, mėn"
     assert summary[2]["money_fund"] == 1500 / (no_incomes.avg_expenses - no_incomes.cut_sum)
     assert summary[2]["money_fund_pension"] == 1700 / (no_incomes.avg_expenses - no_incomes.cut_sum)
 
