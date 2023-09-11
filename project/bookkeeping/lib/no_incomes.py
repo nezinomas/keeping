@@ -80,7 +80,10 @@ class NoIncomes:
         i2 = i1 + self.data.pension_sum
 
         return [
-            {"label": "money", "money_fund": i1, "money_fund_pension": i2},
+            {   "label": "money",
+                "money_fund": i1,
+                "money_fund_pension": i2
+            },
             {
                 "label": "no_cut",
                 "money_fund": self._div(i1, self.avg_expenses),
