@@ -52,8 +52,8 @@ def test_view_not_necessary(client_logged):
 # ---------------------------------------------------------------------------------------
 #                                                                        NoIncomes Helper
 # ---------------------------------------------------------------------------------------
-@pytest.fixture
-def _data():
+@pytest.fixture(name="no_incomes_data")
+def fixture_data():
     return SimpleNamespace(
         year=1999,
         months=6,
@@ -81,11 +81,11 @@ def _data():
         ({}, [], 6, 1.17),
     ],
 )
-def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, _data):
-    _data.savings = savings
-    _data.unnecessary = unnecessary
-    _data.months = months
-    obj = NoIncomes(_data)
+def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_incomes_data):
+    no_incomes_data.savings = savings
+    no_incomes_data.unnecessary = unnecessary
+    no_incomes_data.months = months
+    obj = NoIncomes(no_incomes_data)
 
     assert round(obj.avg_expenses, 2) == expect
 
@@ -101,20 +101,20 @@ def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, _data):
         ({}, [], 6, 0),
     ],
 )
-def test_no_incomes_cut_sum(savings, unnecessary, months, expect, _data):
-    _data.savings = savings
-    _data.unnecessary = unnecessary
-    _data.months = months
-    obj = NoIncomes(_data)
+def test_no_incomes_cut_sum(savings, unnecessary, months, expect, no_incomes_data):
+    no_incomes_data.savings = savings
+    no_incomes_data.unnecessary = unnecessary
+    no_incomes_data.months = months
+    obj = NoIncomes(no_incomes_data)
 
     assert round(obj.cut_sum, 2) == expect
 
 
-def test_no_incomes_summary(_data):
-    _data.savings = {"sum": 2}
-    _data.unnecessary = ["Z", "Taupymas"]
+def test_no_incomes_summary(no_incomes_data):
+    no_incomes_data.savings = {"sum": 2}
+    no_incomes_data.unnecessary = ["Z", "Taupymas"]
 
-    actual = NoIncomes(_data).summary
+    actual = NoIncomes(no_incomes_data).summary
 
     assert actual[0]["label"] == "money"
     assert actual[0]["money_fund"] == 6
