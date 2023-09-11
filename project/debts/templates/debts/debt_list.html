@@ -32,7 +32,7 @@
             {% table_cell value=object.date|date:"Y-m-d" css_class="text-center" %}
             {% table_cell value=object.name css_class="text-start cell-padding" %}
             {% table_cell value=object.price|price css_class="text-end cell-padding" %}
-            {% table_cell value=object.returned|price css_class="text-end cell-padding" %}
+            <td class="text-end cell-padding" {% if not object.closed %}data-bs-toggle="tooltip" data-bs-placement="right" title="{% translate 'Remains to be returned' %}:  {{object.price|sub:object.returned|price|floatformat:'2g'}}"{% endif %}>{{object.returned|price|floatformat:"2g"}}</td>
             <td class="text-start cell-padding">{{ object.account }}</td>
             <td class="text-start">{{ object.remark }}</td>
             <td class="text-center">{% if object.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
