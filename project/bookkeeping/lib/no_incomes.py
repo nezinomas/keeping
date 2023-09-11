@@ -77,7 +77,7 @@ class NoIncomes:
     @property
     def summary(self) -> List[Dict[str, float]]:
         i1 = self.data.account_sum + self.data.fund_sum
-        i2 = self.data.account_sum + self.data.fund_sum + self.data.pension_sum
+        i2 = i1 + self.data.pension_sum
 
         return [
             {"label": "money", "money_fund": i1, "money_fund_pension": i2},
