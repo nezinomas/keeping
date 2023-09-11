@@ -6,26 +6,26 @@ from django.template import Context, Template
 from .utils import clean_content
 
 
-@pytest.fixture()
-def _template():
+@pytest.fixture(name="template")
+def fixture_template():
     return Template(
         '{% load slippers %}'
         '{% table_cell value=value %}'
     )
 
 
-@pytest.fixture()
-def _template_positive_and_negative():
+@pytest.fixture(name="template_for_highlight")
+def fixture_template_for_highlight():
     return Template(
         '{% load slippers %}'
         '{% table_cell value=value highlight_value=True %}'
     )
 
 
-def test_cell_positive_and_negative_neg(_template_positive_and_negative):
+def test_cell_positive_and_negative_neg(template_for_highlight):
     context = Context({'value': '-0,5'})
 
-    actual = _template_positive_and_negative.render(context)
+    actual = template_for_highlight.render(context)
     expect = '<td class="table-danger">-0,50</td>'
 
     actual = clean_content(actual)
@@ -34,34 +34,34 @@ def test_cell_positive_and_negative_neg(_template_positive_and_negative):
     assert actual == expect
 
 
-def test_cell_positive_and_negative_pos(_template_positive_and_negative):
+def test_cell_positive_and_negative_pos(template_for_highlight):
     context = Context({'value': '0,5'})
 
     expect = '<td class="table-success">0,50</td>'
 
-    actual = _template_positive_and_negative.render(context)
+    actual = template_for_highlight.render(context)
     actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
 
 
-def test_cell_intcomma(_template):
+def test_cell_intcomma(template):
     context = Context({'value': '1200'})
 
     expect = '<td class="">1.200,00</td>'
 
-    actual = _template.render(context)
+    actual = template.render(context)
     actual = clean_content(actual)
     actual = re.sub(r'\s{2,}', '', actual)
 
     assert actual == expect
 
 
-def test_cell_empty(_template):
+def test_cell_empty(template):
     context = Context({'value': None})
 
-    actual = _template.render(context)
+    actual = template.render(context)
     expect = '<td class=" dash">-</td>'
 
     actual = clean_content(actual)
@@ -90,10 +90,10 @@ def test_cell_empty_with_default_if_empty(value):
     assert actual == expect
 
 
-def test_cell_float_zero(_template):
+def test_cell_float_zero(template):
     context = Context({'value': 0.0})
 
-    actual = _template.render(context)
+    actual = template.render(context)
     expect = '<td class=" dash">-</td>'
 
     actual = clean_content(actual)
@@ -102,10 +102,10 @@ def test_cell_float_zero(_template):
     assert actual == expect
 
 
-def test_cell_string_zero(_template):
+def test_cell_string_zero(template):
     context = Context({'value': '0'})
 
-    actual = _template.render(context)
+    actual = template.render(context)
     expect = '<td class=" dash">-</td>'
 
     actual = clean_content(actual)
