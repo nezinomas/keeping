@@ -81,17 +81,18 @@ class NoIncomes:
         cut_sum = self.avg_expenses - self.cut_sum
 
         return [
-            {   "label": "money",
+            {
+                "title": _("Money") + ", €",
                 "money_fund": money_fund,
                 "money_fund_pension": money_fund_pension
             },
             {
-                "label": "no_cut",
+                "title": _("No change in spending, month"),
                 "money_fund": self._div(money_fund, self.avg_expenses),
                 "money_fund_pension": self._div(money_fund_pension, self.avg_expenses),
             },
             {
-                "label": "cut",
+                "title": _("After spending cuts, month"),
                 "money_fund": self._div(money_fund, cut_sum),
                 "money_fund_pension": self._div(money_fund_pension, cut_sum),
             },
