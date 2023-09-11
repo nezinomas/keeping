@@ -78,6 +78,7 @@ class NoIncomes:
     def summary(self) -> List[Dict[str, float]]:
         money_fund = self.data.account_sum + self.data.fund_sum
         money_fund_pension = money_fund + self.data.pension_sum
+        cut_sum = self.avg_expenses - self.cut_sum
 
         return [
             {   "label": "money",
@@ -91,8 +92,8 @@ class NoIncomes:
             },
             {
                 "label": "cut",
-                "money_fund": self._div(money_fund, (self.avg_expenses - self.cut_sum)),
-                "money_fund_pension": self._div(money_fund_pension, (self.avg_expenses - self.cut_sum)),
+                "money_fund": self._div(money_fund, cut_sum),
+                "money_fund_pension": self._div(money_fund_pension, cut_sum),
             },
         ]
 
