@@ -190,7 +190,6 @@ def test_transaction_post_save_first_record():
 
 
 def test_transaction_post_save_new(main_user):
-    # ToDo: after refactore signals, remove get_user
     main_user.year = 1998
 
     a_from = AccountFactory(title="From")
