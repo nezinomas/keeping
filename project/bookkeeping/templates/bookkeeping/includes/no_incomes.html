@@ -11,21 +11,13 @@
         </tr>
     </thead>
     <tbody>
+        {% for obj in no_incomes %}
         <tr>
-            <td>{% translate 'Money' %}, €</td>
-            {% table_cell value=no_incomes.0.money_fund|price %}
-            {% table_cell value=no_incomes.0.money_fund_pension|price %}
+            <td>{{obj.title}}</td>
+            {% table_cell value=obj.money_fund|price %}
+            {% table_cell value=obj.money_fund_pension|price %}
         </tr>
-        <tr>
-            <td>{% translate 'No change in spending, month' %}</td>
-            <td>{{no_incomes.1.money_fund|floatformat:'1g'}}</td>
-            <td>{{no_incomes.1.money_fund_pension|floatformat:'1g'}}</td>
-        </tr>
-        <tr>
-            <td>{% translate 'After spending cuts, month' %}</td>
-            <td>{{no_incomes.2.money_fund|floatformat:'1g'}}</td>
-            <td>{{no_incomes.2.money_fund_pension|floatformat:'1g'}}</td>
-        </tr>
+        {% endfor %}
     </tbody>
 </table>
 <p>

@@ -52,8 +52,8 @@ def test_view_not_necessary(client_logged):
 # ---------------------------------------------------------------------------------------
 #                                                                        NoIncomes Helper
 # ---------------------------------------------------------------------------------------
-@pytest.fixture
-def _data():
+@pytest.fixture(name="no_incomes_data")
+def fixture_data():
     return SimpleNamespace(
         year=1999,
         months=6,
@@ -81,11 +81,11 @@ def _data():
         ({}, [], 6, 1.17),
     ],
 )
-def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, _data):
-    _data.savings = savings
-    _data.unnecessary = unnecessary
-    _data.months = months
-    obj = NoIncomes(_data)
+def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_incomes_data):
+    no_incomes_data.savings = savings
+    no_incomes_data.unnecessary = unnecessary
+    no_incomes_data.months = months
+    obj = NoIncomes(no_incomes_data)
 
     assert round(obj.avg_expenses, 2) == expect
 
@@ -101,29 +101,95 @@ def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, _data):
         ({}, [], 6, 0),
     ],
 )
-def test_no_incomes_cut_sum(savings, unnecessary, months, expect, _data):
-    _data.savings = savings
-    _data.unnecessary = unnecessary
-    _data.months = months
-    obj = NoIncomes(_data)
+def test_no_incomes_cut_sum(savings, unnecessary, months, expect, no_incomes_data):
+    no_incomes_data.savings = savings
+    no_incomes_data.unnecessary = unnecessary
+    no_incomes_data.months = months
+    obj = NoIncomes(no_incomes_data)
 
     assert round(obj.cut_sum, 2) == expect
 
 
-def test_no_incomes_summary(_data):
-    _data.savings = {"sum": 2}
-    _data.unnecessary = ["Z", "Taupymas"]
+def test_no_incomes_summary(no_incomes_data):
+    no_incomes_data.savings = {"sum": 2}
+    no_incomes_data.unnecessary = ["Z", "Taupymas"]
 
-    actual = NoIncomes(_data).summary
+    actual = NoIncomes(no_incomes_data).summary
 
-    assert actual[0]["label"] == "money"
+    assert actual[0]["title"] == "Pinigai, €"
     assert actual[0]["money_fund"] == 6
     assert actual[0]["money_fund_pension"] == 7
 
-    assert actual[1]["label"] == "no_cut"
+    assert actual[1]["title"] == "Nekeičiant išlaidų, mėn"
     assert round(actual[1]["money_fund"], 2) == 4
     assert round(actual[1]["money_fund_pension"], 2) == 4.67
 
-    assert actual[2]["label"] == "cut"
+    assert actual[2]["title"] == "Sumažinus išlaidas, mėn"
     assert round(actual[2]["money_fund"], 2) == 12
     assert round(actual[2]["money_fund_pension"], 2) == 14
+
+
+@pytest.fixture
+def no_incomes_data_class():
+    # Create a sample NoIncomesData object for testing
+    return SimpleNamespace(
+        year=1999,
+        months=12,
+        account_sum=1000,
+        fund_sum=500,
+        pension_sum=200,
+        expenses=[
+            {"title": "Expense 1", "sum": 100},
+            {"title": "Expense 2", "sum": 200},
+            {"title": "Expense 3", "sum": 300},
+        ],
+        savings={"sum": 500},
+        unnecessary=["Expense 2"]
+    )
+
+
+def test_summary_property(no_incomes_data_class):
+    # Arrange
+    no_incomes = NoIncomes(no_incomes_data_class)
+
+    # Act
+    summary = no_incomes.summary
+
+    # Assert
+    assert len(summary) == 3
+    assert summary[0]["title"] == "Pinigai, €"
+    assert summary[0]["money_fund"] == 1500
+    assert summary[0]["money_fund_pension"] == 1700
+
+    assert summary[1]["title"] == "Nekeičiant išlaidų, mėn"
+    assert summary[1]["money_fund"] == 1500 / no_incomes.avg_expenses
+    assert summary[1]["money_fund_pension"] == 1700 / no_incomes.avg_expenses
+
+    assert summary[2]["title"] == "Sumažinus išlaidas, mėn"
+    assert summary[2]["money_fund"] == 1500 / (no_incomes.avg_expenses - no_incomes.cut_sum)
+    assert summary[2]["money_fund_pension"] == 1700 / (no_incomes.avg_expenses - no_incomes.cut_sum)
+
+
+def test_calc_method(no_incomes_data_class):
+    # Arrange
+    no_incomes = NoIncomes(no_incomes_data_class)
+
+    # Act
+    no_incomes._calc()
+
+    # Assert
+    assert no_incomes.avg_expenses == (100 + 200 + 300 + 500) / 12
+    assert no_incomes.cut_sum == (200 + 500) / 12
+
+
+def test_div_method(no_incomes_data_class):
+    # Arrange
+    no_incomes = NoIncomes(no_incomes_data_class)
+
+    # Act
+    result1 = no_incomes._div(10, 2)
+    result2 = no_incomes._div(10, 0)
+
+    # Assert
+    assert result1 == 5
+    assert result2 == 0

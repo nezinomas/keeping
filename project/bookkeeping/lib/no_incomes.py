@@ -76,21 +76,36 @@ class NoIncomes:
 
     @property
     def summary(self) -> List[Dict[str, float]]:
-        i1 = self.data.account_sum + self.data.fund_sum
-        i2 = self.data.account_sum + self.data.fund_sum + self.data.pension_sum
+        money_fund = self.data.account_sum + self.data.fund_sum
+        money_fund_pension = money_fund + self.data.pension_sum
+        cut_sum = self.avg_expenses - self.cut_sum
 
+        return self._generate_dict(
+            (
+                _("Money") + ", €",
+                money_fund,
+                money_fund_pension
+            ),
+            (
+                _("No change in spending, month"),
+                self._div(money_fund, self.avg_expenses),
+                self._div(money_fund_pension, self.avg_expenses),
+            ),
+            (
+                _("After spending cuts, month"),
+                self._div(money_fund, cut_sum),
+                self._div(money_fund_pension, cut_sum),
+            ),
+        )
+
+    def _generate_dict(self, *entries) -> list[dict]:
         return [
-            {"label": "money", "money_fund": i1, "money_fund_pension": i2},
             {
-                "label": "no_cut",
-                "money_fund": self._div(i1, self.avg_expenses),
-                "money_fund_pension": self._div(i2, self.avg_expenses),
-            },
-            {
-                "label": "cut",
-                "money_fund": self._div(i1, (self.avg_expenses - self.cut_sum)),
-                "money_fund_pension": self._div(i2, (self.avg_expenses - self.cut_sum)),
-            },
+                "title": title,
+                "money_fund": money_fund,
+                "money_fund_pension": money_fund_pension,
+            }
+            for title, money_fund, money_fund_pension in entries
         ]
 
     def _calc(self):
