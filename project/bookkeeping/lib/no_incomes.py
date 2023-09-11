@@ -82,9 +82,9 @@ class NoIncomes:
 
         return self._generate_dict(
             (
-                _("Money") + ", €",
+                f'{_("Money")}, €',
                 money_fund,
-                money_fund_pension
+                money_fund_pension,
             ),
             (
                 _("No change in spending, month"),
