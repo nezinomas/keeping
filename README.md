@@ -69,6 +69,6 @@ mkdir media; chmod -R 755 media
 
 9. Run tests:
 ```
-_fast:_ pytest -n auto -k "not webtest"
-_slow:_ pytest
+fast: pytest -n auto -k "not webtest"
+slow: pytest
 ```
