@@ -14,15 +14,18 @@ numbers_strategy = st.one_of(
 @pytest.mark.parametrize(
     "value, expect",
     [
-        (1, 0.01),
-        (0.1, 0.001),
         (None, None),
         ("-", "-"),
     ],
 )
-def test_price(value, expect):
+def test_price_none(value, expect):
     actual = math.price(value)
     assert actual == expect
+
+
+@given(st.integers(min_value=1))
+def test_price(num):
+    assert math.price(num) == num / 100
 
 
 @given(numbers_strategy)
