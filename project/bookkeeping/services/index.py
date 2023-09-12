@@ -136,7 +136,3 @@ class IndexService:
             }
 
         return {}
-
-    @staticmethod
-    def percentage_from_incomes(incomes, savings):
-        return (savings * 100) / incomes if incomes and savings else 0
