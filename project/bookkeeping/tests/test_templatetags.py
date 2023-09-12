@@ -23,7 +23,7 @@ def test_info_table_no_data(info_table, arr):
 
     actual = info_table.render(ctx)
 
-    assert actual == "\n\n\n\n\n"
+    assert actual == "\n\n\n\n\n\n"
 
 
 def test_info_table_with_data_and_title(info_table):
