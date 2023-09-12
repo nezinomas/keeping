@@ -24,8 +24,9 @@ def test_context(client_logged):
     url = reverse("bookkeeping:wealth")
     response = client_logged.get(url)
 
-    assert "title" in response.context
     assert "data" in response.context
+    assert "title" in response.context["data"]
+    assert "data" in response.context["data"]
 
 
 def test_content(client_logged):

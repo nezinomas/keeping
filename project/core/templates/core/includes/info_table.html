@@ -1,0 +1,24 @@
+{% load slippers %}
+{% load get_item %}
+{% load math %}
+{% load i18n %}
+
+{% if data.title and data.data %}
+<table class="table table-sm">
+    <thead>
+        <tr>
+            {% for title in data.title %}
+            <th class="text-nowrap" style="width: calc(100%/{{ title|length }});">
+                {{ title }}
+            </th>{% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        <tr {% if calculate_debt_remains %}data-bs-toggle="tooltip" data-bs-placement="bottom" title="{% translate 'Remains to be returned' %}:  {{data.data.0|sub:data.data.1|price|floatformat:'2g'}}"{% endif %}>
+            {% for d in data.data %}
+            {% table_cell value=d|price highlight_value=data.highlight|get_list_val:forloop.counter0 %}
+            {% endfor %}
+        </tr>
+    </tbody>
+</table>
+{% endif %}
