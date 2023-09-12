@@ -125,7 +125,7 @@ class PensionsWorthNew(FormsetMixin, CreateViewMixin):
 
 
 class Wealth(TemplateViewMixin):
-    template_name = "bookkeeping/includes/info_table.html"
+    template_name = "core/includes/info_table.html"
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
@@ -133,8 +133,10 @@ class Wealth(TemplateViewMixin):
         service = services.WealthService(data)
 
         context = {
-            "title": [_("Money"), _("Wealth")],
-            "data": [service.money, service.wealth],
+            "data": {
+                "title": [_("Money"), _("Wealth")],
+                "data": [service.money, service.wealth],
+            }
         }
         return super().get_context_data(**kwargs) | context
 
