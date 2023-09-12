@@ -71,12 +71,12 @@
 
             <div class="col-lg-12 col-md-3">
                 <!-- Debts Borrow -->
-                <div id="borrow">{% info_table data=borrow %}</div>
+                <div id="borrow">{% info_table data=borrow calculate_debt_remains="true" %}</div>
             </div>
 
             <div class="col-lg-12 col-md-3">
                 <!-- Debts Lend -->
-                <div id="lend">{% info_table data=lend %}</div>
+                <div id="lend">{% info_table data=lend calculate_debt_remains="true" %}</div>
             </div>
         </div>
     </div>
