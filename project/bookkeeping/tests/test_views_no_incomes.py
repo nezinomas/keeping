@@ -1,7 +1,9 @@
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from django.template import Context, Template
 from django.urls import resolve, reverse
 
 from ...expenses.factories import ExpenseTypeFactory
@@ -47,6 +49,27 @@ def test_view_not_necessary(client_logged):
         "Nebūtinos išlaidos, kurių galima atsisakyti:<br />- XXX<br />- YYY<br />- Taupymas"
         in actual
     )
+
+
+def test_template_month_value():
+    with open(Path(__file__).cwd() / 'project/bookkeeping/templates/bookkeeping/includes/no_incomes.html') as f:
+        template = Template(f.read())
+
+    ctx = Context({
+        "no_incomes": [
+            {"title": "x", "money_fund": 11, "money_fund_pension": 22, "price": True},
+            {"title": "y", "money_fund": 33, "money_fund_pension": 44, "price": False}
+        ],
+    })
+    actual = template.render(ctx)
+
+    # price
+    assert "0,11" in actual
+    assert "0,22" in actual
+
+    # month
+    assert "33,0" in actual
+    assert "44,0" in actual
 
 
 # ---------------------------------------------------------------------------------------

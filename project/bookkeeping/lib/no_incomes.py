@@ -85,16 +85,19 @@ class NoIncomes:
                 f'{_("Money")}, €',
                 money_fund,
                 money_fund_pension,
+                "price",
             ),
             (
                 _("No change in spending, month"),
                 self._div(money_fund, self.avg_expenses),
                 self._div(money_fund_pension, self.avg_expenses),
+                "month",
             ),
             (
                 _("After spending cuts, month"),
                 self._div(money_fund, cut_sum),
                 self._div(money_fund_pension, cut_sum),
+                "month",
             ),
         )
 
@@ -104,8 +107,9 @@ class NoIncomes:
                 "title": title,
                 "money_fund": money_fund,
                 "money_fund_pension": money_fund_pension,
+                "price": price == "price",
             }
-            for title, money_fund, money_fund_pension in entries
+            for title, money_fund, money_fund_pension, price in entries
         ]
 
     def _calc(self):

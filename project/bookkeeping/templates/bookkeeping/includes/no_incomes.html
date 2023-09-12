@@ -13,9 +13,17 @@
     <tbody>
         {% for obj in no_incomes %}
         <tr>
+            {% if obj.price %}
+                {% var money_fund=obj.money_fund|price|floatformat:'2g' %}
+                {% var money_fund_pension=obj.money_fund_pension|price|floatformat:'2g' %}
+            {% else %}
+                {% var money_fund=obj.money_fund|floatformat:'1g' %}
+                {% var money_fund_pension=obj.money_fund_pension|floatformat:'1g' %}
+            {% endif %}
+
             <td>{{obj.title}}</td>
-            {% table_cell value=obj.money_fund|price %}
-            {% table_cell value=obj.money_fund_pension|price %}
+            <td>{{money_fund}}</td>
+            <td>{{money_fund_pension}}</td>
         </tr>
         {% endfor %}
     </tbody>
