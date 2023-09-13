@@ -233,8 +233,6 @@ def test_expenses_update_price_for_closed_account(client_logged, main_user):
     assert actual.remark == 'Pastaba'
 
 
-
-# @time_machine.travel("2000-03-04")
 def test_expenses_update_price_with_489(client_logged):
     e = ExpenseFactory(date=date.today(), price=477)
 
