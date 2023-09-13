@@ -252,6 +252,7 @@ def test_expenses_update_with_closed_account_date_greated_than_closed_value(clie
 
     response = client_logged.post(url, data)
     form = response.context["form"]
+
     assert len(form.errors) == 1
     assert 'Data negali būti didesnė nei sąskaitos uždarymo data. Sąskaita uždaryta 2000.' in form.errors["date"]
 
