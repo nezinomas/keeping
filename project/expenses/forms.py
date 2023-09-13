@@ -82,7 +82,11 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         expense_type = self.fields["expense_type"]
         expense_name = self.fields["expense_name"]
 
-        account.queryset = Account.objects.items()
+        if self.instance.pk:
+            account.queryset = Account.objects.items(year=self.instance.date.year)
+        else:
+            account.queryset = Account.objects.items()
+
         expense_type.queryset = ExpenseType.objects.items()
         expense_name.queryset = ExpenseName.objects.none()
 

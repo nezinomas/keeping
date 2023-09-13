@@ -1,4 +1,3 @@
-import json
 from datetime import date
 
 import pytest
@@ -193,7 +192,7 @@ def test_expenses_update(client_logged):
     }
     url = reverse('expenses:update', kwargs={'pk': e.pk})
 
-    client_logged.post(url, data, follow=True)
+    client_logged.post(url, data)
 
     actual = models.Expense.objects.get(pk=e.pk)
     assert actual.date == date(1999, 12, 31)
@@ -203,6 +202,36 @@ def test_expenses_update(client_logged):
     assert actual.expense_type.title == 'Expense Type'
     assert actual.expense_name.title == 'Expense Name'
     assert actual.remark == 'Pastaba'
+
+
+def test_expenses_update_price_for_closed_account(client_logged, main_user):
+    main_user.year = 2023
+
+    account = AccountFactory(title='XXX', closed=2000)
+    expense = ExpenseFactory(account=account, date=date(1999, 1, 1))
+
+    data = {
+        'price': 150,
+        'quantity': 33,
+        'date': expense.date,
+        'remark': 'Pastaba',
+        'account': account.pk,
+        'expense_type': expense.expense_type.pk,
+        'expense_name': expense.expense_name.pk,
+    }
+    url = reverse('expenses:update', kwargs={'pk': expense.pk})
+
+    client_logged.post(url, data)
+
+    actual = models.Expense.objects.get(pk=expense.pk)
+    assert actual.date == expense.date
+    assert actual.price == 15_000
+    assert actual.quantity == 33
+    assert actual.account.title == account.title
+    assert actual.expense_type.title == expense.expense_type.title
+    assert actual.expense_name.title == expense.expense_name.title
+    assert actual.remark == 'Pastaba'
+
 
 
 # @time_machine.travel("2000-03-04")
