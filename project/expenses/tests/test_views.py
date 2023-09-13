@@ -233,6 +233,29 @@ def test_expenses_update_price_for_closed_account(client_logged, main_user):
     assert actual.remark == 'Pastaba'
 
 
+def test_expenses_update_with_closed_account_date_greated_than_closed_value(client_logged, main_user):
+    main_user.year = 2023
+
+    account = AccountFactory(title='XXX', closed=2000)
+    expense = ExpenseFactory(account=account, date=date(1999, 1, 1))
+
+    data = {
+        'price': 150,
+        'quantity': 33,
+        'date': '2023-1-1',
+        'remark': 'Pastaba',
+        'account': account.pk,
+        'expense_type': expense.expense_type.pk,
+        'expense_name': expense.expense_name.pk,
+    }
+    url = reverse('expenses:update', kwargs={'pk': expense.pk})
+
+    response = client_logged.post(url, data)
+    form = response.context["form"]
+    assert len(form.errors) == 1
+    assert 'Data negali būti didesnė nei sąskaitos uždarymo data. Sąskaita uždaryta 2000.' in form.errors["date"]
+
+
 def test_expenses_update_price_with_489(client_logged):
     e = ExpenseFactory(date=date.today(), price=477)
 

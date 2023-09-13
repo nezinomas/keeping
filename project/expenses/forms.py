@@ -166,6 +166,20 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
         return dt
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        account = cleaned_data.get("account")
+        expense_date = cleaned_data.get("date")
+
+        if not account or not account.closed:
+            return cleaned_data
+
+        if expense_date.year > account.closed:
+            self.add_error(
+                "date", _("The date cannot be higher than the closed date of the account. Account is closed %(year)s.") % ({"year": f"{account.closed}"})
+            )
+
 
 class ExpenseTypeForm(forms.ModelForm):
     class Meta:
