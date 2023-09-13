@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-11 17:03+0300\n"
-"PO-Revision-Date: 2023-09-11 17:04+0300\n"
+"POT-Creation-Date: 2023-09-13 16:26+0300\n"
+"PO-Revision-Date: 2023-09-13 16:27+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -39,7 +39,7 @@ msgstr "Rūšiavimas"
 #: .\project\debts\forms.py:61 .\project\debts\forms.py:150
 #: .\project\debts\templates\debts\debt_list.html:21
 #: .\project\debts\templates\debts\debtreturn_list.html:19
-#: .\project\expenses\forms.py:122
+#: .\project\expenses\forms.py:126
 #: .\project\expenses\templates\expenses\expense_list.html:27
 #: .\project\incomes\forms.py:45
 #: .\project\incomes\templates\incomes\income_list.html:16
@@ -67,7 +67,7 @@ msgstr "Reikia pasirinkti bent vieną kategoriją."
 #: .\project\bookkeeping\services\month.py:96
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:14
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:9
-#: .\project\bookkeeping\views.py:269 .\project\journals\forms.py:34
+#: .\project\bookkeeping\views.py:271 .\project\journals\forms.py:34
 #: .\project\plans\templates\plans\index.html:53
 #: .\project\savings\managers.py:67
 #: .\project\savings\templates\savings\saving_form.html:5
@@ -76,16 +76,11 @@ msgstr "Reikia pasirinkti bent vieną kategoriją."
 msgid "Savings"
 msgstr "Taupymas"
 
-#: .\project\bookkeeping\lib\no_incomes.py:85
-#: .\project\bookkeeping\views.py:136
-msgid "Money"
-msgstr "Pinigai"
-
-#: .\project\bookkeeping\lib\no_incomes.py:90
+#: .\project\bookkeeping\lib\no_incomes.py:91
 msgid "No change in spending, month"
 msgstr "Nekeičiant išlaidų, mėn"
 
-#: .\project\bookkeeping\lib\no_incomes.py:95
+#: .\project\bookkeeping\lib\no_incomes.py:97
 msgid "After spending cuts, month"
 msgstr "Sumažinus išlaidas, mėn"
 
@@ -101,7 +96,7 @@ msgstr "Pajamos ir išlaidos"
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:11
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:21
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:17
-#: .\project\bookkeeping\views.py:268
+#: .\project\bookkeeping\views.py:270
 #: .\project\incomes\templates\incomes\income_form.html:5
 #: .\project\plans\templates\plans\index.html:13
 #: .\project\templates\base.html:84 .\project\templates\base.html:147
@@ -410,15 +405,15 @@ msgstr "Diena"
 msgid "Unnecessary expenses that can be avoided"
 msgstr "Nebūtinos išlaidos, kurių galima atsisakyti"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:24
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:32
 msgid "Money in accounts"
 msgstr "Sąskaitose esantys pinigai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:25
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:33
 msgid "Funds/Stocks"
 msgstr "Fondai/Akcijos"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:26
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:34
 msgid "Pension funds"
 msgstr "Pensijų fondai"
 
@@ -524,7 +519,7 @@ msgstr "Pajamų dalis pervedama taupymui"
 msgid "Year"
 msgstr "Metai"
 
-#: .\project\bookkeeping\views.py:89 .\project\bookkeeping\views.py:243
+#: .\project\bookkeeping\views.py:89 .\project\bookkeeping\views.py:245
 #: .\project\savings\models.py:15
 #: .\project\savings\templates\savings\index.html:19
 #: .\project\savings\templates\savings\savingtype_list.html:4
@@ -537,23 +532,27 @@ msgstr "Fondai"
 msgid "Pensions"
 msgstr "Pensijos"
 
-#: .\project\bookkeeping\views.py:136
+#: .\project\bookkeeping\views.py:137
+msgid "Money"
+msgstr "Pinigai"
+
+#: .\project\bookkeeping\views.py:137
 msgid "Wealth"
 msgstr "Turtas"
 
-#: .\project\bookkeeping\views.py:244 .\project\savings\models.py:14
+#: .\project\bookkeeping\views.py:246 .\project\savings\models.py:14
 msgid "Shares"
 msgstr "Akcijos"
 
-#: .\project\bookkeeping\views.py:267
+#: .\project\bookkeeping\views.py:269
 msgid "Incomes and Savings"
 msgstr "Pajamos ir taupymas"
 
-#: .\project\bookkeeping\views.py:270
+#: .\project\bookkeeping\views.py:272
 msgid "Percents"
 msgstr "Procentai"
 
-#: .\project\bookkeeping\views.py:303 .\project\core\mixins\views.py:149
+#: .\project\bookkeeping\views.py:305 .\project\core\mixins\views.py:149
 msgid "No data found"
 msgstr "Nieko nerasta"
 
@@ -569,7 +568,7 @@ msgstr "Baigta skaityti"
 
 #: .\project\books\forms.py:49
 #: .\project\books\templates\books\book_list.html:14
-#: .\project\counts\forms.py:71 .\project\expenses\forms.py:179
+#: .\project\counts\forms.py:71 .\project\expenses\forms.py:198
 #: .\project\plans\templates\plans\includes\generic_list.html:12
 msgid "Title"
 msgstr "Pavadinimas"
@@ -584,7 +583,7 @@ msgstr "Autorius"
 #: .\project\debts\forms.py:63 .\project\debts\forms.py:153
 #: .\project\debts\templates\debts\debt_list.html:22
 #: .\project\debts\templates\debts\debtreturn_list.html:20
-#: .\project\expenses\forms.py:120
+#: .\project\expenses\forms.py:124
 #: .\project\expenses\templates\expenses\expense_list.html:25
 #: .\project\incomes\forms.py:47
 #: .\project\incomes\templates\incomes\income_list.html:17
@@ -608,7 +607,7 @@ msgstr "Data negali būti ateityje"
 msgid "Ended reading cannot precede started reading"
 msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti"
 
-#: .\project\books\forms.py:114 .\project\expenses\forms.py:117
+#: .\project\books\forms.py:114 .\project\expenses\forms.py:121
 #: .\project\expenses\templates\expenses\expense_list.html:23
 msgid "How many"
 msgstr "Kiek"
@@ -793,6 +792,11 @@ msgstr "Ar tikrai norite ištrinti"
 msgid "Add"
 msgstr "Pridėti"
 
+#: .\project\core\templates\core\includes\info_table.html:17
+#: .\project\debts\templates\debts\debt_list.html:35
+msgid "Remains to be returned"
+msgstr "Liko grąžinti"
+
 #: .\project\core\templates\core\includes\regenerate_balances.html:2
 msgid "Only the balances in this table will be updated."
 msgstr "Bus atnaujinti tik šios lentelės balansai."
@@ -820,7 +824,7 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 #: .\project\debts\forms.py:59 .\project\debts\forms.py:149
 #: .\project\debts\templates\debts\debt_list.html:14
 #: .\project\debts\templates\debts\debtreturn_list.html:13
-#: .\project\drinks\forms.py:41 .\project\expenses\forms.py:115
+#: .\project\drinks\forms.py:41 .\project\expenses\forms.py:119
 #: .\project\expenses\templates\expenses\expense_list.html:20
 #: .\project\incomes\forms.py:44
 #: .\project\incomes\templates\incomes\income_list.html:14
@@ -992,10 +996,6 @@ msgstr "Pasirinkta data yra ankstesnė nei skolos data."
 msgid "Debt"
 msgstr "Skola"
 
-#: .\project\debts\templates\debts\debt_list.html:35
-msgid "Remains to be returned"
-msgstr "Liko grąžinti"
-
 #: .\project\debts\templates\debts\debtreturn_form.html:5
 msgid "Debt repayment"
 msgstr "Skolos gražinimas"
@@ -1163,55 +1163,64 @@ msgstr "Vidutiniškai per dieną, ml"
 msgid "Pure alcohol per year, L"
 msgstr "Per metus gryno alkoholio, L"
 
-#: .\project\expenses\forms.py:116
+#: .\project\expenses\forms.py:120
 msgid "Full price"
 msgstr "Visa kaina"
 
-#: .\project\expenses\forms.py:118 .\project\expenses\forms.py:206
+#: .\project\expenses\forms.py:122 .\project\expenses\forms.py:225
 #: .\project\expenses\templates\expenses\expense_list.html:21
 #: .\project\expenses\templates\expenses\expensetype_form.html:4
 msgid "Expense type"
 msgstr "Išlaidų rūšis"
 
-#: .\project\expenses\forms.py:119 .\project\expenses\forms.py:207
+#: .\project\expenses\forms.py:123 .\project\expenses\forms.py:226
 #: .\project\expenses\templates\expenses\expense_list.html:22
 #: .\project\expenses\templates\expenses\expensename_form.html:4
 msgid "Expense name"
 msgstr "Išlaidų pavadinimas"
 
-#: .\project\expenses\forms.py:121
+#: .\project\expenses\forms.py:125
 msgid "Exception"
 msgstr "Išimtis"
 
-#: .\project\expenses\forms.py:123
+#: .\project\expenses\forms.py:127
 #: .\project\expenses\templates\expenses\expense_list.html:24
 msgid "Price"
 msgstr "Kaina"
 
-#: .\project\expenses\forms.py:124
+#: .\project\expenses\forms.py:128
 #: .\project\expenses\templates\expenses\expense_list.html:26
 msgid "Attachment"
 msgstr "Failas"
 
-#: .\project\expenses\forms.py:134
+#: .\project\expenses\forms.py:138
 #, python-format
 msgid "The %(title)s is 'Necessary', so it can't be marked as 'Exeption'"
 msgstr "%(title)s yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimtis'"
 
-#: .\project\expenses\forms.py:144
+#: .\project\expenses\forms.py:148
 msgid "Image file too large ( > 4Mb )"
 msgstr "Per didelis vaizdo failas ( > 4Mb)"
 
-#: .\project\expenses\forms.py:160 .\project\incomes\forms.py:67
+#: .\project\expenses\forms.py:164 .\project\incomes\forms.py:67
 #, python-format
 msgid "Year cannot be greater than %(year)s"
 msgstr "Metai negali būti didesni nei %(year)s"
 
-#: .\project\expenses\forms.py:180
+#: .\project\expenses\forms.py:182
+#, python-format
+msgid ""
+"The date cannot be higher than the closed date of the account. Account is "
+"closed %(year)s."
+msgstr ""
+"Data negali būti didesnė nei sąskaitos uždarymo data. Sąskaita uždaryta "
+"%(year)s."
+
+#: .\project\expenses\forms.py:199
 msgid "Necessary"
 msgstr "Būtina"
 
-#: .\project\expenses\forms.py:208
+#: .\project\expenses\forms.py:227
 msgid "Valid for"
 msgstr "Galioja"
 

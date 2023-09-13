@@ -82,7 +82,11 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         expense_type = self.fields["expense_type"]
         expense_name = self.fields["expense_name"]
 
-        account.queryset = Account.objects.items()
+        if self.instance.pk:
+            account.queryset = Account.objects.items(year=self.instance.date.year)
+        else:
+            account.queryset = Account.objects.items()
+
         expense_type.queryset = ExpenseType.objects.items()
         expense_name.queryset = ExpenseName.objects.none()
 
@@ -161,6 +165,20 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             )
 
         return dt
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        account = cleaned_data.get("account")
+        expense_date = cleaned_data.get("date")
+
+        if not account or not account.closed:
+            return cleaned_data
+
+        if expense_date.year > account.closed:
+            self.add_error(
+                "date", _("The date cannot be higher than the closed date of the account. Account is closed %(year)s.") % ({"year": f"{account.closed}"})
+            )
 
 
 class ExpenseTypeForm(forms.ModelForm):
