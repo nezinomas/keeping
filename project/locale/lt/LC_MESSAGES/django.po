@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-13 16:26+0300\n"
-"PO-Revision-Date: 2023-09-13 16:27+0300\n"
+"POT-Creation-Date: 2023-09-14 10:42+0300\n"
+"PO-Revision-Date: 2023-09-14 10:45+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -568,7 +568,7 @@ msgstr "Baigta skaityti"
 
 #: .\project\books\forms.py:49
 #: .\project\books\templates\books\book_list.html:14
-#: .\project\counts\forms.py:71 .\project\expenses\forms.py:198
+#: .\project\counts\forms.py:71 .\project\expenses\forms.py:197
 #: .\project\plans\templates\plans\includes\generic_list.html:12
 msgid "Title"
 msgstr "Pavadinimas"
@@ -1167,13 +1167,13 @@ msgstr "Per metus gryno alkoholio, L"
 msgid "Full price"
 msgstr "Visa kaina"
 
-#: .\project\expenses\forms.py:122 .\project\expenses\forms.py:225
+#: .\project\expenses\forms.py:122 .\project\expenses\forms.py:224
 #: .\project\expenses\templates\expenses\expense_list.html:21
 #: .\project\expenses\templates\expenses\expensetype_form.html:4
 msgid "Expense type"
 msgstr "Išlaidų rūšis"
 
-#: .\project\expenses\forms.py:123 .\project\expenses\forms.py:226
+#: .\project\expenses\forms.py:123 .\project\expenses\forms.py:225
 #: .\project\expenses\templates\expenses\expense_list.html:22
 #: .\project\expenses\templates\expenses\expensename_form.html:4
 msgid "Expense name"
@@ -1202,25 +1202,25 @@ msgstr "%(title)s yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimti
 msgid "Image file too large ( > 4Mb )"
 msgstr "Per didelis vaizdo failas ( > 4Mb)"
 
-#: .\project\expenses\forms.py:164 .\project\incomes\forms.py:67
+#: .\project\expenses\forms.py:164
 #, python-format
-msgid "Year cannot be greater than %(year)s"
-msgstr "Metai negali būti didesni nei %(year)s"
+msgid "Year cannot be later than %(year)s"
+msgstr "Metai negali būti vėlesni nei %(year)s"
 
-#: .\project\expenses\forms.py:182
+#: .\project\expenses\forms.py:180
 #, python-format
 msgid ""
-"The date cannot be higher than the closed date of the account. Account is "
-"closed %(year)s."
+"The date cannot be later than the account closure date. The account was "
+"closed in %(year)s."
 msgstr ""
-"Data negali būti didesnė nei sąskaitos uždarymo data. Sąskaita uždaryta "
+"Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta "
 "%(year)s."
 
-#: .\project\expenses\forms.py:199
+#: .\project\expenses\forms.py:198
 msgid "Necessary"
 msgstr "Būtina"
 
-#: .\project\expenses\forms.py:227
+#: .\project\expenses\forms.py:226
 msgid "Valid for"
 msgstr "Galioja"
 
@@ -1277,6 +1277,11 @@ msgstr "Suma"
 #: .\project\incomes\templates\incomes\incometype_list.html:4
 msgid "Incomes type"
 msgstr "Pajamų rūšis"
+
+#: .\project\incomes\forms.py:67
+#, python-format
+msgid "Year cannot be greater than %(year)s"
+msgstr "Metai negali būti didesni nei %(year)s"
 
 #: .\project\incomes\forms.py:87 .\project\savings\forms.py:34
 msgid "Type"
