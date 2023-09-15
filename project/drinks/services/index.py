@@ -75,7 +75,7 @@ class IndexService:
             ),
             "text": {
                 "limit": _("Limit"),
-                "alcohol": _("Alcohol consumption per day, ml"),
+                "alcohol": _("Alcohol consumption per day, milliliters"),
             },
         }
 

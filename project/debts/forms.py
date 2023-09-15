@@ -100,7 +100,7 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
             self.add_error(
                 "price",
                 _(
-                    "You cannot update to an amount lower than the amount already returned."
+                    "The amount due exceeds the debt."
                 ),
             )
 
@@ -185,6 +185,6 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         date = cleaned_data.get("date")
         debt = cleaned_data.get("debt")
         if debt and date < debt.date:
-            self.add_error("date", _("The date is earlier than the date of the debt."))
+            self.add_error("date", _("The date preceding the debt's date."))
 
         return cleaned_data
