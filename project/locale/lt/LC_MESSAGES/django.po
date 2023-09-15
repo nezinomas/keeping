@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-14 10:42+0300\n"
-"PO-Revision-Date: 2023-09-14 10:45+0300\n"
+"POT-Creation-Date: 2023-09-15 09:47+0300\n"
+"PO-Revision-Date: 2023-09-15 09:47+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -53,11 +53,11 @@ msgstr "Sąskaitos"
 
 #: .\project\bookkeeping\forms.py:29
 #, python-format
-msgid "Account closed %(year)s."
+msgid "Account was closed in %(year)s."
 msgstr "Sąskaita uždaryta %(year)s."
 
 #: .\project\bookkeeping\forms.py:164
-msgid "At least one category needs to be selected."
+msgid "At least one category has to be selected."
 msgstr "Reikia pasirinkti bent vieną kategoriją."
 
 #: .\project\bookkeeping\lib\no_incomes.py:60
@@ -511,7 +511,7 @@ msgid "Show other chart"
 msgstr "Rodyti kitą grafiką"
 
 #: .\project\bookkeeping\templates\bookkeeping\savings.html:7
-msgid "Part of the income is transferred to savings"
+msgid "Percentage of income saved"
 msgstr "Pajamų dalis pervedama taupymui"
 
 #: .\project\bookkeeping\templates\bookkeeping\summary_savings_and_incomes.html:22
@@ -604,8 +604,8 @@ msgid "Date cannot be in the future"
 msgstr "Data negali būti ateityje"
 
 #: .\project\books\forms.py:89
-msgid "Ended reading cannot precede started reading"
-msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti"
+msgid "Finished reading cannot precede start reading."
+msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti."
 
 #: .\project\books\forms.py:114 .\project\expenses\forms.py:121
 #: .\project\expenses\templates\expenses\expense_list.html:23
@@ -816,7 +816,7 @@ msgid "Data missing."
 msgstr "Trūksta duomenų."
 
 #: .\project\core\templates\core\no_records.html:7
-msgid "Missing data. At least two years of data are needed."
+msgid "Data are missing. At least two years of data is required."
 msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 
 #: .\project\counts\forms.py:53
@@ -980,17 +980,13 @@ msgstr "Skolintojo vardas turi būti unikalus."
 msgid "You can't close a debt that hasn't been returned."
 msgstr "Negalite uždaryti dar negražintos skolos."
 
-#: .\project\debts\forms.py:103
-msgid "You cannot update to an amount lower than the amount already returned."
-msgstr "Negalite atnaujinti į mažesnę sumą nei jau sugrąžinta suma."
-
-#: .\project\debts\forms.py:177
-msgid "The amount to be paid is more than the debt!"
-msgstr "Gražinama suma yra didesnė nei skola!"
+#: .\project\debts\forms.py:103 .\project\debts\forms.py:177
+msgid "The amount due exceeds the debt."
+msgstr "Gražinama suma yra didesnė nei skola."
 
 #: .\project\debts\forms.py:188
-msgid "The date is earlier than the date of the debt."
-msgstr "Pasirinkta data yra ankstesnė nei skolos data."
+msgid "The date preceding the debt's date."
+msgstr ""
 
 #: .\project\debts\templates\debts\debt_form.html:5
 msgid "Debt"
@@ -1030,8 +1026,8 @@ msgstr "1 Degtinė = 1L"
 
 #: .\project\drinks\forms.py:48
 #, python-format
-msgid "If more than %(cnt)s is entered, it will be assumed to be mL"
-msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mL"
+msgid "Millilitres are assumed if more than %(cnt)s is entered."
+msgstr ""
 
 #: .\project\drinks\forms.py:93
 msgid "if the type of drink is"
@@ -1054,7 +1050,7 @@ msgid "Limit"
 msgstr "Riba"
 
 #: .\project\drinks\services\index.py:78
-msgid "Alcohol consumption per day, ml"
+msgid "Alcohol consumption per day, milliliters"
 msgstr "Alkoholio kiekis per dieną, ml"
 
 #: .\project\drinks\services\index.py:127
@@ -1670,16 +1666,13 @@ msgid "Success!"
 msgstr "Sėkmė!"
 
 #: .\project\users\templates\users\password_change_done.html:8
-msgid "Your password has been changed!"
-msgstr "Jūsų slaptažodis pakeistas!"
+#: .\project\users\templates\users\password_reset_complete.html:7
+msgid "Password changed!"
+msgstr "Slaptažodis pakeistas!"
 
 #: .\project\users\templates\users\password_change_done.html:10
 msgid "Return to home page"
 msgstr "Grįžti į pagrindinį puslapį"
-
-#: .\project\users\templates\users\password_reset_complete.html:7
-msgid "Password changed!"
-msgstr "Slaptažodis pakeistas!"
 
 #: .\project\users\templates\users\password_reset_complete.html:8
 msgid ""
@@ -1753,6 +1746,26 @@ msgstr ""
 "Patikrinkite el. pašto dėžutę, joje turi būti laiškas su slaptažodžio "
 "atstatymo nuoroda. Jei laiško negausite per kelias minutes, patikrinkite "
 "šlamšto aplanką."
+
+#~ msgid "The amount to be paid is more than the debt!"
+#~ msgstr "Gražinama suma yra didesnė nei skola!"
+
+#~ msgid "Part of the income is transferred to savings"
+#~ msgstr "Pajamų dalis pervedama taupymui"
+
+#~ msgid ""
+#~ "You cannot update to an amount lower than the amount already returned."
+#~ msgstr "Negalite atnaujinti į mažesnę sumą nei jau sugrąžinta suma."
+
+#~ msgid "The date is earlier than the date of the debt."
+#~ msgstr "Pasirinkta data yra ankstesnė nei skolos data."
+
+#, python-format
+#~ msgid "If more than %(cnt)s is entered, it will be assumed to be mL"
+#~ msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mL"
+
+#~ msgid "Your password has been changed!"
+#~ msgstr "Jūsų slaptažodis pakeistas!"
 
 #~ msgid "Left"
 #~ msgstr "Liko"
