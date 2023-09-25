@@ -39,7 +39,7 @@
                     <td class="text-start">{{ object.expense_name }}</td>
                     <td>{{ object.quantity }}</td>
                     {% table_cell value=object.price|price %}
-                    <td class="text-start">{{ object.remark|linebreaksbr }}</td>
+                    <td class="text-start cell-padding">{{ object.remark|linebreaksbr }}</td>
                     <td>{% if object.attachment %}
                         {% if not 'pdf' in object.attachment.url %}
                         <button type="button" class="btn btn-outline-primary btn-xs" data-bs-toggle="modal" data-bs-target="#imgModal" data-bs-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
