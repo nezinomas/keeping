@@ -746,3 +746,29 @@ def test_search_pagination_second_page(client_logged):
     actual = response.context["object_list"]
 
     assert len(actual) == 1
+
+
+def test_seach_statistic(client_logged):
+    ExpenseFactory(price=100)
+    ExpenseFactory(price=200, quantity=2, remark="xxx")
+    ExpenseFactory(price=300, quantity=3, remark="xxx")
+
+    url = reverse("expenses:search")
+    response = client_logged.get(url, {"page": 2, "search": "xxx"})
+
+    assert response.context["sum_price"] == 500
+    assert response.context["sum_quantity"] == 5
+    assert response.context["average"] == 100
+
+
+def test_seach_statistic_not_found(client_logged):
+    ExpenseFactory(price=100)
+    ExpenseFactory(price=200, quantity=2)
+    ExpenseFactory(price=300, quantity=3)
+
+    url = reverse("expenses:search")
+    response = client_logged.get(url, {"page": 2, "search": "xxx"})
+
+    assert "sum_price" not in response.context
+    assert "sum_quantity" not in response.context
+    assert "average" not in response.context
