@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-15 09:47+0300\n"
-"PO-Revision-Date: 2023-09-25 12:47+0300\n"
+"POT-Creation-Date: 2023-09-25 12:54+0300\n"
+"PO-Revision-Date: 2023-09-25 12:54+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -516,7 +516,7 @@ msgid "Percentage of income saved"
 msgstr "Pajamų dalis pervedama taupymui"
 
 #: .\project\bookkeeping\templates\bookkeeping\summary_savings_and_incomes.html:22
-#: .\project\books\forms.py:113 .\project\drinks\forms.py:89
+#: .\project\books\forms.py:116 .\project\drinks\forms.py:89
 msgid "Year"
 msgstr "Metai"
 
@@ -604,16 +604,16 @@ msgstr "Metai turi būti tarp %(year1)s ir %(year2)s"
 msgid "Date cannot be in the future"
 msgstr "Data negali būti ateityje"
 
-#: .\project\books\forms.py:89
+#: .\project\books\forms.py:90
 msgid "Finished reading cannot precede start reading."
 msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti."
 
-#: .\project\books\forms.py:114 .\project\expenses\forms.py:121
+#: .\project\books\forms.py:117 .\project\expenses\forms.py:121
 #: .\project\expenses\templates\expenses\expense_list.html:23
 msgid "How many"
 msgstr "Kiek"
 
-#: .\project\books\forms.py:137 .\project\drinks\forms.py:119
+#: .\project\books\forms.py:140 .\project\drinks\forms.py:119
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
