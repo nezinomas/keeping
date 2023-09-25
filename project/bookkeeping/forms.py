@@ -26,7 +26,7 @@ def clean_date_and_closed(account: str, cleaned: dict, add_error: Callable) -> d
         return cleaned
 
     if dt.year > account.closed:
-        add_error("date", _("Account closed %(year)s.") % ({"year": account.closed}))
+        add_error("date", _("Account was closed in %(year)s.") % ({"year": account.closed}))
     return cleaned
 
 
@@ -161,5 +161,5 @@ class SummaryExpensesForm(forms.Form):
             return cleaned_data
         else:
             raise forms.ValidationError(
-                _("At least one category needs to be selected.")
+                _("At least one category has to be selected.")
             )

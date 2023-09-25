@@ -45,7 +45,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         _h1 = _("1 Beer = 0.5L")
         _h2 = _("1 Wine = 0.75L")
         _h3 = _("1 Vodka = 1L")
-        _h4 = _("If more than %(cnt)s is entered, it will be assumed to be mL") % {
+        _h4 = _("Millilitres are assumed if more than %(cnt)s is entered.") % {
             "cnt": MAX_BOTTLES
         }
         _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"

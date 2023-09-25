@@ -161,7 +161,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             year_msg = year_user + diff
             self.add_error(
                 "date",
-                _("Year cannot be greater than %(year)s") % ({"year": year_msg}),
+                _("Year cannot be later than %(year)s") % ({"year": year_msg}),
             )
 
         return dt
@@ -177,7 +177,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
         if expense_date.year > account.closed:
             self.add_error(
-                "date", _("The date cannot be higher than the closed date of the account. Account is closed %(year)s.") % ({"year": f"{account.closed}"})
+                "date", _("The date cannot be later than the account closure date. The account was closed in %(year)s.") % ({"year": f"{account.closed}"})
             )
 
 
