@@ -60,7 +60,7 @@
                     <th class="text-start" colspan="3">{% translate "Total" %}</th>
                     <th>{{sum_quantity}}</th>
                     {% table_cell value=sum_price|price tag="th" %}
-                    <th class="text-start cell-padding">{{average|price|floatformat:"2g"}} <span style="font-weight: normal">({% translate "Average unit price" %})</span></th>
+                    <th class="text-start cell-padding">{{average|price|floatformat:"2g"}} <span style="font-weight: normal" class="ps-1">({% translate "Average unit price" %})</span></th>
                     <th colspan="4"></th>
                 </tr>
             </tfoot>
