@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-09-15 09:47+0300\n"
-"PO-Revision-Date: 2023-09-25 11:20+0300\n"
+"PO-Revision-Date: 2023-09-25 12:47+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -983,11 +983,11 @@ msgstr "Negalite uždaryti dar negražintos skolos."
 
 #: .\project\debts\forms.py:103 .\project\debts\forms.py:177
 msgid "The amount due exceeds the debt."
-msgstr "Gražinama suma yra didesnė nei skola."
+msgstr "Mokėtina suma viršija skolą."
 
 #: .\project\debts\forms.py:188
 msgid "The date preceding the debt's date."
-msgstr ""
+msgstr "Data yra ankstesnė nei skolos data."
 
 #: .\project\debts\templates\debts\debt_form.html:5
 msgid "Debt"
@@ -1028,7 +1028,7 @@ msgstr "1 Degtinė = 1L"
 #: .\project\drinks\forms.py:48
 #, python-format
 msgid "Millilitres are assumed if more than %(cnt)s is entered."
-msgstr ""
+msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mililitrai."
 
 #: .\project\drinks\forms.py:93
 msgid "if the type of drink is"

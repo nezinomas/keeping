@@ -134,7 +134,7 @@ def test_exepense_insert_only_one_year_to_future():
 
     assert not form.is_valid()
     assert 'date' in form.errors
-    assert 'Metai negali būti didesni nei 2000' in form.errors['date']
+    assert 'Metai negali būti vėlesni nei 2000' in form.errors['date']
 
 
 def test_expenses_form_blank_data():

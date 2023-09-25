@@ -108,8 +108,7 @@ def test_book_end_date_earlier_than_start_date():
 
     assert not form.is_valid()
     assert 'ended' in form.errors
-    assert 'Baigta skaityti negali būti anksčiau nei pradėta skaityti' in form.errors[
-        'ended']
+    assert 'Baigta skaityti negali būti anksčiau nei pradėta skaityti.' in form.errors["ended"]
 
 
 def test_book_blank_data():

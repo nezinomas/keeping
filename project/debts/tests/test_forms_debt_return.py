@@ -196,7 +196,7 @@ def test_lend_return_price_higher(mocker):
 
     assert not form.is_valid()
     assert 'price' in form.errors
-    assert form.errors['price'] == ['Gražinama suma yra didesnė nei skola!']
+    assert form.errors['price'] == ['Mokėtina suma viršija skolą.']
 
 
 def test_borrow_return_price_higher(mocker):
@@ -216,7 +216,7 @@ def test_borrow_return_price_higher(mocker):
 
     assert not form.is_valid()
     assert 'price' in form.errors
-    assert form.errors['price'] == ['Gražinama suma yra didesnė nei skola!']
+    assert form.errors['price'] == ['Mokėtina suma viršija skolą.']
 
 
 def test_debt_return_date_earlier(mocker):
@@ -235,4 +235,4 @@ def test_debt_return_date_earlier(mocker):
 
     assert not form.is_valid()
     assert 'date' in form.errors
-    assert form.errors['date'] == ['Pasirinkta data yra ankstesnė nei skolos data.']
+    assert form.errors['date'] == ['Data yra ankstesnė nei skolos data.']

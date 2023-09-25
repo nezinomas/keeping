@@ -34,7 +34,7 @@ def test_drink_help_text():
     assert '1 Alus = 0.5L' in form
     assert '1 Vynas = 0.75L' in form
     assert '1 Degtinė = 1L' in form
-    assert 'Įvedus daugiau nei 20, bus manoma kad tai yra mL' in form
+    assert 'Įvedus daugiau nei 20, bus manoma kad tai yra mililitrai' in form
 
 
 @time_machine.travel("1974-1-1")

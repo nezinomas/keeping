@@ -227,7 +227,7 @@ def test_borrow_update_price_smaller_then_returned(client_logged):
     form = response.context['form']
 
     assert not form.is_valid()
-    assert 'Negalite atnaujinti į mažesnę sumą nei jau sugrąžinta suma.' in form.as_p()
+    assert 'Mokėtina suma viršija skolą.' in form.as_p()
 
 
 def test_borrow_update_cant_close(client_logged):
