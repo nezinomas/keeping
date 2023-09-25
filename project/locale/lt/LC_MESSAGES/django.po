@@ -217,6 +217,7 @@ msgstr "Balansas"
 #: .\project\counts\templates\counts\tab_history.html:22
 #: .\project\drinks\templates\drinks\includes\tbl_consumption.html:11
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:9
+#: .\project\expenses\templates\expenses\expense_list.html:60
 msgid "Total"
 msgstr "Viso"
 
@@ -236,7 +237,7 @@ msgstr "Investuota"
 #: .\project\core\templates\core\no_records.html:9
 #: .\project\debts\templates\debts\debt_list.html:49
 #: .\project\debts\templates\debts\debtreturn_list.html:51
-#: .\project\expenses\templates\expenses\expense_list.html:71
+#: .\project\expenses\templates\expenses\expense_list.html:82
 #: .\project\expenses\views\expenses.py:57
 #: .\project\incomes\templates\incomes\income_list.html:51
 #: .\project\pensions\templates\pensions\pension_list.html:38
@@ -1236,6 +1237,10 @@ msgstr "Paveikslėlis"
 #: .\project\expenses\templates\expenses\expense_list.html:47
 msgid "Pdf file"
 msgstr "Pdf failas"
+
+#: .\project\expenses\templates\expenses\expense_list.html:63
+msgid "Average unit price"
+msgstr "Vidutinė vieneto kaina"
 
 #: .\project\expenses\templates\expenses\index.html:50
 #: .\project\templates\base.html:77 .\project\templates\base.html:107

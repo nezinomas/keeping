@@ -39,7 +39,7 @@
                     <td class="text-start">{{ object.expense_name }}</td>
                     <td>{{ object.quantity }}</td>
                     {% table_cell value=object.price|price %}
-                    <td class="text-start">{{ object.remark|linebreaksbr }}</td>
+                    <td class="text-start cell-padding">{{ object.remark|linebreaksbr }}</td>
                     <td>{% if object.attachment %}
                         {% if not 'pdf' in object.attachment.url %}
                         <button type="button" class="btn btn-outline-primary btn-xs" data-bs-toggle="modal" data-bs-target="#imgModal" data-bs-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
@@ -54,6 +54,17 @@
                 </tr>
                 {% endfor %}
             </tbody>
+            {% if sum_price %}
+            <tfoot>
+                <tr>
+                    <th class="text-start" colspan="3">{% translate "Total" %}</th>
+                    <th>{{sum_quantity}}</th>
+                    {% table_cell value=sum_price|price tag="th" %}
+                    <th class="text-start cell-padding">{{average|price|floatformat:"2g"}} <span style="font-weight: normal">({% translate "Average unit price" %})</span></th>
+                    <th colspan="4"></th>
+                </tr>
+            </tfoot>
+            {% endif %}
         </table>
     </div>
 </div>
