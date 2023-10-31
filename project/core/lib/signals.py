@@ -192,7 +192,7 @@ class Accounts(SignalBase):
             .with_columns(tmp_balance=pl.col("balance").cumsum().over(["id"]))
             .with_columns(
                 past=pl.col("tmp_balance")
-                .shift_and_fill(periods=1, fill_value=0)
+                .shift_and_fill(n=1, fill_value=0)
                 .over("id")
             )
             .with_columns(
@@ -274,13 +274,13 @@ class Savings(SignalBase):
             .with_columns(tmp=pl.col("per_year_incomes").cumsum().over("id"))
             .with_columns(
                 past_amount=pl.col("tmp")
-                .shift_and_fill(periods=1, fill_value=0)
+                .shift_and_fill(n=1, fill_value=0)
                 .over("id")
             )
             .with_columns(tmp=pl.col("per_year_fee").cumsum().over("id"))
             .with_columns(
                 past_fee=pl.col("tmp")
-                .shift_and_fill(periods=1, fill_value=0)
+                .shift_and_fill(n=1, fill_value=0)
                 .over("id")
             )
             .drop("tmp")
