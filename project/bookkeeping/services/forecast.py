@@ -4,24 +4,33 @@ from ...incomes.models import Income
 from ...savings.models import Saving
 from ...plans.models import IncomePlan
 from ...core.lib.date import monthnames
-
+from datetime import datetime
 
 @dataclass
 class ForecastServiceData:
     year: int
-    data: dict = field(default_factory=dict)
 
-    def __post_init__(self):
-        self.data = {
-            "incomes": self.get_data(Income),
-            "expenses": self.get_data(Expense),
-            "savings": self.get_data(Saving),
-            "planned_incomes": self.get_planned_incomes(),
-        }
+    def get_data(self, data):
+        arr = [0]*12
 
-    def get_data(self, model):
-        return [x["sum"] for x in model.objects.sum_by_month(self.year)]
+        for row in data:
+            month = row["date"].month
+            arr[month - 1] = row["sum"]
 
-    def get_planned_incomes(self):
-        data = IncomePlan.objects.year(self.year).values(*monthnames())
-        return list(data[0].values()) if data else []
+        return arr
+
+    def get_planned_data(self, data):
+        arr = [0]*12
+
+        for row in data:
+            for k, v in row.items():
+                if not v:
+                    continue
+
+                month = datetime.strptime(k[:3].title(), "%b").month
+                arr[month - 1] += v
+        return arr
+
+
+class ForecastService:
+    pass
