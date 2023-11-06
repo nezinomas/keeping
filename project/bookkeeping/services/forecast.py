@@ -1,10 +1,10 @@
+import polars as pl
 from dataclasses import dataclass
 from ...expenses.models import Expense
 from ...incomes.models import Income
 from ...savings.models import Saving
 from ...plans.models import IncomePlan
 from ...core.lib.date import monthnames
-import polars as pl
 
 
 @dataclass
