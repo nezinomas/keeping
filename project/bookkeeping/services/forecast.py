@@ -4,7 +4,7 @@ from ...incomes.models import Income
 from ...savings.models import Saving
 from ...plans.models import IncomePlan
 from ...core.lib.date import monthnames
-from datetime import datetime
+
 
 @dataclass
 class ForecastServiceData:
@@ -21,13 +21,14 @@ class ForecastServiceData:
 
     def get_planned_data(self, data):
         arr = [0]*12
+        month_map = {month: i+1 for i, month in enumerate(monthnames())}
 
         for row in data:
             for k, v in row.items():
                 if not v:
                     continue
 
-                month = datetime.strptime(k[:3].title(), "%b").month
+                month = month_map[k]
                 arr[month - 1] += v
         return arr
 
