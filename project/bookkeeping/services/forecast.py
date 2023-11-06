@@ -31,7 +31,7 @@ class ForecastServiceData:
 
     def get_planned_data(self, data):
         arr = [0] * 12
-        month_map = {month: i + 1 for i, month in enumerate(monthnames())}
+        month_map = {month: i for i, month in enumerate(monthnames(), 1)}
 
         for row in data:
             for k, v in row.items():
