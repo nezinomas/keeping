@@ -17,7 +17,7 @@
                     title="Prognozė"
                     @click="open = ! open"
                     hx-get="{% url 'bookkeeping:forecast' %}"
-                    hx-target="#last-row"
+                    hx-target="#last"
                     hx-swap="afterend"
                     hx-trigger="click once"
                     >
@@ -29,7 +29,7 @@
             </th>{% endfor %}
         </tr>
     </thead>
-    <tbody id="last-row">
+    <tbody id="last">
         <tr>
             <td class="no-right-border"></td>
             {% for d in data.data %}
