@@ -49,7 +49,7 @@
     <div class="col-lg-3">
         <div class="row">
             <div class="col-lg-12 col-md-6">
-                <div>{% info_table data=balance_short %}</div>
+                <div>{% include "bookkeeping/includes/balance_short.html" with data=balance_short %}</div>
             </div>
             <div class="col-lg-12 col-md-6">
                 <div id="no_incomes" hx-get="{% url 'bookkeeping:no_incomes' %}" hx-trigger="load, afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body"></div>
