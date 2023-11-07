@@ -1,5 +1,9 @@
 import polars as pl
 from dataclasses import dataclass
+
+from django.db.models import Sum
+
+from ...accounts.models import AccountBalance
 from ...expenses.models import Expense
 from ...incomes.models import Income
 from ...savings.models import Saving
@@ -20,6 +24,14 @@ class ForecastServiceData:
                 IncomePlan.objects.year(self.year).values(*monthnames())
             ),
         }
+
+    def amount_at_beginning_of_year(self) -> int:
+        return (
+            AccountBalance.objects.related()
+            .filter(year=self.year)
+            .aggregate(Sum("past"))["past__sum"]
+            or 0
+        )
 
     def _make_data(self, data):
         arr = [0] * 12
@@ -54,19 +66,19 @@ class ForecastService:
 
     def balance(self):
         df = (
-            self._data
-            .filter(pl.col("month") < self._month)
+            self._data.filter(pl.col("month") < self._month)
             .sum()
             .with_columns(
-                (pl.col("incomes") - pl.col("expenses") - pl.col("savings")).alias("balance")
+                (pl.col("incomes") - pl.col("expenses") - pl.col("savings")).alias(
+                    "balance"
+                )
             )
         )
         return df.select(pl.col("balance")).to_series().to_list()[0]
 
     def planned_incomes(self):
         df = (
-            self._data
-            .filter(pl.col("month") >= self._month)
+            self._data.filter(pl.col("month") >= self._month)
             .select(pl.col("planned_incomes"))
             .sum()
         )
@@ -75,11 +87,9 @@ class ForecastService:
     def averages(self):
         min_ = 0 if self._month < 3 else self._month - 3
         max_ = self._month - 1
-        df = (
-            self._data
-            .filter((pl.col("month") >= min_) & ((pl.col("month") <= max_)))
-            .mean()
-        )
+        df = self._data.filter(
+            (pl.col("month") >= min_) & ((pl.col("month") <= max_))
+        ).mean()
         return {"expenses": df["expenses"][0], "savings": df["savings"][0]}
 
     def forecast(self):
