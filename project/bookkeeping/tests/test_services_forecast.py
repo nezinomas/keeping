@@ -99,13 +99,6 @@ def test_planned_incomes(data):
     assert actual == expect
 
 
-def test_averages_for_fourt_months(data):
-    actual = ForecastService(month=4, data=data).averages()
-    expect = {"expenses": 2., "savings": 5.}
-
-    assert actual == expect
-
-
 def test_averages_data_with_six_months(data):
     data["expenses"][3] = 6.
     data["expenses"][4] = 16.
@@ -115,7 +108,7 @@ def test_averages_data_with_six_months(data):
     data["savings"][5] = 27.
 
     actual = ForecastService(month=7, data=data).averages()
-    expect = {"expenses": 16., "savings": 17.}
+    expect = {"expenses": 9., "savings": 11.}
 
     assert actual == expect
 

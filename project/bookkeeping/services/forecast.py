@@ -85,11 +85,11 @@ class ForecastService:
         return df[0, 0]
 
     def averages(self):
-        min_ = 0 if self._month < 3 else self._month - 3
-        max_ = self._month - 1
-        df = self._data.filter(
-            (pl.col("month") >= min_) & ((pl.col("month") <= max_))
-        ).mean()
+        df = (
+            self._data
+            .filter(pl.col("month") <= self._month - 1)
+            .mean()
+        )
         return {"expenses": df["expenses"][0], "savings": df["savings"][0]}
 
     def forecast(self):
