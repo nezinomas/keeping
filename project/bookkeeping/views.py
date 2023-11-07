@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
@@ -137,6 +139,25 @@ class Wealth(TemplateViewMixin):
                 "title": [_("Money"), _("Wealth")],
                 "data": [service.money, service.wealth],
             }
+        }
+        return super().get_context_data(**kwargs) | context
+
+
+class Forecast(TemplateViewMixin):
+    template_name = "bookkeeping/includes/forecast.html"
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        month = datetime.now().month
+
+        data = services.ForecastServiceData(year)
+        beginning = data.amount_at_beginning_of_year()
+        forecast = services.ForecastService(month, data.data()).forecast()
+        end = beginning + forecast
+
+        context = {
+            "data": [beginning, end, forecast],
+            "highlight": [False, False, True],
         }
         return super().get_context_data(**kwargs) | context
 
