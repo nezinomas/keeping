@@ -124,3 +124,21 @@ def test_forecast(data):
     expect = -27.
 
     assert actual == expect
+
+
+def test_forecast_current_month_expenses_exceeds_average(data):
+    data["expenses"][3] = 100
+
+    actual = ForecastService(month=4, data=data).forecast()
+    expect = -125
+
+    assert actual == expect
+
+
+def test_forecast_current_month_savings_exceeds_average(data):
+    data["savings"][3] = 100
+
+    actual = ForecastService(month=4, data=data).forecast()
+    expect = -122
+
+    assert actual == expect

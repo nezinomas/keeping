@@ -69,9 +69,7 @@ class ForecastService:
             self._data.filter(pl.col("month") < self._month)
             .sum()
             .with_columns(
-                (pl.col("incomes") - pl.col("expenses") - pl.col("savings")).alias(
-                    "balance"
-                )
+                (pl.col("incomes") - pl.col("expenses") - pl.col("savings")).alias("balance")
             )
         )
         return df.select(pl.col("balance")).to_series().to_list()[0]
@@ -92,14 +90,29 @@ class ForecastService:
         )
         return {"expenses": df["expenses"][0], "savings": df["savings"][0]}
 
+    def current_month(self):
+        return (
+            self._data
+            .filter(pl.col("month") == self._month)
+            .select([pl.col.expenses, pl.col.savings])
+            .to_dicts()
+            [0]
+        )
+
     def forecast(self):
-        month_left = 12 - self._month + 1
+        month_left = 12 - self._month
         averages = self.averages()
+
+        current_month = self.current_month()
+        current_month_expenses = max(current_month["expenses"], averages["expenses"])
+        current_month_savings = max(current_month["savings"], averages["savings"])
 
         return (
             0.0
             + self.balance()
             + self.planned_incomes()
+            - current_month_expenses
+            - current_month_savings
             - averages["expenses"] * month_left
             - averages["savings"] * month_left
         )
