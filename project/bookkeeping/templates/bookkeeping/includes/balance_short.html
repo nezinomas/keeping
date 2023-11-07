@@ -4,19 +4,36 @@
 {% load i18n %}
 
 {% if data.title and data.data %}
-<table class="table table-sm">
+<table class="table table-sm" x-data="{ open:false }">
     <thead>
         <tr>
+            <th class="no-right-border panel-heading text-start" :class="open ? 'active' : ''">
+                <a
+                    role="button"
+                    class="btn btn-xs no-hover"
+                    data-bs-toggle="tooltip"
+                    data-bs-html="true"
+                    data-bs-placement="right"
+                    title="Prognozė"
+                    @click="open = ! open"
+                    hx-get="{% url 'bookkeeping:forecast' %}"
+                    hx-target="#last-row"
+                    hx-swap="afterend"
+                    hx-trigger="click once"
+                    >
+                </a>
+            </th>
             {% for title in data.title %}
-            <th class="text-nowrap" style="width: calc(100%/{{ title|length }});">
+            <th class="text-nowrap no-left-border">
                {{ title }}
             </th>{% endfor %}
         </tr>
     </thead>
-    <tbody>
+    <tbody id="last-row">
         <tr>
+            <td class="no-right-border"></td>
             {% for d in data.data %}
-            {% table_cell value=d|price highlight_value=data.highlight|get_list_val:forloop.counter0 %}
+            {% table_cell value=d|price css_class="no-left-border" highlight_value=data.highlight|get_list_val:forloop.counter0 %}
             {% endfor %}
         </tr>
     </tbody>
