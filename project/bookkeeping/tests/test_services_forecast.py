@@ -9,7 +9,7 @@ def test_get_data():
         {"date": date(1000, 12, 1), "sum": 2, "title": "incomes"},
     ]
 
-    actual = ForecastServiceData(1000).get_data(data)
+    actual = ForecastServiceData(1000)._make_data(data)
     expect = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 2.]
 
     assert actual == expect
@@ -32,7 +32,7 @@ def test_get_planned_data():
             "december": 2,
         }
     ]
-    actual = ForecastServiceData(1000).get_planned_data(data)
+    actual = ForecastServiceData(1000)._make_planned_data(data)
     expect = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 2.]
 
     assert actual == expect
@@ -69,7 +69,7 @@ def test_get_planned_data_few_records():
             "december": 6,
         },
     ]
-    actual = ForecastServiceData(1000).get_planned_data(data)
+    actual = ForecastServiceData(1000)._make_planned_data(data)
     expect = [5., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 8.]
 
     assert actual == expect

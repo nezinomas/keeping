@@ -13,15 +13,15 @@ class ForecastServiceData:
 
     def data(self):
         return {
-            "incomes": self.get_data(Income.objects.sum_by_month(self.year)),
-            "expenses": self.get_data(Expense.objects.sum_by_month(self.year)),
-            "savings": self.get_data(Saving.objects.sum_by_month(self.year)),
-            "planned_incomes": self.get_planned_data(
+            "incomes": self._make_data(Income.objects.sum_by_month(self.year)),
+            "expenses": self._make_data(Expense.objects.sum_by_month(self.year)),
+            "savings": self._make_data(Saving.objects.sum_by_month(self.year)),
+            "planned_incomes": self._make_planned_data(
                 IncomePlan.objects.year(self.year).values(*monthnames())
             ),
         }
 
-    def get_data(self, data):
+    def _make_data(self, data):
         arr = [0] * 12
 
         for row in data:
@@ -30,7 +30,7 @@ class ForecastServiceData:
 
         return arr
 
-    def get_planned_data(self, data):
+    def _make_planned_data(self, data):
         arr = [0] * 12
         month_map = {month: i for i, month in enumerate(monthnames(), 1)}
 
