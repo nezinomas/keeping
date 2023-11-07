@@ -44,15 +44,15 @@ class ForecastServiceData:
 
     def _make_planned_data(self, data):
         arr = [0] * 12
-        month_map = {month: i for i, month in enumerate(monthnames(), 1)}
+        month_map = dict(zip(monthnames(), range(1, 13)))
 
         for row in data:
-            for k, v in row.items():
-                if not v:
+            for month, price in row.items():
+                if not price:
                     continue
 
-                month = month_map[k]
-                arr[month - 1] += v
+                month_index = month_map[month] - 1
+                arr[month_index] += price
         return arr
 
 
@@ -86,20 +86,17 @@ class ForecastService:
 
     def averages(self):
         return (
-            self._data
-            .filter(pl.col("month") <= self._month - 1)
+            self._data.filter(pl.col("month") <= self._month - 1)
             .select([pl.col.expenses, pl.col.savings])
             .mean()
-            .to_dicts()
-            [0]
+            .to_dicts()[0]
         )
 
     def current_month(self):
         return (
             self._data.filter(pl.col("month") == self._month)
             .select([pl.col.expenses, pl.col.savings])
-            .to_dicts()
-            [0]
+            .to_dicts()[0]
         )
 
     def forecast(self):
