@@ -98,19 +98,12 @@ class ForecastService:
     def forecast(self):
         month_left = 12 - self._month
         avg = self.averages()
-        avg_expenses = avg["expenses"]
-        avg_savings = avg["savings"]
-
         current = self.current_month()
-        current_expenses = max(current["expenses"], avg_expenses)
-        current_savings = max(current["savings"], avg_savings)
 
-        return (
-            0.0
-            + self.balance()
-            + self.planned_incomes()
-            - current_expenses
-            - current_savings
-            - avg_expenses * month_left
-            - avg_savings * month_left
-        )
+        total = self.balance() + self.planned_incomes()
+        for key in ["expenses", "savings"]:
+            avg_value = avg[key]
+            current_value = max(current[key], avg_value)
+            total -= current_value + avg_value * month_left
+
+        return total
