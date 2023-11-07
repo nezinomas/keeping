@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
@@ -27,23 +29,25 @@ from .mixins.month import MonthMixin
 class Index(TemplateViewMixin):
     template_name = "bookkeeping/index.html"
 
-    def get_context_data(self, **kwargs):
+    def _index_service_data(self):
         year = self.request.user.year
-
-        # index service
         data = services.IndexServiceData(year)
         df = MakeDataFrame(year, data.data, data.columns)
         balance = YearBalance(data=df, amount_start=data.amount_start)
+        return services.IndexService(balance)
 
-        ind = services.IndexService(balance)
-
-        # expenses service
+    def _expense_service_data(self):
+        year = self.request.user.year
         data = services.ExpenseServiceData(year)
         df = MakeDataFrame(year, data.expenses, data.expense_types)
-        exp = services.ExpenseService(BalanceBase(df.data))
+        return services.ExpenseService(BalanceBase(df.data))
+
+    def get_context_data(self, **kwargs):
+        ind = self._index_service_data()
+        exp = self._expense_service_data()
 
         context = {
-            "year": year,
+            "year": self.request.user.year,
             "averages": ind.averages_context(),
             "borrow": ind.borrow_context(),
             "lend": ind.lend_context(),
@@ -137,6 +141,25 @@ class Wealth(TemplateViewMixin):
                 "title": [_("Money"), _("Wealth")],
                 "data": [service.money, service.wealth],
             }
+        }
+        return super().get_context_data(**kwargs) | context
+
+
+class Forecast(TemplateViewMixin):
+    template_name = "bookkeeping/includes/forecast.html"
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        month = datetime.now().month
+
+        data = services.ForecastServiceData(year)
+        beginning = data.amount_at_beginning_of_year()
+        forecast = services.ForecastService(month, data.data()).forecast()
+        end = beginning + forecast
+
+        context = {
+            "data": [beginning, end, forecast],
+            "highlight": [False, False, True],
         }
         return super().get_context_data(**kwargs) | context
 

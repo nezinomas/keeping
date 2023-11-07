@@ -13,3 +13,4 @@ from .summary_savings import SummarySavingsService, SummarySavingsServiceData
 from .summary_savings_and_incomes import (ServiceSummarySavingsAndIncomes,
                                           ServiceSummarySavingsAndIncomesData)
 from .wealth import WealthService, WealthServiceData
+from .forecast import ForecastService, ForecastServiceData

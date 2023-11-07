@@ -1,0 +1,13 @@
+{% load slippers %}
+{% load get_item %}
+{% load math %}
+{% load i18n %}
+
+<tfoot x-show="open">
+    <tr>
+        <th class="no-right-border"></th>
+        {% for row in data %}
+        {% table_cell value=row|price tag="th" css_class="no-left-border" highlight_value=highlight|get_list_val:forloop.counter0 %}
+        {% endfor %}
+    </tr>
+</tfoot>
