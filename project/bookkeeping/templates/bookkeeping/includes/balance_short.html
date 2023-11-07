@@ -14,7 +14,7 @@
                     data-bs-toggle="tooltip"
                     data-bs-html="true"
                     data-bs-placement="right"
-                    title="Prognozė"
+                    title="{% translate 'Forecast' %}"
                     @click="open = ! open"
                     hx-get="{% url 'bookkeeping:forecast' %}"
                     hx-target="#last"

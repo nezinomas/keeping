@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-25 12:54+0300\n"
-"PO-Revision-Date: 2023-09-25 12:54+0300\n"
+"POT-Creation-Date: 2023-11-07 15:11+0200\n"
+"PO-Revision-Date: 2023-11-07 15:12+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -67,7 +67,7 @@ msgstr "Reikia pasirinkti bent vieną kategoriją."
 #: .\project\bookkeeping\services\month.py:96
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:14
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:9
-#: .\project\bookkeeping\views.py:271 .\project\journals\forms.py:34
+#: .\project\bookkeeping\views.py:294 .\project\journals\forms.py:34
 #: .\project\plans\templates\plans\index.html:53
 #: .\project\savings\managers.py:67
 #: .\project\savings\templates\savings\saving_form.html:5
@@ -96,7 +96,7 @@ msgstr "Pajamos ir išlaidos"
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:11
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:21
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:17
-#: .\project\bookkeeping\views.py:270
+#: .\project\bookkeeping\views.py:293
 #: .\project\incomes\templates\incomes\income_form.html:5
 #: .\project\plans\templates\plans\index.html:13
 #: .\project\templates\base.html:84 .\project\templates\base.html:147
@@ -270,6 +270,10 @@ msgstr "Delta"
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:43
 msgid "No record of account amount"
 msgstr "Nėra įrašo apie sąskaitos lėšas"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\balance_short.html:17
+msgid "Forecast"
+msgstr "Prognozė"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\detailed_table.html:12
 #: .\project\core\lib\translation.py:6
@@ -520,40 +524,40 @@ msgstr "Pajamų dalis pervedama taupymui"
 msgid "Year"
 msgstr "Metai"
 
-#: .\project\bookkeeping\views.py:89 .\project\bookkeeping\views.py:245
+#: .\project\bookkeeping\views.py:93 .\project\bookkeeping\views.py:268
 #: .\project\savings\models.py:15
 #: .\project\savings\templates\savings\index.html:19
 #: .\project\savings\templates\savings\savingtype_list.html:4
 msgid "Funds"
 msgstr "Fondai"
 
-#: .\project\bookkeeping\views.py:110
+#: .\project\bookkeeping\views.py:114
 #: .\project\pensions\templates\pensions\pensiontype_list.html:4
 #: .\project\savings\models.py:16
 msgid "Pensions"
 msgstr "Pensijos"
 
-#: .\project\bookkeeping\views.py:137
+#: .\project\bookkeeping\views.py:141
 msgid "Money"
 msgstr "Pinigai"
 
-#: .\project\bookkeeping\views.py:137
+#: .\project\bookkeeping\views.py:141
 msgid "Wealth"
 msgstr "Turtas"
 
-#: .\project\bookkeeping\views.py:246 .\project\savings\models.py:14
+#: .\project\bookkeeping\views.py:269 .\project\savings\models.py:14
 msgid "Shares"
 msgstr "Akcijos"
 
-#: .\project\bookkeeping\views.py:269
+#: .\project\bookkeeping\views.py:292
 msgid "Incomes and Savings"
 msgstr "Pajamos ir taupymas"
 
-#: .\project\bookkeeping\views.py:272
+#: .\project\bookkeeping\views.py:295
 msgid "Percents"
 msgstr "Procentai"
 
-#: .\project\bookkeeping\views.py:305 .\project\core\mixins\views.py:149
+#: .\project\bookkeeping\views.py:328 .\project\core\mixins\views.py:149
 msgid "No data found"
 msgstr "Nieko nerasta"
 
