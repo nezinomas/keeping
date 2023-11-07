@@ -30,6 +30,7 @@ urlpatterns = [
         name="pensions_worth_new",
     ),
     path("bookkeeping/wealth/", views.Wealth.as_view(), name="wealth"),
+    path("bookkeeping/forecast/", views.Forecast.as_view(), name="forecast"),
     path("bookkeeping/no_incomes/", views.NoIncomes.as_view(), name="no_incomes"),
     path("detailed/", views.Detailed.as_view(), name="detailed"),
     path("summary/", views.Summary.as_view(), name="summary"),
