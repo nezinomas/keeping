@@ -216,22 +216,21 @@ class SummarySavings(TemplateViewMixin):
         obj = services.SummarySavingsService(data)
 
         super_context = super().get_context_data(**kwargs)
-        context = dict(records=obj.records)
+        context = {"records": obj.records}
         if not obj.records or obj.records < 1:
             return super_context | context
 
-        context |= dict(
-            funds=obj.make_chart_data("funds") | dict(chart_title=_("Funds")),
-            shares=obj.make_chart_data("shares") | dict(chart_title=_("Shares")),
-            funds_shares=obj.make_chart_data("funds", "shares")
-            | dict(chart_title=f"{_('Funds')}, {_('Shares')}"),
-            pensions3=obj.make_chart_data("pensions3")
-            | dict(chart_title=f"{_('Pensions')} III"),
-            pensions2=obj.make_chart_data("pensions2")
-            | dict(chart_title=f"{_('Pensions')} II"),
-            all=obj.make_chart_data("funds", "shares", "pensions3")
-            | dict(chart_title=f"{_('Funds')}, {_('Shares')}, {_('Pensions')}"),
-        )
+        chart_titles = {
+            "funds": _("Funds"),
+            "shares": _("Shares"),
+            "funds_shares": f"{_('Funds')}, {_('Shares')}",
+            "pensions3": f"{_('Pensions')} III",
+            "pensions2": f"{_('Pensions')} II",
+            "funds_shares_pensions3": f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
+        }
+        title = lambda x: {"chart_title": x}
+        for key, val in chart_titles.items():
+            context |= {key: obj.make_chart_data(*key.split("_")) | title(val)}
 
         return super_context | context
 

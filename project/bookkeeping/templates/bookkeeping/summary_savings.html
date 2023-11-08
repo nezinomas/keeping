@@ -33,7 +33,7 @@
         <div id="funds_shares_container"></div>
     </div>
     <div class="col-md-12 col-lg-6">
-        <div id="all_container"></div>
+        <div id="funds_shares_pensions3_container"></div>
     </div>
 </div>
 
@@ -49,7 +49,7 @@
 {{pensions3|json_script:"pensions3_container_data"}}
 {{pensions2|json_script:"pensions2_container_data"}}
 {{funds_shares|json_script:"funds_shares_container_data"}}
-{{all|json_script:"all_container_data"}}
+{{funds_shares_pensions3|json_script:"funds_shares_pensions3_container_data"}}
 
 <script>
     $(document).ready( function () {
@@ -58,7 +58,7 @@
         chartSavings('pensions3_container');
         chartSavings('pensions2_container');
         chartSavings('funds_shares_container');
-        chartSavings('all_container');
+        chartSavings('funds_shares_pensions3_container');
     });
 </script>
 
