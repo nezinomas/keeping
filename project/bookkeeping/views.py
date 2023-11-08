@@ -228,9 +228,11 @@ class SummarySavings(TemplateViewMixin):
             "pensions2": f"{_('Pensions')} II",
             "funds_shares_pensions3": f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
         }
-        title = lambda x: {"chart_title": x}
+
         for key, val in chart_titles.items():
-            context |= {key: obj.make_chart_data(*key.split("_")) | title(val)}
+            context |= {
+                key: obj.make_chart_data(*key.split("_")) | {"chart_title": val}
+            }
 
         return super_context | context
 
