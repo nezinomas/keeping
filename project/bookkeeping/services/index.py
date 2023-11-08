@@ -12,6 +12,7 @@ from ...incomes.models import Income
 from ...savings.models import Saving
 from ...transactions.models import SavingClose
 from ..lib.year_balance import YearBalance
+from ..lib.make_dataframe import MakeDataFrame
 
 
 @dataclass
@@ -66,11 +67,7 @@ class IndexServiceData:
         final = []
         for row in data:
             date = row["date"]
-            debt = {
-                "date": date,
-                "sum": row["sum_debt"],
-                "title": row["title"]
-            }
+            debt = {"date": date, "sum": row["sum_debt"], "title": row["title"]}
             debt_return = {
                 "date": date,
                 "sum": row["sum_return"],
@@ -136,3 +133,10 @@ class IndexService:
             }
 
         return {}
+
+
+def load_service(year):
+    data = IndexServiceData(year)
+    df = MakeDataFrame(year, data.data, data.columns)
+    balance = YearBalance(data=df, amount_start=data.amount_start)
+    return IndexService(balance)

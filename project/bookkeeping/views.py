@@ -22,23 +22,15 @@ from .lib.day_spending import DaySpending
 from .lib.make_dataframe import MakeDataFrame
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .lib.no_incomes import NoIncomesData
-from .lib.year_balance import YearBalance
 from .mixins.month import MonthMixin
 
 
 class Index(TemplateViewMixin):
     template_name = "bookkeeping/index.html"
 
-    def _index_service_data(self):
-        year = self.request.user.year
-        data = services.IndexServiceData(year)
-        df = MakeDataFrame(year, data.data, data.columns)
-        balance = YearBalance(data=df, amount_start=data.amount_start)
-        return services.IndexService(balance)
-
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        ind = self._index_service_data()
+        ind = services.load_income_service(year)
         exp = services.load_expense_service(year)
 
         context = {
