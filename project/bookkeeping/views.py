@@ -139,13 +139,10 @@ class Forecast(TemplateViewMixin):
         year = self.request.user.year
         month = datetime.now().month
 
-        data = services.ForecastServiceData(year)
-        beginning = data.amount_at_beginning_of_year()
-        forecast = services.ForecastService(month, data.data()).forecast()
-        end = beginning + forecast
+        obj = services.load_forecast_service(year, month)
 
         context = {
-            "data": [beginning, end, forecast],
+            "data": [obj.beginning, obj.end, obj.forecast],
             "highlight": [False, False, True],
         }
         return super().get_context_data(**kwargs) | context
