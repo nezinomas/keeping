@@ -4,8 +4,6 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
-from project.bookkeeping.services.month import MonthServiceData
-
 from ..accounts.models import Account
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (
@@ -14,12 +12,8 @@ from ..core.mixins.views import (
     TemplateViewMixin,
 )
 from ..pensions.models import PensionType
-from ..plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ..savings.models import SavingType
 from . import forms, models, services
-from .lib.balance_base import BalanceBase
-from .lib.day_spending import DaySpending
-from .lib.make_dataframe import MakeDataFrame
 from .lib.no_incomes import NoIncomes as LibNoIncomes
 from .lib.no_incomes import NoIncomesData
 from .mixins.month import MonthMixin
@@ -176,24 +170,9 @@ class Month(MonthMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         self.set_month()
 
-        year = self.request.user.year
-        month = self.request.user.month
-        data = MonthServiceData(year, month)
-        df_expenses = MakeDataFrame(year, data.expenses, data.expense_types, month)
-        df_savings = MakeDataFrame(year, data.savings, None, month)
-        plans = PlanCalculateDaySum(PlanCollectData(year, month))
-        spending = DaySpending(
-            df=df_expenses,
-            necessary=data.necessary_expense_types,
-            day_input=plans.day_input,
-            expenses_free=plans.expenses_free,
-        )
-        service = services.MonthService(
-            data=data,
-            plans=plans,
-            savings=BalanceBase(df_savings.data),
-            spending=spending,
-        )
+        user = self.request.user
+        service = services.load_month_service(user.year, user.month)
+
         context = {
             "month_table": service.month_table_context(),
             "info": service.info_context(),

@@ -6,7 +6,7 @@ from .detailed import DetailedService, DetailerServiceData
 from .expand_day import ExpandDayService
 from .expenses import load_service as load_expense_service
 from .index import load_service as load_income_service
-from .month import MonthService, MonthServiceData
+from .month import load_service as load_month_service
 from .pensions import PensionServiceData, PensionsService
 from .savings import SavingServiceData, SavingsService
 from .summary_savings import SummarySavingsService, SummarySavingsServiceData

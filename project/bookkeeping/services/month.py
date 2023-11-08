@@ -7,9 +7,10 @@ from django.utils.translation import gettext as _
 from ...core.lib.date import current_day
 from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
-from ...plans.lib.calc_day_sum import PlanCalculateDaySum
+from ...plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ...savings.models import Saving
 from ..lib.balance_base import BalanceBase
+from ..lib.make_dataframe import MakeDataFrame
 from ..lib.day_spending import DaySpending
 
 
@@ -167,3 +168,23 @@ class MonthService:
 
     def _calculate_expenses(self, incomes: float, savings: float) -> float:
         return incomes - savings
+
+
+def load_service(year, month):
+    data = MonthServiceData(year, month)
+    df_expenses = MakeDataFrame(year, data.expenses, data.expense_types, month)
+    df_savings = MakeDataFrame(year, data.savings, None, month)
+    plans = PlanCalculateDaySum(PlanCollectData(year, month))
+    spending = DaySpending(
+        df=df_expenses,
+        necessary=data.necessary_expense_types,
+        day_input=plans.day_input,
+        expenses_free=plans.expenses_free,
+    )
+
+    return MonthService(
+        data=data,
+        plans=plans,
+        savings=BalanceBase(df_savings.data),
+        spending=spending,
+    )
