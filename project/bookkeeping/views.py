@@ -36,15 +36,10 @@ class Index(TemplateViewMixin):
         balance = YearBalance(data=df, amount_start=data.amount_start)
         return services.IndexService(balance)
 
-    def _expense_service_data(self):
-        year = self.request.user.year
-        data = services.ExpenseServiceData(year)
-        df = MakeDataFrame(year, data.expenses, data.expense_types)
-        return services.ExpenseService(BalanceBase(df.data))
-
     def get_context_data(self, **kwargs):
+        year = self.request.user.year
         ind = self._index_service_data()
-        exp = self._expense_service_data()
+        exp = services.load_expense_service(year)
 
         context = {
             "year": self.request.user.year,

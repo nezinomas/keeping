@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from django.utils.translation import gettext as _
 
 from ..lib.balance_base import BalanceBase
+from ..lib.make_dataframe import MakeDataFrame
 from ...expenses.models import Expense, ExpenseType
 
 
@@ -55,3 +56,9 @@ class ExpenseService:
 
     def _calc_total_avg(self, data: dict) -> float:
         return sum(values) / 12 if (values := data.values()) else 0
+
+
+def load_service(year):
+    data = ExpenseServiceData(year)
+    df = MakeDataFrame(year, data.expenses, data.expense_types)
+    return ExpenseService(BalanceBase(df.data))

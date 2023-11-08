@@ -4,7 +4,7 @@ from .chart_summary_expenses import (ChartSummaryExpensesService,
                                      ChartSummaryExpensesServiceData)
 from .detailed import DetailedService, DetailerServiceData
 from .expand_day import ExpandDayService
-from .expenses import ExpenseService, ExpenseServiceData
+from .expenses import load_service as load_expense_service
 from .index import IndexService, IndexServiceData
 from .month import MonthService, MonthServiceData
 from .pensions import PensionServiceData, PensionsService
