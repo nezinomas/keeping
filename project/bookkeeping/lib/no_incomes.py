@@ -134,3 +134,12 @@ class NoIncomes:
 
     def _div(self, incomes: float, expenses: float) -> float:
         return incomes / expenses if expenses else 0
+
+
+def load_service(year, journal):
+    data = NoIncomesData(
+        year=year,
+        unnecessary_expenses=journal.unnecessary_expenses,
+        unnecessary_savings=journal.unnecessary_savings,
+    )
+    return NoIncomes(data)

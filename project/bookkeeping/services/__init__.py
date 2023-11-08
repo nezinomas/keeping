@@ -14,3 +14,4 @@ from .summary_savings_and_incomes import (ServiceSummarySavingsAndIncomes,
                                           ServiceSummarySavingsAndIncomesData)
 from .wealth import WealthService, WealthServiceData
 from .forecast import load_service as load_forecast_service
+from ..lib.no_incomes import load_service as load_no_income_service

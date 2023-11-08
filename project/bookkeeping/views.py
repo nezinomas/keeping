@@ -14,8 +14,6 @@ from ..core.mixins.views import (
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import forms, models, services
-from .lib.no_incomes import NoIncomes as LibNoIncomes
-from .lib.no_incomes import NoIncomesData
 from .mixins.month import MonthMixin
 
 
@@ -148,12 +146,7 @@ class NoIncomes(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         journal = self.request.user.journal
-        data = NoIncomesData(
-            year=year,
-            unnecessary_expenses=journal.unnecessary_expenses,
-            unnecessary_savings=journal.unnecessary_savings,
-        )
-        service = LibNoIncomes(data)
+        service = services.load_no_income_service(year, journal)
 
         context = {
             "no_incomes": service.summary,
