@@ -45,21 +45,26 @@ def make_chart_data(*args):
         if not _invested and not _profit:
             continue
 
-        if _year not in items["categories"]:
-            items["categories"].append(_year)
-            items["invested"].append(_invested)
-            items["profit"].append(_profit)
-            items["total"].append(_total_sum)
-        else:
-            ix = items["categories"].index(_year)  # category index
-            items["invested"][ix] += _invested
-            items["profit"][ix] += _profit
-            items["total"][ix] += _total_sum
+        items = _update_items(items, _year, _invested, _profit, _total_sum)
 
     # max value
     with contextlib.suppress(ValueError):
         items["max"] = max(items.get("profit")) + max(items.get("invested"))
 
+    return items
+
+
+def _update_items(items, year, invested, profit, total_sum):
+    if year not in items["categories"]:
+        items["categories"].append(year)
+        items["invested"].append(invested)
+        items["profit"].append(profit)
+        items["total"].append(total_sum)
+    else:
+        ix = items["categories"].index(year)  # category index
+        items["invested"][ix] += invested
+        items["profit"][ix] += profit
+        items["total"][ix] += total_sum
     return items
 
 
@@ -93,20 +98,15 @@ chart_titles = [
 ]
 
 
-def process_chart(i, data):
-    chart_pointer = ("_").join(i.keys)
-    chart_data = make_chart_data(*[data[x] for x in i.keys])
-    chart_data["chart_title"] = i.title
-    records = len(chart_data["categories"])
-    return chart_pointer, chart_data, records
-
-
 def load_service(data):
     context = Context()
 
     for i in chart_titles:
-        chart_pointer, chart_data, records = process_chart(i, data)
-        if records:
+        chart_pointer = ("_").join(i.keys)
+        chart_data = make_chart_data(*[data[x] for x in i.keys])
+        chart_data["chart_title"] = i.title
+
+        if records := len(chart_data["categories"]):
             context.add_chart(chart_pointer, chart_data, records)
 
     return asdict(context)
