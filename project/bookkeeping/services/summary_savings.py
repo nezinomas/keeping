@@ -2,6 +2,7 @@ import contextlib
 import itertools
 from typing import NamedTuple
 from datetime import datetime
+from dataclasses import dataclass, field, asdict
 
 from django.utils.translation import gettext as _
 
@@ -62,6 +63,18 @@ def make_chart_data(*args):
     return items
 
 
+@dataclass
+class Context:
+    records: int = field(default=0, init=False)
+    charts: dict = field(default_factory=dict, init=False)
+    pointers: list = field(default_factory=list, init=False)
+
+    def add_chart(self, pointer, data, records):
+        self.charts[pointer] = data
+        self.records += records
+        self.pointers.append(pointer)
+
+
 class ChartKeys(NamedTuple):
     title: str
     keys: list
@@ -80,22 +93,20 @@ chart_titles = [
 ]
 
 
+def process_chart(i, data):
+    chart_pointer = ("_").join(i.keys)
+    chart_data = make_chart_data(*[data[x] for x in i.keys])
+    chart_data["chart_title"] = i.title
+    records = len(chart_data["categories"])
+    return chart_pointer, chart_data, records
+
+
 def load_service(data):
-    context = {"records": 0, "charts": {}, "pointers": []}
+    context = Context()
 
     for i in chart_titles:
-        chart_pointer = ("_").join(i.keys)
+        chart_pointer, chart_data, records = process_chart(i, data)
+        if records:
+            context.add_chart(chart_pointer, chart_data, records)
 
-        chart_data = make_chart_data(*[data[x] for x in i.keys])
-        chart_data["chart_title"] = i.title
-
-        records = len(chart_data["categories"])
-        if not records:
-            continue
-
-        # update context
-        context["charts"][chart_pointer] = chart_data
-        context["records"] += records
-        context["pointers"].append(chart_pointer)
-
-    return context
+    return asdict(context)
