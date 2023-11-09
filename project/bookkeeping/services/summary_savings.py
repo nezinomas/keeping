@@ -65,7 +65,7 @@ def make_chart(title: str, *args) -> dict:
         if not _invested and not _profit:
             continue
 
-        chart = _update_chart(chart, _year, _invested, _profit, _total_sum)
+        _update_chart(chart, _year, _invested, _profit, _total_sum)
 
     # max value
     with contextlib.suppress(ValueError):
@@ -85,8 +85,6 @@ def _update_chart(chart, year, invested, profit, total_sum):
         chart.invested[ix] += invested
         chart.profit[ix] += profit
         chart.total[ix] += total_sum
-
-    return chart
 
 
 chart_titles = [
