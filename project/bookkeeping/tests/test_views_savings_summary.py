@@ -47,6 +47,6 @@ def test_view_summery_savings_context_no_records(client_logged):
     assert "shares" not in response.context
     assert "pensions2" not in response.context
     assert "pensions3" not in response.context
-    assert "all" not in response.context
+    assert "funds_shares_pensions3" not in response.context
 
     assert response.context["records"] == 0
