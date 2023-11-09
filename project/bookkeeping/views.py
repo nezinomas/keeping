@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import NamedTuple
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -220,18 +221,22 @@ class SummarySavings(TemplateViewMixin):
         if not obj.records or obj.records < 1:
             return super_context | context
 
-        chart_titles = {
-            "funds": _("Funds"),
-            "shares": _("Shares"),
-            "funds_shares": f"{_('Funds')}, {_('Shares')}",
-            "pensions3": f"{_('Pensions')} III",
-            "pensions2": f"{_('Pensions')} II",
-            "funds_shares_pensions3": f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
-        }
+        class mp(NamedTuple):
+            title: str
+            keys: list
 
-        for key, val in chart_titles.items():
+        chart_titles = [
+            mp(_("Funds"), ["funds"]),
+            mp(_("Shares"), ["shares"]),
+            mp(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
+            mp(f"{_('Pensions')} III", ["pensions3"]),
+            mp(f"{_('Pensions')} II", ["pensions2"]),
+            mp(f"{_('Funds')}, {_('Shares')}, {_('Pensions')}", ["funds", "shares", "pensions3"])
+        ]
+
+        for i in chart_titles:
             context |= {
-                key: obj.make_chart_data(*key.split("_")) | {"chart_title": val}
+                ("_").join(i.keys): obj.make_chart_data(*i.keys) | {"chart_title": i.title}
             }
 
         return super_context | context
