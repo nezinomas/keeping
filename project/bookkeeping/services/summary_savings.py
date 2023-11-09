@@ -80,19 +80,24 @@ chart_titles = [
 ]
 
 
-def load_service():
-    data = get_data()
-
-    records = sum(len(v) for _, v in data.items())
-    context = {"records": records}
-    if not records:
-        return context
-
+def load_service(data):
+    context = {"records": 0, "charts": []}
     charts = {}
+
     for i in chart_titles:
         template_var = ("_").join(i.keys)
+
         chart_data = make_chart_data(*[data[x] for x in i.keys])
         chart_data["chart_title"] = i.title
+
+        records = len(chart_data["categories"])
+        if not records:
+            continue
+
         charts[template_var] = chart_data
+
+        # update context
+        context["records"] += records
+        context["charts"].append(template_var)
 
     return context | charts

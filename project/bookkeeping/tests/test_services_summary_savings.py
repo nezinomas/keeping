@@ -25,6 +25,26 @@ def fixture_data2():
     ]
 
 
+@pytest.fixture(name="load_data_full")
+def fixture_load_data_full(data1, data2):
+    return {
+        "funds": data1,
+        "shares": data2,
+        "pensions2": data1,
+        "pensions3": data2,
+    }
+
+
+@pytest.fixture(name="load_data_funds")
+def fixture_load_data_funds(data1):
+    return {
+        "funds": data1,
+        "shares": [],
+        "pensions2": [],
+        "pensions3": [],
+    }
+
+
 def test_chart_data_1(data1):
     actual = make_chart_data(data1)
 
@@ -107,3 +127,42 @@ def test_chart_data_db1():
     assert actual["invested"] == [1, 2]
     assert actual["profit"] == [1, 2]
     assert actual["total"] == [2, 4]
+
+
+def test_load_service_records_full(load_data_full):
+    actual = load_service(load_data_full)
+    expect = 12
+
+    assert actual["records"] == expect
+
+
+def test_load_service_records_funds(load_data_funds):
+    actual = load_service(load_data_funds)
+    expect = 6
+
+    assert actual["records"] == expect
+
+
+def test_load_service_template_variables_full(load_data_full):
+    actual = load_service(load_data_full)
+    expect = [
+        "funds",
+        "shares",
+        "funds_shares",
+        "pensions3",
+        "pensions2",
+        "funds_shares_pensions3",
+    ]
+
+    assert actual["charts"] == expect
+
+
+def test_load_service_template_variables_funds(load_data_funds):
+    actual = load_service(load_data_funds)
+    expect = [
+        "funds",
+        "funds_shares",
+        "funds_shares_pensions3",
+    ]
+
+    assert actual["charts"] == expect
