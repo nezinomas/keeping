@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
 
+{% load get_item %}
+{% load slippers %}
+
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/annotations.js"></script>
@@ -12,28 +15,28 @@
 {% if records > 1 %}
 <div class="row mt-2">
     <div class="col-md-12 col-lg-6">
-        <div id="funds_container"></div>
+        <div id="funds"></div>
     </div>
     <div class="col-md-12 col-lg-6">
-        <div id="shares_container"></div>
-    </div>
-</div>
-
-<div class="row mt-2">
-    <div class="col-md-12 col-lg-6">
-        <div id="pensions3_container"></div>
-    </div>
-    <div class="col-md-12 col-lg-6">
-        <div id="pensions2_container"></div>
+        <div id="shares"></div>
     </div>
 </div>
 
 <div class="row mt-2">
     <div class="col-md-12 col-lg-6">
-        <div id="funds_shares_container"></div>
+        <div id="pensions"></div>
     </div>
     <div class="col-md-12 col-lg-6">
-        <div id="funds_shares_pensions3_container"></div>
+        <div id="pensions2"></div>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-md-12 col-lg-6">
+        <div id="funds_shares"></div>
+    </div>
+    <div class="col-md-12 col-lg-6">
+        <div id="funds_shares_pensions"></div>
     </div>
 </div>
 
@@ -44,22 +47,18 @@
 
 <script src="/static/js/chart_summary_savings.js"></script>
 
-{{funds|json_script:"funds_container_data"}}
-{{shares|json_script:"shares_container_data"}}
-{{pensions3|json_script:"pensions3_container_data"}}
-{{pensions2|json_script:"pensions2_container_data"}}
-{{funds_shares|json_script:"funds_shares_container_data"}}
-{{funds_shares_pensions3|json_script:"funds_shares_pensions3_container_data"}}
+{% for chart in pointers %}
+    {% var data_id=chart|add:"_data" %}
+    {{charts|get_list_val:chart|json_script:data_id}}
+{% endfor %}
 
 <script>
     $(document).ready( function () {
-        chartSavings('funds_container');
-        chartSavings('shares_container');
-        chartSavings('pensions3_container');
-        chartSavings('pensions2_container');
-        chartSavings('funds_shares_container');
-        chartSavings('funds_shares_pensions3_container');
+        {{pointers|safe}}.forEach(element => {
+            chartSavings(String(element));
+        });
     });
+
 </script>
 
 {% endblock content %}

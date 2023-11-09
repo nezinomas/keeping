@@ -31,7 +31,7 @@ def fixture_load_data_full(data1, data2):
         "funds": data1,
         "shares": data2,
         "pensions2": data1,
-        "pensions3": data2,
+        "pensions": data2,
     }
 
 
@@ -41,7 +41,7 @@ def fixture_load_data_funds(data1):
         "funds": data1,
         "shares": [],
         "pensions2": [],
-        "pensions3": [],
+        "pensions": [],
     }
 
 
@@ -149,12 +149,13 @@ def test_load_service_template_variables_full(load_data_full):
         "funds",
         "shares",
         "funds_shares",
-        "pensions3",
+        "pensions",
         "pensions2",
-        "funds_shares_pensions3",
+        "funds_shares_pensions",
     ]
 
-    assert actual["charts"] == expect
+    assert actual["pointers"] == expect
+    assert list(actual["charts"].keys()) == expect
 
 
 def test_load_service_template_variables_funds(load_data_funds):
@@ -162,7 +163,8 @@ def test_load_service_template_variables_funds(load_data_funds):
     expect = [
         "funds",
         "funds_shares",
-        "funds_shares_pensions3",
+        "funds_shares_pensions",
     ]
 
-    assert actual["charts"] == expect
+    assert actual["pointers"] == expect
+    assert list(actual["charts"].keys()) == expect

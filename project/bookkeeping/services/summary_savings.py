@@ -10,12 +10,12 @@ from ...savings.models import SavingBalance
 
 
 def get_data():
-    return {
-        "funds": list(SavingBalance.objects.sum_by_type().filter(type="funds")),
-        "shares": list(SavingBalance.objects.sum_by_type().filter(type="shares")),
-        "pensions2": list(PensionBalance.objects.sum_by_year()),
-        "pensions3": list(SavingBalance.objects.sum_by_type().filter(type="pensions")),
-    }
+    types = ["funds", "shares", "pensions"]
+    data = {}
+    for t in types:
+        data[t] = list(SavingBalance.objects.sum_by_type().filter(type=t))
+    data["pensions2"] = list(PensionBalance.objects.sum_by_year())
+    return data
 
 
 def make_chart_data(*args):
@@ -71,21 +71,20 @@ chart_titles = [
     ChartKeys(_("Funds"), ["funds"]),
     ChartKeys(_("Shares"), ["shares"]),
     ChartKeys(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
-    ChartKeys(f"{_('Pensions')} III", ["pensions3"]),
+    ChartKeys(f"{_('Pensions')} III", ["pensions"]),
     ChartKeys(f"{_('Pensions')} II", ["pensions2"]),
     ChartKeys(
         f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
-        ["funds", "shares", "pensions3"],
+        ["funds", "shares", "pensions"],
     ),
 ]
 
 
 def load_service(data):
-    context = {"records": 0, "charts": []}
-    charts = {}
+    context = {"records": 0, "charts": {}, "pointers": []}
 
     for i in chart_titles:
-        template_var = ("_").join(i.keys)
+        chart_pointer = ("_").join(i.keys)
 
         chart_data = make_chart_data(*[data[x] for x in i.keys])
         chart_data["chart_title"] = i.title
@@ -94,10 +93,9 @@ def load_service(data):
         if not records:
             continue
 
-        charts[template_var] = chart_data
-
         # update context
+        context["charts"][chart_pointer] = chart_data
         context["records"] += records
-        context["charts"].append(template_var)
+        context["pointers"].append(chart_pointer)
 
-    return context | charts
+    return context
