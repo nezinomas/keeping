@@ -9,7 +9,7 @@ from .index import load_service as load_income_service
 from .month import load_service as load_month_service
 from .pensions import PensionServiceData, PensionsService
 from .savings import SavingServiceData, SavingsService
-from .summary_savings import SummarySavingsService, SummarySavingsServiceData
+from .summary_savings import load_service as load_summary_savings_service
 from .summary_savings_and_incomes import (ServiceSummarySavingsAndIncomes,
                                           ServiceSummarySavingsAndIncomesData)
 from .wealth import WealthService, WealthServiceData

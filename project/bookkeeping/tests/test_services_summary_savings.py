@@ -2,7 +2,7 @@ import pytest
 import time_machine
 
 from ...savings.factories import SavingBalance, SavingBalanceFactory
-from ..services.summary_savings import SummarySavingsService
+from ..services.summary_savings import make_chart_data
 
 pytestmark = pytest.mark.django_db
 
@@ -26,7 +26,7 @@ def _b():
 
 
 def test_chart_data_1(_a):
-    actual = SummarySavingsService.chart_data(_a)
+    actual = make_chart_data(_a)
 
     assert actual["categories"] == [2000, 2001]
     assert actual["invested"] == [1, 2]
@@ -36,7 +36,7 @@ def test_chart_data_1(_a):
 
 @time_machine.travel("2000-1-1")
 def test_chart_data_2(_a):
-    actual = SummarySavingsService.chart_data(_a)
+    actual = make_chart_data(_a)
 
     assert actual["categories"] == [2000]
     assert actual["invested"] == [1]
@@ -45,7 +45,7 @@ def test_chart_data_2(_a):
 
 
 def test_chart_data_3(_a, _b):
-    actual = SummarySavingsService.chart_data(_a, _b)
+    actual = make_chart_data(_a, _b)
 
     assert actual["categories"] == [2000, 2001]
     assert actual["invested"] == [5, 7]
@@ -54,7 +54,7 @@ def test_chart_data_3(_a, _b):
 
 
 def test_chart_data_5(_a):
-    actual = SummarySavingsService.chart_data(_a, [])
+    actual = make_chart_data(_a, [])
 
     assert actual["categories"] == [2000, 2001]
     assert actual["invested"] == [1, 2]
@@ -63,7 +63,7 @@ def test_chart_data_5(_a):
 
 
 def test_chart_data_6():
-    actual = SummarySavingsService.chart_data([])
+    actual = make_chart_data([])
 
     assert not actual["categories"]
     assert not actual["invested"]
@@ -73,7 +73,7 @@ def test_chart_data_6():
 
 @time_machine.travel("2000-1-1")
 def test_chart_data_4(_a, _b):
-    actual = SummarySavingsService.chart_data(_a, _b)
+    actual = make_chart_data(_a, _b)
 
     assert actual["categories"] == [2000]
     assert actual["invested"] == [5]
@@ -82,13 +82,13 @@ def test_chart_data_4(_a, _b):
 
 
 def test_chart_data_max_value(_a, _b):
-    actual = SummarySavingsService.chart_data(_a, _b)
+    actual = make_chart_data(_a, _b)
 
     assert actual["max"] == 14
 
 
 def test_chart_data_max_value_empty():
-    actual = SummarySavingsService.chart_data([])
+    actual = make_chart_data([])
 
     assert actual["max"] == 0
 
@@ -101,7 +101,7 @@ def test_chart_data_db1():
 
     qs = SavingBalance.objects.sum_by_type()
 
-    actual = SummarySavingsService.chart_data(list(qs.filter(type="funds")))
+    actual = make_chart_data(list(qs.filter(type="funds")))
 
     assert actual["categories"] == [2000, 2001]
     assert actual["invested"] == [1, 2]

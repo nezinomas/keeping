@@ -213,33 +213,8 @@ class SummarySavings(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings.html"
 
     def get_context_data(self, **kwargs):
-        data = services.SummarySavingsServiceData()
-        obj = services.SummarySavingsService(data)
-
-        super_context = super().get_context_data(**kwargs)
-        context = {"records": obj.records}
-        if not obj.records or obj.records < 1:
-            return super_context | context
-
-        class mp(NamedTuple):
-            title: str
-            keys: list
-
-        chart_titles = [
-            mp(_("Funds"), ["funds"]),
-            mp(_("Shares"), ["shares"]),
-            mp(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
-            mp(f"{_('Pensions')} III", ["pensions3"]),
-            mp(f"{_('Pensions')} II", ["pensions2"]),
-            mp(f"{_('Funds')}, {_('Shares')}, {_('Pensions')}", ["funds", "shares", "pensions3"])
-        ]
-
-        for i in chart_titles:
-            context |= {
-                ("_").join(i.keys): obj.make_chart_data(*i.keys) | {"chart_title": i.title}
-            }
-
-        return super_context | context
+        context = services.load_summary_savings_service()
+        return super().get_context_data(**kwargs) | context
 
 
 class SummarySavingsAndIncomes(TemplateViewMixin):

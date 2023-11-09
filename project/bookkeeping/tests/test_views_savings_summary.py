@@ -31,7 +31,7 @@ def test_view_summery_savings_context(client_logged):
     assert "shares" in response.context
     assert "pensions2" in response.context
     assert "pensions3" in response.context
-    assert "all" in response.context
+    assert "funds_shares_pensions3" in response.context
 
     assert response.context["funds"]["categories"] == [1999, 2000]
     assert response.context["funds"]["invested"] == [106, 106]
