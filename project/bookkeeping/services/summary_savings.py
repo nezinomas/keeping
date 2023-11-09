@@ -22,6 +22,17 @@ class Chart:
     total: list = field(init=False, default_factory=list)
     max_value: int = field(init=False, default=0)
 
+    def add(self, year, invested, profit, total_sum):
+        self.categories.append(year)
+        self.invested.append(invested)
+        self.profit.append(profit)
+        self.total.append(total_sum)
+
+    def update(self, ix, invested, profit, total_sum):
+        self.invested[ix] += invested
+        self.profit[ix] += profit
+        self.total[ix] += total_sum
+
 
 class ChartKeys(NamedTuple):
     title: str
@@ -65,26 +76,18 @@ def make_chart(title: str, *args) -> dict:
         if not _invested and not _profit:
             continue
 
-        _update_chart(chart, _year, _invested, _profit, _total_sum)
+        if _year in chart.categories:
+            ix = chart.categories.index(_year)
+            chart.update(ix, _invested, _profit, _total_sum)
+            continue
+
+        chart.add(_year, _invested, _profit, _total_sum)
 
     # max value
     with contextlib.suppress(ValueError):
         chart.max_value = max(chart.profit) + max(chart.invested)
 
     return asdict(chart)
-
-
-def _update_chart(chart, year, invested, profit, total_sum):
-    if year not in chart.categories:
-        chart.categories.append(year)
-        chart.invested.append(invested)
-        chart.profit.append(profit)
-        chart.total.append(total_sum)
-    else:
-        ix = chart.categories.index(year)  # category index
-        chart.invested[ix] += invested
-        chart.profit[ix] += profit
-        chart.total[ix] += total_sum
 
 
 chart_titles = [
