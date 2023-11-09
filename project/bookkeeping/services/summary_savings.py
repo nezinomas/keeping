@@ -79,9 +79,8 @@ def make_chart(title: str, *args) -> dict:
         if _year in chart.categories:
             ix = chart.categories.index(_year)
             chart.update(ix, _invested, _profit, _total_sum)
-            continue
-
-        chart.add(_year, _invested, _profit, _total_sum)
+        else:
+            chart.add(_year, _invested, _profit, _total_sum)
 
     # max value
     with contextlib.suppress(ValueError):
