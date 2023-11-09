@@ -2,13 +2,13 @@ import pytest
 import time_machine
 
 from ...savings.factories import SavingBalance, SavingBalanceFactory
-from ..services.summary_savings import make_chart_data
+from ..services.summary_savings import make_chart_data, load_service
 
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture
-def _a():
+@pytest.fixture(name="data1")
+def fixture_data1():
     return [
         {"year": 1999, "invested": 0, "profit": 0},
         {"year": 2000, "invested": 1, "profit": 1},
@@ -16,8 +16,8 @@ def _a():
     ]
 
 
-@pytest.fixture
-def _b():
+@pytest.fixture(name="data2")
+def fixture_data2():
     return [
         {"year": 1999, "invested": 0, "profit": 0},
         {"year": 2000, "invested": 4, "profit": 4},
@@ -25,8 +25,8 @@ def _b():
     ]
 
 
-def test_chart_data_1(_a):
-    actual = make_chart_data(_a)
+def test_chart_data_1(data1):
+    actual = make_chart_data(data1)
 
     assert actual["categories"] == [2000, 2001]
     assert actual["invested"] == [1, 2]
@@ -35,8 +35,8 @@ def test_chart_data_1(_a):
 
 
 @time_machine.travel("2000-1-1")
-def test_chart_data_2(_a):
-    actual = make_chart_data(_a)
+def test_chart_data_2(data1):
+    actual = make_chart_data(data1)
 
     assert actual["categories"] == [2000]
     assert actual["invested"] == [1]
@@ -44,8 +44,8 @@ def test_chart_data_2(_a):
     assert actual["total"] == [2]
 
 
-def test_chart_data_3(_a, _b):
-    actual = make_chart_data(_a, _b)
+def test_chart_data_3(data1, data2):
+    actual = make_chart_data(data1, data2)
 
     assert actual["categories"] == [2000, 2001]
     assert actual["invested"] == [5, 7]
@@ -53,8 +53,8 @@ def test_chart_data_3(_a, _b):
     assert actual["total"] == [10, 14]
 
 
-def test_chart_data_5(_a):
-    actual = make_chart_data(_a, [])
+def test_chart_data_5(data1):
+    actual = make_chart_data(data1, [])
 
     assert actual["categories"] == [2000, 2001]
     assert actual["invested"] == [1, 2]
@@ -72,8 +72,8 @@ def test_chart_data_6():
 
 
 @time_machine.travel("2000-1-1")
-def test_chart_data_4(_a, _b):
-    actual = make_chart_data(_a, _b)
+def test_chart_data_4(data1, data2):
+    actual = make_chart_data(data1, data2)
 
     assert actual["categories"] == [2000]
     assert actual["invested"] == [5]
@@ -81,8 +81,8 @@ def test_chart_data_4(_a, _b):
     assert actual["total"] == [10]
 
 
-def test_chart_data_max_value(_a, _b):
-    actual = make_chart_data(_a, _b)
+def test_chart_data_max_value(data1, data2):
+    actual = make_chart_data(data1, data2)
 
     assert actual["max"] == 14
 
