@@ -31,7 +31,11 @@ class Chart:
         if df.is_empty():
             return
 
-        df = (
+        df = self._process_dataframe(df)
+        self._update_attributes(df)
+
+    def _process_dataframe(self, df):
+        return (
             df
             .lazy()
             .group_by(pl.col.year)
@@ -47,6 +51,8 @@ class Chart:
             .sort(pl.col.year)
         ).collect()
 
+
+    def _update_attributes(self, df):
         self.categories = df["year"].to_list()
         self.invested = df["invested"].to_list()
         self.profit = df["profit"].to_list()
