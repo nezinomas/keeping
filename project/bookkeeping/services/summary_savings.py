@@ -22,20 +22,26 @@ class Chart:
     total: list = field(init=False, default_factory=list)
     max_value: int = field(init=False, default=0)
 
-    def add_data(self, year, invested, profit, total_sum):
+    def add(self, year, invested, profit, total_sum):
+        ix = self.categories.index(year) if year in self.categories else None
+
+        if ix is None:
+            self._add(year, invested, profit, total_sum)
+        else:
+            self._update(ix, invested, profit, total_sum)
+
+        self._calculate_max()
+
+    def _add(self, year, invested, profit, total_sum):
         self.categories.append(year)
         self.invested.append(invested)
         self.profit.append(profit)
         self.total.append(total_sum)
 
-        self._calculate_max()
-
-    def update_data(self, ix, invested, profit, total_sum):
+    def _update(self, ix, invested, profit, total_sum):
         self.invested[ix] += invested
         self.profit[ix] += profit
         self.total[ix] += total_sum
-
-        self._calculate_max()
 
     def _calculate_max(self):
         with contextlib.suppress(ValueError):
@@ -59,22 +65,7 @@ class Context:
         self.pointers.append(pointer)
 
 
-def get_data(saving_type: list = None):
-    if saving_type is None:
-        saving_type = ["funds", "shares", "pensions"]
-
-    data = {
-        t: list(SavingBalance.objects.sum_by_type().filter(type=t)) for t in saving_type
-    }
-    data["pensions2"] = list(PensionBalance.objects.sum_by_year())
-
-    return data
-
-
-def make_chart(title: str, *args) -> dict:
-    chart = Chart(title)
-    data = itertools.chain.from_iterable(args)
-
+def process_data(chart: Chart, data):
     for row in data:
         _year = row.get("year")
         _invested = row.get("invested")
@@ -87,16 +78,29 @@ def make_chart(title: str, *args) -> dict:
         if not _invested and not _profit:
             continue
 
-        ix = chart.categories.index(_year) if _year in chart.categories else None
-        if ix is None:
-            chart.add_data(_year, _invested, _profit, _total_sum)
-        else:
-            chart.update_data(ix, _invested, _profit, _total_sum)
+        chart.add(_year, _invested, _profit, _total_sum)
 
+
+def make_chart(title: str, *args) -> dict:
+    chart = Chart(title)
+    data = itertools.chain.from_iterable(args)
+    process_data(chart, data)
     return asdict(chart)
 
 
-chart_titles = [
+def get_data(saving_type: list = None):
+    if saving_type is None:
+        saving_type = ["funds", "shares", "pensions"]
+
+    data = {
+        t: list(SavingBalance.objects.sum_by_type().filter(type=t)) for t in saving_type
+    }
+    data["pensions2"] = list(PensionBalance.objects.sum_by_year())
+
+    return data
+
+
+CHARTS_MAP = [
     ChartKeys(_("Funds"), ["funds"]),
     ChartKeys(_("Shares"), ["shares"]),
     ChartKeys(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
@@ -112,8 +116,9 @@ chart_titles = [
 def load_service(data):
     context = Context()
 
-    for i in chart_titles:
-        chart = make_chart(i.title, *[data[x] for x in i.keys])
+    for i in CHARTS_MAP:
+        data_args = [data[x] for x in i.keys]
+        chart = make_chart(i.title, *data_args)
 
         if records := len(chart["categories"]):
             chart_pointer = ("_").join(i.keys)
