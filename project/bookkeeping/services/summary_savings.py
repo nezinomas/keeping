@@ -14,13 +14,16 @@ from ...savings.models import SavingBalance
 @dataclass
 class Chart:
     title: str
+
     text_total: str = field(init=False, default=_("Total"))
     text_profit: str = field(init=False, default=_("Profit"))
     text_invested: str = field(init=False, default=_("Invested"))
+
     categories: list = field(init=False, default_factory=list)
     invested: list = field(init=False, default_factory=list)
     profit: list = field(init=False, default_factory=list)
     total: list = field(init=False, default_factory=list)
+
     max_value: int = field(init=False, default=0)
 
     def process_data(self, data):
