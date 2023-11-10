@@ -1,4 +1,3 @@
-import contextlib
 import itertools
 from typing import NamedTuple
 from datetime import datetime
@@ -8,6 +7,7 @@ from django.utils.translation import gettext as _
 
 from ...pensions.models import PensionBalance
 from ...savings.models import SavingBalance
+import polars as pl
 
 
 @dataclass
@@ -23,40 +23,29 @@ class Chart:
     max_value: int = field(init=False, default=0)
 
     def process_data(self, data):
-        for row in data:
-            year = row.get("year")
-            invested = row.get("invested")
-            profit = row.get("profit")
-            total_sum = invested + profit
+        df = pl.DataFrame(data)
+        if df.is_empty():
+            return
 
-            if year > datetime.now().year:
-                continue
+        df = (
+            df.lazy()
+            .group_by(pl.col.year)
+            .agg(
+                [pl.col.invested.sum(), pl.col.profit.sum()]
+            )
+            .with_columns(
+                (pl.col.invested + pl.col.profit).alias("total")
+            )
+            .filter(pl.col.year <= datetime.now().year)
+            .filter((pl.col.invested != 0.0) & (pl.col.profit != 0.0))
+            .sort(pl.col.year)
+        ).collect()
 
-            if not invested and not profit:
-                continue
-
-            ix = self.categories.index(year) if year in self.categories else None
-            if ix is None:
-                self._add(year, invested, profit, total_sum)
-            else:
-                self._update(ix, invested, profit, total_sum)
-
-        self._calculate_max()
-
-    def _add(self, year, invested, profit, total_sum):
-        self.categories.append(year)
-        self.invested.append(invested)
-        self.profit.append(profit)
-        self.total.append(total_sum)
-
-    def _update(self, ix, invested, profit, total_sum):
-        self.invested[ix] += invested
-        self.profit[ix] += profit
-        self.total[ix] += total_sum
-
-    def _calculate_max(self):
-        with contextlib.suppress(ValueError):
-            self.max_value = max(self.profit) + max(self.invested)
+        self.categories = df["year"].to_list()
+        self.invested = df["invested"].to_list()
+        self.profit = df["profit"].to_list()
+        self.total = df["total"].to_list()
+        self.max_value = df["total"].max()
 
 
 @dataclass

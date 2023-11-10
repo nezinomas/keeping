@@ -10,18 +10,18 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(name="data1")
 def fixture_data1():
     return [
-        {"year": 1999, "invested": 0, "profit": 0},
-        {"year": 2000, "invested": 1, "profit": 1},
-        {"year": 2001, "invested": 2, "profit": 2},
+        {"year": 1999, "invested": 0.0, "profit": 0.0},
+        {"year": 2000, "invested": 1.0, "profit": 1.0},
+        {"year": 2001, "invested": 2.0, "profit": 2.0},
     ]
 
 
 @pytest.fixture(name="data2")
 def fixture_data2():
     return [
-        {"year": 1999, "invested": 0, "profit": 0},
-        {"year": 2000, "invested": 4, "profit": 4},
-        {"year": 2001, "invested": 5, "profit": 5},
+        {"year": 1999, "invested": 0.0, "profit": 0.0},
+        {"year": 2000, "invested": 4.0, "profit": 4.0},
+        {"year": 2001, "invested": 5.0, "profit": 5.0},
     ]
 
 
