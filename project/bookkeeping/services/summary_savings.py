@@ -32,7 +32,8 @@ class Chart:
             return
 
         df = (
-            df.lazy()
+            df
+            .lazy()
             .group_by(pl.col.year)
             .agg(
                 [pl.col.invested.sum(), pl.col.profit.sum()]
