@@ -51,12 +51,15 @@ class Context:
         self.pointers.append(pointer)
 
 
-def get_data():
-    types = ["funds", "shares", "pensions"]
-    data = {}
-    for t in types:
-        data[t] = list(SavingBalance.objects.sum_by_type().filter(type=t))
+def get_data(saving_type: list = None):
+    if saving_type is None:
+        saving_type = ["funds", "shares", "pensions"]
+
+    data = {
+        t: list(SavingBalance.objects.sum_by_type().filter(type=t)) for t in saving_type
+    }
     data["pensions2"] = list(PensionBalance.objects.sum_by_year())
+
     return data
 
 
