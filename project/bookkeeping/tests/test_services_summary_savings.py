@@ -1,6 +1,9 @@
 import pytest
 import time_machine
 
+from hypothesis import given
+from hypothesis import strategies as st
+
 from ...savings.factories import SavingBalance, SavingBalanceFactory
 from ..services.summary_savings import make_chart, load_service
 
@@ -43,6 +46,19 @@ def fixture_load_data_funds(data1):
         "pensions2": [],
         "pensions": [],
     }
+
+float_stragegy = st.floats(allow_nan=False, allow_infinity=False, width=16)
+data_stragety = st.lists(
+    st.fixed_dictionaries({
+        'year': st.integers(min_value=1974, max_value=2050),
+        'invested': float_stragegy,
+        'profit': float_stragegy
+    })
+)
+
+@given(data_stragety)
+def test_chart_data_with_hypothesis(data):
+    make_chart("x", data)
 
 
 def test_chart_data_1(data1):
@@ -179,3 +195,15 @@ def test_load_service_template_variables_funds(load_data_funds):
 
     assert actual["pointers"] == expect
     assert list(actual["charts"].keys()) == expect
+
+
+@given(
+        st.fixed_dictionaries({
+            "funds": data_stragety,
+            "shares": data_stragety,
+            "pensions": data_stragety,
+            "pensions2": data_stragety
+        })
+)
+def test_load_service_with_hypothesis(data):
+    load_service(data)
