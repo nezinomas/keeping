@@ -80,7 +80,7 @@ function chartSavings(container) {
         },
         legend: {
             layout: 'horizontal',
-            align: 'right',
+            align: 'center',
             verticalAlign: 'top',
             floating: true,
             borderWidth: 0,
