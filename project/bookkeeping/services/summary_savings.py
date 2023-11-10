@@ -109,15 +109,18 @@ def make_chart(title: str, *args) -> dict:
     return asdict(chart)
 
 
+def update_context(context, chart, chart_pointer):
+    if records := len(chart["categories"]):
+        context.add_chart(chart_pointer, chart, records)
+
+
 def load_service(data):
     context = Context()
 
     for i in CHART_KEYS_MAP:
         data_args = [data[x] for x in i.keys]
         chart = make_chart(i.title, *data_args)
-
-        if records := len(chart["categories"]):
-            chart_pointer = ("_").join(i.keys)
-            context.add_chart(chart_pointer, chart, records)
+        chart_pointer = ("_").join(i.keys)
+        update_context(context, chart, chart_pointer)
 
     return asdict(context)
