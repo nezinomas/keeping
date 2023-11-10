@@ -1,10 +1,9 @@
 from datetime import datetime
+from typing import NamedTuple
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
-
-from project.bookkeeping.services.month import MonthServiceData
 
 from ..accounts.models import Account
 from ..core.mixins.formset import FormsetMixin
@@ -14,14 +13,8 @@ from ..core.mixins.views import (
     TemplateViewMixin,
 )
 from ..pensions.models import PensionType
-from ..plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ..savings.models import SavingType
 from . import forms, models, services
-from .lib.balance_base import BalanceBase
-from .lib.day_spending import DaySpending
-from .lib.make_dataframe import MakeDataFrame
-from .lib.no_incomes import NoIncomes as LibNoIncomes
-from .lib.no_incomes import NoIncomesData
 from .mixins.month import MonthMixin
 
 
@@ -139,13 +132,10 @@ class Forecast(TemplateViewMixin):
         year = self.request.user.year
         month = datetime.now().month
 
-        data = services.ForecastServiceData(year)
-        beginning = data.amount_at_beginning_of_year()
-        forecast = services.ForecastService(month, data.data()).forecast()
-        end = beginning + forecast
+        obj = services.load_forecast_service(year, month)
 
         context = {
-            "data": [beginning, end, forecast],
+            "data": [obj.beginning, obj.end, obj.forecast],
             "highlight": [False, False, True],
         }
         return super().get_context_data(**kwargs) | context
@@ -157,12 +147,7 @@ class NoIncomes(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         journal = self.request.user.journal
-        data = NoIncomesData(
-            year=year,
-            unnecessary_expenses=journal.unnecessary_expenses,
-            unnecessary_savings=journal.unnecessary_savings,
-        )
-        service = LibNoIncomes(data)
+        service = services.load_no_income_service(year, journal)
 
         context = {
             "no_incomes": service.summary,
@@ -179,24 +164,9 @@ class Month(MonthMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         self.set_month()
 
-        year = self.request.user.year
-        month = self.request.user.month
-        data = MonthServiceData(year, month)
-        df_expenses = MakeDataFrame(year, data.expenses, data.expense_types, month)
-        df_savings = MakeDataFrame(year, data.savings, None, month)
-        plans = PlanCalculateDaySum(PlanCollectData(year, month))
-        spending = DaySpending(
-            df=df_expenses,
-            necessary=data.necessary_expense_types,
-            day_input=plans.day_input,
-            expenses_free=plans.expenses_free,
-        )
-        service = services.MonthService(
-            data=data,
-            plans=plans,
-            savings=BalanceBase(df_savings.data),
-            spending=spending,
-        )
+        user = self.request.user
+        service = services.load_month_service(user.year, user.month)
+
         context = {
             "month_table": service.month_table_context(),
             "info": service.info_context(),
@@ -243,28 +213,9 @@ class SummarySavings(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings.html"
 
     def get_context_data(self, **kwargs):
-        data = services.SummarySavingsServiceData()
-        obj = services.SummarySavingsService(data)
-
-        super_context = super().get_context_data(**kwargs)
-        context = dict(records=obj.records)
-        if not obj.records or obj.records < 1:
-            return super_context | context
-
-        context |= dict(
-            funds=obj.make_chart_data("funds") | dict(chart_title=_("Funds")),
-            shares=obj.make_chart_data("shares") | dict(chart_title=_("Shares")),
-            funds_shares=obj.make_chart_data("funds", "shares")
-            | dict(chart_title=f"{_('Funds')}, {_('Shares')}"),
-            pensions3=obj.make_chart_data("pensions3")
-            | dict(chart_title=f"{_('Pensions')} III"),
-            pensions2=obj.make_chart_data("pensions2")
-            | dict(chart_title=f"{_('Pensions')} II"),
-            all=obj.make_chart_data("funds", "shares", "pensions3")
-            | dict(chart_title=f"{_('Funds')}, {_('Shares')}, {_('Pensions')}"),
-        )
-
-        return super_context | context
+        data = services.get_summary_savings_data()
+        context = services.load_summary_savings_service(data)
+        return super().get_context_data(**kwargs) | context
 
 
 class SummarySavingsAndIncomes(TemplateViewMixin):

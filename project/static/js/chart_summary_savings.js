@@ -15,7 +15,7 @@ function chartSavings(container) {
     const chartData = JSON.parse(document.getElementById(`${container}_data`).textContent);
 
     // convert data
-    chartData.max /= 100;
+    chartData.max_value /= 100;
     for (i = 0; i < chartData.categories.length; i++) {
         chartData.invested[i] /= 100;
         chartData.profit[i] /= 100;
@@ -58,7 +58,7 @@ function chartSavings(container) {
             },
         },
         yAxis: {
-            max: chartData.max,
+            max: chartData.max_value * 1.1,
             title: {
                 text: ''
             },
@@ -80,7 +80,7 @@ function chartSavings(container) {
         },
         legend: {
             layout: 'horizontal',
-            align: 'right',
+            align: 'center',
             verticalAlign: 'top',
             floating: true,
             borderWidth: 0,
