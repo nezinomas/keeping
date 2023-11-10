@@ -58,7 +58,7 @@ function chartSavings(container) {
             },
         },
         yAxis: {
-            max: chartData.max_value,
+            max: chartData.max_value * 1.1,
             title: {
                 text: ''
             },
