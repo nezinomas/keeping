@@ -76,7 +76,7 @@ class ChartKeys(NamedTuple):
     keys: list
 
 
-CHARTS_MAP = [
+CHART_KEYS_MAP = [
     ChartKeys(_("Funds"), ["funds"]),
     ChartKeys(_("Shares"), ["shares"]),
     ChartKeys(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
@@ -111,7 +111,7 @@ def make_chart(title: str, *args) -> dict:
 def load_service(data):
     context = Context()
 
-    for i in CHARTS_MAP:
+    for i in CHART_KEYS_MAP:
         data_args = [data[x] for x in i.keys]
         chart = make_chart(i.title, *data_args)
 
