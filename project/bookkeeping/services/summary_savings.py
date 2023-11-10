@@ -22,13 +22,24 @@ class Chart:
     total: list = field(init=False, default_factory=list)
     max_value: int = field(init=False, default=0)
 
-    def add(self, year, invested, profit, total_sum):
-        ix = self.categories.index(year) if year in self.categories else None
+    def process_data(self, data):
+        for row in data:
+            year = row.get("year")
+            invested = row.get("invested")
+            profit = row.get("profit")
+            total_sum = invested + profit
 
-        if ix is None:
-            self._add(year, invested, profit, total_sum)
-        else:
-            self._update(ix, invested, profit, total_sum)
+            if year > datetime.now().year:
+                continue
+
+            if not invested and not profit:
+                continue
+
+            ix = self.categories.index(year) if year in self.categories else None
+            if ix is None:
+                self._add(year, invested, profit, total_sum)
+            else:
+                self._update(ix, invested, profit, total_sum)
 
         self._calculate_max()
 
@@ -48,11 +59,6 @@ class Chart:
             self.max_value = max(self.profit) + max(self.invested)
 
 
-class ChartKeys(NamedTuple):
-    title: str
-    keys: list
-
-
 @dataclass
 class Context:
     records: int = field(default=0, init=False)
@@ -65,27 +71,22 @@ class Context:
         self.pointers.append(pointer)
 
 
-def process_data(chart: Chart, data):
-    for row in data:
-        _year = row.get("year")
-        _invested = row.get("invested")
-        _profit = row.get("profit")
-        _total_sum = _invested + _profit
-
-        if _year > datetime.now().year:
-            continue
-
-        if not _invested and not _profit:
-            continue
-
-        chart.add(_year, _invested, _profit, _total_sum)
+class ChartKeys(NamedTuple):
+    title: str
+    keys: list
 
 
-def make_chart(title: str, *args) -> dict:
-    chart = Chart(title)
-    data = itertools.chain.from_iterable(args)
-    process_data(chart, data)
-    return asdict(chart)
+CHARTS_MAP = [
+    ChartKeys(_("Funds"), ["funds"]),
+    ChartKeys(_("Shares"), ["shares"]),
+    ChartKeys(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
+    ChartKeys(f"{_('Pensions')} III", ["pensions"]),
+    ChartKeys(f"{_('Pensions')} II", ["pensions2"]),
+    ChartKeys(
+        f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
+        ["funds", "shares", "pensions"],
+    ),
+]
 
 
 def get_data(saving_type: list = None):
@@ -100,17 +101,11 @@ def get_data(saving_type: list = None):
     return data
 
 
-CHARTS_MAP = [
-    ChartKeys(_("Funds"), ["funds"]),
-    ChartKeys(_("Shares"), ["shares"]),
-    ChartKeys(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
-    ChartKeys(f"{_('Pensions')} III", ["pensions"]),
-    ChartKeys(f"{_('Pensions')} II", ["pensions2"]),
-    ChartKeys(
-        f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
-        ["funds", "shares", "pensions"],
-    ),
-]
+def make_chart(title: str, *args) -> dict:
+    chart = Chart(title)
+    data = itertools.chain.from_iterable(args)
+    chart.process_data(data)
+    return asdict(chart)
 
 
 def load_service(data):
