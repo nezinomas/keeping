@@ -22,16 +22,24 @@ class Chart:
     total: list = field(init=False, default_factory=list)
     max_value: int = field(init=False, default=0)
 
-    def add(self, year, invested, profit, total_sum):
+    def add_data(self, year, invested, profit, total_sum):
         self.categories.append(year)
         self.invested.append(invested)
         self.profit.append(profit)
         self.total.append(total_sum)
 
-    def update(self, ix, invested, profit, total_sum):
+        self._calculate_max()
+
+    def update_data(self, ix, invested, profit, total_sum):
         self.invested[ix] += invested
         self.profit[ix] += profit
         self.total[ix] += total_sum
+
+        self._calculate_max()
+
+    def _calculate_max(self):
+        with contextlib.suppress(ValueError):
+            self.max_value = max(self.profit) + max(self.invested)
 
 
 class ChartKeys(NamedTuple):
@@ -79,15 +87,11 @@ def make_chart(title: str, *args) -> dict:
         if not _invested and not _profit:
             continue
 
-        if _year in chart.categories:
-            ix = chart.categories.index(_year)
-            chart.update(ix, _invested, _profit, _total_sum)
+        ix = chart.categories.index(_year) if _year in chart.categories else None
+        if ix is None:
+            chart.add_data(_year, _invested, _profit, _total_sum)
         else:
-            chart.add(_year, _invested, _profit, _total_sum)
-
-    # max value
-    with contextlib.suppress(ValueError):
-        chart.max_value = max(chart.profit) + max(chart.invested)
+            chart.update_data(ix, _invested, _profit, _total_sum)
 
     return asdict(chart)
 
@@ -109,10 +113,10 @@ def load_service(data):
     context = Context()
 
     for i in chart_titles:
-        chart_pointer = ("_").join(i.keys)
         chart = make_chart(i.title, *[data[x] for x in i.keys])
 
         if records := len(chart["categories"]):
+            chart_pointer = ("_").join(i.keys)
             context.add_chart(chart_pointer, chart, records)
 
     return asdict(context)
