@@ -35,7 +35,8 @@ class Chart:
                 [pl.col.invested.sum(), pl.col.profit.sum()]
             )
             .with_columns(
-                (pl.col.invested + pl.col.profit).alias("total")
+                (pl.col.invested + pl.col.profit).alias("total"),
+                (pl.col.invested.abs() + pl.col.profit.abs()).alias("max_value"),
             )
             .filter(pl.col.year <= datetime.now().year)
             .filter((pl.col.invested != 0.0) & (pl.col.profit != 0.0))
@@ -46,7 +47,7 @@ class Chart:
         self.invested = df["invested"].to_list()
         self.profit = df["profit"].to_list()
         self.total = df["total"].to_list()
-        self.max_value = df["total"].max()
+        self.max_value = df["max_value"].max()
 
 
 @dataclass
