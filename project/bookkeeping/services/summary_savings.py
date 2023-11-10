@@ -1,4 +1,6 @@
 import itertools
+import polars as pl
+
 from typing import NamedTuple
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
@@ -7,7 +9,6 @@ from django.utils.translation import gettext as _
 
 from ...pensions.models import PensionBalance
 from ...savings.models import SavingBalance
-import polars as pl
 
 
 @dataclass
