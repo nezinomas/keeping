@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import NamedTuple
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
