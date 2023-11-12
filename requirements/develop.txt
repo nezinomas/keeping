@@ -7,12 +7,12 @@ django-webtest==1.9.11
 factory-boy==3.3.0
 hypothesis==6.88.1
 mock==5.1.0
-pyinstrument==4.6.0
+pyinstrument==4.6.1
 pytest==7.4.3
 pytest-clarity==1.0.1
 pytest-cov==4.1.0
 pytest-diff==0.1.14
-pytest-django==4.6.0
+pytest-django==4.7.0
 pytest-factoryboy==2.6.0
 pytest-forked==1.6.0
 pytest-icdiff==0.8
@@ -21,7 +21,7 @@ pytest-mock==3.12.0
 pytest-raises==0.11
 pytest-randomly==3.15.0
 pytest-sugar==0.9.7
-pytest-xdist==3.3.1
+pytest-xdist==3.4.0
 pytz==2023.3
 selenium==4.14.0
 time-machine==2.13.0
