@@ -1,9 +1,10 @@
 import itertools
-import polars as pl
 
-from typing import NamedTuple
-from datetime import datetime
 from dataclasses import dataclass, field, asdict
+from datetime import datetime
+from typing import NamedTuple
+
+import polars as pl
 
 from django.utils.translation import gettext as _
 
