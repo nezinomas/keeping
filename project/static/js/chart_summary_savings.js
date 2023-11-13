@@ -85,7 +85,7 @@ function chartSavings(container) {
         },
         legend: {
             layout: 'horizontal',
-            align: 'center',
+            align: 'right',
             verticalAlign: 'top',
             floating: true,
             borderWidth: 0,
