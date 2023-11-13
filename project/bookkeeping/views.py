@@ -15,6 +15,7 @@ from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import forms, models, services
 from .mixins.month import MonthMixin
+from .services import summary_savings
 
 
 class Index(TemplateViewMixin):
@@ -212,8 +213,8 @@ class SummarySavings(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings.html"
 
     def get_context_data(self, **kwargs):
-        data = services.get_summary_savings_data()
-        context = services.load_summary_savings_service(data)
+        data = summary_savings.get_data()
+        context = summary_savings.load_service(data)
         return super().get_context_data(**kwargs) | context
 
 
