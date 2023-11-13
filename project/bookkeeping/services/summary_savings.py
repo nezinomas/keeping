@@ -14,9 +14,9 @@ from ...savings.models import SavingBalance
 class Chart:
     title: str
 
-    text_total: str = field(init=False, default=_("Total"))
-    text_profit: str = field(init=False, default=_("Profit"))
-    text_invested: str = field(init=False, default=_("Invested"))
+    text_total: str = field(init=False)
+    text_profit: str = field(init=False)
+    text_invested: str = field(init=False)
 
     categories: list = field(init=False, default_factory=list)
     invested: list = field(init=False, default_factory=list)
@@ -24,6 +24,12 @@ class Chart:
     total: list = field(init=False, default_factory=list)
 
     max_value: int = field(init=False, default=0)
+
+    def __post_init__(self):
+        self.text_total = _("Total")
+        self.text_profit = _("Profit")
+        self.text_invested = _("Invested")
+
 
     def process_data(self, data):
         df = pl.DataFrame(data)
