@@ -1,12 +1,17 @@
-function annotationLabels(list) {
-    list.forEach(function (element, index, list) {
-        let val = Math.round(element);
-        list[index] = {
-            point: { xAxis: 0, yAxis: 0, x: index, y: val },
-            text: Highcharts.numberFormat(val, 0),
+function annotationLabels(total_list, invested_list, profit_list) {
+    total_list.forEach(function (element, index, total_list) {
+        let y_val = element;
+        if (profit_list[index] < 0) {
+            y_val = invested_list[index]
+            console.log(invested_list[index]);
+        }
+
+        total_list[index] = {
+            point: { xAxis: 0, yAxis: 0, x: index, y: y_val },
+            text: Highcharts.numberFormat(Math.round(element), 0),
         };
     });
-    return list;
+    return total_list;
 };
 
 function chartSavings(container) {
@@ -35,7 +40,7 @@ function chartSavings(container) {
             spacingRight: 25,
         },
         title: {
-            text: chartData.chart_title,
+            text: chartData.title,
             style: {
                 fontSize: '14px',
             },
@@ -45,7 +50,7 @@ function chartSavings(container) {
             labelOptions: {
                 y: -8,
             },
-            labels: annotationLabels(chartData.total)
+            labels: annotationLabels(chartData.total, chartData.invested, chartData.profit)
         }],
         xAxis: {
             categories: chartData.categories,
@@ -80,7 +85,7 @@ function chartSavings(container) {
         },
         legend: {
             layout: 'horizontal',
-            align: 'center',
+            align: 'right',
             verticalAlign: 'top',
             floating: true,
             borderWidth: 0,

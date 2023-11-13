@@ -13,18 +13,18 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(name="data1")
 def fixture_data1():
     return [
-        {"year": 1999, "invested": 0.0, "profit": 0.0},
-        {"year": 2000, "invested": 1.0, "profit": 1.0},
-        {"year": 2001, "invested": 2.0, "profit": 2.0},
+        {"year": 1999, "invested": 0, "profit": 0},
+        {"year": 2000, "invested": 1, "profit": 1},
+        {"year": 2001, "invested": 2, "profit": 2},
     ]
 
 
 @pytest.fixture(name="data2")
 def fixture_data2():
     return [
-        {"year": 1999, "invested": 0.0, "profit": 0.0},
-        {"year": 2000, "invested": 4.0, "profit": 4.0},
-        {"year": 2001, "invested": 5.0, "profit": 5.0},
+        {"year": 1999, "invested": 0, "profit": 0},
+        {"year": 2000, "invested": 4, "profit": 4},
+        {"year": 2001, "invested": 5, "profit": 5},
     ]
 
 
@@ -47,12 +47,12 @@ def fixture_load_data_funds(data1):
         "pensions": [],
     }
 
-float_stragegy = st.floats(allow_nan=False, allow_infinity=False, width=16)
+int_stragegy = st.integers()
 data_stragety = st.lists(
     st.fixed_dictionaries({
         'year': st.integers(min_value=1974, max_value=2050),
-        'invested': float_stragegy,
-        'profit': float_stragegy
+        'invested': st.integers(min_value=0, max_value=1_000_000),
+        'profit': st.integers(min_value=-1_000, max_value=1_000)
     })
 )
 

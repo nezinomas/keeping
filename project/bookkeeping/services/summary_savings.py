@@ -32,7 +32,11 @@ class Chart:
         if df.is_empty():
             return
 
-        df = (
+        df = self._process_dataframe(df)
+        self._update_attributes(df)
+
+    def _process_dataframe(self, df):
+        return (
             df
             .lazy()
             .group_by(pl.col.year)
@@ -48,6 +52,8 @@ class Chart:
             .sort(pl.col.year)
         ).collect()
 
+
+    def _update_attributes(self, df):
         self.categories = df["year"].to_list()
         self.invested = df["invested"].to_list()
         self.profit = df["profit"].to_list()
@@ -72,17 +78,18 @@ class ChartKeys(NamedTuple):
     keys: list
 
 
-CHART_KEYS_MAP = [
-    ChartKeys(_("Funds"), ["funds"]),
-    ChartKeys(_("Shares"), ["shares"]),
-    ChartKeys(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
-    ChartKeys(f"{_('Pensions')} III", ["pensions"]),
-    ChartKeys(f"{_('Pensions')} II", ["pensions2"]),
-    ChartKeys(
-        f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
-        ["funds", "shares", "pensions"],
-    ),
-]
+def chart_keys_map():
+    return [
+        ChartKeys(_("Funds"), ["funds"]),
+        ChartKeys(_("Shares"), ["shares"]),
+        ChartKeys(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
+        ChartKeys(f"{_('Pensions')} III", ["pensions"]),
+        ChartKeys(f"{_('Pensions')} II", ["pensions2"]),
+        ChartKeys(
+            f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
+            ["funds", "shares", "pensions"],
+        ),
+    ]
 
 
 def get_data(saving_type: list = None):
@@ -104,15 +111,20 @@ def make_chart(title: str, *args) -> dict:
     return asdict(chart)
 
 
-def load_service(data):
-    context = Context()
+def update_context(context, chart, chart_pointer):
+    if records := len(chart["categories"]):
+        context.add_chart(chart_pointer, chart, records)
 
-    for i in CHART_KEYS_MAP:
+
+def load_service(data, maps=None):
+    context = Context()
+    if not maps:
+        maps = chart_keys_map()
+
+    for i in maps:
         data_args = [data[x] for x in i.keys]
         chart = make_chart(i.title, *data_args)
-
-        if records := len(chart["categories"]):
-            chart_pointer = ("_").join(i.keys)
-            context.add_chart(chart_pointer, chart, records)
+        chart_pointer = ("_").join(i.keys)
+        update_context(context, chart, chart_pointer)
 
     return asdict(context)
