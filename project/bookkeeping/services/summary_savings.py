@@ -118,6 +118,7 @@ def update_context(context, chart, chart_pointer):
 
 def load_service(data, maps=None):
     context = Context()
+
     if not maps:
         maps = chart_keys_map()
 
