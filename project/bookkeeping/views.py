@@ -108,9 +108,7 @@ class Wealth(TemplateViewMixin):
     template_name = "core/includes/info_table.html"
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        data = services.wealth.WealthServiceData(year)
-        service = services.wealth.WealthService(data)
+        service = services.wealth.load_service(self.request.user.year)
 
         context = {
             "data": {

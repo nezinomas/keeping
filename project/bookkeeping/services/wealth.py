@@ -61,3 +61,7 @@ class WealthService:
             + self.data.saving_balance
             + self.data.pension_balance
         )
+
+
+def load_service(year: int) -> WealthService:
+    return WealthService(WealthServiceData(year))
