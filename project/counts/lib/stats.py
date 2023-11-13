@@ -180,7 +180,7 @@ class Stats:
         return (
             self._df
             .lazy()
-            .with_columns((pl.col("date").diff().dt.days()).alias("duration"))
+            .with_columns((pl.col("date").diff().dt.total_days()).alias("duration"))
             .fill_null(0)
             .sort("date")
             .collect()
