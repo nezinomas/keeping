@@ -89,7 +89,7 @@ def chart_keys_map():
         ChartKeys(f"{_('Pensions')} III", ["pensions"]),
         ChartKeys(f"{_('Pensions')} II", ["pensions2"]),
         ChartKeys(
-            f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
+            f"{_('Funds')}, {_('Shares')}, {_('Pensions')} III",
             ["funds", "shares", "pensions"],
         ),
     ]
