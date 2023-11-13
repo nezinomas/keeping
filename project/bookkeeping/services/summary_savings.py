@@ -1,11 +1,9 @@
 import itertools
-
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import NamedTuple
 
 import polars as pl
-
 from django.utils.translation import gettext as _
 
 from ...pensions.models import PensionBalance
