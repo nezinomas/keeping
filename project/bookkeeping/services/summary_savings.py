@@ -78,17 +78,18 @@ class ChartKeys(NamedTuple):
     keys: list
 
 
-CHART_KEYS_MAP = [
-    ChartKeys(_("Funds"), ["funds"]),
-    ChartKeys(_("Shares"), ["shares"]),
-    ChartKeys(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
-    ChartKeys(f"{_('Pensions')} III", ["pensions"]),
-    ChartKeys(f"{_('Pensions')} II", ["pensions2"]),
-    ChartKeys(
-        f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
-        ["funds", "shares", "pensions"],
-    ),
-]
+def chart_keys_map():
+    return [
+        ChartKeys(_("Funds"), ["funds"]),
+        ChartKeys(_("Shares"), ["shares"]),
+        ChartKeys(f"{_('Funds')}, {_('Shares')}", ["funds", "shares"]),
+        ChartKeys(f"{_('Pensions')} III", ["pensions"]),
+        ChartKeys(f"{_('Pensions')} II", ["pensions2"]),
+        ChartKeys(
+            f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
+            ["funds", "shares", "pensions"],
+        ),
+    ]
 
 
 def get_data(saving_type: list = None):
@@ -115,10 +116,12 @@ def update_context(context, chart, chart_pointer):
         context.add_chart(chart_pointer, chart, records)
 
 
-def load_service(data):
+def load_service(data, maps=None):
     context = Context()
+    if not maps:
+        maps = chart_keys_map()
 
-    for i in CHART_KEYS_MAP:
+    for i in maps:
         data_args = [data[x] for x in i.keys]
         chart = make_chart(i.title, *data_args)
         chart_pointer = ("_").join(i.keys)
