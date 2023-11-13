@@ -40,7 +40,7 @@ function chartSavings(container) {
             spacingRight: 25,
         },
         title: {
-            text: chartData.chart_title,
+            text: chartData.title,
             style: {
                 fontSize: '14px',
             },
