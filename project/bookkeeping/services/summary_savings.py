@@ -1,11 +1,9 @@
 import itertools
-
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import NamedTuple
 
 import polars as pl
-
 from django.utils.translation import gettext as _
 
 from ...pensions.models import PensionBalance
@@ -16,9 +14,9 @@ from ...savings.models import SavingBalance
 class Chart:
     title: str
 
-    text_total: str = field(init=False, default=_("Total"))
-    text_profit: str = field(init=False, default=_("Profit"))
-    text_invested: str = field(init=False, default=_("Invested"))
+    text_total: str = field(init=False)
+    text_profit: str = field(init=False)
+    text_invested: str = field(init=False)
 
     categories: list = field(init=False, default_factory=list)
     invested: list = field(init=False, default_factory=list)
@@ -26,6 +24,11 @@ class Chart:
     total: list = field(init=False, default_factory=list)
 
     max_value: int = field(init=False, default=0)
+
+    def __post_init__(self):
+        self.text_total = _("Total")
+        self.text_profit = _("Profit")
+        self.text_invested = _("Invested")
 
     def process_data(self, data):
         df = pl.DataFrame(data)
@@ -86,7 +89,7 @@ def chart_keys_map():
         ChartKeys(f"{_('Pensions')} III", ["pensions"]),
         ChartKeys(f"{_('Pensions')} II", ["pensions2"]),
         ChartKeys(
-            f"{_('Funds')}, {_('Shares')}, {_('Pensions')}",
+            f"{_('Funds')}, {_('Shares')}, {_('Pensions')} III",
             ["funds", "shares", "pensions"],
         ),
     ]
@@ -118,6 +121,7 @@ def update_context(context, chart, chart_pointer):
 
 def load_service(data, maps=None):
     context = Context()
+
     if not maps:
         maps = chart_keys_map()
 

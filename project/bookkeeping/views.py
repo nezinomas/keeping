@@ -6,14 +6,11 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.views import (
-    CreateViewMixin,
-    FormViewMixin,
-    TemplateViewMixin,
-)
+from ..core.mixins.views import CreateViewMixin, FormViewMixin, TemplateViewMixin
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import forms, models, services
+from .lib import no_incomes
 from .mixins.month import MonthMixin
 
 
@@ -22,8 +19,8 @@ class Index(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        ind = services.load_income_service(year)
-        exp = services.load_expense_service(year)
+        ind = services.index.load_service(year)
+        exp = services.expenses.load_service(year)
 
         context = {
             "year": self.request.user.year,
@@ -43,8 +40,8 @@ class Accounts(TemplateViewMixin):
     template_name = "bookkeeping/includes/account_worth_list.html"
 
     def get_context_data(self, **kwargs):
-        data = services.AccountServiceData(self.request.user.year)
-        obj = services.AccountService(data=data)
+        data = services.accounts.AccountServiceData(self.request.user.year)
+        obj = services.accounts.AccountService(data=data)
 
         context = {
             "items": obj.data,
@@ -66,8 +63,8 @@ class Savings(TemplateViewMixin):
     template_name = "bookkeeping/savings.html"
 
     def get_context_data(self, **kwargs):
-        data = services.SavingServiceData(self.request.user.year)
-        obj = services.SavingsService(data)
+        data = services.savings.SavingServiceData(self.request.user.year)
+        obj = services.savings.SavingsService(data)
 
         context = {"title": _("Funds"), "type": "savings", **obj.context()}
         return super().get_context_data(**kwargs) | context
@@ -86,8 +83,8 @@ class Pensions(TemplateViewMixin):
     template_name = "bookkeeping/includes/funds_table.html"
 
     def get_context_data(self, **kwargs):
-        data = services.PensionServiceData(self.request.user.year)
-        obj = services.PensionsService(data)
+        data = services.pensions.PensionServiceData(self.request.user.year)
+        obj = services.pensions.PensionsService(data)
 
         context = {
             "title": _("Pensions"),
@@ -112,8 +109,8 @@ class Wealth(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        data = services.WealthServiceData(year)
-        service = services.WealthService(data)
+        data = services.wealth.WealthServiceData(year)
+        service = services.wealth.WealthService(data)
 
         context = {
             "data": {
@@ -131,7 +128,7 @@ class Forecast(TemplateViewMixin):
         year = self.request.user.year
         month = datetime.now().month
 
-        obj = services.load_forecast_service(year, month)
+        obj = services.forecast.load_service(year, month)
 
         context = {
             "data": [obj.beginning, obj.end, obj.forecast],
@@ -146,7 +143,7 @@ class NoIncomes(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         journal = self.request.user.journal
-        service = services.load_no_income_service(year, journal)
+        service = no_incomes.load_service(year, journal)
 
         context = {
             "no_incomes": service.summary,
@@ -164,7 +161,7 @@ class Month(MonthMixin, TemplateViewMixin):
         self.set_month()
 
         user = self.request.user
-        service = services.load_month_service(user.year, user.month)
+        service = services.month.load_service(user.year, user.month)
 
         context = {
             "month_table": service.month_table_context(),
@@ -185,8 +182,8 @@ class Detailed(TemplateViewMixin):
             "data": [],
         }
 
-        data = services.DetailerServiceData(year)
-        ctx = services.DetailedService(data)
+        data = services.detailed.DetailerServiceData(year)
+        ctx = services.detailed.DetailedService(data)
 
         context["data"] += ctx.incomes_context()
         context["data"] += ctx.savings_context()
@@ -199,8 +196,8 @@ class Summary(TemplateViewMixin):
     template_name = "bookkeeping/summary.html"
 
     def get_context_data(self, **kwargs):
-        data = services.ChartSummaryServiceData()
-        obj = services.ChartSummaryService(data)
+        data = services.chart_summary.ChartSummaryServiceData()
+        obj = services.chart_summary.ChartSummaryService(data)
 
         return {
             "chart_balance": obj.chart_balance(),
@@ -212,8 +209,8 @@ class SummarySavings(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings.html"
 
     def get_context_data(self, **kwargs):
-        data = services.get_summary_savings_data()
-        context = services.load_summary_savings_service(data)
+        data = services.summary_savings.get_data()
+        context = services.summary_savings.load_service(data)
         return super().get_context_data(**kwargs) | context
 
 
@@ -221,8 +218,9 @@ class SummarySavingsAndIncomes(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings_and_incomes.html"
 
     def get_context_data(self, **kwargs):
-        data = services.ServiceSummarySavingsAndIncomesData()
-        obj = services.ServiceSummarySavingsAndIncomes(data=data)
+        srv = services.summary_savings_and_incomes
+        data = srv.ServiceSummarySavingsAndIncomesData()
+        obj = srv.ServiceSummarySavingsAndIncomes(data=data)
 
         text = {
             "text": {
@@ -245,8 +243,9 @@ class SummaryExpenses(FormViewMixin):
 
     def form_valid(self, form, **kwargs):
         form_data = form.cleaned_data.get("types")
-        data = services.ChartSummaryExpensesServiceData(form_data)
-        obj = services.ChartSummaryExpensesService(data=data)
+        srv = services.chart_summary_expenses
+        data = srv.ChartSummaryExpensesServiceData(form_data)
+        obj = srv.ChartSummaryExpensesService(data=data)
 
         context = {"found": False, "form": form}
 
@@ -271,6 +270,6 @@ class ExpandDayExpenses(TemplateViewMixin):
     template_name = "bookkeeping/includes/expand_day_expenses.html"
 
     def get_context_data(self, **kwargs):
-        obj = services.ExpandDayService(self.kwargs.get("date"))
+        obj = services.expand_day.ExpandDayService(self.kwargs.get("date"))
 
         return super().get_context_data(**kwargs) | obj.context()
