@@ -30,7 +30,6 @@ class Chart:
         self.text_profit = _("Profit")
         self.text_invested = _("Invested")
 
-
     def process_data(self, data):
         df = pl.DataFrame(data)
         if df.is_empty():
