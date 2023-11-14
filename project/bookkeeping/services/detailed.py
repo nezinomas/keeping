@@ -1,7 +1,6 @@
-import itertools
-import operator
 from dataclasses import dataclass, field
 from datetime import date
+
 import polars as pl
 from django.utils.translation import gettext as _
 
@@ -60,77 +59,58 @@ class DetailedService:
     @staticmethod
     def modify_data(year, data):
         maps = set()
-        start = date(year, 1, 1)
-        end = date(year, 12, 1)
-
+        arr = []
         for i in data:
-            j = (i["type_title"], i["title"])
-            if j in maps:
+            title_map = (i["type_title"], i["title"])
+            if title_map in maps:
                 continue
 
-            maps.add(j)
+            maps.add(title_map)
 
-            si = {
-                "date": start,
-                "title": i["title"],
-                "type_title": i["type_title"],
-                "sum": 0,
-            }
-            ei = {
-                "date": end,
-                "title": i["title"],
-                "type_title": i["type_title"],
-                "sum": 0,
-            }
+            arr += [{
+                    "date": date(year, mm, 1),
+                    "title": i["title"],
+                    "type_title": i["type_title"],
+                    "sum": 0,
+                } for mm in range(1, 13)]
 
-            data.extend((si, ei))
+        data.extend(arr)
         return data
 
     def _create_context(self, data, categories, name = None):
         context = []
+        data = self._create_df(data)
 
-        df = self._create_df(data)
-        df = df.partition_by("type_title")
+        for category in categories:
+            df = data.filter(pl.col.type_title == category)
 
-        for i, t in enumerate(categories):
-            da = df[i].partition_by("title")
+            total = (
+                df.lazy()
+                .group_by(pl.col.title)
+                .agg(pl.col.total_col.sum())
+                .sort(pl.col.title)
+                .collect()["total_col"]
+                .to_list()
+            )
 
-            data = {
-                "name": name + t if name else t,
+            context_item = {
+                "name": name + category if name else category,
                 "items": [],
-                "total": df[i]["total_col"].sum(),
-                "total_col": [],
-                "total_row": da[0]["total_row"].to_list(),
+                "total": df["total_col"].sum(),
+                "total_col": total,
+                "total_row": df["total_row"].to_list()[:12],
             }
 
-            for d in da:
-                row = {"title": d["title"][0], "data": d["sum"].to_list()}
-                data["items"].append(row)
-                data["total_col"].append(d["total_col"].sum())
+            for d in df.partition_by("title"):
+                context_item["items"] += [{"title": d["title"][0], "data": d["sum"].to_list()}]
 
-            context.append(data)
+            context.append(context_item)
         return context
 
     def _create_df(self, arr):
-        pl.Config.set_tbl_rows(100)
-        df = pl.DataFrame(arr).sort(["date", "type_title", "title"])
         df = (
-            df
-            .upsample(
-                time_column="date",
-                every="1mo",
-                by=["type_title", "title"],
-                maintain_order=True,
-            )
+            pl.DataFrame(arr)
             .lazy()
-            .select(
-                [
-                    pl.col.date,
-                    pl.col.sum.fill_null(0),
-                    pl.col.title.forward_fill(),
-                    pl.col.type_title.forward_fill(),
-                ]
-            )
             .group_by([pl.col.date, pl.col.type_title, pl.col.title])
             .agg(pl.col.sum.sum())
             .with_columns(
@@ -145,5 +125,4 @@ class DetailedService:
             )
             .sort([pl.col.type_title, pl.col.title, pl.col.date])
         )
-
         return df.collect()

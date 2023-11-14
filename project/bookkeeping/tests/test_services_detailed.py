@@ -119,7 +119,7 @@ def test_modify_data():
 
     actual = DetailedService.modify_data(1999, data)
 
-    assert len(actual) == 6
+    assert len(actual) == 26
 
     assert {"date": date(1999, 1, 1), "sum": 0, "title": "Y", "type_title": "A"} in actual
     assert {"date": date(1999, 12, 1), "sum": 0, "title": "Y", "type_title": "A"} in actual
