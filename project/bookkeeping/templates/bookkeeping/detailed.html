@@ -20,7 +20,7 @@
         {% for row in data %}
         <div class="row mt-2">
             <div class="col-lg-12">
-                {% detailed_table row.name row.items row.total_row %}
+                {% detailed_table row.name row.items row.total row.total_col row.total_row  %}
             </div>
         </div>
         {% endfor %}

@@ -6,7 +6,9 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.views import CreateViewMixin, FormViewMixin, TemplateViewMixin
+from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
+                                 TemplateViewMixin)
+from ..core.tests.utils import timer
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import forms, models, services
@@ -173,6 +175,7 @@ class Month(MonthMixin, TemplateViewMixin):
 class Detailed(TemplateViewMixin):
     template_name = "bookkeeping/detailed.html"
 
+    @timer(7)
     def get_context_data(self, **kwargs):
         year = self.request.user.year
 

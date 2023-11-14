@@ -2,7 +2,7 @@
 {% load slippers %}
 {% load math%}
 {% load cache %}
-
+{% load get_item %}
 
 <table class="table table-sm table-striped table-hover">
     <thead>
@@ -32,6 +32,7 @@
             {% for i in item.data %}
                 {% table_cell value=i|price %}
             {% endfor %}
+            {%table_cell value=total_col|get_list_val:forloop.counter0|price%}
         </tr>
         {% endfor %}
     </tbody>
@@ -39,6 +40,7 @@
         <tr>
             <th class="text-start">{% translate 'Total' %}</th>
             {% for i in total_row %}{% table_cell value=i|price tag='th' %}{% endfor %}
+            <th>{{total|price}}</th>
         </tr>
     </tfoot>
 </table>
