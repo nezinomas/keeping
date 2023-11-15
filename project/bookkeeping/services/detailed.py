@@ -77,7 +77,7 @@ class DetailedService:
         data.extend(arr)
         return data
 
-    def _create_context(self, data, categories, name = None):
+    def _create_context(self, data, categories, name = ''):
         context = []
 
         if not data:
@@ -87,7 +87,7 @@ class DetailedService:
 
         for category in categories:
             context_item = {
-                "name": name + category if name else category,
+                "name": name + category,
                 "items": [],
                 "total": 0,
                 "total_col": [],
