@@ -6,7 +6,8 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.views import CreateViewMixin, FormViewMixin, TemplateViewMixin
+from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
+                                 TemplateViewMixin)
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import forms, models, services
@@ -108,9 +109,7 @@ class Wealth(TemplateViewMixin):
     template_name = "core/includes/info_table.html"
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        data = services.wealth.WealthServiceData(year)
-        service = services.wealth.WealthService(data)
+        service = services.wealth.load_service(self.request.user.year)
 
         context = {
             "data": {
