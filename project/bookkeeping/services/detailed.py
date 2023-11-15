@@ -95,11 +95,15 @@ class DetailedService:
             }
 
             df = data.filter(pl.col.type_title == category)
-            for d in df.partition_by("title"):
-                context_item["items"] += [{"title": d["title"][0], "data": d["sum"].to_list()}]
-                context_item["total"] += d["total_col"].sum()
-                context_item["total_col"] += [d["total_col"].sum()]
-                context_item["total_row"] = d["total_row"].to_list()
+            for df_part in df.partition_by("title"):
+                context_item["total"] += df_part["total_col"].sum()
+                context_item["total_col"] += [df_part["total_col"].sum()]
+                context_item["total_row"] = df_part["total_row"].to_list()
+
+                context_item["items"] += [{
+                    "title": df_part["title"][0],
+                    "data": df_part["sum"].to_list()
+                }]
 
             context.append(context_item)
         return context
