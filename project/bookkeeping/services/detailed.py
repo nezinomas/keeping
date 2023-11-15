@@ -79,6 +79,10 @@ class DetailedService:
 
     def _create_context(self, data, categories, name = None):
         context = []
+
+        if not data:
+            return context
+
         data = self._create_df(data)
 
         for category in categories:
