@@ -86,19 +86,20 @@ class DetailedService:
         data = self._create_df(data)
 
         for category in categories:
-            df = data.filter(pl.col.type_title == category)
-
             context_item = {
                 "name": name + category if name else category,
                 "items": [],
-                "total": df["total_col"].sum(),
+                "total": 0,
                 "total_col": [],
-                "total_row": df["total_row"].to_list()[:12],
+                "total_row": [],
             }
 
+            df = data.filter(pl.col.type_title == category)
             for d in df.partition_by("title"):
                 context_item["items"] += [{"title": d["title"][0], "data": d["sum"].to_list()}]
+                context_item["total"] += d["total_col"].sum()
                 context_item["total_col"] += [d["total_col"].sum()]
+                context_item["total_row"] = d["total_row"].to_list()
 
             context.append(context_item)
         return context
