@@ -30,16 +30,18 @@
         <tr>
             <td class="text-start">{{ item.title|safe }}</td>
             {% for i in item.data %}
-                {% table_cell value=i|price %}
+                <td {% if not i %}class="dash"{% endif %}>{{ i|price|default:"-" }}</td>
             {% endfor %}
-            {%table_cell value=total_col|get_list_val:forloop.counter0|price%}
+            <td><b>{{total_col|get_list_val:forloop.counter0|price}}</b></td>
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <th class="text-start">{% translate 'Total' %}</th>
-            {% for i in total_row %}{% table_cell value=i|price tag='th' %}{% endfor %}
+            {% for i in total_row %}
+            <th {% if not i %}class="dash"{% endif %}>{{i|price|default:"-"}}</th>
+            {% endfor %}
             <th>{{total|price}}</th>
         </tr>
     </tfoot>
