@@ -34,6 +34,13 @@ def cellformat(value, default: str = "-"):
 
 
 @register.filter
+def css_class_if_none(value, default: str = "dash"):
+    value = None if value == "None" else value
+
+    return "" if value else default
+
+
+@register.filter
 def negative(value):
     try:
         value = float(value)
@@ -68,3 +75,12 @@ def compare(value: str, args: str) -> str:
         return str()
 
     return "table-success" if _value >= _compare else "table-danger"
+
+
+@register.inclusion_tag("core/includes/cell.html")
+def cell(value, tag=None, css_class=None):
+    return {
+        "value": value,
+        "tag": tag,
+        "css_class": css_class
+    }
