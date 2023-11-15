@@ -6,7 +6,8 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.mixins.formset import FormsetMixin
-from ..core.mixins.views import CreateViewMixin, FormViewMixin, TemplateViewMixin
+from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
+                                 TemplateViewMixin)
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import forms, models, services
