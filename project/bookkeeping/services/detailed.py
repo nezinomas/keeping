@@ -88,25 +88,17 @@ class DetailedService:
         for category in categories:
             df = data.filter(pl.col.type_title == category)
 
-            total = (
-                df.lazy()
-                .group_by(pl.col.title)
-                .agg(pl.col.total_col.sum())
-                .sort(pl.col.title)
-                .collect()["total_col"]
-                .to_list()
-            )
-
             context_item = {
                 "name": name + category if name else category,
                 "items": [],
                 "total": df["total_col"].sum(),
-                "total_col": total,
+                "total_col": [],
                 "total_row": df["total_row"].to_list()[:12],
             }
 
             for d in df.partition_by("title"):
                 context_item["items"] += [{"title": d["title"][0], "data": d["sum"].to_list()}]
+                context_item["total_col"] += [d["total_col"].sum()]
 
             context.append(context_item)
         return context
