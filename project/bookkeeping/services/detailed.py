@@ -68,11 +68,11 @@ class DetailedService:
             maps.add(title_map)
 
             arr += [{
-                    "date": date(year, mm, 1),
+                    "date": date(year, month, 1),
                     "title": i["title"],
                     "type_title": i["type_title"],
                     "sum": 0,
-                } for mm in range(1, 13)]
+                } for month in range(1, 13)]
 
         data.extend(arr)
         return data
