@@ -77,38 +77,37 @@ class DetailedService:
         data.extend(arr)
         return data
 
-    def _create_context(self, data, categories, name = ''):
+    def _create_context(self, data, categories, name=''):
         context = []
-
         if not data:
             return context
 
-        data = self._create_df(data)
-
+        df = self._create_df(data)
         for category in categories:
-            context_item = {
-                "name": name + category,
-                "items": [],
-                "total": 0,
-                "total_col": [],
-                "total_row": [],
-            }
-
-            df = data.filter(pl.col.type_title == category)
-            for df_part in df.partition_by("title"):
-                total_col = df_part["total_col"].sum()
-
-                context_item["total"] += total_col
-                context_item["total_col"] += [total_col]
-                context_item["total_row"] = df_part["total_row"].to_list()
-
-                context_item["items"] += [{
-                    "title": df_part["title"][0],
-                    "data": df_part["sum"].to_list()
-                }]
-
+            context_item = self._create_context_item(df, category, name)
             context.append(context_item)
         return context
+
+    def _create_context_item(self, df, category, name):
+        context_item = {
+            "name": name + category,
+            "items": [],
+            "total": 0,
+            "total_col": [],
+            "total_row": [],
+        }
+
+        df_category = df.filter(pl.col.type_title == category)
+        for df_part in df_category.partition_by("title"):
+            total_col = df_part["total_col"].sum()
+            context_item["total"] += total_col
+            context_item["total_col"] += [total_col]
+            context_item["total_row"] = df_part["total_row"].to_list()
+            context_item["items"] += [{
+                "title": df_part["title"][0],
+                "data": df_part["sum"].to_list()
+            }]
+        return context_item
 
     def _create_df(self, arr):
         df = (
