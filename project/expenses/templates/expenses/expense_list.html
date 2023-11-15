@@ -50,8 +50,8 @@
                         {% endif %}
                     </td>
                     <td>{{ object.account }}</td>
-                    {% edit_cell url=url_update %}
-                    {% delete_cell url=url_delete %}
+                    {% include "core/includes/cell_edit.html" with url=url_update %}
+                    {% include "core/includes/cell_delete.html" with url=url_delete %}
                 </tr>
                 {% endfor %}
             </tbody>
