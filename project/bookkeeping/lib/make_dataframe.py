@@ -1,4 +1,5 @@
 import calendar
+import itertools
 from datetime import date
 
 import polars as pl
@@ -44,6 +45,36 @@ class MakeDataFrame:
             return df.with_columns(sum=pl.lit(0))
 
         return df.select([pl.col("date"), pl.sum_horizontal(pl.exclude("date")).alias("sum")])
+
+    def _modify_data(self):
+        if not self._data:
+            return self._data
+
+        cols = sorted({a["title"] for a in self._data})
+
+        keys = [x for x in self._data[0].keys() if x not in ["date", "title"]]
+        data = self._data
+
+        # insert empty values for one month days
+        if self.month:
+            days = calendar.monthrange(self.year, self.month)[1] + 1
+            for title, i in itertools.product(cols, range(1, days)):
+                dt = date(self.year, 1, i)
+                self._insert_empty_dicts(data, dt, title, keys)
+        else:
+            # insert empty values form 12 months
+            for title, i in itertools.product(cols, range(1, 13)):
+                dt = date(self.year, i, 1)
+                self._insert_empty_dicts(data, dt, title, keys)
+
+        return data
+
+    def _insert_empty_dicts(self, data, date, title, keys):
+        return data.append({
+            "date": date,
+            "title": title,
+            **{x: 0 for x in keys}
+        })
 
     def create_data(self, sum_col_name: str = "sum") -> DF:
         return (
