@@ -78,9 +78,12 @@ class MakeDataFrame:
         }
 
     def create_data(self, sum_col_name: str = "sum") -> DF:
+        data = self._modify_data()
+
         return (
-            pl.DataFrame(self._data)
-            .pipe(self._insert_missing_rows)
+            pl.DataFrame(data)
+            .pipe(self._group_and_sum)
+            .sort([pl.col.title, pl.col.date])
             .select(["date", "title", sum_col_name])
             .sort(["title", "date"])
             .with_columns(pl.col(sum_col_name).cast(pl.Int32))
@@ -97,40 +100,17 @@ class MakeDataFrame:
             .sort("date")
         )
 
-    def _insert_missing_rows(self, df) -> pl.Expr:
-        df_empty = self._empty_df()
-
-        if df.is_empty():
-            return df_empty.with_columns(
-                title=pl.lit("__tmp_to_drop__"),
-                sum=pl.lit(0),
-                exception_sum=pl.lit(0),
-            )
-
+    def _group_and_sum(self, df):
+        cols = df.columns
         return (
-            df_empty.join(df, on="date", how="outer")
-            .fill_null(0)
-            .select(pl.all().forward_fill())
+            df
+            .group_by([pl.col.date, pl.col.title])
+            .agg([pl.col(i).sum() for i in cols if i not in ["date", "title"]])
         )
-
-    def _empty_df(self) -> DF:
-        if self.month:
-            days = calendar.monthrange(self.year, self.month)[1]
-            start = date(self.year, self.month, 1)
-            end = date(self.year, self.month, days)
-            every = "1d"
-        else:
-            start = date(self.year, 1, 1)
-            end = date(self.year, 12, 31)
-            every = "1mo"
-
-        rng = pl.date_range(start, end, every, eager=True)
-        return pl.DataFrame({"date": rng})
 
     def _drop_columns(self, df: DF) -> pl.Expr:
         col_to_drop = [
             "__tmp_to_drop__",
-            "null",
         ]
         return df.drop([name for name in col_to_drop if name in df.columns])
 
@@ -141,6 +121,7 @@ class MakeDataFrame:
 
         cols_diff = set(self._columns) - set(df.columns)
         cols = [pl.lit(0).alias(col_name) for col_name in cols_diff]
+
         return df.select([pl.all(), *cols])
 
     def _sort_columns(self, df: DF) -> pl.Expr:
