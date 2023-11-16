@@ -62,7 +62,7 @@ class MakeDataFrame:
             for title, i in itertools.product(cols, range(1, days)):
                 dt = date(self.year, self.month, i)
                 data.append(self._insert_empty_dicts(dt, title, keys))
-        # insert empty values form 12 months
+        # insert empty values for 12 months
         else:
             for title, i in itertools.product(cols, range(1, 13)):
                 dt = date(self.year, i, 1)
