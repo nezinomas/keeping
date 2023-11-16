@@ -1,7 +1,7 @@
-{% load slippers %}
 {% load get_item %}
 {% load math %}
 {% load i18n %}
+{% load cell_format %}
 
 {% if data.title and data.data %}
 <table class="table table-sm" x-data="{ open:false }">
@@ -33,7 +33,7 @@
         <tr>
             <td class="no-right-border"></td>
             {% for d in data.data %}
-            {% table_cell value=d|price css_class="no-left-border" highlight_value=data.highlight|get_list_val:forloop.counter0 %}
+            <td class="no-left-border {% if data.highlight|get_list_val:forloop.counter0 %}{{d|positive_negative}}{% endif%}">{{d|price|cellformat}}</td>
             {% endfor %}
         </tr>
     </tbody>

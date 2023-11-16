@@ -1,6 +1,7 @@
 {% load i18n %}
-{% load slippers %}
 {% load math %}
+{% load cell_format %}
+
 
 <table class="table table-sm table-striped table-hover" x-data="{ open:false }">
     <thead>
@@ -29,46 +30,46 @@
     <tbody>
         {% for item in ctx.data %}
         <tr>
-            {% table_cell value=item.date|date:"F"|title css_class="text-start" %}
-            {% table_cell value=item.incomes|price %}
-            {% table_cell value=item.expenses|price %}
-            {% table_cell value=item.balance|price highlight_value=True  %}
-            {% table_cell value=item.savings|price css_class="left-blue-border" %}
-            {% table_cell value=item.savings_close|price css_class="right-blue-border"  %}
-            {% table_cell value=item.borrow|price css_class="left-blue-border" alpinejs='x-show="open"' %}
-            {% table_cell value=item.borrow_return|price alpinejs='x-show="open"' %}
-            {% table_cell value=item.lend|price alpinejs='x-show="open"' %}
-            {% table_cell value=item.lend_return|price css_class="right-blue-border" alpinejs='x-show="open"' %}
-            {% table_cell value=item.money_flow|price %}
+            <td class="text-start">{{item.date|date:"F"|title}}</td>
+            <td class="{{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
+            <td class="{{item.expenses|css_class_if_none}}">{{item.expenses|price|cellformat}}</td>
+            <td class="{{item.balance|positive_negative}} {{item.balance|css_class_if_none}}">{{item.balance|price|cellformat}}</td>
+            <td class="left-blue-border {{item.savings|css_class_if_none}}">{{item.savings|price|cellformat}}</td>
+            <td class="right-blue-border {{item.savings_close|css_class_if_none}}">{{item.savings_close|price|cellformat}}</td>
+            <td class="left-blue-border {{item.borrow|css_class_if_none}}" x-show="open">{{item.borrow|price|cellformat}}</td>
+            <td class="{{item.borrow_return|css_class_if_none}}" x-show="open">{{item.borrow_return|price|cellformat}}</td>
+            <td class="{{item.lend|css_class_if_none}}" x-show="open">{{item.lend|price|cellformat}}</td>
+            <td class="right-blue-border {{item.lend_return|css_class_if_none}}" x-show="open">{{item.lend_return|price|cellformat}}</td>
+            <td class="{{item.money_flow|css_class_if_none}}">{{item.money_flow|price|cellformat}}</td>
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <th class="text-start">Avg</th>
-            {% table_cell value=ctx.avg_row.incomes|price tag='th' %}
-            {% table_cell value=ctx.avg_row.expenses|price tag='th' %}
-            {% table_cell value='' tag='th' %}
-            {% table_cell value=ctx.avg_row.savings|price tag='th' css_class="left-blue-border" %}
-            {% table_cell value=ctx.avg_row.savings_close|price tag='th' css_class="right-blue-border" %}
-            {% table_cell value=ctx.avg_row.borrow|price tag='th' css_class="left-blue-border" alpinejs='x-show="open"' %}
-            {% table_cell value=ctx.avg_row.borrow_return|price tag="th" alpinejs='x-show="open"' %}
-            {% table_cell value=ctx.avg_row.lend|price tag="th" alpinejs='x-show="open"' %}
-            {% table_cell value=ctx.avg_row.lend_return|price tag="th" css_class="right-blue-border" alpinejs='x-show="open"' %}
+            <th class="{{ctx.avg_row.incomes|css_class_if_none}}">{{ctx.avg_row.incomes|price|cellformat}}</th>
+            <th class="{{ctx.avg_row.expenses|css_class_if_none}}">{{ctx.avg_row.expenses|price|cellformat}}</th>
+            <th></th>
+            <th class="left-blue-border {{ctx.avg_row.savings|css_class_if_none}}">{{ctx.avg_row.savings|price|cellformat}}</th>
+            <th class="right-blue-border {{ctx.avg_row.savings_close|css_class_if_none}}">{{ctx.avg_row.savings_close|price|cellformat}}</th>
+            <th class="left-blue-border {{ctx.avg_row.borrow|css_class_if_none}}" x-show="open">{{ctx.avg_row.borrow|price|cellformat}}</th>
+            <th class="{{ctx.avg_row.borrow_return|css_class_if_none}}" x-show="open">{{ctx.avg_row.borrow_return|price|cellformat}}</th>
+            <th class="{{ctx.avg_row.lend|css_class_if_none}}" x-show="open">{{ctx.avg_row.lend|price|cellformat}}</th>
+            <th class="right-blue-border {{ctx.avg_row.lend_return|css_class_if_none}}" x-show="open">{{ctx.avg_row.lend_return|price|cellformat}}</th>
             <th><b>{% translate "End of year" %}</b></th>
         </tr>
         <tr>
             <th class="text-start">{% translate 'Total' %}</th>
-            {% table_cell value=ctx.total_row.incomes|price tag='th' %}
-            {% table_cell value=ctx.total_row.expenses|price tag='th' %}
-            {% table_cell value=ctx.total_row.balance|price tag='th' highlight_value=True %}
-            {% table_cell value=ctx.total_row.savings|price tag='th' css_class="left-blue-border" %}
-            {% table_cell value=ctx.total_row.savings_close|price tag='th' css_class="right-blue-border" %}
-            {% table_cell value=ctx.total_row.borrow|price tag='th' css_class="left-blue-border" alpinejs='x-show="open"' %}
-            {% table_cell value=ctx.total_row.borrow_return|price tag="th" alpinejs='x-show="open"' %}
-            {% table_cell value=ctx.total_row.lend|price tag="th" alpinejs='x-show="open"' %}
-            {% table_cell value=ctx.total_row.lend_return|price tag="th" css_class="right-blue-border" alpinejs='x-show="open"' %}
-            {% table_cell value=ctx.amount_end|price tag='th' css_class="check" highlight_value=True %}
+            <th class="{{ctx.total_row.incomes|css_class_if_none}}">{{ctx.total_row.incomes|price|cellformat}}</th>
+            <th class="{{ctx.total_row.expenses|css_class_if_none}}">{{ctx.total_row.expenses|price|cellformat}}</th>
+            <th class="{{ctx.total_row.balance|positive_negative}}">{{ctx.total_row.balance|price|cellformat}}</th>
+            <th class="left-blue-border {{ctx.total_row.savings|css_class_if_none}}">{{ctx.total_row.savings|price|cellformat}}</th>
+            <th class="right-blue-border {{ctx.total_row.savings_close|css_class_if_none}}">{{ctx.total_row.savings_close|price|cellformat}}</th>
+            <th class="left-blue-border {{ctx.total_row.borrow|css_class_if_none}}" x-show="open">{{ctx.total_row.borrow|price|cellformat}}</th>
+            <th class="{{ctx.total_row.borrow_return|css_class_if_none}}" x-show="open">{{ctx.total_row.borrow_return|price|cellformat}}</th>
+            <th class="{{ctx.total_row.lend|css_class_if_none}}" x-show="open">{{ctx.total_row.lend|price|cellformat}}</th>
+            <th class="right-blue-border {{ctx.total_row.lend_return|css_class_if_none}}" x-show="open">{{ctx.total_row.lend_return|price|cellformat}}</th>
+            <th class="{{ctx.amount_end|positive_negative}}">{{ctx.amount_end|price|cellformat}}</th>
         </tr>
     </tfoot>
 </table>
