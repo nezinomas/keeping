@@ -60,10 +60,10 @@ class MakeDataFrame:
         if self.month:
             days = calendar.monthrange(self.year, self.month)[1] + 1
             for title, i in itertools.product(cols, range(1, days)):
-                dt = date(self.year, 1, i)
+                dt = date(self.year, self.month, i)
                 data.append(self._insert_empty_dicts(dt, title, keys))
+        # insert empty values form 12 months
         else:
-            # insert empty values form 12 months
             for title, i in itertools.product(cols, range(1, 13)):
                 dt = date(self.year, i, 1)
                 data.append(self._insert_empty_dicts(dt, title, keys))

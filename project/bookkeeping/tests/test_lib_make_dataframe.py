@@ -330,48 +330,48 @@ def test_transform_month_no_data():
 
 def test_transform_month_data_no_exeptions():
     data = [
-        {"date": date(1999, 1, 2), "title": "X", "sum": 5},
-        {"date": date(1999, 1, 1), "title": "Y", "sum": 5},
+        {"date": date(1999, 3, 2), "title": "X", "sum": 5},
+        {"date": date(1999, 3, 1), "title": "Y", "sum": 5},
     ]
 
-    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=data)._modify_data()
+    actual = make_dataframe.MakeDataFrame(year=1999, month=3, data=data)._modify_data()
 
     assert len(actual) == 64
-    assert actual[2] == {"date": date(1999, 1, 1), "title": "X", "sum": 0}
-    assert actual[32] == {"date": date(1999, 1, 31), "title": "X", "sum": 0}
-    assert actual[33] == {"date": date(1999, 1, 1), "title": "Y", "sum": 0}
-    assert actual[63] == {"date": date(1999, 1, 31), "title": "Y", "sum": 0}
+    assert actual[2] == {"date": date(1999, 3, 1), "title": "X", "sum": 0}
+    assert actual[32] == {"date": date(1999, 3, 31), "title": "X", "sum": 0}
+    assert actual[33] == {"date": date(1999, 3, 1), "title": "Y", "sum": 0}
+    assert actual[63] == {"date": date(1999, 3, 31), "title": "Y", "sum": 0}
 
 
 def test_transform_month_data_with_exeptions():
     data = [
-        {"date": date(1999, 2, 1), "title": "X", "sum": 5, "exception_sum": 4},
-        {"date": date(1999, 3, 1), "title": "Y", "sum": 6, "exception_sum": 44},
+        {"date": date(1999, 3, 4), "title": "X", "sum": 5, "exception_sum": 4},
+        {"date": date(1999, 3, 5), "title": "Y", "sum": 6, "exception_sum": 44},
     ]
 
-    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=data)._modify_data()
+    actual = make_dataframe.MakeDataFrame(year=1999, month=3, data=data)._modify_data()
 
     assert len(actual) == 64
     assert actual[2] == {
-        "date": date(1999, 1, 1),
+        "date": date(1999, 3, 1),
         "title": "X",
         "sum": 0,
         "exception_sum": 0,
     }
     assert actual[32] == {
-        "date": date(1999, 1, 31),
+        "date": date(1999, 3, 31),
         "title": "X",
         "sum": 0,
         "exception_sum": 0,
     }
     assert actual[33] == {
-        "date": date(1999, 1, 1),
+        "date": date(1999, 3, 1),
         "title": "Y",
         "sum": 0,
         "exception_sum": 0,
     }
     assert actual[63] == {
-        "date": date(1999, 1, 31),
+        "date": date(1999, 3, 31),
         "title": "Y",
         "sum": 0,
         "exception_sum": 0,
