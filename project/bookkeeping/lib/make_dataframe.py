@@ -98,6 +98,7 @@ class MakeDataFrame:
     def _drop_columns(self, df: DF) -> pl.Expr:
         col_to_drop = [
             "__tmp_to_drop__",
+            "null",
         ]
         return df.drop([name for name in col_to_drop if name in df.columns])
 

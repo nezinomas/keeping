@@ -75,6 +75,38 @@ def test_month_expenses(month_data, columns):
     assert actual[11, "T2"] == 5.0
 
 
+def test_month_expenses(month_data, columns):
+    actual = make_dataframe.MakeDataFrame(
+        year=1999, data=month_data, columns=columns
+    ).data
+
+    assert actual.shape == (12, 4)
+    assert actual.columns == ["date", "T0", "T1", "T2"]
+
+    # 1999-01-01 first row
+    assert actual[0, "T0"] == 0.0
+    assert actual[0, "T1"] == 4.0
+    assert actual[0, "T2"] == 2.0
+
+    # 1999-12-01 last row
+    assert actual[11, "T0"] == 0.0
+    assert actual[11, "T1"] == 4.0
+    assert actual[11, "T2"] == 5.0
+
+
+def test_month_expenses_partial_data():
+    data = [
+        {"date": date(1999, 2, 1), "title": "X", "sum": 5},
+    ]
+
+    actual = make_dataframe.MakeDataFrame(
+        year=1999, data=data, columns=["X"]
+    ).data
+
+    assert actual.shape == (12, 2)
+    assert actual.columns == ["date", "X"]
+
+
 def test_month_no_data_expenses(columns):
     actual = make_dataframe.MakeDataFrame(year=1999, data=[], columns=columns).data
 
