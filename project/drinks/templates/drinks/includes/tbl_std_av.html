@@ -1,5 +1,5 @@
-{% load slippers %}
 {% load i18n %}
+{% load cell_format %}
 
 <table class="table table-sm table-striped table-hover caption-top">
     <caption>{% translate 'Drunk' %}, {% translate 'pcs' %}</caption>
@@ -16,10 +16,10 @@
         {% for item in ctx.items %}
         <tr {% if 'Av' in item.title %}class="table table-sm table-warning std-av-border"{% endif %}>
             <td class="text-start"><span class="ms-2">{{ item.title }}</span></td>
-            {% table_cell value=item.total %}
-            {% table_cell value=item.per_day %}
-            {% table_cell value=item.per_week %}
-            {% table_cell value=item.per_month %}
+            <td>{{item.total|cellformat}}</td>
+            <td>{{item.per_day|cellformat}}</td>
+            <td>{{item.per_week|cellformat}}</td>
+            <td>{{item.per_month|cellformat}}</td>
         </tr>
         {% empty %}
         <tr><td colspan="5">{% translate 'No data' %}</td></tr>
