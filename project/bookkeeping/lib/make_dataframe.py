@@ -47,13 +47,14 @@ class MakeDataFrame:
         return df.select([pl.col("date"), pl.sum_horizontal(pl.exclude("date")).alias("sum")])
 
     def _modify_data(self):
-        data = self._data
-        cols = sorted({a["title"] for a in self._data}) or ["__tmp_to_drop__"]
+        data = self._data or []
 
         if data:
             keys = [x for x in self._data[0].keys() if x not in ["date", "title"]]
+            cols = sorted({a["title"] for a in self._data})
         else:
-            keys = ["sum"]
+            keys = ["sum", "exception_sum"]
+            cols = ["__tmp_to_drop__"]
 
         # insert empty values for one month days
         if self.month:
