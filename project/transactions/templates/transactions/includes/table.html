@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load static %}
-{% load slippers %}
 {% load math %}
+{% load cell_format %}
 
 {% if object_list %}
 
@@ -24,10 +24,12 @@
             <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ object.from_account }}</td>
             <td class="text-start">{{ object.to_account }}</td>
-            {% table_cell value=object.price|price %}
-            {% if fee %}<td>{% table_cell value=object.fee|price %}</td>{% endif %}
-            {% edit_cell url=url__update %}
-            {% delete_cell url=url__delete %}
+            <td class="{{object.price|css_class_if_none}}">{{object.price|price|cellformat}}</td>
+            {% if fee %}
+            <td class="{{object.fee|css_class_if_none}}">{{object.fee|price|cellformat}}</td>
+            {% endif %}
+            {% include "core/includes/cell_edit.html" with url=url__update %}
+            {% include "core/includes/cell_delete.html" with url=url__delete %}
         </tr>
         {% endfor %}
     </tbody>
