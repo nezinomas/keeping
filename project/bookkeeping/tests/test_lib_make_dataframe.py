@@ -262,6 +262,14 @@ def test_expenses_and_exceptions_same_size(month_data, columns):
     assert actual.exceptions.shape[0] == actual.data.shape[0]
 
 
+def test_transform_year_no_data():
+    actual = make_dataframe.MakeDataFrame(year=1999, data=[])._modify_data()
+
+    assert len(actual) == 12
+    assert actual[0] == {"date": date(1999, 1, 1), "title": "__tmp_to_drop__", "sum": 0}
+    assert actual[11] == {"date": date(1999, 12, 1), "title": "__tmp_to_drop__", "sum": 0}
+
+
 def test_transform_year_data_no_exeptions():
     data = [
         {"date": date(1999, 2, 1), "title": "X", "sum": 5},
@@ -290,6 +298,15 @@ def test_transform_year_data_with_exeptions():
     assert actual[13] == {"date": date(1999, 12, 1), "title": "X", "sum": 0, "exception_sum": 0}
     assert actual[14] == {"date": date(1999, 1, 1), "title": "Y", "sum": 0, "exception_sum": 0}
     assert actual[25] == {"date": date(1999, 12, 1), "title": "Y", "sum": 0, "exception_sum": 0}
+
+
+def test_transform_month_no_data():
+
+    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=[])._modify_data()
+
+    assert len(actual) == 31
+    assert actual[0] == {"date": date(1999, 1, 1), "title": "__tmp_to_drop__", "sum": 0}
+    assert actual[30] == {"date": date(1999, 1, 31), "title": "__tmp_to_drop__", "sum": 0}
 
 
 def test_transform_month_data_no_exeptions():

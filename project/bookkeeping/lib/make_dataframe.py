@@ -47,34 +47,34 @@ class MakeDataFrame:
         return df.select([pl.col("date"), pl.sum_horizontal(pl.exclude("date")).alias("sum")])
 
     def _modify_data(self):
-        if not self._data:
-            return self._data
-
-        cols = sorted({a["title"] for a in self._data})
-
-        keys = [x for x in self._data[0].keys() if x not in ["date", "title"]]
         data = self._data
+        cols = sorted({a["title"] for a in self._data}) or ["__tmp_to_drop__"]
+
+        if data:
+            keys = [x for x in self._data[0].keys() if x not in ["date", "title"]]
+        else:
+            keys = ["sum"]
 
         # insert empty values for one month days
         if self.month:
             days = calendar.monthrange(self.year, self.month)[1] + 1
             for title, i in itertools.product(cols, range(1, days)):
                 dt = date(self.year, 1, i)
-                self._insert_empty_dicts(data, dt, title, keys)
+                data.append(self._insert_empty_dicts(dt, title, keys))
         else:
             # insert empty values form 12 months
             for title, i in itertools.product(cols, range(1, 13)):
                 dt = date(self.year, i, 1)
-                self._insert_empty_dicts(data, dt, title, keys)
+                data.append(self._insert_empty_dicts(dt, title, keys))
 
         return data
 
-    def _insert_empty_dicts(self, data, date, title, keys):
-        return data.append({
+    def _insert_empty_dicts(self, date, title, keys):
+        return {
             "date": date,
             "title": title,
             **{x: 0 for x in keys}
-        })
+        }
 
     def create_data(self, sum_col_name: str = "sum") -> DF:
         return (
