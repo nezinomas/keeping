@@ -70,9 +70,9 @@ class MakeDataFrame:
 
         return data
 
-    def _insert_empty_dicts(self, date, title, keys):
+    def _insert_empty_dicts(self, dt, title, keys):
         return {
-            "date": date,
+            "date": dt,
             "title": title,
             **{x: 0 for x in keys}
         }
