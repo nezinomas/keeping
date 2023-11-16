@@ -65,23 +65,34 @@ def test_month_expenses(month_data, columns):
     assert actual.columns == ["date", "T0", "T1", "T2"]
 
     # 1999-01-01 first row
-    assert actual[0, "T0"] == 0.0
-    assert actual[0, "T1"] == 4.0
-    assert actual[0, "T2"] == 2.0
+    assert actual[0, "T0"] == 0
+    assert actual[0, "T1"] == 7
+    assert actual[0, "T2"] == 2
 
     # 1999-12-01 last row
-    assert actual[11, "T0"] == 0.0
-    assert actual[11, "T1"] == 4.0
-    assert actual[11, "T2"] == 5.0
+    assert actual[11, "T0"] == 0
+    assert actual[11, "T1"] == 4
+    assert actual[11, "T2"] == 5
+
+
+def test_month_expenses_partial_data():
+    data = [
+        {"date": date(1999, 2, 1), "title": "X", "sum": 5},
+    ]
+
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data).data
+
+    assert actual.shape == (12, 2)
+    assert actual.columns == ["date", "X"]
 
 
 def test_month_no_data_expenses(columns):
     actual = make_dataframe.MakeDataFrame(year=1999, data=[], columns=columns).data
 
     for i in range(12):
-        assert actual[i, "T0"] == 0.0
-        assert actual[i, "T1"] == 0.0
-        assert actual[i, "T2"] == 0.0
+        assert actual[i, "T0"] == 0
+        assert actual[i, "T1"] == 0
+        assert actual[i, "T2"] == 0
 
 
 def test_month_dtype(month_data, columns):
@@ -156,14 +167,14 @@ def test_day_expenses(day_data, columns):
     assert actual.columns == ["date", "T0", "T1", "T2"]
 
     # first row 1999-01-01
-    assert actual[0, "T0"] == 0.0
-    assert actual[0, "T1"] == 5.0
-    assert actual[0, "T2"] == 2.0
+    assert actual[0, "T0"] == 0
+    assert actual[0, "T1"] == 5
+    assert actual[0, "T2"] == 2
 
     # last row 1999-01-30
-    assert actual[29, "T0"] == 0.0
-    assert actual[29, "T1"] == 3.0
-    assert actual[29, "T2"] == 0.0
+    assert actual[29, "T0"] == 0
+    assert actual[29, "T1"] == 3
+    assert actual[29, "T2"] == 0
 
 
 @pytest.mark.parametrize("data", [([]), (None)])
@@ -229,3 +240,139 @@ def test_expenses_and_exceptions_same_size(month_data, columns):
     )
 
     assert actual.exceptions.shape[0] == actual.data.shape[0]
+
+
+def test_transform_year_no_data():
+    actual = make_dataframe.MakeDataFrame(year=1999, data=[])._modify_data()
+
+    assert len(actual) == 12
+    assert actual[0] == {
+        "date": date(1999, 1, 1),
+        "title": "__tmp_to_drop__",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+    assert actual[11] == {
+        "date": date(1999, 12, 1),
+        "title": "__tmp_to_drop__",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+
+
+def test_transform_year_data_no_exeptions():
+    data = [
+        {"date": date(1999, 2, 1), "title": "X", "sum": 5},
+        {"date": date(1999, 3, 1), "title": "Y", "sum": 5},
+    ]
+
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data)._modify_data()
+
+    assert len(actual) == 26
+    assert actual[2] == {"date": date(1999, 1, 1), "title": "X", "sum": 0}
+    assert actual[13] == {"date": date(1999, 12, 1), "title": "X", "sum": 0}
+    assert actual[14] == {"date": date(1999, 1, 1), "title": "Y", "sum": 0}
+    assert actual[25] == {"date": date(1999, 12, 1), "title": "Y", "sum": 0}
+
+
+def test_transform_year_data_with_exeptions():
+    data = [
+        {"date": date(1999, 2, 1), "title": "X", "sum": 5, "exception_sum": 4},
+        {"date": date(1999, 3, 1), "title": "Y", "sum": 6, "exception_sum": 44},
+    ]
+
+    actual = make_dataframe.MakeDataFrame(year=1999, data=data)._modify_data()
+
+    assert len(actual) == 26
+    assert actual[2] == {
+        "date": date(1999, 1, 1),
+        "title": "X",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+    assert actual[13] == {
+        "date": date(1999, 12, 1),
+        "title": "X",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+    assert actual[14] == {
+        "date": date(1999, 1, 1),
+        "title": "Y",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+    assert actual[25] == {
+        "date": date(1999, 12, 1),
+        "title": "Y",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+
+
+def test_transform_month_no_data():
+    actual = make_dataframe.MakeDataFrame(year=1999, month=1, data=[])._modify_data()
+
+    assert len(actual) == 31
+    assert actual[0] == {
+        "date": date(1999, 1, 1),
+        "title": "__tmp_to_drop__",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+    assert actual[30] == {
+        "date": date(1999, 1, 31),
+        "title": "__tmp_to_drop__",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+
+
+def test_transform_month_data_no_exeptions():
+    data = [
+        {"date": date(1999, 3, 2), "title": "X", "sum": 5},
+        {"date": date(1999, 3, 1), "title": "Y", "sum": 5},
+    ]
+
+    actual = make_dataframe.MakeDataFrame(year=1999, month=3, data=data)._modify_data()
+
+    assert len(actual) == 64
+    assert actual[2] == {"date": date(1999, 3, 1), "title": "X", "sum": 0}
+    assert actual[32] == {"date": date(1999, 3, 31), "title": "X", "sum": 0}
+    assert actual[33] == {"date": date(1999, 3, 1), "title": "Y", "sum": 0}
+    assert actual[63] == {"date": date(1999, 3, 31), "title": "Y", "sum": 0}
+
+
+def test_transform_month_data_with_exeptions():
+    data = [
+        {"date": date(1999, 3, 4), "title": "X", "sum": 5, "exception_sum": 4},
+        {"date": date(1999, 3, 5), "title": "Y", "sum": 6, "exception_sum": 44},
+    ]
+
+    actual = make_dataframe.MakeDataFrame(year=1999, month=3, data=data)._modify_data()
+
+    assert len(actual) == 64
+    assert actual[2] == {
+        "date": date(1999, 3, 1),
+        "title": "X",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+    assert actual[32] == {
+        "date": date(1999, 3, 31),
+        "title": "X",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+    assert actual[33] == {
+        "date": date(1999, 3, 1),
+        "title": "Y",
+        "sum": 0,
+        "exception_sum": 0,
+    }
+    assert actual[63] == {
+        "date": date(1999, 3, 31),
+        "title": "Y",
+        "sum": 0,
+        "exception_sum": 0,
+    }
