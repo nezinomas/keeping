@@ -1,7 +1,6 @@
-{% load humanize %}
 {% load i18n %}
-{% load slippers %}
 {% load math %}
+{% load cell_format %}
 
 {% if object_list %}
 <table class="table table-sm table-striped table-hover">
@@ -23,10 +22,10 @@
             <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-start">{{ object.pension_type }}</td>
             <td class="text-start">{{ object.remark }}</td>
-            {% table_cell value=object.price|price %}
-            {% table_cell value=object.fee|price %}
-            {% edit_cell url=url_update %}
-            {% delete_cell url=url_delete %}
+            <td>{{object.price|price|cellformat}}</td>
+            <td class="{{object.fee|css_class_if_none}}">{{object.fee|price|cellformat}}</td>
+            {% include "core/includes/cell_edit.html" with url=url_update %}
+            {% include "core/includes/cell_delete.html" with url=url_delete %}
         </tr>
         {% endfor %}
     </tbody>
