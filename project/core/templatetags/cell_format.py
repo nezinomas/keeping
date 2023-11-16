@@ -75,12 +75,3 @@ def compare(value: str, args: str) -> str:
         return str()
 
     return "table-success" if _value >= _compare else "table-danger"
-
-
-@register.inclusion_tag("core/includes/cell.html")
-def cell(value, tag=None, css_class=None):
-    return {
-        "value": value,
-        "tag": tag,
-        "css_class": css_class
-    }
