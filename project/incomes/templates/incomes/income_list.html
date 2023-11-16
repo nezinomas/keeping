@@ -1,8 +1,7 @@
-{% load static %}
-{% load humanize %}
 {% load i18n %}
 {% load slippers %}
 {% load math %}
+{% load cell_format%}
 
 {% if object_list %}
 
@@ -28,9 +27,9 @@
                     <td class="text-start">{{ object.income_type }}</td>
                     <td class="text-start">{{ object.account }}</td>
                     <td class="text-start">{{ object.remark }}</td>
-                    {% table_cell value=object.price|price %}
-                    {% edit_cell url=url_update %}
-                    {% delete_cell url=url_delete %}
+                    <td>{{object.price|price|cellformat}}</td>
+                    {% include "core/includes/cell_edit.html" with url=url_update %}
+                    {% include "core/includes/cell_delete.html" with url=url_delete %}
                 </tr>
                 {% endfor %}
             </tbody>

@@ -4,6 +4,7 @@
 {% load slippers %}
 {% load colorize %}
 {% load math %}
+{% load cell_format %}
 
 
 {% if object_list %}
@@ -38,7 +39,7 @@
                     <td class="text-start">{{ object.expense_type }}</td>
                     <td class="text-start">{{ object.expense_name }}</td>
                     <td>{{ object.quantity }}</td>
-                    {% table_cell value=object.price|price %}
+                    <td>{{object.price|price|cellformat}}</td>
                     <td class="text-start cell-padding">{{ object.remark|linebreaksbr }}</td>
                     <td>{% if object.attachment %}
                         {% if not 'pdf' in object.attachment.url %}
@@ -49,8 +50,8 @@
                         {% endif %}
                     </td>
                     <td>{{ object.account }}</td>
-                    {% edit_cell url=url_update %}
-                    {% delete_cell url=url_delete %}
+                    {% include "core/includes/cell_edit.html" with url=url_update %}
+                    {% include "core/includes/cell_delete.html" with url=url_delete %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -59,7 +60,7 @@
                 <tr>
                     <th class="text-start" colspan="3">{% translate "Total" %}</th>
                     <th>{{sum_quantity}}</th>
-                    {% table_cell value=sum_price|price tag="th" %}
+                    <th>{{sum_price|price|cellformat}}</th>
                     <th class="text-start cell-padding">{{average|price|floatformat:"2g"}} <span style="font-weight: normal" class="ps-1">({% translate "Average unit price" %})</span></th>
                     <th colspan="4"></th>
                 </tr>

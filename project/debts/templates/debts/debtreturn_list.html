@@ -1,11 +1,11 @@
 {% load humanize %}
 {% load i18n %}
-{% load slippers %}
 {% load math %}
+{% load cell_format %}
 
 {% if object_list %}
 
-{% var target=request.resolver_match.kwargs.debt_type %}
+{% with request.resolver_match.kwargs.debt_type as target %}
 
 <table class="table table-sm table-striped table-hover">
     <thead>
@@ -29,22 +29,23 @@
         <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#dialog" class="{% ifchanged object.debt.name or ifchanged object.debt.closed %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
             <td class="text-center">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-start cell-padding">{{ object.debt.name }}</td>
-            {% table_cell value=object.price|price css_class="text-endcell-padding" %}
+            <td class="text-endcell-padding">{{object.price|price|cellformat}}</td>
             <td class="text-start cell-padding">{{ object.account }}</td>
             <td class="text-start">{{ object.remark }}</td>
             <td class="text-center">{% if object.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
             {% if not object.debt.closed %}
-                {% edit_cell url=url_update %}
-                {% delete_cell url=url_delete %}
+                {% include "core/includes/cell_edit.html" with url=url_update %}
+                {% include "core/includes/cell_delete.html" with url=url_delete %}
             {% else %}
-                {% edit_cell %}
-                {% delete_cell %}
+                <td class="edit-cell"></td>
+                <td class="delete-cell"></td>
             {% endif %}
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
+{% endwith %}
 {% else %}
 
 <div class="mx-auto text-center alert alert-warning py-2">

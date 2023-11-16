@@ -34,6 +34,13 @@ def cellformat(value, default: str = "-"):
 
 
 @register.filter
+def css_class_if_none(value, default: str = "dash"):
+    value = None if value == "None" else value
+
+    return "" if value else default
+
+
+@register.filter
 def negative(value):
     try:
         value = float(value)

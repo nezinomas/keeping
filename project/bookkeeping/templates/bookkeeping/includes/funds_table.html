@@ -2,6 +2,7 @@
 {% load slippers %}
 {% load get_item %}
 {% load math %}
+{% load cell_format %}
 
 {% if items %}
 <table class="table table-sm table-striped table-hover">
@@ -41,36 +42,36 @@
         <tr>
             {% if item.saving_type_id %}{% var obj_type='saving_type'%}{% else %}{% var obj_type='pension_type' %}{% endif %}
             <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="left" title="{{ item.latest_check|default_if_none:_('No record of account amount') }}" class="text-start right-grey-border">{{ item|get_obj_attr:obj_type }}</td>
-            {% table_cell value=item.past_amount|price css_class='w6' %}
-            {% table_cell value=item.past_fee|price css_class='w6 right-grey-border' %}
-            {% table_cell value=item.per_year_incomes|price css_class='w6' %}
-            {% table_cell value=item.per_year_fee|price css_class='w6 right-grey-border' %}
-            {% table_cell value=item.incomes|price css_class='w6' %}
-            {% table_cell value=item.fee|price css_class='w6' %}
-            {% table_cell value=item.sold|price css_class='w6' %}
-            {% table_cell value=item.sold_fee|price css_class='w6  right-grey-border' %}
-            {% table_cell value=item.invested|price css_class='w6' %}
-            {% table_cell value=item.market_value|price css_class='right-blue-border w6' %}
-            {% table_cell value=item.profit_sum|price text_after='€' highlight_value=True css_class='w6' %}
-            {% table_cell value=item.invested|percent:item.market_value|sub:100 text_after='%' highlight_value=True css_class='w6' %}
+            <td class="w6 {{item.past_amount|css_class_if_none}}">{{item.past_amount|price|cellformat}}</td>
+            <td class="w6 right-grey-border {{item.past_fee|css_class_if_none}}">{{item.past_fee|price|cellformat}}</td>
+            <td class="w6 {{item.per_year_incomes|css_class_if_none}}">{{item.per_year_incomes|price|cellformat}}</td>
+            <td class="w6 right-grey-border {{item.per_year_fee|css_class_if_none}}">{{item.per_year_fee|price|cellformat}}</td>
+            <td class="w6 {{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
+            <td class="w6 {{item.fee|css_class_if_none}}">{{item.fee|price|cellformat}}</td>
+            <td class="w6 {{item.sold|css_class_if_none}}">{{item.sold|price|cellformat}}</td>
+            <td class="w6  right-grey-border {{item.sold_fee|css_class_if_none}}">{{item.sold_fee|price|cellformat}}</td>
+            <td class="w6 {{item.invested|css_class_if_none}}">{{item.invested|price|cellformat}}</td>
+            <td class="w6 right-blue-border {{item.market_value|css_class_if_none}}">{{item.market_value|price|cellformat}}</td>
+            <td class="w6 {{item.profit_sum|css_class_if_none}}">{{item.profit_sum|price|cellformat}}</td>
+            <td class="w6 {{item.invested|css_class_if_none}}">{{item.invested|percent:item.market_value|sub:100|cellformat}}%</td>
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr >
             <th class="text-start right-grey-border">{% translate 'Total' %}</th>
-            {% table_cell value=total_row.past_amount|price tag='th' %}
-            {% table_cell value=total_row.past_fee|price tag='th' css_class="right-grey-border" %}
-            {% table_cell value=total_row.per_year_incomes|price tag='th' %}
-            {% table_cell value=total_row.per_year_fee|price tag='th' css_class="right-grey-border" %}
-            {% table_cell value=total_row.incomes|price tag='th' %}
-            {% table_cell value=total_row.fee|price tag='th' %}
-            {% table_cell value=total_row.sold|price tag='th' %}
-            {% table_cell value=total_row.sold_fee|price tag='th' css_class="right-grey-border" %}
-            {% table_cell value=total_row.invested|price tag='th' %}
-            {% table_cell value=total_row.market_value|price tag='th' css_class='right-blue-border' %}
-            {% table_cell value=total_row.profit_sum|price text_after='€' highlight_value=True tag='th' %}
-            {% table_cell value=total_row.invested|percent:total_row.market_value|sub:100 text_after='%' highlight_value=True tag='th' %}
+            <th class="{{total_row.past_amount|css_class_if_none}}">{{total_row.past_amount|price|cellformat}}</th>
+            <th class="right-grey-border {{total_row.past_fee|css_class_if_none}}">{{total_row.past_fee|price|cellformat}}</th>
+            <th class="{{total_row.per_year_incomes|css_class_if_none}}">{{total_row.per_year_incomes|price|cellformat}}</th>
+            <th class="right-grey-border {{total_row.per_year_fee|css_class_if_none}}">{{total_row.per_year_fee|price|cellformat}}</th>
+            <th class="{{total_row.incomes|css_class_if_none}}">{{total_row.incomes|price|cellformat}}</th>
+            <th class="{{total_row.fee|css_class_if_none}}">{{total_row.fee|price|cellformat}}</th>
+            <th class="{{total_row.sold|css_class_if_none}}">{{total_row.sold|price|cellformat}}</th>
+            <th class="right-grey-border {{total_row.sold_fee|css_class_if_none}}">{{total_row.sold_fee|price|cellformat}}</th>
+            <th class="{{total_row.invested|css_class_if_none}}">{{total_row.invested|price|cellformat}}</th>
+            <th class="right-blue-border {{total_row.market_value|css_class_if_none}}">{{total_row.market_value|price|cellformat}}</th>
+            <th class="{{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_sum|price|cellformat}}</th>
+            <th class="{{total_row.invested|css_class_if_none}}">{{total_row.invested|percent:total_row.market_value|sub:100|cellformat}}%</th>
         </tr>
     </tfoot>
 </table>

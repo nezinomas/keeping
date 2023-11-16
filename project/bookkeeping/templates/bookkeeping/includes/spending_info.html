@@ -1,5 +1,4 @@
 {% load cell_format %}
-{% load slippers %}
 {% load i18n %}
 {% load math %}
 
@@ -15,17 +14,20 @@
     <tbody>
         {% for item in ctx %}
         <tr>
-            {% table_cell value=item.title %}
-            {% table_cell value=item.plan|price %}
+            <td>{{item.title}}</td>
+            <td>{{item.plan|price|cellformat}}</td>
 
             {% if item.title == _('Incomes') or item.title == _('Balance') %}
-                {% table_cell value=item.fact|price css_class=item.fact|compare:item.plan %}
-                {% table_cell value=item.fact|sub:item.plan|price highlight_value=True %}
-            {% else %}
-                {% table_cell value=item.fact|price css_class=item.plan|compare:item.fact %}
-                {% table_cell value=item.plan|sub:item.fact|price highlight_value=True %}
-            {% endif %}
 
+            <td class="{{item.fact|compare:item.plan}}">{{item.fact|price|cellformat:"0,00"}}</td>
+                {% with item.fact|sub:item.plan as val %}<td class="{{val|positive_negative}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
+
+            {% else %}
+
+                <td class="{{item.plan|compare:item.fact}}">{{item.fact|price|cellformat:"0,00"}}</td>
+                {% with item.plan|sub:item.fact as val %}<td class="{{val|positive_negative}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
+
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>

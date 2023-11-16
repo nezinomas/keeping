@@ -1,7 +1,8 @@
 {% load i18n %}
-{% load slippers %}
 {% load get_item %}
 {% load math %}
+{% load cell_format %}
+
 
 <table class="table table-sm table-striped table-hover">
     <thead>
@@ -20,22 +21,26 @@
         <tr>
             <td class="text-start">{{ item.date|date:"F"|title }}</td>
             {% for category in ctx.categories %}
-            {% table_cell value=item|get_item:category|price %}
+            {% with item|get_item:category as val%}<td class="{{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
             {% endfor %}
-            {% table_cell value=total_column.total|price css_class="left-blue-border" %}
+            <td class="left-blue-border {{total_column.total|css_class_if_none}}">{{total_column.total|price|cellformat}}</td>
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <th class="text-start">Avg</th>
-            {% for category in ctx.categories %}{% table_cell value=ctx.avg_row|get_item:category|price tag='th' %}{% endfor %}
-            {% table_cell value=ctx.avg|price tag='th' css_class="left-blue-border" %}
+            {% for category in ctx.categories %}{% with ctx.avg_row|get_item:category as val %}
+            <th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>
+            {% endwith %}{% endfor %}
+            <th class="left-blue-border {{ctx.avg|css_class_if_none}}">{{ctx.avg|price|cellformat}}</th>
         </tr>
         <tr>
             <th class="text-start">{% translate 'Total' %}</th>
-            {% for category in ctx.categories %}{% table_cell value=ctx.total_row|get_item:category|price tag='th' %}{% endfor %}
-            {% table_cell value=ctx.total|price tag='th' css_class="left-blue-border" %}
+            {% for category in ctx.categories %}{% with ctx.total_row|get_item:category as val%}
+            <th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>
+            {% endwith %}{% endfor %}
+            <th class="left-blue-border {{ctx.total|css_class_if_none}}">{{ctx.total|price|cellformat}}</th>
         </tr>
     </tfoot>
 </table>

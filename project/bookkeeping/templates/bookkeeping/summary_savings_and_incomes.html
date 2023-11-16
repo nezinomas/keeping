@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load slippers %}
 {% load math %}
+{% load cell_format %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -26,15 +27,21 @@
         <tbody>
             <tr>
                 <td class="text-start">{{chart_data.text.incomes}}</td>
-                {% for obj in chart_data.incomes %}{% table_cell value=obj|price %}{% endfor %}
+                {% for obj in chart_data.incomes %}
+                <td class="{{obj|css_class_if_none}}">{{obj|price|cellformat}}</td>
+                {% endfor %}
             </tr>
             <tr>
                 <td class="text-start">{{chart_data.text.savings}}</td>
-                {% for obj in chart_data.savings %}{% table_cell value=obj|price %}{% endfor %}
+                {% for obj in chart_data.savings %}
+                <td class="{{obj|css_class_if_none}}">{{obj|price|cellformat}}</td>
+                {% endfor %}
             </tr>
             <tr>
                 <td class="text-start">{{chart_data.text.percents}}</td>
-                {% for obj in chart_data.percents %}{% table_cell value=obj %}{% endfor %}
+                {% for obj in chart_data.percents %}
+                <td class="{{obj|css_class_if_none}}">{{obj|price|cellformat}}</td>
+                {% endfor %}
             </tr>
         </tbody>
     </table>
