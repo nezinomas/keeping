@@ -10,8 +10,8 @@ from ...incomes.models import Income
 from ...plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ...savings.models import Saving
 from ..lib.balance_base import BalanceBase
-from ..lib.make_dataframe import MakeDataFrame
 from ..lib.day_spending import DaySpending
+from ..lib.make_dataframe import MakeDataFrame
 
 
 @dataclass
