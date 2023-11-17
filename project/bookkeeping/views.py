@@ -2,7 +2,6 @@ from datetime import datetime
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.mixins.formset import FormsetMixin
