@@ -1,49 +1,23 @@
-from dataclasses import dataclass, field
-
-import polars as pl
-
 from ...accounts.models import AccountBalance
+from ...core.lib.utils import total_row
 
 
-@dataclass
-class AccountServiceData:
-    year: int
-
-    data: list = field(init=False, default_factory=list)
-
-    def __post_init__(self):
-        self.data = AccountBalance.objects.year(self.year)
-
-
-class AccountService:
-    def __init__(self, data: AccountServiceData):
-        self.data = data.data
-
-    def total_row(self) -> dict:
-        if not self.data:
-            return {}
-
-        fields = [
-            "past",
-            "incomes",
-            "expenses",
-            "balance",
-            "have",
-            "delta",
-        ]
-
-        data = [x.__dict__ for x in self.data]
-
-        df = pl.DataFrame(data).select([pl.col(i) for i in fields]).sum().to_dicts()
-
-        return df[0] if df else {}
+def get_data(year: int) -> AccountBalance:
+    return AccountBalance.objects.year(year)
 
 
 def load_service(year: int) -> dict:
-    data = AccountServiceData(year)
-    obj = AccountService(data)
+    data = get_data(year)
+    fields = [
+        "past",
+        "incomes",
+        "expenses",
+        "balance",
+        "have",
+        "delta",
+    ]
 
     return {
-        "items": obj.data,
-        "total_row": obj.total_row(),
+        "items": data,
+        "total_row": total_row(data, fields),
     }
