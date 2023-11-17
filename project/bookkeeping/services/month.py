@@ -184,6 +184,24 @@ class MainTable:
         )
 
 
+@dataclass
+class Info:
+    income: int
+    saving: int
+    expense: int
+    per_day: int
+    balance: int
+
+    def __sub__(self, other):
+        return __class__(
+            other.income - self.income,
+            self.saving - other.saving,
+            self.expense - other.expense,
+            self.per_day - other.per_day,
+            other.balance - self.balance,
+        )
+
+
 def load_service(year: int, month: int) -> dict:
     data = MonthServiceData(year, month)
     df_expenses = MakeDataFrame(year, data.expenses, data.expense_types, month)

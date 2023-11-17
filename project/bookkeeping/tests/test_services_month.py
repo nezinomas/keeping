@@ -1,12 +1,12 @@
 from datetime import date
-from itertools import zip_longest
 from types import SimpleNamespace
+from numpy import isin
 
 import pytest
 import time_machine
 from mock import MagicMock
 
-from ..services.month import MainTable, MonthService
+from ..services.month import Info, MainTable, MonthService
 
 
 @time_machine.travel("1999-1-1")
@@ -246,3 +246,18 @@ def test_main_table_total_row():
     actual = MainTable(year, month, expense, expense_type, saving).total_row
 
     assert actual == {"A": 4, "B": 0, "Viso": 4, "Taupymas": 2}
+
+
+def test_info_class_sub_method():
+    a = Info(income=9, saving=8, expense=7, per_day=6, balance=5)
+    b = Info(income=1, saving=2, expense=3, per_day=4, balance=4)
+
+    actual = a - b
+
+    assert isinstance(actual, Info)
+
+    assert actual.income == -8
+    assert actual.saving == 6
+    assert actual.expense == 4
+    assert actual.per_day == 2
+    assert actual.balance == -1
