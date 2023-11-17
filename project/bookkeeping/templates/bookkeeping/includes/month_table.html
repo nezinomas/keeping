@@ -56,11 +56,11 @@
             {% endfor %}
 
             <!-- total expenses -->
-            {% with ctx.total as val%}<th class="{{val|css_class_if_none}} left-blue-double-border right-blue-double-border">{{val|price|cellformat}}</th>{% endwith %}
+            {% with ctx.total_row|get_item:_("Viso") as val%}<th class="{{val|css_class_if_none}} left-blue-double-border right-blue-double-border">{{val|price|cellformat}}</th>{% endwith %}
 
 
             <!-- savings -->
-            {% with ctx.total_savings as val%}<th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>{% endwith %}
+            {% with ctx.total_row|get_item:_("Taupymas") as val%}<th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>{% endwith %}
 
             <th class="empty-column"></th>
             <th></th>

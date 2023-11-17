@@ -212,6 +212,7 @@ def load_service(year: int, month: int) -> dict:
         expense_type=data.expense_types,
         saving=data.savings,
     )
+
     return {
         "month_table": {
             "day": current_day(year, month, False),
@@ -220,9 +221,7 @@ def load_service(year: int, month: int) -> dict:
                 spending.spending,
             ),
             "expense_types": data.expense_types,
-            "total": spending.total,
-            "total_row": spending.total_row,
-            "total_savings": savings.total,
+            "total_row": main_table.total_row,
         },
         "info": service.info_context(),
         "chart_expenses": service.chart_expenses_context(),
