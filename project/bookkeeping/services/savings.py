@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Dict
 
 from django.db.models import Sum
+from django.utils.translation import gettext as _
 
 from ...core.lib import utils
 from ...incomes.models import Income
@@ -9,59 +9,52 @@ from ...savings.models import Saving, SavingBalance
 
 
 @dataclass
-class SavingServiceData:
-    year: int
-
-    incomes: float = field(init=False, default=0)
-    savings: list = field(init=False, default_factory=list)
-    total_savings: float = field(init=False, default=0)
-    data: list = field(init=False, default_factory=list)
-
-    def __post_init__(self):
-        # incomes
-        self.incomes = (
-            Income.objects.related()
-            .year(year=self.year)
-            .aggregate(Sum("price"))["price__sum"]
-        )
-
-        self.total_savings = (
-            Saving.objects.related()
-            .year(self.year)
-            .aggregate(Sum("price"))["price__sum"]
-            or 0
-        )
-
-        # data
-        self.data = SavingBalance.objects.year(self.year).exclude(
-            saving_type__type="pensions"
-        )
+class Data:
+    savings: list
+    savings_total: int
+    incomes_total: int
 
 
-class SavingsService:
-    def __init__(self, data: SavingServiceData):
-        self.data = data.data
-        self.incomes = data.incomes
-        self.total_savings = data.total_savings
+def get_data(year: int) -> Data:
+    incomes_total = (
+        Income.objects.related()
+        .year(year=year)
+        .aggregate(Sum("price", default=0))["price__sum"]
+    )
 
-    def context(self) -> Dict:
-        fields = [
-            "past_amount",
-            "past_fee",
-            "per_year_incomes",
-            "per_year_fee",
-            "fee",
-            "incomes",
-            "sold",
-            "sold_fee",
-            "invested",
-            "market_value",
-            "profit_sum",
-        ]
+    savings_total = (
+        Saving.objects.related()
+        .year(year)
+        .aggregate(Sum("price", default=0))["price__sum"]
+    )
 
-        return {
-            "items": self.data,
-            "total_row": utils.sum_all(self.data, fields),
-            "incomes": self.incomes,
-            "savings": self.total_savings,
-        }
+    savings = SavingBalance.objects.year(year).exclude(
+        saving_type__type="pensions"
+    )
+    return Data(savings, savings_total, incomes_total)
+
+
+def load_service(year: int) -> dict:
+    data = get_data(year)
+    fields = [
+        "past_amount",
+        "past_fee",
+        "per_year_incomes",
+        "per_year_fee",
+        "fee",
+        "incomes",
+        "sold",
+        "sold_fee",
+        "invested",
+        "market_value",
+        "profit_sum",
+    ]
+
+    return {
+        "title": _("Funds"),
+        "type": "savings",
+        "object_list": data.savings,
+        "incomes_total": data.incomes_total,
+        "savings_total": data.savings_total,
+        "total_row": utils.total_row(data.savings, fields),
+    }
