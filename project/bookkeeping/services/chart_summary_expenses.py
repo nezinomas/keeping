@@ -2,6 +2,8 @@ import itertools
 import operator
 from dataclasses import dataclass, field
 
+from django.utils.translation import gettext as _
+
 from ...expenses.models import Expense
 
 
@@ -93,3 +95,21 @@ class ChartSummaryExpensesService:
     def _calc_total_row(self, data):
         matrix = [x["data"] for x in data]
         self.total_row = [sum(idx) for idx in zip(*matrix)]
+
+
+def load_service(form_data):
+    data = ChartSummaryExpensesServiceData(form_data)
+    obj = ChartSummaryExpensesService(data=data)
+
+    if obj.serries_data:
+        return {
+            "found": True,
+            "total_col": obj.total_col,
+            "total_row": obj.total_row,
+            "total": obj.total,
+            "chart": {
+                "categories": obj.categories,
+                "data": obj.serries_data,
+            },
+        }
+    return {"found": False, "error": _("No data found")}

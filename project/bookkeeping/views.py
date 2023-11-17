@@ -193,25 +193,10 @@ class SummaryExpenses(FormViewMixin):
 
     def form_valid(self, form, **kwargs):
         form_data = form.cleaned_data.get("types")
-        srv = services.chart_summary_expenses
-        data = srv.ChartSummaryExpensesServiceData(form_data)
-        obj = srv.ChartSummaryExpensesService(data=data)
-
-        context = {"found": False, "form": form}
-
-        if obj.serries_data:
-            context |= {
-                "found": True,
-                "total_col": obj.total_col,
-                "total_row": obj.total_row,
-                "total": obj.total,
-                "chart": {
-                    "categories": obj.categories,
-                    "data": obj.serries_data,
-                },
-            }
-        else:
-            context["error"] = _("No data found")
+        context = {
+            "form": form,
+            **services.chart_summary_expenses.load_service(form_data)
+        }
 
         return render(self.request, self.template_name, context)
 
