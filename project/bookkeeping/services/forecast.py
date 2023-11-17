@@ -1,15 +1,14 @@
-import polars as pl
 from dataclasses import dataclass
 
+import polars as pl
 from django.db.models import Sum
-from types import SimpleNamespace
 
 from ...accounts.models import AccountBalance
+from ...core.lib.date import monthnames
 from ...expenses.models import Expense
 from ...incomes.models import Income
-from ...savings.models import Saving
 from ...plans.models import IncomePlan
-from ...core.lib.date import monthnames
+from ...savings.models import Saving
 
 
 @dataclass
