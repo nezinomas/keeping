@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass, field
 from typing import Dict, List
 
 from django.db.models import Sum
@@ -7,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from ...accounts.models import AccountBalance
 from ...expenses.models import Expense, ExpenseType
 from ...savings.models import Saving, SavingBalance
-from dataclasses import dataclass, field
+from ...users.models import Journal
 
 
 @dataclass
@@ -136,10 +137,17 @@ class NoIncomes:
         return incomes / expenses if expenses else 0
 
 
-def load_service(year, journal):
+def load_service(year: int, journal: Journal) -> dict:
     data = NoIncomesData(
         year=year,
         unnecessary_expenses=journal.unnecessary_expenses,
         unnecessary_savings=journal.unnecessary_savings,
     )
-    return NoIncomes(data)
+    obj = NoIncomes(data)
+
+    return {
+        "no_incomes": obj.summary,
+        "save_sum": obj.cut_sum,
+        "not_use": obj.unnecessary,
+        "avg_expenses": obj.avg_expenses,
+    }

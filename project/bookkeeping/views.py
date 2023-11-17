@@ -124,14 +124,8 @@ class NoIncomes(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         journal = self.request.user.journal
-        service = no_incomes.load_service(year, journal)
+        context = no_incomes.load_service(year, journal)
 
-        context = {
-            "no_incomes": service.summary,
-            "save_sum": service.cut_sum,
-            "not_use": service.unnecessary,
-            "avg_expenses": service.avg_expenses,
-        }
         return super().get_context_data(**kwargs) | context
 
 
