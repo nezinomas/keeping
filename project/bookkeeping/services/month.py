@@ -158,7 +158,6 @@ class MainTable:
         self.df = self.make_table(year, month, expense, expense_type, saving)
 
     def make_table(self, year, month, expense, expense_type, saving):
-        pl.Config.set_fmt_str_lengths(100)
         df_expense = MakeDataFrame(
             year=year, month=month, data=expense, columns=expense_type
         ).data
