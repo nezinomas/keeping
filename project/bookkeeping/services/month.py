@@ -170,7 +170,7 @@ class MonthService:
         return incomes - savings
 
 
-def load_service(year, month):
+def load_service(year: int, month: int) -> dict:
     data = MonthServiceData(year, month)
     df_expenses = MakeDataFrame(year, data.expenses, data.expense_types, month)
     df_savings = MakeDataFrame(year, data.savings, None, month)
@@ -182,9 +182,16 @@ def load_service(year, month):
         expenses_free=plans.expenses_free,
     )
 
-    return MonthService(
+    service = MonthService(
         data=data,
         plans=plans,
         savings=BalanceBase(df_savings.data),
         spending=spending,
     )
+
+    return {
+        "month_table": service.month_table_context(),
+        "info": service.info_context(),
+        "chart_expenses": service.chart_expenses_context(),
+        "chart_targets": service.chart_targets_context(),
+    }

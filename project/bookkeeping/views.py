@@ -136,14 +136,8 @@ class Month(MonthMixin, TemplateViewMixin):
         self.set_month()
 
         user = self.request.user
-        service = services.month.load_service(user.year, user.month)
+        context = services.month.load_service(user.year, user.month)
 
-        context = {
-            "month_table": service.month_table_context(),
-            "info": service.info_context(),
-            "chart_expenses": service.chart_expenses_context(),
-            "chart_targets": service.chart_targets_context(),
-        }
         return super().get_context_data(**kwargs) | context
 
 
