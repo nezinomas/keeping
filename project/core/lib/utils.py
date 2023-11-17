@@ -31,3 +31,7 @@ def sum_col(arr: List[Dict], key: Any) -> float:
     rtn = sum_all(arr)
 
     return rtn.get(key, 0)
+
+
+def total_row(data, fields) -> dict:
+    return {field: sum(getattr(d, field, 0) for d in data) for field in fields}

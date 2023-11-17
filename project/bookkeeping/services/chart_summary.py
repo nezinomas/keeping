@@ -67,3 +67,13 @@ class ChartSummaryService:
         }
 
         return context
+
+
+def load_service() -> dict:
+    data = ChartSummaryServiceData()
+    obj = ChartSummaryService(data)
+
+    return {
+        "chart_balance": obj.chart_balance(),
+        "chart_incomes": obj.chart_incomes(),
+    }

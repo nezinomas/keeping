@@ -4,7 +4,7 @@
 {% load math %}
 {% load cell_format %}
 
-{% if items %}
+{% if object_list %}
 <table class="table table-sm table-striped table-hover">
     <thead>
         <tr>
@@ -38,7 +38,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in items %}
+        {% for item in object_list %}
         <tr>
             {% if item.saving_type_id %}{% var obj_type='saving_type'%}{% else %}{% var obj_type='pension_type' %}{% endif %}
             <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="left" title="{{ item.latest_check|default_if_none:_('No record of account amount') }}" class="text-start right-grey-border">{{ item|get_obj_attr:obj_type }}</td>
@@ -58,7 +58,7 @@
         {% endfor %}
     </tbody>
     <tfoot>
-        <tr >
+        <tr>
             <th class="text-start right-grey-border">{% translate 'Total' %}</th>
             <th class="{{total_row.past_amount|css_class_if_none}}">{{total_row.past_amount|price|cellformat}}</th>
             <th class="right-grey-border {{total_row.past_fee|css_class_if_none}}">{{total_row.past_fee|price|cellformat}}</th>

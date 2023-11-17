@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+from django.utils.translation import gettext as _
+
 from ...core.lib.date import years
 from ...incomes.models import Income
 from ...savings.models import Saving
@@ -41,3 +43,20 @@ class ServiceSummarySavingsAndIncomes:
             "savings": _saving_values,
             "percents": _percent_values,
         }
+
+def load_service() -> dict:
+    data = ServiceSummarySavingsAndIncomesData()
+    obj = ServiceSummarySavingsAndIncomes(data)
+
+    text = {
+        "text": {
+            "title": _("Incomes and Savings"),
+            "incomes": _("Incomes"),
+            "savings": _("Savings"),
+            "percents": _("Percents"),
+        }
+    }
+
+    return {
+        "chart_data": obj.chart_data() | text,
+    }

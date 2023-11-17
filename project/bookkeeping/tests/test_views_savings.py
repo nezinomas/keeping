@@ -32,7 +32,7 @@ def test_view_context(client_logged):
 
     assert actual["title"] == "Fondai"
     assert actual["type"] == "savings"
-    assert "items" in actual
+    assert "object_list" in actual
     assert "total_row" in actual
 
 
@@ -42,7 +42,7 @@ def test_view_context_no_pensions_type(client_logged):
 
     url = reverse("bookkeeping:savings")
     response = client_logged.get(url)
-    actual = response.context["items"]
+    actual = response.context["object_list"]
 
     assert len(actual) == 1
     assert actual[0].saving_type.title == 'FFF'
@@ -110,9 +110,9 @@ def test_latest_check(client_logged):
 
     url = reverse("bookkeeping:savings")
     response = client_logged.get(url)
-    items = response.context["items"]
+    object_list = response.context["object_list"]
 
-    assert items[0].latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
+    assert object_list[0].latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
 
 
 def test_regenerate_buttons(client_logged):

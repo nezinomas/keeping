@@ -1,32 +1,23 @@
-from dataclasses import dataclass, field
-
 from ...accounts.models import AccountBalance
-from ...core.lib import utils
+from project.core.lib import utils
 
 
-@dataclass
-class AccountServiceData:
-    year: int
-
-    data: list = field(init=False, default_factory=list)
-
-    def __post_init__(self):
-        self.data = AccountBalance.objects.year(self.year)
+def get_data(year: int) -> AccountBalance:
+    return AccountBalance.objects.year(year)
 
 
-class AccountService:
-    def __init__(self, data: AccountServiceData):
-        self.data = data.data
+def load_service(year: int) -> dict:
+    data = get_data(year)
+    fields = [
+        "past",
+        "incomes",
+        "expenses",
+        "balance",
+        "have",
+        "delta",
+    ]
 
-    @property
-    def total_row(self) -> dict:
-        fields = [
-            "past",
-            "incomes",
-            "expenses",
-            "balance",
-            "have",
-            "delta",
-        ]
-
-        return utils.sum_all(self.data, fields)
+    return {
+        "items": data,
+        "total_row": utils.total_row(data, fields),
+    }

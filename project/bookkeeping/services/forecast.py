@@ -1,15 +1,14 @@
-import polars as pl
 from dataclasses import dataclass
 
+import polars as pl
 from django.db.models import Sum
-from types import SimpleNamespace
 
 from ...accounts.models import AccountBalance
+from ...core.lib.date import monthnames
 from ...expenses.models import Expense
 from ...incomes.models import Income
-from ...savings.models import Saving
 from ...plans.models import IncomePlan
-from ...core.lib.date import monthnames
+from ...savings.models import Saving
 
 
 @dataclass
@@ -116,13 +115,14 @@ class ForecastService:
         return total
 
 
-def load_service(year, month) -> SimpleNamespace:
+def load_service(year: int, month: int) -> dict:
     data = ForecastServiceData(year)
-    beginning = data.amount_at_beginning_of_year()
     forecast = ForecastService(month, data.data()).forecast()
 
-    return SimpleNamespace(
-        beginning = beginning,
-        end = beginning + forecast,
-        forecast = forecast
-    )
+    beginning = data.amount_at_beginning_of_year()
+    end = beginning + forecast
+
+    return {
+        "data": [beginning, end, forecast],
+        "highlight": [False, False, True],
+    }

@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from django.db.models import Sum
+from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
 from ...pensions.models import PensionBalance
@@ -63,5 +64,12 @@ class WealthService:
         )
 
 
-def load_service(year: int) -> WealthService:
-    return WealthService(WealthServiceData(year))
+def load_service(year: int) -> dict:
+    obj = WealthService(WealthServiceData(year))
+
+    return {
+        "data": {
+            "title": [_("Money"), _("Wealth")],
+            "data": [obj.money, obj.wealth],
+        }
+    }
