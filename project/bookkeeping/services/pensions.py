@@ -1,6 +1,8 @@
 import itertools as it
 from dataclasses import dataclass, field
 
+from django.utils.translation import gettext as _
+
 from ...core.lib import utils
 from ...pensions.models import PensionBalance
 from ...savings.models import SavingBalance
@@ -38,3 +40,15 @@ class PensionsService:
             "profit_sum",
         ]
         return utils.sum_all([x.__dict__ for x in self.data], fields)
+
+
+def load_service(year: int) -> dict:
+    data = PensionServiceData(year)
+    obj = PensionsService(data)
+
+    return {
+        "title": _("Pensions"),
+        "type": "pensions",
+        "items": obj.data,
+        "total_row": obj.total_row,
+    }
