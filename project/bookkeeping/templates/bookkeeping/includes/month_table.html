@@ -1,4 +1,3 @@
-
 {% load get_item %}
 {% load template_filters %}
 {% load cell_format %}
@@ -19,26 +18,26 @@
         </tr>
     </thead>
     <tbody x-data="make_x_data()">
-        {% for balance, balance_total_column, spending, saving_total_column in ctx.expenses %}
-        {% with balance.date|date:'w'|weekend:'weekend-col' as weekend_col %}
-        {% with balance.date|date:'j' as day_int %}
-        {% url 'bookkeeping:expand_day_expenses' balance.date|date:'Ymd' as url_expand %}
+        {% for table, spending in ctx.expenses %}
+        {% with table.date|date:'w'|weekend:'weekend-col' as weekend_col %}
+        {% with table.date|date:'j' as day_int %}
+        {% url 'bookkeeping:expand_day_expenses' table.date|date:'Ymd' as url_expand %}
         <tr
-            id="balance{{day_int}}"
+            id="table{{day_int}}"
             {% if ctx.day|slugify == day_int %}class="current-day"{% endif %}>
             <td class="text-start {{weekend_col}} panel-heading" :class="open{{day_int}} ? 'active' : ''">
-                <a role="button" class="btn btn-xs no-hover" data-bs-toggle="collapse" aria-expanded="true" hx-get="{{url_expand}}" hx-target="#balance{{day_int}}" hx-swap="afterend" hx-trigger="click once" @click="open{{day_int}} = !open{{day_int}}">{{balance.date|date:'d'}}</a>
+                <a role="button" class="btn btn-xs no-hover" data-bs-toggle="collapse" aria-expanded="true" hx-get="{{url_expand}}" hx-target="#table{{day_int}}" hx-swap="afterend" hx-trigger="click once" @click="open{{day_int}} = !open{{day_int}}">{{table.date|date:'d'}}</a>
             </td>
             {% for cat in ctx.expense_types %}
-              {% with balance|get_item:cat as val%}
+              {% with table|get_item:cat as val%}
               <td class="{{weekend_col}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{%endwith%}
             {% endfor %}
 
             <!-- total expenses -->
-            {% with balance_total_column.total as val%}<td class="{{weekend_col|add:' left-blue-double-border right-blue-double-border'}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
+            {% with table|get_item:_("Viso") as val%}<td class="{{weekend_col|add:' left-blue-double-border right-blue-double-border'}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- savings -->
-            {% with saving_total_column.total as val%}<td class="{{weekend_col}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
+            {% with table|get_item:_("Taupymas") as val%}<td class="{{weekend_col}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- spending -->
             <td class="text-start {{weekend_col}} empty-column">{{spending.date|date:'l'}}</td>

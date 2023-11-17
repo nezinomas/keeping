@@ -161,7 +161,12 @@ class MainTable:
         df_expense = MakeDataFrame(
             year=year, month=month, data=expense, columns=expense_type
         ).data
-        df_expense = df_expense.with_columns(pl.sum_horizontal(pl.exclude("date")).alias(_("Total")))
+
+        # if exists only one column (dates) i.e. there are no expense_types
+        if df_expense.shape[1] > 1:
+            df_expense = df_expense.with_columns(
+                pl.sum_horizontal(pl.exclude("date")).alias(_("Total"))
+            )
         df_saving = MakeDataFrame(year=year, month=month, data=saving).data
 
         return df_expense.join(df_saving, on="date", how="outer")
@@ -200,14 +205,19 @@ def load_service(year: int, month: int) -> dict:
         spending=spending,
     )
 
+    main_table = MainTable(
+        year=year,
+        month=month,
+        expense=data.expenses,
+        expense_type=data.expense_types,
+        saving=data.savings,
+    )
     return {
         "month_table": {
             "day": current_day(year, month, False),
             "expenses": it.zip_longest(
-                spending.balance,
-                spending.total_column,
+                main_table.table,
                 spending.spending,
-                savings.total_column,
             ),
             "expense_types": data.expense_types,
             "total": spending.total,
