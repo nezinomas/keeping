@@ -41,13 +41,8 @@ class Accounts(TemplateViewMixin):
     template_name = "bookkeeping/includes/account_worth_list.html"
 
     def get_context_data(self, **kwargs):
-        data = services.accounts.AccountServiceData(self.request.user.year)
-        obj = services.accounts.AccountService(data=data)
+        context = services.accounts.load_service(self.request.user.year)
 
-        context = {
-            "items": obj.data,
-            "total_row": obj.total_row,
-        }
         return super().get_context_data(**kwargs) | context
 
 

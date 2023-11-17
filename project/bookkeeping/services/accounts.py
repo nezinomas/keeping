@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 
+import polars as pl
+
 from ...accounts.models import AccountBalance
-from ...core.lib import utils
 
 
 @dataclass
@@ -18,8 +19,10 @@ class AccountService:
     def __init__(self, data: AccountServiceData):
         self.data = data.data
 
-    @property
     def total_row(self) -> dict:
+        if not self.data:
+            return {}
+
         fields = [
             "past",
             "incomes",
@@ -29,4 +32,18 @@ class AccountService:
             "delta",
         ]
 
-        return utils.sum_all(self.data, fields)
+        data = [x.__dict__ for x in self.data]
+
+        df = pl.DataFrame(data).select([pl.col(i) for i in fields]).sum().to_dicts()
+
+        return df[0] if df else {}
+
+
+def load_service(year: int) -> dict:
+    data = AccountServiceData(year)
+    obj = AccountService(data)
+
+    return {
+        "items": obj.data,
+        "total_row": obj.total_row(),
+    }
