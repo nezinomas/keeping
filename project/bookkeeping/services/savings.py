@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 from typing import Dict
 
 from django.db.models import Sum
-from django.db.models.fields import IntegerField
 
 from ...core.lib import utils
 from ...incomes.models import Income
@@ -23,13 +22,13 @@ class SavingServiceData:
         self.incomes = (
             Income.objects.related()
             .year(year=self.year)
-            .aggregate(Sum("price", output_field=IntegerField()))["price__sum"]
+            .aggregate(Sum("price"))["price__sum"]
         )
 
         self.total_savings = (
             Saving.objects.related()
             .year(self.year)
-            .aggregate(Sum("price", output_field=IntegerField()))["price__sum"]
+            .aggregate(Sum("price"))["price__sum"]
             or 0
         )
 
