@@ -76,8 +76,7 @@ class Pensions(TemplateViewMixin):
     template_name = "bookkeeping/includes/funds_table.html"
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        context = services.pensions.load_service(year)
+        context = services.pensions.load_service(self.request.user.year)
 
         return super().get_context_data(**kwargs) | context
 

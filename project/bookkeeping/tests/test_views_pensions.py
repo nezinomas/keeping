@@ -32,7 +32,7 @@ def test_view_context(client_logged):
 
     assert actual["title"] == "Pensijos"
     assert actual["type"] == "pensions"
-    assert "items" in actual
+    assert "object_list" in actual
     assert "total_row" in actual
 
 
@@ -42,7 +42,7 @@ def test_view_context_with_saving_type_pension(client_logged):
 
     url = reverse("bookkeeping:pensions")
     response = client_logged.get(url)
-    actual = response.context["items"]
+    actual = response.context["object_list"]
 
     assert len(actual) == 2
     assert actual[0].saving_type.title == "AAA"
@@ -68,9 +68,9 @@ def test_view_latest_check(client_logged):
 
     url = reverse("bookkeeping:pensions")
     response = client_logged.get(url)
-    items = response.context["items"]
+    object_list = response.context["object_list"]
 
-    assert items[0].latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
+    assert object_list[0].latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
 
 
 def test_table_percentage(client_logged):
