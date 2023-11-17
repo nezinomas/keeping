@@ -1,3 +1,4 @@
+import itertools as it
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -128,3 +129,16 @@ class DetailedService:
             .sort([pl.col.type_title, pl.col.title, pl.col.date])
         )
         return df.collect()
+
+
+def load_service(year: int) -> dict:
+    data = DetailerServiceData(year)
+    obj = DetailedService(data)
+
+    return  {
+        "object_list": it.chain(
+            obj.incomes_context(),
+            obj.savings_context(),
+            obj.expenses_context()
+        ),
+    }

@@ -146,17 +146,7 @@ class Detailed(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-
-        context = {
-            "data": [],
-        }
-
-        data = services.detailed.DetailerServiceData(year)
-        ctx = services.detailed.DetailedService(data)
-
-        context["data"] += ctx.incomes_context()
-        context["data"] += ctx.savings_context()
-        context["data"] += ctx.expenses_context()
+        context = services.detailed.load_service(year)
 
         return super().get_context_data(**kwargs) | context
 

@@ -16,8 +16,8 @@
 
 
 {% block content %}
-    {% if data %}
-        {% for row in data %}
+    {% if object_list %}
+        {% for row in object_list %}
         <div class="row mt-2">
             <div class="col-lg-12">
                 {% detailed_table row.name row.items row.total row.total_col row.total_row  %}
