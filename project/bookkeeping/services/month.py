@@ -2,6 +2,7 @@ import itertools as it
 from dataclasses import dataclass, field
 from operator import itemgetter
 
+import polars as pl
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import current_day
@@ -150,6 +151,33 @@ class MonthService:
 
     def _calculate_expenses(self, incomes: float, savings: float) -> float:
         return incomes - savings
+
+
+class MainTable:
+    def __init__(self, year, month, expense, expense_type, saving):
+        self.df = self.make_table(year, month, expense, expense_type, saving)
+
+    def make_table(self, year, month, expense, expense_type, saving):
+        pl.Config.set_fmt_str_lengths(100)
+        df_expense = MakeDataFrame(
+            year=year, month=month, data=expense, columns=expense_type
+        ).data
+        df_expense = df_expense.with_columns(pl.sum_horizontal(pl.exclude("date")).alias(_("Total")))
+        df_saving = MakeDataFrame(year=year, month=month, data=saving).data
+
+        return df_expense.join(df_saving, on="date", how="outer")
+
+    @property
+    def table(self):
+        return [] if self.df.is_empty() else self.df.to_dicts()
+
+    @property
+    def total_row(self):
+        return (
+            {}
+            if self.df.is_empty()
+            else self.df.select(pl.exclude("date")).sum().to_dicts()[0]
+        )
 
 
 def load_service(year: int, month: int) -> dict:

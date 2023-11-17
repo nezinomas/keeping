@@ -219,3 +219,30 @@ def test_make_chart_data(data, expect):
     actual = obj._make_chart_data(data)
 
     assert actual == expect
+
+
+def test_main_table():
+    year = 1999
+    month = 3
+    expense = [{"date": date(1999, 3, 2), "title": "A", "sum": 4, "exception_sum": 0}]
+    expense_type = ["A", "B"]
+    saving = [{'date': date(1999, 3, 3), 'sum': 2, 'title': 'Taupymas'}]
+
+    actual = MainTable(year, month, expense, expense_type, saving).table
+
+    assert len(actual) == 31
+    assert actual[0] == {"date": date(1999, 3, 1), "A": 0, "B": 0, "Viso": 0, "Taupymas": 0}
+    assert actual[1] == {"date": date(1999, 3, 2), "A": 4, "B": 0, "Viso": 4, "Taupymas": 0}
+    assert actual[2] == {"date": date(1999, 3, 3), "A": 0, "B": 0, "Viso": 0, "Taupymas": 2}
+
+
+def test_main_table_total_row():
+    year = 1999
+    month = 3
+    expense = [{"date": date(1999, 3, 2), "title": "A", "sum": 4, "exception_sum": 0}]
+    expense_type = ["A", "B"]
+    saving = [{'date': date(1999, 3, 3), 'sum': 2, 'title': 'Taupymas'}]
+
+    actual = MainTable(year, month, expense, expense_type, saving).total_row
+
+    assert actual == {"A": 4, "B": 0, "Viso": 4, "Taupymas": 2}
