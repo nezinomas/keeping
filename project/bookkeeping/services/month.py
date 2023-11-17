@@ -99,16 +99,6 @@ class MonthService:
             (_("Balance"), plan_balance, fact_balance),
         )
 
-    def month_table_context(self) -> dict:
-        return {
-            "day": current_day(self._data.year, self._data.month, False),
-            "expenses": self._generate_expenses_table(),
-            "expense_types": self._data.expense_types,
-            "total": self._spending.total,
-            "total_row": self._spending.total_row,
-            "total_savings": self._savings.total,
-        }
-
     def _chart_data_for_expenses(self, total_row: dict) -> list[dict]:
         data = self._make_chart_data(total_row)
         for entry in data:
@@ -143,14 +133,6 @@ class MonthService:
 
         return rtn
 
-    def _generate_expenses_table(self) -> list[tuple]:
-        return it.zip_longest(
-            self._spending.balance,
-            self._spending.total_column,
-            self._spending.spending,
-            self._savings.total_column,
-        )
-
     def _get_fact_income(self) -> float:
         fact_incomes = self._data.incomes
         return float(fact_incomes[0]["sum"]) if fact_incomes else 0
@@ -182,15 +164,29 @@ def load_service(year: int, month: int) -> dict:
         expenses_free=plans.expenses_free,
     )
 
+    savings = BalanceBase(df_savings.data)
+
     service = MonthService(
         data=data,
         plans=plans,
-        savings=BalanceBase(df_savings.data),
+        savings=savings,
         spending=spending,
     )
 
     return {
-        "month_table": service.month_table_context(),
+        "month_table": {
+            "day": current_day(year, month, False),
+            "expenses": it.zip_longest(
+                spending.balance,
+                spending.total_column,
+                spending.spending,
+                savings.total_column,
+            ),
+            "expense_types": data.expense_types,
+            "total": spending.total,
+            "total_row": spending.total_row,
+            "total_savings": savings.total,
+        },
         "info": service.info_context(),
         "chart_expenses": service.chart_expenses_context(),
         "chart_targets": service.chart_targets_context(),

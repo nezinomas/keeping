@@ -1,3 +1,4 @@
+from datetime import date
 from itertools import zip_longest
 from types import SimpleNamespace
 
@@ -5,113 +6,7 @@ import pytest
 import time_machine
 from mock import MagicMock
 
-from ..services.month import MonthService
-
-
-def test_month_table_context_keys():
-    obj = MonthService(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
-    actual = obj.month_table_context()
-
-    assert "day" in actual
-    assert "expenses" in actual
-    assert "expense_types" in actual
-    assert "total" in actual
-    assert "total_row" in actual
-    assert "total_savings" in actual
-
-
-@time_machine.travel("2017-05-21")
-def test_month_table_context_day():
-    obj = MonthService(
-        data=MagicMock(year=2017, month=5),
-        plans=MagicMock(),
-        savings=MagicMock(),
-        spending=MagicMock(),
-    )
-    actual = obj.month_table_context()
-
-    assert actual["day"] == 21
-
-
-@time_machine.travel("1999-1-21")
-def test_month_table_context_expenses():
-    obj = MonthService(
-        data=MagicMock(),
-        plans=MagicMock(),
-        savings=MagicMock(total_column=["savings.total_column"]),
-        spending=MagicMock(
-            balance=["spending.balance"],
-            total_column=["spending.total_column"],
-            spending=["spending.spending"],
-        ),
-    )
-    actual = obj.month_table_context()["expenses"]
-
-    assert isinstance(actual, zip_longest)
-
-    actual = list(actual)[0]
-
-    # spending.balance
-    assert actual[0] == "spending.balance"
-
-    # spending.total_column
-    assert actual[1] == "spending.total_column"
-
-    # spending.spending
-    assert actual[2] == "spending.spending"
-
-    # savings.total_column
-    assert actual[3] == "savings.total_column"
-
-
-def test_month_table_context_expense_types():
-    obj = MonthService(
-        data=MagicMock(expense_types=["Expense Type"]),
-        plans=MagicMock(),
-        savings=MagicMock(),
-        spending=MagicMock(),
-    )
-    actual = obj.month_table_context()["expense_types"]
-
-    assert actual == ["Expense Type"]
-
-
-def test_month_table_context_total():
-    obj = MonthService(
-        data=MagicMock(),
-        plans=MagicMock(),
-        savings=MagicMock(),
-        spending=MagicMock(total="spending.total"),
-    )
-    actual = obj.month_table_context()["total"]
-
-    assert actual == "spending.total"
-
-
-def test_month_table_context_total_row():
-    obj = MonthService(
-        data=MagicMock(),
-        plans=MagicMock(),
-        savings=MagicMock(),
-        spending=MagicMock(total_row={"xxx": 0}),
-    )
-    actual = obj.month_table_context()["total_row"]
-
-    assert actual == {"xxx": 0}
-
-
-def test_month_table_context_total_savings():
-    obj = MonthService(
-        data=MagicMock(),
-        plans=MagicMock(),
-        savings=MagicMock(total="savings.total"),
-        spending=MagicMock(),
-    )
-    actual = obj.month_table_context()["total_savings"]
-
-    assert actual == "savings.total"
+from ..services.month import MainTable, MonthService
 
 
 @time_machine.travel("1999-1-1")
