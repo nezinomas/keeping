@@ -1,5 +1,5 @@
 from ...accounts.models import AccountBalance
-from ...core.lib.utils import total_row
+from project.core.lib import utils
 
 
 def get_data(year: int) -> AccountBalance:
@@ -19,5 +19,5 @@ def load_service(year: int) -> dict:
 
     return {
         "items": data,
-        "total_row": total_row(data, fields),
+        "total_row": utils.total_row(data, fields),
     }
