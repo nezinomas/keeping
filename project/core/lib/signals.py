@@ -189,7 +189,7 @@ class Accounts(SignalBase):
             .with_columns(balance=pl.lit(0), past=pl.lit(0), delta=pl.lit(0))
             .sort(["id", "year"])
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
-            .with_columns(tmp_balance=pl.col("balance").cumsum().over(["id"]))
+            .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["id"]))
             .with_columns(
                 past=pl.col("tmp_balance")
                 .shift(n=1, fill_value=0)
@@ -240,8 +240,8 @@ class Savings(SignalBase):
             )
             .pipe(self._calc_past)
             .with_columns(
-                sold=pl.col("sold").cumsum().over("id"),
-                sold_fee=pl.col("sold_fee").cumsum().over("id"),
+                sold=pl.col("sold").cum_sum().over("id"),
+                sold_fee=pl.col("sold_fee").cum_sum().over("id"),
             )
             .with_columns(
                 incomes=(pl.col("past_amount") + pl.col("per_year_incomes")),
@@ -271,13 +271,13 @@ class Savings(SignalBase):
         df = (
             df
             .lazy()
-            .with_columns(tmp=pl.col("per_year_incomes").cumsum().over("id"))
+            .with_columns(tmp=pl.col("per_year_incomes").cum_sum().over("id"))
             .with_columns(
                 past_amount=pl.col("tmp")
                 .shift(n=1, fill_value=0)
                 .over("id")
             )
-            .with_columns(tmp=pl.col("per_year_fee").cumsum().over("id"))
+            .with_columns(tmp=pl.col("per_year_fee").cum_sum().over("id"))
             .with_columns(
                 past_fee=pl.col("tmp")
                 .shift(n=1, fill_value=0)

@@ -115,6 +115,6 @@ class YearBalance(BalanceBase):
             .collect()
             .pipe(add_amount_start_to_money_flow_first_cell)
             .lazy()
-            .with_columns(pl.col("money_flow").cumsum())
+            .with_columns(pl.col("money_flow").cum_sum())
         )
         return df.collect()
