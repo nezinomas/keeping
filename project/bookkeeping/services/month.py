@@ -30,7 +30,7 @@ class MonthServiceData:
     def __post_init__(self):
         self.incomes = (
             Income.objects.related()
-            .filter(date__year=self.year)
+            .filter(date__year=self.year, date__month=self.month)
             .aggregate(Sum("price", default=0))["price__sum"]
         )
 
