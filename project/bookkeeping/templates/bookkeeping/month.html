@@ -19,6 +19,7 @@
 
 
 {% block content %}
+
 <div x-data="{show_chart: true}">
     <div id="month_content" hx-ext="alpine-morph" hx-swap="morph" hx-target="this">
         <div class="row mt-2 gx-2">
@@ -28,14 +29,18 @@
             <div class="col-lg-4">
                 <div class="d-flex flex-column align-items-start h-100">
                     <div class="w-100 mb-auto">
-                        <div x-show="show_chart"><div id="chart-targets-container"></div></div>
-                        <div x-show="!show_chart"><div id="chart-expenses-container"></div></div>
                         {{ chart_targets|json_script:"chart-targets-data" }}
                         {{ chart_expenses|json_script:"chart-expenses-data" }}
-                        <script>
-                            chartExpensesTarget('chart-targets-data', 'chart-targets-container');
-                            chartExpensesOnly('chart-expenses-data', 'chart-expenses-container');
-                        </script>
+                        <div x-show="show_chart">
+                            <div id="chart-targets-container">
+                                <script>chartExpensesTarget('chart-targets-data', 'chart-targets-container');</script>
+                            </div>
+                        </div>
+                        <div x-show="!show_chart">
+                            <div id="chart-expenses-container">
+                                <script>chartExpensesOnly('chart-expenses-data', 'chart-expenses-container');</script>
+                            </div>
+                        </div>
                     </div>
                     <div class="w-100" id="info">
                         {% include 'bookkeeping/includes/spending_info.html' with ctx=info %}
