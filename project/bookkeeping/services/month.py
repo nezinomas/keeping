@@ -136,7 +136,7 @@ class MainTable:
     def total_row(self):
         return (
             {}
-            if self.df.is_empty()
+            if self.df.is_empty() or self.df.shape[1] == 1
             else self.df.select(pl.exclude("date")).sum().to_dicts()[0]
         )
 
