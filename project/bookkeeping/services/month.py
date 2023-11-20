@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from operator import itemgetter
 
 import polars as pl
+from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import current_day
@@ -20,14 +21,18 @@ class MonthServiceData:
     year: int
     month: int
 
-    incomes: list[dict] = field(init=False, default_factory=list)
+    incomes: int = field(init=False, default=0)
     expenses: list[dict] = field(init=False, default_factory=list)
     expense_types: list = field(init=False, default_factory=list)
     necessary_expense_types: list = field(init=False, default_factory=list)
     savings: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = list(Income.objects.sum_by_month(self.year, self.month))
+        self.incomes = (
+            Income.objects.related()
+            .filter(date__year=self.year)
+            .aggregate(Sum("price", default=0))["price__sum"]
+        )
 
         self.expenses = list(Expense.objects.sum_by_day_ant_type(self.year, self.month))
 
@@ -78,7 +83,7 @@ class MonthService:
         return self._chart_data_for_expenses(self._totals_with_savings)
 
     def info_context(self):
-        fact_incomes = self._get_fact_income()
+        fact_incomes = self._data.incomes
         fact_savings = self._savings.total
         fact_expenses = self._spending.total
         fact_per_day = self._spending.avg_per_day
@@ -133,10 +138,6 @@ class MonthService:
             rtn = sorted(rtn, key=itemgetter("y"), reverse=True)
 
         return rtn
-
-    def _get_fact_income(self) -> float:
-        fact_incomes = self._data.incomes
-        return float(fact_incomes[0]["sum"]) if fact_incomes else 0
 
     def _generate_info_entries(self, *entries) -> list[dict]:
         return [
