@@ -1,10 +1,11 @@
 from datetime import date
 from types import SimpleNamespace
-from numpy import isin
 
 import pytest
 import time_machine
 from mock import MagicMock
+
+from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
 from ..services.month import Info, MainTable, MonthService
 
@@ -221,14 +222,27 @@ def test_make_chart_data(data, expect):
     assert actual == expect
 
 
-def test_main_table():
+@pytest.fixture(name="df_expense")
+def fixture_df_expense():
     year = 1999
     month = 3
-    expense = [{"date": date(1999, 3, 2), "title": "A", "sum": 4, "exception_sum": 0}]
-    expense_type = ["A", "B"]
-    saving = [{'date': date(1999, 3, 3), 'sum': 2, 'title': 'Taupymas'}]
+    data = [{"date": date(1999, 3, 2), "title": "A", "sum": 4, "exception_sum": 0}]
+    columns = ["A", "B"]
 
-    actual = MainTable(year, month, expense, expense_type, saving).table
+    return MakeDataFrame(year=year, month=month, data=data, columns=columns)
+
+
+@pytest.fixture(name="df_saving")
+def fixture_df_saving():
+    year = 1999
+    month = 3
+    data = [{'date': date(1999, 3, 3), 'sum': 2, 'title': 'Taupymas'}]
+
+    return MakeDataFrame(year=year, month=month, data=data)
+
+
+def test_main_table(df_expense, df_saving):
+    actual = MainTable(df_expense, df_saving).table
 
     assert len(actual) == 31
     assert actual[0] == {"date": date(1999, 3, 1), "A": 0, "B": 0, "Viso": 0, "Taupymas": 0}
@@ -236,14 +250,8 @@ def test_main_table():
     assert actual[2] == {"date": date(1999, 3, 3), "A": 0, "B": 0, "Viso": 0, "Taupymas": 2}
 
 
-def test_main_table_total_row():
-    year = 1999
-    month = 3
-    expense = [{"date": date(1999, 3, 2), "title": "A", "sum": 4, "exception_sum": 0}]
-    expense_type = ["A", "B"]
-    saving = [{'date': date(1999, 3, 3), 'sum': 2, 'title': 'Taupymas'}]
-
-    actual = MainTable(year, month, expense, expense_type, saving).total_row
+def test_main_table_total_row(df_expense, df_saving):
+    actual = MainTable(df_expense, df_saving).total_row
 
     assert actual == {"A": 4, "B": 0, "Viso": 4, "Taupymas": 2}
 
