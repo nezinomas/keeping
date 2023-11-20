@@ -52,19 +52,14 @@ class MonthServiceData:
 class MonthService:
     def __init__(
         self,
-        data: MonthServiceData,
-        plans: PlanCalculateDaySum,
-        savings: BalanceBase,
-        spending: DaySpending,
+        targets_with_savings: dict,
+        total_row_with_savings: dict
     ):
-        self._data = data
-        self._plans = plans
-        self._spending = spending
-        self._savings = savings
+        del total_row_with_savings[_("Total")]
 
-        # push savings data
-        self._totals_with_savings = spending.total_row | {_("Savings"): savings.total}
-        self._targets_with_savings = plans.targets | {_("Savings"): plans.savings}
+        self._totals_with_savings = total_row_with_savings
+        self._targets_with_savings = targets_with_savings
+
 
     def chart_targets_context(self):
         categories, data_target, data_fact = self._chart_data_for_targets(
@@ -201,17 +196,13 @@ def load_service(year: int, month: int) -> dict:
         expenses_free=plans.expenses_free,
     )
 
-    savings = BalanceBase(saving.data)
-
-    service = MonthService(
-        data=data,
-        plans=plans,
-        savings=savings,
-        spending=spending,
-    )
-
     # main table
     main_table = MainTable(expense, saving)
+
+    service = MonthService(
+        targets_with_savings=(plans.targets | {_("Savings"): plans.savings}),
+        total_row_with_savings=main_table.total_row
+    )
 
     return {
         "month_table": {
