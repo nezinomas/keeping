@@ -1,5 +1,5 @@
 import itertools as it
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from operator import itemgetter
 
 import polars as pl
@@ -82,28 +82,6 @@ class MonthService:
     def chart_expenses_context(self):
         return self._chart_data_for_expenses(self._totals_with_savings)
 
-    def info_context(self):
-        fact_incomes = self._data.incomes
-        fact_savings = self._savings.total
-        fact_expenses = self._spending.total
-        fact_per_day = self._spending.avg_per_day
-        fact_balance = self._calculate_balance(
-            fact_incomes, fact_expenses, fact_savings
-        )
-
-        plan_incomes = self._plans.incomes
-        plan_savings = self._plans.savings
-        plan_expenses = self._calculate_expenses(plan_incomes, plan_savings)
-        plan_per_day = self._plans.day_input
-        plan_balance = self._plans.remains
-
-        return self._generate_info_entries(
-            (_("Incomes"), plan_incomes, fact_incomes),
-            (_("Expenses"), plan_expenses, fact_expenses),
-            (_("Savings"), plan_savings, fact_savings),
-            (_("Money for a day"), plan_per_day, fact_per_day),
-            (_("Balance"), plan_balance, fact_balance),
-        )
 
     def _chart_data_for_expenses(self, total_row: dict) -> list[dict]:
         data = self._make_chart_data(total_row)
@@ -138,20 +116,6 @@ class MonthService:
             rtn = sorted(rtn, key=itemgetter("y"), reverse=True)
 
         return rtn
-
-    def _generate_info_entries(self, *entries) -> list[dict]:
-        return [
-            {"title": title, "plan": plan, "fact": fact}
-            for title, plan, fact in entries
-        ]
-
-    def _calculate_balance(
-        self, incomes: float, expenses: float, savings: float
-    ) -> float:
-        return incomes - expenses - savings
-
-    def _calculate_expenses(self, incomes: float, savings: float) -> float:
-        return incomes - savings
 
 
 class MainTable:
@@ -200,7 +164,6 @@ class Info:
         )
 
 
-
 def load_service(year: int, month: int) -> dict:
     data = MonthServiceData(year, month)
     expense = MakeDataFrame(year, data.expenses, data.expense_types, month)
@@ -223,7 +186,29 @@ def load_service(year: int, month: int) -> dict:
         spending=spending,
     )
 
+    # main table
     main_table = MainTable(expense, saving)
+
+    # info table
+    exp = main_table.total_row.get(_("Total"), 0)
+    svg = main_table.total_row.get(_("Savings"), 0)
+    fact = Info(
+        income=data.incomes,
+        expense=exp,
+        saving=svg,
+        per_day=spending.avg_per_day,
+        balance=(data.incomes - exp - svg),
+    )
+
+    plan = Info(
+        income=plans.incomes,
+        expense=(plans.incomes - plans.savings),
+        saving=plans.savings,
+        per_day=plans.day_input,
+        balance=plans.remains,
+    )
+
+    delta = plan - fact
 
     return {
         "month_table": {
@@ -235,7 +220,7 @@ def load_service(year: int, month: int) -> dict:
             "expense_types": data.expense_types,
             "total_row": main_table.total_row,
         },
-        "info": service.info_context(),
+        "info": {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)},
         "chart_expenses": service.chart_expenses_context(),
         "chart_targets": service.chart_targets_context(),
     }
