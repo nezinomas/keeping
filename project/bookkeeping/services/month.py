@@ -87,14 +87,11 @@ class Charts:
         return data
 
     def _make_chart_data(self, data: dict) -> list[dict]:
-        rtn = []
-        for key, val in data.items():
-            rtn.append({"name": key, "y": val})
-
-        if rtn:
-            rtn = sorted(rtn, key=itemgetter("y"), reverse=True)
-
-        return rtn
+        return sorted(
+            [{"name": key, "y": val} for key, val in data.items()],
+            key=itemgetter("y"),
+            reverse=True,
+        )
 
 
 class MainTable:
