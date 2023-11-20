@@ -164,6 +164,30 @@ class Info:
         )
 
 
+def info_table(income: int, total: dict, spending: DaySpending, plans: PlanCalculateDaySum) -> dict:
+    exp = total.get(_("Total"), 0)
+    svg = total.get(_("Savings"), 0)
+    fact = Info(
+        income=income,
+        expense=exp,
+        saving=svg,
+        per_day=spending.avg_per_day,
+        balance=(income - exp - svg),
+    )
+
+    plan = Info(
+        income=plans.incomes,
+        expense=(plans.incomes - plans.savings),
+        saving=plans.savings,
+        per_day=plans.day_input,
+        balance=plans.remains,
+    )
+
+    delta = plan - fact
+
+    return {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)}
+
+
 def load_service(year: int, month: int) -> dict:
     data = MonthServiceData(year, month)
     expense = MakeDataFrame(year, data.expenses, data.expense_types, month)
@@ -189,27 +213,6 @@ def load_service(year: int, month: int) -> dict:
     # main table
     main_table = MainTable(expense, saving)
 
-    # info table
-    exp = main_table.total_row.get(_("Total"), 0)
-    svg = main_table.total_row.get(_("Savings"), 0)
-    fact = Info(
-        income=data.incomes,
-        expense=exp,
-        saving=svg,
-        per_day=spending.avg_per_day,
-        balance=(data.incomes - exp - svg),
-    )
-
-    plan = Info(
-        income=plans.incomes,
-        expense=(plans.incomes - plans.savings),
-        saving=plans.savings,
-        per_day=plans.day_input,
-        balance=plans.remains,
-    )
-
-    delta = plan - fact
-
     return {
         "month_table": {
             "day": current_day(year, month, False),
@@ -220,7 +223,7 @@ def load_service(year: int, month: int) -> dict:
             "expense_types": data.expense_types,
             "total_row": main_table.total_row,
         },
-        "info": {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)},
+        "info": info_table(data.incomes, main_table.total_row, spending, plans),
         "chart_expenses": service.chart_expenses_context(),
         "chart_targets": service.chart_targets_context(),
     }
