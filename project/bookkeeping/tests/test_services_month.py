@@ -1,5 +1,4 @@
 from datetime import date
-from types import SimpleNamespace
 
 import pytest
 import time_machine
@@ -7,47 +6,41 @@ from mock import MagicMock
 
 from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
-from ..services.month import Info, MainTable, Charts
+from ..services.month import Info, MainTable, Charts, info_table
 
 
 @time_machine.travel("1999-1-1")
 def test_info_context():
-    obj = Charts(
-        data=MagicMock(incomes=[{"date": "x", "sum": 15}]),
-        plans=MagicMock(incomes=100, savings=12, day_input=3, remains=-85),
-        savings=MagicMock(total=2),
-        spending=MagicMock(total=5, avg_per_day=2),
-    )
-    actual = obj.info_context()
+    income = 15
+    total = {"Viso": 5, "Taupymas": 12}
+    per_day = 2
+    plans = MagicMock(incomes=100, savings=12, day_input=3, remains=-85)
+    actual = info_table(income, total, per_day, plans)
 
-    assert actual[0]["title"] == "Pajamos"
-    assert actual[0]["plan"] == 100
-    assert actual[0]["fact"] == 15
+    assert actual["plan"]["income"] == 100
+    assert actual["plan"]["saving"] == 12
+    assert actual["plan"]["expense"] == 88
+    assert actual["plan"]["per_day"] == 3
+    assert actual["plan"]["balance"] == -85
 
-    assert actual[1]["title"] == "Išlaidos"
-    assert actual[1]["plan"] == 88
-    assert actual[1]["fact"] == 5
+    assert actual["fact"]["income"] == 15
+    assert actual["fact"]["saving"] == 12
+    assert actual["fact"]["expense"] == 5
+    assert actual["fact"]["per_day"] == 2
+    assert actual["fact"]["balance"] == -2
 
-    assert actual[2]["title"] == "Taupymas"
-    assert actual[2]["plan"] == 12
-    assert actual[2]["fact"] == 2
-
-    assert actual[3]["title"] == "Pinigai dienai"
-    assert actual[3]["plan"] == 3
-    assert actual[3]["fact"] == 2
-
-    assert actual[4]["title"] == "Balansas"
-    assert actual[4]["plan"] == -85
-    assert actual[4]["fact"] == 8
+    assert actual["delta"]["income"] == -85
+    assert actual["delta"]["saving"] == 0
+    assert actual["delta"]["expense"] == 83
+    assert actual["delta"]["per_day"] == 1
+    assert actual["delta"]["balance"] == 83
 
 
 def test_chart_expenses_context():
-    obj = Charts(
-        data=MagicMock(expense_types=["xyz"]),
-        plans=MagicMock(),
-        savings=MagicMock(total=1),
-        spending=MagicMock(total_row={"xyz": 10}),
-    )
+    total = {"xyz": 10, "Taupymas": 1}
+    targets = {"xyz": 6, "Taupymas": 9}
+    obj = Charts(targets, total)
+
     actual = obj.chart_expenses_context()
 
     assert len(actual) == 2
@@ -56,9 +49,7 @@ def test_chart_expenses_context():
 
 
 def test_chart_expenses():
-    obj = Charts(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
+    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
     total_row = {"T1": 25, "T2": 50}
 
     actual = obj._chart_data_for_expenses(total_row)
@@ -72,9 +63,7 @@ def test_chart_expenses():
 
 
 def test_chart_expenses_colors_shorter_then_data():
-    obj = Charts(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
+    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
     total_row = {"T1": 2, "T2": 5, "T3": 1}
 
     actual = obj._chart_data_for_expenses(total_row)
@@ -89,9 +78,7 @@ def test_chart_expenses_colors_shorter_then_data():
 
 
 def test_chart_expenses_no_expenes_data():
-    obj = Charts(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
+    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
 
     actual = obj._chart_data_for_expenses(total_row={})
 
@@ -99,9 +86,7 @@ def test_chart_expenses_no_expenes_data():
 
 
 def test_chart_targets_context():
-    obj = Charts(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
+    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
     actual = obj.chart_targets_context()
 
     assert "categories" in actual
@@ -112,23 +97,18 @@ def test_chart_targets_context():
 
 
 def test_chart_targets_context_with_savings():
-    obj = Charts(
-        data=MagicMock(),
-        plans=SimpleNamespace(targets={'XXX': 6}, savings=9),
-        savings=SimpleNamespace(total=99),
-        spending=SimpleNamespace(total_row={'XXX': 66})
-    )
+    total = {"xxx": 6, "Taupymas": 99}
+    targets = {"xxx": 6, "Taupymas": 9}
+    obj = Charts(targets, total)
     actual = obj.chart_targets_context()
 
     assert actual["categories"] == ["TAUPYMAS", "XXX"]
     assert actual["target"] == [9, 6]
-    assert actual["fact"] == [{"y": 99, "target": 9}, {"y": 66, "target": 6}]
+    assert actual["fact"] == [{"y": 99, "target": 9}, {"y": 6, "target": 6}]
 
 
 def test_chart_targets_categories():
-    obj = Charts(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
+    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
 
     total_row = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
@@ -141,9 +121,7 @@ def test_chart_targets_categories():
 
 
 def test_chart_targets_data_target():
-    obj = Charts(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
+    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
 
     total_row = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
@@ -156,9 +134,7 @@ def test_chart_targets_data_target():
 
 
 def test_chart_targets_data_target_empty():
-    obj = Charts(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
+    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
 
     total_row = {"T1": 2, "T2": 5}
     targets = {}
@@ -171,9 +147,7 @@ def test_chart_targets_data_target_empty():
 
 
 def test_chart_targets_data_fact():
-    obj = Charts(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
+    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
     total_row = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
 
@@ -188,9 +162,7 @@ def test_chart_targets_data_fact():
 
 
 def test_chart_targets_data_fact_no_target():
-    obj = Charts(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
+    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
 
     total_row = {"T1": 2, "T2": 5}
     targets = {}
@@ -214,9 +186,7 @@ def test_chart_targets_data_fact_no_target():
     ],
 )
 def test_make_chart_data(data, expect):
-    obj = Charts(
-        data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
-    )
+    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
     actual = obj._make_chart_data(data)
 
     assert actual == expect

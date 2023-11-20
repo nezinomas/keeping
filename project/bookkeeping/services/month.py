@@ -1,3 +1,4 @@
+import contextlib
 import itertools as it
 from dataclasses import asdict, dataclass, field
 from operator import itemgetter
@@ -54,7 +55,8 @@ class Charts:
         targets_with_savings: dict,
         total_row_with_savings: dict
     ):
-        del total_row_with_savings[_("Total")]
+        with contextlib.suppress(KeyError):
+            del total_row_with_savings[_("Total")]
 
         self._totals_with_savings = total_row_with_savings
         self._targets_with_savings = targets_with_savings
