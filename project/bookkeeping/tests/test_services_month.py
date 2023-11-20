@@ -37,11 +37,11 @@ def test_info_context():
 
 
 def test_chart_expenses_context():
-    total = {"xyz": 10, "Taupymas": 1}
+    totals = {"xyz": 10, "Taupymas": 1}
     targets = {"xyz": 6, "Taupymas": 9}
-    obj = Charts(targets, total)
+    obj = Charts(targets, totals)
 
-    actual = obj.chart_expenses_context()
+    actual = obj.chart_expenses()
 
     assert len(actual) == 2
     assert actual[0]["name"] == "XYZ"
@@ -49,10 +49,10 @@ def test_chart_expenses_context():
 
 
 def test_chart_expenses():
-    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
-    total_row = {"T1": 25, "T2": 50}
+    totals = {"T1": 25, "T2": 50}
+    obj = Charts(totals=totals, targets={})
 
-    actual = obj._chart_data_for_expenses(total_row)
+    actual = obj.chart_expenses()
 
     expect = [
         {"name": "T2", "y": 50},
@@ -63,10 +63,10 @@ def test_chart_expenses():
 
 
 def test_chart_expenses_colors_shorter_then_data():
-    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
-    total_row = {"T1": 2, "T2": 5, "T3": 1}
+    totals = {"T1": 2, "T2": 5, "T3": 1}
+    obj = Charts(targets={}, totals=totals)
 
-    actual = obj._chart_data_for_expenses(total_row)
+    actual = obj.chart_expenses()
 
     expect = [
         {"name": "T2", "y": 5},
@@ -78,16 +78,16 @@ def test_chart_expenses_colors_shorter_then_data():
 
 
 def test_chart_expenses_no_expenes_data():
-    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
+    obj = Charts(targets={}, totals={})
 
-    actual = obj._chart_data_for_expenses(total_row={})
+    actual = obj.chart_expenses()
 
     assert actual == []
 
 
 def test_chart_targets_context():
-    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
-    actual = obj.chart_targets_context()
+    obj = Charts(targets={}, totals={})
+    actual = obj.chart_targets()
 
     assert "categories" in actual
     assert "target" in actual
@@ -97,10 +97,10 @@ def test_chart_targets_context():
 
 
 def test_chart_targets_context_with_savings():
-    total = {"xxx": 6, "Taupymas": 99}
+    totals = {"xxx": 6, "Taupymas": 99}
     targets = {"xxx": 6, "Taupymas": 9}
-    obj = Charts(targets, total)
-    actual = obj.chart_targets_context()
+    obj = Charts(targets, totals)
+    actual = obj.chart_targets()
 
     assert actual["categories"] == ["TAUPYMAS", "XXX"]
     assert actual["target"] == [9, 6]
@@ -108,73 +108,68 @@ def test_chart_targets_context_with_savings():
 
 
 def test_chart_targets_categories():
-    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
-
-    total_row = {"T1": 2, "T2": 5}
+    totals = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
 
-    actual, _, _ = obj._chart_data_for_targets(total_row, targets)
+    obj = Charts(targets, totals)
+
+
+    actual = obj.chart_targets()
 
     expect = ["T2", "T1"]
 
-    assert actual == expect
+    assert actual["categories"] == expect
 
 
 def test_chart_targets_data_target():
-    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
-
-    total_row = {"T1": 2, "T2": 5}
+    totals = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
 
-    _, actual, _ = obj._chart_data_for_targets(total_row, targets)
+    obj = Charts(targets, totals)
 
-    expect = [4, 3]
+    actual = obj.chart_targets()
 
-    assert actual == expect
+    assert actual["target"] == [4, 3]
 
 
 def test_chart_targets_data_target_empty():
-    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
-
-    total_row = {"T1": 2, "T2": 5}
+    totals = {"T1": 2, "T2": 5}
     targets = {}
+    obj = Charts(targets, totals)
 
-    _, actual, _ = obj._chart_data_for_targets(total_row, targets)
+    actual = obj.chart_targets()
 
-    expect = [0, 0]
-
-    assert actual == expect
+    assert actual["target"] == [0, 0]
 
 
 def test_chart_targets_data_fact():
-    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
-    total_row = {"T1": 2, "T2": 5}
+    totals = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
+    obj = Charts(targets, totals)
 
-    _, _, actual = obj._chart_data_for_targets(total_row, targets)
+    actual = obj.chart_targets()
 
     expect = [
         {"y": 5, "target": 4},
         {"y": 2, "target": 3},
     ]
 
-    assert actual == expect
+    assert actual["fact"] == expect
 
 
 def test_chart_targets_data_fact_no_target():
-    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
-
-    total_row = {"T1": 2, "T2": 5}
+    totals = {"T1": 2, "T2": 5}
     targets = {}
+    obj = Charts(targets, totals)
 
-    _, _, actual = obj._chart_data_for_targets(total_row, targets)
+    actual = obj.chart_targets()
 
     expect = [
         {"y": 5, "target": 0},
         {"y": 2, "target": 0},
     ]
 
-    assert actual == expect
+    assert actual["fact"] == expect
 
 
 @pytest.mark.parametrize(
@@ -186,7 +181,7 @@ def test_chart_targets_data_fact_no_target():
     ],
 )
 def test_make_chart_data(data, expect):
-    obj = Charts(targets_with_savings=MagicMock(), total_row_with_savings=MagicMock())
+    obj = Charts(targets=MagicMock(), totals=MagicMock())
     actual = obj._make_chart_data(data)
 
     assert actual == expect

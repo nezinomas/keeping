@@ -50,22 +50,26 @@ class MonthServiceData:
 
 
 class Charts:
-    def __init__(
-        self,
-        targets_with_savings: dict,
-        total_row_with_savings: dict
-    ):
+    def __init__(self, targets: dict, totals: dict):
         with contextlib.suppress(KeyError):
-            del total_row_with_savings[_("Total")]
+            del totals[_("Total")]
 
-        self._totals_with_savings = total_row_with_savings
-        self._targets_with_savings = targets_with_savings
+        self.totals = totals
+        self.targets = targets
 
+    def chart_targets(self):
+        data = self._make_chart_data(self.totals)
 
-    def chart_targets_context(self):
-        categories, data_target, data_fact = self._chart_data_for_targets(
-            self._totals_with_savings, self._targets_with_savings
-        )
+        categories, data_fact, data_target = [], [], []
+
+        for entry in data:
+            category = entry["name"]
+            target = float(self.targets.get(category, 0))
+            fact = float(entry["y"])
+
+            categories.append(category.upper())
+            data_target.append(target)
+            data_fact.append({"y": fact, "target": target})
 
         return {
             "categories": categories,
@@ -75,32 +79,12 @@ class Charts:
             "factTitle": _("Fact"),
         }
 
-    def chart_expenses_context(self):
-        return self._chart_data_for_expenses(self._totals_with_savings)
+    def chart_expenses(self):
+        data = self._make_chart_data(self.totals)
 
-    def _chart_data_for_expenses(self, total_row: dict) -> list[dict]:
-        data = self._make_chart_data(total_row)
         for entry in data:
             entry["name"] = entry["name"].upper()
         return data
-
-    def _chart_data_for_targets(
-        self, total_row: dict, targets: dict
-    ) -> tuple[list[str], list[float], list[dict]]:
-        data = self._make_chart_data(total_row)
-
-        rtn_categories, rtn_data_fact, rtn_data_target = [], [], []
-
-        for entry in data:
-            category = entry["name"]
-            target = float(targets.get(category, 0))
-            fact = float(entry["y"])
-
-            rtn_categories.append(category.upper())
-            rtn_data_target.append(target)
-            rtn_data_fact.append({"y": fact, "target": target})
-
-        return (rtn_categories, rtn_data_target, rtn_data_fact)
 
     def _make_chart_data(self, data: dict) -> list[dict]:
         rtn = []
@@ -159,7 +143,9 @@ class Info:
         )
 
 
-def info_table(income: int, total: dict, per_day: int, plans: PlanCalculateDaySum) -> dict:
+def info_table(
+    income: int, total: dict, per_day: int, plans: PlanCalculateDaySum
+) -> dict:
     expense = total.get(_("Total"), 0)
     saving = total.get(_("Savings"), 0)
 
@@ -208,8 +194,8 @@ def load_service(year: int, month: int) -> dict:
 
     # charts
     charts = Charts(
-        targets_with_savings=(plans.targets | {_("Savings"): plans.savings}),
-        total_row_with_savings=main_table.total_row
+        targets=(plans.targets | {_("Savings"): plans.savings}),
+        totals=main_table.total_row,
     )
 
     return {
@@ -225,6 +211,6 @@ def load_service(year: int, month: int) -> dict:
         "info": info_table(
             data.incomes, main_table.total_row, spending.avg_per_day, plans
         ),
-        "chart_expenses": charts.chart_expenses_context(),
-        "chart_targets": charts.chart_targets_context(),
+        "chart_expenses": charts.chart_expenses(),
+        "chart_targets": charts.chart_targets(),
     }
