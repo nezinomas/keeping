@@ -7,12 +7,12 @@ from mock import MagicMock
 
 from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
-from ..services.month import Info, MainTable, MonthService
+from ..services.month import Info, MainTable, Charts
 
 
 @time_machine.travel("1999-1-1")
 def test_info_context():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(incomes=[{"date": "x", "sum": 15}]),
         plans=MagicMock(incomes=100, savings=12, day_input=3, remains=-85),
         savings=MagicMock(total=2),
@@ -42,7 +42,7 @@ def test_info_context():
 
 
 def test_chart_expenses_context():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(expense_types=["xyz"]),
         plans=MagicMock(),
         savings=MagicMock(total=1),
@@ -56,7 +56,7 @@ def test_chart_expenses_context():
 
 
 def test_chart_expenses():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
     total_row = {"T1": 25, "T2": 50}
@@ -72,7 +72,7 @@ def test_chart_expenses():
 
 
 def test_chart_expenses_colors_shorter_then_data():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
     total_row = {"T1": 2, "T2": 5, "T3": 1}
@@ -89,7 +89,7 @@ def test_chart_expenses_colors_shorter_then_data():
 
 
 def test_chart_expenses_no_expenes_data():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
 
@@ -99,7 +99,7 @@ def test_chart_expenses_no_expenes_data():
 
 
 def test_chart_targets_context():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
     actual = obj.chart_targets_context()
@@ -112,7 +112,7 @@ def test_chart_targets_context():
 
 
 def test_chart_targets_context_with_savings():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(),
         plans=SimpleNamespace(targets={'XXX': 6}, savings=9),
         savings=SimpleNamespace(total=99),
@@ -126,7 +126,7 @@ def test_chart_targets_context_with_savings():
 
 
 def test_chart_targets_categories():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
 
@@ -141,7 +141,7 @@ def test_chart_targets_categories():
 
 
 def test_chart_targets_data_target():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
 
@@ -156,7 +156,7 @@ def test_chart_targets_data_target():
 
 
 def test_chart_targets_data_target_empty():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
 
@@ -171,7 +171,7 @@ def test_chart_targets_data_target_empty():
 
 
 def test_chart_targets_data_fact():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
     total_row = {"T1": 2, "T2": 5}
@@ -188,7 +188,7 @@ def test_chart_targets_data_fact():
 
 
 def test_chart_targets_data_fact_no_target():
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
 
@@ -214,7 +214,7 @@ def test_chart_targets_data_fact_no_target():
     ],
 )
 def test_make_chart_data(data, expect):
-    obj = MonthService(
+    obj = Charts(
         data=MagicMock(), plans=MagicMock(), savings=MagicMock(), spending=MagicMock()
     )
     actual = obj._make_chart_data(data)

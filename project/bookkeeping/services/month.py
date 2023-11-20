@@ -11,7 +11,6 @@ from ...expenses.models import Expense, ExpenseType
 from ...incomes.models import Income
 from ...plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ...savings.models import Saving
-from ..lib.balance_base import BalanceBase
 from ..lib.day_spending import DaySpending
 from ..lib.make_dataframe import MakeDataFrame
 
@@ -49,7 +48,7 @@ class MonthServiceData:
         self.savings = list(Saving.objects.sum_by_day(self.year, self.month))
 
 
-class MonthService:
+class Charts:
     def __init__(
         self,
         targets_with_savings: dict,
@@ -184,11 +183,17 @@ def info_table(income: int, total: dict, per_day: int, plans: PlanCalculateDaySu
 
 
 def load_service(year: int, month: int) -> dict:
+    # get data from db
     data = MonthServiceData(year, month)
+
+    # expense and saving data_frames
     expense = MakeDataFrame(year, data.expenses, data.expense_types, month)
     saving = MakeDataFrame(year, data.savings, None, month)
 
+    # plans
     plans = PlanCalculateDaySum(PlanCollectData(year, month))
+
+    # spending table
     spending = DaySpending(
         df=expense,
         necessary=data.necessary_expense_types,
@@ -199,7 +204,8 @@ def load_service(year: int, month: int) -> dict:
     # main table
     main_table = MainTable(expense, saving)
 
-    service = MonthService(
+    # charts
+    charts = Charts(
         targets_with_savings=(plans.targets | {_("Savings"): plans.savings}),
         total_row_with_savings=main_table.total_row
     )
@@ -217,6 +223,6 @@ def load_service(year: int, month: int) -> dict:
         "info": info_table(
             data.incomes, main_table.total_row, spending.avg_per_day, plans
         ),
-        "chart_expenses": service.chart_expenses_context(),
-        "chart_targets": service.chart_targets_context(),
+        "chart_expenses": charts.chart_expenses_context(),
+        "chart_targets": charts.chart_targets_context(),
     }
