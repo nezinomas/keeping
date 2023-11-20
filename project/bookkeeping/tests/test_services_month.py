@@ -15,6 +15,7 @@ def test_info_context():
     total = {"Viso": 5, "Taupymas": 12}
     per_day = 2
     plans = MagicMock(incomes=100, savings=12, day_input=3, remains=-85)
+
     actual = info_table(income, total, per_day, plans)
 
     assert actual["plan"]["income"] == 100
