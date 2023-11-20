@@ -76,6 +76,6 @@ class DaySpending(BalanceBase):
                     self._expenses_free - (self._day_input * pl.col("date").dt.day())
                 )
             )
-            .with_columns(real=(self._expenses_free - pl.col("total").cumsum()))
+            .with_columns(real=(self._expenses_free - pl.col("total").cum_sum()))
             .with_columns(full=(pl.col("real") - pl.col("teoretical")))
         )
