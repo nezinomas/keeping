@@ -82,7 +82,6 @@ class MonthService:
     def chart_expenses_context(self):
         return self._chart_data_for_expenses(self._totals_with_savings)
 
-
     def _chart_data_for_expenses(self, total_row: dict) -> list[dict]:
         data = self._make_chart_data(total_row)
         for entry in data:
@@ -164,15 +163,16 @@ class Info:
         )
 
 
-def info_table(income: int, total: dict, spending: DaySpending, plans: PlanCalculateDaySum) -> dict:
-    exp = total.get(_("Total"), 0)
-    svg = total.get(_("Savings"), 0)
+def info_table(income: int, total: dict, per_day: int, plans: PlanCalculateDaySum) -> dict:
+    expense = total.get(_("Total"), 0)
+    saving = total.get(_("Savings"), 0)
+
     fact = Info(
         income=income,
-        expense=exp,
-        saving=svg,
-        per_day=spending.avg_per_day,
-        balance=(income - exp - svg),
+        expense=expense,
+        saving=saving,
+        per_day=per_day,
+        balance=(income - expense - saving),
     )
 
     plan = Info(
@@ -223,7 +223,9 @@ def load_service(year: int, month: int) -> dict:
             "expense_types": data.expense_types,
             "total_row": main_table.total_row,
         },
-        "info": info_table(data.incomes, main_table.total_row, spending, plans),
+        "info": info_table(
+            data.incomes, main_table.total_row, spending.avg_per_day, plans
+        ),
         "chart_expenses": service.chart_expenses_context(),
         "chart_targets": service.chart_targets_context(),
     }
