@@ -9,13 +9,14 @@ from ..managers import DrinkQuerySet
 
 
 class HistoryService:
-    def __init__(self, data):
+    def __init__(self, data: list[dict]):
         self.df: pl.DataFrame = pl.DataFrame()
         self.options: DrinksOptions = DrinksOptions()
 
         if data:
             if isinstance(data, DrinkQuerySet):
                 data = list(data)
+
             self.df = self._create_df(data)
 
     @staticmethod
