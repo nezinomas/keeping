@@ -20,9 +20,8 @@ class Lists(ListViewMixin):
     model = models.Income
 
     def get_queryset(self):
-        return models.Income.objects.year(year=self.request.user.year).order_by(
-            "-date", "price"
-        )
+        year = self.request.user.year
+        return models.Income.objects.year(year).order_by("-date", "price")
 
 
 class New(CreateViewMixin):
