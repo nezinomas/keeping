@@ -34,8 +34,8 @@ class HistoryService:
     def _calc(self, data) -> pl.DataFrame:
         data = __class__.insert_empty_values(data)
 
-        year_ = datetime.now().year
-        days_ = datetime.now().timetuple().tm_yday
+        year = datetime.now().year
+        days = datetime.now().timetuple().tm_yday
         drink_type = self.options.drink_type
 
         df = pl.DataFrame(data)
@@ -54,8 +54,8 @@ class HistoryService:
             # for current year update days_in_year to actual number of days
             .with_columns(
                 days_in_year =
-                pl.when(pl.col.year == year_)
-                .then(pl.lit(days_))
+                pl.when(pl.col.year == year)
+                .then(pl.lit(days))
                 .otherwise(pl.col.days_in_year)
             )
             # calculate alcohol and ml
