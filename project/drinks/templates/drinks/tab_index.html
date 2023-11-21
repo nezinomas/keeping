@@ -25,7 +25,7 @@
                 {% include 'drinks/includes/tbl_alcohol.html' with ctx=tbl_alcohol %}
             </div>
             <div id="target_list" class="col-lg-3 col-md-3">
-                {{target_list}}
+                <div hx-get="{% url 'drinks:target_list' %}" hx-swap="outerHTML" hx-trigger="load"></div>
             </div>
         </div>
 
@@ -77,7 +77,7 @@
     </div>
 
     <div class="col-lg-6" id="compare_form_and_chart">
-        {{compare_form_and_chart}}
+        <div hx-get="{% url 'drinks:compare_two' %}" hx-swap="outerHTML" hx-trigger="load"></div>
     </div>
 </div>
 

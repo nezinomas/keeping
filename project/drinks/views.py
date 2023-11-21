@@ -2,7 +2,6 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
-from ..core.lib.date import years
 from ..core.lib.translation import month_names
 from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
                                  FormViewMixin, ListViewMixin,
@@ -11,7 +10,6 @@ from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
 from . import services
 from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
 from .lib.drinks_options import DrinksOptions
-from .lib.drinks_stats import DrinkStats
 from .models import Drink, DrinkTarget, DrinkType
 
 
@@ -27,35 +25,8 @@ class TabIndex(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        # Index data
-        data = IndexServiceData(year)
-        # Index Tab service
-        index_service = IndexService(
-            drink_stats=DrinkStats(data.sum_by_month),
-            target=data.target,
-            latest_past_date=data.latest_past_date,
-            latest_current_date=data.latest_current_date,
-        )
-        # calendar chart service
-        calendar_service = CalendarChart(
-            year=year, data=data.sum_by_day, latest_past_date=data.latest_past_date
-        )
+        context = services.index.load_service(year)
 
-        context = {
-            "target_list": rendered_content(self.request, TargetLists, **kwargs),
-            "compare_form_and_chart": rendered_content(
-                self.request, CompareTwo, **kwargs
-            ),
-            "all_years": len(years()),
-            "chart_quantity": index_service.chart_quantity(),
-            "chart_consumption": index_service.chart_consumption(),
-            "chart_calendar_1H": calendar_service.first_half_of_year(),
-            "chart_calendar_2H": calendar_service.second_half_of_year(),
-            "tbl_consumption": index_service.tbl_consumption(),
-            "tbl_dray_days": index_service.tbl_dry_days(),
-            "tbl_alcohol": index_service.tbl_alcohol(),
-            "tbl_std_av": index_service.tbl_std_av(),
-        }
         return super().get_context_data(**kwargs) | context
 
 
