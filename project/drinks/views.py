@@ -12,10 +12,8 @@ from ..core.mixins.views import (
     TemplateViewMixin,
     UpdateViewMixin,
 )
-from . import services
-from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
+from . import forms, models, services
 from .lib.drinks_options import DrinksOptions
-from .models import Drink, DrinkTarget, DrinkType
 
 
 class Index(TemplateViewMixin):
@@ -39,12 +37,12 @@ class TabIndex(TemplateViewMixin):
 
 
 class TabData(ListViewMixin):
-    model = Drink
+    model = models.Drink
     template_name = "drinks/tab_data.html"
 
     def get_queryset(self):
         year = self.request.user.year
-        return Drink.objects.year(year=year)
+        return models.Drink.objects.year(year=year)
 
 
 class TabHistory(TemplateViewMixin):
@@ -75,7 +73,7 @@ class Compare(TemplateViewMixin):
 
 
 class CompareTwo(FormViewMixin):
-    form_class = DrinkCompareForm
+    form_class = forms.DrinkCompareForm
     template_name = "drinks/includes/compare_form.html"
     success_url = reverse_lazy("drinks:compare_two")
 
@@ -97,8 +95,8 @@ class CompareTwo(FormViewMixin):
 
 
 class New(CreateViewMixin):
-    model = Drink
-    form_class = DrinkForm
+    model = models.Drink
+    form_class = forms.DrinkForm
     success_url = reverse_lazy("drinks:tab_data")
 
     def get_hx_trigger_django(self):
@@ -119,8 +117,8 @@ class New(CreateViewMixin):
 
 
 class Update(UpdateViewMixin):
-    model = Drink
-    form_class = DrinkForm
+    model = models.Drink
+    form_class = forms.DrinkForm
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
 
@@ -134,13 +132,13 @@ class Update(UpdateViewMixin):
 
 
 class Delete(DeleteViewMixin):
-    model = Drink
+    model = models.Drink
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
 
 
 class TargetLists(ListViewMixin):
-    model = DrinkTarget
+    model = models.DrinkTarget
 
     def get_queryset(self):
         year = self.request.user.year
@@ -148,8 +146,8 @@ class TargetLists(ListViewMixin):
 
 
 class TargetNew(CreateViewMixin):
-    model = DrinkTarget
-    form_class = DrinkTargetForm
+    model = models.DrinkTarget
+    form_class = forms.DrinkTargetForm
     success_url = reverse_lazy("drinks:index")
 
     def get_hx_trigger_django(self):
@@ -170,8 +168,8 @@ class TargetNew(CreateViewMixin):
 
 
 class TargetUpdate(UpdateViewMixin):
-    model = DrinkTarget
-    form_class = DrinkTargetForm
+    model = models.DrinkTarget
+    form_class = forms.DrinkTargetForm
     hx_trigger_django = "reloadIndex"
     success_url = reverse_lazy("drinks:tab_index")
 
@@ -193,8 +191,8 @@ class SelectDrink(RedirectViewMixin):
     def get_redirect_url(self, *args, **kwargs):
         drink_type = kwargs.get("drink_type")
 
-        if drink_type not in DrinkType.values:
-            drink_type = DrinkType.BEER.value
+        if drink_type not in models.DrinkType.values:
+            drink_type = models.DrinkType.BEER.value
 
         user = self.request.user
         user.drink_type = drink_type
