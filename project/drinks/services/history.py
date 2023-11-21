@@ -16,7 +16,7 @@ class HistoryService:
         if data:
             if isinstance(data, DrinkQuerySet):
                 data = list(data)
-            self._df = self._calc(data)
+            self._df = self._create_df(data)
 
     @staticmethod
     def insert_empty_values(data: list[dict]) -> list[dict]:
