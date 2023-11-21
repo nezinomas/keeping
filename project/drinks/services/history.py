@@ -10,16 +10,13 @@ from ..managers import DrinkQuerySet
 
 class HistoryService:
     def __init__(self, data):
-        self._df = pl.DataFrame()
+        self.df: pl.DataFrame = pl.DataFrame()
+        self.options: DrinksOptions = DrinksOptions()
 
-        if not data:
-            return
-
-        if isinstance(data, DrinkQuerySet):
-            data = list(data)
-
-        self.options = DrinksOptions()
-        self._df = self._calc(data)
+        if data:
+            if isinstance(data, DrinkQuerySet):
+                data = list(data)
+            self.df = self._create_df(data)
 
     @staticmethod
     def insert_empty_values(data: list[dict]) -> list[dict]:
@@ -31,19 +28,41 @@ class HistoryService:
 
         return data
 
-    def _calc(self, data) -> pl.DataFrame:
-        data = __class__.insert_empty_values(data)
+    def _create_df(self, data) -> pl.DataFrame:
+        data = self.insert_empty_values(data)
 
-        year = datetime.now().year
-        days = datetime.now().timetuple().tm_yday
+        df = pl.DataFrame(data).lazy()
+        df = self._agg_df(df)
+        df = df.with_columns(date=pl.date("year", 1, 1))
+        df = self._days_in_year(df)
+        df = self._calc_stats(df)
+        df = df.sort(pl.col.year)
+
+        return df.collect()
+
+    def _agg_df(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        return df.group_by("year").agg(pl.col.qty.sum(), pl.col.stdav.sum())
+
+    def _calc_stats(self, df: pl.LazyFrame) -> pl.LazyFrame:
         drink_type = self.options.drink_type
 
-        df = pl.DataFrame(data)
         return (
-            df.lazy()
-            .group_by("year")
-            .agg(pl.col.qty.sum(), pl.col.stdav.sum())
-            .with_columns(date=pl.date("year", 1, 1))
+            df
+            # calculate alcohol and ml
+            .with_columns(
+                alcohol=self.options.stdav_to_alcohol(pl.col.stdav),
+                ml=self.options.stdav_to_ml(pl.col.stdav, drink_type),
+            )
+            # calculate per_day
+            .with_columns(per_day=pl.col.ml / pl.col.days_in_year)
+        )
+
+    def _days_in_year(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        year = datetime.now().year
+        days = datetime.now().timetuple().tm_yday
+
+        return (
+            df
             # calculate days_in_year for each year
             .with_columns(
                 days_in_year=pl.when(pl.col.date.dt.is_leap_year())
@@ -56,18 +75,10 @@ class HistoryService:
                 .then(pl.lit(days))
                 .otherwise(pl.col.days_in_year)
             )
-            # calculate alcohol and ml
-            .with_columns(
-                alcohol=self.options.stdav_to_alcohol(pl.col.stdav),
-                ml=self.options.stdav_to_ml(pl.col.stdav, drink_type),
-            )
-            # calculate per_day
-            .with_columns(per_day=pl.col.ml / pl.col.days_in_year)
-            .sort(pl.col.year)
-        ).collect()
+        )
 
     def _data_frame_col(self, col: str) -> list:
-        return self._df[col].to_list() if not self._df.is_empty() else []
+        return self.df[col].to_list() if not self.df.is_empty() else []
 
     @property
     def years(self) -> list[int]:
