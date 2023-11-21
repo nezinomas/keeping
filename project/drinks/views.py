@@ -28,14 +28,7 @@ class Index(TemplateViewMixin):
     template_name = "drinks/index.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                "tab_content": rendered_content(self.request, TabIndex, **kwargs),
-                **H.drink_type_dropdown(self.request),
-            }
-        )
-        return context
+        return super().get_context_data(**kwargs) | H.drink_type_dropdown(self.request)
 
 
 class TabIndex(TemplateViewMixin):
