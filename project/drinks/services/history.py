@@ -11,15 +11,12 @@ from ..managers import DrinkQuerySet
 class HistoryService:
     def __init__(self, data):
         self._df = pl.DataFrame()
-
-        if not data:
-            return
-
-        if isinstance(data, DrinkQuerySet):
-            data = list(data)
-
         self.options = DrinksOptions()
-        self._df = self._create_df(data)
+
+        if data:
+            if isinstance(data, DrinkQuerySet):
+                data = list(data)
+            self._df = self._calc(data)
 
     @staticmethod
     def insert_empty_values(data: list[dict]) -> list[dict]:
