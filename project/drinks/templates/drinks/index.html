@@ -88,7 +88,7 @@
 
 <!-- tab content -->
 <div id="tab_content">
-    <div hx-get="{% url 'drinks:tab_index' %}" hx-target="#tab_content" hx-trigger="load"></div>
+    {{content}}
 </div>
 
 {% endblock content %}

@@ -25,7 +25,7 @@
                 {% include 'drinks/includes/tbl_alcohol.html' with ctx=tbl_alcohol %}
             </div>
             <div id="target_list" class="col-lg-3 col-md-3">
-                <div hx-get="{% url 'drinks:target_list' %}" hx-swap="outerHTML" hx-trigger="load"></div>
+                {{target}}
             </div>
         </div>
 

@@ -11,6 +11,7 @@ from ..core.mixins.views import (
     RedirectViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
+    rendered_content,
 )
 from . import forms, models, services
 from .lib.drinks_options import DrinksOptions
@@ -23,6 +24,7 @@ class Index(TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **services.helper.drink_type_dropdown(self.request),
+            **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
 
@@ -31,9 +33,15 @@ class TabIndex(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        context = services.index.load_service(year)
 
-        return super().get_context_data(**kwargs) | context
+        context_data = super().get_context_data(**kwargs)
+        service_data = services.index.load_service(year)
+        target_data = {"target": rendered_content(self.request, TargetLists, **kwargs)}
+
+        context_data.update(service_data)
+        context_data.update(target_data)
+
+        return context_data
 
 
 class TabData(ListViewMixin):
