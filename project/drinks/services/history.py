@@ -36,6 +36,7 @@ class HistoryService:
 
         year_ = datetime.now().year
         days_ = datetime.now().timetuple().tm_yday
+        drink_type = self.options.drink_type
 
         df = pl.DataFrame(data)
         return (
@@ -60,7 +61,7 @@ class HistoryService:
             # calculate alcohol and ml
             .with_columns(
                 alcohol = self.options.stdav_to_alcohol(pl.col.stdav),
-                ml = self.options.stdav_to_ml(pl.col.stdav, self.options.drink_type),
+                ml = self.options.stdav_to_ml(pl.col.stdav, drink_type),
             )
             # calculate per_day
             .with_columns(per_day = (pl.col.ml / pl.col.days_in_year))
