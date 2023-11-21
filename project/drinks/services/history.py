@@ -85,7 +85,7 @@ class HistoryService:
         return self._data_frame_col("per_day")
 
     @property
-    def quantity(self) -> list[float]:
+    def quantity(self) -> list[int]:
         return self._data_frame_col("qty")
 
 
