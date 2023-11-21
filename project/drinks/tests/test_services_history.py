@@ -6,6 +6,18 @@ from ..services import history as T
 pytestmark = pytest.mark.django_db
 
 
+@time_machine.travel('1999-01-01')
+def test_insert_empty_values():
+    data = [{'year': 1998, 'qty': 1, 'stdav': 2.5}]
+    actual = T.HistoryService.insert_empty_values(data)
+    expect = [
+        {'year': 1998, 'qty': 1, 'stdav': 2.5},
+        {'year': 1998, 'qty': 0, 'stdav': 0.0},
+        {'year': 1999, 'qty': 0, 'stdav': 0.0},
+    ]
+    assert actual == expect
+
+
 @time_machine.travel('2000-01-01')
 def test_years():
     qs = [{'year': 1998, 'qty': 1, 'stdav': 2.5}]
