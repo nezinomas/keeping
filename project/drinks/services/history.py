@@ -41,31 +41,29 @@ class HistoryService:
         return (
             df.lazy()
             .group_by("year")
-            .agg([pl.col.qty.sum(), pl.col.stdav.sum()])
-            .with_columns(date=pl.date("year", 1, 1))
+            .agg(pl.col.qty.sum(), pl.col.stdav.sum())
+            .with_columns(date = pl.date("year", 1, 1))
             # calculate days_in_year for each year
             .with_columns(
-                pl
-                .when(pl.col.date.dt.is_leap_year())
+                days_in_year =
+                pl.when(pl.col.date.dt.is_leap_year())
                 .then(pl.lit(366))
                 .otherwise(pl.lit(365))
-                .alias("days_in_year")
             )
             # for current year update days_in_year to actual number of days
             .with_columns(
-                pl
-                .when(pl.col.year == year_)
+                days_in_year =
+                pl.when(pl.col.year == year_)
                 .then(pl.lit(days_))
                 .otherwise(pl.col.days_in_year)
-                .alias("days_in_year")
             )
             # calculate alcohol and ml
-            .with_columns([
-                self.options.stdav_to_alcohol(pl.col.stdav).alias("alcohol"),
-                self.options.stdav_to_ml(pl.col.stdav, self.options.drink_type).alias("ml"),
-            ])
+            .with_columns(
+                alcohol = self.options.stdav_to_alcohol(pl.col.stdav),
+                ml = self.options.stdav_to_ml(pl.col.stdav, self.options.drink_type),
+            )
             # calculate per_day
-            .with_columns((pl.col.ml / pl.col.days_in_year).alias("per_day"))
+            .with_columns(per_day = (pl.col.ml / pl.col.days_in_year))
             .sort(pl.col.year)
         ).collect()
 
