@@ -10,13 +10,13 @@ from ..managers import DrinkQuerySet
 
 class HistoryService:
     def __init__(self, data):
-        self._df = pl.DataFrame()
+        self.df = pl.DataFrame()
         self.options = DrinksOptions()
 
         if data:
             if isinstance(data, DrinkQuerySet):
                 data = list(data)
-            self._df = self._create_df(data)
+            self.df = self._create_df(data)
 
     @staticmethod
     def insert_empty_values(data: list[dict]) -> list[dict]:
@@ -78,7 +78,7 @@ class HistoryService:
         )
 
     def _data_frame_col(self, col: str) -> list:
-        return self._df[col].to_list() if not self._df.is_empty() else []
+        return self.df[col].to_list() if not self.df.is_empty() else []
 
     @property
     def years(self) -> list[int]:
