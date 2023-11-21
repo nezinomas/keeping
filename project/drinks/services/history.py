@@ -1,7 +1,10 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from django.utils.translation import gettext as _
+
 from ...core.lib.date import ydays
+from .. import models
 from ..lib.drinks_options import DrinksOptions
 from ..managers import DrinkQuerySet
 
@@ -53,3 +56,23 @@ class HistoryService:
             self.quantity.append(_quantity)
             self.alcohol.append(_alcohol)
             self.per_day.append(_per_day)
+
+
+def load_service() -> dict:
+    data = models.Drink.objects.sum_by_year()
+    obj = HistoryService(data)
+
+    return {
+        "tab": "history",
+        "records": len(obj.years) if len(obj.years) > 1 else 0,
+        "chart": {
+            "categories": obj.years,
+            "data_ml": obj.per_day,
+            "data_alcohol": obj.alcohol,
+            "text": {
+                "title": _("Drinks"),
+                "per_day": _("Average per day, ml"),
+                "per_year": _("Pure alcohol per year, L"),
+            },
+        },
+    }

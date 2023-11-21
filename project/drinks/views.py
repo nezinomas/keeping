@@ -51,24 +51,10 @@ class TabHistory(TemplateViewMixin):
     template_name = "drinks/tab_history.html"
 
     def get_context_data(self, **kwargs):
-        data = Drink.objects.sum_by_year()
-        obj = services.history.HistoryService(data)
-
-        context = {
-            "tab": "history",
-            "records": len(obj.years) if len(obj.years) > 1 else 0,
-            "chart": {
-                "categories": obj.years,
-                "data_ml": obj.per_day,
-                "data_alcohol": obj.alcohol,
-                "text": {
-                    "title": _("Drinks"),
-                    "per_day": _("Average per day, ml"),
-                    "per_year": _("Pure alcohol per year, L"),
-                },
-            },
+        return {
+            **super().get_context_data(**kwargs),
+            **services.history.load_service(),
         }
-        return super().get_context_data(**kwargs) | context
 
 
 class Compare(TemplateViewMixin):
