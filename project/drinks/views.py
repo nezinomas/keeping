@@ -3,10 +3,15 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
 from ..core.lib.translation import month_names
-from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 FormViewMixin, ListViewMixin,
-                                 RedirectViewMixin, TemplateViewMixin,
-                                 UpdateViewMixin)
+from ..core.mixins.views import (
+    CreateViewMixin,
+    DeleteViewMixin,
+    FormViewMixin,
+    ListViewMixin,
+    RedirectViewMixin,
+    TemplateViewMixin,
+    UpdateViewMixin,
+)
 from . import services
 from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
 from .lib.drinks_options import DrinksOptions
@@ -17,7 +22,10 @@ class Index(TemplateViewMixin):
     template_name = "drinks/index.html"
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | services.helper.drink_type_dropdown(self.request)
+        return {
+            **super().get_context_data(**kwargs),
+            **services.helper.drink_type_dropdown(self.request),
+        }
 
 
 class TabIndex(TemplateViewMixin):
@@ -69,7 +77,9 @@ class Compare(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year + 1
         qty = self.kwargs.get("qty", 0)
-        chart_serries = services.helper.several_years_consumption(range(year - qty, year))
+        chart_serries = services.helper.several_years_consumption(
+            range(year - qty, year)
+        )
         return {
             "chart": {
                 "categories": list(month_names().values()),
