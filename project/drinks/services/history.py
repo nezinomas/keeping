@@ -10,8 +10,8 @@ from ..managers import DrinkQuerySet
 
 class HistoryService:
     def __init__(self, data):
-        self.df = pl.DataFrame()
-        self.options = DrinksOptions()
+        self.df: pl.DataFrame = pl.DataFrame()
+        self.options: DrinksOptions = DrinksOptions()
 
         if data:
             if isinstance(data, DrinkQuerySet):
@@ -43,7 +43,7 @@ class HistoryService:
     def _agg_df(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return df.group_by("year").agg(pl.col.qty.sum(), pl.col.stdav.sum())
 
-    def _calc_stats(self, df) -> pl.LazyFrame:
+    def _calc_stats(self, df: pl.LazyFrame) -> pl.LazyFrame:
         drink_type = self.options.drink_type
 
         return (
@@ -57,7 +57,7 @@ class HistoryService:
             .with_columns(per_day=pl.col.ml / pl.col.days_in_year)
         )
 
-    def _days_in_year(self, df) -> pl.LazyFrame:
+    def _days_in_year(self, df: pl.LazyFrame) -> pl.LazyFrame:
         year = datetime.now().year
         days = datetime.now().timetuple().tm_yday
 
