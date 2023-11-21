@@ -1,5 +1,6 @@
-from ...accounts.models import AccountBalance
 from project.core.lib import utils
+
+from ...accounts.models import AccountBalance
 
 
 def get_data(year: int) -> AccountBalance:
