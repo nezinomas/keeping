@@ -4,12 +4,13 @@ from typing import Dict, List, Tuple
 
 from django.utils.translation import gettext as _
 
-from ...core.lib.date import ydays
+from ...core.lib.date import ydays, years
 from ...core.lib.translation import month_names
 from ..lib.drinks_options import DrinksOptions
 from ..lib.drinks_stats import DrinkStats
 from ..managers import DrinkQuerySet
 from ..models import Drink, DrinkTarget
+from .calendar_chart import CalendarChart
 
 
 class IndexServiceData:
@@ -154,3 +155,32 @@ class IndexService:
         _weeks = date(year, 12, 28).isocalendar()[1]
 
         return (_days, _weeks, 12)
+
+
+def load_service(year: int) -> dict:
+    data = IndexServiceData(year)
+
+    # Index Tab service
+    index_service = IndexService(
+        drink_stats=DrinkStats(data.sum_by_month),
+        target=data.target,
+        latest_past_date=data.latest_past_date,
+        latest_current_date=data.latest_current_date,
+    )
+
+    # calendar chart service
+    calendar_service = CalendarChart(
+        year=year, data=data.sum_by_day, latest_past_date=data.latest_past_date
+    )
+
+    return {
+        "all_years": len(years()),
+        "chart_quantity": index_service.chart_quantity(),
+        "chart_consumption": index_service.chart_consumption(),
+        "chart_calendar_1H": calendar_service.first_half_of_year(),
+        "chart_calendar_2H": calendar_service.second_half_of_year(),
+        "tbl_consumption": index_service.tbl_consumption(),
+        "tbl_dray_days": index_service.tbl_dry_days(),
+        "tbl_alcohol": index_service.tbl_alcohol(),
+        "tbl_std_av": index_service.tbl_std_av(),
+    }

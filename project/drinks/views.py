@@ -2,7 +2,6 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
-from ..core.lib.date import years
 from ..core.lib.translation import month_names
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -12,30 +11,19 @@ from ..core.mixins.views import (
     RedirectViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
-from .forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
+from . import forms, models, services
 from .lib.drinks_options import DrinksOptions
-from .lib.drinks_stats import DrinkStats
-from .models import Drink, DrinkTarget, DrinkType
-from .services import helper as H
-from .services.calendar_chart import CalendarChart
-from .services.history import HistoryService
-from .services.index import IndexService, IndexServiceData
 
 
 class Index(TemplateViewMixin):
     template_name = "drinks/index.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                "tab_content": rendered_content(self.request, TabIndex, **kwargs),
-                **H.drink_type_dropdown(self.request),
-            }
-        )
-        return context
+        return {
+            **super().get_context_data(**kwargs),
+            **services.helper.drink_type_dropdown(self.request),
+        }
 
 
 class TabIndex(TemplateViewMixin):
@@ -43,69 +31,28 @@ class TabIndex(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year = self.request.user.year
-        # Index data
-        data = IndexServiceData(year)
-        # Index Tab service
-        index_service = IndexService(
-            drink_stats=DrinkStats(data.sum_by_month),
-            target=data.target,
-            latest_past_date=data.latest_past_date,
-            latest_current_date=data.latest_current_date,
-        )
-        # calendar chart service
-        calendar_service = CalendarChart(
-            year=year, data=data.sum_by_day, latest_past_date=data.latest_past_date
-        )
+        context = services.index.load_service(year)
 
-        context = {
-            "target_list": rendered_content(self.request, TargetLists, **kwargs),
-            "compare_form_and_chart": rendered_content(
-                self.request, CompareTwo, **kwargs
-            ),
-            "all_years": len(years()),
-            "chart_quantity": index_service.chart_quantity(),
-            "chart_consumption": index_service.chart_consumption(),
-            "chart_calendar_1H": calendar_service.first_half_of_year(),
-            "chart_calendar_2H": calendar_service.second_half_of_year(),
-            "tbl_consumption": index_service.tbl_consumption(),
-            "tbl_dray_days": index_service.tbl_dry_days(),
-            "tbl_alcohol": index_service.tbl_alcohol(),
-            "tbl_std_av": index_service.tbl_std_av(),
-        }
         return super().get_context_data(**kwargs) | context
 
 
 class TabData(ListViewMixin):
-    model = Drink
+    model = models.Drink
     template_name = "drinks/tab_data.html"
 
     def get_queryset(self):
         year = self.request.user.year
-        return Drink.objects.year(year=year)
+        return models.Drink.objects.year(year=year)
 
 
 class TabHistory(TemplateViewMixin):
     template_name = "drinks/tab_history.html"
 
     def get_context_data(self, **kwargs):
-        data = Drink.objects.sum_by_year()
-        obj = HistoryService(data)
-
-        context = {
-            "tab": "history",
-            "records": len(obj.years) if len(obj.years) > 1 else 0,
-            "chart": {
-                "categories": obj.years,
-                "data_ml": obj.per_day,
-                "data_alcohol": obj.alcohol,
-                "text": {
-                    "title": _("Drinks"),
-                    "per_day": _("Average per day, ml"),
-                    "per_year": _("Pure alcohol per year, L"),
-                },
-            },
+        return {
+            **super().get_context_data(**kwargs),
+            **services.history.load_service(),
         }
-        return super().get_context_data(**kwargs) | context
 
 
 class Compare(TemplateViewMixin):
@@ -114,7 +61,9 @@ class Compare(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year + 1
         qty = self.kwargs.get("qty", 0)
-        chart_serries = H.several_years_consumption(range(year - qty, year))
+        chart_serries = services.helper.several_years_consumption(
+            range(year - qty, year)
+        )
         return {
             "chart": {
                 "categories": list(month_names().values()),
@@ -124,7 +73,7 @@ class Compare(TemplateViewMixin):
 
 
 class CompareTwo(FormViewMixin):
-    form_class = DrinkCompareForm
+    form_class = forms.DrinkCompareForm
     template_name = "drinks/includes/compare_form.html"
     success_url = reverse_lazy("drinks:compare_two")
 
@@ -132,7 +81,7 @@ class CompareTwo(FormViewMixin):
         context = {}
         year1 = form.cleaned_data["year1"]
         year2 = form.cleaned_data["year2"]
-        chart_serries = H.several_years_consumption([year1, year2])
+        chart_serries = services.helper.several_years_consumption([year1, year2])
 
         if len(chart_serries) == 2:
             context |= {
@@ -146,8 +95,8 @@ class CompareTwo(FormViewMixin):
 
 
 class New(CreateViewMixin):
-    model = Drink
-    form_class = DrinkForm
+    model = models.Drink
+    form_class = forms.DrinkForm
     success_url = reverse_lazy("drinks:tab_data")
 
     def get_hx_trigger_django(self):
@@ -168,8 +117,8 @@ class New(CreateViewMixin):
 
 
 class Update(UpdateViewMixin):
-    model = Drink
-    form_class = DrinkForm
+    model = models.Drink
+    form_class = forms.DrinkForm
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
 
@@ -183,13 +132,13 @@ class Update(UpdateViewMixin):
 
 
 class Delete(DeleteViewMixin):
-    model = Drink
+    model = models.Drink
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
 
 
 class TargetLists(ListViewMixin):
-    model = DrinkTarget
+    model = models.DrinkTarget
 
     def get_queryset(self):
         year = self.request.user.year
@@ -197,8 +146,8 @@ class TargetLists(ListViewMixin):
 
 
 class TargetNew(CreateViewMixin):
-    model = DrinkTarget
-    form_class = DrinkTargetForm
+    model = models.DrinkTarget
+    form_class = forms.DrinkTargetForm
     success_url = reverse_lazy("drinks:index")
 
     def get_hx_trigger_django(self):
@@ -219,8 +168,8 @@ class TargetNew(CreateViewMixin):
 
 
 class TargetUpdate(UpdateViewMixin):
-    model = DrinkTarget
-    form_class = DrinkTargetForm
+    model = models.DrinkTarget
+    form_class = forms.DrinkTargetForm
     hx_trigger_django = "reloadIndex"
     success_url = reverse_lazy("drinks:tab_index")
 
@@ -242,8 +191,8 @@ class SelectDrink(RedirectViewMixin):
     def get_redirect_url(self, *args, **kwargs):
         drink_type = kwargs.get("drink_type")
 
-        if drink_type not in DrinkType.values:
-            drink_type = DrinkType.BEER.value
+        if drink_type not in models.DrinkType.values:
+            drink_type = models.DrinkType.BEER.value
 
         user = self.request.user
         user.drink_type = drink_type

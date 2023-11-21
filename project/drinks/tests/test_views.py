@@ -69,7 +69,6 @@ def test_index_context(client_logged):
     response = client_logged.get(url)
     context = response.context
 
-    assert 'tab_content' in context
     assert 'select_drink_type' in context
     assert 'current_drink_type' in context
 
@@ -128,8 +127,6 @@ def test_tab_index_context(client_logged):
     url = reverse('drinks:tab_index')
     response = client_logged.get(url)
 
-    assert 'target_list' in response.context
-    assert 'compare_form_and_chart' in response.context
     assert 'all_years' in response.context
     assert 'chart_quantity' in response.context
     assert 'chart_consumption' in response.context
@@ -830,9 +827,10 @@ def test_target_update_not_load_other_user(client_logged, second_user):
 def test_target_empty_db(client_logged):
     DrinkFactory()
 
-    response = client_logged.get('/drinks/')
+    url = reverse('drinks:target_list')
+    response = client_logged.get(url)
 
-    assert 'Neįvestas tikslas' in response.context["target_list"]
+    assert 'Neįvestas tikslas' in response.content.decode('utf-8')
 
 
 # ---------------------------------------------------------------------------------------

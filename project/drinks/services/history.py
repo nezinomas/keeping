@@ -1,55 +1,106 @@
-from dataclasses import dataclass, field
 from datetime import datetime
 
-from ...core.lib.date import ydays
+import polars as pl
+from django.utils.translation import gettext as _
+
+from .. import models
 from ..lib.drinks_options import DrinksOptions
 from ..managers import DrinkQuerySet
 
 
-@dataclass()
 class HistoryService:
-    data: DrinkQuerySet.sum_by_year = None
+    def __init__(self, data):
+        self._df = pl.DataFrame()
 
-    years: list[int] = field(init=False, default_factory=list)
-    alcohol: list[float] = field(init=False, default_factory=list)
-    per_day: list[float] = field(init=False, default_factory=list)
-    quantity: list[float] = field(init=False, default_factory=list)
-    drink_options: DrinksOptions = field(init=False, default_factory=DrinksOptions)
-
-    def __post_init__(self):
-        if not self.data:
+        if not data:
             return
 
-        self._calc()
+        if isinstance(data, DrinkQuerySet):
+            data = list(data)
 
-    def _calc(self) -> None:
-        _first_year = self.data[0]["year"]
-        _last_year = datetime.now().year + 1
+        self.options = DrinksOptions()
+        self._df = self._calc(data)
 
-        for _year in range(_first_year, _last_year):
-            _quantity = 0.0
-            _alcohol = 0.0
-            _per_day = 0.0
+    @staticmethod
+    def insert_empty_values(data: list[dict]) -> list[dict]:
+        first_year = data[0]["year"]
+        last_year = datetime.now().year + 1
 
-            if item := next((x for x in self.data if x["year"] == _year), False):
-                _stdav = item["stdav"]
-                _quantity = item["qty"]
-                _ml = self.drink_options.stdav_to_ml(
-                    _stdav, self.drink_options.drink_type
-                )
-                _alcohol = self.drink_options.stdav_to_alcohol(_stdav)
+        for year in range(first_year, last_year):
+            data.append({"year": year, "qty": 0, "stdav": 0.0})
 
-                # mililitres per day
-                # for current year get day number, else 365 or 366
-                _date = datetime.now().date()
-                if _year == _date.year:
-                    _day_of_year = _date.timetuple().tm_yday
-                else:
-                    _day_of_year = ydays(_year)
+        return data
 
-                _per_day = _ml / _day_of_year
+    def _calc(self, data) -> pl.DataFrame:
+        data = __class__.insert_empty_values(data)
 
-            self.years.append(_year)
-            self.quantity.append(_quantity)
-            self.alcohol.append(_alcohol)
-            self.per_day.append(_per_day)
+        year = datetime.now().year
+        days = datetime.now().timetuple().tm_yday
+        drink_type = self.options.drink_type
+
+        df = pl.DataFrame(data)
+        return (
+            df.lazy()
+            .group_by("year")
+            .agg(pl.col.qty.sum(), pl.col.stdav.sum())
+            .with_columns(date=pl.date("year", 1, 1))
+            # calculate days_in_year for each year
+            .with_columns(
+                days_in_year=pl.when(pl.col.date.dt.is_leap_year())
+                .then(pl.lit(366))
+                .otherwise(pl.lit(365))
+            )
+            # for current year update days_in_year to actual number of days
+            .with_columns(
+                days_in_year=pl.when(pl.col.year == year)
+                .then(pl.lit(days))
+                .otherwise(pl.col.days_in_year)
+            )
+            # calculate alcohol and ml
+            .with_columns(
+                alcohol=self.options.stdav_to_alcohol(pl.col.stdav),
+                ml=self.options.stdav_to_ml(pl.col.stdav, drink_type),
+            )
+            # calculate per_day
+            .with_columns(per_day=pl.col.ml / pl.col.days_in_year)
+            .sort(pl.col.year)
+        ).collect()
+
+    def _data_frame_col(self, col: str) -> list:
+        return self._df[col].to_list() if not self._df.is_empty() else []
+
+    @property
+    def years(self) -> list[int]:
+        return self._data_frame_col("year")
+
+    @property
+    def alcohol(self) -> list[float]:
+        return self._data_frame_col("alcohol")
+
+    @property
+    def per_day(self) -> list[float]:
+        return self._data_frame_col("per_day")
+
+    @property
+    def quantity(self) -> list[int]:
+        return self._data_frame_col("qty")
+
+
+def load_service() -> dict:
+    data = models.Drink.objects.sum_by_year()
+    obj = HistoryService(data)
+
+    return {
+        "tab": "history",
+        "records": len(obj.years) if len(obj.years) > 1 else 0,
+        "chart": {
+            "categories": obj.years,
+            "data_ml": obj.per_day,
+            "data_alcohol": obj.alcohol,
+            "text": {
+                "title": _("Drinks"),
+                "per_day": _("Average per day, ml"),
+                "per_year": _("Pure alcohol per year, L"),
+            },
+        },
+    }
