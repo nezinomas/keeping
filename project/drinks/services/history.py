@@ -64,7 +64,7 @@ class HistoryService:
                 ml = self.options.stdav_to_ml(pl.col.stdav, drink_type),
             )
             # calculate per_day
-            .with_columns(per_day = (pl.col.ml / pl.col.days_in_year))
+            .with_columns(per_day = pl.col.ml / pl.col.days_in_year)
             .sort(pl.col.year)
         ).collect()
 
