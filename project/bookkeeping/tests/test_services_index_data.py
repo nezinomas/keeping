@@ -17,6 +17,10 @@ def fixture_data_dummy(mocker):
         "project.bookkeeping.services.index.IndexServiceData.get_data",
         side_effect=[{"foo": "bar"}],
     )
+    mocker.patch(
+        "project.bookkeeping.services.index.IndexServiceData.get_debts",
+        side_effect=[{"foo1": "bar1"}],
+    )
 
 
 @pytest.fixture(name="data")
@@ -45,12 +49,16 @@ def fixture_data(mocker):
     ]
     mocker.patch(f"{module}.Debt.objects.sum_by_month", side_effect=debts)
 
+    debts_summed = {"lend": {"debt": 7, "debt_return": 5}, "borrow": {"debt": 2, "debt_return": 1}}
+    mocker.patch(f"{module}.Debt.objects.sum_all", side_effect=debts_summed)
+
 
 def test_init(amount_start, data_dummy):
     actual = IndexServiceData(1999)
 
     assert actual.amount_start == 8
     assert actual.data == {"foo": "bar"}
+    assert actual.debts == {"foo1": "bar1"}
 
 
 def test_get_debt_data(amount_start, data):
