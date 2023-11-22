@@ -1,23 +1,16 @@
-import contextlib
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import weeknumber
-from ..core.mixins.views import (
-    CreateViewMixin,
-    DeleteViewMixin,
-    ListViewMixin,
-    RedirectViewMixin,
-    TemplateViewMixin,
-    UpdateViewMixin,
-    rendered_content,
-)
+from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
+                                 ListViewMixin, RedirectViewMixin,
+                                 TemplateViewMixin, UpdateViewMixin,
+                                 rendered_content)
+from . import services
 from .forms import CountForm, CountTypeForm
-from .lib.stats import Stats
 from .lib.views_helper import CountTypetObjectMixin, InfoRowData
 from .models import Count, CountType
-from .services.index import IndexService
 
 
 class Redirect(RedirectViewMixin):
@@ -90,32 +83,12 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
 
         year = self.request.user.year
         count_type = self.object.slug
+        context = services.index.load_index_service(year, count_type)
 
-        qs = Count.objects.sum_by_day(year=year, count_type=count_type)
-
-        past_last_record = None
-        with contextlib.suppress(Count.DoesNotExist, AttributeError):
-            past_last_record = (
-                Count.objects.related()
-                .filter(date__year__lt=year, count_type=self.object)
-                .latest()
-                .date
-            )
-
-        stats = Stats(year=year, data=qs, past_latest=past_last_record)
-        srv = IndexService(year, stats)
-        # cash calendar data
-        calendar_data = srv.calendar_data
-
-        context = {
-            "chart_calendar_1H": srv.chart_calendar(calendar_data[:6]),
-            "chart_calendar_2H": srv.chart_calendar(calendar_data[6:]),
-            "chart_weekdays": srv.chart_weekdays(),
-            "chart_months": srv.chart_months(),
-            "chart_histogram": srv.chart_histogram(),
+        return {
+            **super().get_context_data(**self.kwargs),
+            **context
         }
-
-        return super().get_context_data(**self.kwargs) | context
 
 
 class TabData(ListViewMixin):
@@ -136,18 +109,15 @@ class TabHistory(TemplateViewMixin):
     template_name = "counts/tab_history.html"
 
     def get_context_data(self, **kwargs):
-        slug = self.kwargs.get("slug")
-        qs = Count.objects.items(count_type=slug).values("date", "quantity")
-        srv = IndexService(self.request.user.year, Stats(data=qs))
+        year = self.request.user.year
+        count_type = self.kwargs.get("slug")
+        print(f'--------------------------->\n{count_type}\n')
+        context = services.index.load_history_service(year, count_type)
 
-        context = {
-            "records": srv.records,
-            "chart_weekdays": srv.chart_weekdays(_("Days of week")),
-            "chart_years": srv.chart_years(),
-            "chart_histogram": srv.chart_histogram(),
+        return {
+            **super().get_context_data(**self.kwargs),
+            **context
         }
-
-        return super().get_context_data(**self.kwargs) | context
 
 
 class CountUrlMixin:
