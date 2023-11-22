@@ -17,16 +17,14 @@ class Index(TemplateViewMixin):
     template_name = "savings/index.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                "saving": rendered_content(self.request, Lists),
-                "saving_type": rendered_content(self.request, TypeLists),
-                "pension": rendered_content(self.request, pension_views.Lists),
-                "pension_type": rendered_content(self.request, pension_views.TypeLists),
-            }
-        )
-        return context
+        context = {
+            "saving": rendered_content(self.request, Lists),
+            "saving_type": rendered_content(self.request, TypeLists),
+            "pension": rendered_content(self.request, pension_views.Lists),
+            "pension_type": rendered_content(self.request, pension_views.TypeLists),
+        }
+
+        return {**super().get_context_data(**kwargs), **context}
 
 
 class Lists(ListViewMixin):

@@ -1,4 +1,5 @@
 from datetime import date as dt
+from os import close
 
 import pytest
 from mock import patch
@@ -442,6 +443,25 @@ def test_debt_sum_all_months(mck):
     ]
 
     actual = list(Debt.objects.sum_by_month(1999, 'lend'))
+
+    assert expect == actual
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+def test_debt_sum_all_months_with_closed(mck):
+    LendFactory(date=dt(1999, 1, 1), price=1, returned=1)
+    LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
+    LendFactory(date=dt(1999, 2, 1), price=4, returned=1)
+    LendFactory(date=dt(1999, 2, 2), price=1, returned=1)
+    LendFactory(date=dt(1999, 1, 1), price=2, returned=2, closed=True)
+    LendFactory(date=dt(1974, 1, 1))
+
+    expect = [
+        {'date': dt(1999, 1, 1), 'sum_debt': 5, 'sum_return': 4, 'title': 'lend'},
+        {'date': dt(1999, 2, 1), 'sum_debt': 5, 'sum_return': 2, 'title': 'lend'},
+    ]
+
+    actual = list(Debt.objects.sum_by_month(1999, 'lend', closed=True))
 
     assert expect == actual
 

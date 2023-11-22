@@ -52,6 +52,8 @@ def test_positive(value, expect):
         (1, 0, 'table-success'),
         ('1', '0', 'table-success'),
         (None, None, ''),
+        ('x', 1, ''),
+        (1, 'x', ''),
     ]
 )
 def test_compare(value1, value2, expect):
@@ -67,6 +69,7 @@ def test_compare(value1, value2, expect):
         ('1', 'table-success'),
         (-1, 'table-danger'),
         ('-1', 'table-danger'),
+        ('x', ''),
     ]
 )
 def test_positive_negative_positive(value, expect):

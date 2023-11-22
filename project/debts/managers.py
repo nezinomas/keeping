@@ -25,11 +25,14 @@ class DebtQuerySet(models.QuerySet):
             Q(date__year=year) | (Q(date__year__lt=year) & Q(closed=False))
         )
 
-    def sum_by_month(self, year, debt_type=None):
+    def sum_by_month(self, year, debt_type=None, closed=False):
+        qs = self.related(debt_type=debt_type)
+
+        if not closed:
+            qs = qs.filter(closed=False)
+
         return (
-            self.related(debt_type=debt_type)
-            .filter(closed=False)
-            .filter(date__year=year)
+            qs.filter(date__year=year)
             .annotate(cnt=Count("id"))
             .values("id")
             .annotate(date=TruncMonth("date"))

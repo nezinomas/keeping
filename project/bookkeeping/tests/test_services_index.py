@@ -57,7 +57,7 @@ def test_averages_context():
 
 
 def test_borrow_context():
-    obj = IndexService(balance=MagicMock(borrow_data=[99], borrow_return_data=[66]))
+    obj = IndexService(balance=MagicMock(), debts={"borrow": {"debt": 99, "debt_return": 66}})
     actual = obj.borrow_context()
 
     assert "title" in actual
@@ -69,21 +69,21 @@ def test_borrow_context():
 
 
 def test_borrow_context_no_data():
-    obj = IndexService(balance=MagicMock())
+    obj = IndexService(balance=MagicMock(), debts={"borrow": {"debt": None, "debt_return": None}})
     actual = obj.borrow_context()
 
     assert actual == {}
 
 
-def test_lend_context_no_data():
-    obj = IndexService(balance=MagicMock())
+def test_lend_context_no_data(main_user):
+    obj = IndexService(balance=MagicMock(), debts={"lend": {"debt": None, "debt_return": None}})
     actual = obj.lend_context()
 
     assert actual == {}
 
 
 def test_lend_context():
-    obj = IndexService(balance=MagicMock(lend_data=[4, 5], lend_return_data=[1, 2]))
+    obj = IndexService(balance=MagicMock(), debts={"lend": {"debt": 9, "debt_return": 3}})
     actual = obj.lend_context()
 
     assert "title" in actual

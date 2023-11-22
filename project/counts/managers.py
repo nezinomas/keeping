@@ -23,6 +23,7 @@ class CountQuerySet(SumMixin, models.QuerySet):
 
     def items(self, count_type=None):
         qs = self.related()
+
         if count_type:
             qs = qs.filter(count_type__slug=count_type)
 

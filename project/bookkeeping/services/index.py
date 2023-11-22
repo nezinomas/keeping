@@ -18,12 +18,14 @@ from ..lib.make_dataframe import MakeDataFrame
 @dataclass
 class IndexServiceData:
     year: int
-    amount_start: int = 0
-    data: dict = field(default_factory=dict)
+    amount_start: int = field(init=False, default=0)
+    data: dict = field(init=False, default_factory=dict)
+    debts: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self.amount_start = self.get_amount_start()
         self.data = self.get_data()
+        self.debts = self.get_debts()
 
     @property
     def columns(self) -> tuple[str]:
@@ -49,8 +51,10 @@ class IndexServiceData:
         )
 
     def get_data(self) -> list[dict]:
-        qs_borrow = Debt.objects.sum_by_month(self.year, debt_type="borrow")
-        qs_lend = Debt.objects.sum_by_month(self.year, debt_type="lend")
+        qs_borrow = Debt.objects.sum_by_month(
+            self.year, debt_type="borrow", closed=True
+        )
+        qs_lend = Debt.objects.sum_by_month(self.year, debt_type="lend", closed=True)
 
         return list(
             it.chain(
@@ -77,10 +81,17 @@ class IndexServiceData:
 
         return final
 
+    def get_debts(self) -> dict:
+        return {
+            "lend": Debt.objects.sum_all(debt_type="lend"),
+            "borrow": Debt.objects.sum_all(debt_type="borrow"),
+        }
+
 
 class IndexService:
-    def __init__(self, balance: YearBalance):
+    def __init__(self, balance: YearBalance, debts: dict = None):
         self._balance = balance
+        self._debts = debts
 
     def balance_context(self):
         return {
@@ -116,27 +127,28 @@ class IndexService:
         }
 
     def borrow_context(self):
-        if borrow := sum(self._balance.borrow_data):
-            borrow_return = sum(self._balance.borrow_return_data)
-            return {
-                "title": [_("Borrow"), _("Borrow return")],
-                "data": [borrow, borrow_return],
-            }
-        return {}
+        debt = self._debts.get("borrow", {})
+        if not debt.get("debt"):
+            return {}
+
+        return {
+            "title": [_("Borrow"), _("Borrow return")],
+            "data": [debt["debt"], debt["debt_return"]],
+        }
 
     def lend_context(self):
-        if lend := sum(self._balance.lend_data):
-            lend_return = sum(self._balance.lend_return_data)
-            return {
-                "title": [_("Lend"), _("Lend return")],
-                "data": [lend, lend_return],
-            }
+        debt = self._debts.get("lend", {})
+        if not debt.get("debt"):
+            return {}
 
-        return {}
+        return {
+            "title": [_("Lend"), _("Lend return")],
+            "data": [debt["debt"], debt["debt_return"]],
+        }
 
 
 def load_service(year):
     data = IndexServiceData(year)
     df = MakeDataFrame(year, data.data, data.columns)
     balance = YearBalance(data=df, amount_start=data.amount_start)
-    return IndexService(balance)
+    return IndexService(balance=balance, debts=data.debts)
