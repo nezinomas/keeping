@@ -112,10 +112,7 @@ class TabHistory(TemplateViewMixin):
         count_type = self.kwargs.get("slug")
         context = services.index.load_history_service(year, count_type)
 
-        return {
-            **super().get_context_data(**self.kwargs),
-            **context
-        }
+        return {**super().get_context_data(**self.kwargs), **context}
 
 
 class CountUrlMixin:
