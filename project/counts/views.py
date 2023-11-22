@@ -111,7 +111,6 @@ class TabHistory(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         count_type = self.kwargs.get("slug")
-        print(f'--------------------------->\n{count_type}\n')
         context = services.index.load_history_service(year, count_type)
 
         return {
