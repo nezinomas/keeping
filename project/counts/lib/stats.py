@@ -144,7 +144,7 @@ class Stats:
 
     def _make_dataframe(self, data):
         """Make DataFrame"""
-        print(f'--------------------------->make dataframe\n{data}\n')
+
         data = data if isinstance(data, list) else list(data)
         df = pl.DataFrame(data or [])
 
