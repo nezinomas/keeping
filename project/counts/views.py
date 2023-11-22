@@ -15,14 +15,7 @@ from .models import Count, CountType
 
 class Redirect(RedirectViewMixin):
     def get_redirect_url(self, *args, **kwargs):
-        slug = kwargs.get("slug")
-
-        if slug:
-            qs = CountType.objects.related().filter(slug=slug).first()
-        else:
-            qs = CountType.objects.related().first()
-
-        if qs:
+        if qs := CountType.objects.related().first():
             return reverse("counts:index", kwargs={"slug": qs.slug})
 
         return reverse("counts:empty")
