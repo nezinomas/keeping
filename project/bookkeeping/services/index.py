@@ -49,8 +49,8 @@ class IndexServiceData:
         )
 
     def get_data(self) -> list[dict]:
-        qs_borrow = Debt.objects.sum_by_month(self.year, debt_type="borrow")
-        qs_lend = Debt.objects.sum_by_month(self.year, debt_type="lend")
+        qs_borrow = Debt.objects.sum_by_month(self.year, debt_type="borrow", closed=True)
+        qs_lend = Debt.objects.sum_by_month(self.year, debt_type="lend", closed=True)
 
         return list(
             it.chain(
