@@ -49,7 +49,7 @@ class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
             "ratio": data.total / week,
             "current_gap": data.gap,
         }
-        return super().get_context_data(**kwargs) | context
+        return {**super().get_context_data(**kwargs), **context}
 
 
 class Index(CountTypetObjectMixin, TemplateViewMixin):
