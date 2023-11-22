@@ -15,9 +15,11 @@ from .models import Count, CountType
 
 class Redirect(RedirectViewMixin):
     def get_redirect_url(self, *args, **kwargs):
-        try:
-            qs = CountType.objects.related().get(slug=kwargs.get("slug"))
-        except CountType.DoesNotExist:
+        slug = kwargs.get("slug")
+
+        if slug:
+            qs = CountType.objects.related().filter(slug=slug).first()
+        else:
             qs = CountType.objects.related().first()
 
         if qs:
@@ -85,10 +87,7 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
         count_type = self.object.slug
         context = services.index.load_index_service(year, count_type)
 
-        return {
-            **super().get_context_data(**self.kwargs),
-            **context
-        }
+        return {**super().get_context_data(**self.kwargs), **context}
 
 
 class TabData(ListViewMixin):
