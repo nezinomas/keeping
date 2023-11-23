@@ -34,14 +34,12 @@ class CountType(TitleAbstract):
         _generate_counts_menu()
 
     def get_absolute_url(self):
-        pk = self.pk
-        kwargs = {"pk": pk}
+        kwargs = {"pk": self.pk}
 
         return reverse_lazy("counts:type_update", kwargs=kwargs)
 
     def get_delete_url(self):
-        pk = self.pk
-        kwargs = {"pk": pk}
+        kwargs = {"pk": self.pk}
 
         return reverse_lazy("counts:type_delete", kwargs=kwargs)
 
@@ -70,8 +68,7 @@ class Count(models.Model):
         return reverse_lazy("counts:update", kwargs=kwargs)
 
     def get_delete_url(self):
-        pk = self.pk
-        kwargs = {"pk": pk}
+        kwargs = {"pk": self.pk}
 
         return reverse_lazy("counts:delete", kwargs=kwargs)
 
