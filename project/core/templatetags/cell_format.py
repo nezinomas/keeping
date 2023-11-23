@@ -6,19 +6,16 @@ register = template.Library()
 
 @register.filter
 def cellformat(value, default: str = "-"):
-    value = None if value == "None" else value
-
     if isinstance(value, str):
-        value = value.replace(",", ".")
+        try:
+            value = float(value.replace(',', '.'))
+        except ValueError:
+            return default
 
-    try:
-        _value = float(value)
-    except TypeError:
+    if value is None or round(value, 2) == 0:
         return default
-    except ValueError:
-        return value
 
-    return floatformat(_value, "2g") if round(_value, 2) else default
+    return floatformat(value, "2g")
 
 
 @register.filter

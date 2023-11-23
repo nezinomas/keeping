@@ -102,7 +102,11 @@ def test_positive_negative_positive(value, expect):
         (None, '-', '-'),
         (None, 'ok', 'ok'),
         ('None', 'ok', 'ok'),
-        ('xx', '-', 'xx'),
+        ('xx', '-', '-'),
+        (1000, '-', '1.000,00'),
+        ("1000", '-', '1.000,00'),
     ])
 def test_cellformat(value, default, expect):
-    assert cellformat(value, default) == expect
+    actual = cellformat(value, default)
+
+    assert actual == expect
