@@ -22,7 +22,7 @@
             <th class="w7p">{% translate 'October' %}</th>
             <th class="w7p">{% translate 'November' %}</th>
             <th class="w7p">{% translate 'December' %}</th>
-            <th class="w7p">{% translate 'Total' %}</th>
+            <th class="w7p left-blue-border">{% translate 'Total' %}</th>
             {% endcache %}
         </tr>
     </thead>
@@ -33,7 +33,9 @@
             {% for i in item.data %}
                 <td class="{{i|css_class_if_none}}">{{i|price|cellformat:"0,00"}}</td>
             {% endfor %}
-            <td><b>{{total_col|get_list_val:forloop.counter0|price|cellformat:"0,00"}}</b></td>
+            <td class="left-blue-border">
+                <b>{{total_col|get_list_val:forloop.counter0|price|cellformat:"0,00"}}</b>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -43,7 +45,7 @@
             {% for i in total_row %}
             <th class="{{i|css_class_if_none}}">{{i|price|cellformat:"0,00"}}</th>
             {% endfor %}
-            <th>{{total|price|cellformat:"0,00"}}</th>
+            <th class="left-blue-border">{{total|price|cellformat:"0,00"}}</th>
         </tr>
     </tfoot>
 </table>
