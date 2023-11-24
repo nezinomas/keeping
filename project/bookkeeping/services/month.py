@@ -163,11 +163,13 @@ class Objects:
         self.main_table: MainTable
         self.charts: Charts
 
+        self._get_data(year, month)
         self._initialize_objects(year, month)
 
-    def _initialize_objects(self, year: int, month: int):
+    def _get_data(self, year: int, month: int):
         self.data = MonthServiceData(year, month)
 
+    def _initialize_objects(self, year: int, month: int):
         # expense and saving data_frames
         expense = MakeDataFrame(
             year=year, month=month, data=self.data.expenses, columns=self.data.expense_types

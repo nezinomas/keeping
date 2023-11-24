@@ -10,8 +10,9 @@ from ..services.month import Charts, Info, MainTable, Objects
 
 
 @time_machine.travel("1999-1-1")
+@patch("project.bookkeeping.services.month.Objects._get_data")
 @patch("project.bookkeeping.services.month.Objects._initialize_objects")
-def test_info_context(mck):
+def test_info_context(mck_get_data, mck_initialize_objects):
     obj = Objects(1, 1)
     obj.data = MagicMock(incomes=15)
     obj.plans = MagicMock(incomes=100, savings=12, day_input=3, remains=-85)
