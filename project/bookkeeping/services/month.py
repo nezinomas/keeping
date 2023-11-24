@@ -172,7 +172,10 @@ class Objects:
     def _initialize_objects(self, year: int, month: int):
         # expense and saving data_frames
         expense = MakeDataFrame(
-            year=year, month=month, data=self.data.expenses, columns=self.data.expense_types
+            year=year,
+            month=month,
+            data=self.data.expenses,
+            columns=self.data.expense_types,
         )
         saving = MakeDataFrame(
             year=year,
