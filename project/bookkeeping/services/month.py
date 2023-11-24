@@ -1,7 +1,10 @@
 import contextlib
 import itertools as it
+from collections import namedtuple
 from dataclasses import asdict, dataclass, field
 from operator import itemgetter
+from threading import main_thread
+from numpy import char
 
 import polars as pl
 from django.db.models import Sum
@@ -182,56 +185,73 @@ def info_table(
     return {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)}
 
 
+class Objects:
+    def __init__(self, year: int, month: int):
+        self.expense_types: list
+        self.plans: PlanCalculateDaySum
+        self.spending: DaySpending
+        self.main_table: MainTable
+        self.charts: Charts
+        self.info_table: dict
+
+        self._initialize_objects(year, month)
+
+    def _initialize_objects(self, year: int, month: int):
+        data = MonthServiceData(year, month)
+
+        self.expense_types = data.expense_types
+        # expense and saving data_frames
+        expense = MakeDataFrame(
+            year=year, month=month, data=data.expenses, columns=data.expense_types
+        )
+        saving = MakeDataFrame(
+            year=year,
+            month=month,
+            data=data.savings,
+        )
+
+        # plans
+        self.plans = PlanCalculateDaySum(data=PlanCollectData(year, month))
+
+        # spending table
+        self.spending = DaySpending(
+            expense=expense,
+            necessary=data.necessary_expense_types,
+            per_day=self.plans.day_input,
+            free=self.plans.expenses_free,
+        )
+
+        # main table
+        self.main_table = MainTable(expense=expense, saving=saving)
+
+        # charts
+        self.charts = Charts(
+            targets=(self.plans.targets | {_("Savings"): self.plans.savings}),
+            totals=self.main_table.total_row,
+        )
+
+        self.info_table = info_table(
+            income=data.incomes,
+            total=self.main_table.total_row,
+            per_day=self.spending.avg_per_day,
+            plans=self.plans,
+        )
+
+
 def load_service(year: int, month: int) -> dict:
-    # get data from db
-    data = MonthServiceData(year, month)
-
-    # expense and saving data_frames
-    expense = MakeDataFrame(
-        year=year, month=month, data=data.expenses, columns=data.expense_types
-    )
-    saving = MakeDataFrame(
-        year=year,
-        month=month,
-        data=data.savings,
-    )
-
-    # plans
-    plans = PlanCalculateDaySum(data=PlanCollectData(year, month))
-
-    # spending table
-    spending = DaySpending(
-        expense=expense,
-        necessary=data.necessary_expense_types,
-        per_day=plans.day_input,
-        free=plans.expenses_free,
-    )
-
-    # main table
-    main_table = MainTable(expense=expense, saving=saving)
-
-    # charts
-    charts = Charts(
-        targets=(plans.targets | {_("Savings"): plans.savings}),
-        totals=main_table.total_row,
-    )
+    obj = Objects(year, month)
 
     return {
         "month_table": {
             "day": current_day(year, month, False),
             "expenses": it.zip_longest(
-                main_table.table,
-                spending.spending,
+                obj.main_table.table,
+                obj.spending.spending,
             ),
-            "expense_types": data.expense_types,
-            "total_row": main_table.total_row,
+            "expense_types": obj.expense_types,
+            "total_row": obj.main_table.total_row,
         },
-        "info": info_table(
-            income=data.incomes,
-            total=main_table.total_row,
-            per_day=spending.avg_per_day,
-            plans=plans,
-        ),
-        "chart_expenses": charts.chart_expenses(),
-        "chart_targets": charts.chart_targets(),
+        "info": obj.info_table,
+        "chart_expenses": obj.charts.chart_expenses(),
+        "chart_targets": obj.charts.chart_targets(),
     }
