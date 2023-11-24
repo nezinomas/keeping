@@ -28,25 +28,39 @@ class MonthServiceData:
     savings: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
+        self.get_incomes()
+        self.get_expenses()
+        self.get_expense_types()
+        self.get_necessary_expense_types()
+        self.get_savings()
+
+    def get_incomes(self):
         self.incomes = (
-            Income.objects.related()
-            .filter(date__year=self.year, date__month=self.month)
+            Income.objects.related().filter(date__year=self.year, date__month=self.month)
             .aggregate(Sum("price", default=0))["price__sum"]
         )
 
-        self.expenses = list(Expense.objects.sum_by_day_ant_type(self.year, self.month))
+    def get_expenses(self):
+        self.expenses = list(
+            list(Expense.objects.sum_by_day_ant_type(self.year, self.month))
+        )
 
+    def get_expense_types(self):
         self.expense_types = list(
             ExpenseType.objects.items().values_list("title", flat=True)
         )
 
+    def get_necessary_expense_types(self):
         self.necessary_expense_types = list(
             ExpenseType.objects.items()
             .filter(necessary=True)
             .values_list("title", flat=True)
         )
 
-        self.savings = list(Saving.objects.sum_by_day(self.year, self.month))
+    def get_savings(self):
+        self.savings = list(
+            list(Saving.objects.sum_by_day(self.year, self.month))
+        )
 
 
 class Charts:
