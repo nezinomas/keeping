@@ -201,10 +201,10 @@ def load_service(year: int, month: int) -> dict:
 
     # spending table
     spending = DaySpending(
-        df=expense,
+        expense=expense,
         necessary=data.necessary_expense_types,
-        day_input=plans.day_input,
-        expenses_free=plans.expenses_free,
+        per_day=plans.day_input,
+        free=plans.expenses_free,
     )
 
     # main table

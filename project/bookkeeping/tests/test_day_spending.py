@@ -47,10 +47,10 @@ def fixture_df_for_average_calculation():
 @time_machine.travel("1999-1-2")
 def test_avg_per_day(df, necessary):
     obj = DaySpending(
-        df=df,
+        expense=df,
         necessary=necessary,
-        day_input=25,
-        expenses_free=200,
+        per_day=25,
+        free=200,
     )
 
     actual = obj.avg_per_day
@@ -60,10 +60,10 @@ def test_avg_per_day(df, necessary):
 
 def test_spending_first_day(df, necessary):
     obj = DaySpending(
-        df=df,
+        expense=df,
         necessary=necessary,
-        day_input=25,
-        expenses_free=200,
+        per_day=25,
+        free=200,
     )
 
     actual = obj.spending
@@ -75,10 +75,10 @@ def test_spending_first_day(df, necessary):
 
 def test_spending_second_day(df, necessary):
     obj = DaySpending(
-        df=df,
+        expense=df,
         necessary=necessary,
-        day_input=25,
-        expenses_free=200,
+        per_day=25,
+        free=200,
     )
 
     actual = obj.spending
@@ -90,10 +90,10 @@ def test_spending_second_day(df, necessary):
 
 def test_spending_first_day_necessary_empty(df):
     obj = DaySpending(
-        df=df,
+        expense=df,
         necessary=[],
-        day_input=25,
-        expenses_free=200,
+        per_day=25,
+        free=200,
     )
 
     actual = obj.spending
@@ -105,10 +105,10 @@ def test_spending_first_day_necessary_empty(df):
 
 def test_spending_first_day_necessary_none(df):
     obj = DaySpending(
-        df=df,
+        expense=df,
         necessary=None,
-        day_input=25,
-        expenses_free=200,
+        per_day=25,
+        free=200,
     )
 
     actual = obj.spending
@@ -120,10 +120,10 @@ def test_spending_first_day_necessary_none(df):
 
 def test_spending_first_day_all_empty(df):
     obj = DaySpending(
-        df=df,
+        expense=df,
         necessary=None,
-        day_input=0,
-        expenses_free=0,
+        per_day=0,
+        free=0,
     )
 
     actual = obj.spending
@@ -135,12 +135,12 @@ def test_spending_first_day_all_empty(df):
 
 def test_spending_balance_expenses_empty():
     obj = DaySpending(
-        df=SimpleNamespace(
+        expense=SimpleNamespace(
             year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()
         ),
         necessary=[],
-        day_input=0,
-        expenses_free=0,
+        per_day=0,
+        free=0,
     )
 
     actual = obj.spending
@@ -156,12 +156,12 @@ def test_spending_balance_expenses_empty():
 @time_machine.travel("1999-1-2")
 def test_average_month_two_days(df_for_average_calculation):
     o = DaySpending(
-        df=SimpleNamespace(
+        expense=SimpleNamespace(
             year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()
         ),
         necessary=[],
-        day_input=0,
-        expenses_free=0,
+        per_day=0,
+        free=0,
     )
 
     o._spending = df_for_average_calculation
@@ -173,12 +173,12 @@ def test_average_month_two_days(df_for_average_calculation):
 @time_machine.travel("1999-1-31")
 def test_average_month_last_day(df_for_average_calculation):
     o = DaySpending(
-        df=SimpleNamespace(
+        expense=SimpleNamespace(
             year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()
         ),
         necessary=[],
-        day_input=0,
-        expenses_free=0,
+        per_day=0,
+        free=0,
     )
 
     o._spending = df_for_average_calculation
@@ -190,12 +190,12 @@ def test_average_month_last_day(df_for_average_calculation):
 @time_machine.travel("1974-1-1")
 def test_average_month_other_year(df_for_average_calculation):
     o = DaySpending(
-        df=SimpleNamespace(
+        expense=SimpleNamespace(
             year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()
         ),
         necessary=[],
-        day_input=0,
-        expenses_free=0,
+        per_day=0,
+        free=0,
     )
 
     o._spending = df_for_average_calculation
@@ -206,12 +206,12 @@ def test_average_month_other_year(df_for_average_calculation):
 
 def test_average_month_empty_dataframe():
     o = DaySpending(
-        df=SimpleNamespace(
+        expense=SimpleNamespace(
             year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()
         ),
         necessary=[],
-        day_input=0,
-        expenses_free=0,
+        per_day=0,
+        free=0,
     )
 
     o._spending = pl.DataFrame()

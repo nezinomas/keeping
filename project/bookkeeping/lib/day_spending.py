@@ -9,19 +9,19 @@ from .make_dataframe import MakeDataFrame
 class DaySpending(BalanceBase):
     def __init__(
         self,
-        df: MakeDataFrame,
+        expense: MakeDataFrame,
         necessary: list[str],
-        day_input: float,
-        expenses_free: float,
+        free: float,
+        per_day: float,
     ):
-        super().__init__(df.data)
+        super().__init__(expense.data)
 
-        self._year = df.year
-        self._month = df.month
-        self._day_input = day_input
-        self._expenses_free = expenses_free
+        self._year = expense.year
+        self._month = expense.month
+        self._per_day = per_day
+        self._free = free
         self._necessary = necessary or []
-        self._spending = self._calculate_spending(df.data, df.exceptions)
+        self._spending = self._calculate_spending(expense.data, expense.exceptions)
 
     @property
     def spending(self) -> list[dict]:
@@ -69,12 +69,12 @@ class DaySpending(BalanceBase):
 
     def _calculate_spending_columns(self, df: DF) -> pl.Expr:
         return (
-            df.with_columns(day=(self._day_input - pl.col("total")))
+            df.with_columns(day=(self._per_day - pl.col("total")))
             .with_columns(
                 teoretical=(
-                    self._expenses_free - (self._day_input * pl.col("date").dt.day())
+                    self._free - (self._per_day * pl.col("date").dt.day())
                 )
             )
-            .with_columns(real=(self._expenses_free - pl.col("total").cum_sum()))
+            .with_columns(real=(self._free - pl.col("total").cum_sum()))
             .with_columns(full=(pl.col("real") - pl.col("teoretical")))
         )
