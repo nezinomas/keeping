@@ -2,22 +2,23 @@ from datetime import date
 
 import pytest
 import time_machine
-from mock import MagicMock
+from mock import MagicMock, patch
 
 from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
-from ..services.month import Info, MainTable, Charts, info_table
+from ..services.month import Charts, Info, MainTable, Objects
 
 
 @time_machine.travel("1999-1-1")
-def test_info_context():
-    income = 15
-    total = {"Viso": 5, "Taupymas": 12}
-    per_day = 2
-    plans = MagicMock(incomes=100, savings=12, day_input=3, remains=-85)
+@patch("project.bookkeeping.services.month.Objects._initialize_objects")
+def test_info_context(mck):
+    obj = Objects(1, 1)
+    obj.data = MagicMock(incomes=15)
+    obj.plans = MagicMock(incomes=100, savings=12, day_input=3, remains=-85)
+    obj.main_table = MagicMock(total_row = {"Viso": 5, "Taupymas": 12})
+    obj.spending = MagicMock(avg_per_day=2)
 
-    actual = info_table(income, total, per_day, plans)
-
+    actual = obj.info_table()
     assert actual["plan"]["income"] == 100
     assert actual["plan"]["saving"] == 12
     assert actual["plan"]["expense"] == 88

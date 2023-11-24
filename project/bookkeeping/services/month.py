@@ -1,10 +1,7 @@
 import contextlib
 import itertools as it
-from collections import namedtuple
 from dataclasses import asdict, dataclass, field
 from operator import itemgetter
-from threading import main_thread
-from numpy import char
 
 import polars as pl
 from django.db.models import Sum
@@ -158,56 +155,27 @@ class Info:
         )
 
 
-def info_table(
-    income: int, total: dict, per_day: int, plans: PlanCalculateDaySum
-) -> dict:
-    expense = total.get(_("Total"), 0)
-    saving = total.get(_("Savings"), 0)
-
-    fact = Info(
-        income=income,
-        expense=expense,
-        saving=saving,
-        per_day=per_day,
-        balance=(income - expense - saving),
-    )
-
-    plan = Info(
-        income=plans.incomes,
-        expense=(plans.incomes - plans.savings),
-        saving=plans.savings,
-        per_day=plans.day_input,
-        balance=plans.remains,
-    )
-
-    delta = plan - fact
-
-    return {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)}
-
-
 class Objects:
     def __init__(self, year: int, month: int):
-        self.expense_types: list
+        self.data: MakeDataFrame = None
         self.plans: PlanCalculateDaySum
         self.spending: DaySpending
         self.main_table: MainTable
         self.charts: Charts
-        self.info_table: dict
 
         self._initialize_objects(year, month)
 
     def _initialize_objects(self, year: int, month: int):
-        data = MonthServiceData(year, month)
+        self.data = MonthServiceData(year, month)
 
-        self.expense_types = data.expense_types
         # expense and saving data_frames
         expense = MakeDataFrame(
-            year=year, month=month, data=data.expenses, columns=data.expense_types
+            year=year, month=month, data=self.data.expenses, columns=self.data.expense_types
         )
         saving = MakeDataFrame(
             year=year,
             month=month,
-            data=data.savings,
+            data=self.data.savings,
         )
 
         # plans
@@ -216,7 +184,7 @@ class Objects:
         # spending table
         self.spending = DaySpending(
             expense=expense,
-            necessary=data.necessary_expense_types,
+            necessary=self.data.necessary_expense_types,
             per_day=self.plans.day_input,
             free=self.plans.expenses_free,
         )
@@ -230,12 +198,30 @@ class Objects:
             totals=self.main_table.total_row,
         )
 
-        self.info_table = info_table(
-            income=data.incomes,
-            total=self.main_table.total_row,
+    def info_table(self) -> dict:
+        income = self.data.incomes
+        expense = self.main_table.total_row.get(_("Total"), 0)
+        saving = self.main_table.total_row.get(_("Savings"), 0)
+
+        fact = Info(
+            income=income,
+            expense=expense,
+            saving=saving,
             per_day=self.spending.avg_per_day,
-            plans=self.plans,
+            balance=(income - expense - saving),
         )
+
+        plan = Info(
+            income=self.plans.incomes,
+            expense=(self.plans.incomes - self.plans.savings),
+            saving=self.plans.savings,
+            per_day=self.plans.day_input,
+            balance=self.plans.remains,
+        )
+
+        delta = plan - fact
+
+        return {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)}
 
 
 def load_service(year: int, month: int) -> dict:
@@ -248,10 +234,10 @@ def load_service(year: int, month: int) -> dict:
                 obj.main_table.table,
                 obj.spending.spending,
             ),
-            "expense_types": obj.expense_types,
+            "expense_types": obj.data.expense_types,
             "total_row": obj.main_table.total_row,
         },
-        "info": obj.info_table,
+        "info": obj.info_table(),
         "chart_expenses": obj.charts.chart_expenses(),
         "chart_targets": obj.charts.chart_targets(),
     }
