@@ -40,7 +40,7 @@
             <tr>
                 <td class="text-start">{{chart_data.text.percents}}</td>
                 {% for obj in chart_data.percents %}
-                <td class="{{obj|css_class_if_none}}">{{obj|price|cellformat}}</td>
+                <td class="{{obj|css_class_if_none}}">{{obj|cellformat}}</td>
                 {% endfor %}
             </tr>
         </tbody>
