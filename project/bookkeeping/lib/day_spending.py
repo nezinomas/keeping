@@ -52,7 +52,7 @@ class DaySpending(BalanceBase):
         if df.shape[1] <= 1:
             df = df.with_columns(total=pl.lit(0))
 
-        df = (
+        return (
             df.pipe(self._remove_necessary_if_any)
             .lazy()
             .with_columns(total=pl.sum_horizontal(pl.exclude("date")))
@@ -63,7 +63,6 @@ class DaySpending(BalanceBase):
             .pipe(self._calculate_spending_columns)
             .collect()
         )
-        return df
 
     def _remove_necessary_if_any(self, df: DF) -> pl.Expr:
         return df.select(pl.exclude(self._necessary)) if self._necessary else df
