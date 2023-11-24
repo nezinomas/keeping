@@ -36,7 +36,8 @@ class MonthServiceData:
 
     def get_incomes(self):
         self.incomes = (
-            Income.objects.related().filter(date__year=self.year, date__month=self.month)
+            Income.objects.related()
+            .filter(date__year=self.year, date__month=self.month)
             .aggregate(Sum("price", default=0))["price__sum"]
         )
 
@@ -58,9 +59,7 @@ class MonthServiceData:
         )
 
     def get_savings(self):
-        self.savings = list(
-            list(Saving.objects.sum_by_day(self.year, self.month))
-        )
+        self.savings = list(list(Saving.objects.sum_by_day(self.year, self.month)))
 
 
 class Charts:
