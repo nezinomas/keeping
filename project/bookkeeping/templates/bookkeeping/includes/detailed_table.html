@@ -9,7 +9,6 @@
     <thead>
         <tr>
             <th class="text-start">{{ name }}</th>
-            {% cache 500 toprow %}
             <th class="w7p">{% translate 'January' %}</th>
             <th class="w7p">{% translate 'February' %}</th>
             <th class="w7p">{% translate 'March' %}</th>
@@ -23,7 +22,6 @@
             <th class="w7p">{% translate 'November' %}</th>
             <th class="w7p">{% translate 'December' %}</th>
             <th class="w7p left-blue-border">{% translate 'Total' %}</th>
-            {% endcache %}
         </tr>
     </thead>
     <tbody>
