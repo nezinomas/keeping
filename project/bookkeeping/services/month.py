@@ -187,11 +187,17 @@ def load_service(year: int, month: int) -> dict:
     data = MonthServiceData(year, month)
 
     # expense and saving data_frames
-    expense = MakeDataFrame(year, data.expenses, data.expense_types, month)
-    saving = MakeDataFrame(year, data.savings, None, month)
+    expense = MakeDataFrame(
+        year=year, month=month, data=data.expenses, columns=data.expense_types
+    )
+    saving = MakeDataFrame(
+        year=year,
+        month=month,
+        data=data.savings,
+    )
 
     # plans
-    plans = PlanCalculateDaySum(PlanCollectData(year, month))
+    plans = PlanCalculateDaySum(data=PlanCollectData(year, month))
 
     # spending table
     spending = DaySpending(
@@ -202,7 +208,7 @@ def load_service(year: int, month: int) -> dict:
     )
 
     # main table
-    main_table = MainTable(expense, saving)
+    main_table = MainTable(expense=expense, saving=saving)
 
     # charts
     charts = Charts(
@@ -221,7 +227,10 @@ def load_service(year: int, month: int) -> dict:
             "total_row": main_table.total_row,
         },
         "info": info_table(
-            data.incomes, main_table.total_row, spending.avg_per_day, plans
+            income=data.incomes,
+            total=main_table.total_row,
+            per_day=spending.avg_per_day,
+            plans=plans,
         ),
         "chart_expenses": charts.chart_expenses(),
         "chart_targets": charts.chart_targets(),
