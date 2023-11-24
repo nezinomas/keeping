@@ -10,7 +10,9 @@ class SavingWorth(models.Model):
     date = models.DateTimeField()
     price = models.PositiveIntegerField(null=True, blank=True)
     saving_type = models.ForeignKey(
-        SavingType, on_delete=models.CASCADE, related_name="savings_worth"
+        to=SavingType,
+        on_delete=models.CASCADE,
+        related_name="savings_worth"
     )
 
     class Meta:
@@ -28,7 +30,9 @@ class AccountWorth(models.Model):
     date = models.DateTimeField()
     price = models.PositiveIntegerField(null=True, blank=True)
     account = models.ForeignKey(
-        Account, on_delete=models.CASCADE, related_name="accounts_worth"
+        to=Account,
+        on_delete=models.CASCADE,
+        related_name="accounts_worth"
     )
 
     class Meta:
@@ -46,7 +50,9 @@ class PensionWorth(models.Model):
     date = models.DateTimeField()
     price = models.PositiveIntegerField(null=True, blank=True)
     pension_type = models.ForeignKey(
-        PensionType, on_delete=models.CASCADE, related_name="pensions_worth"
+        to=PensionType,
+        on_delete=models.CASCADE,
+        related_name="pensions_worth"
     )
 
     class Meta:
