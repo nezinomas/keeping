@@ -21,7 +21,7 @@ class DaySpending(BalanceBase):
         self._day_input = day_input
         self._expenses_free = expenses_free
         self._necessary = necessary or []
-        self._spending = self._make_df(df.data, df.exceptions)
+        self._spending = self._calculate_spending(df.data, df.exceptions)
 
     @property
     def spending(self) -> list[dict]:
@@ -45,7 +45,7 @@ class DaySpending(BalanceBase):
         )
         return df[0, 0]
 
-    def _make_df(self, df: DF, exceptions: DF) -> DF:
+    def _calculate_spending(self, df: DF, exceptions: DF) -> DF:
         if df.is_empty():
             return df
 
@@ -60,7 +60,7 @@ class DaySpending(BalanceBase):
             .with_columns(pl.Series(name="exceptions", values=exceptions["sum"]))
             .with_columns(total=(pl.col("total") - pl.col("exceptions")))
             .drop("exceptions")
-            .pipe(self._calc_spending)
+            .pipe(self._calculate_spending_columns)
             .collect()
         )
         return df
@@ -68,7 +68,7 @@ class DaySpending(BalanceBase):
     def _remove_necessary_if_any(self, df: DF) -> pl.Expr:
         return df.select(pl.exclude(self._necessary)) if self._necessary else df
 
-    def _calc_spending(self, df: DF) -> pl.Expr:
+    def _calculate_spending_columns(self, df: DF) -> pl.Expr:
         return (
             df.with_columns(day=(self._day_input - pl.col("total")))
             .with_columns(
