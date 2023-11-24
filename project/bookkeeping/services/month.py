@@ -65,13 +65,10 @@ class MonthServiceData:
 
 class Charts:
     def __init__(self, targets: dict, totals: dict):
-        with contextlib.suppress(KeyError):
-            del totals[_("Total")]
-
-        self.totals = totals
+        self.totals = self._filter_totals(totals)
         self.targets = targets
 
-    def chart_targets(self):
+    def chart_targets(self) -> dict:
         data = self._make_chart_data(self.totals)
 
         categories, data_fact, data_target = [], [], []
@@ -93,12 +90,17 @@ class Charts:
             "factTitle": _("Fact"),
         }
 
-    def chart_expenses(self):
+    def chart_expenses(self) -> list[dict]:
         data = self._make_chart_data(self.totals)
 
         for entry in data:
             entry["name"] = entry["name"].upper()
         return data
+
+    def _filter_totals(self, totals: dict) -> dict:
+        with contextlib.suppress(KeyError):
+            del totals[_("Total")]
+        return totals
 
     def _make_chart_data(self, data: dict) -> list[dict]:
         return sorted(
