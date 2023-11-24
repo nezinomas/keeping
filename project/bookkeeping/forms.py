@@ -159,7 +159,5 @@ class SummaryExpensesForm(forms.Form):
 
         if cleaned_data.get("types"):
             return cleaned_data
-        else:
-            raise forms.ValidationError(
-                _("At least one category has to be selected.")
-            )
+
+        raise forms.ValidationError(_("At least one category has to be selected."))
