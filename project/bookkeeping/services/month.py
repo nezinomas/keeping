@@ -116,7 +116,7 @@ class MainTable:
     def make_table(self, expense, saving):
         df_expense = expense.data
 
-        # if exists only one column (dates) i.e. there are no expense_types
+        # if exists at least two columns (dates, expense_type) create total column
         if df_expense.shape[1] > 1:
             df_expense = df_expense.with_columns(
                 pl.sum_horizontal(pl.exclude("date")).alias(_("Total"))
