@@ -1,5 +1,7 @@
-import pytest
 from datetime import date
+
+import pytest
+
 from ..services.forecast import ForecastService, ForecastServiceData
 
 
@@ -85,6 +87,16 @@ def fixture_data():
     }
 
 
+@pytest.fixture(name="data_empty")
+def fixture_data_empty():
+    return {
+        "incomes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "expenses": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "savings": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "planned_incomes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    }
+
+
 def test_balance(data):
     actual = ForecastService(month=4, data=data).balance()
     expect = 12.
@@ -92,9 +104,31 @@ def test_balance(data):
     assert actual == expect
 
 
+def test_balance_no_data(data_empty):
+    actual = ForecastService(month=1, data=data_empty).balance()
+    expect = 0
+
+    assert actual == expect
+
+
 def test_planned_incomes(data):
     actual = ForecastService(month=4, data=data).planned_incomes()
     expect = 24.
+
+    assert actual == expect
+
+
+def test_planned_incomes_no_data(data_empty):
+    actual = ForecastService(month=1, data=data_empty).planned_incomes()
+    expect = 0
+
+    assert actual == expect
+
+
+def test_planned_incomes_only_planned_data(data_empty):
+    data_empty["planned_incomes"][3] = 1
+    actual = ForecastService(month=1, data=data_empty).planned_incomes()
+    expect = 1
 
     assert actual == expect
 
@@ -119,9 +153,32 @@ def test_averages_for_three_months(data):
 
     assert actual == expect
 
+
+def test_averages_no_data(data_empty):
+    actual = ForecastService(month=1, data=data_empty).averages()
+    expect = {"expenses": 0, "savings": 0}
+
+    assert actual == expect
+
+
 def test_forecast(data):
     actual = ForecastService(month=4, data=data).forecast()
     expect = -27.
+
+    assert actual == expect
+
+
+def test_forecast_no_data(data_empty):
+    actual = ForecastService(month=1, data=data_empty).forecast()
+    expect = 0
+
+    assert actual == expect
+
+
+def test_forecast_only_planned_data(data_empty):
+    data_empty["planned_incomes"][3] = 1
+    actual = ForecastService(month=1, data=data_empty).forecast()
+    expect = 1
 
     assert actual == expect
 

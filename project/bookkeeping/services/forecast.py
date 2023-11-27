@@ -139,6 +139,7 @@ class ForecastService:
             self._data.filter(pl.col("month") <= self._month - 1)
             .select([pl.col.expenses, pl.col.savings])
             .mean()
+            .fill_null(0)
             .to_dicts()[0]
         )
 
