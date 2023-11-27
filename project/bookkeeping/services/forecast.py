@@ -87,12 +87,12 @@ class ForecastService:
         self._month = month
         self._data = self._create_df(data)
 
-    def _create_df(self, data):
+    def _create_df(self, data) -> pl.DataFrame:
         return pl.DataFrame(data | {"month": list(range(1, 13))})
 
     def balance(self) -> int:
         """
-        Calculates the balance from January to the current month.
+        Calculates balance from January to current month, excluding current month.
 
         Returns:
             int: The balance for the current month.
