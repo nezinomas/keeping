@@ -167,15 +167,16 @@ class ForecastService:
         Returns:
             int: The forecasted balance for the end of the year.
         """
-
-        month_left = 12 - self._month
         avg = self.averages()
         current = self.current_month()
 
         expenses_avg = avg["expenses"]
-        savings_avg = avg["savings"]
         expenses_current = max(current["expenses"], expenses_avg)
+
+        savings_avg = avg["savings"]
         savings_current = max(current["savings"], savings_avg)
+
+        month_left = 12 - self._month
 
         return (
             0
