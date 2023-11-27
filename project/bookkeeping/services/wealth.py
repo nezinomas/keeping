@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from django.db.models import Sum
+from django.db.models import Model, QuerySet, Sum
 from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
@@ -17,16 +17,15 @@ class WealthServiceData:
     pension_balance: float = field(init=False, default=0)
 
     def __post_init__(self):
-        self.account_balance = self.get_balance(AccountBalance)
-        self.saving_balance = self.get_balance(SavingBalance)
-        self.pension_balance = self.get_balance(PensionBalance)
+        self.account_balance = self.get_balance("balance", AccountBalance)
+        self.saving_balance = self.get_balance("market_value", SavingBalance)
+        self.pension_balance = self.get_balance("market_value", PensionBalance)
 
-    def get_balance(self, balance_model):
+    def get_balance(self, field_name: str, model: Model) -> QuerySet | int:
         return (
-            balance_model.objects
-            .related()
+            model.objects.related()
             .filter(year=self.year)
-            .aggregate(Sum('market_value'))['market_value__sum']
+            .aggregate(Sum(field_name))[f"{field_name}__sum"]
             or 0
         )
 
@@ -37,11 +36,7 @@ class WealthService:
 
     @property
     def money(self):
-        return (
-            0
-            + self.data.account_balance
-            + self.data.saving_balance
-        )
+        return 0 + self.data.account_balance + self.data.saving_balance
 
     @property
     def wealth(self):
