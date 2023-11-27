@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 import polars as pl
-from django.db.models import Sum
+from django.db.models import QuerySet, Sum
 
 from ...accounts.models import AccountBalance
 from ...core.lib.date import monthnames
@@ -33,7 +33,18 @@ class ForecastServiceData:
             or 0
         )
 
-    def _make_data(self, data):
+    def _make_data(self, data: QuerySet) -> list[int]:
+        """
+        Generates price array based on the given data.
+
+        Args:
+            data (list): A list of dictionaries containing the data.
+            [{"date": date, "sum": sum, "title": title},]
+
+        Returns:
+            list: The generated price array for 12 months.
+            If month does not exist in the data, price will be 0.
+        """
         arr = [0] * 12
 
         for row in data:
