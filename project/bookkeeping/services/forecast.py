@@ -53,7 +53,18 @@ class ForecastServiceData:
 
         return arr
 
-    def _make_planned_data(self, data):
+    def _make_planned_data(self, data: QuerySet) -> list[int]:
+        """
+        Calculates the total price for each month in a given dataset.
+
+        Args:
+            data (QuerySet): The dataset containing rows of monthly prices.
+
+        Returns:
+            list[int]: A list of total prices for each month, where the index represents the month (0-11).
+            If the month does not exist in the dataset, the price will be 0.
+        """
+
         arr = [0] * 12
         month_map = dict(zip(monthnames(), range(1, 13)))
 
