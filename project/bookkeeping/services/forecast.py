@@ -166,19 +166,23 @@ class ForecastService:
         Returns:
             int: The forecasted balance for the end of the year.
         """
+
         month_left = 12 - self._month
         avg = self.averages()
         current = self.current_month()
 
-        forecast = self.balance() + self.planned_incomes()
+        expenses_avg = avg["expenses"]
+        savings_avg = avg["savings"]
+        expenses_current = max(current["expenses"], expenses_avg)
+        savings_current = max(current["savings"], savings_avg)
 
-        for key in ["expenses", "savings"]:
-            avg_value = avg[key]
-            current_value = max(current[key], avg_value)
-            forecast -= current_value + avg_value * month_left
-
-        return forecast
-
+        return (
+            0
+            + self.balance()
+            + self.planned_incomes()
+            - (expenses_current + expenses_avg * month_left)
+            - (savings_current + savings_avg * month_left)
+        )
 
 def load_service(year: int, month: int) -> dict:
     data = ForecastServiceData(year)
