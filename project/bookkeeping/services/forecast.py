@@ -15,7 +15,7 @@ from ...savings.models import Saving
 class ForecastServiceData:
     year: int
 
-    def data(self):
+    def data(self) -> dict[str, list[int]]:
         incomes = self._make_data(Income.objects.sum_by_month(self.year))
         expenses = self._make_data(Expense.objects.sum_by_month(self.year))
         savings = self._make_data(Saving.objects.sum_by_month(self.year))
@@ -83,11 +83,11 @@ class ForecastServiceData:
 
 
 class ForecastService:
-    def __init__(self, month, data):
+    def __init__(self, month: int, data: dict[str, list[int]]):
         self._month = month
         self._data = self._create_df(data)
 
-    def _create_df(self, data) -> pl.DataFrame:
+    def _create_df(self, data: dict[str, list[int]]) -> pl.DataFrame:
         return pl.DataFrame(data | {"month": list(range(1, 13))})
 
     def balance(self) -> int:
