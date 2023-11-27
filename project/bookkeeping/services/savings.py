@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from django.db.models import Sum
 from django.utils.translation import gettext as _
