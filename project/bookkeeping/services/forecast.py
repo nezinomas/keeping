@@ -90,7 +90,15 @@ class ForecastService:
     def _create_df(self, data):
         return pl.DataFrame(data | {"month": list(range(1, 13))})
 
-    def balance(self):
+    def balance(self) -> int:
+        """
+        Calculates the balance from January to the current month.
+
+        Returns:
+            int: The balance for the current month.
+
+            Formula: incomes - expenses - savings
+        """
         df = (
             self._data.filter(pl.col("month") < self._month)
             .sum()
@@ -102,7 +110,13 @@ class ForecastService:
         )
         return df["balance"].to_list()[0]
 
-    def planned_incomes(self):
+    def planned_incomes(self) -> int:
+        """
+        Calculate the total sum of planned incomes from current month to December.
+
+        Returns:
+            int: The total sum of planned incomes.
+        """
         df = (
             self._data.filter(pl.col("month") >= self._month)
             .select(pl.col("planned_incomes"))
@@ -110,7 +124,17 @@ class ForecastService:
         )
         return df[0, 0]
 
-    def averages(self):
+    def averages(self) -> dict:
+        """
+        Calculates the average expenses and savings for the months from January to the current month.
+
+        Returns:
+            A dictionary containing the average expenses and savings.
+
+            The keys are "expenses" and "savings".
+
+            {"expenses": int, "savings": int}
+        """
         return (
             self._data.filter(pl.col("month") <= self._month - 1)
             .select([pl.col.expenses, pl.col.savings])
@@ -118,25 +142,41 @@ class ForecastService:
             .to_dicts()[0]
         )
 
-    def current_month(self):
+    def current_month(self) -> dict:
+        """
+        Calculates expenses and savings for the current month.
+
+        Returns:
+            A dictionary containing sum of expenses and savings.
+
+            The keys are "expenses" and "savings".
+
+            {"expenses": int, "savings": int}
+        """
         return (
             self._data.filter(pl.col("month") == self._month)
             .select([pl.col.expenses, pl.col.savings])
             .to_dicts()[0]
         )
 
-    def forecast(self):
+    def forecast(self) -> int:
+        """
+        Calculate the forecasted balance for the end of the year.
+
+        Returns:
+            int: The forecasted balance for the end of the year.
+        """
         month_left = 12 - self._month
         avg = self.averages()
         current = self.current_month()
 
-        total = self.balance() + self.planned_incomes()
+        forecast = self.balance() + self.planned_incomes()
         for key in ["expenses", "savings"]:
             avg_value = avg[key]
             current_value = max(current[key], avg_value)
-            total -= current_value + avg_value * month_left
+            forecast -= current_value + avg_value * month_left
 
-        return total
+        return forecast
 
 
 def load_service(year: int, month: int) -> dict:
