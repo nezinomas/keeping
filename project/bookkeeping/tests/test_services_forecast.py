@@ -83,6 +83,7 @@ def fixture_data():
         "incomes": [10., 11., 12., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
         "expenses": [1., 2., 3., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
         "savings": [4., 5., 6., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+        "savings_close": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "planned_incomes": [0., 0., 0., 7., 8., 9., 0., 0., 0., 0., 0., 0.],
     }
 
@@ -93,6 +94,7 @@ def fixture_data_empty():
         "incomes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "expenses": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "savings": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "savings_close": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "planned_incomes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     }
 
@@ -100,6 +102,14 @@ def fixture_data_empty():
 def test_balance(data):
     actual = ForecastService(month=4, data=data).balance()
     expect = 12.
+
+    assert actual == expect
+
+
+def test_balance_with_savings_close(data):
+    data["savings_close"][2] = 2
+    actual = ForecastService(month=4, data=data).balance()
+    expect = 14
 
     assert actual == expect
 
@@ -163,7 +173,15 @@ def test_averages_no_data(data_empty):
 
 def test_forecast(data):
     actual = ForecastService(month=4, data=data).forecast()
-    expect = -27.
+    expect = -27
+
+    assert actual == expect
+
+
+def test_forecast_with_savings_close(data):
+    data["savings_close"][2] = 2
+    actual = ForecastService(month=4, data=data).forecast()
+    expect = -25
 
     assert actual == expect
 
