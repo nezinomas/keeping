@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from django.db.models import Model, QuerySet, Sum
+from django.db.models import Model, Sum
 from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
@@ -21,7 +21,7 @@ class WealthServiceData:
         self.saving_balance = self.get_balance("market_value", SavingBalance)
         self.pension_balance = self.get_balance("market_value", PensionBalance)
 
-    def get_balance(self, field_name: str, model: Model) -> QuerySet | int:
+    def get_balance(self, field_name: str, model: Model) -> int:
         return (
             model.objects.related()
             .filter(year=self.year)
