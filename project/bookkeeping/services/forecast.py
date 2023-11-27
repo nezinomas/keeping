@@ -9,6 +9,7 @@ from ...expenses.models import Expense
 from ...incomes.models import Income
 from ...plans.models import IncomePlan
 from ...savings.models import Saving
+from ...transactions.models import SavingClose
 
 
 @dataclass
@@ -19,6 +20,7 @@ class ForecastServiceData:
         incomes = self._make_data(Income.objects.sum_by_month(self.year))
         expenses = self._make_data(Expense.objects.sum_by_month(self.year))
         savings = self._make_data(Saving.objects.sum_by_month(self.year))
+        savings_close = self._make_data(SavingClose.objects.sum_by_month(self.year))
         planned_incomes = self._make_planned_data(
             IncomePlan.objects.year(self.year).values(*monthnames())
         )
@@ -26,6 +28,7 @@ class ForecastServiceData:
             "incomes": incomes,
             "expenses": expenses,
             "savings": savings,
+            "savings_close": savings_close,
             "planned_incomes": planned_incomes,
         }
 
