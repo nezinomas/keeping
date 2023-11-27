@@ -8,7 +8,7 @@
     <tr>
         <th class="no-right-border"></th>
         {% for row in data %}
-        <th class="no-left-border {% if highlight|get_list_val:forloop.counter0 %}{{row|positive_negative}}{% endif %}">{{row|price|cellformat}}</th>
+        <th class="{% if highlight|get_list_val:forloop.counter0 %}{{row|positive_negative}} {% endif %}no-left-border">{{row|price|cellformat}}</th>
         {% endfor %}
     </tr>
 </tfoot>
