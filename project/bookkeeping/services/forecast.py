@@ -171,6 +171,7 @@ class ForecastService:
         current = self.current_month()
 
         forecast = self.balance() + self.planned_incomes()
+
         for key in ["expenses", "savings"]:
             avg_value = avg[key]
             current_value = max(current[key], avg_value)
