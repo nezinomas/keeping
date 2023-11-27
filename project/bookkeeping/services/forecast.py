@@ -35,16 +35,16 @@ class ForecastServiceData:
 
     def _make_data(self, data: QuerySet) -> list[int]:
         """
-        Generates price array based on the given data.
+        Takes a QuerySet object and converts it into a list of integers.
 
-        Args:
-            data (list): A list of dictionaries containing the data.
-            [{"date": date, "sum": sum, "title": title},]
+        Parameters:
+            data (QuerySet): The QuerySet object containing the data to be converted.
 
         Returns:
-            list: The generated price array for 12 months.
-            If month does not exist in the data, price will be 0.
+            list[int]: A list of integers representing the data from the QuerySet object.
+            If month does not exist in the dataset, the price will be 0.
         """
+
         arr = [0] * 12
 
         for row in data:
