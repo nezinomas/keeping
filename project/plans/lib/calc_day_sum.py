@@ -119,8 +119,8 @@ class PlanCalculateDaySum:
         return data[0, 0] if self._data.month else data.to_dicts()[0]
 
     def _create_df(self) -> DF:
-        expenses_necessary = filter(lambda item: item["necessary"], self._data.expenses)
-        expenses_free = filter(lambda item: not item["necessary"], self._data.expenses)
+        expenses_necessary = filter(lambda x: x["necessary"], self._data.expenses)
+        expenses_free = filter(lambda x: not x["necessary"], self._data.expenses)
 
         df_data = {
             "month_len": [int(monthlen(self._year, x)) for x in self.std_columns],
