@@ -123,7 +123,7 @@ class PlanCalculateDaySum:
         expenses_free = filter(lambda x: not x["necessary"], self._data.expenses)
 
         df_data = {
-            "month_len": [int(monthlen(self._year, x)) for x in self.std_columns],
+            "month_len": [monthlen(self._year, x) for x in self.std_columns],
             "incomes": self._sum_dicts(self._data.incomes),
             "savings": self._sum_dicts(self._data.savings),
             "day_input": self._sum_dicts(self._data.days),
