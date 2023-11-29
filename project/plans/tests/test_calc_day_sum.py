@@ -204,6 +204,15 @@ def test_remains(data):
     assert round(actual['february'], 2) == 22
 
 
+def test_remains_only_necessary_expenses(data):
+    data.necessary = [{'january': None, 'february': None, 'march': None, 'april': None, 'may': 12500, 'june': None, 'july': None, 'august': None, 'september': None, 'october': None, 'november': None, 'december': None}]
+    actual = PlanCalculateDaySum(data).remains
+
+    assert len(actual) == 12
+    assert round(actual['january'], 2) == 1
+    assert round(actual['february'], 2) == 122
+
+
 @pytest.mark.parametrize(
     'month, expect',
     [

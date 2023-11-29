@@ -173,7 +173,9 @@ class PlanCalculateDaySum:
         df = self._create_df().clone()
 
         df = (
-            df.transpose(include_header=False, column_names=df["name"])
+            df
+            .fill_null(0)
+            .transpose(include_header=False, column_names=df["name"])
             .limit(12)
             .lazy()
             .with_columns(pl.all().cast(pl.Int32))
