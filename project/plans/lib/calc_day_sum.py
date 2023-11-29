@@ -102,10 +102,10 @@ class PlanCalculateDaySum:
     @property
     def plans_stats(self):
         dicts = [
-            dict({"type": _("Necessary expenses")}, **self.expenses_necessary),
-            dict({"type": _("Remains for everyday"), **self.expenses_free}),
-            dict({"type": _("Sum per day, max possible")}, **self.day_calced),
-            dict({"type": _("Residual")}, **self.remains),
+            {"type": _("Necessary expenses"), **self.expenses_necessary},
+            {"type": _("Remains for everyday"), **self.expenses_free},
+            {"type": _("Sum per day, max possible"), **self.day_calced},
+            {"type": _("Residual"), **self.remains},
         ]
         # list of dictionaries convert to list of objects
         return [namedtuple("Items", item.keys())(*item.values()) for item in dicts]
