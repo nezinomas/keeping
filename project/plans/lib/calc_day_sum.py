@@ -9,8 +9,7 @@ from django.utils.translation import gettext as _
 from polars import DataFrame as DF
 
 from ...core.lib.date import monthlen, monthname, monthnames
-from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
-                      SavingPlan)
+from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 
 
 @dataclass
@@ -90,7 +89,7 @@ class PlanCalculateDaySum:
 
     @property
     def plans_stats(self):
-        Items = namedtuple('Items', ['type', *self.std_columns])
+        Items = namedtuple("Items", ["type", *self.std_columns])
         return [
             Items(type=_("Necessary expenses"), **self.expenses_necessary),
             Items(type=_("Remains for everyday"), **self.expenses_free),
@@ -121,8 +120,8 @@ class PlanCalculateDaySum:
         return data[0, 0] if self._data.month else data.to_dicts()[0]
 
     def _create_df(self) -> DF:
-        expenses_necessary = filter(lambda item: item['necessary'], self._data.expenses)
-        expenses_free = filter(lambda item: not item['necessary'], self._data.expenses)
+        expenses_necessary = filter(lambda item: item["necessary"], self._data.expenses)
+        expenses_free = filter(lambda item: not item["necessary"], self._data.expenses)
 
         df_data = {
             "month_len": [int(monthlen(self._year, x)) for x in self.std_columns],
@@ -136,7 +135,7 @@ class PlanCalculateDaySum:
         return pl.DataFrame(df_data)
 
     def _sum_dicts(self, data: list[dict]) -> list[int]:
-        arr = [0]*12
+        arr = [0] * 12
         for dict_item, i in itertools.product(data, range(12)):
             val = dict_item.get(self.std_columns[i], 0)
             arr[i] += val or 0
@@ -146,8 +145,7 @@ class PlanCalculateDaySum:
         df = self._create_df()
 
         return (
-            df
-            .lazy()
+            df.lazy()
             .with_columns(
                 expenses_necessary=(
                     pl.lit(0)
