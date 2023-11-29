@@ -1,4 +1,3 @@
-import itertools
 from collections import namedtuple
 from dataclasses import dataclass, field
 from typing import Union
@@ -135,13 +134,9 @@ class PlanCalculateDaySum:
         return pl.DataFrame(df_data)
 
     def _sum_dicts(self, data: list[dict]) -> list[int]:
-        result = []
-
-        for month in self.std_columns:
-            month_sum = sum(map(lambda x: x.get(month, 0) or 0, data))
-            result.append(month_sum)
-
-        return result
+        return [
+            sum(map(lambda x: x.get(month, 0) or 0, data)) for month in self.std_columns
+        ]
 
     def _calc_df(self) -> None:
         df = self._create_df()
