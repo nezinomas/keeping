@@ -155,7 +155,7 @@ class PlanCalculateDaySum:
         return arr
 
     def _calc_df(self) -> None:
-        df = self._create_df().clone()
+        df = self._create_df()
 
         return (
             df
