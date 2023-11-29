@@ -101,14 +101,13 @@ class PlanCalculateDaySum:
 
     @property
     def plans_stats(self):
-        dicts = [
-            {"type": _("Necessary expenses"), **self.expenses_necessary},
-            {"type": _("Remains for everyday"), **self.expenses_free},
-            {"type": _("Sum per day, max possible"), **self.day_calced},
-            {"type": _("Residual"), **self.remains},
+        Items = namedtuple('Items', ['type', *self.std_columns])
+        return [
+            Items(type=_("Necessary expenses"), **self.expenses_necessary),
+            Items(type=_("Remains for everyday"), **self.expenses_free),
+            Items(type=_("Sum per day, max possible"), **self.day_calced),
+            Items(type=_("Residual"), **self.remains),
         ]
-        # list of dictionaries convert to list of objects
-        return [namedtuple("Items", item.keys())(*item.values()) for item in dicts]
 
     @property
     def targets(self) -> dict[str, float]:
