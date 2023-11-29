@@ -1,3 +1,4 @@
+import itertools
 from collections import namedtuple
 from dataclasses import dataclass, field
 from typing import Union
@@ -8,7 +9,8 @@ from django.utils.translation import gettext as _
 from polars import DataFrame as DF
 
 from ...core.lib.date import monthlen, monthname, monthnames
-from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
+from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
+                      SavingPlan)
 
 
 @dataclass
@@ -130,53 +132,34 @@ class PlanCalculateDaySum:
         data = data.select(select)
         return data[0, 0] if self._data.month else data.to_dicts()[0]
 
-    def _sum(self, name: str, data) -> pl.Expr:
-        data = data if isinstance(data, list) else list(data)
-
-        def insert_missing_columns(df: DF) -> pl.Expr:
-            diff = set(self.std_columns) - set(df.columns)
-            return (
-                df
-                .with_columns([pl.lit(0).alias(col_name) for col_name in diff])
-                .select(self.std_columns))
-
-        return (
-            pl.DataFrame(data)
-            .lazy()
-            .sum()
-            .pipe(insert_missing_columns)
-            .with_columns(pl.all().cast(pl.Int32))
-            .with_columns(pl.lit(name).alias("name"))
-            .collect()
-        )
-
     def _create_df(self) -> DF:
-        expenses_necessary, expenses_free = [], []
-        for item in self._data.expenses:
-            expenses_necessary.append(item) if item["necessary"] else expenses_free.append(item)
+        expenses_necessary = filter(lambda item: item['necessary'], self._data.expenses)
+        expenses_free = filter(lambda item: not item['necessary'], self._data.expenses)
 
-        rows = {
-            "month_len": [
-                {x: float(monthlen(self._year, x)) for x in self.std_columns}
-            ],
-            "incomes": self._data.incomes,
-            "savings": self._data.savings,
-            "day_input": self._data.days,
-            "necessary": self._data.necessary,
-            "expenses_necessary": expenses_necessary,
-            "expenses_free": expenses_free,
+        df_data = {
+            "month_len": [int(monthlen(self._year, x)) for x in self.std_columns],
+            "incomes": self._sum_dicts(self._data.incomes),
+            "savings": self._sum_dicts(self._data.savings),
+            "day_input": self._sum_dicts(self._data.days),
+            "necessary": self._sum_dicts(self._data.necessary),
+            "expenses_necessary": self._sum_dicts(expenses_necessary),
+            "expenses_free": self._sum_dicts(expenses_free),
         }
-        list_of_df = [self._sum(k, v) for k, v in rows.items()]
-        return pl.concat(list_of_df, how="vertical")
+        return pl.DataFrame(df_data)
+
+    def _sum_dicts(self, data: list[dict]) -> list[int]:
+        arr = [0]*12
+        for dict_item, i in itertools.product(data, range(12)):
+            val = dict_item.get(self.std_columns[i], 0)
+            arr[i] += val or 0
+        return arr
 
     def _calc_df(self) -> None:
         df = self._create_df().clone()
 
-        df = (
-            df.transpose(include_header=False, column_names=df["name"])
-            .limit(12)
+        return (
+            df
             .lazy()
-            .with_columns(pl.all().cast(pl.Int32))
             .with_columns(
                 expenses_necessary=(
                     pl.lit(0)
@@ -200,4 +183,3 @@ class PlanCalculateDaySum:
                 include_header=True, header_name="name", column_names=self.std_columns
             )
         )
-        return df
