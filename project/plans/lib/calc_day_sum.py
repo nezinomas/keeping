@@ -120,8 +120,8 @@ class PlanCalculateDaySum:
         return data[0, 0] if self._data.month else data.to_dicts()[0]
 
     def _create_df(self) -> DF:
-        expenses_necessary = filter(lambda item: item["necessary"], self._data.expenses)
-        expenses_free = filter(lambda item: not item["necessary"], self._data.expenses)
+        expenses_necessary = list(filter(lambda item: item["necessary"], self._data.expenses))
+        expenses_free = list(filter(lambda item: not item["necessary"], self._data.expenses))
 
         df_data = {
             "month_len": [int(monthlen(self._year, x)) for x in self.std_columns],
@@ -135,11 +135,13 @@ class PlanCalculateDaySum:
         return pl.DataFrame(df_data)
 
     def _sum_dicts(self, data: list[dict]) -> list[int]:
-        arr = [0] * 12
-        for dict_item, i in itertools.product(data, range(12)):
-            val = dict_item.get(self.std_columns[i], 0)
-            arr[i] += val or 0
-        return arr
+        result = []
+
+        for month in self.std_columns:
+            month_sum = sum(map(lambda x: x.get(month, 0) or 0, data))
+            result.append(month_sum)
+
+        return result
 
     def _calc_df(self) -> None:
         df = self._create_df()
