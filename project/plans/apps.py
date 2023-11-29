@@ -1,5 +1,6 @@
-from project.accounts.apps import App_name
 from django.apps import AppConfig
+
+from project.accounts.apps import App_name
 
 App_name = "plans"
 
