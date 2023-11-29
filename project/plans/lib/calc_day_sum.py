@@ -39,22 +39,9 @@ class PlanCollectData:
 
 
 class PlanCalculateDaySum:
-    std_columns = (
-        "january",
-        "february",
-        "march",
-        "april",
-        "may",
-        "june",
-        "july",
-        "august",
-        "september",
-        "october",
-        "november",
-        "december",
-    )
-
     def __init__(self, data: PlanCollectData):
+        self.std_columns = monthnames()
+
         self._data = data
         self._year = data.year
         self._df = self._calc_df()
