@@ -3,8 +3,8 @@ import pytest
 from ..lib.calc_day_sum import PlanCalculateDaySum
 
 
-@pytest.fixture()
-def data():
+@pytest.fixture(name="data")
+def fixture_data():
     obj = type("PlanCollectData", (object,), {})
 
     obj.year = 2020
@@ -37,8 +37,8 @@ def data():
     return obj
 
 
-@pytest.fixture()
-def data_empty():
+@pytest.fixture(name="data_empty")
+def fixture_data_empty():
     return type(
         "PlanCollectData",
         (object,),
