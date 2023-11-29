@@ -25,17 +25,19 @@ class PlanCollectData:
     necessary: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = IncomePlan.objects.year(self.year).values(*monthnames())
+        month_names = monthnames()
+
+        self.incomes = IncomePlan.objects.year(self.year).values(*month_names)
 
         self.expenses = ExpensePlan.objects.year(self.year).values(
-            *monthnames(),
+            *month_names,
             necessary=F("expense_type__necessary"),
             title=F("expense_type__title")
         )
 
-        self.savings = SavingPlan.objects.year(self.year).values(*monthnames())
-        self.days = DayPlan.objects.year(self.year).values(*monthnames())
-        self.necessary = NecessaryPlan.objects.year(self.year).values(*monthnames())
+        self.savings = SavingPlan.objects.year(self.year).values(*month_names)
+        self.days = DayPlan.objects.year(self.year).values(*month_names)
+        self.necessary = NecessaryPlan.objects.year(self.year).values(*month_names)
 
 
 class PlanCalculateDaySum:
