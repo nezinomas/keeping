@@ -135,7 +135,7 @@ class PlanCalculateDaySum:
 
     def _sum_dicts(self, data: list[dict]) -> list[int]:
         return [
-            sum(map(lambda x: x.get(month, 0) or 0, data)) for month in self.std_columns
+            sum(map(lambda x: x.get(month) or 0, data)) for month in self.std_columns
         ]
 
     def _calc_df(self) -> None:
