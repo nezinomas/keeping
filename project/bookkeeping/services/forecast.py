@@ -142,7 +142,7 @@ class ForecastService:
             {"expenses": int, "savings": int}
         """
         return (
-            self._data.filter(pl.col("month") <= self._month - 1)
+            self._data.filter(pl.col("month") < self._month)
             .select([pl.col.expenses, pl.col.savings])
             .mean()
             .fill_null(0)
