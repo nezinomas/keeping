@@ -105,10 +105,10 @@ class Forecast(TemplateViewMixin):
         now = datetime.now()
         year = now.year
 
-        if year_user < year:
-            month = 12
-        elif year_user > year:
+        if year_user > year:
             month = 1
+        elif year_user < year:
+            month = 12
         else:
             month = now.month
 
