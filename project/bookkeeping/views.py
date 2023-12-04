@@ -102,14 +102,15 @@ class Forecast(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         year_user = self.request.user.year
-        year_now = datetime.now().year
+        now = datetime.now()
+        year = now.year
 
-        if year_user < year_now:
+        if year_user < year:
             month = 12
-        elif year_user > year_now:
+        elif year_user > year:
             month = 1
         else:
-            month = datetime.now().month
+            month = now.month
 
         context = services.forecast.load_service(year_user, month)
 
