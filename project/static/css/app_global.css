@@ -30,6 +30,9 @@ button > i.bi {
     margin-right: 0.25rem;
 }
 
+.btn.btn-xs.no-hover {
+    text-align: left;
+}
 
 /*
                                                                     Top Menu
