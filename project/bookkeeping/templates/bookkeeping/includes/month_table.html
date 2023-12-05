@@ -25,7 +25,17 @@
         <tr
             id="table{{day_int}}"
             {% if ctx.day|slugify == day_int %}class="current-day"{% endif %}>
-            <td class="{{weekend_col}} panel-heading" :class="open{{day_int}} ? 'active' : ''" data-bs-toggle="collapse" aria-expanded="true" hx-get="{{url_expand}}" hx-target="#table{{day_int}}" hx-swap="afterend" hx-trigger="click once" @click="open{{day_int}} = !open{{day_int}}">
+            <td
+                class="{{weekend_col}} panel-heading"
+                data-bs-toggle="collapse"
+                aria-expanded="true"
+                :class="open{{day_int}} ? 'active' : ''"
+                @click="open{{day_int}} = !open{{day_int}}""
+                hx-get="{{url_expand}}"
+                hx-target="#table{{day_int}}"
+                hx-swap="afterend"
+                hx-trigger="click once"
+            >
                 <span class="col1"></span><span class="col2">{{table.date|date:'d'}}</span>
             </td>
             {% for cat in ctx.expense_types %}
