@@ -293,7 +293,7 @@ tr.current-day>td.weekend-col {
 
 .col2 {
     float: left;
-    text-align: left;
+    text-align: center;
     width: 45%;
 }
 
