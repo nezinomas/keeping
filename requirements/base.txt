@@ -1,5 +1,5 @@
 crispy-bootstrap5==0.7
-Django==4.2.7
+Django==5.0
 django-bootstrap-datepicker-plus==5.0.4
 django-bootstrap-datepicker-widget==0.1
 django-crequest==2018.5.11
