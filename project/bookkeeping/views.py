@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from ..accounts.models import Account
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (CreateViewMixin, FormViewMixin,
-                                 TemplateViewMixin)
+                                 TemplateViewMixin, rendered_content)
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from . import forms, models, services
@@ -32,6 +32,11 @@ class Index(TemplateViewMixin):
             "chart_balance": ind.chart_balance_context(),
             "chart_expenses": exp.chart_context(),
             "expenses": exp.table_context(),
+            "accounts": rendered_content(self.request, Accounts, **self.kwargs),
+            "savings": rendered_content(self.request, Savings, **self.kwargs),
+            "pensions": rendered_content(self.request, Pensions, **self.kwargs),
+            "wealth": rendered_content(self.request, Wealth, **self.kwargs),
+            "no_incomes": rendered_content(self.request, NoIncomes, **self.kwargs),
         }
         return super().get_context_data(**kwargs) | context
 
