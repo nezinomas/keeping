@@ -39,6 +39,11 @@ def test_view_index_context(client_logged):
     assert "lend" in response.context
     assert "chart_expenses" in response.context
     assert "chart_balance" in response.context
+    assert "accounts" in response.context
+    assert "savings" in response.context
+    assert "pensions" in response.context
+    assert "wealth" in response.context
+    assert "no_incomes" in response.context
 
 
 def test_view_index_regenerate_buttons(client_logged):
