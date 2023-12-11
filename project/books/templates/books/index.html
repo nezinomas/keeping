@@ -33,7 +33,7 @@
     </div>
 </div>
 
-<div id="data" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}">{{books}}</div>
+<div id="data" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
 
 
 <div class="row my-2">
