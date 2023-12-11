@@ -71,6 +71,7 @@ class Lists(ListViewMixin):
 
         context = {
             "object_list": paginator.get_page(page),
+            "first_item": paginator.count - (paginator.per_page * (int(page) - 1)),
             "url": reverse("books:list"),
             "page_range": page_range,
             "tab": self.request.GET.get("tab"),
