@@ -148,6 +148,7 @@ class SearchMixin:
         return {
             "notice": _("No data found"),
             "object_list": paginator.get_page(page),
+            "first_item": paginator.count - (paginator.per_page * (int(page) - 1)),
             "search": search_str,
             "url": reverse(f"{app}:search"),
             "page_range": page_range,
