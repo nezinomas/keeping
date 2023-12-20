@@ -122,7 +122,7 @@ class MainTable:
                 pl.sum_horizontal(pl.exclude("date")).alias(_("Total"))
             )
 
-        return df_expense.join(saving.data, on="date", how="outer")
+        return df_expense.join(saving.data, on="date", how="outer_coalesce")
 
     @property
     def table(self):
