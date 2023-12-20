@@ -67,6 +67,11 @@ class PlanCalculateDaySum:
         return self._return_data(data)
 
     @property
+    def expenses_full(self) -> dict[str, float]:
+        data = self._df.filter(pl.col("name") == "expenses_full")
+        return self._return_data(data)
+
+    @property
     def day_calced(self) -> dict[str, float]:
         data = self._df.filter(pl.col("name") == "day_calced")
         return self._return_data(data)
@@ -89,9 +94,11 @@ class PlanCalculateDaySum:
     @property
     def plans_stats(self):
         Items = namedtuple("Items", ["type", *self.std_columns])
+
         return [
-            Items(type=_("Necessary expenses"), **self.expenses_necessary),
-            Items(type=_("Remains for everyday"), **self.expenses_free),
+            Items(type=_("Necessary expenses") + " (1)", **self.expenses_necessary),
+            Items(type=_("Remains for everyday") + " (2)", **self.expenses_free),
+            Items(type="(1) + (2)", **self.expenses_full),
             Items(type=_("Sum per day, max possible"), **self.day_calced),
             Items(type=_("Residual"), **self.remains),
         ]
@@ -151,6 +158,7 @@ class PlanCalculateDaySum:
                     + pl.col("necessary")
                 )
             )
+            .with_columns(expenses_full=(pl.col("expenses_necessary") + pl.col("expenses_free")))
             .with_columns(day_calced=(pl.col("expenses_free") / pl.col("month_len")))
             .with_columns(
                 remains=(
