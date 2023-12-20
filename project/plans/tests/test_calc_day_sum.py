@@ -95,15 +95,15 @@ def test_expenses_free(data):
     actual = PlanCalculateDaySum(data).expenses_free
 
     assert len(actual) == 12
-    assert round(actual["january"], 2) == 410
-    assert round(actual["february"], 2) == 380
+    assert round(actual["january"], 2) == 260
+    assert round(actual["february"], 2) == 280
 
 
 @pytest.mark.parametrize(
     "month, expect",
     [
-        (1, 410),
-        (2, 380),
+        (1, 260),
+        (2, 280),
         (3, 0),
     ],
 )
@@ -141,15 +141,15 @@ def test_day_calced(data):
     actual = PlanCalculateDaySum(data).day_calced
 
     assert len(actual) == 12
-    assert round(actual["january"], 2) == 13.23
-    assert round(actual["february"], 2) == 13.10
+    assert round(actual["january"], 2) == 8.39
+    assert round(actual["february"], 2) == 9.66
 
 
 @pytest.mark.parametrize(
     "month, expect",
     [
-        (1, 13.23),
-        (2, 13.10),
+        (1, 8.39),
+        (2, 9.66),
         (3, 0),
     ],
 )
@@ -187,8 +187,8 @@ def test_remains(data):
     actual = PlanCalculateDaySum(data).remains
 
     assert len(actual) == 12
-    assert round(actual["january"], 2) == -365
-    assert round(actual["february"], 2) == -374
+    assert round(actual["january"], 2) == -515
+    assert round(actual["february"], 2) == -474
 
 
 def test_remains_only_necessary_expenses(data):
@@ -211,15 +211,15 @@ def test_remains_only_necessary_expenses(data):
     actual = PlanCalculateDaySum(data).remains
 
     assert len(actual) == 12
-    assert round(actual["january"], 2) == -365
-    assert round(actual["february"], 2) == -274
+    assert round(actual["january"], 2) == -515
+    assert round(actual["february"], 2) == -474
 
 
 @pytest.mark.parametrize(
     "month, expect",
     [
-        (1, -365),
-        (2, -374),
+        (1, -515),
+        (2, -474),
         (3, 0),
     ],
 )
@@ -271,24 +271,24 @@ def test_plans_stats_expenses_free(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
     assert actual[1].type == "Lieka kasdienybei"
-    assert round(actual[1].january, 2) == 410
-    assert round(actual[1].february, 2) == 380
+    assert round(actual[1].january, 2) == 260
+    assert round(actual[1].february, 2) == 280
 
 
 def test_plans_stats_day_sum(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
     assert "Suma dienai" in actual[2].type
-    assert round(actual[2].january, 2) == 13.23
-    assert round(actual[2].february, 2) == 13.10
+    assert round(actual[2].january, 2) == 8.39
+    assert round(actual[2].february, 2) == 9.66
 
 
 def test_plans_stats_remains(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
     assert actual[3].type == "Likutis"
-    assert round(actual[3].january, 2) == -365
-    assert round(actual[3].february, 2) == -374
+    assert round(actual[3].january, 2) == -515
+    assert round(actual[3].february, 2) == -474
 
 
 def test_targets(data):

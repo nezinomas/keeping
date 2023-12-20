@@ -151,9 +151,6 @@ class PlanCalculateDaySum:
                     + pl.col("necessary")
                 )
             )
-            .with_columns(
-                expenses_free=(pl.col("incomes") - pl.col("expenses_necessary"))
-            )
             .with_columns(day_calced=(pl.col("expenses_free") / pl.col("month_len")))
             .with_columns(
                 remains=(
