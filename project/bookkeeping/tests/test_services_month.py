@@ -15,14 +15,14 @@ from ..services.month import Charts, Info, MainTable, Objects
 def test_info_context(mck_get_data, mck_initialize_objects):
     obj = Objects(1, 1)
     obj.data = MagicMock(incomes=15)
-    obj.plans = MagicMock(incomes=100, savings=12, day_input=3, remains=-85)
+    obj.plans = MagicMock(incomes=100, savings=12, day_input=3, remains=-85, expenses_free=88, expenses_necessary=5)
     obj.main_table = MagicMock(total_row = {"Viso": 5, "Taupymas": 12})
     obj.spending = MagicMock(avg_per_day=2)
 
     actual = obj.info_table()
     assert actual["plan"]["income"] == 100
     assert actual["plan"]["saving"] == 12
-    assert actual["plan"]["expense"] == 88
+    assert actual["plan"]["expense"] == 81
     assert actual["plan"]["per_day"] == 3
     assert actual["plan"]["balance"] == -85
 
@@ -34,7 +34,7 @@ def test_info_context(mck_get_data, mck_initialize_objects):
 
     assert actual["delta"]["income"] == -85
     assert actual["delta"]["saving"] == 0
-    assert actual["delta"]["expense"] == 83
+    assert actual["delta"]["expense"] == 76
     assert actual["delta"]["per_day"] == 1
     assert actual["delta"]["balance"] == 83
 
