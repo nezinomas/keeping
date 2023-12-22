@@ -275,9 +275,11 @@ def test_necessary_items(second_user):
     actual = NecessaryPlan.objects.items()
 
     assert len(actual) == 2
+
     assert actual[0].journal.users.first().username == 'bob'
     assert actual[0].year == 1974
     assert actual[0].title == 'other'
+
     assert actual[1].journal.users.first().username == 'bob'
     assert actual[1].year == 1999
     assert actual[1].title == 'other'
