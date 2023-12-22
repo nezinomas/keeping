@@ -455,12 +455,12 @@ def test_plans_stats_remains(data):
 
 
 def test_targets(data):
-    data.month = 1
+    data.month = 2
     obj = PlanCalculateDaySum(data)
 
     actual = obj.targets
 
-    expect = {"T1": 110, "T2": 130, "T3": 150, "T4": 170}
+    expect = {"T1": 120, "T2": 140, "T3": 160, "T4": 180}
 
     assert actual == expect
 
@@ -474,8 +474,8 @@ def test_targets_no_month(data):
 
 
 def test_target_with_nones(data_empty):
-    data_empty.month = 1
-    data_empty.expenses = [{"january": 0, "necessary": False, "title": "T1"}]
+    data_empty.month = 2
+    data_empty.expenses = [{"january": 0, "february": 0, "necessary": False, "title": "T1"}]
 
     obj = PlanCalculateDaySum(data_empty)
 
