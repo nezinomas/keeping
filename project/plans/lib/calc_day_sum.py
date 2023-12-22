@@ -1,4 +1,4 @@
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from dataclasses import dataclass, field
 from typing import Union
 
@@ -105,17 +105,17 @@ class PlanCalculateDaySum:
 
     @property
     def targets(self) -> dict[str, float]:
-        rtn = {}
+        rtn = defaultdict(int)
 
         if not self._data.month:
             return rtn
 
         month = monthname(self._data.month)
-        arr = self._data.expenses
-
-        for item in arr:
+        data = [*self._data.expenses, *self._data.necessary]
+        for item in data:
+            title = item.get("title", "unknown")
             val = item.get(month, 0) or 0
-            rtn[item.get("title", "unknown")] = float(val)
+            rtn[title] += val
 
         return rtn
 

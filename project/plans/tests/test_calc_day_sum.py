@@ -460,7 +460,20 @@ def test_targets(data):
 
     actual = obj.targets
 
-    expect = {"T1": 120, "T2": 140, "T3": 160, "T4": 180}
+    expect = {"T1": 120, "T2": 140, "T3": 160, "T4": 180, "NNN": 100}
+
+    assert actual == expect
+
+
+def test_targets_with_same_title_for_expense_and_necessary(data):
+    data.necessary[0]["title"] = "T1"
+
+    data.month = 2
+    obj = PlanCalculateDaySum(data)
+
+    actual = obj.targets
+
+    expect = {"T1": 220, "T2": 140, "T3": 160, "T4": 180}
 
     assert actual == expect
 
