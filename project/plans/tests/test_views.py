@@ -2,6 +2,8 @@ import pytest
 import time_machine
 from django.urls import resolve, reverse
 
+from project.expenses.views import expenses_type
+
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
@@ -776,10 +778,11 @@ def test_necessary(client_logged):
 
 
 def test_necessary_new(client_logged):
-    data = {'year': '1999', 'title': 'X', 'january': 0.01}
+    e = ExpenseTypeFactory()
+    data = {'year': '1999', 'title': 'X', 'january': 0.01, "expense_type": e.pk}
 
     url = reverse('plans:necessary_new')
-    response = client_logged.post(url, data, follow=True)
+    client_logged.post(url, data, follow=True)
     actual = NecessaryPlan.objects.first()
 
     assert actual.january == 1

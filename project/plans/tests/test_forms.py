@@ -1,6 +1,8 @@
 import pytest
 import time_machine
 
+from project.expenses.views import expenses_type
+
 from ...core.lib.translation import month_names
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
@@ -604,6 +606,7 @@ def test_necessary_init_fields():
     form = NecessaryPlanForm().as_p()
 
     assert '<input type="text" name="year"' in form
+    assert '<select name="expense_type"' in form
     assert '<input type="text" name="title"' in form
 
     assert '<input type="number" name="january"' in form
@@ -638,9 +641,11 @@ def test_income_year_initial_value1():
     ]
 )
 def test_necessary_valid_data(year):
+    expense = ExpenseTypeFactory()
     form = NecessaryPlanForm({
         'year': year,
         'title': 'XXX',
+        'expense_type': expense.pk,
         'january': 0.01,
         'february': 0.01,
         'march': 0.01,
@@ -681,9 +686,10 @@ def test_necessary_blank_data():
 
     assert not form.is_valid()
 
-    assert len(form.errors) == 2
+    assert len(form.errors) == 3
     assert 'year' in form.errors
     assert 'title' in form.errors
+    assert 'expense_type' in form.errors
 
 
 def test_necessary_unique_together_validation():
@@ -691,6 +697,7 @@ def test_necessary_unique_together_validation():
 
     form = NecessaryPlanForm({
         'year': i.year,
+        'expense_type': i.expense_type.pk,
         'title': i.title,
         'january': 666,
     })
@@ -698,15 +705,32 @@ def test_necessary_unique_together_validation():
     assert not form.is_valid()
 
     assert form.errors == {
-        '__all__': ['1999 metai jau turi XXX planą.']
+        '__all__': ['1999 metai ir Expense Type jau turi XXX planą.']
     }
 
 
+def test_necessary_unique_titles_but_different_expense_type():
+    e1 = ExpenseTypeFactory(title="E1")
+    e2 = ExpenseTypeFactory(title="E2")
+
+    i = NecessaryPlanFactory(title='XXX', expense_type=e1)
+
+    form = NecessaryPlanForm({
+        'year': i.year,
+        'title': i.title,
+        'expense_type': e2.pk,
+        'january': 666,
+    })
+
+    assert form.is_valid()
+
+
 def test_necessary_unique_together_validation_more_than_one():
-    NecessaryPlanFactory(title='First')
+    i = NecessaryPlanFactory(title='First')
 
     form = NecessaryPlanForm({
         'year': 1999,
+        'expense_type': i.expense_type.pk,
         'title': 'XXX',
         'january': 15,
     })
