@@ -35,7 +35,7 @@ class PlanCollectData:
 
         self.savings = SavingPlan.objects.year(self.year).values(*month_names)
         self.days = DayPlan.objects.year(self.year).values(*month_names)
-        self.necessary = NecessaryPlan.objects.year(self.year).values(*month_names)
+        self.necessary = NecessaryPlan.objects.year(self.year).values(*month_names).annotate(title=F("expense_type__title"))
 
 
 class PlanCalculateDaySum:
