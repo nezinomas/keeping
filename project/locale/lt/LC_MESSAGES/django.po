@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-22 11:08+0200\n"
-"PO-Revision-Date: 2023-12-22 11:09+0200\n"
+"PO-Revision-Date: 2023-12-22 11:27+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -1440,7 +1440,7 @@ msgstr "Dienos"
 #: .\project\plans\models.py:176
 #, python-format
 msgid "%(year)s year and %(type)s already has %(title)s plan."
-msgstr "%(year)s metai ir %(type)s  jau turi %(title)s planą."
+msgstr "%(year)s metai ir %(type)s jau turi %(title)s planą."
 
 #: .\project\plans\templates\plans\copyplan_form.html:4
 #: .\project\plans\templates\plans\index.html:17
