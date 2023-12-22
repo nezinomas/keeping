@@ -8,18 +8,18 @@
     <thead>
         <tr>
             <th class="text-start">{% translate 'Title' %}</th>
-            <th class="w7p">{% translate 'January' %}</th>
-            <th class="w7p">{% translate 'February' %}</th>
-            <th class="w7p">{% translate 'March' %}</th>
-            <th class="w7p">{% translate 'April' %}</th>
-            <th class="w7p">{% translate 'May' %}</th>
-            <th class="w7p">{% translate 'June' %}</th>
-            <th class="w7p">{% translate 'July' %}</th>
-            <th class="w7p">{% translate 'August' %}</th>
-            <th class="w7p">{% translate 'September' %}</th>
-            <th class="w7p">{% translate 'October' %}</th>
-            <th class="w7p">{% translate 'November' %}</th>
-            <th class="w7p">{% translate 'December' %}</th>
+            <th class="w6p">{% translate 'January' %}</th>
+            <th class="w6p">{% translate 'February' %}</th>
+            <th class="w6p">{% translate 'March' %}</th>
+            <th class="w6p">{% translate 'April' %}</th>
+            <th class="w6p">{% translate 'May' %}</th>
+            <th class="w6p">{% translate 'June' %}</th>
+            <th class="w6p">{% translate 'July' %}</th>
+            <th class="w6p">{% translate 'August' %}</th>
+            <th class="w6p">{% translate 'September' %}</th>
+            <th class="w6p">{% translate 'October' %}</th>
+            <th class="w6p">{% translate 'November' %}</th>
+            <th class="w6p">{% translate 'December' %}</th>
             <th colspan="2"></th>
         </tr>
     </thead>
@@ -30,7 +30,11 @@
         {% if delete %}{% url delete item.id as url_delete %}{% endif %}
         {% with item|get_obj_attr:type as name %}
         <tr hx-get="{{url_update}}" hx-target="#dialog" hx-trigger="dblclick" class="{% if name == _('Residual') %} bg-warning{% endif %}">
-            <td class="text-start">{{ name }}{% if item.expense_type.necessary or item.saving_type or item.title %} <i class="bi bi-star plans-star"></i>{% endif %}</td>
+            <td class="text-start">
+                {{ name }}
+                {% if expense_type %} ({{item|get_obj_attr:expense_type}}){% endif %}
+                {% if item.expense_type.necessary or item.saving_type or item.title %} <i class="bi bi-star plans-star"></i>{% endif %}
+            </td>
             <td class="{{item.january|css_class_if_none}}">{{item.january|price|cellformat:"0,00"}}</td>
             <td class="{{item.february|css_class_if_none}}">{{item.february|price|cellformat:"0,00"}}</td>
             <td class="{{item.march|css_class_if_none}}">{{item.march|price|cellformat:"0,00"}}</td>
