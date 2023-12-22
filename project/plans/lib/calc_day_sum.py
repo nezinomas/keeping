@@ -8,7 +8,8 @@ from django.utils.translation import gettext as _
 from polars import DataFrame as DF
 
 from ...core.lib.date import monthlen, monthname, monthnames
-from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
+from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
+                      SavingPlan)
 
 
 @dataclass
