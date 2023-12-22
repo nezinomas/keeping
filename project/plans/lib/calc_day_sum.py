@@ -105,6 +105,7 @@ class PlanCalculateDaySum:
             Items(type=_("Necessary expenses") + " (1)", **self.expenses_necessary),
             Items(type=_("Remains for everyday") + " (2)", **self.expenses_free),
             Items(type="(1) + (2)", **self.expenses_full),
+            Items(type=f"Avg {_('Incomes')} - (3)", **self.expenses_remains),
             Items(type=_("Sum per day, max possible"), **self.day_calced),
             Items(type=_("Residual"), **self.remains),
         ]

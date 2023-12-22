@@ -426,7 +426,7 @@ def test_additional_necessary_with_month(month, expect, data):
 def test_plans_stats_list(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
-    assert len(actual) == 5
+    assert len(actual) == 6
 
 
 def test_plans_stats_expenses_necessary(data):
@@ -453,20 +453,29 @@ def test_plans_stats_expenses_full(data):
     assert round(actual[2].february, 2) == 900
 
 
+def test_plans_stats_expenses_remains(data):
+    actual = PlanCalculateDaySum(data).plans_stats
+
+    assert "Avg Pajamos - (3)" in actual[3].type
+    assert round(actual[3].january, 2) == -591.67
+    assert round(actual[3].february, 2) == -741.67
+    assert round(actual[3].march, 2) == 158.33
+
+
 def test_plans_stats_day_sum(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
-    assert "Suma dienai" in actual[3].type
-    assert round(actual[3].january, 2) == 8.39
-    assert round(actual[3].february, 2) == 9.66
+    assert "Suma dienai" in actual[4].type
+    assert round(actual[4].january, 2) == 8.39
+    assert round(actual[4].february, 2) == 9.66
 
 
 def test_plans_stats_remains(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
-    assert actual[4].type == "Likutis"
-    assert round(actual[4].january, 2) == -515
-    assert round(actual[4].february, 2) == -474
+    assert actual[5].type == "Likutis"
+    assert round(actual[5].january, 2) == -515
+    assert round(actual[5].february, 2) == -474
 
 
 def test_targets(data):
