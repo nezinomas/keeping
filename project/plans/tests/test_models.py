@@ -275,9 +275,11 @@ def test_necessary_items(second_user):
     actual = NecessaryPlan.objects.items()
 
     assert len(actual) == 2
+
     assert actual[0].journal.users.first().username == 'bob'
     assert actual[0].year == 1974
     assert actual[0].title == 'other'
+
     assert actual[1].journal.users.first().username == 'bob'
     assert actual[1].year == 1999
     assert actual[1].title == 'other'
@@ -287,3 +289,18 @@ def test_necessary_items(second_user):
 def test_necessary_no_dublicates():
     NecessaryPlanFactory(year=2000, title='N')
     NecessaryPlanFactory(year=2000, title='N')
+
+
+def test_necessary_same_title():
+    NecessaryPlanFactory(year=2000, title='A', expense_type=ExpenseTypeFactory(title="X"))
+    NecessaryPlanFactory(year=2000, title='A', expense_type=ExpenseTypeFactory(title="Y"))
+
+    actual = NecessaryPlan.objects.items()
+
+    assert len(actual) == 2
+
+    assert actual[0].title == 'A'
+    assert actual[0].expense_type.title == 'X'
+
+    assert actual[1].title == 'A'
+    assert actual[1].expense_type.title == 'Y'
