@@ -170,6 +170,7 @@ def fixture_data():
             "october": None,
             "november": None,
             "december": None,
+            "title": "NNN",
         },
     ]
 
