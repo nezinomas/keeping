@@ -73,6 +73,11 @@ class PlanCalculateDaySum:
         return self._return_data(data)
 
     @property
+    def expenses_remains(self) -> dict[str, float]:
+        data = self._df.filter(pl.col("name") == "expenses_remains")
+        return self._return_data(data)
+
+    @property
     def day_calced(self) -> dict[str, float]:
         data = self._df.filter(pl.col("name") == "day_calced")
         return self._return_data(data)
@@ -166,6 +171,10 @@ class PlanCalculateDaySum:
                     pl.col("expenses_free")
                     - (pl.col("day_input") * pl.col("month_len"))
                 )
+            )
+            .with_columns(incomes_avg=pl.col.incomes.mean())
+            .with_columns(
+                expenses_remains=(pl.col.incomes_avg - pl.col.expenses_full)
             )
             .collect()
             .transpose(

@@ -292,6 +292,21 @@ def test_expenses_full(month, expect, data):
     assert round(actual, 2) == expect
 
 
+@pytest.mark.parametrize(
+    "month, expect",
+    [
+        (1, -591.67),
+        (2, -741.67),
+        (3, 158.33),
+    ],
+)
+def test_expenses_remains(month, expect, data):
+    data.month = month
+    actual = PlanCalculateDaySum(data).expenses_remains
+
+    assert round(actual, 2) == expect
+
+
 def test_day_calced(data):
     actual = PlanCalculateDaySum(data).day_calced
 
