@@ -44,10 +44,10 @@
             {% endfor %}
 
             <!-- total expenses -->
-            {% with table|get_item:_("Viso") as val%}<td class="{{weekend_col|add:' left-blue-double-border right-blue-double-border'}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
+            {% with table|get_item:_("Total") as val%}<td class="{{weekend_col|add:' left-blue-double-border right-blue-double-border'}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- savings -->
-            {% with table|get_item:_("Taupymas") as val%}<td class="{{weekend_col}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
+            {% with table|get_item:_("Savings") as val%}<td class="{{weekend_col}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- spending -->
             <td class="text-start {{weekend_col}} empty-column">{{spending.date|date:'l'}}</td>
@@ -66,11 +66,11 @@
             {% endfor %}
 
             <!-- total expenses -->
-            {% with ctx.total_row|get_item:_("Viso") as val%}<th class="{{val|css_class_if_none}} left-blue-double-border right-blue-double-border">{{val|price|cellformat}}</th>{% endwith %}
+            {% with ctx.total_row|get_item:_("Total") as val%}<th class="{{val|css_class_if_none}} left-blue-double-border right-blue-double-border">{{val|price|cellformat}}</th>{% endwith %}
 
 
             <!-- savings -->
-            {% with ctx.total_row|get_item:_("Taupymas") as val%}<th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>{% endwith %}
+            {% with ctx.total_row|get_item:_("Savings") as val%}<th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>{% endwith %}
 
             <th class="empty-column"></th>
             <th></th>
