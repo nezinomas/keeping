@@ -432,7 +432,7 @@ def test_plans_stats_list(data):
 def test_plans_stats_expenses_necessary(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
-    assert "Būtinos išlaidos (1)" == actual[0].type
+    assert "Būtinos išlaidos" == actual[0].type
     assert round(actual[0].january, 2) == 490
     assert round(actual[0].february, 2) == 620
 
@@ -440,7 +440,7 @@ def test_plans_stats_expenses_necessary(data):
 def test_plans_stats_expenses_free(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
-    assert actual[1].type == "Lieka kasdienybei (2)"
+    assert actual[1].type == "Lieka kasdienybei"
     assert round(actual[1].january, 2) == 260
     assert round(actual[1].february, 2) == 280
 
@@ -448,7 +448,7 @@ def test_plans_stats_expenses_free(data):
 def test_plans_stats_expenses_full(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
-    assert actual[2].type == "(1) + (2)"
+    assert actual[2].type == "Visos išlaidos"
     assert round(actual[2].january, 2) == 750
     assert round(actual[2].february, 2) == 900
 
@@ -456,7 +456,7 @@ def test_plans_stats_expenses_full(data):
 def test_plans_stats_expenses_remains(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
-    assert "Avg Pajamos - (3)" in actual[3].type
+    assert "Avg Pajamos - Visos išlaidos" in actual[3].type
     assert round(actual[3].january, 2) == -591.67
     assert round(actual[3].february, 2) == -741.67
     assert round(actual[3].march, 2) == 158.33

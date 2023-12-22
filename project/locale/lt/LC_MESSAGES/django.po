@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-22 11:08+0200\n"
-"PO-Revision-Date: 2023-12-22 11:27+0200\n"
+"POT-Creation-Date: 2023-12-22 21:51+0200\n"
+"PO-Revision-Date: 2023-12-22 21:53+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
 "11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
 "1 : n % 1 != 0 ? 2: 3);\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.4.2\n"
 
 #: .\project\accounts\forms.py:33
 msgid "Account title"
@@ -266,7 +266,7 @@ msgstr "Turtas"
 #: .\project\expenses\views\expenses.py:57
 #: .\project\incomes\templates\incomes\income_list.html:50
 #: .\project\pensions\templates\pensions\pension_list.html:37
-#: .\project\plans\templates\plans\includes\generic_list.html:52
+#: .\project\plans\templates\plans\includes\generic_list.html:56
 #: .\project\savings\templates\savings\saving_list.html:41
 #: .\project\transactions\templates\transactions\includes\table.html:40
 #, python-format
@@ -1409,19 +1409,23 @@ msgstr "Dienos planai"
 msgid "Plans for additional necessary expenses"
 msgstr "Papildomų būtinų išlaidų planus"
 
-#: .\project\plans\lib\calc_day_sum.py:99
+#: .\project\plans\lib\calc_day_sum.py:105
 msgid "Necessary expenses"
 msgstr "Būtinos išlaidos"
 
-#: .\project\plans\lib\calc_day_sum.py:100
+#: .\project\plans\lib\calc_day_sum.py:106
 msgid "Remains for everyday"
 msgstr "Lieka kasdienybei"
 
-#: .\project\plans\lib\calc_day_sum.py:102
+#: .\project\plans\lib\calc_day_sum.py:107
+msgid "Full expenses"
+msgstr "Visos išlaidos"
+
+#: .\project\plans\lib\calc_day_sum.py:109
 msgid "Sum per day, max possible"
 msgstr "Suma dienai, max galima"
 
-#: .\project\plans\lib\calc_day_sum.py:103
+#: .\project\plans\lib\calc_day_sum.py:110
 #: .\project\plans\templates\plans\includes\generic_list.html:32
 msgid "Residual"
 msgstr "Likutis"
