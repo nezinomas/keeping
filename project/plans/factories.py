@@ -110,6 +110,7 @@ class NecessaryPlanFactory(factory.django.DjangoModelFactory):
         model = NecessaryPlan
 
     journal = factory.SubFactory(JournalFactory)
+    expense_type = factory.SubFactory(ExpenseTypeFactory)
     year = 1999
     title = "other"
     january = 1
