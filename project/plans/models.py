@@ -165,7 +165,7 @@ class NecessaryPlan(MonthAbstract):
         return f"{self.year}/{self.title}"
 
     class Meta:
-        ordering = ["year", "title"]
+        ordering = ["year", "expense_type", "title"]
         unique_together = ("year", "title", "expense_type", "journal")
 
     def validate_unique(self, exclude=None):
