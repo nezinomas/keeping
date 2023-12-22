@@ -10,28 +10,168 @@ def fixture_data():
     obj.year = 2020
     obj.month = 0
 
+
     obj.incomes = [
-        {"january": 400, "february": 500},
-        {"january": 500, "february": 500},
+        {
+            "january": 400,
+            "february": 500,
+            "march": None,
+            "april": None,
+            "may": None,
+            "june": None,
+            "july": None,
+            "august": None,
+            "september": None,
+            "october": None,
+            "november": None,
+            "december": None,
+        },
+        {
+            "january": 500,
+            "february": 500,
+            "march": None,
+            "april": None,
+            "may": None,
+            "june": None,
+            "july": None,
+            "august": None,
+            "september": None,
+            "october": None,
+            "november": None,
+            "december": None,
+        },
     ]
     obj.expenses = [
-        {"january": 110, "february": 120, "necessary": False, "title": "T1"},
-        {"january": 130, "february": 140, "necessary": True, "title": "T2"},
-        {"january": 150, "february": 160, "necessary": False, "title": "T3"},
-        {"january": 170, "february": 180, "necessary": True, "title": "T4"},
+        {
+            "january": 110,
+            "february": 120,
+            "march": None,
+            "april": None,
+            "may": None,
+            "june": None,
+            "july": None,
+            "august": None,
+            "september": None,
+            "october": None,
+            "november": None,
+            "december": None,
+            "necessary": False,
+            "title": "T1",
+        },
+        {
+            "january": 130,
+            "february": 140,
+            "march": None,
+            "april": None,
+            "may": None,
+            "june": None,
+            "july": None,
+            "august": None,
+            "september": None,
+            "october": None,
+            "november": None,
+            "december": None,
+            "necessary": True,
+            "title": "T2",
+        },
+        {
+            "january": 150,
+            "february": 160,
+            "march": None,
+            "april": None,
+            "may": None,
+            "june": None,
+            "july": None,
+            "august": None,
+            "september": None,
+            "october": None,
+            "november": None,
+            "december": None,
+            "necessary": False,
+            "title": "T3",
+        },
+        {
+            "january": 170,
+            "february": 180,
+            "march": None,
+            "april": None,
+            "may": None,
+            "june": None,
+            "july": None,
+            "august": None,
+            "september": None,
+            "october": None,
+            "november": None,
+            "december": None,
+            "necessary": True,
+            "title": "T4",
+        },
     ]
 
     obj.savings = [
-        {"january": 100, "february": 110},
-        {"january": 90, "february": 90},
+        {
+            "january": 100,
+            "february": 110,
+            "march": None,
+            "april": None,
+            "may": None,
+            "june": None,
+            "july": None,
+            "august": None,
+            "september": None,
+            "october": None,
+            "november": None,
+            "december": None,
+        },
+        {
+            "january": 90,
+            "february": 90,
+            "march": None,
+            "april": None,
+            "may": None,
+            "june": None,
+            "july": None,
+            "august": None,
+            "september": None,
+            "october": None,
+            "november": None,
+            "december": None,
+        },
     ]
 
     obj.days = [
-        {"january": 25, "february": 26},
+        {
+            "january": 25,
+            "february": 26,
+            "march": None,
+            "april": None,
+            "may": None,
+            "june": None,
+            "july": None,
+            "august": None,
+            "september": None,
+            "october": None,
+            "november": None,
+            "december": None,
+        },
     ]
 
     obj.necessary = [
-        {"february": 100},
+        {
+            "january": None,
+            "february": 100,
+            "march": None,
+            "april": None,
+            "may": None,
+            "june": None,
+            "july": None,
+            "august": None,
+            "september": None,
+            "october": None,
+            "november": None,
+            "december": None,
+            "title": "NNN",
+        },
     ]
 
     return obj
@@ -315,12 +455,25 @@ def test_plans_stats_remains(data):
 
 
 def test_targets(data):
-    data.month = 1
+    data.month = 2
     obj = PlanCalculateDaySum(data)
 
     actual = obj.targets
 
-    expect = {"T1": 110, "T2": 130, "T3": 150, "T4": 170}
+    expect = {"T1": 120, "T2": 140, "T3": 160, "T4": 180, "NNN": 100}
+
+    assert actual == expect
+
+
+def test_targets_with_same_title_for_expense_and_necessary(data):
+    data.necessary[0]["title"] = "T1"
+
+    data.month = 2
+    obj = PlanCalculateDaySum(data)
+
+    actual = obj.targets
+
+    expect = {"T1": 220, "T2": 140, "T3": 160, "T4": 180}
 
     assert actual == expect
 
@@ -334,8 +487,8 @@ def test_targets_no_month(data):
 
 
 def test_target_with_nones(data_empty):
-    data_empty.month = 1
-    data_empty.expenses = [{"january": 0, "necessary": False, "title": "T1"}]
+    data_empty.month = 2
+    data_empty.expenses = [{"january": 0, "february": 0, "necessary": False, "title": "T1"}]
 
     obj = PlanCalculateDaySum(data_empty)
 

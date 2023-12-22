@@ -1,4 +1,4 @@
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from dataclasses import dataclass, field
 from typing import Union
 
@@ -8,7 +8,8 @@ from django.utils.translation import gettext as _
 from polars import DataFrame as DF
 
 from ...core.lib.date import monthlen, monthname, monthnames
-from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
+from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
+                      SavingPlan)
 
 
 @dataclass
@@ -35,7 +36,7 @@ class PlanCollectData:
 
         self.savings = SavingPlan.objects.year(self.year).values(*month_names)
         self.days = DayPlan.objects.year(self.year).values(*month_names)
-        self.necessary = NecessaryPlan.objects.year(self.year).values(*month_names)
+        self.necessary = NecessaryPlan.objects.year(self.year).values(*month_names).annotate(title=F("expense_type__title"))
 
 
 class PlanCalculateDaySum:
@@ -105,17 +106,17 @@ class PlanCalculateDaySum:
 
     @property
     def targets(self) -> dict[str, float]:
-        rtn = {}
+        rtn = defaultdict(int)
 
         if not self._data.month:
             return rtn
 
         month = monthname(self._data.month)
-        arr = self._data.expenses
-
-        for item in arr:
+        data = [*self._data.expenses, *self._data.necessary]
+        for item in data:
+            title = item.get("title", "unknown")
             val = item.get(month, 0) or 0
-            rtn[item.get("title", "unknown")] = float(val)
+            rtn[title] += val
 
         return rtn
 
