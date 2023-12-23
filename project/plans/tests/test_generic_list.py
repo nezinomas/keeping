@@ -19,7 +19,7 @@ def test_has_type(_template):
     items = [type('O', (object,), dict(january=11, type='TypeRowName'))]
     context = Context({'items': items})
 
-    actual = _template.render(context)
+    actual = _template.render(context).replace('\n', '').replace("  ", "")
 
     assert '<td class="text-start">TypeRowName</td>' in actual
 
@@ -28,7 +28,7 @@ def test_no_type(_template):
     items = [type('O', (object,), dict(january=11))]
     context = Context({'items': items})
 
-    actual = _template.render(context)
+    actual = _template.render(context).replace('\n', '').replace("  ", "")
 
     assert '<td class="text-start">type</td>' in actual
 
@@ -43,7 +43,7 @@ def test_necessary_expense_1(_template):
     ]
     context = Context({'items': items})
 
-    actual = _template.render(context)
+    actual = _template.render(context).replace('\n', '').replace("  ", "")
     expect = '<td class="text-start">TypeRowName <i class="bi bi-star plans-star"></i></td>'
 
     assert expect in _remove_line_end(actual)
@@ -59,7 +59,7 @@ def test_necessary_expense_3(_template):
     ]
     context = Context({'items': items})
 
-    actual = _template.render(context)
+    actual = _template.render(context).replace('\n', '').replace("  ", "")
     expect = '<td class="text-start">type <i class="bi bi-star plans-star"></i></td>'
 
     assert expect in _remove_line_end(actual)
