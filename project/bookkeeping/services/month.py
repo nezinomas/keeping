@@ -122,7 +122,9 @@ class MainTable:
                 pl.sum_horizontal(pl.exclude("date")).alias(_("Total"))
             )
 
-        return df_expense.join(saving.data, on="date", how="outer_coalesce", join_nulls=True)
+        return df_expense.join(
+            saving.data, on="date", how="outer_coalesce", join_nulls=True
+        )
 
     @property
     def table(self):
@@ -218,7 +220,12 @@ class Objects:
 
         plan = Info(
             income=self.plans.incomes,
-            expense=(self.plans.incomes - self.plans.savings),
+            expense=(
+                0
+                + self.plans.expenses_necessary
+                + self.plans.expenses_free
+                - self.plans.savings
+            ),
             saving=self.plans.savings,
             per_day=self.plans.day_input,
             balance=self.plans.remains,

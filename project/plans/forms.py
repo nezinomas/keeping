@@ -216,13 +216,13 @@ class DayPlanForm(YearFormMixin):
 class NecessaryPlanForm(YearFormMixin):
     class Meta:
         model = NecessaryPlan
-        fields = ["journal", "year", "title"] + monthnames()
+        fields = ["journal", "year", "expense_type", "title"] + monthnames()
 
         widgets = {
             "year": YearPickerInput(),
         }
 
-    field_order = ["year", "title"] + monthnames()
+    field_order = ["year", "expense_type", "title"] + monthnames()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

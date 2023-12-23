@@ -154,6 +154,7 @@ class NecessaryPlan(MonthAbstract):
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
     title = models.CharField(max_length=100)
+    expense_type = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="necessary_plans"
     )
@@ -164,16 +165,16 @@ class NecessaryPlan(MonthAbstract):
         return f"{self.year}/{self.title}"
 
     class Meta:
-        ordering = ["year", "title"]
-        unique_together = ("year", "title", "journal")
+        ordering = ["year", "expense_type", "title"]
+        unique_together = ("year", "title", "expense_type", "journal")
 
     def validate_unique(self, exclude=None):
         try:
             super().validate_unique()
         except ValidationError as e:
             raise ValidationError(
-                _("%(year)s year already has %(title)s plan.")
-                % ({"year": self.year, "title": self.title})
+                _("%(year)s year and %(type)s already has %(title)s plan.")
+                % ({"year": self.year, "title": self.title, "type": self.expense_type.title})
             ) from e
 
     def get_absolute_url(self):

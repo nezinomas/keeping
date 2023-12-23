@@ -1,4 +1,4 @@
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from dataclasses import dataclass, field
 from typing import Union
 
@@ -8,7 +8,8 @@ from django.utils.translation import gettext as _
 from polars import DataFrame as DF
 
 from ...core.lib.date import monthlen, monthname, monthnames
-from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
+from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
+                      SavingPlan)
 
 
 @dataclass
@@ -35,7 +36,7 @@ class PlanCollectData:
 
         self.savings = SavingPlan.objects.year(self.year).values(*month_names)
         self.days = DayPlan.objects.year(self.year).values(*month_names)
-        self.necessary = NecessaryPlan.objects.year(self.year).values(*month_names)
+        self.necessary = NecessaryPlan.objects.year(self.year).values(*month_names).annotate(title=F("expense_type__title"))
 
 
 class PlanCalculateDaySum:
@@ -67,6 +68,16 @@ class PlanCalculateDaySum:
         return self._return_data(data)
 
     @property
+    def expenses_full(self) -> dict[str, float]:
+        data = self._df.filter(pl.col("name") == "expenses_full")
+        return self._return_data(data)
+
+    @property
+    def expenses_remains(self) -> dict[str, float]:
+        data = self._df.filter(pl.col("name") == "expenses_remains")
+        return self._return_data(data)
+
+    @property
     def day_calced(self) -> dict[str, float]:
         data = self._df.filter(pl.col("name") == "day_calced")
         return self._return_data(data)
@@ -89,26 +100,29 @@ class PlanCalculateDaySum:
     @property
     def plans_stats(self):
         Items = namedtuple("Items", ["type", *self.std_columns])
+
         return [
             Items(type=_("Necessary expenses"), **self.expenses_necessary),
             Items(type=_("Remains for everyday"), **self.expenses_free),
+            Items(type=_("Full expenses"), **self.expenses_full),
+            Items(type=f"Avg {_('Incomes')} - {_('Full expenses')}", **self.expenses_remains),
             Items(type=_("Sum per day, max possible"), **self.day_calced),
             Items(type=_("Residual"), **self.remains),
         ]
 
     @property
     def targets(self) -> dict[str, float]:
-        rtn = {}
+        rtn = defaultdict(int)
 
         if not self._data.month:
             return rtn
 
         month = monthname(self._data.month)
-        arr = self._data.expenses
-
-        for item in arr:
+        data = [*self._data.expenses, *self._data.necessary]
+        for item in data:
+            title = item.get("title", "unknown")
             val = item.get(month, 0) or 0
-            rtn[item.get("title", "unknown")] = float(val)
+            rtn[title] += val
 
         return rtn
 
@@ -151,15 +165,17 @@ class PlanCalculateDaySum:
                     + pl.col("necessary")
                 )
             )
-            .with_columns(
-                expenses_free=(pl.col("incomes") - pl.col("expenses_necessary"))
-            )
+            .with_columns(expenses_full=(pl.col("expenses_necessary") + pl.col("expenses_free")))
             .with_columns(day_calced=(pl.col("expenses_free") / pl.col("month_len")))
             .with_columns(
                 remains=(
                     pl.col("expenses_free")
                     - (pl.col("day_input") * pl.col("month_len"))
                 )
+            )
+            .with_columns(incomes_avg=pl.col.incomes.mean())
+            .with_columns(
+                expenses_remains=(pl.col.incomes_avg - pl.col.expenses_full)
             )
             .collect()
             .transpose(
