@@ -7,7 +7,7 @@ def _remove_line_end(rendered):
 
 
 @pytest.fixture(name="template")
-def fixturetemplate():
+def fixture_template():
     template_to_render = Template(
         "{% load generic_list %}"
         '{% generic_list year=2019 items=items type="type" update=url_update %}'
