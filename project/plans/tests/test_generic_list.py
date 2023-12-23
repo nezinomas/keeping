@@ -15,6 +15,15 @@ def fixture_template():
     return template_to_render
 
 
+@pytest.fixture(name="template_with_expenses_type")
+def fixture_template_with_expenses_type():
+    template_to_render = Template(
+        "{% load generic_list %}"
+        '{% generic_list year=2019 items=items type="type" expense_type="True" update=url_update %}'
+    )
+    return template_to_render
+
+
 def test_has_type(template):
     items = [type("O", (object,), dict(january=11, type="TypeRowName"))]
     context = Context({"items": items})
@@ -22,6 +31,23 @@ def test_has_type(template):
     actual = template.render(context).replace("\n", "").replace("  ", "")
 
     assert '<td class="text-start">TypeRowName</td>' in actual
+
+
+def test_has_type_and_has_expenses_type(template_with_expenses_type):
+    items = [
+        type(
+            "O",
+            (object,),
+            dict(january=11, type="TypeRowName", expense_type="ExpenseType"),
+        )
+    ]
+    context = Context({"items": items})
+
+    actual = (
+        template_with_expenses_type.render(context).replace("\n", "").replace("  ", "")
+    )
+
+    assert '<td class="text-start">TypeRowName (ExpenseType)</td>' in actual
 
 
 def test_no_type(template):
