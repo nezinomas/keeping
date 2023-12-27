@@ -233,6 +233,9 @@ class NecessaryPlanForm(YearFormMixin):
         # inital values
         self.fields["year"].initial = set_year_for_form().year
 
+        # overwrite ForeignKey expense_type queryset
+        self.fields["expense_type"].queryset = ExpenseType.objects.items()
+
         # field translation
         common_field_transalion(self)
 

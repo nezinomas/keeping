@@ -1,3 +1,4 @@
+from turtle import title
 import pytest
 import time_machine
 from django.urls import resolve, reverse
@@ -786,6 +787,18 @@ def test_necessary_new(client_logged):
     actual = NecessaryPlan.objects.first()
 
     assert actual.january == 1
+
+
+def test_necessary_new_not_load_other_journal(client_logged, second_user):
+    this = ExpenseTypeFactory(title="AAA")
+    other = ExpenseTypeFactory(journal=second_user.journal, title="XXX")
+
+
+    url = reverse('plans:necessary_new')
+    content = client_logged.get(url).content.decode('utf-8')
+
+    assert this.title in content
+    assert other.title not in content
 
 
 def test_necessary_invalid_data(client_logged):
