@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 import polars as pl
 from django.db.models import QuerySet, Sum
@@ -192,8 +193,24 @@ class ForecastService:
             - (savings_current + savings_avg * month_left)
         )
 
-def load_service(year: int, month: int) -> dict:
+
+def get_month(year: int) -> int:
+    now = datetime.now()
+    year_now = now.year
+
+    if year > year_now:
+        month = 1
+    elif year < year_now:
+        month = 12
+    else:
+        month = now.month
+
+    return month
+
+
+def load_service(year: int) -> dict:
     data = ForecastServiceData(year)
+    month = get_month(year)
     forecast = ForecastService(month, data.data()).forecast()
 
     beginning = data.amount_at_beginning_of_year()

@@ -1,8 +1,9 @@
 from datetime import date
 
 import pytest
+import time_machine
 
-from ..services.forecast import ForecastService, ForecastServiceData
+from ..services.forecast import ForecastService, ForecastServiceData, get_month
 
 
 def test_get_data():
@@ -217,3 +218,16 @@ def test_forecast_current_month_savings_exceeds_average(data):
     expect = -122
 
     assert actual == expect
+
+
+@time_machine.travel("1999-3-1")
+@pytest.mark.parametrize(
+    "year, expected",
+    [
+        (1999, 3),
+        (1998, 12),
+        (2000, 1),
+    ],
+)
+def test_get_month(year, expected):
+    assert get_month(year) == expected
