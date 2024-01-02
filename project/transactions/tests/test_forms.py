@@ -286,7 +286,7 @@ def test_saving_change_form_type_closed_in_past(main_user):
     assert "S1" in str(form["from_account"])
     assert "S2" not in str(form["from_account"])
 
-    assert "S1" in str(form["to_account"])
+    assert "S1" not in str(form["to_account"])
     assert "S2" not in str(form["to_account"])
 
 
@@ -301,8 +301,8 @@ def test_saving_change_form_type_closed_in_future(main_user):
     assert "S1" in str(form["from_account"])
     assert "S2" in str(form["from_account"])
 
-    assert "S1" in str(form["to_account"])
-    assert "S2" in str(form["to_account"])
+    assert "S1" not in str(form["to_account"])
+    assert "S2" not in str(form["to_account"])
 
 
 def test_saving_change_form_type_closed_in_current_year(main_user):
@@ -316,8 +316,8 @@ def test_saving_change_form_type_closed_in_current_year(main_user):
     assert "S1" in str(form["from_account"])
     assert "S2" in str(form["from_account"])
 
-    assert "S1" in str(form["to_account"])
-    assert "S2" in str(form["to_account"])
+    assert "S1" not in str(form["to_account"])
+    assert "S2" not in str(form["to_account"])
 
 
 @time_machine.travel("1999-1-1")

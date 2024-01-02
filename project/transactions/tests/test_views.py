@@ -168,6 +168,23 @@ def test_transactions_update(client_logged):
     assert "Account2" in actual
 
 
+def test_transactions_update_switch_accounts(client_logged):
+    tr = TransactionFactory()
+
+    data = {
+        "price": "150",
+        "date": "1999-12-31",
+        "from_account": tr.to_account.pk,
+        "to_account": tr.from_account.pk,
+    }
+    url = reverse("transactions:update", kwargs={"pk": tr.pk})
+    response = client_logged.post(url, data)
+    actual = response.context
+
+    # if no context is returned, it means that the form is valid
+    assert not actual
+
+
 def test_transactions_not_load_other_journal(client_logged, second_user):
     j2 = second_user.journal
     a_to = AccountFactory(journal=j2, title="a1")
@@ -731,6 +748,24 @@ def test_savings_change_update(client_logged):
     assert actual.fee == 1
     assert actual.to_account.title == "Savings To"
     assert actual.from_account.title == "Savings From"
+
+
+def test_savings_change_update_switch_accounts(client_logged):
+    obj = SavingChangeFactory()
+
+    data = {
+        "date": "1999-12-31",
+        "price": "0.01",
+        "fee": "0.01",
+        "from_account": obj.to_account.pk,
+        "to_account": obj.from_account.pk,
+    }
+    url = reverse("transactions:savings_change_update", kwargs={"pk": obj.pk})
+    response = client_logged.post(url, data)
+    actual = response.context
+
+    # if no account is selected, the form is valid
+    assert not actual
 
 
 def test_savings_change_update_no_fee(client_logged):
