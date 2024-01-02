@@ -97,15 +97,13 @@ function chartSavings(container) {
                 fontSize: '12px',
             },
             formatter: function () {
-                let sum = 0;
                 let {series} = this.series.chart;
-                for (i in [1,2]) {
-                    sum += series[i].yData[this.point.x];
-                }
+                let profit = series[0].yData[this.point.x];
+                let invested = series[1].yData[this.point.x];
+                let percent = (profit * 100) / invested;
                 return `
                     <div><b>${this.x}</b></div>
-                    <div class="my-2">${this.series.name}: ${Highcharts.numberFormat(this.point.y, 0)}€</div>
-                    <div>${chartData.text_total}: ${Highcharts.numberFormat(sum, 0)}€</div>
+                    <div class="my-2">${chartData.text_profit}: ${Highcharts.numberFormat(percent, 1)}%</div>
                 `
             }
         },
