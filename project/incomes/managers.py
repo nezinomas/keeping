@@ -2,7 +2,7 @@ from typing import List
 
 from django.db import models
 from django.db.models import Count, F, Sum, Value
-from django.db.models.functions import ExtractYear, TruncMonth
+from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
@@ -48,6 +48,19 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .annotate(cnt=Count("income_type"))
             .values("income_type")
             .annotate(date=TruncMonth("date"))
+            .values("date")
+            .annotate(c=Count("id"))
+            .annotate(sum=Sum("price"))
+            .order_by("income_type__title", "date")
+            .values("date", "sum", title=F("income_type__title"))
+        )
+
+    def sum_by_year_and_type(self, year):
+        return (
+            self.related()
+            .annotate(cnt=Count("income_type"))
+            .values("income_type")
+            .annotate(date=TruncYear("date"))
             .values("date")
             .annotate(c=Count("id"))
             .annotate(sum=Sum("price"))
