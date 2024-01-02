@@ -3,12 +3,12 @@ function annotationLabels(total_list, invested_list, profit_list) {
         let y_val = element;
         if (profit_list[index] < 0) {
             y_val = invested_list[index]
-            console.log(invested_list[index]);
         }
-
         total_list[index] = {
             point: { xAxis: 0, yAxis: 0, x: index, y: y_val },
             text: Highcharts.numberFormat(Math.round(element), 0),
+            crop: false,
+            overflow: 'none',
         };
     });
     return total_list;
@@ -20,7 +20,6 @@ function chartSavings(container) {
     const chartData = JSON.parse(document.getElementById(`${container}_data`).textContent);
 
     // convert data
-    chartData.max_value /= 100;
     for (i = 0; i < chartData.categories.length; i++) {
         chartData.invested[i] /= 100;
         chartData.profit[i] /= 100;
@@ -63,7 +62,6 @@ function chartSavings(container) {
             },
         },
         yAxis: {
-            max: chartData.max_value * 1.1,
             title: {
                 text: ''
             },

@@ -117,29 +117,6 @@ def test_chart_data_6():
     assert not actual["total"]
 
 
-def test_chart_data_max_value(data1, data2):
-    actual = make_chart("x", data1, data2)
-
-    assert actual["max_value"] == 14
-
-
-def test_chart_data_max_value_empty():
-    actual = make_chart("x", [])
-
-    assert actual["max_value"] == 0
-
-
-def test_chart_data_max_value_with_loss():
-    data = [
-        {"year": 2000, "invested": 4.0, "profit": -4.0},
-        {"year": 2001, "invested": 5.0, "profit": -5.0},
-    ]
-
-    actual = make_chart("x", data)
-
-    assert actual["max_value"] == 10.0
-
-
 @pytest.mark.django_db
 def test_chart_data_db1():
     SavingBalanceFactory(year=1999, incomes=0, invested=0, profit_sum=0)
