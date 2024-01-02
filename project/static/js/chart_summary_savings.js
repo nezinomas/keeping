@@ -3,7 +3,6 @@ function annotationLabels(total_list, invested_list, profit_list) {
         let y_val = element;
         if (profit_list[index] < 0) {
             y_val = invested_list[index]
-            console.log(invested_list[index]);
         }
 
         total_list[index] = {
