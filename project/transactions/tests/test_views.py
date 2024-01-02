@@ -168,6 +168,23 @@ def test_transactions_update(client_logged):
     assert "Account2" in actual
 
 
+def test_transactions_update_switch_accounts(client_logged):
+    tr = TransactionFactory()
+
+    data = {
+        "price": "150",
+        "date": "1999-12-31",
+        "from_account": tr.to_account.pk,
+        "to_account": tr.from_account.pk,
+    }
+    url = reverse("transactions:update", kwargs={"pk": tr.pk})
+    response = client_logged.post(url, data)
+    actual = response.context
+
+    # if no context is returned, it means that the form is valid
+    assert not actual
+
+
 def test_transactions_not_load_other_journal(client_logged, second_user):
     j2 = second_user.journal
     a_to = AccountFactory(journal=j2, title="a1")
