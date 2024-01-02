@@ -155,7 +155,7 @@ def test_account_closed_in_past_transactions(main_user):
     assert "S1" in str(form["from_account"])
     assert "S2" not in str(form["from_account"])
 
-    assert "S1" in str(form["to_account"])
+    assert "S1" not in str(form["to_account"])
     assert "S2" not in str(form["to_account"])
 
 
@@ -170,8 +170,8 @@ def test_account_closed_in_future_transactions(main_user):
     assert "S1" in str(form["from_account"])
     assert "S2" in str(form["from_account"])
 
-    assert "S1" in str(form["to_account"])
-    assert "S2" in str(form["to_account"])
+    assert "S1" not in str(form["to_account"])
+    assert "S2" not in str(form["to_account"])
 
 
 def test_account_closed_in_current_year_transactions(main_user):
@@ -185,8 +185,8 @@ def test_account_closed_in_current_year_transactions(main_user):
     assert "S1" in str(form["from_account"])
     assert "S2" in str(form["from_account"])
 
-    assert "S1" in str(form["to_account"])
-    assert "S2" in str(form["to_account"])
+    assert "S1" not in str(form["to_account"])
+    assert "S2" not in str(form["to_account"])
 
 
 def test_account_closed_in_past_saving_close(main_user):
