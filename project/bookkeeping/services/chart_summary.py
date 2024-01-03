@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
@@ -70,6 +71,22 @@ class ChartSummaryService:
         }
 
         return context
+
+    def chart_incomes_types(self) -> dict:
+        categories = sorted({x["date"].year for x in self._incomes_types})
+        data_values = defaultdict(lambda: [0] * len(categories))
+
+        for item in self._incomes_types:
+            idx = categories.index(item["date"].year)
+            data_values[item["title"]][idx] = item["sum"]
+
+        data = [{"name": title, "data": values} for title, values in data_values.items()]
+
+        return {
+            "chart_title": _("Incomes"),
+            "categories": categories,
+            "data": data,
+        }
 
 
 def load_service() -> dict:
