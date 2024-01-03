@@ -55,7 +55,7 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .values("date", "sum", title=F("income_type__title"))
         )
 
-    def sum_by_year_and_type(self, year):
+    def sum_by_year_and_type(self):
         return (
             self.related()
             .annotate(cnt=Count("income_type"))

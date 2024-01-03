@@ -206,7 +206,7 @@ def test_income_year_type_sum():
         {'date': date(1999, 1, 1), 'title': 'I-1', 'sum': 3},
         {'date': date(1999, 1, 1), 'title': 'I-2', 'sum': 7},
     ]
-    actual = Income.objects.sum_by_year_and_type(1999)
+    actual = Income.objects.sum_by_year_and_type()
 
     assert expect == [*actual]
 
