@@ -96,4 +96,5 @@ def load_service() -> dict:
     return {
         "chart_balance": obj.chart_balance(),
         "chart_incomes": obj.chart_incomes(),
+        "chart_incomes_types": obj.chart_incomes_types(),
     }
