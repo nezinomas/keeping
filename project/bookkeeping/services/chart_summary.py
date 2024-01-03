@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
@@ -10,11 +11,13 @@ from . import common
 @dataclass
 class ChartSummaryServiceData:
     incomes: list = field(init=False, default_factory=list)
+    incomes_types: list = field(init=False, default_factory=list)
     expenses: list = field(init=False, default_factory=list)
     salary: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
         self.incomes = Income.objects.sum_by_year()
+        self.incomes_types = Income.objects.sum_by_year_and_type()
         self.salary = Income.objects.sum_by_year().filter(income_type__type="salary")
         self.expenses = Expense.objects.sum_by_year()
 
@@ -22,6 +25,7 @@ class ChartSummaryServiceData:
 class ChartSummaryService:
     def __init__(self, data: ChartSummaryServiceData):
         self._incomes = data.incomes
+        self._incomes_types = data.incomes_types
         self._salary = data.salary
         self._expenses = data.expenses
 
@@ -68,6 +72,22 @@ class ChartSummaryService:
 
         return context
 
+    def chart_incomes_types(self) -> dict:
+        categories = sorted({x["date"].year for x in self._incomes_types})
+        data_values = defaultdict(lambda: [0] * len(categories))
+
+        for item in self._incomes_types:
+            idx = categories.index(item["date"].year)
+            data_values[item["title"]][idx] = item["sum"]
+
+        data = [{"name": title, "data": values} for title, values in data_values.items()]
+
+        return {
+            "chart_title": _("Incomes"),
+            "categories": categories,
+            "data": data,
+        }
+
 
 def load_service() -> dict:
     data = ChartSummaryServiceData()
@@ -76,4 +96,5 @@ def load_service() -> dict:
     return {
         "chart_balance": obj.chart_balance(),
         "chart_incomes": obj.chart_incomes(),
+        "chart_incomes_types": obj.chart_incomes_types(),
     }
