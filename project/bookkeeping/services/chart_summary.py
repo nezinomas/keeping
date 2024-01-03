@@ -10,11 +10,13 @@ from . import common
 @dataclass
 class ChartSummaryServiceData:
     incomes: list = field(init=False, default_factory=list)
+    incomes_types: list = field(init=False, default_factory=list)
     expenses: list = field(init=False, default_factory=list)
     salary: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
         self.incomes = Income.objects.sum_by_year()
+        self.incomes_types = Income.object.sum_by_year_and_type()
         self.salary = Income.objects.sum_by_year().filter(income_type__type="salary")
         self.expenses = Expense.objects.sum_by_year()
 
@@ -22,6 +24,7 @@ class ChartSummaryServiceData:
 class ChartSummaryService:
     def __init__(self, data: ChartSummaryServiceData):
         self._incomes = data.incomes
+        self._incomes_types = data.incomes_types
         self._salary = data.salary
         self._expenses = data.expenses
 
