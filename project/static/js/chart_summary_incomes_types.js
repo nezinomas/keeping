@@ -56,8 +56,9 @@ $(function () {
             },
         },
         tooltip: {
-            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}€</b> ({point.percentage:.1f}%)<br/>',
-            shared: true
+            pointFormat: '<span style="color:{series.color}">{series.name}</span>:  <b>{point.y}€</b> ({point.percentage:.1f}%)<br/>',
+            shared: true,
+            backgroundColor: '#F0F0F4',
         },
         plotOptions: {
             column: {
