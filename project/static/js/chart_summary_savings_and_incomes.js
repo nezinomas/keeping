@@ -72,7 +72,6 @@ $(function () {
             data: chartData.incomes,
             opacity: 0.85,
             type: 'column',
-            color: Highcharts.getOptions().colors[2],
             borderRadius: '5%',
             states: {
                 inactive: {
@@ -81,16 +80,14 @@ $(function () {
             },
             dataLabels: {
                 enabled: true,
+                x: 3,
                 style: {
-                    fontFamily: 'Calibri, sans-serif',
-                    fontSize: '12px',
-                    fontWeight: 'normal',
-                    color: 'green',
+                    color: 'black',
                     textOutline: false
                 },
                 formatter: function () {
                     let i = this.series.data.indexOf(this.point);
-                    return `${Highcharts.numberFormat(chartData.incomes[i] / 1000, 1)}k`;
+                    return `${Highcharts.numberFormat(chartData.incomes[i] / 1000, 1)}`;
                 },
             }
         }, {
@@ -98,11 +95,8 @@ $(function () {
             data: chartData.savings,
             type: 'line',
             lineWidth: 2,
-            color: Highcharts.getOptions().colors[3],
             marker: {
                 lineWidth: 2,
-                lineColor: Highcharts.getOptions().colors[3],
-                fillColor: 'white'
             },
             states: {
                 inactive: {
@@ -111,11 +105,12 @@ $(function () {
             },
             dataLabels: {
                 enabled: true,
+                y: -3,
+                x: 4.5,
                 style: {
-                    fontFamily: 'Calibri, sans-serif',
-                    fontSize: '12px',
                     fontWeight: 'normal',
-                    textOutline: false
+                    textOutline: false,
+                    color: 'black',
                 },
                 formatter: function () {
                     let i = this.series.data.indexOf(this.point);
