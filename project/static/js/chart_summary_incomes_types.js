@@ -8,13 +8,6 @@ $(function () {
         }
     }
 
-    Highcharts.setOptions({
-        lang: {
-            thousandsSep: '.',
-            decimalPoint: ',',
-        }
-    });
-
     Highcharts.chart('chart-incomes-types-container', {
         chart: {
             type: 'column',
@@ -22,9 +15,6 @@ $(function () {
         },
         title: {
             text: chartData.chart_title,
-            style: {
-                fontSize: '14px',
-            }
         },
         legend: {
             layout: 'horizontal',
@@ -36,31 +26,16 @@ $(function () {
         },
         xAxis: {
             categories: chartData.categories,
-            lineColor: '#000',
-            lineWidth: 2,
-            labels: {
-                style: {
-                    fontSize: '10px',
-                },
-            },
         },
         yAxis: {
             min: 0,
             title: {
                 text: '%'
             },
-            labels: {
-                style: {
-                    fontSize: '10px',
-                },
-            },
         },
         tooltip: {
-            pointFormat: '<span style="color:{series.color}">{series.name}</span>:  <b>{point.y:.0f}€</b> ({point.percentage:.1f}%)<br/>',
+            pointFormat: '<span style="color:{series.color}">{series.name}</span>:  <b>{point.y:,.0f}€</b> ({point.percentage:.1f}%)<br/>',
             shared: true,
-            backgroundColor: '#F0F0F4',
-            borderWidth: 1,
-            shadow: true,
         },
         plotOptions: {
             column: {
