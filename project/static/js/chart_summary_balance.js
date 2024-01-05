@@ -68,9 +68,12 @@ $(function () {
         tooltip: {
             split: true,
             pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>',
-                style: {
-                    fontSize: '12px',
-                },
+            backgroundColor: '#F0F0F4',
+            borderWidth: 1,
+            shadow: true,
+            style: {
+                fontSize: '12px',
+            },
         },
         credits: {
             enabled: false

@@ -66,6 +66,9 @@ $(function () {
         },
         tooltip: {
             pointFormat: '<b>{point.y:,.0f}</b><br/>',
+            backgroundColor: '#F0F0F4',
+            borderWidth: 1,
+            shadow: true,
             style: {
                 fontSize: '12px',
             },

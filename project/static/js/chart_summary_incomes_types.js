@@ -59,6 +59,8 @@ $(function () {
             pointFormat: '<span style="color:{series.color}">{series.name}</span>:  <b>{point.y:.0f}€</b> ({point.percentage:.1f}%)<br/>',
             shared: true,
             backgroundColor: '#F0F0F4',
+            borderWidth: 1,
+            shadow: true,
         },
         plotOptions: {
             column: {
