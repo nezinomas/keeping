@@ -23,6 +23,10 @@ Highcharts.theme = {
         backgroundColor: '#FFF',
         borderWidth: 1,
         shadow: true,
+        useHTML: true,
+        style: {
+            fontSize: '12px',
+        },
     },
 };
 
