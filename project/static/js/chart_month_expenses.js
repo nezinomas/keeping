@@ -20,6 +20,11 @@ function chartExpensesOnly(idData, idContainer) {
         xAxis: {
             type: 'category',
             gridLineWidth: 0,
+            labels: {
+                style: {
+                    fontWeight: 'bold',
+                },
+            }
         },
         yAxis: {
             title: {

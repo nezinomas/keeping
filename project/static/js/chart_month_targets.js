@@ -23,6 +23,11 @@ function chartExpensesTarget(idData, idContainer) {
         xAxis: {
             categories: chartData.categories,
             gridLineWidth: 0,
+            labels: {
+                style: {
+                    fontWeight: 'bold',
+                },
+            }
         },
         yAxis: {
             title: {
