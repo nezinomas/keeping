@@ -66,9 +66,9 @@ $(function () {
         },
         tooltip: {
             pointFormat: '<b>{point.y:,.0f}</b><br/>',
-                style: {
-                    fontSize: '12px',
-                },
+            style: {
+                fontSize: '12px',
+            },
         },
         credits: {
             enabled: false
