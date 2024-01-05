@@ -75,12 +75,6 @@ function chartSavings(container) {
         },
         legend: {
             enabled: true,
-            layout: 'horizontal',
-            align: 'right',
-            verticalAlign: 'top',
-            floating: true,
-            borderWidth: 0,
-            x: -10,
             y: -5,
         },
         tooltip: {
