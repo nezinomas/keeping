@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+
 {% load static %}
 {% load i18n %}
 {% load counts_components %}
@@ -6,6 +7,8 @@
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="{% static 'js/highcharts_themes/grid-light.js' %}"></script>
+<script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
 <script src="{% static 'js/chart_calendar.js' %}"></script>
 <script src="{% static 'js/chart_counts_periodicity.js' %}"></script>
 <script src="{% static 'js/sticky-table-headers.js' %}"></script>
