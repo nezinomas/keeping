@@ -16,6 +16,14 @@ Highcharts.theme = {
         },
         minorTicks: false,
     },
+    legend: {
+        enabled: false,
+        layout: 'horizontal',
+        align: 'right',
+        verticalAlign: 'top',
+        floating: true,
+        borderWidth: 0,
+    },
     credits: {
         enabled: false
     },
