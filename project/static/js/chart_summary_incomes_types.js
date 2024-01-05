@@ -17,12 +17,7 @@ $(function () {
             text: chartData.chart_title,
         },
         legend: {
-            layout: 'horizontal',
-            align: 'right',
-            verticalAlign: 'top',
-            floating: true,
-            borderWidth: 0,
-            x: -10
+            enabled: true,
         },
         xAxis: {
             categories: chartData.categories,

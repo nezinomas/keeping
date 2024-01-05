@@ -74,6 +74,7 @@ function chartSavings(container) {
             startOnTick: false,
         },
         legend: {
+            enabled: true,
             layout: 'horizontal',
             align: 'right',
             verticalAlign: 'top',

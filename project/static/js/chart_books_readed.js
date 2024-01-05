@@ -18,9 +18,6 @@ function chartReaded(idData, idContainer) {
                 text: ''
             },
         },
-        legend: {
-            enabled: false
-        },
         plotOptions: {
             series: {
                 enableMouseTracking: false,
