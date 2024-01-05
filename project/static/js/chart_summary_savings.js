@@ -105,6 +105,9 @@ function chartSavings(container) {
         tooltip: {
             useHTML: true,
             pointFormat: '{point.y:,.0f}',
+            backgroundColor: '#F0F0F4',
+            borderWidth: 1,
+            shadow: true,
             style: {
                 fontSize: '12px',
             },
