@@ -6,9 +6,7 @@ function annotationLabels(total_list, invested_list, profit_list) {
         }
         total_list[index] = {
             point: { xAxis: 0, yAxis: 0, x: index, y: y_val },
-            text: Highcharts.numberFormat(Math.round(element), 0),
-            crop: false,
-            overflow: 'none',
+            text: Highcharts.numberFormat(element, 0),
         };
     });
     return total_list;
@@ -48,6 +46,12 @@ function chartSavings(container) {
             draggable: '',
             labelOptions: {
                 y: -8,
+                useHTML: true,
+                crop: false,
+                overflow: 'none',
+                style: {
+                    fontSize: '12px',
+                }
             },
             labels: annotationLabels(chartData.total, chartData.invested, chartData.profit)
         }],
