@@ -26,6 +26,7 @@ function chartExpenses(idData, idContainer) {
         xAxis: {
             categories: chartData.categories,
             crosshair: true,
+            gridLineWidth: 0,
         },
         yAxis: {
             title: {

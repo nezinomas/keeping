@@ -48,6 +48,8 @@ function chartSavings(container) {
         }],
         xAxis: {
             categories: chartData.categories,
+            crosshair: true,
+            gridLineWidth: 0,
         },
         yAxis: {
             title: {
@@ -72,10 +74,6 @@ function chartSavings(container) {
                 enabled: false,
             },
             startOnTick: false,
-        },
-        legend: {
-            enabled: true,
-            y: -5,
         },
         tooltip: {
             pointFormat: '{point.y:,.0f}',

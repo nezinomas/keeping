@@ -21,6 +21,8 @@ $(function () {
         },
         xAxis: {
             categories: chartData.categories,
+            gridLineWidth: 0,
+            crosshair: true,
         },
         yAxis: {
             min: 0,

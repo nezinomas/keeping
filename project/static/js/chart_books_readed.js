@@ -12,6 +12,7 @@ function chartReaded(idData, idContainer) {
         },
         xAxis: {
             categories: chartData.categories,
+            gridLineWidth: 0,
         },
         yAxis: {
             title: {

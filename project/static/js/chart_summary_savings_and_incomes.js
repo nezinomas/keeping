@@ -13,6 +13,8 @@ $(function () {
         },
         xAxis: {
             categories: chartData.categories,
+            crosshair: true,
+            gridLineWidth: 0,
         },
         yAxis: {
             labels: {
@@ -23,6 +25,9 @@ $(function () {
             title: {
                 text: ''
             },
+        },
+        legend: {
+            enabled: true,
         },
         tooltip: {
             formatter: function () {
