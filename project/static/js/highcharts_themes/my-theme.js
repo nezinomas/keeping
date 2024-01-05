@@ -1,4 +1,7 @@
 Highcharts.theme = {
+    title: {
+        verticalAlign: 'top',
+    },
     xAxis: {
         lineColor: '#000',
         lineWidth: 2,
