@@ -10,8 +10,6 @@ function chartExpenses(idData, idContainer) {
         }
     }
 
-    Highcharts.setOptions({ lang: { decimalPoint: ',', thousandsSep: '.' } });
-
     Highcharts.chart(idContainer, {
         chart: {
             type: 'column',
@@ -25,17 +23,10 @@ function chartExpenses(idData, idContainer) {
         title: {
             text: '',
         },
-
         xAxis: {
             categories: chartData.categories,
             crosshair: true,
-            lineColor: '#000',
-            lineWidth: 2,
-            labels: {
-                style: {
-                    fontSize: '10px',
-                },
-            },
+            gridLineWidth: 0,
         },
         yAxis: {
             title: {
@@ -48,25 +39,15 @@ function chartExpenses(idData, idContainer) {
                     }
                     return Highcharts.numberFormat(this.value, 0);
                 },
-                style: {
-                    fontSize: '10px',
-                }
             }
         },
         tooltip: {
-            style: {
-                fontSize: '12px',
-            },
             headerFormat: '<div class="mb-2">{point.key}</div>',
             pointFormat:
                 '<div class="mb-2"><span style="color:{series.color};">{series.name}:</span> ' +
                 '<span> <b>{point.y:,.1f}€</b></span></div>',
             footerFormat: '',
             shared: true,
-            useHTML: true
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             column: {

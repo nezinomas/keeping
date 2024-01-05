@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="{% static 'js/highcharts_themes/grid-light.js' %}"></script>
+<script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
 {% endblock head %}
 
 {% block content %}

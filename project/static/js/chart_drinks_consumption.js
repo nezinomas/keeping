@@ -1,13 +1,6 @@
 function chartConsumption(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
-    Highcharts.setOptions({
-        lang: {
-            thousandsSep: '.',
-            decimalPoint: ',',
-        }
-    });
-
     Highcharts.chart(idContainer, {
         chart: {
             height: '350px',
@@ -16,31 +9,19 @@ function chartConsumption(idData, idContainer) {
             text: ''
         },
         legend: {
-            layout: 'horizontal',
-            align: 'center',
-            verticalAlign: 'top',
-            floating: true,
-            borderWidth: 1,
+            enabled: true,
         },
         xAxis: {
             min: 0.49,
             max: chartData.categories.length - 1.49,
             categories: chartData.categories,
             type: 'category',
-            lineColor: '#000',
-            lineWidth: 2,
-            gridLineWidth: 1,
             tickmarkPlacement: 'on',
             labels: {
-                style: {
-                    fontSize: '10px',
-                },
                 rotation: -45,
             }
         },
         yAxis: {
-            labels: {
-            },
             title: {
                 text: ''
             },
@@ -73,18 +54,10 @@ function chartConsumption(idData, idContainer) {
                     }
                 }
             }],
-            labels: {
-                style: {
-                    fontSize: '10px',
-                }
-            }
         },
         tooltip: {
             shared: true,
-            pointFormat: '<b>{point.y:,.1f} ml</b><br/>'
-        },
-        credits: {
-            enabled: false
+            pointFormat: '<b>{point.y:,.0f} ml</b><br/>'
         },
         plotOptions: {
             area: {

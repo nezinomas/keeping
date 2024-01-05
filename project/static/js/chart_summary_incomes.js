@@ -20,32 +20,16 @@ $(function () {
         },
         title: {
             text: chartData.chart_title,
-            style: {
-                fontSize: '14px',
-            }
         },
         legend: {
-            layout: 'horizontal',
-            align: 'right',
-            verticalAlign: 'top',
-            floating: true,
-            borderWidth: 0,
-            x: -10
+            enabled: true,
         },
         xAxis: {
             min: 0.49,
             max: chartData.categories.length - 1.49,
             categories: chartData.categories,
             type: 'category',
-            lineColor: '#000',
-            lineWidth: 2,
-            gridLineWidth: 1,
             tickmarkPlacement: 'on',
-            labels: {
-                style: {
-                    fontSize: '10px',
-                },
-            },
         },
         yAxis: {
             labels: {
@@ -55,9 +39,6 @@ $(function () {
                     }
                     return Highcharts.numberFormat(this.value, 0);
                 },
-                style: {
-                    fontSize: '10px',
-                },
             },
             title: {
                 text: ''
@@ -66,12 +47,6 @@ $(function () {
         },
         tooltip: {
             pointFormat: '<b>{point.y:,.0f}</b><br/>',
-                style: {
-                    fontSize: '12px',
-                },
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             area: {

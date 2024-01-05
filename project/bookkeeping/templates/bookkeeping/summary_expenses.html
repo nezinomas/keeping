@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
 
+{% load static %}
 {% load i18n %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="{% static 'js/highcharts_themes/grid-light.js' %}"></script>
+<script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
+
 <style>
     .spacer {
         padding-left: 1.5rem;

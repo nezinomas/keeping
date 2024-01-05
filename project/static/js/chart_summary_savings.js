@@ -6,13 +6,12 @@ function annotationLabels(total_list, invested_list, profit_list) {
         }
         total_list[index] = {
             point: { xAxis: 0, yAxis: 0, x: index, y: y_val },
-            text: Highcharts.numberFormat(Math.round(element), 0),
-            crop: false,
-            overflow: 'none',
+            text: Highcharts.numberFormat(element, 0),
         };
     });
     return total_list;
 };
+
 
 function chartSavings(container) {
     const positive = '#548235';
@@ -26,13 +25,6 @@ function chartSavings(container) {
         chartData.total[i] /= 100;
     }
 
-    Highcharts.setOptions({
-        lang: {
-            thousandsSep: '.',
-            decimalPoint: ',',
-        }
-    });
-
     Highcharts.chart(container, {
         chart: {
             type: 'column',
@@ -40,26 +32,24 @@ function chartSavings(container) {
         },
         title: {
             text: chartData.title,
-            style: {
-                fontSize: '14px',
-            },
         },
         annotations: [{
             draggable: '',
             labelOptions: {
                 y: -8,
+                useHTML: true,
+                crop: false,
+                overflow: 'none',
+                style: {
+                    fontSize: '12px',
+                }
             },
             labels: annotationLabels(chartData.total, chartData.invested, chartData.profit)
         }],
         xAxis: {
             categories: chartData.categories,
-            lineColor: '#000',
-            lineWidth: 2,
-            labels: {
-                style: {
-                    fontSize: '10px',
-                },
-            },
+            crosshair: true,
+            gridLineWidth: 0,
         },
         yAxis: {
             title: {
@@ -73,29 +63,20 @@ function chartSavings(container) {
                     }
                     return Highcharts.numberFormat(this.value, 0);
                 },
-                style: {
-                    fontSize: '10px',
-                },
             },
+            plotLines: [{
+                color: '#c0c0c0',
+                width: 1,
+                value: 0,
+                zIndex:2
+            }],
             stackLabels: {
                 enabled: false,
-            }
-        },
-        legend: {
-            layout: 'horizontal',
-            align: 'right',
-            verticalAlign: 'top',
-            floating: true,
-            borderWidth: 0,
-            x: -10,
-            y: -5,
+            },
+            startOnTick: false,
         },
         tooltip: {
-            useHTML: true,
             pointFormat: '{point.y:,.0f}',
-            style: {
-                fontSize: '12px',
-            },
             formatter: function () {
                 let {series} = this.series.chart;
                 let profit = series[0].yData[this.point.x];
@@ -106,9 +87,6 @@ function chartSavings(container) {
                     <div class="my-2">${chartData.text_profit}: ${Highcharts.numberFormat(percent, 1)}%</div>
                 `
             }
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             column: {

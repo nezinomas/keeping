@@ -1,14 +1,17 @@
 {% extends 'base.html' %}
 
+{% load static %}
 {% load get_item %}
 {% load slippers %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
 <script src="https://code.highcharts.com/modules/annotations.js"></script>
-
+<script src="{% static 'js/highcharts_themes/grid-light.js' %}"></script>
+<script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
 
 {% endblock head %}
+
 
 {% block content %}
 

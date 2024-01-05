@@ -12,15 +12,11 @@ function chartPeriodicity(idData, idContainer) {
             text: chartData.title,
         },
         xAxis: {
-            lineColor: '#000',
-            lineWidth: 2,
             categories: chartData.categories,
             crosshair: true,
+            gridLineWidth: 0,
             labels: {
                 useHTML: true,
-                style: {
-                    fontSize: '10px',
-                },
                 formatter: function () { /* use formatter to break word. */
                     return '<div style="word-wrap: break-word; word-break:break-all; width:40px; text-align: right">' + this.value + '</div>';
                 },
@@ -31,25 +27,11 @@ function chartPeriodicity(idData, idContainer) {
             title: {
                 text: ''
             },
-            labels: {
-                style: {
-                    fontSize: '10px',
-                }
-            }
-        },
-        legend: {
-            enabled: false
         },
         tooltip: {
             shared: true,
             headerFormat: '',
             pointFormat: '<b>{point.y:.0f}</b>',
-            style: {
-                fontSize: '12px',
-            }
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             bar: {

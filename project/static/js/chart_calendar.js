@@ -49,7 +49,6 @@ function chartCalender (idData, idContainer) {
                 enabled: false
             }
         },
-
         yAxis: {
             type: 'category',
             categories: chartData.categories,
@@ -59,13 +58,7 @@ function chartCalender (idData, idContainer) {
             gridLineWidth: 0,
             minorGridLineWidth: 0,
             minTickInterval: 1,
-            labels: {
-                style: {
-                    fontSize: '10px'
-                }
-            },
         },
-
         colorAxis: {
             min: 0,
             max: 10,
@@ -85,24 +78,7 @@ function chartCalender (idData, idContainer) {
                 enabled: true
             }
         },
-
-        legend: {
-            enabled: false,
-            verticalAlign: 'bottom',
-            layout: 'horizontal',
-            margin: 30,
-            y: 40
-        },
-
-        credits: {
-            enabled: false
-        },
-
         tooltip: {
-            style: {
-                fontSize: '12px',
-            },
-            useHTML: true,
             formatter: function () {
                 if (this.point.value==0) {
                     return false;
@@ -116,7 +92,6 @@ function chartCalender (idData, idContainer) {
                 return text;
             }
         },
-
         plotOptions: {
             series: {
                 /*
