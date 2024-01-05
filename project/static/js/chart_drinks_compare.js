@@ -3,12 +3,6 @@ function chartCompare(idData, idContainer) {
         document.getElementById(idData).textContent
     );
 
-    Highcharts.setOptions({
-        lang: {
-            thousandsSep: '.',
-            decimalPoint: ',',
-        }
-    });
     Highcharts.chart(idContainer, {
         chart: {
             height: '350px',
@@ -17,46 +11,27 @@ function chartCompare(idData, idContainer) {
             text: ''
         },
         legend: {
-            layout: 'horizontal',
-            align: 'center',
-            verticalAlign: 'top',
-            floating: true,
-            borderWidth: 1,
+            enabled: true,
+            backgroundColor: undefined,
         },
         xAxis: {
             min: 0.4,
             max: 10.8,
-            lineColor: '#000',
-            lineWidth: 2,
-            gridLineWidth: 1,
             tickmarkPlacement: 'on',
             categories: chartData.categories,
             labels: {
-                style: {
-                    fontSize: '10px',
-                },
                 rotation: -45,
             }
         },
         yAxis: {
-            labels: {
-            },
             title: {
                 text: ''
             },
-            labels: {
-                style: {
-                    fontSize: '10px',
-                }
-            }
         },
         tooltip: {
             shared: true,
             crosshairs: true,
             pointFormat: '<span style="color: {series.color}"><b>{series.name}</b>:</span> {point.y:,.0f}ml<br>',
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             area: {

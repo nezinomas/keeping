@@ -1,13 +1,6 @@
 function chart_drinks_summary(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
-    Highcharts.setOptions({
-        lang: {
-            thousandsSep: '.',
-            decimalPoint: ',',
-        }
-    });
-
     Highcharts.chart(idContainer, {
         chart: {
             marginBottom: 67,
@@ -16,33 +9,19 @@ function chart_drinks_summary(idData, idContainer) {
             text: chartData.text.title,
         },
         legend: {
-            layout: 'horizontal',
-            align: 'right',
-            verticalAlign: 'top',
-            floating: true,
-            borderWidth: 0,
-            x: -10,
+            enabled: true,
         },
         xAxis: {
             min: 0.49,
             max: chartData.categories.length - 1.49,
             categories: chartData.categories,
             type: 'category',
-            lineColor: '#000',
-            lineWidth: 2,
-            gridLineWidth: 1,
             tickmarkPlacement: 'on',
-            labels: {
-                style: {
-                    fontSize: '10px',
-                },
-            },
         },
         yAxis: [{
             labels: {
                 format: '{value:.0f}',
                 style: {
-                    fontSize: '10px',
                     color: '#46ab9d',
                 },
             },
@@ -57,7 +36,6 @@ function chart_drinks_summary(idData, idContainer) {
             labels: {
                 format: '{value:.0f}',
                 style: {
-                    fontSize: '10px',
                     color: '#d13572',
                 },
             },
@@ -68,14 +46,8 @@ function chart_drinks_summary(idData, idContainer) {
                 }
             },
         }],
-        credits: {
-            enabled: false
-        },
         tooltip: {
             pointFormat: '<b>{point.y:,.0f} ml</b><br/>',
-                style: {
-                    fontSize: '12px',
-                },
         },
         series: [{
             name: chartData.text.per_day,

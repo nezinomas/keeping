@@ -12,12 +12,9 @@ function chartQuantity(idData, idContainer) {
         xAxis: {
             categories: chartData.categories,
             type: 'category',
-            lineColor: '#000',
-            lineWidth: 2,
+            gridLineWidth: 0,
+            crosshair: true,
             labels: {
-                style: {
-                    fontSize: '10px',
-                },
                 rotation: -45,
             }
         },
@@ -25,25 +22,11 @@ function chartQuantity(idData, idContainer) {
             title: {
                 text: ''
             },
-            labels: {
-                style: {
-                    fontSize: '10px',
-                }
-            }
-        },
-        legend: {
-            enabled: false
         },
         tooltip: {
             shared: true,
             headerFormat: '',
             pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
-            style: {
-                fontSize: '12px',
-            }
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             bar: {
