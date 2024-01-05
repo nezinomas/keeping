@@ -12,6 +12,7 @@ function annotationLabels(total_list, invested_list, profit_list) {
     return total_list;
 };
 
+
 function chartSavings(container) {
     const positive = '#548235';
     const negative = '#c0504d';
@@ -57,7 +58,7 @@ function chartSavings(container) {
         }],
         xAxis: {
             categories: chartData.categories,
-            lineColor: '#000',
+            lineColor: 'black',
             lineWidth: 2,
             labels: {
                 style: {
@@ -81,9 +82,16 @@ function chartSavings(container) {
                     fontSize: '10px',
                 },
             },
+            plotLines: [{
+                color: '#c0c0c0',
+                width: 1,
+                value: 0,
+                zIndex:2
+            }],
             stackLabels: {
                 enabled: false,
-            }
+            },
+            startOnTick: false,
         },
         legend: {
             layout: 'horizontal',
