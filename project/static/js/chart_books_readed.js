@@ -9,36 +9,16 @@ function chartReaded(idData, idContainer) {
         },
         title: {
             text: chartData.chart_title,
-            style: {
-                fontSize: '16px',
-            },
         },
         xAxis: {
-            lineColor: '#000',
-            lineWidth: 2,
             categories: chartData.categories,
-            labels: {
-                useHTML: true,
-                style: {
-                    fontSize: '10px',
-                },
-                rotation: -45,
-            }
         },
         yAxis: {
             title: {
                 text: ''
             },
-            labels: {
-                style: {
-                    fontSize: '10px',
-                }
-            }
         },
         legend: {
-            enabled: false
-        },
-        credits: {
             enabled: false
         },
         plotOptions: {
