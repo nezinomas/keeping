@@ -19,6 +19,11 @@ Highcharts.theme = {
     credits: {
         enabled: false
     },
+    tooltip: {
+        backgroundColor: '#FFF',
+        borderWidth: 1,
+        shadow: true,
+    },
 };
 // Apply the theme
 Highcharts.setOptions(Highcharts.theme);
