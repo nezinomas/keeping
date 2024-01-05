@@ -25,13 +25,6 @@ function chartSavings(container) {
         chartData.total[i] /= 100;
     }
 
-    Highcharts.setOptions({
-        lang: {
-            thousandsSep: '.',
-            decimalPoint: ',',
-        }
-    });
-
     Highcharts.chart(container, {
         chart: {
             type: 'column',
@@ -39,9 +32,6 @@ function chartSavings(container) {
         },
         title: {
             text: chartData.title,
-            style: {
-                fontSize: '14px',
-            },
         },
         annotations: [{
             draggable: '',
@@ -58,13 +48,6 @@ function chartSavings(container) {
         }],
         xAxis: {
             categories: chartData.categories,
-            lineColor: 'black',
-            lineWidth: 2,
-            labels: {
-                style: {
-                    fontSize: '10px',
-                },
-            },
         },
         yAxis: {
             title: {
@@ -77,9 +60,6 @@ function chartSavings(container) {
                         return Highcharts.numberFormat(this.value / 1000, 1) + "k";
                     }
                     return Highcharts.numberFormat(this.value, 0);
-                },
-                style: {
-                    fontSize: '10px',
                 },
             },
             plotLines: [{
@@ -103,14 +83,7 @@ function chartSavings(container) {
             y: -5,
         },
         tooltip: {
-            useHTML: true,
             pointFormat: '{point.y:,.0f}',
-            backgroundColor: '#F0F0F4',
-            borderWidth: 1,
-            shadow: true,
-            style: {
-                fontSize: '12px',
-            },
             formatter: function () {
                 let {series} = this.series.chart;
                 let profit = series[0].yData[this.point.x];
@@ -121,9 +94,6 @@ function chartSavings(container) {
                     <div class="my-2">${chartData.text_profit}: ${Highcharts.numberFormat(percent, 1)}%</div>
                 `
             }
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             column: {
