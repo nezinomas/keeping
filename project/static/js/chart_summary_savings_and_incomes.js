@@ -7,37 +7,17 @@ $(function () {
         chartData.savings[i] /= 100
     }
 
-    Highcharts.setOptions({
-        lang: {
-            thousandsSep: '.',
-            decimalPoint: ',',
-        }
-    });
-
     Highcharts.chart('chart-container', {
         title: {
             text: chartData.text.title,
-            style: {
-                fontSize: '14px',
-            }
         },
         xAxis: {
             categories: chartData.categories,
-            lineColor: '#000',
-            lineWidth: 2,
-            labels: {
-                style: {
-                    fontSize: '10px',
-                },
-            },
         },
         yAxis: {
             labels: {
                 formatter: function () {
                     return Highcharts.numberFormat(this.value / 1000, 0) + "k";
-                },
-                style: {
-                    fontSize: '10px',
                 },
             },
             title: {
@@ -45,13 +25,6 @@ $(function () {
             },
         },
         tooltip: {
-            useHTML: true,
-            backgroundColor: '#F0F0F4',
-            borderWidth: 1,
-            shadow: true,
-            style: {
-                fontSize: '12px',
-            },
             formatter: function () {
                 let i = this.series.data.indexOf(this.point);
                 return `
