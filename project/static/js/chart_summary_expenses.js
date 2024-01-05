@@ -63,7 +63,11 @@ function chartExpenses(idData, idContainer) {
                 '<span> <b>{point.y:,.1f}€</b></span></div>',
             footerFormat: '',
             shared: true,
-            useHTML: true
+            useHTML: true,
+            backgroundColor: '#FFF',
+            borderWidth: 1,
+            shadow: true,
+            opacity: 1,
         },
         credits: {
             enabled: false
