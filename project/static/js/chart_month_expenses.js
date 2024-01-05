@@ -19,30 +19,12 @@ function chartExpensesOnly(idData, idContainer) {
         },
         xAxis: {
             type: 'category',
-            lineColor: '#000',
-            lineWidth: 2,
-            labels: {
-                style: {
-                    fontSize: '11px',
-                    fontFamily: 'Calibri, Verdana',
-                }
-            }
+            gridLineWidth: 0,
         },
         yAxis: {
             title: {
                 text: ''
             },
-            labels: {
-                style: {
-                    fontSize: '10px',
-                }
-            }
-        },
-        legend: {
-            enabled: false
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             series: {
@@ -57,10 +39,6 @@ function chartExpensesOnly(idData, idContainer) {
         tooltip: {
             headerFormat: '',
             pointFormat: '{point.name}: <b>{point.y:.1f}</b><br/>',
-            style: {
-                fontSize: '12px',
-                fontFamily: 'Calibri, Verdana',
-            }
         },
         series: [
             {

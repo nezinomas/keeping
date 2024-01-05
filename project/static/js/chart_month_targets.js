@@ -22,38 +22,17 @@ function chartExpensesTarget(idData, idContainer) {
         },
         xAxis: {
             categories: chartData.categories,
-            lineColor: '#000',
-            lineWidth: 2,
-            labels: {
-                style: {
-                    fontSize: '11px',
-                    fontFamily: 'Calibri, Verdana',
-                }
-            }
+            gridLineWidth: 0,
         },
         yAxis: {
             title: {
                 text: ''
             },
-            labels: {
-                    style: {
-                        fontSize: '10px',
-                    }
-                }
-        },
-        legend: {
-            enabled: false
         },
         tooltip: {
             shared: true,
             headerFormat: '',
             pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
-            style: {
-                fontSize: '12px',
-            }
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             bar: {
@@ -75,9 +54,8 @@ function chartExpensesTarget(idData, idContainer) {
                 y: -15,
                 format: '{point.y:.0f}', /* one decimal */
                 style: {
-                    fontSize: '7px',
+                    fontSize: '9px',
                     fontWeight: 'bold',
-                    fontFamily: 'Verdana, sans-serif',
                     textOutline: false
                 }
             }
@@ -90,7 +68,7 @@ function chartExpensesTarget(idData, idContainer) {
             targetOptions: {
                 borderWidth: 0,
                 height: 2,
-                color: 'black',
+                color: '#000',
                 width: '200%'
             },
             dataLabels: {
@@ -99,10 +77,9 @@ function chartExpensesTarget(idData, idContainer) {
                 rotation: 0,
                 align: 'right',
                 y: -0.5,
+                color: '#000',
                 style: {
-                    fontSize: '11px',
                     fontWeight: 'bold',
-                    fontFamily: 'Calibri, sans-serif',
                     textOutline: false,
                 },
             },
