@@ -14,15 +14,11 @@ $(function () {
             text: ''
         },
         xAxis: {
-            lineColor: '#000',
-            lineWidth: 2,
             type: 'category',
+            gridLineWidth: 0,
             crosshair: true,
             labels: {
                 rotation: -45,
-                style: {
-                    fontSize: '10px',
-                }
             }
         },
         yAxis: {
@@ -34,13 +30,7 @@ $(function () {
                     if (this.value >= 100) { return Highcharts.numberFormat(this.value / 1000, 1) + "k"; }
                     return Highcharts.numberFormat(this.value, 0);
                 },
-                style: {
-                    fontSize: '10px',
-                }
             }
-        },
-        legend: {
-            enabled: false
         },
         tooltip: {
             shared: true,
@@ -52,9 +42,6 @@ $(function () {
                     ${Highcharts.numberFormat(pcnt, 1)}%
                 `;
             }
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             column: {

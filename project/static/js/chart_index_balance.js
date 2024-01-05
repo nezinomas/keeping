@@ -6,13 +6,6 @@ $(function () {
         chartData.expenses[i] /= 100
     }
 
-    Highcharts.setOptions({
-        lang: {
-            thousandsSep: '.',
-            decimalPoint: ',',
-        }
-    });
-
     Highcharts.chart('chart-balance-container', {
         chart: {
             marginBottom: 74,
@@ -21,25 +14,16 @@ $(function () {
             text: '',
         },
         legend: {
-            layout: 'horizontal',
-            align: 'right',
-            verticalAlign: 'top',
-            floating: true,
-            borderWidth: 0,
+            enabled: true,
+            backgroundColor: undefined,
         },
         xAxis: {
             min: 0.49,
             max: chartData.categories.length - 1.49,
             categories: chartData.categories,
             type: 'category',
-            lineColor: '#000',
-            lineWidth: 2,
-            gridLineWidth: 1,
             tickmarkPlacement: 'on',
             labels: {
-                style: {
-                    fontSize: '10px',
-                },
                 rotation: -45,
             },
         },
@@ -51,9 +35,6 @@ $(function () {
                     }
                     return Highcharts.numberFormat(this.value, 0);
                 },
-                style: {
-                    fontSize: '10px',
-                },
             },
             title: {
                 text: ''
@@ -62,12 +43,6 @@ $(function () {
         tooltip: {
             split: true,
             pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>',
-                style: {
-                    fontSize: '13px',
-                },
-        },
-        credits: {
-            enabled: false
         },
         plotOptions: {
             area: {
