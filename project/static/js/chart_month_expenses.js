@@ -55,7 +55,7 @@ function chartExpensesOnly(idData, idContainer) {
                     color: '#000',
                     align: 'right',
                     format: '{point.y:.1f}', /* one decimal */
-                    y: -1,
+                    y: -2,
                     style: {
                         fontSize: '9px',
                         fontWeight: 'bold',
