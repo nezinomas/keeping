@@ -55,8 +55,10 @@ function chartExpensesTarget(idData, idContainer) {
                 enabled: true,
                 rotation: 0,
                 color: '#000',
-                x: -3,
+                x: -2,
                 y: -15,
+                overflow: 'none',
+                crop: false,
                 format: '{point.y:.0f}', /* one decimal */
                 style: {
                     fontSize: '9px',
