@@ -1,119 +1,123 @@
-function chartExpensesTarget(idData, idContainer) {
-    const chartData = JSON.parse(document.getElementById(idData).textContent);
+<script>
+    loadChart('chart-targets-data', 'chart-targets-container');
 
-    // convert targets
-    for(i = 0; i < chartData.target.length; i++) {
-        chartData.target[i] /= 100;
-    }
+    function loadChart(idData, idContainer) {
+        const chartData = JSON.parse(document.getElementById(idData).textContent);
 
-    // convert data
-    for (key in chartData.fact) {
-        chartData.fact[key]['y'] /= 100;
-        chartData.fact[key]['target'] /= 100;
-    }
+        // convert targets
+        for(i = 0; i < chartData.target.length; i++) {
+            chartData.target[i] /= 100;
+        }
 
-    Highcharts.chart(idContainer, {
-        chart: {
-            type: 'bar',
-            height: '485'
-        },
-        title: {
-            text: ''
-        },
-        xAxis: {
-            categories: chartData.categories,
-            gridLineWidth: 0,
-            labels: {
-                style: {
-                    fontWeight: 'bold',
-                },
-            }
-        },
-        yAxis: {
+        // convert data
+        for (key in chartData.fact) {
+            chartData.fact[key]['y'] /= 100;
+            chartData.fact[key]['target'] /= 100;
+        }
+
+        Highcharts.chart(idContainer, {
+            chart: {
+                type: 'bar',
+                height: '485'
+            },
             title: {
                 text: ''
             },
-        },
-        tooltip: {
-            shared: true,
-            headerFormat: '',
-            pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
-        },
-        plotOptions: {
-            bar: {
-                grouping: false,
-                shadow: false,
-            },
-        },
-        series: [{
-            name: chartData.targetTitle,
-            type: 'bar',
-            color: 'rgba(0,0,0,0.07)',
-            data: chartData.target,
-            pointWidth: 19,
-            dataLabels: {
-                enabled: true,
-                rotation: 0,
-                color: '#000',
-                x: -2,
-                y: -15,
-                overflow: 'none',
-                crop: false,
-                format: '{point.y:.0f}', /* one decimal */
-                style: {
-                    fontSize: '9px',
-                    fontWeight: 'bold',
-                    textOutline: false
+            xAxis: {
+                categories: chartData.categories,
+                gridLineWidth: 0,
+                labels: {
+                    style: {
+                        fontWeight: 'bold',
+                    },
                 }
-            }
-        }, {
-            name: chartData.factTitle,
-            type: 'bullet',
-            data: chartData.fact,
-            pointWidth: 13,
-            borderRadius: 0,
-            targetOptions: {
-                borderWidth: 0,
-                height: 2,
-                color: '#000',
-                width: '200%'
             },
-            dataLabels: {
-                format: '{point.y:.0f}',
-                enabled: true,
-                rotation: 0,
-                align: 'right',
-                y: -0.5,
-                color: '#000',
-                style: {
-                    fontWeight: 'bold',
-                    textOutline: false,
+            yAxis: {
+                title: {
+                    text: ''
                 },
             },
-        }
-    ]
-    }, function (chartObj) {
-        /* align datalabels for expenses that exceeds targets */
-        $.each(chartObj.series[1].data, function (i, point) {
-            let max = chartObj.series[0].data[point.x].y;
-            let {y} = point;
-
-            max = parseFloat(max.toFixed(1));
-            y = parseFloat(y.toFixed(1));
-
-            if (y <= max) {
-                color = '#5D9C59';
+            tooltip: {
+                shared: true,
+                headerFormat: '',
+                pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
+            },
+            plotOptions: {
+                bar: {
+                    grouping: false,
+                    shadow: false,
+                },
+            },
+            series: [{
+                name: chartData.targetTitle,
+                type: 'bar',
+                color: 'rgba(0,0,0,0.07)',
+                data: chartData.target,
+                pointWidth: 19,
+                dataLabels: {
+                    enabled: true,
+                    rotation: 0,
+                    color: '#000',
+                    x: -2,
+                    y: -15,
+                    overflow: 'none',
+                    crop: false,
+                    format: '{point.y:.0f}', /* one decimal */
+                    style: {
+                        fontSize: '9px',
+                        fontWeight: 'bold',
+                        textOutline: false
+                    }
+                }
+            }, {
+                name: chartData.factTitle,
+                type: 'bullet',
+                data: chartData.fact,
+                pointWidth: 13,
+                borderRadius: 0,
+                targetOptions: {
+                    borderWidth: 0,
+                    height: 2,
+                    color: '#000',
+                    width: '200%'
+                },
+                dataLabels: {
+                    format: '{point.y:.0f}',
+                    enabled: true,
+                    rotation: 0,
+                    align: 'right',
+                    y: -0.5,
+                    color: '#000',
+                    style: {
+                        fontWeight: 'bold',
+                        textOutline: false,
+                    },
+                },
             }
-            else {
-                p = 28;
-                if (y < 100) { p = 21; }
-                if (y < 10) { p = -2; }
-                point.dataLabel.attr({ x: point.dataLabel.x + p });
+        ]
+        }, function (chartObj) {
+            /* align datalabels for expenses that exceeds targets */
+            $.each(chartObj.series[1].data, function (i, point) {
+                let max = chartObj.series[0].data[point.x].y;
+                let {y} = point;
 
-                color = (y <= max * 1.1) ? '#feb56a' : '#EB5353';
-            }
-            point.color = color;
-            point.graphic.attr({ fill: color });
+                max = parseFloat(max.toFixed(1));
+                y = parseFloat(y.toFixed(1));
+
+                if (y <= max) {
+                    color = '#5D9C59';
+                }
+                else {
+                    p = 28;
+                    if (y < 100) { p = 21; }
+                    if (y < 10) { p = -2; }
+                    point.dataLabel.attr({ x: point.dataLabel.x + p });
+
+                    color = (y <= max * 1.1) ? '#feb56a' : '#EB5353';
+                }
+                point.color = color;
+                point.graphic.attr({ fill: color });
+            });
         });
-    });
-};
+    };
+</script>
