@@ -1,8 +1,8 @@
+import os
+import tomllib as toml
 from pathlib import Path
 
-import tomllib as toml
 from django.utils.translation import gettext_lazy as _
-
 
 PROJECT_APPS = [
     "users",
@@ -50,7 +50,9 @@ MEDIA_URL = "/media/"
 
 STATIC_URL = "/static/"
 STATIC_ROOT = SITE_ROOT / "static"
-
+STATICFILES_DIRS = [
+    os.path.join(SITE_ROOT, 'bookkeeping/static/'),
+]
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
