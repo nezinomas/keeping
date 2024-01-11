@@ -10,7 +10,7 @@
 <script src="{% static 'js/highcharts_themes/grid-light.js' %}"></script>
 <script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
 <script src="{% static 'js/chart_month_expenses.js' %}"></script>
-<script src="{% static 'js/chart_month_targets.js' %}"></script>
+
 
 <style>
 .table-danger {
@@ -34,9 +34,7 @@
                         {{ chart_targets|json_script:"chart-targets-data" }}
                         {{ chart_expenses|json_script:"chart-expenses-data" }}
                         <div x-show="show_chart">
-                            <div id="chart-targets-container">
-                                <script>chartExpensesTarget('chart-targets-data', 'chart-targets-container');</script>
-                            </div>
+                            <div id="chart-targets-container" hx-get="{% static 'bookkeeping/chart_month_targets.html' %}" hx-trigger="load" hx-target="this"></div>
                         </div>
                         <div x-show="!show_chart">
                             <div id="chart-expenses-container">
