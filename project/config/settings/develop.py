@@ -14,7 +14,7 @@ INSTALLED_APPS += [
 
 
 STATIC_ROOT = None
-STATICFILES_DIRS = [
+STATICFILES_DIRS += [
     SITE_ROOT / "static",
 ]
 
