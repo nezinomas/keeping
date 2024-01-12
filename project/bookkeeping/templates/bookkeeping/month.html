@@ -9,7 +9,6 @@
 <script src="https://code.highcharts.com/modules/bullet.js"></script>
 <script src="{% static 'js/highcharts_themes/grid-light.js' %}"></script>
 <script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
-<script src="{% static 'js/chart_month_expenses.js' %}"></script>
 
 
 <style>
@@ -37,9 +36,7 @@
                             <div id="chart-targets-container" hx-get="{% static 'bookkeeping/chart_month_targets.html' %}" hx-trigger="load" hx-target="this"></div>
                         </div>
                         <div x-show="!show_chart">
-                            <div id="chart-expenses-container">
-                                <script>chartExpensesOnly('chart-expenses-data', 'chart-expenses-container');</script>
-                            </div>
+                            <div id="chart-expenses-container"></div>
                         </div>
                     </div>
 
@@ -67,7 +64,7 @@
             <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>{{" "}}
             <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'transactions:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Transactions' context 'transactions button' %}</button>{{" "}}
             <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'drinks:new' 'index' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Drinks' context 'drinks button' %}</button>{{" "}}
-            <button class="btn btn-sm btn-info" @click="show_chart = ! show_chart">{% translate 'Show other chart' %}</button>
+            <button class="btn btn-sm btn-info" @click="show_chart = ! show_chart" hx-get="{% static 'bookkeeping/chart_month_expenses.html' %}" hx-target="#chart-expenses-container" hx-trigger="click once">{% translate 'Show other chart' %}</button>
         </div>
     </div>
 </div>
