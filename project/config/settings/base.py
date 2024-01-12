@@ -1,8 +1,8 @@
+import os
+import tomllib as toml
 from pathlib import Path
 
-import tomllib as toml
 from django.utils.translation import gettext_lazy as _
-
 
 PROJECT_APPS = [
     "users",
@@ -49,7 +49,7 @@ MEDIA_URL = "/media/"
 
 
 STATIC_URL = "/static/"
-STATIC_ROOT = SITE_ROOT / "static"
+STATIC_ROOT = os.path.join(SITE_ROOT, "static")
 
 
 DEBUG = False
