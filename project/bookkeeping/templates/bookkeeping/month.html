@@ -32,12 +32,10 @@
                     <div class="w-100 mb-auto">
                         {{ chart_targets|json_script:"chart-targets-data" }}
                         {{ chart_expenses|json_script:"chart-expenses-data" }}
-                        <div x-show="show_chart">
-                            <div id="chart-targets-container" hx-get="{% static 'bookkeeping/chart_month_targets.html' %}" hx-trigger="load" hx-target="this"></div>
-                        </div>
-                        <div x-show="!show_chart">
-                            <div id="chart-expenses-container"></div>
-                        </div>
+
+                        <div x-show="show_chart" id="chart-targets-container" hx-get="{% static 'bookkeeping/chart_month_targets.html' %}" hx-trigger="load" hx-target="this"></div>
+
+                        <div x-show="!show_chart" id="chart-expenses-container"></div>
                     </div>
 
                     <div class="w-100" id="info">
