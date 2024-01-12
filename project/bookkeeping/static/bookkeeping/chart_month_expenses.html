@@ -39,7 +39,7 @@
             },
             tooltip: {
                 headerFormat: '',
-                pointFormat: '{point.name}: <b>{point.y:.1f}</b><br/>',
+                pointFormat: '{point.name}: <b>{point.y:.1f}</b>',
             },
             series: [
                 {
@@ -47,15 +47,12 @@
                     borderRadius: 0,
                     dataLabels: {
                         enabled: true,
-                        rotation: 0,
                         color: '#000',
                         align: 'right',
-                        format: '{point.y:.1f}', /* one decimal */
-                        y: -2,
+                        format: '{point.y:.0f}', /* one decimal */
+                        y: -0.5,
                         style: {
-                            fontSize: '9px',
                             fontWeight: 'bold',
-                            fontFamily: 'Verdana, sans-serif',
                             textOutline: false
                         }
                     }
