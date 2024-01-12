@@ -87,7 +87,7 @@ class Charts:
             "targetTitle": _("Plan"),
             "fact": data_fact,
             "factTitle": _("Fact"),
-            "max_category_len": len(max(categories, key=len)),
+            "max_category_len": len(max(categories, key=len)) if categories else 0,
             "category_len": len(categories),
         }
 
