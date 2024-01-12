@@ -42,12 +42,6 @@
                 headerFormat: '',
                 pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
             },
-            plotOptions: {
-                bar: {
-                    grouping: false,
-                    shadow: false,
-                },
-            },
             series: [{
                 name: chartData.targetTitle,
                 type: 'bar',
@@ -56,7 +50,6 @@
                 pointWidth: 19,
                 dataLabels: {
                     enabled: true,
-                    rotation: 0,
                     color: '#000',
                     x: -2,
                     y: -15,
