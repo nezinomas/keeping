@@ -49,10 +49,8 @@ MEDIA_URL = "/media/"
 
 
 STATIC_URL = "/static/"
-STATIC_ROOT = SITE_ROOT / "static"
-STATICFILES_DIRS = [
-    os.path.join(SITE_ROOT, 'bookkeeping/static/'),
-]
+STATIC_ROOT = os.path.join(SITE_ROOT, "static")
+
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
