@@ -87,6 +87,8 @@ class Charts:
             "targetTitle": _("Plan"),
             "fact": data_fact,
             "factTitle": _("Fact"),
+            "max_category_len": len(max(categories, key=len)),
+            "category_len": len(categories),
         }
 
     def chart_expenses(self) -> list[dict]:
