@@ -37,7 +37,7 @@ function chartPeriodicity(idData, idContainer) {
         tooltip: {
             shared: true,
             headerFormat: '',
-            pointFormat: '<b>{point.y:.0f}</b>',
+            pointFormat: '<b>{point.category}</b>:  <span style="color:{series.color}"><b>{point.y:.0f}</b></span>',
         },
         plotOptions: {
             bar: {
