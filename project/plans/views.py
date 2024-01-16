@@ -207,6 +207,7 @@ class CopyPlans(FormViewMixin):
     form_class = forms.CopyPlanForm
     template_name = "plans/copyplan_form.html"
     success_url = reverse_lazy("plans:index")
+    hx_trigger_django = "afterCopy"
 
     def get_context_data(self, **kwargs):
         context = {
@@ -219,9 +220,4 @@ class CopyPlans(FormViewMixin):
     def form_valid(self, form, **kwargs):
         form.save()
 
-        year_to = form.cleaned_data.get("year_to")
-        year_user = self.request.user.year
-
-        hx_trigger_django = "afterCopy" if year_to == year_user else None
-
-        return httpHtmxResponse(hx_trigger_django)
+        return httpHtmxResponse(self.hx_trigger_django)
