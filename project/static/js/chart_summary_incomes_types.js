@@ -38,11 +38,17 @@ $(function () {
             column: {
                 stacking: 'percent',
                 dataLabels: {
+                    useHTML: true,
                     enabled: true,
-                    format: '{point.percentage:.1f}%',
+                    crop: false,
+                    overflow: 'none',
+                    formatter:function(){
+                        return `<div class="text-center" style="width: ${this.point.pointWidth}px;">${Highcharts.numberFormat(this.point.percentage, 1)}%</div>`;
+                    },
                     style: {
                         fontWeight: 'normal',
                         textOutline: 'none',
+                        fontSize: '11px',
                     }
                 }
             }
