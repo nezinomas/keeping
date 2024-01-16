@@ -3,6 +3,12 @@ function chartPeriodicity(idData, idContainer) {
         document.getElementById(idData).textContent
     );
 
+    // if no data
+    if (!chartData.categories.length) {
+        chartData.categories = ['0'];
+        chartData.data = [0];
+    }
+
     Highcharts.chart(idContainer, {
         chart: {
             type: 'column',
