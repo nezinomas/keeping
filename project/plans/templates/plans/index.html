@@ -14,9 +14,9 @@
             </div>
             <div class="col-3 text-end">
                 {% url 'plans:income_new' as url_new %}
-                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'plans:copy' %}" hx-target="#dialog"><i class="bi bi-stickies"></i> {% translate 'Copy plans' %}</button>
-                {{" "}}
                 <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_new }}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Record" context "record button" %}</button>
+                {{" "}}
+                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'plans:copy' %}" hx-target="#dialog"><i class="bi bi-stickies"></i> {% translate 'Copy plans' %}</button>
             </div>
         </div>
         <div class="row">
