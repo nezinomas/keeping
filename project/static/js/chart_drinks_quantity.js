@@ -28,13 +28,6 @@ function chartQuantity(idData, idContainer) {
             headerFormat: '',
             pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
         },
-        plotOptions: {
-            bar: {
-                grouping: false,
-                shadow: false,
-                pointWidth: 13,
-            }
-        },
         series: [{
             name: chartData.text.quantity,
             color: 'rgba(70, 171, 157,0.65)',
@@ -48,11 +41,6 @@ function chartQuantity(idData, idContainer) {
                 rotation: 0,
                 color: '#000',
                 format: '{point.y:.1f}',
-                style: {
-                    fontSize: '12px',
-                    fontFamily: 'Calibri, sans-serif',
-                    textOutline: false
-                }
             }
         }]
     });

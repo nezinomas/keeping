@@ -83,6 +83,15 @@ Highcharts.theme = {
         candlestick: {
             lineColor: "#404048"
         },
+        series: {
+            dataLabels: {
+                style: {
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    textOutline: false,
+                },
+            }
+        }
     },
 };
 

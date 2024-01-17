@@ -102,6 +102,7 @@ function chartSavings(container) {
             borderWidth: '0.5',
             borderRadius: 0,
             dataLabels: {
+                useHTML: true,
                 enabled: true,
                 formatter: function () {
                     let val = Highcharts.numberFormat(this.y, 0)
@@ -112,10 +113,6 @@ function chartSavings(container) {
                         return `<div class="text-center" style="width: ${this.point.pointWidth}px;"><span style="color:${color};">${val}</span></div>`;
                     }
                 },
-                style: {
-                    fontWeight: 'bold',
-                    textOutline: false,
-                },
             }
         }, {
             name: chartData.text_invested,
@@ -125,14 +122,13 @@ function chartSavings(container) {
             borderWidth: '0.5',
             borderRadius: 0,
             dataLabels: {
+                useHTML: true,
                 enabled: true,
                 verticalAlign: 'top',
                 formatter: function () {
                     return `<div class="text-center" style="width: ${this.point.pointWidth}px;">${Highcharts.numberFormat(this.y, 0)}</div>`;
                 },
                 style: {
-                    fontWeight: 'bold',
-                    textOutline: false,
                     color: '#bf8f00'
                 },
             }
