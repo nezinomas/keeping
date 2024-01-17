@@ -71,10 +71,10 @@ Highcharts.theme = {
         enabled: false,
     },
     tooltip: {
-        backgroundColor: "#FFF",
-        borderWidth: 1,
         shadow: true,
         useHTML: true,
+        backgroundColor: "#FFF",
+        borderWidth: 1,
         style: {
             fontSize: "12px",
         },
