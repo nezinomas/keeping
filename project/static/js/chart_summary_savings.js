@@ -45,23 +45,29 @@ function chartSavings(container) {
             stackLabels: {
                 enabled: true,
                 align: 'center',
+                // overflow: 'none',
+                // borderRadius: 5,
+                // backgroundColor: 'rgba(252, 255, 197, 0.7)',
+                // borderWidth: 1,
+                // borderColor: '#AAA',
+                // y: -8,
                 formatter: function() {
                   let sum = 0;
                   let {series} = this.axis;
-
+                  let ii = this.x;
                   for (var i in series) {
                     if (series[i].visible && series[i].options.stacking == 'normal') {
                       sum += series[i].yData[this.x];
                     }
                   }
                   if (this.total > 0) {
-                    return Highcharts.numberFormat(sum, 0);
+                    return Highcharts.numberFormat(chartData.total[ii], 0);
                   } else {
                     return '';
                   }
                 }
               },
-            startOnTick: false,
+            // startOnTick: false,
         },
         tooltip: {
             pointFormat: '{point.y:,.0f}',
@@ -132,6 +138,8 @@ function chartSavings(container) {
             if (point.negative) {
                 point.color = negative; /* + tooltip border color */
                 point.graphic.css({ stroke: negative, color: '#EB5353'});
+            } else {
+                point.update({})
             }
         });
     });
