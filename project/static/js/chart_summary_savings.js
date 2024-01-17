@@ -43,8 +43,24 @@ function chartSavings(container) {
                 zIndex:2
             }],
             stackLabels: {
-                enabled: false,
-            },
+                enabled: true,
+                align: 'center',
+                formatter: function() {
+                  let sum = 0;
+                  let {series} = this.axis;
+
+                  for (var i in series) {
+                    if (series[i].visible && series[i].options.stacking == 'normal') {
+                      sum += series[i].yData[this.x];
+                    }
+                  }
+                  if (this.total > 0) {
+                    return Highcharts.numberFormat(sum, 0);
+                  } else {
+                    return '';
+                  }
+                }
+              },
             startOnTick: false,
         },
         tooltip: {
