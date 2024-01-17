@@ -36,10 +36,10 @@ function chartSavings(container) {
         annotations: [{
             draggable: '',
             labelOptions: {
-                y: -8,
                 useHTML: true,
                 crop: false,
                 overflow: 'none',
+                y: -8,
                 style: {
                     fontSize: '12px',
                 }
