@@ -109,7 +109,7 @@ function chartSavings(container) {
                         return '';
                     } else {
                         let color = (val < 0) ? negative : positive;
-                        return `<span style="color:${color};">${val}</span>`;
+                        return `<div class="text-center" style="width: ${this.point.pointWidth}px;"><span style="color:${color};">${val}</span></div>`;
                     }
                 },
                 style: {
@@ -128,7 +128,7 @@ function chartSavings(container) {
                 enabled: true,
                 verticalAlign: 'top',
                 formatter: function () {
-                    return `${Highcharts.numberFormat(this.y, 0)}`;
+                    return `<div class="text-center" style="width: ${this.point.pointWidth}px;">${Highcharts.numberFormat(this.y, 0)}</div>`;
                 },
                 style: {
                     fontWeight: 'bold',
