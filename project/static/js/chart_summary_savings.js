@@ -1,18 +1,3 @@
-function annotationLabels(total_list, invested_list, profit_list) {
-    total_list.forEach(function (element, index, total_list) {
-        let y_val = element;
-        if (profit_list[index] < 0) {
-            y_val = invested_list[index]
-        }
-        total_list[index] = {
-            point: { xAxis: 0, yAxis: 0, x: index, y: y_val },
-            text: Highcharts.numberFormat(element, 0),
-        };
-    });
-    return total_list;
-};
-
-
 function chartSavings(container) {
     const positive = '#548235';
     const negative = '#c0504d';
@@ -33,19 +18,6 @@ function chartSavings(container) {
         title: {
             text: chartData.title,
         },
-        annotations: [{
-            draggable: '',
-            labelOptions: {
-                y: -8,
-                useHTML: true,
-                crop: false,
-                overflow: 'none',
-                style: {
-                    fontSize: '12px',
-                }
-            },
-            labels: annotationLabels(chartData.total, chartData.invested, chartData.profit)
-        }],
         xAxis: {
             categories: chartData.categories,
             crosshair: true,
