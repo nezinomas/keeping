@@ -125,14 +125,17 @@ def test_transactions_load_update_form_field_values(client_logged):
 
     url = reverse("transactions:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
-    form = response.context["form"]
+    form = response.context["form"].as_p()
 
-    assert form.instance.date == date(1999, 1, 1)
-    assert form.instance.price == 0.01
+    assert 'name="date" value="1999-01-01"' in form
+    assert 'name="price" value="0.01"' in form
 
-    assert form.instance.from_account.title == "Account1"
-    assert form.instance.to_account.title == "Account2"
+    # from account select
+    assert f'<option value="{obj.from_account.pk}" selected>Account1</option>' in form
+    assert f'<option value="{obj.to_account.pk}">Account2</option>' in form
 
+    # to account select
+    assert f'<option value="{obj.to_account.pk}" selected>Account2</option>' in form
 
 def test_transactions_update_to_another_year(client_logged):
     tr = TransactionFactory()
@@ -702,14 +705,18 @@ def test_savings_change_load_update_form_field_values(client_logged):
 
     url = reverse("transactions:savings_change_update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
-    form = response.context["form"]
+    form = response.context["form"].as_p()
 
-    assert form.instance.date == date(1999, 1, 1)
-    assert form.instance.price == 0.01
-    assert form.instance.fee == 0.01
+    assert 'name="date" value="1999-01-01"' in form
+    assert 'name="price" value="0.01"' in form
+    assert 'name="fee" value="0.01"' in form
 
-    assert form.instance.from_account.title == "Savings From"
-    assert form.instance.to_account.title == "Savings To"
+    # from account select
+    assert f'<option value="{obj.from_account.pk}" selected>Savings From</option>' in form
+    assert f'<option value="{obj.to_account.pk}">Savings To</option>' in form
+
+    # to account select
+    assert f'<option value="{obj.to_account.pk}" selected>Savings To</option>' in form
 
 
 def test_savings_change_update_to_another_year(client_logged):

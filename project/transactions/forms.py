@@ -51,17 +51,13 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         from_account = self.fields["from_account"]
         to_account = self.fields["to_account"]
 
-        from_account_pk = self.data.get("from_account")
-        to_account_pk = self.data.get("to_account")
-
         from_account.queryset = Account.objects.items()
         to_account.queryset = Account.objects.none()
 
-        if from_account_pk:
+        _from = getattr(self.instance, "from_account", None)
+        _from_pk = getattr(_from, "pk", None)
+        if from_account_pk := self.data.get("from_account") or _from_pk:
             to_account.queryset = Account.objects.items().exclude(pk=from_account_pk)
-
-        if to_account_pk:
-            from_account.queryset = Account.objects.items().exclude(pk=to_account_pk)
 
     def _set_htmx_attributes(self):
         url = reverse("accounts:load")
@@ -184,18 +180,13 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         from_account = self.fields["from_account"]
         to_account = self.fields["to_account"]
 
-        from_account_pk = self.data.get("from_account")
-        to_account_pk = self.data.get("to_account")
-
         from_account.queryset = SavingType.objects.items()
         to_account.queryset = SavingType.objects.none()
 
-        if from_account_pk:
+        _from = getattr(self.instance, "from_account", None)
+        _from_pk = getattr(_from, "pk", None)
+        if from_account_pk := self.data.get("from_account") or _from_pk:
             to_account.queryset = SavingType.objects.items().exclude(pk=from_account_pk)
-
-        if to_account_pk:
-            from_account.queryset = SavingType.objects.items().exclude(pk=to_account_pk)
-
 
     def _set_htmx_attributes(self):
         url = reverse("transactions:load_saving_type")
