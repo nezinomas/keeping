@@ -11,7 +11,6 @@ function annotationLabels(arrTotal, arrProfit, arrInvested) {
     return total;
 };
 
-
 function chartSavings(container) {
     const positive = '#548235';
     const negative = '#c0504d';
@@ -40,7 +39,8 @@ function chartSavings(container) {
                 overflow: 'none',
                 y: -8,
                 style: {
-                    fontSize: '12px',
+                    fontSize: '11px',
+                    fontFamily: 'Helvetica, sans-serif',
                 },
                 formatter:function(){
                     let i = this.x
@@ -48,7 +48,7 @@ function chartSavings(container) {
                     return `${Highcharts.numberFormat(y, 0)}`
                 }
             },
-            labels: annotationLabels(chartData.total, chartData.profit, chartData.invested)
+            labels: annotationLabels(chartData.total, chartData.profit, chartData.invested),
         }],
         xAxis: {
             categories: chartData.categories,
