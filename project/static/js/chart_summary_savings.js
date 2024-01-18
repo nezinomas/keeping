@@ -1,18 +1,3 @@
-function annotationLabels(total_list, invested_list, profit_list) {
-    total_list.forEach(function (element, index, total_list) {
-        let y_val = element;
-        if (profit_list[index] < 0) {
-            y_val = invested_list[index]
-        }
-        total_list[index] = {
-            point: { xAxis: 0, yAxis: 0, x: index, y: y_val },
-            text: Highcharts.numberFormat(element, 0),
-        };
-    });
-    return total_list;
-};
-
-
 function chartSavings(container) {
     const positive = '#548235';
     const negative = '#c0504d';
@@ -33,19 +18,6 @@ function chartSavings(container) {
         title: {
             text: chartData.title,
         },
-        annotations: [{
-            draggable: '',
-            labelOptions: {
-                y: -8,
-                useHTML: true,
-                crop: false,
-                overflow: 'none',
-                style: {
-                    fontSize: '12px',
-                }
-            },
-            labels: annotationLabels(chartData.total, chartData.invested, chartData.profit)
-        }],
         xAxis: {
             categories: chartData.categories,
             crosshair: true,
@@ -71,9 +43,31 @@ function chartSavings(container) {
                 zIndex:2
             }],
             stackLabels: {
-                enabled: false,
-            },
-            startOnTick: false,
+                enabled: true,
+                align: 'center',
+                // overflow: 'none',
+                // borderRadius: 5,
+                // backgroundColor: 'rgba(252, 255, 197, 0.7)',
+                // borderWidth: 1,
+                // borderColor: '#AAA',
+                // y: -8,
+                formatter: function() {
+                  let sum = 0;
+                  let {series} = this.axis;
+                  let ii = this.x;
+                  for (var i in series) {
+                    if (series[i].visible && series[i].options.stacking == 'normal') {
+                      sum += series[i].yData[this.x];
+                    }
+                  }
+                  if (this.total > 0) {
+                    return Highcharts.numberFormat(chartData.total[ii], 0);
+                  } else {
+                    return '';
+                  }
+                }
+              },
+            // startOnTick: false,
         },
         tooltip: {
             pointFormat: '{point.y:,.0f}',
@@ -144,6 +138,8 @@ function chartSavings(container) {
             if (point.negative) {
                 point.color = negative; /* + tooltip border color */
                 point.graphic.css({ stroke: negative, color: '#EB5353'});
+            } else {
+                point.update({})
             }
         });
     });
