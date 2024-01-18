@@ -1,15 +1,14 @@
-function annotationLabels(total_list, invested_list, profit_list) {
-    total_list.forEach(function (element, index, total_list) {
-        let y_val = element;
-        if (profit_list[index] < 0) {
-            y_val = invested_list[index]
+function annotationLabels(arrTotal, arrProfit, arrInvested) {
+    let total = new Array(arrTotal.length)
+
+    for(i = 0; i < arrTotal.length; i++) {
+        let y_val = arrTotal[i];
+        if (arrProfit[i] < 0) {
+            y_val = arrInvested[i]
         }
-        total_list[index] = {
-            point: { xAxis: 0, yAxis: 0, x: index, y: y_val },
-            text: Highcharts.numberFormat(element, 0),
-        };
-    });
-    return total_list;
+        total[i] = {point: { xAxis: 0, yAxis: 0, x: i, y: y_val}}
+    }
+    return total;
 };
 
 
@@ -42,9 +41,14 @@ function chartSavings(container) {
                 y: -8,
                 style: {
                     fontSize: '12px',
+                },
+                formatter:function(){
+                    let i = this.x
+                    let y = chartData.total[i];
+                    return `${Highcharts.numberFormat(y, 0)}`
                 }
             },
-            labels: annotationLabels(chartData.total, chartData.invested, chartData.profit)
+            labels: annotationLabels(chartData.total, chartData.profit, chartData.invested)
         }],
         xAxis: {
             categories: chartData.categories,
