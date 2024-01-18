@@ -8,10 +8,10 @@
     <thead>
         <tr>
             <th class="text-start">{% translate 'Date' %}</th>
-            <th class="text-start">{% translate 'From account' %}</th>
-            <th class="text-start">{% translate 'To account' %}</th>
-            <th>{% translate 'Amount' %}</th>
-            {% if fee %}<th>{% translate 'Fees' %}</th>{% endif %}
+            <th class="text-start w16">{% translate 'From account' %}</th>
+            <th class="text-start w16">{% translate 'To account' %}</th>
+            <th class="{% if fee %}w8{% else %}w16{% endif %}">{% translate 'Amount' %}</th>
+            {% if fee %}<th class="w8">{% translate 'Fees' %}</th>{% endif %}
             <th colspan="{% if fee %}3{% else %}2{% endif %}"></th>
         </tr>
     </thead>
