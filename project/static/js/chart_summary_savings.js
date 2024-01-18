@@ -1,3 +1,16 @@
+function annotationLabels(arrTotal, arrProfit, arrInvested) {
+    let total = new Array(arrTotal.length)
+
+    for(i = 0; i < arrTotal.length; i++) {
+        let y_val = arrTotal[i];
+        if (arrProfit[i] < 0) {
+            y_val = arrInvested[i]
+        }
+        total[i] = {point: { xAxis: 0, yAxis: 0, x: i, y: y_val}}
+    }
+    return total;
+};
+
 function chartSavings(container) {
     const positive = '#548235';
     const negative = '#c0504d';
@@ -18,6 +31,25 @@ function chartSavings(container) {
         title: {
             text: chartData.title,
         },
+        annotations: [{
+            draggable: '',
+            labelOptions: {
+                useHTML: true,
+                crop: false,
+                overflow: 'none',
+                y: -8,
+                style: {
+                    fontSize: '11px',
+                    fontFamily: 'Helvetica, sans-serif',
+                },
+                formatter:function(){
+                    let i = this.x
+                    let y = chartData.total[i];
+                    return `${Highcharts.numberFormat(y, 0)}`
+                }
+            },
+            labels: annotationLabels(chartData.total, chartData.profit, chartData.invested),
+        }],
         xAxis: {
             categories: chartData.categories,
             crosshair: true,
@@ -43,31 +75,9 @@ function chartSavings(container) {
                 zIndex:2
             }],
             stackLabels: {
-                enabled: true,
-                align: 'center',
-                // overflow: 'none',
-                // borderRadius: 5,
-                // backgroundColor: 'rgba(252, 255, 197, 0.7)',
-                // borderWidth: 1,
-                // borderColor: '#AAA',
-                // y: -8,
-                formatter: function() {
-                  let sum = 0;
-                  let {series} = this.axis;
-                  let ii = this.x;
-                  for (var i in series) {
-                    if (series[i].visible && series[i].options.stacking == 'normal') {
-                      sum += series[i].yData[this.x];
-                    }
-                  }
-                  if (this.total > 0) {
-                    return Highcharts.numberFormat(chartData.total[ii], 0);
-                  } else {
-                    return '';
-                  }
-                }
-              },
-            // startOnTick: false,
+                enabled: false,
+            },
+            startOnTick: false,
         },
         tooltip: {
             pointFormat: '{point.y:,.0f}',
@@ -96,6 +106,7 @@ function chartSavings(container) {
             borderWidth: '0.5',
             borderRadius: 0,
             dataLabels: {
+                useHTML: true,
                 enabled: true,
                 formatter: function () {
                     let val = Highcharts.numberFormat(this.y, 0)
@@ -103,12 +114,8 @@ function chartSavings(container) {
                         return '';
                     } else {
                         let color = (val < 0) ? negative : positive;
-                        return `<span style="color:${color};">${val}</span>`;
+                        return `<div class="text-center" style="width: ${this.point.pointWidth}px;"><span style="color:${color};">${val}</span></div>`;
                     }
-                },
-                style: {
-                    fontWeight: 'bold',
-                    textOutline: false,
                 },
             }
         }, {
@@ -119,14 +126,13 @@ function chartSavings(container) {
             borderWidth: '0.5',
             borderRadius: 0,
             dataLabels: {
+                useHTML: true,
                 enabled: true,
                 verticalAlign: 'top',
                 formatter: function () {
-                    return `${Highcharts.numberFormat(this.y, 0)}`;
+                    return `<div class="text-center" style="width: ${this.point.pointWidth}px;">${Highcharts.numberFormat(this.y, 0)}</div>`;
                 },
                 style: {
-                    fontWeight: 'bold',
-                    textOutline: false,
                     color: '#bf8f00'
                 },
             }
