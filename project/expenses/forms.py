@@ -133,7 +133,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         _exception = data.get("exception")
         _expense_type = data.get("expense_type")
 
-        if _exception and _expense_type.necessary:
+        if _exception and _expense_type and _expense_type.necessary:
             msg = _(
                 "The %(title)s is 'Necessary', so it can't be marked as 'Exeption'"
             ) % {"title": _expense_type.title}
