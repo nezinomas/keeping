@@ -535,3 +535,8 @@ table.hightcharts-tooltip td.head {
 table.hightcharts-tooltip td {
     margin-bottom: 0.25rem;
 }
+
+.disabled {
+    background-color: var(--bs-secondary-bg);
+    opacity: 1;
+}

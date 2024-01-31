@@ -42,15 +42,6 @@ htmx.on("htmx:beforeSwap", (e) => {
                     field.val('');
                 }
             }
-
-            // reset checkboxes
-            let boolean_fields = ["exception"];
-            for (let i in boolean_fields) {
-                let field = $(`#id_${fields[i]}`);
-                if(field) {
-                    field.checked = false;
-                }
-            }
         }
 
         if(subbmiter == '_close') {
