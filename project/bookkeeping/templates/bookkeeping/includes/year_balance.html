@@ -69,7 +69,7 @@
             <th class="{{ctx.total_row.borrow_return|css_class_if_none}}" x-show="open">{{ctx.total_row.borrow_return|price|cellformat}}</th>
             <th class="{{ctx.total_row.lend|css_class_if_none}}" x-show="open">{{ctx.total_row.lend|price|cellformat}}</th>
             <th class="right-blue-border {{ctx.total_row.lend_return|css_class_if_none}}" x-show="open">{{ctx.total_row.lend_return|price|cellformat}}</th>
-            <th class="{{ctx.amount_end|positive_negative}}">{{ctx.amount_end|price|cellformat}}</th>
+            <th class="{{ctx.amount_end|positive_negative}} check">{{ctx.amount_end|price|cellformat}}</th>
         </tr>
     </tfoot>
 </table>

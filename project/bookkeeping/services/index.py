@@ -1,18 +1,18 @@
 import itertools as it
 from dataclasses import dataclass, field
 
-from django.db.models import Sum
+from django.db.models import F, Sum
 from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
 from ...core.lib.translation import month_names
-from ...debts.models import Debt
+from ...debts.models import Debt, DebtReturn
 from ...expenses.models import Expense
 from ...incomes.models import Income
 from ...savings.models import Saving
 from ...transactions.models import SavingClose
-from ..lib.year_balance import YearBalance
 from ..lib.make_dataframe import MakeDataFrame
+from ..lib.year_balance import YearBalance
 
 
 @dataclass
@@ -51,35 +51,24 @@ class IndexServiceData:
         )
 
     def get_data(self) -> list[dict]:
-        qs_borrow = Debt.objects.sum_by_month(
-            self.year, debt_type="borrow", closed=True
-        )
-        qs_lend = Debt.objects.sum_by_month(self.year, debt_type="lend", closed=True)
-
         return list(
             it.chain(
                 Income.objects.sum_by_month(self.year),
                 Expense.objects.sum_by_month(self.year),
                 Saving.objects.sum_by_month(self.year),
                 SavingClose.objects.sum_by_month(self.year),
-                self.split_debt_data(qs_borrow),
-                self.split_debt_data(qs_lend),
+                self._get_debt("lend"),
+                self._get_debt("borrow"),
+                DebtReturn.objects.sum_by_month(self.year, debt_type="lend"),
+                DebtReturn.objects.sum_by_month(self.year, debt_type="borrow"),
             )
         )
 
-    def split_debt_data(self, data):
-        final = []
-        for row in data:
-            date = row["date"]
-            debt = {"date": date, "sum": row["sum_debt"], "title": row["title"]}
-            debt_return = {
-                "date": date,
-                "sum": row["sum_return"],
-                "title": f"{row['title']}_return",
-            }
-            final.extend((debt, debt_return))
-
-        return final
+    def _get_debt(self, debt_type):
+        return \
+            Debt.objects \
+            .sum_by_month(self.year, debt_type=debt_type, closed=True) \
+            .values("date", "title", sum=F("sum_debt"))
 
     def get_debts(self) -> dict:
         return {

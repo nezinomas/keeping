@@ -22,7 +22,7 @@ def test_view_index_200(client_logged):
 
 def test_view_count_queries(client_logged, django_assert_max_num_queries):
     url = reverse("bookkeeping:index")
-    with django_assert_max_num_queries(27):
+    with django_assert_max_num_queries(29):
         client_logged.get(url)
 
 

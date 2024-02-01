@@ -96,6 +96,20 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
     def year(self, year):
         return self.related().filter(date__year=year)
 
+    def sum_by_month(self, year, debt_type=None):
+        qs = self.related(debt_type=debt_type)
+
+        return (
+            qs.filter(date__year=year)
+            .annotate(cnt=Count("id"))
+            .values("id")
+            .annotate(date=TruncMonth("date"))
+            .values("date")
+            .annotate(sum=Sum("price"))
+            .annotate(title=Value(f"{debt_type}_return"))
+            .order_by("date")
+        )
+
     def incomes(self):
         """
         method used only in post_save signal

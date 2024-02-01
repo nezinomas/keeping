@@ -90,6 +90,30 @@ def test_lend_return_year(mck):
 
 
 @patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+def test_lend_return_sum_by_month(mck):
+    LendReturnFactory()
+    LendReturnFactory(date=dt(1974, 3, 2), price=1)
+    LendReturnFactory(date=dt(1974, 3, 3), price=2)
+    LendReturnFactory(date=dt(1974, 3, 4), price=3)
+
+    actual = DebtReturn.objects.sum_by_month(1974, "lend")
+
+    assert list(actual) == [{"date": dt(1974, 3, 1), "title": "lend_return", "sum": 6}]
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+def test_borrow_return_sum_by_month(mck):
+    BorrowReturnFactory()
+    BorrowReturnFactory(date=dt(1974, 3, 2), price=1)
+    BorrowReturnFactory(date=dt(1974, 3, 3), price=2)
+    BorrowReturnFactory(date=dt(1974, 3, 4), price=3)
+
+    actual = DebtReturn.objects.sum_by_month(1974, "borrow")
+
+    assert list(actual) == [{"date": dt(1974, 3, 1), "title": "borrow_return", "sum": 6}]
+
+
+@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
 def test_lend_return_new_record_updates_debt_tbl(mck):
     LendReturnFactory(price=30)
 

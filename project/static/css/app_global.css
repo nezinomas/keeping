@@ -153,7 +153,7 @@ div[class*="col"]>h6 {
     border-top: double #0359b0 !important;
 }
 
-.table tfoot th:not([class^="table-"]) {
+.table tfoot th:not([class^="table-"]):not(.check) {
     background-color: #f8f9fa!important;
 }
 
