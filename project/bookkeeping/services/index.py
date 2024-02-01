@@ -6,13 +6,13 @@ from django.utils.translation import gettext as _
 
 from ...accounts.models import AccountBalance
 from ...core.lib.translation import month_names
-from ...debts.models import Debt
+from ...debts.models import Debt, DebtReturn
 from ...expenses.models import Expense
 from ...incomes.models import Income
 from ...savings.models import Saving
 from ...transactions.models import SavingClose
-from ..lib.year_balance import YearBalance
 from ..lib.make_dataframe import MakeDataFrame
+from ..lib.year_balance import YearBalance
 
 
 @dataclass
