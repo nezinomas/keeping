@@ -45,7 +45,6 @@ def load_service(year: int) -> dict:
         "incomes",
         "sold",
         "sold_fee",
-        "invested",
         "market_value",
         "profit_sum",
     ]
