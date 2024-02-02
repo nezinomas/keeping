@@ -113,7 +113,6 @@ def test_saving_worth_post_save():
     assert actual.past_amount == 0
     assert actual.past_fee == 0
     assert actual.fee == 0
-    assert actual.invested == 0
     assert actual.incomes == 0
     assert actual.market_value == 5
 
@@ -124,7 +123,6 @@ def test_saving_worth_post_save_new():
     actual = SavingBalance.objects.first()
     assert actual.saving_type.title == "Savings"
     assert actual.fee == 5
-    assert actual.invested == 15
     assert actual.incomes == 20
     assert actual.market_value == 0
 
@@ -135,7 +133,6 @@ def test_saving_worth_post_save_new():
     actual = SavingBalance.objects.first()
     assert actual.saving_type.title == "Savings"
     assert actual.fee == 5
-    assert actual.invested == 15
     assert actual.incomes == 20
     assert actual.market_value == 30
 
@@ -190,7 +187,6 @@ def test_pension_worth_post_save():
     assert actual.past_amount == 0
     assert actual.past_fee == 0
     assert actual.fee == 0
-    assert actual.invested == 0
     assert actual.incomes == 0
     assert actual.market_value == 5
 
