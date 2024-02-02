@@ -43,10 +43,6 @@ def total_row(data, fields) -> dict:
     fee = row.get("fee", 0)
     market_value = row.get("market_value", 0)
 
-    proc = 0
-    if incomes:
-        proc = ((market_value - fee) / incomes * 100) - 100
-
-    row["profit_proc"] = proc
+    row["profit_proc"] = ((market_value - fee) / incomes * 100) - 100 if incomes else 0
 
     return row
