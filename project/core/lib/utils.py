@@ -39,10 +39,13 @@ def total_row(data, fields) -> dict:
     if not row.get("profit_proc"):
         return row
 
-    incomes = row.get("incomes", 0)
-    fee = row.get("fee", 0)
-    market_value = row.get("market_value", 0)
-
-    row["profit_proc"] = ((market_value - fee) / incomes * 100) - 100 if incomes else 0
+    row["profit_proc"] = calculate_percents(row)
 
     return row
+
+def calculate_percents(data):
+    incomes = data.get("incomes", 0)
+    fee = data.get("fee", 0)
+    market_value = data.get("market_value", 0)
+
+    return ((market_value - fee) / incomes * 100) - 100 if incomes else 0
