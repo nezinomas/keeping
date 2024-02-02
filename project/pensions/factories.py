@@ -59,3 +59,4 @@ class PensionBalanceFactory(factory.django.DjangoModelFactory):
     incomes = 24
     market_value = 25
     profit_sum = 29
+    profit_proc = 30.3
