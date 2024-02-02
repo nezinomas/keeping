@@ -79,9 +79,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[0]["sold"] == 0
     assert actual[0]["sold_fee"] == 0
     assert actual[0]["incomes"] == 5
-    assert actual[0]["invested"] == 4
     assert actual[0]["market_value"] == 0
-    assert actual[0]["profit_sum"] == -4
+    assert actual[0]["profit_sum"] == -6
     assert not actual[0]["latest_check"]
 
     assert actual[1]["id"] == 1
@@ -94,9 +93,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[1]["sold"] == 0
     assert actual[1]["sold_fee"] == 0
     assert actual[1]["incomes"] == 20
-    assert actual[1]["invested"] == 18
     assert actual[1]["market_value"] == 0
-    assert actual[1]["profit_sum"] == -18
+    assert actual[1]["profit_sum"] == -22
     assert not actual[1]["latest_check"]
 
     assert actual[2]["id"] == 1
@@ -109,9 +107,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[2]["sold"] == 50
     assert actual[2]["sold_fee"] == 6
     assert actual[2]["incomes"] == 120
-    assert actual[2]["invested"] == 60
     assert actual[2]["market_value"] == 75
-    assert actual[2]["profit_sum"] == 15
+    assert actual[2]["profit_sum"] == -49
     assert actual[2]["latest_check"] == datetime(1999, 1, 1)
 
     assert actual[3]["id"] == 1
@@ -124,9 +121,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[3]["sold"] == 150
     assert actual[3]["sold_fee"] == 10
     assert actual[3]["incomes"] == 320
-    assert actual[3]["invested"] == 152
     assert actual[3]["market_value"] == 300
-    assert actual[3]["profit_sum"] == 148
+    assert actual[3]["profit_sum"] == -28
     assert actual[3]["latest_check"] == datetime(2000, 1, 2)
 
     assert actual[4]["id"] == 1
@@ -139,9 +135,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[4]["sold"] == 150
     assert actual[4]["sold_fee"] == 10
     assert actual[4]["incomes"] == 320
-    assert actual[4]["invested"] == 152
     assert actual[4]["market_value"] == 300
-    assert actual[4]["profit_sum"] == 148
+    assert actual[4]["profit_sum"] == -28
     assert actual[4]["latest_check"] == datetime(2000, 1, 2)
 
     assert actual[5]["id"] == 2
@@ -154,9 +149,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[5]["sold"] == 0
     assert actual[5]["sold_fee"] == 0
     assert actual[5]["incomes"] == 110
-    assert actual[5]["invested"] == 104
     assert actual[5]["market_value"] == 100
-    assert actual[5]["profit_sum"] == -4
+    assert actual[5]["profit_sum"] == -16
     assert actual[5]["latest_check"] == datetime(1999, 1, 3)
 
     assert actual[6]["id"] == 2
@@ -169,9 +163,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[6]["sold"] == 110
     assert actual[6]["sold_fee"] == 2
     assert actual[6]["incomes"] == 330
-    assert actual[6]["invested"] == 204
     assert actual[6]["market_value"] == 250
-    assert actual[6]["profit_sum"] == 46
+    assert actual[6]["profit_sum"] == -94
     assert actual[6]["latest_check"] == datetime(2000, 1, 4)
 
     assert actual[7]["id"] == 2
@@ -184,9 +177,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[7]["sold"] == 110
     assert actual[7]["sold_fee"] == 2
     assert actual[7]["incomes"] == 330
-    assert actual[7]["invested"] == 204
     assert actual[7]["market_value"] == 250
-    assert actual[7]["profit_sum"] == 46
+    assert actual[7]["profit_sum"] == -94
     assert actual[7]["latest_check"] == datetime(2000, 1, 4)
 
 
@@ -216,8 +208,7 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         "past_fee": 0,
         "per_year_incomes": 10,
         "per_year_fee": 1,
-        "invested": 9,
-        "profit_sum": 24,
+        "profit_sum": 22,
     }
 
     assert actual[1] == {
@@ -233,8 +224,7 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         "past_fee": 1,
         "per_year_incomes": 20,
         "per_year_fee": 2,
-        "invested": 27,
-        "profit_sum": 6,
+        "profit_sum": 0,
     }
 
     assert actual[2] == {
@@ -250,8 +240,7 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         "past_fee": 3,
         "per_year_incomes": 0,
         "per_year_fee": 0,
-        "invested": 27,
-        "profit_sum": 6,
+        "profit_sum": 0,
     }
 
     assert actual[3] == {
@@ -267,8 +256,7 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         "past_fee": 0,
         "per_year_incomes": 50,
         "per_year_fee": 5,
-        "invested": 45,
-        "profit_sum": -45,
+        "profit_sum": -55,
     }
 
     assert actual[4] == {
@@ -284,8 +272,7 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         "past_fee": 5,
         "per_year_incomes": 0,
         "per_year_fee": 0,
-        "invested": 45,
-        "profit_sum": -45,
+        "profit_sum": -55,
     }
 
     assert actual[5] == {
@@ -301,8 +288,7 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         "past_fee": 5,
         "per_year_incomes": 0,
         "per_year_fee": 0,
-        "invested": 45,
-        "profit_sum": -45,
+        "profit_sum": -55,
     }
 
 
@@ -440,9 +426,8 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[0]["sold"] == 50
     assert actual[0]["sold_fee"] == 6
     assert actual[0]["incomes"] == 100
-    assert actual[0]["invested"] == 42
     assert actual[0]["market_value"] == 0
-    assert actual[0]["profit_sum"] == -42
+    assert actual[0]["profit_sum"] == -102
     assert not actual[0]["latest_check"]
 
     assert actual[1]["id"] == 1
@@ -455,9 +440,8 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[1]["sold"] == 150
     assert actual[1]["sold_fee"] == 10
     assert actual[1]["incomes"] == 300
-    assert actual[1]["invested"] == 134
     assert actual[1]["market_value"] == 0
-    assert actual[1]["profit_sum"] == -134
+    assert actual[1]["profit_sum"] == -306
     assert not actual[1]["latest_check"]
 
     assert actual[2]["id"] == 1
@@ -470,9 +454,8 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[2]["sold"] == 150
     assert actual[2]["sold_fee"] == 10
     assert actual[2]["incomes"] == 300
-    assert actual[2]["invested"] == 134
     assert actual[2]["market_value"] == 0
-    assert actual[2]["profit_sum"] == -134
+    assert actual[2]["profit_sum"] == -306
     assert not actual[2]["latest_check"]
 
 
@@ -491,7 +474,6 @@ def test_table_incomes_empty(expenses, types):
     assert actual[0]["sold"] == 50
     assert actual[0]["sold_fee"] == 6
     assert actual[0]["incomes"] == 0
-    assert actual[0]["invested"] == 0
     assert actual[0]["market_value"] == 0
     assert actual[0]["profit_sum"] == 0
     assert not actual[0]["latest_check"]
@@ -506,7 +488,6 @@ def test_table_incomes_empty(expenses, types):
     assert actual[1]["sold"] == 150
     assert actual[1]["sold_fee"] == 10
     assert actual[1]["incomes"] == 0
-    assert actual[1]["invested"] == 0
     assert actual[1]["market_value"] == 0
     assert actual[1]["profit_sum"] == 0
     assert not actual[1]["latest_check"]
@@ -521,7 +502,6 @@ def test_table_incomes_empty(expenses, types):
     assert actual[2]["sold"] == 150
     assert actual[2]["sold_fee"] == 10
     assert actual[2]["incomes"] == 0
-    assert actual[2]["invested"] == 0
     assert actual[2]["market_value"] == 0
     assert actual[2]["profit_sum"] == 0
     assert not actual[2]["latest_check"]
@@ -542,9 +522,8 @@ def test_table_expenses_empty(incomes, types):
     assert actual[0]["sold"] == 0
     assert actual[0]["sold_fee"] == 0
     assert actual[0]["incomes"] == 100
-    assert actual[0]["invested"] == 98
     assert actual[0]["market_value"] == 0
-    assert actual[0]["profit_sum"] == -98
+    assert actual[0]["profit_sum"] == -102
     assert not actual[0]["latest_check"]
 
     assert actual[1]["id"] == 1
@@ -557,9 +536,8 @@ def test_table_expenses_empty(incomes, types):
     assert actual[1]["sold"] == 0
     assert actual[1]["sold_fee"] == 0
     assert actual[1]["incomes"] == 300
-    assert actual[1]["invested"] == 294
     assert actual[1]["market_value"] == 0
-    assert actual[1]["profit_sum"] == -294
+    assert actual[1]["profit_sum"] == -306
     assert not actual[1]["latest_check"]
 
     assert actual[2]["id"] == 1
@@ -572,9 +550,8 @@ def test_table_expenses_empty(incomes, types):
     assert actual[2]["sold"] == 0
     assert actual[2]["sold_fee"] == 0
     assert actual[2]["incomes"] == 300
-    assert actual[2]["invested"] == 294
     assert actual[2]["market_value"] == 0
-    assert actual[2]["profit_sum"] == -294
+    assert actual[2]["profit_sum"] == -306
     assert not actual[2]["latest_check"]
 
 
@@ -593,7 +570,6 @@ def test_table_only_have(have, types):
     assert actual[0]["sold"] == 0
     assert actual[0]["sold_fee"] == 0
     assert actual[0]["incomes"] == 0
-    assert actual[0]["invested"] == 0
     assert actual[0]["market_value"] == 75
     assert actual[0]["profit_sum"] == 75
     assert actual[0]["latest_check"] == datetime(1999, 1, 1)
@@ -608,7 +584,6 @@ def test_table_only_have(have, types):
     assert actual[1]["sold"] == 0
     assert actual[1]["sold_fee"] == 0
     assert actual[1]["incomes"] == 0
-    assert actual[1]["invested"] == 0
     assert actual[1]["market_value"] == 300
     assert actual[1]["profit_sum"] == 300
     assert actual[1]["latest_check"] == datetime(2000, 1, 2)
@@ -623,7 +598,6 @@ def test_table_only_have(have, types):
     assert actual[2]["sold"] == 0
     assert actual[2]["sold_fee"] == 0
     assert actual[2]["incomes"] == 0
-    assert actual[2]["invested"] == 0
     assert actual[2]["market_value"] == 300
     assert actual[2]["profit_sum"] == 300
     assert actual[2]["latest_check"] == datetime(2000, 1, 2)

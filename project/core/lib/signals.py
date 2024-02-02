@@ -247,23 +247,7 @@ class Savings(SignalBase):
                 incomes=(pl.col("past_amount") + pl.col("per_year_incomes")),
                 fee=(pl.col("past_fee") + pl.col("per_year_fee")),
             )
-            .with_columns(
-                invested=(
-                    pl.lit(0)
-                    + pl.col("incomes")
-                    - pl.col("fee")
-                    - pl.col("sold")
-                    - pl.col("sold_fee")
-                )
-            )
-            .with_columns(
-                invested=(
-                    pl.when(pl.col("invested") < 0)
-                    .then(0)
-                    .otherwise(pl.col("invested"))
-                )
-            )
-            .with_columns(profit_sum=(pl.col("market_value") - pl.col("invested")))
+            .with_columns(profit_sum=(pl.col("market_value") - pl.col("incomes") - pl.col("fee")))
         )
         return df.collect()
 
@@ -299,7 +283,6 @@ class Savings(SignalBase):
             "past_fee",
             "per_year_incomes",
             "per_year_fee",
-            "invested",
             "profit_sum",
         ]
 
