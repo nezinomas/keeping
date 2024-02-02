@@ -47,8 +47,7 @@ class SignalBase(ABC):
         return self._table.to_dicts()
 
     @abstractmethod
-    def make_table(self, df: DF) -> DF:
-        ...
+    def make_table(self, df: DF) -> DF: ...
 
     def _make_df(self, arr: list[dict]) -> DF:
         schema = {
@@ -65,8 +64,7 @@ class SignalBase(ABC):
             return df
 
         return (
-            df
-            .lazy()
+            df.lazy()
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
@@ -191,9 +189,7 @@ class Accounts(SignalBase):
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
             .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["id"]))
             .with_columns(
-                past=pl.col("tmp_balance")
-                .shift(n=1, fill_value=0)
-                .over("id")
+                past=pl.col("tmp_balance").shift(n=1, fill_value=0).over("id")
             )
             .with_columns(
                 balance=(pl.col("past") + pl.col("incomes") - pl.col("expenses"))
@@ -247,26 +243,36 @@ class Savings(SignalBase):
                 incomes=(pl.col("past_amount") + pl.col("per_year_incomes")),
                 fee=(pl.col("past_fee") + pl.col("per_year_fee")),
             )
-            .with_columns(profit_sum=(pl.col("market_value") - pl.col("incomes") - pl.col("fee")))
+            .with_columns(
+                profit_sum=(pl.col("market_value") - pl.col("incomes") - pl.col("fee"))
+            )
+            .with_columns(
+                profit_proc=(
+                    pl.when(pl.col("market_value") == 0)
+                    .then(0)
+                    .otherwise(
+                        pl.lit(100)
+                        - (pl.col("market_value") - pl.col("fee")) * 100 / pl.col("incomes")
+                    )
+                )
+            )
+            .with_columns(
+                profit_proc=(
+                    pl.when(pl.col("profit_proc").is_infinite())
+                    .then(0)
+                    .otherwise(pl.col("profit_proc"))
+                )
+            )
         )
         return df.collect()
 
     def _calc_past(self, df: DF) -> pl.Expr:
         df = (
-            df
-            .lazy()
+            df.lazy()
             .with_columns(tmp=pl.col("per_year_incomes").cum_sum().over("id"))
-            .with_columns(
-                past_amount=pl.col("tmp")
-                .shift(n=1, fill_value=0)
-                .over("id")
-            )
+            .with_columns(past_amount=pl.col("tmp").shift(n=1, fill_value=0).over("id"))
             .with_columns(tmp=pl.col("per_year_fee").cum_sum().over("id"))
-            .with_columns(
-                past_fee=pl.col("tmp")
-                .shift(n=1, fill_value=0)
-                .over("id")
-            )
+            .with_columns(past_fee=pl.col("tmp").shift(n=1, fill_value=0).over("id"))
             .drop("tmp")
         )
         return df
@@ -287,8 +293,7 @@ class Savings(SignalBase):
         ]
 
         return (
-            inc
-            .join(exp, on=["id", "year"], how="outer_coalesce", join_nulls=True)
+            inc.join(exp, on=["id", "year"], how="outer_coalesce", join_nulls=True)
             .join(hv, on=["id", "year"], how="outer_coalesce", join_nulls=True)
             .lazy()
             .rename({"have": "market_value"})
