@@ -251,7 +251,7 @@ class Savings(SignalBase):
                     pl.when(pl.col("market_value") == 0)
                     .then(0)
                     .otherwise(
-                       (pl.col("market_value") - pl.col("fee")) * 100 / pl.col("incomes") - 100
+                       ((pl.col("market_value") - pl.col("fee")) / pl.col("incomes") * 100) - 100
                     )
                 )
             )
