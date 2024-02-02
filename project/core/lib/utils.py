@@ -34,4 +34,19 @@ def sum_col(arr: List[Dict], key: Any) -> float:
 
 
 def total_row(data, fields) -> dict:
-    return {field: sum(getattr(d, field, 0) for d in data) for field in fields}
+    row = {field: sum(getattr(d, field, 0) for d in data) for field in fields}
+
+    if not row.get("profit_proc"):
+        return row
+
+    incomes = row.get("incomes", 0)
+    fee = row.get("fee", 0)
+    market_value = row.get("market_value", 0)
+
+    proc = 0
+    if incomes:
+        proc = ((market_value - fee) / incomes * 100) - 100
+
+    row["profit_proc"] = proc
+
+    return row
