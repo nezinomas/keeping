@@ -91,6 +91,7 @@ class SavingBalance(models.Model):
     incomes = models.IntegerField(default=0)
     market_value = models.IntegerField(default=0)
     profit_sum = models.IntegerField(default=0)
+    profit_proc = models.FloatField(default=0.0)
 
     # Managers
     objects = managers.SavingBalanceQuerySet.as_manager()
