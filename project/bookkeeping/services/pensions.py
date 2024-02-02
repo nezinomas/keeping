@@ -26,6 +26,7 @@ def load_service(year: int) -> dict:
         "sold_fee",
         "market_value",
         "profit_sum",
+        "profit_proc",
     ]
 
     return {

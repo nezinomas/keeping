@@ -51,7 +51,7 @@
             <td class="w6  right-grey-border {{item.sold_fee|css_class_if_none}}">{{item.sold_fee|price|cellformat}}</td>
             <td class="w6 right-blue-border {{item.market_value|css_class_if_none}}">{{item.market_value|price|cellformat}}</td>
             <td class="w6 {{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_sum|price|cellformat}}</td>
-            <td class="w6 {{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.incomes|percent:item.market_value|sub:100|cellformat}}%</td>
+            <td class="w6 {{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_proc|cellformat}}%</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -68,7 +68,7 @@
             <th class="right-grey-border {{total_row.sold_fee|css_class_if_none}}">{{total_row.sold_fee|price|cellformat}}</th>
             <th class="right-blue-border {{total_row.market_value|css_class_if_none}}">{{total_row.market_value|price|cellformat}}</th>
             <th class="{{total_row.profit_sum|positive_negative}} {{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_sum|price|cellformat}}</th>
-            <th class="{{total_row.profit_sum|positive_negative}} {{total_row.profit_sum|css_class_if_none}}">{{total_row.incomes|percent:total_row.market_value|sub:100|cellformat}}%</th>
+            <th class="{{total_row.profit_sum|positive_negative}} {{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_proc|cellformat}}%</th>
         </tr>
     </tfoot>
 </table>
