@@ -13,18 +13,18 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(name="data1")
 def fixture_data1():
     return [
-        {"year": 1999, "invested": 0, "profit": 0},
-        {"year": 2000, "invested": 1, "profit": 1},
-        {"year": 2001, "invested": 2, "profit": 2},
+        {"year": 1999, "incomes": 0, "profit": 0},
+        {"year": 2000, "incomes": 1, "profit": 1},
+        {"year": 2001, "incomes": 2, "profit": 2},
     ]
 
 
 @pytest.fixture(name="data2")
 def fixture_data2():
     return [
-        {"year": 1999, "invested": 0, "profit": 0},
-        {"year": 2000, "invested": 4, "profit": 4},
-        {"year": 2001, "invested": 5, "profit": 5},
+        {"year": 1999, "incomes": 0, "profit": 0},
+        {"year": 2000, "incomes": 4, "profit": 4},
+        {"year": 2001, "incomes": 5, "profit": 5},
     ]
 
 
@@ -51,7 +51,7 @@ int_stragegy = st.integers()
 data_stragety = st.lists(
     st.fixed_dictionaries({
         'year': st.integers(min_value=1974, max_value=2050),
-        'invested': st.integers(min_value=0, max_value=1_000_000),
+        'incomes': st.integers(min_value=0, max_value=1_000_000),
         'profit': st.integers(min_value=-1_000, max_value=1_000)
     })
 )
@@ -119,9 +119,9 @@ def test_chart_data_6():
 
 @pytest.mark.django_db
 def test_chart_data_db1():
-    SavingBalanceFactory(year=1999, incomes=0, invested=0, profit_sum=0)
-    SavingBalanceFactory(year=2000, incomes=1, invested=1, profit_sum=1)
-    SavingBalanceFactory(year=2001, incomes=2, invested=2, profit_sum=2)
+    SavingBalanceFactory(year=1999, incomes=0, profit_sum=0)
+    SavingBalanceFactory(year=2000, incomes=1, profit_sum=1)
+    SavingBalanceFactory(year=2001, incomes=2, profit_sum=2)
 
     qs = SavingBalance.objects.sum_by_type()
 

@@ -22,6 +22,7 @@ class Chart:
     invested: list = field(init=False, default_factory=list)
     profit: list = field(init=False, default_factory=list)
     total: list = field(init=False, default_factory=list)
+    proc: float = field(init=False, default=0.0)
 
     def __post_init__(self):
         self.text_total = _("Total")
@@ -42,22 +43,23 @@ class Chart:
             .lazy()
             .group_by(pl.col.year)
             .agg(
-                [pl.col.invested.sum(), pl.col.profit.sum()]
+                [pl.col.incomes.sum(), pl.col.profit.sum()]
             )
             .with_columns(
-                (pl.col.invested + pl.col.profit).alias("total"),
+                (pl.col.incomes + pl.col.profit).alias("total"),
             )
             .filter(pl.col.year <= datetime.now().year)
-            .filter((pl.col.invested != 0.0) & (pl.col.profit != 0.0))
+            .filter((pl.col.incomes != 0.0) & (pl.col.profit != 0.0))
+            .with_columns(proc=((pl.col.profit * 100) / pl.col.incomes).round(1))
             .sort(pl.col.year)
         ).collect()
 
-
     def _update_attributes(self, df):
         self.categories = df["year"].to_list()
-        self.invested = df["invested"].to_list()
+        self.invested = df["incomes"].to_list()
         self.profit = df["profit"].to_list()
         self.total = df["total"].to_list()
+        self.proc = df["proc"].to_list()
 
 
 @dataclass

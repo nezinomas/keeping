@@ -62,10 +62,10 @@ class PensionBalance(models.Model):
     per_year_fee = models.IntegerField(default=0)
     sold = models.IntegerField(default=0)
     sold_fee = models.IntegerField(default=0)
-    invested = models.IntegerField(default=0)
     incomes = models.IntegerField(default=0)
     market_value = models.IntegerField(default=0)
     profit_sum = models.IntegerField(default=0)
+    profit_proc = models.FloatField(default=0.0)
 
     # Managers
     objects = managers.PensionBalanceQuerySet.as_manager()
