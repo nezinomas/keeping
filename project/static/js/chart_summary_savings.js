@@ -6,7 +6,14 @@ function annotationLabels(arrTotal, arrProfit, arrInvested) {
         if (arrProfit[i] < 0) {
             y_val = arrInvested[i]
         }
-        total[i] = {point: { xAxis: 0, yAxis: 0, x: i, y: y_val}}
+        total[i] = {
+            point: {
+                xAxis: 0,
+                yAxis: 0,
+                x: i,
+                y: y_val
+            }
+        }
     }
     return total;
 };
