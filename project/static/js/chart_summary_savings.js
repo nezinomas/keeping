@@ -38,6 +38,9 @@ function chartSavings(container) {
         title: {
             text: chartData.title,
         },
+        subtitle: {
+            text: ''
+        },
         annotations: [{
             draggable: '',
             labelOptions: {
