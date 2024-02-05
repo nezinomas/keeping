@@ -259,7 +259,7 @@ class Savings(SignalBase):
                 profit_proc=(
                     pl.when(pl.col("profit_proc").is_infinite())
                     .then(0)
-                    .otherwise(pl.col("profit_proc"))
+                    .otherwise(pl.col("profit_proc").round(2))
                 )
             )
         )
