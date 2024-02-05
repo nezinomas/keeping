@@ -50,7 +50,7 @@ class Chart:
             )
             .filter(pl.col.year <= datetime.now().year)
             .filter((pl.col.incomes != 0.0) & (pl.col.profit != 0.0))
-            .with_columns(proc=(pl.col.profit *100 / pl.col.incomes).round(1))
+            .with_columns(proc=((pl.col.profit * 100) / pl.col.incomes).round(1))
             .sort(pl.col.year)
         ).collect()
 
