@@ -14,7 +14,7 @@ Highcharts.theme = {
     ],
     chart: {
         backgroundColor: null,
-        style:{
+        style: {
             fontFamily: "Dosis, sans-serif"
         },
     },
@@ -26,7 +26,7 @@ Highcharts.theme = {
             textTransform: "uppercase"
         }
     },
-    tooltip:{
+    tooltip: {
         borderWidth: 0,
         backgroundColor: "rgba(219,219,216,0.8)",
         shadow: !1
@@ -42,8 +42,8 @@ Highcharts.theme = {
         }
     },
     yAxis: {
-        title:{
-            style:{
+        title: {
+            style: {
                 textTransform: "uppercase"
             }
         },
@@ -62,7 +62,7 @@ Highcharts.theme = {
         floating: true,
         borderWidth: 0,
         backgroundColor: "#F0F0EA",
-        itemStyle:{
+        itemStyle: {
             fontWeight: "bold",
             fontSize: "13px",
         },
