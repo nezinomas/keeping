@@ -12,7 +12,7 @@
             <th colspan="2" class="text-center">{% translate 'Past years' %}</th>
             <th colspan="2" class="text-center left-grey-border right-grey-border">{{ request.user.year }}</th>
             <th colspan="4" class="text-center">{% translate 'Total' %}</th>
-            <th rowspan="2" colspan="2" class="left-grey-border right-blue-border"></th>
+            <th rowspan="2" colspan="2" class="left-grey-border right-blue-border text-center">{% translate 'Market value' %}</th>
             <th colspan="4" rowspan="2" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
         </tr>
         <tr>
@@ -31,7 +31,8 @@
             <th>{% translate 'Fees' %}</th>
             <th>{% translate 'Sum' %}</th>
             <th class="right-grey-border">{% translate 'Fees' %}</th>
-            <th colspan="2" class="right-blue-border">{% translate 'Market value' %}</th>
+            <th>{% translate 'Date' %}</th>
+            <th class="right-blue-border">{% translate 'Sum'%}</th>
             <th>{% translate 'Sum' %}</th>
             <th>%</th>
         </tr>
