@@ -22,6 +22,7 @@ class Chart:
     invested: list = field(init=False, default_factory=list)
     profit: list = field(init=False, default_factory=list)
     total: list = field(init=False, default_factory=list)
+    proc: float = field(init=False, default=0.0)
 
     def __post_init__(self):
         self.text_total = _("Total")
@@ -49,15 +50,16 @@ class Chart:
             )
             .filter(pl.col.year <= datetime.now().year)
             .filter((pl.col.incomes != 0.0) & (pl.col.profit != 0.0))
+            .with_columns(proc=(pl.col.profit *100 / pl.col.incomes).round(1))
             .sort(pl.col.year)
         ).collect()
-
 
     def _update_attributes(self, df):
         self.categories = df["year"].to_list()
         self.invested = df["incomes"].to_list()
         self.profit = df["profit"].to_list()
         self.total = df["total"].to_list()
+        self.proc = df["proc"].to_list()
 
 
 @dataclass

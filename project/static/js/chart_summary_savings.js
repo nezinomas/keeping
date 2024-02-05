@@ -82,13 +82,9 @@ function chartSavings(container) {
         tooltip: {
             pointFormat: '{point.y:,.0f}',
             formatter: function () {
-                let {series} = this.series.chart;
-                let profit = series[0].yData[this.point.x];
-                let invested = series[1].yData[this.point.x];
-                let percent = (profit * 100) / invested;
                 return `
                     <div><b>${this.x}</b></div>
-                    <div class="my-2">${chartData.text_profit}: ${Highcharts.numberFormat(percent, 1)}%</div>
+                    <div class="my-2">${chartData.text_profit}: ${chartData.proc[this.point.x]}%</div>
                 `
             }
         },
