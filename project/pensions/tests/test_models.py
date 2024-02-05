@@ -331,6 +331,6 @@ def test_sum_by_year():
     actual = list(PensionBalance.objects.sum_by_year())
 
     assert actual == [
-        {'year': 1999, 'incomes': 3, 'profit': -3},
-        {'year': 2000, 'incomes': 3, 'profit': -3},
+        {'year': 1999, 'incomes': 3, 'profit': -3, 'fee': 0},
+        {'year': 2000, 'incomes': 3, 'profit': -3, 'fee': 0},
     ]

@@ -751,8 +751,8 @@ def test_sum_by_type_funds():
     actual = list(SavingBalance.objects.sum_by_type())
 
     assert actual == [
-        {'year': 1999, 'incomes': 11, 'profit': -13, 'type': 'funds'},
-        {'year': 2000, 'incomes': 11, 'profit': -13, 'type': 'funds'},
+        {'year': 1999, 'incomes': 11, 'profit': -13, 'fee': 2, 'type': 'funds'},
+        {'year': 2000, 'incomes': 11, 'profit': -13, 'fee': 2, 'type': 'funds'},
     ]
 
 
@@ -766,8 +766,8 @@ def test_sum_by_type_shares():
     actual = list(SavingBalance.objects.sum_by_type())
 
     assert actual == [
-        {'year': 1999, 'incomes': 11, 'profit': -13, 'type': 'shares'},
-        {'year': 2000, 'incomes': 11, 'profit': -13, 'type': 'shares'},
+        {'year': 1999, 'incomes': 11, 'profit': -13, 'fee': 2, 'type': 'shares'},
+        {'year': 2000, 'incomes': 11, 'profit': -13, 'fee': 2, 'type': 'shares'},
     ]
 
 
@@ -781,8 +781,8 @@ def test_sum_by_type_pensions():
     actual = list(SavingBalance.objects.sum_by_type())
 
     assert actual == [
-        {'year': 1999, 'incomes': 11, 'profit': -13, 'type': 'pensions'},
-        {'year': 2000, 'incomes': 11, 'profit': -13, 'type': 'pensions'},
+        {'year': 1999, 'incomes': 11, 'profit': -13, 'fee': 2, 'type': 'pensions'},
+        {'year': 2000, 'incomes': 11, 'profit': -13, 'fee': 2, 'type': 'pensions'},
     ]
 
 
