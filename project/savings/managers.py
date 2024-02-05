@@ -137,9 +137,9 @@ class SavingBalanceQuerySet(models.QuerySet):
             .filter(
                 Q(saving_type__closed__isnull=True) | Q(saving_type__closed__gt=F("y"))
             )
-            .annotate(incomes=Sum("incomes"), profit=Sum("profit_sum"))
+            .annotate(incomes=Sum("incomes"), profit=Sum("profit_sum"), fee=Sum("fee"))
             .order_by("year")
-            .values("year", "incomes", "profit", type=F("saving_type__type"))
+            .values("year", "incomes", "profit", "fee", type=F("saving_type__type"))
         )
 
     def sum_by_year(self):
