@@ -4,7 +4,7 @@ import pytest
 from mock import patch
 
 from ..services.summary_savings_and_incomes import \
-    ServiceSummarySavingsAndIncomes as T
+    Service as T
 
 
 @pytest.fixture(name="incomes")

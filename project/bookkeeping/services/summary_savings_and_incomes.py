@@ -8,7 +8,7 @@ from ...savings.models import Saving
 
 
 @dataclass
-class ServiceSummarySavingsAndIncomesData:
+class Data:
     incomes: list = field(init=False, default_factory=list)
     savings: list = field(init=False, default_factory=list)
 
@@ -17,8 +17,8 @@ class ServiceSummarySavingsAndIncomesData:
         self.savings = Saving.objects.sum_by_year()
 
 
-class ServiceSummarySavingsAndIncomes:
-    def __init__(self, data: ServiceSummarySavingsAndIncomesData):
+class Service:
+    def __init__(self, data: Data):
         self._incomes = data.incomes
         self._savings = data.savings
 
@@ -45,8 +45,8 @@ class ServiceSummarySavingsAndIncomes:
         }
 
 def load_service() -> dict:
-    data = ServiceSummarySavingsAndIncomesData()
-    obj = ServiceSummarySavingsAndIncomes(data)
+    data = Data()
+    obj = Service(data)
 
     text = {
         "text": {
