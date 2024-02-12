@@ -5,13 +5,13 @@ import pytest
 from ...accounts.factories import AccountBalanceFactory
 from ...pensions.factories import PensionBalanceFactory
 from ...savings.factories import SavingBalanceFactory
-from ..services.wealth import WealthService, WealthServiceData
+from ..services.wealth import Wealth, Data
 
 pytestmark = pytest.mark.django_db
 
 
 def test_data_service_empty_db():
-    obj = WealthServiceData(1999)
+    obj = Data(1999)
 
     assert obj.year == 1999
     assert obj.account_balance == 0
@@ -23,7 +23,7 @@ def test_data_service_account_balance():
     AccountBalanceFactory()
     AccountBalanceFactory()
 
-    obj = WealthServiceData(1999)
+    obj = Data(1999)
 
     assert obj.account_balance == 250
 
@@ -32,7 +32,7 @@ def test_data_service_saving_balance():
     SavingBalanceFactory()
     SavingBalanceFactory()
 
-    obj = WealthServiceData(1999)
+    obj = Data(1999)
 
     assert obj.saving_balance == 50
 
@@ -41,13 +41,13 @@ def test_data_service_pension_balance():
     PensionBalanceFactory()
     PensionBalanceFactory()
 
-    obj = WealthServiceData(1999)
+    obj = Data(1999)
 
     assert obj.pension_balance == 50
 
 
 def test_data():
-    obj = WealthService(
+    obj = Wealth(
         data=SimpleNamespace(
             year=1111, account_balance=1, saving_balance=2, pension_balance=4
         )
@@ -60,7 +60,7 @@ def test_data():
 
 
 def test_money():
-    obj = WealthService(
+    obj = Wealth(
         data=SimpleNamespace(account_balance=1, saving_balance=2, pension_balance=4)
     )
     actual = obj.money
@@ -69,7 +69,7 @@ def test_money():
 
 
 def test_wealth():
-    obj = WealthService(
+    obj = Wealth(
         data=SimpleNamespace(account_balance=1, saving_balance=2, pension_balance=4)
     )
     actual = obj.wealth

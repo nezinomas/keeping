@@ -9,7 +9,7 @@ from ...savings.models import SavingBalance
 
 
 @dataclass
-class WealthServiceData:
+class Data:
     year: int
 
     account_balance: float = field(init=False, default=0)
@@ -31,8 +31,8 @@ class WealthServiceData:
 
 
 @dataclass
-class WealthService:
-    data: WealthServiceData
+class Wealth:
+    data: Data
 
     @property
     def money(self):
@@ -49,7 +49,7 @@ class WealthService:
 
 
 def load_service(year: int) -> dict:
-    obj = WealthService(WealthServiceData(year))
+    obj = Wealth(Data(year))
 
     return {
         "data": {
