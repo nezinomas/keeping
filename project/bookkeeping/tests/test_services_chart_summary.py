@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 import time_machine
 
-from ..services.chart_summary import ChartSummaryService
+from ..services.chart_summary import Charts
 
 
 @pytest.fixture(name="incomes_types")
@@ -26,7 +26,7 @@ def test_chart_incomes_context():
         ],
         expenses=[],
     )
-    actual = ChartSummaryService(data).chart_incomes()
+    actual = Charts(data).chart_incomes()
 
     assert "records" in actual
     assert "chart_title" in actual
@@ -48,7 +48,7 @@ def test_chart_incomes_salary_years():
         incomes_types=[],
         expenses=[],
     )
-    actual = ChartSummaryService(data).chart_incomes()
+    actual = Charts(data).chart_incomes()
 
     assert actual["categories"] == [1998, 1999]
 
@@ -64,7 +64,7 @@ def test_chart_incomes_salary():
         incomes_types=[],
         expenses=[],
     )
-    actual = ChartSummaryService(data).chart_incomes()
+    actual = Charts(data).chart_incomes()
 
     assert actual["salary"] == [1, 10]
 
@@ -83,7 +83,7 @@ def test_chart_incomes_incomes():
         ],
         expenses=[],
     )
-    actual = ChartSummaryService(data).chart_incomes()
+    actual = Charts(data).chart_incomes()
 
     assert actual["incomes"] == [2, 12]
 
@@ -100,7 +100,7 @@ def test_chart_incomes_records():
         ],
         expenses=[],
     )
-    actual = ChartSummaryService(data).chart_incomes()
+    actual = Charts(data).chart_incomes()
 
     assert actual["records"] == 1
 
@@ -108,7 +108,7 @@ def test_chart_incomes_records():
 @time_machine.travel("1999-1-1")
 def test_chart_incomes_records_no_data():
     data = SimpleNamespace(incomes=[], incomes_types=[], salary=[], expenses=[])
-    actual = ChartSummaryService(data).chart_incomes()
+    actual = Charts(data).chart_incomes()
 
     assert actual["records"] == 0
 
@@ -129,7 +129,7 @@ def test_chart_balance_context():
         incomes_types=[],
         expenses=[],
     )
-    actual = ChartSummaryService(data).chart_balance()
+    actual = Charts(data).chart_balance()
 
     assert "records" in actual
     assert "chart_title" in actual
@@ -142,7 +142,7 @@ def test_chart_balance_context():
 
 def test_chart_balance_no_data():
     data = SimpleNamespace(salary=[], incomes=[], incomes_types=[], expenses=[])
-    actual = ChartSummaryService(data).chart_balance()
+    actual = Charts(data).chart_balance()
 
     assert actual["records"] == 0
     assert "chart_title" not in actual
@@ -162,7 +162,7 @@ def test_chart_balance_records_only_incomes():
         incomes_types=[],
         expenses=[],
     )
-    actual = ChartSummaryService(data).chart_balance()
+    actual = Charts(data).chart_balance()
 
     assert actual["records"] == 1
 
@@ -176,7 +176,7 @@ def test_chart_balance_records_only_expenses():
             {"sum": 12, "year": 1998},
         ],
     )
-    actual = ChartSummaryService(data).chart_balance()
+    actual = Charts(data).chart_balance()
 
     assert actual["records"] == 1
 
@@ -193,7 +193,7 @@ def test_chart_balance_records():
             {"sum": 24, "year": 1999},
         ],
     )
-    actual = ChartSummaryService(data).chart_balance()
+    actual = Charts(data).chart_balance()
 
     assert actual["records"] == 1
 
@@ -208,7 +208,7 @@ def test_chart_balance_categories_only_incomes():
         incomes_types=[],
         expenses=[],
     )
-    actual = ChartSummaryService(data).chart_balance()
+    actual = Charts(data).chart_balance()
 
     assert actual["categories"] == [1998, 1999]
 
@@ -223,7 +223,7 @@ def test_chart_balance_categories_only_expenses():
             {"sum": 24, "year": 1999},
         ],
     )
-    actual = ChartSummaryService(data).chart_balance()
+    actual = Charts(data).chart_balance()
 
     assert actual["categories"] == [1998, 1999]
 
@@ -240,7 +240,7 @@ def test_chart_balance_categories():
             {"sum": 12, "year": 2000},
         ],
     )
-    actual = ChartSummaryService(data).chart_balance()
+    actual = Charts(data).chart_balance()
 
     assert actual["categories"] == [1998, 1999]
 
@@ -255,7 +255,7 @@ def test_chart_balance_incomes():
         incomes_types=[],
         expenses=[],
     )
-    actual = ChartSummaryService(data).chart_balance()
+    actual = Charts(data).chart_balance()
 
     assert actual["incomes"] == [12, 24]
 
@@ -270,7 +270,7 @@ def test_chart_balance_expenses():
             {"sum": 24, "year": 1999},
         ],
     )
-    actual = ChartSummaryService(data).chart_balance()
+    actual = Charts(data).chart_balance()
 
     assert actual["expenses"] == [12, 24]
 
@@ -282,7 +282,7 @@ def test_chart_incomes_types_context():
         salary=[],
         expenses=[],
     )
-    actual = ChartSummaryService(data).chart_incomes_types()
+    actual = Charts(data).chart_incomes_types()
 
     assert "chart_title" in actual
     assert "categories" in actual
@@ -296,7 +296,7 @@ def test_chart_incomes_types_categories_no_data():
         expenses=[],
         incomes_types=[]
     )
-    actual = ChartSummaryService(data).chart_incomes_types()
+    actual = Charts(data).chart_incomes_types()
 
     assert actual["categories"] == []
 
@@ -308,7 +308,7 @@ def test_chart_incomes_types_categories(incomes_types):
         expenses=[],
         incomes_types=incomes_types
     )
-    actual = ChartSummaryService(data).chart_incomes_types()
+    actual = Charts(data).chart_incomes_types()
 
     assert actual["categories"] == [1998, 1999, 2000]
 
@@ -320,7 +320,7 @@ def test_chart_incomes_types_data(incomes_types):
         expenses=[],
         incomes_types=incomes_types
     )
-    actual = ChartSummaryService(data).chart_incomes_types()
+    actual = Charts(data).chart_incomes_types()
 
     assert actual["data"][0] == {"name": "T1", "data": [1, 0, 2]}
     assert actual["data"][1] == {"name": "T2", "data": [0, 3, 4]}
@@ -333,6 +333,6 @@ def test_chart_incomes_types_data_no_data():
         expenses=[],
         incomes_types=[]
     )
-    actual = ChartSummaryService(data).chart_incomes_types()
+    actual = Charts(data).chart_incomes_types()
 
     assert actual["data"] == []

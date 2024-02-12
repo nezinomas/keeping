@@ -9,7 +9,7 @@ from . import common
 
 
 @dataclass
-class ChartSummaryServiceData:
+class Data:
     incomes: list = field(init=False, default_factory=list)
     incomes_types: list = field(init=False, default_factory=list)
     expenses: list = field(init=False, default_factory=list)
@@ -22,8 +22,8 @@ class ChartSummaryServiceData:
         self.expenses = Expense.objects.sum_by_year()
 
 
-class ChartSummaryService:
-    def __init__(self, data: ChartSummaryServiceData):
+class Charts:
+    def __init__(self, data: Data):
         self._incomes = data.incomes
         self._incomes_types = data.incomes_types
         self._salary = data.salary
@@ -90,8 +90,8 @@ class ChartSummaryService:
 
 
 def load_service() -> dict:
-    data = ChartSummaryServiceData()
-    obj = ChartSummaryService(data)
+    data = Data()
+    obj = Charts(data)
 
     return {
         "chart_balance": obj.chart_balance(),
