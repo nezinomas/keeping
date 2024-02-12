@@ -12,7 +12,7 @@ from ...users.models import Journal
 
 
 @dataclass
-class NoIncomesData:
+class Data:
     year: int
     months: int = field(default=6)
     unnecessary_expenses: list = field(default_factory=list)
@@ -64,7 +64,7 @@ class NoIncomesData:
 
 @dataclass
 class NoIncomes:
-    data: NoIncomesData
+    data: Data
     cut_sum: float = field(init=False, default=0)
     avg_expenses: float = field(init=False, default=0)
 
@@ -138,7 +138,7 @@ class NoIncomes:
 
 
 def load_service(year: int, journal: Journal) -> dict:
-    data = NoIncomesData(
+    data = Data(
         year=year,
         unnecessary_expenses=journal.unnecessary_expenses,
         unnecessary_savings=journal.unnecessary_savings,
