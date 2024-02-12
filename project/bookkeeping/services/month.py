@@ -17,7 +17,7 @@ from ..lib.make_dataframe import MakeDataFrame
 
 
 @dataclass
-class MonthServiceData:
+class Data:
     year: int
     month: int
 
@@ -171,7 +171,7 @@ class Objects:
         self._initialize_objects(year, month)
 
     def _get_data(self, year: int, month: int):
-        self.data = MonthServiceData(year, month)
+        self.data = Data(year, month)
 
     def _initialize_objects(self, year: int, month: int):
         # expense and saving data_frames
