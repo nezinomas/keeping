@@ -14,7 +14,7 @@ from ...transactions.models import SavingClose
 
 
 @dataclass
-class ForecastServiceData:
+class Data:
     year: int
 
     def data(self) -> dict[str, list[int]]:
@@ -86,7 +86,7 @@ class ForecastServiceData:
         return arr
 
 
-class ForecastService:
+class Forecast:
     def __init__(self, month: int, data: dict[str, list[int]]):
         self._month = month
         self._data = self._create_df(data)
@@ -209,9 +209,9 @@ def get_month(year: int) -> int:
 
 
 def load_service(year: int) -> dict:
-    data = ForecastServiceData(year)
+    data = Data(year)
     month = get_month(year)
-    forecast = ForecastService(month, data.data()).forecast()
+    forecast = Forecast(month, data.data()).forecast()
 
     beginning = data.amount_at_beginning_of_year()
     end = beginning + forecast
