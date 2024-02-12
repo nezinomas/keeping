@@ -11,7 +11,7 @@ from ...savings.models import Saving
 
 
 @dataclass
-class DetailerServiceData:
+class Data:
     year: int
     incomes: list[dict] = field(init=False, default_factory=list)
     expenses: list[dict] = field(init=False, default_factory=list)
@@ -27,8 +27,8 @@ class DetailerServiceData:
         )
 
 
-class DetailedService:
-    def __init__(self, data: DetailerServiceData):
+class Service:
+    def __init__(self, data: Data):
         self._year = data.year
         self._incomes = data.incomes
         self._expenses = data.expenses
@@ -132,8 +132,8 @@ class DetailedService:
 
 
 def load_service(year: int) -> dict:
-    data = DetailerServiceData(year)
-    obj = DetailedService(data)
+    data = Data(year)
+    obj = Service(data)
 
     return  {
         "object_list": it.chain(
