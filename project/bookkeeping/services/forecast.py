@@ -124,8 +124,9 @@ class Forecast:
         Returns:
             int: The total sum of planned incomes.
         """
+
         df = (
-            self._data.filter(pl.col("month") >= self._month)
+            self._data.filter(pl.col("month") > self._month)
             .select(pl.col("planned_incomes"))
             .sum()
         )
@@ -157,13 +158,13 @@ class Forecast:
         Returns:
             A dictionary containing sum of expenses and savings.
 
-            The keys are "expenses" and "savings".
+            The keys are "expenses", "savings", "incomes", "planed_incomes".
 
-            {"expenses": int, "savings": int}
+            {"expenses": int, "savings": int, "incomes": int, "planned_incomes": int}
         """
         return (
             self._data.filter(pl.col("month") == self._month)
-            .select([pl.col.expenses, pl.col.savings])
+            .select([pl.col.expenses, pl.col.savings, pl.col.incomes, pl.col.planned_incomes])
             .to_dicts()[0]
         )
 
@@ -183,12 +184,15 @@ class Forecast:
         savings_avg = avg["savings"]
         savings_current = max(current["savings"], savings_avg)
 
+        incomes_current = max(current["incomes"], current["planned_incomes"])
+
         month_left = 12 - self._month
 
         return (
             0
             + self.balance()
             + self.planned_incomes()
+            + incomes_current
             - (expenses_current + expenses_avg * month_left)
             - (savings_current + savings_avg * month_left)
         )
