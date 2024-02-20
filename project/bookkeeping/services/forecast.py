@@ -124,8 +124,9 @@ class Forecast:
         Returns:
             int: The total sum of planned incomes.
         """
+
         df = (
-            self._data.filter(pl.col("month") >= self._month)
+            self._data.filter(pl.col("month") > self._month)
             .select(pl.col("planned_incomes"))
             .sum()
         )

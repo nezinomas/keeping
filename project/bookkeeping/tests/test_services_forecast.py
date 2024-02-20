@@ -133,7 +133,7 @@ def test_balance_no_data(data_empty):
 
 def test_planned_incomes(data):
     actual = Forecast(month=4, data=data).planned_incomes()
-    expect = 24.
+    expect = 17.
 
     assert actual == expect
 
