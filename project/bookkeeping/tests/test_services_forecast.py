@@ -144,6 +144,13 @@ def test_planned_incomes_only_planned_data(data_empty):
     assert actual == expect
 
 
+def test_averages_dict_keys(data_empty):
+    actual = Forecast(month=1, data=data_empty).averages()
+
+    assert "expenses" in actual
+    assert "savings" in actual
+
+
 def test_averages_data_with_six_months(data):
     data["expenses"][3] = 6.
     data["expenses"][4] = 16.
