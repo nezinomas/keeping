@@ -157,13 +157,13 @@ class Forecast:
         Returns:
             A dictionary containing sum of expenses and savings.
 
-            The keys are "expenses" and "savings".
+            The keys are "expenses", "savings", "incomes", "planed_incomes".
 
-            {"expenses": int, "savings": int}
+            {"expenses": int, "savings": int, "incomes": int, "planned_incomes": int}
         """
         return (
             self._data.filter(pl.col("month") == self._month)
-            .select([pl.col.expenses, pl.col.savings])
+            .select([pl.col.expenses, pl.col.savings, pl.col.incomes, pl.col.planned_incomes])
             .to_dicts()[0]
         )
 

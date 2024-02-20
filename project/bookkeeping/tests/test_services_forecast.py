@@ -100,6 +100,15 @@ def fixture_data_empty():
     }
 
 
+def test_current_month(data):
+    actual = Forecast(month=4, data=data).current_month()
+
+    assert "expenses" in actual
+    assert "savings" in actual
+    assert "incomes" in actual
+    assert "planned_incomes" in actual
+
+
 def test_balance(data):
     actual = Forecast(month=4, data=data).balance()
     expect = 12.
