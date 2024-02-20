@@ -227,6 +227,15 @@ def test_forecast_current_month_expenses_exceeds_average(data):
     assert actual == expect
 
 
+def test_forecast_current_month_incomes_exceeds_planned(data):
+    data["incomes"][3] = 100
+
+    actual = Forecast(month=4, data=data).forecast()
+    expect = 66
+
+    assert actual == expect
+
+
 def test_forecast_current_month_savings_exceeds_average(data):
     data["savings"][3] = 100
 

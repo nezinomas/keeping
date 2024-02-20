@@ -184,12 +184,15 @@ class Forecast:
         savings_avg = avg["savings"]
         savings_current = max(current["savings"], savings_avg)
 
+        incomes_current = max(current["incomes"], current["planned_incomes"])
+
         month_left = 12 - self._month
 
         return (
             0
             + self.balance()
             + self.planned_incomes()
+            + incomes_current
             - (expenses_current + expenses_avg * month_left)
             - (savings_current + savings_avg * month_left)
         )
