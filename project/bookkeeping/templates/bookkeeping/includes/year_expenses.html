@@ -4,14 +4,14 @@
 {% load cell_format %}
 
 
-<table class="table table-sm table-striped table-hover">
+<table>
     <thead>
         <tr>
-            <th class="text-start" colspan="{{ ctx.categories|length|add:1 }}" {% if not ctx.categories|length %}style="width: 90%"{% endif %}>{% translate 'Expenses statistic' %}</th>
+            <th colspan="{{ ctx.categories|length|add:1 }}" {% if not ctx.categories|length %}style="width: 90%"{% endif %}>{% translate 'Expenses statistic' %}</th>
             <th class="left-blue-border top"></th>
         </tr>
         <tr>
-            <th class="text-start w5">{{ year|title }}</th>
+            <th class="w5">{{ year|title }}</th>
             {% for category in ctx.categories %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ category }}">{{ category|truncatechars:8 }}</th>{% endfor %}
             <th class="left-blue-border">{% translate 'Total' %}</th>
         </tr>
@@ -19,7 +19,7 @@
     <tbody>
         {% for item, total_column in ctx.data  %}
         <tr>
-            <td class="text-start">{{ item.date|date:"F"|title }}</td>
+            <td>{{ item.date|date:"F"|title }}</td>
             {% for category in ctx.categories %}
             {% with item|get_item:category as val%}<td class="{{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
             {% endfor %}
@@ -29,14 +29,14 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-start">Avg</th>
+            <th>Avg</th>
             {% for category in ctx.categories %}{% with ctx.avg_row|get_item:category as val %}
             <th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>
             {% endwith %}{% endfor %}
             <th class="left-blue-border {{ctx.avg|css_class_if_none}}">{{ctx.avg|price|cellformat}}</th>
         </tr>
         <tr>
-            <th class="text-start">{% translate 'Total' %}</th>
+            <th>{% translate 'Total' %}</th>
             {% for category in ctx.categories %}{% with ctx.total_row|get_item:category as val%}
             <th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>
             {% endwith %}{% endfor %}
