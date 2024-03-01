@@ -3,18 +3,18 @@
 {% load cell_format %}
 
 
-<table class="table table-sm table-striped table-hover" x-data="{ open:false }">
+<table x-data="{ open:false }">
     <thead>
         <tr>
-            <th colspan="4" class="text-start">{% translate 'Balance' %}</th>
-            <th colspan="2" class="left-blue-border right-blue-border text-start">{% translate 'Savings' %}</th>
-            <th colspan="4" class="left-blue-border right-blue-border text-start" x-show="open">{% translate 'Debts' %}</th>
+            <th colspan="4">{% translate 'Balance' %}</th>
+            <th colspan="2" class="left-blue-border right-blue-border">{% translate 'Savings' %}</th>
+            <th colspan="4" class="left-blue-border right-blue-border" x-show="open">{% translate 'Debts' %}</th>
             <th class="text-nowrap">
-                <button class="btn btn-xs no-hover" style="font-weight: bold; color: #0d6efd; padding-right: 0!important;" @click="open = ! open" x-text="open ? '{% translate "Hide debts" %}' : '{% translate "Show debts" %}' "></button>
+                <button class="btn btn-xs no-hover" @click="open = ! open" x-text="open ? '{% translate "Hide debts" %}' : '{% translate "Show debts" %}' "></button>
             </th>
         </tr>
         <tr>
-            <th class="text-start w5">{{ year|title }}</th>
+            <th class="w5">{{ year|title }}</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
             <th>{% translate 'Balance' %}</th>
@@ -30,7 +30,7 @@
     <tbody>
         {% for item in ctx.data %}
         <tr>
-            <td class="text-start">{{item.date|date:"F"|title}}</td>
+            <td>{{item.date|date:"F"|title}}</td>
             <td class="{{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
             <td class="{{item.expenses|css_class_if_none}}">{{item.expenses|price|cellformat}}</td>
             <td class="{{item.balance|positive_negative}} {{item.balance|css_class_if_none}}">{{item.balance|price|cellformat}}</td>
@@ -46,7 +46,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-start">Avg</th>
+            <th>Avg</th>
             <th class="{{ctx.avg_row.incomes|css_class_if_none}}">{{ctx.avg_row.incomes|price|cellformat}}</th>
             <th class="{{ctx.avg_row.expenses|css_class_if_none}}">{{ctx.avg_row.expenses|price|cellformat}}</th>
             <th></th>
@@ -59,7 +59,7 @@
             <th><b>{% translate "End of year" %}</b></th>
         </tr>
         <tr>
-            <th class="text-start">{% translate 'Total' %}</th>
+            <th>{% translate 'Total' %}</th>
             <th class="{{ctx.total_row.incomes|css_class_if_none}}">{{ctx.total_row.incomes|price|cellformat}}</th>
             <th class="{{ctx.total_row.expenses|css_class_if_none}}">{{ctx.total_row.expenses|price|cellformat}}</th>
             <th class="{{ctx.total_row.balance|positive_negative}}">{{ctx.total_row.balance|price|cellformat}}</th>
