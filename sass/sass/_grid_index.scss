@@ -1,0 +1,91 @@
+#main {
+    display: grid;
+    gap: $gap;
+    grid-auto-columns: 1fr;
+    grid-template-areas:
+        'table-balance table-balance'
+        'table-expenses table-expenses'
+        'chart-expenses chart-expenses'
+        'chart-balance chart-balance'
+        'buttons buttons'
+        'accounts accounts'
+        'balance-short wealth'
+        'no-incomes avg-incomes'
+        'no-incomes borrow'
+        'no-incomes lend'
+        'savings savings'
+        'pensions pensions';
+}
+
+#main > #table-balance {
+    grid-area: table-balance;
+}
+
+#main > #table-expenses {
+    grid-area: table-expenses;
+}
+
+#main > #chart-expenses-container {
+    grid-area: chart-expenses;
+}
+
+#main > #chart-balance-container {
+    grid-area: chart-balance;
+}
+
+#main > #buttons {
+    grid-area: buttons;
+}
+
+#main > #accounts {
+    grid-area: accounts;
+}
+
+#main > #balance-short {
+    grid-area: balance-short;
+    background-color: #aceef3 ;
+}
+
+#main > #wealth {
+    grid-area: wealth;
+}
+
+#main > #no-incomes {
+    grid-area: no-incomes;
+}
+
+#main > #avg-incomes {
+    grid-area: avg-incomes;
+}
+
+#main > #borrow {
+    grid-area: borrow;
+}
+
+#main > #lend {
+    grid-area: lend;
+}
+
+#main > #savings {
+    grid-area: savings;
+}
+
+#main > #pensions {
+    grid-area: pensions;
+}
+
+@media only screen and (min-width: 992px) {
+    #main {
+        grid-template-columns: repeat(2, 20%) repeat(4, 1fr);
+        grid-template-areas:
+        "table-balance table-balance table-expenses table-expenses table-expenses table-expenses"
+        "chart-expenses chart-expenses chart-balance chart-balance chart-balance chart-balance"
+        "buttons buttons buttons buttons buttons buttons"
+        "accounts accounts accounts balance-short balance-short wealth"
+        "accounts accounts accounts no-incomes no-incomes avg-incomes"
+        "accounts accounts accounts no-incomes no-incomes borrow"
+        "accounts accounts accounts no-incomes no-incomes lend"
+        "savings savings savings savings savings savings"
+        "pensions pensions pensions pensions pensions pensions";
+    }
+}
