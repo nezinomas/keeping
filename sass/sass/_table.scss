@@ -1,0 +1,197 @@
+table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 100%;
+
+    thead  {
+        border-bottom: #000 solid .15rem !important;
+    }
+
+    thead th {
+        padding: 0.25rem 0.25rem;
+        font-weight: bold;
+    }
+
+    thead tr:not(:last-child) th {
+        background-color: #f9f9f9;
+        min-height: 36px;
+        height: 36px;
+    }
+
+    thead tr:last-child th {
+        background-color: $M1;
+    }
+
+    tfoot tr:last-child th {
+        border-bottom: 0;
+    }
+
+    tfoot tr th {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    tfoot tr:first-child th {
+        border-top: double #0359b0;
+    }
+
+    tfoot tr:not(:last-child) th {
+        font-weight: normal;
+    }
+
+    tbody tr:nth-child(odd) > * {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    tbody tr:nth-child(odd) > td.table-success {
+        background-color: lighten($success, 59) !important;
+    }
+
+    tbody tr:nth-child(odd) > td.table-danger {
+        background-color: lighten($danger, 33) !important;
+    }
+
+    td, th {
+        border: 0.5px solid #cacac9;
+        padding: 0.15rem 0.25rem;
+        text-align: right;
+        vertical-align: middle;
+    }
+
+    td:first-child, th:first-child {
+        border-left: 0 !important;
+        text-align: left;
+    }
+
+    td:last-child, th:last-child {
+        border-right: 0 !important;
+    }
+
+    tbody tr:hover td, tr:nth-child(odd):hover [class*="table-"] {
+        background: rgb(19, 139, 0, 0.1) !important;
+    }
+
+    .right-blue-border {
+        border-right: .15rem solid #0359b0 !important;
+    }
+
+    .left-blue-border {
+        border-left: .15rem solid #0359b0 !important;
+    }
+
+    .no-left-border {
+        border-left: 0 !important;
+    }
+
+    .no-right-border {
+        border-right: 0 !important;
+    }
+
+    .dash {
+        color: #d1d1d1 !important;
+    }
+
+    .table-success {
+        background-color: lighten($success, 61%) !important;
+    }
+
+    .table-danger {
+        background-color: lighten($danger, 35%) !important;
+    }
+
+    .right-grey-border {
+        border-right: 2px solid #6c757d;
+    }
+
+    .left-grey-border {
+        border-left: 2px solid #6c757d;
+    }
+
+    .right-blue-double-border {
+        border-right: double #0359b0;
+
+    }
+
+    .left-blue-double-border {
+        border-left: double #0359b0;
+    }
+
+    .no-border {
+        border: 0 !important;
+    }
+
+    .empty-column {
+        border-left: #fff solid .5rem;
+    }
+
+    .edit-cell {
+        width: 35px !important;
+        text-align: center !important;
+        border-right: 0 !important;
+    }
+
+    .delete-cell {
+        width: 25px;
+        text-align: center;
+        border-left: 0;
+    }
+
+    .exception {
+        padding-left: .4rem;
+        border-left: 5px solid $danger;
+    }
+
+    .cell-padding {
+        padding-right: .35rem;
+        padding-left: .35rem;
+    }
+
+    .table-danger.-full {
+        background-color: #fe536a;
+    }
+}
+
+
+.w3 {
+    width: 3rem !important;
+    min-width: 3rem !important;
+}
+
+.w5 {
+    width: 5rem !important;
+}
+
+.w6 {
+    width: 6rem !important;
+}
+
+.w6p {
+    width: 6% !important;
+}
+
+.w7 {
+    width: 7rem !important;
+}
+
+.w7p {
+    width: 7% !important;
+}
+
+.w8 {
+    width: 8rem !important;
+}
+
+.w10 {
+    width: 10rem !important;
+}
+
+.w12 {
+    width: 12rem !important;
+}
+
+.w16 {
+    width: 16rem !important;
+}
+
+.w18 {
+    width: 18rem !important;
+}
