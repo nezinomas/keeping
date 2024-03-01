@@ -1,0 +1,95 @@
+$M1: #aceef3;
+
+$font-size: 0.7rem;
+$gap: 0.75rem;
+
+// navigations
+$dropdown-item-padding-x: 0.5rem;
+$dropdown-item-padding-y: 0.2rem;
+
+// alerts
+$alert-padding-y: 0.75rem;
+
+// buttons
+$btn-padding-y-sm:0.25rem;
+$btn-padding-x-sm: 0.25rem;
+$btn-font-size-sm: $font-size;
+
+// @import "../node_modules/bootstrap/scss/mixins/banner";
+// @include bsBanner("");
+
+
+// scss-docs-start import-stack
+// Configuration
+@import "../node_modules/bootstrap/scss/functions";
+@import "../node_modules/bootstrap/scss/variables";
+@import "../node_modules/bootstrap/scss/maps";
+@import "../node_modules/bootstrap/scss/mixins";
+@import "../node_modules/bootstrap/scss/utilities";
+
+// // Layout & components
+@import "../node_modules/bootstrap/scss/root";
+@import "../node_modules/bootstrap/scss/reboot";
+// @import "../node_modules/bootstrap/scss/type";
+// @import "../node_modules/bootstrap/scss/images";
+// @import "../node_modules/bootstrap/scss/containers";
+// @import "../node_modules/bootstrap/scss/grid";
+// @import "../node_modules/bootstrap/scss/tables";
+@import "../node_modules/bootstrap/scss/forms";
+@import "../node_modules/bootstrap/scss/buttons";
+@import "../node_modules/bootstrap/scss/transitions";
+@import "../node_modules/bootstrap/scss/dropdown";
+@import "../node_modules/bootstrap/scss/button-group";
+@import "../node_modules/bootstrap/scss/nav";
+@import "../node_modules/bootstrap/scss/navbar";
+@import "../node_modules/bootstrap/scss/card";
+@import "../node_modules/bootstrap/scss/accordion";
+// @import "../node_modules/bootstrap/scss/breadcrumb";
+@import "../node_modules/bootstrap/scss/pagination";
+@import "../node_modules/bootstrap/scss/badge";
+@import "../node_modules/bootstrap/scss/alert";
+// @import "../node_modules/bootstrap/scss/progress";
+// @import "../node_modules/bootstrap/scss/list-group";
+@import "../node_modules/bootstrap/scss/close";
+// @import "../node_modules/bootstrap/scss/toasts";
+@import "../node_modules/bootstrap/scss/modal";
+@import "../node_modules/bootstrap/scss/tooltip";
+// @import "../node_modules/bootstrap/scss/popover";
+// @import "../node_modules/bootstrap/scss/carousel";
+// @import "../node_modules/bootstrap/scss/spinners";
+// @import "../node_modules/bootstrap/scss/offcanvas";
+// @import "../node_modules/bootstrap/scss/placeholders";
+
+@import "../node_modules/bootstrap/scss/helpers";
+@import "../node_modules/bootstrap/scss/utilities/api";
+
+
+@import 'grid_index';
+@import 'table';
+@import 'accordion';
+// @import '../node_modules/bootstrap/scss/bootstrap.scss';
+
+input,
+button,
+textarea,
+select,
+li,
+.form-control-sm,
+.tooltip
+{
+    font-size: $font-size;
+}
+
+body {
+    font-family: $font-family-sans-serif;
+    font-size: $font-size;
+    margin: 0 calc($gap / 2);
+}
+
+.btn-xs {
+    @include button-size($btn-padding-y-sm, $btn-padding-x-sm, 0.65rem, $btn-border-radius-sm);
+
+    line-height: 0.25rem !important;
+    margin-top: -0.65rem !important;
+    margin-bottom: -0.45rem !important;
+}
