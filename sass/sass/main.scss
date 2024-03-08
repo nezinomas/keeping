@@ -93,3 +93,31 @@ body {
     margin-top: -0.65rem !important;
     margin-bottom: -0.45rem !important;
 }
+
+.flex {
+    display: flex;
+    gap: calc($gap / 3);
+
+    > #search_form_data {
+        flex: 1;
+    }
+
+    > .flex-right {
+        margin-left: auto;
+        background-color: red;
+    }
+}
+
+.rows > *:not([class="flex"]) {
+    margin-bottom: calc($gap * 2);
+}
+
+.width-100 {
+    width: 100%;
+}
+
+.alert {
+    text-align: center;
+}
+
+// shadow:     box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
