@@ -112,7 +112,8 @@
 // One column
 #one-column {
     display: grid;
-    gap: $gap;
+    column-gap: $gap;
+    row-gap: calc($gap * 2);
 }
 
 
