@@ -14,16 +14,16 @@
 {% url 'expenses:new' as url_expense_new %}
 {% url 'expenses:type_new' as url_type_new %}
 {% url 'expenses:name_new' as url_name_new %}
-<div class="row gx-2">
+<main id="two-columns">
     {% var current_month=view.get_month %}
-    <div class="col-lg-8"
+    <div
         x-data="{
             openTab: '{{current_month}}',
             activeClass: 'btn-info',
             inactiveClass: 'btn-month',
         }">
-        <div class="row my-2">
-            <div class="col">
+        <!-- month buttons -->
+        <div class="flex">
                 {% for month in context_months %}
                 {% with month|date:'n' as month_number %}
                 <button type="button"
@@ -40,7 +40,7 @@
                 {% endwith %}
                 {% endfor %}
                 <button type="button"
-                    class="btn btn-sm ms-2"
+                    class="btn btn-sm"
                     hx-get="{% url 'expenses:list' %}?month=13"
                     hx-target="#data"
                     hx-swap="innerHTML"
@@ -49,22 +49,23 @@
                     @click="openTab = '13'">
                     {% translate 'All records' %}
                 </button>
-            </div>
-            <div class="col-auto text-end">
+
+
                 <button type="button" id="insert_expense"
-                    class="btn btn-sm btn-outline-success"
+                    class="btn btn-sm btn-outline-success flex-right"
                     hx-get="{{url_expense_new}}"
                     hx-target="#dialog">
                     <i class="bi bi-plus"></i>
                     {% translate "Expenses" context "expenses button" %}
                 </button>
-            </div>
-        </div>
 
-        <div class="row mb-2">
+        </div><!-- /month buttons -->
+
+        <!-- search form -->
+        <div>
             {% url 'expenses:search' as search_url %}
             {% url 'expenses:list' as reset_url %}
-            <div id="search_form_data" class="col">{% search_form url=search_url reset_url=reset_url target="#data" hightlight_tab=current_month %}</div>
+            <div id="search_form_data">{% search_form url=search_url reset_url=reset_url target="#data" hightlight_tab=current_month %}</div>
         </div>
 
         {% if request.GET.month %}
@@ -73,12 +74,13 @@
             {% now 'n' as month_number %}
         {% endif %}
 
+        <!-- data -->
         <div id="data" hx-trigger="load" hx-indicator="#indicator" hx-get="{% url 'expenses:list' %}?month={{month_number}}"></div>
     </div>
 
-    <div class="col-lg-4">
-        <div class="row my-2">
-            <div class="col-lg-12 text-end">
+    <div>
+        <!-- type and name buttons -->
+        <div class="text-end">
                 <button type="button" class="btn btn-sm btn-outline-success"
                     hx-get="{{url_type_new}}"
                     hx-target="#dialog">
@@ -92,17 +94,15 @@
                     <i class="bi bi-plus"></i>
                     {% translate "Expenses name" context "expenses name button" %}
                 </button>
-            </div>
         </div>
 
-        <div class="row">
-            <div class="col-lg-12"
-                hx-trigger="load, afterType from:body, afterName from:body"
-                hx-get="{% url 'expenses:type_list' %}"
-                hx-target="this">
-            </div>
+        <!-- type and name list -->
+        <div
+           hx-trigger="load, afterType from:body, afterName from:body"
+            hx-get="{% url 'expenses:type_list' %}"
+            hx-target="this">
         </div>
     </div>
-</div>
+</main>
 
 {% endblock content %}

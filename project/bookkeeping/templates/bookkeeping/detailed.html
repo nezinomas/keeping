@@ -16,17 +16,15 @@
 
 
 {% block content %}
+    <main id="one-column">
     {% if object_list %}
         {% for row in object_list %}
-        <div class="row mt-2">
-            <div class="col-lg-12">
-                {% detailed_table row.name row.items row.total row.total_col row.total_row  %}
-            </div>
-        </div>
+        <div>{% detailed_table row.name row.items row.total row.total_col row.total_row  %}</div>
         {% endfor %}
     {% else %}
-        <div class="mx-auto text-center alert alert-warning py-2">
+        <div class="alert alert-warning">
             {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
         </div>
     {% endif %}
+    </main>
 {% endblock content %}
