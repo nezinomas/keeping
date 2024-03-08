@@ -4,7 +4,7 @@ table {
     min-width: 100%;
 
     thead  {
-        border-bottom: #000 solid .15rem !important;
+        border-bottom: #000 solid .15rem;
     }
 
     thead th {
@@ -38,18 +38,6 @@ table {
         font-weight: normal;
     }
 
-    tbody tr:nth-child(odd) > * {
-        background-color: rgba(0, 0, 0, 0.05);
-    }
-
-    tbody tr:nth-child(odd) > td.table-success {
-        background-color: lighten($success, 59) !important;
-    }
-
-    tbody tr:nth-child(odd) > td.table-danger {
-        background-color: lighten($danger, 33) !important;
-    }
-
     td, th {
         border: 0.5px solid #cacac9;
         padding: 0.15rem 0.25rem;
@@ -66,16 +54,12 @@ table {
         border-right: 0 !important;
     }
 
-    tbody tr:hover td, tr:nth-child(odd):hover [class*="table-"] {
-        background: rgb(19, 139, 0, 0.1) !important;
-    }
-
     .right-blue-border {
-        border-right: .15rem solid #0359b0 !important;
+        border-right: .15rem solid #0359b0;
     }
 
     .left-blue-border {
-        border-left: .15rem solid #0359b0 !important;
+        border-left: .15rem solid #0359b0;
     }
 
     .no-left-border {
@@ -91,11 +75,11 @@ table {
     }
 
     .table-success {
-        background-color: lighten($success, 61%) !important;
+        background-color: lighten($success, 61%);
     }
 
     .table-danger {
-        background-color: lighten($danger, 35%) !important;
+        background-color: lighten($danger, 35%);
     }
 
     .right-grey-border {
@@ -124,9 +108,9 @@ table {
     }
 
     .edit-cell {
-        width: 35px !important;
-        text-align: center !important;
-        border-right: 0 !important;
+        width: 35px;
+        text-align: center;
+        border-right: 0;
     }
 
     .delete-cell {
@@ -147,6 +131,27 @@ table {
 
     .table-danger.-full {
         background-color: #fe536a;
+    }
+
+
+    &.hover {
+        tbody tr:hover td, tr:nth-child(odd):hover [class*="table-"] {
+            background: rgb(19, 139, 0, 0.1) !important;
+        }
+    }
+
+    &.striped {
+        tbody tr:nth-child(odd) > * {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        tbody tr:nth-child(odd) > td.table-success {
+            background-color: lighten($success, 59) !important;
+        }
+
+        tbody tr:nth-child(odd) > td.table-danger {
+            background-color: lighten($danger, 33) !important;
+        }
     }
 }
 
