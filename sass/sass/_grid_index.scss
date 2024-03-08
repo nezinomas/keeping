@@ -17,6 +17,7 @@
         'pensions pensions';
 }
 
+
 #main > #table-balance {
     grid-area: table-balance;
 }
@@ -41,9 +42,9 @@
     grid-area: accounts;
 }
 
+
 #main > #balance-short {
     grid-area: balance-short;
-    background-color: #aceef3 ;
 }
 
 #main > #wealth {
