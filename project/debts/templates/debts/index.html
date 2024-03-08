@@ -8,70 +8,46 @@
 {% block content %}
 
 
-<div class="row gx-2">
+<main id="debts-grid" class="rows">
     <!-- Borrow -->
-    <div class="col-sm-12 col-lg-6">
-        <div class="row py-2">
-            <div class="col"><h6>{% translate 'Borrow' %}</h6></div>
-            <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'debts:new' 'borrow' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
-            </div>
+    <div id="borrow-container">
+        <div class="flex">
+            <h6>{% translate 'Borrow' %}</h6>
+            <button type="button" class="btn btn-sm btn-outline-success flex-right" hx-get="{% url 'debts:new' 'borrow' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
         </div>
 
-        <div class="row">
-            <div class="col" id="borrow" hx-trigger="after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:list' 'borrow' %}" hx-target="this">{{borrow}}</div>
-        </div>
+        <div id="borrow" hx-trigger="after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:list' 'borrow' %}" hx-target="this">{{borrow}}</div>
     </div>
 
     <!-- Lend -->
-    <div class="col-sm-12 col-lg-6">
-        <div class="row py-2">
-            <div class="col">
-                <h6>{% translate 'Lend' %}</h6>
-            </div>
-            <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'debts:new' 'lend' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
-            </div>
+    <div id="lend-container">
+        <div class="flex">
+            <h6>{% translate 'Lend' %}</h6>
+            <button type="button" class="btn btn-sm btn-outline-success flex-right" hx-get="{% url 'debts:new' 'lend' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
         </div>
 
-        <div class="row">
-            <div class="col" id="lend" hx-trigger="after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:list' 'lend' %}" hx-target="this">{{lend}}</div>
-        </div>
+        <div id="lend" hx-trigger="after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:list' 'lend' %}" hx-target="this">{{lend}}</div>
     </div>
-</div>
 
-<div class="row gx-2">
     <!-- Borrow Return -->
-    <div class="col-sm-12 col-lg-6">
-        <div class="row py-2">
-            <div class="col">
-                <h6>{% translate 'Borrow return' %}</h6>
-            </div>
-            <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'debts:return_new' 'borrow' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
-            </div>
+    <div id="borrow-return-container">
+        <div class="flex">
+            <h6>{% translate 'Borrow return' %}</h6>
+            <button type="button" class="btn btn-sm btn-outline-success flex-right" hx-get="{% url 'debts:return_new' 'borrow' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
         </div>
 
-        <div class="row">
-            <div class="col" id="borrow_return" hx-trigger="after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:return_list' 'borrow' %}" hx-target="this">{{borrow_return}}</div>
-        </div>
+        <div id="borrow_return" hx-trigger="after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:return_list' 'borrow' %}" hx-target="this">{{borrow_return}}</div>
     </div>
 
     <!-- Lend Return -->
-    <div class="col-sm-12 col-lg-6">
-        <div class="row py-2">
-            <div class="col">
-                <h6>{% translate 'Lend return' %}</h6>
-            </div>
-            <div class="col text-end">
-                <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'debts:return_new' 'lend' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
-            </div>
+    <div id="lend-return-container">
+        <div class="flex">
+            <h6>{% translate 'Lend return' %}</h6>
+            <button type="button" class="btn btn-sm btn-outline-success flex-right" hx-get="{% url 'debts:return_new' 'lend' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
         </div>
 
-        <div class="row">
-            <div class="col" id="lend_return" hx-trigger="after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:return_list' 'lend' %}" hx-target="this">{{lend_return}}</div>
-        </div>
+        <div id="lend_return" hx-trigger="after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:return_list' 'lend' %}" hx-target="this">{{lend_return}}</div>
     </div>
-</div>
+</main>
 
 {% endblock content %}

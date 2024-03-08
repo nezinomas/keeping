@@ -42,7 +42,6 @@
     grid-area: accounts;
 }
 
-
 #main > #balance-short {
     grid-area: balance-short;
 }
@@ -75,11 +74,49 @@
     grid-area: pensions;
 }
 
+
+// Debts grid
+#debts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $gap;
+    grid-template-areas:
+        "lend-container"
+        "lend-return-container"
+        "borrow-container"
+        "borrow-return-container"
+    ;
+
+    .flex {
+        margin-bottom: $gap;
+    }
+}
+
+#debts-grid > #lend-container {
+    grid-area: lend-container;
+}
+
+#debts-grid > #lend-return-container {
+    grid-area: lend-return-container;
+}
+
+#debts-grid > #borrow-container {
+    grid-area: borrow-container;
+}
+
+#debts-grid > #borrow-return-container {
+    grid-area: borrow-return-container;
+}
+
+
+// One column
 #one-column {
     display: grid;
     gap: $gap;
 }
 
+
+// Two columns: two thirds and one third
 #two-columns {
     display: grid;
     grid-template-columns: 1fr;
@@ -98,6 +135,15 @@
 }
 
 
+// Two equal columns
+#two-equal-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $gap;
+}
+
+
+// Media queries for screens larger than 992px
 @media only screen and (min-width: 992px) {
     #main {
         grid-template-columns: repeat(2, 20%) repeat(4, 1fr);
@@ -113,8 +159,20 @@
         "pensions pensions pensions pensions pensions pensions";
     }
 
+    #debts-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-areas:
+            "borrow-container lend-container"
+            "borrow-return-container lend-return-container"
+        ;
+    }
+
     #two-columns {
         grid-template-columns: 2fr 1fr;
+    }
+
+    #two-equal-columns {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
