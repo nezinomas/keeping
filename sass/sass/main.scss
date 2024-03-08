@@ -15,6 +15,7 @@ $btn-padding-y-sm:0.25rem;
 $btn-padding-x-sm: 0.25rem;
 $btn-font-size-sm: $font-size;
 
+
 // @import "../node_modules/bootstrap/scss/mixins/banner";
 // @include bsBanner("");
 
@@ -29,7 +30,7 @@ $btn-font-size-sm: $font-size;
 
 // // Layout & components
 @import "../node_modules/bootstrap/scss/root";
-@import "../node_modules/bootstrap/scss/reboot";
+// @import "../node_modules/bootstrap/scss/reboot";
 // @import "../node_modules/bootstrap/scss/type";
 // @import "../node_modules/bootstrap/scss/images";
 // @import "../node_modules/bootstrap/scss/containers";
@@ -86,6 +87,12 @@ body {
     margin: 0 calc($gap / 2);
 }
 
+h6 {
+    font-size: 1rem;
+    margin: 0;
+    font-weight: 500;
+}
+
 .btn-xs {
     @include button-size($btn-padding-y-sm, $btn-padding-x-sm, 0.65rem, $btn-border-radius-sm);
 
@@ -96,6 +103,7 @@ body {
 
 .flex {
     display: flex;
+    align-items: center;
     gap: calc($gap / 3);
 
     > #search_form_data {
