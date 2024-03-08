@@ -75,6 +75,29 @@
     grid-area: pensions;
 }
 
+#one-column {
+    display: grid;
+    gap: $gap;
+}
+
+#two-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $gap;
+
+    > div {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-auto-rows: min-content;
+        gap: $gap;
+    }
+
+    > div#month-chart-and-info-table {
+        align-content: space-between;
+    }
+}
+
+
 @media only screen and (min-width: 992px) {
     #main {
         grid-template-columns: repeat(2, 20%) repeat(4, 1fr);
@@ -89,4 +112,9 @@
         "savings savings savings savings savings savings"
         "pensions pensions pensions pensions pensions pensions";
     }
+
+    #two-columns {
+        grid-template-columns: 2fr 1fr;
+    }
 }
+
