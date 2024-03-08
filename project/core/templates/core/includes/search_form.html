@@ -3,22 +3,21 @@
 <form novalidate
     method="post"
     id="search_form"
-    class="row d-flex gx-1 align-items-center"
+    class="flex"
     hx-get="{{ url }}"
     hx-target="{{ target }}"
     hx-swap="innerHTML"
     hx-indicator="#indicator"
     x-data="{ search_str: '' }">
-    <div class="col">
+
         <input type="search" name="search"
             id="id_search"
-            class="textinput textInput form-control form-control-sm"
+            class="form-control form-control-sm"
             placeholder="{% translate 'Search' %}..."
             aria-label="{% translate 'Search' %}"
             x-model="search_str"
             {% if hightlight_tab %}@keyup.enter="openTab = '13'"{% endif %}>
-    </div>
-    <div class="col-auto">
+
         <button type="submit" class="btn btn-secondary btn-sm" name="search" x-model="search_str">{% translate 'Search' %}</button>
         {{" "}}
         <button type="button"
@@ -28,5 +27,4 @@
             @click="search_str = ''; {% if hightlight_tab %}openTab = '{{hightlight_tab}}';{% endif %}">
             {% translate 'Reset' %}
         </button>
-    </div>
 </form>
