@@ -32,7 +32,6 @@
   <body>
     {% block body %}
     <!-- top navidation bar -->
-    <div class="container-fluid">
       <nav class="navbar navbar-expand-lg navbar-light bg-light py-0">
         <ul class="nav nav-pills">
           <!-- Years Dropdown -->
@@ -214,10 +213,11 @@
           </ul>
         </div>
       </nav>
+
       <!-- Loader -->
       <div class="htmx-indicator loader loader-default is-active" id="indicator"></div>
       {% block content %}{% endblock content %}
-    </div>
+
     {% endblock body %}
 
     <div id="modal" class="modal fade">
