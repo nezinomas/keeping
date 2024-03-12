@@ -65,7 +65,7 @@
         <div>
             {% url 'expenses:search' as search_url %}
             {% url 'expenses:list' as reset_url %}
-            <div id="search_form_data">{% search_form url=search_url reset_url=reset_url target="#data" hightlight_tab=current_month %}</div>
+            <div>{% search_form url=search_url reset_url=reset_url target="#data" hightlight_tab=current_month %}</div>
         </div>
 
         {% if request.GET.month %}

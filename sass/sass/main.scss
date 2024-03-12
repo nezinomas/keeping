@@ -106,13 +106,33 @@ h6 {
     align-items: center;
     gap: calc($gap / 3);
 
-    > #search_form_data {
-        flex: 1;
-    }
-
     > .flex-right {
         margin-left: auto;
         background-color: red;
+    }
+}
+
+
+#search-form {
+    display: flex;
+    gap: calc($gap / 3);
+
+    > button {
+        align-self: flex-end;
+    }
+}
+
+
+#incomes-search-form {
+    display: flex;
+    gap: calc($gap / 3);
+
+    > * {
+        flex: 1;
+    }
+
+    > button {
+        max-width: max-content;
     }
 }
 
