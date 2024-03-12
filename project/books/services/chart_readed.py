@@ -25,14 +25,11 @@ class ChartReaded:
         data = self._make_serries_data()
 
         return {
-            "chart": {
                 "categories": list(self._readed.keys()),
                 "data": data,
                 "targets": list(map(operator.itemgetter("target"), data)),
-                "chart": "chart_readed_books",
                 "chart_title": _("Readed books"),
                 "chart_column_color": "70, 171, 157",
-            }
         }
 
     def _make_serries_data(self):

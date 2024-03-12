@@ -21,7 +21,6 @@ class Index(TemplateViewMixin):
             "year": self.request.user.year,
             "tab": self.request.GET.get("tab"),
             "info_row": rendered_content(self.request, InfoRow, **self.kwargs),
-            "chart": rendered_content(self.request, ChartReaded, **self.kwargs),
             "books": rendered_content(self.request, Lists, **self.kwargs),
         }
         return super().get_context_data(**kwargs) | context
@@ -34,11 +33,11 @@ class ChartReaded(TemplateViewMixin):
         data = services.ChartReadedData()
         obj = services.ChartReaded(data)
 
-        if not data.readed:
-            self.template_name = "empty.html"
-            return {}
+        # if not data.readed:
+        #     self.template_name = "empty.html"
+        #     return {}
 
-        return super().get_context_data(**kwargs) | obj.context()
+        return super().get_context_data(**kwargs) | {"chart": obj.context()}
 
 
 class InfoRow(TemplateViewMixin):
