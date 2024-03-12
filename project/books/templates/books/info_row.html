@@ -1,12 +1,16 @@
 {% load i18n %}
 
-<div class="info-row">
-    <span>{% translate 'Readed' %}: </span> <h6 class="me-3 ms-1">{{ readed|floatformat:'0g' }}</h6>
-    <span>{% translate 'Reading' %}: </span> <h6 class="me-3 ms-1">{{ reading|floatformat:'0g' }}</h6>
+<div class="info-row-text">
+    <div>{% translate 'Readed' %}:</div>
+    <div class="bigger">{{ readed|floatformat:'0g' }}</div>
+
+    <div>{% translate 'Reading' %}:</div>
+    <div class="bigger">{{ reading|floatformat:'0g' }}</div>
+
     {% if target %}
-    <span>{% translate 'Goal' %}: </span>
-    <h6 class="me-3 ms-1">
+    <div>{% translate 'Goal' %}:</div>
+    <div class="bigger">
         <a role="button" hx-get="{% url 'books:target_update' target.id %}" hx-target="#dialog" class="no-hover">{{ target.quantity|floatformat:'0g' }}</a>
-    </h6>
+    </div>
     {% endif %}
 </div>
