@@ -4,86 +4,6 @@
     --font-size-sm: .7rem;
 }
 
-.tooltip,
-.form-control,
-.form-control-sm {
-    font-size: var(--font-size-sm);
-}
-
-.btn-xs {
-    font-size: var(--font-size-xs);
-    line-height: 0.25rem !important;
-    padding-top: 0.25rem !important;
-    padding-bottom: 0.25rem !important;
-    padding-left: 0.25rem !important;
-    padding-right: 0.25rem !important;
-    margin-top: -0.65rem !important;
-    margin-bottom: -0.45rem !important;
-}
-
-.btn-sm {
-    font-size: var(--font-size-sm);
-    padding: .2rem .3rem;
-}
-
-button > i.bi {
-    margin-right: 0.25rem;
-}
-
-
-/*
-                                                                    Top Menu
-*/
-.dropdown-menu a.dropdown-item {
-    padding: .2rem .5rem;
-}
-
-.nav-item {
-    margin: 0 .15rem;
-}
-
-.nav-link {
-    padding: .2rem .35rem;
-}
-
-.dropdown-toggle.dropdown-toggle-split.nav-link {
-    padding-left: 0;
-}
-
-
-
-/*
-                                                                    Info Row
-*/
-.info-row {
-    font-weight: normal;
-    font-size: 0.8rem;
-}
-
-.info-row>span {
-    vertical-align: middle;
-    display: inline-block;
-    margin-top: 0.25rem !important;
-}
-
-.info-row>h6 {
-    font-size: 1.5rem;
-    display: inline;
-}
-
-.info-row>h6,
-div[class*="col"]>h6 {
-    vertical-align: middle;
-    margin-bottom: 0 !important;
-    padding-top: .25rem;
-}
-
-.currently-reading-book {
-    --bs-table-bg: rgb(202, 235, 204) !important;
-    --bs-table-bg-type: rgb(202, 235, 204) !important;
-    --bs-table-striped-bg: rgb(202, 235, 204) !important;
-}
-
 /*
                                                                     Month View
 */
@@ -206,14 +126,6 @@ caption {
     min-width: 8rem !important;
 }
 
-/*
-                                                                    Search
-*/
-#search-btn {
-    margin: 0 !important;
-    padding: .25rem .5rem;
-}
-
 
 /*
                                                                     Expenses
@@ -295,14 +207,6 @@ caption {
     right: 30px;
     display: block;
     z-index: 99;
-}
-
-table.hightcharts-tooltip td.head {
-    padding-bottom: 0.5rem;
-}
-
-table.hightcharts-tooltip td {
-    margin-bottom: 0.25rem;
 }
 
 .disabled {
