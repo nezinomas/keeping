@@ -5,7 +5,7 @@
 
 {% if object_list %}
 
-<table class="table table-sm table-striped table-hover sticky-table">
+<table class="striped hover sticky-table">
     <thead>
         <tr>
             <th class="text-start">{% translate 'Date' %}</th>
@@ -37,7 +37,7 @@
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
 {% else %}
-<div class="mx-auto text-center alert alert-warning py-2 mb-4">
+<div class="alert alert-warning">
     {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 </div>
 {% endif %}

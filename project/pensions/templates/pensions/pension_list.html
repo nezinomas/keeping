@@ -3,7 +3,7 @@
 {% load cell_format %}
 
 {% if object_list %}
-<table class="table table-sm table-striped table-hover">
+<table class="striped hover">
     <thead>
         <tr>
             <th class="text-start">{% translate 'Date' %}</th>
@@ -33,7 +33,7 @@
 
 {% else %}
 
-<div class="mx-auto text-center alert alert-warning py-2">
+<div class="alert alert-warning">
     {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 </div>
 

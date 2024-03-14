@@ -4,7 +4,7 @@
 {% load cache %}
 {% load cell_format %}
 
-<table class="table table-sm table-striped table-hover">
+<table class="striped hover">
     <thead>
         <tr>
             <th class="text-start">{% translate 'Title' %}</th>
@@ -51,7 +51,7 @@
             {% include "core/includes/cell_delete.html" with url=url_delete %}
         </tr>{% endwith %}
         {% empty %}
-        <tr class="table table-sm-warning text-center">
+        <tr class="table-alert-warning">
             <td colspan="13" class="py-2">
                 {% blocktranslate with year=year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
             <td></td>

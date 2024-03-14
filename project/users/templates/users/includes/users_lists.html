@@ -4,7 +4,7 @@
 
 {% if object_list %}
 
-<table class="table table-sm table-striped table-hover">
+<table class="striped hover">
     <thead>
         <tr>
             <th class="text-start">{% translate 'User' %}</th>
@@ -28,6 +28,6 @@
 
 {% else %}
 
-<div class="mx-auto text-center alert alert-warning py-2">{% translate 'There are no additional users.' %}</div>
+<div class="alert alert-warning">{% translate 'There are no additional users.' %}</div>
 
 {% endif %}

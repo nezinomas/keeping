@@ -6,11 +6,11 @@
 
 
 {% if data.title and data.data %}
-<table class="table">
+<table>
     <thead>
         <tr>
             {% for title in data.title %}
-            <th class="text-nowrap" style="width: calc(100%/{{ data|length }});">
+            <th style="width: calc(100%/{{ data|length }});">
                 {{ title }}
             </th>{% endfor %}
         </tr>

@@ -8,7 +8,7 @@
 
 {% with request.resolver_match.kwargs.debt_type as target %}
 
-<table class="table table-sm table-striped table-hover">
+<table class="striped hover">
     <thead>
         <tr>
             <th class="w5 text-center">{% translate 'Date' %}</th>
@@ -16,8 +16,8 @@
                 {% if target == 'lend' %}{% translate 'Borrower' %}{% endif %}
                 {% if target == 'borrow' %}{% translate 'Lender' %}{% endif %}
             </th>
-            <th class="w5 text-end cell-padding">{% translate 'Sum' %}</th>
-            <th class="w5 text-end cell-padding">{% translate 'Returned' %}</th>
+            <th class="w5 cell-padding">{% translate 'Sum' %}</th>
+            <th class="w5 cell-padding">{% translate 'Returned' %}</th>
             <th class="w10 text-start cell-padding">{% translate 'Account' %}</th>
             <th class="text-start">{% translate 'Remark' %}</th>
             <th class="text-center w3">{% translate 'Closed' %}</th>
@@ -31,8 +31,8 @@
         <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#dialog">
             <td class="text-center">{{object.date|date:"Y-m-d"}}</td>
             <td class="text-start cell-padding">{{object.name}}</td>
-            <td class="text-end cell-padding">{{object.price|price|cellformat}}</td>
-            <td class="text-end cell-padding" {% if not object.closed %}data-bs-toggle="tooltip" data-bs-placement="right" title="{% translate 'Remains to be returned' %}:  {{object.price|sub:object.returned|price|floatformat:'2g'}}"{% endif %}>{{object.returned|price|floatformat:"2g"}}</td>
+            <td class="cell-padding">{{object.price|price|cellformat}}</td>
+            <td class="cell-padding" {% if not object.closed %}data-bs-toggle="tooltip" data-bs-placement="right" title="{% translate 'Remains to be returned' %}:  {{object.price|sub:object.returned|price|floatformat:'2g'}}"{% endif %}>{{object.returned|price|floatformat:"2g"}}</td>
             <td class="text-start cell-padding">{{ object.account }}</td>
             <td class="text-start">{{ object.remark }}</td>
             <td class="text-center">{% if object.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
@@ -45,7 +45,7 @@
 {% endwith %}
 {% else %}
 
-<div class="mx-auto text-center alert alert-warning py-2">
+<div class="alert alert-warning">
     {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 </div>
 

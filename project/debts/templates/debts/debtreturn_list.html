@@ -7,7 +7,7 @@
 
 {% with request.resolver_match.kwargs.debt_type as target %}
 
-<table class="table table-sm table-striped table-hover">
+<table class="striped hover">
     <thead>
         <tr>
             <th class="w5 text-center">{% translate 'Date' %}</th>
@@ -15,7 +15,7 @@
                 {% if target == 'lend' %}{% translate 'Borrower' %}{% endif %}
                 {% if target == 'borrow' %}{% translate 'Lender' %}{% endif %}
             </th>
-            <th class="w10 text-end cell-padding">{% translate 'Sum' %}</th>
+            <th class="w10 cell-padding">{% translate 'Sum' %}</th>
             <th class="w10 text-start cell-padding">{% translate 'Account' %}</th>
             <th class="text-start">{% translate 'Remark' %}</th>
             <th class="text-center w3">{% translate 'Closed' %}</th>
@@ -48,7 +48,7 @@
 {% endwith %}
 {% else %}
 
-<div class="mx-auto text-center alert alert-warning py-2">
+<div class="alert alert-warning">
     {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 </div>
 

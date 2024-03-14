@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load cell_format %}
 
-<table class="table table-sm table-striped table-hover caption-top">
+<table class="striped hover caption-top">
     <caption>{% translate 'Drunk' %}, {% translate 'pcs' %}</caption>
     <thead>
         <tr>
@@ -14,7 +14,7 @@
     </thead>
     <tbody>
         {% for item in ctx.items %}
-        <tr {% if 'Av' in item.title %}class="table table-sm table-warning std-av-border"{% endif %}>
+        <tr {% if 'Av' in item.title %}class="std-av-border"{% endif %}>
             <td class="text-start"><span class="ms-2">{{ item.title }}</span></td>
             <td>{{item.total|cellformat}}</td>
             <td>{{item.per_day|cellformat}}</td>
