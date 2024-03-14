@@ -11,7 +11,7 @@ nav {
 
     > ul {
         display: flex;
-        gap: 1rem;
+        gap: calc($gap / 2) $gap;
         flex: 1;
         flex-wrap: wrap;
     }
