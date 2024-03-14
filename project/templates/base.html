@@ -31,188 +31,196 @@
 
   <body>
     {% block body %}
-    <!-- top navidation bar -->
-      <nav class="navbar navbar-expand-lg navbar-light bg-light py-0">
-        <ul class="nav nav-pills">
-          <!-- Years Dropdown -->
-          <li class="nav-item dropdown ms-0">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{{ request.user.year|title }}</a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-              {% for y in years %}
-              <li><a class="dropdown-item btn-sm" href="{% url 'core:set_year' y %}">{{ y|safe }}</a></li>
-              {% endfor %}
-            </ul>
-          </li>
-          <!-- End of Years Dropdown -->
+    <nav>
+      <ul>
+        <!-- Years Dropdown -->
+        <li class="{% if '/' == request.path %}active{% endif %}">
+          <div>
+            <a href="{% url 'bookkeeping:index' %}">{{ request.user.year|title }}</a>
+            <a href="#" class="dropdown-toggle"></a>
+          </div>
 
-          <li class="nav-item">
-            <a class="nav-link {% if '/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:index' %}">{% translate 'Main' %}</a>
-          </li>
+          <ul class="dropdown">
+            {% for y in years %}
+            <li><a href="{% url 'core:set_year' y %}">{{ y|safe }}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
 
-          <li class="nav-item">
-            <a class="nav-link {% if '/month/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:month' %}">{% translate 'Month' %}</a>
-          </li>
+        <!-- Month -->
+        <li class="{% if '/month/' == request.path %}active{% endif %}">
+          <a  href="{% url 'bookkeeping:month' %}">{% translate 'Month' %}</a>
+        </li>
 
-          <li class="nav-item">
-            <a class="nav-link {% if '/detailed/' == request.path %}active{% endif %}" href="{% url 'bookkeeping:detailed' %}">{% translate 'Detailed' %}</a>
-          </li>
+        <!-- Detailed -->
+        <li class="{% if '/detailed/' == request.path %}active{% endif %}">
+          <a href="{% url 'bookkeeping:detailed' %}">{% translate 'Detailed' %}</a>
+        </li>
 
-          <li class="nav-item">
-            <div class="btn-group">
-              <a class="btn nav-link {% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}" href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
-              <button type="button" class="btn dropdown-toggle dropdown-toggle-split nav-link {% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="visually-hidden">Toggle Dropdown</span>
-              </button>
-              <ul class="dropdown-menu">
-                {% for m in context_months %}
-                {% with m|date:'n' as m_num %}
-                <li>
-                  <a class="dropdown-item btn-sm" hx-get="{% url 'expenses:index'%}?month={{ forloop.counter }}" hx-target="body">{{ m|date:'F'|title }}</a>
-                </li>
-                {% endwith %}{% endfor %}
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
-                <li>
-                  <a class="dropdown-item btn-sm" hx-get="{% url 'expenses:index' %}?month=13" hx-target="body">{% translate 'All records' %}</a>
-                </li>
-              </ul>
-            </div>
-          </li>
+        <!-- Expenses -->
+        <li class="{% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}">
+          <div class="btn-group ">
+            <a href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
+            <a href="#" class="dropdown-toggle"></a>
+          </div>
 
-          <li class="nav-item">
-            <a class="nav-link {% if '/incomes/' in request.path %}active{% endif %}" href="{% url 'incomes:index' %}">{% translate 'Incomes' %}</a>
-          </li>
+          <ul class="dropdown">
+            {% for m in context_months %}
+            {% with m|date:'n' as m_num %}
+            <li>
+              <a hx-get="{% url 'expenses:index'%}?month={{ forloop.counter }}" hx-target="body">{{ m|date:'F'|title }}</a>
+            </li>
+            {% endwith %}{% endfor %}
+            <li class="dropdown-divider"></li>
+            <li>
+              <a hx-get="{% url 'expenses:index' %}?month=13" hx-target="body">{% translate 'All records' %}</a>
+            </li>
+          </ul>
+        </li>
 
-          <li class="nav-item">
-            <a class="nav-link {% if '/transactions/' in request.path %}active{% endif %}" href="{% url 'transactions:index' %}">{% translate 'Transactions' %}</a>
-          </li>
+        <!-- Incomes -->
+        <li class="{% if '/incomes/' in request.path %}active{% endif %}">
+          <a href="{% url 'incomes:index' %}">{% translate 'Incomes' %}</a>
+        </li>
 
-          <li class="nav-item">
-            <a class="nav-link {% if '/savings/' in request.path and not '/summary/' in request.path %}active{% endif %}" href="{% url 'savings:index' %}">{% translate 'Savings' %}</a>
-          </li>
+        <!-- Transactions -->
+        <li class="{% if '/transactions/' in request.path %}active{% endif %}">
+          <a  href="{% url 'transactions:index' %}">{% translate 'Transactions' %}</a>
+        </li>
 
-          <li class="nav-item">
-            <a class="nav-link {% if '/debts/' in request.path %}active{% endif %}" href="{% url 'debts:index' %}">{% translate 'Depts' %}</a>
-          </li>
+        <!-- Savings -->
+        <li class="{% if '/savings/' in request.path and not '/summary/' in request.path %}active{% endif %}">
+          <a href="{% url 'savings:index' %}">{% translate 'Savings' %}</a>
+        </li>
 
-          <li class="nav-item">
-            <div class="btn-group">
-              <a class="btn nav-link {% if '/books/' in request.path %}active{% endif %}" href="{% url 'books:index' %}">{% translate 'Books' %}</a>
-              <button type="button" class="btn dropdown-toggle dropdown-toggle-split nav-link {% if '/books/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="visually-hidden">Toggle Dropdown</span>
-              </button>
-              <ul class="dropdown-menu">
-                <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'books:index' %}?tab=all">{% translate 'All records' %}</a>
-                </li>
-              </ul>
-            </div>
-          </li>
+        <!-- Debts -->
+        <li class="{% if '/debts/' in request.path %}active{% endif %}">
+          <a href="{% url 'debts:index' %}">{% translate 'Debts' %}</a>
+        </li>
 
-          <li class="nav-item">
-            <a class="nav-link {% if '/drinks/' in request.path %}active{% endif %}" href="{% url 'drinks:index' %}">{% translate 'Drinks' %}</a>
-          </li>
+        <!-- Books -->
+        <li class="{% if '/books/' in request.path %}active{% endif %}">
+          <div>
+            <a href="{% url 'books:index' %}">{% translate 'Books' %}</a>
+            <a href="#" class="dropdown-toggle"></a>
+          </div>
 
-          <li class="nav-item">
-            <div class="btn-group">
-              <a class="btn nav-link {% if '/counts/' in request.path %}active{% endif %}" href="{% url 'counts:redirect' %}">{% translate 'Counter' %}</a>
-              <button type="button" class="btn dropdown-toggle dropdown-toggle-split nav-link {% if '/counts/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="visually-hidden">Toggle Dropdown</span>
-              </button>
-              <ul class="dropdown-menu">
+          <ul class="dropdown">
+            <li>
+              <a href="{% url 'books:index' %}?tab=all">{% translate 'All records' %}</a>
+            </li>
+          </ul>
+        </li>
 
-                {% if counts_menu %}{{ counts_menu }}{% endif %}
+        <!-- Drinks -->
+        <li class="{% if '/drinks/' in request.path %}active{% endif %}">
+          <a href="{% url 'drinks:index' %}">{% translate 'Drinks' %}</a>
+        </li>
 
-                <li class="dropdown-divider"></li>
-                <li>
-                  <button type="button" class="dropdown-item btn-sm" hx-get="{% url 'counts:type_new' %}" hx-target="#dialog">{% translate 'Add count type' %}</button>
-                </li>
-              </ul>
-            </div>
-          </li>
+        <!-- Counters -->
+        <li class="{% if '/counts/' in request.path %}active{% endif %}">
+          <div>
+            <a href="{% url 'counts:redirect' %}">{% translate 'Counter' %}</a>
+            <a href="#" class="dropdown-toggle"></a>
+          </div>
 
-          <li class="nav-item">
-            <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}" href="{% url 'plans:index' %}">{% translate 'Plans' %}</a>
-          </li>
+          <ul class="dropdown">
+            {% if counts_menu %}{{ counts_menu }}{% endif %}
+            <li class="dropdown-divider"></li>
+            <li>
+              <button type="button" hx-get="{% url 'counts:type_new' %}" hx-target="#dialog">{% translate 'Add count type' %}</button>
+            </li>
+          </ul>
+        </li>
 
-          <li class="nav-item">
-            <div class="btn-group">
-              <a class="btn nav-link {% if 'summary' in request.path %}active{% endif %}" href="{% url 'bookkeeping:summary' %}">{% translate 'Charts' %}</a>
-              <button type="button" class="btn dropdown-toggle dropdown-toggle-split nav-link {% if '/summary/' in request.path %}active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="visually-hidden">Toggle Dropdown</span>
-              </button>
-              <ul class="dropdown-menu">
-                <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'bookkeeping:summary' %}">{% translate 'Incomes' %} & {% translate 'Expenses' %}</a>
-                </li>
-                <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'bookkeeping:summary_savings_and_incomes' %}">{% translate 'Incomes'%} & {% translate 'Savings' %}</a>
-                </li>
-                <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'bookkeeping:summary_savings' %}">{% translate 'Savings' %}</a>
-                </li>
-                <li>
-                  <a class="dropdown-item btn-sm" href="{% url 'bookkeeping:summary_expenses' %}">{% translate 'Expenses' %}</a>
-                </li>
-              </ul>
-            </div>
-          </li>
+        <!-- Plans -->
+        <li class="{% if '/plans/' in request.path %}active{% endif %}">
+          <a href="{% url 'plans:index' %}">{% translate 'Plans' %}</a>
+        </li>
 
-          <li class="nav-item">
-            <div class="btn-group">
-              <button type="button" class="btn dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">{% translate 'Add' %}</button>
-              <ul class="dropdown-menu">
-                <li>
-                  <button class="dropdown-item btn-sm" hx-get="{% url 'incomes:new' %}" hx-target="#dialog">{% translate 'Incomes' context 'incomes button' %}</button>
-                </li>
-                <li>
-                  <button class="dropdown-item btn-sm" hx-get="{% url 'expenses:new' %}" hx-target="#dialog">{% translate "Expenses" context "expenses button" %}</button>
-                </li>
-                <li>
-                  <button class="dropdown-item btn-sm" hx-get="{% url 'transactions:new' %}" hx-target="#dialog">{% translate 'Transactions' context "transactions button" %}</button>
-                </li>
-                <li>
-                  <button class="dropdown-item btn-sm" hx-get="{% url 'savings:new' %}" hx-target="#dialog">{% translate 'Savings' context "savings button" %}</button>
-                </li>
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
-                <li>
-                  <button class="dropdown-item btn-sm" hx-get="{% url 'accounts:new' %}" hx-target="#dialog">{% translate 'Account' context 'account button' %}</button>
-                </li>
-                <li>
-                  <button class="dropdown-item btn-sm" hx-get="{% url 'incomes:type_new' %}" hx-target="#dialog">{% translate 'Incomes type' context 'income type button' %}</button>
-                </li>
-                <li>
-                  <button class="dropdown-item btn-sm" hx-get="{% url 'expenses:type_new' %}" hx-target="#dialog">{% translate "Expenses type" context "expenses type button" %}</button>
-                </li>
-                <li>
-                  <button class="dropdown-item btn-sm" hx-get="{% url 'expenses:name_new' %}" hx-target="#dialog">{% translate "Expenses name" context "expenses name button" %}</button>
-                </li>
-                <li>
-                  <button class="dropdown-item btn-sm" hx-get="{% url 'savings:type_new' %}" hx-target="#dialog">{% translate 'Fund' context 'fund button' %}</button>
-                </li>
-              </ul>
-            </div>
-          </li>
+        <!-- Charts -->
+        <li class="{% if 'summary' in request.path %}active{% endif %}">
+          <div>
+            <a href="{% url 'bookkeeping:summary' %}">{% translate 'Charts' %}</a>
+            <a href="#" class="dropdown-toggle"></a>
+          </div>
 
-        </ul>
+          <ul class="dropdown">
+            <li>
+              <a href="{% url 'bookkeeping:summary' %}">{% translate 'Incomes' %} & {% translate 'Expenses' %}</a>
+            </li>
+            <li>
+              <a href="{% url 'bookkeeping:summary_savings_and_incomes' %}">{% translate 'Incomes'%} & {% translate 'Savings' %}</a>
+            </li>
+            <li>
+              <a href="{% url 'bookkeeping:summary_savings' %}">{% translate 'Savings' %}</a>
+            </li>
+            <li>
+              <a href="{% url 'bookkeeping:summary_expenses' %}">{% translate 'Expenses' %}</a>
+            </li>
+          </ul>
+        </li>
 
-        <div class="navbar-text ms-3">{{ yday }} / <b>{{ ydays }}</b></div>
+        <!-- Add butons -->
+        <li>
+          <div>
+            <a href="#" role="button">{% translate 'Add' %}</a>
+            <a href="#" class="dropdown-toggle"></a>
+          </div>
 
-        <div class="nav-item dropdown ms-auto me-0">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">{{ user.username }}</a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
-            <li><a class="dropdown-item btn-sm" href="{% url 'users:logout' %}">{% translate 'Log out' %}</a></li>
-            <li><a class="dropdown-item btn-sm" href="{% url 'users:password_change' %}">{% translate 'Change password' %}</a></li>
+          <ul class="dropdown">
+            <li>
+              <button hx-get="{% url 'incomes:new' %}" hx-target="#dialog">{% translate 'Incomes' context 'incomes button' %}</button>
+            </li>
+            <li>
+              <button hx-get="{% url 'expenses:new' %}" hx-target="#dialog">{% translate "Expenses" context "expenses button" %}</button>
+            </li>
+            <li>
+              <button hx-get="{% url 'transactions:new' %}" hx-target="#dialog">{% translate 'Transactions' context "transactions button" %}</button>
+            </li>
+            <li>
+              <button hx-get="{% url 'savings:new' %}" hx-target="#dialog">{% translate 'Savings' context "savings button" %}</button>
+            </li>
+            <li class="dropdown-divider"></li>
+            <li>
+              <button hx-get="{% url 'accounts:new' %}" hx-target="#dialog">{% translate 'Account' context 'account button' %}</button>
+            </li>
+            <li>
+              <button hx-get="{% url 'incomes:type_new' %}" hx-target="#dialog">{% translate 'Incomes type' context 'income type button' %}</button>
+            </li>
+            <li>
+              <button hx-get="{% url 'expenses:type_new' %}" hx-target="#dialog">{% translate "Expenses type" context "expenses type button" %}</button>
+            </li>
+            <li>
+              <button hx-get="{% url 'expenses:name_new' %}" hx-target="#dialog">{% translate "Expenses name" context "expenses name button" %}</button>
+            </li>
+            <li>
+              <button hx-get="{% url 'savings:type_new' %}" hx-target="#dialog">{% translate 'Fund' context 'fund button' %}</button>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Day of year -->
+        <li>{{ yday }} / <b>{{ ydays }}</b></li>
+
+        <!-- User settings -->
+        <li>
+          <div>
+            <a href="#" role="button">{{ user.username }}</a>
+            <a href="#" class="dropdown-toggle"></a>
+          </div>
+
+          <ul class="dropdown left">
+            <li><a href="{% url 'users:logout' %}">{% translate 'Log out' %}</a></li>
+            <li><a href="{% url 'users:password_change' %}">{% translate 'Change password' %}</a></li>
             {% if user.is_superuser %}
             <li class="dropdown-divider"></li>
-            <li><a role="button" class="dropdown-item btn-sm" href="{% url 'users:settings_index' %}">{% translate 'Settings' %}</a></li>
+            <li><a role="button" href="{% url 'users:settings_index' %}">{% translate 'Settings' %}</a></li>
             {% endif %}
           </ul>
-        </div>
-      </nav>
+        </li>
+      </ul>
+    </nav>
 
       <!-- Loader -->
       <div class="htmx-indicator loader loader-default is-active" id="indicator"></div>

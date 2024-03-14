@@ -1,0 +1,94 @@
+$t: rgba(222, 29, 29, 0.5);
+
+nav {
+    @include shadow;
+    background-color: $nav-bg;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    padding-bottom: calc($gap / 2);
+    padding-top: calc($gap / 2);
+    margin-bottom: $gap;
+
+    > ul {
+        display: flex;
+        gap: 1rem;
+    }
+
+    > ul > li:last-child {
+        margin-left: auto;
+    }
+
+    li {
+        list-style: none;
+        padding: 0.35rem;
+        position: relative;
+    }
+
+    ul.dropdown {
+        @include shadow;
+        display: none;
+        position: absolute;
+        top: 1.75rem;
+        left: 0;
+        padding: 0;
+        margin: 0;
+        background-color: white;
+
+        > li {
+            display: block;
+            min-width: max-content;
+            padding: 0.25rem 2rem;
+            margin: 0.25rem 0;
+            cursor: pointer;
+        }
+
+        > li:hover {
+            background-color: lighten($nav-active, 25%);
+        }
+
+        > li.dropdown-divider {
+            border-top: 1px solid rgb(black, .175);
+            padding: 0;
+        }
+
+        > li.dropdown-divider:hover {
+            background-color: unset;
+        }
+    }
+
+    ul.dropdown.left {
+        right: 0;
+        left: auto;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    a, a:visited, li {
+        color: $nav-text;
+    }
+
+    a.dropdown-toggle {
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+        /* needed */
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        /* SVG background image */
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='#{$nav-text}' stroke='#{$nav-text}' stroke-linecap='round' stroke-linejoin='round'><path d='M2 5L8 11L14 5'/></svg>");
+        background-size: calc($font-size * 0.7);
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    li:hover .dropdown {
+        display: block;
+        z-index: 100;
+    }
+
+    .active {
+        border-bottom: 2px solid $nav-active;
+    }
+}
