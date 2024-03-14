@@ -15,7 +15,7 @@
     <tbody>
         {% for item in ctx.items %}
         <tr {% if 'Av' in item.title %}class="std-av-border"{% endif %}>
-            <td class="text-start"><span class="ms-2">{{ item.title }}</span></td>
+            <td class="text-start"><span>{{ item.title }}</span></td>
             <td>{{item.total|cellformat}}</td>
             <td>{{item.per_day|cellformat}}</td>
             <td>{{item.per_week|cellformat}}</td>

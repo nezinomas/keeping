@@ -12,9 +12,9 @@
     </script>
 </div>
 
-<div class="row my-2">
+<div class="row">
     <div class="col-lg-6">
-        <div class="row gx-2">
+        <div class="row">
             <div id="tbl_consumption" class="col-lg-3 col-md-3">
                 {% include 'drinks/includes/tbl_consumption.html' with ctx=tbl_consumption %}
             </div>
@@ -39,7 +39,7 @@
     <div class="col-lg-6 d-flex">
         {% get_current_language as LANGUAGE_CODE %}
         {% with 'images/drinks_info_'|add:LANGUAGE_CODE|add:'.jpg' as image %}
-        <div class="text-center mx-auto align-self-center">
+        <div class="text-center">
             <img src="{% static image %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}">
         </div>{% endwith %}
     </div>
@@ -56,10 +56,10 @@
     </script>
 </div>
 
-<div class="row mt-4">
+<div class="row">
     <div class="col-lg-6">
-        <div class="row my-2">
-            <div class="col-sm-3 pt-1"><b>{% translate 'Historical data' %}</b></div>
+        <div class="row">
+            <div class="col-sm-3"><b>{% translate 'Historical data' %}</b></div>
             <div class="col-sm-9 text-end">
                 <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:compare' 2 %}" hx-target="#historical_data">{% translate '2 years' %}</button>
                 {{" "}}

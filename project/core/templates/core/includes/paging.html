@@ -1,5 +1,5 @@
 {% if page_obj.paginator.num_pages > 1 %}
-<ul class="pagination justify-content-center flex-wrap mt-2 mb-4">
+<ul class="pagination">
     <!-- previous button -->
     {% if page_obj.has_previous %}
         <li class="page-item"><a class="page-link paging" role="button" hx-get="{{ url }}?page={{ page_obj.previous_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">&laquo;</a></li>

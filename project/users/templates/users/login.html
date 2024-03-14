@@ -4,7 +4,7 @@
 
 
 {% block content %}
-<div class="card my-auto">
+<div class="card">
 {% if valid_link %}
     <div class="card-body">
         <h3 class="card-title">{{ card_title }}</h3>
@@ -29,7 +29,7 @@
     {% endif %}
 </div>
 {% if reset_link and form.errors %}
-<div class="text-center py-2">
+<div class="text-center">
     <small>
         <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
     </small>
@@ -38,7 +38,7 @@
 
 {% else %}
     <div class="card-body">
-        <p class="my-auto text-center py-3">{% translate 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' %}</p>
+        <p class="text-center">{% translate 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' %}</p>
     </div>
 {% endif %}
 

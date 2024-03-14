@@ -1,7 +1,7 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-    <div class="col-2 gy-2">
+    <div class="col-2">
         <form novalidate method="post" id="search_form" hx-target="#summary_expenses">
             {% csrf_token %}
             <div>
@@ -13,7 +13,7 @@
         </form>
     </div>
 
-    <div class="col-10 gy-2">
+    <div class="col-10">
         {{ form|as_crispy_errors }}
         {% if found %}
         <div class="row">
@@ -24,7 +24,7 @@
                 chartExpenses('chart-data', 'chart-container');
             </script>
         </div>
-        <div class="row mt-5">
+        <div class="row">
             <div class="col-12 table-responsive" id="table">{% include 'bookkeeping/includes/summary_expenses_table.html' %}</div>
         </div>
         {% elif not found and error %}

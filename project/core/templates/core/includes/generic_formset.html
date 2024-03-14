@@ -22,7 +22,7 @@
         {% for form in formset.forms %}
         {% include 'core/includes/form_errors.html' %}
 
-        <div class="row gx-2">
+        <div class="row">
             {% for field in form %}
             {% var col='col' %}
             {% if field.name == 'price' %}

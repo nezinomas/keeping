@@ -18,7 +18,7 @@
             <div class="col-8">
             <!-- add price field -->
             {% if field.html_name == 'total_sum' %}
-            <div class="row gx-2">
+            <div class="row">
                 <div class="col">{{ field|as_crispy_field }}</div>
                 <div class="col-2" id="div_sum_prices"><button type="button" id="add_price" class="btn btn-sm btn-secondary w-100">{% translate 'Add' %}</button></div>
             </div>

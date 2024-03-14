@@ -1,10 +1,10 @@
 {% load i18n %}
 {% load crispy_forms_tags %}
 
-<div class="row my-2">
-    <div class="col-sm-4 pt-1"><b>{% translate 'Year comparison' %}</b></div>
+<div class="row">
+    <div class="col-sm-4"><b>{% translate 'Year comparison' %}</b></div>
     <div class="col-sm-8 text-end">
-        <form novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#compare_form_and_chart" class="row d-flex gx-1 align-items-center">
+        <form novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#compare_form_and_chart" class="row">
         {% csrf_token %}
             <div class="col align-self-start"></div>
             <div class="col-3">{{ form.year1|as_crispy_field }}</div>

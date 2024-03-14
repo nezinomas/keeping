@@ -298,7 +298,7 @@ def test_redirect_count_first(client_logged):
     response = client_logged.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is views.Index
-    assert '<h6 class="me-3">AAA</h6>' in response.content.decode("utf-8")
+    assert '<h6>AAA</h6>' in response.content.decode("utf-8")
 
 
 # ---------------------------------------------------------------------------------------
