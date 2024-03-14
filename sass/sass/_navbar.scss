@@ -29,6 +29,10 @@ nav {
         > li:last-child {
             margin-left: auto;
         }
+
+        > li.active {
+            border-bottom: 2px solid $nav-active;
+        }
     }
 
     ul.dropdown {
@@ -87,9 +91,5 @@ nav {
         background-size: calc($font-size * 0.7);
         background-position: right;
         background-repeat: no-repeat;
-    }
-
-    .active {
-        border-bottom: 2px solid $nav-active;
     }
 }
