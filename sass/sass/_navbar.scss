@@ -12,6 +12,8 @@ nav {
     > ul {
         display: flex;
         gap: 1rem;
+        flex: 1;
+        flex-wrap: wrap;
     }
 
     > ul > li:last-child {
