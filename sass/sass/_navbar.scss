@@ -77,8 +77,7 @@ nav {
     }
 
     a.dropdown-toggle {
-        padding-right: 0.5rem;
-        padding-left: 0.5rem;
+        padding-left: 0.75rem;
         /* needed */
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -86,7 +85,7 @@ nav {
         /* SVG background image */
         background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='#{$nav-text}' stroke='#{$nav-text}' stroke-linecap='round' stroke-linejoin='round'><path d='M2 5L8 11L14 5'/></svg>");
         background-size: calc($font-size * 0.7);
-        background-position: center;
+        background-position: right;
         background-repeat: no-repeat;
     }
 
