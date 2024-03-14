@@ -14,16 +14,21 @@ nav {
         gap: calc($gap / 2) $gap;
         flex: 1;
         flex-wrap: wrap;
-    }
 
-    > ul > li:last-child {
-        margin-left: auto;
-    }
+        > li {
+            position: relative;
+            list-style: none;
+            padding: 0.35rem;
+        }
 
-    li {
-        list-style: none;
-        padding: 0.35rem;
-        position: relative;
+        > li:hover .dropdown {
+            display: block;
+            z-index: 100;
+        }
+
+        > li:last-child {
+            margin-left: auto;
+        }
     }
 
     ul.dropdown {
@@ -35,6 +40,11 @@ nav {
         padding: 0;
         margin: 0;
         background-color: white;
+
+        &.left {
+            right: 0;
+            left: auto;
+        }
 
         > li {
             display: block;
@@ -58,11 +68,6 @@ nav {
         }
     }
 
-    ul.dropdown.left {
-        right: 0;
-        left: auto;
-    }
-
     a {
         text-decoration: none;
     }
@@ -83,11 +88,6 @@ nav {
         background-size: calc($font-size * 0.7);
         background-position: center;
         background-repeat: no-repeat;
-    }
-
-    li:hover .dropdown {
-        display: block;
-        z-index: 100;
     }
 
     .active {
