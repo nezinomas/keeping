@@ -17,10 +17,6 @@ nav {
         color: $nav-text;
     }
 
-    ul {
-        list-style: none;
-    }
-
     > ul {
         display: flex;
         gap: calc($gap / 2) $gap;
