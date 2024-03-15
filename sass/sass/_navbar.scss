@@ -26,10 +26,10 @@ nav {
         > li {
             padding: 0.35rem;
             border-bottom: 3px solid transparent;
-            transition: $transition;
 
-            &:hover,
-            &:focus {
+            &:hover, &:hover > a,
+            &:focus, &:focus > a {
+                transition: $transition;
                 border-bottom-color: $nav-active;
                 color: $nav-active;
             }
@@ -54,6 +54,11 @@ nav {
                 transform: rotateX(0) translateX(0);
                 visibility: visible;
             }
+        }
+
+        &:hover .dropdown__title::after,
+        &:focus .dropdown__title::after {
+            border-top-color: $nav-active;
         }
 
         .dropdown__menu {
