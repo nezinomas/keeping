@@ -25,7 +25,14 @@ nav {
 
         > li {
             padding: 0.35rem;
+            border-bottom: 3px solid transparent;
             transition: $transition;
+
+            &:hover,
+            &:focus {
+                border-bottom-color: $nav-active;
+                color: $nav-active;
+            }
         }
 
         > li:last-child {
@@ -33,7 +40,7 @@ nav {
         }
 
         > li.active {
-            border-bottom: 2px solid $nav-active;
+            border-bottom: 3px solid $nav-active;
         }
     }
 
