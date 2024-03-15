@@ -19,6 +19,7 @@ $btn-padding-y-sm:0.25rem;
 $btn-padding-x-sm: 0.25rem;
 $btn-font-size-sm: $font-size;
 
+$transition: 280ms all var(--delay) ease-out;
 
 // @import "../node_modules/bootstrap/scss/mixins/banner";
 // @include bsBanner("");

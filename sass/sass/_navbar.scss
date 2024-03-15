@@ -9,6 +9,18 @@ nav {
     padding-top: calc($gap / 2);
     margin-bottom: $gap;
 
+    a {
+        text-decoration: none;
+    }
+
+    a, a:visited, li {
+        color: $nav-text;
+    }
+
+    ul {
+        list-style: none;
+    }
+
     > ul {
         display: flex;
         gap: calc($gap / 2) $gap;
@@ -16,19 +28,8 @@ nav {
         flex-wrap: wrap;
 
         > li {
-            position: relative;
-            list-style: none;
             padding: 0.35rem;
-            transition-duration: 0.5s;
-        }
-
-        > li:hover > ul,
-        > li:focus-within > ul,
-        > li ul:focus,
-        > li ul:hover {
-            visibility: visible;
-            display: block;
-            z-index: 100;
+            transition: $transition;
         }
 
         > li:last-child {
@@ -40,63 +41,69 @@ nav {
         }
     }
 
-    ul.dropdown {
-        @include shadow;
-        display: none;
-        visibility: hidden;
-        position: absolute;
-        transition: all 0.5s ease;
-        top: 1.75rem;
-        left: 0;
-        padding: 0;
-        margin: 0;
-        background-color: white;
+    .dropdown {
+        position: relative;
 
-        &.left {
-            right: 0;
-            left: auto;
+        &:hover,
+        &:focus-within {
+            .dropdown__menu {
+                opacity: 1;
+                transform: rotateX(0) translateX(0);
+                visibility: visible;
+            }
         }
 
-        > li {
-            display: block;
+        .dropdown__menu {
+            --delay: 120ms;
+
+            @include shadow;
+            position: absolute;
+            top: calc(100% + 0.15rem);
+            left: 0;
+            padding: 0.25rem 0;
+            margin: 0;
             min-width: max-content;
-            padding: 0.25rem 2rem;
-            margin: 0.25rem 0;
-            cursor: pointer;
+            background-color: white;
+            z-index: 100;
+
+            transform: rotateX(-90deg) translateX(0);
+            transform-origin: top center;
+            opacity: 0.3;
+            transition: $transition;
+
+            &.left {
+                right: 0;
+                left: auto;
+            }
+
+            > li {
+                cursor: pointer;
+                display: block;
+                padding: 0.25rem 1.75rem 0.25rem 0.75rem;
+            }
+
+            > li:hover {
+                background-color: lighten($nav-active, 25%);
+            }
+
+            > li.dropdown-divider {
+                background-color: rgb($nav-text, .175);
+                min-height: 1px;
+                padding: 0;
+            }
         }
 
-        > li:hover {
-            background-color: lighten($nav-active, 25%);
+        .dropdown__title {
+            display: inline-flex;
+            align-items: center;
+
+            &:after {
+                content: "";
+                border: 0.2rem solid transparent;
+                border-top-color: rgb($nav-text, .75);
+                margin-left: 0.35rem;
+                transform: translateY(0.15em);
+            }
         }
-
-        > li.dropdown-divider {
-            border-top: 1px solid rgb(black, .175);
-            padding: 0;
-        }
-
-        > li.dropdown-divider:hover {
-            background-color: unset;
-        }
-    }
-
-    a {
-        text-decoration: none;
-    }
-
-    a, a:visited, li {
-        color: $nav-text;
-    }
-
-    a.dropdown-toggle {
-        padding-right: 0.75rem;
-        /* needed */
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        /* SVG background image */
-        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='#{$nav-text}' stroke='#{$nav-text}' stroke-linecap='round' stroke-linejoin='round'><path d='M2 5L8 11L14 5'/></svg>");
-        background-size: calc($font-size * 0.7);
-        background-position: right;
-        background-repeat: no-repeat;
     }
 }
