@@ -19,9 +19,14 @@ nav {
             position: relative;
             list-style: none;
             padding: 0.35rem;
+            transition-duration: 0.5s;
         }
 
-        > li:hover .dropdown {
+        > li:hover > ul,
+        > li:focus-within > ul,
+        > li ul:focus,
+        > li ul:hover {
+            visibility: visible;
             display: block;
             z-index: 100;
         }
@@ -38,7 +43,9 @@ nav {
     ul.dropdown {
         @include shadow;
         display: none;
+        visibility: hidden;
         position: absolute;
+        transition: all 0.5s ease;
         top: 1.75rem;
         left: 0;
         padding: 0;
@@ -81,7 +88,7 @@ nav {
     }
 
     a.dropdown-toggle {
-        padding-left: 0.75rem;
+        padding-right: 0.75rem;
         /* needed */
         -webkit-appearance: none;
         -moz-appearance: none;

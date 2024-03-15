@@ -35,11 +35,7 @@
       <ul>
         <!-- Years Dropdown -->
         <li class="{% if '/' == request.path %}active{% endif %}">
-          <div>
-            <a href="{% url 'bookkeeping:index' %}">{{ request.user.year|title }}</a>
-            <a href="#" class="dropdown-toggle"></a>
-          </div>
-
+          <a class="dropdown-toggle" href="{% url 'bookkeeping:index' %}">{{ request.user.year|title }}</a>
           <ul class="dropdown">
             {% for y in years %}
             <li><a href="{% url 'core:set_year' y %}">{{ y|safe }}</a></li>
@@ -59,11 +55,7 @@
 
         <!-- Expenses -->
         <li class="{% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}">
-          <div class="btn-group ">
-            <a href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
-            <a href="#" class="dropdown-toggle"></a>
-          </div>
-
+          <a class="dropdown-toggle" href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
           <ul class="dropdown">
             {% for m in context_months %}
             {% with m|date:'n' as m_num %}
@@ -100,11 +92,7 @@
 
         <!-- Books -->
         <li class="{% if '/books/' in request.path %}active{% endif %}">
-          <div>
-            <a href="{% url 'books:index' %}">{% translate 'Books' %}</a>
-            <a href="#" class="dropdown-toggle"></a>
-          </div>
-
+          <a class="dropdown-toggle" href="{% url 'books:index' %}">{% translate 'Books' %}</a>
           <ul class="dropdown">
             <li>
               <a href="{% url 'books:index' %}?tab=all">{% translate 'All records' %}</a>
@@ -119,11 +107,7 @@
 
         <!-- Counters -->
         <li class="{% if '/counts/' in request.path %}active{% endif %}">
-          <div>
-            <a href="{% url 'counts:redirect' %}">{% translate 'Counter' %}</a>
-            <a href="#" class="dropdown-toggle"></a>
-          </div>
-
+          <a class="dropdown-toggle" href="{% url 'counts:redirect' %}">{% translate 'Counter' %}</a>
           <ul class="dropdown">
             {% if counts_menu %}{{ counts_menu }}{% endif %}
             <li class="dropdown-divider"></li>
@@ -140,11 +124,7 @@
 
         <!-- Charts -->
         <li class="{% if 'summary' in request.path %}active{% endif %}">
-          <div>
-            <a href="{% url 'bookkeeping:summary' %}">{% translate 'Charts' %}</a>
-            <a href="#" class="dropdown-toggle"></a>
-          </div>
-
+          <a class="dropdown-toggle" href="{% url 'bookkeeping:summary' %}">{% translate 'Charts' %}</a>
           <ul class="dropdown">
             <li>
               <a href="{% url 'bookkeeping:summary' %}">{% translate 'Incomes' %} & {% translate 'Expenses' %}</a>
@@ -163,11 +143,7 @@
 
         <!-- Add butons -->
         <li>
-          <div>
-            <a href="#" role="button">{% translate 'Add' %}</a>
-            <a href="#" class="dropdown-toggle"></a>
-          </div>
-
+          <a class="dropdown-toggle" href="#" role="button">{% translate 'Add' %}</a>
           <ul class="dropdown">
             <li>
               <button hx-get="{% url 'incomes:new' %}" hx-target="#dialog">{% translate 'Incomes' context 'incomes button' %}</button>
@@ -205,11 +181,7 @@
 
         <!-- User settings -->
         <li>
-          <div>
-            <a href="#" role="button">{{ user.username }}</a>
-            <a href="#" class="dropdown-toggle"></a>
-          </div>
-
+          <a class="dropdown-toggle" href="#" role="button">{{ user.username }}</a>
           <ul class="dropdown left">
             <li><a href="{% url 'users:logout' %}">{% translate 'Log out' %}</a></li>
             <li><a href="{% url 'users:password_change' %}">{% translate 'Change password' %}</a></li>
