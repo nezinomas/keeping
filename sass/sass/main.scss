@@ -56,7 +56,8 @@
 @import 'table';
 @import 'navbar';
 @import 'accordion';
-@`import 'search';
+@import 'search';
+@import 'info_row';
 
 
 body {
@@ -98,40 +99,6 @@ h6 {
 .alert {
     text-align: center;
 }
-
-.info-row {
-    display: flex;
-
-    > * {
-        flex: 1;
-    }
-
-    > *:nth-child(2) {
-        flex-grow: 2;
-    }
-
-    > *:last-child {
-        text-align: right;
-    }
-}
-
-.info-row-text {
-    display: flex;
-    gap: $gap;
-    justify-content: center;
-
-    > .bigger {
-        font-weight: 400;
-        font-size: 1.5rem;
-        line-height: 100%;
-        margin-left: calc(-1 * $gap / 2) !important;
-    }
-
-    > *:nth-child(odd) {
-        padding-top: 0.3rem;
-    }
-}
-
 
 .text-center {
     text-align: center;
