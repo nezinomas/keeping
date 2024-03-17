@@ -1,0 +1,18 @@
+.text-center {
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+    gap: calc($gap / 3);
+
+    > .flex-right {
+        margin-left: auto;
+        background-color: red;
+    }
+}

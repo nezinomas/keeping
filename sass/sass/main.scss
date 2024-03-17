@@ -82,18 +82,6 @@ h6 {
     margin-bottom: -0.45rem !important;
 }
 
-.flex {
-    display: flex;
-    align-items: center;
-    gap: calc($gap / 3);
-
-    > .flex-right {
-        margin-left: auto;
-        background-color: red;
-    }
-}
-
-
 .rows > *:not([class="flex"]) {
     margin-bottom: calc($gap * 2);
 }
@@ -102,10 +90,3 @@ h6 {
     text-align: center;
 }
 
-.text-center {
-    text-align: center;
-}
-
-.hidden {
-    display: none;
-}
