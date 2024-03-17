@@ -56,7 +56,7 @@
 @import 'table';
 @import 'navbar';
 @import 'accordion';
-@import 'search';
+@`import 'search';
 
 
 body {
@@ -93,10 +93,6 @@ h6 {
 
 .rows > *:not([class="flex"]) {
     margin-bottom: calc($gap * 2);
-}
-
-.width-100 {
-    width: 100%;
 }
 
 .alert {
