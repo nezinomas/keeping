@@ -1,0 +1,18 @@
+.alert {
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
+    padding: .5rem 0;
+    margin-bottom: $gap;
+}
+
+.alert.alert-success {
+    border-color: $success-border;
+    background-color: $success-bg;
+    color: $success-text-clr;
+}
+
+.alert.alert-warning {
+    border-color: $warning-border;
+    background-color: $warning-bg;
+    color: $warning-text-clr;
+}
