@@ -4,6 +4,7 @@ __pycache__/
 
 # my folders
 media/
+sass/node_modules/
 .idea/
 project.pyproj*
 *.p
