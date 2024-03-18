@@ -16,3 +16,9 @@
     background-color: $warning-bg;
     color: $warning-text-clr;
 }
+
+.alert.alert-danger {
+    border-color: $danger-border;
+    background-color: $danger-bg;
+    color: $danger-text-clr;
+}
