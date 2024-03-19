@@ -75,6 +75,33 @@ h6 {
     font-weight: 500;
 }
 
+
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: inline;
+}
+
+.htmx-request.htmx-indicator {
+    display: inline;
+}
+
+.modal-dialog.modal-650 {
+    max-width: 650px !important;
+    margin: auto;
+}
+
+#imgModal .modal-dialog {
+    max-width: 800px !important;
+}
+
+#imgModal img {
+    max-width: 765px;
+    height: auto;
+}
+
 .btn-xs {
     @include button-size($btn-padding-y-sm, $btn-padding-x-sm, 0.65rem, $btn-border-radius-sm);
 
