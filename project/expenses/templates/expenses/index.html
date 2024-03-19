@@ -14,7 +14,7 @@
 {% url 'expenses:new' as url_expense_new %}
 {% url 'expenses:type_new' as url_type_new %}
 {% url 'expenses:name_new' as url_name_new %}
-<main class="two-columns">
+<main class="grid-66-33">
     {% var current_month=view.get_month %}
     <div
         x-data="{

@@ -109,15 +109,21 @@
 
 
 // One column
-#one-column {
+#grid-100 {
     display: grid;
     column-gap: $gap;
     row-gap: calc($gap * 2);
 }
 
+// Two equal columns
+.grid-50-50 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $gap;
+}
 
 // Two columns: two thirds and one third
-.two-columns {
+.grid-66-33 {
     display: grid;
     grid-template-columns: 1fr;
     gap: $gap;
@@ -133,15 +139,6 @@
         align-content: space-between;
     }
 }
-
-
-// Two equal columns
-.two-equal-columns {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: $gap;
-}
-
 
 // Media queries for screens larger than 992px
 @media only screen and (min-width: 992px) {
@@ -167,11 +164,11 @@
         ;
     }
 
-    .two-columns {
+    .grid-66-33 {
         grid-template-columns: 2fr 1fr;
     }
 
-    .two-equal-columns {
+    .grid-50-50 {
         grid-template-columns: repeat(2, 1fr);
     }
 }
