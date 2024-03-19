@@ -15,10 +15,10 @@
 
 {% block content %}
 
-<main id="main">
-    <div id="table-balance">{% include 'bookkeeping/includes/year_balance.html' with ctx=balance %}</div>
+<main id="main-grid">
+    <div id="table-balance" class="table-responsive">{% include 'bookkeeping/includes/year_balance.html' with ctx=balance %}</div>
 
-    <div id="table-expenses">{% include 'bookkeeping/includes/year_expenses.html' with ctx=expenses %}</div>
+    <div id="table-expenses" class="table-responsive">{% include 'bookkeeping/includes/year_expenses.html' with ctx=expenses %}</div>
 
     <div id="chart-expenses-container"></div>
 

@@ -1,4 +1,4 @@
-#main {
+#main-grid {
     display: grid;
     gap: $gap;
     grid-auto-columns: 1fr;
@@ -17,24 +17,23 @@
         'pensions pensions';
 }
 
-
-#main > #table-balance {
+#main-grid > #table-balance {
     grid-area: table-balance;
 }
 
-#main > #table-expenses {
+#main-grid > #table-expenses {
     grid-area: table-expenses;
 }
 
-#main > #chart-expenses-container {
+#main-grid > #chart-expenses-container {
     grid-area: chart-expenses;
 }
 
-#main > #chart-balance-container {
+#main-grid > #chart-balance-container {
     grid-area: chart-balance;
 }
 
-#main > #buttons {
+#main-grid > #buttons {
     grid-area: buttons;
 }
 
@@ -42,35 +41,35 @@
     grid-area: accounts;
 }
 
-#main > #balance-short {
+#main-grid > #balance-short {
     grid-area: balance-short;
 }
 
-#main > #wealth {
+#main-grid > #wealth {
     grid-area: wealth;
 }
 
-#main > #no-incomes {
+#main-grid > #no-incomes {
     grid-area: no-incomes;
 }
 
-#main > #avg-incomes {
+#main-grid > #avg-incomes {
     grid-area: avg-incomes;
 }
 
-#main > #borrow {
+#main-grid > #borrow {
     grid-area: borrow;
 }
 
-#main > #lend {
+#main-grid > #lend {
     grid-area: lend;
 }
 
-#main > #savings {
+#main-grid > #savings {
     grid-area: savings;
 }
 
-#main > #pensions {
+#main-grid > #pensions {
     grid-area: pensions;
 }
 
@@ -146,8 +145,8 @@
 
 // Media queries for screens larger than 992px
 @media only screen and (min-width: 992px) {
-    #main {
-        grid-template-columns: repeat(2, 20%) repeat(4, 1fr);
+    #main-grid {
+        grid-template-columns: 1fr 2fr;
         grid-template-areas:
         "table-balance table-balance table-expenses table-expenses table-expenses table-expenses"
         "chart-expenses chart-expenses chart-balance chart-balance chart-balance chart-balance"
