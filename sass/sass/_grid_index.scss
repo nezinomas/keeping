@@ -19,11 +19,11 @@
         grid-template-columns: 2fr 1fr;
         gap: $gap;
         grid-template-areas:
-            "accounts accounts"
-            "balance-short wealth"
-            "no-incomes avg-incomes"
-            "no-incomes borrow"
-            "no-incomes lend"
+            "accounts       accounts"
+            "balance-short  wealth"
+            "no-incomes     avg-incomes"
+            "no-incomes     borrow"
+            "no-incomes     lend"
         ;
     }
 
@@ -156,20 +156,21 @@
     #main-grid {
         grid-template-columns: 1fr 2fr;
         grid-template-areas:
-        "table-balance table-expenses"
-        "chart-expenses chart-balance"
-        "buttons buttons"
-        "accounts-info accounts-info"
-        "savings savings"
-        "pensions pensions";
+            "table-balance   table-expenses"
+            "chart-expenses  chart-balance"
+            "buttons         buttons"
+            "accounts-info   accounts-info"
+            "savings         savings"
+            "pensions        pensions"
+        ;
 
         > #accounts-info {
             grid-template-columns: 4fr 2fr 1fr;
             grid-template-areas:
-                "accounts balance-short wealth"
-                "accounts no-incomes avg-incomes"
-                "accounts no-incomes borrow"
-                "accounts no-incomes lend"
+                "accounts  balance-short  wealth"
+                "accounts  no-incomes     avg-incomes"
+                "accounts  no-incomes     borrow"
+                "accounts  no-incomes     lend"
             ;
         }
     }
@@ -177,8 +178,8 @@
     #debts-grid {
         grid-template-columns: repeat(2, 1fr);
         grid-template-areas:
-            "borrow-container lend-container"
-            "borrow-return-container lend-return-container"
+            "borrow-container          lend-container"
+            "borrow-return-container   lend-return-container"
         ;
     }
 
