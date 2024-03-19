@@ -1,76 +1,87 @@
+// Main grid
 #main-grid {
     display: grid;
     gap: $gap;
     grid-auto-columns: 1fr;
     grid-template-areas:
-        'table-balance table-balance'
-        'table-expenses table-expenses'
-        'chart-expenses chart-expenses'
-        'chart-balance chart-balance'
-        'buttons buttons'
-        'accounts accounts'
-        'balance-short wealth'
-        'no-incomes avg-incomes'
-        'no-incomes borrow'
-        'no-incomes lend'
-        'savings savings'
-        'pensions pensions';
-}
+        "table-balance"
+        "table-expenses"
+        "chart-expenses"
+        "chart-balance"
+        "buttons"
+        "accounts-info"
+        "savings"
+        "pensions";
 
-#main-grid > #table-balance {
-    grid-area: table-balance;
-}
+    > #accounts-info {
+        grid-area: accounts-info;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: $gap;
+        grid-template-areas:
+            "accounts accounts"
+            "balance-short wealth"
+            "no-incomes avg-incomes"
+            "no-incomes borrow"
+            "no-incomes lend"
+        ;
+    }
 
-#main-grid > #table-expenses {
-    grid-area: table-expenses;
-}
+    #table-balance {
+        grid-area: table-balance;
+    }
 
-#main-grid > #chart-expenses-container {
-    grid-area: chart-expenses;
-}
+    #table-expenses {
+        grid-area: table-expenses;
+    }
 
-#main-grid > #chart-balance-container {
-    grid-area: chart-balance;
-}
+    #chart-expenses-container {
+        grid-area: chart-expenses;
+    }
 
-#main-grid > #buttons {
-    grid-area: buttons;
-}
+    #chart-balance-container {
+        grid-area: chart-balance;
+    }
 
-#main > #accounts {
-    grid-area: accounts;
-}
+    #buttons {
+        grid-area: buttons;
+    }
 
-#main-grid > #balance-short {
-    grid-area: balance-short;
-}
+    #accounts {
+        grid-area: accounts;
+    }
 
-#main-grid > #wealth {
-    grid-area: wealth;
-}
+    #balance-short {
+        grid-area: balance-short;
+    }
 
-#main-grid > #no-incomes {
-    grid-area: no-incomes;
-}
+    #wealth {
+        grid-area: wealth;
+    }
 
-#main-grid > #avg-incomes {
-    grid-area: avg-incomes;
-}
+    #no-incomes {
+        grid-area: no-incomes;
+    }
 
-#main-grid > #borrow {
-    grid-area: borrow;
-}
+    #avg-incomes {
+        grid-area: avg-incomes;
+    }
 
-#main-grid > #lend {
-    grid-area: lend;
-}
+    #borrow {
+        grid-area: borrow;
+    }
 
-#main-grid > #savings {
-    grid-area: savings;
-}
+    #lend {
+        grid-area: lend;
+    }
 
-#main-grid > #pensions {
-    grid-area: pensions;
+    #savings {
+        grid-area: savings;
+    }
+
+    #pensions {
+        grid-area: pensions;
+    }
 }
 
 
@@ -89,22 +100,22 @@
     .flex {
         margin-bottom: $gap;
     }
-}
 
-#debts-grid > #lend-container {
-    grid-area: lend-container;
-}
+    #lend-container {
+        grid-area: lend-container;
+    }
 
-#debts-grid > #lend-return-container {
-    grid-area: lend-return-container;
-}
+    #lend-return-container {
+        grid-area: lend-return-container;
+    }
 
-#debts-grid > #borrow-container {
-    grid-area: borrow-container;
-}
+    #borrow-container {
+        grid-area: borrow-container;
+    }
 
-#debts-grid > #borrow-return-container {
-    grid-area: borrow-return-container;
+    #borrow-return-container {
+        grid-area: borrow-return-container;
+    }
 }
 
 
@@ -145,15 +156,22 @@
     #main-grid {
         grid-template-columns: 1fr 2fr;
         grid-template-areas:
-        "table-balance table-balance table-expenses table-expenses table-expenses table-expenses"
-        "chart-expenses chart-expenses chart-balance chart-balance chart-balance chart-balance"
-        "buttons buttons buttons buttons buttons buttons"
-        "accounts accounts accounts balance-short balance-short wealth"
-        "accounts accounts accounts no-incomes no-incomes avg-incomes"
-        "accounts accounts accounts no-incomes no-incomes borrow"
-        "accounts accounts accounts no-incomes no-incomes lend"
-        "savings savings savings savings savings savings"
-        "pensions pensions pensions pensions pensions pensions";
+        "table-balance table-expenses"
+        "chart-expenses chart-balance"
+        "buttons buttons"
+        "accounts-info accounts-info"
+        "savings savings"
+        "pensions pensions";
+
+        > #accounts-info {
+            grid-template-columns: 4fr 2fr 1fr;
+            grid-template-areas:
+                "accounts balance-short wealth"
+                "accounts no-incomes avg-incomes"
+                "accounts no-incomes borrow"
+                "accounts no-incomes lend"
+            ;
+        }
     }
 
     #debts-grid {

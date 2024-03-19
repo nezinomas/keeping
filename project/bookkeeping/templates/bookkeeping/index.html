@@ -37,20 +37,22 @@
         <button class="btn btn-sm btn-outline-danger" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</button>
     </div>
 
-    <!-- Accounts stats -->
-    <div id="accounts" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body">{{accounts}}</div>
+    <div id="accounts-info">
+        <!-- Accounts stats -->
+        <div id="accounts" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body">{{accounts}}</div>
 
-    <div id="balance-short">{% include "bookkeeping/includes/balance_short.html" with data=balance_short %}</div>
+        <div id="balance-short">{% include "bookkeeping/includes/balance_short.html" with data=balance_short %}</div>
 
-    <div id="wealth" hx-get="{% url 'bookkeeping:wealth' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{wealth}}</div>
+        <div id="wealth" hx-get="{% url 'bookkeeping:wealth' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{wealth}}</div>
 
-    <div id="no-incomes" hx-get="{% url 'bookkeeping:no_incomes' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{no_incomes}}</div>
+        <div id="no-incomes" hx-get="{% url 'bookkeeping:no_incomes' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{no_incomes}}</div>
 
-    <div id="avg-incomes">{% info_table data=averages %}</div>
+        <div id="avg-incomes">{% info_table data=averages %}</div>
 
-    <div id="borrow">{% info_table data=borrow calculate_debt_remains="true" %}</div>
+        <div id="borrow">{% info_table data=borrow calculate_debt_remains="true" %}</div>
 
-    <div id="lend">{% info_table data=lend calculate_debt_remains="true" %}</div>
+        <div id="lend">{% info_table data=lend calculate_debt_remains="true" %}</div>
+    </div>
 
     <div id="savings" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{savings}}</div>
 
