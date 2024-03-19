@@ -1,68 +1,4 @@
-:root {
-    --bs-body-font-size: 0.7rem;
-    --font-size-xs: .65rem;
-    --font-size-sm: .7rem;
-}
-
-/*
-                                                                    Month View
-*/
-.weekend-col {
-    --bs-table-bg-type: rgb(202, 235, 204) !important;
-}
-
-tr.current-day>td,
-tr.current-day>td.weekend-col {
-    --bs-table-bg-type: #ffc107 !important;
-}
-
-.table-hover tr:hover td,
-.table-hover tr.current-day:hover td {
-    --bs-table-bg-type: #f9f6cf !important;
-}
-
-.table-hover tr.expand-expenses:hover,
-.table-hover tr.expand-expenses:hover td
-{
-    --bs-table-bg-type: transparent !important;
-}
-
-.table td.expand-expenses {
-    padding-top: .35rem !important;
-    padding-left: .3rem !important;
-    padding-right: .3rem !important;
-    padding-bottom: 1rem !important;
-    background-color: white !important;
-}
-
-.expand-column-width {
-    width: 2.6rem !important;
-    min-width: 2.6rem !important;
-}
-
-.col2 {
-    float: left;
-    text-align: center;
-    width: 45%;
-}
-
-.panel-heading span.col1:after, .panel-heading a:before {
-    font-family: 'Glyphicons Halflings';
-    content: "\e114";
-    float: right;
-    vertical-align: middle;
-    transition: all 0.5s;
-    color: #fe536a;
-    margin-right: .25rem;
-}
-
-.panel-heading.active span.col1:after, .panel-heading.active a:before {
-    -webkit-transform: rotate(180deg);
-    -moz-transform: rotate(180deg);
-    transform: rotate(180deg);
-}
-
-
+/* 
 .btn-group-month .btn {
     margin-right: 5px !important;
     border-radius: 0.2rem !important;
@@ -72,35 +8,6 @@ tr.current-day>td.weekend-col {
     margin-right: 0 !important;
 }
 
-/*
-                                                                    Various
-*/
-caption {
-    font-weight: bold;
-}
-
-.modal-dialog.modal-650 {
-    max-width: 650px !important;
-    margin: auto;
-}
-
-.no-hover,
-.no-hover:hover {
-    text-decoration: none !important;
-    border: 0 !important;
-}
-
-.trash,
-.trash:hover {
-    color: #dc3545;
-    width: 100%;
-}
-
-.edit,
-.edit:hover {
-    color: #008000;
-    width: 100%;
-}
 
 .page-link {
     font-size: var(--font-size-sm);
@@ -112,47 +19,14 @@ caption {
     text-align: left;
 }
 
-#imgModal .modal-dialog {
-    max-width: 800px !important;
-}
-
-#imgModal img {
-    max-width: 765px;
-    height: auto;
-}
-
 
 .funds-title-col-min-width {
     min-width: 8rem !important;
 }
 
-
-/*
-                                                                    Expenses
-*/
 .badge td {
     padding: 0.25rem .25rem;
     color: #004085;
-}
-
-.drinks td {
-    background-color: #d9d9d9;
-}
-
-.fee td {
-    background-color: #ffdddd;
-}
-
-.food td {
-    background-color: #c5d9f1;
-}
-
-.leisure td {
-    background-color: #c4d79b;
-}
-
-.work td {
-    background-color: #fff0c1;
 }
 
 .table tr>.expense-ordinary {
@@ -160,9 +34,6 @@ caption {
 }
 
 
-/*
-                                                                    Plans
-*/
 .plans-star {
     color: #e83e8c;
     padding-left: .5rem;
@@ -170,31 +41,13 @@ caption {
 }
 
 
-/*
-                                                                    Ajax indicator
-*/
-.htmx-indicator {
-    display: none;
-}
 
-.htmx-request .htmx-indicator {
-    display: inline;
-}
-
-.htmx-request.htmx-indicator {
-    display: inline;
-}
-
-
-/*
-                                                                    Bootstrap Hacks
-*/
 .formset-input {
     padding-top: .1rem;
 }
 
 
-/* DatePicker icon and input size */
+//* DatePicker icon and input size
 .bi-calendar {
     margin-top: -.35rem;
     height: 1.35em;
@@ -207,9 +60,4 @@ caption {
     right: 30px;
     display: block;
     z-index: 99;
-}
-
-.disabled {
-    background-color: var(--bs-secondary-bg);
-    opacity: 1;
-}
+} */

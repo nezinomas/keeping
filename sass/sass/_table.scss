@@ -1,6 +1,5 @@
 table {
     border-collapse: collapse;
-    width: 100%;
     min-width: 100%;
 
     thead  {
@@ -15,7 +14,6 @@ table {
     thead tr:not(:last-child) th {
         background-color: #f9f9f9;
         min-height: 36px;
-        height: 36px;
     }
 
     thead tr:last-child th {
@@ -54,6 +52,20 @@ table {
         border-right: 0 !important;
     }
 
+    // Custom backgrounds
+    .dash {
+        color: #d1d1d1 !important;
+    }
+
+    .table-success {
+        background-color: #d1e7dd;
+    }
+
+    .table-danger {
+        background-color: lighten($danger, 35%);
+    }
+
+    // Border styles
     .right-blue-border {
         border-right: .15rem solid #0359b0;
     }
@@ -70,18 +82,6 @@ table {
         border-right: 0 !important;
     }
 
-    .dash {
-        color: #d1d1d1 !important;
-    }
-
-    .table-success {
-        background-color: lighten($success, 61%);
-    }
-
-    .table-danger {
-        background-color: lighten($danger, 35%);
-    }
-
     .right-grey-border {
         border-right: 2px solid #6c757d;
     }
@@ -92,7 +92,6 @@ table {
 
     .right-blue-double-border {
         border-right: double #0359b0;
-
     }
 
     .left-blue-double-border {
@@ -103,10 +102,7 @@ table {
         border: 0 !important;
     }
 
-    .empty-column {
-        border-left: #fff solid .5rem;
-    }
-
+    // Cell styles
     .edit-cell {
         width: 35px;
         text-align: center;
@@ -119,84 +115,192 @@ table {
         border-left: 0;
     }
 
-    .exception {
-        padding-left: .4rem;
-        border-left: 5px solid $danger;
-    }
-
     .cell-padding {
         padding-right: .35rem;
         padding-left: .35rem;
     }
 
-    .table-danger.-full {
-        background-color: #fe536a;
+    .trash,
+    .trash:hover {
+        color: #dc3545;
+        width: 100%;
     }
 
+    .edit,
+    .edit:hover {
+        color: #008000;
+        width: 100%;
+    }
 
+    // Month table styles
+    .weekend-col {
+        background-color: rgb(202, 235, 204) !important;
+    }
+
+    .current-day :not([class*="day"]) {
+        background-color: rgb(255, 193, 7) !important;
+    }
+
+    .empty-column {
+        border-left: #fff solid .5rem;
+    }
+
+    .table-danger.day-full {
+        background-color: $day-danger;
+        font-weight: 650;
+   }
+
+   .exception {
+        padding-left: .4rem;
+        border-left: 5px solid $danger;
+    }
+
+    // Hover styles
     &.hover {
-        tbody tr:hover td, tr:nth-child(odd):hover [class*="table-"] {
-            background: rgb(19, 139, 0, 0.1) !important;
+        tbody tr:hover {
+            > td {
+                background-color: $hover-bg !important;
+            }
+
+            > td.table-success {
+                background-color: #c1d6cc !important;
+            }
+
+            > td.table-danger {
+                background-color: #e5c7ca !important;
+            }
+        }
+
+        tbody tr.current-day:hover > td:not([class*="day"]) {
+            background-color: rgb(255, 193, 7) !important;
         }
     }
 
+    // Striped styles
     &.striped {
-        tbody tr:nth-child(odd) > * {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
+        tbody tr:nth-child(odd) {
+            > td {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
 
-        tbody tr:nth-child(odd) > td.table-success {
-            background-color: lighten($success, 59) !important;
-        }
+            > td.table-success {
+                background-color: #c7dbd2;
+            }
 
-        tbody tr:nth-child(odd) > td.table-danger {
-            background-color: lighten($danger, 33) !important;
+            > td.table-danger {
+                background-color: lighten($danger, 33);
+            }
+
+            > td.table-danger.day-full {
+                background-color: darken($day-danger, 5);
+            }
         }
     }
 }
 
 
+// Columns widths
 .w3 {
-    width: 3rem !important;
     min-width: 3rem !important;
 }
 
 .w5 {
-    width: 5rem !important;
+    min-width: 5rem !important;
 }
 
 .w6 {
-    width: 6rem !important;
+    min-width: 6rem !important;
 }
 
 .w6p {
-    width: 6% !important;
+    min-width: 6% !important;
 }
 
 .w7 {
-    width: 7rem !important;
+    min-width: 7rem !important;
 }
 
 .w7p {
-    width: 7% !important;
+    min-width: 7% !important;
 }
 
 .w8 {
-    width: 8rem !important;
+    min-width: 8rem !important;
 }
 
 .w10 {
-    width: 10rem !important;
+    min-width: 10rem !important;
 }
 
 .w12 {
-    width: 12rem !important;
+    min-width: 12rem !important;
 }
 
 .w16 {
-    width: 16rem !important;
+    min-width: 16rem !important;
 }
 
 .w18 {
-    width: 18rem !important;
+    min-width: 18rem !important;
+}
+
+
+// Expenses colors
+.fee td {
+    background-color: #ffdddd;
+}
+
+.food td {
+    background-color: #c5d9f1;
+}
+
+.leisure td {
+    background-color: #c4d79b;
+}
+
+.work td {
+    background-color: #fff0c1;
+}
+
+
+// Drinks colors
+.drinks td {
+    background-color: #d9d9d9;
+}
+
+
+// Month expands
+.table td.expand-expenses {
+    padding-top: .35rem !important;
+    padding-left: .3rem !important;
+    padding-right: .3rem !important;
+    padding-bottom: 1rem !important;
+    background-color: white !important;
+}
+
+.expand-column-width {
+    width: 2.6rem !important;
+    min-width: 2.6rem !important;
+}
+
+.col2 {
+    float: left;
+    text-align: center;
+    width: 45%;
+}
+
+.panel-heading span.col1:after, .panel-heading a:before {
+    font-family: 'Glyphicons Halflings';
+    content: "\e114";
+    float: right;
+    vertical-align: middle;
+    transition: all 0.5s;
+    color: #fe536a;
+    margin-right: .25rem;
+}
+
+.panel-heading.active span.col1:after, .panel-heading.active a:before {
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    transform: rotate(180deg);
 }

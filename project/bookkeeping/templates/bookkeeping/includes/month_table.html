@@ -50,10 +50,10 @@
             {% with table|get_item:_("Savings") as val%}<td class="{{weekend_col}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- spending -->
-            <td class="text-start {{weekend_col}} empty-column">{{spending.date|date:'l'}}</td>
-            {% with spending.day as val%}<td class="{{val|negative}} {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
+            <td class="text-start empty-column {{weekend_col}}">{{spending.date|date:'l'}}</td>
+            {% with spending.day as val%}<td class="{{val|negative}} day {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
 
-            {% with spending.full as val%}<td class="{{val|negative|add:' -full'|add:' empty-column-wide'}} {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
+            {% with spending.full as val%}<td class="{{val|negative}} day-full {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
 
         </tr>{% endwith %}{% endwith %}
         {% endfor %}

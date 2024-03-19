@@ -9,14 +9,21 @@ $gap: 0.75rem;
 
 $transition: 280ms all var(--delay) ease-out;
 
+$success: #28a745;
 $success-text-clr: #0a3622;
 $success-bg: #d1e7dd;
 $success-border: #a3cfbb;
 
+$warning: #ffc107;
 $warning-text-clr: #664d03;
 $warning-bg: #fff3cd;
 $warning-border: #ffe69c;
 
+$danger: #dc3545;
 $danger-text-clr: #58151c;
 $danger-bg: #f8d7da;
 $danger-border: #f1ae5b;
+
+$day-danger: rgb(254, 83, 106);
+
+$hover-bg: rgba(161, 160, 160, 0.25);
