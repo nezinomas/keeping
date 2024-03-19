@@ -16,7 +16,7 @@
 
 {% block content %}
 
-<main id="two-columns" x-data="{show_chart: true}">
+<main class="two-columns" x-data="{show_chart: true}">
     <!-- month table -->
     <div id="month_content" hx-ext="alpine-morph" hx-swap="morph" hx-target="this">{% include 'bookkeeping/includes/month_table.html' with ctx=month_table %}</div>
 

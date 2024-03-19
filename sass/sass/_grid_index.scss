@@ -118,7 +118,7 @@
 
 
 // Two columns: two thirds and one third
-#two-columns {
+.two-columns {
     display: grid;
     grid-template-columns: 1fr;
     gap: $gap;
@@ -137,7 +137,7 @@
 
 
 // Two equal columns
-#two-equal-columns {
+.two-equal-columns {
     display: grid;
     grid-template-columns: 1fr;
     gap: $gap;
@@ -168,11 +168,11 @@
         ;
     }
 
-    #two-columns {
+    .two-columns {
         grid-template-columns: 2fr 1fr;
     }
 
-    #two-equal-columns {
+    .two-equal-columns {
         grid-template-columns: repeat(2, 1fr);
     }
 }
