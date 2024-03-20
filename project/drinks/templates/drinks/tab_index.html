@@ -1,6 +1,8 @@
 {% load i18n %}
 {% load static %}
 
+{% include 'drinks/includes/navbar.html' %}
+
 <div class="row">
     <div class="col-lg-6"><div id="chart-consumption-container"></div></div>
     <div class="col-lg-6"><div id="chart-quantity-container"></div></div>
@@ -80,9 +82,3 @@
         <div hx-get="{% url 'drinks:compare_two' %}" hx-swap="outerHTML" hx-trigger="load"></div>
     </div>
 </div>
-
-{% if request.htmx %}
-<span id="btn-new" hx-swap-oob="true">
-    {% include 'drinks/includes/new_buttons.html' with tab="index" hx_swap_oop="true" %}
-</span>
-{% endif %}

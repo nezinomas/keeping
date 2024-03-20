@@ -23,7 +23,6 @@ class Index(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            **services.helper.drink_type_dropdown(self.request),
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
@@ -38,6 +37,8 @@ class TabIndex(TemplateViewMixin):
         service_data = services.index.load_service(year)
         target_data = {"target": rendered_content(self.request, TargetLists, **kwargs)}
 
+        context_data.update({'tab': 'index'})
+        context_data.update(services.helper.drink_type_dropdown(self.request))
         context_data.update(service_data)
         context_data.update(target_data)
 
@@ -52,6 +53,12 @@ class TabData(ListViewMixin):
         year = self.request.user.year
         return models.Drink.objects.year(year=year)
 
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            **{'tab': 'data'},
+            **services.helper.drink_type_dropdown(self.request),
+        }
 
 class TabHistory(TemplateViewMixin):
     template_name = "drinks/tab_history.html"
@@ -59,7 +66,9 @@ class TabHistory(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
+            **{'tab': 'history'},
             **services.history.load_service(),
+            **services.helper.drink_type_dropdown(self.request)
         }
 
 

@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load drinks_templatetags %}
 
+{% include 'drinks/includes/navbar.html' %}
 
 {% if object_list %}
 
@@ -34,11 +35,4 @@
 
 {% include 'core/no_records.html' %}
 
-{% endif %}
-
-
-{% if request.htmx %}
-<span id="btn-new" hx-swap-oob="true">
-    {% include 'drinks/includes/new_buttons.html' with tab="data" hx_swap_oop="true" %}
-</span>
 {% endif %}
