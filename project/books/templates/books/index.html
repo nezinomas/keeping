@@ -42,6 +42,6 @@
     <div id="chart-readed-container"></div>
 </main>
 
-<div class="hidden" hx-get="{% url 'books:chart_readed' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
+<div hx-get="{% url 'books:chart_readed' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
 
 {% endblock content %}
