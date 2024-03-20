@@ -1,8 +1,14 @@
+@mixin grid-template($column-gap: $gap, $row-gap: calc($gap * 2)) {
+    display: grid;
+    grid-auto-columns: 1fr;
+    column-gap: $column-gap;
+    row-gap: $row-gap;
+}
+
 // Main grid
 #main-grid {
-    display: grid;
-    gap: $gap;
-    grid-auto-columns: 1fr;
+    @include grid-template;
+
     grid-template-areas:
         "table-balance"
         "table-expenses"
@@ -87,9 +93,8 @@
 
 // Debts grid
 #debts-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: $gap;
+    @include grid-template;
+
     grid-template-areas:
         "lend-container"
         "lend-return-container"
@@ -121,23 +126,17 @@
 
 // One column
 #grid-100 {
-    display: grid;
-    column-gap: $gap;
-    row-gap: calc($gap * 2);
+    @include grid-template;
 }
 
 // Two equal columns
 .grid-50-50 {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: $gap;
+    @include grid-template;
 }
 
 // Two columns: two thirds and one third
 .grid-66-33 {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: $gap;
+    @include grid-template;
 
     > div {
         display: grid;
