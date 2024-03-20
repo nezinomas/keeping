@@ -1,0 +1,10 @@
+{% load widget_tweaks %}
+
+<div id="id_{{ field.html_name }}">
+{% if field.errors %}
+    {{ field|add_class:"is-invalid" }}
+    <span class="invalid-feedback">{% for error in field.errors %}<b>{{ error }}</b>{% endfor %}</span>
+{% else %}
+    {{ field }}
+{% endif %}
+</div>
