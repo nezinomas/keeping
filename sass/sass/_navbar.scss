@@ -118,10 +118,7 @@ nav#drinks-nav {
 
     > ul {
         display: flex;
-
-        > li {
-            padding: 0.5rem 0.25rem;
-        }
+        gap: calc($gap / 3);
 
         a {
             text-decoration: none;
