@@ -33,20 +33,26 @@ ul {
     list-style: none;
 }
 
-input,
-textarea,
-select,
-button {
+button,
+input[type=submit],
+input[type=button]
+{
     color: inherit;
-    font: inherit;
+    font: inherit !important;
     letter-spacing: inherit;
-}
-
-button {
-    border-radius: 0;
-    background-color: transparent;
     border: 1px solid #585858;
     cursor: pointer;
+    border-radius: 0;
+}
+
+input,
+textarea,
+select{
+    color: inherit;
+    font: inherit !important;
+    letter-spacing: inherit;
+    border: 1px solid #dee2e6;
+    background-color: transparent !important;
 }
 
 css button * {   pointer-events: none; }
