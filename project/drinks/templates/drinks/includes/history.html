@@ -1,4 +1,3 @@
-<div id="chart-history-container"></div>
 {% if chart.serries  %}
 {{chart|json_script:"chart-history-data"}}
 <script>chartCompare('chart-history-data', 'chart-history-container')</script>

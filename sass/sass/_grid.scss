@@ -91,6 +91,86 @@
 }
 
 
+//Drinks grid
+#drinks-grid {
+    @include grid-template;
+
+    grid-template-areas:
+        "chart-consumption-container"
+        "chart-quality-container"
+        "stats-tables"
+        "tbl-stdav"
+        "info-img"
+        "chart-calendar-1H-container"
+        "chart-calendar-2H-container"
+        "historical-data"
+        "compare-form-and-chart"
+    ;
+
+    > #chart-consumption-container {
+        grid-area: chart-consumption-container;
+    }
+
+    > #chart-quality-container {
+        grid-area: chart-quality-container;
+    }
+
+    > #stats-tables {
+        grid-area: stats-tables;
+        display: flex;
+        gap: $gap;
+
+        > * {
+            flex: 1;
+        }
+    }
+
+    > #tbl-stdav {
+        grid-area: tbl-stdav;
+    }
+
+    > #info-img {
+        grid-area: info-img;
+    }
+
+    > #chart-calendar-1H-container {
+        grid-area: chart-calendar-1H-container;
+    }
+
+    > #chart-calendar-2H-container {
+        grid-area: chart-calendar-2H-container;
+    }
+
+    > #historical-data, > #compare-form-and-chart {
+        @include grid-template(0, 0);
+
+        > .row {
+            display: flex;
+            align-items: center;
+            height: 2rem;
+
+            > *:first-child {
+                margin-right: auto;
+            }
+        }
+    }
+
+    > #compare-form-and-chart {
+        grid-area: compare-form-and-chart;
+
+        form {
+            display: flex;
+            gap: calc($gap / 3);
+            align-items: flex-start;
+
+            > *:last-child {
+                align-self: center;
+            }
+        }
+    }
+}
+
+
 // Debts grid
 #debts-grid {
     @include grid-template;
@@ -179,6 +259,17 @@
         grid-template-areas:
             "borrow-container          lend-container"
             "borrow-return-container   lend-return-container"
+        ;
+    }
+
+    #drinks-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-areas:
+        "chart-consumption-container        chart-quality-container"
+        "stats-tables                       info-img"
+        "tbl-stdav                          info-img"
+        "chart-calendar-1H-container        chart-calendar-2H-container"
+        "historical-data                    compare-form-and-chart"
         ;
     }
 
