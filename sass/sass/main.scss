@@ -96,15 +96,18 @@ h6 {
     height: auto;
 }
 
-.btn-xs {
-    @include button-size($btn-padding-y-sm, $btn-padding-x-sm, 0.65rem, $btn-border-radius-sm);
+// .btn-xs {
+//     @include button-size($btn-padding-y-sm, $btn-padding-x-sm, 0.65rem, $btn-border-radius-sm);
 
-    line-height: 0.25rem !important;
-    margin-top: -0.65rem !important;
-    margin-bottom: -0.45rem !important;
-}
+//     line-height: 0.25rem !important;
+//     margin-top: -0.65rem !important;
+//     margin-bottom: -0.45rem !important;
+// }
 
 .rows > *:not([class="flex"]) {
     margin-bottom: calc($gap * 2);
 }
 
+.btn-info {
+    background-color: pink !important;
+}
