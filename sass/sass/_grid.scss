@@ -131,6 +131,8 @@
 
     > #info-img {
         grid-area: info-img;
+        justify-self: center;
+        align-self: center;
     }
 
     > #chart-calendar-1H-container {
