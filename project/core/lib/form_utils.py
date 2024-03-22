@@ -2,7 +2,7 @@ from django.forms import BooleanField
 
 
 def add_css_class(instance):
-    default_input_css_class = ["form-control-sm"]
+    default_input_css_class = []
 
     for field_name in instance.fields:
         if isinstance(instance.fields[field_name], BooleanField):
