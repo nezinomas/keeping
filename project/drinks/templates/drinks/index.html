@@ -32,7 +32,6 @@
 {% block content %}
 
 
-
 <!-- htmx tab data load -->
 <div hx-get="{% url 'drinks:tab_index' %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
 <div hx-get="{% url 'drinks:tab_data' %}" hx-target="#tab_content" hx-trigger="reloadData from:body"></div>
