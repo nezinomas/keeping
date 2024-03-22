@@ -11,16 +11,16 @@
 
         <input type="search" name="search"
             id="id_search"
-            class="form-control form-control-sm"
+            class="form-control-my"
             placeholder="{% translate 'Search' %}..."
             aria-label="{% translate 'Search' %}"
             x-model="search_str"
             {% if hightlight_tab %}@keyup.enter="openTab = '13'"{% endif %}>
 
-        <button type="submit" class="btn btn-secondary btn-sm" name="search" x-model="search_str">{% translate 'Search' %}</button>
+        <button type="submit" class="btn-secondary" name="search" x-model="search_str">{% translate 'Search' %}</button>
         {{" "}}
         <button type="button"
-            class="btn btn-sm btn-secondary"
+            class="btn-secondary"
             hx-get="{{ reset_url }}"
             hx-target="{{ target }}"
             @click="search_str = ''; {% if hightlight_tab %}openTab = '{{hightlight_tab}}';{% endif %}">
