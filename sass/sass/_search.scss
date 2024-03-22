@@ -1,10 +1,7 @@
 #search-form {
     display: flex;
     gap: calc($gap / 3);
-
-    > button {
-        align-self: flex-end;
-    }
+    align-items: center;
 }
 
 
