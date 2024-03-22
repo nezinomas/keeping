@@ -137,11 +137,6 @@ class DrinkCompareForm(forms.Form):
         # inital values
         self.fields["year2"].initial = datetime.now().year
 
-        form_utils.add_css_class(self)
-
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False
-
     def clean_year1(self):
         return self._clean_year_field("year1")
 
