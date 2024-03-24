@@ -41,8 +41,14 @@ input[type=button]
     font: inherit !important;
     letter-spacing: inherit;
     border: 1px solid #585858;
-    cursor: pointer;
     border-radius: 0;
+}
+
+button,
+input[type=submit],
+input[type=button],
+a[role=button] {
+    cursor: pointer;
 }
 
 input,
