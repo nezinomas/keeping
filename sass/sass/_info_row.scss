@@ -1,5 +1,6 @@
 .info-row {
     display: flex;
+    align-items: center;
 
     > * {
         flex: 1;
@@ -18,15 +19,13 @@
     display: flex;
     gap: $gap;
     justify-content: center;
+}
 
-    > .bigger {
-        font-weight: 400;
-        font-size: 1.5rem;
-        line-height: 100%;
-        margin-left: calc(-1 * $gap / 2) !important;
-    }
-
-    > *:nth-child(odd) {
-        padding-top: 0.3rem;
-    }
+.info-row-text ::after {
+    content: attr(data-info-row);
+    font-weight: 400;
+    font-size: 2em;
+    margin-left: 0.25rem;
+    margin-bottom: auto;
+    vertical-align: -12.5%;
 }
