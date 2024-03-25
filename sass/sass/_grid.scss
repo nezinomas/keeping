@@ -205,6 +205,19 @@
     }
 }
 
+// Plans grid
+.plans-grid {
+    > div:nth-child(odd) {
+        display: flex;
+        margin-bottom: calc(-1.25 * $gap);
+        align-items: center;
+
+        > :last-child {
+            margin-left: auto;
+        }
+    }
+}
+
 
 // One column
 .grid-one-col {
