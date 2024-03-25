@@ -48,13 +48,13 @@
                 <b>{% translate 'Historical data' %}</b>
             </div>
             <div>
-                <button type="button" class="btn btn-sm btn-info" hx-get="{% url 'drinks:compare' 2 %}" hx-target="#chart-history-container">{% translate '2 years' %}</button>
+                <button type="button" class="btn btn-sm btn-active" hx-get="{% url 'drinks:compare' 2 %}" hx-target="#chart-history-container">{% translate '2 years' %}</button>
                 {{" "}}
-                <button type="button" class="btn btn-sm btn-info" hx-get="{% url 'drinks:compare' 3 %}" hx-target="#chart-history-container">{% translate '3 years' %}</button>
+                <button type="button" class="btn btn-sm btn-active" hx-get="{% url 'drinks:compare' 3 %}" hx-target="#chart-history-container">{% translate '3 years' %}</button>
                 {{" "}}
-                <button type="button" class="btn btn-sm btn-info" hx-get="{% url 'drinks:compare' 7 %}" hx-target="#chart-history-container">{% translate '7 years' %}</button>
+                <button type="button" class="btn btn-sm btn-active" hx-get="{% url 'drinks:compare' 7 %}" hx-target="#chart-history-container">{% translate '7 years' %}</button>
                 {{" "}}
-                <button type="button" class="btn btn-sm btn-info" hx-get="{% url 'drinks:compare' all_years %}" hx-target="#chart-history-container">{% translate 'All years' %}</button>
+                <button type="button" class="btn btn-sm btn-active" hx-get="{% url 'drinks:compare' all_years %}" hx-target="#chart-history-container">{% translate 'All years' %}</button>
             </div>
         </div>
 
