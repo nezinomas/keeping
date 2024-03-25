@@ -217,7 +217,7 @@
 }
 
 // Three equal columns
-.grid-tree-col {
+.grid-three-col {
     @include grid-template;
 }
 
@@ -288,7 +288,7 @@
         grid-template-columns: 2fr 1fr;
     }
 
-    .grid-tree-col {
+    .grid-three-col {
         grid-template-columns: repeat(3, 1fr);
     }
 }
