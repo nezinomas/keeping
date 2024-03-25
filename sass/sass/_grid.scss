@@ -216,6 +216,11 @@
     @include grid-template;
 }
 
+// Three equal columns
+.grid-tree-col {
+    @include grid-template;
+}
+
 // Two columns: two thirds and one third
 .grid-66-33 {
     @include grid-template;
@@ -275,12 +280,16 @@
         ;
     }
 
+    .grid-two-col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
     .grid-66-33 {
         grid-template-columns: 2fr 1fr;
     }
 
-    .grid-two-col {
-        grid-template-columns: repeat(2, 1fr);
+    .grid-tree-col {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
