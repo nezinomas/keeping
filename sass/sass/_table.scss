@@ -156,6 +156,11 @@ table {
         border-left: 5px solid $danger;
     }
 
+    // Book styles
+    .currently-reading-book {
+        background-color: rgb(202, 235, 204);
+    }
+
     // Hover styles
     &.hover {
         tbody tr:hover {
@@ -197,6 +202,8 @@ table {
             }
         }
     }
+
+
 }
 
 
