@@ -20,15 +20,16 @@
     gap: $gap;
     justify-content: center;
 
-    &  ::after {
+    & ::after {
         content: attr(data-info-row);
         font-weight: 400;
         font-size: 2em;
         margin-left: 0.25rem;
         vertical-align: -12.5%;
+        color: $nav-active;
     }
 
-    a {
-        color: $primary;
+    a::after {
+        color: $primary !important;
     }
 }
