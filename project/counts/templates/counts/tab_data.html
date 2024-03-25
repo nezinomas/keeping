@@ -1,8 +1,11 @@
 {% load i18n %}
 {% load slippers %}
-{% load counts_components %}
+
+
+{{info_row}}
 
 {% if object_list %}
+
 <table class="striped hover sticky-table">
     <thead>
         <tr>
@@ -27,12 +30,7 @@
 </table>
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
+
 {% else %}
     {% if not records %}{% include 'core/no_records.html' %}{% endif %}
-{% endif %}
-
-
-{% if request.htmx %}
-{% url 'counts:new' 'data' slug as url_new %}
-{% new_count_button url=url_new hx_swap_oob="true" %}
 {% endif %}

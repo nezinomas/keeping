@@ -1,7 +1,54 @@
 {% load i18n %}
+{% load counts_components %}
 
-<h6>{{ title }}</h6>
-<span>{% translate 'Quantity' %}:</span> <h6>{{ total|floatformat:'0g' }}</h6>
-<span>{% translate 'Week' %}:</span> <h6>{{ week|floatformat:'0g' }}</h6>
-<span>{% translate 'Per week' %}:</span> <h6>{{ ratio|floatformat:'1g' }}</h6>
-{% if current_gap %}<span>{% translate 'Last time before' %}:</span> <h6>{{ current_gap|floatformat:'0g' }}</h6><span>d.</span>{% endif %}
+<div class="info-row" >
+    <!-- Counter tabs -->
+    <div>
+        <button
+            class="{% if tab == 'index' %}btn-active{% endif %}"
+            hx-get="{% url 'counts:tab_index' object.slug %}"
+            hx-target="#tab_content">
+            {% translate 'Charts' %}
+        </button>
+        <button
+            class="{% if tab == 'data' %}btn-active{% endif %}"
+            hx-get="{% url 'counts:tab_data' object.slug %}"
+            hx-target="#tab_content">
+            {% translate 'Data' %}
+        </button>
+        <button
+            class="{% if tab == 'history' %}btn-active{% endif %}"
+            hx-get="{% url 'counts:tab_history' object.slug %}"
+            hx-target="#tab_content">
+            {% translate 'History' %}
+        </button>
+    </div>
+
+    <!-- Counter stats -->
+    <div
+        class="info-row-text"
+        hx-get="{% url 'counts:info_row' object.slug %}"
+        hx-trigger="reloadIndex from:body, reloadData from:body, reloadHistory from:body">
+
+        {% if tab == 'history' %}
+
+        <div data-info-row="{{records|floatformat:'0g'}}">{% translate "Total" %}:</div>
+
+        {% else %}
+        <div data-info-row="{{ total|floatformat:'0g' }}">{% translate 'Quantity' %}:</div>
+        <div data-info-row="{{ week|floatformat:'0g' }}">{% translate 'Week' %}:</div>
+        <div data-info-row="{{ ratio|floatformat:'1g' }}">{% translate 'Per week' %}:</div>
+        {% if current_gap %}<div data-info-row="{{ current_gap|floatformat:'0g' }}">{% translate 'Last time before' %}:</div>{% endif %}
+
+        {% endif%}
+    </div>
+
+    <!-- Counter buttons -->
+    <div>
+        {% url 'counts:new' tab object.slug as url_new %}
+        {% new_count_button url=url_new %}
+        <button type="button" class="btn btn-sm btn-success" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#dialog"><i class="bi bi-pencil-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn btn-sm btn-danger" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#dialog"><i class="bi bi-trash-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
+    </div>
+</div>
+
