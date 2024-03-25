@@ -5,7 +5,7 @@
     <ul>
         <li>
             <button
-                class="btn btn-sm {% if tab == 'index' %}btn-active{% endif %}"
+                class="{% if tab == 'index' %}btn-active{% endif %}"
                 hx-get="{% url 'drinks:tab_index' %}"
                 hx-target="#tab_content">
             {% translate 'Charts' %}
@@ -13,7 +13,7 @@
         </li>
         <li>
             <button
-                class="btn btn-sm {% if tab == 'data' %}btn-active{% endif %}"
+                class="{% if tab == 'data' %}btn-active{% endif %}"
                 hx-get="{% url 'drinks:tab_data' %}"
                 hx-target="#tab_content">
                 {% translate 'Data' %}
@@ -21,7 +21,7 @@
         </li>
         <li>
             <button
-                class="btn btn-sm {% if tab == 'history' %}btn-active{% endif %}"
+                class="{% if tab == 'history' %}btn-active{% endif %}"
                 hx-get="{% url 'drinks:tab_history' %}"
                 hx-target="#tab_content">
                 {% translate 'History' %}
