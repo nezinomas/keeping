@@ -161,6 +161,13 @@ table {
         background-color: rgb(202, 235, 204);
     }
 
+    // Drink styles
+    .std-av-border {
+        border-top: double #ffc000;
+        border-bottom: double #ffc000;
+        background-color: #fff3cd;
+    }
+
     // Hover styles
     &.hover {
         tbody tr:hover {
