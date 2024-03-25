@@ -36,7 +36,9 @@ class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
         data = InfoRowData(year, self.object.slug)
 
         context = {
-            "title": self.object.title,
+            "object": self.object,
+            "tab": self.kwargs.get("tab", "index"),
+            "records": self.kwargs.get("records", 0),
             "week": week,
             "total": data.total,
             "ratio": data.total / week,
@@ -63,7 +65,6 @@ class Index(CountTypetObjectMixin, TemplateViewMixin):
         super().get_object()
 
         context = {
-            "info_row": rendered_content(self.request, InfoRow, **self.kwargs),
             "tab_content": rendered_content(self.request, TabIndex, **self.kwargs),
         }
 
@@ -80,7 +81,13 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
         count_type = self.object.slug
         context = services.index.load_index_service(year, count_type)
 
-        return {**super().get_context_data(**self.kwargs), **context}
+        return {
+            **super().get_context_data(**self.kwargs),
+            **context,
+            "info_row": rendered_content(
+                self.request, InfoRow, **self.kwargs | {"tab": "index"}
+            ),
+        }
 
 
 class TabData(ListViewMixin):
@@ -94,7 +101,12 @@ class TabData(ListViewMixin):
         return Count.objects.year(year=year, count_type=slug)
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**self.kwargs)
+        return {
+            **super().get_context_data(**self.kwargs),
+            "info_row": rendered_content(
+                self.request, InfoRow, **self.kwargs | {"tab": "data"}
+            ),
+        }
 
 
 class TabHistory(TemplateViewMixin):
@@ -105,7 +117,15 @@ class TabHistory(TemplateViewMixin):
         count_type = self.kwargs.get("slug")
         context = services.index.load_history_service(year, count_type)
 
-        return {**super().get_context_data(**self.kwargs), **context}
+        return {
+            **super().get_context_data(**self.kwargs),
+            **context,
+            "info_row": rendered_content(
+                self.request,
+                InfoRow,
+                **self.kwargs | {"tab": "history", "records": context["records"]},
+            ),
+        }
 
 
 class CountUrlMixin:
