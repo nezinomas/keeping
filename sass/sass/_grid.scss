@@ -207,12 +207,12 @@
 
 
 // One column
-#grid-100 {
+.grid-one-col {
     @include grid-template;
 }
 
 // Two equal columns
-.grid-50-50 {
+.grid-two-col {
     @include grid-template;
 }
 
@@ -279,7 +279,7 @@
         grid-template-columns: 2fr 1fr;
     }
 
-    .grid-50-50 {
+    .grid-two-col {
         grid-template-columns: repeat(2, 1fr);
     }
 }

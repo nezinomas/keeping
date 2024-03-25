@@ -16,7 +16,7 @@
 
 
 {% block content %}
-    <main id="grid-100">
+    <main class="grid-one-col">
     {% if object_list %}
         {% for row in object_list %}
         <div>{% detailed_table row.name row.items row.total row.total_col row.total_row  %}</div>
