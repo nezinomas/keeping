@@ -19,12 +19,16 @@
     display: flex;
     gap: $gap;
     justify-content: center;
-}
 
-.info-row-text ::after {
-    content: attr(data-info-row);
-    font-weight: 400;
-    font-size: 2em;
-    margin-left: 0.25rem;
-    vertical-align: -12.5%;
+    &  ::after {
+        content: attr(data-info-row);
+        font-weight: 400;
+        font-size: 2em;
+        margin-left: 0.25rem;
+        vertical-align: -12.5%;
+    }
+
+    a {
+        color: $primary;
+    }
 }
