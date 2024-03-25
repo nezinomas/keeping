@@ -161,3 +161,17 @@ h6 {
     }
 
   }
+
+  .counter-title {
+    @include shadow;
+
+    --border-radius: 0;
+
+    font-weight: 500;
+    font-size: 2em;
+    text-align: center;
+    margin-bottom: $gap;
+    padding-bottom: 0.25rem;
+
+  }
+
