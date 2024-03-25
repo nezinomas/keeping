@@ -29,7 +29,7 @@
         {% url 'books:list' as reset_url %}
         <div hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#data" %}</div>
 
-        <div hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}">{{info_row}}</div>
+        <div class="info-row-text" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}">{{info_row}}</div>
 
         <div>
             <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>{{" "}}
