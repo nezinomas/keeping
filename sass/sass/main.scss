@@ -161,7 +161,7 @@ h6 {
 
   }
 
-  .counter-title {
+.title {
     @include shadow;
 
     --border-radius: 0;
@@ -171,8 +171,8 @@ h6 {
     text-align: center;
     margin-bottom: $gap;
     padding-bottom: 0.25rem;
+}
 
-  }
 
 .bg-warning {
     background-color: $warning-bg;
