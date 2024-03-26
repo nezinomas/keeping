@@ -5,6 +5,7 @@
     row-gap: $row-gap;
 }
 
+
 // Main grid
 #main-grid {
     @include grid-template;
@@ -205,6 +206,7 @@
     }
 }
 
+
 // Plans grid
 .plans-grid {
     > div:nth-child(odd) {
@@ -217,6 +219,7 @@
         }
     }
 }
+
 
 .summary-expenses-grid {
     display: grid;
