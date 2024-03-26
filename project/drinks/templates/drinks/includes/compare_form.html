@@ -4,7 +4,7 @@
 <div class="row">
     <div><b>{% translate 'Year comparison' %}</b></div>
     <form novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#compare-form-and-chart">
-    {% csrf_token %}
+        {% csrf_token %}
         {% form_field field=form.year1 %}
         {% form_field field=form.year2 %}
         <input type="submit" value="{% translate 'Filter' %}" class="btn btn-secondary">
