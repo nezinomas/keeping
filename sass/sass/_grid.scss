@@ -218,6 +218,13 @@
     }
 }
 
+.summary-expenses-grid {
+    display: grid;
+    // grid-auto-columns: repeat();
+    grid-template-columns: 15% minmax(80%, 1fr);
+    gap: $gap;
+}
+
 
 // One column
 .grid-one-col {
@@ -291,6 +298,10 @@
         "chart-calendar-1H-container        chart-calendar-2H-container"
         "historical-data                    compare-form-and-chart"
         ;
+    }
+
+    .summary-expenses-grid {
+        grid-template-columns: 10% minmax(85%, 1fr);
     }
 
     .grid-two-col {

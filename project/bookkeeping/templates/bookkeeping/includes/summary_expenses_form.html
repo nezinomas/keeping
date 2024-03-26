@@ -1,33 +1,28 @@
-{% load crispy_forms_tags %}
 {% load i18n %}
+{% load slippers %}
 
-    <div class="col-2">
-        <form novalidate method="post" id="search_form" hx-target="#summary_expenses">
-            {% csrf_token %}
-            <div>
-                {{ form.types|as_crispy_field }}
-            </div>
-            <div>
-                <input type="submit" name="search" value="{% translate 'Filter' %}" id="search-btn" class="btn btn-secondary btn-sm" text-center w-100">
-            </div>
-        </form>
+<form novalidate method="post" id="expenses-summary-form">
+    {% csrf_token %}
+    {% form_field field=form.types %}
+    <input type="submit" name="search" value="{% translate 'Filter' %}" class="btn-secondary">
+</form>
+
+<div>
+    {% include 'core/includes/form_errors.html' %}
+
+    {% if found %}
+
+    <div id="chart-container">
+        {{chart|json_script:"chart-data"}}
+        <script src="/static/js/chart_summary_expenses.js"></script>
+        <script>
+            chartExpenses('chart-data', 'chart-container');
+        </script>
     </div>
 
-    <div class="col-10">
-        {{ form|as_crispy_errors }}
-        {% if found %}
-        <div class="row">
-            <div class="col-12" id="chart"><div id="chart-container"></div></div>
-            {{chart|json_script:"chart-data"}}
-            <script src="/static/js/chart_summary_expenses.js"></script>
-            <script>
-                chartExpenses('chart-data', 'chart-container');
-            </script>
-        </div>
-        <div class="row">
-            <div class="col-12 table-responsive" id="table">{% include 'bookkeeping/includes/summary_expenses_table.html' %}</div>
-        </div>
-        {% elif not found and error %}
-        <div class="alert alert-block alert-danger">{{error}}</div>
-        {% endif %}
-    </div>
+    {% include 'bookkeeping/includes/summary_expenses_table.html' %}</div>
+
+    {% elif not found and error %}
+    <div class="alert alert-danger">{{error}}</div>
+    {% endif %}
+</div>
