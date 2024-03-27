@@ -221,9 +221,9 @@
 }
 
 
+// Summary expenses grid
 .summary-expenses-grid {
     display: grid;
-    // grid-auto-columns: repeat();
     grid-template-columns: 15% minmax(80%, 1fr);
     gap: $gap;
 }
