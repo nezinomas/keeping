@@ -229,6 +229,31 @@
 }
 
 
+// Settings grid
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    gap: $gap;
+
+    .users-title {
+        @include shadow;
+
+        display: flex;
+        gap: $gap;
+        padding: 0.5rem;
+        margin-bottom: $gap;
+        background-color: aliceblue;
+
+        > p {
+            font-size: 1rem;
+        }
+
+        > button {
+            margin-left: auto;
+        }
+    }
+}
+
 // One column
 .grid-one-col {
     @include grid-template;
