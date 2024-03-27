@@ -51,8 +51,6 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
         self.fields["quantity"].help_text = _help_text
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
         self.helper.form_show_labels = False
 
@@ -96,8 +94,6 @@ class DrinkTargetForm(forms.ModelForm):
         help_text = f"{h1}</br>{h2}"
         self.fields["quantity"].help_text = help_text
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
         self.helper.form_show_labels = False
 
@@ -136,6 +132,9 @@ class DrinkCompareForm(forms.Form):
 
         # inital values
         self.fields["year2"].initial = datetime.now().year
+
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
 
     def clean_year1(self):
         return self._clean_year_field("year1")
