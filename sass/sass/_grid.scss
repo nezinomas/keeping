@@ -144,13 +144,18 @@
         grid-area: chart-calendar-2H-container;
     }
 
-    > #historical-data, > #compare-form-and-chart {
+    > #historical-data,
+    > #compare-form-and-chart {
         @include grid-template(0, 0);
 
         > .row {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             height: 2rem;
+
+            > * {
+                margin-top: 0.25rem;
+            }
 
             > *:first-child {
                 margin-right: auto;
@@ -167,8 +172,9 @@
             align-items: flex-start;
 
             > *:last-child {
-                align-self: center;
+                margin-top: 0.25rem;
             }
+
         }
     }
 }
