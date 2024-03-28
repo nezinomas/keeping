@@ -1,10 +1,5 @@
 label {
     display: inline-block;
-    margin-bottom: $gap;
-}
-
-.mb-3 {
-    margin-bottom: $gap;
 }
 
 .invalid-feedback {
@@ -111,5 +106,17 @@ label {
     input {
         margin-top: 0.25rem;
         width: 100%;
+    }
+}
+
+
+// Settings form
+.settings-form {
+    .mb-3 {
+        margin-bottom: $gap;
+    }
+
+    label {
+        margin-bottom: 0.25rem;
     }
 }
