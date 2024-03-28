@@ -2,7 +2,7 @@ import contextlib
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth import views as auth_views
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
@@ -71,7 +71,14 @@ class Login(auth_views.LoginView):
 
 
 class Logout(auth_views.LogoutView):
-    pass
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+
+        if request.user.is_authenticated:
+            logout(request)
+            return redirect(reverse("users:login"))
+
+        return response
 
 
 class Signup(CreateView):
