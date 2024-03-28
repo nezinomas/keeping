@@ -260,6 +260,38 @@
     }
 }
 
+
+// User grid
+.user-grid {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    height: 100vh;
+    align-items: center;
+
+    > div {
+        @include shadow;
+        --border-radius: 0.05rem;
+
+        padding: calc($gap * 2);
+        grid-column-start: 2;
+        grid-column-end: 3;
+    }
+
+    h3 {
+        font-size: 2em;
+        margin-bottom: calc($gap * 2);
+    }
+
+    label {
+        margin-bottom: 0.25rem;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem !important;
+    }
+}
+
+
 // One column
 .grid-one-col {
     @include grid-template;
@@ -336,6 +368,10 @@
 
     .summary-expenses-grid {
         grid-template-columns: 10% minmax(85%, 1fr);
+    }
+
+    .user-grid {
+        grid-template-columns: 1fr 2fr 1fr;
     }
 
     .grid-two-col {
