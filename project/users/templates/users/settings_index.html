@@ -4,52 +4,33 @@
 {% load i18n %}
 
 
-{% block head %}
-<style>
-    .settings_row {
-        background-color: aliceblue;
-        margin: 0.5rem 0;
-        padding: 0!important;
-    }
-    .settings_row .btn-sm {
-        margin: 0.2rem 0;
-    }
-    #div_id_savings .form-check-input {
-        margin-right: .3rem !important;
-    }
-</style>
-{% endblock head %}
+{% block head %}{% endblock head %}
 
 {% block content %}
 
-<div class="row">
-    <div class="col text-center bg-light"><h6>{% translate 'Settings' %}</h6></div>
-</div>
 
-<div class="row">
-    <div class="col-3">
-        <div class="row settings_row">
-            <div class="col">
-                <h6>{% translate 'Journal settings' %}</h6>
-            </div>
+<main class="settings-grid">
+    <div>
+        <div class="users-title">
+            <p>{% translate 'Journal settings' %}</p>
         </div>
         <div>{{ settings_journal|safe }}</div>
     </div>
 
-    <div class="col">
-        <div class="row settings_row">
-            <div class="col"><h6>{% translate 'Users'%}</h6></div>
-            <div class="col text-end"><a role="button" class="btn btn-sm btn-primary js-invite" hx-get="{% url 'users:invite' %}" hx-target="#dialog">{% translate 'Send invite link' %}</a></div>
+    <div>
+        <div class="users-title">
+            <p>{% translate 'Users'%}</p>
+            <button class="btn btn-sm btn-primary js-invite" hx-get="{% url 'users:invite' %}" hx-target="#dialog">{% translate 'Send invite link' %}</button>
         </div>
         <div hx-get="{% url 'users:settings_users' %}" hx-trigger="delete_user from:body">{{ users|safe }}</div>
     </div>
 
-    <div class="col-3">
-        <div class="row settings_row">
-            <div class="col"><h6>{% translate 'Unneccessary expenses' %}</h6></div>
+    <div>
+        <div class="users-title">
+            <p>{% translate 'Unneccessary expenses' %}</p>
         </div>
         <div>{{settings_unnecessary|safe}}</div>
     </div>
-</div>
+</main>
 
 {% endblock content %}
