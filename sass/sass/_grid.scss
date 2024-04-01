@@ -289,6 +289,17 @@
     .mb-3 {
         margin-bottom: 1rem !important;
     }
+
+    .login-footer {
+        margin-top: calc($gap * 2);
+        margin-bottom: calc($gap * -2);
+        margin-left: calc($gap * -2);
+        margin-right: calc($gap * -2);
+        padding: $gap;
+        text-align: center;
+        background-color: $nav-bg;
+        border-top: rgba(0, 0, 0, 0.16) 1px solid;
+    }
 }
 
 
