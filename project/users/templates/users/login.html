@@ -18,14 +18,14 @@
 
 
     {% if signup_link %}
-    <div class="card-footer text-muted text-center">
+    <div class="login-footer">
         {% translate 'New to this site?' %} <a href="{% url 'users:signup' %}">{% translate 'Sign up' %}</a>
     </div>
     {% endif %}
 
 
     {% if login_link %}
-    <div class="card-footer text-muted text-center">
+    <div class="login-footer">
         {% translate 'Already have an account?' %} <a href="{% url 'users:login' %}">{% translate 'Log in' %}</a>
     </div>
     {% endif %}
@@ -33,9 +33,7 @@
 
     {% if reset_link and form.errors %}
     <div class="text-center">
-        <small>
-            <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
-        </small>
+        <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
     </div>
 
 </div>
