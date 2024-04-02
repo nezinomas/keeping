@@ -266,6 +266,7 @@
     display: grid;
     grid-template-columns: 1fr 3fr 1fr;
     height: 100vh;
+    gap: $gap;
     align-items: center;
 
     > div {
@@ -280,6 +281,23 @@
     h3 {
         font-size: 2em;
         margin-bottom: calc($gap * 2);
+    }
+
+    ul {
+        list-style: disc;
+        margin-left: 0.75rem;
+        margin-top: 0.25rem;
+
+        li {
+            padding: 0.1rem;
+        }
+    }
+
+    li,
+    .form-text {
+        font-size: 0.95em;
+        color: rgb(90, 90, 90);
+        font-style: italic;
     }
 
     label {
