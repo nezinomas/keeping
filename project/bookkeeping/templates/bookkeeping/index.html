@@ -49,9 +49,10 @@
 
         <div id="avg-incomes">{% info_table data=averages %}</div>
 
-        <div id="borrow">{% info_table data=borrow calculate_debt_remains="true" %}</div>
-
-        <div id="lend">{% info_table data=lend calculate_debt_remains="true" %}</div>
+        <div id="debts">
+            {% if borrow %}<div>{% info_table data=borrow calculate_debt_remains="true" %}</div>{% endif %}
+            {% if lend %}<div>{% info_table data=lend calculate_debt_remains="true" %}</div>{% endif %}
+        </div>
     </div>
 
     <div id="savings" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{savings}}</div>

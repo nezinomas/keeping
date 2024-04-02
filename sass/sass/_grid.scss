@@ -25,12 +25,13 @@
         display: grid;
         grid-template-columns: 2fr 1fr;
         gap: $gap;
+        align-items: start;
+        align-content: start;
         grid-template-areas:
             "accounts       accounts"
             "balance-short  wealth"
             "no-incomes     avg-incomes"
-            "no-incomes     borrow"
-            "no-incomes     lend"
+            "no-incomes     debts"
         ;
     }
 
@@ -74,12 +75,14 @@
         grid-area: avg-incomes;
     }
 
-    #borrow {
-        grid-area: borrow;
-    }
+    #debts {
+        grid-area: debts;
 
-    #lend {
-        grid-area: lend;
+        > :not(:only-child) {
+            margin-bottom: $gap;
+            background-color: hotpink;
+        }
+
     }
 
     #savings {
@@ -370,8 +373,7 @@
             grid-template-areas:
                 "accounts  balance-short  wealth"
                 "accounts  no-incomes     avg-incomes"
-                "accounts  no-incomes     borrow"
-                "accounts  no-incomes     lend"
+                "accounts  no-incomes     debts"
             ;
         }
     }
