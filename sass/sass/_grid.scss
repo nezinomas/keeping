@@ -28,10 +28,8 @@
         align-items: start;
         align-content: start;
         grid-template-areas:
-            "accounts       accounts"
-            "balance-short  wealth"
-            "no-incomes     avg-incomes"
-            "no-incomes     debts"
+            "accounts                       accounts"
+            "balance-short-and-no-incomes   wealth-avg-debts"
         ;
     }
 
@@ -59,30 +57,12 @@
         grid-area: accounts;
     }
 
-    #balance-short {
-        grid-area: balance-short;
+    #balance-short-and-no-incomes {
+        grid-area: balance-short-and-no-incomes;
     }
 
-    #wealth {
-        grid-area: wealth;
-    }
-
-    #no-incomes {
-        grid-area: no-incomes;
-    }
-
-    #avg-incomes {
-        grid-area: avg-incomes;
-    }
-
-    #debts {
-        grid-area: debts;
-
-        > :not(:only-child) {
-            margin-bottom: $gap;
-            background-color: hotpink;
-        }
-
+    #wealth-avg-debts {
+        grid-area: wealth-avg-debts;
     }
 
     #savings {
@@ -91,6 +71,13 @@
 
     #pensions {
         grid-area: pensions;
+    }
+
+    #balance-short-and-no-incomes,
+    #wealth-avg-debts {
+        display: flex;
+        flex-direction: column;
+        gap: $gap;
     }
 }
 
@@ -371,9 +358,7 @@
         > #accounts-info {
             grid-template-columns: 4fr 2fr 1fr;
             grid-template-areas:
-                "accounts  balance-short  wealth"
-                "accounts  no-incomes     avg-incomes"
-                "accounts  no-incomes     debts"
+                "accounts   balance-short-and-no-incomes   wealth-avg-debts"
             ;
         }
     }
