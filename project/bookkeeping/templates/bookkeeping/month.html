@@ -16,49 +16,43 @@
 
 {% block content %}
 
-<main class="grid-66-33" x-data="{show_chart: true}">
-    <!-- month table -->
-    <div id="month_content" class="table-responsive" hx-ext="alpine-morph" hx-swap="morph" hx-target="this">{% include 'bookkeeping/includes/month_table.html' with ctx=month_table %}</div>
+<main id="month-grid" x-data="{show_chart: true}">
+    <!-- Month table -->
+    <div id="month-content" class="table-responsive" hx-ext="alpine-morph" hx-swap="morph" hx-target="this">{% include 'bookkeeping/includes/month_table.html' with ctx=month_table %}</div>
 
-    <!-- chart and info table -->
+    <!-- Chart and info table -->
     <div id="month-chart-and-info-table">
-        <!-- chart -->
-        <div>
-            {{ chart_targets|json_script:"chart-targets-data" }}
-            {{ chart_expenses|json_script:"chart-expenses-data" }}
-            <div x-show="show_chart" id="chart-targets-container" hx-get="{% static 'bookkeeping/chart_month_targets.html' %}" hx-trigger="load" hx-target="this"></div>
+        <!-- Main chart -->
+        {{ chart_targets|json_script:"chart-targets-data" }}
+        {{ chart_expenses|json_script:"chart-expenses-data" }}
+        <div x-show="show_chart" id="chart-targets-container" hx-get="{% static 'bookkeeping/chart_month_targets.html' %}" hx-trigger="load" hx-target="this"></div>
 
-            <div x-show="!show_chart" id="chart-expenses-container"></div>
-        </div>
+        <!-- Second chart -->
+        <div x-show="!show_chart" id="chart-expenses-container"></div>
 
-        <!-- info table -->
+        <!-- Info table -->
         <div>
             {% include 'bookkeeping/includes/spending_info.html' with ctx=info %}
         </div>
     </div>
 
-    <!-- month buttons -->
-    <div>
-        <div class="btn-group">
+    <!-- Month buttons -->
+    <div id="month-buttons">
         {% with request.user.month as month %}
         {% for m in context_months %}
         {% with m|date:'n' as m_num %}
         <button type="button" hx-get="{% url 'bookkeeping:month' %}?month={{m_num}}" hx-target="body" hx-indicator="#indicator" class="{% if month|slugify == m_num %}btn-active{% else %}btn-secondary{% endif %}">{{ m|date:'F'|title }}</button>
         {% endwith %}{% endfor %}{% endwith %}
-        </div>
-
     </div>
 
-    <!-- other buttons -->
-    <div>
-        <div class="btn-group d-flex btn-group-month" role="group">
-            <button type="button" class="btn-outline-success" hx-get="{% url 'expenses:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Expenses' context "expenses button" %}</button>{{" "}}
-            <button type="button" class="btn-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Incomes' context "incomes button" %}</button>{{" "}}
-            <button type="button" class="btn-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>{{" "}}
-            <button type="button" class="btn-outline-success" hx-get="{% url 'transactions:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Transactions' context 'transactions button' %}</button>{{" "}}
-            <button type="button" class="btn-outline-success" hx-get="{% url 'drinks:new' 'index' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Drinks' context 'drinks button' %}</button>{{" "}}
-            <button class="btn-active" @click="show_chart = ! show_chart" hx-get="{% static 'bookkeeping/chart_month_expenses.html' %}" hx-target="#chart-expenses-container" hx-trigger="click once">{% translate 'Show other chart' %}</button>
-        </div>
+    <!-- Add buttons -->
+    <div id="month-add-buttons">
+        <button type="button" class="btn-outline-success" hx-get="{% url 'expenses:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Expenses' context "expenses button" %}</button>{{" "}}
+        <button type="button" class="btn-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Incomes' context "incomes button" %}</button>{{" "}}
+        <button type="button" class="btn-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>{{" "}}
+        <button type="button" class="btn-outline-success" hx-get="{% url 'transactions:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Transactions' context 'transactions button' %}</button>{{" "}}
+        <button type="button" class="btn-outline-success" hx-get="{% url 'drinks:new' 'index' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Drinks' context 'drinks button' %}</button>{{" "}}
+        <button class="btn-active" @click="show_chart = ! show_chart" hx-get="{% static 'bookkeeping/chart_month_expenses.html' %}" hx-target="#chart-expenses-container" hx-trigger="click once">{% translate 'Show other chart' %}</button>
     </div>
 
 </main>

@@ -311,6 +311,46 @@
 }
 
 
+// Month grid
+#month-grid {
+    @include grid-template;
+
+    grid-template-areas:
+        "month-content"
+        "month-buttons"
+        "month-chart-and-info-table"
+        "month-add-buttons"
+    ;
+
+    #month-chart-and-info-table {
+        display: flex;
+        flex-direction: column;
+        gap: $gap;
+        justify-content: space-between;
+        grid-area: month-chart-and-info-table;
+    }
+
+    #month-content {
+        grid-area: month-content;
+    }
+
+    #month-buttons {
+        grid-area: month-buttons;
+        display: flex;
+        gap: calc($gap / 3);
+
+        > * {
+            flex: 1;
+        }
+    }
+
+    #month-add-buttons {
+        grid-area: month-add-buttons;
+        text-align: right;
+    }
+}
+
+
 // One column
 .grid-one-col {
     @include grid-template;
@@ -329,17 +369,6 @@
 // Two columns: two thirds and one third
 .grid-66-33 {
     @include grid-template;
-
-    > div {
-        display: grid;
-        grid-template-columns: subgrid;
-        grid-auto-rows: min-content;
-        gap: $gap;
-    }
-
-    > div#month-chart-and-info-table {
-        align-content: space-between;
-    }
 }
 
 // Media queries for screens larger than 992px
@@ -361,6 +390,14 @@
                 "accounts   balance-short-and-no-incomes   wealth-avg-debts"
             ;
         }
+    }
+
+    #month-grid {
+        grid-template-columns: 2fr 1fr;
+        grid-template-areas:
+            "month-content      month-chart-and-info-table"
+            "month-buttons      month-add-buttons"
+        ;
     }
 
     #debts-grid {
