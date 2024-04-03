@@ -121,10 +121,8 @@ table {
         padding-left: .35rem;
     }
 
-    .trash,
-    .trash:hover {
-        color: #dc3545;
-        width: 100%;
+    .trash {
+        color: $danger;
     }
 
     // Month table styles
