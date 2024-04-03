@@ -2,18 +2,5 @@
     display: flex;
     gap: calc($gap / 3);
     align-items: center;
-}
-
-
-#incomes-search-form {
-    display: flex;
-    gap: calc($gap / 3);
-
-    > * {
-        flex: 1;
-    }
-
-    > button {
-        max-width: max-content;
-    }
+    flex-wrap: nowrap;
 }

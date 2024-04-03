@@ -23,56 +23,52 @@
             inactiveClass: 'btn-month',
         }">
         <!-- month buttons -->
-        <div class="flex">
-                {% for month in context_months %}
-                {% with month|date:'n' as month_number %}
-                <button type="button"
-                    class="btn btn-sm"
-                    hx-get="{% url 'expenses:list' %}?month={{month_number}}"
-                    hx-target="#data"
-                    hx-swap="innerHTML"
-                    hx-indicator="#indicator"
-                    :class="openTab === '{{month_number}}' ? activeClass : inactiveClass"
-                    @click="openTab = '{{month_number}}'">
-                    {{month|date:'F'|title}}
-                </button>
-                {{" "}}
-                {% endwith %}
-                {% endfor %}
-                <button type="button"
-                    class="btn btn-sm"
-                    hx-get="{% url 'expenses:list' %}?month=13"
-                    hx-target="#data"
-                    hx-swap="innerHTML"
-                    hx-indicator="#indicator"
-                    :class="openTab === '13' ? activeClass : inactiveClass"
-                    @click="openTab = '13'">
-                    {% translate 'All records' %}
-                </button>
+        <div class="btn-row">
+            {% for month in context_months %}
+            {% with month|date:'n' as month_number %}
+            <button type="button"
+                hx-get="{% url 'expenses:list' %}?month={{month_number}}"
+                hx-target="#data"
+                hx-swap="innerHTML"
+                hx-indicator="#indicator"
+                :class="openTab === '{{month_number}}' ? activeClass : inactiveClass"
+                @click="openTab = '{{month_number}}'">
+                {{month|date:'F'|title}}
+            </button>
+            {% endwith %}
+            {% endfor %}
 
+            <button type="button"
+                hx-get="{% url 'expenses:list' %}?month=13"
+                hx-target="#data"
+                hx-swap="innerHTML"
+                hx-indicator="#indicator"
+                :class="openTab === '13' ? activeClass : inactiveClass"
+                @click="openTab = '13'">
+                {% translate 'All records' %}
+            </button>
 
-                <button type="button" id="insert_expense"
-                    class="btn btn-sm btn-outline-success flex-right"
-                    hx-get="{{url_expense_new}}"
-                    hx-target="#dialog">
-                    <i class="bi bi-plus"></i>
-                    {% translate "Expenses" context "expenses button" %}
-                </button>
-
+            <button type="button" id="insert_expense"
+                class="btn-outline-success flex-right"
+                hx-get="{{url_expense_new}}"
+                hx-target="#dialog">
+                <i class="bi bi-plus"></i>
+                {% translate "Expenses" context "expenses button" %}
+            </button>
         </div><!-- /month buttons -->
 
         <!-- search form -->
-        <div>
+        <div class="btn-row">
             {% url 'expenses:search' as search_url %}
             {% url 'expenses:list' as reset_url %}
-            <div>{% search_form url=search_url reset_url=reset_url target="#data" hightlight_tab=current_month %}</div>
-        </div>
+            {% search_form url=search_url reset_url=reset_url target="#data" hightlight_tab=current_month %}
 
-        {% if request.GET.month %}
-            {% var month_number=request.GET.month %}
-        {% else %}
-            {% now 'n' as month_number %}
-        {% endif %}
+            {% if request.GET.month %}
+                {% var month_number=request.GET.month %}
+            {% else %}
+                {% now 'n' as month_number %}
+            {% endif %}
+        </div>
 
         <!-- data -->
         <div id="data" hx-trigger="load" hx-indicator="#indicator" hx-get="{% url 'expenses:list' %}?month={{month_number}}"></div>
@@ -80,25 +76,24 @@
 
     <div>
         <!-- type and name buttons -->
-        <div class="text-end">
-                <button type="button" class="btn btn-sm btn-outline-success"
-                    hx-get="{{url_type_new}}"
-                    hx-target="#dialog">
-                    <i class="bi bi-plus"></i>
-                    {% translate "Expenses type" context "expenses type button" %}
-                </button>
-                {{" "}}
-                <button type="button" class="btn btn-sm btn-outline-success"
-                    hx-get="{{url_name_new}}"
-                    hx-target="#dialog">
-                    <i class="bi bi-plus"></i>
-                    {% translate "Expenses name" context "expenses name button" %}
-                </button>
+        <div class="btn-row row-reverse">
+            <button type="button" class="btn-outline-success"
+                hx-get="{{url_type_new}}"
+                hx-target="#dialog">
+                <i class="bi bi-plus"></i>
+                {% translate "Expenses type" context "expenses type button" %}
+            </button>
+            <button type="button" class="btn-outline-success"
+                hx-get="{{url_name_new}}"
+                hx-target="#dialog">
+                <i class="bi bi-plus"></i>
+                {% translate "Expenses name" context "expenses name button" %}
+            </button>
         </div>
 
         <!-- type and name list -->
         <div
-           hx-trigger="load, afterType from:body, afterName from:body"
+            hx-trigger="load, afterType from:body, afterName from:body"
             hx-get="{% url 'expenses:type_list' %}"
             hx-target="this">
         </div>

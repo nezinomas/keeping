@@ -2,17 +2,27 @@
     text-align: center;
 }
 
+.text-right {
+    text-align: right;
+}
+
 .flex {
     display: flex;
     align-items: center;
     gap: calc($gap / 3);
-    flex: 1;
-
-    > .flex-right {
-        margin-left: auto;
-        background-color: red;
-    }
 }
+
+.row-reverse {
+    flex-direction: row-reverse;
+}
+
+
+.flex-right {
+    margin-left: auto;
+    background-color: red;
+    text-align: right;
+}
+
 
 .no-hover,
 .no-hover:hover {
@@ -22,4 +32,28 @@
 
 .table-responsive {
     overflow-x: auto;
+}
+
+.margin-bottom {
+    margin-bottom: $gap;
+}
+
+
+.btn-row {
+    display: flex;
+    margin-bottom: $gap;
+    min-height: calc(2 * $gap + 0.25rem);
+    height: calc(2 * $gap + 0.25rem);
+    align-items: center;
+    gap: calc($gap / 3);
+
+    &:has(#search-form) {
+        > * {
+            flex-grow: 1;
+        }
+    }
+
+    > button {
+        max-width: max-content;
+    }
 }
