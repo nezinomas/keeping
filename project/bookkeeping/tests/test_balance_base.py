@@ -5,16 +5,16 @@ import pytest
 
 from ..lib.balance_base import BalanceBase
 
-
-@pytest.fixture(name="df")
-def fixture_df():
-    arr = [
+ARR = pl.DataFrame([
         {"date": date(1999, 1, 1), "x": 11, "y": 21},
         {"date": date(1999, 1, 2), "x": 11, "y": 21},
         {"date": date(1999, 1, 3), "x": 0, "y": 21},
         {"date": date(1999, 1, 4), "x": 11, "y": 0},
-    ]
-    return pl.DataFrame(arr)
+    ])
+
+@pytest.fixture(name="df")
+def fixture_df():
+    return (ARR)
 
 
 @pytest.mark.parametrize(
@@ -51,7 +51,7 @@ def test_balance_then_before_was_called_total_row(data, expected):
     "data, expected",
     [
         (None, {}),
-        (pytest.lazy_fixture("df"), {"x": 11, "y": 21}),
+        (ARR, {"x": 11, "y": 21}),
         (pl.DataFrame({"x": [11, 22]}), {"x": 16.5}),
         (pl.DataFrame({"x": [0, 11, 0, 22]}), {"x": 16.5}),
         (pl.DataFrame({"x": pl.Series([0, None], dtype=pl.Float32)}), {"x": 0}),
@@ -67,7 +67,7 @@ def test_average(data, expected):
 @pytest.mark.parametrize(
     "data, expected",
     [
-        (pytest.lazy_fixture("df"), {"x": 33, "y": 63}),
+        (ARR, {"x": 33, "y": 63}),
         (pl.DataFrame(), {}),
         (None, {}),
     ],
@@ -107,7 +107,7 @@ def test_total_column_empty_data(data, expect):
 @pytest.mark.parametrize(
     'data, expect',
     [
-        (pytest.lazy_fixture('df'), 96),
+        (ARR, 96),
         (None, 0),
         (pl.DataFrame(), 0)
     ]
