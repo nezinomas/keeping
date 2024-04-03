@@ -4,11 +4,11 @@ table {
     width: 100%;
 
     thead  {
-        border-bottom: #000 solid 3px;
+        border-bottom: $nav-active solid 3px;
     }
 
     thead th {
-        padding: 0.25rem 0.25rem;
+        padding: 0.35rem 0.25rem;
         font-weight: bold;
     }
 
