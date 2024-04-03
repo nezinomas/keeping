@@ -181,10 +181,6 @@
         "borrow-return-container"
     ;
 
-    .flex {
-        margin-bottom: $gap;
-    }
-
     #lend-container {
         grid-area: lend-container;
     }
@@ -292,10 +288,6 @@
 
     label {
         margin-bottom: 0.25rem;
-    }
-
-    .mb-3 {
-        margin-bottom: 1rem !important;
     }
 
     .login-footer {
