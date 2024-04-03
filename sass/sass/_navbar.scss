@@ -29,6 +29,11 @@ nav#main-nav {
                 border-bottom-color: $nav-active;
                 color: $nav-active;
             }
+
+            &:not(:has(a)):hover{
+                border-bottom-color: transparent;
+                color: $nav-text;
+            }
         }
 
         > li:last-child {
