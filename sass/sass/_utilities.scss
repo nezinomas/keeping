@@ -16,13 +16,9 @@
     flex-direction: row-reverse;
 }
 
-
 .flex-right {
     margin-left: auto;
-    background-color: red;
-    text-align: right;
 }
-
 
 .no-hover,
 .no-hover:hover {
@@ -37,7 +33,6 @@
 .margin-bottom {
     margin-bottom: calc($gap * 2);
 }
-
 
 .btn-row {
     display: flex;
