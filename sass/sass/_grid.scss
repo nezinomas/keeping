@@ -359,7 +359,7 @@
 }
 
 // Two columns: two thirds and one third
-.grid-66-33 {
+.grid-70-30 {
     @include grid-template;
 }
 
@@ -423,8 +423,8 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .grid-66-33 {
-        grid-template-columns: 2fr 1fr;
+    .grid-70-30 {
+        grid-template-columns: 70% 1fr;
     }
 
     .grid-three-col {
