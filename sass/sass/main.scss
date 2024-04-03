@@ -61,7 +61,10 @@
 body {
     font-family: $font-family-sans-serif;
     font-size: $font-size;
-    margin: 0 calc($gap / 2);
+    margin-left: calc($gap / 2);
+    margin-right: calc($gap / 2);
+    margin-top: 0;
+    margin-bottom: calc($gap / 2);
 }
 
 h6 {
