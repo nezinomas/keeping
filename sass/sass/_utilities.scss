@@ -35,7 +35,7 @@
 }
 
 .margin-bottom {
-    margin-bottom: $gap;
+    margin-bottom: calc($gap * 2);
 }
 
 

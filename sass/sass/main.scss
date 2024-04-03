@@ -99,10 +99,6 @@ h6 {
     height: auto;
 }
 
-.rows > *:not([class="flex"]) {
-    margin-bottom: calc($gap * 2);
-}
-
 .btn-active {
     background-color: pink !important;
 }
