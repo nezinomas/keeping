@@ -78,16 +78,16 @@
         <!-- type and name buttons -->
         <div class="btn-row row-reverse">
             <button type="button" class="btn-outline-success"
-                hx-get="{{url_type_new}}"
-                hx-target="#dialog">
-                <i class="bi bi-plus"></i>
-                {% translate "Expenses type" context "expenses type button" %}
-            </button>
-            <button type="button" class="btn-outline-success"
                 hx-get="{{url_name_new}}"
                 hx-target="#dialog">
                 <i class="bi bi-plus"></i>
                 {% translate "Expenses name" context "expenses name button" %}
+            </button>
+            <button type="button" class="btn-outline-success"
+                hx-get="{{url_type_new}}"
+                hx-target="#dialog">
+                <i class="bi bi-plus"></i>
+                {% translate "Expenses type" context "expenses type button" %}
             </button>
         </div>
 
