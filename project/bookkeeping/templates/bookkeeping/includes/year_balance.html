@@ -10,7 +10,7 @@
             <th colspan="2" class="left-blue-border right-blue-border">{% translate 'Savings' %}</th>
             <th colspan="4" class="left-blue-border right-blue-border" x-show="open">{% translate 'Debts' %}</th>
             <th class="text-nowrap">
-                <button class="btn btn-xs no-hover" @click="open = ! open" x-text="open ? '{% translate "Hide debts" %}' : '{% translate "Show debts" %}' "></button>
+                <a role="button" class="btn btn-xs no-hover" @click="open = ! open" x-text="open ? '{% translate "Hide debts" %}' : '{% translate "Show debts" %}' "></a>
             </th>
         </tr>
         <tr>
