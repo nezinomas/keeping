@@ -374,7 +374,7 @@
 // Media queries for screens larger than 992px
 @media only screen and (min-width: 992px) {
     #main-grid {
-        grid-template-columns: 1fr 2fr;
+        grid-template-columns: 42% 1fr;
         grid-template-areas:
             "table-balance   table-expenses"
             "chart-expenses  chart-balance"
