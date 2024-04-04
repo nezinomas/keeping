@@ -37,7 +37,7 @@
     </div>
 
     <!-- Month buttons -->
-    <div id="month-buttons">
+    <div id="month-buttons" class="btn-group">
         {% with request.user.month as month %}
         {% for m in context_months %}
         {% with m|date:'n' as m_num %}

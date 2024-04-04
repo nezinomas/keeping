@@ -328,12 +328,6 @@
 
     #month-buttons {
         grid-area: month-buttons;
-        display: flex;
-        gap: calc($gap / 3);
-
-        > * {
-            flex: 1;
-        }
     }
 
     #month-add-buttons {

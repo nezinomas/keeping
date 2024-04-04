@@ -52,3 +52,12 @@
         max-width: max-content;
     }
 }
+
+.btn-group {
+    display: flex;
+    gap: calc($gap / 3);
+
+    > * {
+        flex: 1;
+    }
+}
