@@ -1,0 +1,30 @@
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: $gap 0;
+
+    a,
+    li:not(:has(a)) {
+        font-size: .8rem;
+        padding: 0.35rem 0.75rem;
+        margin: 0 0.25rem;
+        border-bottom: 3px solid transparent;
+    }
+
+    a {
+        &:hover, &:focus {
+            color: $nav-active;
+            border-bottom-color: $nav-active;
+        }
+    }
+
+    > li {
+        display: flex;
+
+        &.active {
+            color: $nav-active;
+            border-bottom: 3px solid $nav-active;
+        }
+    }
+}
