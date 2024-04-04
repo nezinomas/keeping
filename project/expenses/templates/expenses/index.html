@@ -47,14 +47,6 @@
                 @click="openTab = '13'">
                 {% translate 'All records' %}
             </button>
-
-            <button type="button" id="insert_expense"
-                class="btn-outline-success flex-right"
-                hx-get="{{url_expense_new}}"
-                hx-target="#dialog">
-                <i class="bi bi-plus"></i>
-                {% translate "Expenses" context "expenses button" %}
-            </button>
         </div><!-- /month buttons -->
 
         <!-- search form -->
@@ -68,6 +60,14 @@
             {% else %}
                 {% now 'n' as month_number %}
             {% endif %}
+
+            <button type="button" id="insert_expense"
+            class="btn-outline-success flex-right"
+            hx-get="{{url_expense_new}}"
+            hx-target="#dialog">
+            <i class="bi bi-plus"></i>
+            {% translate "Expenses" context "expenses button" %}
+        </button>
         </div>
 
         <!-- data -->
@@ -75,6 +75,7 @@
     </div>
 
     <div>
+        <div class="btn-row"></div>
         <!-- type and name buttons -->
         <div class="btn-row row-reverse">
             <button type="button" class="btn-outline-success"
