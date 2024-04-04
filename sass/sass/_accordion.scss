@@ -6,7 +6,6 @@ ul.accordion {
         font-size: inherit;
         font-weight: bold;
         display: block;
-        cursor: pointer;
         border-bottom: 3px solid $nav-active;
         padding: 0.35rem 0;
     }
@@ -42,6 +41,7 @@ ul.accordion {
 
     > li {
         position: relative;
+        margin-bottom: calc(1.25 * $gap);
 
         > i {
             position: absolute;
@@ -71,25 +71,27 @@ ul.accordion {
         > input[type=checkbox] {
             position: absolute;
             cursor: pointer;
-            width: 100%;
+            right: 0;
+            width: 80%;
             height: 100%;
             z-index: 1;
             opacity: 0;
-        }
 
-        > input[type=checkbox]:checked {
-            ~ .accordion__dropdown {
-                max-height: 0;
-                opacity: 0;
-                transform: translate(0, 50%);
-            }
 
-            ~ i:before {
-                transform: translate(2px, 0) rotate(45deg);
-            }
+            &:checked {
+                ~ .accordion__dropdown {
+                    max-height: 0;
+                    opacity: 0;
+                    transform: translate(0, 50%);
+                }
 
-            ~ i:after {
-                transform: translate(-2px, 0) rotate(-45deg);
+                ~ i:before {
+                    transform: translate(2px, 0) rotate(45deg);
+                }
+
+                ~ i:after {
+                    transform: translate(-2px, 0) rotate(-45deg);
+                }
             }
         }
     }
