@@ -4,7 +4,7 @@ ul.accordion {
 
     h2 {
         font-size: inherit;
-        font-weight: bold;
+        font-weight: 650;
         display: block;
         border-bottom: 3px solid $nav-active;
         padding: 0.35rem 0;
@@ -51,6 +51,7 @@ ul.accordion {
             font-family: "Bootstrap-icons";
             color: $nav-active;
             margin-right: 0.35rem;
+            font-weight: normal;
         }
     }
 
