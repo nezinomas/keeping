@@ -24,13 +24,33 @@ ul.accordion {
         align-items: center;
         justify-content: space-between;
 
-        .edit {
-            padding-left: 3rem;
-            padding-right: calc($gap / 2);
-        }
-
         s {
-            color: gray;
+            color: rgb(188, 188, 188);
+        }
+    }
+
+    .edit {
+        z-index: 3;
+
+        &:hover:after {
+            content: "\F4C9";
+            font-family: "Bootstrap-icons";
+            margin-left: 1rem;
+        }
+    }
+
+    .badge {
+        color: $nav-active;
+        font-weight: bold;
+        margin-right: 0.35rem;
+    }
+
+    .necessary {
+        &::before {
+            content: "\F588";
+            font-family: "Bootstrap-icons";
+            color: $nav-active;
+            margin-right: 0.35rem;
         }
     }
 
