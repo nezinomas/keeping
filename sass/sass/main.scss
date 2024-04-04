@@ -43,10 +43,11 @@
 // @import "../node_modules/bootstrap/scss/utilities/api";
 
 
-@import 'normalize';
 @import 'variables';
 @import 'mixins';
 @import 'utilities';
+@import 'root';
+@import 'normalize';
 @import 'grid';
 @import 'table';
 @import 'navbar';
