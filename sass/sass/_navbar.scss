@@ -11,7 +11,7 @@ nav#main-nav {
     }
 
     a, a:visited, li {
-        color: $nav-text;
+        color: $black;
     }
 
     > ul {
@@ -26,13 +26,13 @@ nav#main-nav {
             &:hover, &:hover > a,
             &:focus, &:focus > a {
                 transition: $transition;
-                border-bottom-color: $nav-active;
-                color: $nav-active;
+                border-bottom-color: $active;
+                color: $active;
             }
 
             &:not(:has(a)):hover{
                 border-bottom-color: transparent;
-                color: $nav-text;
+                color: $black;
             }
         }
 
@@ -41,7 +41,7 @@ nav#main-nav {
         }
 
         > li.active {
-            border-bottom: 3px solid $nav-active;
+            border-bottom: 3px solid $active;
         }
     }
 
@@ -59,7 +59,7 @@ nav#main-nav {
 
         &:hover .dropdown__title::after,
         &:focus .dropdown__title::after {
-            border-top-color: $nav-active;
+            border-top-color: $active;
         }
 
         .dropdown__menu {
@@ -92,11 +92,11 @@ nav#main-nav {
             }
 
             > li:hover {
-                background-color: lighten($nav-active, 25%);
+                background-color: lighten($active, 25%);
             }
 
             > li.dropdown-divider {
-                background-color: rgb($nav-text, .175);
+                background-color: rgb($black, .175);
                 min-height: 1px;
                 padding: 0;
             }
@@ -109,7 +109,7 @@ nav#main-nav {
             &:after {
                 content: "";
                 border: 0.2rem solid transparent;
-                border-top-color: rgb($nav-text, .75);
+                border-top-color: rgb($black, .75);
                 margin-left: 0.35rem;
                 transform: translateY(0.15em);
             }
@@ -130,7 +130,7 @@ nav#drinks-nav {
         }
 
         a, a:visited, li {
-            color: $nav-text;
+            color: $black;
         }
     }
 
@@ -178,7 +178,7 @@ nav#drinks-nav {
             }
 
             > li:hover {
-                background-color: lighten($nav-active, 25%);
+                background-color: lighten($active, 25%);
             }
         }
 
@@ -189,7 +189,7 @@ nav#drinks-nav {
             &:after {
                 content: "";
                 border: 0.2rem solid transparent;
-                border-top-color: rgb($nav-text, .75);
+                border-top-color: rgb($black, .75);
                 margin-left: 0.35rem;
                 transform: translateY(0.15em);
             }

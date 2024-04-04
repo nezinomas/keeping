@@ -6,7 +6,7 @@ ul.accordion {
         font-size: inherit;
         font-weight: 650;
         display: block;
-        border-bottom: 3px solid $nav-active;
+        border-bottom: 3px solid $active;
         padding: 0.35rem 0;
     }
 
@@ -40,7 +40,7 @@ ul.accordion {
     }
 
     .badge {
-        color: $nav-active;
+        color: $active;
         font-weight: bold;
         margin-right: 0.35rem;
     }
@@ -49,7 +49,7 @@ ul.accordion {
         &::before {
             content: "\F588";
             font-family: "Bootstrap-icons";
-            color: $nav-active;
+            color: $active;
             margin-right: 0.35rem;
             font-weight: normal;
         }
@@ -73,7 +73,7 @@ ul.accordion {
             &:before, &:after {
                 content: "";
                 position: absolute;
-                background-color: $nav-active;
+                background-color: $active;
                 width: 3px;
                 height: 8px;
             }

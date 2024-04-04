@@ -14,8 +14,8 @@
 
     a {
         &:hover, &:focus {
-            color: $nav-active;
-            border-bottom-color: $nav-active;
+            color: $active;
+            border-bottom-color: $active;
         }
     }
 
@@ -23,8 +23,8 @@
         display: flex;
 
         &.active {
-            color: $nav-active;
-            border-bottom: 3px solid $nav-active;
+            color: $active;
+            border-bottom: 3px solid $active;
         }
     }
 }
