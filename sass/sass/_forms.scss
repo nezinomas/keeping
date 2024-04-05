@@ -1,6 +1,6 @@
-label {
-    display: inline-block;
-}
+// label {
+//     display: inline-block;
+// }
 
 .invalid-feedback {
     font-size: .875em;
@@ -15,7 +15,6 @@ label {
     border: 1px solid #dee2e6;
     border-radius: 0;
 }
-
 
 .form-control {
     display: block;
@@ -118,5 +117,57 @@ label {
 
     label {
         margin-bottom: 0.25rem;
+    }
+}
+
+
+// Modal forms
+.modal-form {
+    .form-label {
+        display: block;
+        margin-bottom: .25rem;
+    }
+
+    .disabled {
+        background-color: $disabled !important;
+        opacity: 1;
+    }
+
+    .mb-3 {
+        margin-bottom: $gap;
+    }
+
+    .item-price {
+        display: flex;
+        gap: calc($gap / 3);
+        align-items: center;
+
+        > *:first-child {
+            flex-grow: 1;
+        }
+
+        > *:last-child {
+            margin-top: 0.5rem;
+        }
+    }
+
+    .bi-calendar {
+        font-size: 1.6em;
+    }
+
+    .input-group {
+        position: relative;
+
+        .input-group-text {
+            position: absolute;
+            top: 0;
+            right: 5px;
+        }
+    }
+
+    input[type="file"] {
+        border: none;
+        background-color: $disabled !important;
+        padding: 0;
     }
 }
