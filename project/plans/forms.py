@@ -103,7 +103,6 @@ class IncomePlanForm(YearFormMixin):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        # self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -139,7 +138,6 @@ class ExpensePlanForm(YearFormMixin):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -175,7 +173,6 @@ class SavingPlanForm(YearFormMixin):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -207,7 +204,6 @@ class DayPlanForm(YearFormMixin):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -242,7 +238,6 @@ class NecessaryPlanForm(YearFormMixin):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -368,4 +363,3 @@ class CopyPlanForm(forms.Form):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False

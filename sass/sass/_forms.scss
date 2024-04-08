@@ -171,3 +171,12 @@
         padding: 0;
     }
 }
+
+.plans-form {
+    > *:not([class*='alert']) {
+        display: grid;
+        grid-template-columns: 15% 1fr;
+        align-items: center;
+    }
+}
+
