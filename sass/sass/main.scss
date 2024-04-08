@@ -31,7 +31,7 @@
 // @import "../node_modules/bootstrap/scss/list-group";
 // @import "../node_modules/bootstrap/scss/close";
 // @import "../node_modules/bootstrap/scss/toasts";
-@import "../node_modules/bootstrap/scss/modal";
+// @import "../node_modules/bootstrap/scss/modal";
 @import "../node_modules/bootstrap/scss/tooltip";
 // @import "../node_modules/bootstrap/scss/popover";
 // @import "../node_modules/bootstrap/scss/carousel";
@@ -58,6 +58,7 @@
 @import 'alert';
 @import 'forms';
 @import 'pagination';
+@import 'modal';
 
 
 body {
@@ -88,19 +89,6 @@ h6 {
     display: inline;
 }
 
-.modal-dialog.modal-650 {
-    max-width: 650px !important;
-    margin: auto;
-}
-
-#imgModal .modal-dialog {
-    max-width: 800px !important;
-}
-
-#imgModal img {
-    max-width: 765px;
-    height: auto;
-}
 
 .btn-active {
     background-color: pink !important;

@@ -44,7 +44,9 @@ $cyan:    #0dcaf0;
 $black:   #585858;
 
 $primary: $blue;
+$disabled: #E9ECEF;
 
+$modal-border-radius: 0.25rem;
 
 @function tint-color-my($color, $weight) {
     @return mix(white, $color, $weight);
