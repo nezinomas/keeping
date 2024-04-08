@@ -65,8 +65,7 @@ htmx.on("htmx:beforeSwap", (e) => {
         if(subbmiter == '_close') {
             modal_hide();
 
-
-            $('#modal form')[0].reset();
+            $('#modal-form .modal-form')[0].reset();
         }
 
         e.detail.shouldSwap = false;
