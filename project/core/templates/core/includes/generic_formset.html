@@ -12,7 +12,7 @@
         <h5 class="modal-title">{{ title }}</h5>
         <button type="button" class="btn-close modal-close" aria-label="{% translate 'Close' %}"></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body {% if css_class %}{{css_class}}{% endif %}">
         {% if formset.non_form_errors %}
         <div class="alert alert-danger">
         {% for error in formset.non_form_errors %}<strong>{{ error|escape }}</strong>{% endfor %}
@@ -22,7 +22,6 @@
         {% for form in formset.forms %}
         {% include 'core/includes/form_errors.html' %}
 
-        <div class="row">
             {% for field in form %}
             {% var col='col' %}
             {% if field.name == 'price' %}
@@ -31,9 +30,8 @@
             {% if field.name == 'date' %}
                 {% var col='formset-input'%}
             {% endif %}
-            <div class="{{col}}">{{ field|as_crispy_field }}</div>
+            {{ field|as_crispy_field }}
             {% endfor %}
-        </div>
         {% endfor %}
     </div>
 

@@ -180,3 +180,15 @@
     }
 }
 
+
+.worth-form {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: $gap;
+
+    .mb-3 {
+        padding: 0 !important;
+        margin: 0;
+    }
+
+}
