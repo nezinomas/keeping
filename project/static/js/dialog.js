@@ -34,7 +34,6 @@ window.onclick = function(event) {
 
 // show modal on click button with hx-target="#dialog"
 htmx.on("htmx:afterSwap", (e) => {
-    console.log(e.detail.target.id);
     if (e.detail.target.id == "dialog") {
         $('#modal').show();
     }
