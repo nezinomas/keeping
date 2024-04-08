@@ -103,7 +103,7 @@ class IncomePlanForm(YearFormMixin):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
+        # self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------

@@ -68,7 +68,6 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
         form_utils.add_css_class(self)
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         if not self.instance.pk:
@@ -200,7 +199,6 @@ class ExpenseTypeForm(forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 class ExpenseNameForm(forms.ModelForm):
@@ -228,7 +226,6 @@ class ExpenseNameForm(forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()

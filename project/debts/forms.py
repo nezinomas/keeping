@@ -66,7 +66,6 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def save(self, *args, **kwargs):
         # set debt_type
@@ -155,7 +154,6 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean_price(self):
         price = self.cleaned_data["price"]

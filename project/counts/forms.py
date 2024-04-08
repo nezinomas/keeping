@@ -26,7 +26,6 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerInput(
@@ -73,7 +72,6 @@ class CountTypeForm(forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean_title(self):
         reserved_titles = [

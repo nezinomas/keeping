@@ -37,7 +37,6 @@ class AccountForm(forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()

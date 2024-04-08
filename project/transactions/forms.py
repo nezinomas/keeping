@@ -33,7 +33,6 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerInput(
@@ -98,7 +97,6 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerInput(
@@ -164,7 +162,6 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerInput(

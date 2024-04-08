@@ -50,7 +50,6 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean_date(self):
         dt = self.cleaned_data["date"]
@@ -89,4 +88,3 @@ class IncomeTypeForm(forms.ModelForm):
         form_utils.add_css_class(self)
 
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
