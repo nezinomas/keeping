@@ -21,15 +21,7 @@
 
         {% for form in formset.forms %}
         {% include 'core/includes/form_errors.html' %}
-
             {% for field in form %}
-            {% var col='col' %}
-            {% if field.name == 'price' %}
-                {% var col='formset-input'%}
-            {% endif %}
-            {% if field.name == 'date' %}
-                {% var col='formset-input'%}
-            {% endif %}
             {{ field|as_crispy_field }}
             {% endfor %}
         {% endfor %}
