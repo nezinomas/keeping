@@ -133,7 +133,7 @@ class ExpensePlanForm(YearFormMixin):
         self.fields["expense_type"].queryset = ExpenseType.objects.items()
 
         # field translation
-        self.fields["expense_type"].label = "Expense type"
+        self.fields["expense_type"].label = _("Expense type")
         common_field_transalion(self)
 
         form_utils.add_css_class(self)
@@ -237,6 +237,7 @@ class NecessaryPlanForm(YearFormMixin):
         self.fields["expense_type"].queryset = ExpenseType.objects.items()
 
         # field translation
+        self.fields["expense_type"].label = _("Expense type")
         common_field_transalion(self)
 
         form_utils.add_css_class(self)
