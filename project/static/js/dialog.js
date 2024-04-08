@@ -1,29 +1,49 @@
+
+// close modal on ESC
 $(document).keydown(function (event) {
     if (event.keyCode == 27) {
-        $('#modal').modal("hide");
+        modal_hide();
     }
 });
 
 
-$(document).on('submit', '.js-form', function (e) {
+// close modal on outside click
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal_hide();
+    }
+  }
+
+
+// prevent default form submission
+$(document).on('submit', '.modal-form', function (e) {
     e.preventDefault();
 });
 
 
-/* focus on [autofocus] attribute */
+// close modal on Close Buton
+$(document).on('click', '.modal-close', function (e) {
+    modal_hide();
+});
+
+
+// focus on [autofocus] attribute
 $(document).on('shown.bs.modal', '#modal', function () {
     $(this).find('[autofocus]').focus();
 });
 
 
+// show modal on click button with hx-target="#dialog"
 htmx.on("htmx:afterSwap", (e) => {
     /* Response targeting #dialog => show the modal */
+    console.log(e.detail.target.id);
     if (e.detail.target.id == "dialog") {
-        $("#modal").modal("show").draggable({ handle: ".modal-header" });
+        $('#modal').show();
     }
 })
 
 
+// reload modal form with error messages or reset fields and close modal form
 htmx.on("htmx:beforeSwap", (e) => {
     if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
         /* find submit button id */
@@ -45,7 +65,9 @@ htmx.on("htmx:beforeSwap", (e) => {
         }
 
         if(subbmiter == '_close') {
-            $('#modal').modal('hide');
+            modal_hide();
+
+
             $('#modal form')[0].reset();
         }
 
@@ -54,8 +76,9 @@ htmx.on("htmx:beforeSwap", (e) => {
 })
 
 
-$(document).on('hidden.bs.modal', '#modal', function () {
-    let form = $('.form');
+// trigger htmx on form submit if form has data-hx-trigger-form or data-hx-inserted attribute
+function hx_trigger() {
+    let form = $('.modal-form');
     let trigger_name = form.attr("data-hx-trigger-form");
     let data_inserted = form.attr('data-hx-inserted');
 
@@ -66,4 +89,11 @@ $(document).on('hidden.bs.modal', '#modal', function () {
     if(trigger_name && data_inserted) {
         htmx.trigger("body", trigger_name, { });
     }
-});
+}
+
+
+// hide modal
+function modal_hide() {
+    $('#modal').hide();
+    hx_trigger();
+}
