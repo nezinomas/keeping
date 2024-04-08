@@ -3,14 +3,14 @@
 {% load i18n %}
 
 
-<form method="post" class="modal-content form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted" >
+<form method="post" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted" >
     {% csrf_token %}
     {% include 'core/includes/form_date_scripts.html' %}
     {{ formset.management_form|crispy }}
 
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close" data-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
+        <button type="button" class="btn-close modal-close" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body">
         {% if formset.non_form_errors %}

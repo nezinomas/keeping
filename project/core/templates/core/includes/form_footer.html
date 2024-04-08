@@ -4,5 +4,5 @@
     {% if form_action == "insert" %}<button type="submit" id="_new" class="btn-primary" @click="inserted = true">{% translate 'Insert' %}</button>{% endif %}
     {% if form_action == 'update' %}<button type="submit" id="_close" class="btn-primary">{% translate 'Update and Close' %}</button>{% endif %}
     {% if form_action == 'insert' or form_action == 'insert_close' %}<button type="submit" id="_close" class="btn-primary" @click="inserted = true">{% translate 'Insert and Close' %}</button>{% endif %}
-    <button type="button" class="btn-secondary modal-close" data-dismiss="modal">{% translate 'Close' %}</button>
+    <button type="button" class="btn-secondary modal-close">{% translate 'Close' %}</button>
 </div>
