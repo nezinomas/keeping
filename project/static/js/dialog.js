@@ -1,3 +1,20 @@
+// prevent default form submission
+$(document).on('submit', '.modal-form', function (e) {
+    e.preventDefault();
+});
+
+
+// focus on [autofocus] attribute
+$(document).on('shown.bs.modal', '#modal', function () {
+    $(this).find('[autofocus]').focus();
+});
+
+
+// close modal on Close Buton
+$(document).on('click', '.modal-close', function (e) {
+    modal_hide();
+});
+
 
 // close modal on ESC
 $(document).keydown(function (event) {
@@ -12,30 +29,11 @@ window.onclick = function(event) {
     if (event.target == modal) {
         modal_hide();
     }
-  }
-
-
-// prevent default form submission
-$(document).on('submit', '.modal-form', function (e) {
-    e.preventDefault();
-});
-
-
-// close modal on Close Buton
-$(document).on('click', '.modal-close', function (e) {
-    modal_hide();
-});
-
-
-// focus on [autofocus] attribute
-$(document).on('shown.bs.modal', '#modal', function () {
-    $(this).find('[autofocus]').focus();
-});
+}
 
 
 // show modal on click button with hx-target="#dialog"
 htmx.on("htmx:afterSwap", (e) => {
-    /* Response targeting #dialog => show the modal */
     console.log(e.detail.target.id);
     if (e.detail.target.id == "dialog") {
         $('#modal').show();
