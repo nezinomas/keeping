@@ -18,7 +18,7 @@
     <tbody>
         {% for item in items %}
         <tr>
-            <td data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="left" data-bs-title="{{ item.latest_check|default_if_none:_('No record of account amount') }}" class="text-start no-right-border">
+            <td data-toggle="tooltip" data-html="true" data-placement="left" data-title="{{ item.latest_check|default_if_none:_('No record of account amount') }}" class="text-start no-right-border">
                 {{ item.account.title }}
             </td>
             <td class="w7 {{item.past|css_class_if_none}}">{{item.past|price|cellformat}}</td>

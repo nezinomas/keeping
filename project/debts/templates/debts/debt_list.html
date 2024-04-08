@@ -32,7 +32,7 @@
             <td class="text-center">{{object.date|date:"Y-m-d"}}</td>
             <td class="text-start cell-padding">{{object.name}}</td>
             <td class="cell-padding">{{object.price|price|cellformat}}</td>
-            <td class="cell-padding" {% if not object.closed %}data-bs-toggle="tooltip" data-bs-placement="right" title="{% translate 'Remains to be returned' %}:  {{object.price|sub:object.returned|price|floatformat:'2g'}}"{% endif %}>{{object.returned|price|floatformat:"2g"}}</td>
+            <td class="cell-padding" {% if not object.closed %}data-toggle="tooltip" data-placement="right" title="{% translate 'Remains to be returned' %}:  {{object.price|sub:object.returned|price|floatformat:'2g'}}"{% endif %}>{{object.returned|price|floatformat:"2g"}}</td>
             <td class="text-start cell-padding">{{ object.account }}</td>
             <td class="text-start">{{ object.remark }}</td>
             <td class="text-center">{% if object.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>

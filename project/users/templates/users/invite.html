@@ -5,7 +5,7 @@
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{% translate 'Invitation' %}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
+        <button type="button" class="btn-close" data-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body">
         {% if not send %}
@@ -15,6 +15,6 @@
         {% else %}
         <p>{% translate 'Email sent' %}</p>
         {% endif %}
-        <button type="button" class="btn-secondary" data-bs-dismiss="modal">{% translate 'Close' %}</button>
+        <button type="button" class="btn-secondary" data-dismiss="modal">{% translate 'Close' %}</button>
     </div>
 </form>

@@ -199,5 +199,5 @@ def test_view_last_check_empty(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert 'data-bs-title="Nėra įrašo apie sąskaitos lėšas"' in actual
+    assert 'data-title="Nėra įrašo apie sąskaitos lėšas"' in actual
     assert "20" in actual

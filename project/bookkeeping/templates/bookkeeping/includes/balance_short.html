@@ -11,9 +11,9 @@
                 <a
                     role="button"
                     class="btn btn-xs no-hover"
-                    data-bs-toggle="tooltip"
-                    data-bs-html="true"
-                    data-bs-placement="right"
+                    data-toggle="tooltip"
+                    data-html="true"
+                    data-placement="right"
                     title="{% translate 'Forecast' %}"
                     @click="open = ! open"
                     hx-get="{% url 'bookkeeping:forecast' %}"

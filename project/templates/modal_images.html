@@ -6,7 +6,7 @@
                 <div class="dspl text-center"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
             </div>
         </div>
     </div>
@@ -18,7 +18,7 @@
     imgModal.addEventListener('show.bs.modal', function (event) {
         var button = event.relatedTarget;
         var modalBodyInput = imgModal.querySelector('.modal-body .dspl');
-        var url = button.getAttribute('data-bs-url');
+        var url = button.getAttribute('data-url');
 
         modalBodyInput.innerHTML = `<img src="${url}" />`;
     })

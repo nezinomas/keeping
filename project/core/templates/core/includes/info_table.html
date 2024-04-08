@@ -16,7 +16,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr {% if calculate_debt_remains %}data-bs-toggle="tooltip" data-bs-placement="bottom" title="{% translate 'Remains to be returned' %}:  {{data.data.0|sub:data.data.1|price|floatformat:'2g'}}"{% endif %}>
+        <tr {% if calculate_debt_remains %}data-toggle="tooltip" data-placement="bottom" title="{% translate 'Remains to be returned' %}:  {{data.data.0|sub:data.data.1|price|floatformat:'2g'}}"{% endif %}>
             {% for d in data.data %}
             <td class="{% if data.highlight|get_list_val:forloop.counter0 %}{{d|positive_negative}}{% endif %}">{{d|price|cellformat}}</td>
             {% endfor %}

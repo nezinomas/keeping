@@ -6,7 +6,7 @@
 <table class="striped hover">
     <thead>
         <tr>
-            <th data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="right" title="<p>{% translate 'Unnecessary expenses that can be avoided' %}:<br />{% for i in not_use %}- {{ i }}<br />{% endfor %}</p>" class="text-start exception">{{ save_sum|price|floatformat:'0g' }}</th>
+            <th data-toggle="tooltip" data-html="true" data-placement="right" title="<p>{% translate 'Unnecessary expenses that can be avoided' %}:<br />{% for i in not_use %}- {{ i }}<br />{% endfor %}</p>" class="text-start exception">{{ save_sum|price|floatformat:'0g' }}</th>
             <th>€ + F</th>
             <th>€ + F + P</th>
         </tr>
