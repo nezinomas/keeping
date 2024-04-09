@@ -179,6 +179,24 @@ table {
         tbody tr.current-day:hover > td:not([class*="day"]) {
             background-color: rgb(254, 225, 149) !important;
         }
+
+        td.expand-expenses {
+            background-color: white !important;
+
+            &:has([class*="alert"]) {
+                padding-top: $gap;
+            }
+
+            &:has(table) {
+                padding: $gap 0;
+            }
+        }
+
+        tr.expand-expenses:hover {
+            > td {
+                background-color: unset !important;
+            }
+        }
     }
 
     // Striped styles
