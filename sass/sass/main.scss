@@ -44,11 +44,7 @@ h6 {
     display: inline;
 }
 
-.btn-active {
-    background-color: pink !important;
-}
-
-.title {
+.counts-title {
     @include shadow;
 
     --border-radius: 0;
