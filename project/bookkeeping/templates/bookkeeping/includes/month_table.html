@@ -48,7 +48,7 @@
             {% with table|get_item:_("Savings") as val%}<td class="{{weekend_col}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- spending -->
-            <td class="text-start empty-column {{weekend_col}}">{{spending.date|date:'l'}}</td>
+            <td class="text-left empty-column {{weekend_col}}">{{spending.date|date:'l'}}</td>
             {% with spending.day as val%}<td class="{{val|negative}} day {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
 
             {% with spending.full as val%}<td class="{{val|negative}} day-full {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
@@ -58,7 +58,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-start">&#8721;</th>
+            <th class="text-left">&#8721;</th>
             {% for cat in ctx.expense_types %}
                 {% with ctx.total_row|get_item:cat as val%}<th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>{% endwith %}
             {% endfor %}

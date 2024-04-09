@@ -7,7 +7,7 @@
 <table class="main striped hover">
     <thead>
         <tr>
-            <th class="text-start">{% translate 'Expense' %}</th>
+            <th class="text-left">{% translate 'Expense' %}</th>
             {% for year in chart.categories %}
             <th>{{ year|title }}</th>
             {% endfor %}
@@ -17,7 +17,7 @@
     <tbody>
         {% for row in chart.data %}
         <tr>
-            <td class="text-start">{{ row.name }}</td>
+            <td class="text-left">{{ row.name }}</td>
             {% for i in row.data %}
             <td class="{{i|css_class_if_none}}">{{i|price|cellformat}}</td>
             {% endfor %}
@@ -27,7 +27,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-start">{% translate 'Total' %}</th>
+            <th class="text-left">{% translate 'Total' %}</th>
             {% for i in total_row %}
             <th class="{{i|css_class_if_none}}">{{i|price|cellformat}}</th>
             {% endfor %}

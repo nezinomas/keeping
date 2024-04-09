@@ -8,7 +8,7 @@
 <table class="main striped hover">
     <thead>
         <tr>
-            <th class="text-start">{{ name }}</th>
+            <th class="text-left">{{ name }}</th>
             <th class="w7p">{% translate 'January' %}</th>
             <th class="w7p">{% translate 'February' %}</th>
             <th class="w7p">{% translate 'March' %}</th>
@@ -27,7 +27,7 @@
     <tbody>
         {% for item in items %}
         <tr>
-            <td class="text-start">{{ item.title|safe }}</td>
+            <td class="text-left">{{ item.title|safe }}</td>
             {% for i in item.data %}
                 <td class="{{i|css_class_if_none}}">{{i|price|cellformat:"0,00"}}</td>
             {% endfor %}
@@ -39,7 +39,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-start">{% translate 'Total' %}</th>
+            <th class="text-left">{% translate 'Total' %}</th>
             {% for i in total_row %}
             <th class="{{i|css_class_if_none}}">{{i|price|cellformat:"0,00"}}</th>
             {% endfor %}

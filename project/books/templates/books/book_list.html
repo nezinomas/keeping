@@ -8,10 +8,10 @@
 <table class="main striped hover sticky-table">
     <thead>
         <tr>
-            <th class="text-start">Nr</th>
-            <th class="text-start">{% translate 'Author' %}</th>
-            <th class="text-start">{% translate 'Title' %}</th>
-            <th class="text-start">{% translate 'Remark' %}</th>
+            <th class="text-left">Nr</th>
+            <th class="text-left">{% translate 'Author' %}</th>
+            <th class="text-left">{% translate 'Title' %}</th>
+            <th class="text-left">{% translate 'Remark' %}</th>
             <th class="text-center">{% translate 'Started reading' %}</th>
             <th class="text-center">{% translate 'Ended reading' %}</th>
             <th colspan="2"></th>
@@ -23,10 +23,10 @@
         {% url 'books:delete' object.id as url_delete %}
 
         <tr hx-get="{{ url_update }}{% if tab %}?tab={{ tab }}{% endif %}" hx-trigger="dblclick" hx-target="#dialog" class="{% if not object.ended %} currently-reading-book{% endif %}">
-            <td class="text-start">{{ first_item|sub:forloop.counter0 }}</td>
-            <td class="text-start">{{ object.author }}</td>
-            <td class="text-start">„{{ object.title }}”</td>
-            <td class="text-start">{{ object.remark }}</td>
+            <td class="text-left">{{ first_item|sub:forloop.counter0 }}</td>
+            <td class="text-left">{{ object.author }}</td>
+            <td class="text-left">„{{ object.title }}”</td>
+            <td class="text-left">{{ object.remark }}</td>
             <td class="text-center">{{ object.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ object.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
             {% edit_cell url=url_update %}

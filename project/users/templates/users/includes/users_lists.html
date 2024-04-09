@@ -7,8 +7,8 @@
 <table class="main striped hover">
     <thead>
         <tr>
-            <th class="text-start">{% translate 'User' %}</th>
-            <th class="text-start">{% translate 'Email' %}</th>
+            <th class="text-left">{% translate 'User' %}</th>
+            <th class="text-left">{% translate 'Email' %}</th>
             <th class="text-center">{% translate 'Admin' %}</th>
             <th></th>
         </tr>
@@ -17,8 +17,8 @@
         {% for item in object_list %}
         {% url 'users:settings_users_delete' item.id as url_delete %}
         <tr>
-            <td class="text-start">{{ item.username }}</td>
-            <td class="text-start">{{ item.email }}</td>
+            <td class="text-left">{{ item.username }}</td>
+            <td class="text-left">{{ item.email }}</td>
             <td class="text-center">{% if item.is_superuser %}<i class="bi bi-check-circle" style="color: #198754;"></i>{% else %}<i class="bi bi-dash-circle-fill" style="color: #dc3545;"></i>{% endif %}</td>
             {% delete_cell url=url_delete %}
         </tr>
