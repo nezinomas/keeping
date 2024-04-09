@@ -4,7 +4,7 @@
 {% load cell_format %}
 
 {% if data.title and data.data %}
-<table x-data="{ open:false }">
+<table class="main" x-data="{ open:false }">
     <thead>
         <tr>
             <th class="no-right-border panel-heading text-start" :class="open ? 'active' : ''">

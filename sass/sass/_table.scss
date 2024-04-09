@@ -1,4 +1,4 @@
-table {
+.main {
     border-collapse: collapse;
     min-width: 100%;
     width: 100%;
@@ -42,6 +42,7 @@ table {
         padding: 0.15rem 0.25rem;
         text-align: right;
         vertical-align: middle;
+        min-width: max-content;
     }
 
     td:first-child, th:first-child {
@@ -179,6 +180,25 @@ table {
         tbody tr.current-day:hover > td:not([class*="day"]) {
             background-color: rgb(254, 225, 149) !important;
         }
+
+        // Month expand tr and td styles
+        td.expand-expenses {
+            background-color: white !important;
+
+            &:has([class*="alert"]) {
+                padding-top: $gap;
+            }
+
+            &:has(table) {
+                padding: $gap 0;
+            }
+        }
+
+        tr.expand-expenses:hover {
+            > td {
+                background-color: unset !important;
+            }
+        }
     }
 
     // Striped styles
@@ -281,24 +301,6 @@ table {
 
 
 // Month expands
-td.expand-expenses {
-    background-color: white !important;
-
-    &:has([class*="alert"]) {
-        padding-top: $gap;
-    }
-
-    &:has(table) {
-        padding: $gap 0;
-    }
-}
-
-tr.expand-expenses:hover {
-    > td {
-        background-color: unset !important;
-    }
-}
-
 .expand-column-width {
     min-width: 2.6rem;
 }

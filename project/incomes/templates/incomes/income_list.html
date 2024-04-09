@@ -6,7 +6,7 @@
 {% if object_list %}
 
 <div hx-trigger="reload from:body, afterType from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
-    <table class="striped hover sticky-table">
+    <table class="main striped hover sticky-table">
         <thead>
             <tr>
                 <th class="text-start">{% translate 'Date' %}</th>
