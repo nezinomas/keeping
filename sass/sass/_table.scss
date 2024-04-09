@@ -68,11 +68,11 @@
     }
 
     // Border styles
-    .right-blue-border {
+    .right-thick-border {
         border-right: 3px solid $black;
     }
 
-    .left-blue-border {
+    .left-thick-border {
         border-left: 3px solid $black;
     }
 
@@ -84,19 +84,19 @@
         border-right: 0 !important;
     }
 
-    .right-grey-border {
+    .right-thin-border {
         border-right: 2px solid $black;
     }
 
-    .left-grey-border {
+    .left-thin-border {
         border-left: 2px solid $black;
     }
 
-    .right-blue-double-border {
+    .right-double-border {
         border-right: double $black;
     }
 
-    .left-blue-double-border {
+    .left-double-border {
         border-left: double $black;
     }
 

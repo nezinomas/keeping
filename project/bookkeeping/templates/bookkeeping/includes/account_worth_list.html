@@ -11,7 +11,7 @@
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
             <th>{% translate 'Balance' %}</th>
-            <th class="left-blue-border">{% translate 'Have' %}</th>
+            <th class="left-thick-border">{% translate 'Have' %}</th>
             <th>{% translate 'Delta' %}</th>
         </tr>
     </thead>
@@ -25,7 +25,7 @@
             <td class="w7 {{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
             <td class="w7 {{item.expenses|css_class_if_none}}">{{item.expenses|price|cellformat}}</td>
             <td class="w7 {{item.balance|css_class_if_none}}">{{item.balance|price|cellformat}}</td>
-            <td class="w7 left-blue-border {{item.have|css_class_if_none}}">{{item.have|price|cellformat}}</td>
+            <td class="w7 left-thick-border {{item.have|css_class_if_none}}">{{item.have|price|cellformat}}</td>
             <td class="w7 {{item.delta|positive_negative}}">{{item.delta|price|cellformat:"ok"}}</td>
 
         </tr>
@@ -38,7 +38,7 @@
             <th class="{{total_row.incomes|css_class_if_none}}">{{total_row.incomes|price|cellformat}}</th>
             <th class="{{total_row.expenses|css_class_if_none}}">{{total_row.expenses|price|cellformat}}</th>
             <th class="{{total_row.balance|css_class_if_none}} check">{{total_row.balance|price|cellformat}}</th>
-            <th class="left-blue-border {{total_row.have|css_class_if_none}}">{{total_row.have|price|cellformat}}</th>
+            <th class="left-thick-border {{total_row.have|css_class_if_none}}">{{total_row.have|price|cellformat}}</th>
             <th class="{{total_row.delta|positive_negative}}">{{total_row.delta|price|cellformat}}</th>
         </tr>
     </tfoot>

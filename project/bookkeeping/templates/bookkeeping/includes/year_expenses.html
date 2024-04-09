@@ -8,12 +8,12 @@
     <thead>
         <tr>
             <th colspan="{{ ctx.categories|length|add:1 }}" {% if not ctx.categories|length %}style="width: 90%"{% endif %}>{% translate 'Expenses statistic' %}</th>
-            <th class="left-blue-border top"></th>
+            <th class="left-thick-border top"></th>
         </tr>
         <tr>
             <th class="w5">{{ year|title }}</th>
             {% for category in ctx.categories %}<th><span class="tip bottom" data-tip="{{ category }}">{{ category|truncatechars:8 }}</span></th>{% endfor %}
-            <th class="left-blue-border">{% translate 'Total' %}</th>
+            <th class="left-thick-border">{% translate 'Total' %}</th>
         </tr>
     </thead>
     <tbody>
@@ -23,7 +23,7 @@
             {% for category in ctx.categories %}
             {% with item|get_item:category as val%}<td class="{{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
             {% endfor %}
-            <td class="left-blue-border {{total_column.total|css_class_if_none}}">{{total_column.total|price|cellformat}}</td>
+            <td class="left-thick-border {{total_column.total|css_class_if_none}}">{{total_column.total|price|cellformat}}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -33,14 +33,14 @@
             {% for category in ctx.categories %}{% with ctx.avg_row|get_item:category as val %}
             <th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>
             {% endwith %}{% endfor %}
-            <th class="left-blue-border {{ctx.avg|css_class_if_none}}">{{ctx.avg|price|cellformat}}</th>
+            <th class="left-thick-border {{ctx.avg|css_class_if_none}}">{{ctx.avg|price|cellformat}}</th>
         </tr>
         <tr>
             <th>{% translate 'Total' %}</th>
             {% for category in ctx.categories %}{% with ctx.total_row|get_item:category as val%}
             <th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>
             {% endwith %}{% endfor %}
-            <th class="left-blue-border {{ctx.total|css_class_if_none}}">{{ctx.total|price|cellformat}}</th>
+            <th class="left-thick-border {{ctx.total|css_class_if_none}}">{{ctx.total|price|cellformat}}</th>
         </tr>
     </tfoot>
 </table>

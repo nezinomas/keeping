@@ -10,7 +10,7 @@
         <tr>
             <th></th>
             {% for cat in ctx.expense_types %}<th><span class="tip bottom" data-tip="{{cat}}">{{cat|truncatechars:8}}</span></th>{% endfor %}
-            <th class="left-blue-double-border right-blue-double-border">{% translate 'Total' %}</th>
+            <th class="left-double-border right-double-border">{% translate 'Total' %}</th>
             <th>{% translate 'Savings' %}</th>
             <th class="empty-column"></th>
             <th>{% translate 'Day' %}</th>
@@ -42,7 +42,7 @@
             {% endfor %}
 
             <!-- total expenses -->
-            {% with table|get_item:_("Total") as val%}<td class="{{weekend_col|add:' left-blue-double-border right-blue-double-border'}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
+            {% with table|get_item:_("Total") as val%}<td class="{{weekend_col|add:' left-double-border right-double-border'}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- savings -->
             {% with table|get_item:_("Savings") as val%}<td class="{{weekend_col}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
@@ -64,7 +64,7 @@
             {% endfor %}
 
             <!-- total expenses -->
-            {% with ctx.total_row|get_item:_("Total") as val%}<th class="{{val|css_class_if_none}} left-blue-double-border right-blue-double-border">{{val|price|cellformat}}</th>{% endwith %}
+            {% with ctx.total_row|get_item:_("Total") as val%}<th class="{{val|css_class_if_none}} left-double-border right-double-border">{{val|price|cellformat}}</th>{% endwith %}
 
 
             <!-- savings -->
