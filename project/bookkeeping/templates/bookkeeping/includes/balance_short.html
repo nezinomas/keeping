@@ -8,20 +8,16 @@
     <thead>
         <tr>
             <th class="no-right-border panel-heading text-start" :class="open ? 'active' : ''">
+                <span class="tip right" data-tip="{% translate 'Forecast' %}">
                 <a
                     role="button"
-                    class="btn btn-xs no-hover"
-                    data-toggle="tooltip"
-                    data-html="true"
-                    data-placement="right"
-                    title="{% translate 'Forecast' %}"
                     @click="open = ! open"
                     hx-get="{% url 'bookkeeping:forecast' %}"
                     hx-target="#last"
                     hx-swap="afterend"
                     hx-trigger="click once"
                     >
-                </a>
+                </a></span>
             </th>
             {% for title in data.title %}
             <th class="text-nowrap no-left-border">
