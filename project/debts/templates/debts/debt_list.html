@@ -33,7 +33,7 @@
             <td class="text-left cell-padding">{{object.name}}</td>
             <td class="cell-padding">{{object.price|price|cellformat}}</td>
             <td class="cell-padding">
-                <span {% if not object.closed %} class="tip right" data-tip="{% translate 'Remains to be returned' %}:  {{object.price|sub:object.returned|price|floatformat:'2g'}}"{% endif %}>
+                <span {% if not object.closed %} class="tip right w100" data-tip="{% translate 'Remains to be returned' %}:  {{object.price|sub:object.returned|price|floatformat:'2g'}}"{% endif %}>
                 {{object.returned|price|floatformat:"2g"}}
                 </span>
             </td>
