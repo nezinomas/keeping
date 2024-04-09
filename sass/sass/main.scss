@@ -32,7 +32,6 @@ h6 {
     font-weight: 500;
 }
 
-
 .htmx-indicator {
     display: none;
 }
@@ -45,11 +44,9 @@ h6 {
     display: inline;
 }
 
-
 .btn-active {
     background-color: pink !important;
 }
-
 
 .title {
     @include shadow;
@@ -63,7 +60,6 @@ h6 {
     padding: 0.25rem 0 0.4rem 0;
     color: $active;
 }
-
 
 .bg-warning {
     background-color: $warning-bg;
