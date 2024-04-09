@@ -180,6 +180,10 @@
         grid-template-columns: 15% 1fr;
         align-items: center;
     }
+
+    > * > span {
+        grid-column-start: 2;
+    }
 }
 
 
