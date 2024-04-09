@@ -1,7 +1,7 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-<form method="post" class="modal-content form" novalidate autocomplete="off" tabindex="-1" hx-post="{% url 'users:invite' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
+<form method="post" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{% url 'users:invite' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{% translate 'Invitation' %}</h5>

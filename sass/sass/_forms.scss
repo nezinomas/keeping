@@ -110,13 +110,15 @@
 
 
 // Settings form
-.settings-form {
+.settings-form,
+.login-form {
     .mb-3 {
         margin-bottom: $gap;
     }
 
     label {
         margin-bottom: 0.25rem;
+        display: block;
     }
 }
 

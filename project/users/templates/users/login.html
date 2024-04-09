@@ -8,7 +8,7 @@
 <div>
     <h3>{{ card_title }}</h3>
     {% if card_text %}<p>{{ card_text }}</p>{% endif %}
-    <form method="post" novalidate>
+    <form method="post" class="login-form" novalidate>
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}">
         {% include 'core/includes/form_errors.html' %}
