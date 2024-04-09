@@ -306,6 +306,10 @@ tr.expand-expenses:hover {
 
 // Button expand
 .panel-heading .btn-expand:before {
+    @font-face {
+        font-family: 'Glyphicons Halflings';
+        src: url('/static/font/glyphicons-halflings-regular.ttf') format('truetype'),
+    }
     font-family: 'Glyphicons Halflings';
     content: "\e114";
     float: right;
