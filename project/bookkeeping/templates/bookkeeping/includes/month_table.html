@@ -24,9 +24,9 @@
         {% url 'bookkeeping:expand_day_expenses' table.date|date:'Ymd' as url_expand %}
         <tr
             id="table{{day_int}}"
-            {% if ctx.day|slugify == day_int %}class="current-day"{% endif %}>
+            {% if ctx.day|slugify == day_int %} class="current-day"{% endif %}>
             <td
-                class="{{weekend_col}} panel-heading expand-column-width"
+                class="{{weekend_col}} panel-heading expand-column-width text-left"
                 :class="open{{day_int}} ? 'active' : ''"
                 @click="open{{day_int}} = !open{{day_int}}""
                 hx-get="{{url_expand}}"
