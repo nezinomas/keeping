@@ -199,6 +199,10 @@
                 background-color: unset !important;
             }
         }
+
+        .expand-column-width {
+            min-width: 2.6rem;
+        }
     }
 
     // Striped styles
@@ -297,12 +301,6 @@
 // Drinks colors
 .drinks td {
     background-color: #d9d9d9;
-}
-
-
-// Month expands
-.expand-column-width {
-    min-width: 2.6rem;
 }
 
 
