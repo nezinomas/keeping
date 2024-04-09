@@ -111,15 +111,12 @@
         width: 25px;
         text-align: center;
         border-left: 0;
+        color: $danger;
     }
 
     .cell-padding {
         padding-right: .35rem;
         padding-left: .35rem;
-    }
-
-    .trash {
-        color: $danger;
     }
 
     // Month table styles
