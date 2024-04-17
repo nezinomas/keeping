@@ -4,12 +4,6 @@ $(document).on('submit', '.modal-form', function (e) {
 });
 
 
-// focus on [autofocus] attribute
-$(document).on('shown.bs.modal', '#modal', function () {
-    $(this).find('[autofocus]').focus();
-});
-
-
 // close modal on Close Buton
 $(document).on('click', '.modal-close', function (e) {
     modal_hide($(this).data("dismiss"));
@@ -45,6 +39,9 @@ htmx.on("htmx:afterSwap", (e) => {
 
     if (modals.includes(target)) {
         $(`#${target}`).parent().show();
+
+        // focus on [autofocus] field
+        $(`#${target}`).find('[autofocus]').focus();
     }
 })
 
