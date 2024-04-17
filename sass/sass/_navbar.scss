@@ -48,20 +48,6 @@ nav#main-nav {
     .dropdown {
         position: relative;
 
-        &:hover,
-        &:focus-within {
-            .dropdown__menu {
-                opacity: 1;
-                transform: rotateX(0) translateX(0);
-                visibility: visible;
-            }
-        }
-
-        &:hover .dropdown__title::after,
-        &:focus .dropdown__title::after {
-            border-top-color: $active;
-        }
-
         .dropdown__menu {
             --delay: 0.5s;
 
@@ -105,13 +91,26 @@ nav#main-nav {
         .dropdown__title {
             display: inline-flex;
             align-items: center;
+        }
 
-            &:after {
-                content: "";
-                border: 0.2rem solid transparent;
-                border-top-color: rgb($black, .75);
-                margin-left: 0.35rem;
-                transform: translateY(0.15em);
+        .arrow::after {
+            @font-face {
+                font-family: 'Glyphicons Halflings';
+                src: url('/static/font/glyphicons-halflings-regular.ttf') format('truetype'),
+            }
+            font-family: 'Glyphicons Halflings';
+            content: "\e114";
+            margin-left: .25rem;
+            font-size: 8px;
+        }
+
+        .arrow:hover,
+        .arrow:focus-within {
+            cursor: pointer;
+            .dropdown__menu {
+                opacity: 1;
+                transform: rotateX(0) translateX(0);
+                visibility: visible;
             }
         }
     }
