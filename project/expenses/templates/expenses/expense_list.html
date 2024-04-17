@@ -32,7 +32,7 @@
             {% url 'expenses:update' object.id as url_update %}
             {% url 'expenses:delete' object.id as url_delete %}
 
-            <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog" class="{{ object.expense_type.pk|bg_color }} {% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+            <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{{ object.expense_type.pk|bg_color }} {% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
                 <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
                 <td class="text-left">{{ object.expense_type }}</td>
                 <td class="text-left">{{ object.expense_name }}</td>

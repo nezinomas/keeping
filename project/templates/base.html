@@ -108,7 +108,7 @@
             {% if counts_menu %}{{ counts_menu }}{% endif %}
             <li class="dropdown-divider"></li>
             <li>
-              <button type="button" hx-get="{% url 'counts:type_new' %}" hx-target="#dialog">{% translate 'Add count type' %}</button>
+              <button type="button" hx-get="{% url 'counts:type_new' %}" hx-target="#mainModal">{% translate 'Add count type' %}</button>
             </li>
           </ul>
         </li>
@@ -142,32 +142,32 @@
           <a class="dropdown__title" href="#" role="button">{% translate 'Add' %}</a>
           <ul class="dropdown__menu">
             <li>
-              <button hx-get="{% url 'incomes:new' %}" hx-target="#dialog">{% translate 'Incomes' context 'incomes button' %}</button>
+              <button hx-get="{% url 'incomes:new' %}" hx-target="#mainModal">{% translate 'Incomes' context 'incomes button' %}</button>
             </li>
             <li>
-              <button hx-get="{% url 'expenses:new' %}" hx-target="#dialog">{% translate "Expenses" context "expenses button" %}</button>
+              <button hx-get="{% url 'expenses:new' %}" hx-target="#mainModal">{% translate "Expenses" context "expenses button" %}</button>
             </li>
             <li>
-              <button hx-get="{% url 'transactions:new' %}" hx-target="#dialog">{% translate 'Transactions' context "transactions button" %}</button>
+              <button hx-get="{% url 'transactions:new' %}" hx-target="#mainModal">{% translate 'Transactions' context "transactions button" %}</button>
             </li>
             <li>
-              <button hx-get="{% url 'savings:new' %}" hx-target="#dialog">{% translate 'Savings' context "savings button" %}</button>
+              <button hx-get="{% url 'savings:new' %}" hx-target="#mainModal">{% translate 'Savings' context "savings button" %}</button>
             </li>
             <li class="dropdown-divider"></li>
             <li>
-              <button hx-get="{% url 'accounts:new' %}" hx-target="#dialog">{% translate 'Account' context 'account button' %}</button>
+              <button hx-get="{% url 'accounts:new' %}" hx-target="#mainModal">{% translate 'Account' context 'account button' %}</button>
             </li>
             <li>
-              <button hx-get="{% url 'incomes:type_new' %}" hx-target="#dialog">{% translate 'Incomes type' context 'income type button' %}</button>
+              <button hx-get="{% url 'incomes:type_new' %}" hx-target="#mainModal">{% translate 'Incomes type' context 'income type button' %}</button>
             </li>
             <li>
-              <button hx-get="{% url 'expenses:type_new' %}" hx-target="#dialog">{% translate "Expenses type" context "expenses type button" %}</button>
+              <button hx-get="{% url 'expenses:type_new' %}" hx-target="#mainModal">{% translate "Expenses type" context "expenses type button" %}</button>
             </li>
             <li>
-              <button hx-get="{% url 'expenses:name_new' %}" hx-target="#dialog">{% translate "Expenses name" context "expenses name button" %}</button>
+              <button hx-get="{% url 'expenses:name_new' %}" hx-target="#mainModal">{% translate "Expenses name" context "expenses name button" %}</button>
             </li>
             <li>
-              <button hx-get="{% url 'savings:type_new' %}" hx-target="#dialog">{% translate 'Fund' context 'fund button' %}</button>
+              <button hx-get="{% url 'savings:type_new' %}" hx-target="#mainModal">{% translate 'Fund' context 'fund button' %}</button>
             </li>
           </ul>
         </li>
@@ -196,8 +196,8 @@
 
     {% endblock body %}
 
-    <div id="modal" class="modal">
-      <div id="dialog" class="modal-dialog modal-500" hx-target="this" hx-ext="alpine-morph" hx-swap="morph" x-data="{ inserted: false }"></div>
+    <div id="containerModal" class="modal">
+      <div id="mainModal" class="modal-dialog modal-500" hx-target="this" hx-ext="alpine-morph" hx-swap="morph" x-data="{ inserted: false }"></div>
     </div>
 
     <script src="{% static 'js/dialog.js' %}"></script>

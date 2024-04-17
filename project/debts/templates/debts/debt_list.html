@@ -28,7 +28,7 @@
         {% for object in object_list %}
         {% url 'debts:update' target object.id as url_update %}
         {% url 'debts:delete' target object.id as url_delete %}
-        <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#dialog">
+        <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#mainModal">
             <td class="text-center">{{object.date|date:"Y-m-d"}}</td>
             <td class="text-left cell-padding">{{object.name}}</td>
             <td class="cell-padding">{{object.price|price|cellformat}}</td>

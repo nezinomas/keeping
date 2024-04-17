@@ -10,9 +10,9 @@
         {% url ''|add:url_name object.id as url_update %}
         <div class="accordion__dropdown__item">
             {% if object.closed %}
-                <s><a role="button" class="edit" hx-get="{{url_update}}" hx-target="#dialog">{{ object.title }}</a></s> <i>{% translate 'closed' %} <b>{{ object.closed|safe }}</b></i>
+                <s><a role="button" class="edit" hx-get="{{url_update}}" hx-target="#mainModal">{{ object.title }}</a></s> <i>{% translate 'closed' %} <b>{{ object.closed|safe }}</b></i>
             {% else %}
-                <a role="button" class="edit" hx-get="{{url_update}}" hx-target="#dialog">{{ object.title }}</a>
+                <a role="button" class="edit" hx-get="{{url_update}}" hx-target="#mainModal">{{ object.title }}</a>
             {% endif %}
         </div>
         {% endfor %}

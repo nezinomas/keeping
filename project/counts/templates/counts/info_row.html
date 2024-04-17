@@ -47,8 +47,8 @@
     <div>
         {% url 'counts:new' tab object.slug as url_new %}
         {% new_count_button url=url_new %}
-        <button type="button" class="btn-success" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#dialog"><i class="bi bi-pencil-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
-        <button type="button" class="btn-danger" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#dialog"><i class="bi bi-trash-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn-success" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#mainModal"><i class="bi bi-pencil-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="btn-danger" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#mainModal"><i class="bi bi-trash-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
     </div>
 </div>
 

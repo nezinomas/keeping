@@ -18,7 +18,7 @@
         {% for object in object_list %}
         {% url 'pensions:update' object.id as url_update %}
         {% url 'pensions:delete' object.id as url_delete %}
-        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog">
+        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
             <td class="text-left">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ object.pension_type }}</td>
             <td class="text-left">{{ object.remark }}</td>

@@ -5,7 +5,7 @@
 
 {% if target %}
 <div>{% translate 'Goal' %}:
-    <a role="button" data-info-row="{{ target.quantity|floatformat:'0g' }}" hx-get="{% url 'books:target_update' target.id %}" hx-target="#dialog"></a>
+    <a role="button" data-info-row="{{ target.quantity|floatformat:'0g' }}" hx-get="{% url 'books:target_update' target.id %}" hx-target="#mainModal"></a>
 </div>
 {% endif %}
 

@@ -24,25 +24,26 @@ $(document).keydown(function (event) {
 });
 
 
-// close modal on outside click
+// close modal on outside (e.g. containerModal) click
 window.onclick = function(event) {
-    if (event.target == modal) {
+    if (event.target == containerModal) {
         modal_hide();
     }
 }
 
 
-// show modal on click button with hx-target="#dialog"
+// show modal on click button with hx-target="#mainModal"
 htmx.on("htmx:afterSwap", (e) => {
-    if (e.detail.target.id == "dialog") {
-        $('#modal').show();
+    let target = e.detail.target.id;
+    if (target == "mainModal") {
+        $(`#${target}`).parent().show();
     }
 })
 
 
 // reload modal form with error messages or reset fields and close modal form
 htmx.on("htmx:beforeSwap", (e) => {
-    if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+    if (e.detail.target.id == "mainModal" && !e.detail.xhr.response) {
         /* find submit button id */
         let subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id;
 
@@ -90,6 +91,6 @@ function hx_trigger() {
 
 // hide modal
 function modal_hide() {
-    $('#modal').hide();
+    $('#mainModal').parent().hide();
     hx_trigger();
 }

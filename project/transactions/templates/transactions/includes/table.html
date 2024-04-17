@@ -19,7 +19,7 @@
         {% for object in object_list %}
         {% url url_update object.id as url__update %}
         {% url url_delete object.id as url__delete %}
-        <tr hx-get="{{ url__update }}" hx-trigger="dblclick" hx-target="#dialog" class="{% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+        <tr hx-get="{{ url__update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
             <td class="text-left">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ object.from_account }}</td>
             <td class="text-left">{{ object.to_account }}</td>

@@ -29,7 +29,7 @@
         {% if update %}{% url update item.id as url_update %}{% endif %}
         {% if delete %}{% url delete item.id as url_delete %}{% endif %}
         {% with item|get_obj_attr:type as name %}
-        <tr hx-get="{{url_update}}" hx-target="#dialog" hx-trigger="dblclick" class="{% if name == _('Residual') %} plans-residual-row{% endif %}">
+        <tr hx-get="{{url_update}}" hx-target="#mainModal" hx-trigger="dblclick" class="{% if name == _('Residual') %} plans-residual-row{% endif %}">
             <td class="text-left">
                 {{ name }}
                 {% if expense_type %} ({{item|get_obj_attr:expense_type}}){% endif %}

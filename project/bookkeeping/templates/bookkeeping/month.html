@@ -47,11 +47,11 @@
 
     <!-- Add buttons -->
     <div id="month-add-buttons">
-        <button type="button" class="btn-outline-success" hx-get="{% url 'expenses:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Expenses' context "expenses button" %}</button>{{" "}}
-        <button type="button" class="btn-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Incomes' context "incomes button" %}</button>{{" "}}
-        <button type="button" class="btn-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>{{" "}}
-        <button type="button" class="btn-outline-success" hx-get="{% url 'transactions:new' %}" hx-target="#dialog"> <i class="bi bi-plus"></i>{% translate 'Transactions' context 'transactions button' %}</button>{{" "}}
-        <button type="button" class="btn-outline-success" hx-get="{% url 'drinks:new' 'index' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Drinks' context 'drinks button' %}</button>{{" "}}
+        <button type="button" class="btn-outline-success" hx-get="{% url 'expenses:new' %}" hx-target="#mainModal"> <i class="bi bi-plus"></i>{% translate 'Expenses' context "expenses button" %}</button>{{" "}}
+        <button type="button" class="btn-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal"> <i class="bi bi-plus"></i>{% translate 'Incomes' context "incomes button" %}</button>{{" "}}
+        <button type="button" class="btn-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#mainModal"> <i class="bi bi-plus"></i>{% translate 'Savings' context "savings button" %}</button>{{" "}}
+        <button type="button" class="btn-outline-success" hx-get="{% url 'transactions:new' %}" hx-target="#mainModal"> <i class="bi bi-plus"></i>{% translate 'Transactions' context 'transactions button' %}</button>{{" "}}
+        <button type="button" class="btn-outline-success" hx-get="{% url 'drinks:new' 'index' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{% translate 'Drinks' context 'drinks button' %}</button>{{" "}}
         <button class="btn-active" @click="show_chart = ! show_chart" hx-get="{% static 'bookkeeping/chart_month_expenses.html' %}" hx-target="#chart-expenses-container" hx-trigger="click once">{% translate 'Show other chart' %}</button>
     </div>
 

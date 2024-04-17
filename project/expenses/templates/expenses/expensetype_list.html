@@ -5,13 +5,13 @@
     <li>
         <input type="checkbox" checked>
         <i></i>
-        <h2 {% if e_type.necessary %}class="necessary"{% endif %}><a role="button" class="edit" hx-get="{% url 'expenses:type_update' e_type.id %}" hx-target="#dialog">{{e_type.title}}</a></h2>
+        <h2 {% if e_type.necessary %}class="necessary"{% endif %}><a role="button" class="edit" hx-get="{% url 'expenses:type_update' e_type.id %}" hx-target="#mainModal">{{e_type.title}}</a></h2>
         <div class="accordion__dropdown">
             {% for e_name in e_type.expensename_set.all %}
             <div class="accordion__dropdown__item">
                 <div>
                     {% if e_name.valid_for %}<span class="badge">{{e_name.valid_for|safe}}</span>{% endif %}
-                    <a role="button" class="edit" hx-get="{% url 'expenses:name_update' e_name.id %}" hx-target="#dialog">{{e_name.title}}</a>
+                    <a role="button" class="edit" hx-get="{% url 'expenses:name_update' e_name.id %}" hx-target="#mainModal">{{e_name.title}}</a>
                 </div>
             </div>
             {% endfor %}

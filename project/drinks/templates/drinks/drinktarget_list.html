@@ -12,11 +12,11 @@
     <tbody>
         {% for obj in object_list %}
         {% url 'drinks:target_update' obj.id as url_update %}
-        <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#dialog">
+        <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#mainModal">
             <td>{{ obj.qty|floatformat:'1g' }}</td>
             <td>{{ obj.max_bottles|floatformat:'0g' }}</td>
             <td class="w3">
-                <button type="button" class="btn btn-xs btn-outline-info" hx-get="{{url_update}}" hx-target="#dialog">{% translate 'Edit' %}</button>
+                <button type="button" class="btn btn-xs btn-outline-info" hx-get="{{url_update}}" hx-target="#mainModal">{% translate 'Edit' %}</button>
             </td>
         </tr>
         {% empty %}

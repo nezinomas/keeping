@@ -39,7 +39,7 @@ document.getElementById("modal-form").addEventListener('keypress', function (e) 
 });
 
 htmx.on("htmx:beforeSwap", (e) => {
-    if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+    if (e.detail.target.id == "mainModal" && !e.detail.xhr.response) {
         /* find submit button id */
         let subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id;
 

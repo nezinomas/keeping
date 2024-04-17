@@ -19,7 +19,7 @@
         {% url 'drinks:update' obj.id as url_update %}
         {% url 'drinks:delete' obj.id as url_delete %}
 
-        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog" class="{% ifchanged obj.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged obj.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
             <td class="text-left">{{ obj.date|date:"Y-m-d" }}</td>
             <td class="text-left">{% with obj.option|title as drink_type %}{% translate drink_type %}{% endwith %}</td>
             <td class="text-left">{{ obj.quantity|convert:obj.option|floatformat:'2g' }}</td>
