@@ -12,14 +12,16 @@ $(document).on('shown.bs.modal', '#modal', function () {
 
 // close modal on Close Buton
 $(document).on('click', '.modal-close', function (e) {
-    modal_hide();
+    modal_hide($(this).data("dismiss"));
 });
 
 
 // close modal on ESC
 $(document).keydown(function (event) {
     if (event.keyCode == 27) {
-        modal_hide();
+        $('.modal-close').each(function () {
+            modal_hide($(this).data("dismiss"));
+        })
     }
 });
 
@@ -29,7 +31,9 @@ window.onclick = function(event) {
     let containers = ['mainModalContainer']
 
     if (containers.includes(event.target.id)) {
-        modal_hide();
+        // strip 'Container' prefix
+        let target = event.target.id.replace('Container', '');
+        modal_hide(target);
     }
 }
 
@@ -47,7 +51,9 @@ htmx.on("htmx:afterSwap", (e) => {
 
 // reload modal form with error messages or reset fields and close modal form
 htmx.on("htmx:beforeSwap", (e) => {
-    if (e.detail.target.id == "mainModal" && !e.detail.xhr.response) {
+    let target = e.detail.target.id;
+
+    if (target == "mainModal" && !e.detail.xhr.response) {
         /* find submit button id */
         let subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id;
 
@@ -67,7 +73,7 @@ htmx.on("htmx:beforeSwap", (e) => {
         }
 
         if(subbmiter == '_close') {
-            modal_hide();
+            modal_hide(target);
 
             $('#modal-form .modal-form')[0].reset();
         }
@@ -94,7 +100,7 @@ function hx_trigger() {
 
 
 // hide modal
-function modal_hide() {
-    $('#mainModal').parent().hide();
+function modal_hide(target) {
+    $(`#${target}`).parent().hide();
     hx_trigger();
 }

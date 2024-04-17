@@ -6,7 +6,7 @@
     {% include 'core/includes/form_date_scripts.html' %}
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close modal-close" aria-label="{% translate 'Close' %}"></button>
+        <button type="button" class="btn-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body {% if css_class %}{{css_class}}{% endif %}">
         {% include 'core/includes/form_errors.html' %}

@@ -4,7 +4,7 @@
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close modal-close" aria-label="{% translate 'Close' %}"></button>
+        <button type="button" class="btn-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body">
         <p>
@@ -13,6 +13,6 @@
     </div>
     <div class="modal-footer">
         <button type="submit" id="_close" class="btn-danger" autofocus>{% translate 'Delete' %}</button>
-        <button type="button" class="btn-secondary modal-close">{% translate 'Close' %}</button>
+        <button type="button" class="btn-secondary modal-close" data-dismiss="mainModal">{% translate 'Close' %}</button>
     </div>
 </form>
