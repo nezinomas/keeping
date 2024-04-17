@@ -18,8 +18,11 @@
 .modal-dialog {
     position: relative;
     transition: transform .3s ease-out;
-    transform: translate(0,10%);
     pointer-events: none;
+    margin: auto;
+    top: 50%;
+    transform: translateY(-50%);
+
 }
 
 .modal-body {
@@ -98,11 +101,9 @@
 
 #mainModal.modal-dialog {
     max-width: 500px;
-    margin: auto;
 }
 
 #imgModal.modal-dialog {
-    margin: auto;
     max-width: 800px;
 
     img {
