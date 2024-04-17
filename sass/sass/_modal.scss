@@ -101,11 +101,13 @@
     margin: auto;
 }
 
-#imgModal .modal-dialog {
-    max-width: 800px !important;
+#imgModal.modal-dialog {
+    margin: auto;
+    max-width: 800px;
 }
 
 #imgModal img {
     max-width: 765px;
     height: auto;
+    margin: auto;
 }

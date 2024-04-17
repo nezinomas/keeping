@@ -22,7 +22,7 @@ $(document).keydown(function (event) {
 
 // close modal on outside (e.g. containerModal) click
 window.onclick = function(event) {
-    let containers = ['mainModalContainer']
+    let containers = ['mainModalContainer', 'imgModalContainer'];
 
     if (containers.includes(event.target.id)) {
         // strip 'Container' prefix
@@ -35,13 +35,20 @@ window.onclick = function(event) {
 // show modal on click button with hx-target="#mainModal"
 htmx.on("htmx:afterSwap", (e) => {
     let target = e.detail.target.id;
-    let modals = ['mainModal'];
+    let modals = ['mainModal', 'imgModal'];
 
     if (modals.includes(target)) {
         $(`#${target}`).parent().show();
 
         // focus on [autofocus] field
         $(`#${target}`).find('[autofocus]').focus();
+
+        // insert image url in imgModal
+        if (target == 'imgModal') {
+            let url = e.detail.requestConfig.triggeringEvent.originalTarget.dataset.url;
+            let modalBodyInput = imgModal.querySelector('.modal-body .dspl');
+            modalBodyInput.innerHTML = `<img src="${url}" />`;
+        }
     }
 })
 

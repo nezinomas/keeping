@@ -41,7 +41,7 @@
                 <td class="text-left cell-padding">{{ object.remark|linebreaksbr }}</td>
                 <td>{% if object.attachment %}
                     {% if not 'pdf' in object.attachment.url %}
-                    <button type="button" class="btn-outline-primary btn-xs" data-toggle="modal" data-target="#imgModal" data-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
+                    <button type="button" class="btn-outline-primary btn-xs" hx-get="{% url 'core:modal_image' %}" hx-trigger="click" hx-target="#imgModal" data-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
                     {% else %}
                     <a role="button" class="btn btn-outline-primary btn-xs" href="{{ object.attachment.url }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
                     {% endif %}
@@ -67,10 +67,16 @@
     </table>
 </div>
 
-
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
 {% paging url=url page_obj=object_list page_range=page_range search=search target="#data" %}
+
+
+<!-- modal image -->
+<div id="imgModalContainer" class="modal">
+    <div id="imgModal" class="modal-dialog"></div>
+</div>
+
 
 {% else %}
 
@@ -83,5 +89,3 @@
 </div>
 
 {% endif %}
-
-{% include 'modal_images.html' %}
