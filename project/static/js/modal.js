@@ -26,7 +26,9 @@ $(document).keydown(function (event) {
 
 // close modal on outside (e.g. containerModal) click
 window.onclick = function(event) {
-    if (event.target == containerModal) {
+    let containers = ['mainModalContainer']
+
+    if (containers.includes(event.target.id)) {
         modal_hide();
     }
 }
@@ -35,7 +37,9 @@ window.onclick = function(event) {
 // show modal on click button with hx-target="#mainModal"
 htmx.on("htmx:afterSwap", (e) => {
     let target = e.detail.target.id;
-    if (target == "mainModal") {
+    let modals = ['mainModal'];
+
+    if (modals.includes(target)) {
         $(`#${target}`).parent().show();
     }
 })
