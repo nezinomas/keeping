@@ -94,10 +94,6 @@ nav#main-nav {
         }
 
         .arrow::after {
-            @font-face {
-                font-family: 'Glyphicons Halflings';
-                src: url('/static/font/glyphicons-halflings-regular.ttf') format('truetype'),
-            }
             font-family: 'Glyphicons Halflings';
             content: "\e114";
             margin-left: .25rem;

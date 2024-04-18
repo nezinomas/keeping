@@ -16,6 +16,10 @@
 @import 'modal';
 @import 'tooltip';
 
+@font-face {
+    font-family: 'Glyphicons Halflings';
+    src: url('/static/font/glyphicons-halflings-regular.ttf') format('truetype'),
+}
 
 body {
     font-family: $font-family-sans-serif;
