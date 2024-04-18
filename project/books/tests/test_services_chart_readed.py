@@ -62,12 +62,10 @@ def test_chart_context():
     data = SimpleNamespace(readed={}, targets={})
 
     actual = ChartReaded(data).context()
-    actual = actual['chart']
 
     assert 'categories' in actual
     assert 'data' in actual
     assert 'targets' in actual
-    assert 'chart' in actual
     assert 'chart_title' in actual
     assert 'chart_column_color' in actual
 
@@ -76,7 +74,7 @@ def test_chart_context_categories(readed, targets):
     data = SimpleNamespace(readed=readed, targets=targets)
 
     actual = ChartReaded(data).context()
-    actual = actual['chart']['categories']
+    actual = actual['categories']
 
     assert actual == [1111, 2222, 3333]
 
@@ -85,7 +83,7 @@ def test_chart_context_targets(readed, targets):
     data = SimpleNamespace(readed=readed, targets=targets)
 
     actual = ChartReaded(data).context()
-    actual = actual['chart']['targets']
+    actual = actual['targets']
 
     assert actual == [11, 0, 33]
 
@@ -95,7 +93,7 @@ def test_chart_context_data(readed, targets):
 
     actual = ChartReaded(data).context()
 
-    assert actual['chart']['data'] == [
+    assert actual['data'] == [
         {'y': 1, 'target': 11},
         {'y': 2, 'target': 0},
         {'y': 3, 'target': 33},
@@ -107,4 +105,4 @@ def test_chart_context_chart_title(readed, targets):
 
     actual = ChartReaded(data).context()
 
-    assert actual['chart']['chart_title'] == 'Perskaitytos knygos'
+    assert actual['chart_title'] == 'Perskaitytos knygos'
