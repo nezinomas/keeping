@@ -37,7 +37,7 @@
     </div>
 
     <!-- Month buttons -->
-    <div id="month-buttons" class="button-group">
+    <div id="month-buttons" class="button-row equal-width">
         {% with request.user.month as month %}
         {% for m in context_months %}
         {% with m|date:'n' as m_num %}
@@ -46,7 +46,7 @@
     </div>
 
     <!-- Add buttons -->
-    <div id="month-add-buttons">
+    <div id="month-add-buttons" class="button-row flex-right">
         <button type="button" class="button-outline-success" hx-get="{% url 'expenses:new' %}" hx-target="#mainModal"> {% translate 'Expenses' context "expenses button" %}</button>{{" "}}
         <button type="button" class="button-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal"> {% translate 'Incomes' context "incomes button" %}</button>{{" "}}
         <button type="button" class="button-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#mainModal"> {% translate 'Savings' context "savings button" %}</button>{{" "}}
