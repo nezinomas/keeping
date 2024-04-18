@@ -55,14 +55,12 @@
     > button {
         max-width: max-content;
     }
-}
 
-.button-group {
-    display: flex;
-    gap: calc($gap / 3);
-
-    > * {
-        flex: 1;
+    &.equal-width {
+        > button {
+            flex: 1;
+            max-width: 100%;
+        }
     }
 }
 
