@@ -32,8 +32,9 @@ def test_index_add_button(client_logged):
     url = reverse('drinks:index')
     response = client_logged.get(url)
     content = response.content.decode()
+
     pattern = re.compile(
-        r'<button type="button" id="button-new" class="button-outline-success" hx-get="(.*?)" hx-target="#mainModal">.*? (\w+)<\/button>')
+        r'<button .*? id="button-new" .*? hx-get="(.*?)" hx-target="#mainModal">(\w+)<\/button>', re.MULTILINE)
     res = re.findall(pattern, content)
 
     assert len(res[0]) == 2
@@ -45,23 +46,20 @@ def test_index_links(client_logged):
     url = reverse('drinks:index')
     response = client_logged.get(url)
     content = response.content.decode()
-    content = content.replace('\n', '')
-    content = content.replace('           ', '')
-    content = content.replace('       ', '')
+    # content = content.replace('\n', '')
 
-    pattern = re.compile(
-        r'<a role="button".*?hx-get="(.*?)".*?> (\w+) <\/a>')
+    pattern = re.compile(r'<button\s+class="button-(active|secondary)"\s+hx-get="(.*?)"\s+hx-target="#tab_content">\s+(\w+)\s+<\/button', re.MULTILINE)
     res = re.findall(pattern, content)
 
     assert len(res) == 3
-    assert res[0][0] == reverse('drinks:tab_index')
-    assert res[0][1] == 'Grafikai'
+    assert res[0][1] == reverse('drinks:tab_index')
+    assert res[0][2] == 'Grafikai'
 
-    assert res[1][0] == reverse('drinks:tab_data')
-    assert res[1][1] == 'Duomenys'
+    assert res[1][1] == reverse('drinks:tab_data')
+    assert res[1][2] == 'Duomenys'
 
-    assert res[2][0] == reverse('drinks:tab_history')
-    assert res[2][1] == 'Istorija'
+    assert res[2][1] == reverse('drinks:tab_history')
+    assert res[2][2] == 'Istorija'
 
 
 def test_index_context(client_logged):
@@ -91,7 +89,7 @@ def test_index_select_drink_drop_down_title(drink_type, expect, main_user, clien
 
     content = response.content.decode('utf-8')
 
-    assert f'id="dropdownDrinkType">{ expect }</a>' in content
+    assert f'id="dropdownDrinkType" class="dropdown__title" href="#">{ expect }</a>' in content
 
 
 def test_index_select_drink_drop_down_link_list(client_logged):
