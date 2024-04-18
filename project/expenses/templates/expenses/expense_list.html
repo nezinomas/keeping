@@ -41,7 +41,7 @@
                 <td class="text-left cell-padding">{{ object.remark|linebreaksbr }}</td>
                 <td>{% if object.attachment %}
                     {% if not 'pdf' in object.attachment.url %}
-                    <button type="button" class="button-outline-primary button-xs" hx-get="{% url 'core:modal_image' %}" hx-trigger="click" hx-target="#imgModal" data-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
+                    <button type="button" class="button-secondary button-xs" hx-get="{% url 'core:modal_image' %}" hx-trigger="click" hx-target="#imgModal" data-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
                     {% else %}
                     <a role="button" class="button-outline-primary button-xs" href="{{ object.attachment.url }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
                     {% endif %}
