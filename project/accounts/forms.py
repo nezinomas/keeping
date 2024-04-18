@@ -34,8 +34,6 @@ class AccountForm(forms.ModelForm):
         self.fields["closed"].label = _("Closed")
         self.fields["order"].label = _("Sorting")
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
 
     def clean(self):

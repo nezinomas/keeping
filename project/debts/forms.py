@@ -6,7 +6,7 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.lib import form_utils, utils
+from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
@@ -62,8 +62,6 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["price"].label = _("Sum")
         self.fields["remark"].label = _("Remark")
         self.fields["closed"].label = _("Returned")
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
 
@@ -150,8 +148,6 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["debt"].label = _name
         self.fields["price"].label = _("Sum")
         self.fields["remark"].label = _("Remark")
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
 

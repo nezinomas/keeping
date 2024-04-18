@@ -66,7 +66,6 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         }
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        form_utils.add_css_class(self)
         self.helper = FormHelper()
 
     def _initial_fields_values(self):
@@ -196,8 +195,6 @@ class ExpenseTypeForm(forms.ModelForm):
         self.fields["title"].label = _("Title")
         self.fields["necessary"].label = _("Necessary")
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
 
 
@@ -222,8 +219,6 @@ class ExpenseNameForm(forms.ModelForm):
         self.fields["parent"].label = _("Expense type")
         self.fields["title"].label = _("Expense name")
         self.fields["valid_for"].label = _("Valid for")
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
 

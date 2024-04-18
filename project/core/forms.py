@@ -8,8 +8,6 @@ from django.core.validators import (
     RegexValidator,
 )
 
-from .lib import form_utils
-
 
 class SearchForm(forms.Form):
     re_alphanumeric = re.compile(r"^[ _\w\d\.\-]+$", re.UNICODE)
@@ -26,8 +24,6 @@ class SearchForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         self.fields["search"].label = None
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
         self.helper.form_show_labels = False
