@@ -16,7 +16,7 @@
             <td>{{ obj.qty|floatformat:'1g' }}</td>
             <td>{{ obj.max_bottles|floatformat:'0g' }}</td>
             <td class="w3">
-                <button type="button" class="button-xs button-outline-info" hx-get="{{url_update}}" hx-target="#mainModal">{% translate 'Edit' %}</button>
+                <button type="button" class="button-xs button-secondary" hx-get="{{url_update}}" hx-target="#mainModal">{% translate 'Edit' %}</button>
             </td>
         </tr>
         {% empty %}

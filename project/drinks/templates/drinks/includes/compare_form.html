@@ -7,7 +7,7 @@
         {% csrf_token %}
         {{ form.year1|as_crispy_field }}
         {{ form.year2|as_crispy_field }}
-        <input type="submit" value="{% translate 'Filter' %}" class="button-secondary">
+        <button type="submit" class="button-secondary" name="search">{% translate 'Filter' %}</button>
     </form>
 </div>
 
