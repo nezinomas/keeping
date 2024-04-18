@@ -21,7 +21,7 @@
         x-data="{
             openTab: '{{current_month}}',
             activeClass: 'button-active',
-            inactiveClass: 'button-month',
+            inactiveClass: 'button-secondary',
         }">
         <!-- month buttons -->
         <div class="button-row">
@@ -66,7 +66,7 @@
                 class="button-outline-success flex-right"
                 hx-get="{{url_expense_new}}"
                 hx-target="#mainModal">
-                <i class="bi bi-plus"></i>
+                
                 {% translate "Expenses" context "expenses button" %}
             </button>
         </div>
@@ -82,13 +82,13 @@
             <button type="button" class="button-outline-success"
                 hx-get="{{url_name_new}}"
                 hx-target="#mainModal">
-                <i class="bi bi-plus"></i>
+                
                 {% translate "Expenses name" context "expenses name button" %}
             </button>
             <button type="button" class="button-outline-success"
                 hx-get="{{url_type_new}}"
                 hx-target="#mainModal">
-                <i class="bi bi-plus"></i>
+                
                 {% translate "Expenses type" context "expenses type button" %}
             </button>
         </div>

@@ -24,7 +24,7 @@
             {% url 'incomes:search' as search_url %}
             {% url 'incomes:list' as reset_url %}
             <div hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#data" %}</div>
-            <button type="button" class="button-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{% translate 'Incomes' context 'incomes button' %}</button>
+            <button type="button" class="button-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal">{% translate 'Incomes' context 'incomes button' %}</button>
         </div>
 
         <div id="data" hx-get="{% url 'incomes:list' %}" hx-trigger="load"></div>
@@ -32,7 +32,7 @@
 
     <div>
         <div class="button-row row-reverse">
-            <button type="button" class="button-outline-success" hx-get="{% url 'incomes:type_new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{% translate 'Incomes type' context 'income type button' %}</button>
+            <button type="button" class="button-outline-success" hx-get="{% url 'incomes:type_new' %}" hx-target="#mainModal">{% translate 'Incomes type' context 'income type button' %}</button>
         </div>
 
         <div id="incometype_list" hx-trigger="load, afterType from:body" hx-get="{% url 'incomes:type_list' %}" hx-target="this"></div>
