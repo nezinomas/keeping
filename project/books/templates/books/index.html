@@ -32,8 +32,8 @@
         <div class="info-row-text" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}">{{info_row}}</div>
 
         <div>
-            <button type="button" class="btn-outline-success" hx-get="{% url 'books:new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>{{" "}}
-            <button type="button" class="btn-outline-success" hx-get="{% url 'books:target_new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year goal' %}</button>
+            <button type="button" class="button-outline-success" hx-get="{% url 'books:new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>{{" "}}
+            <button type="button" class="button-outline-success" hx-get="{% url 'books:target_new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year goal' %}</button>
         </div>
     </div>
 

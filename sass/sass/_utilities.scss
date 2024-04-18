@@ -38,7 +38,7 @@
     margin-bottom: calc($gap * 2);
 }
 
-.btn-row {
+.button-row {
     display: flex;
     margin-bottom: $gap;
     min-height: calc(2 * $gap + 0.25rem);
@@ -57,7 +57,7 @@
     }
 }
 
-.btn-group {
+.button-group {
     display: flex;
     gap: calc($gap / 3);
 

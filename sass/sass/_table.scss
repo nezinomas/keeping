@@ -297,7 +297,7 @@
 
 
 // Button expand
-.panel-heading .btn-expand:before {
+.panel-heading .button-expand:before {
     @font-face {
         font-family: 'Glyphicons Halflings';
         src: url('/static/font/glyphicons-halflings-regular.ttf') format('truetype'),
@@ -311,7 +311,7 @@
     margin-right: .25rem;
 }
 
-.panel-heading.active .btn-expand:before {
+.panel-heading.active .button-expand:before {
     -webkit-transform: rotate(180deg);
     -moz-transform: rotate(180deg);
     transform: rotate(180deg);

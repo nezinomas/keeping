@@ -5,7 +5,7 @@
     <ul>
         <li>
             <button
-                class="{% if tab == 'index' %}btn-active{% endif %}"
+                class="{% if tab == 'index' %}button-active{% endif %}"
                 hx-get="{% url 'drinks:tab_index' %}"
                 hx-target="#tab_content">
             {% translate 'Charts' %}
@@ -13,7 +13,7 @@
         </li>
         <li>
             <button
-                class="{% if tab == 'data' %}btn-active{% endif %}"
+                class="{% if tab == 'data' %}button-active{% endif %}"
                 hx-get="{% url 'drinks:tab_data' %}"
                 hx-target="#tab_content">
                 {% translate 'Data' %}
@@ -21,7 +21,7 @@
         </li>
         <li>
             <button
-                class="{% if tab == 'history' %}btn-active{% endif %}"
+                class="{% if tab == 'history' %}button-active{% endif %}"
                 hx-get="{% url 'drinks:tab_history' %}"
                 hx-target="#tab_content">
                 {% translate 'History' %}
@@ -32,7 +32,7 @@
             <a id="dropdownDrinkType" class="dropdown__title" href="#">{{current_drink_type}}</a>
             <ul class="dropdown__menu">
                 {% for type in select_drink_type %}
-                    <li><a class="dropdown-item btn-sm" href="{% url 'drinks:set_drink_type' type.1 %}">{{type.0}}</a></li>
+                    <li><a class="dropdown-item button-sm" href="{% url 'drinks:set_drink_type' type.1 %}">{{type.0}}</a></li>
                 {% endfor %}
 
             </ul>
@@ -41,12 +41,12 @@
         <li>
             {% url 'drinks:new' tab as url_drinks %}
             {% translate "Drinks" context "drinks button" as drinks_button_title %}
-            {% new_button url=url_drinks title=drinks_button_title css_class="btn-outline-success" %}
+            {% new_button url=url_drinks title=drinks_button_title css_class="button-outline-success" %}
         </li>
 
         <li>
             {% url 'drinks:target_new' tab as url_drinks_target %}
-            {% new_button url=url_drinks_target title=_('Goal for the year') css_class="btn-active" %}
+            {% new_button url=url_drinks_target title=_('Goal for the year') css_class="button-active" %}
         </li>
     </ul>
 </nav>

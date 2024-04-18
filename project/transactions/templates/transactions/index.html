@@ -15,31 +15,31 @@
     <!-- First column -->
     <div>
         <!-- Transactions -->
-        <div class="btn-row">
+        <div class="button-row">
             <h6>{% translate 'Account &hArr; Account' %}</h6>
-            <button type="button" class="btn-outline-success flex-right" hx-get="{% url 'transactions:new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'transactions:new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
         </div>
         <div id="transactions_list" class="margin-bottom" hx-trigger="afterTransaction from:body, afterAccount from:body" hx-get="{% url 'transactions:list' %}" hx-target="this" hx-indicator="#indicator">{{transaction}}</div>
 
         <!-- Close savings -->
-        <div class="btn-row">
+        <div class="button-row">
             <h6>{% translate 'Fund &rArr; Account' %}</h6>
-            <button type="button" class="btn-outline-succes flex-right" hx-get="{% url 'transactions:savings_close_new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+            <button type="button" class="button-outline-succes flex-right" hx-get="{% url 'transactions:savings_close_new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
         </div>
         <div id="savings_close_list" class="margin-bottom" hx-trigger="afterClose from:body, afterAccount from:body" hx-get="{% url 'transactions:savings_close_list' %}" hx-target="this">{{saving_close}}</div>
 
         <!-- Change savings -->
-        <div class="btn-row">
+        <div class="button-row">
             <h6>{% translate 'Fund &hArr; Fund' %}</h6>
-            <button type="button" class="btn-outline-success flex-right" hx-get="{% url 'transactions:savings_change_new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'transactions:savings_change_new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
         </div>
         <div id="savings_change_list" class="margin-bottom" hx-trigger="afterChange from:body, afterAccount from:body" hx-get="{% url 'transactions:savings_change_list' %}" hx-target="this">{{saving_change}}</div>
     </div>
 
     <!-- Second column, Account list -->
     <div>
-        <div class="btn-row row-reverse">
-            <button type="button" class="btn-outline-success" hx-get="{% url 'accounts:new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Account' context 'account button' %}</button>
+        <div class="button-row row-reverse">
+            <button type="button" class="button-outline-success" hx-get="{% url 'accounts:new' %}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Account' context 'account button' %}</button>
         </div>
         <div id="account_list" hx-trigger="afterAccount from:body" hx-get="{% url 'accounts:list' %}" hx-target="this">{{account}}</div>
     </div>

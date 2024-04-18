@@ -14,7 +14,7 @@ class Incomes(Browser):
     def test_create(self):
         self.browser.get(f"{self.live_server_url}/counts/")
 
-        self.browser.find_element(By.CSS_SELECTOR , ".btn-success").click()
+        self.browser.find_element(By.CSS_SELECTOR , ".button-success").click()
         sleep(0.5)
 
         self.browser.find_element(By.ID, "id_title").send_keys("-AAA-")
@@ -38,7 +38,7 @@ class Incomes(Browser):
         self.browser.find_element(By.ID, "_close").click()
         sleep(0.5)
 
-        self.browser.find_element(By.CSS_SELECTOR, ".btn-danger").click()
+        self.browser.find_element(By.CSS_SELECTOR, ".button-danger").click()
         sleep(0.5)
         # delete button in delete form
         self.browser.find_element(By.ID, "_close").click()

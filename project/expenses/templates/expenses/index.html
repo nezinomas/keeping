@@ -20,11 +20,11 @@
     <div
         x-data="{
             openTab: '{{current_month}}',
-            activeClass: 'btn-active',
-            inactiveClass: 'btn-month',
+            activeClass: 'button-active',
+            inactiveClass: 'button-month',
         }">
         <!-- month buttons -->
-        <div class="btn-row">
+        <div class="button-row">
             {% for month in context_months %}
             {% with month|date:'n' as month_number %}
             <button type="button"
@@ -51,7 +51,7 @@
         </div><!-- /month buttons -->
 
         <!-- search form -->
-        <div class="btn-row">
+        <div class="button-row">
             {% url 'expenses:search' as search_url %}
             {% url 'expenses:list' as reset_url %}
             {% search_form url=search_url reset_url=reset_url target="#data" hightlight_tab=current_month %}
@@ -63,7 +63,7 @@
             {% endif %}
 
             <button type="button" id="insert_expense"
-                class="btn-outline-success flex-right"
+                class="button-outline-success flex-right"
                 hx-get="{{url_expense_new}}"
                 hx-target="#mainModal">
                 <i class="bi bi-plus"></i>
@@ -76,16 +76,16 @@
     </div>
 
     <div>
-        <div class="btn-row"></div>
+        <div class="button-row"></div>
         <!-- type and name buttons -->
-        <div class="btn-row row-reverse">
-            <button type="button" class="btn-outline-success"
+        <div class="button-row row-reverse">
+            <button type="button" class="button-outline-success"
                 hx-get="{{url_name_new}}"
                 hx-target="#mainModal">
                 <i class="bi bi-plus"></i>
                 {% translate "Expenses name" context "expenses name button" %}
             </button>
-            <button type="button" class="btn-outline-success"
+            <button type="button" class="button-outline-success"
                 hx-get="{{url_type_new}}"
                 hx-target="#mainModal">
                 <i class="bi bi-plus"></i>
