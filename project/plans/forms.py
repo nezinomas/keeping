@@ -100,8 +100,6 @@ class IncomePlanForm(YearFormMixin):
         self.fields["income_type"].label = _("Income type")
         common_field_transalion(self)
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
 
 
@@ -134,8 +132,6 @@ class ExpensePlanForm(YearFormMixin):
         # field translation
         self.fields["expense_type"].label = _("Expense type")
         common_field_transalion(self)
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
 
@@ -170,8 +166,6 @@ class SavingPlanForm(YearFormMixin):
         self.fields["saving_type"].label = _("Saving type")
         common_field_transalion(self)
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
 
 
@@ -200,8 +194,6 @@ class DayPlanForm(YearFormMixin):
 
         # field translation
         common_field_transalion(self)
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
 
@@ -235,8 +227,6 @@ class NecessaryPlanForm(YearFormMixin):
         # field translation
         self.fields["expense_type"].label = _("Expense type")
         common_field_transalion(self)
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
 
@@ -360,7 +350,5 @@ class CopyPlanForm(forms.Form):
         self.fields["saving"].label = _("Savings plans")
         self.fields["day"].label = _("Day plans")
         self.fields["necessary"].label = _("Plans for additional necessary expenses")
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()

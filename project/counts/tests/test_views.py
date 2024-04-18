@@ -298,7 +298,7 @@ def test_redirect_count_first(client_logged):
     response = client_logged.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is views.Index
-    assert '<h6>AAA</h6>' in response.content.decode("utf-8")
+    assert '<div class="counts-title">AAA</div>' in response.content.decode("utf-8")
 
 
 # ---------------------------------------------------------------------------------------
@@ -358,7 +358,7 @@ def test_index_add_button(client_logged):
     content = response.content.decode()
 
     pattern = re.compile(
-        r'<button type="button" id="button-new" .+hx-get="(.*?)".+ (\w+)<\/button>'
+        r'<button type="button" id="button-new" .*? hx-get="(.*?)" .*?>(\w+)<\/button>'
     )
     res = re.findall(pattern, content)
 
@@ -381,18 +381,19 @@ def test_index_links(client_logged):
     content = content.replace("           ", "")
     content = content.replace("       ", "")
 
-    pattern = re.compile(r'<a role="button".*?hx-get="(.*?)".*?> (\w+) <\/a>')
+    pattern = re.compile(r'<button class="button-(active|secondary)" hx-get="(.*?)" hx-target="#tab_content"> (\w+) <\/button', re.MULTILINE)
     res = re.findall(pattern, content)
 
     assert len(res) == 3
-    assert res[0][0] == reverse("counts:tab_index", kwargs={"slug": "xxx"})
-    assert res[0][1] == "Grafikai"
 
-    assert res[1][0] == reverse("counts:tab_data", kwargs={"slug": "xxx"})
-    assert res[1][1] == "Duomenys"
+    assert res[0][1] == reverse("counts:tab_index", kwargs={"slug": "xxx"})
+    assert res[0][2] == "Grafikai"
 
-    assert res[2][0] == reverse("counts:tab_history", kwargs={"slug": "xxx"})
-    assert res[2][1] == "Istorija"
+    assert res[1][1] == reverse("counts:tab_data", kwargs={"slug": "xxx"})
+    assert res[1][2] == "Duomenys"
+
+    assert res[2][1] == reverse("counts:tab_history", kwargs={"slug": "xxx"})
+    assert res[2][2] == "Istorija"
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -424,7 +425,7 @@ def test_tab_index_chart_weekdays(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    assert 'id="chart_weekdays"><div id="chart-weekdays-container"></div>' in content
+    assert '<div id="chart-weekdays-container"></div>' in content
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -435,7 +436,7 @@ def test_tab_index_chart_months(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    assert 'id="chart_months"><div id="chart-months-container"></div>' in content
+    assert '<div id="chart-months-container"></div>' in content
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -447,7 +448,7 @@ def test_tab_index_chart_histogram(client_logged):
 
     content = response.content.decode("utf-8")
 
-    assert 'id="chart_histogram"><div id="chart-histogram-container"></div>' in content
+    assert '<div id="chart-histogram-container">' in content
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -846,7 +847,7 @@ def test_info_row(client_logged):
     response = client_logged.get(url)
     context = response.context
 
-    assert context["title"] == "Count Type"
+    assert context["object"].title == "Count Type"
     assert context["week"] == 28
     assert context["total"] == 3
     assert round(context["ratio"], 2) == 0.11

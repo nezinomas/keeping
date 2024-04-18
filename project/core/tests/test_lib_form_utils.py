@@ -1,25 +1,4 @@
-from types import SimpleNamespace
-from ..lib.form_utils import add_css_class, clean_year_picker_input
-
-
-def test_set_field_properties():
-    obj = SimpleNamespace(
-        fields={"x": SimpleNamespace(widget=SimpleNamespace(attrs={"class": None}))}
-    )
-
-    add_css_class(obj)
-
-    assert obj.fields["x"].widget.attrs["class"] == "form-control-sm"
-
-
-def test_set_field_properties_have_css():
-    obj = SimpleNamespace(
-        fields={"x": SimpleNamespace(widget=SimpleNamespace(attrs={"class": "X"}))}
-    )
-
-    add_css_class(obj)
-
-    assert obj.fields["x"].widget.attrs["class"] == "form-control-sm X"
+from ..lib.form_utils import clean_year_picker_input
 
 
 def test_clean_year_input_no_field():

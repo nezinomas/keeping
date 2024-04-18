@@ -54,8 +54,8 @@ def test_view(client_logged):
     response = client_logged.post(url, data)
     actual = response.content.decode("utf-8")
 
-    assert 'id="chart">' in actual
-    assert 'id="table">' in actual
+    assert 'id="chart-container">' in actual
+    assert '<table class="main' in actual
 
 
 def test_view_no_records_for_selected_expense_name(client_logged):
@@ -67,8 +67,8 @@ def test_view_no_records_for_selected_expense_name(client_logged):
     response = client_logged.post(url, data)
     actual = response.content.decode("utf-8")
 
-    assert 'id="chart">' not in actual
-    assert 'id="table">' not in actual
+    assert 'id="chart-container">' not in actual
+    assert '<table class="main>' not in actual
 
 
 def test_view_context_found(client_logged):

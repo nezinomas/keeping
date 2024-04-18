@@ -6,7 +6,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.lib import form_utils, utils
+from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
 from .models import Income, IncomeType
@@ -47,8 +47,6 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
         self.fields["remark"].label = _("Remark")
         self.fields["income_type"].label = _("Incomes type")
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
 
     def clean_date(self):
@@ -84,7 +82,5 @@ class IncomeTypeForm(forms.ModelForm):
 
         self.fields["title"].label = _("Incomes type")
         self.fields["type"].label = _("Type")
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()

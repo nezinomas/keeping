@@ -7,7 +7,7 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from ..core.lib import form_utils, utils
+from ..core.lib import utils
 from ..expenses.models import ExpenseType
 
 
@@ -34,7 +34,6 @@ class UnnecessaryForm(forms.Form):
         self.fields["savings"].label = _("Savings")
         self.fields["choices"].label = False
 
-        form_utils.add_css_class(self)
         self.helper = FormHelper()
 
     def save(self):
@@ -65,8 +64,6 @@ class SettingsForm(forms.Form):
 
         self.fields["lang"].label = _("Journal language")
         self.fields["title"].label = _("Journal title")
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
 

@@ -44,10 +44,11 @@ def test_info_table_highlight(info_table):
         }
     })
 
-    actual = info_table.render(ctx)
+    actual = info_table.render(ctx).replace("\n", "")
+    actual = ' '.join(actual.split())
 
-    assert '<td class="table-success">0,01</td>' in actual
-    assert '<td class="table-danger">-0,02</td>' in actual
+    assert '<td class="table-success"> 0,01 </td>' in actual
+    assert '<td class="table-danger"> -0,02 </td>' in actual
 
 
 def test_info_table_for_calculate_debt_remains():
