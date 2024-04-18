@@ -24,7 +24,7 @@
         <!-- Close savings -->
         <div class="button-row">
             <h6>{% translate 'Fund &rArr; Account' %}</h6>
-            <button type="button" class="button-outline-succes flex-right" hx-get="{% url 'transactions:savings_close_new' %}" hx-target="#mainModal">{% translate 'Record' context 'record button' %}</button>
+            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'transactions:savings_close_new' %}" hx-target="#mainModal">{% translate 'Record' context 'record button' %}</button>
         </div>
         <div id="savings_close_list" class="margin-bottom" hx-trigger="afterClose from:body, afterAccount from:body" hx-get="{% url 'transactions:savings_close_list' %}" hx-target="this">{{saving_close}}</div>
 
