@@ -6,7 +6,7 @@
     {% include 'core/includes/form_date_scripts.html' %}
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
+        <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body {% if css_class %}{{css_class}}{% endif %}">
         {% include 'core/includes/form_errors.html' %}
@@ -18,7 +18,7 @@
             {% if field.html_name == 'total_sum' %}
             <div class="item-price">
                 {{ field|as_crispy_field }}
-                <div id="div_sum_prices"><button type="button" id="add_price" class="btn-secondary">{% translate 'Add' %}</button></div>
+                <div id="div_sum_prices"><button type="button" id="add_price" class="button-secondary">{% translate 'Add' %}</button></div>
             </div>
             {% else %}
             {{ field|as_crispy_field }}

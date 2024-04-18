@@ -34,7 +34,7 @@
                 hx-swap="afterend"
                 hx-trigger="click once"
             >
-                <span class="btn-expand">{{table.date|date:'d'}}</span>
+                <span class="button-expand">{{table.date|date:'d'}}</span>
             </td>
             {% for cat in ctx.expense_types %}
               {% with table|get_item:cat as val%}

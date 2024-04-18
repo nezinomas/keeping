@@ -20,7 +20,7 @@
     <div>
         <div class="users-title">
             <p>{% translate 'Users'%}</p>
-            <button class="btn-primary js-invite" hx-get="{% url 'users:invite' %}" hx-target="#mainModal">{% translate 'Send invite link' %}</button>
+            <button class="button-active js-invite" hx-get="{% url 'users:invite' %}" hx-target="#mainModal">{% translate 'Send invite link' %}</button>
         </div>
         <div hx-get="{% url 'users:settings_users' %}" hx-trigger="delete_user from:body">{{ users|safe }}</div>
     </div>

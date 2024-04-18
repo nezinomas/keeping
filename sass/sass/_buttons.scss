@@ -1,3 +1,89 @@
-.btn-active {
-    background-color: pink !important;
+.button-active {
+    @include button();
+    color: #fff;
+    background-color: rgb(108, 117, 125);
+    border-color: rgb(84, 90, 96);
+
+    &:hover {
+        background-color: #5c6e64;
+    }
+}
+
+
+.button-secondary {
+    @include button();
+    background-color: #f7f7f7;
+    border-color: #989898;
+
+    &:hover {
+        background-color: #e1e1e1;
+    }
+}
+
+
+.button-outline-success {
+    @include button();
+    color: #198754;
+    background-color: #fff;
+    border-color: #198754;
+
+    &:hover {
+        color: #fff;
+        background-color: #198754;
+    }
+
+    &::before {
+        font-family: 'Glyphicons Halflings';
+        content: "\2b";
+        font-size: .5rem;
+    }
+
+    &.plans-copy::before {
+        font-family: 'Glyphicons Halflings';
+        content:"\e205";
+        font-size: .75rem;
+    }
+}
+
+.button-success {
+    @include button();
+    color: #fff;
+    background-color: #198754;
+    border-color: #198754;
+
+    &:hover {
+        background-color: #157347;
+        border-color: #146c43;
+    }
+}
+
+
+.button-danger {
+    @include button();
+    color: #fff;
+    background-color: $danger;
+    border-color: $danger;
+
+    &:hover {
+        background-color: #bb2d3b;
+        border-color: #b02a37;
+    }
+}
+
+
+.button-xs {
+    padding: 0 .5rem;
+}
+
+
+.button-refresh::before {
+    font-family: 'Glyphicons Halflings';
+    content:"\e031";
+}
+
+.main thead th {
+    :has(.button-refresh) {
+        font-weight: 50;
+        // color: red;
+    }
 }

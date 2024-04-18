@@ -5,19 +5,19 @@
     <!-- Counter tabs -->
     <div>
         <button
-            class="{% if tab == 'index' %}btn-active{% endif %}"
+            class="{% if tab == 'index' %}button-active{% else %}button-secondary{% endif %}"
             hx-get="{% url 'counts:tab_index' object.slug %}"
             hx-target="#tab_content">
             {% translate 'Charts' %}
         </button>
         <button
-            class="{% if tab == 'data' %}btn-active{% endif %}"
+            class="{% if tab == 'data' %}button-active{% else %}button-secondary{% endif %}"
             hx-get="{% url 'counts:tab_data' object.slug %}"
             hx-target="#tab_content">
             {% translate 'Data' %}
         </button>
         <button
-            class="{% if tab == 'history' %}btn-active{% endif %}"
+            class="{% if tab == 'history' %}button-active{% else %}button-secondary{% endif %}"
             hx-get="{% url 'counts:tab_history' object.slug %}"
             hx-target="#tab_content">
             {% translate 'History' %}
@@ -47,8 +47,8 @@
     <div>
         {% url 'counts:new' tab object.slug as url_new %}
         {% new_count_button url=url_new %}
-        <button type="button" class="btn-success" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#mainModal"><i class="bi bi-pencil-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
-        <button type="button" class="btn-danger" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#mainModal"><i class="bi bi-trash-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="button-success" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#mainModal"><i class="bi bi-pencil-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="button-danger" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#mainModal"><i class="bi bi-trash-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
     </div>
 </div>
 

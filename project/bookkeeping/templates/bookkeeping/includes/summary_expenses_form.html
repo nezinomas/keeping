@@ -4,7 +4,7 @@
 <form novalidate method="post" id="expenses-summary-form">
     {% csrf_token %}
     {{ form.types|as_crispy_field }}
-    <input type="submit" name="search" value="{% translate 'Filter' %}" class="btn-secondary">
+    <button type="submit" name="search" class="button-secondary">{% translate 'Filter' %}</button>
 </form>
 
 <div>

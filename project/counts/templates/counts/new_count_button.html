@@ -1,5 +1,5 @@
 {% load i18n %}
 
-<span id="btn-new" {% if hx_swap_oob %}hx-swap-oob="true"{% endif %}>
-<button type="button" id="btn-new" class="btn-outline-success" hx-get="{{url}}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Record' context 'record button' %}</button>
+<span id="button-new" {% if hx_swap_oob %}hx-swap-oob="true"{% endif %}>
+<button type="button" id="button-new" class="button-outline-success" hx-get="{{url}}" hx-target="#mainModal">{% translate 'Record' context 'record button' %}</button>
 </span>

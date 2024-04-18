@@ -11,9 +11,9 @@
 <main id="debts-grid" class="rows">
     <!-- Borrow -->
     <div id="borrow-container">
-        <div class="btn-row">
+        <div class="button-row">
             <h6>{% translate 'Borrow' %}</h6>
-            <button type="button" class="btn-outline-success flex-right" hx-get="{% url 'debts:new' 'borrow' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
+            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'debts:new' 'borrow' %}" hx-target="#mainModal">{% translate "Debt" context "debt button" %}</button>
         </div>
 
         <div id="borrow" hx-trigger="after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:list' 'borrow' %}" hx-target="this">{{borrow}}</div>
@@ -21,9 +21,9 @@
 
     <!-- Lend -->
     <div id="lend-container">
-        <div class="btn-row">
+        <div class="button-row">
             <h6>{% translate 'Lend' %}</h6>
-            <button type="button" class="btn-outline-success flex-right" hx-get="{% url 'debts:new' 'lend' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{% translate "Debt" context "debt button" %}</button>
+            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'debts:new' 'lend' %}" hx-target="#mainModal">{% translate "Debt" context "debt button" %}</button>
         </div>
 
         <div id="lend" hx-trigger="after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:list' 'lend' %}" hx-target="this">{{lend}}</div>
@@ -31,9 +31,9 @@
 
     <!-- Borrow Return -->
     <div id="borrow-return-container">
-        <div class="btn-row">
+        <div class="button-row">
             <h6>{% translate 'Borrow return' %}</h6>
-            <button type="button" class="btn-outline-success flex-right" hx-get="{% url 'debts:return_new' 'borrow' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
+            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'debts:return_new' 'borrow' %}" hx-target="#mainModal">{% translate "Sum" context "sum button" %}</button>
         </div>
 
         <div id="borrow_return" hx-trigger="after_borrow from:body, after_borrow_return from:body" hx-get="{% url 'debts:return_list' 'borrow' %}" hx-target="this">{{borrow_return}}</div>
@@ -41,9 +41,9 @@
 
     <!-- Lend Return -->
     <div id="lend-return-container">
-        <div class="btn-row">
+        <div class="button-row">
             <h6>{% translate 'Lend return' %}</h6>
-            <button type="button" class="btn-outline-success flex-right" hx-get="{% url 'debts:return_new' 'lend' %}" hx-target="#mainModal"><i class="bi bi-plus"></i>{% translate "Sum" context "sum button" %}</button>
+            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'debts:return_new' 'lend' %}" hx-target="#mainModal">{% translate "Sum" context "sum button" %}</button>
         </div>
 
         <div id="lend_return" hx-trigger="after_lend from:body, after_lend_return from:body" hx-get="{% url 'debts:return_list' 'lend' %}" hx-target="this">{{lend_return}}</div>

@@ -26,15 +26,15 @@
 
     <div id="buttons">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
-        <button type="button" class="btn-outline-success" hx-get="{{ url_accounts }}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Accounts fact' %}</button>
+        <button type="button" class="button-outline-success" hx-get="{{ url_accounts }}" hx-target="#mainModal">{% translate 'Accounts fact' %}</button>
         {{" "}}
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
-        <button type="button" class="btn-outline-success" hx-get="{{ url_expenses_new }}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
+        <button type="button" class="button-outline-success" hx-get="{{ url_expenses_new }}" hx-target="#mainModal">{% translate 'Funds fact' %}</button>
         {{" "}}
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
-        <button type="button" class="btn-outline-success" hx-get="{{ url_pensions_new }}" hx-target="#mainModal"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
+        <button type="button" class="button-outline-success" hx-get="{{ url_pensions_new }}" hx-target="#mainModal">{% translate 'Pensions fact' %}</button>
         {{" "}}
-        <button class="btn-outline-danger" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</span></button>
+        <button class="button-secondary button-refresh" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span></button>
     </div>
 
     <div id="accounts-info">
