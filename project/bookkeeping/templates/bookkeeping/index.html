@@ -34,7 +34,7 @@
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
         <button type="button" class="button-outline-success" hx-get="{{ url_pensions_new }}" hx-target="#mainModal">{% translate 'Pensions fact' %}</button>
         {{" "}}
-        <button class="button-outline-danger" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</span></button>
+        <button class="button-secondary button-refresh" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span></button>
     </div>
 
     <div id="accounts-info">
