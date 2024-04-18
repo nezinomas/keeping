@@ -45,7 +45,7 @@ htmx.on("htmx:afterSwap", (e) => {
 
         // insert image url in imgModal
         if (target == 'imgModal') {
-            let url = e.detail.requestConfig.triggeringEvent.originalTarget.dataset.url;
+            let {url} = e.detail.requestConfig.triggeringEvent.originalTarget.dataset;
             let modalBodyInput = imgModal.querySelector('.modal-body .dspl');
             modalBodyInput.innerHTML = `<img src="${url}" />`;
         }
