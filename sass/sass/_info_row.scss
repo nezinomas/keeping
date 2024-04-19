@@ -11,7 +11,13 @@
     }
 
     > *:last-child {
-        text-align: right;
+        justify-content: right;
+    }
+
+    > *:first-child,
+    > *:last-child {
+        display: flex;
+        gap: calc($gap / 3);
     }
 }
 
