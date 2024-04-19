@@ -24,7 +24,7 @@
 
     <div id="chart-balance-container"></div>
 
-    <div id="buttons">
+    <div id="buttons" class="flex">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
         <button type="button" class="button-outline-success" hx-get="{{ url_accounts }}" hx-target="#mainModal">{% translate 'Accounts fact' %}</button>
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
