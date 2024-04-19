@@ -18,22 +18,22 @@
 
 <main id="month-grid" x-data="{show_chart: true}">
     <!-- Month table -->
-    <div id="month-content" class="table-responsive" hx-ext="alpine-morph" hx-swap="morph" hx-target="this">{% include 'bookkeeping/includes/month_table.html' with ctx=month_table %}</div>
+    <div id="month-content" class="table-responsive">{% include 'bookkeeping/includes/month_table.html' with ctx=month_table %}</div>
 
     <!-- Chart and info table -->
     <div id="month-chart-and-info-table">
         <!-- Main chart -->
         {{ chart_targets|json_script:"chart-targets-data" }}
         {{ chart_expenses|json_script:"chart-expenses-data" }}
-        <div x-show="show_chart" id="chart-targets-container" hx-get="{% static 'bookkeeping/chart_month_targets.html' %}" hx-trigger="load" hx-target="this"></div>
+        <div>
+            <div x-show="show_chart" id="chart-targets-container" hx-get="{% static 'bookkeeping/chart_month_targets.html' %}" hx-trigger="load" hx-target="this"></div>
 
-        <!-- Second chart -->
-        <div x-show="!show_chart" id="chart-expenses-container"></div>
+            <!-- Second chart -->
+            <div x-show="!show_chart" id="chart-expenses-container"></div>
+        </div>
 
         <!-- Info table -->
-        <div>
-            {% include 'bookkeeping/includes/spending_info.html' with ctx=info %}
-        </div>
+        {% include 'bookkeeping/includes/spending_info.html' with ctx=info %}
     </div>
 
     <!-- Month buttons -->
