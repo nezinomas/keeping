@@ -103,7 +103,6 @@ def load_service() -> dict:
     obj = HistoryService(data)
 
     return {
-        "tab": "history",
         "records": len(obj.years) if len(obj.years) > 1 else 0,
         "chart": {
             "categories": obj.years,

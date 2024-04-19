@@ -66,9 +66,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         }
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        form_utils.add_css_class(self)
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         if not self.instance.pk:
@@ -197,10 +195,7 @@ class ExpenseTypeForm(forms.ModelForm):
         self.fields["title"].label = _("Title")
         self.fields["necessary"].label = _("Necessary")
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 class ExpenseNameForm(forms.ModelForm):
@@ -225,10 +220,7 @@ class ExpenseNameForm(forms.ModelForm):
         self.fields["title"].label = _("Expense name")
         self.fields["valid_for"].label = _("Valid for")
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()

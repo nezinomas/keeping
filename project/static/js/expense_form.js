@@ -31,7 +31,7 @@ Enter allowed in texarea
 Enter on id_total_sum input calls sum_prices()
 Enter disabled on rest of form inputs
 */
-document.getElementById("dialog-form").addEventListener('keypress', function (e) {
+document.getElementById("modal-form").addEventListener('keypress', function (e) {
     if (e.key === "Enter" && e.target.id == "id_total_sum") {
         e.preventDefault();
         sum_prices();
@@ -39,7 +39,7 @@ document.getElementById("dialog-form").addEventListener('keypress', function (e)
 });
 
 htmx.on("htmx:beforeSwap", (e) => {
-    if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+    if (e.detail.target.id == "mainModal" && !e.detail.xhr.response) {
         /* find submit button id */
         let subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id;
 

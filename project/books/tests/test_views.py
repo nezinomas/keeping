@@ -35,7 +35,7 @@ def test_books_index_add_button(client_logged):
     content = response.content.decode()
 
     link = reverse('books:new')
-    pattern = re.compile(fr'<button type="button".+hx-get="{ link }".+<\/i>(.*?)<\/button>')
+    pattern = re.compile(fr'<button .*? hx-get="{ link }" .*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == 'Knygą'
@@ -51,7 +51,7 @@ def test_books_index_add_target_button(main_user, client_logged):
     content = response.content.decode()
 
     link = reverse('books:target_new')
-    pattern = re.compile(fr'<button type="button".+hx-get="{ link }".+<\/i>(.*?)<\/button>')
+    pattern = re.compile(fr'<button .*? hx-get="{ link }" .*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == '1111 metų tikslą'
@@ -71,7 +71,6 @@ def test_books_index_context(client_logged):
 
     assert 'year' in response.context
     assert 'tab' in response.context
-    assert 'chart' in response.context
     assert 'books' in response.context
     assert 'info_row' in response.context
 
@@ -102,10 +101,10 @@ def test_info_row_html(client_logged):
 
     content = response.content.decode("utf-8")
 
-    readed = re.compile(r'Perskaitytos:.*?(\d+)<\/h6>')
+    readed = re.compile(r'<div data-info-row="(\d+)">Perskaitytos:')
     assert re.findall(readed, content) == ['1']
 
-    reading = re.compile(r'Skaitomos:.*?(\d+)<\/h6>')
+    reading = re.compile(r'<div data-info-row="(\d+)">Skaitomos:')
     assert re.findall(reading, content) == ['2']
 
 
@@ -116,10 +115,10 @@ def test_info_row_no_data(client_logged):
 
     content = response.content.decode("utf-8")
 
-    readed = re.compile(r'Perskaitytos:.*?(\d+)<\/h6>')
+    readed = re.compile(r'<div data-info-row="(\d+)">Perskaitytos:')
     assert re.findall(readed, content) == ['0']
 
-    reading = re.compile(r'Skaitomos:.*?(\d+)<\/h6>')
+    reading = re.compile(r'<div data-info-row="(\d+)">Skaitomos:')
     assert re.findall(reading, content) == ['0']
 
 
@@ -132,7 +131,7 @@ def test_info_row_update_link(client_logged):
     content = response.content.decode('utf-8')
     link = reverse('books:target_update', kwargs={'pk': t.pk})
 
-    pattern = re.compile(fr'<a role="button" hx-get="{ link }".*?>(\d+)<\/a>')
+    pattern = re.compile(fr'<a role="button" data-info-row="(\d+)" hx-get="{ link }".*?><\/a>')
     res = re.findall(pattern, content)
 
     assert res[0] == '100'
@@ -168,8 +167,7 @@ def test_books_index_chart_year(client_logged):
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
-
-    assert '<div id="chart-readed-container"></div>' in content
+    assert '<script id="chart-readed-data" type="application/json">' in content
 
 
 # ----------------------------------------------------------------------------

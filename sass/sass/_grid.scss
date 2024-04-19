@@ -1,0 +1,428 @@
+@mixin grid-template($column-gap: $gap, $row-gap: calc($gap * 2)) {
+    display: grid;
+    grid-auto-columns: 1fr;
+    column-gap: $column-gap;
+    row-gap: $row-gap;
+}
+
+
+// Main grid
+#main-grid {
+    @include grid-template;
+
+    grid-template-areas:
+        "table-balance"
+        "table-expenses"
+        "chart-expenses"
+        "chart-balance"
+        "buttons"
+        "accounts-info"
+        "savings"
+        "pensions";
+
+    > #accounts-info {
+        grid-area: accounts-info;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: $gap;
+        align-items: start;
+        align-content: start;
+        grid-template-areas:
+            "accounts                       accounts"
+            "balance-short-and-no-incomes   wealth-avg-debts"
+        ;
+    }
+
+    #table-balance {
+        grid-area: table-balance;
+    }
+
+    #table-expenses {
+        grid-area: table-expenses;
+    }
+
+    #chart-expenses-container {
+        grid-area: chart-expenses;
+    }
+
+    #chart-balance-container {
+        grid-area: chart-balance;
+    }
+
+    #buttons {
+        grid-area: buttons;
+    }
+
+    #accounts {
+        grid-area: accounts;
+    }
+
+    #balance-short-and-no-incomes {
+        grid-area: balance-short-and-no-incomes;
+    }
+
+    #wealth-avg-debts {
+        grid-area: wealth-avg-debts;
+    }
+
+    #savings {
+        grid-area: savings;
+    }
+
+    #pensions {
+        grid-area: pensions;
+    }
+
+    #balance-short-and-no-incomes,
+    #wealth-avg-debts {
+        display: flex;
+        flex-direction: column;
+        gap: $gap;
+    }
+}
+
+
+//Drinks grid
+#drinks-grid {
+    @include grid-template;
+
+    grid-template-areas:
+        "chart-consumption-container"
+        "chart-quality-container"
+        "stats-tables"
+        "tbl-stdav"
+        "info-img"
+        "chart-calendar-1H-container"
+        "chart-calendar-2H-container"
+        "historical-data"
+        "compare-form-and-chart"
+    ;
+
+    > #chart-consumption-container {
+        grid-area: chart-consumption-container;
+    }
+
+    > #chart-quality-container {
+        grid-area: chart-quality-container;
+    }
+
+    > #stats-tables {
+        grid-area: stats-tables;
+        display: flex;
+        gap: $gap;
+
+        > * {
+            flex: 1;
+        }
+    }
+
+    > #tbl-stdav {
+        grid-area: tbl-stdav;
+    }
+
+    > #info-img {
+        grid-area: info-img;
+        justify-self: center;
+        align-self: center;
+    }
+
+    > #chart-calendar-1H-container {
+        grid-area: chart-calendar-1H-container;
+    }
+
+    > #chart-calendar-2H-container {
+        grid-area: chart-calendar-2H-container;
+    }
+
+    > #historical-data,
+    > #compare-form-and-chart {
+        @include grid-template(0, 0);
+
+        > .row {
+            display: flex;
+            align-items: flex-start;
+            height: 2rem;
+
+            > * {
+                margin-top: 0.25rem;
+            }
+
+            > *:first-child {
+                margin-right: auto;
+            }
+        }
+    }
+
+    > #compare-form-and-chart {
+        grid-area: compare-form-and-chart;
+
+        form {
+            display: flex;
+            gap: calc($gap / 3);
+            align-items: flex-start;
+
+            > *:last-child {
+                margin-top: 0.25rem;
+            }
+
+        }
+    }
+}
+
+
+// Debts grid
+#debts-grid {
+    @include grid-template;
+
+    grid-template-areas:
+        "lend-container"
+        "lend-return-container"
+        "borrow-container"
+        "borrow-return-container"
+    ;
+
+    #lend-container {
+        grid-area: lend-container;
+    }
+
+    #lend-return-container {
+        grid-area: lend-return-container;
+    }
+
+    #borrow-container {
+        grid-area: borrow-container;
+    }
+
+    #borrow-return-container {
+        grid-area: borrow-return-container;
+    }
+}
+
+
+// Plans grid
+.plans-grid {
+    > div:nth-child(odd) {
+        display: flex;
+        margin-bottom: calc(-1.25 * $gap);
+        align-items: center;
+
+        > :last-child {
+            margin-left: auto;
+        }
+    }
+}
+
+
+// Summary expenses grid
+.summary-expenses-grid {
+    display: grid;
+    grid-template-columns: 15% minmax(80%, 1fr);
+    gap: $gap;
+}
+
+
+// Settings grid
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    gap: $gap;
+
+    .users-title {
+        @include shadow;
+        --border-radius: 0.05rem;
+
+        display: flex;
+        gap: $gap;
+        padding: 0.5rem;
+        margin-bottom: $gap;
+
+        > p {
+            font-size: 1rem;
+        }
+
+        > button {
+            margin-left: auto;
+        }
+    }
+}
+
+
+// User grid
+.user-grid {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    height: 100vh;
+    gap: $gap;
+    align-items: center;
+
+    > div {
+        @include shadow;
+        --border-radius: 0.05rem;
+
+        padding: calc($gap * 2);
+        grid-column-start: 2;
+        grid-column-end: 3;
+    }
+
+    h3 {
+        font-size: 2em;
+        margin-bottom: calc($gap * 2);
+    }
+
+    ul {
+        list-style: disc;
+        margin-left: 0.75rem;
+        margin-top: 0.25rem;
+
+        li {
+            padding: 0.1rem;
+        }
+    }
+
+    li,
+    .form-text {
+        font-size: 0.95em;
+        color: rgb(90, 90, 90);
+        font-style: italic;
+    }
+
+    label {
+        margin-bottom: 0.25rem;
+    }
+
+    .login-footer {
+        margin-top: calc($gap * 2);
+        margin-bottom: calc($gap * -2);
+        margin-left: calc($gap * -2);
+        margin-right: calc($gap * -2);
+        padding: $gap;
+        text-align: center;
+        background-color: $nav-bg;
+        border-top: rgba(0, 0, 0, 0.16) 1px solid;
+    }
+}
+
+
+// Month grid
+#month-grid {
+    @include grid-template;
+
+    grid-template-areas:
+        "month-content"
+        "month-buttons"
+        "month-chart-and-info-table"
+        "month-add-buttons"
+    ;
+
+    #month-chart-and-info-table {
+        display: flex;
+        flex-direction: column;
+        gap: $gap;
+        justify-content: space-between;
+        grid-area: month-chart-and-info-table;
+    }
+
+    #month-content {
+        grid-area: month-content;
+    }
+
+    #month-buttons {
+        grid-area: month-buttons;
+    }
+
+    #month-add-buttons {
+        grid-area: month-add-buttons;
+        text-align: right;
+    }
+}
+
+
+// One column
+.grid-one-col {
+    @include grid-template;
+}
+
+// Two equal columns
+.grid-two-col {
+    @include grid-template;
+}
+
+// Three equal columns
+.grid-three-col {
+    @include grid-template;
+}
+
+// Two columns: two thirds and one third
+.grid-70-30 {
+    @include grid-template;
+}
+
+// Media queries for screens larger than 992px
+@media only screen and (min-width: 992px) {
+    #main-grid {
+        grid-template-columns: 42% 1fr;
+        grid-template-areas:
+            "table-balance   table-expenses"
+            "chart-expenses  chart-balance"
+            "buttons         buttons"
+            "accounts-info   accounts-info"
+            "savings         savings"
+            "pensions        pensions"
+        ;
+
+        > #accounts-info {
+            grid-template-columns: 4fr 2fr 1fr;
+            grid-template-areas:
+                "accounts   balance-short-and-no-incomes   wealth-avg-debts"
+            ;
+        }
+    }
+
+    #month-grid {
+        grid-template-columns: 2fr 1fr;
+        grid-template-areas:
+            "month-content      month-chart-and-info-table"
+            "month-buttons      month-add-buttons"
+        ;
+    }
+
+    #debts-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-areas:
+            "borrow-container          lend-container"
+            "borrow-return-container   lend-return-container"
+        ;
+    }
+
+    #drinks-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-areas:
+        "chart-consumption-container        chart-quality-container"
+        "stats-tables                       info-img"
+        "tbl-stdav                          info-img"
+        "chart-calendar-1H-container        chart-calendar-2H-container"
+        "historical-data                    compare-form-and-chart"
+        ;
+    }
+
+    .summary-expenses-grid {
+        grid-template-columns: 10% minmax(85%, 1fr);
+    }
+
+    .user-grid {
+        grid-template-columns: 1fr 2fr 1fr;
+    }
+
+    .grid-two-col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-70-30 {
+        grid-template-columns: 70% 1fr;
+    }
+
+    .grid-three-col {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+

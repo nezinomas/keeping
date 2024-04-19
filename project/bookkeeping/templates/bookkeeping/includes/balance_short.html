@@ -4,24 +4,21 @@
 {% load cell_format %}
 
 {% if data.title and data.data %}
-<table class="table table-sm" x-data="{ open:false }">
+<table class="main" x-data="{ open:false }">
     <thead>
         <tr>
-            <th class="no-right-border panel-heading text-start" :class="open ? 'active' : ''">
+            <th class="no-right-border panel-heading text-left" :class="open ? 'active' : ''">
+                <span class="tip right" data-tip="{% translate 'Forecast' %}">
                 <a
                     role="button"
-                    class="btn btn-xs no-hover"
-                    data-bs-toggle="tooltip"
-                    data-bs-html="true"
-                    data-bs-placement="right"
-                    title="{% translate 'Forecast' %}"
+                    class="button-expand"
                     @click="open = ! open"
                     hx-get="{% url 'bookkeeping:forecast' %}"
                     hx-target="#last"
                     hx-swap="afterend"
                     hx-trigger="click once"
                     >
-                </a>
+                </a></span>
             </th>
             {% for title in data.title %}
             <th class="text-nowrap no-left-border">

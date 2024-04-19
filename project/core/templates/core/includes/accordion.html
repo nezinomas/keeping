@@ -1,20 +1,21 @@
 {% load i18n %}
-<div class="accordion" id="accordion">
-    <div class="accordion-header" id="heading_1">
-        <button class="accordion-button collapsed btn-sm rounded-top" type="button" data-bs-toggle="collapse"
-            data-bs-target="#collapse_1" aria-expanded="false" aria-controls="collapse_1">{{ title }}</button>
-    </div>
-    <div id="collapse_1" class="accordion-collapse collapse show" aria-labelledby="heading_1" data-bs-parent="#accordion">
-        <div class="accordion-body list-group list-group-flush">
-            {% for object in object_list %}
-            {% url ''|add:url_name object.id as url_update %}
-            <div class="list-group-item list-group-item-action" hx-get="{{url_update}}" hx-target="#dialog">
-                {% if object.closed %}<s>{{ object.title }}</s> <i>{% translate 'closed' %} {{ object.closed|safe }}</i>{% else %}{{ object.title }}{% endif %}
-                <span class="edit-icon">
-                    <button type="button" hx-get="{{url_update}}" hx-target="#dialog" class="btn btn-xs edit no-hover"><i class="bi bi-pencil-fill"></i></button>
-                </span>
-            </div>
-            {% endfor %}
+
+<ul class="accordion">
+  <li>
+    <input type="checkbox">
+    <i></i>
+    <h2>{{title}}</h2>
+    <div class="accordion__dropdown">
+        {% for object in object_list %}
+        {% url ''|add:url_name object.id as url_update %}
+        <div class="accordion__dropdown__item">
+            {% if object.closed %}
+                <s><a role="button" class="edit" hx-get="{{url_update}}" hx-target="#mainModal">{{ object.title }}</a></s> <i>{% translate 'closed' %} <b>{{ object.closed|safe }}</b></i>
+            {% else %}
+                <a role="button" class="edit" hx-get="{{url_update}}" hx-target="#mainModal">{{ object.title }}</a>
+            {% endif %}
         </div>
+        {% endfor %}
     </div>
-</div>
+  </li>
+</ul>

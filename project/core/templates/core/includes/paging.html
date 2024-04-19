@@ -1,31 +1,38 @@
 {% if page_obj.paginator.num_pages > 1 %}
-<ul class="pagination justify-content-center flex-wrap mt-2 mb-4">
+<ul class="pagination">
     <!-- previous button -->
     {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link paging" role="button" hx-get="{{ url }}?page={{ page_obj.previous_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">&laquo;</a></li>
+        <li><a role="button" hx-get="{{ url }}?page={{ page_obj.previous_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">&laquo;</a></li>
     {% else %}
-        <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+        <li class="disabled">&laquo;</li>
     {% endif %}
 
     <!-- pages -->
     {% for i in page_range|default_if_none:page_obj.paginator.get_elided_page_range %}
         {% if page_obj.number == i %}
-            <li class="active page-item"><span class="page-link">{{ i|title }} <span class="sr-only">(current)</span></span>
+            <li class="active">
+                {{ i|title }}
             </li>
         {% else %}
             {% if i == page_obj.paginator.ELLIPSIS %}
-                <li class="page-item"><span class="page-link">{{ i|title }}</span></li>
+                <li class="disabled">
+                    {{ i|title }}
+                </li>
             {% else %}
-                <li class="page-item"><a class="page-link paging" role="button" hx-get="{{ url }}?page={{ i|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">{{ i|title }}</a></li>
+                <li>
+                    <a role="button" hx-get="{{ url }}?page={{ i|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">{{ i|title }}</a>
+                </li>
             {% endif %}
         {% endif %}
     {% endfor %}
 
     <!-- next button -->
     {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link paging" role="button" hx-get="{{ url }}?page={{ page_obj.next_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">&raquo;</a></li>
+        <li>
+            <a role="button" hx-get="{{ url }}?page={{ page_obj.next_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">&raquo;</a>
+        </li>
     {% else %}
-        <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+        <li class="disabled">&raquo;</li>
     {% endif %}
 
 </ul>

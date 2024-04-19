@@ -4,18 +4,18 @@
 
 {% var drink_type=request.user.drink_type|title %}
 
-<table class="table table-sm caption-top">
+<table class="main">
     <caption>{% translate drink_type %}</caption>
     <thead>
         <tr>
-            <th class="text-start">{% translate 'Total' %}, {% translate 'pcs' %}</th>
+            <th class="text-left">{% translate 'Total' %}, {% translate 'pcs' %}</th>
             <th>{% translate 'Per day' %} avg, ml</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             {% if ctx.qty %}
-            <td class="text-start">{{ ctx.qty|floatformat:'1g' }}</td>
+            <td class="text-left">{{ ctx.qty|floatformat:'1g' }}</td>
             <td class="{{ ctx.target|compare:ctx.avg }}">{{ ctx.avg|floatformat:'1g' }}</td>
             {% else %}
             <td colspan="2">{% translate 'No data' %}</td>

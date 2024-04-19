@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% load static %}
-{% load i18n %}
 
 
 {% block head %}
@@ -17,71 +16,11 @@
 <script src="{% static 'js/chart_drinks_summary.js' %}"></script>
 <script src="{% static 'js/sticky-table-headers.js' %}"></script>
 
-<style>
-    tr.std-av-border {
-        border-top: double #ffc000;
-        border-bottom: double #ffc000;
-    }
-    #div_id_year1, #div_id_year2 {
-        margin-bottom: 0!important;
-    }
-</style>
-
 {% endblock head %}
 
 
 {% block content %}
 
-<div class="row my-2">
-    <div class="col text-start"
-        x-data="{
-            openTab: 'index',
-            activeClass: 'btn-info',
-            inactiveClass: 'btn-light',
-        }">
-        <a role="button"
-            class="btn btn-sm"
-            :class="openTab === 'index' ? activeClass : inactiveClass"
-            @click="openTab = 'index'"
-            hx-get="{% url 'drinks:tab_index' %}"
-            hx-target="#tab_content">
-            {% translate 'Charts' %}
-        </a>
-        {{" "}}
-        <a role="button"
-            class="btn btn-sm"
-            :class="openTab === 'data' ? activeClass : inactiveClass"
-            @click="openTab = 'data'"
-            hx-get="{% url 'drinks:tab_data' %}"
-            hx-target="#tab_content">
-            {% translate 'Data' %}
-        </a>
-        {{" "}}
-        <a role="button"
-            class="btn btn-sm"
-            :class="openTab === 'history' ? activeClass : inactiveClass"
-            @click="openTab = 'history'"
-            hx-get="{% url 'drinks:tab_history' %}"
-            hx-target="#tab_content">
-            {% translate 'History' %}
-        </a>
-    </div>
-
-    <div class="col text-center" id="info-row">
-        <div class="dropdown">
-            <a class="btn btn-sm btn-outline-primary dropdown-toggle ps-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" id="dropdownDrinkType">{{current_drink_type}}</a>
-            <ul class="dropdown-menu" aria-labelledby="dropdownDrinkType">
-                {% for type in select_drink_type %}
-                    <li><a class="dropdown-item btn-sm" href="{% url 'drinks:set_drink_type' type.1 %}">{{type.0}}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div class="col text-end">
-        <span id="btn-new">{% include 'drinks/includes/new_buttons.html' with tab='index' %}</span>
-    </div>
-</div>
 
 <!-- htmx tab data load -->
 <div hx-get="{% url 'drinks:tab_index' %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>

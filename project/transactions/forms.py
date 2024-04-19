@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.lib import form_utils, utils
+from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
 from ..core.mixins.forms import YearBetweenMixin
@@ -30,10 +30,7 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self._set_htmx_attributes()
         self._translate_fields()
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerInput(
@@ -95,10 +92,7 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
             self.fields["close"].initial = True
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerInput(
@@ -161,10 +155,7 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
             self.fields["close"].initial = True
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerInput(

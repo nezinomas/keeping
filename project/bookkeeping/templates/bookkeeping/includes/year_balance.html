@@ -3,72 +3,72 @@
 {% load cell_format %}
 
 
-<table class="table table-sm table-striped table-hover" x-data="{ open:false }">
+<table x-data="{ open:false }" class="main striped hover">
     <thead>
         <tr>
-            <th colspan="4" class="text-start">{% translate 'Balance' %}</th>
-            <th colspan="2" class="left-blue-border right-blue-border text-start">{% translate 'Savings' %}</th>
-            <th colspan="4" class="left-blue-border right-blue-border text-start" x-show="open">{% translate 'Debts' %}</th>
+            <th colspan="4">{% translate 'Balance' %}</th>
+            <th colspan="2" class="left-thick-border right-thick-border">{% translate 'Savings' %}</th>
+            <th colspan="4" class="left-thick-border right-thick-border" x-show="open">{% translate 'Debts' %}</th>
             <th class="text-nowrap">
-                <button class="btn btn-xs no-hover" style="font-weight: bold; color: #0d6efd; padding-right: 0!important;" @click="open = ! open" x-text="open ? '{% translate "Hide debts" %}' : '{% translate "Show debts" %}' "></button>
+                <a role="button" class="button-xs no-hover" @click="open = ! open" x-text="open ? '{% translate "Hide debts" %}' : '{% translate "Show debts" %}' "></a>
             </th>
         </tr>
         <tr>
-            <th class="text-start w5">{{ year|title }}</th>
+            <th class="w5">{{ year|title }}</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
             <th>{% translate 'Balance' %}</th>
-            <th class="left-blue-border">{% translate 'Invested' %}</th>
-            <th class="right-blue-border">{% translate 'Sold' %}</th>
-            <th class="left-blue-border" x-show="open">{% translate 'Borrow' %}</th>
+            <th class="left-thick-border">{% translate 'Invested' %}</th>
+            <th class="right-thick-border">{% translate 'Sold' %}</th>
+            <th class="left-thick-border" x-show="open">{% translate 'Borrow' %}</th>
             <th x-show="open">{% translate 'Borrow return' %}</th>
             <th x-show="open">{% translate 'Lend' %}</th>
-            <th class="right-blue-border" x-show="open">{% translate 'Lend return' %}</th>
+            <th class="right-thick-border" x-show="open">{% translate 'Lend return' %}</th>
             <th class="text-nowrap">{% translate 'Money flow' %}</th>
         </tr>
     </thead>
     <tbody>
         {% for item in ctx.data %}
         <tr>
-            <td class="text-start">{{item.date|date:"F"|title}}</td>
+            <td>{{item.date|date:"F"|title}}</td>
             <td class="{{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
             <td class="{{item.expenses|css_class_if_none}}">{{item.expenses|price|cellformat}}</td>
             <td class="{{item.balance|positive_negative}} {{item.balance|css_class_if_none}}">{{item.balance|price|cellformat}}</td>
-            <td class="left-blue-border {{item.savings|css_class_if_none}}">{{item.savings|price|cellformat}}</td>
-            <td class="right-blue-border {{item.savings_close|css_class_if_none}}">{{item.savings_close|price|cellformat}}</td>
-            <td class="left-blue-border {{item.borrow|css_class_if_none}}" x-show="open">{{item.borrow|price|cellformat}}</td>
+            <td class="left-thick-border {{item.savings|css_class_if_none}}">{{item.savings|price|cellformat}}</td>
+            <td class="right-thick-border {{item.savings_close|css_class_if_none}}">{{item.savings_close|price|cellformat}}</td>
+            <td class="left-thick-border {{item.borrow|css_class_if_none}}" x-show="open">{{item.borrow|price|cellformat}}</td>
             <td class="{{item.borrow_return|css_class_if_none}}" x-show="open">{{item.borrow_return|price|cellformat}}</td>
             <td class="{{item.lend|css_class_if_none}}" x-show="open">{{item.lend|price|cellformat}}</td>
-            <td class="right-blue-border {{item.lend_return|css_class_if_none}}" x-show="open">{{item.lend_return|price|cellformat}}</td>
+            <td class="right-thick-border {{item.lend_return|css_class_if_none}}" x-show="open">{{item.lend_return|price|cellformat}}</td>
             <td class="{{item.money_flow|css_class_if_none}}">{{item.money_flow|price|cellformat}}</td>
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-start">Avg</th>
+            <th>Avg</th>
             <th class="{{ctx.avg_row.incomes|css_class_if_none}}">{{ctx.avg_row.incomes|price|cellformat}}</th>
             <th class="{{ctx.avg_row.expenses|css_class_if_none}}">{{ctx.avg_row.expenses|price|cellformat}}</th>
             <th></th>
-            <th class="left-blue-border {{ctx.avg_row.savings|css_class_if_none}}">{{ctx.avg_row.savings|price|cellformat}}</th>
-            <th class="right-blue-border {{ctx.avg_row.savings_close|css_class_if_none}}">{{ctx.avg_row.savings_close|price|cellformat}}</th>
-            <th class="left-blue-border {{ctx.avg_row.borrow|css_class_if_none}}" x-show="open">{{ctx.avg_row.borrow|price|cellformat}}</th>
+            <th class="left-thick-border {{ctx.avg_row.savings|css_class_if_none}}">{{ctx.avg_row.savings|price|cellformat}}</th>
+            <th class="right-thick-border {{ctx.avg_row.savings_close|css_class_if_none}}">{{ctx.avg_row.savings_close|price|cellformat}}</th>
+            <th class="left-thick-border {{ctx.avg_row.borrow|css_class_if_none}}" x-show="open">{{ctx.avg_row.borrow|price|cellformat}}</th>
             <th class="{{ctx.avg_row.borrow_return|css_class_if_none}}" x-show="open">{{ctx.avg_row.borrow_return|price|cellformat}}</th>
             <th class="{{ctx.avg_row.lend|css_class_if_none}}" x-show="open">{{ctx.avg_row.lend|price|cellformat}}</th>
-            <th class="right-blue-border {{ctx.avg_row.lend_return|css_class_if_none}}" x-show="open">{{ctx.avg_row.lend_return|price|cellformat}}</th>
+            <th class="right-thick-border {{ctx.avg_row.lend_return|css_class_if_none}}" x-show="open">{{ctx.avg_row.lend_return|price|cellformat}}</th>
             <th><b>{% translate "End of year" %}</b></th>
         </tr>
         <tr>
-            <th class="text-start">{% translate 'Total' %}</th>
+            <th>{% translate 'Total' %}</th>
             <th class="{{ctx.total_row.incomes|css_class_if_none}}">{{ctx.total_row.incomes|price|cellformat}}</th>
             <th class="{{ctx.total_row.expenses|css_class_if_none}}">{{ctx.total_row.expenses|price|cellformat}}</th>
             <th class="{{ctx.total_row.balance|positive_negative}}">{{ctx.total_row.balance|price|cellformat}}</th>
-            <th class="left-blue-border {{ctx.total_row.savings|css_class_if_none}}">{{ctx.total_row.savings|price|cellformat}}</th>
-            <th class="right-blue-border {{ctx.total_row.savings_close|css_class_if_none}}">{{ctx.total_row.savings_close|price|cellformat}}</th>
-            <th class="left-blue-border {{ctx.total_row.borrow|css_class_if_none}}" x-show="open">{{ctx.total_row.borrow|price|cellformat}}</th>
+            <th class="left-thick-border {{ctx.total_row.savings|css_class_if_none}}">{{ctx.total_row.savings|price|cellformat}}</th>
+            <th class="right-thick-border {{ctx.total_row.savings_close|css_class_if_none}}">{{ctx.total_row.savings_close|price|cellformat}}</th>
+            <th class="left-thick-border {{ctx.total_row.borrow|css_class_if_none}}" x-show="open">{{ctx.total_row.borrow|price|cellformat}}</th>
             <th class="{{ctx.total_row.borrow_return|css_class_if_none}}" x-show="open">{{ctx.total_row.borrow_return|price|cellformat}}</th>
             <th class="{{ctx.total_row.lend|css_class_if_none}}" x-show="open">{{ctx.total_row.lend|price|cellformat}}</th>
-            <th class="right-blue-border {{ctx.total_row.lend_return|css_class_if_none}}" x-show="open">{{ctx.total_row.lend_return|price|cellformat}}</th>
+            <th class="right-thick-border {{ctx.total_row.lend_return|css_class_if_none}}" x-show="open">{{ctx.total_row.lend_return|price|cellformat}}</th>
             <th class="{{ctx.amount_end|positive_negative}} check">{{ctx.amount_end|price|cellformat}}</th>
         </tr>
     </tfoot>

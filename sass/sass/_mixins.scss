@@ -1,0 +1,23 @@
+@mixin shadow {
+    --border-radius: 0.25rem;
+
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    border-radius: var(--border-radius);
+}
+
+
+@mixin button {
+    --button-border-radius: 0.1rem;
+
+    border-radius: var(--button-border-radius);
+    padding-left: .5rem;
+    padding-right: .5rem;
+    padding-top: .15rem;
+    padding-bottom: .2rem;
+
+    &::before {
+        vertical-align: middle;
+        padding-bottom: .25rem;
+        padding-right: .25rem;
+    }
+}

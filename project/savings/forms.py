@@ -33,10 +33,7 @@ class SavingTypeForm(forms.ModelForm):
         self.fields["closed"].label = _("Closed")
         self.fields["type"].label = _("Type")
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()
@@ -86,7 +83,4 @@ class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["remark"].label = _("Remark")
         self.fields["saving_type"].label = _("Fund")
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False

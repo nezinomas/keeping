@@ -15,107 +15,53 @@
 
 {% block content %}
 
-<div class="row gx-2 my-2 border-bottom border-primary">
-    <div class="col-lg-5 table-responsive">
-        {% include 'bookkeeping/includes/year_balance.html' with ctx=balance %}
-    </div>
-    <div class="col-lg-7 table-responsive">
-        {% include 'bookkeeping/includes/year_expenses.html' with ctx=expenses %}
-    </div>
-</div>
+<main id="main-grid">
+    <div id="table-balance" class="table-responsive">{% include 'bookkeeping/includes/year_balance.html' with ctx=balance %}</div>
 
-<div class="row gx-2 my-2 border-bottom border-primary">
-    <div class="col-lg-5">
-        <div id="chart-expenses-container"></div>
-    </div>
-    <div class="col-lg-7">
-        <div id="chart-balance-container"></div>
-    </div>
-</div>
+    <div id="table-expenses" class="table-responsive">{% include 'bookkeeping/includes/year_expenses.html' with ctx=expenses %}</div>
 
-<div class="row my-4">
-    <div class="col">
+    <div id="chart-expenses-container"></div>
+
+    <div id="chart-balance-container"></div>
+
+    <div id="buttons">
         {% url 'bookkeeping:accounts_worth_new' as url_accounts %}
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_accounts }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Accounts fact' %}</button>
+        <button type="button" class="button-outline-success" hx-get="{{ url_accounts }}" hx-target="#mainModal">{% translate 'Accounts fact' %}</button>
         {{" "}}
         {% url 'bookkeeping:savings_worth_new' as url_expenses_new %}
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_expenses_new }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Funds fact' %}</button>
+        <button type="button" class="button-outline-success" hx-get="{{ url_expenses_new }}" hx-target="#mainModal">{% translate 'Funds fact' %}</button>
         {{" "}}
         {% url 'bookkeeping:pensions_worth_new' as url_pensions_new %}
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{{ url_pensions_new }}" hx-target="#dialog"><i class="bi bi-plus"></i> {% translate 'Pensions fact' %}</button>
+        <button type="button" class="button-outline-success" hx-get="{{ url_pensions_new }}" hx-target="#mainModal">{% translate 'Pensions fact' %}</button>
         {{" "}}
-        <button class="btn btn-sm btn-outline-danger" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator" data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Balances for all years will be updated.' %}"><i class="bi bi-arrow-repeat"></i> {% translate 'Update balances' %}</button>
+        <button class="button-secondary button-refresh" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span></button>
     </div>
-</div>
 
-<div class="row gx-2">
-    <!-- Accounts stats -->
-    <div id="accounts_worth" class="col-lg-7" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body">{{accounts}}</div>
-    <!-- /Accounts stats -->
+    <div id="accounts-info">
+        <!-- Accounts stats -->
+        <div id="accounts" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body">{{accounts}}</div>
 
-    <div class="col-lg-5">
-        <div class="row gx-2">
-            <!-- Balance Short -->
-            <div class="col-7">
-                <div>{% include "bookkeeping/includes/balance_short.html" with data=balance_short %}</div>
-            </div>
-            <!-- /Balance Short -->
+        <div id="balance-short-and-no-incomes">
+            <div>{% include "bookkeeping/includes/balance_short.html" with data=balance_short %}</div>
 
-            <!-- Wealth -->
-            <div class="col">
-                <div id="wealth" hx-get="{% url 'bookkeeping:wealth' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{wealth}}</div>
-            </div>
-            <!-- /Wealth -->
+            <div hx-get="{% url 'bookkeeping:no_incomes' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{no_incomes}}</div>
         </div>
 
-        <div class="row gx-2">
-            <!-- No incomes -->
-            <div class="col-7">
-                <div id="no_incomes" hx-get="{% url 'bookkeeping:no_incomes' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{no_incomes}}</div>
-            </div>
-            <!-- /No incomes -->
+        <div id="wealth-avg-debts">
+            <div hx-get="{% url 'bookkeeping:wealth' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{wealth}}</div>
 
-            <div class="col">
-                <!-- Average Incomes and Expenses -->
-                <div class="row gx-2">
-                    <div class="col">
-                        <div id="avg_incomes">{% info_table data=averages %}</div>
-                    </div>
-                </div>
-                <!-- /Average Incomes and Expenses -->
+            <div>{% info_table data=averages %}</div>
 
-                <!-- Debts Borrow -->
-                <div class="row gx-2">
-                    <div class="col">
-                        <div id="borrow">{% info_table data=borrow calculate_debt_remains="true" %}</div>
-                    </div>
-                </div>
-                <!-- /Debts Borrow -->
-
-                <!-- Debts Lend -->
-                <div class="row gx-2">
-                    <div class="col">
-                        <div id="lend">{% info_table data=lend calculate_debt_remains="true" %}</div>
-                    </div>
-                </div>
-                <!-- /Debts Lend -->
-            </div>
+            {% if borrow %}<div>{% info_table data=borrow calculate_debt_remains="true" %}</div>{% endif %}
+            {% if lend %}<div>{% info_table data=lend calculate_debt_remains="true" %}</div>{% endif %}
         </div>
     </div>
-</div>
 
+    <div id="savings" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{savings}}</div>
 
-<!-- Savings -->
-<div class="row mt-3">
-    <div id="savings_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{savings}}</div>
-</div>
-<!-- /Savings -->
+    <div id="pensions" hx-get="{% url 'bookkeeping:pensions' %}" hx-trigger="afterPensionWorthNew from:body, afterSignalPensions from:body, afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{pensions}}</div>
 
-<!-- Pensions -->
-<div class="row mt-3">
-    <div id="pensions_worth" class="col-lg-12" hx-get="{% url 'bookkeeping:pensions' %}" hx-trigger="afterPensionWorthNew from:body, afterSignalPensions from:body, afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{pensions}}</div>
-</div>
-<!-- /Pensions -->
+</main>
 
 <script>
     function compareValues() {
@@ -140,5 +86,4 @@
 
 <script src="/static/js/chart_index_expenses.js" defer></script>
 {{ chart_expenses|json_script:"chart-expenses-data" }}
-
 {% endblock content %}

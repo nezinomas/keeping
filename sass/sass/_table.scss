@@ -1,0 +1,314 @@
+.main {
+    border-collapse: collapse;
+    min-width: 100%;
+    width: 100%;
+    font-size: .65rem;
+
+    thead  {
+        border-bottom: $active solid 3px;
+    }
+
+    thead th {
+        padding: 0.35rem 0.25rem;
+        font-weight: bold;
+    }
+
+    thead tr:not(:last-child) th {
+        background-color: #f9f9f9;
+        min-height: 36px;
+    }
+
+    thead tr:last-child th {
+        background-color: $table-thead;
+    }
+
+    tfoot tr:last-child th {
+        border-bottom: 0;
+    }
+
+    tfoot tr th {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    tfoot tr:first-child th {
+        border-top: double $black;
+    }
+
+    tfoot tr:not(:last-child) th {
+        font-weight: normal;
+    }
+
+    td, th {
+        border: 0.5px solid #cacac9;
+        padding: 0.15rem 0.25rem;
+        text-align: right;
+        vertical-align: middle;
+        min-width: max-content;
+    }
+
+    td:first-child, th:first-child {
+        border-left: 0 !important;
+    }
+
+    td:last-child, th:last-child {
+        border-right: 0 !important;
+    }
+
+    // Custom backgrounds
+    .dash {
+        color: #d1d1d1 !important;
+    }
+
+    .table-success {
+        background-color: #d1e7dd;
+    }
+
+    .table-danger {
+        background-color: lighten($danger, 35%);
+    }
+
+    // Border styles
+    .right-thick-border {
+        border-right: 3px solid $black;
+    }
+
+    .left-thick-border {
+        border-left: 3px solid $black;
+    }
+
+    .no-left-border {
+        border-left: 0 !important;
+    }
+
+    .no-right-border {
+        border-right: 0 !important;
+    }
+
+    .right-thin-border {
+        border-right: 2px solid $black;
+    }
+
+    .left-thin-border {
+        border-left: 2px solid $black;
+    }
+
+    .right-double-border {
+        border-right: double $black;
+    }
+
+    .left-double-border {
+        border-left: double $black;
+    }
+
+    // Cell styles
+    .edit-cell {
+        width: 35px;
+        text-align: center;
+        border-right: 0;
+    }
+
+    .delete-cell {
+        width: 25px;
+        text-align: center;
+        border-left: 0;
+        color: $danger;
+    }
+
+    .cell-padding {
+        padding-right: .35rem;
+        padding-left: .35rem;
+    }
+
+    // Month table styles
+    .weekend-col {
+        background-color: rgb(202, 235, 204) !important;
+    }
+
+    .current-day :not([class*="day"]) {
+        background-color: #fde8b2 !important;
+    }
+
+    .empty-column {
+        border-left: #fff solid .5rem;
+    }
+
+    .table-danger.day-full {
+        background-color: $day-danger;
+        font-weight: 650;
+   }
+
+   th.exception,
+   td.exception {
+        padding-left: .4rem;
+        border-left: 5px solid $danger !important;
+    }
+
+    // Book styles
+    .currently-reading-book {
+        background-color: rgb(0, 0, 0, 0.1);
+    }
+
+    // Drink styles
+    .std-av-border {
+        border-top: double #ffc000;
+        border-bottom: double #ffc000;
+        background-color: #fde8b2;
+    }
+
+    // Hover styles
+    &.hover {
+        tbody tr:hover {
+            > td {
+                background-color: $hover-bg !important;
+            }
+
+            > td.table-success {
+                background-color: #c1d6cc !important;
+            }
+
+            > td.table-danger {
+                background-color: #e5c7ca !important;
+            }
+        }
+
+        tbody tr.current-day:hover > td:not([class*="day"]) {
+            background-color: rgb(254, 225, 149) !important;
+        }
+
+        // Month expand tr and td styles
+        td.expand-expenses {
+            background-color: white !important;
+
+            &:has([class*="alert"]) {
+                padding-top: $gap;
+            }
+
+            &:has(table) {
+                padding: $gap 0;
+            }
+        }
+
+        tr.expand-expenses:hover {
+            > td {
+                background-color: unset !important;
+            }
+        }
+
+        .expand-column-width {
+            min-width: 2.6rem;
+        }
+    }
+
+    // Striped styles
+    &.striped {
+        tbody tr:nth-child(odd) {
+            > td {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+
+            > td.table-success {
+                background-color: #c7dbd2;
+            }
+
+            > td.table-danger {
+                background-color: lighten($danger, 33);
+            }
+
+            > td.table-danger.day-full {
+                background-color: darken($day-danger, 5);
+            }
+        }
+    }
+}
+
+
+// Columns widths
+.w3 {
+    width: 3rem !important;
+}
+
+.w5 {
+    width: 5rem !important;
+}
+
+.w6 {
+    width: 6rem !important;
+}
+
+.w6p {
+    width: 6% !important;
+}
+
+.w7 {
+    width: 7rem !important;
+}
+
+.w7p {
+    width: 7% !important;
+}
+
+.w8 {
+    width: 8rem !important;
+}
+
+.w10 {
+    width: 10rem !important;
+}
+
+.w12 {
+    width: 12rem !important;
+}
+
+.w16 {
+    width: 16rem !important;
+}
+
+.w18 {
+    width: 18rem !important;
+}
+
+.funds-title-col-min-width {
+    min-width: 8rem !important;
+}
+
+
+// Expenses colors
+.fee td {
+    background-color: #ffdddd !important;
+}
+
+.food td {
+    background-color: #c5d9f1 !important;
+}
+
+.leisure td {
+    background-color: #c4d79b !important;
+}
+
+.work td {
+    background-color: #fff0c1 !important;
+}
+
+
+// Drinks colors
+.drinks td {
+    background-color: #d9d9d9;
+}
+
+
+// Button expand
+.panel-heading .button-expand:before {
+    font-family: 'Glyphicons Halflings';
+    content: "\e114";
+    float: right;
+    vertical-align: middle;
+    transition: all 0.5s;
+    color: #fe536a;
+    margin-right: .25rem;
+}
+
+.panel-heading.active .button-expand:before {
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    transform: rotate(180deg);
+}

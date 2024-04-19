@@ -4,12 +4,12 @@
 
 {% if object_list %}
 
-<table class="table table-sm table-striped table-hover sticky-table">
+<table class="main striped hover sticky-table">
     <thead>
         <tr>
-            <th class="text-start">{% translate 'Date' %}</th>
-            <th class="text-start w16">{% translate 'From account' %}</th>
-            <th class="text-start w16">{% translate 'To account' %}</th>
+            <th class="text-left">{% translate 'Date' %}</th>
+            <th class="text-left w16">{% translate 'From account' %}</th>
+            <th class="text-left w16">{% translate 'To account' %}</th>
             <th class="{% if fee %}w8{% else %}w16{% endif %}">{% translate 'Amount' %}</th>
             {% if fee %}<th class="w8">{% translate 'Fees' %}</th>{% endif %}
             <th colspan="{% if fee %}3{% else %}2{% endif %}"></th>
@@ -19,10 +19,10 @@
         {% for object in object_list %}
         {% url url_update object.id as url__update %}
         {% url url_delete object.id as url__delete %}
-        <tr hx-get="{{ url__update }}" hx-trigger="dblclick" hx-target="#dialog" class="{% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
-            <td class="text-start">{{ object.date|date:"Y-m-d" }}</td>
-            <td class="text-start">{{ object.from_account }}</td>
-            <td class="text-start">{{ object.to_account }}</td>
+        <tr hx-get="{{ url__update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+            <td class="text-left">{{ object.date|date:"Y-m-d" }}</td>
+            <td class="text-left">{{ object.from_account }}</td>
+            <td class="text-left">{{ object.to_account }}</td>
             <td class="{{object.price|css_class_if_none}}">{{object.price|price|cellformat}}</td>
             {% if fee %}
             <td class="{{object.fee|css_class_if_none}}">{{object.fee|price|cellformat}}</td>
@@ -36,7 +36,7 @@
 <script>$('.sticky-table').stickyTableHeaders();</script>
 {% else %}
 
-<div class="mx-auto text-center alert alert-warning py-2 mb-4">
+<div class="alert alert-warning">
     {% blocktranslate with year=year|default_if_none:'xxxx'|safe %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 </div>
 

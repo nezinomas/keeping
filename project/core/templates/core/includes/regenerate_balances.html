@@ -1,2 +1,6 @@
 {% load i18n %}
-<button class="btn btn-xs btn-outline-primary me-1" hx-get="{% url 'core:regenerate_balances' %}{% if type %}?type={{ type }}"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="{% translate 'Only the balances in this table will be updated.' %}"><i class="bi bi-arrow-repeat me-0"></i></button>
+<span class="tip right" data-tip="{% translate 'Only the balances in this table will be updated.' %}">
+    <a type="button" hx-get="{% url 'core:regenerate_balances' %}{% if type %}?type={{ type }}{% endif %}">
+        <i class="bi bi-arrow-repeat"></i>
+    </a>
+</span>

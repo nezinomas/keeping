@@ -46,7 +46,7 @@ def test_view_not_necessary(client_logged):
     actual = response.content.decode("utf-8")
 
     assert (
-        "Nebūtinos išlaidos, kurių galima atsisakyti:<br />- XXX<br />- YYY<br />- Taupymas"
+        "Nebūtinos išlaidos, kurių galima atsisakyti:\n- XXX\n- YYY\n- Taupymas"
         in actual
     )
 

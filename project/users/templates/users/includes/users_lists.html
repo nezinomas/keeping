@@ -4,11 +4,11 @@
 
 {% if object_list %}
 
-<table class="table table-sm table-striped table-hover">
+<table class="main striped hover">
     <thead>
         <tr>
-            <th class="text-start">{% translate 'User' %}</th>
-            <th class="text-start">{% translate 'Email' %}</th>
+            <th class="text-left">{% translate 'User' %}</th>
+            <th class="text-left">{% translate 'Email' %}</th>
             <th class="text-center">{% translate 'Admin' %}</th>
             <th></th>
         </tr>
@@ -17,8 +17,8 @@
         {% for item in object_list %}
         {% url 'users:settings_users_delete' item.id as url_delete %}
         <tr>
-            <td class="text-start">{{ item.username }}</td>
-            <td class="text-start">{{ item.email }}</td>
+            <td class="text-left">{{ item.username }}</td>
+            <td class="text-left">{{ item.email }}</td>
             <td class="text-center">{% if item.is_superuser %}<i class="bi bi-check-circle" style="color: #198754;"></i>{% else %}<i class="bi bi-dash-circle-fill" style="color: #dc3545;"></i>{% endif %}</td>
             {% delete_cell url=url_delete %}
         </tr>
@@ -28,6 +28,6 @@
 
 {% else %}
 
-<div class="mx-auto text-center alert alert-warning py-2">{% translate 'There are no additional users.' %}</div>
+<div class="alert alert-warning">{% translate 'There are no additional users.' %}</div>
 
 {% endif %}

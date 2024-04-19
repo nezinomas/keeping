@@ -23,24 +23,25 @@
 
 {% block content %}
 
-<div class="row my-2">
-    {% url 'books:search' as search_url %}
-    {% url 'books:list' as reset_url %}
-    <div class="col-3 text-start" id="search_form_data" hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#data" %}</div>
+<main class="grid-one-col">
+    <div class="info-row">
+        {% url 'books:search' as search_url %}
+        {% url 'books:list' as reset_url %}
+        <div hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#data" %}</div>
 
-    <div class="col text-center" id="info_row" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}">{{info_row}}</div>
+        <div class="info-row-text" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}">{{info_row}}</div>
 
-    <div class="col-3 text-end">
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{% translate 'Book' context 'book add button' %}</button>{{" "}}
-        <button type="button" class="btn btn-sm btn-outline-success" hx-get="{% url 'books:target_new' %}" hx-target="#dialog"><i class="bi bi-plus"></i>{{ year|title }} {% translate 'year goal' %}</button>
+        <div>
+            <button type="button" class="button-outline-success" hx-get="{% url 'books:new' %}" hx-target="#mainModal">{% translate 'Book' context 'book add button' %}</button>{{" "}}
+            <button type="button" class="button-outline-success" hx-get="{% url 'books:target_new' %}" hx-target="#mainModal">{{ year|title }} {% translate 'year goal' %}</button>
+        </div>
     </div>
-</div>
 
-<div id="data" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
+    <div id="data" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
 
+    <div id="chart-readed-container"></div>
+</main>
 
-<div class="row my-2">
-    <div class="col-lg-12" id="chart_readed_books" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:chart_readed' %}">{{chart}}</div>
-</div>
+<div hx-get="{% url 'books:chart_readed' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
 
 {% endblock content %}

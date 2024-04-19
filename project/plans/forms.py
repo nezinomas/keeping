@@ -100,10 +100,7 @@ class IncomePlanForm(YearFormMixin):
         self.fields["income_type"].label = _("Income type")
         common_field_transalion(self)
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -136,10 +133,7 @@ class ExpensePlanForm(YearFormMixin):
         self.fields["expense_type"].label = _("Expense type")
         common_field_transalion(self)
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -172,10 +166,7 @@ class SavingPlanForm(YearFormMixin):
         self.fields["saving_type"].label = _("Saving type")
         common_field_transalion(self)
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -204,10 +195,7 @@ class DayPlanForm(YearFormMixin):
         # field translation
         common_field_transalion(self)
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -240,10 +228,7 @@ class NecessaryPlanForm(YearFormMixin):
         self.fields["expense_type"].label = _("Expense type")
         common_field_transalion(self)
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
 
 # ----------------------------------------------------------------------------
@@ -366,7 +351,4 @@ class CopyPlanForm(forms.Form):
         self.fields["day"].label = _("Day plans")
         self.fields["necessary"].label = _("Plans for additional necessary expenses")
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False

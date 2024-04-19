@@ -1,0 +1,227 @@
+// label {
+//     display: inline-block;
+// }
+
+.invalid-feedback {
+    font-size: .875em;
+    color: $danger;
+}
+
+.form-select {
+    display: block;
+    width: 100%;
+    padding: .35rem 2.25rem .35rem .75rem;
+    background-color: white !important;
+    border: 1px solid #dee2e6;
+    border-radius: 0;
+}
+
+.form-control,
+.form-select {
+    display: block;
+    width: 100%;
+    padding: .35rem .25rem .35rem .75rem;
+    color: #212529;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+
+    &:focus {
+        border-color: mix(white, $primary, 50%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 2px rgba($black, .075),
+            0 0 0 0.15rem rgba($primary, 0.17);
+    }
+
+    &.is-invalid {
+        border-color: #dc3545 !important;
+        padding-right: calc(1.5em + .75rem) !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+
+        &:focus {
+            outline: 0;
+            box-shadow:
+                inset 0 1px 2px rgba($black, .075),
+                0 0 0 0.15rem rgba($danger, 0.17) !important;
+        }
+    }
+}
+
+.is-invalid {
+    &.form-control {
+        background-position: right .5rem center;
+    }
+
+    &.form-select {
+        background-position:
+            right 1.25rem center,
+            center right 2.25rem;
+    }
+
+    &.datepickerinput,
+    &.yearpickerinput {
+        background-position:
+            right 1.85rem center,
+            center right 2.25rem;
+    }
+}
+
+.form-check {
+    display: flex;
+    gap: calc($gap / 2);
+}
+
+.form-check-input {
+    width: 1em;
+    height: 1em;
+    vertical-align: top;
+    border: 1px solid #dee2e6;
+    appearance: none;
+
+    &[type="checkbox"] {
+        border-radius: .25em;
+    }
+
+    &:checked {
+        background-color: #0d6efd !important;
+        border-color: #0d6efd;
+
+        &[type="checkbox"] {
+            background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='rgb(255, 255, 255)' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/></svg>");
+        }
+    }
+
+    &:focus {
+        border-color: mix(white, $primary, 50%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 2px rgba($black, .075),
+            0 0 0 0.15rem rgba($primary, 0.17);
+    }
+
+    &.is-invalid {
+        border-color: $danger;
+        background-color: $danger!important;
+    }
+}
+
+
+// Chart Expenses Summary
+#expenses-summary-form {
+    .spacer {
+        padding-left: 1.5rem;
+    }
+
+    .root {
+        font-weight: bold;
+    }
+
+    #id_types {
+        height: 90vh;
+    }
+
+    button[type="submit"] {
+        margin-top: 0.25rem;
+        width: 100%;
+    }
+}
+
+
+// Settings form
+.settings-form,
+.login-form {
+    .mb-3 {
+        margin-bottom: $gap;
+    }
+
+    label {
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+}
+
+
+// Modal forms
+.modal-form {
+    .form-label {
+        display: block;
+        margin-bottom: .25rem;
+    }
+
+    .disabled {
+        background-color: $disabled !important;
+        opacity: 1;
+    }
+
+    .mb-3 {
+        margin-bottom: $gap;
+    }
+
+    .item-price {
+        display: flex;
+        gap: calc($gap / 3);
+        align-items: center;
+
+        > *:first-child {
+            flex-grow: 1;
+        }
+
+        > *:last-child {
+            margin-top: 0.5rem;
+        }
+    }
+
+    .bi-calendar {
+        font-size: 1.6em;
+    }
+
+    .input-group {
+        position: relative;
+
+        .input-group-text {
+            position: absolute;
+            top: 0;
+            right: 5px;
+        }
+    }
+
+    input[type="file"] {
+        border: none;
+        background-color: $disabled !important;
+        padding: 0;
+    }
+}
+
+.plans-form {
+    > *:not([class*='alert']) {
+        display: grid;
+        grid-template-columns: 15% 1fr;
+        align-items: center;
+    }
+
+    > * > span {
+        grid-column-start: 2;
+    }
+}
+
+
+.worth-form {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: $gap;
+
+    .mb-3 {
+        padding: 0 !important;
+        margin: 0;
+    }
+
+}
+
+.asteriskField {
+    color: $danger;
+    padding-left: .25rem;
+}

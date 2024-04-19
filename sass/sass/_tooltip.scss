@@ -1,0 +1,112 @@
+.tip {
+    display: inline-block;
+    position: relative;
+    font-style: normal;
+    transition:all .25s ease-in-out
+}
+
+.tip:before {
+    content: attr(data-tip);
+    position: absolute;
+    background: rgba(10, 20, 30, 0.85);
+    color: #fff;
+    line-height: 1.1em;
+    padding: 0.3rem 0.75rem 0.55rem 0.75rem;
+    font-style: normal;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all .3s ease-in-out;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+    font-weight: 300;
+    font-size: small;
+    white-space: pre-wrap;
+    min-width: max-content;
+    text-align: left;
+}
+
+.tip:after {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    content: '';
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    transition: all .3s ease-in-out
+}
+
+.tip:hover:before,
+.tip:hover:after {
+    visibility: visible;
+    opacity: 1
+}
+
+  /*top*/
+.tip.top:before {
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, calc(-100% - 8px));
+    box-sizing: border-box;
+    border-radius: 3px;
+}
+
+.tip.top:after {
+    border-width: 8px 8px 0 8px;
+    border-color: rgba(10, 20, 30, 0.85) transparent transparent transparent;
+    top: -8px;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+ /*bottom*/
+ .tip.bottom:before {
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, calc(100% + 8px));
+    box-sizing: border-box;
+    border-radius: 3px;
+}
+
+.tip.bottom:after {
+    border-width: 0 8px 8px 8px;
+    border-color: transparent transparent rgba(10, 20, 30, 0.85) transparent;
+    bottom: -8px;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+  /*left*/
+.tip.left:before {
+    left: 0;
+    top: 50%;
+    transform: translate(calc(-100% - 8px), -50%);
+    box-sizing: border-box;
+    border-radius: 3px;
+}
+
+.tip.left:after {
+    border-width: 8px 0 8px 8px;
+    border-color: transparent transparent transparent rgba(10, 20, 30, 0.85);
+    left: -8px;
+    top: 50%;
+    transform: translate(0, -50%);
+}
+
+/*right*/
+.tip.right:before {
+    right: 0;
+    top: 50%;
+    transform: translate(calc(100% + 8px), -50%);
+    box-sizing: border-box;
+    border-radius: 3px;
+}
+
+.tip.right:after {
+    border-width: 8px 8px 8px 0;
+    border-color: transparent rgba(10, 20, 30, 0.85) transparent transparent;
+    right: -8px;
+    top: 50%;
+    transform: translate(0, -50%);
+}

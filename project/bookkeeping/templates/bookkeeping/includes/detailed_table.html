@@ -5,10 +5,10 @@
 {% load cell_format %}
 
 
-<table class="table table-sm table-striped table-hover">
+<table class="main striped hover">
     <thead>
         <tr>
-            <th class="text-start">{{ name }}</th>
+            <th class="text-left">{{ name }}</th>
             <th class="w7p">{% translate 'January' %}</th>
             <th class="w7p">{% translate 'February' %}</th>
             <th class="w7p">{% translate 'March' %}</th>
@@ -21,17 +21,17 @@
             <th class="w7p">{% translate 'October' %}</th>
             <th class="w7p">{% translate 'November' %}</th>
             <th class="w7p">{% translate 'December' %}</th>
-            <th class="w7p left-blue-border">{% translate 'Total' %}</th>
+            <th class="w7p left-thick-border">{% translate 'Total' %}</th>
         </tr>
     </thead>
     <tbody>
         {% for item in items %}
         <tr>
-            <td class="text-start">{{ item.title|safe }}</td>
+            <td class="text-left">{{ item.title|safe }}</td>
             {% for i in item.data %}
                 <td class="{{i|css_class_if_none}}">{{i|price|cellformat:"0,00"}}</td>
             {% endfor %}
-            <td class="left-blue-border">
+            <td class="left-thick-border">
                 <b>{{total_col|get_list_val:forloop.counter0|price|cellformat:"0,00"}}</b>
             </td>
         </tr>
@@ -39,11 +39,11 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-start">{% translate 'Total' %}</th>
+            <th class="text-left">{% translate 'Total' %}</th>
             {% for i in total_row %}
             <th class="{{i|css_class_if_none}}">{{i|price|cellformat:"0,00"}}</th>
             {% endfor %}
-            <th class="left-blue-border">{{total|price|cellformat:"0,00"}}</th>
+            <th class="left-thick-border">{{total|price|cellformat:"0,00"}}</th>
         </tr>
     </tfoot>
 </table>

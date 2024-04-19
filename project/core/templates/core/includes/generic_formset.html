@@ -3,16 +3,16 @@
 {% load i18n %}
 
 
-<form method="post" class="modal-content form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted" >
+<form method="post" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted" >
     {% csrf_token %}
     {% include 'core/includes/form_date_scripts.html' %}
     {{ formset.management_form|crispy }}
 
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
+        <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body {% if css_class %}{{css_class}}{% endif %}">
         {% if formset.non_form_errors %}
         <div class="alert alert-danger">
         {% for error in formset.non_form_errors %}<strong>{{ error|escape }}</strong>{% endfor %}
@@ -21,19 +21,9 @@
 
         {% for form in formset.forms %}
         {% include 'core/includes/form_errors.html' %}
-
-        <div class="row gx-2">
             {% for field in form %}
-            {% var col='col' %}
-            {% if field.name == 'price' %}
-                {% var col='col-2 formset-input'%}
-            {% endif %}
-            {% if field.name == 'date' %}
-                {% var col='col-4 formset-input'%}
-            {% endif %}
-            <div class="{{col}}">{{ field|as_crispy_field }}</div>
+            {{ field|as_crispy_field }}
             {% endfor %}
-        </div>
         {% endfor %}
     </div>
 

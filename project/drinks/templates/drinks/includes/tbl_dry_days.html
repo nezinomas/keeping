@@ -1,16 +1,16 @@
 {% load i18n %}
 
-<table class="table table-sm caption-top">
+<table class="main">
     <caption>{% translate 'Last time I had a drink' %}</caption>
     <thead>
         <tr>
-            <th class="text-start">Data</th>
+            <th class="text-left">Data</th>
             <th>{% translate 'Number of days' %}</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td class="text-start">{% if ctx.date %}{{ ctx.date|date:"Y-m-d" }}{% else %}{% translate 'No data' %}{% endif %}</td>
+            <td class="text-left">{% if ctx.date %}{{ ctx.date|date:"Y-m-d" }}{% else %}{% translate 'No data' %}{% endif %}</td>
             <td>{{ ctx.delta }}</td>
         </tr>
     </tbody>

@@ -187,7 +187,7 @@ def test_view(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert 'title="1999 m. vasario 2 d., 00:00"' in actual
+    assert 'data-tip="1999 m. vasario 2 d., 00:00"' in actual
     assert "5,55" in actual
 
 
@@ -199,5 +199,5 @@ def test_view_last_check_empty(client_logged):
 
     actual = response.content.decode("utf-8")
 
-    assert 'data-bs-title="Nėra įrašo apie sąskaitos lėšas"' in actual
+    assert 'data-tip="Nėra įrašo apie sąskaitos lėšas"' in actual
     assert "20" in actual

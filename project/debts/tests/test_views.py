@@ -49,7 +49,7 @@ def test_debts_index_borrow_add_button(client_logged):
     content = response.content.decode()
 
     link = reverse('debts:new', kwargs={'debt_type': 'borrow'})
-    pattern = re.compile(fr'<button type="button".+hx-get="{ link }".+<\/i>(.*?)<\/button>')
+    pattern = re.compile(fr'<button.*?hx-get="{ link }".*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == 'Skolą'
@@ -62,7 +62,7 @@ def test_debts_index_borrow_return_add_button(client_logged):
     content = response.content.decode()
 
     link = reverse('debts:return_new', kwargs={'debt_type': 'borrow'})
-    pattern = re.compile(fr'<button type="button".+hx-get="{ link }".+<\/i>(.*?)<\/button>')
+    pattern = re.compile(fr'<button.*?hx-get="{ link }".*>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == 'Sumą'
@@ -75,7 +75,7 @@ def test_debts_index_lend_add_button(client_logged):
     content = response.content.decode()
 
     link = reverse('debts:new', kwargs={'debt_type': 'lend'})
-    pattern = re.compile(fr'<button type="button".+hx-get="{ link }".+<\/i>(.*?)<\/button>')
+    pattern = re.compile(fr'<button.*?hx-get="{ link }".*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == 'Skolą'
@@ -88,7 +88,7 @@ def test_debts_index_lend_return_add_button(client_logged):
     content = response.content.decode()
 
     link = reverse('debts:return_new', kwargs={'debt_type': 'lend'})
-    pattern = re.compile(fr'<button type="button".+hx-get="{ link }".+<\/i>(.*?)<\/button>')
+    pattern = re.compile(fr'<button.*?hx-get="{ link }".*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == 'Sumą'

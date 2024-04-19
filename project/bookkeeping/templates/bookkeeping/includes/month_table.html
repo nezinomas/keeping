@@ -5,12 +5,12 @@
 {% load math %}
 
 
-<table class="table table-sm table-striped table-hover">
+<table class="main striped hover">
     <thead>
         <tr>
-            <th class="expand-column-width"></th>
-            {% for cat in ctx.expense_types %}<th data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{cat}}">{{cat|truncatechars:8}}</th>{% endfor %}
-            <th class="left-blue-double-border right-blue-double-border">{% translate 'Total' %}</th>
+            <th></th>
+            {% for cat in ctx.expense_types %}<th><span class="tip bottom" data-tip="{{cat}}">{{cat|truncatechars:8}}</span></th>{% endfor %}
+            <th class="left-double-border right-double-border">{% translate 'Total' %}</th>
             <th>{% translate 'Savings' %}</th>
             <th class="empty-column"></th>
             <th>{% translate 'Day' %}</th>
@@ -24,11 +24,9 @@
         {% url 'bookkeeping:expand_day_expenses' table.date|date:'Ymd' as url_expand %}
         <tr
             id="table{{day_int}}"
-            {% if ctx.day|slugify == day_int %}class="current-day"{% endif %}>
+            {% if ctx.day|slugify == day_int %} class="current-day"{% endif %}>
             <td
-                class="{{weekend_col}} panel-heading"
-                data-bs-toggle="collapse"
-                aria-expanded="true"
+                class="{{weekend_col}} panel-heading expand-column-width text-left"
                 :class="open{{day_int}} ? 'active' : ''"
                 @click="open{{day_int}} = !open{{day_int}}""
                 hx-get="{{url_expand}}"
@@ -36,7 +34,7 @@
                 hx-swap="afterend"
                 hx-trigger="click once"
             >
-                <span class="col1"></span><span class="col2">{{table.date|date:'d'}}</span>
+                <span class="button-expand">{{table.date|date:'d'}}</span>
             </td>
             {% for cat in ctx.expense_types %}
               {% with table|get_item:cat as val%}
@@ -44,29 +42,29 @@
             {% endfor %}
 
             <!-- total expenses -->
-            {% with table|get_item:_("Total") as val%}<td class="{{weekend_col|add:' left-blue-double-border right-blue-double-border'}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
+            {% with table|get_item:_("Total") as val%}<td class="{{weekend_col|add:' left-double-border right-double-border'}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- savings -->
             {% with table|get_item:_("Savings") as val%}<td class="{{weekend_col}} {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- spending -->
-            <td class="text-start {{weekend_col}} empty-column">{{spending.date|date:'l'}}</td>
-            {% with spending.day as val%}<td class="{{val|negative}} {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
+            <td class="text-left empty-column {{weekend_col}}">{{spending.date|date:'l'}}</td>
+            {% with spending.day as val%}<td class="{{val|negative}} day {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
 
-            {% with spending.full as val%}<td class="{{val|negative|add:' -full'|add:' empty-column-wide'}} {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
+            {% with spending.full as val%}<td class="{{val|negative}} day-full {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
 
         </tr>{% endwith %}{% endwith %}
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
-            <th class="text-start">&#8721;</th>
+            <th class="text-left">&#8721;</th>
             {% for cat in ctx.expense_types %}
                 {% with ctx.total_row|get_item:cat as val%}<th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>{% endwith %}
             {% endfor %}
 
             <!-- total expenses -->
-            {% with ctx.total_row|get_item:_("Total") as val%}<th class="{{val|css_class_if_none}} left-blue-double-border right-blue-double-border">{{val|price|cellformat}}</th>{% endwith %}
+            {% with ctx.total_row|get_item:_("Total") as val%}<th class="{{val|css_class_if_none}} left-double-border right-double-border">{{val|price|cellformat}}</th>{% endwith %}
 
 
             <!-- savings -->

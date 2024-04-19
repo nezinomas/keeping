@@ -1,88 +1,81 @@
 {% load i18n %}
 {% load static %}
 
-<div class="row">
-    <div class="col-lg-6"><div id="chart-consumption-container"></div></div>
-    <div class="col-lg-6"><div id="chart-quantity-container"></div></div>
-    {{chart_quantity|json_script:"chart-quantity-data"}}
-    {{chart_consumption|json_script:"chart-consumption-data"}}
-    <script>
-        chartConsumption('chart-consumption-data', 'chart-consumption-container');
-        chartQuantity('chart-quantity-data', 'chart-quantity-container');
-    </script>
-</div>
+{% include 'drinks/includes/navbar.html' %}
 
-<div class="row my-2">
-    <div class="col-lg-6">
-        <div class="row gx-2">
-            <div id="tbl_consumption" class="col-lg-3 col-md-3">
-                {% include 'drinks/includes/tbl_consumption.html' with ctx=tbl_consumption %}
-            </div>
-            <div id="tbl_last_day" class="col-lg-4 col-md-3">
-                {% include 'drinks/includes/tbl_dry_days.html' with ctx=tbl_dray_days %}
-            </div>
-            <div id="tbl_alcohol" class="col-lg-2 col-md-3">
-                {% include 'drinks/includes/tbl_alcohol.html' with ctx=tbl_alcohol %}
-            </div>
-            <div id="target_list" class="col-lg-3 col-md-3">
-                {{target}}
-            </div>
+<main id="drinks-grid">
+    <div id="chart-consumption-container"></div>
+    <div id="chart-quantity-container"></div>
+
+
+    <div id="stats-tables">
+        <div id="tbl_consumption">
+            {% include 'drinks/includes/tbl_consumption.html' with ctx=tbl_consumption %}
         </div>
+        <div id="tbl_last_day">
+            {% include 'drinks/includes/tbl_dry_days.html' with ctx=tbl_dray_days %}
+        </div>
+        <div id="tbl_alcohol">
+            {% include 'drinks/includes/tbl_alcohol.html' with ctx=tbl_alcohol %}
+        </div>
+        <div id="target_list">
+            {{target}}
+        </div>
+    </div>
 
+    <!-- Std AV table -->
+    <div id="tbl-stdav">
+        {% include 'drinks/includes/tbl_std_av.html' with ctx=tbl_std_av %}
+    </div>
+
+    <!-- Std AV image -->
+    {% get_current_language as LANGUAGE_CODE %}
+    {% with 'images/drinks_info_'|add:LANGUAGE_CODE|add:'.jpg' as image %}
+    <div id="info-img" class="text-center">
+        <img src="{% static image %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}">
+    </div>{% endwith %}
+
+    <!-- 1-6 months -->
+    <div id="chart-calendar-1H-container"></div>
+
+    <!-- 7-12 months -->
+    <div id="chart-calendar-2H-container"></div>
+
+    <!-- Historical data -->
+    <div id="historical-data">
         <div class="row">
-            <div class="col" id="tbl_std_av">
-                {% include 'drinks/includes/tbl_std_av.html' with ctx=tbl_std_av %}
+            <div>
+                <b>{% translate 'Historical data' %}</b>
             </div>
-        </div>
-    </div>
-
-    <div class="col-lg-6 d-flex">
-        {% get_current_language as LANGUAGE_CODE %}
-        {% with 'images/drinks_info_'|add:LANGUAGE_CODE|add:'.jpg' as image %}
-        <div class="text-center mx-auto align-self-center">
-            <img src="{% static image %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}">
-        </div>{% endwith %}
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-6 col-md-12"><div id="chart-calendar-1H-container"></div></div>
-    <div class="col-lg-6 col-md-12"><div id="chart-calendar-2H-container"></div></div>
-    {{chart_calendar_1H|json_script:"chart-calendar-1H-data"}}
-    {{chart_calendar_2H|json_script:"chart-calendar-2H-data"}}
-    <script>
-        chartCalender('chart-calendar-1H-data', 'chart-calendar-1H-container');
-        chartCalender('chart-calendar-2H-data', 'chart-calendar-2H-container');
-    </script>
-</div>
-
-<div class="row mt-4">
-    <div class="col-lg-6">
-        <div class="row my-2">
-            <div class="col-sm-3 pt-1"><b>{% translate 'Historical data' %}</b></div>
-            <div class="col-sm-9 text-end">
-                <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:compare' 2 %}" hx-target="#historical_data">{% translate '2 years' %}</button>
+            <div>
+                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 2 %}" hx-target="#chart-history-container">{% translate '2 years' %}</button>
                 {{" "}}
-                <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:compare' 3 %}" hx-target="#historical_data">{% translate '3 years' %}</button>
+                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 3 %}" hx-target="#chart-history-container">{% translate '3 years' %}</button>
                 {{" "}}
-                <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:compare' 7 %}" hx-target="#historical_data">{% translate '7 years' %}</button>
+                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 7 %}" hx-target="#chart-history-container">{% translate '7 years' %}</button>
                 {{" "}}
-                <button type="button" class="btn btn-sm btn-info btn_click" hx-get="{% url 'drinks:compare' all_years %}" hx-target="#historical_data">{% translate 'All years' %}</button>
+                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' all_years %}" hx-target="#chart-history-container">{% translate 'All years' %}</button>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col" id="historical_data"></div>
-        </div>
+        <div id="chart-history-container"></div>
     </div>
 
-    <div class="col-lg-6" id="compare_form_and_chart">
-        <div hx-get="{% url 'drinks:compare_two' %}" hx-swap="outerHTML" hx-trigger="load"></div>
-    </div>
-</div>
+    <!-- Compare form and chart -->
+    <div id="compare-form-and-chart" hx-get="{% url 'drinks:compare_two' %}" hx-trigger="load"></div>
 
-{% if request.htmx %}
-<span id="btn-new" hx-swap-oob="true">
-    {% include 'drinks/includes/new_buttons.html' with tab="index" hx_swap_oop="true" %}
-</span>
-{% endif %}
+</main>
+
+{{chart_quantity|json_script:"chart-quantity-data"}}
+{{chart_consumption|json_script:"chart-consumption-data"}}
+
+{{chart_calendar_1H|json_script:"chart-calendar-1H-data"}}
+{{chart_calendar_2H|json_script:"chart-calendar-2H-data"}}
+
+<script>
+    chartConsumption('chart-consumption-data', 'chart-consumption-container');
+    chartQuantity('chart-quantity-data', 'chart-quantity-container');
+
+    chartCalender('chart-calendar-1H-data', 'chart-calendar-1H-container');
+    chartCalender('chart-calendar-2H-data', 'chart-calendar-2H-container');
+</script>

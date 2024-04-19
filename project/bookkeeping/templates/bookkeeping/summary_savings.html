@@ -15,36 +15,21 @@
 {% block content %}
 
 {% if records > 1 %}
-<div class="row mt-2">
-    <div class="col-md-12 col-lg-6">
-        <div id="funds"></div>
-    </div>
-    <div class="col-md-12 col-lg-6">
-        <div id="shares"></div>
-    </div>
-</div>
-
-<div class="row mt-2">
-    <div class="col-md-12 col-lg-6">
-        <div id="pensions"></div>
-    </div>
-    <div class="col-md-12 col-lg-6">
-        <div id="pensions2"></div>
-    </div>
-</div>
-
-<div class="row mt-2">
-    <div class="col-md-12 col-lg-6">
-        <div id="funds_shares"></div>
-    </div>
-    <div class="col-md-12 col-lg-6">
-        <div id="funds_shares_pensions"></div>
-    </div>
-</div>
-
+<main class="grid-two-col">
+    <div id="funds"></div>
+    <div id="shares"></div>
+    <div id="pensions"></div>
+    <div id="pensions2"></div>
+    <div id="funds_shares"></div>
+    <div id="funds_shares_pensions"></div>
+</main>
 
 {% else %}
-{% include 'core/no_records.html' with two_years=True %}
+
+<main class="grid-one-col">
+    {% include 'core/no_records.html' with two_years=True %}
+</main>
+
 {% endif %}
 
 <script src="/static/js/chart_summary_savings.js"></script>

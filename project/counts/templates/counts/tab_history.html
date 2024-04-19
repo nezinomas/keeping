@@ -1,36 +1,29 @@
 {% load i18n %}
 {% load counts_components %}
 
+
+{{info_row}}
+
 {% if records %}
 
-<div class="row my-2">
-    <div class="col-lg-4" id="chart_weekdays"><div id="chart-weekdays-container"></div></div>
-    <div class="col-lg-4" id="chart_years"><div id="chart-years-container"></div></div>
-    <div class="col-lg-4" id="chart_histogram"><div id="chart-histogram-container"></div></div>
-    {{chart_weekdays|json_script:"chart-weekdays-data"}}
-    {{chart_years|json_script:"chart-years-data"}}
-    {{chart_histogram|json_script:"chart-histogram-data"}}
-    <script>
-        chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
-        chartPeriodicity('chart-years-data', 'chart-years-container');
-        chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
-    </script>
+<div class="grid-three-col">
+    <div id="chart-weekdays-container"></div>
+    <div id="chart-years-container"></div>
+    <div id="chart-histogram-container">
+        {{chart_weekdays|json_script:"chart-weekdays-data"}}
+        {{chart_years|json_script:"chart-years-data"}}
+        {{chart_histogram|json_script:"chart-histogram-data"}}
+        <script>
+            chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
+            chartPeriodicity('chart-years-data', 'chart-years-container');
+            chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
+        </script>
+    </div>
 </div>
 
-<div class="row">
-    <div class="col-lg"></div>
-    <div class="col-lg text-center"><h6>{% translate "Total" %}: {{records|floatformat:"0g"}}</h6></div>
-    <div class="col-lg"></div>
-</div>
 
 {% else %}
 
 {% include 'core/no_records.html' with data_missing=True %}
 
-{% endif %}
-
-
-{% if request.htmx %}
-{% url 'counts:new' 'history' slug as url_new %}
-{% new_count_button url=url_new hx_swap_oob="true" %}
 {% endif %}

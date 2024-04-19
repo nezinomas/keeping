@@ -1,0 +1,69 @@
+.text-center {
+    text-align: center !important;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.text-left {
+    text-align: left !important;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+    gap: calc($gap / 3);
+}
+
+.row-reverse {
+    flex-direction: row-reverse;
+}
+
+.flex-right {
+    margin-left: auto;
+}
+
+.no-hover,
+.no-hover:hover {
+    text-decoration: none !important;
+    border: 0 !important;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.margin-bottom {
+    margin-bottom: calc($gap * 2);
+}
+
+.button-row {
+    display: flex;
+    margin-bottom: $gap;
+    min-height: calc(2 * $gap + 0.25rem);
+    height: calc(2 * $gap + 0.25rem);
+    align-items: center;
+    gap: calc($gap / 3);
+
+    &:has(#search-form) {
+        > * {
+            flex-grow: 1;
+        }
+    }
+
+    > button {
+        max-width: max-content;
+    }
+
+    &.equal-width {
+        > button {
+            flex: 1;
+            max-width: 100%;
+        }
+    }
+}
+
+.w100 {
+    width: 100%;
+}

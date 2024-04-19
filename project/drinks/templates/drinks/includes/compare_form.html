@@ -1,26 +1,18 @@
 {% load i18n %}
 {% load crispy_forms_tags %}
 
-<div class="row my-2">
-    <div class="col-sm-4 pt-1"><b>{% translate 'Year comparison' %}</b></div>
-    <div class="col-sm-8 text-end">
-        <form novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#compare_form_and_chart" class="row d-flex gx-1 align-items-center">
+<div class="row">
+    <div><b>{% translate 'Year comparison' %}</b></div>
+    <form novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#compare-form-and-chart">
         {% csrf_token %}
-            <div class="col align-self-start"></div>
-            <div class="col-3">{{ form.year1|as_crispy_field }}</div>
-            <div class="col-3 align-self-start">{{ form.year2|as_crispy_field }}</div>
-            <div class="col-auto align-self-start">
-                <input type="submit" value="{% translate 'Filter' %}" class="btn btn-secondary btn-sm">
-            </div>
-        </form>
-    </div>
+        {{ form.year1|as_crispy_field }}
+        {{ form.year2|as_crispy_field }}
+        <button type="submit" class="button-secondary" name="search">{% translate 'Filter' %}</button>
+    </form>
+</div>
 
-    <div class="row">
-        <div class="col">
-            <div id="chart-compare-two-container"></div>
-            {% if chart.serries  %}
-            {{chart|json_script:"chart-compare-two-data"}}
-            <script>chartCompare('chart-compare-two-data', 'chart-compare-two-container')</script>
-            {% endif %}
-        </div>
-    </div>
+<div id="chart-compare-two-container"></div>
+{% if chart.serries  %}
+{{chart|json_script:"chart-compare-two-data"}}
+<script>chartCompare('chart-compare-two-data', 'chart-compare-two-container')</script>
+{% endif %}

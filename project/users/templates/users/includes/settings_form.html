@@ -1,9 +1,9 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-<form method="POST" novalidate autocomplete="off" tabindex="-1" hx-post="{{ view.url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
+<form method="POST" class="settings-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ view.url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
     {% csrf_token %}
     {{ form|as_crispy_errors }}
     {% for field in form %}{{ field|as_crispy_field }}{% endfor %}
-    <button type="submit" class="btn btn-sm btn-primary">{% translate 'Update' %}</button>
+    <button type="submit" class="button-active">{% translate 'Update' %}</button>
 </form>

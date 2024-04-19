@@ -1,21 +1,3 @@
-from django.forms import BooleanField
-
-
-def add_css_class(instance):
-    default_input_css_class = ["form-control-sm"]
-
-    for field_name in instance.fields:
-        if isinstance(instance.fields[field_name], BooleanField):
-            continue
-
-        if css_class := instance.fields[field_name].widget.attrs.get("class"):
-            default_input_css_class.append(css_class)
-
-        instance.fields[field_name].widget.attrs["class"] = " ".join(
-            default_input_css_class
-        )
-
-
 def clean_year_picker_input(field_name, data, cleaned_data, errors):
     # ugly workaround for YearPickerInput field
     # widget returns YYYY-01-01 instead YYYY

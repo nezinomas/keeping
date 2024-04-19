@@ -1,32 +1,28 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-<form method="POST" id="dialog-form" class="modal-content form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted">
+<form method="POST" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted">
     {% csrf_token %}
     {% include 'core/includes/form_date_scripts.html' %}
     <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button>
+        <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body {% if css_class %}{{css_class}}{% endif %}">
         {% include 'core/includes/form_errors.html' %}
 
         {% for field in form %}
         {% if not field.is_hidden %}
-        <div class="row">
-            <div class="col-4">{{ field.label_tag }}</div>
-            <div class="col-8">
+
             <!-- add price field -->
             {% if field.html_name == 'total_sum' %}
-            <div class="row gx-2">
-                <div class="col">{{ field|as_crispy_field }}</div>
-                <div class="col-2" id="div_sum_prices"><button type="button" id="add_price" class="btn btn-sm btn-secondary w-100">{% translate 'Add' %}</button></div>
+            <div class="item-price">
+                {{ field|as_crispy_field }}
+                <div id="div_sum_prices"><button type="button" id="add_price" class="button-secondary">{% translate 'Add' %}</button></div>
             </div>
             {% else %}
             {{ field|as_crispy_field }}
             {% endif %}
-            </div>
-        </div>
         {% endif %}
         {% endfor %}
     </div>

@@ -5,34 +5,34 @@
 {% load cell_format %}
 
 {% if object_list %}
-<table class="table table-sm table-striped table-hover">
+<table class="main striped hover">
     <thead>
         <tr>
-            <th class="text-start right-grey-border" rowspan="2">{% regenerate_balances type=type %} {{ title }}</th>
+            <th class="text-left right-thin-border" rowspan="2">{% regenerate_balances type=type %} {{ title }}</th>
             <th colspan="2" class="text-center">{% translate 'Past years' %}</th>
-            <th colspan="2" class="text-center left-grey-border right-grey-border">{{ request.user.year }}</th>
+            <th colspan="2" class="text-center left-thin-border right-thin-border">{{ request.user.year }}</th>
             <th colspan="4" class="text-center">{% translate 'Total' %}</th>
-            <th rowspan="2" colspan="2" class="left-grey-border right-blue-border text-center">{% translate 'Market value' %}</th>
+            <th rowspan="2" colspan="2" class="left-thin-border right-thick-border text-center">{% translate 'Market value' %}</th>
             <th colspan="4" rowspan="2" class="text-center">{% translate 'Profit' %}/{% translate 'Loss' %}</th>
         </tr>
         <tr>
             <th colspan="2" class="text-center">{% translate 'Transferred' %}</th>
-            <th colspan="2" class="text-center left-grey-border right-grey-border">{% translate 'Transferred' %}</th>
+            <th colspan="2" class="text-center left-thin-border right-thin-border">{% translate 'Transferred' %}</th>
             <th colspan="2" class="text-center">{% translate 'Transferred' %}</th>
             <th colspan="2" class="text-center">{% translate 'Sold' %}</th>
         </tr>
         <tr>
-            <th class="text-start right-grey-border">{% translate 'Fund' %}</th>
+            <th class="text-left right-thin-border">{% translate 'Fund' %}</th>
             <th>{% translate 'Sum' %}</th>
-            <th class="right-grey-border">{% translate 'Fees' %}</th>
+            <th class="right-thin-border">{% translate 'Fees' %}</th>
             <th>{% translate 'Sum' %}</th>
-            <th class="right-grey-border">{% translate 'Fees' %}</th>
+            <th class="right-thin-border">{% translate 'Fees' %}</th>
             <th>{% translate 'Sum' %}</th>
             <th>{% translate 'Fees' %}</th>
             <th>{% translate 'Sum' %}</th>
-            <th class="right-grey-border">{% translate 'Fees' %}</th>
+            <th class="right-thin-border">{% translate 'Fees' %}</th>
             <th>{% translate 'Date' %}</th>
-            <th class="right-blue-border">{% translate 'Sum'%}</th>
+            <th class="right-thick-border">{% translate 'Sum'%}</th>
             <th>{% translate 'Sum' %}</th>
             <th>%</th>
         </tr>
@@ -41,17 +41,17 @@
         {% for item in object_list %}
         <tr>
             {% if item.saving_type_id %}{% var obj_type='saving_type'%}{% else %}{% var obj_type='pension_type' %}{% endif %}
-            <td class="funds-title-col-min-width text-start right-grey-border">{{ item|get_obj_attr:obj_type }}</td>
+            <td class="funds-title-col-min-width text-left right-thin-border">{{ item|get_obj_attr:obj_type }}</td>
             <td class="w6 {{item.past_amount|css_class_if_none}}">{{item.past_amount|price|cellformat}}</td>
-            <td class="w6 right-grey-border {{item.past_fee|css_class_if_none}}">{{item.past_fee|price|cellformat}}</td>
+            <td class="w6 right-thin-border {{item.past_fee|css_class_if_none}}">{{item.past_fee|price|cellformat}}</td>
             <td class="w6 {{item.per_year_incomes|css_class_if_none}}">{{item.per_year_incomes|price|cellformat}}</td>
-            <td class="w6 right-grey-border {{item.per_year_fee|css_class_if_none}}">{{item.per_year_fee|price|cellformat}}</td>
+            <td class="w6 right-thin-border {{item.per_year_fee|css_class_if_none}}">{{item.per_year_fee|price|cellformat}}</td>
             <td class="w6 {{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
             <td class="w6 {{item.fee|css_class_if_none}}">{{item.fee|price|cellformat}}</td>
             <td class="w6 {{item.sold|css_class_if_none}}">{{item.sold|price|cellformat}}</td>
-            <td class="w6  right-grey-border {{item.sold_fee|css_class_if_none}}">{{item.sold_fee|price|cellformat}}</td>
+            <td class="w6  right-thin-border {{item.sold_fee|css_class_if_none}}">{{item.sold_fee|price|cellformat}}</td>
             <td class="w6">{{ item.latest_check|date:"Y-m-d"|default_if_none:_('No record of account amount') }}</td>
-            <td class="w6 right-blue-border {{item.market_value|css_class_if_none}}">{{item.market_value|price|cellformat}}</td>
+            <td class="w6 right-thick-border {{item.market_value|css_class_if_none}}">{{item.market_value|price|cellformat}}</td>
             <td class="w6 {{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_sum|price|cellformat}}</td>
             <td class="w6 {{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_proc|cellformat}}%</td>
         </tr>
@@ -59,22 +59,20 @@
     </tbody>
     <tfoot>
         <tr>
-            <th class="funds-title-col-min-width text-start right-grey-border">{% translate 'Total' %}</th>
+            <th class="funds-title-col-min-width text-left right-thin-border">{% translate 'Total' %}</th>
             <th class="{{total_row.past_amount|css_class_if_none}}">{{total_row.past_amount|price|cellformat}}</th>
-            <th class="right-grey-border {{total_row.past_fee|css_class_if_none}}">{{total_row.past_fee|price|cellformat}}</th>
+            <th class="right-thin-border {{total_row.past_fee|css_class_if_none}}">{{total_row.past_fee|price|cellformat}}</th>
             <th class="{{total_row.per_year_incomes|css_class_if_none}}">{{total_row.per_year_incomes|price|cellformat}}</th>
-            <th class="right-grey-border {{total_row.per_year_fee|css_class_if_none}}">{{total_row.per_year_fee|price|cellformat}}</th>
+            <th class="right-thin-border {{total_row.per_year_fee|css_class_if_none}}">{{total_row.per_year_fee|price|cellformat}}</th>
             <th class="{{total_row.incomes|css_class_if_none}}">{{total_row.incomes|price|cellformat}}</th>
             <th class="{{total_row.fee|css_class_if_none}}">{{total_row.fee|price|cellformat}}</th>
             <th class="{{total_row.sold|css_class_if_none}}">{{total_row.sold|price|cellformat}}</th>
-            <th class="right-grey-border {{total_row.sold_fee|css_class_if_none}}">{{total_row.sold_fee|price|cellformat}}</th>
-            <th colspan="2" class="right-blue-border {{total_row.market_value|css_class_if_none}}">{{total_row.market_value|price|cellformat}}</th>
+            <th class="right-thin-border {{total_row.sold_fee|css_class_if_none}}">{{total_row.sold_fee|price|cellformat}}</th>
+            <th colspan="2" class="right-thick-border {{total_row.market_value|css_class_if_none}}">{{total_row.market_value|price|cellformat}}</th>
             <th class="{{total_row.profit_sum|positive_negative}} {{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_sum|price|cellformat}}</th>
             <th class="{{total_row.profit_sum|positive_negative}} {{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_proc|cellformat}}%</th>
         </tr>
     </tfoot>
 </table>
-
-<script>setUpToolTip();</script>
 
 {% endif %}

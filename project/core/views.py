@@ -41,3 +41,7 @@ class RegenerateBalances(TemplateViewMixin):
             getattr(signals, f"{_type}_signal")(**_kwargs)
 
         return httpHtmxResponse(hx_trigger_name)
+
+
+class ModalImage(TemplateViewMixin):
+    template_name = "core/modal_image.html"

@@ -42,9 +42,9 @@ function chartExpenses(idData, idContainer) {
             }
         },
         tooltip: {
-            headerFormat: '<div class="mb-2">{point.key}</div>',
+            headerFormat: '<div class="">{point.key}</div>',
             pointFormat:
-                '<div class="mb-2"><span style="color:{series.color};">{series.name}:</span> ' +
+                '<div class=""><span style="color:{series.color};">{series.name}:</span> ' +
                 '<span> <b>{point.y:,.1f}€</b></span></div>',
             footerFormat: '',
             shared: true,

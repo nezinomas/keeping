@@ -65,12 +65,13 @@ class Expenses(Browser):
 
         qty = self.browser.find_element(By.ID, "id_quantity")
         qty.send_keys(Keys.RETURN)
+        sleep(0.25)
 
         # click Esc button
         ActionChains(self.browser).send_keys(Keys.ESCAPE).perform()
 
         # wait while form is closing
-        sleep(0.5)
+        sleep(0.25)
 
         page = self.browser.page_source
         assert "Expense Type" in page

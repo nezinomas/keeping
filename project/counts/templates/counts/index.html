@@ -2,7 +2,7 @@
 
 {% load static %}
 {% load i18n %}
-{% load counts_components %}
+
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -17,71 +17,12 @@
 
 
 {% block content %}
-<div class="row my-2" x-data="{ dataInfoRow: true }">
-    <div
-        class="col-sm-3 text-start"
-        x-data="{
-            openTab: 'index',
-            activeClass: 'btn-info',
-            inactiveClass: 'btn-light',
-        }">
-        <a role="button"
-            class="btn btn-sm btn-tab"
-            :class="openTab === 'index' ? activeClass : inactiveClass"
-            @click="dataInfoRow = true, openTab = 'index'"
-            hx-get="{% url 'counts:tab_index' object.slug %}"
-            hx-target="#tab_content">
-            {% translate 'Charts' %}
-        </a>
-        {{" "}}
-        <a role="button"
-            class="btn btn-sm btn-tab"
-            :class="openTab === 'data' ? activeClass : inactiveClass"
-            @click="dataInfoRow = true, openTab = 'data'"
-            hx-get="{% url 'counts:tab_data' object.slug %}"
-            hx-target="#tab_content">
-            {% translate 'Data' %}
-        </a>
-        {{" "}}
-        <a role="button"
-            class="btn btn-sm btn-tab"
-            :class="openTab === 'history' ? activeClass : inactiveClass"
-            @click="dataInfoRow = false, openTab = 'history'"
-            hx-get="{% url 'counts:tab_history' object.slug %}"
-            hx-target="#tab_content">
-            {% translate 'History' %}
-        </a>
-    </div>
 
-    <div class="col text-center">
-        <div
-            id="info-row" class="info-row"
-            hx-get="{% url 'counts:info_row' object.slug %}"
-            hx-trigger="reloadIndex from:body, reloadData from:body, reloadHistory from:body"
-            x-show="dataInfoRow">
-            {{info_row|safe}}
-        </div>
-        <div id="info-row" class="info-row"
-            x-show="!dataInfoRow">
-            <h6>{% translate 'Historical data' %}</h6>
-        </div>
-    </div>
+<div class="counts-title">{{object.title}}</div>
 
-    <div class="col-sm-3 text-end">
-        <span id="btn-new">
-            {% url 'counts:new' 'index' object.slug as url_new %}
-            {% new_count_button url=url_new %}
-        </span>
-        {{" "}}
-        <button type="button"p class="btn btn-sm btn-success" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#dialog"><i class="bi bi-pencil-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
-        {{" "}}
-        <button type="button" class="btn btn-sm btn-danger" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#dialog"><i class="bi bi-trash-fill me-1"></i> {% translate 'Counter' context 'counter button' %}</button>
-    </div>
-</div>
-
-<div id="tab_content">
+<main id="tab_content" class="grid-one-col">
     {{tab_content}}
-</div>
+</main>
 
 <div hx-get="{% url 'counts:tab_data' object.slug %}" hx-target="#tab_content" hx-trigger="reloadData from:body"></div>
 <div hx-get="{% url 'counts:tab_index' object.slug %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>

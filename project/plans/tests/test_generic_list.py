@@ -30,7 +30,7 @@ def test_has_type(template):
 
     actual = template.render(context).replace("\n", "").replace("  ", "")
 
-    assert '<td class="text-start">TypeRowName</td>' in actual
+    assert '<td class="text-left">TypeRowName</td>' in actual
 
 
 def test_has_type_and_has_expenses_type(template_with_expenses_type):
@@ -47,7 +47,7 @@ def test_has_type_and_has_expenses_type(template_with_expenses_type):
         template_with_expenses_type.render(context).replace("\n", "").replace("  ", "")
     )
 
-    assert '<td class="text-start">TypeRowName (ExpenseType)</td>' in actual
+    assert '<td class="text-left">TypeRowName (ExpenseType)</td>' in actual
 
 
 def test_no_type(template):
@@ -56,7 +56,7 @@ def test_no_type(template):
 
     actual = template.render(context).replace("\n", "").replace("  ", "")
 
-    assert '<td class="text-start">type</td>' in actual
+    assert '<td class="text-left">type</td>' in actual
 
 
 def test_necessary_expense_1(template):
@@ -71,7 +71,7 @@ def test_necessary_expense_1(template):
 
     actual = template.render(context).replace("\n", "").replace("  ", "")
     expect = (
-        '<td class="text-start">TypeRowName <i class="bi bi-star plans-star"></i></td>'
+        '<td class="text-left">TypeRowName <i class="bi bi-star plans-star"></i></td>'
     )
 
     assert expect in _remove_line_end(actual)
@@ -82,7 +82,7 @@ def test_necessary_expense_3(template):
     context = Context({"items": items})
 
     actual = template.render(context).replace("\n", "").replace("  ", "")
-    expect = '<td class="text-start">type <i class="bi bi-star plans-star"></i></td>'
+    expect = '<td class="text-left">type <i class="bi bi-star plans-star"></i></td>'
 
     assert expect in _remove_line_end(actual)
 

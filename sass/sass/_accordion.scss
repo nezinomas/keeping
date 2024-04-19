@@ -1,0 +1,117 @@
+ul.accordion {
+
+    h2 {
+        font-size: inherit;
+        font-weight: 650;
+        display: block;
+        border-bottom: 3px solid $active;
+        padding: 0.35rem 0;
+    }
+
+    .accordion__dropdown {
+        position: relative;
+        overflow: hidden;
+        opacity: 1;
+        transform: translate(0, 0);
+        transition: $accordion-transition;
+        z-index: 2;
+    }
+
+    .accordion__dropdown__item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        s {
+            color: rgb(188, 188, 188);
+        }
+    }
+
+    .edit {
+        z-index: 3;
+
+        &:hover:after {
+            content: "\F4C9";
+            font-family: "Bootstrap-icons";
+            margin-left: 1rem;
+        }
+    }
+
+    .badge {
+        color: $active;
+        font-weight: bold;
+        margin-right: 0.35rem;
+    }
+
+    .necessary {
+        &::before {
+            content: "\F588";
+            font-family: "Bootstrap-icons";
+            color: $active;
+            margin-right: 0.35rem;
+            font-weight: normal;
+        }
+    }
+
+    .accordion__dropdown__item {
+        border-bottom: rgb(255, 104, 115, 0.25) 1px solid;
+        padding: calc($gap / 2) 0;
+    }
+
+    > li {
+        position: relative;
+        margin-bottom: calc(1.25 * $gap);
+
+        > i {
+            position: absolute;
+            transform: translate(-6px, 0);
+            margin-top: 10px;
+            right: calc($gap/2);
+
+            &:before, &:after {
+                content: "";
+                position: absolute;
+                background-color: $active;
+                width: 3px;
+                height: 8px;
+            }
+
+            &:before {
+                transform: translate(-2px, 0) rotate(45deg);
+                transition: $accordion-transition;
+            }
+
+            &:after {
+                transition: $accordion-transition;
+                transform: translate(2px, 0) rotate(-45deg);
+            }
+        }
+
+        > input[type=checkbox] {
+            position: absolute;
+            cursor: pointer;
+            right: 0;
+            width: 80%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0;
+
+
+            &:checked {
+                ~ .accordion__dropdown {
+                    max-height: 0;
+                    opacity: 0;
+                    transform: translate(0, 50%);
+                }
+
+                ~ i:before {
+                    transform: translate(2px, 0) rotate(45deg);
+                }
+
+                ~ i:after {
+                    transform: translate(-2px, 0) rotate(-45deg);
+                }
+            }
+        }
+    }
+}

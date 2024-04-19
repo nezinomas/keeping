@@ -8,74 +8,79 @@
 
 {% if object_list %}
 
-<div class="row">
-    <div class="col"
-        hx-trigger="reload from:body, afterType from:body, afterName from:body"
-        hx-get="{{request.get_full_path}}"
-        hx-target="#data"
-        hx-indicator="#indicator">
-        <table class="table table-sm table-hover sticky-table">
-            <thead>
-                <tr>
-                    <th class="expense-ordinary text-start">{% translate 'Date' %}</th>
-                    <th class="text-start">{% translate 'Expense type' %}</th>
-                    <th class="text-start">{% translate 'Expense name' %}</th>
-                    <th>{% translate 'How many' %}</th>
-                    <th>{% translate 'Price' %}</th>
-                    <th class="w16 text-start">{% translate 'Remark' %}</th>
-                    <th class="w5">{% translate 'Attachment' %}</th>
-                    <th>{% translate 'Account' %}</th>
-                    <th colspan="2"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for object in object_list %}
-                {% url 'expenses:update' object.id as url_update %}
-                {% url 'expenses:delete' object.id as url_delete %}
+<div
+    hx-trigger="reload from:body, afterType from:body, afterName from:body"
+    hx-get="{{request.get_full_path}}"
+    hx-target="#data"
+    hx-indicator="#indicator">
+    <table class="main hover sticky-table">
+        <thead>
+            <tr>
+                <th class="text-left">{% translate 'Date' %}</th>
+                <th class="text-left">{% translate 'Expense type' %}</th>
+                <th class="text-left">{% translate 'Expense name' %}</th>
+                <th>{% translate 'How many' %}</th>
+                <th>{% translate 'Price' %}</th>
+                <th class="text-left w16">{% translate 'Remark' %}</th>
+                <th class="w5">{% translate 'Attachment' %}</th>
+                <th>{% translate 'Account' %}</th>
+                <th colspan="2"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in object_list %}
+            {% url 'expenses:update' object.id as url_update %}
+            {% url 'expenses:delete' object.id as url_delete %}
 
-                <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#dialog" class="{{ object.expense_type.pk|bg_color }} {% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
-                    <td class="text-start {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
-                    <td class="text-start">{{ object.expense_type }}</td>
-                    <td class="text-start">{{ object.expense_name }}</td>
-                    <td>{{ object.quantity }}</td>
-                    <td>{{object.price|price|cellformat}}</td>
-                    <td class="text-start cell-padding">{{ object.remark|linebreaksbr }}</td>
-                    <td>{% if object.attachment %}
-                        {% if not 'pdf' in object.attachment.url %}
-                        <button type="button" class="btn btn-outline-primary btn-xs" data-bs-toggle="modal" data-bs-target="#imgModal" data-bs-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
-                        {% else %}
-                        <a role="button" class="btn btn-outline-primary btn-xs" href="{{ object.attachment.url }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
-                        {% endif %}
-                        {% endif %}
-                    </td>
-                    <td>{{ object.account }}</td>
-                    {% include "core/includes/cell_edit.html" with url=url_update %}
-                    {% include "core/includes/cell_delete.html" with url=url_delete %}
-                </tr>
-                {% endfor %}
-            </tbody>
-            {% if sum_price %}
-            <tfoot>
-                <tr>
-                    <th class="text-start" colspan="3">{% translate "Total" %}</th>
-                    <th>{{sum_quantity}}</th>
-                    <th>{{sum_price|price|cellformat}}</th>
-                    <th class="text-start cell-padding">{{average|price|floatformat:"2g"}} <span style="font-weight: normal" class="ps-1">({% translate "Average unit price" %})</span></th>
-                    <th colspan="4"></th>
-                </tr>
-            </tfoot>
-            {% endif %}
-        </table>
-    </div>
+            <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{{ object.expense_type.pk|bg_color }} {% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+                <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
+                <td class="text-left">{{ object.expense_type }}</td>
+                <td class="text-left">{{ object.expense_name }}</td>
+                <td>{{ object.quantity }}</td>
+                <td>{{object.price|price|cellformat}}</td>
+                <td class="text-left cell-padding">{{ object.remark|linebreaksbr }}</td>
+                <td>{% if object.attachment %}
+                    {% if not 'pdf' in object.attachment.url %}
+                    <button type="button" class="button-secondary button-xs" hx-get="{% url 'core:modal_image' %}" hx-trigger="click" hx-target="#imgModal" data-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
+                    {% else %}
+                    <a role="button" class="button-outline-primary button-xs" href="{{ object.attachment.url }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
+                    {% endif %}
+                    {% endif %}
+                </td>
+                <td>{{ object.account }}</td>
+                {% include "core/includes/cell_edit.html" with url=url_update %}
+                {% include "core/includes/cell_delete.html" with url=url_delete %}
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% if sum_price %}
+        <tfoot>
+            <tr>
+                <th colspan="3">{% translate "Total" %}</th>
+                <th>{{sum_quantity}}</th>
+                <th>{{sum_price|price|cellformat}}</th>
+                <th class="cell-padding">{{average|price|floatformat:"2g"}} <span style="font-weight: normal">({% translate "Average unit price" %})</span></th>
+                <th colspan="4"></th>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
 </div>
 
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
 {% paging url=url page_obj=object_list page_range=page_range search=search target="#data" %}
 
+
+<!-- modal image -->
+<div id="imgModalContainer" class="modal">
+    <div id="imgModal" class="modal-dialog"></div>
+</div>
+
+
 {% else %}
 
-<div class="mx-auto text-center alert alert-warning py-2" hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
+<div class="alert alert-warning" hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
 {% if notice %}
     {{ notice|safe }}
 {% else %}
@@ -84,5 +89,3 @@
 </div>
 
 {% endif %}
-
-{% include 'modal_images.html' %}

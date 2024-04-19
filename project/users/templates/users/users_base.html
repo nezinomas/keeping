@@ -1,29 +1,9 @@
 {% extends "base.html" %}
 
-{% block head%}{{ block.super }}
-<style>
-    .container-fluid {
-        height: 100vh;
-        display: flex;
-        padding: 0 2rem;
-    }
-
-    h3.card-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-bottom: 2rem;
-    }
-</style>
-{% endblock %}
+{% block head%}{{ block.super }}{% endblock %}
 
 {% block body %}
 
-<div class="container-fluid">
-    <div class="row w-100 my-auto align-items-center">
-        <div class="col-lg-6 col-sm-12 mx-auto">
-            {% block content %}{% endblock content %}
-        </div>
-    </div>
-</div>
+<main class="user-grid">{% block content %}{% endblock content %}</main>
 
 {% endblock %}

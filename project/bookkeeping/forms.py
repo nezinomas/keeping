@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.lib import date as core_date
-from ..core.lib import form_utils, utils
+from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..expenses.models import ExpenseType
 from ..pensions.models import PensionType
@@ -67,8 +67,6 @@ class SavingWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         # overwrite FK
         self.fields["saving_type"].queryset = SavingType.objects.items()
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
         self.helper.form_show_labels = False
 
@@ -96,8 +94,6 @@ class AccountWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
 
         # overwrite FK
         self.fields["account"].queryset = Account.objects.items()
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
         self.helper.form_show_labels = False
@@ -127,8 +123,6 @@ class PensionWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         # overwrite FK
         self.fields["pension_type"].queryset = PensionType.objects.items()
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
         self.helper.form_show_labels = False
 
@@ -150,8 +144,6 @@ class SummaryExpensesForm(forms.Form):
 
         self.fields["types"].choices = choices
         self.fields["types"].label = None
-
-        form_utils.add_css_class(self)
 
         self.helper = FormHelper()
         self.helper.form_show_labels = False

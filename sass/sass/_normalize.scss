@@ -1,0 +1,78 @@
+html {
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+/* Reset margins and paddings on most elements */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+ol,
+li,
+p,
+pre,
+blockquote,
+figure,
+hr {
+    padding: 0;
+    margin: 0;
+}
+
+/* Removes discs from ul */
+ul {
+    list-style: none;
+}
+
+button,
+input[type=submit],
+input[type=button]
+{
+    color: inherit;
+    font: inherit !important;
+    letter-spacing: inherit;
+    border: 1px solid $black;
+    border-radius: 0;
+    padding: 0.15rem;
+}
+
+button,
+input[type=submit],
+input[type=button],
+a[role=button] {
+    cursor: pointer;
+}
+
+input,
+textarea,
+select{
+    color: inherit;
+    font: inherit !important;
+    letter-spacing: inherit;
+    border: 1px solid #dee2e6;
+    background-color: transparent !important;
+}
+
+css button * {   pointer-events: none; }
+
+embed,
+iframe,
+img,
+object,
+video {
+    display: block;
+    max-width: 100%;
+}
+
+[hidden] {
+    display: none !important;
+}

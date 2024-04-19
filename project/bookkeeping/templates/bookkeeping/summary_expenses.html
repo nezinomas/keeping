@@ -8,31 +8,14 @@
 <script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
 <link rel="stylesheet" href="{% static 'js/highcharts_themes/my-theme.css' %}">
 
-<style>
-    .spacer {
-        padding-left: 1.5rem;
-    }
-    .root {
-        font-weight: bold;
-    }
-    #id_types {
-        height: 90vh;
-    }
-    #div_id_types {
-        margin-bottom: .25rem!important;
-    }
-    #search-btn {
-        padding-top: 0.15rem!important;
-        padding-bottom: 0.15rem!important;
-    }
-</style>
 {% endblock head %}
 
 {% block content %}
-<!-- Loader -->
-<div class="loader loader-default" id="loader"></div>
 
-<div class="row" id="summary_expenses">{% include 'bookkeeping/includes/summary_expenses_form.html' %}</div>
+
+<main class="summary-expenses-grid">
+    {% include 'bookkeeping/includes/summary_expenses_form.html' %}
+</main>
 
 <script>
     function options_class() {

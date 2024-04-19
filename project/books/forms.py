@@ -50,10 +50,7 @@ class BookForm(forms.ModelForm):
         self.fields["author"].label = _("Author")
         self.fields["remark"].label = _("Remark")
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean_started(self):
         dt = self.cleaned_data["started"]
@@ -116,10 +113,7 @@ class BookTargetForm(forms.ModelForm):
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("How many")
 
-        form_utils.add_css_class(self)
-
         self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()

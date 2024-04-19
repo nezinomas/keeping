@@ -1,23 +1,14 @@
+{% include 'drinks/includes/navbar.html' %}
+
 {% if records %}
 
-<div class="row">
-    <div class="col">
-        <div id="chart-summary-container"></div>
-    </div>
+    <div id="chart-summary-container"></div>
     {{chart|json_script:"chart-summary-data"}}
 
     <script>chart_drinks_summary("chart-summary-data", "chart-summary-container");</script>
-</div>
 
 {% else %}
 
-{% include 'core/no_records.html' with two_years=True %}
+    {% include 'core/no_records.html' with two_years=True %}
 
-{% endif %}
-
-
-{% if request.htmx %}
-<span id="btn-new" hx-swap-oob="true">
-    {% include 'drinks/includes/new_buttons.html' with tab="history" hx_swap_oop="true" %}
-</span>
 {% endif %}
