@@ -49,7 +49,7 @@ nav#main-nav {
         position: relative;
 
         .dropdown__menu {
-            --delay: 0.5s;
+            --delay: 0.2s;
 
             @include shadow;
             position: absolute;
