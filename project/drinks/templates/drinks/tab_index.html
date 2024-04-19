@@ -47,7 +47,7 @@
             <div>
                 <b>{% translate 'Historical data' %}</b>
             </div>
-            <div>
+            <div class="flex">
                 <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 2 %}" hx-target="#chart-history-container">{% translate '2 years' %}</button>
                 <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 3 %}" hx-target="#chart-history-container">{% translate '3 years' %}</button>
                 <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 7 %}" hx-target="#chart-history-container">{% translate '7 years' %}</button>
