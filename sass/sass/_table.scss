@@ -4,6 +4,13 @@
     width: 100%;
     font-size: .65rem;
 
+    caption {
+        font-weight: bold;
+        padding-top: .5rem;
+        padding-bottom: .5rem;
+        text-align: left;
+    }
+
     thead  {
         border-bottom: $active solid 3px;
     }
