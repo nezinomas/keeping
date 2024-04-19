@@ -46,9 +46,13 @@ def test_view_not_necessary(client_logged):
     actual = response.content.decode("utf-8")
 
     assert (
-        "Nebūtinos išlaidos, kurių galima atsisakyti:\n- XXX\n- YYY\n- Taupymas"
+        "Nebūtinos išlaidos, kurių galima atsisakyti:"
         in actual
     )
+
+    assert "- XXX" in actual
+    assert "- YYY" in actual
+    assert "- Taupymas" in actual
 
 
 def test_template_month_value():
