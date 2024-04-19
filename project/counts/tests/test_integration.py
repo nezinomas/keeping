@@ -11,7 +11,7 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.mark.webtest
-class Incomes(Browser):
+class CountsIntegrationTests(Browser):
     def test_create(self):
         self.browser.get(f"{self.live_server_url}/counts/")
 
@@ -37,7 +37,7 @@ class Incomes(Browser):
         sleep(0.25)
 
         # click on add count type
-        self.browser.find_element(By.XPATH, "//button[text()='Add count type']").click()
+        self.browser.find_element(By.XPATH, "//a[text()='Add count type']").click()
         sleep(0.25)
 
         # fill form
