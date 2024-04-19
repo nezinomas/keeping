@@ -18,7 +18,6 @@
             {% if hightlight_tab %}@keyup.enter="openTab = '13'"{% endif %}>
 
         <button type="submit" class="button-secondary" name="search" x-model="search_str">{% translate 'Search' %}</button>
-        {{" "}}
         <button type="button"
             class="button-secondary"
             hx-get="{{ reset_url }}"
