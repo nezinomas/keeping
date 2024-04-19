@@ -1,6 +1,7 @@
-// label {
-//     display: inline-block;
-// }
+// in form-label second child is form input
+.form-label > *:nth-child(2) {
+    margin-top: 0.25rem;
+}
 
 .invalid-feedback {
     font-size: .875em;

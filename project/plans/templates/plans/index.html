@@ -9,7 +9,7 @@
     <!-- incomes plans -->
     <div>
         <h6>{% translate 'Incomes' %}</h6>
-        <div>
+        <div class="flex">
             {% url 'plans:income_new' as url_new %}
             <button type="button" class="button-outline-success" hx-get="{{ url_new }}" hx-target="#mainModal">{% translate "Record" context "record button" %}</button>
             <button type="button" class="button-outline-success plans-copy" hx-get="{% url 'plans:copy' %}" hx-target="#mainModal">{% translate 'Copy plans' %}</button>

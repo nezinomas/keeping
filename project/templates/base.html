@@ -115,7 +115,7 @@
               {% if counts_menu %}{{ counts_menu }}{% endif %}
               <li class="dropdown-divider"></li>
               <li>
-                <button type="button" hx-get="{% url 'counts:type_new' %}" hx-target="#mainModal">{% translate 'Add count type' %}</button>
+                <a role="button" href="#" hx-get="{% url 'counts:type_new' %}" hx-target="#mainModal">{% translate 'Add count type' %}</a>
               </li>
             </ul>
           </span>

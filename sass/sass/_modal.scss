@@ -65,6 +65,9 @@
     border-top: 1px solid rgba(0, 0, 0, 0.175);
     border-bottom-left-radius: $modal-border-radius;
     border-bottom-right-radius: $modal-border-radius;
+    display: flex;
+    justify-content: end;
+    gap: calc($gap / 3);
 }
 
 .button-close {
