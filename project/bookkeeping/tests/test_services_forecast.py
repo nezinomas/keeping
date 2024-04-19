@@ -100,6 +100,15 @@ def fixture_data_empty():
     }
 
 
+def test_current_month(data):
+    actual = Forecast(month=4, data=data).current_month()
+
+    assert "expenses" in actual
+    assert "savings" in actual
+    assert "incomes" in actual
+    assert "planned_incomes" in actual
+
+
 def test_balance(data):
     actual = Forecast(month=4, data=data).balance()
     expect = 12.
@@ -124,7 +133,7 @@ def test_balance_no_data(data_empty):
 
 def test_planned_incomes(data):
     actual = Forecast(month=4, data=data).planned_incomes()
-    expect = 24.
+    expect = 17.
 
     assert actual == expect
 
@@ -142,6 +151,13 @@ def test_planned_incomes_only_planned_data(data_empty):
     expect = 1
 
     assert actual == expect
+
+
+def test_averages_dict_keys(data_empty):
+    actual = Forecast(month=1, data=data_empty).averages()
+
+    assert "expenses" in actual
+    assert "savings" in actual
 
 
 def test_averages_data_with_six_months(data):
@@ -207,6 +223,15 @@ def test_forecast_current_month_expenses_exceeds_average(data):
 
     actual = Forecast(month=4, data=data).forecast()
     expect = -125
+
+    assert actual == expect
+
+
+def test_forecast_current_month_incomes_exceeds_planned(data):
+    data["incomes"][3] = 100
+
+    actual = Forecast(month=4, data=data).forecast()
+    expect = 66
 
     assert actual == expect
 
