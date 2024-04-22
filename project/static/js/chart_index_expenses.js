@@ -51,12 +51,12 @@ $(function () {
         series: [{
             data: chartData,
             dataLabels: {
+                useHTML: true,
                 enabled: true,
                 rotation: -90,
                 color: '#000',
-                align: 'right',
+                align: 'center',
                 y: 2,
-                x: -2,
                 style: {
                     fontSize: '10px',
                     fontWeight: 'bold',
