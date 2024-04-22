@@ -81,9 +81,9 @@
     content:"\e031";
 }
 
+
 .main thead th {
     :has(.button-refresh) {
         font-weight: 50;
-        // color: red;
     }
 }
