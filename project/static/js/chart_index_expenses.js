@@ -55,7 +55,8 @@ $(function () {
                 rotation: -90,
                 color: '#000',
                 align: 'right',
-                y: 5,
+                y: 2,
+                x: -2,
                 style: {
                     fontSize: '10px',
                     fontWeight: 'bold',
