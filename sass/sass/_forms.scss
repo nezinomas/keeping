@@ -1,3 +1,7 @@
+.mb-3 {
+    margin-bottom: $gap;
+}
+
 // in form-label second child is form input
 .form-label {
     input,
@@ -12,22 +16,23 @@
     color: $danger;
 }
 
-.form-select {
+.form-select,
+.form-control {
     display: block;
     width: 100%;
-    padding: .35rem 2.25rem .35rem .75rem;
     background-color: white !important;
+}
+
+.form-select {
+    padding: .35rem 2.25rem .35rem .75rem;
     border: 1px solid #dee2e6;
     border-radius: 0;
 }
 
 .form-control,
 .form-select {
-    display: block;
-    width: 100%;
     padding: .35rem .25rem .35rem .75rem;
     color: #212529;
-    background-color: white;
     border: 1px solid #dee2e6;
     border-radius: 0;
     transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
@@ -70,8 +75,8 @@
     &.datepickerinput,
     &.yearpickerinput {
         background-position:
-            right 1.85rem center,
-            center right 2.25rem;
+        right 1.85rem center,
+        center right 2.25rem;
     }
 }
 
@@ -139,10 +144,6 @@
 // Settings form
 .settings-form,
 .login-form {
-    .mb-3 {
-        margin-bottom: $gap;
-    }
-
     label {
         margin-bottom: 0.25rem;
         display: block;
@@ -160,10 +161,6 @@
     .disabled {
         background-color: $disabled !important;
         opacity: 1;
-    }
-
-    .mb-3 {
-        margin-bottom: $gap;
     }
 
     .item-price {
@@ -202,14 +199,26 @@
 }
 
 .plans-form {
-    > *:not([class*='alert']) {
-        display: grid;
-        grid-template-columns: 15% 1fr;
+    .form-label {
+        grid-template-columns: 16% 1fr;
         align-items: center;
+        display: grid;
+
+        &:has(span) {
+            grid-template-columns: 13% 3% 1fr;
+        }
+
+        span.invalid-feedback {
+            grid-column-start: 3;
+        }
     }
 
-    > * > span {
-        grid-column-start: 2;
+    .input-group {
+        .input-group-text {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
     }
 }
 
