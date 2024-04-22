@@ -1,0 +1,38 @@
+@font-face {
+    font-family: "bootstrap-icons";
+    src:
+        url("/static/font/bootstrap-icons.woff2") format("woff2"),
+        url("/static/font/bootstrap-icons.woff") format("woff");
+  }
+
+  [class^="bi-"]::before,
+  [class*=" bi-"]::before {
+    display: inline-block;
+    font-family: bootstrap-icons !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    vertical-align: -.125em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+
+.bi-arrow-repeat::before { content: "\f130"; }
+.bi-check-circle-fill::before { content: "\f26a"; }
+.bi-dash-circle-fill::before { content: "\f2e5"; }
+.bi-pencil-fill::before { content: "\f4c9"; }
+.bi-star::before { content: "\f588"; }
+.bi-trash-fill::before { content: "\f5dd"; }
+
+// Date icons
+.bi-clock::before { content: "\f293"; }
+.bi-calendar::before { content: "\f1f6"; }
+.bi-chevron-down::before { content: "\f282"; }
+.bi-chevron-expand::before { content: "\f283"; }
+.bi-chevron-left::before { content: "\f284"; }
+.bi-chevron-right::before { content: "\f285"; }
+.bi-chevron-up::before { content: "\f286"; }
+.bi-record-circle::before { content: "\f518"; }
