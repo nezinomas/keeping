@@ -12,22 +12,19 @@
     color: $danger;
 }
 
-.form-select,
-.form-control {
-    display: block;
-    width: 100%;
-    background-color: white !important;
-}
-
 .form-select {
     padding: .35rem 2.25rem .35rem .75rem;
-    border: 1px solid #dee2e6;
-    border-radius: 0;
+}
+
+.form-control {
+    padding: .35rem .25rem .35rem .75rem;
 }
 
 .form-control,
 .form-select {
-    padding: .35rem .25rem .35rem .75rem;
+    display: block;
+    width: 100%;
+    background-color: white !important;
     color: #212529;
     border: 1px solid #dee2e6;
     border-radius: 0;
