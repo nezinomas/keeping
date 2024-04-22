@@ -20,7 +20,7 @@ pytestmark = pytest.mark.django_db
 def test_transaction_str():
     t = TransactionFactory.build()
 
-    assert str(t) == "1999-01-01 Account1->Account2: 200"
+    assert str(t) == "1999-01-01 Account1 -> Account2: 2,00"
 
 
 def test_transaction_get_absolute_url():
@@ -447,7 +447,7 @@ def test_transaction_balance_expenses(transactions):
 def test_saving_close_str():
     s = SavingCloseFactory.build()
 
-    assert str(s) == "1999-01-01 Savings From->Account To: 10"
+    assert str(s) == "1999-01-01 Savings From -> Account To: 0,10"
 
 
 def test_saving_close_get_absolute_url():
@@ -839,7 +839,7 @@ def test_saving_close_balance_expenses(savings_close):
 def test_savings_change_str():
     s = SavingChangeFactory.build()
 
-    assert str(s) == "1999-01-01 Savings From->Savings To: 10"
+    assert str(s) == "1999-01-01 Savings From -> Savings To: 0,10"
 
 
 def test_savings_change_get_absolute_url():

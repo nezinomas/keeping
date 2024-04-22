@@ -239,7 +239,7 @@ def test_view_transactions_delete_load_form(client_logged):
 
     assert '<form method="POST"' in actual
     assert (
-        "Ar tikrai norite ištrinti: <strong>1999-01-01 Account1-&gt;Account2: 200</strong>?"
+        "Ar tikrai norite ištrinti: <strong>1999-01-01 Account1 -&gt; Account2: 2,00</strong>?"
         in actual
     )
 
@@ -581,7 +581,7 @@ def test_view_savings_close_delete_load_form(client_logged):
     assert '<form method="POST"' in form
     assert f'hx-post="{url}"' in form
     assert (
-        "Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From-&gt;Account To: 10</strong>?"
+        "Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From -&gt; Account To: 0,10</strong>?"
         in form
     )
 
@@ -998,7 +998,7 @@ def test_view_savings_change_delete_load_form(client_logged):
     assert '<form method="POST"' in actual
     assert f'hx-post="{ url }"' in actual
     assert (
-        "Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From-&gt;Savings To: 10</strong>?"
+        "Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From -&gt; Savings To: 0,10</strong>?"
         in actual
     )
 
