@@ -166,7 +166,8 @@
         }
 
         > *:last-child {
-            margin-top: .15rem;
+            margin-top: .3rem;
+            outline: #dc3545 solid 1px;
         }
     }
 
@@ -179,7 +180,8 @@
 
         .input-group-text {
             position: absolute;
-            top: 0;
+            top: 50%;
+            transform: translateY(-50%);
             right: 5px;
         }
     }
