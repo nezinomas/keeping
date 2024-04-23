@@ -202,7 +202,10 @@
         }
 
         .expand-column-width {
-            min-width: 2.2rem;
+            --column-width: 2.5rem;
+
+            min-width: var(--column-width);
+            width: var(--column-width);
         }
     }
 
