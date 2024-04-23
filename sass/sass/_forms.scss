@@ -141,7 +141,7 @@
     .input-group-text {
         position: absolute;
         top: 50%;
-        transform: translateY(-50%);
+        transform: translateY(calc(-50% - 2px));
         right: 5px;
     }
 }
