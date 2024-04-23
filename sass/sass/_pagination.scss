@@ -26,5 +26,9 @@
             color: $active;
             border-bottom: 3px solid $active;
         }
+
+        &.disabled {
+            color: #cecece;
+        }
     }
 }
