@@ -1,9 +1,9 @@
-// in form-label second child is form input
-.form-label {
-    input,
-    select,
-    textarea {
-        margin-top: 0.25rem;
+input,
+select,
+textarea {
+    &.disabled {
+        background-color: $disabled !important;
+        opacity: 1;
     }
 }
 
@@ -124,11 +124,6 @@
 .form-label {
     display: block;
     margin-bottom: .25rem;
-}
-
-.disabled {
-    background-color: $disabled !important;
-    opacity: 1;
 }
 
 .bi-calendar {
