@@ -10,17 +10,6 @@ ALLOWED_HOSTS = ENV["ALLOWED_HOSTS"]
 INSTALLED_APPS += []
 
 
-TEMPLATES[0]["OPTIONS"]["loaders"] = [
-    [
-        "django.template.loaders.cached.Loader",
-        [
-            "django_spaceless_templates.loaders.filesystem.Loader",
-            "django_spaceless_templates.loaders.app_directories.Loader",
-        ],
-    ],
-]
-
-
 SECURE_HSTS_PRELOAD = True
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
