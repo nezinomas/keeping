@@ -70,6 +70,11 @@ textarea {
         border-right-style: solid;
         margin-inline-end: .5rem;
         border-width: 0 1px 0 0;
+        background-color: #f7f7f7;
+
+        &:hover {
+            background-color: #e1e1e1;
+        }
     }
 }
 
