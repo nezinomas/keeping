@@ -52,6 +52,25 @@ textarea {
                 0 0 0 0.15rem rgba($danger, 0.17) !important;
         }
     }
+
+    &[type="file"] {
+        overflow: hidden; // prevent pseudo element button overlap
+
+        &:not(:disabled):not([readonly]) {
+            cursor: pointer;
+        }
+
+        background-color: white !important;
+        border: solid 1px #dee2e6;
+    }
+
+    &::file-selector-button {
+        padding: .35rem 0.35rem;
+        border-right-color: #dee2e6;
+        border-right-style: solid;
+        margin-inline-end: .5rem;
+        border-width: 0 1px 0 0;
+    }
 }
 
 .is-invalid {
