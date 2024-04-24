@@ -237,29 +237,15 @@ textarea {
 }
 
 .plans-form {
-    // .form-label {
     > div {
         grid-template-columns: 16% 1fr;
         align-items: center;
         display: grid;
 
-        // &:has(span) {
-        //     grid-template-columns: 13% 3% 1fr;
-        // }
-
         span.invalid-feedback {
-            // grid-column-start: 3;
             grid-column-start: 2;
         }
     }
-
-    // .input-group {
-    //     .input-group-text {
-    //         position: absolute;
-    //         top: 5px;
-    //         right: 5px;
-    //     }
-    // }
 }
 
 .worth-form {
