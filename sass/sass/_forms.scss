@@ -52,6 +52,30 @@ textarea {
                 0 0 0 0.15rem rgba($danger, 0.17) !important;
         }
     }
+
+    &[type="file"] {
+        overflow: hidden; // prevent pseudo element button overlap
+        background-color: white !important;
+        border: solid 1px #dee2e6;
+        padding: 0;
+
+        &:not(:disabled):not([readonly]) {
+            cursor: pointer;
+        }
+    }
+
+    &::file-selector-button {
+        padding: .35rem 0.35rem;
+        border-right-color: #dee2e6;
+        border-right-style: solid;
+        margin-inline-end: .5rem;
+        border-width: 0 1px 0 0;
+        background-color: #f7f7f7;
+
+        &:hover {
+            background-color: #e1e1e1;
+        }
+    }
 }
 
 .is-invalid {
@@ -130,7 +154,8 @@ textarea {
     font-size: 1.6em;
 }
 
-.input-group {
+// Datepicker icon position
+.input-group:has([class*="input-group-addon"]) {
     position: relative;
 
     .input-group-text {
@@ -141,10 +166,35 @@ textarea {
     }
 }
 
-input[type="file"] {
-    border: none;
-    background-color: $disabled !important;
-    padding: 0;
+// File input has file
+.input-group:has([class="input-group-text"]) {
+    display: flex;
+    margin-bottom: $gap;
+
+    // Text "Current File" style
+    > span {
+        flex-shrink: 0;
+        border-color: #dee2e6;
+        border-style: solid;
+        border-width: 1px 0 1px 1px;
+        background-color: #f7f7f7;
+        align-self: center;
+        padding: .4125rem .4125em;
+
+        &::after {
+            content: ": ";
+        }
+    }
+
+    // file name and checkbox
+    > div {
+        display: flex;
+
+        > *:last-child {
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+    }
 }
 
 .asteriskField {
