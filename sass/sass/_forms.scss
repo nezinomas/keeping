@@ -149,7 +149,8 @@ textarea {
     font-size: 1.6em;
 }
 
-.input-group {
+// Datepicker icon position
+.input-group:has([class*="input-group-addon"]) {
     position: relative;
 
     .input-group-text {
