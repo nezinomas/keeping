@@ -161,6 +161,37 @@ textarea {
     }
 }
 
+// File input has file
+.input-group:has([class="input-group-text"]) {
+    display: flex;
+    margin-bottom: $gap;
+
+    // Text "Current File" style
+    > span {
+        flex-shrink: 0;
+        border-color: #dee2e6;
+        border-style: solid;
+        border-width: 1px 0 1px 1px;
+        background-color: #f7f7f7;
+        align-self: center;
+        padding: .4125rem .4125em;
+
+        &::after {
+            content: ": ";
+        }
+    }
+
+    // file name and checkbox
+    > div {
+        display: flex;
+
+        > *:last-child {
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+    }
+}
+
 .asteriskField {
     color: $danger;
     padding-left: .25rem;
