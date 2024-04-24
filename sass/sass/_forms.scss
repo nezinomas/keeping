@@ -55,13 +55,13 @@ textarea {
 
     &[type="file"] {
         overflow: hidden; // prevent pseudo element button overlap
+        background-color: white !important;
+        border: solid 1px #dee2e6;
+        padding: 0;
 
         &:not(:disabled):not([readonly]) {
             cursor: pointer;
         }
-
-        background-color: white !important;
-        border: solid 1px #dee2e6;
     }
 
     &::file-selector-button {
@@ -158,12 +158,6 @@ textarea {
         transform: translateY(calc(-50% - 2px));
         right: 5px;
     }
-}
-
-input[type="file"] {
-    border: none;
-    background-color: $disabled !important;
-    padding: 0;
 }
 
 .asteriskField {
