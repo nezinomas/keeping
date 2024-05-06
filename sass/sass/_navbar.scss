@@ -69,14 +69,7 @@
 }
 
 
-nav#main-nav {
-    @include shadow;
-
-    --border-radius: 0;
-
-    background-color: $nav-bg;
-    margin-bottom: $gap;
-
+[id*=-nav] {
     a {
         text-decoration: none;
     }
@@ -88,6 +81,19 @@ nav#main-nav {
     > ul {
         display: flex;
         gap: calc($gap / 2) $gap;
+    }
+}
+
+
+nav#main-nav {
+    @include shadow;
+
+    --border-radius: 0;
+
+    background-color: $nav-bg;
+    margin-bottom: $gap;
+
+    > ul {
         flex-wrap: wrap;
 
         > li {
@@ -120,19 +126,6 @@ nav#main-nav {
 
 nav#drinks-nav {
     margin-bottom: $gap;
-
-    > ul {
-        display: flex;
-        gap: calc($gap / 3);
-
-        a {
-            text-decoration: none;
-        }
-
-        a, a:visited, li {
-            color: $black;
-        }
-    }
 
     .dropdown {
         margin-left: auto;
