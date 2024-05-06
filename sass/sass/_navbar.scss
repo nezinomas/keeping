@@ -1,3 +1,29 @@
+@mixin arrow-button {
+    .arrow {
+        padding: 0;
+        border: 0;
+        background-color: transparent;
+
+        &::after {
+            font-family: 'Glyphicons Halflings';
+            content: "\e114";
+            margin-left: .25rem;
+            font-size: 8px;
+        }
+
+        &:active,
+        &:focus,
+        &:focus-within {
+            .dropdown__menu {
+                opacity: 1;
+                transform: rotateX(0) translateX(0);
+                visibility: visible;
+            }
+        }
+    }
+}
+
+
 nav#main-nav {
     @include shadow;
 
@@ -49,8 +75,6 @@ nav#main-nav {
         position: relative;
 
         .dropdown__menu {
-            --delay: 0.2s;
-
             @include shadow;
             position: absolute;
             text-align: left;
@@ -73,7 +97,6 @@ nav#main-nav {
             }
 
             > li {
-                cursor: pointer;
                 display: block;
                 padding: 0.25rem 1.75rem 0.25rem 0.75rem;
             }
@@ -94,28 +117,7 @@ nav#main-nav {
             align-items: center;
         }
 
-        .arrow {
-            padding: 0;
-            border: 0;
-            background-color: transparent;
-
-            &::after {
-                font-family: 'Glyphicons Halflings';
-                content: "\e114";
-                margin-left: .25rem;
-                font-size: 8px;
-            }
-
-            &:active,
-            &:focus,
-            &:focus-within {
-                 .dropdown__menu {
-                    opacity: 1;
-                    transform: rotateX(0) translateX(0);
-                    visibility: visible;
-                }
-            }
-        }
+        @include arrow-button;
     }
 }
 
@@ -141,20 +143,13 @@ nav#drinks-nav {
         margin-left: auto;
         margin-right: auto;
 
-        &:hover,
-        &:focus-within {
-            .dropdown__menu {
-                opacity: 1;
-                transform: rotateX(0) translateX(0);
-                visibility: visible;
-            }
-        }
+        @include arrow-button;
 
         .dropdown__menu {
-            --delay: 0.75s;
 
             @include shadow;
             position: absolute;
+            text-align: left;
             top: calc(100% + 0.15rem);
             left: 0;
             padding: 0.25rem 0;
@@ -164,7 +159,6 @@ nav#drinks-nav {
             z-index: 100;
 
             transform: rotateX(-90deg) translateX(0);
-            transform-origin: top center;
             opacity: 0.3;
             transition: $transition;
 
@@ -174,7 +168,6 @@ nav#drinks-nav {
             }
 
             > li {
-                cursor: pointer;
                 display: block;
                 padding: 0.25rem 1.75rem 0.25rem 0.75rem;
             }
@@ -187,14 +180,6 @@ nav#drinks-nav {
         .dropdown__title {
             display: inline-flex;
             align-items: center;
-
-            &:after {
-                content: "";
-                border: 0.2rem solid transparent;
-                border-top-color: rgb($black, .75);
-                margin-left: 0.35rem;
-                transform: translateY(0.15em);
-            }
         }
     }
 }
