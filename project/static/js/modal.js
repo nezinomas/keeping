@@ -41,7 +41,8 @@ htmx.on("htmx:afterSwap", (e) => {
         $(`#${target}`).parent().show();
 
         // focus on [autofocus] field
-        $(`#${target}`).find('[autofocus]').focus();
+        // commented on 2024.05.06
+        // $(`#${target}`).find('[autofocus]').focus();
 
         // insert image url in imgModal
         if (target == 'imgModal') {
