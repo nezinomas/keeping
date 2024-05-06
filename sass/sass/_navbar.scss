@@ -1,4 +1,49 @@
-@mixin arrow-button {
+.dropdown {
+    position: relative;
+
+    .dropdown__menu {
+        @include shadow;
+        position: absolute;
+        text-align: left;
+        top: calc(100% + 0.15rem);
+        left: 0;
+        padding: 0.25rem 0;
+        margin: 0;
+        min-width: max-content;
+        background-color: white;
+        z-index: 100;
+
+        transform: rotateX(-90deg) translateX(0);
+        transform-origin: top center;
+        opacity: 0.3;
+        transition: $transition;
+
+        &.left {
+            right: 0;
+            left: auto;
+        }
+
+        > li {
+            display: block;
+            padding: 0.25rem 1.75rem 0.25rem 0.75rem;
+        }
+
+        > li:hover {
+            background-color: lighten($active, 25%);
+        }
+
+        > li.dropdown-divider {
+            background-color: rgb($black, .175);
+            min-height: 1px;
+            padding: 0;
+        }
+    }
+
+    .dropdown__title {
+        display: inline-flex;
+        align-items: center;
+    }
+
     .arrow {
         padding: 0;
         border: 0;
@@ -24,14 +69,7 @@
 }
 
 
-nav#main-nav {
-    @include shadow;
-
-    --border-radius: 0;
-
-    background-color: $nav-bg;
-    margin-bottom: $gap;
-
+[id*=-nav] {
     a {
         text-decoration: none;
     }
@@ -43,6 +81,19 @@ nav#main-nav {
     > ul {
         display: flex;
         gap: calc($gap / 2) $gap;
+    }
+}
+
+
+nav#main-nav {
+    @include shadow;
+
+    --border-radius: 0;
+
+    background-color: $nav-bg;
+    margin-bottom: $gap;
+
+    > ul {
         flex-wrap: wrap;
 
         > li {
@@ -70,116 +121,14 @@ nav#main-nav {
             border-bottom: 3px solid $active;
         }
     }
-
-    .dropdown {
-        position: relative;
-
-        .dropdown__menu {
-            @include shadow;
-            position: absolute;
-            text-align: left;
-            top: calc(100% + 0.15rem);
-            left: 0;
-            padding: 0.25rem 0;
-            margin: 0;
-            min-width: max-content;
-            background-color: white;
-            z-index: 100;
-
-            transform: rotateX(-90deg) translateX(0);
-            transform-origin: top center;
-            opacity: 0.3;
-            transition: $transition;
-
-            &.left {
-                right: 0;
-                left: auto;
-            }
-
-            > li {
-                display: block;
-                padding: 0.25rem 1.75rem 0.25rem 0.75rem;
-            }
-
-            > li:hover {
-                background-color: lighten($active, 25%);
-            }
-
-            > li.dropdown-divider {
-                background-color: rgb($black, .175);
-                min-height: 1px;
-                padding: 0;
-            }
-        }
-
-        .dropdown__title {
-            display: inline-flex;
-            align-items: center;
-        }
-
-        @include arrow-button;
-    }
 }
 
 
 nav#drinks-nav {
     margin-bottom: $gap;
 
-    > ul {
-        display: flex;
-        gap: calc($gap / 3);
-
-        a {
-            text-decoration: none;
-        }
-
-        a, a:visited, li {
-            color: $black;
-        }
-    }
-
     .dropdown {
-        position: relative;
         margin-left: auto;
         margin-right: auto;
-
-        @include arrow-button;
-
-        .dropdown__menu {
-
-            @include shadow;
-            position: absolute;
-            text-align: left;
-            top: calc(100% + 0.15rem);
-            left: 0;
-            padding: 0.25rem 0;
-            margin: 0;
-            min-width: max-content;
-            background-color: white;
-            z-index: 100;
-
-            transform: rotateX(-90deg) translateX(0);
-            opacity: 0.3;
-            transition: $transition;
-
-            &.left {
-                right: 0;
-                left: auto;
-            }
-
-            > li {
-                display: block;
-                padding: 0.25rem 1.75rem 0.25rem 0.75rem;
-            }
-
-            > li:hover {
-                background-color: lighten($active, 25%);
-            }
-        }
-
-        .dropdown__title {
-            display: inline-flex;
-            align-items: center;
-        }
     }
 }
