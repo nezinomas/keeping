@@ -106,19 +106,16 @@ nav#main-nav {
                 font-size: 8px;
             }
 
-            // .arrow:hover,
             &:active,
             &:focus,
             &:focus-within {
-                // cursor: pointer;
-                .dropdown__menu {
+                 .dropdown__menu {
                     opacity: 1;
                     transform: rotateX(0) translateX(0);
                     visibility: visible;
                 }
             }
         }
-
     }
 }
 
