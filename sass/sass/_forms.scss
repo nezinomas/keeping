@@ -246,6 +246,10 @@ textarea {
             grid-column-start: 2;
         }
     }
+
+    .alert.alert-danger > strong {
+        grid-column: span 2;
+    }
 }
 
 .worth-form {
