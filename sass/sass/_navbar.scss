@@ -53,6 +53,7 @@ nav#main-nav {
 
             @include shadow;
             position: absolute;
+            text-align: left;
             top: calc(100% + 0.15rem);
             left: 0;
             padding: 0.25rem 0;
@@ -93,22 +94,31 @@ nav#main-nav {
             align-items: center;
         }
 
-        .arrow::after {
-            font-family: 'Glyphicons Halflings';
-            content: "\e114";
-            margin-left: .25rem;
-            font-size: 8px;
-        }
+        .arrow {
+            padding: 0;
+            border: 0;
+            background-color: transparent;
 
-        .arrow:hover,
-        .arrow:focus-within {
-            cursor: pointer;
-            .dropdown__menu {
-                opacity: 1;
-                transform: rotateX(0) translateX(0);
-                visibility: visible;
+            &::after {
+                font-family: 'Glyphicons Halflings';
+                content: "\e114";
+                margin-left: .25rem;
+                font-size: 8px;
+            }
+
+            // .arrow:hover,
+            &:active,
+            &:focus,
+            &:focus-within {
+                // cursor: pointer;
+                .dropdown__menu {
+                    opacity: 1;
+                    transform: rotateX(0) translateX(0);
+                    visibility: visible;
+                }
             }
         }
+
     }
 }
 
