@@ -7,6 +7,15 @@
     &:hover {
         background-color: #5c6e64;
     }
+
+    &:focus,
+    &:focus-within,
+    &:active {
+        outline: 0;
+        box-shadow:
+            inset 0 1px 2px rgba($black, .075),
+            0 0 0 0.15rem rgba($black, 0.1);
+    }
 }
 
 
@@ -17,6 +26,15 @@
 
     &:hover {
         background-color: #e1e1e1;
+    }
+
+    &:focus,
+    &:focus-within,
+    &:active {
+        outline: 0;
+        box-shadow:
+            inset 0 1px 2px rgba($black, .075),
+            0 0 0 0.15rem rgba($black, 0.1);
     }
 }
 
@@ -30,6 +48,15 @@
     &:hover {
         color: #fff;
         background-color: #198754;
+    }
+
+    &:focus,
+    &:focus-within,
+    &:active {
+        outline: 0;
+        box-shadow:
+            inset 0 1px 2px rgba(#198754, .075),
+            0 0 0 0.15rem rgba(#198754, 0.1);
     }
 
     &::before {
@@ -67,6 +94,15 @@
     &:hover {
         background-color: #bb2d3b;
         border-color: #b02a37;
+    }
+
+    &:focus,
+    &:focus-within,
+    &:active {
+        outline: 0;
+        box-shadow:
+            inset 0 1px 2px rgba($black, .075),
+            0 0 0 0.15rem rgba($danger, 0.17) !important;
     }
 }
 
