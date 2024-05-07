@@ -143,18 +143,27 @@
             align-items: flex-start;
             height: 2rem;
 
-            > * {
-                margin-top: 0.25rem;
-            }
-
             > *:first-child {
                 margin-right: auto;
+                align-self: center;
             }
+        }
+    }
+
+    > #historical-data {
+        > .row {
+            align-items: center;
         }
     }
 
     > #compare-form-and-chart {
         grid-area: compare-form-and-chart;
+
+        > .row {
+            > *:not(:first-child) {
+                margin-top: .15rem;
+            }
+        }
 
         form {
             display: flex;
@@ -162,7 +171,7 @@
             align-items: flex-start;
 
             > *:last-child {
-                margin-top: 0.25rem;
+                margin-top: .15rem;
             }
 
         }
