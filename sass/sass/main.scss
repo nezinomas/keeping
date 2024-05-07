@@ -29,7 +29,7 @@ body {
     margin-left: calc($gap / 2);
     margin-right: calc($gap / 2);
     margin-top: 0;
-    margin-bottom: calc($gap / 2);
+    margin-bottom: $gap;
 }
 
 h6 {
