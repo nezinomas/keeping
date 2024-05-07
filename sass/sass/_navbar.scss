@@ -127,6 +127,10 @@ nav#main-nav {
 nav#drinks-nav {
     margin-bottom: $gap;
 
+    > ul {
+        gap: calc($gap / 3);
+    }
+
     .dropdown {
         margin-left: auto;
         margin-right: auto;
