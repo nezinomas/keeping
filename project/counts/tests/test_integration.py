@@ -32,8 +32,7 @@ class CountsIntegrationTests(Browser):
         self.browser.get(f"{self.live_server_url}/counts/")
 
         # hover over dropdown menu
-        menu = self.browser.find_element(By.XPATH, '//a[contains(@href,"/counts/")]/following-sibling::*[1]')
-        ActionChains(self.browser).move_to_element(menu).perform()
+        self.browser.find_element(By.XPATH, '//a[contains(@href,"/counts/")]/following::button[1]').click()
         sleep(0.25)
 
         # click on add count type
