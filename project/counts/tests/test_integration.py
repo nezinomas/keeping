@@ -2,7 +2,6 @@ from time import sleep
 
 import pytest
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
 
 from ...core.tests.test_integration_browser import Browser
 from ..factories import CountTypeFactory
@@ -15,7 +14,7 @@ class CountsIntegrationTests(Browser):
     def test_create(self):
         self.browser.get(f"{self.live_server_url}/counts/")
 
-        self.browser.find_element(By.CSS_SELECTOR , ".button-success").click()
+        self.browser.find_element(By.CSS_SELECTOR, ".button-success").click()
         sleep(0.5)
 
         self.browser.find_element(By.ID, "id_title").send_keys("-AAA-")
@@ -23,17 +22,17 @@ class CountsIntegrationTests(Browser):
         sleep(0.5)
 
         page = self.browser.page_source
-        assert '-AAA-' in page
-
+        assert "-AAA-" in page
 
     def test_delete(self):
-        CountTypeFactory(title='-AAA-')
+        CountTypeFactory(title="-AAA-")
 
         self.browser.get(f"{self.live_server_url}/counts/")
 
         # hover over dropdown menu
-        menu = self.browser.find_element(By.XPATH, '//a[contains(@href,"/counts/")]/following-sibling::*[1]')
-        ActionChains(self.browser).move_to_element(menu).perform()
+        self.browser.find_element(
+            By.XPATH, '//a[contains(@href,"/counts/")]/following::button[1]'
+        ).click()
         sleep(0.25)
 
         # click on add count type
@@ -54,4 +53,4 @@ class CountsIntegrationTests(Browser):
         sleep(0.25)
 
         page = self.browser.page_source
-        assert '-AAA-' in page
+        assert "-AAA-" in page
