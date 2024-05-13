@@ -28,7 +28,7 @@
             <td
                 class="{{weekend_col}} panel-heading expand-column-width text-left"
                 :class="open{{day_int}} ? 'active' : ''"
-                @click="open{{day_int}} = !open{{day_int}}""
+                @click="open{{day_int}} = !open{{day_int}}"
                 hx-get="{{url_expand}}"
                 hx-target="#table{{day_int}}"
                 hx-swap="afterend"
