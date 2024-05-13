@@ -48,7 +48,7 @@
             {% for month in context_months %}
             {% with month|date:'n' as month_number %}
             <button type="button"
-                hx-get="{% url 'expenses:list' %}?month={{month_number}}"
+                hx-get="{% url 'expenses:list' month_number %}"
                 hx-target="#data"
                 hx-swap="innerHTML"
                 hx-indicator="#indicator"
@@ -60,7 +60,7 @@
             {% endfor %}
 
             <button type="button"
-                hx-get="{% url 'expenses:list' %}?month=13"
+                hx-get="{% url 'expenses:list' 13 %}"
                 hx-target="#data"
                 hx-swap="innerHTML"
                 hx-indicator="#indicator"
@@ -71,7 +71,7 @@
         </div><!-- /month buttons -->
 
         <!-- data -->
-        <div id="data" hx-trigger="load" hx-indicator="#indicator" hx-get="{% url 'expenses:list' %}?month={{month_number}}"></div>
+        <div id="data" hx-trigger="load" hx-indicator="#indicator" hx-get="{% url 'expenses:list' month_number %}"></div>
     </div>
 
     <div>

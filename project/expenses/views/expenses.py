@@ -18,7 +18,7 @@ from .. import forms, models
 
 class GetMonthMixin:
     def get_month(self):
-        month = self.request.GET.get("month")
+        month = self.kwargs.get("month")
         now = datetime.now().month
 
         try:
