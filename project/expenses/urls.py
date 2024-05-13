@@ -8,7 +8,9 @@ app_name = App_name
 
 urlpatterns = [
     path("", expenses.Index.as_view(), name="index"),
+    path("<int:month>/", expenses.Index.as_view(), name="index"),
     path("list/", expenses.Lists.as_view(), name="list"),
+    path("list/<int:month>/", expenses.Lists.as_view(), name="list"),
     path("new/", expenses.New.as_view(), name="new"),
     path("update/<int:pk>/", expenses.Update.as_view(), name="update"),
     path("delete/<int:pk>/", expenses.Delete.as_view(), name="delete"),

@@ -389,26 +389,13 @@ def test_expenses_list_month_not_set(client_logged):
 
 
 @time_machine.travel("1999-1-1")
-def test_expenses_list_month_stringt(client_logged):
-    ExpenseFactory(date=date(1998, 1, 1))
-    ExpenseFactory(date=date(1999, 1, 1))
-    ExpenseFactory(date=date(1999, 2, 1))
-
-    url = reverse("expenses:list")
-    actual = client_logged.get(url, {"month": "xxx"}).context["object_list"]
-
-    assert len(actual) == 1
-    assert actual[0].date == date(1999, 1, 1)
-
-
-@time_machine.travel("1999-1-1")
 def test_expenses_list_january(client_logged):
     ExpenseFactory(date=date(1998, 1, 1))
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(1999, 2, 1))
 
-    url = reverse("expenses:list")
-    actual = client_logged.get(url, {"month": 1}).context["object_list"]
+    url = reverse("expenses:list", kwargs={"month": 1})
+    actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 1
     assert actual[0].date == date(1999, 1, 1)
@@ -420,8 +407,8 @@ def test_expenses_list_all(client_logged):
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(1999, 2, 1))
 
-    url = reverse("expenses:list")
-    actual = client_logged.get(url, {"month": 13}).context["object_list"]
+    url = reverse("expenses:list", kwargs={"month": 13})
+    actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 2
 
@@ -432,8 +419,8 @@ def test_expenses_list_all_any_num(client_logged):
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(1999, 2, 1))
 
-    url = reverse("expenses:list")
-    actual = client_logged.get(url, {"month": 133}).context["object_list"]
+    url = reverse("expenses:list", kwargs={"month": 133})
+    actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 2
 
@@ -442,8 +429,8 @@ def test_expenses_list_all_any_num(client_logged):
 def test_expenses_list_price_converted(client_logged):
     ExpenseFactory(price=7777)
 
-    url = reverse("expenses:list")
-    response = client_logged.get(url, {"month": 1})
+    url = reverse("expenses:list", kwargs={"month": 1})
+    response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
     assert "77,77" in actual
@@ -453,8 +440,8 @@ def test_expenses_list_price_converted(client_logged):
 def test_expenses_list_price_converted_with_thousands(client_logged):
     ExpenseFactory(price=100_000)
 
-    url = reverse("expenses:list")
-    response = client_logged.get(url, {"month": 1})
+    url = reverse("expenses:list", kwargs={"month": 1})
+    response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
     assert "1.000,00" in actual
