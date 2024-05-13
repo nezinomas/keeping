@@ -57,7 +57,7 @@ function chartConsumption(idData, idContainer) {
         },
         tooltip: {
             shared: true,
-            pointFormat: '<b>{point.y:,.0f} ml</b><br/>'
+            pointFormat: '<b>{point.y:,.0f} ml</b><br>'
         },
         plotOptions: {
             area: {
