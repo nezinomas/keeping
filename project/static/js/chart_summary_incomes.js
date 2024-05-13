@@ -46,7 +46,7 @@ $(function () {
 
         },
         tooltip: {
-            pointFormat: '<b>{point.y:,.0f}</b><br/>',
+            pointFormat: '<b>{point.y:,.0f}</b><br>',
         },
         plotOptions: {
             area: {

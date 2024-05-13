@@ -26,7 +26,7 @@ function chartQuantity(idData, idContainer) {
         tooltip: {
             shared: true,
             headerFormat: '',
-            pointFormat: '{series.name}: <b>{point.y:.1f}</b><br/>',
+            pointFormat: '{series.name}: <b>{point.y:.1f}</b><br>',
         },
         series: [{
             name: chartData.text.quantity,

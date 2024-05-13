@@ -15,7 +15,7 @@
 
         transform: rotateX(-90deg) translateX(0);
         transform-origin: top center;
-        opacity: 0.3;
+        opacity: 0;
         transition: $transition;
 
         &.left {
@@ -59,7 +59,7 @@
         &:active,
         &:focus,
         &:focus-within {
-            .dropdown__menu {
+            >.dropdown__menu {
                 opacity: 1;
                 transform: rotateX(0) translateX(0);
                 visibility: visible;

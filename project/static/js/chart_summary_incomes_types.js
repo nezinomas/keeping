@@ -31,7 +31,7 @@ $(function () {
             },
         },
         tooltip: {
-            pointFormat: '<span style="color:{series.color}">{series.name}</span>:  <b>{point.y:,.0f}€</b> ({point.percentage:.1f}%)<br/>',
+            pointFormat: '<span style="color:{series.color}">{series.name}</span>:  <b>{point.y:,.0f}€</b> ({point.percentage:.1f}%)<br>',
             shared: true,
         },
         plotOptions: {

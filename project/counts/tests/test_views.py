@@ -358,7 +358,7 @@ def test_index_add_button(client_logged):
     content = response.content.decode()
 
     pattern = re.compile(
-        r'<button type="button" id="button-new" .*? hx-get="(.*?)" .*?>(\w+)<\/button>'
+        r'<button type="button" class="button-outline-success" hx-get="(.*?)" .*?>(\w+)<\/button>'
     )
     res = re.findall(pattern, content)
 

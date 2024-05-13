@@ -30,14 +30,13 @@
 
         <li class="dropdown">
             <a id="dropdownDrinkType" class="dropdown__title" href="#">{{current_drink_type}}</a>
-            <button class="arrow">
-                <ul class="dropdown__menu">
-                    {% for type in select_drink_type %}
-                        <li><a class="dropdown-item button-sm" href="{% url 'drinks:set_drink_type' type.1 %}">{{type.0}}</a></li>
-                    {% endfor %}
+            <button class="arrow"></button>
+            <ul class="dropdown__menu">
+                {% for type in select_drink_type %}
+                    <li><a class="dropdown-item button-sm" href="{% url 'drinks:set_drink_type' type.1 %}">{{type.0}}</a></li>
+                {% endfor %}
 
-                </ul>
-            </button>
+            </ul>
         </li>
 
         <li>

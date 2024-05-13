@@ -47,7 +47,7 @@ function chart_drinks_summary(idData, idContainer) {
             },
         }],
         tooltip: {
-            pointFormat: '<b>{point.y:,.0f} ml</b><br/>',
+            pointFormat: '<b>{point.y:,.0f} ml</b><br>',
         },
         series: [{
             name: chartData.text.per_day,

@@ -42,7 +42,7 @@ $(function () {
         },
         tooltip: {
             split: true,
-            pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br/>',
+            pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br>',
         },
         plotOptions: {
             area: {
