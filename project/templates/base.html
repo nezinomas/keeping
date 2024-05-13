@@ -56,12 +56,12 @@
             {% for m in context_months %}
             {% with m|date:'n' as m_num %}
             <li>
-              <a hx-get="{% url 'expenses:index'%}?month={{ forloop.counter }}" hx-target="body">{{ m|date:'F'|title }}</a>
+              <a href="#" hx-get="{% url 'expenses:index'%}?month={{ forloop.counter }}" hx-target="body">{{ m|date:'F'|title }}</a>
             </li>
             {% endwith %}{% endfor %}
             <li class="dropdown-divider"></li>
             <li>
-              <a hx-get="{% url 'expenses:index' %}?month=13" hx-target="body">{% translate 'All records' %}</a>
+              <a href="#" hx-get="{% url 'expenses:index' %}?month=13" hx-target="body">{% translate 'All records' %}</a>
             </li>
           </ul>
         </li>
