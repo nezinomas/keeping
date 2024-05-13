@@ -13,9 +13,9 @@
         background-color: white;
         z-index: 100;
 
-        transform: rotateX(-90deg) translateX(0);
-        transform-origin: top center;
-        opacity: 0.3;
+        // transform: rotateX(-90deg) translateX(0);
+        // transform-origin: top center;
+        opacity: 0;
         transition: $transition;
 
         &.left {
