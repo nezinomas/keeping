@@ -32,6 +32,9 @@ class GetMonthMixin:
 class Index(GetMonthMixin, TemplateViewMixin):
     template_name = "expenses/index.html"
 
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs) | {"month": self.get_month()}
+
 
 class Lists(GetMonthMixin, ListViewMixin):
     model = models.Expense
