@@ -56,7 +56,6 @@ def test_expenses_index_context(client_logged):
 
     url = reverse("expenses:index")
     actual = client_logged.get(url).context["month"]
-    print(f">>>> {actual}")
 
     assert actual == 2
 
