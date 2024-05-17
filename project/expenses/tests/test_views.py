@@ -29,6 +29,49 @@ def test_expenses_index_func():
     assert expenses.Index == view.func.view_class
 
 
+def test_expenses_index_alternative_func():
+    view = resolve("/expenses/5/")
+
+    assert expenses.Index == view.func.view_class
+
+
+def test_expenses_index_200(client_logged):
+    url = reverse("expenses:index")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_expenses_index_alternative_200(client_logged):
+    url = reverse("expenses:index", kwargs={"month": 1})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+@time_machine.travel("1999-02-08")
+def test_expenses_index_context(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1))
+    ExpenseFactory(date=date(1999, 2, 7))
+
+    url = reverse("expenses:index")
+    actual = client_logged.get(url).context["month"]
+    print(f">>>> {actual}")
+
+    assert actual == 2
+
+
+@time_machine.travel("1999-02-08")
+def test_expenses_index_alternative_context(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1))
+    ExpenseFactory(date=date(1999, 2, 7))
+
+    url = reverse("expenses:index", kwargs={"month": 2})
+    actual = client_logged.get(url).context["month"]
+
+    assert actual == 2
+
+
 def test_expenses_lists_func():
     view = resolve("/expenses/list/")
 
