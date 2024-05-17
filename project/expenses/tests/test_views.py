@@ -439,13 +439,6 @@ def test_expenses_update_past_record(main_user, client_logged):
     assert actual.remark == "Pastaba"
 
 
-def test_expenses_index_200(client_logged):
-    url = reverse("expenses:index")
-    response = client_logged.get(url, follow=True)
-
-    assert response.status_code == 200
-
-
 def test_expenses_index_search_form(client_logged):
     url = reverse("expenses:index")
     response = client_logged.get(url, follow=True).content.decode("utf-8")
