@@ -78,11 +78,48 @@ def test_expenses_lists_func():
     assert expenses.Lists == view.func.view_class
 
 
+def test_expenses_lists_alternative_func():
+    view = resolve("/expenses/list/1/")
+
+    assert expenses.Lists == view.func.view_class
+
+
 def test_expenses_lists_200(client_logged):
     url = reverse("expenses:list")
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+def test_expenses_lists_alternative_200(client_logged):
+    url = reverse("expenses:list", kwargs={"month": 1})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+@time_machine.travel("1999-02-08")
+def test_expenses_lists_context(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1))
+    ExpenseFactory(date=date(1999, 2, 7))
+
+    url = reverse("expenses:list")
+    actual = client_logged.get(url).context["object_list"]
+
+    assert len(actual) == 1
+    assert actual[0].date == date(1999, 2, 7)
+
+
+@time_machine.travel("1999-02-08")
+def test_expenses_lists_alternative_context(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1))
+    ExpenseFactory(date=date(1999, 2, 7))
+
+    url = reverse("expenses:list", kwargs={"month": 2})
+    actual = client_logged.get(url).context["object_list"]
+
+    assert len(actual) == 1
+    assert actual[0].date == date(1999, 2, 7)
 
 
 def test_expenses_lists_302(client):
