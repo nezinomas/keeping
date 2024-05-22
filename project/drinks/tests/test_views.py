@@ -89,7 +89,7 @@ def test_index_select_drink_drop_down_title(drink_type, expect, main_user, clien
 
     content = response.content.decode('utf-8')
 
-    assert f'id="dropdownDrinkType" class="dropdown__title" href="#">{ expect }</a>' in content
+    assert f'id="dropdownDrinkType" href="#">{ expect }</a>' in content
 
 
 def test_index_select_drink_drop_down_link_list(client_logged):
