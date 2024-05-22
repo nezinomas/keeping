@@ -45,6 +45,7 @@
     height: calc(2 * $gap + 0.25rem);
     align-items: center;
     gap: calc($gap / 3);
+    white-space: nowrap;
 
     &:has(#search-form) {
         > * {
