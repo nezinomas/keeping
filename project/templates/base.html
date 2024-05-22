@@ -41,14 +41,10 @@
       </div>
 
       <!-- Month -->
-      <div class="{% if '/month/' == request.path %}active{% endif %}">
-        <a href="{% url 'bookkeeping:month' %}">{% translate 'Month' %}</a>
-      </div>
+      <a href="{% url 'bookkeeping:month' %}" class="{% if '/month/' == request.path %}active{% endif %}">{% translate 'Month' %}</a>
 
       <!-- Detailed -->
-      <div class="{% if '/detailed/' == request.path %}active{% endif %}">
-        <a href="{% url 'bookkeeping:detailed' %}">{% translate 'Detailed' %}</a>
-      </div>
+      <a href="{% url 'bookkeeping:detailed' %}" class="{% if '/detailed/' == request.path %}active{% endif %}">{% translate 'Detailed' %}</a>
 
       <!-- Expenses -->
       <div class="{% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}">
@@ -67,24 +63,16 @@
       </div>
 
       <!-- Incomes -->
-      <div class="{% if '/incomes/' in request.path %}active{% endif %}">
-        <a href="{% url 'incomes:index' %}">{% translate 'Incomes' %}</a>
-      </div>
+      <a href="{% url 'incomes:index' %}" class="{% if '/incomes/' in request.path %}active{% endif %}">{% translate 'Incomes' %}</a>
 
       <!-- Transactions -->
-      <div class="{% if '/transactions/' in request.path %}active{% endif %}">
-        <a  href="{% url 'transactions:index' %}">{% translate 'Transactions' %}</a>
-      </div>
+      <a  href="{% url 'transactions:index' %}" class="{% if '/transactions/' in request.path %}active{% endif %}">{% translate 'Transactions' %}</a>
 
       <!-- Savings -->
-      <div class="{% if '/savings/' in request.path and not '/summary/' in request.path %}active{% endif %}">
-        <a href="{% url 'savings:index' %}">{% translate 'Savings' %}</a>
-      </div>
+      <a href="{% url 'savings:index' %}" class="{% if '/savings/' in request.path and not '/summary/' in request.path %}active{% endif %}">{% translate 'Savings' %}</a>
 
       <!-- Debts -->
-      <div class="{% if '/debts/' in request.path %}active{% endif %}">
-        <a href="{% url 'debts:index' %}">{% translate 'Debts' %}</a>
-      </div>
+      <a href="{% url 'debts:index' %}" class="{% if '/debts/' in request.path %}active{% endif %}">{% translate 'Debts' %}</a>
 
       <!-- Books -->
       <div class="{% if '/books/' in request.path %}active{% endif %}">
@@ -98,9 +86,7 @@
       </div>
 
       <!-- Drinks -->
-      <div class="{% if '/drinks/' in request.path %}active{% endif %}">
-        <a href="{% url 'drinks:index' %}">{% translate 'Drinks' %}</a>
-      </div>
+      <a href="{% url 'drinks:index' %}" class="{% if '/drinks/' in request.path %}active{% endif %}">{% translate 'Drinks' %}</a>
 
       <!-- Counters -->
       <div class="{% if '/counts/' in request.path %}active{% endif %}">
@@ -116,9 +102,7 @@
       </div>
 
       <!-- Plans -->
-      <div class="{% if '/plans/' in request.path %}active{% endif %}">
-        <a href="{% url 'plans:index' %}">{% translate 'Plans' %}</a>
-      </div>
+      <a href="{% url 'plans:index' %}" class="{% if '/plans/' in request.path %}active{% endif %}">{% translate 'Plans' %}</a>
 
       <!-- Charts -->
       <div class="{% if 'summary' in request.path %}active{% endif %}">
@@ -155,7 +139,7 @@
       </div>
 
       <!-- Day of year -->
-      <div>{{ yday }} / <b>{{ ydays }}</b></div>
+      <div class="day-of-year">{{ yday }} / <b>{{ ydays }}</b></div>
 
       <!-- User settings -->
       <div>
