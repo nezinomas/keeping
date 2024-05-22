@@ -1,62 +1,4 @@
 .dropdown {
-    position: relative;
-
-    .dropdown__menu {
-        @include shadow;
-        position: absolute;
-        text-align: left;
-        top: calc(100% + 0.15rem);
-        left: 0;
-        padding: 0.25rem 0;
-        margin: 0;
-        min-width: max-content;
-        background-color: white;
-        z-index: 100;
-
-        transform: rotateX(-90deg) translateX(0);
-        transform-origin: top center;
-        opacity: 0;
-        transition: $transition;
-
-        &.left {
-            right: 0;
-            left: auto;
-        }
-
-        > li {
-            display: block;
-            padding: 0.25rem 1.75rem 0.25rem 0.75rem;
-        }
-
-        > li:hover {
-            background-color: lighten($active, 25%);
-        }
-
-        > li.dropdown-divider {
-            background-color: rgb($black, .175);
-            min-height: 1px;
-            padding: 0;
-        }
-    }
-
-    .dropdown__title {
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .arrow {
-        padding: 0;
-        border: 0;
-        background-color: transparent;
-
-        &::after {
-            font-family: 'Glyphicons Halflings';
-            content: "\e114";
-            margin-left: .25rem;
-            font-size: 8px;
-        }
-    }
-
     &:active,
     &:focus,
     &:focus-within {
@@ -66,21 +8,85 @@
             visibility: visible;
         }
     }
+
+    &.left {
+        .dropdown__menu {
+            right: 0;
+            left: auto;
+        }
+    }
+}
+
+.dropdown__menu {
+    @include shadow;
+    display: flex;
+    flex-direction: column;
+
+    position: absolute;
+    top: calc(100% + 0.15rem);
+    left: 0;
+    padding: 0.25rem 0;
+    margin: 0;
+    min-width: max-content;
+    text-align: left;
+    background-color: white;
+    z-index: 999;
+
+    opacity: 0;
+    transform: rotateX(-90deg) translateX(0);
+    transform-origin: top center;
+    transition: $transition;
+
+    > * {
+        display: block;
+        padding: 0.25rem 1.75rem 0.25rem 0.75rem;
+    }
+
+    > *:hover {
+        background-color: lighten($active, 25%);
+    }
+
+    > *.dropdown-divider {
+        background-color: rgb($black, .175);
+        min-height: 1px;
+        padding: 0;
+    }
+}
+
+.dropdown__title {
+    display: inline-flex;
+    align-items: center;
+}
+
+.dropdown__btn {
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+
+    &::after {
+        font-family: 'Glyphicons Halflings';
+        content: "\e114";
+        margin-left: .25rem;
+        font-size: 8px;
+    }
 }
 
 
 [id*=-nav] {
+    display: flex;
+    gap: calc($gap / 2) $gap;
+
     a {
         text-decoration: none;
     }
 
-    a, a:visited, li {
+    a, a:visited {
         color: $black;
     }
 
-    > ul {
+    :has(.dropdown) {
         display: flex;
-        gap: calc($gap / 2) $gap;
+        position: relative;
     }
 }
 
@@ -93,33 +99,31 @@ nav#main-nav {
     background-color: $nav-bg;
     margin-bottom: $gap;
 
-    > ul {
-        flex-wrap: wrap;
+    flex-wrap: wrap;
 
-        > li {
-            padding: 0.5rem 0.4rem;
-            border-bottom: 3px solid transparent;
+    > * {
+        padding: 0.5rem 0.4rem;
+        border-bottom: 3px solid transparent;
 
-            &:hover, &:hover > a,
-            &:focus, &:focus > a {
-                transition: $transition;
-                border-bottom-color: $active;
-                color: $active;
-            }
-
-            &:not(:has(a)):hover{
-                border-bottom-color: transparent;
-                color: $black;
-            }
+        &:hover, &:hover > a,
+        &:focus, &:focus > a {
+            transition: $transition;
+            border-bottom-color: $active;
+            color: $active;
         }
 
-        > li:last-child {
-            margin-left: auto;
+        &:not(:has(a)):hover{
+            border-bottom-color: transparent;
+            color: $black;
         }
+    }
 
-        > li.active {
-            border-bottom: 3px solid $active;
-        }
+    > :last-child {
+        margin-left: auto;
+    }
+
+    > .active {
+        border-bottom: 3px solid $active;
     }
 }
 
