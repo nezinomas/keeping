@@ -142,7 +142,7 @@
       <div class="day-of-year">{{ yday }} / <b>{{ ydays }}</b></div>
 
       <!-- User settings -->
-      <div>
+      <div {% if 'settings' in request.path %}class="active"{% endif %}>
         <a href="#" role="button">{{ user.username }}</a>
         <div class="dropdown left">
             <button class="dropdown__btn"></button>
