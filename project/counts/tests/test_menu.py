@@ -19,7 +19,7 @@ def test_menu_count_type_add(client_logged):
 
     url = reverse("counts:index", kwargs={"slug": obj.slug})
 
-    assert f'href="{url}">{obj.title}</a></li>' in content
+    assert f'href="{url}">{obj.title}</a>' in content
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -35,8 +35,8 @@ def test_menu_count_type_add_two(client_logged):
     url1 = reverse("counts:index", kwargs={"slug": obj1.slug})
     url2 = reverse("counts:index", kwargs={"slug": obj2.slug})
 
-    assert f'href="{url1}">{obj1.title}</a></li>' in content
-    assert f'href="{url2}">{obj2.title}</a></li>' in content
+    assert f'href="{url1}">{obj1.title}</a>' in content
+    assert f'href="{url2}">{obj2.title}</a>' in content
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -52,11 +52,11 @@ def test_menu_count_type_delete(client_logged):
     url1 = reverse("counts:index", kwargs={"slug": obj1.slug})
     url2 = reverse("counts:index", kwargs={"slug": obj2.slug})
 
-    assert f'href="{url1}">{obj1.title}</a></li>' in content
-    assert f'href="{url2}">{obj2.title}</a></li>' in content
+    assert f'href="{url1}">{obj1.title}</a>' in content
+    assert f'href="{url2}">{obj2.title}</a>' in content
 
     obj2.delete()
     response = client_logged.get(url, follow=True)
     content = response.content.decode()
 
-    assert f'href="{url2}">{obj2.title}</a></li>' not in content
+    assert f'href="{url2}">{obj2.title}</a>' not in content
