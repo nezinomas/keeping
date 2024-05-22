@@ -106,10 +106,13 @@ nav#main-nav {
         padding: 0.5rem 0.4rem;
         border-bottom: 3px solid transparent;
 
-        &:hover, &:hover > a,
-        &:focus, &:focus > a {
+        :is(&:hover, &:focus) {
             transition: $transition;
             border-bottom-color: $active;
+            color: $active;
+        }
+
+        :is(&:hover > a, &:focus > a) {
             color: $active;
         }
 
