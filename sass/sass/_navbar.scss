@@ -1,86 +1,92 @@
 .dropdown {
-    position: relative;
+    &:active,
+    &:focus,
+    &:focus-within {
+        .dropdown__menu {
+            opacity: 1;
+            transform: rotateX(0) translateX(0);
+            visibility: visible;
+        }
+    }
 
-    .dropdown__menu {
-        @include shadow;
-        position: absolute;
-        text-align: left;
-        top: calc(100% + 0.15rem);
-        left: 0;
-        padding: 0.25rem 0;
-        margin: 0;
-        min-width: max-content;
-        background-color: white;
-        z-index: 100;
-
-        transform: rotateX(-90deg) translateX(0);
-        transform-origin: top center;
-        opacity: 0;
-        transition: $transition;
-
-        &.left {
+    &.left {
+        .dropdown__menu {
             right: 0;
             left: auto;
         }
+    }
+}
 
-        > li {
-            display: block;
-            padding: 0.25rem 1.75rem 0.25rem 0.75rem;
-        }
+.dropdown__menu {
+    @include shadow;
+    display: flex;
+    flex-direction: column;
 
-        > li:hover {
-            background-color: lighten($active, 25%);
-        }
+    position: absolute;
+    top: calc(100% + 0.15rem);
+    left: 0;
+    padding: 0.25rem 0;
+    margin: 0;
+    min-width: max-content;
+    text-align: left;
+    background-color: white;
+    z-index: 999;
 
-        > li.dropdown-divider {
-            background-color: rgb($black, .175);
-            min-height: 1px;
-            padding: 0;
-        }
+    opacity: 0;
+    transform: rotateX(-90deg) translateX(0);
+    transform-origin: top center;
+    transition: $transition;
+
+    > * {
+        display: block;
+        padding: 0.25rem 1.75rem 0.25rem 0.75rem;
     }
 
-    .dropdown__title {
-        display: inline-flex;
-        align-items: center;
+    > *:hover {
+        background-color: lighten($active, 25%);
     }
 
-    .arrow {
+    > *.dropdown-divider {
+        background-color: rgb($black, .175);
+        min-height: 1px;
         padding: 0;
-        border: 0;
-        background-color: transparent;
+    }
+}
 
-        &::after {
-            font-family: 'Glyphicons Halflings';
-            content: "\e114";
-            margin-left: .25rem;
-            font-size: 8px;
-        }
+.dropdown__title {
+    display: inline-flex;
+    align-items: center;
+}
 
-        &:active,
-        &:focus,
-        &:focus-within {
-            >.dropdown__menu {
-                opacity: 1;
-                transform: rotateX(0) translateX(0);
-                visibility: visible;
-            }
-        }
+.dropdown__btn {
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+
+    &::after {
+        font-family: 'Glyphicons Halflings';
+        content: "\e114";
+        margin-left: .25rem;
+        font-size: 8px;
     }
 }
 
 
 [id*=-nav] {
+    display: flex;
+    gap: calc($gap / 2) $gap;
+
     a {
         text-decoration: none;
     }
 
-    a, a:visited, li {
+    a, a:visited {
         color: $black;
     }
 
-    > ul {
+    :has(.dropdown) {
         display: flex;
-        gap: calc($gap / 2) $gap;
+        position: relative;
     }
 }
 
@@ -93,46 +99,57 @@ nav#main-nav {
     background-color: $nav-bg;
     margin-bottom: $gap;
 
-    > ul {
-        flex-wrap: wrap;
+    flex-wrap: wrap;
 
-        > li {
-            padding: 0.5rem 0.4rem;
-            border-bottom: 3px solid transparent;
+    > * {
+        padding: 0.5rem 0.4rem;
+        border-bottom: 3px solid transparent;
 
-            &:hover, &:hover > a,
-            &:focus, &:focus > a {
-                transition: $transition;
-                border-bottom-color: $active;
-                color: $active;
-            }
-
-            &:not(:has(a)):hover{
-                border-bottom-color: transparent;
-                color: $black;
-            }
+        &:hover, &:hover > a,
+        &:focus, &:focus > a {
+            transition: $transition;
+            border-bottom-color: $active;
+            color: $active;
         }
 
-        > li:last-child {
-            margin-left: auto;
+        &:not(:has(a)):hover{
+            border-bottom-color: transparent;
+            color: $black;
         }
+    }
 
-        > li.active {
-            border-bottom: 3px solid $active;
-        }
+    > :last-child {
+        margin-left: auto;
+    }
+
+    > .active {
+        border-bottom: 3px solid $active;
     }
 }
 
 
 nav#drinks-nav {
     margin-bottom: $gap;
+    gap: calc($gap / 3);
+    flex-wrap: nowrap;
 
-    > ul {
-        gap: calc($gap / 3);
+    > * {
+        white-space: nowrap;
+        align-items: center;
     }
 
-    .dropdown {
-        margin-left: auto;
-        margin-right: auto;
+    > div {
+        flex-basis: 100%;
+        justify-content: center;
+    }
+
+    > :not(div) {
+        flex-grow: 0;
+    }
+
+    .dropdown__menu {
+        left: 50%;
+        transform: translate(-50%, 0);
+        z-index: 998;
     }
 }
