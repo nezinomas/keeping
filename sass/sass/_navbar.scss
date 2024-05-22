@@ -130,13 +130,26 @@ nav#main-nav {
 
 nav#drinks-nav {
     margin-bottom: $gap;
+    gap: calc($gap / 3);
+    flex-wrap: nowrap;
 
-    > ul {
-        gap: calc($gap / 3);
+    > * {
+        white-space: nowrap;
+        align-items: center;
     }
 
-    .dropdown {
-        margin-left: auto;
-        margin-right: auto;
+    > div {
+        flex-basis: 100%;
+        justify-content: center;
+    }
+
+    > :not(div) {
+        flex-grow: 0;
+    }
+
+    .dropdown__menu {
+        left: 50%;
+        transform: translate(-50%, 0);
+        z-index: 998;
     }
 }
