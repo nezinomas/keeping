@@ -28,7 +28,7 @@
 
     <nav id="main-nav">
       <!-- Years Dropdown -->
-      <div class="{% if '/' == request.path %}active{% endif %}">
+      <div {% if '/' == request.path %}class="active"{% endif %}>
         <a href="{% url 'bookkeeping:index' %}">{{ request.user.year|title }}</a>
         <div class="dropdown">
           <button class="dropdown__btn"></button>
@@ -41,20 +41,20 @@
       </div>
 
       <!-- Month -->
-      <a href="{% url 'bookkeeping:month' %}" class="{% if '/month/' == request.path %}active{% endif %}">{% translate 'Month' %}</a>
+      <a href="{% url 'bookkeeping:month' %}" {% if '/month/' == request.path %}class="active"{% endif %}>{% translate 'Month' %}</a>
 
       <!-- Detailed -->
-      <a href="{% url 'bookkeeping:detailed' %}" class="{% if '/detailed/' == request.path %}active{% endif %}">{% translate 'Detailed' %}</a>
+      <a href="{% url 'bookkeeping:detailed' %}" {% if '/detailed/' == request.path %}class="active"{% endif %}>{% translate 'Detailed' %}</a>
 
       <!-- Expenses -->
-      <div class="{% if '/expenses/' in request.path and not '/summary/' in request.path %}active{% endif %}">
+      <div {% if '/expenses/' in request.path and not '/summary/' in request.path %}class="active"{% endif %}>
         <a href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
         <div class="dropdown">
           <button class="dropdown__btn"></button>
           <div class="dropdown__menu">
             {% for m in context_months %}
             {% with m|date:'n' as m_num %}
-              <a href="{% url 'expenses:index' forloop.counter %}">{{ m|date:'F'|title }}</a>
+            <a href="{% url 'expenses:index' forloop.counter %}">{{ m|date:'F'|title }}</a>
             {% endwith %}{% endfor %}
             <span class="dropdown-divider"></span>
             <a href="{% url 'expenses:index' 13 %}">{% translate 'All records' %}</a>
@@ -63,19 +63,19 @@
       </div>
 
       <!-- Incomes -->
-      <a href="{% url 'incomes:index' %}" class="{% if '/incomes/' in request.path %}active{% endif %}">{% translate 'Incomes' %}</a>
+      <a href="{% url 'incomes:index' %}" {% if '/incomes/' in request.path %}class="active"{% endif %}>{% translate 'Incomes' %}</a>
 
       <!-- Transactions -->
-      <a  href="{% url 'transactions:index' %}" class="{% if '/transactions/' in request.path %}active{% endif %}">{% translate 'Transactions' %}</a>
+      <a  href="{% url 'transactions:index' %}" {% if '/transactions/' in request.path %}class="active"{% endif %}>{% translate 'Transactions' %}</a>
 
       <!-- Savings -->
-      <a href="{% url 'savings:index' %}" class="{% if '/savings/' in request.path and not '/summary/' in request.path %}active{% endif %}">{% translate 'Savings' %}</a>
+      <a href="{% url 'savings:index' %}" {% if '/savings/' in request.path and not '/summary/' in request.path %}class="active"{% endif %}>{% translate 'Savings' %}</a>
 
       <!-- Debts -->
-      <a href="{% url 'debts:index' %}" class="{% if '/debts/' in request.path %}active{% endif %}">{% translate 'Debts' %}</a>
+      <a href="{% url 'debts:index' %}" {% if '/debts/' in request.path %}class="active"{% endif %}>{% translate 'Debts' %}</a>
 
       <!-- Books -->
-      <div class="{% if '/books/' in request.path %}active{% endif %}">
+      <div {% if '/books/' in request.path %}class="active"{% endif %}>
         <a href="{% url 'books:index' %}">{% translate 'Books' %}</a>
         <div class="dropdown">
             <button class="dropdown__btn"></button>
@@ -86,10 +86,10 @@
       </div>
 
       <!-- Drinks -->
-      <a href="{% url 'drinks:index' %}" class="{% if '/drinks/' in request.path %}active{% endif %}">{% translate 'Drinks' %}</a>
+      <a href="{% url 'drinks:index' %}" {% if '/drinks/' in request.path %}class="active"{% endif %}>{% translate 'Drinks' %}</a>
 
       <!-- Counters -->
-      <div class="{% if '/counts/' in request.path %}active{% endif %}">
+      <div {% if '/counts/' in request.path %}class="active"{% endif %}>
         <a href="{% url 'counts:redirect' %}">{% translate 'Counter' %}</a>
         <div class="dropdown">
             <button class="dropdown__btn"></button>
@@ -102,10 +102,10 @@
       </div>
 
       <!-- Plans -->
-      <a href="{% url 'plans:index' %}" class="{% if '/plans/' in request.path %}active{% endif %}">{% translate 'Plans' %}</a>
+      <a href="{% url 'plans:index' %}" {% if '/plans/' in request.path %}class="active"{% endif %}>{% translate 'Plans' %}</a>
 
       <!-- Charts -->
-      <div class="{% if 'summary' in request.path %}active{% endif %}">
+      <div {% if 'summary' in request.path %}class="active"{% endif %}>
         <a href="{% url 'bookkeeping:summary' %}">{% translate 'Charts' %}</a>
         <div class="dropdown">
             <button class="dropdown__btn"></button>
