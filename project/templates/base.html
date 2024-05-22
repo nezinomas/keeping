@@ -25,10 +25,10 @@
 
   <body tabindex="-1">
     {% block body %}
-    <nav id="main-nav">
 
+    <nav id="main-nav">
+      <!-- Years Dropdown -->
       <div class="{% if '/' == request.path %}active{% endif %}">
-        <!-- Years Dropdown -->
         <a href="{% url 'bookkeeping:index' %}">{{ request.user.year|title }}</a>
         <div class="dropdown">
           <button class="dropdown__btn"></button>
@@ -66,7 +66,6 @@
         </div>
       </div>
 
-
       <!-- Incomes -->
       <div class="{% if '/incomes/' in request.path %}active{% endif %}">
         <a href="{% url 'incomes:index' %}">{% translate 'Incomes' %}</a>
@@ -102,7 +101,6 @@
       <div class="{% if '/drinks/' in request.path %}active{% endif %}">
         <a href="{% url 'drinks:index' %}">{% translate 'Drinks' %}</a>
       </div>
-
 
       <!-- Counters -->
       <div class="{% if '/counts/' in request.path %}active{% endif %}">
@@ -176,9 +174,9 @@
       </div>
     </nav>
 
-      <!-- Loader -->
-      <div class="htmx-indicator loader loader-default is-active" id="indicator"></div>
-      {% block content %}{% endblock content %}
+    <!-- Loader -->
+    <div class="htmx-indicator loader loader-default is-active" id="indicator"></div>
+    {% block content %}{% endblock content %}
 
     {% endblock body %}
 
