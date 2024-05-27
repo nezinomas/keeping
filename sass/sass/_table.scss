@@ -144,12 +144,6 @@
         font-weight: 650;
    }
 
-   th.exception,
-   td.exception {
-        padding-left: .4rem;
-        border-left: 5px solid $danger !important;
-    }
-
     // Book styles
     .currently-reading-book {
         background-color: #f5ebd7;
@@ -228,6 +222,23 @@
                 background-color: darken($day-danger, 5);
             }
         }
+    }
+}
+
+
+// Expenses table
+.expenses {
+    td:first-child {
+        padding-left: 8px;
+    }
+
+    td.exception {
+        padding-left: 5px;
+    }
+
+    th.exception,
+    td.exception {
+        border-left: 5px solid $danger !important;
     }
 }
 
