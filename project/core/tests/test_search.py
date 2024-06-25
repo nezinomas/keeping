@@ -72,6 +72,59 @@ def test_sanitize_search_str_empty():
     assert not actual
 
 
+@pytest.mark.parametrize(
+    "search, expect",
+    [
+        (
+            "-c x",
+            {"category": ["x"], "year": None, "month": None, "remark": None}
+        ),
+        (
+            "-category x",
+            {"category": ["x"], "year": None, "month": None, "remark": None},
+        ),
+        (
+            "-c x y",
+            {"category": ["x", "y"], "year": None, "month": None, "remark": None},
+        ),
+        (
+            "-y 1 -c x",
+            {"category": ["x"], "year": 1, "month": None, "remark": None}
+        ),
+        (
+            "-year 1 -c x",
+            {"category": ["x"], "year": 1, "month": None, "remark": None}
+        ),
+        (
+            "-m 1 -c x",
+            {"category": ["x"], "year": None, "month": 1, "remark": None}
+        ),
+        (
+            "-month 1 -c x",
+            {"category": ["x"], "year": None, "month": 1, "remark": None},
+        ),
+        (
+            "-r xxx -c x",
+            {"category": ["x"], "year": None, "month": None, "remark": "xxx"},
+        ),
+        (
+            "-remark xxx -c x",
+            {"category": ["x"], "year": None, "month": None, "remark": "xxx"},
+        ),
+        (
+            "-c x -y 1 -m 2 -r xxx",
+            {"category": ["x"], "year": 1, "month": 2, "remark": "xxx"},
+        ),
+        (
+            "-category x y -year 1 -month 2 -remark xxx",
+            {"category": ["x", "y"], "year": 1, "month": 2, "remark": "xxx"},
+        ),
+    ],
+)
+def test_parse_search_with_args(search, expect):
+    assert expect == H.parse_search_with_args(search)
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                                 Expense
 # ---------------------------------------------------------------------------------------

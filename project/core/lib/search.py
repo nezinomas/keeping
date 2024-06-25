@@ -1,3 +1,4 @@
+import argparse
 import re
 from functools import reduce
 from operator import or_
@@ -42,6 +43,18 @@ def parse_search_input(search_str):
             _search.append(word)
 
     return _date, _search
+
+
+def parse_search_with_args(search_str):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-category', '-c', type=str, nargs='+', required=True)
+    parser.add_argument('-year', '-y', type=int, required=False)
+    parser.add_argument('-month', '-m', type=int, required=False)
+    parser.add_argument('-remark', '-r', type=str, required=False)
+
+    args = parser.parse_args(search_str.split())
+
+    return vars(args)
 
 
 def filter_dates(_date, sql, field="date"):
