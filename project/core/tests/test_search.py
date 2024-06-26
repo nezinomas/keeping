@@ -119,6 +119,11 @@ def test_sanitize_search_str_empty():
             "-category x y -year 1 -month 2 -remark xxx",
             {"category": ["x", "y"], "year": 1, "month": 2, "remark": ["xxx"]},
         ),
+        pytest.param(
+            "xxx 1111",
+            {"category": None, "year": None, "month": None, "remark": None},
+            marks=pytest.mark.xfail(reason='argparse.ArgumentError'),
+        ),
     ],
 )
 def test_parse_search_with_args(search, expect):
