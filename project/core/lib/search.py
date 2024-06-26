@@ -45,6 +45,23 @@ def parse_search_input(search_str):
     return _date, _search
 
 
+def parse_search_no_args(search_str):
+    rtn = {"category": None, "year": None, "month": None, "remark": None}
+
+    if match := re.search(r"(\d{4})-{0,1}\.{0,1}(\d{0,2})", search_str):
+        if match[1]:
+            rtn["year"] = int(match[1])
+
+        if match[2]:
+            rtn["month"] = int(match[2])
+
+    if match := re.findall(r"[a-zA-Z]+", search_str):
+        rtn["category"] = match
+        rtn["remark"] = match
+
+    return rtn
+
+
 def parse_search_with_args(search_str):
     parser = argparse.ArgumentParser()
     parser.add_argument('-category', '-c', type=str, nargs='+', required=True)

@@ -125,6 +125,59 @@ def test_parse_search_with_args(search, expect):
     assert expect == H.parse_search_with_args(search)
 
 
+@pytest.mark.parametrize(
+    "search, expect",
+    [
+        (
+            "xxx",
+            {"category": ["xxx"], "year": None, "month": None, "remark": ["xxx"]}
+        ),
+        (
+            "xxx yyy",
+            {"category": ["xxx", "yyy"], "year": None, "month": None, "remark": ["xxx", "yyy"]},
+        ),
+        (
+            "2000",
+            {"category": None, "year": 2000, "month": None, "remark": None}
+        ),
+        (
+            "2000.01",
+            {"category": None, "year": 2000, "month": 1, "remark": None}
+        ),
+        (
+            "2000.01.02",
+            {"category": None, "year": 2000, "month": 1, "remark": None}
+        ),
+        (
+            "2000-01",
+            {"category": None, "year": 2000, "month": 1, "remark": None}
+        ),
+        (
+            "2000-01",
+            {"category": None, "year": 2000, "month": 1, "remark": None}
+        ),
+        (
+            "2000-01-02",
+            {"category": None, "year": 2000, "month": 1, "remark": None}
+        ),
+        (
+            "xxx 2000-01-02 yyy",
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]}
+        ),
+        (
+            "xxx 2000.01.02 yyy",
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]}
+        ),
+        (
+            "xxx 2000.01.02 yyy 1111.11",
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]}
+        ),
+    ],
+)
+def test_parse_search_no_args(search, expect):
+    assert expect == H.parse_search_no_args(search)
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                                 Expense
 # ---------------------------------------------------------------------------------------
