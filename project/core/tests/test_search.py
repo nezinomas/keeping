@@ -194,6 +194,14 @@ def test_parse_search_no_args(search, expect):
             {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
             {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
         ),
+        (
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": None},
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": None},
+        ),
+        (
+            {"category": None, "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
+            {"category": None, "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
+        ),
     ],
 )
 def test_filter_short_search_words(search_dict, expect):

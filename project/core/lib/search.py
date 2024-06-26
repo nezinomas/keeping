@@ -79,6 +79,9 @@ def filter_short_search_words(search_dict):
         return [word for word in words if len(word) > 2]
 
     for key in ["category", "remark"]:
+        if search_dict[key] is None:
+            continue
+
         search_dict[key] = filter_words(search_dict[key])
 
     return search_dict
