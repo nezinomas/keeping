@@ -104,20 +104,20 @@ def test_sanitize_search_str_empty():
             {"category": ["x"], "year": None, "month": 1, "remark": None},
         ),
         (
-            "-r xxx -c x",
-            {"category": ["x"], "year": None, "month": None, "remark": "xxx"},
+            "-r xxx yyy -c x",
+            {"category": ["x"], "year": None, "month": None, "remark": ["xxx", "yyy"]},
         ),
         (
             "-remark xxx -c x",
-            {"category": ["x"], "year": None, "month": None, "remark": "xxx"},
+            {"category": ["x"], "year": None, "month": None, "remark": ["xxx"]},
         ),
         (
             "-c x -y 1 -m 2 -r xxx",
-            {"category": ["x"], "year": 1, "month": 2, "remark": "xxx"},
+            {"category": ["x"], "year": 1, "month": 2, "remark": ["xxx"]},
         ),
         (
             "-category x y -year 1 -month 2 -remark xxx",
-            {"category": ["x", "y"], "year": 1, "month": 2, "remark": "xxx"},
+            {"category": ["x", "y"], "year": 1, "month": 2, "remark": ["xxx"]},
         ),
     ],
 )
