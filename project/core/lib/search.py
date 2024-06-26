@@ -87,6 +87,19 @@ def filter_short_search_words(search_dict):
     return search_dict
 
 
+def make_search_dict(search_str):
+    _str = sanitize_search_str(search_str)
+
+    try:
+        search_dict = parse_search_with_args(_str)
+    except SystemExit:
+        search_dict = parse_search_no_args(_str)
+
+    search_dict = filter_short_search_words(search_dict)
+
+    return search_dict
+
+
 def filter_dates(_date, sql, field="date"):
     if _date:
         year = _date[:4]
@@ -100,27 +113,18 @@ def filter_dates(_date, sql, field="date"):
 
 
 def search_expenses(search_str):
-    _sql = Expense.objects.none()
-
-    search_str = sanitize_search_str(search_str)
-
-    try:
-        search_dict = parse_search_with_args(search_str)
-    except SystemExit:
-        search_dict = parse_search_no_args(search_str)
+    search_dict = make_search_dict(search_str)
 
     if all(value is None for value in search_dict.values()):
-        return _sql
+        return Expense.objects.none()
 
-    search_dict = filter_short_search_words(search_dict)
-
-    _sql = Expense.objects.items()
+    query = Expense.objects.items()
 
     if search_dict["year"]:
-        _sql = _sql.filter(**{"date__year": search_dict["year"]})
+        query = query.filter(**{"date__year": search_dict["year"]})
 
     if search_dict["month"]:
-        _sql = _sql.filter(**{"date__month": search_dict["month"]})
+        query = query.filter(**{"date__month": search_dict["month"]})
 
     Q_arr = []
     if search_dict["category"]:
@@ -146,10 +150,10 @@ def search_expenses(search_str):
     if search_dict["remark"]:
         Q_arr.append(reduce(or_, (Q(remark__icontains=q) for q in search_dict["remark"])))
 
-    _sql = _sql.filter(*Q_arr, _connector=Q.OR)
-    _sql = _sql.order_by("-date")
+    query = query.filter(*Q_arr, _connector=Q.OR)
+    query = query.order_by("-date")
 
-    return _sql
+    return query
 
 
 def search_incomes(search_str):
