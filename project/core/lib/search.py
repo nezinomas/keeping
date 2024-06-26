@@ -64,10 +64,10 @@ def parse_search_no_args(search_str):
 
 def parse_search_with_args(search_str):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-category', '-c', type=str, nargs='+', required=True)
-    parser.add_argument('-year', '-y', type=int, required=False)
-    parser.add_argument('-month', '-m', type=int, required=False)
-    parser.add_argument('-remark', '-r', type=str, nargs='+', required=False)
+    parser.add_argument('-category', '-c', type=str, nargs='+')
+    parser.add_argument('-year', '-y', type=int)
+    parser.add_argument('-month', '-m', type=int)
+    parser.add_argument('-remark', '-r', type=str, nargs='+')
 
     args = parser.parse_args(search_str.split())
 

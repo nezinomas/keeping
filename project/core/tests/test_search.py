@@ -88,28 +88,28 @@ def test_sanitize_search_str_empty():
             {"category": ["x", "y"], "year": None, "month": None, "remark": None},
         ),
         (
-            "-y 1 -c x",
-            {"category": ["x"], "year": 1, "month": None, "remark": None}
+            "-y 1",
+            {"category": None, "year": 1, "month": None, "remark": None}
         ),
         (
-            "-year 1 -c x",
-            {"category": ["x"], "year": 1, "month": None, "remark": None}
+            "-year 1",
+            {"category": None, "year": 1, "month": None, "remark": None}
         ),
         (
-            "-m 1 -c x",
-            {"category": ["x"], "year": None, "month": 1, "remark": None}
+            "-m 1",
+            {"category": None, "year": None, "month": 1, "remark": None}
         ),
         (
-            "-month 1 -c x",
-            {"category": ["x"], "year": None, "month": 1, "remark": None},
+            "-month 1",
+            {"category": None, "year": None, "month": 1, "remark": None},
         ),
         (
-            "-r xxx yyy -c x",
-            {"category": ["x"], "year": None, "month": None, "remark": ["xxx", "yyy"]},
+            "-r xxx yyy",
+            {"category": None, "year": None, "month": None, "remark": ["xxx", "yyy"]},
         ),
         (
-            "-remark xxx -c x",
-            {"category": ["x"], "year": None, "month": None, "remark": ["xxx"]},
+            "-remark xxx",
+            {"category": None, "year": None, "month": None, "remark": ["xxx"]},
         ),
         (
             "-c x -y 1 -m 2 -r xxx",
