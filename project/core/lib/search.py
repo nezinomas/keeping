@@ -55,7 +55,7 @@ def parse_search_no_args(search_str):
         if match[2]:
             rtn["month"] = int(match[2])
 
-    if match := re.findall(r"[a-zA-Z]+", search_str):
+    if match := [word for word in search_str.split(" ") if not any(char.isdigit() for char in word)]:
         rtn["category"] = match
         rtn["remark"] = match
 

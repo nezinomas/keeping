@@ -177,6 +177,22 @@ def test_parse_search_with_args(search, expect):
             "xxx 2000.01.02 yyy 1111.11",
             {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]}
         ),
+        (
+            "type_a",
+            {"category": ["type_a"], "year": None, "month": None, "remark": ["type_a"]}
+        ),
+        (
+            "type-a",
+            {"category": ["type-a"], "year": None, "month": None, "remark": ["type-a"]}
+        ),
+        (
+            "type.a",
+            {"category": ["type.a"], "year": None, "month": None, "remark": ["type.a"]}
+        ),
+        (
+            "type.a 2000.01 3000.02",
+            {"category": ["type.a"], "year": 2000, "month": 1, "remark": ["type.a"]}
+        ),
     ],
 )
 def test_parse_search_no_args(search, expect):
