@@ -101,20 +101,53 @@ def filter_dates(_date, sql, field="date"):
 
 def search_expenses(search_str):
     _sql = Expense.objects.none()
-    _date, _search = parse_search_input(search_str)
 
-    if _date or _search:
-        _sql = Expense.objects.items()
-        _sql = filter_dates(_date, _sql)
+    search_str = sanitize_search_str(search_str)
 
-        if _search:
-            _sql = _sql.filter(
-                reduce(or_, (Q(expense_type__title__icontains=q) for q in _search))
-                | reduce(or_, (Q(expense_name__title__icontains=q) for q in _search))
-                | reduce(or_, (Q(remark__icontains=q) for q in _search))
+    try:
+        search_dict = parse_search_with_args(search_str)
+    except SystemExit:
+        search_dict = parse_search_no_args(search_str)
+
+    if all(value is None for value in search_dict.values()):
+        return _sql
+
+    search_dict = filter_short_search_words(search_dict)
+
+    _sql = Expense.objects.items()
+
+    if search_dict["year"]:
+        _sql = _sql.filter(**{"date__year": search_dict["year"]})
+
+    if search_dict["month"]:
+        _sql = _sql.filter(**{"date__month": search_dict["month"]})
+
+    Q_arr = []
+    if search_dict["category"]:
+        Q_arr.extend(
+            (
+                reduce(
+                    or_,
+                    (
+                        Q(expense_type__title__icontains=q)
+                        for q in search_dict["category"]
+                    ),
+                ),
+                reduce(
+                    or_,
+                    (
+                        Q(expense_name__title__icontains=q)
+                        for q in search_dict["category"]
+                    ),
+                ),
             )
+        )
 
-        _sql = _sql.order_by("-date")
+    if search_dict["remark"]:
+        Q_arr.append(reduce(or_, (Q(remark__icontains=q) for q in search_dict["remark"])))
+
+    _sql = _sql.filter(*Q_arr, _connector=Q.OR)
+    _sql = _sql.order_by("-date")
 
     return _sql
 
