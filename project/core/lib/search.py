@@ -74,6 +74,16 @@ def parse_search_with_args(search_str):
     return vars(args)
 
 
+def filter_short_search_words(search_dict):
+    def filter_words(words):
+        return [word for word in words if len(word) > 2]
+
+    for key in ["category", "remark"]:
+        search_dict[key] = filter_words(search_dict[key])
+
+    return search_dict
+
+
 def filter_dates(_date, sql, field="date"):
     if _date:
         year = _date[:4]

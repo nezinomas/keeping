@@ -183,6 +183,23 @@ def test_parse_search_no_args(search, expect):
     assert expect == H.parse_search_no_args(search)
 
 
+@pytest.mark.parametrize(
+    "search_dict, expect",
+    [
+        (
+            {"category": ["xx", "yyy"], "year": 2000, "month": 1, "remark": ["xx", "yyy"]},
+            {"category": ["yyy"], "year": 2000, "month": 1, "remark": ["yyy"]},
+        ),
+        (
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
+        ),
+    ],
+)
+def test_filter_short_search_words(search_dict, expect):
+    assert expect == H.filter_short_search_words(search_dict)
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                                 Expense
 # ---------------------------------------------------------------------------------------
