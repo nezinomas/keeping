@@ -229,54 +229,125 @@ def test_filter_short_search_words(search_dict, expect):
 # ---------------------------------------------------------------------------------------
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    'search, cnt, expense_type, expense_name',
+    'search, expect',
     [
-        ('1999', 1, 'Expense Type', 'Expense Name'),
-        ('-y 1999', 1, 'Expense Type', 'Expense Name'),
-        ('1999.1', 1, 'Expense Type', 'Expense Name'),
-        ('-y 1999 -m 1', 1, 'Expense Type', 'Expense Name'),
-        ('1999-1', 1, 'Expense Type', 'Expense Name'),
-        ('2000', 0, None, None),
-        ('-y 2000', 0, None, None),
-        ('name', 1, 'Expense Type', 'Expense Name'),
-        ('-c name', 1, 'Expense Type', 'Expense Name'),
-        ('type', 1, 'Expense Type', 'Expense Name'),
-        ('-c type', 1, 'Expense Type', 'Expense Name'),
-        ('remark', 1, 'Expense Type', 'Expense Name'),
-        ('-r remark', 1, 'Expense Type', 'Expense Name'),
-        ('1999 name', 1, 'Expense Type', 'Expense Name'),
-        ('-y 1999 -c name', 1, 'Expense Type', 'Expense Name'),
-        ('1999 type', 1, 'Expense Type', 'Expense Name'),
-        ('-y 1999 -c type', 1, 'Expense Type', 'Expense Name'),
-        ('-y 1999 -c type name', 1, 'Expense Type', 'Expense Name'),
-        ('1999.1 name', 1, 'Expense Type', 'Expense Name'),
-        ('-y 1999 -m 1 -c name', 1, 'Expense Type', 'Expense Name'),
-        ('1999-1 name', 1, 'Expense Type', 'Expense Name'),
-        ('-y 1999 -m 1 -c name', 1, 'Expense Type', 'Expense Name'),
-        ('1999.1 type', 1, 'Expense Type', 'Expense Name'),
-        ('-y 1999 -m 1 -c type', 1, 'Expense Type', 'Expense Name'),
-        ('1999-1 type', 1, 'Expense Type', 'Expense Name'),
-        ('-y 1999 -m 1 -c type', 1, 'Expense Type', 'Expense Name'),
+        (
+            '1999', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-y 1999', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '1999.1', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '1999-1', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-y 1999 -m 1', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '3000', []
+        ),
+        (
+            'type_a', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-c type_a', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            'type_a name_b', [
+                {"type": "Type_B", "name": "Name_B", "remark": "WWW"},
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-c type_a name_b', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+            ]
+        ),
+        (
+            'type_a xxx', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-c type_a -r xxx', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-c type_a name_a -r www', []
+        ),
+        (
+            '-c type_a name_a -r xxx', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
+            ]
+        ),
+        (
+            '1999 name_a', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
+            ]
+        ),
+        (
+            '-y 1999 -c name_a', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
+            ]
+        ),
     ]
 )
-def test_expense_search(search, cnt, expense_type, expense_name):
-    ExpenseFactory()
+def test_expense_search(search, expect):
     ExpenseFactory(
-        date=date(3333, 1, 1),
-        expense_name=ExpenseNameFactory(title='X'),
-        expense_type=ExpenseTypeFactory(title='Y'),
+        date=date(1999, 1, 1),
+        expense_type=ExpenseTypeFactory(title='Type_A'),
+        expense_name=ExpenseNameFactory(title='Name_A'),
+        remark='XXX'
+    )
+    ExpenseFactory(
+        date=date(1999, 2, 1),
+        expense_type=ExpenseTypeFactory(title='Type_A'),
+        expense_name=ExpenseNameFactory(title='Name_B'),
+        remark='YYY'
+    )
+    ExpenseFactory(
+        date=date(2000, 1, 1),
+        expense_type=ExpenseTypeFactory(title='Type_B'),
+        expense_name=ExpenseNameFactory(title='Name_A'),
         remark='ZZZ'
+    )
+    ExpenseFactory(
+        date=date(2000, 2, 1),
+        expense_type=ExpenseTypeFactory(title='Type_B'),
+        expense_name=ExpenseNameFactory(title='Name_B'),
+        remark='WWW'
     )
 
     q = H.search_expenses(search)
-    assert q.count() == cnt
 
-    if q:
-        q = q[0]
-
-        assert q.date == date(1999, 1, 1)
-        assert q.expense_type.title == expense_type
-        assert q.expense_name.title == expense_name
+    for i in range(len(expect)):
+        assert q[i].expense_type.title == expect[i]["type"]
+        assert q[i].expense_name.title == expect[i]["name"]
+        assert q[i].remark == expect[i]["remark"]
 
 
 @pytest.mark.django_db
