@@ -112,6 +112,18 @@ def filter_dates(_date, sql, field="date"):
     return sql
 
 
+def _get(search_dict, key, default_value=None):
+    if default_value is None:
+        default_value = []
+
+    try:
+        value = search_dict[key]
+    except KeyError:
+        return default_value
+
+    return value or default_value
+
+
 def search_expenses(search_str):
     search_dict = make_search_dict(search_str)
 
@@ -120,37 +132,28 @@ def search_expenses(search_str):
 
     query = Expense.objects.items()
 
-    if search_dict["year"]:
-        query = query.filter(**{"date__year": search_dict["year"]})
+    date_filters = {
+        "year": "date__year",
+        "month": "date__month"
+    }
 
-    if search_dict["month"]:
-        query = query.filter(**{"date__month": search_dict["month"]})
+    for key, filter_key in date_filters.items():
+        if search_dict[key]:
+            query = query.filter(**{filter_key: search_dict[key]})
 
-    Q_arr = []
-    if search_dict["category"]:
-        Q_arr.extend(
-            (
-                reduce(
-                    or_,
-                    (
-                        Q(expense_type__title__icontains=q)
-                        for q in search_dict["category"]
-                    ),
-                ),
-                reduce(
-                    or_,
-                    (
-                        Q(expense_name__title__icontains=q)
-                        for q in search_dict["category"]
-                    ),
-                ),
-            )
-        )
+    category_filters = [
+        Q(expense_type__title__icontains=q) | Q(expense_name__title__icontains=q)
+        for q in _get(search_dict, "category")
+    ]
 
-    if search_dict["remark"]:
-        Q_arr.append(reduce(or_, (Q(remark__icontains=q) for q in search_dict["remark"])))
+    remark_filters = [
+        Q(remark__icontains=q)
+        for q in _get(search_dict, "remark")
+    ]
 
-    query = query.filter(*Q_arr, _connector=Q.OR)
+    if combined_filters := category_filters + remark_filters:
+        query = query.filter(reduce(or_, combined_filters))
+
     query = query.order_by("-date")
 
     return query
