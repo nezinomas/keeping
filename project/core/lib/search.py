@@ -1,7 +1,7 @@
 import argparse
 import re
 from functools import reduce
-from operator import or_
+from operator import and_, or_
 
 from django.db.models import Q
 
@@ -92,12 +92,14 @@ def make_search_dict(search_str):
 
     try:
         search_dict = parse_search_with_args(_str)
+        search_type = "with_args"
     except SystemExit:
         search_dict = parse_search_no_args(_str)
+        search_type = "no_args"
 
     search_dict = filter_short_search_words(search_dict)
 
-    return search_dict
+    return search_dict, search_type
 
 
 def filter_dates(_date, sql, field="date"):
@@ -125,7 +127,7 @@ def _get(search_dict, key, default_value=None):
 
 
 def search_expenses(search_str):
-    search_dict = make_search_dict(search_str)
+    search_dict, search_type = make_search_dict(search_str)
 
     if all(value is None for value in search_dict.values()):
         return Expense.objects.none()
@@ -152,7 +154,8 @@ def search_expenses(search_str):
     ]
 
     if combined_filters := category_filters + remark_filters:
-        query = query.filter(reduce(or_, combined_filters))
+        operator_ = and_ if search_type == 'with_args' else or_
+        query = query.filter(reduce(operator_, combined_filters))
 
     query = query.order_by("-date")
 
