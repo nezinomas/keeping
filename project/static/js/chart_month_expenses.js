@@ -1,17 +1,22 @@
 function loadMonthExpensesChart(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
+    let max_category_len = 0;
+
     // convert data
     for (var key in chartData) {
         chartData[key]['y'] /= 100;
+
+        if (chartData[key]['name'].length > max_category_len) {
+            max_category_len = chartData[key]['name'].length;
+        }
     }
 
     Highcharts.chart(idContainer, {
         chart: {
             type: 'bar',
             height: 485,
-            spacingLeft: 5,
-            marginBottom: chartData.length * 2.85,
+            marginLeft: max_category_len * 6.55,
         },
         title: {
             text: ''

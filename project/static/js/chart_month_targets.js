@@ -1,6 +1,5 @@
 function loadMonthTargetsChart(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
-    console.log(chartData, idData, idContainer);
 
     // convert targets
     for(i = 0; i < chartData.target.length; i++) {
@@ -18,8 +17,8 @@ function loadMonthTargetsChart(idData, idContainer) {
             type: 'bar',
             height: 485,
             marginLeft: chartData.max_category_len * 6.55,
-            marginTop: 8.5,
-            marginBottom: chartData.category_len * 2.85,
+            // marginTop: 8.5,
+            // marginBottom: chartData.category_len * 2.85,
 
         },
         title: {
