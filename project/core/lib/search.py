@@ -143,10 +143,13 @@ def generic_search(search_str, category_list):
         if search_dict[key]:
             query = query.filter(**{filter_key: search_dict[key]})
 
-    category_filters = []
-    for q in _get(search_dict, "category"):
-        category_filters.append(reduce(or_, (Q(**{f"{category}__icontains": q}) for category in category_list)))
-
+    category_filters = [
+        reduce(
+            or_,
+            (Q(**{f"{category}__icontains": q}) for category in category_list),
+        )
+        for q in _get(search_dict, "category")
+    ]
 
     remark_filters = [
         Q(remark__icontains=q)
