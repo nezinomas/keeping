@@ -171,22 +171,8 @@ def search_expenses(search_str):
 
 
 def search_incomes(search_str):
-    _sql = Income.objects.none()
-    _date, _search = parse_search_input(search_str)
-
-    if _date or _search:
-        _sql = Income.objects.items()
-        _sql = filter_dates(_date, _sql)
-
-        if _search:
-            _sql = _sql.filter(
-                reduce(or_, (Q(income_type__title__icontains=q) for q in _search))
-                | reduce(or_, (Q(remark__icontains=q) for q in _search))
-            )
-
-        _sql = _sql.order_by("-date")
-
-    return _sql
+    category_list = ["income_type__title"]
+    return generic_search(search_str, category_list)
 
 
 def search_books(search_str):

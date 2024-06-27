@@ -369,13 +369,19 @@ def test_expense_search_ordering():
     'search, cnt, income_type',
     [
         ('1999', 1, 'Income Type'),
+        ('-y 1999', 1, 'Income Type'),
         ('1999.1', 1, 'Income Type'),
         ('1999-1', 1, 'Income Type'),
+        ('-y 1999 -m 1', 1, 'Income Type'),
         ('2000', 0, None),
+        ('-y 2000', 0, None),
         ('type', 1, 'Income Type'),
+        ('-c type', 1, 'Income Type'),
         ('remark', 1, 'Income Type'),
+        ('-r remark', 1, 'Income Type'),
         ('1999.1 type', 1, 'Income Type'),
         ('1999-1 type', 1, 'Income Type'),
+        ('-y 1999 -m 1 -c type', 1, 'Income Type'),
     ]
 )
 def test_search(search, cnt, income_type):
