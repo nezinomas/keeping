@@ -38,6 +38,11 @@
     margin-bottom: calc($gap * 2);
 }
 
+.wrap {
+    flex-wrap: wrap;
+    white-space: wrap;
+}
+
 .button-row {
     display: flex;
     margin-bottom: $gap;
