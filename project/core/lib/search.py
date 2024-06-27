@@ -126,7 +126,7 @@ def _get(search_dict, key, default_value=None):
     return value or default_value
 
 
-def search_expenses(search_str):
+def generic_search(search_str, category_list):
     search_dict, search_type = make_search_dict(search_str)
 
     if all(value is None for value in search_dict.values()):
@@ -143,10 +143,10 @@ def search_expenses(search_str):
         if search_dict[key]:
             query = query.filter(**{filter_key: search_dict[key]})
 
-    category_filters = [
-        Q(expense_type__title__icontains=q) | Q(expense_name__title__icontains=q)
-        for q in _get(search_dict, "category")
-    ]
+    category_filters = []
+    for q in _get(search_dict, "category"):
+        category_filters.append(reduce(or_, (Q(**{f"{category}__icontains": q}) for category in category_list)))
+
 
     remark_filters = [
         Q(remark__icontains=q)
@@ -160,6 +160,11 @@ def search_expenses(search_str):
     query = query.order_by("-date")
 
     return query
+
+
+def search_expenses(search_str):
+    category_list = ["expense_type__title", "expense_name__title"]
+    return generic_search(search_str, category_list)
 
 
 def search_incomes(search_str):
