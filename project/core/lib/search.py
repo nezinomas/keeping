@@ -20,6 +20,9 @@ def sanitize_search_str(search_str):
 def parse_search_no_args(search_str):
     rtn = {"category": None, "year": None, "month": None, "remark": None}
 
+    if not search_str:
+        return rtn
+
     if match := re.search(r"(\d{4})-{0,1}\.{0,1}(\d{0,2})", search_str):
         if match[1]:
             rtn["year"] = int(match[1])
@@ -69,7 +72,7 @@ def make_search_dict(search_str):
     try:
         search_dict = parse_search_with_args(_str)
         search_type = "with_args"
-    except SystemExit:
+    except (AttributeError, SystemExit):
         search_dict = parse_search_no_args(_str)
         search_type = "no_args"
 
