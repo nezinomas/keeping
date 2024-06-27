@@ -103,8 +103,9 @@ def generic_search(model, search_str, category_list, date_field="date"):
 
     # Date filters
     for key in ["year", "month"]:
-        if search_dict.get(key):
-            query = query.filter(**{f"{date_field}__{key}": search_dict[key]})
+        if not search_dict.get(key):
+            continue
+        query = query.filter(**{f"{date_field}__{key}": search_dict[key]})
 
     # Category filters
     category_filters = [
