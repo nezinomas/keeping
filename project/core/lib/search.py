@@ -17,34 +17,6 @@ def sanitize_search_str(search_str):
     return search_str
 
 
-def parse_search_input(search_str):
-    _date = None
-    _search = []
-
-    search_str = sanitize_search_str(search_str)
-
-    if not search_str:
-        return _date, _search
-
-    # find all 2000 or 2000-01 or 2000.01 inputs
-    rgx = re.compile(r"\d{4}-{0,1}\.{0,1}\d{0,2}")
-
-    match = re.findall(rgx, search_str)
-    _date = match[0] if match else None
-
-    searches = search_str.split(" ")
-
-    _search = []
-    for word in searches:
-        if word in match:
-            continue
-
-        if len(word) >= 2:
-            _search.append(word)
-
-    return _date, _search
-
-
 def parse_search_no_args(search_str):
     rtn = {"category": None, "year": None, "month": None, "remark": None}
 
@@ -100,18 +72,6 @@ def make_search_dict(search_str):
     search_dict = filter_short_search_words(search_dict)
 
     return search_dict, search_type
-
-
-def filter_dates(_date, sql, field="date"):
-    if _date:
-        year = _date[:4]
-        sql = sql.filter(**{f"{field}__year": year})
-
-        if len(_date) > 4:
-            month = _date[5:]
-            sql = sql.filter(**{f"{field}__month": month})
-
-    return sql
 
 
 def _get(search_dict, key, default_value=None):

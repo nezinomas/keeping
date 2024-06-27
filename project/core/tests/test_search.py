@@ -9,55 +9,6 @@ from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ..lib import search as H
 
 
-def test_get_year():
-    search = 'test1 2000.10 test2 1999 test3 300.11.11 test4 2015-15-15 test5'
-
-    _date, _ = H.parse_search_input(search)
-
-    assert _date == '2000.10'
-
-
-def test_get_year_no_number():
-    search = 'test1'
-
-    _date, _ = H.parse_search_input(search)
-
-    assert not _date
-
-
-def test_get_strings():
-    search = 'test1 2000.10 test2 1999.12.12 test3'
-
-    _, _str = H.parse_search_input(search)
-
-    assert _str == ['test1', 'test2', '1999.12.12', 'test3']
-
-
-def test_get_strings_no_strings():
-    search = '3000'
-
-    _, _str = H.parse_search_input(search)
-
-    assert not _str
-
-
-def test_get_strings_no_data():
-    search = None
-
-    _d, _str = H.parse_search_input(search)
-
-    assert not _d
-    assert _str == []
-
-
-def test_search_min_word_length():
-    search = 'xx'
-
-    _, _s = H.parse_search_input(search)
-
-    assert _s == ['xx']
-
-
 def test_sanitize_search_str():
     search = '~!@#$%^&*()_+-=[]{}|;:,./<>?\\ x1'
     actual = H.sanitize_search_str(search)
