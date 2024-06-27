@@ -94,28 +94,27 @@ def generic_search(model, search_str, category_list, date_field="date"):
 
     query = model.objects.items()
 
-    date_filters = {
-        "year": f"{date_field}__year",
-        "month": f"{date_field}__month"
-    }
+    # Date filters
+    for key in ["year", "month"]:
+        if search_dict.get(key):
+            query = query.filter(**{f"{date_field}__{key}": search_dict[key]})
 
-    for key, filter_key in date_filters.items():
-        if search_dict[key]:
-            query = query.filter(**{filter_key: search_dict[key]})
-
+    # Category filters
     category_filters = [
         reduce(
             or_,
-            (Q(**{f"{category}__icontains": q}) for category in category_list),
+            (Q(**{f"{category}__icontains": search_word}) for category in category_list),
         )
-        for q in _get(search_dict, "category")
+        for search_word in _get(search_dict, "category")
     ]
 
+    # Remark filters
     remark_filters = [
-        Q(remark__icontains=q)
-        for q in _get(search_dict, "remark")
+        Q(remark__icontains=search_word)
+        for search_word in _get(search_dict, "remark")
     ]
 
+    # Combine Category and Remark filters
     if combined_filters := category_filters + remark_filters:
         operator_ = and_ if search_type == 'with_args' else or_
         query = query.filter(reduce(operator_, combined_filters))
