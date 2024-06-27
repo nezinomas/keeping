@@ -265,6 +265,21 @@ def test_filter_short_search_words(search_dict, expect):
                 {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
             ]
         ),
+        (
+            '-c žvaigž', [
+                {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
+            ]
+        ),
+        (
+            '-c ąžuo', [
+                {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
+            ]
+        ),
+        (
+            '-r ąčęėįšųūž', [
+                {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
+            ]
+        ),
     ]
 )
 def test_expense_search(search, expect):
@@ -292,10 +307,16 @@ def test_expense_search(search, expect):
         expense_name=ExpenseNameFactory(title='Name_B'),
         remark='WWW'
     )
+    ExpenseFactory(
+        date=date(2001, 2, 1),
+        expense_type=ExpenseTypeFactory(title='Žvaigždė'),
+        expense_name=ExpenseNameFactory(title='Ąžuolas'),
+        remark='ąčęėįšųūž'
+    )
 
     q = H.search_expenses(search)
 
-    for i in range(len(expect)):
+    for i in range(len(q)):
         assert q[i].expense_type.title == expect[i]["type"]
         assert q[i].expense_name.title == expect[i]["name"]
         assert q[i].remark == expect[i]["remark"]
