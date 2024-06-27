@@ -9,55 +9,6 @@ from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ..lib import search as H
 
 
-def test_get_year():
-    search = 'test1 2000.10 test2 1999 test3 300.11.11 test4 2015-15-15 test5'
-
-    _date, _ = H.parse_search_input(search)
-
-    assert _date == '2000.10'
-
-
-def test_get_year_no_number():
-    search = 'test1'
-
-    _date, _ = H.parse_search_input(search)
-
-    assert not _date
-
-
-def test_get_strings():
-    search = 'test1 2000.10 test2 1999.12.12 test3'
-
-    _, _str = H.parse_search_input(search)
-
-    assert _str == ['test1', 'test2', '1999.12.12', 'test3']
-
-
-def test_get_strings_no_strings():
-    search = '3000'
-
-    _, _str = H.parse_search_input(search)
-
-    assert not _str
-
-
-def test_get_strings_no_data():
-    search = None
-
-    _d, _str = H.parse_search_input(search)
-
-    assert not _d
-    assert _str == []
-
-
-def test_search_min_word_length():
-    search = 'xx'
-
-    _, _s = H.parse_search_input(search)
-
-    assert _s == ['xx']
-
-
 def test_sanitize_search_str():
     search = '~!@#$%^&*()_+-=[]{}|;:,./<>?\\ x1'
     actual = H.sanitize_search_str(search)
@@ -72,46 +23,303 @@ def test_sanitize_search_str_empty():
     assert not actual
 
 
+@pytest.mark.parametrize(
+    "search, expect",
+    [
+        (
+            "-c x",
+            {"category": ["x"], "year": None, "month": None, "remark": None}
+        ),
+        (
+            "-category x",
+            {"category": ["x"], "year": None, "month": None, "remark": None},
+        ),
+        (
+            "-c x y",
+            {"category": ["x", "y"], "year": None, "month": None, "remark": None},
+        ),
+        (
+            "-y 1",
+            {"category": None, "year": 1, "month": None, "remark": None}
+        ),
+        (
+            "-year 1",
+            {"category": None, "year": 1, "month": None, "remark": None}
+        ),
+        (
+            "-m 1",
+            {"category": None, "year": None, "month": 1, "remark": None}
+        ),
+        (
+            "-month 1",
+            {"category": None, "year": None, "month": 1, "remark": None},
+        ),
+        (
+            "-r xxx yyy",
+            {"category": None, "year": None, "month": None, "remark": ["xxx", "yyy"]},
+        ),
+        (
+            "-remark xxx",
+            {"category": None, "year": None, "month": None, "remark": ["xxx"]},
+        ),
+        (
+            "-c x -y 1 -m 2 -r xxx",
+            {"category": ["x"], "year": 1, "month": 2, "remark": ["xxx"]},
+        ),
+        (
+            "-category x y -year 1 -month 2 -remark xxx",
+            {"category": ["x", "y"], "year": 1, "month": 2, "remark": ["xxx"]},
+        ),
+        pytest.param(
+            "xxx 1111",
+            {"category": None, "year": None, "month": None, "remark": None},
+            marks=pytest.mark.xfail(reason='argparse.ArgumentError'),
+        ),
+    ],
+)
+def test_parse_search_with_args(search, expect):
+    assert expect == H.parse_search_with_args(search)
+
+
+@pytest.mark.parametrize(
+    "search, expect",
+    [
+        (
+            "xxx",
+            {"category": ["xxx"], "year": None, "month": None, "remark": ["xxx"]}
+        ),
+        (
+            "xxx yyy",
+            {"category": ["xxx", "yyy"], "year": None, "month": None, "remark": ["xxx", "yyy"]},
+        ),
+        (
+            "2000",
+            {"category": None, "year": 2000, "month": None, "remark": None}
+        ),
+        (
+            "2000.01",
+            {"category": None, "year": 2000, "month": 1, "remark": None}
+        ),
+        (
+            "2000.01.02",
+            {"category": None, "year": 2000, "month": 1, "remark": None}
+        ),
+        (
+            "2000-01",
+            {"category": None, "year": 2000, "month": 1, "remark": None}
+        ),
+        (
+            "2000-01",
+            {"category": None, "year": 2000, "month": 1, "remark": None}
+        ),
+        (
+            "2000-01-02",
+            {"category": None, "year": 2000, "month": 1, "remark": None}
+        ),
+        (
+            "xxx 2000-01-02 yyy",
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]}
+        ),
+        (
+            "xxx 2000.01.02 yyy",
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]}
+        ),
+        (
+            "xxx 2000.01.02 yyy 1111.11",
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]}
+        ),
+        (
+            "type_a",
+            {"category": ["type_a"], "year": None, "month": None, "remark": ["type_a"]}
+        ),
+        (
+            "type-a",
+            {"category": ["type-a"], "year": None, "month": None, "remark": ["type-a"]}
+        ),
+        (
+            "type.a",
+            {"category": ["type.a"], "year": None, "month": None, "remark": ["type.a"]}
+        ),
+        (
+            "type.a 2000.01 3000.02",
+            {"category": ["type.a"], "year": 2000, "month": 1, "remark": ["type.a"]}
+        ),
+    ],
+)
+def test_parse_search_no_args(search, expect):
+    assert expect == H.parse_search_no_args(search)
+
+
+@pytest.mark.parametrize(
+    "search_dict, expect",
+    [
+        (
+            {"category": ["xx", "yyy"], "year": 2000, "month": 1, "remark": ["xx", "yyy"]},
+            {"category": ["yyy"], "year": 2000, "month": 1, "remark": ["yyy"]},
+        ),
+        (
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
+        ),
+        (
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": None},
+            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": None},
+        ),
+        (
+            {"category": None, "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
+            {"category": None, "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
+        ),
+    ],
+)
+def test_filter_short_search_words(search_dict, expect):
+    assert expect == H.filter_short_search_words(search_dict)
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                                 Expense
 # ---------------------------------------------------------------------------------------
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    'search, cnt, expense_type, expense_name',
+    'search, expect',
     [
-        ('1999', 1, 'Expense Type', 'Expense Name'),
-        ('1999.1', 1, 'Expense Type', 'Expense Name'),
-        ('1999-1', 1, 'Expense Type', 'Expense Name'),
-        ('2000', 0, None, None),
-        ('name', 1, 'Expense Type', 'Expense Name'),
-        ('type', 1, 'Expense Type', 'Expense Name'),
-        ('remark', 1, 'Expense Type', 'Expense Name'),
-        ('1999 name', 1, 'Expense Type', 'Expense Name'),
-        ('1999 name', 1, 'Expense Type', 'Expense Name'),
-        ('1999.1 name', 1, 'Expense Type', 'Expense Name'),
-        ('1999-1 name', 1, 'Expense Type', 'Expense Name'),
-        ('1999.1 type', 1, 'Expense Type', 'Expense Name'),
-        ('1999-1 type', 1, 'Expense Type', 'Expense Name'),
+        (
+            '1999', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-y 1999', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '1999.1', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '1999-1', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-y 1999 -m 1', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '3000', []
+        ),
+        (
+            'type_a', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-c type_a', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            'type_a name_b', [
+                {"type": "Type_B", "name": "Name_B", "remark": "WWW"},
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-c type_a name_b', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+            ]
+        ),
+        (
+            'type_a xxx', [
+                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-c type_a -r xxx', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"}
+            ]
+        ),
+        (
+            '-c type_a name_a -r www', []
+        ),
+        (
+            '-c type_a name_a -r xxx', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
+            ]
+        ),
+        (
+            '1999 name_a', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
+            ]
+        ),
+        (
+            '-y 1999 -c name_a', [
+                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
+            ]
+        ),
+        (
+            '-c žvaigž', [
+                {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
+            ]
+        ),
+        (
+            '-c ąžuo', [
+                {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
+            ]
+        ),
+        (
+            '-r ąčęėįšųūž', [
+                {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
+            ]
+        ),
     ]
 )
-def test_expense_search(search, cnt, expense_type, expense_name):
-    ExpenseFactory()
+def test_expense_search(search, expect):
     ExpenseFactory(
-        date=date(3333, 1, 1),
-        expense_name=ExpenseNameFactory(title='X'),
-        expense_type=ExpenseTypeFactory(title='Y'),
+        date=date(1999, 1, 1),
+        expense_type=ExpenseTypeFactory(title='Type_A'),
+        expense_name=ExpenseNameFactory(title='Name_A'),
+        remark='XXX'
+    )
+    ExpenseFactory(
+        date=date(1999, 2, 1),
+        expense_type=ExpenseTypeFactory(title='Type_A'),
+        expense_name=ExpenseNameFactory(title='Name_B'),
+        remark='YYY'
+    )
+    ExpenseFactory(
+        date=date(2000, 1, 1),
+        expense_type=ExpenseTypeFactory(title='Type_B'),
+        expense_name=ExpenseNameFactory(title='Name_A'),
         remark='ZZZ'
+    )
+    ExpenseFactory(
+        date=date(2000, 2, 1),
+        expense_type=ExpenseTypeFactory(title='Type_B'),
+        expense_name=ExpenseNameFactory(title='Name_B'),
+        remark='WWW'
+    )
+    ExpenseFactory(
+        date=date(2001, 2, 1),
+        expense_type=ExpenseTypeFactory(title='Žvaigždė'),
+        expense_name=ExpenseNameFactory(title='Ąžuolas'),
+        remark='ąčęėįšųūž'
     )
 
     q = H.search_expenses(search)
-    assert q.count() == cnt
 
-    if q:
-        q = q[0]
-
-        assert q.date == date(1999, 1, 1)
-        assert q.expense_type.title == expense_type
-        assert q.expense_name.title == expense_name
+    for i in range(len(q)):
+        assert q[i].expense_type.title == expect[i]["type"]
+        assert q[i].expense_name.title == expect[i]["name"]
+        assert q[i].remark == expect[i]["remark"]
 
 
 @pytest.mark.django_db
@@ -133,13 +341,19 @@ def test_expense_search_ordering():
     'search, cnt, income_type',
     [
         ('1999', 1, 'Income Type'),
+        ('-y 1999', 1, 'Income Type'),
         ('1999.1', 1, 'Income Type'),
         ('1999-1', 1, 'Income Type'),
+        ('-y 1999 -m 1', 1, 'Income Type'),
         ('2000', 0, None),
+        ('-y 2000', 0, None),
         ('type', 1, 'Income Type'),
+        ('-c type', 1, 'Income Type'),
         ('remark', 1, 'Income Type'),
+        ('-r remark', 1, 'Income Type'),
         ('1999.1 type', 1, 'Income Type'),
         ('1999-1 type', 1, 'Income Type'),
+        ('-y 1999 -m 1 -c type', 1, 'Income Type'),
     ]
 )
 def test_search(search, cnt, income_type):
@@ -179,16 +393,24 @@ def test_search_ordering():
     'search, author, title, remark',
     [
         ('1999', 'Author', 'Book Title', 'Remark'),
+        ('-y1999', 'Author', 'Book Title', 'Remark'),
         ('1999.1', 'Author', 'Book Title', 'Remark'),
         ('1999-1', 'Author', 'Book Title', 'Remark'),
+        ('-y 1999 -m 1', 'Author', 'Book Title', 'Remark'),
         ('2000', None, None, None),
+        ('-y 2000', None, None, None),
         ('auth', 'Author', 'Book Title', 'Remark'),
+        ('-c auth', 'Author', 'Book Title', 'Remark'),
         ('titl', 'Author', 'Book Title', 'Remark'),
+        ('-c titl', 'Author', 'Book Title', 'Remark'),
         ('remark', 'Author', 'Book Title', 'Remark'),
+        ('-r remark', 'Author', 'Book Title', 'Remark'),
         ('1999.1 auth', 'Author', 'Book Title', 'Remark'),
         ('1999-1 auth', 'Author', 'Book Title', 'Remark'),
+        ('-r 1999 -m 1 -c auth', 'Author', 'Book Title', 'Remark'),
         ('1999.1 titl', 'Author', 'Book Title', 'Remark'),
         ('1999-1 titl', 'Author', 'Book Title', 'Remark'),
+        ('-y 1999 -m 1 -c titl', 'Author', 'Book Title', 'Remark'),
     ]
 )
 def test_search(search, author, title, remark):

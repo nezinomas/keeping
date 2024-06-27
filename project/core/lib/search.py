@@ -1,6 +1,7 @@
+import argparse
 import re
 from functools import reduce
-from operator import or_
+from operator import and_, or_
 
 from django.db.models import Q
 
@@ -16,100 +17,130 @@ def sanitize_search_str(search_str):
     return search_str
 
 
-def parse_search_input(search_str):
-    _date = None
-    _search = []
+def parse_search_no_args(search_str):
+    rtn = {"category": None, "year": None, "month": None, "remark": None}
 
-    search_str = sanitize_search_str(search_str)
+    if match := re.search(r"(\d{4})-{0,1}\.{0,1}(\d{0,2})", search_str):
+        if match[1]:
+            rtn["year"] = int(match[1])
 
-    if not search_str:
-        return _date, _search
+        if match[2]:
+            rtn["month"] = int(match[2])
 
-    # find all 2000 or 2000-01 or 2000.01 inputs
-    rgx = re.compile(r"\d{4}-{0,1}\.{0,1}\d{0,2}")
+    if match := [
+        word
+        for word in search_str.split(" ")
+        if not any(char.isdigit() for char in word)
+    ]:
+        rtn["category"] = match
+        rtn["remark"] = match
 
-    match = re.findall(rgx, search_str)
-    _date = match[0] if match else None
+    return rtn
 
-    searches = search_str.split(" ")
 
-    _search = []
-    for word in searches:
-        if word in match:
+def parse_search_with_args(search_str):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-category", "-c", type=str, nargs="+")
+    parser.add_argument("-year", "-y", type=int)
+    parser.add_argument("-month", "-m", type=int)
+    parser.add_argument("-remark", "-r", type=str, nargs="+")
+
+    args = parser.parse_args(search_str.split())
+
+    return vars(args)
+
+
+def filter_short_search_words(search_dict):
+    def filter_words(words):
+        return [word for word in words if len(word) > 2]
+
+    for key in ["category", "remark"]:
+        if search_dict[key] is None:
             continue
 
-        if len(word) >= 2:
-            _search.append(word)
+        search_dict[key] = filter_words(search_dict[key])
 
-    return _date, _search
+    return search_dict
 
 
-def filter_dates(_date, sql, field="date"):
-    if _date:
-        year = _date[:4]
-        sql = sql.filter(**{f"{field}__year": year})
+def make_search_dict(search_str):
+    _str = sanitize_search_str(search_str)
 
-        if len(_date) > 4:
-            month = _date[5:]
-            sql = sql.filter(**{f"{field}__month": month})
+    try:
+        search_dict = parse_search_with_args(_str)
+        search_type = "with_args"
+    except SystemExit:
+        search_dict = parse_search_no_args(_str)
+        search_type = "no_args"
 
-    return sql
+    search_dict = filter_short_search_words(search_dict)
+
+    return search_dict, search_type
+
+
+def _get(search_dict, key, default_value=None):
+    if default_value is None:
+        default_value = []
+
+    try:
+        value = search_dict[key]
+    except KeyError:
+        return default_value
+
+    return value or default_value
+
+
+def generic_search(model, search_str, category_list, date_field="date"):
+    search_dict, search_type = make_search_dict(search_str)
+
+    if all(value is None for value in search_dict.values()):
+        return model.objects.none()
+
+    query = model.objects.items()
+
+    # Date filters
+    for key in ["year", "month"]:
+        if search_dict.get(key):
+            query = query.filter(**{f"{date_field}__{key}": search_dict[key]})
+
+    # Category filters
+    category_filters = [
+        reduce(
+            or_,
+            (
+                Q(**{f"{category}__icontains": search_word})
+                for category in category_list
+            ),
+        )
+        for search_word in _get(search_dict, "category")
+    ]
+
+    # Remark filters
+    remark_filters = [
+        Q(remark__icontains=search_word) for search_word in _get(search_dict, "remark")
+    ]
+
+    # Combine Category and Remark filters
+    if combined_filters := category_filters + remark_filters:
+        operator_ = and_ if search_type == "with_args" else or_
+        query = query.filter(reduce(operator_, combined_filters))
+
+    return query.order_by(f"-{date_field}")
 
 
 def search_expenses(search_str):
-    _sql = Expense.objects.none()
-    _date, _search = parse_search_input(search_str)
+    category_list = ["expense_type__title", "expense_name__title"]
 
-    if _date or _search:
-        _sql = Expense.objects.items()
-        _sql = filter_dates(_date, _sql)
-
-        if _search:
-            _sql = _sql.filter(
-                reduce(or_, (Q(expense_type__title__icontains=q) for q in _search))
-                | reduce(or_, (Q(expense_name__title__icontains=q) for q in _search))
-                | reduce(or_, (Q(remark__icontains=q) for q in _search))
-            )
-
-        _sql = _sql.order_by("-date")
-
-    return _sql
+    return generic_search(Expense, search_str, category_list)
 
 
 def search_incomes(search_str):
-    _sql = Income.objects.none()
-    _date, _search = parse_search_input(search_str)
+    category_list = ["income_type__title"]
 
-    if _date or _search:
-        _sql = Income.objects.items()
-        _sql = filter_dates(_date, _sql)
-
-        if _search:
-            _sql = _sql.filter(
-                reduce(or_, (Q(income_type__title__icontains=q) for q in _search))
-                | reduce(or_, (Q(remark__icontains=q) for q in _search))
-            )
-
-        _sql = _sql.order_by("-date")
-
-    return _sql
+    return generic_search(Income, search_str, category_list)
 
 
 def search_books(search_str):
-    _sql = Book.objects.none()
-    _date, _search = parse_search_input(search_str)
+    category_list = ["author", "title"]
 
-    if _date or _search:
-        _sql = Book.objects.items()
-        _sql = filter_dates(_date, _sql, "started")
-
-        if _search:
-            _sql = _sql.filter(
-                reduce(or_, (Q(author__icontains=q) for q in _search))
-                | reduce(or_, (Q(title__icontains=q) for q in _search))
-                | reduce(or_, (Q(remark__icontains=q) for q in _search))
-            )
-
-        _sql = _sql.order_by("-started")
-
-    return _sql
+    return generic_search(Book, search_str, category_list, "started")
