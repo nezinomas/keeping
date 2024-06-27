@@ -17,9 +17,6 @@ function loadMonthTargetsChart(idData, idContainer) {
             type: 'bar',
             height: 485,
             marginLeft: chartData.max_category_len * 6.55,
-            // marginTop: 8.5,
-            // marginBottom: chartData.category_len * 2.85,
-
         },
         title: {
             text: ''
