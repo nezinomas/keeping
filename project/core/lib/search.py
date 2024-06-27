@@ -176,20 +176,6 @@ def search_incomes(search_str):
 
 
 def search_books(search_str):
-    _sql = Book.objects.none()
-    _date, _search = parse_search_input(search_str)
+    category_list = ["author", "title"]
 
-    if _date or _search:
-        _sql = Book.objects.items()
-        _sql = filter_dates(_date, _sql, "started")
-
-        if _search:
-            _sql = _sql.filter(
-                reduce(or_, (Q(author__icontains=q) for q in _search))
-                | reduce(or_, (Q(title__icontains=q) for q in _search))
-                | reduce(or_, (Q(remark__icontains=q) for q in _search))
-            )
-
-        _sql = _sql.order_by("-started")
-
-    return _sql
+    return generic_search(Book, search_str, category_list, "started")

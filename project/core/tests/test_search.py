@@ -421,16 +421,24 @@ def test_search_ordering():
     'search, author, title, remark',
     [
         ('1999', 'Author', 'Book Title', 'Remark'),
+        ('-y1999', 'Author', 'Book Title', 'Remark'),
         ('1999.1', 'Author', 'Book Title', 'Remark'),
         ('1999-1', 'Author', 'Book Title', 'Remark'),
+        ('-y 1999 -m 1', 'Author', 'Book Title', 'Remark'),
         ('2000', None, None, None),
+        ('-y 2000', None, None, None),
         ('auth', 'Author', 'Book Title', 'Remark'),
+        ('-c auth', 'Author', 'Book Title', 'Remark'),
         ('titl', 'Author', 'Book Title', 'Remark'),
+        ('-c titl', 'Author', 'Book Title', 'Remark'),
         ('remark', 'Author', 'Book Title', 'Remark'),
+        ('-r remark', 'Author', 'Book Title', 'Remark'),
         ('1999.1 auth', 'Author', 'Book Title', 'Remark'),
         ('1999-1 auth', 'Author', 'Book Title', 'Remark'),
+        ('-r 1999 -m 1 -c auth', 'Author', 'Book Title', 'Remark'),
         ('1999.1 titl', 'Author', 'Book Title', 'Remark'),
         ('1999-1 titl', 'Author', 'Book Title', 'Remark'),
+        ('-y 1999 -m 1 -c titl', 'Author', 'Book Title', 'Remark'),
     ]
 )
 def test_search(search, author, title, remark):
