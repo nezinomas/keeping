@@ -126,13 +126,13 @@ def _get(search_dict, key, default_value=None):
     return value or default_value
 
 
-def generic_search(search_str, category_list, date_field="date"):
+def generic_search(model, search_str, category_list, date_field="date"):
     search_dict, search_type = make_search_dict(search_str)
 
     if all(value is None for value in search_dict.values()):
-        return Expense.objects.none()
+        return model.objects.none()
 
-    query = Expense.objects.items()
+    query = model.objects.items()
 
     date_filters = {
         "year": f"{date_field}__year",
@@ -165,14 +165,14 @@ def generic_search(search_str, category_list, date_field="date"):
 
 def search_expenses(search_str):
     category_list = ["expense_type__title", "expense_name__title"]
-    query = generic_search(search_str, category_list)
+    query = generic_search(Expense, search_str, category_list)
 
     return query.order_by("-date")
 
 
 def search_incomes(search_str):
     category_list = ["income_type__title"]
-    query = generic_search(search_str, category_list)
+    query = generic_search(Income, search_str, category_list)
 
     return query.order_by("-date")
 
