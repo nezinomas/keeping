@@ -386,7 +386,7 @@
     }
 
     #month-grid {
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 66% 33%;
         grid-template-areas:
             "month-content      month-chart-and-info-table"
             "month-buttons      month-add-buttons"
