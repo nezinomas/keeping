@@ -27,7 +27,11 @@ def parse_search_no_args(search_str):
         if match[2]:
             rtn["month"] = int(match[2])
 
-    if match := [word for word in search_str.split(" ") if not any(char.isdigit() for char in word)]:
+    if match := [
+        word
+        for word in search_str.split(" ")
+        if not any(char.isdigit() for char in word)
+    ]:
         rtn["category"] = match
         rtn["remark"] = match
 
@@ -36,10 +40,10 @@ def parse_search_no_args(search_str):
 
 def parse_search_with_args(search_str):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-category', '-c', type=str, nargs='+')
-    parser.add_argument('-year', '-y', type=int)
-    parser.add_argument('-month', '-m', type=int)
-    parser.add_argument('-remark', '-r', type=str, nargs='+')
+    parser.add_argument("-category", "-c", type=str, nargs="+")
+    parser.add_argument("-year", "-y", type=int)
+    parser.add_argument("-month", "-m", type=int)
+    parser.add_argument("-remark", "-r", type=str, nargs="+")
 
     args = parser.parse_args(search_str.split())
 
@@ -103,20 +107,22 @@ def generic_search(model, search_str, category_list, date_field="date"):
     category_filters = [
         reduce(
             or_,
-            (Q(**{f"{category}__icontains": search_word}) for category in category_list),
+            (
+                Q(**{f"{category}__icontains": search_word})
+                for category in category_list
+            ),
         )
         for search_word in _get(search_dict, "category")
     ]
 
     # Remark filters
     remark_filters = [
-        Q(remark__icontains=search_word)
-        for search_word in _get(search_dict, "remark")
+        Q(remark__icontains=search_word) for search_word in _get(search_dict, "remark")
     ]
 
     # Combine Category and Remark filters
     if combined_filters := category_filters + remark_filters:
-        operator_ = and_ if search_type == 'with_args' else or_
+        operator_ = and_ if search_type == "with_args" else or_
         query = query.filter(reduce(operator_, combined_filters))
 
     return query.order_by(f"-{date_field}")
