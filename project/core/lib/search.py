@@ -160,21 +160,19 @@ def generic_search(model, search_str, category_list, date_field="date"):
         operator_ = and_ if search_type == 'with_args' else or_
         query = query.filter(reduce(operator_, combined_filters))
 
-    return query
+    return query.order_by(f"-{date_field}")
 
 
 def search_expenses(search_str):
     category_list = ["expense_type__title", "expense_name__title"]
-    query = generic_search(Expense, search_str, category_list)
 
-    return query.order_by("-date")
+    return generic_search(Expense, search_str, category_list)
 
 
 def search_incomes(search_str):
     category_list = ["income_type__title"]
-    query = generic_search(Income, search_str, category_list)
 
-    return query.order_by("-date")
+    return generic_search(Income, search_str, category_list)
 
 
 def search_books(search_str):
