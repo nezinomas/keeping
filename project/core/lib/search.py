@@ -126,7 +126,7 @@ def _get(search_dict, key, default_value=None):
     return value or default_value
 
 
-def generic_search(search_str, category_list):
+def generic_search(search_str, category_list, date_field="date"):
     search_dict, search_type = make_search_dict(search_str)
 
     if all(value is None for value in search_dict.values()):
@@ -135,8 +135,8 @@ def generic_search(search_str, category_list):
     query = Expense.objects.items()
 
     date_filters = {
-        "year": "date__year",
-        "month": "date__month"
+        "year": f"{date_field}__year",
+        "month": f"{date_field}__month"
     }
 
     for key, filter_key in date_filters.items():
@@ -160,19 +160,21 @@ def generic_search(search_str, category_list):
         operator_ = and_ if search_type == 'with_args' else or_
         query = query.filter(reduce(operator_, combined_filters))
 
-    query = query.order_by("-date")
-
     return query
 
 
 def search_expenses(search_str):
     category_list = ["expense_type__title", "expense_name__title"]
-    return generic_search(search_str, category_list)
+    query = generic_search(search_str, category_list)
+
+    return query.order_by("-date")
 
 
 def search_incomes(search_str):
     category_list = ["income_type__title"]
-    return generic_search(search_str, category_list)
+    query = generic_search(search_str, category_list)
+
+    return query.order_by("-date")
 
 
 def search_books(search_str):
