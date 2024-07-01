@@ -89,6 +89,13 @@
         position: relative;
         gap: .2rem;
     }
+
+    a:hover,
+    a:focus,
+    .dropdown__btn:hover {
+        transition: $transition;
+        color: $active;
+    }
 }
 
 
@@ -110,12 +117,6 @@ nav#main-nav {
         &:focus {
             transition: $transition;
             border-bottom-color: $active;
-            color: $active;
-        }
-
-        &:hover > a,
-        &:focus > a {
-            color: $active;
         }
     }
 
