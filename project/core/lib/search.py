@@ -52,8 +52,9 @@ def parse_search_with_args(search_str):
     parser.add_argument("-remark", "-r", type=str, nargs="+")
 
     args = parser.parse_args(search_str.split())
+    args = vars(args)
 
-    return vars(args)
+    return {key: args.get(key, SEARCH_DICT[key]) for key in SEARCH_DICT}
 
 
 def filter_short_search_words(search_dict):
