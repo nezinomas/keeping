@@ -52,8 +52,9 @@ def parse_search_with_args(search_str):
     parser.add_argument("-remark", "-r", type=str, nargs="+")
 
     args = parser.parse_args(search_str.split())
+    args = vars(args)
 
-    return vars(args)
+    return {key: args.get(key, SEARCH_DICT[key]) for key in SEARCH_DICT}
 
 
 def filter_short_search_words(search_dict):
@@ -84,10 +85,7 @@ def make_search_dict(search_str):
     return search_dict, search_type
 
 
-def _get(search_dict, key, default_value=None):
-    if default_value is None:
-        default_value = []
-
+def _get(search_dict, key, default_value):
     try:
         value = search_dict[key]
     except KeyError:
@@ -119,12 +117,12 @@ def generic_search(model, search_str, category_list, date_field="date"):
                 for category in category_list
             ),
         )
-        for search_word in _get(search_dict, "category")
+        for search_word in _get(search_dict, "category", [])
     ]
 
     # Remark filters
     remark_filters = [
-        Q(remark__icontains=search_word) for search_word in _get(search_dict, "remark")
+        Q(remark__icontains=search_word) for search_word in _get(search_dict, "remark", [])
     ]
 
     # Combine Category and Remark filters
