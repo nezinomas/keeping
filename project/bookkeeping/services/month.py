@@ -125,7 +125,7 @@ class MainTable:
             )
 
         return df_expense.join(
-            saving.data, on="date", how="outer_coalesce", join_nulls=True
+            saving.data, on="date", how='full', coalesce=True, join_nulls=True
         )
 
     @property

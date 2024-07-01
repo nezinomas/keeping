@@ -90,7 +90,7 @@ class MakeDataFrame:
             .pivot(
                 values=sum_col_name,
                 index="date",
-                columns="title",
+                on="title",
                 aggregate_function="first",
             )
             .pipe(self._insert_missing_columns)

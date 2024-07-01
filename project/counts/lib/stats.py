@@ -5,6 +5,7 @@ from datetime import date, datetime
 
 import polars as pl
 from polars import DataFrame as DF
+from polars.exceptions import ColumnNotFoundError
 
 from ...core.exceptions import MethodInvalid
 from ...core.lib.translation import month_names, weekday_names
@@ -34,8 +35,8 @@ class Stats:
     @property
     def number_of_records(self):
         try:
-            return self._df.select(pl.col("qty").sum())[0,0]
-        except pl.ColumnNotFoundError:
+            return self._df.select(pl.col("qty").sum())[0, 0]
+        except ColumnNotFoundError:
             return self._df.shape[0]
 
     def weekdays_stats(self) -> list[dict[int, float]]:
