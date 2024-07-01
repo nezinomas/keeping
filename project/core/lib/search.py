@@ -84,10 +84,7 @@ def make_search_dict(search_str):
     return search_dict, search_type
 
 
-def _get(search_dict, key, default_value=None):
-    if default_value is None:
-        default_value = []
-
+def _get(search_dict, key, default_value):
     try:
         value = search_dict[key]
     except KeyError:
@@ -119,12 +116,12 @@ def generic_search(model, search_str, category_list, date_field="date"):
                 for category in category_list
             ),
         )
-        for search_word in _get(search_dict, "category")
+        for search_word in _get(search_dict, "category", [])
     ]
 
     # Remark filters
     remark_filters = [
-        Q(remark__icontains=search_word) for search_word in _get(search_dict, "remark")
+        Q(remark__icontains=search_word) for search_word in _get(search_dict, "remark", [])
     ]
 
     # Combine Category and Remark filters
