@@ -24,9 +24,8 @@
     </button>
 
     <div>
-        <a id="dropdownDrinkType" href="#">{{current_drink_type}}</a>
         <div class="dropdown">
-            <button class="dropdown__btn"></button>
+            <button class="dropdown__btn">{{current_drink_type}}</button>
             <div class="dropdown__menu">
                 {% for type in select_drink_type %}
                 <a class="dropdown-item button-sm" href="{% url 'drinks:set_drink_type' type.1 %}">{{type.0}}</a>
