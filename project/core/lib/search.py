@@ -10,6 +10,9 @@ from ...expenses.models import Expense
 from ...incomes.models import Income
 
 
+SEARCH_DICT = {"category": None, "year": None, "month": None, "remark": None}
+
+
 def sanitize_search_str(search_str):
     if search_str:
         search_str = re.sub(r"[^\w\d\.\- ]", "", search_str)
@@ -18,7 +21,7 @@ def sanitize_search_str(search_str):
 
 
 def parse_search_no_args(search_str):
-    rtn = {"category": None, "year": None, "month": None, "remark": None}
+    rtn = SEARCH_DICT.copy()
 
     if not search_str:
         return rtn
