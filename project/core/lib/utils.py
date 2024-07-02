@@ -1,8 +1,4 @@
-from collections import Counter
-from typing import Any, Dict, List
-
 from crequest.middleware import CrequestMiddleware
-from django.db.models.query import QuerySet
 
 
 def get_user():
