@@ -21,6 +21,7 @@ def total_row(data, fields) -> dict:
 
     return row
 
+
 def calculate_percents(data):
     incomes = data.get("incomes", 0)
     fee = data.get("fee", 0)
