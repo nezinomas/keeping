@@ -116,22 +116,18 @@ class IndexService:
         }
 
     def borrow_context(self):
-        debt = self._debts.get("borrow", {})
-        if not debt.get("debt"):
-            return {}
-
-        return {
-            "title": [_("Borrow"), _("Borrow return")],
-            "data": [debt["debt"], debt["debt_return"]],
-        }
+        return self._generic_debt_context("borrow", "Borrow", "Borrow return")
 
     def lend_context(self):
-        debt = self._debts.get("lend", {})
+        return self._generic_debt_context("lend", "Lend", "Lend return")
+
+    def _generic_debt_context(self, debt_type, debt_str, debt_return_str):
+        debt = self._debts.get(debt_type, {})
         if not debt.get("debt"):
             return {}
 
         return {
-            "title": [_("Lend"), _("Lend return")],
+            "title": [_(debt_str), _(debt_return_str)],
             "data": [debt["debt"], debt["debt_return"]],
         }
 
