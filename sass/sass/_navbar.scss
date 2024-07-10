@@ -59,7 +59,7 @@
 }
 
 .dropdown__btn {
-    padding: 0;
+    padding: 0 .25rem;
     border: 0;
     background-color: transparent;
 
@@ -74,7 +74,8 @@
 
 [id*=-nav] {
     display: flex;
-    gap: calc($gap / 2) $gap;
+    gap: 0 .35rem;
+    align-items: center;
 
     a {
         text-decoration: none;
@@ -84,10 +85,24 @@
         color: $black;
     }
 
-    :has(.dropdown) {
+    div {
         display: flex;
+    }
+
+    > div {
+        > a,
+        > div:first-child,
+        .day-of-year {
+            padding: 0.5rem;
+        }
+    }
+
+    a:has(+ div.dropdown) {
+        padding-right: 0;
+    }
+
+    :has(.dropdown) {
         position: relative;
-        gap: .2rem;
     }
 
     a:hover,
@@ -110,7 +125,7 @@ nav#main-nav {
     flex-wrap: wrap;
 
     > * {
-        padding: 0.5rem 0.4rem;
+        // padding: 0.5rem 0.4rem;
         border-bottom: 3px solid transparent;
 
         &:hover,
