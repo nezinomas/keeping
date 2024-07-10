@@ -59,14 +59,16 @@
 }
 
 .dropdown__btn {
-    padding: 0 .25rem;
     border: 0;
     background-color: transparent;
 
     &::after {
         font-family: 'Glyphicons Halflings';
         content: "\e114";
-        margin-left: .25rem;
+        padding-top: 0;
+        padding-bottom: 0;
+        padding-left: .35rem;
+        padding-right: 0;
         font-size: 8px;
     }
 }
@@ -74,7 +76,7 @@
 
 [id*=-nav] {
     display: flex;
-    gap: 0 .35rem;
+    gap: 0 1rem;
     align-items: center;
 
     a {
@@ -93,7 +95,7 @@
         > a,
         > div:first-child,
         .day-of-year {
-            padding: 0.5rem;
+            padding: .5rem .25rem;
         }
     }
 
