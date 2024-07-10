@@ -137,7 +137,7 @@
         <!-- Add butons -->
         <div>
           <div class="dropdown">
-              <button class="dropdown__btn">{% translate 'Add' %} </button>
+              <button class="dropdown__btn">{% translate 'Add' %}</button>
               <div class="dropdown__menu">
                 <a role="button" class="no-hover" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal">{% translate 'Incomes' context 'incomes button' %}</a>
                 <a role="button" class="no-hover" hx-get="{% url 'expenses:new' %}" hx-target="#mainModal">{% translate "Expenses" context "expenses button" %}</a>
@@ -159,7 +159,7 @@
         <!-- User settings -->
         <div {% if 'settings' in request.path %}class="active"{% endif %}>
           <div class="dropdown left">
-              <button class="dropdown__btn">{{ user.username }} </button>
+              <button class="dropdown__btn">{{ user.username }}</button>
               <div class="dropdown__menu">
                 <a href="{% url 'users:logout' %}">{% translate 'Log out' %}</a>
                 <a href="{% url 'users:password_change' %}">{% translate 'Change password' %}</a>
