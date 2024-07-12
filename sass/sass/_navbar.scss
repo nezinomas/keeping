@@ -72,8 +72,8 @@
 
 [id*=-nav] {
     display: flex;
-    gap: 0 1rem;
     align-items: center;
+    gap: 0 1rem;
 
     a {
         text-decoration: none;
@@ -83,16 +83,18 @@
         color: $black;
     }
 
-    div {
-        display: flex;
-    }
-
     > div {
-        > a,
-        > div:first-child,
-        .day-of-year {
+        display: flex;
+        align-items: center;
+
+        > a:first-child,
+        > span:first-child {
             padding: .5rem .25rem;
         }
+    }
+
+    > div:has(> div:first-child) {
+        padding: calc(.5rem - 3px) .25rem;
     }
 
     a:has(+ div.dropdown) {
@@ -123,7 +125,6 @@ nav#main-nav {
     flex-wrap: wrap;
 
     > * {
-        // padding: 0.5rem 0.4rem;
         border-bottom: 3px solid transparent;
 
         &:hover,
