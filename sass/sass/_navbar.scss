@@ -60,7 +60,7 @@
 
     &::after {
         font-family: 'Glyphicons Halflings';
-        content: "\e114";
+        content: " \e114";
         padding-right: .25rem;
         font-size: 8px;
     }
@@ -160,6 +160,5 @@ nav#drinks-nav {
     .dropdown__menu {
         left: 50%;
         transform: translate(-50%, 0);
-        z-index: 998;
     }
 }
