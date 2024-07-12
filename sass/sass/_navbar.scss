@@ -61,10 +61,7 @@
     &::after {
         font-family: 'Glyphicons Halflings';
         content: "\e114";
-        padding-top: 0;
-        padding-bottom: 0;
-        padding-left: .35rem;
-        padding-right: 0;
+        padding-right: .25rem;
         font-size: 8px;
     }
 }
@@ -83,6 +80,13 @@
         color: $black;
     }
 
+    a:hover,
+    a:focus,
+    .dropdown__btn:hover {
+        transition: $transition;
+        color: $active;
+    }
+
     > div {
         display: flex;
         align-items: center;
@@ -93,23 +97,8 @@
         }
     }
 
-    > div:has(> div:first-child) {
-        padding: calc(.5rem - 3px) .25rem;
-    }
-
-    a:has(+ div.dropdown) {
-        padding-right: 0;
-    }
-
     :has(.dropdown) {
         position: relative;
-    }
-
-    a:hover,
-    a:focus,
-    .dropdown__btn:hover {
-        transition: $transition;
-        color: $active;
     }
 }
 
