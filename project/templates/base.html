@@ -159,7 +159,7 @@
 
         <!-- User settings -->
         <div {% if 'settings' in request.path %}class="active"{% endif %}>
-          <span>{{ user.username }}</span>
+          <a href="{% url 'users:settings_index' %}">{{ user.username }}</a>
           <div class="dropdown left">
               <button class="dropdown__btn"></button>
               <div class="dropdown__menu">
@@ -167,7 +167,7 @@
                 <a href="{% url 'users:password_change' %}">{% translate 'Change password' %}</a>
                 {% if user.is_superuser %}
                 <span class="dropdown-divider"></span>
-                <a role="button" href="{% url 'users:settings_index' %}">{% translate 'Settings' %}</a>
+                <a href="{% url 'users:settings_index' %}">{% translate 'Settings' %}</a>
                 {% endif %}
               </div>
           </div>
