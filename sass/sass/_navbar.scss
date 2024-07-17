@@ -92,7 +92,7 @@
         display: flex;
         align-items: center;
 
-        > :first-child {
+        > *:first-child {
             padding: .5rem .25rem;
         }
     }
