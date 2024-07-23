@@ -76,7 +76,8 @@
         text-decoration: none;
     }
 
-    a, a:visited {
+    a,
+    a:visited {
         color: $black;
     }
 
@@ -91,8 +92,7 @@
         display: flex;
         align-items: center;
 
-        > a:first-child,
-        > span:first-child {
+        > *:first-child {
             padding: .5rem .25rem;
         }
     }

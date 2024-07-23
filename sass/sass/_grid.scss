@@ -7,7 +7,7 @@
 
 
 // Main grid
-#main-grid {
+.bookkeeping-grid {
     @include grid-template;
 
     grid-template-areas:
@@ -83,7 +83,7 @@
 
 
 //Drinks grid
-#drinks-grid {
+.drinks-grid {
     @include grid-template;
 
     grid-template-areas:
@@ -179,7 +179,7 @@
 
 
 // Debts grid
-#debts-grid {
+.debts-grid {
     @include grid-template;
 
     grid-template-areas:
@@ -311,7 +311,7 @@
 
 
 // Month grid
-#month-grid {
+.month-grid {
     @include grid-template;
 
     grid-template-areas:
@@ -366,7 +366,7 @@
 
 // Media queries for screens larger than 992px
 @media only screen and (min-width: 992px) {
-    #main-grid {
+    .bookkeeping-grid {
         grid-template-columns: 42% 1fr;
         grid-template-areas:
             "table-balance   table-expenses"
@@ -385,7 +385,7 @@
         }
     }
 
-    #month-grid {
+    .month-grid {
         grid-template-columns: 2fr 33%;
         grid-template-areas:
             "month-content      month-chart-and-info-table"
@@ -393,7 +393,7 @@
         ;
     }
 
-    #debts-grid {
+    .debts-grid {
         grid-template-columns: repeat(2, 1fr);
         grid-template-areas:
             "borrow-container          lend-container"
@@ -401,7 +401,7 @@
         ;
     }
 
-    #drinks-grid {
+    .drinks-grid {
         grid-template-columns: repeat(2, 1fr);
         grid-template-areas:
         "chart-consumption-container        chart-quality-container"
