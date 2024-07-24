@@ -159,7 +159,7 @@
 
         <!-- User settings -->
         <div {% if 'settings' in request.path %}class="active"{% endif %}>
-          <a href="{% url 'users:settings_index' %}">{{ user.username }}</a>
+          <span>{{ user.username }}</span>
           <div class="dropdown left">
               <button class="dropdown__btn"></button>
               <div class="dropdown__menu">
