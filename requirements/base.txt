@@ -3,7 +3,7 @@ Django==5.0.7
 django-bootstrap-datepicker-plus==5.0.5
 django-bootstrap-datepicker-widget==0.1
 django-crequest==2018.5.11
-django-crispy-forms==2.2
+django-crispy-forms==2.3
 django-extensions==3.2.3
 django-htmx==1.18.0
 django-vanilla-views==3.0.0
