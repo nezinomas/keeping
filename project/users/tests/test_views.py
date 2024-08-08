@@ -163,12 +163,13 @@ def test_signup_form_inputs(client):
 
     form = response.content.decode("utf-8")
 
-    assert form.count("<input") == 6
+    assert form.count("<input") == 7
     assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
     assert form.count('type="hidden" name="next"') == 1
     assert form.count('type="text"') == 1
     assert form.count('type="email"') == 1
     assert form.count('type="password"') == 2
+    assert form.count('type="hidden" name="usable_password"') == 1
 
 
 @pytest.fixture

@@ -14,7 +14,7 @@ def test_signup_form_init():
 def test_signup_form_inputs():
     form = SignUpForm()
 
-    expected = ["username", "email", "password1", "password2"]
+    expected = ["username", "email", "password1", "password2", "usable_password"]
     actual = list(form.fields)
 
     assert expected == actual
