@@ -205,7 +205,7 @@
 
     // Striped styles
     &.striped {
-        tbody tr:nth-child(odd) {
+        tbody tr:nth-child(even) {
             > td {
                 background-color: rgba(0, 0, 0, 0.05);
             }
