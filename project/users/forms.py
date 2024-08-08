@@ -17,6 +17,10 @@ class SignUpForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields["usable_password"].initial = 'true'
+        self.fields["usable_password"].disabled = True
+        self.fields["usable_password"].widget = forms.HiddenInput()
+
         self.fields["email"].label = _("Email")
 
 
