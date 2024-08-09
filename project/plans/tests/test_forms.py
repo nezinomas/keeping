@@ -1,8 +1,6 @@
 import pytest
 import time_machine
 
-from project.expenses.views import expenses_type
-
 from ...core.lib.translation import month_names
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
