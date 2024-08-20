@@ -2,6 +2,7 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
+from django.db.models import Count, Sum
 from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
@@ -134,6 +135,24 @@ class SearchMixin:
     def get_search_method(self):
         return getattr(search, self.search_method)
 
+    def search_statistic(self, sql):
+        """
+        Calculate total price, total quantity and average of search result.
+
+        :param sql: QuerySet
+        :return: a dictionary with sum_price, sum_quantity and average if search_method is 'search_expenses'
+        :rtype: dict or None
+        """
+        return (
+            sql.aggregate(
+                sum_price=Sum("price"),
+                sum_quantity=Sum("quantity"),
+                average=Sum("price") / Sum("quantity"),
+            )
+            if sql and self.search_method in ['search_expenses']
+            else {}
+        )
+
     def search(self):
         search_str = self.request.GET.get("search")
 
@@ -152,6 +171,7 @@ class SearchMixin:
             "search": search_str,
             "url": reverse(f"{app}:search"),
             "page_range": page_range,
+            **self.search_statistic(sql),
         }
 
 
