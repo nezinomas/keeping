@@ -87,29 +87,8 @@ class Delete(DeleteViewMixin):
 
 class Search(SearchViewMixin):
     template_name = "expenses/expense_list.html"
-    per_page = 50
-
     search_method = "search_expenses"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        price, quantity = [], []
-        for x in context["object_list"]:
-            price.append(x.price)
-            quantity.append(x.quantity)
-
-        if not price:
-            return context
-
-        sum_price = sum(price)
-        sum_quantity = sum(quantity)
-
-        context["sum_price"] = sum_price
-        context["sum_quantity"] = sum_quantity
-        context["average"] = sum_price / sum_quantity
-
-        return context
+    per_page = 50
 
 
 class LoadExpenseName(ListViewMixin):
