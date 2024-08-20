@@ -149,7 +149,7 @@ class SearchMixin:
                 sum_quantity=Sum("quantity"),
                 average=Sum("price") / Sum("quantity"),
             )
-            if sql and self.search_method in ['search_expenses']
+            if sql and self.search_method in ["search_expenses"]
             else {}
         )
 
