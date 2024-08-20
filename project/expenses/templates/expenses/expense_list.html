@@ -8,6 +8,15 @@
 
 {% if object_list %}
 
+{% if sum_price %}
+<div class="search-statistic alert alert-warning">
+    <div><strong>{% translate 'How many' %}</strong>: {{sum_quantity|floatformat:"0g"}}</div>
+    <div><strong>{% translate 'Price' %}</strong>: {{sum_price|price|cellformat}}</div>
+    <div><strong>{% translate "Average unit price" %}</strong>: {{average|price|floatformat:"2g"}}</div>
+</div>
+{% endif %}
+
+
 <div
     hx-trigger="reload from:body, afterType from:body, afterName from:body"
     hx-get="{{request.get_full_path}}"
@@ -53,17 +62,6 @@
             </tr>
             {% endfor %}
         </tbody>
-        {% if sum_price %}
-        <tfoot>
-            <tr>
-                <th colspan="3">{% translate "Total" %}</th>
-                <th>{{sum_quantity}}</th>
-                <th>{{sum_price|price|cellformat}}</th>
-                <th class="cell-padding">{{average|price|floatformat:"2g"}} <span style="font-weight: normal">({% translate "Average unit price" %})</span></th>
-                <th colspan="4"></th>
-            </tr>
-        </tfoot>
-        {% endif %}
     </table>
 </div>
 
