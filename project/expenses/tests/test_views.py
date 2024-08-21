@@ -229,8 +229,8 @@ def test_expenses_load_update_form_field_values(client_logged):
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
     assert '<option value="1" selected>Account1</option>' in form
-    assert '<option value="" hx-get="/expenses/load_expense_name/" hx-target="#id_expense_name" hx-trigger="click">---------</option>' in form
-    assert '<option value="1" selected hx-get="/expenses/load_expense_name/1/" hx-target="#id_expense_name" hx-trigger="click">Expense Type</option>' in form
+    assert '<option value="" hx-get="/expenses/load_expense_name/" hx-target="#id_expense_name" hx-trigger="selected">---------</option>' in form
+    assert '<option value="1" selected hx-get="/expenses/load_expense_name/1/" hx-target="#id_expense_name" hx-trigger="selected">Expense Type</option>' in form
     assert '<option value="1" selected>Expense Name</option>' in form
     assert '<input type="number" name="quantity" value="13"' in form
     assert '<input type="number" name="price" value="0.01"' in form

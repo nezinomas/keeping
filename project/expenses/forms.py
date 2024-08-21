@@ -31,7 +31,7 @@ class ExpenseTypeSelect(forms.Select):
 
         option["attrs"]["hx-get"] = url
         option["attrs"]["hx-target"] = "#id_expense_name"
-        option["attrs"]["hx-trigger"] = "click"
+        option["attrs"]["hx-trigger"] = "selected"
         return option
 
 
@@ -73,6 +73,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
         self._initial_fields_values()
         self._overwrite_default_queries()
+        self._set_htmx_attributes()
         self._translate_fields()
 
         # form inputs settings
@@ -128,12 +129,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             expense_name.queryset = expense_name_qs
 
     def _set_htmx_attributes(self):
-        url = reverse("expenses:load_expense_name")
-
-        expense_type = self.fields["expense_type"]
-        expense_type.widget.attrs["hx-get"] = url
-        expense_type.widget.attrs["hx-target"] = "#id_expense_name"
-        expense_type.widget.attrs["hx-trigger"] = "change"
+        self.fields["expense_type"].widget.attrs["_"] = "on change get my options[my selectedIndex] then trigger selected on it"
 
     def _translate_fields(self):
         self.fields["date"].label = _("Date")
