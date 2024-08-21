@@ -229,7 +229,8 @@ def test_expenses_load_update_form_field_values(client_logged):
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
     assert '<option value="1" selected>Account1</option>' in form
-    assert '<option value="1" selected>Expense Type</option>' in form
+    assert '<option value="" hx-get="/expenses/load_expense_name/" hx-target="#id_expense_name" hx-trigger="click">---------</option>' in form
+    assert '<option value="1" selected hx-get="/expenses/load_expense_name/1/" hx-target="#id_expense_name" hx-trigger="click">Expense Type</option>' in form
     assert '<option value="1" selected>Expense Name</option>' in form
     assert '<input type="number" name="quantity" value="13"' in form
     assert '<input type="number" name="price" value="0.01"' in form
@@ -695,14 +696,14 @@ def test_expense_name_not_load_other_journal(client_logged, second_user):
 #                                                                       LoadExpenseName
 # ---------------------------------------------------------------------------------------
 def test_load_expenses_name_new_func():
-    actual = resolve("/expenses/load_expense_name/")
+    actual = resolve("/expenses/load_expense_name/1/")
 
     assert expenses.LoadExpenseName is actual.func.view_class
 
 
 def test_load_expense_name_status_code(client_logged):
-    url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": 1})
+    url = reverse("expenses:load_expense_name", kwargs={"expense_type": 1})
+    response = client_logged.get(url)
 
     assert response.status_code == 200
 
@@ -710,28 +711,28 @@ def test_load_expense_name_status_code(client_logged):
 def test_load_expense_name_isnull_count(client_logged, _db_data):
     change_profile_year(client_logged)
 
-    url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": 1})
+    url = reverse("expenses:load_expense_name", kwargs={"expense_type": 1})
+    response = client_logged.get(url)
 
     assert response.context["object_list"].count() == 1
 
 
 def test_load_expense_name_all(client_logged, _db_data):
-    url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": 1})
+    url = reverse("expenses:load_expense_name", kwargs={"expense_type": 1})
+    response = client_logged.get(url)
 
     assert response.context["object_list"].count() == 2
 
 
 def test_load_expense_name_select_empty_parent(client_logged, _db_data):
     url = reverse("expenses:load_expense_name")
-    response = client_logged.get(url, {"expense_type": ""})
+    response = client_logged.get(url)
 
     assert response.context["object_list"] == []
 
 
 def test_load_expense_name_must_logged(client):
-    url = reverse("expenses:load_expense_name")
+    url = reverse("expenses:load_expense_name", kwargs={"expense_type": 1})
 
     response = client.get(url, follow=True)
 

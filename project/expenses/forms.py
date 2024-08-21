@@ -46,6 +46,9 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             "account",
             "attachment",
         )
+        widgets = {
+            'expense_type': ExpenseTypeSelect
+        }
 
     field_order = [
         "date",
@@ -66,7 +69,6 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
         self._initial_fields_values()
         self._overwrite_default_queries()
-        self._set_htmx_attributes()
         self._translate_fields()
 
         # form inputs settings

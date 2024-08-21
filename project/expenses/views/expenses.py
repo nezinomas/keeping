@@ -96,16 +96,10 @@ class LoadExpenseName(ListViewMixin):
     object_list = []
 
     def get(self, request, *args, **kwargs):
-        expense_type_pk = request.GET.get("expense_type")
-
-        try:
-            expense_type_pk = int(expense_type_pk)
-        except (ValueError, TypeError):
-            expense_type_pk = None
-
-        if expense_type_pk:
+        if expense_type_pk := self.kwargs.get("expense_type"):
             self.object_list = (
-                models.ExpenseName.objects.related()
+                models.ExpenseName.objects
+                .related()
                 .filter(parent=expense_type_pk)
                 .year(request.user.year)
             )

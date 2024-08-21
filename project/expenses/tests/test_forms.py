@@ -2,9 +2,11 @@ from datetime import date
 from io import BytesIO
 
 import pytest
-from django.core.files.uploadedfile import SimpleUploadedFile
-from PIL import Image
 import time_machine
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import reverse
+from PIL import Image
+
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
 from ..factories import ExpenseNameFactory, ExpenseTypeFactory
@@ -327,8 +329,8 @@ def test_form_expense_type_and_second_user(second_user):
 
     form = ExpenseForm().as_p()
 
-    assert '<option value="1">T1</option>' in form
-    assert '<option value="2">T2</option>' not in form
+    assert 'T1</option>' in form
+    assert 'T2</option>' not in form
 
 
 # ----------------------------------------------------------------------------

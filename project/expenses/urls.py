@@ -15,6 +15,11 @@ urlpatterns = [
     path("update/<int:pk>/", expenses.Update.as_view(), name="update"),
     path("delete/<int:pk>/", expenses.Delete.as_view(), name="delete"),
     path(
+        "load_expense_name/<int:expense_type>/",
+        expenses.LoadExpenseName.as_view(),
+        name="load_expense_name",
+    ),
+    path(
         "load_expense_name/",
         expenses.LoadExpenseName.as_view(),
         name="load_expense_name",
