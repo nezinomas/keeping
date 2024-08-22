@@ -52,7 +52,13 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             "account",
             "attachment",
         )
-        widgets = {"expense_type": ExpenseTypeSelect}
+        widgets = {
+            "expense_type": ExpenseTypeSelect(
+                attrs={
+                    "_": "on change get my options[my selectedIndex] then trigger selected on it"
+                }
+            )
+        }
 
     field_order = [
         "date",
@@ -73,7 +79,6 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
         self._initial_fields_values()
         self._overwrite_default_queries()
-        self._set_htmx_attributes()
         self._translate_fields()
 
         # form inputs settings
@@ -127,9 +132,6 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
                 .year(user.year)
             )
             expense_name.queryset = expense_name_qs
-
-    def _set_htmx_attributes(self):
-        self.fields["expense_type"].widget.attrs["_"] = "on change get my options[my selectedIndex] then trigger selected on it"
 
     def _translate_fields(self):
         self.fields["date"].label = _("Date")
