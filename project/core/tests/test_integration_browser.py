@@ -1,6 +1,7 @@
 from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from webdriver_manager.chrome import ChromeDriverManager
 
 from ...users.factories import UserFactory
@@ -10,7 +11,13 @@ class Browser(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+
+        chrome_options = ChromeOptions()
+        chrome_options.add_argument("--disable-search-engine-choice-screen")
+        cls.browser = webdriver.Chrome(
+            options=chrome_options,
+            service=ChromeService(ChromeDriverManager().install()),
+        )
 
     @classmethod
     def tearDownClass(cls):
