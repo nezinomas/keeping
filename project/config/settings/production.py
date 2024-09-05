@@ -34,6 +34,8 @@ EMAIL_HOST_PASSWORD = ""
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = "Invite <invite@bookkeeping.com>"
 
+SESSION_COOKIE_HTTPONLY = True
+
 
 LOGGING = {
     "version": 1,

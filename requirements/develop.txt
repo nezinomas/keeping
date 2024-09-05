@@ -5,7 +5,7 @@ django-test-plus==2.2.3
 django-test-without-migrations==0.6
 django-webtest==1.9.11
 factory-boy==3.3.0
-hypothesis==6.108.5
+hypothesis==6.111.2
 mock==5.1.0
 pyinstrument==4.6.2
 pytest==8.3.2
@@ -22,6 +22,6 @@ pytest-randomly==3.15.0
 pytest-sugar==1.0.0
 pytest-xdist==3.6.1
 pytz==2024.1
-selenium==4.23.1
+selenium==4.24.0
 time-machine==2.14.1
 webdriver-manager==4.0.2
