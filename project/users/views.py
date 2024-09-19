@@ -332,6 +332,6 @@ class SettingsJournal(FormViewMixin):
         lang = form.cleaned_data.get("lang")
         activate(lang)
 
-        response.set_cookie(key=settings.LANGUAGE_COOKIE_NAME, value=lang, httponly=True)
+        response.set_cookie(key=settings.LANGUAGE_COOKIE_NAME, value=lang, httponly=True, secure=True, samesite="Strict")
 
         return response
