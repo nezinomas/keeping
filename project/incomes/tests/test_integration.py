@@ -21,6 +21,8 @@ class Incomes(Browser):
 
         self.browser.get(f"{self.live_server_url}/incomes/")
 
+        sleep(0.1)
+
         rows = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr")
         assert len(rows) == 3
 
