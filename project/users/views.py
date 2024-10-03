@@ -72,13 +72,13 @@ class Login(auth_views.LoginView):
 
 class Logout(auth_views.LogoutView):
     def dispatch(self, request, *args, **kwargs):
-        response = super().dispatch(request, *args, **kwargs)
+        super().dispatch(request, *args, **kwargs)
 
         if request.user.is_authenticated:
             logout(request)
-            return redirect(reverse("users:login"))
 
-        return response
+        return redirect(reverse("users:login"))
+
 
 
 class Signup(CreateView):

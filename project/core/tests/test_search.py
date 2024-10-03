@@ -24,6 +24,17 @@ def test_sanitize_search_str_empty():
 
 
 @pytest.mark.parametrize(
+    "dictionary, key, default_value, expect",
+    [
+        ({"a": 1}, "a", "x", 1),
+        ({"a": 1}, "b", "x", "x"),
+    ],
+)
+def test_get_from_dictionary(dictionary, key, default_value, expect):
+    assert H._get(dictionary, key, default_value) == expect
+
+
+@pytest.mark.parametrize(
     "search, expect",
     [
         (
