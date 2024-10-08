@@ -1,3 +1,4 @@
+import contextlib
 from datetime import datetime
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
@@ -142,8 +143,9 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
     def clean_attachment(self):
         image = self.cleaned_data.get("attachment", False)
 
-        if image and image.size > 4 * 1024 * 1024:
-            raise ValidationError(_("Image file too large ( > 4Mb )"))
+        with contextlib.suppress(FileNotFoundError):
+            if image and image.size > 4 * 1024 * 1024:
+                raise ValidationError(_("Image file too large ( > 4Mb )"))
 
         return image
 
