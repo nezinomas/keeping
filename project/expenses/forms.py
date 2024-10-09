@@ -52,7 +52,9 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         user = utils.get_user()
 
         self._initial_fields_values()
-        self._overwrite_default_queries()
+        self._overwrite_account_query()
+        self._overwrite_expense_type_query()
+        self._overwrite_expense_name_query(user)
         self._set_htmx_attributes()
         self._translate_fields()
 
@@ -76,11 +78,8 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             self.fields["account"].initial = Account.objects.items().first()
             self.fields["price"].initial = "0.00"
 
-    def _overwrite_default_queries(self):
-        user = utils.get_user()
+    def _overwrite_account_query(self):
         account = self.fields["account"]
-        expense_type = self.fields["expense_type"]
-        expense_name = self.fields["expense_name"]
 
         # overwrite Account queryset
         if self.instance.pk:
@@ -88,10 +87,13 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         else:
             account.queryset = Account.objects.items()
 
-        # overwrite ExpenseType queryset
+    def _overwrite_expense_type_query(self):
+        expense_type = self.fields["expense_type"]
         expense_type.queryset = ExpenseType.objects.items()
 
-        # overwrite ExpenseName queryset
+    def _overwrite_expense_name_query(self, user):
+        expense_name = self.fields["expense_name"]
+
         expense_type_pk = None
         with contextlib.suppress(TypeError, ValueError):
             expense_type_pk = int(self.data.get("expense_type"))
