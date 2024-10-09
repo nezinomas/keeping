@@ -49,15 +49,19 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        user = utils.get_user()
+
         self._initial_fields_values()
-        self._overwrite_default_queries()
+        self._overwrite_account_query()
+        self._overwrite_expense_type_query()
+        self._overwrite_expense_name_query(user)
         self._set_htmx_attributes()
         self._translate_fields()
 
         # form inputs settings
         self.fields["date"].widget = DatePickerInput(
             options={
-                "locale": utils.get_user().journal.lang,
+                "locale": user.journal.lang,
             }
         )
         self.fields["price"].widget.attrs = {
@@ -74,37 +78,35 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             self.fields["account"].initial = Account.objects.items().first()
             self.fields["price"].initial = "0.00"
 
-    def _overwrite_default_queries(self):
-        user = utils.get_user()
-        account = self.fields["account"]
-        expense_type = self.fields["expense_type"]
-        expense_name = self.fields["expense_name"]
-
-        # overwrite Account queryset
+    def _overwrite_account_query(self):
         if self.instance.pk:
-            account.queryset = Account.objects.items(year=self.instance.date.year)
+            qs = Account.objects.items(year=self.instance.date.year)
         else:
-            account.queryset = Account.objects.items()
+            qs = Account.objects.items()
 
-        # overwrite ExpenseType queryset
-        expense_type.queryset = ExpenseType.objects.items()
+        self.fields["account"].queryset = qs
 
-        # overwrite ExpenseName queryset
+    def _overwrite_expense_type_query(self):
+        self.fields["expense_type"].queryset = ExpenseType.objects.items()
+
+    def _overwrite_expense_name_query(self, user):
         expense_type_pk = None
         with contextlib.suppress(TypeError, ValueError):
             expense_type_pk = int(self.data.get("expense_type"))
 
-        if not expense_type_pk and self.instance.pk:
+        if expense_type_pk is None and self.instance.pk:
             expense_type_pk = self.instance.expense_type.pk
 
         if expense_type_pk:
-            expense_name.queryset = (
+            qs = (
                 ExpenseName.objects.related()
                 .filter(parent=expense_type_pk)
                 .year(user.year)
             )
         else:
-            expense_name.queryset = ExpenseName.objects.none()
+            qs = ExpenseName.objects.none()
+
+        self.fields["expense_name"].queryset = qs
 
     def _set_htmx_attributes(self):
         url = reverse("expenses:load_expense_name")
