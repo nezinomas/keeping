@@ -79,20 +79,17 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             self.fields["price"].initial = "0.00"
 
     def _overwrite_account_query(self):
-        account = self.fields["account"]
-
         if self.instance.pk:
-            account.queryset = Account.objects.items(year=self.instance.date.year)
+            qs = Account.objects.items(year=self.instance.date.year)
         else:
-            account.queryset = Account.objects.items()
+            qs = Account.objects.items()
+
+        self.fields["account"].queryset = qs
 
     def _overwrite_expense_type_query(self):
-        expense_type = self.fields["expense_type"]
-        expense_type.queryset = ExpenseType.objects.items()
+        self.fields["expense_type"].queryset = ExpenseType.objects.items()
 
     def _overwrite_expense_name_query(self, user):
-        expense_name = self.fields["expense_name"]
-
         expense_type_pk = None
         with contextlib.suppress(TypeError, ValueError):
             expense_type_pk = int(self.data.get("expense_type"))
@@ -101,13 +98,15 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             expense_type_pk = self.instance.expense_type.pk
 
         if expense_type_pk:
-            expense_name.queryset = (
+            qs = (
                 ExpenseName.objects.related()
                 .filter(parent=expense_type_pk)
                 .year(user.year)
             )
         else:
-            expense_name.queryset = ExpenseName.objects.none()
+            qs = ExpenseName.objects.none()
+
+        self.fields["expense_name"].queryset = qs
 
     def _set_htmx_attributes(self):
         url = reverse("expenses:load_expense_name")
