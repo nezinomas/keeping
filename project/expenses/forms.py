@@ -81,7 +81,6 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
     def _overwrite_account_query(self):
         account = self.fields["account"]
 
-        # overwrite Account queryset
         if self.instance.pk:
             account.queryset = Account.objects.items(year=self.instance.date.year)
         else:
