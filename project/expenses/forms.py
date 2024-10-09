@@ -80,14 +80,16 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         expense_type = self.fields["expense_type"]
         expense_name = self.fields["expense_name"]
 
+        # overwrite Account queryset
         if self.instance.pk:
             account.queryset = Account.objects.items(year=self.instance.date.year)
         else:
             account.queryset = Account.objects.items()
 
+        # overwrite ExpenseType queryset
         expense_type.queryset = ExpenseType.objects.items()
-        expense_name.queryset = ExpenseName.objects.none()
 
+        # overwrite ExpenseName queryset
         expense_type_pk = None
         with contextlib.suppress(TypeError, ValueError):
             expense_type_pk = int(self.data.get("expense_type"))
@@ -96,12 +98,13 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             expense_type_pk = self.instance.expense_type.pk
 
         if expense_type_pk:
-            # overwrite ForeignKey expense_type queryset
             expense_name.queryset = (
                 ExpenseName.objects.related()
                 .filter(parent=expense_type_pk)
                 .year(user.year)
             )
+        else:
+            expense_name.queryset = ExpenseName.objects.none()
 
     def _set_htmx_attributes(self):
         url = reverse("expenses:load_expense_name")
