@@ -72,13 +72,13 @@ class Login(auth_views.LoginView):
 
 class Logout(auth_views.LogoutView):
     def dispatch(self, request, *args, **kwargs):
-        response = super().dispatch(request, *args, **kwargs)
+        super().dispatch(request, *args, **kwargs)
 
         if request.user.is_authenticated:
             logout(request)
-            return redirect(reverse("users:login"))
 
-        return response
+        return redirect(reverse("users:login"))
+
 
 
 class Signup(CreateView):
@@ -332,6 +332,6 @@ class SettingsJournal(FormViewMixin):
         lang = form.cleaned_data.get("lang")
         activate(lang)
 
-        response.set_cookie(key=settings.LANGUAGE_COOKIE_NAME, value=lang, httponly=True)
+        response.set_cookie(key=settings.LANGUAGE_COOKIE_NAME, value=lang, httponly=True, secure=True, samesite="Strict")
 
         return response

@@ -114,6 +114,23 @@ def test_logout_func():
     assert views.Logout is view.func.view_class
 
 
+def test_logout_user_is_logged(client_logged):
+    url = reverse("users:logout")
+
+    response = client_logged.get(url, follow=True)
+
+    assert response.status_code == 200
+    assert response.resolver_match.url_name == "login"
+
+
+def test_logout_user_is_not_logged(client):
+    url = reverse("users:logout")
+
+    response = client.get(url, follow=True)
+
+    assert response.resolver_match.url_name == "login"
+
+
 # ---------------------------------------------------------------------------------------
 #                                                                                 Sign Up
 # ---------------------------------------------------------------------------------------
