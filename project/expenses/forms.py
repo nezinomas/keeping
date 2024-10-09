@@ -94,7 +94,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         with contextlib.suppress(TypeError, ValueError):
             expense_type_pk = int(self.data.get("expense_type"))
 
-        if not expense_type_pk and self.instance.pk:
+        if expense_type_pk is None and self.instance.pk:
             expense_type_pk = self.instance.expense_type.pk
 
         if expense_type_pk:
