@@ -49,6 +49,8 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        user = utils.get_user()
+
         self._initial_fields_values()
         self._overwrite_default_queries()
         self._set_htmx_attributes()
@@ -57,7 +59,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
         # form inputs settings
         self.fields["date"].widget = DatePickerInput(
             options={
-                "locale": utils.get_user().journal.lang,
+                "locale": user.journal.lang,
             }
         )
         self.fields["price"].widget.attrs = {
