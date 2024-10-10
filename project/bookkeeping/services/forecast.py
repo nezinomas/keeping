@@ -132,12 +132,12 @@ class Forecast:
         )
         return df[0, 0]
 
-    def averages(self) -> dict:
+    def medians(self) -> dict:
         """
-        Calculates the average expenses and savings for the months from January to the current month.
+        Calculates median expenses and savings for the months from January to the current month.
 
         Returns:
-            A dictionary containing the average expenses and savings.
+            A dictionary containing median expenses and savings.
 
             The keys are "expenses" and "savings".
 
@@ -175,7 +175,7 @@ class Forecast:
         Returns:
             int: The forecasted balance for the end of the year.
         """
-        avg = self.averages()
+        avg = self.medians()
         current = self.current_month()
 
         expenses_avg = avg["expenses"]
