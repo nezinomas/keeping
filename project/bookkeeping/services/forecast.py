@@ -146,7 +146,7 @@ class Forecast:
         return (
             self._data.filter(pl.col("month") < self._month)
             .select([pl.col.expenses, pl.col.savings])
-            .mean()
+            .median()
             .fill_null(0)
             .to_dicts()[0]
         )

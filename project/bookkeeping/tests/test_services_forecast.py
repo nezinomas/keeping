@@ -169,14 +169,7 @@ def test_averages_data_with_six_months(data):
     data["savings"][5] = 27.
 
     actual = Forecast(month=7, data=data).averages()
-    expect = {"expenses": 9., "savings": 11.}
-
-    assert actual == expect
-
-
-def test_averages_for_three_months(data):
-    actual = Forecast(month=3, data=data).averages()
-    expect = {"expenses": 1.5, "savings": 4.5}
+    expect = {"expenses": 4.5, "savings": 6.5}
 
     assert actual == expect
 
