@@ -166,7 +166,14 @@ class Forecast:
         """
         return (
             self._data.filter(pl.col("month") == self._month)
-            .select([pl.col.expenses, pl.col.savings, pl.col.incomes, pl.col.planned_incomes])
+            .select(
+                [
+                    pl.col.expenses,
+                    pl.col.savings,
+                    pl.col.incomes,
+                    pl.col.planned_incomes,
+                ]
+            )
             .to_dicts()[0]
         )
 
