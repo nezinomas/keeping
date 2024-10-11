@@ -120,6 +120,7 @@ class Forecast:
     def planned_incomes(self) -> int:
         """
         Calculate the total sum of planned incomes from current month to December.
+        Current month not included.
 
         Returns:
             int: The total sum of planned incomes.
@@ -135,6 +136,7 @@ class Forecast:
     def medians(self) -> dict:
         """
         Calculates median expenses and savings for the months from January to the current month.
+        Current month not included.
 
         Returns:
             A dictionary containing median expenses and savings.
