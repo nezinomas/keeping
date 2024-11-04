@@ -295,9 +295,9 @@ def test_expenses_full(month, expect, data):
 @pytest.mark.parametrize(
     "month, expect",
     [
-        (1, -591.67),
-        (2, -741.67),
-        (3, 158.33),
+        (1, -750.0),
+        (2, -900.0),
+        (3, 0.0),
     ],
 )
 def test_expenses_remains(month, expect, data):
@@ -457,9 +457,9 @@ def test_plans_stats_expenses_remains(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
     assert "Avg Pajamos - Visos išlaidos" in actual[3].type
-    assert round(actual[3].january, 2) == -591.67
-    assert round(actual[3].february, 2) == -741.67
-    assert round(actual[3].march, 2) == 158.33
+    assert round(actual[3].january, 2) == -750.0
+    assert round(actual[3].february, 2) == -900.0
+    assert round(actual[3].march, 2) == 0.0
 
 
 def test_plans_stats_day_sum(data):

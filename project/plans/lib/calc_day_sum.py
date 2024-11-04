@@ -173,7 +173,7 @@ class PlanCalculateDaySum:
                     - (pl.col("day_input") * pl.col("month_len"))
                 )
             )
-            .with_columns(incomes_avg=pl.col.incomes.mean())
+            .with_columns(incomes_avg=pl.col.incomes.median())
             .with_columns(
                 expenses_remains=(pl.col.incomes_avg - pl.col.expenses_full)
             )
