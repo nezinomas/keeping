@@ -8,8 +8,7 @@ from django.utils.translation import gettext as _
 from polars import DataFrame as DF
 
 from ...core.lib.date import monthlen, monthname, monthnames
-from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
-                      SavingPlan)
+from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 
 
 @dataclass
@@ -31,12 +30,16 @@ class PlanCollectData:
         self.expenses = ExpensePlan.objects.year(self.year).values(
             *month_names,
             necessary=F("expense_type__necessary"),
-            title=F("expense_type__title")
+            title=F("expense_type__title"),
         )
 
         self.savings = SavingPlan.objects.year(self.year).values(*month_names)
         self.days = DayPlan.objects.year(self.year).values(*month_names)
-        self.necessary = NecessaryPlan.objects.year(self.year).values(*month_names).annotate(title=F("expense_type__title"))
+        self.necessary = (
+            NecessaryPlan.objects.year(self.year)
+            .values(*month_names)
+            .annotate(title=F("expense_type__title"))
+        )
 
 
 class PlanCalculateDaySum:
@@ -68,16 +71,39 @@ class PlanCalculateDaySum:
         _days = _("days in month")
         _from_tables = _("from tables above")
 
-
         return [
-            Items(type=f"1. {_incomes} ({_median})", **self.filter_df("incomes_avg")),
-            Items(type=f"2. {_necessary}", **self.filter_df("expenses_necessary")),
-            Items(type=f"3. {_remain} (1 - 2)", **self.filter_df("expenses_free")),
-            Items(type=f"4. {_remain} ({_from_tables})", **self.filter_df("expenses_free2")),
-            Items(type=f"5. {_full} (1 + 4)", **self.filter_df("expenses_full")),
-            Items(type=f"6. {_incomes} - {_full} (1 - 5)", **self.filter_df("expenses_remains")),
-            Items(type=f"7. {_sum_per_day} (3 / {_days})", **self.filter_df("day_calced")),
-            Items(type=f"8. {_residual} (3 - 7 * {_days})", **self.filter_df("remains")),
+            Items(
+                type=f"1. {_incomes} ({_median})",
+                **self.filter_df("incomes_avg")
+            ),
+            Items(
+                type=f"2. {_necessary}",
+                **self.filter_df("expenses_necessary")
+            ),
+            Items(
+                type=f"3. {_remain} (1 - 2)",
+                **self.filter_df("expenses_free")
+            ),
+            Items(
+                type=f"4. {_remain} ({_from_tables})",
+                **self.filter_df("expenses_free2"),
+            ),
+            Items(
+                type=f"5. {_full} (1 + 4)",
+                **self.filter_df("expenses_full")
+            ),
+            Items(
+                type=f"6. {_incomes} - {_full} (1 - 5)",
+                **self.filter_df("expenses_remains"),
+            ),
+            Items(
+                type=f"7. {_sum_per_day} (3 / {_days})",
+                **self.filter_df("day_calced")
+            ),
+            Items(
+                type=f"8. {_residual} (3 - 7 * {_days})",
+                **self.filter_df("remains")
+            ),
         ]
 
     @property
@@ -136,8 +162,12 @@ class PlanCalculateDaySum:
                     + pl.col("necessary")
                 )
             )
-            .with_columns(expenses_free=(pl.col.incomes_avg - pl.col.expenses_necessary))
-            .with_columns(expenses_full=(pl.col("expenses_necessary") + pl.col("expenses_free2")))
+            .with_columns(
+                expenses_free=(pl.col.incomes_avg - pl.col.expenses_necessary)
+            )
+            .with_columns(
+                expenses_full=(pl.col("expenses_necessary") + pl.col("expenses_free2"))
+            )
             .with_columns(day_calced=(pl.col("expenses_free") / pl.col("month_len")))
             .with_columns(
                 remains=(
@@ -145,9 +175,7 @@ class PlanCalculateDaySum:
                     - (pl.col("day_input") * pl.col("month_len"))
                 )
             )
-            .with_columns(
-                expenses_remains=(pl.col.incomes_avg - pl.col.expenses_full)
-            )
+            .with_columns(expenses_remains=(pl.col.incomes_avg - pl.col.expenses_full))
             .collect()
             .transpose(
                 include_header=True, header_name="name", column_names=self.std_columns
