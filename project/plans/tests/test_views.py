@@ -1,9 +1,6 @@
-from turtle import title
 import pytest
 import time_machine
 from django.urls import resolve, reverse
-
-from project.expenses.views import expenses_type
 
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory

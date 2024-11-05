@@ -15,7 +15,19 @@ from ..services.month import Charts, Info, MainTable, Objects
 def test_info_context(mck_get_data, mck_initialize_objects):
     obj = Objects(1, 1)
     obj.data = MagicMock(incomes=15)
-    obj.plans = MagicMock(incomes=100, savings=12, day_input=3, remains=-85, expenses_free=88, expenses_necessary=5)
+
+    # obj.plans side effect for method filter_df is called 7 times
+    # side effect return values are
+    # 0) incomes=100,
+    # 1) expense_necessary=5,
+    # 2) expense_free=88,
+    # 3) savings=12,
+    # 4) savings=12,
+    # 5) day_input=3,
+    # 6) remains=-85,
+    obj.plans = MagicMock()
+    obj.plans.filter_df.side_effect=[100, 5, 88, 12, 12, 3, -85]
+
     obj.main_table = MagicMock(total_row = {"Viso": 5, "Taupymas": 12})
     obj.spending = MagicMock(avg_per_day=2)
 
