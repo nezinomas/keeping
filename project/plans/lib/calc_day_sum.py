@@ -47,65 +47,11 @@ class PlanCalculateDaySum:
         self._year = data.year
         self._df = self._calc_df()
 
-    @property
-    def incomes(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "incomes")
-        return self._return_data(data)
+    def filter_df(self, name: str) -> DF:
+        if name not in self._df["name"]:
+            return {}
 
-    @property
-    def incomes_avg(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "incomes_avg")
-        return self._return_data(data)
-
-    @property
-    def savings(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "savings")
-        return self._return_data(data)
-
-    @property
-    def expenses_free(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "expenses_free")
-        return self._return_data(data)
-
-    @property
-    def expenses_free2(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "expenses_free2")
-        return self._return_data(data)
-
-    @property
-    def expenses_necessary(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "expenses_necessary")
-        return self._return_data(data)
-
-    @property
-    def expenses_full(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "expenses_full")
-        return self._return_data(data)
-
-    @property
-    def expenses_remains(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "expenses_remains")
-        return self._return_data(data)
-
-
-    @property
-    def day_calced(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "day_calced")
-        return self._return_data(data)
-
-    @property
-    def day_input(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "day_input")
-        return self._return_data(data)
-
-    @property
-    def remains(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "remains")
-        return self._return_data(data)
-
-    @property
-    def necessary(self) -> dict[str, float]:
-        data = self._df.filter(pl.col("name") == "necessary")
+        data = self._df.filter(pl.col("name") == name)
         return self._return_data(data)
 
     @property
@@ -124,14 +70,14 @@ class PlanCalculateDaySum:
 
 
         return [
-            Items(type=f"1. {_incomes} ({_median})", **self.incomes_avg),
-            Items(type=f"2. {_necessary}", **self.expenses_necessary),
-            Items(type=f"3. {_remain} (1 - 2)", **self.expenses_free),
-            Items(type=f"4. {_remain} ({_from_tables})", **self.expenses_free2),
-            Items(type=f"5. {_full} (1 + 4)", **self.expenses_full),
-            Items(type=f"6. {_incomes} - {_full} (1 - 5)", **self.expenses_remains),
-            Items(type=f"7. {_sum_per_day} (3 / {_days})", **self.day_calced),
-            Items(type=f"8. {_residual} (3 - 7 * {_days})", **self.remains),
+            Items(type=f"1. {_incomes} ({_median})", **self.filter_df("incomes_avg")),
+            Items(type=f"2. {_necessary}", **self.filter_df("expenses_necessary")),
+            Items(type=f"3. {_remain} (1 - 2)", **self.filter_df("expenses_free")),
+            Items(type=f"4. {_remain} ({_from_tables})", **self.filter_df("expenses_free2")),
+            Items(type=f"5. {_full} (1 + 4)", **self.filter_df("expenses_full")),
+            Items(type=f"6. {_incomes} - {_full} (1 - 5)", **self.filter_df("expenses_remains")),
+            Items(type=f"7. {_sum_per_day} (3 / {_days})", **self.filter_df("day_calced")),
+            Items(type=f"8. {_residual} (3 - 7 * {_days})", **self.filter_df("remains")),
         ]
 
     @property

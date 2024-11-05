@@ -195,7 +195,7 @@ def fixture_data_empty():
 
 
 def test_incomes(data):
-    actual = PlanCalculateDaySum(data).incomes
+    actual = PlanCalculateDaySum(data).filter_df("incomes")
 
     assert len(actual) == 12
     assert round(actual["january"], 2) == 900
@@ -204,20 +204,20 @@ def test_incomes(data):
 
 def test_incomes_with_month(data):
     data.month = 1
-    actual = PlanCalculateDaySum(data).incomes
+    actual = PlanCalculateDaySum(data).filter_df("incomes")
 
     assert round(actual, 2) == 900
 
 
 def test_incomes_no_data(data_empty):
-    actual = PlanCalculateDaySum(data_empty).incomes
+    actual = PlanCalculateDaySum(data_empty).filter_df("incomes")
 
     assert actual["january"] == 0
     assert actual["december"] == 0
 
 
 def test_savings(data):
-    actual = PlanCalculateDaySum(data).savings
+    actual = PlanCalculateDaySum(data).filter_df("savings")
 
     assert len(actual) == 12
     assert round(actual["january"], 2) == 190
@@ -226,13 +226,13 @@ def test_savings(data):
 
 def test_savings_with_month(data):
     data.month = 1
-    actual = PlanCalculateDaySum(data).savings
+    actual = PlanCalculateDaySum(data).filter_df("savings")
 
     assert round(actual, 2) == 190
 
 
 def test_expenses_free(data):
-    actual = PlanCalculateDaySum(data).expenses_free
+    actual = PlanCalculateDaySum(data).filter_df("expenses_free")
 
     assert len(actual) == 12
     assert round(actual["january"], 2) == -40.0
@@ -249,13 +249,13 @@ def test_expenses_free(data):
 )
 def test_expenses_free_with_month(month, expect, data):
     data.month = month
-    actual = PlanCalculateDaySum(data).expenses_free
+    actual = PlanCalculateDaySum(data).filter_df("expenses_free")
 
     assert round(actual, 2) == expect
 
 
 def test_expenses_necessary(data):
-    actual = PlanCalculateDaySum(data).expenses_necessary
+    actual = PlanCalculateDaySum(data).filter_df("expenses_necessary")
 
     assert len(actual) == 12
     assert round(actual["january"], 2) == 490
@@ -272,7 +272,7 @@ def test_expenses_necessary(data):
 )
 def test_expenses_necessary_with_month(month, expect, data):
     data.month = month
-    actual = PlanCalculateDaySum(data).expenses_necessary
+    actual = PlanCalculateDaySum(data).filter_df("expenses_necessary")
 
     assert round(actual, 2) == expect
 
@@ -287,7 +287,7 @@ def test_expenses_necessary_with_month(month, expect, data):
 )
 def test_expenses_full(month, expect, data):
     data.month = month
-    actual = PlanCalculateDaySum(data).expenses_full
+    actual = PlanCalculateDaySum(data).filter_df("expenses_full")
 
     assert round(actual, 2) == expect
 
@@ -302,13 +302,13 @@ def test_expenses_full(month, expect, data):
 )
 def test_expenses_remains(month, expect, data):
     data.month = month
-    actual = PlanCalculateDaySum(data).expenses_remains
+    actual = PlanCalculateDaySum(data).filter_df("expenses_remains")
 
     assert round(actual, 2) == expect
 
 
 def test_day_calced(data):
-    actual = PlanCalculateDaySum(data).day_calced
+    actual = PlanCalculateDaySum(data).filter_df("day_calced")
 
     assert len(actual) == 12
     assert round(actual["january"], 2) == -1.29
@@ -325,13 +325,13 @@ def test_day_calced(data):
 )
 def test_day_calced_with_month(month, expect, data):
     data.month = month
-    actual = PlanCalculateDaySum(data).day_calced
+    actual = PlanCalculateDaySum(data).filter_df("day_calced")
 
     assert round(actual, 2) == expect
 
 
 def test_day_input(data):
-    actual = PlanCalculateDaySum(data).day_input
+    actual = PlanCalculateDaySum(data).filter_df("day_input")
 
     assert len(actual) == 12
     assert round(actual["january"], 2) == 25
@@ -348,13 +348,13 @@ def test_day_input(data):
 )
 def test_day_input_with_month(month, expect, data):
     data.month = month
-    actual = PlanCalculateDaySum(data).day_input
+    actual = PlanCalculateDaySum(data).filter_df("day_input")
 
     assert round(actual, 2) == expect
 
 
 def test_remains(data):
-    actual = PlanCalculateDaySum(data).remains
+    actual = PlanCalculateDaySum(data).filter_df("remains")
 
     assert len(actual) == 12
     assert round(actual["january"], 2) == -815.0
@@ -378,7 +378,7 @@ def test_remains_only_necessary_expenses(data):
             "december": None,
         }
     ]
-    actual = PlanCalculateDaySum(data).remains
+    actual = PlanCalculateDaySum(data).filter_df("remains")
 
     assert len(actual) == 12
     assert round(actual["january"], 2) == -815.0
@@ -395,13 +395,13 @@ def test_remains_only_necessary_expenses(data):
 )
 def test_remains_with_month(month, expect, data):
     data.month = month
-    actual = PlanCalculateDaySum(data).remains
+    actual = PlanCalculateDaySum(data).filter_df("remains")
 
     assert round(actual, 2) == expect
 
 
 def test_additional_necessary(data):
-    actual = PlanCalculateDaySum(data).necessary
+    actual = PlanCalculateDaySum(data).filter_df("necessary")
 
     assert len(actual) == 12
     assert round(actual["january"], 2) == 0
@@ -418,7 +418,7 @@ def test_additional_necessary(data):
 )
 def test_additional_necessary_with_month(month, expect, data):
     data.month = month
-    actual = PlanCalculateDaySum(data).necessary
+    actual = PlanCalculateDaySum(data).filter_df("necessary")
 
     assert round(actual, 2) == expect
 
