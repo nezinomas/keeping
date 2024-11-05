@@ -194,8 +194,8 @@ class Objects:
         self.spending = DaySpending(
             expense=expense,
             necessary=self.data.necessary_expense_types,
-            per_day=self.plans.day_input,
-            free=self.plans.expenses_free,
+            per_day=self.plans.filter_df("day_input"),
+            free=self.plans.filter_df("expenses_free"),
         )
 
         # main table
@@ -203,7 +203,7 @@ class Objects:
 
         # charts
         self.charts = Charts(
-            targets=(self.plans.targets | {_("Savings"): self.plans.savings}),
+            targets=(self.plans.targets | {_("Savings"): self.plans.filter_df("savings")}),
             totals=self.main_table.total_row,
         )
 
@@ -221,16 +221,16 @@ class Objects:
         )
 
         plan = Info(
-            income=self.plans.incomes,
+            income=self.plans.filter_df("incomes"),
             expense=(
                 0
-                + self.plans.expenses_necessary
-                + self.plans.expenses_free
-                - self.plans.savings
+                + self.plans.filter_df("expenses_necessary")
+                + self.plans.filter_df("expenses_free")
+                - self.plans.filter_df("savings")
             ),
-            saving=self.plans.savings,
-            per_day=self.plans.day_input,
-            balance=self.plans.remains,
+            saving=self.plans.filter_df("savings"),
+            per_day=self.plans.filter_df("day_input"),
+            balance=self.plans.filter_df("remains"),
         )
 
         delta = plan - fact
