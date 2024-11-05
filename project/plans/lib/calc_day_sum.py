@@ -53,6 +53,11 @@ class PlanCalculateDaySum:
         return self._return_data(data)
 
     @property
+    def incomes_avg(self) -> dict[str, float]:
+        data = self._df.filter(pl.col("name") == "incomes_avg")
+        return self._return_data(data)
+
+    @property
     def savings(self) -> dict[str, float]:
         data = self._df.filter(pl.col("name") == "savings")
         return self._return_data(data)
@@ -60,6 +65,11 @@ class PlanCalculateDaySum:
     @property
     def expenses_free(self) -> dict[str, float]:
         data = self._df.filter(pl.col("name") == "expenses_free")
+        return self._return_data(data)
+
+    @property
+    def expenses_free2(self) -> dict[str, float]:
+        data = self._df.filter(pl.col("name") == "expenses_free2")
         return self._return_data(data)
 
     @property
@@ -76,6 +86,7 @@ class PlanCalculateDaySum:
     def expenses_remains(self) -> dict[str, float]:
         data = self._df.filter(pl.col("name") == "expenses_remains")
         return self._return_data(data)
+
 
     @property
     def day_calced(self) -> dict[str, float]:
@@ -101,13 +112,26 @@ class PlanCalculateDaySum:
     def plans_stats(self):
         Items = namedtuple("Items", ["type", *self.std_columns])
 
+        _incomes = _("Incomes")
+        _median = _("median")
+        _necessary = _("Necessary expenses")
+        _remain = _("Remains for everyday")
+        _full = _("Full expenses")
+        _residual = _("Residual")
+        _sum_per_day = _("Sum per day")
+        _days = _("days in month")
+        _from_tables = _("from tables above")
+
+
         return [
-            Items(type=_("Necessary expenses"), **self.expenses_necessary),
-            Items(type=_("Remains for everyday"), **self.expenses_free),
-            Items(type=_("Full expenses"), **self.expenses_full),
-            Items(type=f"Avg {_('Incomes')} - {_('Full expenses')}", **self.expenses_remains),
-            Items(type=_("Sum per day, max possible"), **self.day_calced),
-            Items(type=_("Residual"), **self.remains),
+            Items(type=f"1. {_incomes} ({_median})", **self.incomes_avg),
+            Items(type=f"2. {_necessary}", **self.expenses_necessary),
+            Items(type=f"3. {_remain} (1 - 2)", **self.expenses_free),
+            Items(type=f"4. {_remain} ({_from_tables})", **self.expenses_free2),
+            Items(type=f"5. {_full} (1 + 4)", **self.expenses_full),
+            Items(type=f"6. {_incomes} - {_full} (1 - 5)", **self.expenses_remains),
+            Items(type=f"7. {_sum_per_day} (3 / {_days})", **self.day_calced),
+            Items(type=f"8. {_residual} (3 - 7 * {_days})", **self.remains),
         ]
 
     @property
@@ -143,7 +167,7 @@ class PlanCalculateDaySum:
             "day_input": self._sum_dicts(self._data.days),
             "necessary": self._sum_dicts(self._data.necessary),
             "expenses_necessary": self._sum_dicts(list(expenses_necessary)),
-            "expenses_free": self._sum_dicts(list(expenses_free)),
+            "expenses_free2": self._sum_dicts(list(expenses_free)),
         }
         return pl.DataFrame(df_data)
 
@@ -157,6 +181,7 @@ class PlanCalculateDaySum:
 
         return (
             df.lazy()
+            .with_columns(incomes_avg=pl.col.incomes.median())
             .with_columns(
                 expenses_necessary=(
                     pl.lit(0)
@@ -165,7 +190,8 @@ class PlanCalculateDaySum:
                     + pl.col("necessary")
                 )
             )
-            .with_columns(expenses_full=(pl.col("expenses_necessary") + pl.col("expenses_free")))
+            .with_columns(expenses_free=(pl.col.incomes_avg - pl.col.expenses_necessary))
+            .with_columns(expenses_full=(pl.col("expenses_necessary") + pl.col("expenses_free2")))
             .with_columns(day_calced=(pl.col("expenses_free") / pl.col("month_len")))
             .with_columns(
                 remains=(
@@ -173,7 +199,6 @@ class PlanCalculateDaySum:
                     - (pl.col("day_input") * pl.col("month_len"))
                 )
             )
-            .with_columns(incomes_avg=pl.col.incomes.median())
             .with_columns(
                 expenses_remains=(pl.col.incomes_avg - pl.col.expenses_full)
             )
