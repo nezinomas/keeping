@@ -43,9 +43,12 @@ DEFAULT-CHARACTER-SET = "utf8"
 CONN_MAX_AGE = 600
 ```
 
-5. Install development requirements (make sure you have mysql client installed)
+5. Install development requirements.
+
+Make sure you have **mysql client** and [**uv**](https://docs.astral.sh/uv/getting-started/installation/) python package installed.
+
 ```
-pip install -r requirements/develop.txt
+uv sync --extra dev
 ```
 
 6. If you are using python version lower than 3.11 you must install tomli
@@ -69,6 +72,6 @@ mkdir media; chmod -R 755 media
 
 9. Run tests:
 ```
-fast: pytest -n auto -k "not webtest"
-slow: pytest
+fast: uv run pytest -n auto -k "not webtest"
+slow: uv run pytest
 ```
