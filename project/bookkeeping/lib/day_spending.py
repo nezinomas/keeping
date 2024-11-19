@@ -44,7 +44,9 @@ class DaySpending(BalanceBase):
         )
         return df[0, 0]
 
-    def _calculate_spending(self, df: pl.DataFrame, exceptions: pl.DataFrame) -> pl.DataFrame:
+    def _calculate_spending(
+        self, df: pl.DataFrame, exceptions: pl.DataFrame
+    ) -> pl.DataFrame:
         if df.is_empty():
             return df
 

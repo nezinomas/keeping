@@ -123,7 +123,9 @@ class SignalBase(ABC):
             .pipe(self._insert_future_data)
         )
 
-    def _copy_cell_from_previous_year(self, df: pl.DataFrame, field_name: str) -> pl.Expr:   # noqa: E501
+    def _copy_cell_from_previous_year(
+        self, df: pl.DataFrame, field_name: str
+    ) -> pl.Expr:  # noqa: E501
         return df.with_columns(
             pl.col("latest_check").forward_fill().over("id"),
             pl.col(field_name).forward_fill().over("id"),
@@ -272,7 +274,9 @@ class Savings(SignalBase):
             .drop("tmp")
         )
 
-    def _join_df(self, inc: pl.DataFrame, exp: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:   # noqa: E501
+    def _join_df(
+        self, inc: pl.DataFrame, exp: pl.DataFrame, hv: pl.DataFrame
+    ) -> pl.DataFrame:  # noqa: E501
         # drop expenses column
         inc = inc.drop("expenses")
         # drop incomes column, rename fee
