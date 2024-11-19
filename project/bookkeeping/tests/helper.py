@@ -6,8 +6,8 @@ def assert_(expected, actual):  # sourcery skip: raise-specific-error
         for _k, expected_val in expected[saving_type].items():
             try:
                 actual_val = actual[saving_type][_k]
-            except:
-                raise Exception(f"No '{_k}' key in {actual[saving_type]}.")
+            except KeyError as e:
+                raise Exception(f"No '{_k}' key in {actual[saving_type]}.") from e
 
             with contextlib.suppress(Exception):
                 actual_val = round(float(actual_val), 2)
