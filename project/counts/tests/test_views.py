@@ -358,7 +358,7 @@ def test_index_add_button(client_logged):
     content = response.content.decode()
 
     pattern = re.compile(
-        r'<button type="button" class="button-outline-success" hx-get="(.*?)" .*?>(\w+)<\/button>'
+        r'<button type="button" class="button-outline-success" hx-get="(.*?)" .*?>(\w+)<\/button>'  # noqa: E501
     )
     res = re.findall(pattern, content)
 
@@ -382,7 +382,7 @@ def test_index_links(client_logged):
     content = content.replace("       ", "")
 
     pattern = re.compile(
-        r'<button class="button-(active|secondary)" hx-get="(.*?)" hx-target="#tab_content"> (\w+) <\/button',
+        r'<button class="button-(active|secondary)" hx-get="(.*?)" hx-target="#tab_content"> (\w+) <\/button',  # noqa: E501
         re.MULTILINE,
     )
     res = re.findall(pattern, content)

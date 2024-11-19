@@ -116,7 +116,7 @@ class PasswordReset(auth_views.PasswordResetView):
         context["submit_button_text"] = _("Send password reset email")
         context["card_title"] = _("Reset your password")
         context["card_text"] = _(
-            "Enter your email address and system will send you a link to reset your pasword."
+            "Enter your email address and system will send you a link to reset your pasword."  # noqa: E501
         )
         context["valid_link"] = True
         return context
@@ -133,7 +133,7 @@ class PasswordResetDone(auth_views.PasswordResetDoneView):
         context = super().get_context_data(**kwargs)
         context["card_title"] = _("Reset your password")
         context["card_text"] = _(
-            "Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder."
+            "Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder."  # noqa: E501
         )
         return context
 

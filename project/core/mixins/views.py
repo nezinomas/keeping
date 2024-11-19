@@ -27,7 +27,7 @@ def rendered_content(request, view_class, **kwargs):
     return view_class.as_view()(request, **kwargs).rendered_content
 
 
-def httpHtmxResponse(hx_trigger_name=None, status_code=204):
+def http_htmx_response(hx_trigger_name=None, status_code=204):
     headers = {}
     if hx_trigger_name:
         headers = {
@@ -125,7 +125,7 @@ class DeleteMixin:
         if hx_redirect := self.get_hx_redirect():
             return HttpResponseClientRedirect(hx_redirect)
 
-        return httpHtmxResponse(self.get_hx_trigger_django())
+        return http_htmx_response(self.get_hx_trigger_django())
 
 
 class SearchMixin:
@@ -140,7 +140,9 @@ class SearchMixin:
         Calculate total price, total quantity and average of search result.
 
         :param sql: QuerySet
-        :return: a dictionary with sum_price, sum_quantity and average if search_method is 'search_expenses'
+        :return:
+            a dictionary with sum_price, sum_quantity and average
+            if search_method is 'search_expenses'
         :rtype: dict or None
         """
         return (

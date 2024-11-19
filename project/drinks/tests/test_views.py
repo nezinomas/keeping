@@ -34,7 +34,7 @@ def test_index_add_button(client_logged):
     content = response.content.decode()
 
     pattern = re.compile(
-        r'<button type="button" class="button-outline-success" hx-get="(.*?)" hx-target="#mainModal">(\w+)<\/button>',
+        r'<button type="button" class="button-outline-success" hx-get="(.*?)" hx-target="#mainModal">(\w+)<\/button>',  # noqa: E501
         re.MULTILINE,
     )
     res = re.findall(pattern, content)
@@ -106,19 +106,19 @@ def test_index_select_drink_drop_down_link_list(client_logged):
     content = response.content.decode()
 
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}">Alus</a>'
+        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}">Alus</a>'  # noqa: E501
         in content
     )
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}">Vynas</a>'
+        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}">Vynas</a>'  # noqa: E501
         in content
     )
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}">Degtinė</a>'
+        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}">Degtinė</a>'  # noqa: E501
         in content
     )
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>'
+        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>'  # noqa: E501
         in content
     )
 

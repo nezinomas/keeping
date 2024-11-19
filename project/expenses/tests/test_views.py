@@ -335,7 +335,7 @@ def test_expenses_update_with_closed_account_date_greated_than_closed_value(
 
     assert len(form.errors) == 1
     assert (
-        "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta 2000."
+        "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta 2000."  # noqa: E501
         in form.errors["date"]
     )
 
@@ -549,7 +549,7 @@ def test_view_expenses_delete_load_form(client_logged):
     assert response.status_code == 200
     assert '<form method="POST"' in actual
     assert (
-        "Ar tikrai norite ištrinti: <strong>1999-01-01/Expense Type/Expense Name</strong>?"
+        "Ar tikrai norite ištrinti: <strong>1999-01-01/Expense Type/Expense Name</strong>?"  # noqa: E501
         in actual
     )
 

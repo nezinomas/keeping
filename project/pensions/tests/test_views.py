@@ -11,7 +11,7 @@ pytestmark = pytest.mark.django_db
 
 
 # -------------------------------------------------------------------------------------
-#                                                                                Pensions
+#                                                                              Pensions
 # -------------------------------------------------------------------------------------
 def test_pensions_lists_func():
     view = resolve("/pensions/lists/")
@@ -220,7 +220,7 @@ def test_pensions_list_price_converted_with_thousands(client_logged):
 
 
 # -------------------------------------------------------------------------------------
-#                                                                           Pension Delete
+#                                                                        Pension Delete
 # -------------------------------------------------------------------------------------
 def test_view_pensions_delete_func():
     view = resolve("/pensions/delete/1/")
@@ -281,7 +281,7 @@ def test_pensions_delete_other_journal_post_form(client_logged, second_user):
 
 
 # -------------------------------------------------------------------------------------
-#                                                                             PensionType
+#                                                                           PensionType
 # -------------------------------------------------------------------------------------
 
 
