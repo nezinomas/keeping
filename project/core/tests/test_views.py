@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 import pytest
 import time_machine
@@ -15,7 +15,6 @@ from .. import views
 from .utils import setup_view
 
 pytestmark = pytest.mark.django_db
-from datetime import datetime
 
 
 @pytest.mark.parametrize(
