@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 from mock import patch
 
-from ..services.summary_savings_and_incomes import Service as T
+from ..services.summary_savings_and_incomes import Service
 
 
 @pytest.fixture(name="incomes")
@@ -29,7 +29,7 @@ def fixture_savings():
     return_value=[1, 2, 3],
 )
 def test_chart_data_categories(mck):
-    actual = T(data=SimpleNamespace(incomes=[], savings=[])).chart_data()
+    actual = Service(data=SimpleNamespace(incomes=[], savings=[])).chart_data()
 
     assert actual["categories"] == [1, 2]
 
@@ -39,7 +39,7 @@ def test_chart_data_categories(mck):
     return_value=[1, 2, 3, 4],
 )
 def test_chart_data_incomes(mck, incomes):
-    actual = T(data=SimpleNamespace(incomes=incomes, savings=[])).chart_data()
+    actual = Service(data=SimpleNamespace(incomes=incomes, savings=[])).chart_data()
 
     assert actual["incomes"] == [10, 11, 12]
 
@@ -51,7 +51,7 @@ def test_chart_data_incomes(mck, incomes):
 def test_chart_data_incomes_no_record(mck, incomes):
     del incomes[1]
 
-    actual = T(data=SimpleNamespace(incomes=incomes, savings=[])).chart_data()
+    actual = Service(data=SimpleNamespace(incomes=incomes, savings=[])).chart_data()
 
     assert actual["incomes"] == [10, 0, 12]
 
@@ -61,7 +61,7 @@ def test_chart_data_incomes_no_record(mck, incomes):
     return_value=[1, 2, 3, 4],
 )
 def test_chart_data_savings(mck, incomes, savings):
-    actual = T(data=SimpleNamespace(incomes=incomes, savings=savings)).chart_data()
+    actual = Service(data=SimpleNamespace(incomes=incomes, savings=savings)).chart_data()
 
     assert actual["savings"] == [20, 21, 22]
 
@@ -73,7 +73,7 @@ def test_chart_data_savings(mck, incomes, savings):
 def test_chart_data_savings_no_record(mck, incomes, savings):
     del savings[1]
 
-    actual = T(data=SimpleNamespace(incomes=incomes, savings=savings)).chart_data()
+    actual = Service(data=SimpleNamespace(incomes=incomes, savings=savings)).chart_data()
 
     assert actual["savings"] == [20, 0, 22]
 
@@ -83,7 +83,7 @@ def test_chart_data_savings_no_record(mck, incomes, savings):
     return_value=[1, 2, 3, 4],
 )
 def test_chart_data_percents(mck, incomes, savings):
-    actual = T(data=SimpleNamespace(incomes=incomes, savings=savings)).chart_data()
+    actual = Service(data=SimpleNamespace(incomes=incomes, savings=savings)).chart_data()
 
     assert actual["percents"] == pytest.approx([200, 190.91, 183.33], 0.01)
 
@@ -96,6 +96,6 @@ def test_chart_data_percents_no_record(mck, incomes, savings):
     del incomes[1]
     del savings[2]
 
-    actual = T(data=SimpleNamespace(incomes=incomes, savings=savings)).chart_data()
+    actual = Service(data=SimpleNamespace(incomes=incomes, savings=savings)).chart_data()
 
     assert actual["percents"] == [200, 0, 0]

@@ -5,7 +5,6 @@ from typing import Union
 import polars as pl
 from django.db.models import F
 from django.utils.translation import gettext as _
-from polars import DataFrame as DF
 
 from ...core.lib.date import monthlen, monthname, monthnames
 from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
@@ -50,7 +49,7 @@ class PlanCalculateDaySum:
         self._year = data.year
         self._df = self._calc_df()
 
-    def filter_df(self, name: str) -> DF:
+    def filter_df(self, name: str) -> pl.DataFrame:
         if name not in self._df["name"]:
             return {}
 
@@ -114,7 +113,7 @@ class PlanCalculateDaySum:
         data = data.select(select)
         return data[0, 0] if self._data.month else data.to_dicts()[0]
 
-    def _create_df(self) -> DF:
+    def _create_df(self) -> pl.DataFrame:
         expenses_necessary = filter(lambda x: x["necessary"], self._data.expenses)
         expenses_free = filter(lambda x: not x["necessary"], self._data.expenses)
 

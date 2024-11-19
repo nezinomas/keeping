@@ -3,7 +3,6 @@ import itertools
 from datetime import date
 
 import polars as pl
-from polars import DataFrame as DF
 
 
 class MakeDataFrame:
@@ -75,7 +74,7 @@ class MakeDataFrame:
     def _insert_empty_dicts(self, dt, title, keys):
         return {"date": dt, "title": title, **{x: 0 for x in keys}}
 
-    def create_data(self, sum_col_name: str = "sum") -> DF:
+    def create_data(self, sum_col_name: str = "sum") -> pl.DataFrame:
         data = self._modify_data()
 
         return (
@@ -104,13 +103,13 @@ class MakeDataFrame:
             [pl.col(i).sum() for i in cols if i not in ["date", "title"]]
         )
 
-    def _drop_columns(self, df: DF) -> pl.Expr:
+    def _drop_columns(self, df: pl.DataFrame) -> pl.Expr:
         col_to_drop = [
             "__tmp_to_drop__",
         ]
         return df.drop([name for name in col_to_drop if name in df.columns])
 
-    def _insert_missing_columns(self, df: DF) -> pl.Expr:
+    def _insert_missing_columns(self, df: pl.DataFrame) -> pl.Expr:
         """Insert missing columns"""
         if not self._columns:
             return df
@@ -120,6 +119,6 @@ class MakeDataFrame:
 
         return df.select([pl.all(), *cols])
 
-    def _sort_columns(self, df: DF) -> pl.Expr:
+    def _sort_columns(self, df: pl.DataFrame) -> pl.Expr:
         cols = [pl.col(x) for x in sorted(df.columns[1:])]
         return df.select([pl.col("date"), *cols])

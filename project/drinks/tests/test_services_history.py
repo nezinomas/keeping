@@ -1,7 +1,7 @@
 import pytest
 import time_machine
 
-from ..services import history as T
+from ..services import history
 
 pytestmark = pytest.mark.django_db
 
@@ -9,7 +9,7 @@ pytestmark = pytest.mark.django_db
 @time_machine.travel("1999-01-01")
 def test_insert_empty_values():
     data = [{"year": 1998, "qty": 1, "stdav": 2.5}]
-    actual = T.HistoryService.insert_empty_values(data)
+    actual = history.HistoryService.insert_empty_values(data)
     expect = [
         {"year": 1998, "qty": 1, "stdav": 2.5},
         {"year": 1998, "qty": 0, "stdav": 0.0},
@@ -21,7 +21,7 @@ def test_insert_empty_values():
 @time_machine.travel("2000-01-01")
 def test_years():
     qs = [{"year": 1998, "qty": 1, "stdav": 2.5}]
-    actual = T.HistoryService(qs).years
+    actual = history.HistoryService(qs).years
 
     assert actual == [1998, 1999, 2000]
 
@@ -41,7 +41,7 @@ def test_pure_alcohol(drink_type, qty, stdav, expect, main_user):
 
     qs = [{"year": 1999, "qty": qty, "stdav": stdav}]
 
-    actual = T.HistoryService(qs).alcohol
+    actual = history.HistoryService(qs).alcohol
 
     assert actual == expect
 
@@ -61,7 +61,7 @@ def test_per_day(drink_type, qty, stdav, expect, main_user):
 
     qs = [{"year": 1999, "qty": qty, "stdav": stdav}]
 
-    actual = T.HistoryService(qs).per_day
+    actual = history.HistoryService(qs).per_day
 
     assert actual == expect
 
@@ -84,7 +84,7 @@ def test_per_day_adjusted_for_current_year(drink_type, qty, stdav, expect, main_
         {"year": 2000, "qty": qty, "stdav": stdav},
     ]
 
-    actual = T.HistoryService(qs).per_day
+    actual = history.HistoryService(qs).per_day
 
     assert actual == expect
 
@@ -104,6 +104,6 @@ def test_quantity(drink_type, qty, stdav, expect, main_user):
 
     qs = [{"year": 1999, "qty": qty, "stdav": stdav}]
 
-    actual = T.HistoryService(qs).quantity
+    actual = history.HistoryService(qs).quantity
 
     assert actual == expect

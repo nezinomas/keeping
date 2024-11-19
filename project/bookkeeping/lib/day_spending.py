@@ -1,5 +1,4 @@
 import polars as pl
-from polars import DataFrame as DF
 
 from ...core.lib.date import current_day
 from .balance_base import BalanceBase
@@ -45,7 +44,7 @@ class DaySpending(BalanceBase):
         )
         return df[0, 0]
 
-    def _calculate_spending(self, df: DF, exceptions: DF) -> DF:
+    def _calculate_spending(self, df: pl.DataFrame, exceptions: pl.DataFrame) -> pl.DataFrame:
         if df.is_empty():
             return df
 
@@ -64,10 +63,10 @@ class DaySpending(BalanceBase):
             .collect()
         )
 
-    def _remove_necessary_if_any(self, df: DF) -> pl.Expr:
+    def _remove_necessary_if_any(self, df: pl.DataFrame) -> pl.Expr:
         return df.select(pl.exclude(self._necessary)) if self._necessary else df
 
-    def _calculate_spending_columns(self, df: DF) -> pl.Expr:
+    def _calculate_spending_columns(self, df: pl.DataFrame) -> pl.Expr:
         return (
             df.with_columns(day=(self._per_day - pl.col("total")))
             .with_columns(

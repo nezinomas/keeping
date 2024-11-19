@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
 import polars as pl
-from polars import DataFrame as DF
 
 
 @dataclass
@@ -47,9 +46,9 @@ class SignalBase(ABC):
         return self._table.to_dicts()
 
     @abstractmethod
-    def make_table(self, df: DF) -> DF: ...
+    def make_table(self, df: pl.DataFrame) -> pl.DataFrame: ...
 
-    def _make_df(self, arr: list[dict]) -> DF:
+    def _make_df(self, arr: list[dict]) -> pl.DataFrame:
         schema = {
             "id": pl.UInt16,
             "year": pl.UInt16,
@@ -74,7 +73,7 @@ class SignalBase(ABC):
             .collect()
         )
 
-    def _make_have(self, have: list[dict]) -> DF:
+    def _make_have(self, have: list[dict]) -> pl.DataFrame:
         schema = {
             "id": pl.UInt16,
             "year": pl.UInt16,
@@ -83,10 +82,9 @@ class SignalBase(ABC):
         }
         df = pl.DataFrame(have, schema=schema)
 
-        df = df.sort(["year", "id"])
-        return df
+        return df.sort(["year", "id"])
 
-    def _get_past_records(self, df: DF) -> pl.Expr:
+    def _get_past_records(self, df: pl.DataFrame) -> pl.Expr:
         years = df.select(pl.col("year").unique().sort())["year"]
         if len(years) < 2:
             return df
@@ -106,7 +104,7 @@ class SignalBase(ABC):
         last_year_type_list = row_diff[1, 1]
         row_diff = list(set(prev_year_type_list) ^ set(last_year_type_list))
 
-        df = df.vstack(
+        return df.vstack(
             df.filter(
                 (pl.col("year") == prev_year)
                 & (pl.col("id").is_in(types))
@@ -115,29 +113,27 @@ class SignalBase(ABC):
             .with_columns(year=pl.lit(last_year).cast(pl.UInt16))
             .pipe(self._reset_values, year=last_year)
         )
-        return df
 
-    def _insert_missing_values(self, df: DF, field_name: str) -> DF:
-        df = (
+    def _insert_missing_values(self, df: pl.DataFrame, field_name: str) -> pl.DataFrame:
+        return (
             df.pipe(self._get_past_records)
             .sort(["id", "year"])
             .pipe(self._copy_cell_from_previous_year, field_name=field_name)
             .sort(["year", "id"])
             .pipe(self._insert_future_data)
         )
-        return df
 
-    def _copy_cell_from_previous_year(self, df: DF, field_name: str) -> pl.Expr:
+    def _copy_cell_from_previous_year(self, df: pl.DataFrame, field_name: str) -> pl.Expr:   # noqa: E501
         return df.with_columns(
             pl.col("latest_check").forward_fill().over("id"),
             pl.col(field_name).forward_fill().over("id"),
         ).with_columns(pl.col(field_name).fill_null(0))
 
-    def _insert_future_data(self, df: DF) -> DF:
+    def _insert_future_data(self, df: pl.DataFrame) -> pl.DataFrame:
         """copy last year values into future (year + 1)"""
         last_year = df["year"][-1]
 
-        df = pl.concat(
+        return pl.concat(
             [
                 df,
                 (
@@ -148,9 +144,8 @@ class SignalBase(ABC):
             ],
             how="vertical",
         )
-        return df
 
-    def _reset_values(self, df: DF, year: int) -> pl.Expr:
+    def _reset_values(self, df: pl.DataFrame, year: int) -> pl.Expr:
         if self.signal_type == "savings":
             df = df.filter(pl.col("year") == year).with_columns(
                 incomes=pl.lit(0),
@@ -177,7 +172,7 @@ class Accounts(SignalBase):
         self._types = data.types
         self._table = self.make_table(_df)
 
-    def make_table(self, df: DF) -> DF:
+    def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         if df.is_empty():
             return df
 
@@ -199,7 +194,7 @@ class Accounts(SignalBase):
         )
         return df.collect()
 
-    def _join_df(self, df: DF, hv: DF) -> DF:
+    def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
         df = (
             df.join(hv, on=["id", "year"], how="full", coalesce=True, join_nulls=True)
             .lazy()
@@ -223,7 +218,7 @@ class Savings(SignalBase):
         self._types = data.types
         self._table = self.make_table(_df)
 
-    def make_table(self, df: DF) -> DF:
+    def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         if df.is_empty():
             return df
 
@@ -267,8 +262,8 @@ class Savings(SignalBase):
         )
         return df.collect()
 
-    def _calc_past(self, df: DF) -> pl.Expr:
-        df = (
+    def _calc_past(self, df: pl.DataFrame) -> pl.Expr:
+        return (
             df.lazy()
             .with_columns(tmp=pl.col("per_year_incomes").cum_sum().over("id"))
             .with_columns(past_amount=pl.col("tmp").shift(n=1, fill_value=0).over("id"))
@@ -276,9 +271,8 @@ class Savings(SignalBase):
             .with_columns(past_fee=pl.col("tmp").shift(n=1, fill_value=0).over("id"))
             .drop("tmp")
         )
-        return df
 
-    def _join_df(self, inc: DF, exp: DF, hv: DF) -> DF:
+    def _join_df(self, inc: pl.DataFrame, exp: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:   # noqa: E501
         # drop expenses column
         inc = inc.drop("expenses")
         # drop incomes column, rename fee

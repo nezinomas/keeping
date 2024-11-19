@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import polars as pl
-from polars import DataFrame as DF
 
 from ..lib.make_dataframe import MakeDataFrame
 from .balance_base import BalanceBase
@@ -14,7 +13,15 @@ class YearBalance(BalanceBase):
 
         amount_start: year start worth amount
 
-        awailable keys in data: incomes, expenses, savings, savings_close, borrow, borrow_return, lend, lend_return
+        awailable keys in data:
+            incomes,
+            expenses,
+            savings,
+            savings_close,
+            borrow,
+            borrow_return,
+            lend,
+            lend_return
         """
         self._year = data.year
         self._amount_start = amount_start or 0
@@ -87,7 +94,7 @@ class YearBalance(BalanceBase):
     def money_flow(self) -> list[float]:
         return self._balance["money_flow"].to_list()
 
-    def _calc_balance_and_money_flow(self, df: DF) -> DF:
+    def _calc_balance_and_money_flow(self, df: pl.DataFrame) -> pl.DataFrame:
         if self.is_empty(df):
             return df
 

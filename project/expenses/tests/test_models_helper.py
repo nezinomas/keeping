@@ -7,7 +7,7 @@ from mock import MagicMock
 from override_storage import override_storage
 
 from ..factories import ExpenseFactory
-from ..helpers import models_helper as T
+from ..helpers import models_helper as helper
 
 pytestmark = pytest.mark.django_db
 
@@ -16,7 +16,7 @@ def test_upload_attachment(main_user):
     e = ExpenseFactory(date=date(1000, 1, 1))
     f = "x.jpg"
 
-    actual = T.upload_attachment(e, f)
+    actual = helper.upload_attachment(e, f)
 
     assert (
         actual

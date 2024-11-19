@@ -6,13 +6,11 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 
 from ..core.lib import utils
-from .lib.date import yday as Yday
-from .lib.date import year_month_list
-from .lib.date import years as Year
+from .lib import date as lib_date
 
 
 def years(context):
-    _years = Year()
+    _years = lib_date.years()
 
     return {"years": _years[::-1]}
 
@@ -23,13 +21,13 @@ def yday(context):
     with contextlib.suppress(AttributeError):
         _year = utils.get_user().year
 
-    _yday, _ydays = Yday(_year)
+    _yday, _ydays = lib_date.yday(_year)
 
     return {"yday": _yday, "ydays": _ydays}
 
 
 def context_months(context):
-    return {"context_months": year_month_list()}
+    return {"context_months": lib_date.year_month_list()}
 
 
 def context_counts_menu(context):

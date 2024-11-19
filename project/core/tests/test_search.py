@@ -5,19 +5,19 @@ import pytest
 from ...books.factories import BookFactory
 from ...expenses.factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
-from ..lib import search as H
+from ..lib import search
 
 
 def test_sanitize_search_str():
-    search = "~!@#$%^&*()_+-=[]{}|;:,./<>?\\ x1"
-    actual = H.sanitize_search_str(search)
+    _search = "~!@#$%^&*()_+-=[]{}|;:,./<>?\\ x1"
+    actual = search.sanitize_search_str(_search)
 
     assert actual == "_-. x1"
 
 
 def test_sanitize_search_str_empty():
-    search = None
-    actual = H.sanitize_search_str(search)
+    _search = None
+    actual = search.sanitize_search_str(_search)
 
     assert not actual
 
@@ -30,11 +30,11 @@ def test_sanitize_search_str_empty():
     ],
 )
 def test_get_from_dictionary(dictionary, key, default_value, expect):
-    assert H._get(dictionary, key, default_value) == expect
+    assert search._get(dictionary, key, default_value) == expect
 
 
 @pytest.mark.parametrize(
-    "search, expect",
+    "_search, expect",
     [
         ("-c x", {"category": ["x"], "year": None, "month": None, "remark": None}),
         (
@@ -75,12 +75,12 @@ def test_get_from_dictionary(dictionary, key, default_value, expect):
         ),
     ],
 )
-def test_parse_search_with_args(search, expect):
-    assert expect == H.parse_search_with_args(search)
+def test_parse_search_with_args(_search, expect):
+    assert expect == search.parse_search_with_args(_search)
 
 
 @pytest.mark.parametrize(
-    "search, expect",
+    "_search, expect",
     [
         ("xxx", {"category": ["xxx"], "year": None, "month": None, "remark": ["xxx"]}),
         (
@@ -143,8 +143,8 @@ def test_parse_search_with_args(search, expect):
         ),
     ],
 )
-def test_parse_search_no_args(search, expect):
-    assert expect == H.parse_search_no_args(search)
+def test_parse_search_no_args(_search, expect):
+    assert expect == search.parse_search_no_args(_search)
 
 
 @pytest.mark.parametrize(
@@ -184,7 +184,7 @@ def test_parse_search_no_args(search, expect):
     ],
 )
 def test_filter_short_search_words(search_dict, expect):
-    assert expect == H.filter_short_search_words(search_dict)
+    assert expect == search.filter_short_search_words(search_dict)
 
 
 # -------------------------------------------------------------------------------------
@@ -192,7 +192,7 @@ def test_filter_short_search_words(search_dict, expect):
 # -------------------------------------------------------------------------------------
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "search, expect",
+    "_search, expect",
     [
         (
             "1999",
@@ -287,7 +287,7 @@ def test_filter_short_search_words(search_dict, expect):
         ),
     ],
 )
-def test_expense_search(search, expect):
+def test_expense_search(_search, expect):
     ExpenseFactory(
         date=date(1999, 1, 1),
         expense_type=ExpenseTypeFactory(title="Type_A"),
@@ -319,7 +319,7 @@ def test_expense_search(search, expect):
         remark="ąčęėįšųūž",
     )
 
-    q = H.search_expenses(search)
+    q = search.search_expenses(_search)
 
     for i in range(len(q)):
         assert q[i].expense_type.title == expect[i]["type"]
@@ -332,7 +332,7 @@ def test_expense_search_ordering():
     ExpenseFactory(date=date(1000, 1, 1))
     ExpenseFactory()
 
-    q = H.search_expenses("remark")
+    q = search.search_expenses("remark")
 
     assert q[0].date == date(1999, 1, 1)
     assert q[1].date == date(1000, 1, 1)
@@ -343,7 +343,7 @@ def test_expense_search_ordering():
 # -------------------------------------------------------------------------------------
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "search, cnt, income_type",
+    "_search, cnt, income_type",
     [
         ("1999", 1, "Income Type"),
         ("-y 1999", 1, "Income Type"),
@@ -361,13 +361,13 @@ def test_expense_search_ordering():
         ("-y 1999 -m 1 -c type", 1, "Income Type"),
     ],
 )
-def test_incomes_search(search, cnt, income_type):
+def test_incomes_search(_search, cnt, income_type):
     IncomeFactory()
     IncomeFactory(
         date=date(3333, 1, 1), income_type=IncomeTypeFactory(title="Y"), remark="ZZZ"
     )
 
-    q = H.search_incomes(search)
+    q = search.search_incomes(_search)
     assert q.count() == cnt
 
     if q:
@@ -382,7 +382,7 @@ def test_incomes_search_ordering():
     IncomeFactory(date=date(1000, 1, 1))
     IncomeFactory()
 
-    q = H.search_incomes("remark")
+    q = search.search_incomes("remark")
 
     assert q[0].date == date(1999, 1, 1)
     assert q[1].date == date(1000, 1, 1)
@@ -393,7 +393,7 @@ def test_incomes_search_ordering():
 # -------------------------------------------------------------------------------------
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "search, author, title, remark",
+    "_search, author, title, remark",
     [
         ("1999", "Author", "Book Title", "Remark"),
         ("-y1999", "Author", "Book Title", "Remark"),
@@ -416,11 +416,11 @@ def test_incomes_search_ordering():
         ("-y 1999 -m 1 -c titl", "Author", "Book Title", "Remark"),
     ],
 )
-def test_books_search(search, author, title, remark):
+def test_books_search(_search, author, title, remark):
     BookFactory()
     BookFactory(started=date(3333, 1, 1), author="A", title="T", remark="ZZZ")
 
-    q = H.search_books(search)
+    q = search.search_books(_search)
 
     if q:
         q = q[0]
@@ -436,7 +436,7 @@ def test_books_search_ordering():
     BookFactory(started=date(1000, 1, 1))
     BookFactory()
 
-    q = H.search_books("remark")
+    q = search.search_books("remark")
 
     assert q[0].started == date(1999, 1, 1)
     assert q[1].started == date(1000, 1, 1)
