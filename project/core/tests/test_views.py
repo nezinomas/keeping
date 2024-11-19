@@ -37,9 +37,9 @@ def test_set_year(dt_mock, year, expect, main_user, client_logged):
     assert response.wsgi_request.user.year == expect
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                     Regenerate Balances
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                   Regenerate Balances
+# -------------------------------------------------------------------------------------
 def test_view_regenerate_balances_func():
     view = resolve("/set/balances/")
 
