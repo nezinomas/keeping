@@ -17,103 +17,122 @@ pytestmark = pytest.mark.django_db
 #                                                                              IndexView
 # ---------------------------------------------------------------------------------------
 def test_index_func():
-    view = resolve('/drinks/')
+    view = resolve("/drinks/")
     assert views.Index == view.func.view_class
 
 
 def test_index_200(client_logged):
-    url = reverse('drinks:index')
+    url = reverse("drinks:index")
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_index_add_button(client_logged):
-    url = reverse('drinks:index')
+    url = reverse("drinks:index")
     response = client_logged.get(url)
     content = response.content.decode()
 
     pattern = re.compile(
-        r'<button type="button" class="button-outline-success" hx-get="(.*?)" hx-target="#mainModal">(\w+)<\/button>', re.MULTILINE)
+        r'<button type="button" class="button-outline-success" hx-get="(.*?)" hx-target="#mainModal">(\w+)<\/button>',
+        re.MULTILINE,
+    )
     res = re.findall(pattern, content)
 
     assert len(res[0]) == 2
-    assert res[0][0] == reverse('drinks:new', kwargs={'tab': 'index'})
-    assert res[0][1] == 'Gertynės'
+    assert res[0][0] == reverse("drinks:new", kwargs={"tab": "index"})
+    assert res[0][1] == "Gertynės"
 
 
 def test_index_links(client_logged):
-    url = reverse('drinks:index')
+    url = reverse("drinks:index")
     response = client_logged.get(url)
     content = response.content.decode()
     # content = content.replace('\n', '')
 
-    pattern = re.compile(r'<button\s+class="button-(active|secondary)"\s+hx-get="(.*?)"\s+hx-target="#tab_content">\s+(\w+)\s+<\/button', re.MULTILINE)
+    pattern = re.compile(
+        r'<button\s+class="button-(active|secondary)"\s+hx-get="(.*?)"\s+hx-target="#tab_content">\s+(\w+)\s+<\/button',
+        re.MULTILINE,
+    )
     res = re.findall(pattern, content)
 
     assert len(res) == 3
-    assert res[0][1] == reverse('drinks:tab_index')
-    assert res[0][2] == 'Grafikai'
+    assert res[0][1] == reverse("drinks:tab_index")
+    assert res[0][2] == "Grafikai"
 
-    assert res[1][1] == reverse('drinks:tab_data')
-    assert res[1][2] == 'Duomenys'
+    assert res[1][1] == reverse("drinks:tab_data")
+    assert res[1][2] == "Duomenys"
 
-    assert res[2][1] == reverse('drinks:tab_history')
-    assert res[2][2] == 'Istorija'
+    assert res[2][1] == reverse("drinks:tab_history")
+    assert res[2][2] == "Istorija"
 
 
 def test_index_context(client_logged):
-    url = reverse('drinks:index')
+    url = reverse("drinks:index")
     response = client_logged.get(url)
     context = response.context
 
-    assert 'select_drink_type' in context
-    assert 'current_drink_type' in context
+    assert "select_drink_type" in context
+    assert "current_drink_type" in context
 
 
 @pytest.mark.parametrize(
-    'drink_type, expect',
+    "drink_type, expect",
     [
-        ('beer', 'Alus'),
-        ('wine', 'Vynas'),
-        ('vodka', 'Degtinė'),
-        ('stdav', 'Std Av'),
-    ]
+        ("beer", "Alus"),
+        ("wine", "Vynas"),
+        ("vodka", "Degtinė"),
+        ("stdav", "Std Av"),
+    ],
 )
-def test_index_select_drink_drop_down_title(drink_type, expect, main_user, client_logged):
+def test_index_select_drink_drop_down_title(
+    drink_type, expect, main_user, client_logged
+):
     main_user.drink_type = drink_type
     main_user.save()
 
-    url = reverse('drinks:index')
+    url = reverse("drinks:index")
     response = client_logged.get(url)
 
-    content = response.content.decode('utf-8')
+    content = response.content.decode("utf-8")
 
     assert f'<button class="dropdown__btn">{ expect }</button>' in content
 
 
 def test_index_select_drink_drop_down_link_list(client_logged):
-    url = reverse('drinks:index')
+    url = reverse("drinks:index")
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}">Alus</a>' in content
-    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}">Vynas</a>' in content
-    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}">Degtinė</a>' in content
-    assert f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>' in content
+    assert (
+        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}">Alus</a>'
+        in content
+    )
+    assert (
+        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}">Vynas</a>'
+        in content
+    )
+    assert (
+        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}">Degtinė</a>'
+        in content
+    )
+    assert (
+        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>'
+        in content
+    )
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                           TabIndex View
 # ---------------------------------------------------------------------------------------
 def test_tab_index_func():
-    view = resolve('/drinks/index/')
+    view = resolve("/drinks/index/")
     assert views.TabIndex == view.func.view_class
 
 
 def test_tab_index_200(client_logged):
-    url = reverse('drinks:tab_index')
+    url = reverse("drinks:tab_index")
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -122,29 +141,29 @@ def test_tab_index_200(client_logged):
 def test_tab_index_context(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:tab_index')
+    url = reverse("drinks:tab_index")
     response = client_logged.get(url)
 
-    assert 'all_years' in response.context
-    assert 'chart_quantity' in response.context
-    assert 'chart_consumption' in response.context
-    assert 'chart_calendar_1H' in response.context
-    assert 'chart_calendar_2H' in response.context
-    assert 'tbl_consumption' in response.context
-    assert 'tbl_dray_days' in response.context
-    assert 'tbl_alcohol' in response.context
-    assert 'tbl_std_av' in response.context
+    assert "all_years" in response.context
+    assert "chart_quantity" in response.context
+    assert "chart_consumption" in response.context
+    assert "chart_calendar_1H" in response.context
+    assert "chart_calendar_2H" in response.context
+    assert "tbl_consumption" in response.context
+    assert "tbl_dray_days" in response.context
+    assert "tbl_alcohol" in response.context
+    assert "tbl_std_av" in response.context
 
 
 @time_machine.travel("1999-1-1")
 def test_tab_index_chart_consumption(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:tab_index')
+    url = reverse("drinks:tab_index")
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
-    content = content.replace('\n', '')
+    content = content.replace("\n", "")
 
     assert '<div id="chart-consumption-container"></div>' in content
 
@@ -153,10 +172,10 @@ def test_tab_index_chart_consumption(client_logged):
 def test_tab_index_chart_quantity(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:tab_index')
+    url = reverse("drinks:tab_index")
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
-    content = content.replace('\n', '')
+    content = content.replace("\n", "")
 
     assert '<div id="chart-quantity-container"></div>' in content
 
@@ -167,48 +186,52 @@ def test_tab_index_drinked_date(client_logged):
 
     change_profile_year(client_logged, 1998)
 
-    url = reverse('drinks:tab_index')
+    url = reverse("drinks:tab_index")
     response = client_logged.get(url)
 
-    assert date(1998, 1, 2) == response.context["tbl_dray_days"]['date']
+    assert date(1998, 1, 2) == response.context["tbl_dray_days"]["date"]
 
 
 @pytest.mark.parametrize(
-    'user_drink_type, drink_type, expect',
+    "user_drink_type, drink_type, expect",
     [
-        ('beer', 'beer', 14),
-        ('beer', 'wine', 44),
-        ('beer', 'vodka', 219),
-    ]
+        ("beer", "beer", 14),
+        ("beer", "wine", 44),
+        ("beer", "vodka", 219),
+    ],
 )
 @time_machine.travel("1999-12-31")
-def test_tab_index_chart_consumption_avg(user_drink_type, drink_type, expect, main_user, client_logged):
+def test_tab_index_chart_consumption_avg(
+    user_drink_type, drink_type, expect, main_user, client_logged
+):
     main_user.drink_type = user_drink_type
 
     DrinkFactory(quantity=10, option=drink_type)
 
-    url = reverse('drinks:tab_index')
+    url = reverse("drinks:tab_index")
     response = client_logged.get(url)
     actual = response.context["chart_consumption"]
 
-    assert expect == round(actual['avg'])
+    assert expect == round(actual["avg"])
 
 
 @pytest.mark.parametrize(
-    'user_drink_type, drink_type, expect',
+    "user_drink_type, drink_type, expect",
     [
-        ('beer', 'beer', 500),
-        ('beer', 'wine', 1067),
-        ('beer', 'vodka', 4000),
-    ]
+        ("beer", "beer", 500),
+        ("beer", "wine", 1067),
+        ("beer", "vodka", 4000),
+    ],
 )
-def test_tab_index_chart_consumption_limit(user_drink_type, drink_type, expect, main_user, client_logged):
+def test_tab_index_chart_consumption_limit(
+    user_drink_type, drink_type, expect, main_user, client_logged
+):
     main_user.drink_type = user_drink_type
 
     DrinkFactory()
     DrinkTargetFactory(quantity=500, drink_type=drink_type)
 
-    url = reverse('drinks:tab_index')
+    url = reverse("drinks:tab_index")
     response = client_logged.get(url)
     actual = response.context["chart_consumption"]["target"]
 
@@ -220,55 +243,55 @@ def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
     DrinkFactory(date=date(1999, 1, 2))
     DrinkFactory(date=date(1998, 1, 1))
 
-    url = reverse('drinks:tab_index')
+    url = reverse("drinks:tab_index")
     response = client_logged.get(url)
-    context = response.context['chart_calendar_1H']['data'][0]['data']
+    context = response.context["chart_calendar_1H"]["data"][0]["data"]
 
-    assert context[4] == [0, 4, 0.0005, 53, '1999-01-01']
-    assert context[5] == [0, 5, 1.0, 53, '1999-01-02', 1.0, 366.0]
+    assert context[4] == [0, 4, 0.0005, 53, "1999-01-01"]
+    assert context[5] == [0, 5, 1.0, 53, "1999-01-02", 1.0, 366.0]
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                            TabData View
 # ---------------------------------------------------------------------------------------
 def test_tab_data_func():
-    view = resolve('/drinks/data/')
+    view = resolve("/drinks/data/")
 
     assert views.TabData == view.func.view_class
 
 
 def test_tab_data_200(client_logged):
-    url = reverse('drinks:tab_data')
+    url = reverse("drinks:tab_data")
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_tab_data_context(client_logged):
-    url = reverse('drinks:tab_data')
+    url = reverse("drinks:tab_data")
     response = client_logged.get(url)
 
-    assert 'object_list' in response.context
+    assert "object_list" in response.context
 
 
 def test_tab_data_empty_current_year(client_logged):
     DrinkFactory(date=date(2020, 1, 2))
 
-    url = reverse('drinks:tab_data')
+    url = reverse("drinks:tab_data")
     response = client_logged.get(url)
 
-    assert '<b>1999</b> metais įrašų nėra.' in response.content.decode('utf-8')
+    assert "<b>1999</b> metais įrašų nėra." in response.content.decode("utf-8")
 
 
 def test_tab_data(client_logged):
     p = DrinkFactory(quantity=19)
-    response = client_logged.get(reverse('drinks:tab_data'))
+    response = client_logged.get(reverse("drinks:tab_data"))
 
     assert response.status_code == 200
 
     actual = response.content.decode("utf-8")
 
-    assert '19,0' in actual
+    assert "19,0" in actual
     assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
     assert f'<a role="button" hx-get="/drinks/delete/{p.pk}/"' in actual
 
@@ -277,102 +300,106 @@ def test_tab_data(client_logged):
 #                                                                        TabHistory View
 # ---------------------------------------------------------------------------------------
 def test_tab_history_func():
-    view = resolve('/drinks/history/')
+    view = resolve("/drinks/history/")
 
     assert views.TabHistory == view.func.view_class
 
 
 def test_tab_history_200(client_logged):
-    url = reverse('drinks:tab_history')
+    url = reverse("drinks:tab_history")
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_tab_history_context_tab_value(client_logged):
-    url = reverse('drinks:tab_history')
+    url = reverse("drinks:tab_history")
     response = client_logged.get(url)
 
-    assert response.context['tab'] == 'history'
+    assert response.context["tab"] == "history"
 
 
 def test_tab_history_context(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:tab_history')
+    url = reverse("drinks:tab_history")
     response = client_logged.get(url)
 
-    assert 'categories' in response.context['chart']
-    assert 'data_ml' in response.context['chart']
-    assert 'data_alcohol' in response.context['chart']
+    assert "categories" in response.context["chart"]
+    assert "data_ml" in response.context["chart"]
+    assert "data_alcohol" in response.context["chart"]
 
 
-@time_machine.travel('1999-1-1')
+@time_machine.travel("1999-1-1")
 def test_tab_history_chart_consumption(client_logged):
     DrinkFactory()
     DrinkFactory(date=date(1988, 1, 1))
 
-    url = reverse('drinks:tab_history')
+    url = reverse("drinks:tab_history")
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
     assert '<div id="chart-summary-container"></div>' in content
 
 
-@time_machine.travel('1999-12-31')
+@time_machine.travel("1999-12-31")
 def test_tab_history_drinks_years(client_logged):
     DrinkFactory()
     DrinkFactory(date=date(1998, 1, 1))
 
-    url = reverse('drinks:tab_history')
+    url = reverse("drinks:tab_history")
     response = client_logged.get(url)
 
-    assert response.context['chart']['categories'] == [1998, 1999]
+    assert response.context["chart"]["categories"] == [1998, 1999]
 
 
 @pytest.mark.parametrize(
-    'user_drink_type, drink_type, ml',
+    "user_drink_type, drink_type, ml",
     [
-        ('beer', 'beer', [2.74, 1.37]),
-        ('beer', 'wine', [8.77, 4.38]),
-        ('beer', 'vodka', [43.84, 21.92]),
-    ]
+        ("beer", "beer", [2.74, 1.37]),
+        ("beer", "wine", [8.77, 4.38]),
+        ("beer", "vodka", [43.84, 21.92]),
+    ],
 )
-@time_machine.travel('1999-12-31')
-def test_tab_history_drinks_data_ml(user_drink_type, drink_type, ml, main_user, client_logged):
+@time_machine.travel("1999-12-31")
+def test_tab_history_drinks_data_ml(
+    user_drink_type, drink_type, ml, main_user, client_logged
+):
     main_user.drink_type = user_drink_type
 
     DrinkFactory(date=date(1999, 1, 1), quantity=1, option=drink_type)
     DrinkFactory(date=date(1998, 1, 1), quantity=2, option=drink_type)
 
-    url = reverse('drinks:tab_history')
+    url = reverse("drinks:tab_history")
     response = client_logged.get(url)
 
-    assert response.context['chart']['data_ml'] == pytest.approx(ml, rel=1e-2)
+    assert response.context["chart"]["data_ml"] == pytest.approx(ml, rel=1e-2)
 
 
-@time_machine.travel('1999-12-31')
+@time_machine.travel("1999-12-31")
 @pytest.mark.parametrize(
-    'user_drink_type, drink_type, expect',
+    "user_drink_type, drink_type, expect",
     [
-        ('beer', 'beer', [0.05, 0.025]),
-        ('beer', 'wine', [0.16, 0.08]),
-        ('beer', 'vodka', [0.8, 0.4]),
-    ]
+        ("beer", "beer", [0.05, 0.025]),
+        ("beer", "wine", [0.16, 0.08]),
+        ("beer", "vodka", [0.8, 0.4]),
+    ],
 )
-def test_tab_history_drinks_data_alcohol(user_drink_type, drink_type, expect, main_user, client_logged):
+def test_tab_history_drinks_data_alcohol(
+    user_drink_type, drink_type, expect, main_user, client_logged
+):
     main_user.drink_type = user_drink_type
 
     DrinkFactory(quantity=1, option=drink_type)
     DrinkFactory(date=date(1998, 1, 1), quantity=2, option=drink_type)
 
-    url = reverse('drinks:tab_history')
+    url = reverse("drinks:tab_history")
     response = client_logged.get(url)
 
-    assert response.context['chart']['data_alcohol'] == pytest.approx(expect, 0.01)
+    assert response.context["chart"]["data_alcohol"] == pytest.approx(expect, 0.01)
 
 
-@time_machine.travel('1999-12-31')
+@time_machine.travel("1999-12-31")
 def test_tab_history_categories_with_empty_year_in_between(fake_request):
     DrinkFactory(date=date(1997, 1, 1), quantity=15)
     DrinkFactory(date=date(1999, 1, 1), quantity=15)
@@ -384,21 +411,23 @@ def test_tab_history_categories_with_empty_year_in_between(fake_request):
     view = setup_view(Dummy(), fake_request)
     actual = view.get_context_data()
 
-    assert actual['chart']['categories'] == [1997, 1998, 1999]
-    assert pytest.approx(actual['chart']['data_ml'], 0.01) == [20.55, 0.0, 41.1]
-    assert pytest.approx(actual['chart']['data_alcohol'], rel=1e-1) == [0.38, 0.0, 0.75]
+    assert actual["chart"]["categories"] == [1997, 1998, 1999]
+    assert pytest.approx(actual["chart"]["data_ml"], 0.01) == [20.55, 0.0, 41.1]
+    assert pytest.approx(actual["chart"]["data_alcohol"], rel=1e-1) == [0.38, 0.0, 0.75]
 
 
-@time_machine.travel('1999-1-1')
+@time_machine.travel("1999-1-1")
 @pytest.mark.parametrize(
-    'user_drink_type, drink_type, ml, alcohol',
+    "user_drink_type, drink_type, ml, alcohol",
     [
-        ('beer', 'beer', [1.37, 0.0], [0.025, 0.0]),
-        ('beer', 'wine', [4.38, 0.0], [0.08, 0.0]),
-        ('beer', 'vodka', [21.92, 0.0], [0.4, 0.0]),
-    ]
+        ("beer", "beer", [1.37, 0.0], [0.025, 0.0]),
+        ("beer", "wine", [4.38, 0.0], [0.08, 0.0]),
+        ("beer", "vodka", [21.92, 0.0], [0.4, 0.0]),
+    ],
 )
-def test_tab_history_categories_with_empty_current_year(user_drink_type, drink_type, ml, alcohol, main_user, fake_request):
+def test_tab_history_categories_with_empty_current_year(
+    user_drink_type, drink_type, ml, alcohol, main_user, fake_request
+):
     main_user.drink_type = user_drink_type
 
     DrinkFactory(date=date(1998, 1, 1), quantity=1, option=drink_type)
@@ -409,16 +438,16 @@ def test_tab_history_categories_with_empty_current_year(user_drink_type, drink_t
     view = setup_view(Dummy(), fake_request)
     actual = view.get_context_data()
 
-    assert actual['chart']['categories'] == [1998, 1999]
-    assert pytest.approx(actual['chart']['data_ml'], rel=1e-1) == ml
-    assert pytest.approx(actual['chart']['data_alcohol'], rel=1e-1) == alcohol
+    assert actual["chart"]["categories"] == [1998, 1999]
+    assert pytest.approx(actual["chart"]["data_ml"], rel=1e-1) == ml
+    assert pytest.approx(actual["chart"]["data_alcohol"], rel=1e-1) == alcohol
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                           Compare View
 # ---------------------------------------------------------------------------------------
 def test_compare_data_func():
-    view = resolve('/drinks/compare/1/')
+    view = resolve("/drinks/compare/1/")
 
     assert views.Compare is view.func.view_class
 
@@ -426,7 +455,7 @@ def test_compare_data_func():
 def test_compare_data_200(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:compare', kwargs={'qty': 2})
+    url = reverse("drinks:compare", kwargs={"qty": 2})
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -435,34 +464,34 @@ def test_compare_data_200(client_logged):
 def test_compare_data_chart(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:compare', kwargs={'qty': 2})
+    url = reverse("drinks:compare", kwargs={"qty": 2})
     response = client_logged.get(url)
-    actual = response.context['chart']
+    actual = response.context["chart"]
 
     assert response.status_code == 200
-    assert actual['serries'][0]['name'] == 1999
-    assert round(actual['serries'][0]['data'][0], 2) == 16.13
+    assert actual["serries"][0]["name"] == 1999
+    assert round(actual["serries"][0]["data"][0], 2) == 16.13
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                         CompareTwo View
 # ---------------------------------------------------------------------------------------
 def test_comparetwo_func():
-    view = resolve('/drinks/compare/')
+    view = resolve("/drinks/compare/")
 
     assert views.CompareTwo is view.func.view_class
 
 
 def test_comparetwo_200(client_logged):
-    response = client_logged.get('/drinks/compare/')
+    response = client_logged.get("/drinks/compare/")
 
     assert response.status_code == 200
 
 
 def test_comparetwo_form_is_not_valid(client_logged):
-    url = reverse('drinks:compare_two')
-    response = client_logged.post(url, {'year1': '1999', 'year2': '2000'})
-    form = response.context['form']
+    url = reverse("drinks:compare_two")
+    response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
+    form = response.context["form"]
 
     assert not form.is_valid()
 
@@ -471,9 +500,9 @@ def test_comparetwo_form_is_valid(client_logged):
     DrinkFactory(date=date(1999, 1, 1))
     DrinkFactory(date=date(2000, 1, 1))
 
-    url = reverse('drinks:compare_two')
-    response = client_logged.post(url, {'year1': '1999', 'year2': '2000'})
-    form = response.context['form']
+    url = reverse("drinks:compare_two")
+    response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
+    form = response.context["form"]
 
     assert form.is_valid()
 
@@ -482,63 +511,63 @@ def test_comparetwo_chart_data(client_logged):
     DrinkFactory()
     DrinkFactory(date=date(2020, 1, 1), quantity=10)
 
-    url = reverse('drinks:compare_two')
-    response = client_logged.post(url, {'year1': '1999', 'year2': '2020'})
-    actual = response.context['chart']
+    url = reverse("drinks:compare_two")
+    response = client_logged.post(url, {"year1": "1999", "year2": "2020"})
+    actual = response.context["chart"]
 
-    assert actual['serries'][0]['name'] == 1999
-    assert round(actual['serries'][0]['data'][0], 2) == 16.13
+    assert actual["serries"][0]["name"] == 1999
+    assert round(actual["serries"][0]["data"][0], 2) == 16.13
 
-    assert actual['serries'][1]['name'] == 2020
-    assert round(actual['serries'][1]['data'][0], 2) == 161.29
+    assert actual["serries"][1]["name"] == 2020
+    assert round(actual["serries"][1]["data"][0], 2) == 161.29
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                           Create/Update
 # ---------------------------------------------------------------------------------------
 def test_new_func():
-    view = resolve('/drinks/index/new/')
+    view = resolve("/drinks/index/new/")
 
     assert views.New is view.func.view_class
 
 
 def test_update_func():
-    view = resolve('/drinks/update/1/')
+    view = resolve("/drinks/update/1/")
 
     assert views.Update is view.func.view_class
 
 
 @pytest.mark.parametrize(
-    'tab, trigger',
+    "tab, trigger",
     [
-        ('index', 'reloadIndex'),
-        ('data', 'reloadData'),
-        ('history', 'reloadHistory'),
-        ('xxx', 'reloadData'),
-    ]
+        ("index", "reloadIndex"),
+        ("data", "reloadData"),
+        ("history", "reloadHistory"),
+        ("xxx", "reloadData"),
+    ],
 )
 def test_trigger_name(tab, trigger, rf):
-    request = rf.get(reverse('drinks:new', kwargs={'tab': tab}))
+    request = rf.get(reverse("drinks:new", kwargs={"tab": tab}))
 
     view = setup_view(views.New(), request)
-    view.kwargs = {'tab': tab}
+    view.kwargs = {"tab": tab}
     actual = view.get_hx_trigger_django()
 
     assert actual == trigger
 
 
 @pytest.mark.parametrize(
-    'tab, expect_url',
+    "tab, expect_url",
     [
-        ('index', reverse_lazy('drinks:new', kwargs={'tab': 'index'})),
-        ('data', reverse_lazy('drinks:new', kwargs={'tab': 'data'})),
-        ('history', reverse_lazy('drinks:new', kwargs={'tab': 'history'})),
-        ('xxx', reverse_lazy('drinks:new', kwargs={'tab': 'index'})),
-    ]
+        ("index", reverse_lazy("drinks:new", kwargs={"tab": "index"})),
+        ("data", reverse_lazy("drinks:new", kwargs={"tab": "data"})),
+        ("history", reverse_lazy("drinks:new", kwargs={"tab": "history"})),
+        ("xxx", reverse_lazy("drinks:new", kwargs={"tab": "index"})),
+    ],
 )
-@time_machine.travel('2000-1-1')
+@time_machine.travel("2000-1-1")
 def test_new_load_form(client_logged, tab, expect_url):
-    url = reverse('drinks:new', kwargs={'tab': tab})
+    url = reverse("drinks:new", kwargs={"tab": tab})
     response = client_logged.get(url)
     actual = response.content.decode()
 
@@ -547,21 +576,21 @@ def test_new_load_form(client_logged, tab, expect_url):
 
 
 def test_new_tab_data(client_logged):
-    data = {'date': '1999-01-01', 'quantity': 19, 'option': 'beer'}
-    url = reverse('drinks:new', kwargs={'tab': 'data'})
+    data = {"date": "1999-01-01", "quantity": 19, "option": "beer"}
+    url = reverse("drinks:new", kwargs={"tab": "data"})
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode()
 
-    assert '19' in actual
+    assert "19" in actual
     assert '<a role="button" hx-get="/drinks/update/1/"' in actual
     assert '<a role="button" hx-get="/drinks/update/1/"' in actual
 
 
 def test_new_invalid_data(client_logged):
-    data = {'date': -2, 'quantity': 'x'}
-    url = reverse('drinks:new', kwargs={'tab': 'data'})
+    data = {"date": -2, "quantity": "x"}
+    url = reverse("drinks:new", kwargs={"tab": "data"})
     response = client_logged.post(url, data)
-    form = response.context['form']
+    form = response.context["form"]
 
     assert not form.is_valid()
 
@@ -569,31 +598,31 @@ def test_new_invalid_data(client_logged):
 def test_update(client_logged):
     p = DrinkFactory()
 
-    data = {'date': '1999-01-01', 'quantity': 0.68, 'option': 'beer'}
-    url = reverse('drinks:update', kwargs={'pk': p.pk})
+    data = {"date": "1999-01-01", "quantity": 0.68, "option": "beer"}
+    url = reverse("drinks:update", kwargs={"pk": p.pk})
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode()
 
-    assert '0,68' in actual
+    assert "0,68" in actual
     assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
     assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
 
 
 @pytest.mark.parametrize(
-    'drink_type, expect',
+    "drink_type, expect",
     [
-        ('beer', 10.0),
-        ('wine', 10.0),
-        ('vodka', 10.0),
-        ('stdav', 10.0),
-    ]
+        ("beer", 10.0),
+        ("wine", 10.0),
+        ("vodka", 10.0),
+        ("stdav", 10.0),
+    ],
 )
 def test_update_load_form_convert_quantity(drink_type, expect, client_logged):
     p = DrinkFactory(quantity=10, option=drink_type)
 
-    url = reverse('drinks:update', kwargs={'pk': p.pk})
+    url = reverse("drinks:update", kwargs={"pk": p.pk})
     response = client_logged.get(url)
-    form = response.context['form']
+    form = response.context["form"]
 
     assert f'name="quantity" value="{expect}"' in form.as_p()
 
@@ -602,7 +631,7 @@ def test_drinks_update_not_load_other_user(client_logged, second_user):
     DrinkFactory()
     obj = DrinkFactory(date=date(1111, 1, 1), quantity=0.666, user=second_user)
 
-    url = reverse('drinks:update', kwargs={'pk': obj.pk})
+    url = reverse("drinks:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
 
     assert response.status_code == 404
@@ -612,7 +641,7 @@ def test_drinks_update_not_load_other_user(client_logged, second_user):
 #                                                                            Drink Delete
 # ---------------------------------------------------------------------------------------
 def test_view_drinks_delete_func():
-    view = resolve('/drinks/delete/1/')
+    view = resolve("/drinks/delete/1/")
 
     assert views.Delete is view.func.view_class
 
@@ -620,7 +649,7 @@ def test_view_drinks_delete_func():
 def test_view_drinks_delete_200(client_logged):
     p = DrinkFactory()
 
-    url = reverse('drinks:delete', kwargs={'pk': p.pk})
+    url = reverse("drinks:delete", kwargs={"pk": p.pk})
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -629,19 +658,19 @@ def test_view_drinks_delete_200(client_logged):
 def test_view_drinks_delete_load_form(client_logged):
     p = DrinkFactory()
 
-    url = reverse('drinks:delete', kwargs={'pk': p.pk})
+    url = reverse("drinks:delete", kwargs={"pk": p.pk})
     response = client_logged.get(url, {})
     actual = response.content.decode()
 
     assert f'hx-post="{url}"' in actual
-    assert 'Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?' in actual
+    assert "Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?" in actual
 
 
 def test_view_drinks_delete(client_logged):
     p = DrinkFactory()
 
     assert models.Drink.objects.all().count() == 1
-    url = reverse('drinks:delete', kwargs={'pk': p.pk})
+    url = reverse("drinks:delete", kwargs={"pk": p.pk})
     client_logged.post(url)
 
     assert models.Drink.objects.all().count() == 0
@@ -650,7 +679,7 @@ def test_view_drinks_delete(client_logged):
 def test_drinks_delete_other_user_get_form(client_logged, second_user):
     obj = DrinkFactory(user=second_user)
 
-    url = reverse('drinks:delete', kwargs={'pk': obj.pk})
+    url = reverse("drinks:delete", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
 
     assert response.status_code == 404
@@ -659,7 +688,7 @@ def test_drinks_delete_other_user_get_form(client_logged, second_user):
 def test_drinks_delete_other_user_post_form(client_logged, second_user):
     obj = DrinkFactory(user=second_user)
 
-    url = reverse('drinks:delete', kwargs={'pk': obj.pk})
+    url = reverse("drinks:delete", kwargs={"pk": obj.pk})
     client_logged.post(url)
 
     assert models.Drink.objects.all().count() == 1
@@ -669,47 +698,47 @@ def test_drinks_delete_other_user_post_form(client_logged, second_user):
 #                                                                    Target Create/Update
 # ---------------------------------------------------------------------------------------
 def test_target_func():
-    view = resolve('/drinks/index/target/new/')
+    view = resolve("/drinks/index/target/new/")
 
     assert views.TargetNew is view.func.view_class
 
 
 def test_target_update_func():
-    view = resolve('/drinks/target/update/1/')
+    view = resolve("/drinks/target/update/1/")
 
     assert views.TargetUpdate is view.func.view_class
 
 
 @pytest.mark.parametrize(
-    'tab, trigger',
+    "tab, trigger",
     [
-        ('index', 'reloadIndex'),
-        ('data', 'reloadData'),
-        ('history', 'reloadHistory'),
-        ('xxx', 'reloadIndex'),
-    ]
+        ("index", "reloadIndex"),
+        ("data", "reloadData"),
+        ("history", "reloadHistory"),
+        ("xxx", "reloadIndex"),
+    ],
 )
 def test_target_get_trigger_name(tab, trigger, rf):
-    request = rf.get(reverse('drinks:target_new', kwargs={'tab': tab}))
+    request = rf.get(reverse("drinks:target_new", kwargs={"tab": tab}))
 
     view = setup_view(views.TargetNew(), request)
-    view.kwargs = {'tab': tab}
+    view.kwargs = {"tab": tab}
     actual = view.get_hx_trigger_django()
 
     assert actual == trigger
 
 
 @pytest.mark.parametrize(
-    'tab, expect_url',
+    "tab, expect_url",
     [
-        ('index', reverse_lazy('drinks:target_new', kwargs={'tab': 'index'})),
-        ('data', reverse_lazy('drinks:target_new', kwargs={'tab': 'data'})),
-        ('history', reverse_lazy('drinks:target_new', kwargs={'tab': 'history'})),
-        ('xxx', reverse_lazy('drinks:target_new', kwargs={'tab': 'index'})),
-    ]
+        ("index", reverse_lazy("drinks:target_new", kwargs={"tab": "index"})),
+        ("data", reverse_lazy("drinks:target_new", kwargs={"tab": "data"})),
+        ("history", reverse_lazy("drinks:target_new", kwargs={"tab": "history"})),
+        ("xxx", reverse_lazy("drinks:target_new", kwargs={"tab": "index"})),
+    ],
 )
 def test_target_new_load_form(client_logged, tab, expect_url):
-    url = reverse('drinks:target_new', kwargs={'tab': tab})
+    url = reverse("drinks:target_new", kwargs={"tab": tab})
     response = client_logged.get(url)
     actual = response.content.decode()
 
@@ -719,17 +748,17 @@ def test_target_new_load_form(client_logged, tab, expect_url):
 
 
 @pytest.mark.parametrize(
-    'drink_type, ml, expect',
+    "drink_type, ml, expect",
     [
-        ('beer', 500, 2.5),
-        ('wine', 750, 8),
-        ('vodka', 1000, 40),
-        ('stdav', 66, 66),
-    ]
+        ("beer", 500, 2.5),
+        ("wine", 750, 8),
+        ("vodka", 1000, 40),
+        ("stdav", 66, 66),
+    ],
 )
 def test_target_new(drink_type, ml, expect, client_logged):
-    data = {'year': 1999, 'quantity': ml, 'drink_type': drink_type}
-    url = reverse('drinks:target_new', kwargs= {'tab': 'index'})
+    data = {"year": 1999, "quantity": ml, "drink_type": drink_type}
+    url = reverse("drinks:target_new", kwargs={"tab": "index"})
     client_logged.post(url, data)
 
     actual = models.DrinkTarget.objects.last()
@@ -738,47 +767,47 @@ def test_target_new(drink_type, ml, expect, client_logged):
 
 
 def test_target_new_invalid_data(client_logged):
-    data = {'year': -2, 'quantity': 'x'}
-    url = reverse('drinks:target_new', kwargs= {'tab': 'index'})
+    data = {"year": -2, "quantity": "x"}
+    url = reverse("drinks:target_new", kwargs={"tab": "index"})
     response = client_logged.post(url, data)
-    form = response.context['form']
+    form = response.context["form"]
 
     assert not form.is_valid()
 
 
 @pytest.mark.parametrize(
-    'drink_type, expect',
+    "drink_type, expect",
     [
-        ('beer', 500.0),
-        ('wine', 750.0),
-        ('vodka', 1000.0),
-        ('stdav', 1.0),
-    ]
+        ("beer", 500.0),
+        ("wine", 750.0),
+        ("vodka", 1000.0),
+        ("stdav", 1.0),
+    ],
 )
 def test_target_update_load_form_convert_quantity(drink_type, expect, client_logged):
     p = DrinkTargetFactory(quantity=expect, drink_type=drink_type)
 
-    url = reverse('drinks:target_update', kwargs={'pk': p.pk})
+    url = reverse("drinks:target_update", kwargs={"pk": p.pk})
     response = client_logged.get(url)
-    form = response.context['form']
+    form = response.context["form"]
 
     assert f'name="quantity" value="{expect}"' in form.as_p()
 
 
 @pytest.mark.parametrize(
-    'drink_type, ml, expect',
+    "drink_type, ml, expect",
     [
-        ('beer', 500, 2.5),
-        ('wine', 750, 8),
-        ('vodka', 1000, 40),
-        ('stdav', 66, 66),
-    ]
+        ("beer", 500, 2.5),
+        ("wine", 750, 8),
+        ("vodka", 1000, 40),
+        ("stdav", 66, 66),
+    ],
 )
 def test_target_update(drink_type, ml, expect, client_logged):
     p = DrinkTargetFactory()
 
-    data = {'year': 1999, 'quantity': ml, 'drink_type': drink_type}
-    url = reverse('drinks:target_update', kwargs={'pk': p.pk})
+    data = {"year": 1999, "quantity": ml, "drink_type": drink_type}
+    url = reverse("drinks:target_update", kwargs={"pk": p.pk})
     client_logged.post(url, data)
 
     actual = models.DrinkTarget.objects.get(pk=p.pk)
@@ -786,37 +815,39 @@ def test_target_update(drink_type, ml, expect, client_logged):
 
 
 @pytest.mark.parametrize(
-    'user_drink_type, drink_type, ml, expect_ml, expect_pcs',
+    "user_drink_type, drink_type, ml, expect_ml, expect_pcs",
     [
-        ('beer', 'beer', 500, '500,0', '365'),
-        ('wine', 'beer', 500, '234,4', '114'),
-        ('vodka', 'beer', 500, '62,5', '23'),
-        ('beer', 'wine', 750, '1.600,0', '1.168'),
-        ('wine', 'wine', 750, '750,0', '365'),
-        ('vodka', 'wine', 750, '200,0', '73'),
-        ('beer', 'vodka', 1000, '8.000,0', '5.840'),
-        ('wine', 'vodka', 1000, '3.750,0', '1.825'),
-        ('vodka', 'vodka', 1000, '1.000,0', '365'),
-    ]
+        ("beer", "beer", 500, "500,0", "365"),
+        ("wine", "beer", 500, "234,4", "114"),
+        ("vodka", "beer", 500, "62,5", "23"),
+        ("beer", "wine", 750, "1.600,0", "1.168"),
+        ("wine", "wine", 750, "750,0", "365"),
+        ("vodka", "wine", 750, "200,0", "73"),
+        ("beer", "vodka", 1000, "8.000,0", "5.840"),
+        ("wine", "vodka", 1000, "3.750,0", "1.825"),
+        ("vodka", "vodka", 1000, "1.000,0", "365"),
+    ],
 )
-def test_target_lists(user_drink_type, drink_type, ml, expect_ml, expect_pcs, main_user, client_logged):
+def test_target_lists(
+    user_drink_type, drink_type, ml, expect_ml, expect_pcs, main_user, client_logged
+):
     main_user.drink_type = user_drink_type
 
     DrinkTargetFactory(drink_type=drink_type, quantity=ml)
 
-    url = reverse('drinks:target_list')
+    url = reverse("drinks:target_list")
     response = client_logged.get(url)
-    actual = response.content.decode('utf-8')
+    actual = response.content.decode("utf-8")
 
-    assert f'<td>{expect_ml}</td>' in actual
-    assert f'<td>{expect_pcs}</td>' in actual
+    assert f"<td>{expect_ml}</td>" in actual
+    assert f"<td>{expect_pcs}</td>" in actual
 
 
 def test_target_update_not_load_other_user(client_logged, second_user):
     DrinkTargetFactory()
     obj = DrinkTargetFactory(quantity=666, user=second_user)
 
-    url = reverse('drinks:target_update', kwargs={'pk': obj.pk})
+    url = reverse("drinks:target_update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
 
     assert response.status_code == 404
@@ -825,29 +856,29 @@ def test_target_update_not_load_other_user(client_logged, second_user):
 def test_target_empty_db(client_logged):
     DrinkFactory()
 
-    url = reverse('drinks:target_list')
+    url = reverse("drinks:target_list")
     response = client_logged.get(url)
 
-    assert 'Neįvestas tikslas' in response.content.decode('utf-8')
+    assert "Neįvestas tikslas" in response.content.decode("utf-8")
 
 
 # ---------------------------------------------------------------------------------------
 #                                                                        SelectDrink View
 # ---------------------------------------------------------------------------------------
 def test_select_drink_func():
-    view = resolve('/drinks/drink_type/xxx/')
+    view = resolve("/drinks/drink_type/xxx/")
     assert views.SelectDrink == view.func.view_class
 
 
 def test_select_drink_redirect(client_logged):
-    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'xxx'})
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "xxx"})
     response = client_logged.get(url)
 
     assert response.status_code == 302
 
 
 def test_select_drink_redirect_follow(client_logged):
-    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'xxx'})
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "xxx"})
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
@@ -855,21 +886,21 @@ def test_select_drink_redirect_follow(client_logged):
 
 
 def test_select_drinks_set_drink_type(client_logged):
-    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'wine'})
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})
     client_logged.get(url)
     actual = User.objects.first()
 
-    assert actual.drink_type == 'wine'
+    assert actual.drink_type == "wine"
 
 
 def test_select_drinks_set_default_drink_type(main_user, client_logged):
-    main_user.drink_type = 'wine'
+    main_user.drink_type = "wine"
     main_user.save()
 
-    assert User.objects.first().drink_type == 'wine'
+    assert User.objects.first().drink_type == "wine"
 
-    url = reverse('drinks:set_drink_type', kwargs={'drink_type': 'xxx'})
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "xxx"})
     client_logged.get(url)
     actual = User.objects.first()
 
-    assert actual.drink_type == 'beer'
+    assert actual.drink_type == "beer"

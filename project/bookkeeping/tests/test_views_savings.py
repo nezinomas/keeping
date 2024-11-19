@@ -37,15 +37,15 @@ def test_view_context(client_logged):
 
 
 def test_view_context_no_pensions_type(client_logged):
-    SavingFactory(saving_type=SavingTypeFactory(title='FFF', type='funds'))
-    SavingFactory(saving_type=SavingTypeFactory(title='PPP', type='pensions'))
+    SavingFactory(saving_type=SavingTypeFactory(title="FFF", type="funds"))
+    SavingFactory(saving_type=SavingTypeFactory(title="PPP", type="pensions"))
 
     url = reverse("bookkeeping:savings")
     response = client_logged.get(url)
     actual = response.context["object_list"]
 
     assert len(actual) == 1
-    assert actual[0].saving_type.title == 'FFF'
+    assert actual[0].saving_type.title == "FFF"
 
 
 def test_percentage_from_incomes(client_logged):
@@ -89,8 +89,8 @@ def test_table_percentage(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert '6,60</td>' in actual # row
-    assert '6,60</th>' in actual # total_row
+    assert "6,60</td>" in actual  # row
+    assert "6,60</th>" in actual  # total_row
 
 
 def test_percentage_from_incomes_red_alert(client_logged):

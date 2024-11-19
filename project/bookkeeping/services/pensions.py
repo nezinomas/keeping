@@ -9,7 +9,9 @@ from ...savings.models import SavingBalance
 
 def get_data(year) -> list:
     pensions = PensionBalance.objects.year(year)
-    savings_as_pensions = SavingBalance.objects.year(year).filter(saving_type__type="pensions")
+    savings_as_pensions = SavingBalance.objects.year(year).filter(
+        saving_type__type="pensions"
+    )
     return list(it.chain(savings_as_pensions, pensions))
 
 

@@ -181,7 +181,7 @@ class SummaryExpenses(FormViewMixin):
         form_data = form.cleaned_data.get("types")
         context = {
             "form": form,
-            **services.chart_summary_expenses.load_service(form_data)
+            **services.chart_summary_expenses.load_service(form_data),
         }
 
         return render(self.request, self.template_name, context)

@@ -96,9 +96,7 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         if self.instance.pk and price < self.instance.returned / 100:
             self.add_error(
                 "price",
-                _(
-                    "The amount due exceeds the debt."
-                ),
+                _("The amount due exceeds the debt."),
             )
 
         return cleaned_data

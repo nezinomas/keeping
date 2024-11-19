@@ -24,15 +24,15 @@ def test_view_month_200(client_logged):
 
 
 @pytest.mark.parametrize(
-    'month, expect',
+    "month, expect",
     [
         (1, 1),
-        ('x', 12),
-    ]
+        ("x", 12),
+    ],
 )
 def test_view_month_200_set_user_month_value(month, expect, client_logged):
     url = reverse("bookkeeping:month")
-    response = client_logged.get(url, {'month': month})
+    response = client_logged.get(url, {"month": month})
 
     assert response.wsgi_request.user.month == expect
 

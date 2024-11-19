@@ -10,18 +10,18 @@ from ..templatetags.cell_format import (
 
 
 @pytest.mark.parametrize(
-    'value, expect',
+    "value, expect",
     [
-        (0, ''),
-        (12, ''),
-        (12.2, ''),
-        ('12.2', ''),
-        ('xxx', ''),
-        (-0, ''),
-        (-12, 'table-danger'),
-        (-12.2, 'table-danger'),
-        ('-12.2', 'table-danger'),
-    ]
+        (0, ""),
+        (12, ""),
+        (12.2, ""),
+        ("12.2", ""),
+        ("xxx", ""),
+        (-0, ""),
+        (-12, "table-danger"),
+        (-12.2, "table-danger"),
+        ("-12.2", "table-danger"),
+    ],
 )
 def test_negative(value, expect):
     actual = negative(value)
@@ -30,17 +30,17 @@ def test_negative(value, expect):
 
 
 @pytest.mark.parametrize(
-    'value, expect',
+    "value, expect",
     [
-        (-12, ''),
-        (-12.2, ''),
-        ('-12.2', ''),
-        ('xxx', ''),
-        (0, 'table-success'),
-        (12, 'table-success'),
-        (12.2, 'table-success'),
-        ('12.2', 'table-success'),
-    ]
+        (-12, ""),
+        (-12.2, ""),
+        ("-12.2", ""),
+        ("xxx", ""),
+        (0, "table-success"),
+        (12, "table-success"),
+        (12.2, "table-success"),
+        ("12.2", "table-success"),
+    ],
 )
 # postive custom template filter tests
 def test_positive(value, expect):
@@ -50,16 +50,16 @@ def test_positive(value, expect):
 
 
 @pytest.mark.parametrize(
-    'value1, value2, expect',
+    "value1, value2, expect",
     [
-        (1, 2, 'table-danger'),
-        ('1', '2', 'table-danger'),
-        (1, 0, 'table-success'),
-        ('1', '0', 'table-success'),
-        (None, None, ''),
-        ('x', 1, ''),
-        (1, 'x', ''),
-    ]
+        (1, 2, "table-danger"),
+        ("1", "2", "table-danger"),
+        (1, 0, "table-success"),
+        ("1", "0", "table-success"),
+        (None, None, ""),
+        ("x", 1, ""),
+        (1, "x", ""),
+    ],
 )
 def test_compare(value1, value2, expect):
     actual = compare(value1, value2)
@@ -68,14 +68,14 @@ def test_compare(value1, value2, expect):
 
 
 @pytest.mark.parametrize(
-    'value, expect',
+    "value, expect",
     [
-        (1, 'table-success'),
-        ('1', 'table-success'),
-        (-1, 'table-danger'),
-        ('-1', 'table-danger'),
-        ('x', ''),
-    ]
+        (1, "table-success"),
+        ("1", "table-success"),
+        (-1, "table-danger"),
+        ("-1", "table-danger"),
+        ("x", ""),
+    ],
 )
 def test_positive_negative_positive(value, expect):
     actual = positive_negative(value)
@@ -84,33 +84,34 @@ def test_positive_negative_positive(value, expect):
 
 
 @pytest.mark.parametrize(
-    'value, default, expect',
+    "value, default, expect",
     [
-        (0, '-', '-'),
-        (0.0, '-', '-'),
-        ('0', '-', '-'),
-        ('0.0', '-', '-'),
-        ('0,0', '-', '-'),
-        ('0.00', '-', '-'),
-        ('0,00', '-', '-'),
-        (-0.0001, '-', '-'),
-        ('-0.0001', '-', '-'),
-        (1, '-', '1,00'),
-        (1.0, '-', '1,00'),
-        ('1.00', '-', '1,00'),
-        ('1,00', '-', '1,00'),
-        (1.0111, '-', '1,01'),
-        (1.049, '-', '1,05'),
-        (-0.5, '-', '-0,50'),
-        ('-0.5', '-', '-0,50'),
-        ('-0,5', '-', '-0,50'),
-        (None, '-', '-'),
-        (None, 'ok', 'ok'),
-        ('None', 'ok', 'ok'),
-        ('xx', '-', '-'),
-        (1000, '-', '1.000,00'),
-        ("1000", '-', '1.000,00'),
-    ])
+        (0, "-", "-"),
+        (0.0, "-", "-"),
+        ("0", "-", "-"),
+        ("0.0", "-", "-"),
+        ("0,0", "-", "-"),
+        ("0.00", "-", "-"),
+        ("0,00", "-", "-"),
+        (-0.0001, "-", "-"),
+        ("-0.0001", "-", "-"),
+        (1, "-", "1,00"),
+        (1.0, "-", "1,00"),
+        ("1.00", "-", "1,00"),
+        ("1,00", "-", "1,00"),
+        (1.0111, "-", "1,01"),
+        (1.049, "-", "1,05"),
+        (-0.5, "-", "-0,50"),
+        ("-0.5", "-", "-0,50"),
+        ("-0,5", "-", "-0,50"),
+        (None, "-", "-"),
+        (None, "ok", "ok"),
+        ("None", "ok", "ok"),
+        ("xx", "-", "-"),
+        (1000, "-", "1.000,00"),
+        ("1000", "-", "1.000,00"),
+    ],
+)
 def test_cellformat(value, default, expect):
     actual = cellformat(value, default)
 

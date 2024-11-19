@@ -14,10 +14,11 @@ from ..forms import ExpenseForm, ExpenseNameForm, ExpenseTypeForm
 pytestmark = pytest.mark.django_db
 
 small_gif = (
-    b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-    b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-    b'\x02\x4c\x01\x00\x3b'
+    b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04"
+    b"\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02"
+    b"\x02\x4c\x01\x00\x3b"
 )
+
 
 # ----------------------------------------------------------------------------
 #                                                                      Expense
@@ -46,7 +47,7 @@ def test_expense_init_fields():
     assert '<input type="file" name="attachment"' in form
 
 
-@time_machine.travel('1974-01-01')
+@time_machine.travel("1974-01-01")
 def test_expense_year_initial_value():
     UserFactory()
 
@@ -56,28 +57,28 @@ def test_expense_year_initial_value():
 
 
 def test_expense_current_user_expense_types(second_user):
-    ExpenseTypeFactory(title='T1')  # user bob, current user
-    ExpenseTypeFactory(title='T2', journal=second_user.journal)  # user X
+    ExpenseTypeFactory(title="T1")  # user bob, current user
+    ExpenseTypeFactory(title="T2", journal=second_user.journal)  # user X
 
     form = ExpenseForm().as_p()
 
-    assert 'T1' in form
-    assert 'T2' not in form
+    assert "T1" in form
+    assert "T2" not in form
 
 
 def test_expense_current_user_accounts(second_user):
-    AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', journal=second_user.journal)  # user X
+    AccountFactory(title="A1")  # user bob, current user
+    AccountFactory(title="A2", journal=second_user.journal)  # user X
 
     form = ExpenseForm().as_p()
 
-    assert 'A1' in form
-    assert 'A2' not in form
+    assert "A1" in form
+    assert "A2" not in form
 
 
 def test_expense_select_first_account(second_user):
-    AccountFactory(title='A1', journal=second_user.journal)
-    a2 = AccountFactory(title='A2')
+    AccountFactory(title="A1", journal=second_user.journal)
+    a2 = AccountFactory(title="A2")
 
     form = ExpenseForm().as_p()
 
@@ -92,14 +93,14 @@ def test_exepense_form_valid_data():
 
     form = ExpenseForm(
         data={
-            'date': '1999-01-01',
-            'price': 0.01,
-            'quantity': 1,
-            'expense_type': t.pk,
-            'expense_name': n.pk,
-            'account': a.pk,
-            'remark': None,
-            'exception': None
+            "date": "1999-01-01",
+            "price": 0.01,
+            "quantity": 1,
+            "expense_type": t.pk,
+            "expense_name": n.pk,
+            "account": a.pk,
+            "remark": None,
+            "exception": None,
         },
     )
 
@@ -114,7 +115,7 @@ def test_exepense_form_valid_data():
     assert e.quantity == 1
 
 
-@time_machine.travel('1999-1-1')
+@time_machine.travel("1999-1-1")
 def test_exepense_insert_only_one_year_to_future():
     a = AccountFactory()
     t = ExpenseTypeFactory()
@@ -122,20 +123,20 @@ def test_exepense_insert_only_one_year_to_future():
 
     form = ExpenseForm(
         data={
-            'date': '2001-01-01',
-            'price': 112,
-            'quantity': 1,
-            'expense_type': t.pk,
-            'expense_name': n.pk,
-            'account': a.pk,
-            'remark': None,
-            'exception': None
+            "date": "2001-01-01",
+            "price": 112,
+            "quantity": 1,
+            "expense_type": t.pk,
+            "expense_name": n.pk,
+            "account": a.pk,
+            "remark": None,
+            "exception": None,
         },
     )
 
     assert not form.is_valid()
-    assert 'date' in form.errors
-    assert 'Metai negali būti vėlesni nei 2000' in form.errors['date']
+    assert "date" in form.errors
+    assert "Metai negali būti vėlesni nei 2000" in form.errors["date"]
 
 
 def test_expenses_form_blank_data():
@@ -144,47 +145,47 @@ def test_expenses_form_blank_data():
     assert not form.is_valid()
 
     errors = {
-        'date': ['Šis laukas yra privalomas.'],
-        'price': ['Šis laukas yra privalomas.'],
-        'quantity': ['Šis laukas yra privalomas.'],
-        'expense_type': ['Šis laukas yra privalomas.'],
-        'expense_name': ['Šis laukas yra privalomas.'],
-        'account': ['Šis laukas yra privalomas.'],
+        "date": ["Šis laukas yra privalomas."],
+        "price": ["Šis laukas yra privalomas."],
+        "quantity": ["Šis laukas yra privalomas."],
+        "expense_type": ["Šis laukas yra privalomas."],
+        "expense_name": ["Šis laukas yra privalomas."],
+        "account": ["Šis laukas yra privalomas."],
     }
     assert form.errors == errors
 
 
 @pytest.mark.parametrize(
-    'file, ext, valid',
+    "file, ext, valid",
     [
-        (small_gif, 'gif', True),
-        (small_gif, 'jpeg', True),
-        (small_gif, 'png', True),
-        (b'x', 'pdf', False),
-        (b'x', 'txt', False),
-        (b'x', 'doc', False),
-        (b'x', 'xls', False),
-        (b'x', 'pdf', False),
-    ]
+        (small_gif, "gif", True),
+        (small_gif, "jpeg", True),
+        (small_gif, "png", True),
+        (b"x", "pdf", False),
+        (b"x", "txt", False),
+        (b"x", "doc", False),
+        (b"x", "xls", False),
+        (b"x", "pdf", False),
+    ],
 )
 def test_expenses_form_filefield(file, ext, valid):
-    f = SimpleUploadedFile(f'x.{ext}', file, content_type=f'image/{ext}')
+    f = SimpleUploadedFile(f"x.{ext}", file, content_type=f"image/{ext}")
     a = AccountFactory()
     t = ExpenseTypeFactory()
     n = ExpenseNameFactory(parent=t)
 
     form = ExpenseForm(
         data={
-            'date': '1999-01-01',
-            'price': 112,
-            'quantity': 1,
-            'expense_type': t.pk,
-            'expense_name': n.pk,
-            'account': a.pk,
-            'remark': None,
-            'exception': None,
+            "date": "1999-01-01",
+            "price": 112,
+            "quantity": 1,
+            "expense_type": t.pk,
+            "expense_name": n.pk,
+            "account": a.pk,
+            "remark": None,
+            "exception": None,
         },
-        files={'attachment': f}
+        files={"attachment": f},
     )
 
     assert form.is_valid() == valid
@@ -199,26 +200,26 @@ def test_exepense_form_attachment_too_big():
         bts = BytesIO()
         sz = 1200
         img = Image.new("RGB", (sz, sz))
-        img.save(bts, 'bmp')
-        return SimpleUploadedFile("test.bmp", bts.getvalue(), content_type='image/bmp')
+        img.save(bts, "bmp")
+        return SimpleUploadedFile("test.bmp", bts.getvalue(), content_type="image/bmp")
 
     form = ExpenseForm(
         data={
-            'date': '1999-01-01',
-            'price': 112,
-            'quantity': 1,
-            'expense_type': t.pk,
-            'expense_name': n.pk,
-            'account': a.pk,
-            'remark': None,
-            'exception': None
+            "date": "1999-01-01",
+            "price": 112,
+            "quantity": 1,
+            "expense_type": t.pk,
+            "expense_name": n.pk,
+            "account": a.pk,
+            "remark": None,
+            "exception": None,
         },
-        files={'attachment': f()}
+        files={"attachment": f()},
     )
 
     assert not form.is_valid()
-    assert 'attachment' in form.errors
-    assert form.errors['attachment'] == ['Per didelis vaizdo failas ( > 4Mb)']
+    assert "attachment" in form.errors
+    assert form.errors["attachment"] == ["Per didelis vaizdo failas ( > 4Mb)"]
 
 
 def test_exepense_form_necessary_type_and_exception():
@@ -228,21 +229,23 @@ def test_exepense_form_necessary_type_and_exception():
 
     form = ExpenseForm(
         data={
-            'date': '1999-01-01',
-            'price': 112,
-            'quantity': 1,
-            'expense_type': t.pk,
-            'expense_name': n.pk,
-            'account': a.pk,
-            'remark': None,
-            'exception': True
+            "date": "1999-01-01",
+            "price": 112,
+            "quantity": 1,
+            "expense_type": t.pk,
+            "expense_name": n.pk,
+            "account": a.pk,
+            "remark": None,
+            "exception": True,
         },
     )
 
     assert not form.is_valid()
 
     assert form.errors == {
-        'exception': ["Expense Type yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimtis'"]
+        "exception": [
+            "Expense Type yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimtis'"
+        ]
     }
 
 
@@ -262,19 +265,16 @@ def test_expense_type_init_fields():
 
 
 def test_expense_type_valid_data():
-    form = ExpenseTypeForm(data={
-        'title': 'Title',
-        'necessary': True
-    })
+    form = ExpenseTypeForm(data={"title": "Title", "necessary": True})
 
     assert form.is_valid()
 
     data = form.save()
 
-    assert data.title == 'Title'
+    assert data.title == "Title"
     assert data.necessary
-    assert data.journal.title == 'bob Journal'
-    assert data.journal.users.first().username == 'bob'
+    assert data.journal.title == "bob Journal"
+    assert data.journal.users.first().username == "bob"
 
 
 def test_expense_type_blank_data():
@@ -283,39 +283,39 @@ def test_expense_type_blank_data():
     assert not form.is_valid()
 
     assert len(form.errors) == 1
-    assert 'title' in form.errors
+    assert "title" in form.errors
 
 
 def test_expense_type_title_null():
-    form = ExpenseTypeForm(data={'title': None})
+    form = ExpenseTypeForm(data={"title": None})
 
     assert not form.is_valid()
 
-    assert 'title' in form.errors
+    assert "title" in form.errors
 
 
 def test_expense_type_title_too_long():
-    form = ExpenseTypeForm(data={'title': 'a'*255})
+    form = ExpenseTypeForm(data={"title": "a" * 255})
 
     assert not form.is_valid()
 
-    assert 'title' in form.errors
+    assert "title" in form.errors
 
 
 def test_expense_type_title_too_short():
-    form = ExpenseTypeForm(data={'title': 'aa'})
+    form = ExpenseTypeForm(data={"title": "aa"})
 
     assert not form.is_valid()
 
-    assert 'title' in form.errors
+    assert "title" in form.errors
 
 
 def test_expense_type_unique_name():
-    ExpenseTypeFactory(title='XXX')
+    ExpenseTypeFactory(title="XXX")
 
     form = ExpenseTypeForm(
         data={
-            'title': 'XXX',
+            "title": "XXX",
         },
     )
 
@@ -323,8 +323,8 @@ def test_expense_type_unique_name():
 
 
 def test_form_expense_type_and_second_user(second_user):
-    ExpenseTypeFactory(title='T1')
-    ExpenseTypeFactory(title='T2', journal=second_user.journal)
+    ExpenseTypeFactory(title="T1")
+    ExpenseTypeFactory(title="T2", journal=second_user.journal)
 
     form = ExpenseForm().as_p()
 
@@ -340,35 +340,35 @@ def test_expense_name_init():
 
 
 def test_expense_name_current_user_expense_types(second_user):
-    ExpenseTypeFactory(title='T1') # user bob, current user
-    ExpenseTypeFactory(title='T2', journal=second_user.journal) # user X
+    ExpenseTypeFactory(title="T1")  # user bob, current user
+    ExpenseTypeFactory(title="T2", journal=second_user.journal)  # user X
 
     form = ExpenseNameForm().as_p()
 
-    assert 'T1' in form
-    assert 'T2' not in form
+    assert "T1" in form
+    assert "T2" not in form
 
 
 @pytest.mark.parametrize(
-    'valid_for',
+    "valid_for",
     [
-        ('2000-01-01'), ('2000'), (2000),
-    ]
+        ("2000-01-01"),
+        ("2000"),
+        (2000),
+    ],
 )
 def test_expense_name_valid_data(valid_for):
     p = ExpenseTypeFactory()
 
-    form = ExpenseNameForm(data={
-        'title': 'Title',
-        'parent': p.pk,
-        'valid_for': valid_for
-    })
+    form = ExpenseNameForm(
+        data={"title": "Title", "parent": p.pk, "valid_for": valid_for}
+    )
 
     assert form.is_valid()
 
     data = form.save()
 
-    assert data.title == 'Title'
+    assert data.title == "Title"
     assert data.valid_for == 2000
 
 
@@ -377,32 +377,32 @@ def test_expense_name_blank_data():
 
     assert not form.is_valid()
 
-    assert 'title' in form.errors
-    assert 'parent' in form.errors
+    assert "title" in form.errors
+    assert "parent" in form.errors
 
 
 def test_expense_name_title_null():
     p = ExpenseTypeFactory()
-    form = ExpenseNameForm(data={'title': None, 'parent': p.pk})
+    form = ExpenseNameForm(data={"title": None, "parent": p.pk})
 
     assert not form.is_valid()
 
-    assert 'title' in form.errors
+    assert "title" in form.errors
 
 
 def test_expense_name_title_too_long():
     p = ExpenseTypeFactory()
-    form = ExpenseNameForm(data={'title': 'a'*255, 'parent': p.pk})
+    form = ExpenseNameForm(data={"title": "a" * 255, "parent": p.pk})
 
     assert not form.is_valid()
 
-    assert 'title' in form.errors
+    assert "title" in form.errors
 
 
 def test_expense_name_title_too_short():
     p = ExpenseTypeFactory()
-    form = ExpenseNameForm(data={'title': 'x', 'parent': p.pk})
+    form = ExpenseNameForm(data={"title": "x", "parent": p.pk})
 
     assert not form.is_valid()
 
-    assert 'title' in form.errors
+    assert "title" in form.errors

@@ -112,8 +112,7 @@ class Stats:
             return 0 if self._year else {}
 
         df = (
-            self._df
-            .lazy()
+            self._df.lazy()
             .group_by(pl.col("date").dt.year())
             .agg(pl.col("qty").sum())
             .sort("date")
@@ -134,8 +133,7 @@ class Stats:
             return {}
 
         df = (
-            df
-            .lazy()
+            df.lazy()
             .group_by("duration")
             .agg(pl.col("qty").count())
             .sort("duration")
@@ -179,8 +177,7 @@ class Stats:
             return df
 
         return (
-            self._df
-            .lazy()
+            self._df.lazy()
             .with_columns((pl.col("date").diff().dt.total_days()).alias("duration"))
             .fill_null(0)
             .sort("date")

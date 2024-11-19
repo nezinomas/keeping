@@ -46,14 +46,18 @@ def fixture_load_data_funds(data1):
         "pensions": [],
     }
 
+
 int_stragegy = st.integers()
 data_stragety = st.lists(
-    st.fixed_dictionaries({
-        'year': st.integers(min_value=1974, max_value=2050),
-        'incomes': st.integers(min_value=0, max_value=1_000_000),
-        'profit': st.integers(min_value=-1_000, max_value=1_000)
-    })
+    st.fixed_dictionaries(
+        {
+            "year": st.integers(min_value=1974, max_value=2050),
+            "incomes": st.integers(min_value=0, max_value=1_000_000),
+            "profit": st.integers(min_value=-1_000, max_value=1_000),
+        }
+    )
 )
+
 
 @given(data_stragety)
 def test_chart_data_with_hypothesis(data):
@@ -174,12 +178,14 @@ def test_load_service_template_variables_funds(load_data_funds):
 
 
 @given(
-        st.fixed_dictionaries({
+    st.fixed_dictionaries(
+        {
             "funds": data_stragety,
             "shares": data_stragety,
             "pensions": data_stragety,
-            "pensions2": data_stragety
-        })
+            "pensions2": data_stragety,
+        }
+    )
 )
 def test_load_service_with_hypothesis(data):
     load_service(data)

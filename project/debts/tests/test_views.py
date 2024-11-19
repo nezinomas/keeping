@@ -12,83 +12,83 @@ pytestmark = pytest.mark.django_db
 #                                                                             Debts Index
 # ---------------------------------------------------------------------------------------
 def test_debts_index_func():
-    view = resolve('/debts/')
+    view = resolve("/debts/")
 
     assert views.Index == view.func.view_class
 
 
 def test_debts_index_200(client_logged):
-    url = reverse('debts:index')
+    url = reverse("debts:index")
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 def test_debts_index_not_logged(client):
-    url = reverse('debts:index')
+    url = reverse("debts:index")
     response = client.get(url)
 
     assert response.status_code == 302
 
 
 def test_debts_index_context(client_logged):
-    url = reverse('debts:index')
+    url = reverse("debts:index")
     response = client_logged.get(url)
     context = response.context
 
-    assert 'borrow' in context
-    assert 'borrow_return' in context
-    assert 'lend' in context
-    assert 'lend_return' in context
+    assert "borrow" in context
+    assert "borrow_return" in context
+    assert "lend" in context
+    assert "lend_return" in context
 
 
 def test_debts_index_borrow_add_button(client_logged):
-    url = reverse('debts:index')
+    url = reverse("debts:index")
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('debts:new', kwargs={'debt_type': 'borrow'})
-    pattern = re.compile(fr'<button.*?hx-get="{ link }".*?>(.*?)<\/button>')
+    link = reverse("debts:new", kwargs={"debt_type": "borrow"})
+    pattern = re.compile(rf'<button.*?hx-get="{ link }".*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
-    assert res[0] == 'Skolą'
+    assert res[0] == "Skolą"
 
 
 def test_debts_index_borrow_return_add_button(client_logged):
-    url = reverse('debts:index')
+    url = reverse("debts:index")
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('debts:return_new', kwargs={'debt_type': 'borrow'})
-    pattern = re.compile(fr'<button.*?hx-get="{ link }".*>(.*?)<\/button>')
+    link = reverse("debts:return_new", kwargs={"debt_type": "borrow"})
+    pattern = re.compile(rf'<button.*?hx-get="{ link }".*>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
-    assert res[0] == 'Sumą'
+    assert res[0] == "Sumą"
 
 
 def test_debts_index_lend_add_button(client_logged):
-    url = reverse('debts:index')
+    url = reverse("debts:index")
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('debts:new', kwargs={'debt_type': 'lend'})
-    pattern = re.compile(fr'<button.*?hx-get="{ link }".*?>(.*?)<\/button>')
+    link = reverse("debts:new", kwargs={"debt_type": "lend"})
+    pattern = re.compile(rf'<button.*?hx-get="{ link }".*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
-    assert res[0] == 'Skolą'
+    assert res[0] == "Skolą"
 
 
 def test_debts_index_lend_return_add_button(client_logged):
-    url = reverse('debts:index')
+    url = reverse("debts:index")
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse('debts:return_new', kwargs={'debt_type': 'lend'})
-    pattern = re.compile(fr'<button.*?hx-get="{ link }".*?>(.*?)<\/button>')
+    link = reverse("debts:return_new", kwargs={"debt_type": "lend"})
+    pattern = re.compile(rf'<button.*?hx-get="{ link }".*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
-    assert res[0] == 'Sumą'
+    assert res[0] == "Sumą"

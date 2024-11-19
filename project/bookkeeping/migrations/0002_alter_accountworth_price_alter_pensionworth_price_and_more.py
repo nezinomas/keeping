@@ -7,25 +7,39 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bookkeeping', '0001_initial'),
+        ("bookkeeping", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='accountworth',
-            name='price',
-            field=models.DecimalField(decimal_places=2, max_digits=8, null=True, validators=[django.core.validators.MinValueValidator(Decimal('0.0'))]),
+            model_name="accountworth",
+            name="price",
+            field=models.DecimalField(
+                decimal_places=2,
+                max_digits=8,
+                null=True,
+                validators=[django.core.validators.MinValueValidator(Decimal("0.0"))],
+            ),
         ),
         migrations.AlterField(
-            model_name='pensionworth',
-            name='price',
-            field=models.DecimalField(decimal_places=2, max_digits=8, null=True, validators=[django.core.validators.MinValueValidator(Decimal('0.0'))]),
+            model_name="pensionworth",
+            name="price",
+            field=models.DecimalField(
+                decimal_places=2,
+                max_digits=8,
+                null=True,
+                validators=[django.core.validators.MinValueValidator(Decimal("0.0"))],
+            ),
         ),
         migrations.AlterField(
-            model_name='savingworth',
-            name='price',
-            field=models.DecimalField(decimal_places=2, max_digits=8, null=True, validators=[django.core.validators.MinValueValidator(Decimal('0.0'))]),
+            model_name="savingworth",
+            name="price",
+            field=models.DecimalField(
+                decimal_places=2,
+                max_digits=8,
+                null=True,
+                validators=[django.core.validators.MinValueValidator(Decimal("0.0"))],
+            ),
         ),
     ]

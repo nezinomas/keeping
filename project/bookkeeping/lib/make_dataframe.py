@@ -44,7 +44,9 @@ class MakeDataFrame:
         if df.shape[1] <= 1:
             return df.with_columns(sum=pl.lit(0))
 
-        return df.select([pl.col("date"), pl.sum_horizontal(pl.exclude("date")).alias("sum")])
+        return df.select(
+            [pl.col("date"), pl.sum_horizontal(pl.exclude("date")).alias("sum")]
+        )
 
     def _modify_data(self):
         data = self._data or []
@@ -71,11 +73,7 @@ class MakeDataFrame:
         return data
 
     def _insert_empty_dicts(self, dt, title, keys):
-        return {
-            "date": dt,
-            "title": title,
-            **{x: 0 for x in keys}
-        }
+        return {"date": dt, "title": title, **{x: 0 for x in keys}}
 
     def create_data(self, sum_col_name: str = "sum") -> DF:
         data = self._modify_data()
@@ -102,10 +100,8 @@ class MakeDataFrame:
 
     def _group_and_sum(self, df):
         cols = df.columns
-        return (
-            df
-            .group_by([pl.col.date, pl.col.title])
-            .agg([pl.col(i).sum() for i in cols if i not in ["date", "title"]])
+        return df.group_by([pl.col.date, pl.col.title]).agg(
+            [pl.col(i).sum() for i in cols if i not in ["date", "title"]]
         )
 
     def _drop_columns(self, df: DF) -> pl.Expr:

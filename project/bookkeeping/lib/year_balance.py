@@ -96,8 +96,7 @@ class YearBalance(BalanceBase):
             return df
 
         df = (
-            df
-            .lazy()
+            df.lazy()
             .sort("date")
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
             .with_columns(

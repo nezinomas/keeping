@@ -5,34 +5,59 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Count',
+            name="Count",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('quantity', models.FloatField(validators=[django.core.validators.MinValueValidator(0.1)])),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField()),
+                (
+                    "quantity",
+                    models.FloatField(
+                        validators=[django.core.validators.MinValueValidator(0.1)]
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-date'],
-                'get_latest_by': ['date'],
+                "ordering": ["-date"],
+                "get_latest_by": ["date"],
             },
         ),
         migrations.CreateModel(
-            name='CountType',
+            name="CountType",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=25, validators=[django.core.validators.MinLengthValidator(3)])),
-                ('slug', models.SlugField(editable=False, max_length=25)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "title",
+                    models.CharField(
+                        max_length=25,
+                        validators=[django.core.validators.MinLengthValidator(3)],
+                    ),
+                ),
+                ("slug", models.SlugField(editable=False, max_length=25)),
             ],
             options={
-                'ordering': ['title'],
+                "ordering": ["title"],
             },
         ),
     ]

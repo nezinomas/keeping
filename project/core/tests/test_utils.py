@@ -5,17 +5,21 @@ from mock import patch
 from ..lib import utils as T
 
 
-@patch('project.core.lib.utils.CrequestMiddleware')
+@patch("project.core.lib.utils.CrequestMiddleware")
 def test_get_request_kwargs(mck):
-    mck.get_request.return_value = SimpleNamespace(resolver_match=SimpleNamespace(kwargs={'Foo': 'Boo'}))
-    actual = T.get_request_kwargs('Foo')
-    assert actual == 'Boo'
+    mck.get_request.return_value = SimpleNamespace(
+        resolver_match=SimpleNamespace(kwargs={"Foo": "Boo"})
+    )
+    actual = T.get_request_kwargs("Foo")
+    assert actual == "Boo"
 
 
-@patch('project.core.lib.utils.CrequestMiddleware')
+@patch("project.core.lib.utils.CrequestMiddleware")
 def test_get_request_kwargs_no_name(mck):
-    mck.get_request.return_value = SimpleNamespace(resolver_match=SimpleNamespace(kwargs={}))
-    actual = T.get_request_kwargs('Foo')
+    mck.get_request.return_value = SimpleNamespace(
+        resolver_match=SimpleNamespace(kwargs={})
+    )
+    actual = T.get_request_kwargs("Foo")
     assert not actual
 
 

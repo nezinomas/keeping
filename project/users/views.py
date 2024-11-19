@@ -81,7 +81,6 @@ class Logout(auth_views.LogoutView):
         return redirect(reverse("users:login"))
 
 
-
 class Signup(CreateView):
     template_name = "users/login.html"
     success_url = reverse_lazy("bookkeeping:index")
@@ -333,6 +332,12 @@ class SettingsJournal(FormViewMixin):
         lang = form.cleaned_data.get("lang")
         activate(lang)
 
-        response.set_cookie(key=settings.LANGUAGE_COOKIE_NAME, value=lang, httponly=True, secure=True, samesite="Strict")
+        response.set_cookie(
+            key=settings.LANGUAGE_COOKIE_NAME,
+            value=lang,
+            httponly=True,
+            secure=True,
+            samesite="Strict",
+        )
 
         return response

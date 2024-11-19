@@ -44,6 +44,7 @@ class Service:
             "percents": _percent_values,
         }
 
+
 def load_service() -> dict:
     data = Data()
     obj = Service(data)

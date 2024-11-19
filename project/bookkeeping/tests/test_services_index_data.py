@@ -22,6 +22,7 @@ def fixture_data_dummy(mocker):
         side_effect=[{"foo1": "bar1"}],
     )
 
+
 def test_init(amount_start, data_dummy):
     actual = IndexServiceData(1999)
 

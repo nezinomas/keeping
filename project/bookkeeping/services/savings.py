@@ -28,9 +28,7 @@ def get_data(year: int) -> Data:
         .aggregate(Sum("price", default=0))["price__sum"]
     )
 
-    savings = SavingBalance.objects.year(year).exclude(
-        saving_type__type="pensions"
-    )
+    savings = SavingBalance.objects.year(year).exclude(saving_type__type="pensions")
     return Data(savings, savings_total, incomes_total)
 
 

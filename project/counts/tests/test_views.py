@@ -381,7 +381,10 @@ def test_index_links(client_logged):
     content = content.replace("           ", "")
     content = content.replace("       ", "")
 
-    pattern = re.compile(r'<button class="button-(active|secondary)" hx-get="(.*?)" hx-target="#tab_content"> (\w+) <\/button', re.MULTILINE)
+    pattern = re.compile(
+        r'<button class="button-(active|secondary)" hx-get="(.*?)" hx-target="#tab_content"> (\w+) <\/button',
+        re.MULTILINE,
+    )
     res = re.findall(pattern, content)
 
     assert len(res) == 3

@@ -201,7 +201,7 @@ class Accounts(SignalBase):
 
     def _join_df(self, df: DF, hv: DF) -> DF:
         df = (
-            df.join(hv, on=["id", "year"], how='full', coalesce=True, join_nulls=True)
+            df.join(hv, on=["id", "year"], how="full", coalesce=True, join_nulls=True)
             .lazy()
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
@@ -251,7 +251,9 @@ class Savings(SignalBase):
                     pl.when(pl.col("market_value") == 0)
                     .then(0)
                     .otherwise(
-                       ((pl.col("market_value") - pl.col("fee")) / pl.col("incomes")) * 100 - 100
+                        ((pl.col("market_value") - pl.col("fee")) / pl.col("incomes"))
+                        * 100
+                        - 100
                     )
                 )
             )
@@ -292,8 +294,8 @@ class Savings(SignalBase):
         ]
 
         return (
-            inc.join(exp, on=["id", "year"], how='full', coalesce=True, join_nulls=True)
-            .join(hv, on=["id", "year"], how='full', coalesce=True, join_nulls=True)
+            inc.join(exp, on=["id", "year"], how="full", coalesce=True, join_nulls=True)
+            .join(hv, on=["id", "year"], how="full", coalesce=True, join_nulls=True)
             .lazy()
             .rename({"have": "market_value"})
             .with_columns(

@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('savings', '0002_savingbalance_latest_check'),
+        ("savings", "0002_savingbalance_latest_check"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='savingbalance',
-            name='per_year_fee',
+            model_name="savingbalance",
+            name="per_year_fee",
             field=models.FloatField(default=0.0),
         ),
         migrations.AddField(
-            model_name='savingbalance',
-            name='per_year_incomes',
+            model_name="savingbalance",
+            name="per_year_incomes",
             field=models.FloatField(default=0.0),
         ),
     ]

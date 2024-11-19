@@ -121,7 +121,8 @@ def generic_search(model, search_str, category_list, date_field="date"):
 
     # Remark filters
     remark_filters = [
-        Q(remark__icontains=search_word) for search_word in _get(search_dict, "remark", [])
+        Q(remark__icontains=search_word)
+        for search_word in _get(search_dict, "remark", [])
     ]
 
     # Combine Category and Remark filters

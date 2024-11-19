@@ -125,7 +125,7 @@ class MainTable:
             )
 
         return df_expense.join(
-            saving.data, on="date", how='full', coalesce=True, join_nulls=True
+            saving.data, on="date", how="full", coalesce=True, join_nulls=True
         )
 
     @property
@@ -203,7 +203,9 @@ class Objects:
 
         # charts
         self.charts = Charts(
-            targets=(self.plans.targets | {_("Savings"): self.plans.filter_df("savings")}),
+            targets=(
+                self.plans.targets | {_("Savings"): self.plans.filter_df("savings")}
+            ),
             totals=self.main_table.total_row,
         )
 

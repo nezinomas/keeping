@@ -13,7 +13,7 @@ def test_get_data():
     ]
 
     actual = Data(1000)._make_data(data)
-    expect = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 2.]
+    expect = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]
 
     assert actual == expect
 
@@ -36,7 +36,7 @@ def test_get_planned_data():
         }
     ]
     actual = Data(1000)._make_planned_data(data)
-    expect = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 2.]
+    expect = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]
 
     assert actual == expect
 
@@ -73,7 +73,7 @@ def test_get_planned_data_few_records():
         },
     ]
     actual = Data(1000)._make_planned_data(data)
-    expect = [5., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 8.]
+    expect = [5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0]
 
     assert actual == expect
 
@@ -81,11 +81,11 @@ def test_get_planned_data_few_records():
 @pytest.fixture(name="data")
 def fixture_data():
     return {
-        "incomes": [10., 11., 12., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-        "expenses": [1., 2., 3., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-        "savings": [4., 5., 6., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+        "incomes": [10.0, 11.0, 12.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        "expenses": [1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        "savings": [4.0, 5.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         "savings_close": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "planned_incomes": [0., 0., 0., 7., 8., 9., 0., 0., 0., 0., 0., 0.],
+        "planned_incomes": [0.0, 0.0, 0.0, 7.0, 8.0, 9.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     }
 
 
@@ -111,7 +111,7 @@ def test_current_month(data):
 
 def test_balance(data):
     actual = Forecast(month=4, data=data).balance()
-    expect = 12.
+    expect = 12.0
 
     assert actual == expect
 
@@ -133,7 +133,7 @@ def test_balance_no_data(data_empty):
 
 def test_planned_incomes(data):
     actual = Forecast(month=4, data=data).planned_incomes()
-    expect = 17.
+    expect = 17.0
 
     assert actual == expect
 
@@ -161,12 +161,12 @@ def test_averages_dict_keys(data_empty):
 
 
 def test_averages_data_with_six_months(data):
-    data["expenses"][3] = 6.
-    data["expenses"][4] = 16.
-    data["expenses"][5] = 26.
-    data["savings"][3] = 7.
-    data["savings"][4] = 17.
-    data["savings"][5] = 27.
+    data["expenses"][3] = 6.0
+    data["expenses"][4] = 16.0
+    data["expenses"][5] = 26.0
+    data["savings"][3] = 7.0
+    data["savings"][4] = 17.0
+    data["savings"][5] = 27.0
 
     actual = Forecast(month=7, data=data).medians()
     expect = {"expenses": 4.5, "savings": 6.5}

@@ -137,6 +137,7 @@ def test_transactions_load_update_form_field_values(client_logged):
     # to account select
     assert f'<option value="{obj.to_account.pk}" selected>Account2</option>' in form
 
+
 def test_transactions_update_to_another_year(client_logged):
     tr = TransactionFactory()
 
@@ -712,7 +713,9 @@ def test_savings_change_load_update_form_field_values(client_logged):
     assert 'name="fee" value="0.01"' in form
 
     # from account select
-    assert f'<option value="{obj.from_account.pk}" selected>Savings From</option>' in form
+    assert (
+        f'<option value="{obj.from_account.pk}" selected>Savings From</option>' in form
+    )
     assert f'<option value="{obj.to_account.pk}">Savings To</option>' in form
 
     # to account select

@@ -8,53 +8,124 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('pensions', '0001_initial'),
-        ('accounts', '0001_initial'),
-        ('savings', '0001_initial'),
+        ("pensions", "0001_initial"),
+        ("accounts", "0001_initial"),
+        ("savings", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SavingWorth',
+            name="SavingWorth",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateTimeField()),
-                ('price', models.DecimalField(decimal_places=2, max_digits=8, validators=[django.core.validators.MinValueValidator(Decimal('0.0'))])),
-                ('saving_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='savings_worth', to='savings.savingtype')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateTimeField()),
+                (
+                    "price",
+                    models.DecimalField(
+                        decimal_places=2,
+                        max_digits=8,
+                        validators=[
+                            django.core.validators.MinValueValidator(Decimal("0.0"))
+                        ],
+                    ),
+                ),
+                (
+                    "saving_type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="savings_worth",
+                        to="savings.savingtype",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-date'],
-                'get_latest_by': ['date'],
+                "ordering": ["-date"],
+                "get_latest_by": ["date"],
             },
         ),
         migrations.CreateModel(
-            name='PensionWorth',
+            name="PensionWorth",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateTimeField()),
-                ('price', models.DecimalField(decimal_places=2, max_digits=8, validators=[django.core.validators.MinValueValidator(Decimal('0.0'))])),
-                ('pension_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pensions_worth', to='pensions.pensiontype')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateTimeField()),
+                (
+                    "price",
+                    models.DecimalField(
+                        decimal_places=2,
+                        max_digits=8,
+                        validators=[
+                            django.core.validators.MinValueValidator(Decimal("0.0"))
+                        ],
+                    ),
+                ),
+                (
+                    "pension_type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pensions_worth",
+                        to="pensions.pensiontype",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-date'],
-                'get_latest_by': ['date'],
+                "ordering": ["-date"],
+                "get_latest_by": ["date"],
             },
         ),
         migrations.CreateModel(
-            name='AccountWorth',
+            name="AccountWorth",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateTimeField()),
-                ('price', models.DecimalField(decimal_places=2, max_digits=8, validators=[django.core.validators.MinValueValidator(Decimal('0.0'))])),
-                ('account', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='accounts_worth', to='accounts.account')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateTimeField()),
+                (
+                    "price",
+                    models.DecimalField(
+                        decimal_places=2,
+                        max_digits=8,
+                        validators=[
+                            django.core.validators.MinValueValidator(Decimal("0.0"))
+                        ],
+                    ),
+                ),
+                (
+                    "account",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="accounts_worth",
+                        to="accounts.account",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-date'],
-                'get_latest_by': ['date'],
+                "ordering": ["-date"],
+                "get_latest_by": ["date"],
             },
         ),
     ]

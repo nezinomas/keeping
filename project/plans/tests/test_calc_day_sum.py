@@ -10,7 +10,6 @@ def fixture_data():
     obj.year = 2020
     obj.month = 0
 
-
     obj.incomes = [
         {
             "january": 400,
@@ -472,7 +471,7 @@ def test_plans_stats_expenses_full(data):
 def test_plans_stats_expenses_remains(data):
     actual = PlanCalculateDaySum(data).plans_stats
 
-    assert actual[5].type =="6. Pajamos - Visos išlaidos (1 - 5)"
+    assert actual[5].type == "6. Pajamos - Visos išlaidos (1 - 5)"
     assert round(actual[5].january, 2) == -300.0
     assert round(actual[5].february, 2) == -450.0
     assert round(actual[5].march, 2) == 450.0
@@ -528,7 +527,9 @@ def test_targets_no_month(data):
 
 def test_target_with_nones(data_empty):
     data_empty.month = 2
-    data_empty.expenses = [{"january": 0, "february": 0, "necessary": False, "title": "T1"}]
+    data_empty.expenses = [
+        {"january": 0, "february": 0, "necessary": False, "title": "T1"}
+    ]
 
     obj = PlanCalculateDaySum(data_empty)
 
