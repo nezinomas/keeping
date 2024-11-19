@@ -49,7 +49,8 @@ class Data:
             data (QuerySet): The QuerySet object containing the data to be converted.
 
         Returns:
-            list[int]: A list of integers representing the data from the QuerySet object.
+            list[int]: A list of integers representing the data
+            from the QuerySet object.
             If month does not exist in the dataset, the price will be 0.
         """
 
@@ -69,7 +70,8 @@ class Data:
             data (QuerySet): The dataset containing rows of monthly prices.
 
         Returns:
-            list[int]: A list of total prices for each month, where the index represents the month (0-11).
+            list[int]: A list of total prices for each month,
+            where the index represents the month (0-11).
             If the month does not exist in the dataset, the price will be 0.
         """
 
@@ -135,7 +137,8 @@ class Forecast:
 
     def medians(self) -> dict:
         """
-        Calculates median expenses and savings for the months from January to the current month.
+        Calculates median expenses and savings for the months
+        from January to the current month.
         Current month not included.
 
         Returns:
