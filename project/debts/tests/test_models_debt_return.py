@@ -202,7 +202,7 @@ def test_lend_return_delete_record_updates_debt_tbl_error_on_save(mck):
 
         try:
             obj.delete()
-        except:
+        except:  # noqa: E722
             pass
 
     actual = Debt.objects.items()
@@ -281,14 +281,14 @@ def test_borrow_return_post_save_update():
 
 
 def test_lend_return_post_save_first_record():
-    l = LendFactory(price=5)
+    obj = LendFactory(price=5)
 
     IncomeFactory(date=dt(1998, 1, 1), price=1)
 
     # truncate AccountBalance table
     AccountBalance.objects.all().delete()
 
-    LendReturnFactory(date=dt(1999, 1, 1), debt=l, price=2)
+    LendReturnFactory(date=dt(1999, 1, 1), debt=obj, price=2)
 
     actual = AccountBalance.objects.items()
 
@@ -308,14 +308,14 @@ def test_lend_return_post_save_first_record():
 
 
 def test_borrow_return_post_save_first_record():
-    l = BorrowFactory(price=5)
+    obj = BorrowFactory(price=5)
 
     IncomeFactory(date=dt(1998, 1, 1), price=1)
 
     # truncate AccountBalance table
     AccountBalance.objects.all().delete()
 
-    BorrowReturnFactory(date=dt(1999, 1, 1), debt=l, price=2)
+    BorrowReturnFactory(date=dt(1999, 1, 1), debt=obj, price=2)
 
     actual = AccountBalance.objects.items()
 
