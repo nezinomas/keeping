@@ -1,7 +1,24 @@
 [project]
-name = "keeping "
+name = "keeping"
 version = "0.1.0"
 description = "Home Bookkeeping"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "crispy-bootstrap5>=2024.10",
+    "django-bootstrap-datepicker-plus>=5.0.5",
+    "django>=5.1.3",
+    "django-bootstrap-datepicker-widget>=0.1",
+    "django-crequest>=2018.5.11",
+    "django-crispy-forms>=2.3",
+    "django-extensions>=3.2.3",
+    "django-htmx>=1.21.0",
+    "django-vanilla-views>=3.0.0",
+    "django-widget-tweaks>=1.5.0",
+    "mysqlclient>=2.2.6",
+    "pillow>=11.0.0",
+    "polars>=1.14.0",
+    "pyarrow>=18.0.0",
+    "slippers>=0.6.2",
+    "python-dateutil>=2.9.0.post0",
+]
