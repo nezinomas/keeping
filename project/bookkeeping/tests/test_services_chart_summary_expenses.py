@@ -1,5 +1,7 @@
-import pytest
 from types import SimpleNamespace
+
+import pytest
+
 from ..services.chart_summary_expenses import ChartSummaryExpensesService
 
 

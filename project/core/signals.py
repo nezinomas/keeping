@@ -14,9 +14,9 @@ from ..transactions import models as transaction
 from .lib.signals import Accounts, GetData, Savings, SignalBase
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                        Accounts Signals
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                      Accounts Signals
+# -------------------------------------------------------------------------------------
 @receiver(post_save, sender=income.Income)
 @receiver(post_delete, sender=income.Income)
 @receiver(post_save, sender=expense.Expense)
@@ -60,9 +60,9 @@ def accounts_data() -> SignalBase:
     return Accounts(GetData(conf))
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                         Savings Signals
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                       Savings Signals
+# -------------------------------------------------------------------------------------
 @receiver(post_save, sender=saving.Saving)
 @receiver(post_delete, sender=saving.Saving)
 @receiver(post_save, sender=transaction.SavingClose)
@@ -92,9 +92,9 @@ def savings_data() -> SignalBase:
     return Savings(GetData(conf))
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                        Pensions Signals
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                      Pensions Signals
+# -------------------------------------------------------------------------------------
 @receiver(post_save, sender=pension.Pension)
 @receiver(post_delete, sender=pension.Pension)
 @receiver(post_save, sender=bookkeeping.PensionWorth)
@@ -113,9 +113,9 @@ def pensions_data() -> SignalBase:
     return Savings(GetData(conf))
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                          Common methods
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                        Common methods
+# -------------------------------------------------------------------------------------
 def create_objects(balance_model: Model, categories: dict, data: list[dict]):
     fields = balance_model._meta.get_fields()
     fk_field = [f.name for f in fields if (f.many_to_one)][0]

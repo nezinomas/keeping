@@ -178,13 +178,15 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             return cleaned_data
 
         if expense_date.year > account.closed:
-            self.add_error(
+            self.add_error(  # noqa: RET503
                 "date",
                 _(
-                    "The date cannot be later than the account closure date. The account was closed in %(year)s."
+                    "The date cannot be later than the account closure date. The account was closed in %(year)s."  # noqa: E501
                 )
                 % ({"year": f"{account.closed}"}),
             )
+
+        return cleaned_data
 
 
 class ExpenseTypeForm(forms.ModelForm):

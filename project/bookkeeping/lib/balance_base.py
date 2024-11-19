@@ -1,9 +1,8 @@
 import polars as pl
-from polars import DataFrame as DF
 
 
 class BalanceBase:
-    def __init__(self, data: DF = DF()):
+    def __init__(self, data: pl.DataFrame = pl.DataFrame()):
         self._data = data
 
     @property
@@ -82,10 +81,10 @@ class BalanceBase:
         ).collect()
         return {} if self.is_empty(df) else df.to_dicts()[0]
 
-    def is_empty(self, df: DF) -> bool:
-        return df.is_empty() if isinstance(df, DF) else True
+    def is_empty(self, df: pl.DataFrame) -> bool:
+        return df.is_empty() if isinstance(df, pl.DataFrame) else True
 
-    def sum_cols(self, df: DF, sum_col_name: str = "sum") -> DF:
+    def sum_cols(self, df: pl.DataFrame, sum_col_name: str = "sum") -> pl.DataFrame:
         if df.shape[1] <= 1:
             return df.with_columns(sum_col_name=pl.lit(0))
 

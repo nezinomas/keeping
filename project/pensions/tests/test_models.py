@@ -4,8 +4,7 @@ import pytest
 import time_machine
 from django.urls import reverse
 
-from ..factories import (PensionBalanceFactory, PensionFactory,
-                         PensionTypeFactory)
+from ..factories import PensionBalanceFactory, PensionFactory, PensionTypeFactory
 from ..models import Pension, PensionBalance, PensionType
 
 pytestmark = pytest.mark.django_db
@@ -17,34 +16,36 @@ pytestmark = pytest.mark.django_db
 def test_pension_type_str():
     p = PensionTypeFactory.build()
 
-    assert str(p) == 'PensionType'
+    assert str(p) == "PensionType"
 
 
 def test_pension_type_get_absolute_url():
     obj = PensionTypeFactory()
 
-    assert obj.get_absolute_url() == reverse('pensions:type_update', kwargs={'pk': obj.pk})
+    assert obj.get_absolute_url() == reverse(
+        "pensions:type_update", kwargs={"pk": obj.pk}
+    )
 
 
 def test_pension_type_items_user(second_user):
-    PensionTypeFactory(title='T1')
-    PensionTypeFactory(title='T2', journal=second_user.journal)
+    PensionTypeFactory(title="T1")
+    PensionTypeFactory(title="T2", journal=second_user.journal)
 
     actual = PensionType.objects.items()
 
     assert actual.count() == 1
-    assert actual[0].title == 'T1'
+    assert actual[0].title == "T1"
 
 
 @pytest.mark.xfail
 def test_pension_type_unique_for_journal():
-    PensionType.objects.create(title='T1')
-    PensionType.objects.create(title='T1')
+    PensionType.objects.create(title="T1")
+    PensionType.objects.create(title="T1")
 
 
 def test_pension_type_unique_for_journals(main_user, second_user):
-    PensionType.objects.create(title='T1', journal=main_user.journal)
-    PensionType.objects.create(title='T1', journal=second_user.journal)
+    PensionType.objects.create(title="T1", journal=main_user.journal)
+    PensionType.objects.create(title="T1", journal=second_user.journal)
 
 
 # ----------------------------------------------------------------------------
@@ -53,13 +54,13 @@ def test_pension_type_unique_for_journals(main_user, second_user):
 def test_pension_str():
     p = PensionFactory.build()
 
-    assert str(p) == '1999-01-01: PensionType'
+    assert str(p) == "1999-01-01: PensionType"
 
 
 def test_pension_get_absolute_url():
     obj = PensionFactory()
 
-    assert obj.get_absolute_url() == reverse('pensions:update', kwargs={'pk': obj.pk})
+    assert obj.get_absolute_url() == reverse("pensions:update", kwargs={"pk": obj.pk})
 
 
 def test_pension_object():
@@ -70,13 +71,13 @@ def test_pension_object():
     assert actual.date == date(1999, 1, 1)
     assert actual.price == 100
     assert actual.fee == 1
-    assert actual.remark == 'remark'
-    assert actual.pension_type.title == 'PensionType'
+    assert actual.remark == "remark"
+    assert actual.pension_type.title == "PensionType"
 
 
 def test_pension_related(second_user):
-    t1 = PensionTypeFactory(title='T1')
-    t2 = PensionTypeFactory(title='T2', journal=second_user.journal)
+    t1 = PensionTypeFactory(title="T1")
+    t2 = PensionTypeFactory(title="T2", journal=second_user.journal)
 
     PensionFactory(pension_type=t1)
     PensionFactory(pension_type=t2)
@@ -84,15 +85,14 @@ def test_pension_related(second_user):
     actual = Pension.objects.related()
 
     assert len(actual) == 1
-    assert str(actual[0].pension_type) == 'T1'
+    assert str(actual[0].pension_type) == "T1"
 
 
 def test_pension_items(pensions):
     assert len(Pension.objects.items()) == 4
 
 
-def test_pension_items_query_count(pensions,
-                                   django_assert_max_num_queries):
+def test_pension_items_query_count(pensions, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         list(Pension.objects.items().values())
 
@@ -101,8 +101,7 @@ def test_pension_year(pensions):
     assert len(Pension.objects.year(1999)) == 2
 
 
-def test_pension_year_query_count(pensions,
-                                  django_assert_max_num_queries):
+def test_pension_year_query_count(pensions, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         list(Pension.objects.year(1999).values())
 
@@ -116,7 +115,7 @@ def test_pension_post_save_new():
 
     actual = actual[0]
 
-    assert actual.pension_type.title == 'PensionType'
+    assert actual.pension_type.title == "PensionType"
 
     assert actual.incomes == 100
     assert actual.fee == 1
@@ -135,7 +134,7 @@ def test_pension_post_save_update():
 
     actual = actual[0]
 
-    assert actual.pension_type.title == 'PensionType'
+    assert actual.pension_type.title == "PensionType"
 
     assert actual.incomes == 101
     assert actual.fee == 1
@@ -154,15 +153,15 @@ def test_pension_post_save_first_record():
 
     actual = actual[0]
 
-    assert actual.pension_type.title == 'PensionType'
+    assert actual.pension_type.title == "PensionType"
 
     assert actual.incomes == 200
     assert actual.fee == 2
 
 
 def test_pension_post_save_different_types():
-    t1 = PensionTypeFactory(title='1')
-    t2 = PensionTypeFactory(title='2')
+    t1 = PensionTypeFactory(title="1")
+    t2 = PensionTypeFactory(title="2")
 
     PensionFactory(pension_type=t1, price=150, fee=15)
     PensionFactory(pension_type=t2, price=250, fee=25)
@@ -198,13 +197,13 @@ def test_pension_post_save_update_nothing_changed():
 
 
 def test_pension_post_save_update_changed_pension_type():
-    _p = PensionTypeFactory(title='P')
-    _p_new = PensionTypeFactory(title='P_New')
+    _p = PensionTypeFactory(title="P")
+    _p_new = PensionTypeFactory(title="P_New")
 
     obj = PensionFactory(pension_type=_p, price=10, fee=2)
 
     actual = PensionBalance.objects.get(pension_type_id=_p.pk, year=1999)
-    assert actual.pension_type.title == 'P'
+    assert actual.pension_type.title == "P"
     assert actual.past_amount == 0
     assert actual.past_fee == 0
     assert actual.fee == 2
@@ -218,7 +217,7 @@ def test_pension_post_save_update_changed_pension_type():
     assert actual.count() == 0
 
     actual = PensionBalance.objects.get(pension_type_id=_p_new.pk, year=1999)
-    assert actual.pension_type.title == 'P_New'
+    assert actual.pension_type.title == "P_New"
     assert actual.past_amount == 0
     assert actual.past_fee == 0
     assert actual.fee == 2
@@ -245,7 +244,7 @@ def test_pension_post_delete_with_update():
     actual = PensionBalance.objects.year(1999)
 
     assert actual.count() == 1
-    assert actual[0].pension_type.title == 'PensionType'
+    assert actual[0].pension_type.title == "PensionType"
     assert round(actual[0].incomes, 2) == 100
     assert round(actual[0].fee, 2) == 1
 
@@ -270,7 +269,7 @@ def test_pension_update_post_save_count_queries(django_assert_max_num_queries):
 def test_pension_balance_init():
     actual = PensionBalanceFactory.build()
 
-    assert str(actual.pension_type) == 'PensionType'
+    assert str(actual.pension_type) == "PensionType"
 
     assert actual.past_amount == 20
     assert actual.past_fee == 21
@@ -283,12 +282,12 @@ def test_pension_balance_init():
 def test_pension_balance_str():
     actual = PensionBalanceFactory.build()
 
-    assert str(actual) == 'PensionType'
+    assert str(actual) == "PensionType"
 
 
 def test_pension_balance_related_for_user(second_user):
-    p1 = PensionTypeFactory(title='P1')
-    p2 = PensionTypeFactory(title='P2', journal=second_user.journal)
+    p1 = PensionTypeFactory(title="P1")
+    p2 = PensionTypeFactory(title="P2", journal=second_user.journal)
 
     PensionFactory(pension_type=p1)
     PensionFactory(pension_type=p2)
@@ -296,9 +295,9 @@ def test_pension_balance_related_for_user(second_user):
     actual = PensionBalance.objects.related()
 
     assert len(actual) == 2
-    assert str(actual[0].pension_type) == 'P1'
-    assert actual[0].pension_type.journal.title == 'bob Journal'
-    assert actual[0].pension_type.journal.users.first().username == 'bob'
+    assert str(actual[0].pension_type) == "P1"
+    assert actual[0].pension_type.journal.title == "bob Journal"
+    assert actual[0].pension_type.journal.users.first().username == "bob"
 
 
 @pytest.mark.django_db
@@ -313,8 +312,8 @@ def test_pension_balance_items():
 
 
 def test_pension_balance_queries(django_assert_num_queries):
-    p1 = PensionTypeFactory(title='p1')
-    p2 = PensionTypeFactory(title='p2')
+    p1 = PensionTypeFactory(title="p1")
+    p2 = PensionTypeFactory(title="p2")
 
     PensionBalanceFactory(pension_type=p1)
     PensionBalanceFactory(pension_type=p2)
@@ -323,7 +322,7 @@ def test_pension_balance_queries(django_assert_num_queries):
         list(PensionBalance.objects.items().values())
 
 
-@time_machine.travel('1999-1-1')
+@time_machine.travel("1999-1-1")
 def test_sum_by_year():
     PensionFactory(price=1, fee=0)
     PensionFactory(price=2, fee=0)
@@ -331,6 +330,6 @@ def test_sum_by_year():
     actual = list(PensionBalance.objects.sum_by_year())
 
     assert actual == [
-        {'year': 1999, 'incomes': 3, 'profit': -3, 'fee': 0},
-        {'year': 2000, 'incomes': 3, 'profit': -3, 'fee': 0},
+        {"year": 1999, "incomes": 3, "profit": -3, "fee": 0},
+        {"year": 2000, "incomes": 3, "profit": -3, "fee": 0},
     ]

@@ -5,7 +5,6 @@ from typing import Union
 import polars as pl
 from django.db.models import F
 from django.utils.translation import gettext as _
-from polars import DataFrame as DF
 
 from ...core.lib.date import monthlen, monthname, monthnames
 from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
@@ -50,7 +49,7 @@ class PlanCalculateDaySum:
         self._year = data.year
         self._df = self._calc_df()
 
-    def filter_df(self, name: str) -> DF:
+    def filter_df(self, name: str) -> pl.DataFrame:
         if name not in self._df["name"]:
             return {}
 
@@ -72,37 +71,23 @@ class PlanCalculateDaySum:
         _from_tables = _("from tables above")
 
         return [
-            Items(
-                type=f"1. {_incomes} ({_median})",
-                **self.filter_df("incomes_avg")
-            ),
-            Items(
-                type=f"2. {_necessary}",
-                **self.filter_df("expenses_necessary")
-            ),
-            Items(
-                type=f"3. {_remain} (1 - 2)",
-                **self.filter_df("expenses_free")
-            ),
+            Items(type=f"1. {_incomes} ({_median})", **self.filter_df("incomes_avg")),
+            Items(type=f"2. {_necessary}", **self.filter_df("expenses_necessary")),
+            Items(type=f"3. {_remain} (1 - 2)", **self.filter_df("expenses_free")),
             Items(
                 type=f"4. {_remain} ({_from_tables})",
                 **self.filter_df("expenses_free2"),
             ),
-            Items(
-                type=f"5. {_full} (1 + 4)",
-                **self.filter_df("expenses_full")
-            ),
+            Items(type=f"5. {_full} (1 + 4)", **self.filter_df("expenses_full")),
             Items(
                 type=f"6. {_incomes} - {_full} (1 - 5)",
                 **self.filter_df("expenses_remains"),
             ),
             Items(
-                type=f"7. {_sum_per_day} (3 / {_days})",
-                **self.filter_df("day_calced")
+                type=f"7. {_sum_per_day} (3 / {_days})", **self.filter_df("day_calced")
             ),
             Items(
-                type=f"8. {_residual} (3 - 7 * {_days})",
-                **self.filter_df("remains")
+                type=f"8. {_residual} (3 - 7 * {_days})", **self.filter_df("remains")
             ),
         ]
 
@@ -128,7 +113,7 @@ class PlanCalculateDaySum:
         data = data.select(select)
         return data[0, 0] if self._data.month else data.to_dicts()[0]
 
-    def _create_df(self) -> DF:
+    def _create_df(self) -> pl.DataFrame:
         expenses_necessary = filter(lambda x: x["necessary"], self._data.expenses)
         expenses_free = filter(lambda x: not x["necessary"], self._data.expenses)
 

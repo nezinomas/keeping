@@ -1,7 +1,8 @@
-import pytz
 from datetime import datetime, timezone
-import time_machine
+
 import pytest
+import pytz
+import time_machine
 
 from ...accounts.factories import AccountFactory
 from ...pensions.factories import PensionTypeFactory
@@ -11,9 +12,9 @@ from ..forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 pytestmark = pytest.mark.django_db
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                            Saving Worth
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                          Saving Worth
+# -------------------------------------------------------------------------------------
 def test_saving_worth_init():
     SavingWorthForm()
 
@@ -144,9 +145,9 @@ def test_saving_worth_account_closed_date(closed, date, valid):
         assert form.errors["date"][0] == "Sąskaita uždaryta 1999."
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                           Account Worth
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                         Account Worth
+# -------------------------------------------------------------------------------------
 def test_account_worth_init():
     AccountWorthForm()
 
@@ -243,9 +244,9 @@ def test_account_worth_account_closed_date(closed, date, valid):
         assert form.errors["date"][0] == "Sąskaita uždaryta 1999."
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                           Pension Worth
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                         Pension Worth
+# -------------------------------------------------------------------------------------
 def test_pension_worth_init():
     PensionWorthForm()
 

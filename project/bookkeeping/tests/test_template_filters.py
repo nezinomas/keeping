@@ -1,6 +1,6 @@
 import pytest
 
-from ..templatetags import template_filters as T
+from ..templatetags import template_filters
 
 
 @pytest.mark.parametrize(
@@ -16,4 +16,4 @@ from ..templatetags import template_filters as T
     ],
 )
 def test_weekend(value, css_class, expect):
-    assert T.weekend(value, css_class) == expect
+    assert template_filters.weekend(value, css_class) == expect

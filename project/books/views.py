@@ -8,7 +8,7 @@ from ..core.mixins.views import (
     SearchViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content
+    rendered_content,
 )
 from . import forms, models, services
 
@@ -106,9 +106,9 @@ class Search(SearchViewMixin):
     search_method = "search_books"
 
 
-# ----------------------------------------------------------------------------------------
-#                                                                            Target Views
-# ----------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------
+#                                                                          Target Views
+# --------------------------------------------------------------------------------------
 class TargetNew(CreateViewMixin):
     model = models.BookTarget
     hx_trigger_django = "afterTarget"

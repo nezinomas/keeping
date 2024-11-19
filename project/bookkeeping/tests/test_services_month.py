@@ -26,9 +26,9 @@ def test_info_context(mck_get_data, mck_initialize_objects):
     # 5) day_input=3,
     # 6) remains=-85,
     obj.plans = MagicMock()
-    obj.plans.filter_df.side_effect=[100, 5, 88, 12, 12, 3, -85]
+    obj.plans.filter_df.side_effect = [100, 5, 88, 12, 12, 3, -85]
 
-    obj.main_table = MagicMock(total_row = {"Viso": 5, "Taupymas": 12})
+    obj.main_table = MagicMock(total_row={"Viso": 5, "Taupymas": 12})
     obj.spending = MagicMock(avg_per_day=2)
 
     actual = obj.info_table()
@@ -128,7 +128,6 @@ def test_chart_targets_categories():
 
     obj = Charts(targets, totals)
 
-
     actual = obj.chart_targets()
 
     expect = ["T2", "T1"]
@@ -216,7 +215,7 @@ def fixture_df_expense():
 def fixture_df_saving():
     year = 1999
     month = 3
-    data = [{'date': date(1999, 3, 3), 'sum': 2, 'title': 'Taupymas'}]
+    data = [{"date": date(1999, 3, 3), "sum": 2, "title": "Taupymas"}]
 
     return MakeDataFrame(year=year, month=month, data=data)
 
@@ -225,9 +224,27 @@ def test_main_table(df_expense, df_saving):
     actual = MainTable(df_expense, df_saving).table
 
     assert len(actual) == 31
-    assert actual[0] == {"date": date(1999, 3, 1), "A": 0, "B": 0, "Viso": 0, "Taupymas": 0}
-    assert actual[1] == {"date": date(1999, 3, 2), "A": 4, "B": 0, "Viso": 4, "Taupymas": 0}
-    assert actual[2] == {"date": date(1999, 3, 3), "A": 0, "B": 0, "Viso": 0, "Taupymas": 2}
+    assert actual[0] == {
+        "date": date(1999, 3, 1),
+        "A": 0,
+        "B": 0,
+        "Viso": 0,
+        "Taupymas": 0,
+    }
+    assert actual[1] == {
+        "date": date(1999, 3, 2),
+        "A": 4,
+        "B": 0,
+        "Viso": 4,
+        "Taupymas": 0,
+    }
+    assert actual[2] == {
+        "date": date(1999, 3, 3),
+        "A": 0,
+        "B": 0,
+        "Viso": 0,
+        "Taupymas": 2,
+    }
 
 
 def test_main_table_total_row(df_expense, df_saving):

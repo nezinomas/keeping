@@ -1,4 +1,5 @@
 import pytest
+
 from ..services.index import IndexServiceData
 
 
@@ -20,6 +21,7 @@ def fixture_data_dummy(mocker):
         "project.bookkeeping.services.index.IndexServiceData.get_debts",
         side_effect=[{"foo1": "bar1"}],
     )
+
 
 def test_init(amount_start, data_dummy):
     actual = IndexServiceData(1999)

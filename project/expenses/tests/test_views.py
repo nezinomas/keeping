@@ -20,9 +20,9 @@ def _db_data():
     ExpenseNameFactory(title="S", valid_for=1999)
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                                 Expense
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                               Expense
+# -------------------------------------------------------------------------------------
 def test_expenses_index_func():
     view = resolve("/expenses/")
 
@@ -335,7 +335,7 @@ def test_expenses_update_with_closed_account_date_greated_than_closed_value(
 
     assert len(form.errors) == 1
     assert (
-        "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta 2000."
+        "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta 2000."  # noqa: E501
         in form.errors["date"]
     )
 
@@ -519,9 +519,9 @@ def test_expenses_list_price_converted_with_thousands(client_logged):
     assert "1.000,00" in actual
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                          Expense Delete
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                        Expense Delete
+# -------------------------------------------------------------------------------------
 def test_view_expenses_delete_func():
     view = resolve("/expenses/delete/1/")
 
@@ -549,7 +549,7 @@ def test_view_expenses_delete_load_form(client_logged):
     assert response.status_code == 200
     assert '<form method="POST"' in actual
     assert (
-        "Ar tikrai norite ištrinti: <strong>1999-01-01/Expense Type/Expense Name</strong>?"
+        "Ar tikrai norite ištrinti: <strong>1999-01-01/Expense Type/Expense Name</strong>?"  # noqa: E501
         in actual
     )
 
@@ -585,9 +585,9 @@ def test_expenses_delete_other_journal_post_form(client_logged, second_user):
     assert Expense.objects.all().count() == 1
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                             ExpenseType
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                           ExpenseType
+# -------------------------------------------------------------------------------------
 def test_expenses_type_new_func():
     view = resolve("/expenses/type/new/")
 
@@ -612,9 +612,9 @@ def test_expense_type_not_load_other_journal(client_logged, second_user):
     assert obj.title not in form
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                             ExpenseName
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                           ExpenseName
+# -------------------------------------------------------------------------------------
 def test_expenses_name_new_func():
     view = resolve("/expenses/name/new/")
 
@@ -691,9 +691,9 @@ def test_expense_name_not_load_other_journal(client_logged, second_user):
     assert et2.title not in actual
 
 
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
 #                                                                       LoadExpenseName
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
 def test_load_expenses_name_new_func():
     actual = resolve("/expenses/load_expense_name/")
 
@@ -742,9 +742,9 @@ def test_load_expense_name_must_logged(client):
     assert response.resolver_match.func.view_class is Login
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                         Expenses Search
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                       Expenses Search
+# -------------------------------------------------------------------------------------
 def test_search_func():
     view = resolve("/expenses/search/")
 

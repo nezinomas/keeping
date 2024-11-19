@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('savings', '0003_savingbalance_per_year_fee_and_more'),
+        ("savings", "0003_savingbalance_per_year_fee_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='savingbalance',
-            name='profit_incomes_proc',
+            model_name="savingbalance",
+            name="profit_incomes_proc",
         ),
         migrations.RemoveField(
-            model_name='savingbalance',
-            name='profit_incomes_sum',
+            model_name="savingbalance",
+            name="profit_incomes_sum",
         ),
     ]

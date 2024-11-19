@@ -2,9 +2,9 @@ from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory
 from django.utils.translation import gettext as _
 
-from ...core.mixins.views import httpHtmxResponse
+from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...core import signals
-from ...bookkeeping.models import AccountWorth, SavingWorth, PensionWorth
+from ...core.mixins.views import http_htmx_response
 
 SIGNALS = {
     AccountWorth: signals.accounts_signal,
@@ -81,7 +81,7 @@ class FormsetMixin:
                 model.objects.bulk_create(objects)
                 SIGNALS.get(model)(None, None)
 
-            return httpHtmxResponse(self.get_hx_trigger_django())
+            return http_htmx_response(self.get_hx_trigger_django())
 
         return super().form_invalid(formset)
 

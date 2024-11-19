@@ -8,7 +8,7 @@ register = template.Library()
 def cellformat(value, default: str = "-"):
     if isinstance(value, str):
         try:
-            value = float(value.replace(',', '.'))
+            value = float(value.replace(",", "."))
         except ValueError:
             return default
 

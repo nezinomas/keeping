@@ -8,7 +8,7 @@ from ..core.mixins.views import (
     ListViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    httpHtmxResponse,
+    http_htmx_response,
     rendered_content,
 )
 from . import forms, models
@@ -45,9 +45,9 @@ class Index(TemplateViewMixin):
         return super().get_context_data(**kwargs) | context
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                           Expense Plans
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                         Expense Plans
+# -------------------------------------------------------------------------------------
 class ExpensesLists(ListViewMixin):
     model = models.ExpensePlan
 
@@ -76,9 +76,9 @@ class ExpensesDelete(DeleteViewMixin):
     hx_trigger_django = "reloadExpenses"
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                            Income Plans
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                          Income Plans
+# -------------------------------------------------------------------------------------
 class IncomesLists(ListViewMixin):
     model = models.IncomePlan
 
@@ -107,9 +107,9 @@ class IncomesDelete(DeleteViewMixin):
     hx_trigger_django = "reloadIncomes"
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                            Saving Plans
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                          Saving Plans
+# -------------------------------------------------------------------------------------
 class SavingsLists(ListViewMixin):
     model = models.SavingPlan
 
@@ -138,9 +138,9 @@ class SavingsDelete(DeleteViewMixin):
     hx_trigger_django = "reloadSavings"
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                               Day Plans
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                             Day Plans
+# -------------------------------------------------------------------------------------
 class DayLists(ListViewMixin):
     model = models.DayPlan
 
@@ -169,9 +169,9 @@ class DayDelete(DeleteViewMixin):
     hx_trigger_django = "reloadDay"
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                         Necessary Plans
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                       Necessary Plans
+# -------------------------------------------------------------------------------------
 class NecessaryLists(ListViewMixin):
     model = models.NecessaryPlan
 
@@ -200,9 +200,9 @@ class NecessaryDelete(DeleteViewMixin):
     hx_trigger_django = "reloadNecessary"
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                              Copy Plans
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                            Copy Plans
+# -------------------------------------------------------------------------------------
 class CopyPlans(FormViewMixin):
     form_class = forms.CopyPlanForm
     template_name = "plans/copyplan_form.html"
@@ -220,4 +220,4 @@ class CopyPlans(FormViewMixin):
     def form_valid(self, form, **kwargs):
         form.save()
 
-        return httpHtmxResponse(self.hx_trigger_django)
+        return http_htmx_response(self.hx_trigger_django)

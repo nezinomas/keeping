@@ -4,7 +4,6 @@ from ..core import converters
 from . import views
 from .apps import App_name
 
-
 app_name = App_name
 
 register_converter(converters.DateConverter, "date")
@@ -35,7 +34,11 @@ urlpatterns = [
     path("detailed/", views.Detailed.as_view(), name="detailed"),
     path("summary/", views.Summary.as_view(), name="summary"),
     path("summary/savings/", views.SummarySavings.as_view(), name="summary_savings"),
-    path("summary/savings_and_incomes/", views.SummarySavingsAndIncomes.as_view(), name="summary_savings_and_incomes"),
+    path(
+        "summary/savings_and_incomes/",
+        views.SummarySavingsAndIncomes.as_view(),
+        name="summary_savings_and_incomes",
+    ),
     path("summary/expenses/", views.SummaryExpenses.as_view(), name="summary_expenses"),
     path("month/", views.Month.as_view(), name="month"),
     path(

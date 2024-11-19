@@ -1,5 +1,4 @@
-from django.db.models import Count, Sum
-from django.db.models import F
+from django.db.models import Count, F, Sum
 from django.db.models.functions import ExtractYear, TruncDay, TruncMonth, TruncYear
 
 

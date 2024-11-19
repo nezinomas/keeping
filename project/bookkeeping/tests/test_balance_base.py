@@ -5,16 +5,19 @@ import pytest
 
 from ..lib.balance_base import BalanceBase
 
-ARR = pl.DataFrame([
+ARR = pl.DataFrame(
+    [
         {"date": date(1999, 1, 1), "x": 11, "y": 21},
         {"date": date(1999, 1, 2), "x": 11, "y": 21},
         {"date": date(1999, 1, 3), "x": 0, "y": 21},
         {"date": date(1999, 1, 4), "x": 11, "y": 0},
-    ])
+    ]
+)
+
 
 @pytest.fixture(name="df")
 def fixture_df():
-    return (ARR)
+    return ARR
 
 
 @pytest.mark.parametrize(
@@ -91,27 +94,14 @@ def test_total_column(df):
     assert actual == expect
 
 
-@pytest.mark.parametrize(
-    'data, expect',
-    [
-        (None, []),
-        (pl.DataFrame(), [])
-    ]
-)
+@pytest.mark.parametrize("data, expect", [(None, []), (pl.DataFrame(), [])])
 def test_total_column_empty_data(data, expect):
     actual = BalanceBase(data).total_column
 
     assert actual == expect
 
 
-@pytest.mark.parametrize(
-    'data, expect',
-    [
-        (ARR, 96),
-        (None, 0),
-        (pl.DataFrame(), 0)
-    ]
-)
+@pytest.mark.parametrize("data, expect", [(ARR, 96), (None, 0), (pl.DataFrame(), 0)])
 def test_total(data, expect):
     actual = BalanceBase(data).total
 

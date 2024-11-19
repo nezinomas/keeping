@@ -4,10 +4,9 @@ import itertools as it
 from datetime import date, datetime
 
 import polars as pl
-from polars import DataFrame as DF
 from polars.exceptions import ColumnNotFoundError
 
-from ...core.exceptions import MethodInvalid
+from ...core.exceptions import MethodInvalidError
 from ...core.lib.translation import month_names, weekday_names
 
 
@@ -74,7 +73,7 @@ class Stats:
 
     def chart_calendar(self) -> list[dict]:
         if not self._year:
-            raise MethodInvalid("class Stats must be called with specified year.")
+            raise MethodInvalidError("class Stats must be called with specified year.")
 
         def func(month: int):
             return it.product(
@@ -112,8 +111,7 @@ class Stats:
             return 0 if self._year else {}
 
         df = (
-            self._df
-            .lazy()
+            self._df.lazy()
             .group_by(pl.col("date").dt.year())
             .agg(pl.col("qty").sum())
             .sort("date")
@@ -134,8 +132,7 @@ class Stats:
             return {}
 
         df = (
-            df
-            .lazy()
+            df.lazy()
             .group_by("duration")
             .agg(pl.col("qty").count())
             .sort("duration")
@@ -151,17 +148,17 @@ class Stats:
         if df.is_empty():
             return df
 
-        def filter_by_year(df: DF) -> pl.Expr:
+        def filter_by_year(df: pl.DataFrame) -> pl.Expr:
             return (
                 df.filter(pl.col("date").dt.year() == self._year) if self._year else df
             )
 
-        def copy_quantity(df: DF) -> pl.Expr:
+        def copy_quantity(df: pl.DataFrame) -> pl.Expr:
             return df.rename({"quantity": "qty"}) if "quantity" in df.columns else df
 
         return df.sort("date").pipe(filter_by_year).pipe(copy_quantity)
 
-    def _insert_empty_rows(self, df: DF) -> DF:
+    def _insert_empty_rows(self, df: pl.DataFrame) -> pl.DataFrame:
         first_date = date(df.head(1)[0, "date"].year, 1, 1)
         last_date = date(df.tail(1)[0, "date"].year, 12, 31)
         date_range = pl.date_range(first_date, last_date, "1d", eager=True)
@@ -172,15 +169,14 @@ class Stats:
         if self._df.is_empty():
             return self._df
 
-        def first_gap(df: DF) -> pl.Expr:
+        def first_gap(df: pl.DataFrame) -> pl.Expr:
             first_record_date = df[0, "date"]
             past_record_date = self._past_latest or date(first_record_date.year, 1, 1)
             df[0, "duration"] = (first_record_date - past_record_date).days
             return df
 
         return (
-            self._df
-            .lazy()
+            self._df.lazy()
             .with_columns((pl.col("date").diff().dt.total_days()).alias("duration"))
             .fill_null(0)
             .sort("date")
@@ -188,7 +184,7 @@ class Stats:
             .pipe(first_gap)
         )
 
-    def _day_info(self, data: tuple, iteration: int, calendar_df: DF) -> list:
+    def _day_info(self, data: tuple, iteration: int, calendar_df: pl.DataFrame) -> list:
         (year, month, (day, weekday)) = data
         x, y = divmod(iteration, 7)
         dt = date(year, month, day) if day else None

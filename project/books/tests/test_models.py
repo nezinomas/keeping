@@ -13,31 +13,32 @@ pytestmark = pytest.mark.django_db
 def test_book_str():
     book = BookFactory.build()
 
-    assert str(book) == 'Book Title'
+    assert str(book) == "Book Title"
+
 
 def test_book_related():
     BookFactory()
-    BookFactory(title='B1', user=UserFactory(username='XXX', email='x@x.x'))
+    BookFactory(title="B1", user=UserFactory(username="XXX", email="x@x.x"))
 
     actual = Book.objects.related()
 
     assert len(actual) == 1
-    assert actual[0].title == 'Book Title'
+    assert actual[0].title == "Book Title"
 
 
 def test_book_items():
     BookFactory()
-    BookFactory(title='B1', user=UserFactory(username='XXX', email='x@x.x'))
+    BookFactory(title="B1", user=UserFactory(username="XXX", email="x@x.x"))
 
     assert Book.objects.items().count() == 1
 
 
 def test_book_year():
-    b1 = BookFactory(title='x1')
-    b2 = BookFactory(title='x2', ended=date(1999, 1, 2))
+    b1 = BookFactory(title="x1")
+    b2 = BookFactory(title="x2", ended=date(1999, 1, 2))
     BookFactory(started=date(2000, 1, 1))
     BookFactory(ended=date(2000, 1, 1))
-    BookFactory(user=UserFactory(username='XXX', email='x@x.x'))
+    BookFactory(user=UserFactory(username="XXX", email="x@x.x"))
 
     actual = Book.objects.year(1999)
 
@@ -51,9 +52,9 @@ def test_book_fields():
 
     actual = list(Book.objects.items())[0]
 
-    assert actual.author == 'Author'
-    assert actual.title == 'Book Title'
-    assert actual.remark == 'Remark'
+    assert actual.author == "Author"
+    assert actual.title == "Book Title"
+    assert actual.remark == "Remark"
 
     assert date(1999, 1, 1) == actual.started
     assert date(1999, 1, 31) == actual.ended
@@ -63,11 +64,11 @@ def test_book_readed_one_year():
     BookFactory()
     BookFactory(ended=date(1999, 1, 31))
     BookFactory(ended=date(1999, 12, 31))
-    BookFactory(ended=date(1999, 12, 31), user=UserFactory(username='X', email='x@x.x'))
+    BookFactory(ended=date(1999, 12, 31), user=UserFactory(username="X", email="x@x.x"))
 
     actual = list(Book.objects.readed(year=1999))
 
-    assert actual == [{'year': 1999, 'cnt': 2}]
+    assert actual == [{"year": 1999, "cnt": 2}]
 
 
 def test_book_readed_one_year_no_data():
@@ -81,11 +82,13 @@ def test_book_readed_all_years():
     BookFactory(ended=date(1999, 1, 31))
     BookFactory(ended=date(1999, 12, 31))
     BookFactory(ended=date(1998, 1, 31))
-    BookFactory(ended=date(1998, 1, 31), user=UserFactory(username='XXX', email='x@x.x'))
+    BookFactory(
+        ended=date(1998, 1, 31), user=UserFactory(username="XXX", email="x@x.x")
+    )
 
     actual = list(Book.objects.readed())
 
-    assert actual == [{'year': 1998, 'cnt': 1}, {'year': 1999, 'cnt': 2}]
+    assert actual == [{"year": 1998, "cnt": 1}, {"year": 1999, "cnt": 2}]
 
 
 def test_book_readed_all_years_no_data():
@@ -99,12 +102,11 @@ def test_book_reading():
     BookFactory(started=date(1000, 1, 1))
     BookFactory(started=date(3000, 1, 1))
     BookFactory(ended=date(2000, 1, 31))
-    BookFactory(user=UserFactory(username='XXX', email='x@x.x'))
+    BookFactory(user=UserFactory(username="XXX", email="x@x.x"))
 
     actual = Book.objects.reading(1999)
 
-    assert actual == {'reading': 2}
-
+    assert actual == {"reading": 2}
 
 
 # ----------------------------------------------------------------------------
@@ -113,38 +115,38 @@ def test_book_reading():
 def test_book_target_str():
     actual = BookTargetFactory.build()
 
-    assert str(actual) == '1999: 100'
+    assert str(actual) == "1999: 100"
 
 
 def test_book_target_related():
     BookTargetFactory()
-    BookTargetFactory(user=UserFactory(username='XXX', email='x@x.x'))
+    BookTargetFactory(user=UserFactory(username="XXX", email="x@x.x"))
 
     actual = BookTarget.objects.related()
 
     assert len(actual) == 1
-    assert actual[0].user.username == 'bob'
+    assert actual[0].user.username == "bob"
 
 
 def test_book_target_items():
     BookTargetFactory(year=1999)
-    BookTargetFactory(year=2000, user=UserFactory(username='XXX', email='x@x.x'))
+    BookTargetFactory(year=2000, user=UserFactory(username="XXX", email="x@x.x"))
 
     actual = BookTarget.objects.items()
 
     assert len(actual) == 1
-    assert actual[0].user.username == 'bob'
+    assert actual[0].user.username == "bob"
 
 
 def test_book_target_year():
     BookTargetFactory(year=1999)
-    BookTargetFactory(year=1999, user=UserFactory(username='XXX', email='x@x.x'))
+    BookTargetFactory(year=1999, user=UserFactory(username="XXX", email="x@x.x"))
 
     actual = list(BookTarget.objects.year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
-    assert actual[0].user.username == 'bob'
+    assert actual[0].user.username == "bob"
 
 
 def test_book_target_year_positive():
@@ -153,7 +155,7 @@ def test_book_target_year_positive():
     try:
         actual.full_clean()
     except ValidationError as e:
-        assert 'year' in e.message_dict
+        assert "year" in e.message_dict
 
 
 @pytest.mark.xfail(raises=Exception)
@@ -168,5 +170,5 @@ def test_book_target_ordering():
 
     actual = list(BookTarget.objects.all())
 
-    assert str(actual[0]) == '1999: 100'
-    assert str(actual[1]) == '1970: 100'
+    assert str(actual[0]) == "1999: 100"
+    assert str(actual[1]) == "1970: 100"

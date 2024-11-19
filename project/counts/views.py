@@ -3,10 +3,15 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import weeknumber
-from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 ListViewMixin, RedirectViewMixin,
-                                 TemplateViewMixin, UpdateViewMixin,
-                                 rendered_content)
+from ..core.mixins.views import (
+    CreateViewMixin,
+    DeleteViewMixin,
+    ListViewMixin,
+    RedirectViewMixin,
+    TemplateViewMixin,
+    UpdateViewMixin,
+    rendered_content,
+)
 from . import services
 from .forms import CountForm, CountTypeForm
 from .lib.views_helper import CountTypetObjectMixin, InfoRowData
@@ -167,9 +172,9 @@ class Delete(CountUrlMixin, DeleteViewMixin):
     hx_trigger_django = "reloadData"
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                             Count Types
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                           Count Types
+# -------------------------------------------------------------------------------------
 class TypeUrlMixin:
     def get_hx_redirect(self):
         return self.get_success_url()
