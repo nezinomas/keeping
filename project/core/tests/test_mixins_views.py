@@ -2,9 +2,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from ..mixins import views
 from ...expenses.factories import ExpenseFactory
 from ...expenses.models import Expense
+from ..mixins import views
 
 
 @pytest.mark.xfail

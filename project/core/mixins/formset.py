@@ -2,9 +2,9 @@ from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory
 from django.utils.translation import gettext as _
 
-from ...core.mixins.views import httpHtmxResponse
+from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...core import signals
-from ...bookkeeping.models import AccountWorth, SavingWorth, PensionWorth
+from ...core.mixins.views import httpHtmxResponse
 
 SIGNALS = {
     AccountWorth: signals.accounts_signal,

@@ -3,10 +3,15 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import weeknumber
-from ..core.mixins.views import (CreateViewMixin, DeleteViewMixin,
-                                 ListViewMixin, RedirectViewMixin,
-                                 TemplateViewMixin, UpdateViewMixin,
-                                 rendered_content)
+from ..core.mixins.views import (
+    CreateViewMixin,
+    DeleteViewMixin,
+    ListViewMixin,
+    RedirectViewMixin,
+    TemplateViewMixin,
+    UpdateViewMixin,
+    rendered_content,
+)
 from . import services
 from .forms import CountForm, CountTypeForm
 from .lib.views_helper import CountTypetObjectMixin, InfoRowData

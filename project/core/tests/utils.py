@@ -1,6 +1,6 @@
 import functools
-from statistics import stdev
 import time
+from statistics import stdev
 
 from django.urls import reverse
 

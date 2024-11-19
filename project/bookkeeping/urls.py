@@ -4,7 +4,6 @@ from ..core import converters
 from . import views
 from .apps import App_name
 
-
 app_name = App_name
 
 register_converter(converters.DateConverter, "date")

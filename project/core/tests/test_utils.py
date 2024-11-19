@@ -5,7 +5,6 @@ from mock import patch
 from ..lib import utils as T
 
 
-
 @patch('project.core.lib.utils.CrequestMiddleware')
 def test_get_request_kwargs(mck):
     mck.get_request.return_value = SimpleNamespace(resolver_match=SimpleNamespace(kwargs={'Foo': 'Boo'}))

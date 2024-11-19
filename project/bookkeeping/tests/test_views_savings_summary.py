@@ -3,7 +3,6 @@ from django.urls import resolve, reverse
 
 from ...pensions.factories import PensionFactory
 from ...savings.factories import SavingFactory, SavingTypeFactory
-
 from .. import views
 
 pytestmark = pytest.mark.django_db

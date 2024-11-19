@@ -14,6 +14,7 @@ from django.urls.base import reverse, reverse_lazy
 from django.utils.translation import activate
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView
+
 from project.users import models
 
 from ..core.mixins.views import (

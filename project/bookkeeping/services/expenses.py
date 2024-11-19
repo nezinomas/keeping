@@ -3,9 +3,9 @@ from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
+from ...expenses.models import Expense, ExpenseType
 from ..lib.balance_base import BalanceBase
 from ..lib.make_dataframe import MakeDataFrame
-from ...expenses.models import Expense, ExpenseType
 
 
 @dataclass

@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 import time_machine
 
-from ..services.forecast import Forecast, Data, get_month
+from ..services.forecast import Data, Forecast, get_month
 
 
 def test_get_data():

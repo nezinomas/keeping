@@ -3,8 +3,7 @@ from types import SimpleNamespace
 import pytest
 from mock import patch
 
-from ..services.summary_savings_and_incomes import \
-    Service as T
+from ..services.summary_savings_and_incomes import Service as T
 
 
 @pytest.fixture(name="incomes")

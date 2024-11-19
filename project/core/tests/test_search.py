@@ -3,8 +3,7 @@ from datetime import date
 import pytest
 
 from ...books.factories import BookFactory
-from ...expenses.factories import (ExpenseFactory, ExpenseNameFactory,
-                                   ExpenseTypeFactory)
+from ...expenses.factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory, IncomeTypeFactory
 from ..lib import search as H
 

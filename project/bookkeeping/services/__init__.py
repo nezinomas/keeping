@@ -12,5 +12,5 @@ from . import (
     savings,
     summary_savings,
     summary_savings_and_incomes,
-    wealth
+    wealth,
 )

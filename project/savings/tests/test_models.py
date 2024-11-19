@@ -7,8 +7,7 @@ from django.urls import reverse
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...incomes.factories import IncomeFactory
-from ...savings.factories import (SavingBalanceFactory, SavingFactory,
-                                  SavingTypeFactory)
+from ...savings.factories import SavingBalanceFactory, SavingFactory, SavingTypeFactory
 from ...savings.models import SavingBalance
 from ..models import Saving, SavingBalance, SavingType
 

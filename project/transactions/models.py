@@ -2,8 +2,8 @@ from django.db import models
 from django.urls import reverse_lazy
 
 from ..accounts.models import Account
-from ..core.templatetags.math import price
 from ..core.templatetags.cell_format import cellformat
+from ..core.templatetags.math import price
 from ..savings.models import SavingType
 from . import managers
 

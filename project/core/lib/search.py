@@ -9,7 +9,6 @@ from ...books.models import Book
 from ...expenses.models import Expense
 from ...incomes.models import Income
 
-
 SEARCH_DICT = {"category": None, "year": None, "month": None, "remark": None}
 
 

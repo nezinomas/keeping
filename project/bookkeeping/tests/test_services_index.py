@@ -1,4 +1,5 @@
 from mock import MagicMock
+
 from ..services.index import IndexService
 
 

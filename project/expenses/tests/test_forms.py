@@ -2,9 +2,10 @@ from datetime import date
 from io import BytesIO
 
 import pytest
+import time_machine
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
-import time_machine
+
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
 from ..factories import ExpenseNameFactory, ExpenseTypeFactory

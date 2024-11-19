@@ -6,10 +6,18 @@ from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
 from .. import models, views
-from ..factories import (DayPlan, DayPlanFactory, ExpensePlan,
-                         ExpensePlanFactory, IncomePlan, IncomePlanFactory,
-                         NecessaryPlan, NecessaryPlanFactory, SavingPlan,
-                         SavingPlanFactory)
+from ..factories import (
+    DayPlan,
+    DayPlanFactory,
+    ExpensePlan,
+    ExpensePlanFactory,
+    IncomePlan,
+    IncomePlanFactory,
+    NecessaryPlan,
+    NecessaryPlanFactory,
+    SavingPlan,
+    SavingPlanFactory,
+)
 
 pytestmark = pytest.mark.django_db
 

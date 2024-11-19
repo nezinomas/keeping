@@ -4,6 +4,7 @@ import pytest
 
 from ..templatetags import get_item
 
+
 @pytest.fixture()
 def _object():
     return type("myobj", (object,), dict(foo=1))

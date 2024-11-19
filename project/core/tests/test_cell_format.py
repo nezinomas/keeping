@@ -1,7 +1,12 @@
 import pytest
 
-from ..templatetags.cell_format import (cellformat, compare, negative,
-                                        positive, positive_negative)
+from ..templatetags.cell_format import (
+    cellformat,
+    compare,
+    negative,
+    positive,
+    positive_negative,
+)
 
 
 @pytest.mark.parametrize(

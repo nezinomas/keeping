@@ -6,8 +6,12 @@ from mock import patch
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...incomes.factories import IncomeFactory
-from ..factories import (BorrowFactory, BorrowReturnFactory, LendFactory,
-                         LendReturnFactory)
+from ..factories import (
+    BorrowFactory,
+    BorrowReturnFactory,
+    LendFactory,
+    LendReturnFactory,
+)
 from ..models import Debt, DebtReturn
 
 pytestmark = pytest.mark.django_db

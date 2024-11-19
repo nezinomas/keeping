@@ -1,11 +1,10 @@
 import pytest
 import time_machine
-
 from hypothesis import given
 from hypothesis import strategies as st
 
 from ...savings.factories import SavingBalance, SavingBalanceFactory
-from ..services.summary_savings import make_chart, load_service
+from ..services.summary_savings import load_service, make_chart
 
 pytestmark = pytest.mark.django_db
 

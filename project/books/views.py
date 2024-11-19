@@ -8,7 +8,7 @@ from ..core.mixins.views import (
     SearchViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content
+    rendered_content,
 )
 from . import forms, models, services
 

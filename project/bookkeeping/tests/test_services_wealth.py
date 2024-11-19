@@ -5,7 +5,7 @@ import pytest
 from ...accounts.factories import AccountBalanceFactory
 from ...pensions.factories import PensionBalanceFactory
 from ...savings.factories import SavingBalanceFactory
-from ..services.wealth import Wealth, Data
+from ..services.wealth import Data, Wealth
 
 pytestmark = pytest.mark.django_db
 

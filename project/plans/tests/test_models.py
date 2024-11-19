@@ -3,10 +3,14 @@ import pytest
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeTypeFactory
 from ...savings.factories import SavingTypeFactory
-from ..factories import (DayPlanFactory, ExpensePlanFactory, IncomePlanFactory,
-                         NecessaryPlanFactory, SavingPlanFactory)
-from ..models import (DayPlan, ExpensePlan, IncomePlan, NecessaryPlan,
-                      SavingPlan)
+from ..factories import (
+    DayPlanFactory,
+    ExpensePlanFactory,
+    IncomePlanFactory,
+    NecessaryPlanFactory,
+    SavingPlanFactory,
+)
+from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 
 pytestmark = pytest.mark.django_db
 
