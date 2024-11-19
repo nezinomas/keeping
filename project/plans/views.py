@@ -8,7 +8,7 @@ from ..core.mixins.views import (
     ListViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    httpHtmxResponse,
+    http_htmx_response,
     rendered_content,
 )
 from . import forms, models
@@ -220,4 +220,4 @@ class CopyPlans(FormViewMixin):
     def form_valid(self, form, **kwargs):
         form.save()
 
-        return httpHtmxResponse(self.hx_trigger_django)
+        return http_htmx_response(self.hx_trigger_django)

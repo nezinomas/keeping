@@ -6,7 +6,7 @@ from django.urls import resolve
 
 from . import signals
 from .lib.date import years
-from .mixins.views import TemplateViewMixin, httpHtmxResponse
+from .mixins.views import TemplateViewMixin, http_htmx_response
 from .tests.utils import timer
 
 
@@ -40,7 +40,7 @@ class RegenerateBalances(TemplateViewMixin):
         for _type in _types:
             getattr(signals, f"{_type}_signal")(**_kwargs)
 
-        return httpHtmxResponse(hx_trigger_name)
+        return http_htmx_response(hx_trigger_name)
 
 
 class ModalImage(TemplateViewMixin):
