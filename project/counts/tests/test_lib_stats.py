@@ -7,7 +7,7 @@ import pytest
 import time_machine
 from django.test import override_settings
 
-from ...core.exceptions import MethodInvalid
+from ...core.exceptions import MethodInvalidError
 from ..factories import CountFactory
 from ..lib.stats import Stats
 from ..models import Count
@@ -378,7 +378,7 @@ def fixture_chart_calendar_expect_january_with_data(
     return chart_calendar_expect_january_nodata
 
 
-@pytest.mark.xfail(raises=MethodInvalid)
+@pytest.mark.xfail(raises=MethodInvalidError)
 def test_chart_calendar_no_year_provided():
     Stats(data=[]).chart_calendar()
 
