@@ -55,3 +55,4 @@ dev = [
 
 [tool.ruff.lint]
 select = ["E", "N", "R", "I"]
+ignore=["C0116"]
