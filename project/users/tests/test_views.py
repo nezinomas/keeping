@@ -737,7 +737,7 @@ def test_invite_signup_expired_link(client, main_user):
 
         assert 'type="hidden" name="csrfmiddlewaretoken"' not in content
         assert (
-            "Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą."
+            "Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą."  # noqa: E501
             in content
         )
 
@@ -751,7 +751,7 @@ def test_invite_signup_valid_link(client, signer):
 
     assert 'type="hidden" name="csrfmiddlewaretoken"' in content
     assert (
-        "Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą."
+        "Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą."  # noqa: E501
         not in content
     )
 
@@ -765,7 +765,7 @@ def test_invite_signup_edited_token(client):
     content = response.content.decode("utf-8")
 
     assert (
-        "Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą."
+        "Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą."  # noqa: E501
         in content
     )
 
