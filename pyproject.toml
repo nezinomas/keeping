@@ -23,7 +23,7 @@ dependencies = [
     "python-dateutil>=2.9.0.post0",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "django-debug-toolbar>=4.4.6",
     "django-override-storage>=0.3.2",
