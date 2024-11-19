@@ -8,20 +8,18 @@ def _remove_line_end(rendered):
 
 @pytest.fixture(name="template")
 def fixture_template():
-    template_to_render = Template(
+    return Template(
         "{% load generic_list %}"
         '{% generic_list year=2019 items=items type="type" update=url_update %}'
     )
-    return template_to_render
 
 
 @pytest.fixture(name="template_with_expenses_type")
 def fixture_template_with_expenses_type():
-    template_to_render = Template(
+    return Template(
         "{% load generic_list %}"
         '{% generic_list year=2019 items=items type="type" expense_type="True" update=url_update %}'  # noqa: E501
     )
-    return template_to_render
 
 
 def test_has_type(template):
