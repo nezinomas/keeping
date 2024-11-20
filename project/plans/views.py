@@ -75,7 +75,7 @@ class ExpensesDelete(DeleteViewMixin):
     model = models.ExpensePlan
     success_url = reverse_lazy("plans:expense_list")
     hx_trigger_django = "reloadExpenses"
-    template_name = "cotton/generic_delete_form.html"
+    template_name = "core/generic_delete_form.html"
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"title": _("Delete plans")}
@@ -110,7 +110,7 @@ class IncomesDelete(DeleteViewMixin):
     model = models.IncomePlan
     success_url = reverse_lazy("plans:income_list")
     hx_trigger_django = "reloadIncomes"
-    template_name = "cotton/generic_delete_form.html"
+    template_name = "core/generic_delete_form.html"
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"title": _("Delete plans")}
@@ -145,7 +145,7 @@ class SavingsDelete(DeleteViewMixin):
     model = models.SavingPlan
     success_url = reverse_lazy("plans:saving_list")
     hx_trigger_django = "reloadSavings"
-    template_name = "cotton/generic_delete_form.html"
+    template_name = "core/generic_delete_form.html"
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"title": _("Delete plans")}
@@ -180,7 +180,7 @@ class DayDelete(DeleteViewMixin):
     model = models.DayPlan
     success_url = reverse_lazy("plans:day_list")
     hx_trigger_django = "reloadDay"
-    template_name = "cotton/generic_delete_form.html"
+    template_name = "core/generic_delete_form.html"
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"title": _("Delete plans")}
@@ -215,7 +215,7 @@ class NecessaryDelete(DeleteViewMixin):
     model = models.NecessaryPlan
     success_url = reverse_lazy("plans:necessary_list")
     hx_trigger_django = "reloadNecessary"
-    template_name = "cotton/generic_delete_form.html"
+    template_name = "core/generic_delete_form.html"
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"title": _("Delete plans")}

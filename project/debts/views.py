@@ -80,7 +80,7 @@ class DebtUpdate(ConvertToCents, DebtMixin, UpdateViewMixin):
 
 class DebtDelete(DebtMixin, DeleteViewMixin):
     model = models.Debt
-    template_name = "cotton/generic_delete_form.html"
+    template_name = "core/generic_delete_form.html"
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"title": _("Delete")}
@@ -109,7 +109,7 @@ class DebtReturnUpdate(ConvertToCents, DebtReturnMixin, UpdateViewMixin):
 
 class DebtReturnDelete(DebtReturnMixin, DeleteViewMixin):
     model = models.DebtReturn
-    template_name = "cotton/generic_delete_form.html"
+    template_name = "core/generic_delete_form.html"
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"title": _("Delete")}
