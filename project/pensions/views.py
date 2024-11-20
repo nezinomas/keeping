@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
 
 from ..core.lib.convert_price import ConvertToCents
 from ..core.mixins.views import (
@@ -35,6 +36,10 @@ class Delete(DeleteViewMixin):
     model = models.Pension
     hx_trigger_django = "afterPension"
     success_url = reverse_lazy("pensions:list")
+    template_name = "cotton/generic_delete_form.html"
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs) | {"title": _("Delete pension")}
 
 
 class TypeLists(ListViewMixin):

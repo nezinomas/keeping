@@ -170,6 +170,10 @@ class Update(CountUrlMixin, UpdateViewMixin):
 class Delete(CountUrlMixin, DeleteViewMixin):
     model = Count
     hx_trigger_django = "reloadData"
+    template_name = "cotton/generic_delete_form.html"
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs) | {"title": _("Delete counter")}
 
 
 # -------------------------------------------------------------------------------------
@@ -198,6 +202,10 @@ class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
 
 
 class TypeDelete(TypeUrlMixin, DeleteViewMixin):
+    template_name = "cotton/generic_delete_form.html"
     model = CountType
     hx_trigger_django = "afterType"
     hx_redirect = reverse_lazy("counts:redirect")
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs) | {"title": _("Delete count type")}

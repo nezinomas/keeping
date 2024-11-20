@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
 
 from ..accounts import views as accounts_views
 from ..core.lib.convert_price import ConvertToCents
@@ -72,6 +73,10 @@ class Delete(DeleteViewMixin):
     model = models.Transaction
     hx_trigger_django = "afterTransaction"
     success_url = reverse_lazy("transactions:list")
+    template_name = "cotton/generic_delete_form.html"
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs) | {"title": _("Delete transaction")}
 
 
 class SavingsCloseLists(ListViewMixin):
@@ -101,6 +106,10 @@ class SavingsCloseDelete(DeleteViewMixin):
     model = models.SavingClose
     hx_trigger_django = "afterClose"
     success_url = reverse_lazy("transactions:savings_close_list")
+    template_name = "cotton/generic_delete_form.html"
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs) | {"title": _("Delete transaction")}
 
 
 class SavingsChangeLists(ListViewMixin):
@@ -130,3 +139,7 @@ class SavingsChangeDelete(DeleteViewMixin):
     model = models.SavingChange
     hx_trigger_django = "afterChange"
     success_url = reverse_lazy("transactions:savings_change_list")
+    template_name = "cotton/generic_delete_form.html"
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs) | {"title": _("Delete transaction")}
