@@ -47,10 +47,10 @@
         <div id="wealth-avg-debts">
             <div hx-get="{% url 'bookkeeping:wealth' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{wealth}}</div>
 
-            <div>{% info_table data=averages %}</div>
+            <div><c-info-table :data="averages"></c-info-table></div>
 
-            {% if borrow %}<div>{% info_table data=borrow calculate_debt_remains="true" %}</div>{% endif %}
-            {% if lend %}<div>{% info_table data=lend calculate_debt_remains="true" %}</div>{% endif %}
+            {% if borrow %}<div><c-info-table :data="borrow" calculate_debt_remains="true"></c-info-table></div>{% endif %}
+            {% if lend %}<div><c-info-table :data="lend" calculate_debt_remains="true"></c-info-table></div>{% endif %}
         </div>
     </div>
 
