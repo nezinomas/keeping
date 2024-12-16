@@ -1,5 +1,5 @@
 from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import ConvertToCents
 from ..core.mixins.views import (
@@ -67,6 +67,7 @@ class DebtLists(ListViewMixin):
 class DebtNew(DebtMixin, CreateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
+    form_title = _("Debt")
 
     def url(self):
         debt_type = self.kwargs.get("debt_type")
@@ -76,6 +77,7 @@ class DebtNew(DebtMixin, CreateViewMixin):
 class DebtUpdate(ConvertToCents, DebtMixin, UpdateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
+    form_title = _("Debt")
 
 
 class DebtDelete(DebtMixin, DeleteViewMixin):
@@ -96,6 +98,7 @@ class DebtReturnLists(ListViewMixin):
 class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
+    form_title = _('Debt repayment')
 
     def url(self):
         debt_type = self.kwargs.get("debt_type")
@@ -105,6 +108,7 @@ class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
 class DebtReturnUpdate(ConvertToCents, DebtReturnMixin, UpdateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
+    form_title = _('Debt repayment')
 
 
 class DebtReturnDelete(DebtReturnMixin, DeleteViewMixin):

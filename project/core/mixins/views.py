@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 from vanilla import (
     CreateView,
@@ -78,6 +78,7 @@ class CreateUpdateMixin:
 
     def get_context_data(self, **kwargs):
         context = {
+            "form_title": getattr(self, "form_title", None),
             "form_action": self.form_action,
             "url": self.url,
             "hx_trigger_form": self.get_hx_trigger_form(),

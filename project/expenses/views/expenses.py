@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.db.models import F
 from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.convert_price import ConvertToCents
 from ...core.mixins.views import (
@@ -68,6 +68,7 @@ class New(CreateViewMixin):
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_form = "reload"
+    form_title = _('Expenses')
 
 
 class Update(ConvertToCents, UpdateViewMixin):
@@ -75,6 +76,7 @@ class Update(ConvertToCents, UpdateViewMixin):
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_django = "reload"
+    form_title = _('Expenses')
 
 
 class Delete(DeleteViewMixin):

@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from ..core.mixins.views import CreateViewMixin, ListViewMixin, UpdateViewMixin
 from . import forms, models
@@ -15,17 +16,18 @@ class New(CreateViewMixin):
     model = models.Account
     form_class = forms.AccountForm
     success_url = reverse_lazy("accounts:list")
-
     url = reverse_lazy("accounts:new")
     hx_trigger_django = "afterAccount"
-
+    template_name = "core/generic_form.html"
+    form_title = _('Account')
 
 class Update(UpdateViewMixin):
     model = models.Account
     form_class = forms.AccountForm
     success_url = reverse_lazy("accounts:list")
-
     hx_trigger_django = "afterAccount"
+    template_name = "core/generic_form.html"
+    form_title = _('Account')
 
     def get_queryset(self):
         return models.Account.objects.related()
