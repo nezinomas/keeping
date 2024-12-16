@@ -16,6 +16,10 @@ from . import forms, models
 from .lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 
 
+class CssClassMixin:
+    modal_body_css_class = "plans-form"
+
+
 class Stats(TemplateViewMixin):
     template_name = "plans/stats.html"
 
@@ -56,7 +60,7 @@ class ExpensesLists(ListViewMixin):
         return models.ExpensePlan.objects.year(year=self.request.user.year)
 
 
-class ExpensesNew(CreateViewMixin):
+class ExpensesNew(CssClassMixin, CreateViewMixin):
     model = models.ExpensePlan
     form_class = forms.ExpensePlanForm
     url = reverse_lazy("plans:expense_new")
@@ -65,7 +69,7 @@ class ExpensesNew(CreateViewMixin):
     form_title = _('Expenses plans')
 
 
-class ExpensesUpdate(PlansConvertToCents, UpdateViewMixin):
+class ExpensesUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     model = models.ExpensePlan
     form_class = forms.ExpensePlanForm
     success_url = reverse_lazy("plans:expense_list")
@@ -90,7 +94,7 @@ class IncomesLists(ListViewMixin):
         return models.IncomePlan.objects.year(year=self.request.user.year)
 
 
-class IncomesNew(CreateViewMixin):
+class IncomesNew(CssClassMixin, CreateViewMixin):
     model = models.IncomePlan
     form_class = forms.IncomePlanForm
     url = reverse_lazy("plans:income_new")
@@ -99,7 +103,7 @@ class IncomesNew(CreateViewMixin):
     form_title = _('Incomes plans')
 
 
-class IncomesUpdate(PlansConvertToCents, UpdateViewMixin):
+class IncomesUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     model = models.IncomePlan
     form_class = forms.IncomePlanForm
     success_url = reverse_lazy("plans:income_list")
@@ -124,7 +128,7 @@ class SavingsLists(ListViewMixin):
         return models.SavingPlan.objects.year(year=self.request.user.year)
 
 
-class SavingsNew(CreateViewMixin):
+class SavingsNew(CssClassMixin, CreateViewMixin):
     model = models.SavingPlan
     form_class = forms.SavingPlanForm
     url = reverse_lazy("plans:saving_new")
@@ -133,7 +137,7 @@ class SavingsNew(CreateViewMixin):
     form_title = _('Savings plans')
 
 
-class SavingsUpdate(PlansConvertToCents, UpdateViewMixin):
+class SavingsUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     model = models.SavingPlan
     form_class = forms.SavingPlanForm
     success_url = reverse_lazy("plans:saving_list")
@@ -158,7 +162,7 @@ class DayLists(ListViewMixin):
         return models.DayPlan.objects.year(year=self.request.user.year)
 
 
-class DayNew(CreateViewMixin):
+class DayNew(CssClassMixin, CreateViewMixin):
     model = models.DayPlan
     form_class = forms.DayPlanForm
     url = reverse_lazy("plans:day_new")
@@ -167,7 +171,7 @@ class DayNew(CreateViewMixin):
     form_title = _('Day plans')
 
 
-class DayUpdate(PlansConvertToCents, UpdateViewMixin):
+class DayUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     model = models.DayPlan
     form_class = forms.DayPlanForm
     success_url = reverse_lazy("plans:day_list")
@@ -192,7 +196,7 @@ class NecessaryLists(ListViewMixin):
         return models.NecessaryPlan.objects.year(year=self.request.user.year)
 
 
-class NecessaryNew(CreateViewMixin):
+class NecessaryNew(CssClassMixin, CreateViewMixin):
     model = models.NecessaryPlan
     form_class = forms.NecessaryPlanForm
     url = reverse_lazy("plans:necessary_new")
@@ -200,7 +204,7 @@ class NecessaryNew(CreateViewMixin):
     hx_trigger_django = "reloadNecessary"
     form_title = _('Additional necessary expenses')
 
-class NecessaryUpdate(PlansConvertToCents, UpdateViewMixin):
+class NecessaryUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     model = models.NecessaryPlan
     form_class = forms.NecessaryPlanForm
     success_url = reverse_lazy("plans:necessary_list")
