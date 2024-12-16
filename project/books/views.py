@@ -98,7 +98,6 @@ class Update(UpdateViewMixin):
 
 class Delete(DeleteViewMixin):
     model = models.Book
-    hx_trigger_django = "reload"
     success_url = reverse_lazy("books:list")
     form_title = _("Delete book")
 

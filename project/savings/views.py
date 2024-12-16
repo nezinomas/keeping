@@ -53,7 +53,6 @@ class Update(ConvertToCents, UpdateViewMixin):
 
 class Delete(DeleteViewMixin):
     model = models.Saving
-    hx_trigger_django = "reload"
     success_url = reverse_lazy("savings:list")
     form_title = _("Delete saving")
 

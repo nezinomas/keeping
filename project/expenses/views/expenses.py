@@ -82,7 +82,6 @@ class Update(ConvertToCents, UpdateViewMixin):
 class Delete(DeleteViewMixin):
     model = models.Expense
     success_url = reverse_lazy("expenses:list")
-    hx_trigger_django = "reload"
     form_title = _('Delete expense')
 
 
