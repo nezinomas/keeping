@@ -67,7 +67,6 @@ class DebtLists(ListViewMixin):
 class DebtNew(DebtMixin, CreateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
-    template_name = "core/generic_form.html"
     form_title = _("Debt")
 
     def url(self):
@@ -78,13 +77,11 @@ class DebtNew(DebtMixin, CreateViewMixin):
 class DebtUpdate(ConvertToCents, DebtMixin, UpdateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
-    template_name = "core/generic_form.html"
     form_title = _("Debt")
 
 
 class DebtDelete(DebtMixin, DeleteViewMixin):
     model = models.Debt
-    template_name = "core/generic_delete_form.html"
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"title": _("Delete")}
@@ -100,7 +97,6 @@ class DebtReturnLists(ListViewMixin):
 class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
-    template_name = "core/generic_form.html"
     form_title = _('Debt repayment')
 
     def url(self):
@@ -111,13 +107,11 @@ class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
 class DebtReturnUpdate(ConvertToCents, DebtReturnMixin, UpdateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
-    template_name = "core/generic_form.html"
     form_title = _('Debt repayment')
 
 
 class DebtReturnDelete(DebtReturnMixin, DeleteViewMixin):
     model = models.DebtReturn
-    template_name = "core/generic_delete_form.html"
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"title": _("Delete")}

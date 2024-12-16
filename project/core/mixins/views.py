@@ -184,6 +184,7 @@ class SearchMixin:
 class CreateViewMixin(
     LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView
 ):
+    template_name = "core/generic_form.html"
     form_action = "insert"
 
     def url(self):
@@ -194,6 +195,7 @@ class CreateViewMixin(
 class UpdateViewMixin(
     LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
 ):
+    template_name = "core/generic_form.html"
     form_action = "update"
 
     def url(self):
@@ -201,7 +203,7 @@ class UpdateViewMixin(
 
 
 class DeleteViewMixin(LoginRequiredMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
-    pass
+    template_name = "core/generic_delete_form.html"
 
 
 class RedirectViewMixin(LoginRequiredMixin, RedirectView):
@@ -217,7 +219,7 @@ class ListViewMixin(LoginRequiredMixin, GetQuerysetMixin, ListView):
 
 
 class FormViewMixin(LoginRequiredMixin, FormView):
-    pass
+    template_name = "core/generic_form.html"
 
 
 class SearchViewMixin(LoginRequiredMixin, SearchMixin, TemplateView):

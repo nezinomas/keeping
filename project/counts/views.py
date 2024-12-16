@@ -142,7 +142,6 @@ class CountUrlMixin:
 class New(CountUrlMixin, CreateViewMixin):
     model = Count
     form_class = CountForm
-    template_name = "core/generic_form.html"
     form_title = _('Counter')
 
     def get_hx_trigger_django(self):
@@ -167,14 +166,12 @@ class Update(CountUrlMixin, UpdateViewMixin):
     model = Count
     form_class = CountForm
     hx_trigger_django = "reloadData"
-    template_name = "core/generic_form.html"
     form_title = _('Counter')
 
 
 class Delete(CountUrlMixin, DeleteViewMixin):
     model = Count
     hx_trigger_django = "reloadData"
-    template_name = "core/generic_delete_form.html"
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs) | {"title": _("Delete counter")}
@@ -197,18 +194,15 @@ class TypeNew(TypeUrlMixin, CreateViewMixin):
     form_class = CountTypeForm
     hx_trigger_django = "afterType"
     url = reverse_lazy("counts:type_new")
-    template_name = "core/generic_form.html"
     form_title = _('Count type')
 
 class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
     model = CountType
     form_class = CountTypeForm
     hx_trigger_django = "afterType"
-    template_name = "core/generic_form.html"
     form_title = _('Count type')
 
 class TypeDelete(TypeUrlMixin, DeleteViewMixin):
-    template_name = "core/generic_delete_form.html"
     model = CountType
     hx_trigger_django = "afterType"
     hx_redirect = reverse_lazy("counts:redirect")

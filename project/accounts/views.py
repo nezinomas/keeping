@@ -18,7 +18,6 @@ class New(CreateViewMixin):
     success_url = reverse_lazy("accounts:list")
     url = reverse_lazy("accounts:new")
     hx_trigger_django = "afterAccount"
-    template_name = "core/generic_form.html"
     form_title = _('Account')
 
 class Update(UpdateViewMixin):
@@ -26,7 +25,6 @@ class Update(UpdateViewMixin):
     form_class = forms.AccountForm
     success_url = reverse_lazy("accounts:list")
     hx_trigger_django = "afterAccount"
-    template_name = "core/generic_form.html"
     form_title = _('Account')
 
     def get_queryset(self):
