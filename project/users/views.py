@@ -299,9 +299,7 @@ class SettingsUsersDelete(SettingsQueryMixin, DeleteViewMixin):
     model = models.User
     hx_trigger_django = "delete_user"
     success_url = reverse_lazy("users:settings_users")
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete user")}
+    form_title = _("Delete user")
 
 
 class SettingsUnnecessary(FormViewMixin):

@@ -154,9 +154,7 @@ class Delete(DeleteViewMixin):
     model = models.Drink
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete drinks")}
+    form_title = _('Delete drinks')
 
 
 class TargetLists(ListViewMixin):

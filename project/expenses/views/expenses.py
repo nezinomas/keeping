@@ -83,9 +83,7 @@ class Delete(DeleteViewMixin):
     model = models.Expense
     success_url = reverse_lazy("expenses:list")
     hx_trigger_django = "reload"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete expense")}
+    form_title = _('Delete expense')
 
 
 class Search(SearchViewMixin):

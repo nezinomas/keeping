@@ -118,7 +118,11 @@ class DeleteMixin:
         return self.object.get_delete_url() if self.object else None
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"url": self.url}
+        context = {
+            "url": self.url,
+            "form_title": self.form_title,
+        }
+        return super().get_context_data(**kwargs) | context
 
     def post(self, *args, **kwargs):
         super().post(*args, **kwargs)

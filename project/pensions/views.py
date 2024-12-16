@@ -38,9 +38,7 @@ class Delete(DeleteViewMixin):
     model = models.Pension
     hx_trigger_django = "afterPension"
     success_url = reverse_lazy("pensions:list")
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete pension")}
+    form_title = _("Delete pension")
 
 
 class TypeLists(ListViewMixin):

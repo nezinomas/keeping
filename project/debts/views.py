@@ -82,9 +82,7 @@ class DebtUpdate(ConvertToCents, DebtMixin, UpdateViewMixin):
 
 class DebtDelete(DebtMixin, DeleteViewMixin):
     model = models.Debt
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete")}
+    form_title = _("Delete debt")
 
 
 class DebtReturnLists(ListViewMixin):
@@ -112,6 +110,4 @@ class DebtReturnUpdate(ConvertToCents, DebtReturnMixin, UpdateViewMixin):
 
 class DebtReturnDelete(DebtReturnMixin, DeleteViewMixin):
     model = models.DebtReturn
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete")}
+    form_title = _("Delete debt repayment")
