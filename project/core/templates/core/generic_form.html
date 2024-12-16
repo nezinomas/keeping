@@ -3,13 +3,13 @@
 
 <form method="POST" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted">
     {% csrf_token %}
-    {% include 'core/includes/form_date_scripts.html' %}
+    {% include 'core/form_date_scripts.html' %}
     <div class="modal-header">
-        <h5 class="modal-title">{{ title }}</h5>
+        <h5 class="modal-title">{{ form_title|safe }}</h5>
         <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body {% if css_class %}{{css_class}}{% endif %}">
-        {% include 'core/includes/form_errors.html' %}
+        {% include 'core/form_errors.html' %}
 
         {% for field in form %}
         {% if not field.is_hidden %}
@@ -27,5 +27,5 @@
         {% endfor %}
     </div>
 
-    {% include 'core/includes/form_footer.html' %}
+    {% include 'core/form_footer.html' %}
 </form>

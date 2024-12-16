@@ -5,7 +5,7 @@
 
 <form method="post" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted" >
     {% csrf_token %}
-    {% include 'core/includes/form_date_scripts.html' %}
+    {% include 'core/form_date_scripts.html' %}
     {{ formset.management_form|crispy }}
 
     <div class="modal-header">
@@ -20,12 +20,12 @@
         {% endif %}
 
         {% for form in formset.forms %}
-        {% include 'core/includes/form_errors.html' %}
+        {% include 'core/form_errors.html' %}
             {% for field in form %}
             {{ field|as_crispy_field }}
             {% endfor %}
         {% endfor %}
     </div>
 
-    {% include 'core/includes/form_footer.html' %}
+    {% include 'core/form_footer.html' %}
 </form>
