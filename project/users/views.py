@@ -12,7 +12,7 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls.base import reverse, reverse_lazy
 from django.utils.translation import activate
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView
 
 from project.users import models
@@ -299,10 +299,7 @@ class SettingsUsersDelete(SettingsQueryMixin, DeleteViewMixin):
     model = models.User
     hx_trigger_django = "delete_user"
     success_url = reverse_lazy("users:settings_users")
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete user")}
+    form_title = _("Delete user")
 
 
 class SettingsUnnecessary(FormViewMixin):

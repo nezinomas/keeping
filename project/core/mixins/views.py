@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 from vanilla import (
     CreateView,
@@ -78,6 +78,7 @@ class CreateUpdateMixin:
 
     def get_context_data(self, **kwargs):
         context = {
+            "form_title": getattr(self, "form_title", None),
             "form_action": self.form_action,
             "url": self.url,
             "hx_trigger_form": self.get_hx_trigger_form(),
@@ -117,7 +118,11 @@ class DeleteMixin:
         return self.object.get_delete_url() if self.object else None
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"url": self.url}
+        context = {
+            "url": self.url,
+            "form_title": self.form_title,
+        }
+        return super().get_context_data(**kwargs) | context
 
     def post(self, *args, **kwargs):
         super().post(*args, **kwargs)
@@ -183,6 +188,7 @@ class SearchMixin:
 class CreateViewMixin(
     LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView
 ):
+    template_name = "core/generic_form.html"
     form_action = "insert"
 
     def url(self):
@@ -193,6 +199,7 @@ class CreateViewMixin(
 class UpdateViewMixin(
     LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
 ):
+    template_name = "core/generic_form.html"
     form_action = "update"
 
     def url(self):
@@ -200,7 +207,7 @@ class UpdateViewMixin(
 
 
 class DeleteViewMixin(LoginRequiredMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
-    pass
+    template_name = "core/generic_delete_form.html"
 
 
 class RedirectViewMixin(LoginRequiredMixin, RedirectView):
@@ -216,7 +223,7 @@ class ListViewMixin(LoginRequiredMixin, GetQuerysetMixin, ListView):
 
 
 class FormViewMixin(LoginRequiredMixin, FormView):
-    pass
+    template_name = "core/generic_form.html"
 
 
 class SearchViewMixin(LoginRequiredMixin, SearchMixin, TemplateView):

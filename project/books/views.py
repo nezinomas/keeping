@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator
 from django.urls import reverse, reverse_lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -85,6 +85,7 @@ class New(CreateViewMixin):
     form_class = forms.BookForm
     hx_trigger_django = "reload"
     success_url = reverse_lazy("books:list")
+    form_title = _("New book")
 
 
 class Update(UpdateViewMixin):
@@ -92,16 +93,13 @@ class Update(UpdateViewMixin):
     form_class = forms.BookForm
     hx_trigger_django = "reload"
     success_url = reverse_lazy("books:list")
+    form_title = _("Update book")
 
 
 class Delete(DeleteViewMixin):
     model = models.Book
-    hx_trigger_django = "reload"
     success_url = reverse_lazy("books:list")
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete book")}
+    form_title = _("Delete book")
 
 
 class Search(SearchViewMixin):
@@ -119,9 +117,11 @@ class TargetNew(CreateViewMixin):
     hx_trigger_django = "afterTarget"
     form_class = forms.BookTargetForm
     url = reverse_lazy("books:target_new")
+    form_title = _("New book goal")
 
 
 class TargetUpdate(UpdateViewMixin):
     model = models.BookTarget
     hx_trigger_django = "afterTarget"
     form_class = forms.BookTargetForm
+    form_title = _("Update book goal")

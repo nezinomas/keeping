@@ -1,5 +1,5 @@
 from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import ConvertToCents
 from ..core.mixins.views import (
@@ -40,6 +40,7 @@ class New(CreateViewMixin):
     form_class = forms.SavingForm
     hx_trigger_form = "reload"
     success_url = reverse_lazy("savings:list")
+    form_title = _("New saving")
 
 
 class Update(ConvertToCents, UpdateViewMixin):
@@ -47,16 +48,13 @@ class Update(ConvertToCents, UpdateViewMixin):
     form_class = forms.SavingForm
     hx_trigger_django = "reload"
     success_url = reverse_lazy("savings:list")
+    form_title = _("Update saving")
 
 
 class Delete(DeleteViewMixin):
     model = models.Saving
-    hx_trigger_django = "reload"
     success_url = reverse_lazy("savings:list")
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete savings")}
+    form_title = _("Delete saving")
 
 
 class TypeLists(ListViewMixin):
@@ -73,9 +71,11 @@ class TypeNew(CreateViewMixin):
 
     url = reverse_lazy("savings:type_new")
     success_url = reverse_lazy("savings:type_list")
+    form_title = _("New saving type")
 
 
 class TypeUpdate(UpdateViewMixin):
     model = models.SavingType
     form_class = forms.SavingTypeForm
     hx_trigger_django = "afterType"
+    form_title = _("Update saving type")

@@ -1,5 +1,5 @@
 from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from ..accounts import views as accounts_views
 from ..core.lib.convert_price import ConvertToCents
@@ -60,6 +60,7 @@ class New(CreateViewMixin):
     form_class = forms.TransactionForm
     hx_trigger_form = "afterTransaction"
     success_url = reverse_lazy("transactions:list")
+    form_title = _("Transaction")
 
 
 class Update(ConvertToCents, UpdateViewMixin):
@@ -67,16 +68,14 @@ class Update(ConvertToCents, UpdateViewMixin):
     form_class = forms.TransactionForm
     hx_trigger_django = "afterTransaction"
     success_url = reverse_lazy("transactions:list")
+    form_title = _("Transaction")
 
 
 class Delete(DeleteViewMixin):
     model = models.Transaction
     hx_trigger_django = "afterTransaction"
     success_url = reverse_lazy("transactions:list")
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete transaction")}
+    form_title = _("Delete transaction")
 
 
 class SavingsCloseLists(ListViewMixin):
@@ -93,6 +92,7 @@ class SavingsCloseNew(CreateViewMixin):
 
     url = reverse_lazy("transactions:savings_close_new")
     success_url = reverse_lazy("transactions:savings_close_list")
+    form_title = _('Fund &rArr; Account')
 
 
 class SavingsCloseUpdate(ConvertToCents, UpdateViewMixin):
@@ -100,16 +100,13 @@ class SavingsCloseUpdate(ConvertToCents, UpdateViewMixin):
     form_class = forms.SavingCloseForm
     hx_trigger_django = "afterClose"
     success_url = reverse_lazy("transactions:savings_close_list")
-
+    form_title = _('Fund &rArr; Account')
 
 class SavingsCloseDelete(DeleteViewMixin):
     model = models.SavingClose
     hx_trigger_django = "afterClose"
     success_url = reverse_lazy("transactions:savings_close_list")
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete transaction")}
+    form_title = _("Delete transaction")
 
 
 class SavingsChangeLists(ListViewMixin):
@@ -126,6 +123,7 @@ class SavingsChangeNew(CreateViewMixin):
 
     success_url = reverse_lazy("transactions:savings_change_list")
     url = reverse_lazy("transactions:savings_change_new")
+    form_title = _('Fund &hArr; Fund')
 
 
 class SavingsChangeUpdate(ConvertToCents, UpdateViewMixin):
@@ -133,13 +131,11 @@ class SavingsChangeUpdate(ConvertToCents, UpdateViewMixin):
     form_class = forms.SavingChangeForm
     hx_trigger_django = "afterChange"
     success_url = reverse_lazy("transactions:savings_change_list")
+    form_title = _('Fund &hArr; Fund')
 
 
 class SavingsChangeDelete(DeleteViewMixin):
     model = models.SavingChange
     hx_trigger_django = "afterChange"
     success_url = reverse_lazy("transactions:savings_change_list")
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete transaction")}
+    form_title = _("Delete transaction")

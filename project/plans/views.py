@@ -1,5 +1,5 @@
 from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import PlansConvertToCents
 from ..core.mixins.views import (
@@ -62,6 +62,7 @@ class ExpensesNew(CreateViewMixin):
     url = reverse_lazy("plans:expense_new")
     success_url = reverse_lazy("plans:expense_list")
     hx_trigger_django = "reloadExpenses"
+    form_title = _('Expenses plans')
 
 
 class ExpensesUpdate(PlansConvertToCents, UpdateViewMixin):
@@ -69,16 +70,14 @@ class ExpensesUpdate(PlansConvertToCents, UpdateViewMixin):
     form_class = forms.ExpensePlanForm
     success_url = reverse_lazy("plans:expense_list")
     hx_trigger_django = "reloadExpenses"
+    form_title = _('Expenses plans')
 
 
 class ExpensesDelete(DeleteViewMixin):
     model = models.ExpensePlan
     success_url = reverse_lazy("plans:expense_list")
     hx_trigger_django = "reloadExpenses"
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete plans")}
+    form_title = _('Delete plan')
 
 
 # -------------------------------------------------------------------------------------
@@ -97,6 +96,7 @@ class IncomesNew(CreateViewMixin):
     url = reverse_lazy("plans:income_new")
     success_url = reverse_lazy("plans:income_list")
     hx_trigger_django = "reloadIncomes"
+    form_title = _('Incomes plans')
 
 
 class IncomesUpdate(PlansConvertToCents, UpdateViewMixin):
@@ -104,16 +104,14 @@ class IncomesUpdate(PlansConvertToCents, UpdateViewMixin):
     form_class = forms.IncomePlanForm
     success_url = reverse_lazy("plans:income_list")
     hx_trigger_django = "reloadIncomes"
+    form_title = _('Incomes plans')
 
 
 class IncomesDelete(DeleteViewMixin):
     model = models.IncomePlan
     success_url = reverse_lazy("plans:income_list")
     hx_trigger_django = "reloadIncomes"
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete plans")}
+    form_title = _('Delete plan')
 
 
 # -------------------------------------------------------------------------------------
@@ -132,6 +130,7 @@ class SavingsNew(CreateViewMixin):
     url = reverse_lazy("plans:saving_new")
     success_url = reverse_lazy("plans:saving_list")
     hx_trigger_django = "reloadSavings"
+    form_title = _('Savings plans')
 
 
 class SavingsUpdate(PlansConvertToCents, UpdateViewMixin):
@@ -139,16 +138,14 @@ class SavingsUpdate(PlansConvertToCents, UpdateViewMixin):
     form_class = forms.SavingPlanForm
     success_url = reverse_lazy("plans:saving_list")
     hx_trigger_django = "reloadSavings"
+    form_title = _('Savings plans')
 
 
 class SavingsDelete(DeleteViewMixin):
     model = models.SavingPlan
     success_url = reverse_lazy("plans:saving_list")
     hx_trigger_django = "reloadSavings"
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete plans")}
+    form_title = _('Delete plan')
 
 
 # -------------------------------------------------------------------------------------
@@ -167,6 +164,7 @@ class DayNew(CreateViewMixin):
     url = reverse_lazy("plans:day_new")
     success_url = reverse_lazy("plans:day_list")
     hx_trigger_django = "reloadDay"
+    form_title = _('Day plans')
 
 
 class DayUpdate(PlansConvertToCents, UpdateViewMixin):
@@ -174,16 +172,14 @@ class DayUpdate(PlansConvertToCents, UpdateViewMixin):
     form_class = forms.DayPlanForm
     success_url = reverse_lazy("plans:day_list")
     hx_trigger_django = "reloadDay"
+    form_title = _('Day plans')
 
 
 class DayDelete(DeleteViewMixin):
     model = models.DayPlan
     success_url = reverse_lazy("plans:day_list")
     hx_trigger_django = "reloadDay"
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete plans")}
+    form_title = _('Delete plan')
 
 
 # -------------------------------------------------------------------------------------
@@ -202,23 +198,21 @@ class NecessaryNew(CreateViewMixin):
     url = reverse_lazy("plans:necessary_new")
     success_url = reverse_lazy("plans:necessary_list")
     hx_trigger_django = "reloadNecessary"
-
+    form_title = _('Additional necessary expenses')
 
 class NecessaryUpdate(PlansConvertToCents, UpdateViewMixin):
     model = models.NecessaryPlan
     form_class = forms.NecessaryPlanForm
     success_url = reverse_lazy("plans:necessary_list")
     hx_trigger_django = "reloadNecessary"
+    form_title = _('Additional necessary expenses')
 
 
 class NecessaryDelete(DeleteViewMixin):
     model = models.NecessaryPlan
     success_url = reverse_lazy("plans:necessary_list")
     hx_trigger_django = "reloadNecessary"
-    template_name = "core/generic_delete_form.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"title": _("Delete plans")}
+    form_title = _('Delete plan')
 
 
 # -------------------------------------------------------------------------------------
@@ -226,9 +220,9 @@ class NecessaryDelete(DeleteViewMixin):
 # -------------------------------------------------------------------------------------
 class CopyPlans(FormViewMixin):
     form_class = forms.CopyPlanForm
-    template_name = "plans/copyplan_form.html"
     success_url = reverse_lazy("plans:index")
     hx_trigger_django = "afterCopy"
+    form_title = _('Copy plans')
 
     def get_context_data(self, **kwargs):
         context = {
