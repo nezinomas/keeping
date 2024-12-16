@@ -67,6 +67,7 @@ class DebtLists(ListViewMixin):
 class DebtNew(DebtMixin, CreateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
+    template_name = "core/generic_form.html"
     form_title = _("Debt")
 
     def url(self):
@@ -77,6 +78,7 @@ class DebtNew(DebtMixin, CreateViewMixin):
 class DebtUpdate(ConvertToCents, DebtMixin, UpdateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
+    template_name = "core/generic_form.html"
     form_title = _("Debt")
 
 
@@ -98,6 +100,7 @@ class DebtReturnLists(ListViewMixin):
 class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
+    template_name = "core/generic_form.html"
     form_title = _('Debt repayment')
 
     def url(self):
@@ -108,6 +111,7 @@ class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
 class DebtReturnUpdate(ConvertToCents, DebtReturnMixin, UpdateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
+    template_name = "core/generic_form.html"
     form_title = _('Debt repayment')
 
 

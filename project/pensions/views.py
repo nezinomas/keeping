@@ -23,6 +23,7 @@ class New(CreateViewMixin):
     form_class = forms.PensionForm
     hx_trigger_form = "afterPension"
     success_url = reverse_lazy("pensions:list")
+    template_name = "core/generic_form.html"
     form_title = _("Pension")
 
 
@@ -31,6 +32,7 @@ class Update(ConvertToCents, UpdateViewMixin):
     form_class = forms.PensionForm
     hx_trigger_django = "afterPension"
     success_url = reverse_lazy("pensions:list")
+    template_name = "core/generic_form.html"
     form_title = _("Pension")
 
 

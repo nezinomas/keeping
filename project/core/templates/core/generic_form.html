@@ -1,3 +1,4 @@
+{% load static %}
 {% load crispy_forms_tags %}
 {% load i18n %}
 
@@ -27,5 +28,8 @@
         {% endfor %}
     </div>
 
+
     {% include 'core/form_footer.html' %}
 </form>
+
+{% if 'price' or 'fee' in form.fields %}<script src="{% static 'js/alter_price.js' %}"></script>{% endif %}

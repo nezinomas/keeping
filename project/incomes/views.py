@@ -30,6 +30,7 @@ class New(CreateViewMixin):
     form_class = forms.IncomeForm
     success_url = reverse_lazy("incomes:list")
     hx_trigger_form = "reload"
+    template_name = "core/generic_form.html"
     form_title = _("Incomes")
 
 
@@ -38,6 +39,7 @@ class Update(ConvertToCents, UpdateViewMixin):
     form_class = forms.IncomeForm
     success_url = reverse_lazy("incomes:list")
     hx_trigger_django = "reload"
+    template_name = "core/generic_form.html"
     form_title = _("Incomes")
 
 
