@@ -79,6 +79,7 @@ class CreateUpdateMixin:
     def get_context_data(self, **kwargs):
         context = {
             "form_title": getattr(self, "form_title", None),
+            "modal_body_css_class": getattr(self, "modal_body_css_class", ''),
             "form_action": self.form_action,
             "url": self.url,
             "hx_trigger_form": self.get_hx_trigger_form(),
