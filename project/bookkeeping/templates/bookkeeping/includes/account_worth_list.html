@@ -1,12 +1,11 @@
 {% load i18n %}
-{% load slippers %}
 {% load math %}
 {% load cell_format %}
 
 <table class="main striped hover">
     <thead>
         <tr>
-            <th class="text-left">{% regenerate_balances type='accounts' %} {% translate 'Accounts' %}</th>
+            <th class="text-left"><c-regenerate-balances type='accounts' /> {% translate 'Accounts' %}</th>
             <th>{% translate 'Past years' %}</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
