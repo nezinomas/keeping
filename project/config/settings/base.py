@@ -131,7 +131,6 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "crequest",
-    "slippers",
     "django_htmx",
     "widget_tweaks",
     "django_cotton",
