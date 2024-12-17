@@ -2,7 +2,6 @@
 
 {% load i18n %}
 {% load static %}
-{% load slippers %}
 
 {% block head %}
 <script src="{% static 'js/sticky-table-headers.js' %}"></script>
@@ -14,23 +13,20 @@
 
 
 <main class="grid-70-30">
-    {% var current_month=view.get_month %}
     <div
         x-data="{
-            openTab: '{{current_month}}',
+            openTab: '{{view.get_month}}',
             activeClass: 'button-active',
             inactiveClass: 'button-secondary',
         }">
         <!-- search form -->
         <div class="button-row">
-            {% url 'expenses:search' as search_url %}
-            {% url 'expenses:list' as reset_url %}
-            {% search_form url=search_url reset_url=reset_url target="#data" hightlight_tab=current_month %}
+            <c-search-form url="{% url 'expenses:search' %}" reset_url=" {% url 'expenses:list'%}" target="#data" :hightlight_tab=current_month />
 
             {% if request.GET.month %}
-                {% var month_number=request.GET.month %}
+                {% firstof request.GET.month as month_number %}
             {% else %}
-                {% now 'n' as month_number %}
+                {% firstof now 'n' as month_number %}
             {% endif %}
 
             <c-new-button url="{% url 'expenses:new' %}" title="{% translate 'Expenses' context 'expenses button' %}" css_class="flex-right" />

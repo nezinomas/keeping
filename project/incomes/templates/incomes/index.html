@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% load static %}
-{% load slippers %}
 {% load i18n %}
 
 {% block head %}
@@ -16,9 +15,9 @@
 <main class="grid-70-30">
     <div>
         <div class="button-row">
-            {% url 'incomes:search' as search_url %}
-            {% url 'incomes:list' as reset_url %}
-            <div hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#data" %}</div>
+            <div hx-trigger="reloadSearch from:body">
+                <c-search-form url="{% url 'incomes:search' %}" reset_url="{% url 'incomes:list' %}" target="#data" />
+            </div>
             <c-new-button url="{% url 'incomes:new' %}" title="{% translate 'Incomes' context 'incomes button' %}" />
         </div>
 
