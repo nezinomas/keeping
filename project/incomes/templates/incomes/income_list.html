@@ -38,7 +38,7 @@
 
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
-{% paging url=url page_obj=object_list page_range=page_range search=search target="#data" %}
+<c-paging :url=url :page_obj=object_list :page_range=page_range :search=search target="#data" />
 
 {% else %}
 
