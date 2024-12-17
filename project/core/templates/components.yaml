@@ -1,3 +1,2 @@
 components:
     regenerate_balances: "core/includes/regenerate_balances.html"
-    accordion: "core/includes/accordion.html"
