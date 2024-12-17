@@ -47,7 +47,7 @@
             <td class="{{item.october|css_class_if_none}}">{{item.october|price|cellformat:"0,00"}}</td>
             <td class="{{item.november|css_class_if_none}}">{{item.november|price|cellformat:"0,00"}}</td>
             <td class="{{item.december|css_class_if_none}}">{{item.december|price|cellformat:"0,00"}}</td>
-            {% include "core/includes/cell_edit.html" with url=url_update %}
+            <c-td-edit :url=url_update />
             <c-td-delete :url=url_delete />
         </tr>{% endwith %}
         {% empty %}
