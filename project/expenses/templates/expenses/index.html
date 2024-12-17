@@ -13,10 +13,9 @@
 
 
 <main class="grid-70-30">
-    {% var current_month=view.get_month %}
     <div
         x-data="{
-            openTab: '{{current_month}}',
+            openTab: '{{view.get_month}}',
             activeClass: 'button-active',
             inactiveClass: 'button-secondary',
         }">
@@ -25,9 +24,9 @@
             <c-search-form url="{% url 'expenses:search' %}" reset_url=" {% url 'expenses:list'%}" target="#data" :hightlight_tab=current_month />
 
             {% if request.GET.month %}
-                {% request.GET.month as month_number %}
+                {% firstof request.GET.month as month_number %}
             {% else %}
-                {% now 'n' as month_number %}
+                {% firstof now 'n' as month_number %}
             {% endif %}
 
             <c-new-button url="{% url 'expenses:new' %}" title="{% translate 'Expenses' context 'expenses button' %}" css_class="flex-right" />
