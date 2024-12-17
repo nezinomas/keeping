@@ -19,7 +19,6 @@ dependencies = [
     "pillow>=11.0.0",
     "polars>=1.14.0",
     "pyarrow>=18.0.0",
-    "slippers>=0.6.2",
     "python-dateutil>=2.9.0.post0",
     "django-cotton>=1.3.0",
 ]
