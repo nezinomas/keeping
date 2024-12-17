@@ -2,7 +2,6 @@
 
 {% load i18n %}
 {% load static %}
-{% load slippers %}
 
 {% block head %}
 <script src="{% static 'js/sticky-table-headers.js' %}"></script>
@@ -23,12 +22,10 @@
         }">
         <!-- search form -->
         <div class="button-row">
-            {% url 'expenses:search' as search_url %}
-            {% url 'expenses:list' as reset_url %}
-            {% search_form url=search_url reset_url=reset_url target="#data" hightlight_tab=current_month %}
+            <c-search-form url="{% url 'expenses:search' %}" reset_url=" {% url 'expenses:list'%}" target="#data" :hightlight_tab=current_month />
 
             {% if request.GET.month %}
-                {% var month_number=request.GET.month %}
+                {% request.GET.month as month_number %}
             {% else %}
                 {% now 'n' as month_number %}
             {% endif %}

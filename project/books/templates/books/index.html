@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% load static %}
-{% load slippers %}
 {% load i18n %}
 
 {% block head %}
@@ -20,9 +19,7 @@
 
 <main class="grid-one-col">
     <div class="info-row">
-        {% url 'books:search' as search_url %}
-        {% url 'books:list' as reset_url %}
-        <div hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#data" %}</div>
+        <div hx-trigger="reloadSearch from:body"><c-search-form url="{% url 'books:search' %}" reset_url="{% url 'books:list' %}" target="#data" /></div>
 
         <div class="info-row-text" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}">{{info_row}}</div>
 
