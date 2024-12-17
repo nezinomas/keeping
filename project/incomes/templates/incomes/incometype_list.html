@@ -1,4 +1,3 @@
-{% load slippers %}
 {% load i18n %}
 
-{% accordion object_list=object_list title=_('Incomes type') url_name='incomes:type_update' %}
+<c-accordion :object_list=object_list title="{% translate 'Incomes type' %}" url_name='incomes:type_update' />
