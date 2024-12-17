@@ -28,7 +28,7 @@
             <td class="{{object.fee|css_class_if_none}}">{{object.fee|price|cellformat}}</td>
             {% endif %}
             {% include "core/includes/cell_edit.html" with url=url__update %}
-            {% include "core/includes/cell_delete.html" with url=url__delete %}
+            <c-td-delete :url=url_delete />
         </tr>
         {% endfor %}
     </tbody>

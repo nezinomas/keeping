@@ -28,7 +28,7 @@
                 <td class="text-left">{{ object.remark }}</td>
                 <td>{{object.price|price|cellformat}}</td>
                 {% include "core/includes/cell_edit.html" with url=url_update %}
-                {% include "core/includes/cell_delete.html" with url=url_delete %}
+                <c-td-delete :url=url_delete />
             </tr>
             {% endfor %}
         </tbody>
