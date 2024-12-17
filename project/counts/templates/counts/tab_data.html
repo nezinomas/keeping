@@ -23,7 +23,7 @@
             <td class="text-left">{{ obj.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ obj.quantity }}</td>
             {% edit_cell url=url_update %}
-            {% delete_cell url=url_delete %}
+            <c-td-delete :url=url_delete />
         </tr>
         {% endfor %}
     </tbody>

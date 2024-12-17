@@ -30,7 +30,7 @@
             <td class="text-center">{{ object.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ object.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
             {% edit_cell url=url_update %}
-            {% delete_cell url=url_delete %}
+            <c-td-delete :url=url_delete />
         </tr>
         {% endfor %}
     </tbody>
