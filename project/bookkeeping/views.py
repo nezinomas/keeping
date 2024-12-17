@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
 from ..core.mixins.formset import FormsetMixin
@@ -56,7 +57,7 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = Account
     model = models.AccountWorth
     form_class = forms.AccountWorthForm
-    template_name = "bookkeeping/includes/account_worth_form.html"
+    formset_title = _('Worth of accounts')
     url = reverse_lazy("bookkeeping:accounts_worth_new")
     hx_trigger_django = "afterAccountWorthNew"
 
@@ -73,7 +74,7 @@ class SavingsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = SavingType
     model = models.SavingWorth
     form_class = forms.SavingWorthForm
-    template_name = "bookkeeping/includes/saving_worth_form.html"
+    formset_title = _('Worth of savings')
     url = reverse_lazy("bookkeeping:savings_worth_new")
     hx_trigger_django = "afterSavingWorthNew"
 
@@ -91,13 +92,13 @@ class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = PensionType
     model = models.PensionWorth
     form_class = forms.PensionWorthForm
-    template_name = "bookkeeping/includes/pension_worth_form.html"
+    formset_title = _('Worth of pensions')
     url = reverse_lazy("bookkeeping:pensions_worth_new")
     hx_trigger_django = "afterPensionWorthNew"
 
 
 class Wealth(TemplateViewMixin):
-    template_name = "core/includes/info_table.html"
+    template_name = "cotton/info_table.html"
 
     def get_context_data(self, **kwargs):
         context = services.wealth.load_service(self.request.user.year)

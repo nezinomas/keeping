@@ -36,6 +36,8 @@ class BaseTypeFormSet(BaseFormSet):
 
 
 class FormsetMixin:
+    template_name = "core/generic_formset.html"
+
     def formset_initial(self):
         _list = []
 
@@ -88,5 +90,6 @@ class FormsetMixin:
     def get_context_data(self, **kwargs):
         context = {
             "formset": self.get_formset(self.request.POST or None),
+            "formset_title": getattr(self, "formset_title", None),
         }
         return super().get_context_data(**kwargs) | context

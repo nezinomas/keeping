@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-04 17:15+0200\n"
-"PO-Revision-Date: 2024-11-04 17:16+0200\n"
+"POT-Creation-Date: 2024-12-17 15:40+0200\n"
+"PO-Revision-Date: 2024-12-17 15:44+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
 "11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
 "1 : n % 1 != 0 ? 2: 3);\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.5\n"
 
 #: .\project\accounts\forms.py:33
 msgid "Account title"
@@ -35,21 +35,21 @@ msgstr "Uždaryta"
 msgid "Sorting"
 msgstr "Rūšiavimas"
 
-#: .\project\accounts\templates\accounts\account_form.html:3
-#: .\project\debts\forms.py:61 .\project\debts\forms.py:147
+#: .\project\accounts\templates\accounts\account_list.html:3
+#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:8
+msgid "Accounts"
+msgstr "Sąskaitos"
+
+#: .\project\accounts\views.py:21 .\project\accounts\views.py:28
+#: .\project\debts\forms.py:61 .\project\debts\forms.py:145
 #: .\project\debts\templates\debts\debt_list.html:21
 #: .\project\debts\templates\debts\debtreturn_list.html:19
 #: .\project\expenses\forms.py:127
-#: .\project\expenses\templates\expenses\expense_list.html:35
+#: .\project\expenses\templates\expenses\expense_list.html:34
 #: .\project\incomes\forms.py:45
-#: .\project\incomes\templates\incomes\income_list.html:14
+#: .\project\incomes\templates\incomes\income_list.html:13
 msgid "Account"
 msgstr "Sąskaita"
-
-#: .\project\accounts\templates\accounts\account_list.html:4
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:9
-msgid "Accounts"
-msgstr "Sąskaitos"
 
 #: .\project\bookkeeping\forms.py:30
 #, python-format
@@ -62,19 +62,18 @@ msgstr "Reikia pasirinkti bent vieną kategoriją."
 
 #: .\project\bookkeeping\lib\no_incomes.py:61
 #: .\project\bookkeeping\services\detailed.py:46
-#: .\project\bookkeeping\services\month.py:206
-#: .\project\bookkeeping\services\month.py:213
-#: .\project\bookkeeping\services\summary_savings_and_incomes.py:55
+#: .\project\bookkeeping\services\month.py:207
+#: .\project\bookkeeping\services\month.py:215
+#: .\project\bookkeeping\services\summary_savings_and_incomes.py:56
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:14
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:48
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:71
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:29
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:10
-#: .\project\journals\forms.py:34 .\project\plans\templates\plans\index.html:38
-#: .\project\savings\managers.py:67
-#: .\project\savings\templates\savings\saving_form.html:5
-#: .\project\templates\base.html:81 .\project\templates\base.html:130
-#: .\project\templates\base.html:131
+#: .\project\journals\forms.py:34 .\project\plans\templates\plans\index.html:37
+#: .\project\savings\managers.py:67 .\project\savings\views.py:43
+#: .\project\savings\views.py:51 .\project\templates\base.html:81
+#: .\project\templates\base.html:130 .\project\templates\base.html:131
 msgid "Savings"
 msgstr "Taupymas"
 
@@ -92,34 +91,36 @@ msgstr "Pajamos ir išlaidos"
 
 #: .\project\bookkeeping\services\chart_summary.py:47
 #: .\project\bookkeeping\services\chart_summary.py:65
-#: .\project\bookkeeping\services\chart_summary.py:86
+#: .\project\bookkeeping\services\chart_summary.py:88
 #: .\project\bookkeeping\services\detailed.py:40
-#: .\project\bookkeeping\services\index.py:107
-#: .\project\bookkeeping\services\summary_savings_and_incomes.py:54
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:11
+#: .\project\bookkeeping\services\index.py:106
+#: .\project\bookkeeping\services\summary_savings_and_incomes.py:55
+#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:10
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:17
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:18
-#: .\project\incomes\templates\incomes\income_form.html:5
-#: .\project\plans\lib\calc_day_sum.py:115
-#: .\project\plans\templates\plans\index.html:11
+#: .\project\incomes\views.py:33 .\project\incomes\views.py:41
+#: .\project\plans\lib\calc_day_sum.py:63
+#: .\project\plans\templates\plans\index.html:13
 #: .\project\templates\base.html:71 .\project\templates\base.html:129
 #: .\project\templates\base.html:130
 msgid "Incomes"
 msgstr "Pajamos"
 
 #: .\project\bookkeeping\services\chart_summary.py:49
-#: .\project\bookkeeping\services\index.py:109
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:12
+#: .\project\bookkeeping\services\index.py:108
+#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:11
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:23
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:19
-#: .\project\plans\templates\plans\index.html:22
+#: .\project\expenses\views\expenses.py:71
+#: .\project\expenses\views\expenses.py:79
+#: .\project\plans\templates\plans\index.html:23
 #: .\project\templates\base.html:55 .\project\templates\base.html:129
 #: .\project\templates\base.html:132
 msgid "Expenses"
 msgstr "Išlaidos"
 
 #: .\project\bookkeeping\services\chart_summary.py:68
-#: .\project\bookkeeping\services\index.py:114
+#: .\project\bookkeeping\services\index.py:113
 msgid "Average incomes"
 msgstr "Vidutinės pajamos"
 
@@ -128,7 +129,7 @@ msgid "Average salary"
 msgstr "Vidutinis atlyginimas"
 
 #: .\project\bookkeeping\services\chart_summary_expenses.py:115
-#: .\project\core\mixins\views.py:168
+#: .\project\core\mixins\views.py:176
 msgid "No data found"
 msgstr "Nieko nerasta"
 
@@ -141,20 +142,20 @@ msgstr "%(day)s dieną įrašų nėra"
 msgid "No expenses"
 msgstr "Išlaidų nėra"
 
-#: .\project\bookkeeping\services\index.py:98
+#: .\project\bookkeeping\services\index.py:97
 msgid "Start of year"
 msgstr "Metų pradžioje"
 
-#: .\project\bookkeeping\services\index.py:98
+#: .\project\bookkeeping\services\index.py:97
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:59
 msgid "End of year"
 msgstr "Metų pabaigoje"
 
-#: .\project\bookkeeping\services\index.py:98
+#: .\project\bookkeeping\services\index.py:97
 msgid "Year balance"
 msgstr "Metų balansas"
 
-#: .\project\bookkeeping\services\index.py:114
+#: .\project\bookkeeping\services\index.py:113
 msgid "Average expenses"
 msgstr "Vidutinės išlaidos"
 
@@ -170,13 +171,13 @@ msgstr "Faktas"
 
 #: .\project\bookkeeping\services\month.py:103
 #: .\project\bookkeeping\services\month.py:124
-#: .\project\bookkeeping\services\month.py:212
+#: .\project\bookkeeping\services\month.py:214
 #: .\project\bookkeeping\services\summary_savings.py:28
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:36
+#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:35
 #: .\project\bookkeeping\templates\bookkeeping\includes\detailed_table.html:24
 #: .\project\bookkeeping\templates\bookkeeping\includes\detailed_table.html:42
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:14
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:62
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:13
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:61
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:13
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:17
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:45
@@ -186,28 +187,28 @@ msgstr "Faktas"
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:62
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_expenses.html:16
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_expenses.html:39
-#: .\project\counts\templates\counts\info_row.html:35
-#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:11
+#: .\project\counts\templates\counts\info_row.html:34
+#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:10
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:9
 msgid "Total"
 msgstr "Viso"
 
-#: .\project\bookkeeping\services\pensions.py:33
-#: .\project\pensions\templates\pensions\pensiontype_list.html:4
+#: .\project\bookkeeping\services\pensions.py:35
+#: .\project\pensions\templates\pensions\pensiontype_list.html:3
 #: .\project\savings\models.py:16
 msgid "Pensions"
 msgstr "Pensijos"
 
-#: .\project\bookkeeping\services\savings.py:54
-#: .\project\bookkeeping\services\summary_savings.py:84
+#: .\project\bookkeeping\services\savings.py:52
+#: .\project\bookkeeping\services\summary_savings.py:81
 #: .\project\savings\models.py:15
-#: .\project\savings\templates\savings\index.html:18
-#: .\project\savings\templates\savings\savingtype_list.html:4
+#: .\project\savings\templates\savings\index.html:19
+#: .\project\savings\templates\savings\savingtype_list.html:3
 msgid "Funds"
 msgstr "Fondai"
 
 #: .\project\bookkeeping\services\summary_savings.py:29
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:16
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:15
 msgid "Profit"
 msgstr "Pelnas"
 
@@ -216,16 +217,16 @@ msgstr "Pelnas"
 msgid "Invested"
 msgstr "Investuota"
 
-#: .\project\bookkeeping\services\summary_savings.py:85
+#: .\project\bookkeeping\services\summary_savings.py:82
 #: .\project\savings\models.py:14
 msgid "Shares"
 msgstr "Akcijos"
 
-#: .\project\bookkeeping\services\summary_savings_and_incomes.py:53
+#: .\project\bookkeeping\services\summary_savings_and_incomes.py:54
 msgid "Incomes and Savings"
 msgstr "Pajamos ir taupymas"
 
-#: .\project\bookkeeping\services\summary_savings_and_incomes.py:56
+#: .\project\bookkeeping\services\summary_savings_and_incomes.py:57
 msgid "Percents"
 msgstr "Procentai"
 
@@ -238,13 +239,13 @@ msgid "Wealth"
 msgstr "Turtas"
 
 #: .\project\bookkeeping\templates\bookkeeping\detailed.html:18
-#: .\project\books\templates\books\book_list.html:49
+#: .\project\books\templates\books\book_list.html:48
 #: .\project\core\templates\core\no_records.html:9
 #: .\project\debts\templates\debts\debt_list.html:53
 #: .\project\debts\templates\debts\debtreturn_list.html:52
-#: .\project\expenses\templates\expenses\expense_list.html:85
-#: .\project\expenses\views\expenses.py:60
-#: .\project\incomes\templates\incomes\income_list.html:49
+#: .\project\expenses\templates\expenses\expense_list.html:84
+#: .\project\expenses\views\expenses.py:58
+#: .\project\incomes\templates\incomes\income_list.html:48
 #: .\project\pensions\templates\pensions\pension_list.html:37
 #: .\project\plans\templates\plans\includes\generic_list.html:56
 #: .\project\savings\templates\savings\saving_list.html:41
@@ -253,33 +254,29 @@ msgstr "Turtas"
 msgid "No records in <b>%(year)s</b>."
 msgstr "<b>%(year)s</b> metais įrašų nėra."
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_form.html:4
-msgid "Worth of accounts"
-msgstr "Sąskaitų vertė"
-
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:10
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:12
+#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:9
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:11
 msgid "Past years"
 msgstr "Praėję metai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:13
+#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:12
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:41
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:9
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:20
 msgid "Balance"
 msgstr "Balansas"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:14
+#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:13
 msgid "Have"
 msgstr "Turiu"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:15
+#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:14
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:12
 msgid "Delta"
 msgstr "Delta"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:22
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:53
+#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:21
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:52
 msgid "No record of account amount"
 msgstr "Nėra įrašo apie sąskaitos lėšas"
 
@@ -359,41 +356,41 @@ msgstr "Lapkritis"
 msgid "December"
 msgstr "Gruodis"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:15
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:14
 msgid "Market value"
 msgstr "Rinkos vertė"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:16
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:15
 msgid "Loss"
 msgstr "Nuostolis"
 
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:18
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:19
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:20
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:21
 msgid "Transferred"
 msgstr "Pervesta"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:22
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:21
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:22
 msgid "Sold"
 msgstr "Parduota"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:25
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:24
 #: .\project\pensions\forms.py:46
 #: .\project\pensions\templates\pensions\pension_list.html:10
 #: .\project\savings\forms.py:32 .\project\savings\forms.py:84
 #: .\project\savings\templates\savings\saving_list.html:12
-#: .\project\savings\templates\savings\savingtype_form.html:4
+#: .\project\savings\views.py:74 .\project\savings\views.py:81
 msgid "Fund"
 msgstr "Fondas"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:26
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:28
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:30
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:32
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:25
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:27
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:29
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:31
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:34
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:35
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:36
-#: .\project\debts\forms.py:62 .\project\debts\forms.py:149
+#: .\project\debts\forms.py:62 .\project\debts\forms.py:147
 #: .\project\debts\templates\debts\debt_list.html:19
 #: .\project\debts\templates\debts\debtreturn_list.html:18
 #: .\project\pensions\forms.py:43
@@ -403,10 +400,10 @@ msgstr "Fondas"
 msgid "Sum"
 msgstr "Suma"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:27
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:29
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:31
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:33
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:26
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:28
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:30
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:32
 #: .\project\pensions\templates\pensions\pension_list.html:13
 #: .\project\savings\forms.py:82
 #: .\project\savings\templates\savings\saving_list.html:16
@@ -415,16 +412,16 @@ msgstr "Suma"
 msgid "Fees"
 msgstr "Mokesčiai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:34
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:33
 #: .\project\counts\forms.py:50
-#: .\project\counts\templates\counts\tab_data.html:12
-#: .\project\debts\forms.py:59 .\project\debts\forms.py:146
+#: .\project\counts\templates\counts\tab_data.html:11
+#: .\project\debts\forms.py:59 .\project\debts\forms.py:144
 #: .\project\debts\templates\debts\debt_list.html:14
 #: .\project\debts\templates\debts\debtreturn_list.html:13
 #: .\project\drinks\forms.py:41 .\project\expenses\forms.py:120
-#: .\project\expenses\templates\expenses\expense_list.html:28
+#: .\project\expenses\templates\expenses\expense_list.html:27
 #: .\project\incomes\forms.py:44
-#: .\project\incomes\templates\incomes\income_list.html:12
+#: .\project\incomes\templates\incomes\income_list.html:11
 #: .\project\pensions\forms.py:42
 #: .\project\pensions\templates\pensions\pension_list.html:9
 #: .\project\savings\forms.py:79
@@ -439,32 +436,24 @@ msgstr "Data"
 msgid "Day"
 msgstr "Diena"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:9
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:8
 msgid "Unnecessary expenses that can be avoided"
 msgstr "Nebūtinos išlaidos, kurių galima atsisakyti"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:35
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:34
 msgid "Money in accounts"
 msgstr "Sąskaitose esantys pinigai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:36
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:35
 msgid "Funds/Stocks"
 msgstr "Fondai/Akcijos"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:37
+#: .\project\bookkeeping\templates\bookkeeping\includes\no_incomes.html:36
 msgid "Pension funds"
 msgstr "Pensijų fondai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\pension_worth_form.html:4
-msgid "Worth of pensions"
-msgstr "Pensijų vertė"
-
-#: .\project\bookkeeping\templates\bookkeeping\includes\saving_worth_form.html:4
-msgid "Worth of savings"
-msgstr "Fondų vertė"
-
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:35
-#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:12
+#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:11
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:10
 msgid "Per day"
 msgstr "Per dieną"
@@ -519,35 +508,35 @@ msgstr "Pinigų srautas"
 msgid "Expenses statistic"
 msgstr "Išlaidų statistika"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:29
+#: .\project\bookkeeping\templates\bookkeeping\index.html:27
 msgid "Accounts fact"
 msgstr "Sąskaitų faktas"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:31
+#: .\project\bookkeeping\templates\bookkeeping\index.html:28
 msgid "Funds fact"
 msgstr "Fondų faktas"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:33
+#: .\project\bookkeeping\templates\bookkeeping\index.html:29
 msgid "Pensions fact"
 msgstr "Pensijų faktas"
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:34
+#: .\project\bookkeeping\templates\bookkeeping\index.html:30
 msgid "Balances for all years will be updated."
 msgstr "Bus atnaujinti visų metų balansai."
 
-#: .\project\bookkeeping\templates\bookkeeping\index.html:34
+#: .\project\bookkeeping\templates\bookkeeping\index.html:30
 msgid "Update balances"
 msgstr "Atnaujinti balansus"
 
 #: .\project\bookkeeping\templates\bookkeeping\month.html:49
-#: .\project\expenses\templates\expenses\index.html:42
+#: .\project\expenses\templates\expenses\index.html:32
 #: .\project\templates\base.html:144
 msgctxt "expenses button"
 msgid "Expenses"
 msgstr "Išlaidas"
 
 #: .\project\bookkeeping\templates\bookkeeping\month.html:50
-#: .\project\incomes\templates\incomes\index.html:22
+#: .\project\incomes\templates\incomes\index.html:21
 #: .\project\templates\base.html:143
 msgctxt "incomes button"
 msgid "Incomes"
@@ -566,55 +555,72 @@ msgid "Transactions"
 msgstr "Pervedimą"
 
 #: .\project\bookkeeping\templates\bookkeeping\month.html:53
-#: .\project\drinks\templates\drinks\includes\navbar.html:38
+#: .\project\drinks\templates\drinks\includes\navbar.html:36
 msgctxt "drinks button"
 msgid "Drinks"
 msgstr "Gertynės"
 
-#: .\project\bookkeeping\templates\bookkeeping\month.html:54
+#: .\project\bookkeeping\templates\bookkeeping\month.html:55
 msgid "Show other chart"
 msgstr "Rodyti kitą grafiką"
 
-#: .\project\bookkeeping\templates\bookkeeping\savings.html:7
+#: .\project\bookkeeping\templates\bookkeeping\savings.html:5
 msgid "Percentage of income saved"
 msgstr "Pajamų dalis pervedama taupymui"
 
-#: .\project\bookkeeping\templates\bookkeeping\summary_savings_and_incomes.html:25
-#: .\project\books\forms.py:113 .\project\drinks\forms.py:86
+#: .\project\bookkeeping\templates\bookkeeping\summary_savings_and_incomes.html:24
+#: .\project\books\forms.py:111 .\project\drinks\forms.py:86
 msgid "Year"
 msgstr "Metai"
 
+#: .\project\bookkeeping\templates\cotton\info_table.html:22
+#: .\project\debts\templates\debts\debt_list.html:36
+msgid "Remains to be returned"
+msgstr "Liko grąžinti"
+
+#: .\project\bookkeeping\views.py:60
+msgid "Worth of accounts"
+msgstr "Sąskaitų vertė"
+
+#: .\project\bookkeeping\views.py:77
+msgid "Worth of savings"
+msgstr "Fondų vertė"
+
+#: .\project\bookkeeping\views.py:95
+msgid "Worth of pensions"
+msgstr "Pensijų vertė"
+
 #: .\project\books\forms.py:47
-#: .\project\books\templates\books\book_list.html:15
+#: .\project\books\templates\books\book_list.html:14
 msgid "Started reading"
 msgstr "Pradėta skaityti"
 
 #: .\project\books\forms.py:48
-#: .\project\books\templates\books\book_list.html:16
+#: .\project\books\templates\books\book_list.html:15
 msgid "Ended reading"
 msgstr "Baigta skaityti"
 
 #: .\project\books\forms.py:49
-#: .\project\books\templates\books\book_list.html:13
-#: .\project\counts\forms.py:68 .\project\expenses\forms.py:203
+#: .\project\books\templates\books\book_list.html:12
+#: .\project\counts\forms.py:68 .\project\expenses\forms.py:205
 #: .\project\plans\templates\plans\includes\generic_list.html:10
 msgid "Title"
 msgstr "Pavadinimas"
 
 #: .\project\books\forms.py:50
-#: .\project\books\templates\books\book_list.html:12
+#: .\project\books\templates\books\book_list.html:11
 msgid "Author"
 msgstr "Autorius"
 
 #: .\project\books\forms.py:51
-#: .\project\books\templates\books\book_list.html:14
-#: .\project\debts\forms.py:63 .\project\debts\forms.py:150
+#: .\project\books\templates\books\book_list.html:13
+#: .\project\debts\forms.py:63 .\project\debts\forms.py:148
 #: .\project\debts\templates\debts\debt_list.html:22
 #: .\project\debts\templates\debts\debtreturn_list.html:20
 #: .\project\expenses\forms.py:125
-#: .\project\expenses\templates\expenses\expense_list.html:33
+#: .\project\expenses\templates\expenses\expense_list.html:32
 #: .\project\incomes\forms.py:47
-#: .\project\incomes\templates\incomes\income_list.html:15
+#: .\project\incomes\templates\incomes\income_list.html:14
 #: .\project\pensions\forms.py:45
 #: .\project\pensions\templates\pensions\pension_list.html:11
 #: .\project\savings\forms.py:83
@@ -631,17 +637,17 @@ msgstr "Metai turi būti tarp %(year1)s ir %(year2)s"
 msgid "Date cannot be in the future"
 msgstr "Data negali būti ateityje"
 
-#: .\project\books\forms.py:87
+#: .\project\books\forms.py:86
 msgid "Finished reading cannot precede start reading."
 msgstr "Baigta skaityti negali būti anksčiau nei pradėta skaityti."
 
-#: .\project\books\forms.py:114 .\project\expenses\forms.py:122
-#: .\project\expenses\templates\expenses\expense_list.html:13
-#: .\project\expenses\templates\expenses\expense_list.html:31
+#: .\project\books\forms.py:112 .\project\expenses\forms.py:122
+#: .\project\expenses\templates\expenses\expense_list.html:12
+#: .\project\expenses\templates\expenses\expense_list.html:30
 msgid "How many"
 msgstr "Kiek"
 
-#: .\project\books\forms.py:134 .\project\drinks\forms.py:113
+#: .\project\books\forms.py:132 .\project\drinks\forms.py:113
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
@@ -649,27 +655,12 @@ msgstr "metai jau turi tikslą."
 msgid "Readed books"
 msgstr "Perskaitytos knygos"
 
-#: .\project\books\templates\books\book_confirm_delete.html:4
-msgid "Delete book"
-msgstr "Trinti knygą"
-
-#: .\project\books\templates\books\book_form.html:4
-msgctxt "book form title"
-msgid "Book"
-msgstr "Knyga"
-
-#: .\project\books\templates\books\booktarget_form.html:4
-#: .\project\drinks\templates\drinks\drinktarget_form.html:4
-#: .\project\drinks\templates\drinks\includes\navbar.html:42
-msgid "Goal for the year"
-msgstr "Tikslas metams"
-
-#: .\project\books\templates\books\index.html:30
+#: .\project\books\templates\books\index.html:27
 msgctxt "book add button"
 msgid "Book"
 msgstr "Knygą"
 
-#: .\project\books\templates\books\index.html:31
+#: .\project\books\templates\books\index.html:28
 msgid "year goal"
 msgstr "metų tikslą"
 
@@ -684,6 +675,26 @@ msgstr "Skaitomos"
 #: .\project\books\templates\books\info_row.html:7
 msgid "Goal"
 msgstr "Tikslas"
+
+#: .\project\books\views.py:88
+msgid "New book"
+msgstr "Nauja knyga"
+
+#: .\project\books\views.py:96
+msgid "Update book"
+msgstr "Atnaujinti knygą"
+
+#: .\project\books\views.py:102
+msgid "Delete book"
+msgstr "Trinti knygą"
+
+#: .\project\books\views.py:120 .\project\drinks\views.py:172
+msgid "New goal"
+msgstr "Naujas tikslas"
+
+#: .\project\books\views.py:127 .\project\drinks\views.py:196
+msgid "Update goal"
+msgstr "Atnaujinti tikslą"
 
 #: .\project\config\settings\base.py:72
 msgid "English"
@@ -734,8 +745,7 @@ msgstr "Kitas mėnuo"
 msgid "Previous Month"
 msgstr "Ankstesnis mėnesis"
 
-#: .\project\core\i18n.py:13
-#: .\project\core\templates\core\includes\form_footer.html:4
+#: .\project\core\i18n.py:13 .\project\core\templates\core\form_footer.html:4
 msgid "Insert"
 msgstr "Įrašyti"
 
@@ -776,68 +786,38 @@ msgstr "Pasirinktos vienodos sąskaitos."
 msgid "No %(verbose_name)s found matching the query"
 msgstr "%(verbose_name)s užklausos nėra"
 
-#: .\project\core\templates\core\includes\accordion.html:13
-msgid "closed"
-msgstr "uždaryta"
-
-#: .\project\core\templates\core\includes\cell_delete.html:5
-#: .\project\core\templates\core\includes\generic_delete_form.html:15
-#: .\project\debts\templates\debts\debt_confirm_delete.html:4
-#: .\project\debts\templates\debts\debtreturn_confirm_delete.html:4
-msgid "Delete"
-msgstr "Trinti"
-
-#: .\project\core\templates\core\includes\cell_edit.html:5
-#: .\project\drinks\templates\drinks\drinktarget_list.html:19
-msgid "Edit"
-msgstr "Redaguoti"
-
-#: .\project\core\templates\core\includes\form_footer.html:5
+#: .\project\core\templates\core\form_footer.html:5
 msgid "Update and Close"
 msgstr "Atnaujinti ir uždaryti"
 
-#: .\project\core\templates\core\includes\form_footer.html:6
+#: .\project\core\templates\core\form_footer.html:6
 msgid "Insert and Close"
 msgstr "Įrašyti ir uždaryti"
 
-#: .\project\core\templates\core\includes\form_footer.html:7
-#: .\project\core\templates\core\includes\generic_delete_form.html:7
-#: .\project\core\templates\core\includes\generic_delete_form.html:16
-#: .\project\core\templates\core\includes\generic_form.html:9
-#: .\project\core\templates\core\includes\generic_formset.html:13
+#: .\project\core\templates\core\form_footer.html:7
+#: .\project\core\templates\core\generic_delete_form.html:7
+#: .\project\core\templates\core\generic_delete_form.html:16
+#: .\project\core\templates\core\generic_form.html:10
+#: .\project\core\templates\core\generic_formset.html:12
 #: .\project\core\templates\core\modal_image.html:8
 #: .\project\users\templates\users\invite.html:8
 #: .\project\users\templates\users\invite.html:23
 msgid "Close"
 msgstr "Uždaryti"
 
-#: .\project\core\templates\core\includes\generic_delete_form.html:11
+#: .\project\core\templates\core\generic_delete_form.html:11
 msgid "Are you sure you want to delete"
 msgstr "Ar tikrai norite ištrinti"
 
-#: .\project\core\templates\core\includes\generic_form.html:21
+#: .\project\core\templates\core\generic_delete_form.html:15
+#: .\project\core\templates\cotton\td_delete.html:5
+msgid "Delete"
+msgstr "Trinti"
+
+#: .\project\core\templates\core\generic_form.html:22
 #: .\project\templates\base.html:139
 msgid "Add"
 msgstr "Pridėti"
-
-#: .\project\core\templates\core\includes\info_table.html:22
-#: .\project\debts\templates\debts\debt_list.html:36
-msgid "Remains to be returned"
-msgstr "Liko grąžinti"
-
-#: .\project\core\templates\core\includes\regenerate_balances.html:2
-msgid "Only the balances in this table will be updated."
-msgstr "Bus atnaujinti tik šios lentelės balansai."
-
-#: .\project\core\templates\core\includes\search_form.html:15
-#: .\project\core\templates\core\includes\search_form.html:16
-#: .\project\core\templates\core\includes\search_form.html:20
-msgid "Search"
-msgstr "Ieškoti"
-
-#: .\project\core\templates\core\includes\search_form.html:26
-msgid "Reset"
-msgstr "Išvalyti"
 
 #: .\project\core\templates\core\no_records.html:5
 msgid "Data missing."
@@ -847,9 +827,32 @@ msgstr "Trūksta duomenų."
 msgid "Data are missing. At least two years of data is required."
 msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 
+#: .\project\core\templates\cotton\accordion.html:13
+msgid "closed"
+msgstr "uždaryta"
+
+#: .\project\core\templates\cotton\regenerate_balances.html:2
+msgid "Only the balances in this table will be updated."
+msgstr "Bus atnaujinti tik šios lentelės balansai."
+
+#: .\project\core\templates\cotton\search_form.html:15
+#: .\project\core\templates\cotton\search_form.html:16
+#: .\project\core\templates\cotton\search_form.html:20
+msgid "Search"
+msgstr "Ieškoti"
+
+#: .\project\core\templates\cotton\search_form.html:26
+msgid "Reset"
+msgstr "Išvalyti"
+
+#: .\project\core\templates\cotton\td_edit.html:5
+#: .\project\drinks\templates\drinks\drinktarget_list.html:19
+msgid "Edit"
+msgstr "Redaguoti"
+
 #: .\project\counts\forms.py:51 .\project\counts\services\index.py:63
-#: .\project\counts\templates\counts\info_row.html:38
-#: .\project\counts\templates\counts\tab_data.html:13
+#: .\project\counts\templates\counts\info_row.html:37
+#: .\project\counts\templates\counts\tab_data.html:12
 #: .\project\drinks\forms.py:43 .\project\drinks\forms.py:87
 #: .\project\drinks\services\calendar_chart.py:35
 #: .\project\drinks\services\index.py:62
@@ -857,8 +860,8 @@ msgstr "Trūksta duomenų. Reikia bent dviejų metų duomenų."
 msgid "Quantity"
 msgstr "Kiekis"
 
-#: .\project\counts\forms.py:52
-#: .\project\counts\templates\counts\counttype_form.html:3
+#: .\project\counts\forms.py:52 .\project\counts\views.py:195
+#: .\project\counts\views.py:201
 msgid "Count type"
 msgstr "Skaitiklis"
 
@@ -884,19 +887,6 @@ msgstr "Tarpų dažnis, dienomis"
 msgid "Days of week"
 msgstr "Savaitės dienos"
 
-#: .\project\counts\templates\counts\count_confirm_delete.html:4
-msgid "Delete counter"
-msgstr "Trinti skaitiklį"
-
-#: .\project\counts\templates\counts\count_form.html:4
-#: .\project\templates\base.html:107
-msgid "Counter"
-msgstr "Kiek"
-
-#: .\project\counts\templates\counts\counttype_confirm_delete.html:3
-msgid "Delete count type"
-msgstr "Trinti skaitiklį"
-
 #: .\project\counts\templates\counts\empty.html:11
 msgid "You have no counters."
 msgstr "Jūs neturite skaitiklių."
@@ -905,68 +895,74 @@ msgstr "Jūs neturite skaitiklių."
 msgid "Add counter"
 msgstr "Pridėti skaitiklį"
 
-#: .\project\counts\templates\counts\info_row.html:11
-#: .\project\drinks\templates\drinks\includes\navbar.html:9
+#: .\project\counts\templates\counts\info_row.html:10
+#: .\project\drinks\templates\drinks\includes\navbar.html:8
 #: .\project\templates\base.html:125
 msgid "Charts"
 msgstr "Grafikai"
 
-#: .\project\counts\templates\counts\info_row.html:17
-#: .\project\drinks\templates\drinks\includes\navbar.html:16
+#: .\project\counts\templates\counts\info_row.html:16
+#: .\project\drinks\templates\drinks\includes\navbar.html:15
 #: .\project\drinks\templates\drinks\tab_data.html:11
 msgid "Data"
 msgstr "Duomenys"
 
-#: .\project\counts\templates\counts\info_row.html:23
-#: .\project\drinks\templates\drinks\includes\navbar.html:23
+#: .\project\counts\templates\counts\info_row.html:22
+#: .\project\drinks\templates\drinks\includes\navbar.html:22
 msgid "History"
 msgstr "Istorija"
 
-#: .\project\counts\templates\counts\info_row.html:39
+#: .\project\counts\templates\counts\info_row.html:38
 msgid "Week"
 msgstr "Savaitė"
 
-#: .\project\counts\templates\counts\info_row.html:40
+#: .\project\counts\templates\counts\info_row.html:39
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:11
 msgid "Per week"
 msgstr "Per savaitę"
 
-#: .\project\counts\templates\counts\info_row.html:41
+#: .\project\counts\templates\counts\info_row.html:40
 msgid "Last time before"
 msgstr "Paskutinį sykį prieš"
 
-#: .\project\counts\templates\counts\info_row.html:50
-#: .\project\counts\templates\counts\info_row.html:51
-msgctxt "counter button"
-msgid "Counter"
-msgstr "Skaitiklį"
-
-#: .\project\counts\templates\counts\new_count_button.html:3
-#: .\project\plans\templates\plans\index.html:14
-#: .\project\plans\templates\plans\index.html:24
-#: .\project\plans\templates\plans\index.html:32
-#: .\project\plans\templates\plans\index.html:40
-#: .\project\plans\templates\plans\index.html:48
-#: .\project\savings\templates\savings\index.html:19
-#: .\project\savings\templates\savings\index.html:26
-#: .\project\transactions\templates\transactions\index.html:20
-#: .\project\transactions\templates\transactions\index.html:27
-#: .\project\transactions\templates\transactions\index.html:34
+#: .\project\counts\templates\counts\info_row.html:47
+#: .\project\plans\templates\plans\index.html:8
+#: .\project\savings\templates\savings\index.html:13
+#: .\project\transactions\templates\transactions\index.html:13
 msgctxt "record button"
 msgid "Record"
 msgstr "Įrašą"
 
-#: .\project\debts\forms.py:51 .\project\debts\forms.py:138
+#: .\project\counts\templates\counts\info_row.html:48
+#: .\project\counts\templates\counts\info_row.html:49
+msgctxt "counter button"
+msgid "Counter"
+msgstr "Skaitiklį"
+
+#: .\project\counts\views.py:145 .\project\counts\views.py:169
+#: .\project\templates\base.html:107
+msgid "Counter"
+msgstr "Kiek"
+
+#: .\project\counts\views.py:175
+msgid "Delete counter"
+msgstr "Trinti skaitiklį"
+
+#: .\project\counts\views.py:207
+msgid "Delete count type"
+msgstr "Trinti skaitiklį"
+
+#: .\project\debts\forms.py:51 .\project\debts\forms.py:136
 msgid "Debtor"
 msgstr "Skolininkas"
 
-#: .\project\debts\forms.py:54 .\project\debts\forms.py:141
+#: .\project\debts\forms.py:54 .\project\debts\forms.py:139
 #: .\project\debts\templates\debts\debt_list.html:16
 #: .\project\debts\templates\debts\debtreturn_list.html:15
 msgid "Borrower"
 msgstr "Paskolos gavėjas"
 
-#: .\project\debts\forms.py:57 .\project\debts\forms.py:144
+#: .\project\debts\forms.py:57 .\project\debts\forms.py:142
 #: .\project\debts\templates\debts\debt_list.html:17
 #: .\project\debts\templates\debts\debtreturn_list.html:16
 msgid "Lender"
@@ -985,21 +981,13 @@ msgstr "Skolintojo vardas turi būti unikalus."
 msgid "You can't close a debt that hasn't been returned."
 msgstr "Negalite uždaryti dar negražintos skolos."
 
-#: .\project\debts\forms.py:100 .\project\debts\forms.py:171
+#: .\project\debts\forms.py:99 .\project\debts\forms.py:169
 msgid "The amount due exceeds the debt."
 msgstr "Mokėtina suma viršija skolą."
 
-#: .\project\debts\forms.py:182
+#: .\project\debts\forms.py:180
 msgid "The date preceding the debt's date."
 msgstr "Data yra ankstesnė nei skolos data."
-
-#: .\project\debts\templates\debts\debt_form.html:5
-msgid "Debt"
-msgstr "Skola"
-
-#: .\project\debts\templates\debts\debtreturn_form.html:5
-msgid "Debt repayment"
-msgstr "Skolos gražinimas"
 
 #: .\project\debts\templates\debts\index.html:16
 #: .\project\debts\templates\debts\index.html:26
@@ -1012,6 +1000,22 @@ msgstr "Skolą"
 msgctxt "sum button"
 msgid "Sum"
 msgstr "Sumą"
+
+#: .\project\debts\views.py:70 .\project\debts\views.py:80
+msgid "Debt"
+msgstr "Skola"
+
+#: .\project\debts\views.py:85
+msgid "Delete debt"
+msgstr "Trinti skolą"
+
+#: .\project\debts\views.py:98 .\project\debts\views.py:108
+msgid "Debt repayment"
+msgstr "Skolos gražinimas"
+
+#: .\project\debts\views.py:113
+msgid "Delete debt repayment"
+msgstr "Trinti skolos gražinimą"
 
 #: .\project\drinks\forms.py:42 .\project\drinks\forms.py:88
 msgid "Drink type"
@@ -1050,9 +1054,8 @@ msgstr "Metai turi būti skirtingi"
 msgid "Must be 4 digits."
 msgstr "Turi būti 4 skaitmenys."
 
-#: .\project\drinks\services\history.py:112
-#: .\project\drinks\templates\drinks\drink_form.html:4
-#: .\project\templates\base.html:102
+#: .\project\drinks\services\history.py:112 .\project\drinks\views.py:118
+#: .\project\drinks\views.py:142 .\project\templates\base.html:102
 msgid "Drinks"
 msgstr "Gėrimai"
 
@@ -1084,10 +1087,6 @@ msgstr "Vynas"
 msgid "Vodka"
 msgstr "Degtinė"
 
-#: .\project\drinks\templates\drinks\drink_confirm_delete.html:4
-msgid "Delete drinks"
-msgstr "Trinti gėrimus"
-
 #: .\project\drinks\templates\drinks\drinktarget_list.html:4
 msgid "Max per day"
 msgstr "Max per dieną"
@@ -1097,7 +1096,7 @@ msgid "ml"
 msgstr "ml"
 
 #: .\project\drinks\templates\drinks\drinktarget_list.html:8
-#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:11
+#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:10
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:5
 msgid "pcs"
 msgstr "vnt"
@@ -1110,11 +1109,15 @@ msgstr "Neįvestas tikslas"
 msgid "Year comparison"
 msgstr "Metų palyginimas"
 
+#: .\project\drinks\templates\drinks\includes\navbar.html:37
+msgid "Goal for the year"
+msgstr "Tikslas metams"
+
 #: .\project\drinks\templates\drinks\includes\tbl_alcohol.html:7
 msgid "Litres"
 msgstr "Litrai"
 
-#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:21
+#: .\project\drinks\templates\drinks\includes\tbl_consumption.html:20
 #: .\project\drinks\templates\drinks\includes\tbl_dry_days.html:13
 #: .\project\drinks\templates\drinks\includes\tbl_std_av.html:25
 msgid "No data"
@@ -1164,20 +1167,26 @@ msgstr "7 metų"
 msgid "All years"
 msgstr "Visi metai"
 
+#: .\project\drinks\views.py:157
+msgid "Delete drinks"
+msgstr "Trinti gėrimus"
+
 #: .\project\expenses\forms.py:121
 msgid "Full price"
 msgstr "Visa kaina"
 
-#: .\project\expenses\forms.py:123 .\project\expenses\forms.py:227
-#: .\project\expenses\templates\expenses\expense_list.html:29
-#: .\project\expenses\templates\expenses\expensetype_form.html:4
-#: .\project\plans\forms.py:133 .\project\plans\forms.py:228
+#: .\project\expenses\forms.py:123 .\project\expenses\forms.py:229
+#: .\project\expenses\templates\expenses\expense_list.html:28
+#: .\project\expenses\views\expenses_type.py:19
+#: .\project\expenses\views\expenses_type.py:28 .\project\plans\forms.py:133
+#: .\project\plans\forms.py:228
 msgid "Expense type"
 msgstr "Išlaidų rūšis"
 
-#: .\project\expenses\forms.py:124 .\project\expenses\forms.py:228
-#: .\project\expenses\templates\expenses\expense_list.html:30
-#: .\project\expenses\templates\expenses\expensename_form.html:4
+#: .\project\expenses\forms.py:124 .\project\expenses\forms.py:230
+#: .\project\expenses\templates\expenses\expense_list.html:29
+#: .\project\expenses\views\expenses_name.py:20
+#: .\project\expenses\views\expenses_name.py:28
 msgid "Expense name"
 msgstr "Išlaidų pavadinimas"
 
@@ -1186,13 +1195,13 @@ msgid "Exception"
 msgstr "Išimtis"
 
 #: .\project\expenses\forms.py:128
-#: .\project\expenses\templates\expenses\expense_list.html:14
-#: .\project\expenses\templates\expenses\expense_list.html:32
+#: .\project\expenses\templates\expenses\expense_list.html:13
+#: .\project\expenses\templates\expenses\expense_list.html:31
 msgid "Price"
 msgstr "Kaina"
 
 #: .\project\expenses\forms.py:129
-#: .\project\expenses\templates\expenses\expense_list.html:34
+#: .\project\expenses\templates\expenses\expense_list.html:33
 msgid "Attachment"
 msgstr "Failas"
 
@@ -1219,59 +1228,54 @@ msgstr ""
 "Data negali būti vėlesnė nei sąskaitos uždarymo data. Sąskaita buvo uždaryta "
 "%(year)s."
 
-#: .\project\expenses\forms.py:204
+#: .\project\expenses\forms.py:206
 msgid "Necessary"
 msgstr "Būtina"
 
-#: .\project\expenses\forms.py:229
+#: .\project\expenses\forms.py:231
 msgid "Valid for"
 msgstr "Galioja"
 
-#: .\project\expenses\templates\expenses\expense_confirm_delete.html:4
-msgid "Delete expenses"
-msgstr "Trinti išlaidas"
-
-#: .\project\expenses\templates\expenses\expense_form.html:7
-msgctxt "expenses form title"
-msgid "Expenses"
-msgstr "Išlaidos"
-
-#: .\project\expenses\templates\expenses\expense_list.html:15
+#: .\project\expenses\templates\expenses\expense_list.html:14
 msgid "Average unit price"
 msgstr "Vidutinė vieneto kaina"
 
-#: .\project\expenses\templates\expenses\expense_list.html:53
+#: .\project\expenses\templates\expenses\expense_list.html:52
 msgid "Image"
 msgstr "Paveikslėlis"
 
-#: .\project\expenses\templates\expenses\expense_list.html:55
+#: .\project\expenses\templates\expenses\expense_list.html:54
 msgid "Pdf file"
 msgstr "Pdf failas"
 
-#: .\project\expenses\templates\expenses\index.html:69
+#: .\project\expenses\templates\expenses\index.html:58
 #: .\project\templates\base.html:64 .\project\templates\base.html:95
 msgid "All records"
 msgstr "Visi įrašai"
 
-#: .\project\expenses\templates\expenses\index.html:84
+#: .\project\expenses\templates\expenses\index.html:69
 #: .\project\templates\base.html:151
 msgctxt "expenses name button"
 msgid "Expenses name"
 msgstr "Išlaidų pavadinimą"
 
-#: .\project\expenses\templates\expenses\index.html:90
+#: .\project\expenses\templates\expenses\index.html:70
 #: .\project\templates\base.html:150
 msgctxt "expenses type button"
 msgid "Expenses type"
 msgstr "Išlaidų rūšį"
 
-#: .\project\expenses\views\expenses.py:56
+#: .\project\expenses\views\expenses.py:54
 #, python-format
 msgid "There are no records for month <b>%(month)s</b>."
 msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 
+#: .\project\expenses\views\expenses.py:85
+msgid "Delete expense"
+msgstr "Trinti išlaidas"
+
 #: .\project\incomes\forms.py:46
-#: .\project\incomes\templates\incomes\income_list.html:16
+#: .\project\incomes\templates\incomes\income_list.html:15
 #: .\project\transactions\forms.py:44 .\project\transactions\forms.py:111
 #: .\project\transactions\forms.py:191
 #: .\project\transactions\templates\transactions\includes\table.html:13
@@ -1279,9 +1283,9 @@ msgid "Amount"
 msgstr "Suma"
 
 #: .\project\incomes\forms.py:48 .\project\incomes\forms.py:83
-#: .\project\incomes\templates\incomes\income_list.html:13
-#: .\project\incomes\templates\incomes\incometype_form.html:3
-#: .\project\incomes\templates\incomes\incometype_list.html:4
+#: .\project\incomes\templates\incomes\income_list.html:12
+#: .\project\incomes\templates\incomes\incometype_list.html:3
+#: .\project\incomes\views.py:60 .\project\incomes\views.py:68
 msgid "Incomes type"
 msgstr "Pajamų rūšis"
 
@@ -1306,15 +1310,17 @@ msgstr "Dividendai"
 msgid "Other"
 msgstr "Kita"
 
-#: .\project\incomes\templates\incomes\income_confirm_delete.html:4
-msgid "Delete incomes"
-msgstr "Trinti pajamas"
-
-#: .\project\incomes\templates\incomes\index.html:30
+#: .\project\incomes\templates\incomes\index.html:29
 #: .\project\templates\base.html:149
 msgctxt "income type button"
 msgid "Incomes type"
 msgstr "Pajamų rūšį"
+
+#: .\project\incomes\views.py:47
+#, fuzzy
+#| msgid "Delete incomes"
+msgid "Delete income"
+msgstr "Trinti pajamas"
 
 #: .\project\journals\forms.py:65
 msgid "Journal language"
@@ -1336,15 +1342,15 @@ msgstr "Laukeliai `Suma` ir `Mokestis` abu negali būti tušti."
 msgid "Fund title"
 msgstr "Fondo pavadinimas"
 
-#: .\project\pensions\templates\pensions\pension_confirm_delete.html:4
-msgid "Delete pension"
-msgstr "Trinti pensijas"
-
-#: .\project\pensions\templates\pensions\pension_form.html:5
-#: .\project\pensions\templates\pensions\pensiontype_form.html:4
-#: .\project\savings\templates\savings\index.html:25
+#: .\project\pensions\views.py:26 .\project\pensions\views.py:34
+#: .\project\pensions\views.py:55 .\project\pensions\views.py:63
+#: .\project\savings\templates\savings\index.html:26
 msgid "Pension"
 msgstr "Pensija"
+
+#: .\project\pensions\views.py:41
+msgid "Delete pension"
+msgstr "Trinti pensijas"
 
 #: .\project\plans\forms.py:29
 msgid "Years"
@@ -1371,69 +1377,69 @@ msgstr "Nėra ką kopijuoti."
 msgid "%(year)s year already has plans."
 msgstr "%(year)s metai jau turi planus."
 
-#: .\project\plans\forms.py:346
+#: .\project\plans\forms.py:348
 msgid "Copy from"
 msgstr "Kopijuoti iš"
 
-#: .\project\plans\forms.py:347
+#: .\project\plans\forms.py:349
 msgid "Copy to"
 msgstr "Kopijuoti į"
 
-#: .\project\plans\forms.py:348
-#: .\project\plans\templates\plans\incomeplan_form.html:4
+#: .\project\plans\forms.py:350 .\project\plans\views.py:103
+#: .\project\plans\views.py:111
 msgid "Incomes plans"
 msgstr "Pajamų planai"
 
-#: .\project\plans\forms.py:349
-#: .\project\plans\templates\plans\expenseplan_form.html:4
+#: .\project\plans\forms.py:351 .\project\plans\views.py:69
+#: .\project\plans\views.py:77
 msgid "Expenses plans"
 msgstr "Išlaidų planai"
 
-#: .\project\plans\forms.py:350
-#: .\project\plans\templates\plans\savingplan_form.html:4
+#: .\project\plans\forms.py:352 .\project\plans\views.py:137
+#: .\project\plans\views.py:145
 msgid "Savings plans"
 msgstr "Taupymo planai"
 
-#: .\project\plans\forms.py:351
-#: .\project\plans\templates\plans\dayplan_form.html:4
+#: .\project\plans\forms.py:353 .\project\plans\views.py:171
+#: .\project\plans\views.py:179
 msgid "Day plans"
 msgstr "Dienos planai"
 
-#: .\project\plans\forms.py:352
+#: .\project\plans\forms.py:354
 msgid "Plans for additional necessary expenses"
 msgstr "Papildomų būtinų išlaidų planus"
 
-#: .\project\plans\lib\calc_day_sum.py:116
+#: .\project\plans\lib\calc_day_sum.py:64
 msgid "median"
 msgstr "mediana"
 
-#: .\project\plans\lib\calc_day_sum.py:117
+#: .\project\plans\lib\calc_day_sum.py:65
 msgid "Necessary expenses"
 msgstr "Būtinos išlaidos"
 
-#: .\project\plans\lib\calc_day_sum.py:118
+#: .\project\plans\lib\calc_day_sum.py:66
 msgid "Remains for everyday"
 msgstr "Lieka kasdienybei"
 
-#: .\project\plans\lib\calc_day_sum.py:119
+#: .\project\plans\lib\calc_day_sum.py:67
 msgid "Full expenses"
 msgstr "Visos išlaidos"
 
-#: .\project\plans\lib\calc_day_sum.py:120
+#: .\project\plans\lib\calc_day_sum.py:68
 #: .\project\plans\templates\plans\includes\generic_list.html:32
 msgid "Residual"
 msgstr "Likutis"
 
-#: .\project\plans\lib\calc_day_sum.py:121
-#: .\project\plans\templates\plans\index.html:46
+#: .\project\plans\lib\calc_day_sum.py:69
+#: .\project\plans\templates\plans\index.html:44
 msgid "Sum per day"
 msgstr "Suma dienai"
 
-#: .\project\plans\lib\calc_day_sum.py:122
+#: .\project\plans\lib\calc_day_sum.py:70
 msgid "days in month"
 msgstr "mėnesio dienų skaičius"
 
-#: .\project\plans\lib\calc_day_sum.py:123
+#: .\project\plans\lib\calc_day_sum.py:71
 msgid "from tables above"
 msgstr "iš lentelių viršuje"
 
@@ -1453,31 +1459,28 @@ msgstr "Dienos"
 msgid "%(year)s year and %(type)s already has %(title)s plan."
 msgstr "%(year)s metai ir %(type)s jau turi %(title)s planą."
 
-#: .\project\plans\templates\plans\copyplan_form.html:4
-#: .\project\plans\templates\plans\index.html:15
-msgid "Copy plans"
-msgstr "Kopijuoti planus"
-
-#: .\project\plans\templates\plans\dayplan_confirm_delete.html:4
-#: .\project\plans\templates\plans\expenseplan_confirm_delete.html:4
-#: .\project\plans\templates\plans\incomeplan_confirm_delete.html:4
-#: .\project\plans\templates\plans\necessaryplan_confirm_delete.html:4
-#: .\project\plans\templates\plans\savingplan_confirm_delete.html:4
-msgid "Delete plans"
-msgstr "Trinti planus"
-
 #: .\project\plans\templates\plans\dayplan_list.html:4
 msgid "Daily"
 msgstr "Dienai"
 
-#: .\project\plans\templates\plans\index.html:30
-#: .\project\plans\templates\plans\necessaryplan_form.html:4
+#: .\project\plans\templates\plans\index.html:16 .\project\plans\views.py:229
+msgid "Copy plans"
+msgstr "Kopijuoti planus"
+
+#: .\project\plans\templates\plans\index.html:30 .\project\plans\views.py:205
+#: .\project\plans\views.py:212
 msgid "Additional necessary expenses"
 msgstr "Papildomos būtinos išlaidos"
 
-#: .\project\plans\templates\plans\index.html:54
+#: .\project\plans\templates\plans\index.html:51
 msgid "Calculations"
 msgstr "Skaičiavimai"
+
+#: .\project\plans\views.py:84 .\project\plans\views.py:118
+#: .\project\plans\views.py:152 .\project\plans\views.py:186
+#: .\project\plans\views.py:219
+msgid "Delete plan"
+msgstr "Trinti planus"
 
 #: .\project\savings\forms.py:80
 #: .\project\savings\templates\savings\saving_list.html:13
@@ -1487,23 +1490,25 @@ msgstr "Skaičiavimai"
 msgid "From account"
 msgstr "Iš sąskaitos"
 
-#: .\project\savings\templates\savings\index.html:25
+#: .\project\savings\templates\savings\index.html:26
 msgid "II stage"
 msgstr "II pakopa"
 
-#: .\project\savings\templates\savings\index.html:34
+#: .\project\savings\templates\savings\index.html:35
 #: .\project\templates\base.html:152
 msgctxt "fund button"
 msgid "Fund"
 msgstr "Fondą"
 
-#: .\project\savings\templates\savings\index.html:40
+#: .\project\savings\templates\savings\index.html:41
 msgctxt "pension button"
 msgid "Pension"
 msgstr "Pensiją"
 
-#: .\project\savings\templates\savings\saving_confirm_delete.html:4
-msgid "Delete savings"
+#: .\project\savings\views.py:57
+#, fuzzy
+#| msgid "Delete savings"
+msgid "Delete saving"
 msgstr "Trinti fondus"
 
 #: .\project\templates\403.html:7
@@ -1548,7 +1553,7 @@ msgid "Plans"
 msgstr "Planai"
 
 #: .\project\templates\base.html:148
-#: .\project\transactions\templates\transactions\index.html:42
+#: .\project\transactions\templates\transactions\index.html:43
 msgctxt "account button"
 msgid "Account"
 msgstr "Sąskaitą"
@@ -1557,8 +1562,9 @@ msgstr "Sąskaitą"
 msgid "Log out"
 msgstr "Išsiregistruoti"
 
-#: .\project\templates\base.html:167 .\project\users\views.py:152
-#: .\project\users\views.py:153
+#: .\project\templates\base.html:167
+#: .\project\users\templates\users\password_reset_confirm.html:15
+#: .\project\users\views.py:152 .\project\users\views.py:153
 msgid "Change password"
 msgstr "Keisti slaptažodį"
 
@@ -1576,32 +1582,31 @@ msgstr "Į sąskaitą"
 msgid "Amount left after fee"
 msgstr "Suma kuri lieka atskaičius mokesčius"
 
-#: .\project\transactions\templates\transactions\index.html:19
+#: .\project\transactions\templates\transactions\index.html:20
 msgid "Account &hArr; Account"
 msgstr "Sąskaita &rArr; Sąskaita"
 
-#: .\project\transactions\templates\transactions\index.html:26
-#: .\project\transactions\templates\transactions\savingclose_form.html:4
+#: .\project\transactions\templates\transactions\index.html:27
+#: .\project\transactions\views.py:95 .\project\transactions\views.py:103
 msgid "Fund &rArr; Account"
 msgstr "Fondas &rArr; Sąskaita"
 
-#: .\project\transactions\templates\transactions\index.html:33
-#: .\project\transactions\templates\transactions\savingchange_form.html:4
+#: .\project\transactions\templates\transactions\index.html:34
+#: .\project\transactions\views.py:126 .\project\transactions\views.py:134
 msgid "Fund &hArr; Fund"
 msgstr "Fondas &hArr; Fondas"
 
-#: .\project\transactions\templates\transactions\savingchange_confirm_delete.html:4
-#: .\project\transactions\templates\transactions\savingclose_confirm_delete.html:4
-#: .\project\transactions\templates\transactions\transaction_confirm_delete.html:4
-msgid "Delete transaction"
-msgstr "Trint pervedimą"
-
-#: .\project\transactions\templates\transactions\transaction_form.html:5
+#: .\project\transactions\views.py:63 .\project\transactions\views.py:71
 msgid "Transaction"
 msgstr "Pinigų pervedimas"
 
+#: .\project\transactions\views.py:78 .\project\transactions\views.py:109
+#: .\project\transactions\views.py:141
+msgid "Delete transaction"
+msgstr "Trint pervedimą"
+
 #: .\project\users\forms.py:20 .\project\users\forms.py:32
-#: .\project\users\templates\users\includes\users_lists.html:11
+#: .\project\users\templates\users\includes\users_lists.html:10
 msgid "Email"
 msgstr "El. paštas"
 
@@ -1617,19 +1622,15 @@ msgstr "Vartotojas su šiuo Email jau egzistuoja."
 msgid "Update"
 msgstr "Atnaujinti"
 
-#: .\project\users\templates\users\includes\users_delete.html:4
-msgid "Delete user"
-msgstr "Trinti vartotoją"
-
-#: .\project\users\templates\users\includes\users_lists.html:10
+#: .\project\users\templates\users\includes\users_lists.html:9
 msgid "User"
 msgstr "Vartotojas"
 
-#: .\project\users\templates\users\includes\users_lists.html:12
+#: .\project\users\templates\users\includes\users_lists.html:11
 msgid "Admin"
 msgstr "Administratorius"
 
-#: .\project\users\templates\users\includes\users_lists.html:31
+#: .\project\users\templates\users\includes\users_lists.html:30
 msgid "There are no additional users."
 msgstr "Nėra papildomų vartotojų."
 
@@ -1659,8 +1660,8 @@ msgstr "Užsiregistruoti"
 msgid "Already have an account?"
 msgstr "Jau turite paskyrą?"
 
-#: .\project\users\templates\users\login.html:30 .\project\users\views.py:50
-#: .\project\users\views.py:51
+#: .\project\users\templates\users\login.html:30 .\project\users\views.py:51
+#: .\project\users\views.py:52
 msgid "Log in"
 msgstr "Prisijungti"
 
@@ -1703,10 +1704,6 @@ msgstr "Grįžti į prisijungimo puslapį"
 #, python-format
 msgid "Change password for <b>%(user)s</b>"
 msgstr "Keisti <b>%(user)s</b> slaptažodį"
-
-#: .\project\users\templates\users\password_reset_confirm.html:15
-msgid "Change Password"
-msgstr "Keisti slaptažodį"
 
 #: .\project\users\templates\users\password_reset_confirm.html:22
 #: .\project\users\views.py:117 .\project\users\views.py:134
@@ -1761,6 +1758,24 @@ msgstr ""
 "Patikrinkite el. pašto dėžutę, joje turi būti laiškas su slaptažodžio "
 "atstatymo nuoroda. Jei laiško negausite per kelias minutes, patikrinkite "
 "šlamšto aplanką."
+
+#: .\project\users\views.py:302
+msgid "Delete user"
+msgstr "Trinti vartotoją"
+
+#~ msgid "Change Password"
+#~ msgstr "Keisti slaptažodį"
+
+#~ msgctxt "book form title"
+#~ msgid "Book"
+#~ msgstr "Knyga"
+
+#~ msgctxt "expenses form title"
+#~ msgid "Expenses"
+#~ msgstr "Išlaidos"
+
+#~ msgid "Delete plans"
+#~ msgstr "Trinti planus"
 
 #, fuzzy
 #~| msgid "Residual"
@@ -1953,9 +1968,6 @@ msgstr ""
 
 #~ msgid "Additional necessary expenses plans"
 #~ msgstr "Papildomų būtinų išlaidų planai"
-
-#~ msgid "Delete plan"
-#~ msgstr "Trinti planus"
 
 #, fuzzy
 #~| msgid "Incomes plans"

@@ -1,6 +1,5 @@
 {% load i18n %}
 {% load humanize %}
-{% load slippers %}
 {% load colorize %}
 {% load math %}
 {% load cell_format %}
@@ -57,8 +56,8 @@
                     {% endif %}
                 </td>
                 <td>{{ object.account }}</td>
-                {% include "core/includes/cell_edit.html" with url=url_update %}
-                {% include "core/includes/cell_delete.html" with url=url_delete %}
+                <c-td-edit :url=url_update />
+                <c-td-delete :url=url_delete />
             </tr>
             {% endfor %}
         </tbody>
@@ -67,7 +66,7 @@
 
 <script>$('.sticky-table').stickyTableHeaders();</script>
 
-{% paging url=url page_obj=object_list page_range=page_range search=search target="#data" %}
+<c-paging :url=url :page_obj=object_list :page_range=page_range :search=search target="#data"/>
 
 
 <!-- modal image -->

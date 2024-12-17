@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load slippers %}
 {% load get_item %}
 {% load math %}
 {% load cell_format %}
@@ -8,7 +7,7 @@
 <table class="main striped hover">
     <thead>
         <tr>
-            <th class="text-left right-thin-border" rowspan="2">{% regenerate_balances type=type %} {{ title }}</th>
+            <th class="text-left right-thin-border" rowspan="2"><c-regenerate-balances :type=type /> {{ title }}</th>
             <th colspan="2" class="text-center">{% translate 'Past years' %}</th>
             <th colspan="2" class="text-center left-thin-border right-thin-border">{{ request.user.year }}</th>
             <th colspan="4" class="text-center">{% translate 'Total' %}</th>
@@ -40,7 +39,7 @@
     <tbody>
         {% for item in object_list %}
         <tr>
-            {% if item.saving_type_id %}{% var obj_type='saving_type'%}{% else %}{% var obj_type='pension_type' %}{% endif %}
+            {% if item.saving_type_id %}{% firstof 'saving_type' as obj_type %}{% else %}{% firstof 'pension_type' as obj_type %}{% endif %}
             <td class="funds-title-col-min-width text-left right-thin-border">{{ item|get_obj_attr:obj_type }}</td>
             <td class="w6 {{item.past_amount|css_class_if_none}}">{{item.past_amount|price|cellformat}}</td>
             <td class="w6 right-thin-border {{item.past_fee|css_class_if_none}}">{{item.past_fee|price|cellformat}}</td>

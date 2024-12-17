@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from ...core.mixins.views import CreateViewMixin, UpdateViewMixin
 from .. import forms, models
@@ -16,11 +17,12 @@ class New(QuerySetMixin, CreateViewMixin):
 
     url = reverse_lazy("expenses:name_new")
     hx_trigger_django = "afterName"
+    form_title = _('Expense name')
 
 
 class Update(QuerySetMixin, UpdateViewMixin):
     model = models.ExpenseName
     form_class = forms.ExpenseNameForm
     success_url = reverse_lazy("expenses:type_list")
-
     hx_trigger_django = "afterName"
+    form_title = _('Expense name')

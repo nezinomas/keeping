@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import ConvertToCents
 from ..core.mixins.views import (
@@ -22,6 +23,7 @@ class New(CreateViewMixin):
     form_class = forms.PensionForm
     hx_trigger_form = "afterPension"
     success_url = reverse_lazy("pensions:list")
+    form_title = _("Pension")
 
 
 class Update(ConvertToCents, UpdateViewMixin):
@@ -29,12 +31,14 @@ class Update(ConvertToCents, UpdateViewMixin):
     form_class = forms.PensionForm
     hx_trigger_django = "afterPension"
     success_url = reverse_lazy("pensions:list")
+    form_title = _("Pension")
 
 
 class Delete(DeleteViewMixin):
     model = models.Pension
     hx_trigger_django = "afterPension"
     success_url = reverse_lazy("pensions:list")
+    form_title = _("Delete pension")
 
 
 class TypeLists(ListViewMixin):
@@ -48,6 +52,7 @@ class TypeNew(CreateViewMixin):
 
     url = reverse_lazy("pensions:type_new")
     success_url = reverse_lazy("pensions:type_list")
+    form_title = _('Pension')
 
 
 class TypeUpdate(UpdateViewMixin):
@@ -55,3 +60,4 @@ class TypeUpdate(UpdateViewMixin):
     form_class = forms.PensionTypeForm
     hx_trigger_django = "afterPensionType"
     success_url = reverse_lazy("pensions:type_list")
+    form_title = _('Pension')

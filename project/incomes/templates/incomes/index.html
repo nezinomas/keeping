@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% load static %}
-{% load slippers %}
 {% load i18n %}
 
 {% block head %}
@@ -16,10 +15,10 @@
 <main class="grid-70-30">
     <div>
         <div class="button-row">
-            {% url 'incomes:search' as search_url %}
-            {% url 'incomes:list' as reset_url %}
-            <div hx-trigger="reloadSearch from:body">{% search_form url=search_url reset_url=reset_url target="#data" %}</div>
-            <button type="button" class="button-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal">{% translate 'Incomes' context 'incomes button' %}</button>
+            <div hx-trigger="reloadSearch from:body">
+                <c-search-form url="{% url 'incomes:search' %}" reset_url="{% url 'incomes:list' %}" target="#data" />
+            </div>
+            <c-new-button url="{% url 'incomes:new' %}" title="{% translate 'Incomes' context 'incomes button' %}" />
         </div>
 
         <div id="data" hx-get="{% url 'incomes:list' %}" hx-trigger="load"></div>
@@ -27,7 +26,7 @@
 
     <div>
         <div class="button-row row-reverse">
-            <button type="button" class="button-outline-success" hx-get="{% url 'incomes:type_new' %}" hx-target="#mainModal">{% translate 'Incomes type' context 'income type button' %}</button>
+            <c-new-button url="{% url 'incomes:type_new' %}" title="{% translate 'Incomes type' context 'income type button' %}" />
         </div>
 
         <div id="incometype_list" hx-trigger="load, afterType from:body" hx-get="{% url 'incomes:type_list' %}" hx-target="this"></div>

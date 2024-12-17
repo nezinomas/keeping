@@ -34,8 +34,8 @@
             <td class="text-left">{{ object.remark }}</td>
             <td class="text-center">{% if object.debt.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
             {% if not object.debt.closed %}
-                {% include "core/includes/cell_edit.html" with url=url_update %}
-                {% include "core/includes/cell_delete.html" with url=url_delete %}
+                <c-td-edit :url=url_update />
+                <c-td-delete :url=url_delete />
             {% else %}
                 <td class="edit-cell"></td>
                 <td class="delete-cell"></td>
