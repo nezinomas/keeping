@@ -36,7 +36,11 @@ urlpatterns = [
     ),
     path("invite/", views.Invite.as_view(), name="invite"),
     path("invite/done/", views.InviteDone.as_view(), name="invite_done"),
-    path("invite/<token:token>/", login_not_required(views.InviteSignup.as_view()), name="invite_signup"),
+    path(
+        "invite/<token:token>/",
+        login_not_required(views.InviteSignup.as_view()),
+        name="invite_signup",
+    ),
     path("settings/", views.SettingsIndex.as_view(), name="settings_index"),
     path("settings/users/", views.SettingsUsers.as_view(), name="settings_users"),
     path(
