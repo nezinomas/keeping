@@ -169,7 +169,7 @@ class TargetNew(CreateViewMixin):
     model = models.DrinkTarget
     form_class = forms.DrinkTargetForm
     success_url = reverse_lazy("drinks:index")
-    form_title = _('Goal for the year')
+    form_title = _('New goal')
 
     def get_hx_trigger_django(self):
         tab = self.kwargs.get("tab")
@@ -193,7 +193,7 @@ class TargetUpdate(UpdateViewMixin):
     form_class = forms.DrinkTargetForm
     hx_trigger_django = "reloadIndex"
     success_url = reverse_lazy("drinks:tab_index")
-    form_title = _('Goal for the year')
+    form_title = _('Update goal')
 
     def get_object(self):
         obj = super().get_object()

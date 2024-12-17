@@ -40,7 +40,7 @@ class New(CreateViewMixin):
     form_class = forms.SavingForm
     hx_trigger_form = "reload"
     success_url = reverse_lazy("savings:list")
-    form_title = _("New saving")
+    form_title = _("Savings")
 
 
 class Update(ConvertToCents, UpdateViewMixin):
@@ -48,7 +48,7 @@ class Update(ConvertToCents, UpdateViewMixin):
     form_class = forms.SavingForm
     hx_trigger_django = "reload"
     success_url = reverse_lazy("savings:list")
-    form_title = _("Update saving")
+    form_title = _("Savings")
 
 
 class Delete(DeleteViewMixin):
@@ -71,11 +71,11 @@ class TypeNew(CreateViewMixin):
 
     url = reverse_lazy("savings:type_new")
     success_url = reverse_lazy("savings:type_list")
-    form_title = _("New saving type")
+    form_title = _("Fund")
 
 
 class TypeUpdate(UpdateViewMixin):
     model = models.SavingType
     form_class = forms.SavingTypeForm
     hx_trigger_django = "afterType"
-    form_title = _("Update saving type")
+    form_title = _("Fund")
