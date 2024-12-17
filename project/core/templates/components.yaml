@@ -1,4 +1,3 @@
 components:
     regenerate_balances: "core/includes/regenerate_balances.html"
-    search_form: "core/includes/search_form.html"
     accordion: "core/includes/accordion.html"
