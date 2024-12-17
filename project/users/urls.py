@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_not_required
 from django.urls import path, register_converter
 
 from ..core import converters
@@ -9,8 +10,8 @@ register_converter(converters.SignerConverter, "token")
 
 urlpatterns = [
     path("logout/", views.Logout.as_view(), name="logout"),
-    path("login/", views.Login.as_view(), name="login"),
-    path("signup/", views.Signup.as_view(), name="signup"),
+    path("login/", login_not_required(views.Login.as_view()), name="login"),
+    path("signup/", login_not_required(views.Signup.as_view()), name="signup"),
     path("password_reset/", views.PasswordReset.as_view(), name="password_reset"),
     path(
         "password_reset/done/",
@@ -35,7 +36,7 @@ urlpatterns = [
     ),
     path("invite/", views.Invite.as_view(), name="invite"),
     path("invite/done/", views.InviteDone.as_view(), name="invite_done"),
-    path("invite/<token:token>/", views.InviteSignup.as_view(), name="invite_signup"),
+    path("invite/<token:token>/", login_not_required(views.InviteSignup.as_view()), name="invite_signup"),
     path("settings/", views.SettingsIndex.as_view(), name="settings_index"),
     path("settings/users/", views.SettingsUsers.as_view(), name="settings_users"),
     path(
