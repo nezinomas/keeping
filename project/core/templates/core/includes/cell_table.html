@@ -1,9 +1,0 @@
-{% load cell_format %}
-{% load slippers %}
-
-{% var default=default_if_empty|default:'-' %}
-{% var column_tag=tag|default:"td" %}
-{% var before_value=before_text|default:'' %}
-{% var after_value=after_text|default:'' %}
-
-<{{column_tag}} class="{% if highlight_value %}{{value|cellformat:default|positive_negative}}{% endif %}{% if value|cellformat:default == '-' %} dash{% endif %}{% if css_class %} {{css_class}}{% endif %}"{% if width %} width="{{width}}"{% endif %}{% if alpinejs %} {{alpinejs|safe}}{% endif %}>{{before_value}}{{value|cellformat:default}}{{after_value}}</{{column_tag}}>
