@@ -27,8 +27,8 @@
             {% if fee %}
             <td class="{{object.fee|css_class_if_none}}">{{object.fee|price|cellformat}}</td>
             {% endif %}
-            <c-td-edit :url=url_update />
-            <c-td-delete :url=url_delete />
+            <c-td-edit :url=url__update />
+            <c-td-delete :url=url__delete />
         </tr>
         {% endfor %}
     </tbody>
