@@ -12,9 +12,7 @@
 
 {% block content %}
 
-{% url 'expenses:new' as url_expense_new %}
-{% url 'expenses:type_new' as url_type_new %}
-{% url 'expenses:name_new' as url_name_new %}
+
 <main class="grid-70-30">
     {% var current_month=view.get_month %}
     <div
@@ -35,12 +33,7 @@
                 {% now 'n' as month_number %}
             {% endif %}
 
-            <button type="button" id="insert_expense"
-                class="button-outline-success flex-right"
-                hx-get="{{url_expense_new}}"
-                hx-target="#mainModal">
-                {% translate "Expenses" context "expenses button" %}
-            </button>
+            <c-new-button url="{% url 'expenses:new' %}" title="{% translate 'Expenses' context 'expenses button' %}" css_class="flex-right" />
         </div>
 
         <!-- month buttons -->
@@ -77,18 +70,8 @@
     <div>
         <!-- type and name buttons -->
         <div class="button-row row-reverse">
-            <button type="button" class="button-outline-success"
-                hx-get="{{url_name_new}}"
-                hx-target="#mainModal">
-
-                {% translate "Expenses name" context "expenses name button" %}
-            </button>
-            <button type="button" class="button-outline-success"
-                hx-get="{{url_type_new}}"
-                hx-target="#mainModal">
-
-                {% translate "Expenses type" context "expenses type button" %}
-            </button>
+            <c-new-button url="{% url 'expenses:name_new' %}" title="{% translate 'Expenses name' context 'expenses name button' %}" />
+            <c-new-button url="{% url 'expenses:type_new' %}" title="{% translate 'Expenses type' context 'expenses type button' %}" />
         </div>
 
         <div class="button-row"></div>
