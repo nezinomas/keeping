@@ -1,6 +1,5 @@
 import json
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import Http404, HttpResponse
@@ -79,7 +78,7 @@ class CreateUpdateMixin:
     def get_context_data(self, **kwargs):
         context = {
             "form_title": getattr(self, "form_title", None),
-            "modal_body_css_class": getattr(self, "modal_body_css_class", ''),
+            "modal_body_css_class": getattr(self, "modal_body_css_class", ""),
             "form_action": self.form_action,
             "url": self.url,
             "hx_trigger_form": self.get_hx_trigger_form(),
@@ -186,9 +185,7 @@ class SearchMixin:
 # -------------------------------------------------------------------------------------
 #                                                                          Views Mixins
 # -------------------------------------------------------------------------------------
-class CreateViewMixin(
-    LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView
-):
+class CreateViewMixin(GetQuerysetMixin, CreateUpdateMixin, CreateView):
     template_name = "core/generic_form.html"
     form_action = "insert"
 
@@ -197,9 +194,7 @@ class CreateViewMixin(
         return reverse_lazy(f"{app}:new")
 
 
-class UpdateViewMixin(
-    LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
-):
+class UpdateViewMixin(GetQuerysetMixin, CreateUpdateMixin, UpdateView):
     template_name = "core/generic_form.html"
     form_action = "update"
 
@@ -207,25 +202,25 @@ class UpdateViewMixin(
         return self.object.get_absolute_url() if self.object else None
 
 
-class DeleteViewMixin(LoginRequiredMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
+class DeleteViewMixin(GetQuerysetMixin, DeleteMixin, DeleteView):
     template_name = "core/generic_delete_form.html"
 
 
-class RedirectViewMixin(LoginRequiredMixin, RedirectView):
+class RedirectViewMixin(RedirectView):
     pass
 
 
-class TemplateViewMixin(LoginRequiredMixin, TemplateView):
+class TemplateViewMixin(TemplateView):
     pass
 
 
-class ListViewMixin(LoginRequiredMixin, GetQuerysetMixin, ListView):
+class ListViewMixin(GetQuerysetMixin, ListView):
     pass
 
 
-class FormViewMixin(LoginRequiredMixin, FormView):
+class FormViewMixin(FormView):
     template_name = "core/generic_form.html"
 
 
-class SearchViewMixin(LoginRequiredMixin, SearchMixin, TemplateView):
+class SearchViewMixin(SearchMixin, TemplateView):
     pass
