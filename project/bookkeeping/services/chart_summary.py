@@ -80,7 +80,9 @@ class Charts:
             idx = categories.index(item["date"].year)
             data_values[item["title"]][idx] = item["sum"]
 
-        data = [{"name": title, "data": values} for title, values in data_values.items()]
+        data = [
+            {"name": title, "data": values} for title, values in data_values.items()
+        ]
 
         return {
             "chart_title": _("Incomes"),

@@ -80,8 +80,8 @@ def test_table_percentage(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert '6,60</td>' in actual # row
-    assert '6,60</th>' in actual # total_row
+    assert "6,60</td>" in actual  # row
+    assert "6,60</th>" in actual  # total_row
 
 
 def test_regenerate_buttons(client_logged):

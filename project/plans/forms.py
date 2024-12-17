@@ -314,6 +314,8 @@ class CopyPlanForm(forms.Form):
         if errors:
             raise forms.ValidationError(errors)
 
+        return cleaned_data
+
     def save(self):
         dict_ = self._get_cleaned_checkboxes(self.cleaned_data)
         year_from = self.cleaned_data.get("year_from")

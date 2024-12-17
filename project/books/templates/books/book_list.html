@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load slippers %}
 {% load math %}
 
 {% if object_list %}
@@ -29,8 +28,8 @@
             <td class="text-left">{{ object.remark }}</td>
             <td class="text-center">{{ object.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ object.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
-            {% edit_cell url=url_update %}
-            {% delete_cell url=url_delete %}
+            <c-td-edit :url=url_update />
+            <c-td-delete :url=url_delete />
         </tr>
         {% endfor %}
     </tbody>
@@ -38,7 +37,7 @@
 
 
 <script>$('.sticky-table').stickyTableHeaders();</script>
-{% paging url=url page_obj=object_list page_range=page_range search=search tab=tab target="#data" %}
+<c-paging :url=url :page_obj=object_list :page_range=page_range :search=search :tab=tab target="#data"/>
 
 {% else %}
 

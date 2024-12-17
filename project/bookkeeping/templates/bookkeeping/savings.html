@@ -1,9 +1,8 @@
-{% load slippers %}
 {% load math %}
 {% load i18n %}
 
-{% var percent_val=incomes_total|percent:savings_total %}
-
+{% with incomes_total|percent:savings_total as percent_val %}
 <div class="alert {% if percent_val <= 0 %}alert-danger{% elif percent_val < 10 %}alert-warning{% else %}alert-success{% endif %}">{% translate 'Percentage of income saved' %}: <b>{{percent_val|floatformat:"1g"}}</b>%</div>
+{% endwith %}
 
 {% include 'bookkeeping/includes/funds_table.html' %}

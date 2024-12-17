@@ -92,8 +92,13 @@ class Expenses(Browser):
 
         sleep(0.5)
 
-        assert self.browser.find_element(By.ID, "id_price").get_attribute("value") == "0.0"
-        assert self.browser.find_element(By.ID, "id_quantity").get_attribute("value") == "1"
+        assert (
+            self.browser.find_element(By.ID, "id_price").get_attribute("value") == "0.0"
+        )
+        assert (
+            self.browser.find_element(By.ID, "id_quantity").get_attribute("value")
+            == "1"
+        )
 
     def test_exclude_expense_reset_after_submit(self):
         self._fill_selects()

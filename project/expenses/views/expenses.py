@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.db.models import F
 from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.convert_price import ConvertToCents
 from ...core.mixins.views import (
@@ -46,9 +46,7 @@ class Lists(GetMonthMixin, ListViewMixin):
         if month in range(1, 13):
             qs = qs.filter(date__month=month)
 
-        qs = qs.order_by("-date", "expense_type", F("expense_name").asc())
-
-        return qs
+        return qs.order_by("-date", "expense_type", F("expense_name").asc())
 
     def get_context_data(self, **kwargs):
         month = self.get_month()
@@ -70,6 +68,7 @@ class New(CreateViewMixin):
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_form = "reload"
+    form_title = _('Expenses')
 
 
 class Update(ConvertToCents, UpdateViewMixin):
@@ -77,12 +76,13 @@ class Update(ConvertToCents, UpdateViewMixin):
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_django = "reload"
+    form_title = _('Expenses')
 
 
 class Delete(DeleteViewMixin):
     model = models.Expense
     success_url = reverse_lazy("expenses:list")
-    hx_trigger_django = "reload"
+    form_title = _('Delete expense')
 
 
 class Search(SearchViewMixin):

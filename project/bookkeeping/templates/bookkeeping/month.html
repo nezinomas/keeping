@@ -46,11 +46,12 @@
 
     <!-- Add buttons -->
     <div id="month-add-buttons" class="button-row flex-right wrap">
-        <button type="button" class="button-outline-success" hx-get="{% url 'expenses:new' %}" hx-target="#mainModal"> {% translate 'Expenses' context "expenses button" %}</button>
-        <button type="button" class="button-outline-success" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal"> {% translate 'Incomes' context "incomes button" %}</button>
-        <button type="button" class="button-outline-success" hx-get="{% url 'savings:new' %}" hx-target="#mainModal"> {% translate 'Savings' context "savings button" %}</button>
-        <button type="button" class="button-outline-success" hx-get="{% url 'transactions:new' %}" hx-target="#mainModal"> {% translate 'Transactions' context 'transactions button' %}</button>
-        <button type="button" class="button-outline-success" hx-get="{% url 'drinks:new' 'index' %}" hx-target="#mainModal">{% translate 'Drinks' context 'drinks button' %}</button>
+        <c-new-button url="{% url 'expenses:new' %}" title="{% translate 'Expenses' context 'expenses button' %}" />
+        <c-new-button url="{% url 'incomes:new' %}" title="{% translate 'Incomes' context 'incomes button' %}" />
+        <c-new-button url="{% url 'savings:new' %}" title="{% translate 'Savings' context 'savings button' %}" />
+        <c-new-button url="{% url 'transactions:new' %}" title="{% translate 'Transactions' context 'transactions button' %}" />
+        <c-new-button url="{% url 'drinks:new' 'index' %}" title="{% translate 'Drinks' context 'drinks button' %}" />
+
         <button class="button-active" @click="show_chart =! show_chart" hx-get="{% static 'bookkeeping/chart_month_expenses.html' %}" hx-target="#chart-expenses-container" hx-trigger="click once">{% translate 'Show other chart' %}</button>
     </div>
 

@@ -5,8 +5,7 @@ from django.template import Context, Template
 @pytest.fixture
 def _template():
     return Template(
-        "{% load table %}"
-        '{% table "transactions:update" "transactions:delete" %}'
+        "{% load table %}" '{% table "transactions:update" "transactions:delete" %}'
     )
 
 

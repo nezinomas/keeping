@@ -24,8 +24,8 @@ def expenses_more():
     ExpenseFactory(
         date=date(1999, 1, 1),
         price=3,
-        account=AccountFactory(title='Account1'),
-        exception=True
+        account=AccountFactory(title="Account1"),
+        exception=True,
     )
 
 
@@ -35,19 +35,21 @@ def expenses_more():
 def test_expense_type_str():
     e = ExpenseTypeFactory.build()
 
-    assert str(e) == 'Expense Type'
+    assert str(e) == "Expense Type"
 
 
 def test_expense_type_get_absolute_url():
     obj = ExpenseTypeFactory()
 
-    assert obj.get_absolute_url() == reverse('expenses:type_update', kwargs={'pk': obj.pk})
+    assert obj.get_absolute_url() == reverse(
+        "expenses:type_update", kwargs={"pk": obj.pk}
+    )
 
 
 def test_month_expense_type(expenses):
     expect = [
-        {'date': date(1999, 1, 1), 'sum': 50, 'title': 'Expense Type'},
-        {'date': date(1999, 12, 1), 'sum': 125, 'title': 'Expense Type'},
+        {"date": date(1999, 1, 1), "sum": 50, "title": "Expense Type"},
+        {"date": date(1999, 12, 1), "sum": 125, "title": "Expense Type"},
     ]
 
     actual = [*Expense.objects.sum_by_month_and_type(1999)]
@@ -58,15 +60,16 @@ def test_month_expense_type(expenses):
 def test_day_expense_type(expenses_january):
     expect = [
         {
-            'date': date(1999, 1, 1),
-            'sum': 50,
-            'title': 'Expense Type',
-            'exception_sum': 25,
-        }, {
-            'date': date(1999, 1, 11),
-            'sum': 50,
-            'title': 'Expense Type',
-            'exception_sum': 0,
+            "date": date(1999, 1, 1),
+            "sum": 50,
+            "title": "Expense Type",
+            "exception_sum": 25,
+        },
+        {
+            "date": date(1999, 1, 11),
+            "sum": 50,
+            "title": "Expense Type",
+            "exception_sum": 0,
         },
     ]
 
@@ -76,8 +79,8 @@ def test_day_expense_type(expenses_january):
 
 
 def test_expense_type_items():
-    ExpenseTypeFactory(title='T1')
-    ExpenseTypeFactory(title='T2')
+    ExpenseTypeFactory(title="T1")
+    ExpenseTypeFactory(title="T2")
 
     actual = ExpenseType.objects.items()
 
@@ -85,8 +88,8 @@ def test_expense_type_items():
 
 
 def test_expense_type_items_user(second_user):
-    ExpenseTypeFactory(title='T1')
-    ExpenseTypeFactory(title='T2', journal=second_user.journal)
+    ExpenseTypeFactory(title="T1")
+    ExpenseTypeFactory(title="T2", journal=second_user.journal)
 
     actual = ExpenseType.objects.items()
 
@@ -94,16 +97,16 @@ def test_expense_type_items_user(second_user):
 
 
 def test_expense_type_related_qs_count(django_assert_max_num_queries):
-    ExpenseTypeFactory(title='T1')
-    ExpenseTypeFactory(title='T2')
-    ExpenseTypeFactory(title='T3')
+    ExpenseTypeFactory(title="T1")
+    ExpenseTypeFactory(title="T2")
+    ExpenseTypeFactory(title="T3")
 
     with django_assert_max_num_queries(2):
         list(q.title for q in ExpenseType.objects.items())
 
 
 def test_post_save_expense_type_insert_new(main_user):
-    obj = ExpenseType(title='e1', journal=main_user.journal)
+    obj = ExpenseType(title="e1", journal=main_user.journal)
     obj.save()
 
     actual = AccountBalance.objects.items()
@@ -113,13 +116,13 @@ def test_post_save_expense_type_insert_new(main_user):
 
 @pytest.mark.xfail
 def test_expense_type_unique_user():
-    ExpenseType.objects.create(title='T1', user=UserFactory())
-    ExpenseType.objects.create(title='T1', user=UserFactory())
+    ExpenseType.objects.create(title="T1", user=UserFactory())
+    ExpenseType.objects.create(title="T1", user=UserFactory())
 
 
 def test_expense_type_unique_users(main_user, second_user):
-    ExpenseType.objects.create(title='T1', journal=main_user.journal)
-    ExpenseType.objects.create(title='T1', journal=second_user.journal)
+    ExpenseType.objects.create(title="T1", journal=main_user.journal)
+    ExpenseType.objects.create(title="T1", journal=second_user.journal)
 
 
 # ----------------------------------------------------------------------------
@@ -128,17 +131,20 @@ def test_expense_type_unique_users(main_user, second_user):
 def test_expnese_name_str():
     e = ExpenseNameFactory.build()
 
-    assert str(e) == 'Expense Name'
+    assert str(e) == "Expense Name"
+
 
 def test_expense_name_get_absolute_url():
     obj = ExpenseNameFactory()
 
-    assert obj.get_absolute_url() == reverse('expenses:name_update', kwargs={'pk': obj.pk})
+    assert obj.get_absolute_url() == reverse(
+        "expenses:name_update", kwargs={"pk": obj.pk}
+    )
 
 
 def test_expense_name_items():
-    ExpenseNameFactory(title='N1')
-    ExpenseNameFactory(title='N2')
+    ExpenseNameFactory(title="N1")
+    ExpenseNameFactory(title="N2")
 
     actual = ExpenseName.objects.items()
 
@@ -146,55 +152,55 @@ def test_expense_name_items():
 
 
 def test_expense_name_related_different_users(second_user):
-    t1 = ExpenseTypeFactory(title='T1') # user bob
-    t2 = ExpenseTypeFactory(title='T2', journal=second_user.journal) # user X
+    t1 = ExpenseTypeFactory(title="T1")  # user bob
+    t2 = ExpenseTypeFactory(title="T2", journal=second_user.journal)  # user X
 
-    ExpenseNameFactory(title='N1', parent=t1)
-    ExpenseNameFactory(title='N2', parent=t2)
+    ExpenseNameFactory(title="N1", parent=t1)
+    ExpenseNameFactory(title="N2", parent=t2)
 
     actual = ExpenseName.objects.related()
 
     # expense names for user bob
     assert len(actual) == 1
-    assert actual[0].title == 'N1'
+    assert actual[0].title == "N1"
 
 
 def test_expense_name_related_qs_count(django_assert_max_num_queries):
-    ExpenseNameFactory(title='T1')
-    ExpenseNameFactory(title='T2')
+    ExpenseNameFactory(title="T1")
+    ExpenseNameFactory(title="T2")
 
     with django_assert_max_num_queries(1):
         list(q.parent.title for q in ExpenseName.objects.related())
 
 
 def test_expense_name_year():
-    ExpenseNameFactory(title='N1', valid_for=2000)
-    ExpenseNameFactory(title='N2', valid_for=1999)
+    ExpenseNameFactory(title="N1", valid_for=2000)
+    ExpenseNameFactory(title="N2", valid_for=1999)
 
     actual = ExpenseName.objects.year(2000)
 
     assert actual.count() == 1
-    assert actual[0].title == 'N1'
+    assert actual[0].title == "N1"
 
 
 def test_expense_name_year_02():
-    ExpenseNameFactory(title='N1', valid_for=2000)
-    ExpenseNameFactory(title='N2')
+    ExpenseNameFactory(title="N1", valid_for=2000)
+    ExpenseNameFactory(title="N2")
 
     actual = ExpenseName.objects.year(2000)
 
     assert actual.count() == 2
-    assert actual[0].title == 'N2'
-    assert actual[1].title == 'N1'
+    assert actual[0].title == "N2"
+    assert actual[1].title == "N1"
 
 
 @pytest.mark.django_db
 @pytest.mark.xfail(raises=Exception)
 def test_expense_name_no_dublicates():
-    p1 = ExpenseTypeFactory(title='P1')
+    p1 = ExpenseTypeFactory(title="P1")
 
-    ExpenseName(title='N1', parent=p1).save()
-    ExpenseName(title='N1', parent=p1).save()
+    ExpenseName(title="N1", parent=p1).save()
+    ExpenseName(title="N1", parent=p1).save()
 
 
 # ----------------------------------------------------------------------------
@@ -203,36 +209,36 @@ def test_expense_name_no_dublicates():
 def test_expense_str():
     e = ExpenseFactory.build()
 
-    assert str(e) == '1999-01-01/Expense Type/Expense Name'
+    assert str(e) == "1999-01-01/Expense Type/Expense Name"
 
 
 def test_expense_fields_types():
-    assert isinstance(Expense._meta.get_field('date'), models.DateField)
-    assert isinstance(Expense._meta.get_field('price'), models.PositiveIntegerField)
-    assert isinstance(Expense._meta.get_field('quantity'), models.IntegerField)
-    assert isinstance(Expense._meta.get_field('expense_type'), models.ForeignKey)
-    assert isinstance(Expense._meta.get_field('expense_name'), models.ForeignKey)
-    assert isinstance(Expense._meta.get_field('remark'), models.TextField)
-    assert isinstance(Expense._meta.get_field('exception'), models.BooleanField)
-    assert isinstance(Expense._meta.get_field('account'), models.ForeignKey)
-    assert isinstance(Expense._meta.get_field('attachment'), models.FileField)
+    assert isinstance(Expense._meta.get_field("date"), models.DateField)
+    assert isinstance(Expense._meta.get_field("price"), models.PositiveIntegerField)
+    assert isinstance(Expense._meta.get_field("quantity"), models.IntegerField)
+    assert isinstance(Expense._meta.get_field("expense_type"), models.ForeignKey)
+    assert isinstance(Expense._meta.get_field("expense_name"), models.ForeignKey)
+    assert isinstance(Expense._meta.get_field("remark"), models.TextField)
+    assert isinstance(Expense._meta.get_field("exception"), models.BooleanField)
+    assert isinstance(Expense._meta.get_field("account"), models.ForeignKey)
+    assert isinstance(Expense._meta.get_field("attachment"), models.FileField)
 
 
 @override_storage()
 @time_machine.travel("1974-1-1")
 def test_expense_attachment_field(main_user):
-    file_mock = mock.MagicMock(spec=File, name='FileMock')
-    file_mock.name = 'test1.jpg'
+    file_mock = mock.MagicMock(spec=File, name="FileMock")
+    file_mock.name = "test1.jpg"
 
     e = ExpenseFactory(attachment=file_mock)
     pk = str(main_user.journal.pk)
 
-    assert str(e.attachment) == f'{pk}/expense-type/1974.01_test1.jpg'
+    assert str(e.attachment) == f"{pk}/expense-type/1974.01_test1.jpg"
 
 
 def test_expense_related(second_user):
-    t1 = ExpenseTypeFactory(title='T1')  # user bob, current user
-    t2 = ExpenseTypeFactory(title='T2', journal=second_user.journal)  # user X
+    t1 = ExpenseTypeFactory(title="T1")  # user bob, current user
+    t2 = ExpenseTypeFactory(title="T2", journal=second_user.journal)  # user X
 
     ExpenseFactory(expense_type=t1)
     ExpenseFactory(expense_type=t2)
@@ -241,7 +247,7 @@ def test_expense_related(second_user):
     actual = Expense.objects.related()
 
     assert len(actual) == 1
-    assert str(actual[0].expense_type) == 'T1'
+    assert str(actual[0].expense_type) == "T1"
 
 
 def test_expense_year():
@@ -282,38 +288,38 @@ def test_month_name_sum():
     ExpenseFactory(
         date=date(1974, 1, 1),
         price=1,
-        expense_type=ExpenseTypeFactory(title='T1'),
-        expense_name=ExpenseNameFactory(title='N1')
+        expense_type=ExpenseTypeFactory(title="T1"),
+        expense_name=ExpenseNameFactory(title="N1"),
     )
     ExpenseFactory(
         date=date(1999, 1, 1),
         price=2,
-        expense_type=ExpenseTypeFactory(title='T1'),
-        expense_name=ExpenseNameFactory(title='N1')
+        expense_type=ExpenseTypeFactory(title="T1"),
+        expense_name=ExpenseNameFactory(title="N1"),
     )
     ExpenseFactory(
         date=date(1999, 1, 1),
         price=3,
-        expense_type=ExpenseTypeFactory(title='T2'),
-        expense_name=ExpenseNameFactory(title='N1')
+        expense_type=ExpenseTypeFactory(title="T2"),
+        expense_name=ExpenseNameFactory(title="N1"),
     )
     ExpenseFactory(
         date=date(1999, 2, 1),
         price=4,
-        expense_type=ExpenseTypeFactory(title='T1'),
-        expense_name=ExpenseNameFactory(title='N1')
+        expense_type=ExpenseTypeFactory(title="T1"),
+        expense_name=ExpenseNameFactory(title="N1"),
     )
     ExpenseFactory(
         date=date(1999, 2, 1),
         price=5,
-        expense_type=ExpenseTypeFactory(title='T1'),
-        expense_name=ExpenseNameFactory(title='N1')
+        expense_type=ExpenseTypeFactory(title="T1"),
+        expense_name=ExpenseNameFactory(title="N1"),
     )
 
     expect = [
-        {'date': date(1999, 1, 1), 'title': 'N1', 'type_title': 'T1', 'sum': 2},
-        {'date': date(1999, 1, 1), 'title': 'N1', 'type_title': 'T2', 'sum': 3},
-        {'date': date(1999, 2, 1), 'title': 'N1', 'type_title': 'T1', 'sum': 9},
+        {"date": date(1999, 1, 1), "title": "N1", "type_title": "T1", "sum": 2},
+        {"date": date(1999, 1, 1), "title": "N1", "type_title": "T2", "sum": 3},
+        {"date": date(1999, 2, 1), "title": "N1", "type_title": "T1", "sum": 9},
     ]
 
     actual = Expense.objects.sum_by_month_and_name(1999)
@@ -321,7 +327,7 @@ def test_month_name_sum():
     assert [*actual] == expect
 
 
-@time_machine.travel('1999-06-01')
+@time_machine.travel("1999-06-01")
 def test_expense_avg_last_months():
     ExpenseFactory(date=date(1998, 11, 30), price=3)
     ExpenseFactory(date=date(1998, 12, 31), price=4)
@@ -329,11 +335,11 @@ def test_expense_avg_last_months():
 
     actual = Expense.objects.last_months(6)
 
-    assert actual[0]['sum'] == 11.0
-    assert actual[0]['title'] == 'Expense Type'
+    assert actual[0]["sum"] == 11.0
+    assert actual[0]["title"] == "Expense Type"
 
 
-@time_machine.travel('1999-06-01')
+@time_machine.travel("1999-06-01")
 def test_expense_avg_last_months_qs_count(django_assert_max_num_queries):
     ExpenseFactory(date=date(1999, 1, 1), price=2)
 
@@ -349,11 +355,11 @@ def test_expense_years_sum():
 
     actual = Expense.objects.sum_by_year()
 
-    assert actual[0]['year'] == 1998
-    assert actual[0]['sum'] == 8.0
+    assert actual[0]["year"] == 1998
+    assert actual[0]["sum"] == 8.0
 
-    assert actual[1]['year'] == 1999
-    assert actual[1]['sum'] == 10.0
+    assert actual[1]["year"] == 1999
+    assert actual[1]["sum"] == 10.0
 
 
 def test_expense_sum_by_month():
@@ -365,8 +371,8 @@ def test_expense_sum_by_month():
     actual = Expense.objects.sum_by_month(1999)
 
     assert list(actual) == [
-        {'sum': 3, 'date': date(1999, 1, 1), 'title': 'expenses'},
-        {'sum': 6, 'date': date(1999, 2, 1), 'title': 'expenses'}
+        {"sum": 3, "date": date(1999, 1, 1), "title": "expenses"},
+        {"sum": 6, "date": date(1999, 2, 1), "title": "expenses"},
     ]
 
 
@@ -390,7 +396,7 @@ def test_expense_new_post_save():
 
     actual = actual[0]
 
-    assert actual.account.title == 'Account1'
+    assert actual.account.title == "Account1"
     assert actual.expenses == 1.0
     assert actual.balance == -1.0
 
@@ -406,7 +412,7 @@ def test_expense_update_post_save():
         quantity=1,
         account=a,
         expense_type=t,
-        expense_name=n
+        expense_name=n,
     )
 
     # update
@@ -420,7 +426,7 @@ def test_expense_update_post_save():
 
     actual = actual[0]
 
-    assert actual.account.title == 'Account1'
+    assert actual.account.title == "Account1"
     assert actual.expenses == 1.0
     assert actual.balance == -1.0
 
@@ -438,7 +444,7 @@ def test_expense_post_save_update_with_nothing_changed():
 
     actual = actual[0]
 
-    assert actual.account.title == 'Account1'
+    assert actual.account.title == "Account1"
     assert actual.incomes == 0.0
     assert actual.expenses == 5.0
     assert actual.balance == -5.0
@@ -446,12 +452,12 @@ def test_expense_post_save_update_with_nothing_changed():
 
 def test_expense_post_save_change_account():
     account_old = AccountFactory()
-    account_new = AccountFactory(title='XXX')
+    account_new = AccountFactory(title="XXX")
 
     obj = ExpenseFactory(price=5, account=account_old)
 
     actual = AccountBalance.objects.get(account_id=account_old.pk, year=1999)
-    assert actual.account.title == 'Account1'
+    assert actual.account.title == "Account1"
     assert actual.incomes == 0.0
     assert actual.expenses == 5.0
     assert actual.balance == -5.0
@@ -470,7 +476,7 @@ def test_expense_post_save_change_account():
     assert doest_not_exists
 
     actual = AccountBalance.objects.get(account_id=account_new.pk, year=1999)
-    assert actual.account.title == 'XXX'
+    assert actual.account.title == "XXX"
     assert actual.incomes == 0.0
     assert actual.expenses == 5.0
     assert actual.balance == -5.0
@@ -517,7 +523,6 @@ def test_expense_post_save_first_year_record():
     AccountBalance.objects.all().delete()
 
     obj2 = ExpenseFactory(date=date(1999, 1, 1), price=1)
-
 
     actual = AccountBalance.objects.get(account_id=obj2.account.pk, year=1999)
     assert actual.past == -5
@@ -576,17 +581,17 @@ def test_expense_sum_by_year_type():
 
     actual = Expense.objects.sum_by_year_type()
 
-    assert actual[0]['year'] == 1111
-    assert actual[0]['title'] == 'Expense Type'
-    assert actual[0]['sum'] == 5
-    assert actual[1]['year'] == 1999
-    assert actual[1]['title'] == 'Expense Type'
-    assert actual[1]['sum'] == 12
+    assert actual[0]["year"] == 1111
+    assert actual[0]["title"] == "Expense Type"
+    assert actual[0]["sum"] == 5
+    assert actual[1]["year"] == 1999
+    assert actual[1]["title"] == "Expense Type"
+    assert actual[1]["sum"] == 12
 
 
 def test_expense_sum_by_year_type_filtering():
-    t1 = ExpenseTypeFactory(title='X')
-    t2 = ExpenseTypeFactory(title='Y')
+    t1 = ExpenseTypeFactory(title="X")
+    t2 = ExpenseTypeFactory(title="Y")
 
     ExpenseFactory(expense_type=t1, date=date(1111, 1, 1), price=1)
     ExpenseFactory(expense_type=t1, date=date(1999, 1, 1), price=2)
@@ -600,12 +605,12 @@ def test_expense_sum_by_year_type_filtering():
 
     actual = Expense.objects.sum_by_year_type(expense_type=[t1.pk])
 
-    assert actual[0]['year'] == 1111
-    assert actual[0]['title'] == 'X'
-    assert actual[0]['sum'] == 5
-    assert actual[1]['year'] == 1999
-    assert actual[1]['title'] == 'X'
-    assert actual[1]['sum'] == 12
+    assert actual[0]["year"] == 1111
+    assert actual[0]["title"] == "X"
+    assert actual[0]["sum"] == 5
+    assert actual[1]["year"] == 1999
+    assert actual[1]["title"] == "X"
+    assert actual[1]["sum"] == 12
 
 
 def test_expense_sum_by_year_name():
@@ -616,18 +621,18 @@ def test_expense_sum_by_year_name():
 
     actual = Expense.objects.sum_by_year_name()
 
-    assert actual[0]['year'] == 1111
-    assert actual[0]['title'] == 'Expense Type / Expense Name'
-    assert actual[0]['sum'] == 5
+    assert actual[0]["year"] == 1111
+    assert actual[0]["title"] == "Expense Type / Expense Name"
+    assert actual[0]["sum"] == 5
 
-    assert actual[1]['year'] == 1999
-    assert actual[1]['title'] == 'Expense Type / Expense Name'
-    assert actual[1]['sum'] == 12
+    assert actual[1]["year"] == 1999
+    assert actual[1]["title"] == "Expense Type / Expense Name"
+    assert actual[1]["sum"] == 12
 
 
 def test_expense_sum_by_year_name_filtering():
-    t1 = ExpenseNameFactory(title='X')
-    t2 = ExpenseNameFactory(title='Y')
+    t1 = ExpenseNameFactory(title="X")
+    t2 = ExpenseNameFactory(title="Y")
 
     ExpenseFactory(expense_name=t1, date=date(1111, 1, 1), price=1)
     ExpenseFactory(expense_name=t1, date=date(1999, 1, 1), price=2)
@@ -641,30 +646,30 @@ def test_expense_sum_by_year_name_filtering():
 
     actual = Expense.objects.sum_by_year_name(expense_name=[t1.pk])
 
-    assert actual[0]['year'] == 1111
-    assert actual[0]['title'] == 'Expense Type / X'
-    assert actual[0]['sum'] == 5
+    assert actual[0]["year"] == 1111
+    assert actual[0]["title"] == "Expense Type / X"
+    assert actual[0]["sum"] == 5
 
-    assert actual[1]['year'] == 1999
-    assert actual[1]['title'] == 'Expense Type / X'
-    assert actual[1]['sum'] == 12
+    assert actual[1]["year"] == 1999
+    assert actual[1]["title"] == "Expense Type / X"
+    assert actual[1]["sum"] == 12
 
 
 def test_expenses(expenses):
     actual = Expense.objects.expenses()
 
-    assert actual[0]['year'] == 1970
-    assert actual[0]['id'] == 1
-    assert actual[0]['expenses'] == 250
+    assert actual[0]["year"] == 1970
+    assert actual[0]["id"] == 1
+    assert actual[0]["expenses"] == 250
 
-    assert actual[1]['year'] == 1970
-    assert actual[1]['id'] == 2
-    assert actual[1]['expenses'] == 225
+    assert actual[1]["year"] == 1970
+    assert actual[1]["id"] == 2
+    assert actual[1]["expenses"] == 225
 
-    assert actual[2]['year'] == 1999
-    assert actual[2]['id'] == 1
-    assert actual[2]['expenses'] == 50
+    assert actual[2]["year"] == 1999
+    assert actual[2]["id"] == 1
+    assert actual[2]["expenses"] == 50
 
-    assert actual[3]['year'] == 1999
-    assert actual[3]['id'] == 2
-    assert actual[3]['expenses'] == 125
+    assert actual[3]["year"] == 1999
+    assert actual[3]["id"] == 2
+    assert actual[3]["expenses"] == 125

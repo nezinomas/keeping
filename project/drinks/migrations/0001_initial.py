@@ -5,35 +5,86 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Drink',
+            name="Drink",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('quantity', models.FloatField(validators=[django.core.validators.MinValueValidator(0.1)])),
-                ('option', models.CharField(choices=[('beer', 'Beer'), ('wine', 'Wine'), ('vodka', 'Vodka'), ('stdav', 'Std Av')], default='beer', max_length=7)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField()),
+                (
+                    "quantity",
+                    models.FloatField(
+                        validators=[django.core.validators.MinValueValidator(0.1)]
+                    ),
+                ),
+                (
+                    "option",
+                    models.CharField(
+                        choices=[
+                            ("beer", "Beer"),
+                            ("wine", "Wine"),
+                            ("vodka", "Vodka"),
+                            ("stdav", "Std Av"),
+                        ],
+                        default="beer",
+                        max_length=7,
+                    ),
+                ),
             ],
             options={
-                'get_latest_by': ['date'],
+                "get_latest_by": ["date"],
             },
         ),
         migrations.CreateModel(
-            name='DrinkTarget',
+            name="DrinkTarget",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('year', models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(1974), django.core.validators.MaxValueValidator(2050)])),
-                ('quantity', models.FloatField()),
-                ('drink_type', models.CharField(choices=[('beer', 'Beer'), ('wine', 'Wine'), ('vodka', 'Vodka'), ('stdav', 'Std Av')], default='beer', max_length=7)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "year",
+                    models.PositiveIntegerField(
+                        validators=[
+                            django.core.validators.MinValueValidator(1974),
+                            django.core.validators.MaxValueValidator(2050),
+                        ]
+                    ),
+                ),
+                ("quantity", models.FloatField()),
+                (
+                    "drink_type",
+                    models.CharField(
+                        choices=[
+                            ("beer", "Beer"),
+                            ("wine", "Wine"),
+                            ("vodka", "Vodka"),
+                            ("stdav", "Std Av"),
+                        ],
+                        default="beer",
+                        max_length=7,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-year'],
+                "ordering": ["-year"],
             },
         ),
     ]

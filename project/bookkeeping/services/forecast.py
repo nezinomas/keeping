@@ -49,7 +49,8 @@ class Data:
             data (QuerySet): The QuerySet object containing the data to be converted.
 
         Returns:
-            list[int]: A list of integers representing the data from the QuerySet object.
+            list[int]: A list of integers representing the data
+            from the QuerySet object.
             If month does not exist in the dataset, the price will be 0.
         """
 
@@ -69,7 +70,8 @@ class Data:
             data (QuerySet): The dataset containing rows of monthly prices.
 
         Returns:
-            list[int]: A list of total prices for each month, where the index represents the month (0-11).
+            list[int]: A list of total prices for each month,
+            where the index represents the month (0-11).
             If the month does not exist in the dataset, the price will be 0.
         """
 
@@ -120,6 +122,7 @@ class Forecast:
     def planned_incomes(self) -> int:
         """
         Calculate the total sum of planned incomes from current month to December.
+        Current month not included.
 
         Returns:
             int: The total sum of planned incomes.
@@ -132,12 +135,14 @@ class Forecast:
         )
         return df[0, 0]
 
-    def averages(self) -> dict:
+    def medians(self) -> dict:
         """
-        Calculates the average expenses and savings for the months from January to the current month.
+        Calculates median expenses and savings for the months
+        from January to the current month.
+        Current month not included.
 
         Returns:
-            A dictionary containing the average expenses and savings.
+            A dictionary containing median expenses and savings.
 
             The keys are "expenses" and "savings".
 
@@ -146,7 +151,7 @@ class Forecast:
         return (
             self._data.filter(pl.col("month") < self._month)
             .select([pl.col.expenses, pl.col.savings])
-            .mean()
+            .median()
             .fill_null(0)
             .to_dicts()[0]
         )
@@ -164,7 +169,14 @@ class Forecast:
         """
         return (
             self._data.filter(pl.col("month") == self._month)
-            .select([pl.col.expenses, pl.col.savings, pl.col.incomes, pl.col.planned_incomes])
+            .select(
+                [
+                    pl.col.expenses,
+                    pl.col.savings,
+                    pl.col.incomes,
+                    pl.col.planned_incomes,
+                ]
+            )
             .to_dicts()[0]
         )
 
@@ -175,7 +187,7 @@ class Forecast:
         Returns:
             int: The forecasted balance for the end of the year.
         """
-        avg = self.averages()
+        avg = self.medians()
         current = self.current_month()
 
         expenses_avg = avg["expenses"]

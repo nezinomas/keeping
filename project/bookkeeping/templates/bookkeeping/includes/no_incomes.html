@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load slippers %}
 {% load math %}
 
 
@@ -17,11 +16,11 @@
         {% for obj in no_incomes %}
         <tr>
             {% if obj.price %}
-                {% var money_fund=obj.money_fund|price|floatformat:'2g' %}
-                {% var money_fund_pension=obj.money_fund_pension|price|floatformat:'2g' %}
+                {% firstof obj.money_fund|price|floatformat:'2g' as money_fund %}
+                {% firstof obj.money_fund_pension|price|floatformat:'2g' as money_fund_pension %}
             {% else %}
-                {% var money_fund=obj.money_fund|floatformat:'1g' %}
-                {% var money_fund_pension=obj.money_fund_pension|floatformat:'1g' %}
+                {% firstof obj.money_fund|floatformat:'1g' as money_fund %}
+                {% firstof obj.money_fund_pension|floatformat:'1g' as money_fund_pension %}
             {% endif %}
 
             <td class="text-left">{{obj.title}}</td>

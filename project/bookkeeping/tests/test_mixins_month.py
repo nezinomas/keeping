@@ -7,15 +7,15 @@ from ..mixins.month import MonthMixin
 
 
 @pytest.mark.parametrize(
-    'month, expect',
+    "month, expect",
     [
         (1, 1),
         (20, 12),
-        ('x', 12),
+        ("x", 12),
         (0, 12),
-        ('', 12),
+        ("", 12),
         (None, 12),
-    ]
+    ],
 )
 def test_get_month(month, expect):
     class Dummy(MonthMixin):

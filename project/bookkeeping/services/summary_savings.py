@@ -39,12 +39,9 @@ class Chart:
 
     def _process_dataframe(self, df):
         return (
-            df
-            .lazy()
+            df.lazy()
             .group_by(pl.col.year)
-            .agg(
-                [pl.col.incomes.sum(), pl.col.profit.sum()]
-            )
+            .agg([pl.col.incomes.sum(), pl.col.profit.sum()])
             .with_columns(
                 (pl.col.incomes + pl.col.profit).alias("total"),
             )

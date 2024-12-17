@@ -25,7 +25,7 @@ from .users.factories import UserFactory
 @pytest.fixture(autouse=True)
 def main_user(monkeypatch, request):
     if "disable_get_user_patch" in request.keywords:
-        return
+        return None
 
     if "django_db" in request.keywords:
         user = UserFactory()

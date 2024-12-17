@@ -1,8 +1,7 @@
 {% load cell_format %}
 {% load i18n %}
-{% load slippers %}
 
-{% var drink_type=request.user.drink_type|title %}
+{% firstof request.user.drink_type|title as drink_type %}
 
 <table class="main">
     <caption>{% translate drink_type %}</caption>

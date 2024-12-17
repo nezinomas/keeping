@@ -11,21 +11,21 @@ from ..models import Journal
 pytestmark = pytest.mark.django_db
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                                 Journal
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                               Journal
+# -------------------------------------------------------------------------------------
 def test_journal_str():
     actual = JournalFactory.build()
 
-    assert str(actual) == 'bob Journal'
+    assert str(actual) == "bob Journal"
 
 
 @pytest.mark.disable_get_user_patch
 def test_journal_has_many_users():
-    jr = JournalFactory(title='T')
+    jr = JournalFactory(title="T")
 
-    UserFactory(username='X', email='x@x.x', journal=jr)
-    UserFactory(username='Y', email='y@y.y', journal=jr)
+    UserFactory(username="X", email="x@x.x", journal=jr)
+    UserFactory(username="Y", email="y@y.y", journal=jr)
 
     actual = Journal.objects.get(pk=jr.pk)
 

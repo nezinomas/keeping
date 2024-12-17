@@ -4,20 +4,19 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('pensions', '0004_remove_pensionbalance_profit_incomes_proc_and_more'),
+        ("pensions", "0004_remove_pensionbalance_profit_incomes_proc_and_more"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='pensionbalance',
-            old_name='profit_invested_proc',
-            new_name='profit_proc',
+            model_name="pensionbalance",
+            old_name="profit_invested_proc",
+            new_name="profit_proc",
         ),
         migrations.RenameField(
-            model_name='pensionbalance',
-            old_name='profit_invested_sum',
-            new_name='profit_sum',
+            model_name="pensionbalance",
+            old_name="profit_invested_sum",
+            new_name="profit_sum",
         ),
     ]

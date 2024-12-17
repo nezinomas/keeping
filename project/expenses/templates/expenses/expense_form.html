@@ -1,9 +1,5 @@
-{% load i18n %}
-{% load form %}
 {% load static %}
 
 <script src="{% static 'js/expense_form.js' %}"></script>
 
-{% translate "Expenses" context "expenses form title" as form_title %}
-
-{% generic_form title=form_title %}
+{% include 'core/generic_form.html' %}

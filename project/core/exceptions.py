@@ -1,6 +1,6 @@
-class NoDataFound(Exception):
+class NoDataFoundError(Exception):
     """Exception raised when no data found"""
 
 
-class MethodInvalid(Exception):
+class MethodInvalidError(Exception):
     """Exception raised when something wrong with method"""

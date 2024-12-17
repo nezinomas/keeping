@@ -12,8 +12,9 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls.base import reverse, reverse_lazy
 from django.utils.translation import activate
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView
+
 from project.users import models
 
 from ..core.mixins.views import (
@@ -80,7 +81,6 @@ class Logout(auth_views.LogoutView):
         return redirect(reverse("users:login"))
 
 
-
 class Signup(CreateView):
     template_name = "users/login.html"
     success_url = reverse_lazy("bookkeeping:index")
@@ -116,7 +116,7 @@ class PasswordReset(auth_views.PasswordResetView):
         context["submit_button_text"] = _("Send password reset email")
         context["card_title"] = _("Reset your password")
         context["card_text"] = _(
-            "Enter your email address and system will send you a link to reset your pasword."
+            "Enter your email address and system will send you a link to reset your pasword."  # noqa: E501
         )
         context["valid_link"] = True
         return context
@@ -133,7 +133,7 @@ class PasswordResetDone(auth_views.PasswordResetDoneView):
         context = super().get_context_data(**kwargs)
         context["card_title"] = _("Reset your password")
         context["card_text"] = _(
-            "Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder."
+            "Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder."  # noqa: E501
         )
         return context
 
@@ -297,9 +297,9 @@ class SettingsUsers(SettingsQueryMixin, ListViewMixin):
 
 class SettingsUsersDelete(SettingsQueryMixin, DeleteViewMixin):
     model = models.User
-    template_name = "users/includes/users_delete.html"
     hx_trigger_django = "delete_user"
     success_url = reverse_lazy("users:settings_users")
+    form_title = _("Delete user")
 
 
 class SettingsUnnecessary(FormViewMixin):
@@ -332,6 +332,12 @@ class SettingsJournal(FormViewMixin):
         lang = form.cleaned_data.get("lang")
         activate(lang)
 
-        response.set_cookie(key=settings.LANGUAGE_COOKIE_NAME, value=lang, httponly=True, secure=True, samesite="Strict")
+        response.set_cookie(
+            key=settings.LANGUAGE_COOKIE_NAME,
+            value=lang,
+            httponly=True,
+            secure=True,
+            samesite="Strict",
+        )
 
         return response

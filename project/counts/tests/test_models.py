@@ -14,8 +14,8 @@ from ..models import Count, CountType
 pytestmark = pytest.mark.django_db
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                                   Count
+# -------------------------------------------------------------------------------------
+#                                                                                 Count
 # --------------------------------------------------------------------------------------
 @pytest.fixture()
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -157,9 +157,9 @@ def test_count_days_quantity_sum_for_january(_counters):
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                              Count Type
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                            Count Type
+# -------------------------------------------------------------------------------------
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_str():
     obj = CountTypeFactory.build()
@@ -252,9 +252,9 @@ def test_count_type_update():
     assert Count.objects.first().count_type.title == "YYY"
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                           generate menu
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                         generate menu
+# -------------------------------------------------------------------------------------
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @patch("project.counts.models.render_to_string")
 @patch("builtins.open")

@@ -23,8 +23,8 @@
             <td class="text-left">{{ obj.date|date:"Y-m-d" }}</td>
             <td class="text-left">{% with obj.option|title as drink_type %}{% translate drink_type %}{% endwith %}</td>
             <td class="text-left">{{ obj.quantity|convert:obj.option|floatformat:'2g' }}</td>
-            {% include "core/includes/cell_edit.html" with url=url_update %}
-            {% include "core/includes/cell_delete.html" with url=url_delete %}
+            <c-td-edit :url=url_update />
+            <c-td-delete :url=url_delete />
         </tr>
         {% endfor %}
     </tbody>

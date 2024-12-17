@@ -12,7 +12,7 @@
         <form method="post" class="login-form" novalidate>
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">
-            {% include 'core/includes/form_errors.html' %}
+            {% include 'core/form_errors.html' %}
             {% for field in form %}{{ field|as_crispy_field }}{% endfor %}
             <button type="submit" class="button-active">{{ submit_button_text }}</button>
         </form>

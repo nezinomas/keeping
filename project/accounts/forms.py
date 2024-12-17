@@ -38,6 +38,8 @@ class AccountForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        form_utils.clean_year_picker_input("closed", self.data, cleaned_data, self.errors)
+        form_utils.clean_year_picker_input(
+            "closed", self.data, cleaned_data, self.errors
+        )
 
         return cleaned_data

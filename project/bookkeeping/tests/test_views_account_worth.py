@@ -77,7 +77,7 @@ def test_formset_new_post_save(client_logged):
 
 def test_formset_new_post_save_empty_price(client_logged):
     a1 = AccountFactory()
-    a2 = AccountFactory(title='X')
+    a2 = AccountFactory(title="X")
     data = {
         "form-TOTAL_FORMS": 2,
         "form-INITIAL_FORMS": 0,

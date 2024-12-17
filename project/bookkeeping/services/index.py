@@ -65,10 +65,9 @@ class IndexServiceData:
         )
 
     def _get_debt(self, debt_type):
-        return \
-            Debt.objects \
-            .sum_by_month(self.year, debt_type=debt_type, closed=True) \
-            .values("date", "title", sum=F("sum_debt"))
+        return Debt.objects.sum_by_month(
+            self.year, debt_type=debt_type, closed=True
+        ).values("date", "title", sum=F("sum_debt"))
 
     def get_debts(self) -> dict:
         return {

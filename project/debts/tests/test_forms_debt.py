@@ -30,21 +30,21 @@ def test_debt_init_fields():
     assert '<input type="number" name="returned"' not in form
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
 def test_debt_name_field_label_for_lend(mck):
     form = forms.DebtForm().as_p()
 
     assert '<label for="id_name">Paskolos gavėjas:</label>' in form
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='borrow')
+@patch("project.core.lib.utils.get_request_kwargs", return_value="borrow")
 def test_debt_name_field_label_for_borrow(mck):
     form = forms.DebtForm().as_p()
 
     assert '<label for="id_name">Paskolos davėjas:</label>' in form
 
 
-@time_machine.travel('1974-01-01')
+@time_machine.travel("1974-01-01")
 def test_debt_initial_values():
     UserFactory()
 
@@ -54,19 +54,19 @@ def test_debt_initial_values():
 
 
 def test_debt_current_user_accounts(second_user):
-    AccountFactory(title='A1')  # user bob, current user
-    AccountFactory(title='A2', journal=second_user.journal)  # user X
+    AccountFactory(title="A1")  # user bob, current user
+    AccountFactory(title="A2", journal=second_user.journal)  # user X
 
     form = forms.DebtForm().as_p()
 
-    assert 'A1' in form
-    assert 'A2' not in form
+    assert "A1" in form
+    assert "A2" not in form
 
 
 def test_debt_select_first_account(second_user):
-    AccountFactory(title='A1', journal=second_user.journal)
+    AccountFactory(title="A1", journal=second_user.journal)
 
-    a2 = AccountFactory(title='A2')
+    a2 = AccountFactory(title="A2")
 
     form = forms.DebtForm().as_p()
 
@@ -75,29 +75,33 @@ def test_debt_select_first_account(second_user):
 
 
 def test_debt_name_too_short():
-    form = forms.DebtForm(data={
-        'date': '1974-01-01',
-        'name': 'AA',
-        'price': '1',
-        'account': AccountFactory(),
-    })
+    form = forms.DebtForm(
+        data={
+            "date": "1974-01-01",
+            "name": "AA",
+            "price": "1",
+            "account": AccountFactory(),
+        }
+    )
 
     assert not form.is_valid()
 
-    assert 'name' in form.errors
+    assert "name" in form.errors
 
 
 def test_debt_name_too_long():
-    form = forms.DebtForm(data={
-        'date': '1974-01-01',
-        'name': 'A'*101,
-        'price': '1',
-        'account': AccountFactory(),
-    })
+    form = forms.DebtForm(
+        data={
+            "date": "1974-01-01",
+            "name": "A" * 101,
+            "price": "1",
+            "account": AccountFactory(),
+        }
+    )
 
     assert not form.is_valid()
 
-    assert 'name' in form.errors
+    assert "name" in form.errors
 
 
 def test_debt_valid_data():
@@ -105,12 +109,12 @@ def test_debt_valid_data():
 
     form = forms.DebtForm(
         data={
-            'date': '1999-01-01',
-            'name': 'Name',
-            'price': '0.01',
-            'account': a.pk,
-            'closed': False,
-            'remark': 'Rm'
+            "date": "1999-01-01",
+            "name": "Name",
+            "price": "0.01",
+            "account": a.pk,
+            "closed": False,
+            "remark": "Rm",
         },
     )
 
@@ -122,22 +126,22 @@ def test_debt_valid_data():
     assert e.price == 1
     assert e.returned == 0
     assert e.account == a
-    assert e.remark == 'Rm'
+    assert e.remark == "Rm"
     assert not e.closed
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='xxx')
+@patch("project.core.lib.utils.get_request_kwargs", return_value="xxx")
 def test_debt_valid_data_type_from_request(mck):
     a = AccountFactory()
 
     form = forms.DebtForm(
         data={
-            'date': '1999-01-01',
-            'name': 'Name',
-            'price': '0.01',
-            'account': a.pk,
-            'closed': False,
-            'remark': 'Rm'
+            "date": "1999-01-01",
+            "name": "Name",
+            "price": "0.01",
+            "account": a.pk,
+            "closed": False,
+            "remark": "Rm",
         },
     )
     assert form.is_valid()
@@ -147,36 +151,33 @@ def test_debt_valid_data_type_from_request(mck):
     actual = models.Debt.objects.first()
 
     assert actual.date == date(1999, 1, 1)
-    assert actual.name == 'Name'
+    assert actual.name == "Name"
     assert actual.price == 1
     assert actual.account == a
     assert not actual.closed
-    assert actual.remark == 'Rm'
-    assert actual.debt_type == 'xxx'
+    assert actual.remark == "Rm"
+    assert actual.debt_type == "xxx"
 
 
-@time_machine.travel('1999-2-2')
-@pytest.mark.parametrize(
-    'year',
-    [1998, 2001]
-)
+@time_machine.travel("1999-2-2")
+@pytest.mark.parametrize("year", [1998, 2001])
 def test_debt_invalid_date(year):
     a = AccountFactory()
 
     form = forms.DebtForm(
         data={
-            'date': f'{year}-01-01',
-            'name': 'Name',
-            'price': '1',
-            'account': a.pk,
-            'closed': False,
-            'remark': 'Rm'
+            "date": f"{year}-01-01",
+            "name": "Name",
+            "price": "1",
+            "account": a.pk,
+            "closed": False,
+            "remark": "Rm",
         },
     )
 
     assert not form.is_valid()
-    assert 'date' in form.errors
-    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
+    assert "date" in form.errors
+    assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
 def test_debt_blank_data():
@@ -185,60 +186,62 @@ def test_debt_blank_data():
     assert not form.is_valid()
 
     assert len(form.errors) == 4
-    assert 'date' in form.errors
-    assert 'name' in form.errors
-    assert 'price' in form.errors
-    assert 'account' in form.errors
+    assert "date" in form.errors
+    assert "name" in form.errors
+    assert "price" in form.errors
+    assert "account" in form.errors
 
 
 def test_debt_same_name_for_diff_journal(second_user):
-    factories.LendFactory(name='XXX', journal=second_user.journal)
+    factories.LendFactory(name="XXX", journal=second_user.journal)
 
-    form = forms.DebtForm({
-        'date': '1999-01-04',
-        'name': 'XXX',
-        'account': AccountFactory(),
-        'price': '12',
-    })
+    form = forms.DebtForm(
+        {
+            "date": "1999-01-04",
+            "name": "XXX",
+            "account": AccountFactory(),
+            "price": "12",
+        }
+    )
 
     assert form.is_bound
     assert form.is_valid()
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
 def test_debt_unique_name(mck):
-    factories.LendFactory(name='XXX')
-    obj = factories.LendFactory(name='YYY')
+    factories.LendFactory(name="XXX")
+    obj = factories.LendFactory(name="YYY")
     d = model_to_dict(obj)
-    d['name'] = 'XXX'
+    d["name"] = "XXX"
 
     form = forms.DebtForm(data=d)
 
     assert not form.is_valid()
-    assert 'name' in form.errors
-    assert form.errors['name'] == ['Skolintojo vardas turi būti unikalus.']
+    assert "name" in form.errors
+    assert form.errors["name"] == ["Skolintojo vardas turi būti unikalus."]
 
 
-@patch('project.core.lib.utils.get_request_kwargs', return_value='lend')
+@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
 def test_debt_unique_name_unclose_with_same_name(mck):
-    factories.LendFactory(name='XXX')
+    factories.LendFactory(name="XXX")
 
-    obj = factories.LendFactory(name='XXX', closed=True)
+    obj = factories.LendFactory(name="XXX", closed=True)
     obj.closed = False
 
     form = forms.DebtForm(data=model_to_dict(obj))
 
     assert form.is_bound
     assert not form.is_valid()
-    assert 'name' in form.errors
-    assert form.errors['name'] == ['Skolintojo vardas turi būti unikalus.']
+    assert "name" in form.errors
+    assert form.errors["name"] == ["Skolintojo vardas turi būti unikalus."]
 
 
 def test_debt_cant_close():
-    obj = factories.LendFactory(name='Xxx', closed=True)
+    obj = factories.LendFactory(name="Xxx", closed=True)
     form = forms.DebtForm(data=model_to_dict(obj))
 
     assert not form.is_valid()
     assert len(form.errors) == 1
-    assert 'closed' in form.errors
-    assert form.errors['closed'] == ['Negalite uždaryti dar negražintos skolos.']
+    assert "closed" in form.errors
+    assert form.errors["closed"] == ["Negalite uždaryti dar negražintos skolos."]

@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load slippers %}
 
 
 {% if object_list %}
@@ -20,7 +19,7 @@
             <td class="text-left">{{ item.username }}</td>
             <td class="text-left">{{ item.email }}</td>
             <td class="text-center">{% if item.is_superuser %}<i class="bi bi-check-circle" style="color: #198754;"></i>{% else %}<i class="bi bi-dash-circle-fill" style="color: #dc3545;"></i>{% endif %}</td>
-            {% delete_cell url=url_delete %}
+            <c-td-delete :url=url_delete />
         </tr>
         {% endfor %}
     </tbody>

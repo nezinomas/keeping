@@ -174,7 +174,13 @@ class NecessaryPlan(MonthAbstract):
         except ValidationError as e:
             raise ValidationError(
                 _("%(year)s year and %(type)s already has %(title)s plan.")
-                % ({"year": self.year, "title": self.title, "type": self.expense_type.title})
+                % (
+                    {
+                        "year": self.year,
+                        "title": self.title,
+                        "type": self.expense_type.title,
+                    }
+                )
             ) from e
 
     def get_absolute_url(self):

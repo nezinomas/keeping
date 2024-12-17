@@ -83,9 +83,7 @@ class BookForm(forms.ModelForm):
         ended = cleaned.get("ended")
 
         if ended and started and ended < started:
-            self.add_error(
-                "ended", _("Finished reading cannot precede start reading.")
-            )
+            self.add_error("ended", _("Finished reading cannot precede start reading."))
 
         return cleaned
 

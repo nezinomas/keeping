@@ -290,12 +290,7 @@ def test_chart_incomes_types_context():
 
 
 def test_chart_incomes_types_categories_no_data():
-    data = SimpleNamespace(
-        incomes=[],
-        salary=[],
-        expenses=[],
-        incomes_types=[]
-    )
+    data = SimpleNamespace(incomes=[], salary=[], expenses=[], incomes_types=[])
     actual = Charts(data).chart_incomes_types()
 
     assert actual["categories"] == []
@@ -303,10 +298,7 @@ def test_chart_incomes_types_categories_no_data():
 
 def test_chart_incomes_types_categories(incomes_types):
     data = SimpleNamespace(
-        incomes=[],
-        salary=[],
-        expenses=[],
-        incomes_types=incomes_types
+        incomes=[], salary=[], expenses=[], incomes_types=incomes_types
     )
     actual = Charts(data).chart_incomes_types()
 
@@ -315,10 +307,7 @@ def test_chart_incomes_types_categories(incomes_types):
 
 def test_chart_incomes_types_data(incomes_types):
     data = SimpleNamespace(
-        incomes=[],
-        salary=[],
-        expenses=[],
-        incomes_types=incomes_types
+        incomes=[], salary=[], expenses=[], incomes_types=incomes_types
     )
     actual = Charts(data).chart_incomes_types()
 
@@ -327,12 +316,7 @@ def test_chart_incomes_types_data(incomes_types):
 
 
 def test_chart_incomes_types_data_no_data():
-    data = SimpleNamespace(
-        incomes=[],
-        salary=[],
-        expenses=[],
-        incomes_types=[]
-    )
+    data = SimpleNamespace(incomes=[], salary=[], expenses=[], incomes_types=[])
     actual = Charts(data).chart_incomes_types()
 
     assert actual["data"] == []

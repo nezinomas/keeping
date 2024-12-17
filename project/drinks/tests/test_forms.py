@@ -11,9 +11,9 @@ from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
 pytestmark = pytest.mark.django_db
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                                   Drink
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                                 Drink
+# -------------------------------------------------------------------------------------
 def test_drink_init():
     DrinkForm()
 
@@ -31,10 +31,10 @@ def test_drink_init_fields():
 def test_drink_help_text():
     form = DrinkForm().as_p()
 
-    assert '1 Alus = 0.5L' in form
-    assert '1 Vynas = 0.75L' in form
-    assert '1 Degtinė = 1L' in form
-    assert 'Įvedus daugiau nei 20, bus manoma kad tai yra mililitrai' in form
+    assert "1 Alus = 0.5L" in form
+    assert "1 Vynas = 0.75L" in form
+    assert "1 Degtinė = 1L" in form
+    assert "Įvedus daugiau nei 20, bus manoma kad tai yra mililitrai" in form
 
 
 @time_machine.travel("1974-1-1")
@@ -54,13 +54,15 @@ def test_drink_option_initial_value():
     assert '<option value="beer" selected>Alus</option>' in form
 
 
-@patch('project.drinks.forms.App_name', 'Counter Type')
+@patch("project.drinks.forms.App_name", "Counter Type")
 def test_drink_valid_data():
-    form = DrinkForm(data={
-        'date': '1999-01-01',
-        'quantity': 1.0,
-        'option': 'beer',
-    })
+    form = DrinkForm(
+        data={
+            "date": "1999-01-01",
+            "quantity": 1.0,
+            "option": "beer",
+        }
+    )
 
     assert form.is_valid()
 
@@ -68,26 +70,25 @@ def test_drink_valid_data():
 
     assert data.date == date(1999, 1, 1)
     assert data.quantity == 2.5
-    assert data.user.username == 'bob'
-    assert data.counter_type == 'Counter Type'
+    assert data.user.username == "bob"
+    assert data.counter_type == "Counter Type"
 
 
-@patch('project.drinks.forms.App_name', 'Counter Type')
-@time_machine.travel('1999-2-2')
-@pytest.mark.parametrize(
-    'year',
-    [1998, 2001]
-)
+@patch("project.drinks.forms.App_name", "Counter Type")
+@time_machine.travel("1999-2-2")
+@pytest.mark.parametrize("year", [1998, 2001])
 def test_drink_invalid_date(year):
-    form = DrinkForm(data={
-        'date': f'{year}-01-01',
-        'quantity': 1.0,
-        'option': 'beer',
-    })
+    form = DrinkForm(
+        data={
+            "date": f"{year}-01-01",
+            "quantity": 1.0,
+            "option": "beer",
+        }
+    )
 
     assert not form.is_valid()
-    assert 'date' in form.errors
-    assert 'Metai turi būti tarp 1999 ir 2000' in form.errors['date']
+    assert "date" in form.errors
+    assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
 def test_drink_blank_data():
@@ -96,14 +97,14 @@ def test_drink_blank_data():
     assert not form.is_valid()
 
     assert len(form.errors) == 3
-    assert 'date' in form.errors
-    assert 'quantity' in form.errors
-    assert 'option' in form.errors
+    assert "date" in form.errors
+    assert "quantity" in form.errors
+    assert "option" in form.errors
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                            Drink Target
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                          Drink Target
+# -------------------------------------------------------------------------------------
 def test_drink_target_init():
     DrinkTargetForm()
 
@@ -127,19 +128,15 @@ def test_drink_target_year_initial_value():
 
 
 @pytest.mark.parametrize(
-    'type, qty, expect',
+    "type, qty, expect",
     [
-        ('beer', 500, 2.5),
-        ('wine', 750, 8),
-        ('vodka', 1000, 40),
-    ]
+        ("beer", 500, 2.5),
+        ("wine", 750, 8),
+        ("vodka", 1000, 40),
+    ],
 )
 def test_drink_target_valid_data(type, qty, expect):
-    form = DrinkTargetForm(data={
-        'year': 1974,
-        'quantity': qty,
-        'drink_type': type
-    })
+    form = DrinkTargetForm(data={"year": 1974, "quantity": qty, "drink_type": type})
 
     assert form.is_valid()
 
@@ -147,21 +144,19 @@ def test_drink_target_valid_data(type, qty, expect):
 
     assert data.year == 1974
     assert data.quantity == expect
-    assert data.user.username == 'bob'
+    assert data.user.username == "bob"
 
 
 @pytest.mark.parametrize(
-    'year',
+    "year",
     [
-        ('2000-01-01'), ('2000'), (2000),
-    ]
+        ("2000-01-01"),
+        ("2000"),
+        (2000),
+    ],
 )
 def test_drink_target_valid_data_year_field(year):
-    form = DrinkTargetForm(data={
-        'year': year,
-        'quantity': 1,
-        'drink_type': 'beer'
-    })
+    form = DrinkTargetForm(data={"year": year, "quantity": 1, "drink_type": "beer"})
 
     assert form.is_valid()
 
@@ -173,14 +168,11 @@ def test_drink_target_valid_data_year_field(year):
 def test_drink_target_year_validation():
     DrinkTargetFactory()
 
-    form = DrinkTargetForm(data={
-        'year': 1999,
-        'quantity': 200
-    })
+    form = DrinkTargetForm(data={"year": 1999, "quantity": 200})
 
     assert not form.is_valid()
 
-    assert 'year' in form.errors
+    assert "year" in form.errors
 
 
 def test_drink_target_blank_data():
@@ -189,14 +181,14 @@ def test_drink_target_blank_data():
     assert not form.is_valid()
 
     assert len(form.errors) == 3
-    assert 'year' in form.errors
-    assert 'quantity' in form.errors
-    assert 'drink_type' in form.errors
+    assert "year" in form.errors
+    assert "quantity" in form.errors
+    assert "drink_type" in form.errors
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                            Drink Filter
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                          Drink Filter
+# -------------------------------------------------------------------------------------
 def test_drink_filter_init():
     DrinkCompareForm()
 
@@ -208,7 +200,7 @@ def test_drink_filter_init_fields():
     assert '<input type="number" name="year2"' in form
 
 
-@time_machine.travel('1999-01-01')
+@time_machine.travel("1999-01-01")
 def test_drink_filter_initial_values():
     form = DrinkCompareForm().as_p()
 
@@ -216,24 +208,24 @@ def test_drink_filter_initial_values():
 
 
 @pytest.mark.parametrize(
-    'year1, year2',
+    "year1, year2",
     [
         (None, None),
-        ('', ''),
+        ("", ""),
         (None, 1111),
-        ('', 1111),
+        ("", 1111),
         (1111, None),
-        (1111, ''),
+        (1111, ""),
         (111, 111),
         (11111, 11111),
-        ('xxx', 'xxx'),
-    ]
+        ("xxx", "xxx"),
+    ],
 )
 def test_drink_filter_form_invalid(year1, year2):
     form = DrinkCompareForm(
         data={
-            'year1': year1,
-            'year2': year2,
+            "year1": year1,
+            "year2": year2,
         }
     )
 
@@ -241,14 +233,14 @@ def test_drink_filter_form_invalid(year1, year2):
 
 
 @pytest.mark.parametrize(
-    'year1, year2, valid',
+    "year1, year2, valid",
     [
         (2000, 2001, False),
         (2001, 2001, False),
         (2001, 2002, False),
         (2002, 2003, False),
         (2000, 2003, True),
-    ]
+    ],
 )
 def test_drink_filter_clean_years_fields(year1, year2, valid):
     DrinkFactory(date=date(2000, 1, 1))
@@ -256,8 +248,8 @@ def test_drink_filter_clean_years_fields(year1, year2, valid):
 
     form = DrinkCompareForm(
         data={
-            'year1': year1,
-            'year2': year2,
+            "year1": year1,
+            "year2": year2,
         }
     )
 

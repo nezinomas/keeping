@@ -137,6 +137,7 @@ def test_transactions_load_update_form_field_values(client_logged):
     # to account select
     assert f'<option value="{obj.to_account.pk}" selected>Account2</option>' in form
 
+
 def test_transactions_update_to_another_year(client_logged):
     tr = TransactionFactory()
 
@@ -212,9 +213,9 @@ def test_transactions_list_price_converted(client_logged):
     assert "1.000.000,00" in actual
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                      Transaction Delete
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                    Transaction Delete
+# -------------------------------------------------------------------------------------
 def test_view_transactions_delete_func():
     view = resolve("/transactions/delete/1/")
 
@@ -239,7 +240,7 @@ def test_view_transactions_delete_load_form(client_logged):
 
     assert '<form method="POST"' in actual
     assert (
-        "Ar tikrai norite ištrinti: <strong>1999-01-01 Account1 -&gt; Account2: 2,00</strong>?"
+        "Ar tikrai norite ištrinti: <strong>1999-01-01 Account1 -&gt; Account2: 2,00</strong>?"  # noqa: E501
         in actual
     )
 
@@ -553,9 +554,9 @@ def test_saving_close_list_price_converted(client_logged):
     assert "1.000,00" in actual
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                      SavingClose Delete
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                    SavingClose Delete
+# -------------------------------------------------------------------------------------
 def test_view_savings_close_delete_func():
     view = resolve("/savings_close/delete/1/")
 
@@ -581,7 +582,7 @@ def test_view_savings_close_delete_load_form(client_logged):
     assert '<form method="POST"' in form
     assert f'hx-post="{url}"' in form
     assert (
-        "Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From -&gt; Account To: 0,10</strong>?"
+        "Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From -&gt; Account To: 0,10</strong>?"  # noqa: E501
         in form
     )
 
@@ -712,7 +713,9 @@ def test_savings_change_load_update_form_field_values(client_logged):
     assert 'name="fee" value="0.01"' in form
 
     # from account select
-    assert f'<option value="{obj.from_account.pk}" selected>Savings From</option>' in form
+    assert (
+        f'<option value="{obj.from_account.pk}" selected>Savings From</option>' in form
+    )
     assert f'<option value="{obj.to_account.pk}">Savings To</option>' in form
 
     # to account select
@@ -970,9 +973,9 @@ def test_load_saving_type_must_logged(client):
     assert response.resolver_match.func.view_class is Login
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                      SavingChange Delete
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                    SavingChange Delete
+# -------------------------------------------------------------------------------------
 def test_view_savings_change_delete_func():
     view = resolve("/savings_change/delete/1/")
 
@@ -998,7 +1001,7 @@ def test_view_savings_change_delete_load_form(client_logged):
     assert '<form method="POST"' in actual
     assert f'hx-post="{ url }"' in actual
     assert (
-        "Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From -&gt; Savings To: 0,10</strong>?"
+        "Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From -&gt; Savings To: 0,10</strong>?"  # noqa: E501
         in actual
     )
 

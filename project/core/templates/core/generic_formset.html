@@ -1,18 +1,17 @@
 {% load crispy_forms_tags %}
-{% load slippers %}
 {% load i18n %}
 
 
 <form method="post" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted" >
     {% csrf_token %}
-    {% include 'core/includes/form_date_scripts.html' %}
+    {% include 'core/form_date_scripts.html' %}
     {{ formset.management_form|crispy }}
 
     <div class="modal-header">
-        <h5 class="modal-title">{{ title }}</h5>
+        <h5 class="modal-title">{{ formset_title }}</h5>
         <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
-    <div class="modal-body {% if css_class %}{{css_class}}{% endif %}">
+    <div class="modal-body worth-form">
         {% if formset.non_form_errors %}
         <div class="alert alert-danger">
         {% for error in formset.non_form_errors %}<strong>{{ error|escape }}</strong>{% endfor %}
@@ -20,12 +19,12 @@
         {% endif %}
 
         {% for form in formset.forms %}
-        {% include 'core/includes/form_errors.html' %}
+        {% include 'core/form_errors.html' %}
             {% for field in form %}
             {{ field|as_crispy_field }}
             {% endfor %}
         {% endfor %}
     </div>
 
-    {% include 'core/includes/form_footer.html' %}
+    {% include 'core/form_footer.html' %}
 </form>

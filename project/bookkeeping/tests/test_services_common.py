@@ -1,7 +1,7 @@
 import pytest
 import time_machine
 
-from ..services import common as T
+from ..services import common
 
 pytestmark = pytest.mark.django_db
 
@@ -10,7 +10,7 @@ pytestmark = pytest.mark.django_db
 def test_average_current_year():
     qs = [{"year": 2000, "sum": 12}]
 
-    actual = T.average(qs)
+    actual = common.average(qs)
 
     assert actual == [6]
 
@@ -19,7 +19,7 @@ def test_average_current_year():
 def test_average_past_year():
     qs = [{"year": 2000, "sum": 12}]
 
-    actual = T.average(qs)
+    actual = common.average(qs)
 
     assert actual == [1]
 
@@ -28,6 +28,6 @@ def test_average_past_year():
 def test_average():
     qs = [{"year": 1999, "sum": 12}, {"year": 2000, "sum": 12}]
 
-    actual = T.average(qs)
+    actual = common.average(qs)
 
     assert actual == [1, 6]

@@ -76,9 +76,7 @@ class SavingQuerySet(SumMixin, models.QuerySet):
         end = (start + timedelta(days=1)) - relativedelta(months=months)
 
         return (
-            self.related()
-            .filter(date__range=(end, start))
-            .aggregate(sum=Sum("price"))
+            self.related().filter(date__range=(end, start)).aggregate(sum=Sum("price"))
         )
 
     def incomes(self):

@@ -233,7 +233,6 @@ def test_copy_market_value_and_latest_from_previous_year(types):
     assert actual[1]["profit_sum"] == 0
     assert round(actual[1]["profit_proc"], 2) == 0
 
-
     assert actual[2]["id"] == 1
     assert actual[2]["year"] == 2000
     assert actual[2]["incomes"] == 30

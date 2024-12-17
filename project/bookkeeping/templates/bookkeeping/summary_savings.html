@@ -2,7 +2,6 @@
 
 {% load static %}
 {% load get_item %}
-{% load slippers %}
 
 {% block head %}
 <script src="https://code.highcharts.com/highcharts.src.js"></script>
@@ -35,7 +34,7 @@
 <script src="/static/js/chart_summary_savings.js"></script>
 
 {% for chart in pointers %}
-    {% var data_id=chart|add:"_data" %}
+    {% firstof chart|add:"_data" as data_id %}
     {{charts|get_list_val:chart|json_script:data_id}}
 {% endfor %}
 

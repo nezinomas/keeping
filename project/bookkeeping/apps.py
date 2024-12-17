@@ -3,7 +3,7 @@ from django.apps import AppConfig
 App_name = "bookkeeping"
 
 
-class bookkeepingConfig(AppConfig):
+class BookkeepingConfig(AppConfig):
     name = f"project.{App_name}"
 
     def ready(self):

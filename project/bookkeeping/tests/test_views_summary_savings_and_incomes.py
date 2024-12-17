@@ -37,10 +37,10 @@ def test_view_context(client_logged):
 
     actual = response.context
 
-    assert 'chart_data' in actual
+    assert "chart_data" in actual
 
 
-@time_machine.travel('2000-1-1')
+@time_machine.travel("2000-1-1")
 def test_view_context_categories(client_logged):
     IncomeFactory(date=date(2000, 1, 1))
     url = reverse("bookkeeping:summary_savings_and_incomes")
@@ -51,7 +51,7 @@ def test_view_context_categories(client_logged):
     assert actual["chart_data"]["categories"] == [1999, 2000]
 
 
-@time_machine.travel('2000-1-1')
+@time_machine.travel("2000-1-1")
 def test_view_context_incomes(client_logged):
     IncomeFactory(date=date(1999, 1, 1), price=1)
     IncomeFactory(date=date(2000, 1, 1), price=2)
@@ -64,7 +64,7 @@ def test_view_context_incomes(client_logged):
     assert actual["chart_data"]["incomes"] == [1, 2]
 
 
-@time_machine.travel('2000-1-1')
+@time_machine.travel("2000-1-1")
 def test_view_context_incomes_one_empty_year(client_logged):
     IncomeFactory(date=date(1999, 1, 1), price=1)
 
@@ -76,7 +76,7 @@ def test_view_context_incomes_one_empty_year(client_logged):
     assert actual["chart_data"]["incomes"] == [1, 0]
 
 
-@time_machine.travel('2000-1-1')
+@time_machine.travel("2000-1-1")
 def test_view_context_savings(client_logged):
     SavingFactory(date=date(1999, 1, 1), price=1, fee=0)
     SavingFactory(date=date(2000, 1, 1), price=2, fee=0)
@@ -89,7 +89,7 @@ def test_view_context_savings(client_logged):
     assert actual["chart_data"]["savings"] == [1, 2]
 
 
-@time_machine.travel('2000-1-1')
+@time_machine.travel("2000-1-1")
 def test_view_contex_savings_one_empty_year(client_logged):
     SavingFactory(date=date(1999, 1, 1), price=1, fee=0)
 
@@ -101,7 +101,7 @@ def test_view_contex_savings_one_empty_year(client_logged):
     assert actual["chart_data"]["savings"] == [1, 0]
 
 
-@time_machine.travel('2000-1-1')
+@time_machine.travel("2000-1-1")
 def test_view_context_percents(client_logged):
     IncomeFactory(date=date(1999, 1, 1), price=10)
     SavingFactory(date=date(1999, 1, 1), price=1, fee=0)

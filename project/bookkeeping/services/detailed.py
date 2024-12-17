@@ -37,13 +37,13 @@ class Service:
         self._expenses_types.sort()
 
     def incomes_context(self) -> list[dict]:
-        name = _('Incomes')
+        name = _("Incomes")
         data = __class__.insert_type(name, self._incomes)
         data = __class__.modify_data(self._year, data)
         return self._create_context(data, [name])
 
     def savings_context(self) -> list[dict]:
-        name = _('Savings')
+        name = _("Savings")
         data = __class__.insert_type(name, self._savings)
         data = __class__.modify_data(self._year, data)
         return self._create_context(data, [name])
@@ -68,17 +68,20 @@ class Service:
 
             maps.add(title_map)
 
-            arr += [{
+            arr += [
+                {
                     "date": date(year, month, 1),
                     "title": i["title"],
                     "type_title": i["type_title"],
                     "sum": 0,
-                } for month in range(1, 13)]
+                }
+                for month in range(1, 13)
+            ]
 
         data.extend(arr)
         return data
 
-    def _create_context(self, data, categories, name=''):
+    def _create_context(self, data, categories, name=""):
         context = []
         if not data:
             return context
@@ -104,10 +107,9 @@ class Service:
             context_item["total"] += total_col
             context_item["total_col"] += [total_col]
             context_item["total_row"] = df_part["total_row"].to_list()
-            context_item["items"] += [{
-                "title": df_part["title"][0],
-                "data": df_part["sum"].to_list()
-            }]
+            context_item["items"] += [
+                {"title": df_part["title"][0], "data": df_part["sum"].to_list()}
+            ]
         return context_item
 
     def _create_df(self, arr):
@@ -135,10 +137,8 @@ def load_service(year: int) -> dict:
     data = Data(year)
     obj = Service(data)
 
-    return  {
+    return {
         "object_list": it.chain(
-            obj.incomes_context(),
-            obj.savings_context(),
-            obj.expenses_context()
+            obj.incomes_context(), obj.savings_context(), obj.expenses_context()
         ),
     }

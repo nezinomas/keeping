@@ -1,11 +1,10 @@
 import json
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 from vanilla import (
     CreateView,
@@ -27,7 +26,7 @@ def rendered_content(request, view_class, **kwargs):
     return view_class.as_view()(request, **kwargs).rendered_content
 
 
-def httpHtmxResponse(hx_trigger_name=None, status_code=204):
+def http_htmx_response(hx_trigger_name=None, status_code=204):
     headers = {}
     if hx_trigger_name:
         headers = {
@@ -40,9 +39,9 @@ def httpHtmxResponse(hx_trigger_name=None, status_code=204):
     )
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                                  Mixins
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                                Mixins
+# -------------------------------------------------------------------------------------
 class GetQuerysetMixin:
     object = None
 
@@ -78,6 +77,8 @@ class CreateUpdateMixin:
 
     def get_context_data(self, **kwargs):
         context = {
+            "form_title": getattr(self, "form_title", None),
+            "modal_body_css_class": getattr(self, "modal_body_css_class", ""),
             "form_action": self.form_action,
             "url": self.url,
             "hx_trigger_form": self.get_hx_trigger_form(),
@@ -117,7 +118,11 @@ class DeleteMixin:
         return self.object.get_delete_url() if self.object else None
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {"url": self.url}
+        context = {
+            "url": self.url,
+            "form_title": self.form_title,
+        }
+        return super().get_context_data(**kwargs) | context
 
     def post(self, *args, **kwargs):
         super().post(*args, **kwargs)
@@ -125,7 +130,7 @@ class DeleteMixin:
         if hx_redirect := self.get_hx_redirect():
             return HttpResponseClientRedirect(hx_redirect)
 
-        return httpHtmxResponse(self.get_hx_trigger_django())
+        return http_htmx_response(self.get_hx_trigger_django())
 
 
 class SearchMixin:
@@ -140,7 +145,9 @@ class SearchMixin:
         Calculate total price, total quantity and average of search result.
 
         :param sql: QuerySet
-        :return: a dictionary with sum_price, sum_quantity and average if search_method is 'search_expenses'
+        :return:
+            a dictionary with sum_price, sum_quantity and average
+            if search_method is 'search_expenses'
         :rtype: dict or None
         """
         return (
@@ -175,12 +182,11 @@ class SearchMixin:
         }
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                            Views Mixins
-# ---------------------------------------------------------------------------------------
-class CreateViewMixin(
-    LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView
-):
+# -------------------------------------------------------------------------------------
+#                                                                          Views Mixins
+# -------------------------------------------------------------------------------------
+class CreateViewMixin(GetQuerysetMixin, CreateUpdateMixin, CreateView):
+    template_name = "core/generic_form.html"
     form_action = "insert"
 
     def url(self):
@@ -188,34 +194,33 @@ class CreateViewMixin(
         return reverse_lazy(f"{app}:new")
 
 
-class UpdateViewMixin(
-    LoginRequiredMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
-):
+class UpdateViewMixin(GetQuerysetMixin, CreateUpdateMixin, UpdateView):
+    template_name = "core/generic_form.html"
     form_action = "update"
 
     def url(self):
         return self.object.get_absolute_url() if self.object else None
 
 
-class DeleteViewMixin(LoginRequiredMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
+class DeleteViewMixin(GetQuerysetMixin, DeleteMixin, DeleteView):
+    template_name = "core/generic_delete_form.html"
+
+
+class RedirectViewMixin(RedirectView):
     pass
 
 
-class RedirectViewMixin(LoginRequiredMixin, RedirectView):
+class TemplateViewMixin(TemplateView):
     pass
 
 
-class TemplateViewMixin(LoginRequiredMixin, TemplateView):
+class ListViewMixin(GetQuerysetMixin, ListView):
     pass
 
 
-class ListViewMixin(LoginRequiredMixin, GetQuerysetMixin, ListView):
-    pass
+class FormViewMixin(FormView):
+    template_name = "core/generic_form.html"
 
 
-class FormViewMixin(LoginRequiredMixin, FormView):
-    pass
-
-
-class SearchViewMixin(LoginRequiredMixin, SearchMixin, TemplateView):
+class SearchViewMixin(SearchMixin, TemplateView):
     pass

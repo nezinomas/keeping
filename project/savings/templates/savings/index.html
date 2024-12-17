@@ -10,20 +10,21 @@
 
 {% block content %}
 
+{% translate 'Record' context 'record button' as record_button_title %}
 
 <main class="grid-70-30">
     <div>
         <!-- Funds -->
         <div class="button-row">
             <h6>{% translate 'Funds' %}</h6>
-            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'savings:new' %}" hx-target="#mainModal">{% translate 'Record' context 'record button' %}</button>
+            <c-new-button url="{% url 'savings:new' %}" title="{{ record_button_title }}" css_class="flex-right" />
         </div>
         <div id="saving_list" class="margin-bottom" hx-get="{% url 'savings:list' %}" hx-trigger="reload from:body, afterType from:body" hx-target="this" hx-indicator="#indicator">{{saving}}</div>
 
         <!-- Pensions -->
         <div class="button-row">
             <h6>{% translate 'Pension' %}, {% translate 'II stage' %}</h6>
-            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'pensions:new' %}" hx-target="#mainModal">{% translate 'Record' context 'record button' %}</button>
+            <c-new-button url="{% url 'pensions:new' %}" title="{{ record_button_title }}" css_class="flex-right" />
         </div>
         <div id="pensions_list" class="margin-bottom" hx-get="{% url 'pensions:list' %}" hx-trigger="afterPension from:body, afterPensionType from:body" hx-target="this">{{pension}}</div>
     </div>
@@ -31,13 +32,13 @@
     <div>
         <!-- Funds Types -->
         <div class="button-row">
-            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'savings:type_new' %}" hx-target="#mainModal">{% translate 'Fund' context 'fund button' %}</button>
+            <c-new-button url="{% url 'savings:type_new' %}" title="{% translate 'Fund' context 'fund button' %}" css_class="flex-right" />
         </div>
         <div id="savintype_list" class="margin-bottom" hx-get="{% url 'savings:type_list' %}" hx-trigger="afterType from:body" hx-target="this">{{saving_type}}</div>
 
         <!-- Pension Types -->
         <div class="button-row">
-            <button type="button" class="button-outline-success flex-right" hx-get="{% url 'pensions:type_new' %}" hx-target="#mainModal">{% translate 'Pension' context 'pension button' %}</button>
+            <c-new-button url="{% url 'pensions:type_new' %}" title="{% translate 'Pension' context 'pension button' %}" css_class="flex-right" />
         </div>
         <div id="pensiontype_list" hx-get="{% url 'pensions:type_list' %}" hx-trigger="afterPensionType from:body" hx-target="this">{{pension_type}}</div>
     </div>

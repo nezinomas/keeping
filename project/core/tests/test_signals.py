@@ -10,7 +10,16 @@ def test_create_objects():
 
     data = [
         dict(
-            id=1, year=1999, past=1, incomes=2, expenses=3, balance=4, have=5, delta=6, latest_check=datetime(1999, 1, 1, 3, 2, 1))
+            id=1,
+            year=1999,
+            past=1,
+            incomes=2,
+            expenses=3,
+            balance=4,
+            have=5,
+            delta=6,
+            latest_check=datetime(1999, 1, 1, 3, 2, 1),
+        )
     ]
     actual = create_objects(AccountBalance, {1: account}, data)[0]
 

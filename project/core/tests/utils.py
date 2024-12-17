@@ -1,6 +1,6 @@
 import functools
-from statistics import stdev
 import time
+from statistics import stdev
 
 from django.urls import reverse
 
@@ -43,7 +43,7 @@ def timer(*a, **kw):
                 end = time.perf_counter()
                 items.append(end - start)
             func_name = f"Finished function: < {func.__name__} >"
-            stats = f"Runs: {iterations}, Full time: {sum(items):.3f}s, Average time: {(sum(items) / len(items)):.3f}s, Standard deviation: {stdev(items):.3f}"
+            stats = f"Runs: {iterations}, Full time: {sum(items):.3f}s, Average time: {(sum(items) / len(items)):.3f}s, Standard deviation: {stdev(items):.3f}"  # noqa: E501
             raw = f"Raw data: {items}"
             print(f"\n\n{func_name}\n{stats}\n{raw}")
             return return_value
@@ -63,6 +63,6 @@ class Timer:
         end = time.perf_counter()
         total = end - start
         print(
-            f"Finished function form class: {self.original_func.__name__} in {total:.5f} sec"
+            f"Finished function form class: {self.original_func.__name__} in {total:.5f} sec"  # noqa: E501
         )
         return r_val

@@ -4,7 +4,6 @@ from hypothesis import strategies as st
 
 from ..templatetags import math
 
-
 numbers_strategy = st.one_of(
     st.integers(min_value=0),
     st.floats(min_value=0, allow_nan=False, allow_infinity=False, width=16),

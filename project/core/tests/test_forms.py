@@ -5,9 +5,9 @@ from ..forms import SearchForm
 pytestmark = pytest.mark.django_db
 
 
-# ---------------------------------------------------------------------------------------
-#                                                                                  Search
-# ---------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+#                                                                                Search
+# -------------------------------------------------------------------------------------
 def test_search_init():
     SearchForm()
 
@@ -19,41 +19,61 @@ def test_search_fields():
 
 
 @pytest.mark.parametrize(
-    'search',
+    "search",
     [
-        ('xxx \''), ('xxx "'), ('xxx >'),
-        ('xxx <'), ('xxx ?'), ('xxx \\'),
-        ('xxx |'), ('xxx {'), ('xxx }'),
-        ('xxx ]'), ('xxx ['), ('xxx ~'),
-        ('xxx `'), ('xxx !'), ('xxx @'),
-        ('xxx #'), ('xxx $'), ('xxx %'),
-        ('xxx ^'), ('xxx &'), ('xxx *'),
-        ('xxx ('), ('xxx )'), ('xxx +'),
-        ('xxx ='), ('xxx ;'), ('xxx ,'),
-        ('xxx /'), ('x'), ('x'*51),
-    ]
+        ("xxx '"),
+        ('xxx "'),
+        ("xxx >"),
+        ("xxx <"),
+        ("xxx ?"),
+        ("xxx \\"),
+        ("xxx |"),
+        ("xxx {"),
+        ("xxx }"),
+        ("xxx ]"),
+        ("xxx ["),
+        ("xxx ~"),
+        ("xxx `"),
+        ("xxx !"),
+        ("xxx @"),
+        ("xxx #"),
+        ("xxx $"),
+        ("xxx %"),
+        ("xxx ^"),
+        ("xxx &"),
+        ("xxx *"),
+        ("xxx ("),
+        ("xxx )"),
+        ("xxx +"),
+        ("xxx ="),
+        ("xxx ;"),
+        ("xxx ,"),
+        ("xxx /"),
+        ("x"),
+        ("x" * 51),
+    ],
 )
 def test_search_form_invalid(search):
-    form = SearchForm(data={'search': search})
+    form = SearchForm(data={"search": search})
 
     assert not form.is_valid()
 
 
 @pytest.mark.parametrize(
-    'search',
+    "search",
     [
-        ('2000'),
-        ('2000.01'),
-        ('2000-01'),
-        ('2000.01.01'),
-        ('2000-01-01'),
-        ('2000 test'),
-        ('2000 test1 test2'),
-        ('test'),
-        ('test1 test2'),
-    ]
+        ("2000"),
+        ("2000.01"),
+        ("2000-01"),
+        ("2000.01.01"),
+        ("2000-01-01"),
+        ("2000 test"),
+        ("2000 test1 test2"),
+        ("test"),
+        ("test1 test2"),
+    ],
 )
 def test_search_form_valid(search):
-    form = SearchForm(data={'search': search})
+    form = SearchForm(data={"search": search})
 
     assert form.is_valid()

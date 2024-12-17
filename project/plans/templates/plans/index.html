@@ -5,14 +5,15 @@
 
 {% block content %}
 
+{% translate 'Record' context 'record button' as record_button_title %}
+
 <div class="grid-one-col plans-grid">
     <!-- incomes plans -->
     <div>
         <h6>{% translate 'Incomes' %}</h6>
         <div class="flex">
-            {% url 'plans:income_new' as url_new %}
-            <button type="button" class="button-outline-success" hx-get="{{ url_new }}" hx-target="#mainModal">{% translate "Record" context "record button" %}</button>
-            <button type="button" class="button-outline-success plans-copy" hx-get="{% url 'plans:copy' %}" hx-target="#mainModal">{% translate 'Copy plans' %}</button>
+            <c-new-button url="{% url 'plans:income_new' %}" title="{{ record_button_title }}" />
+            <c-new-button url="{% url 'plans:copy' %}" title="{% translate 'Copy plans' %}" css_class="plans-copy" />
         </div>
     </div>
     <div hx-get="{% url 'plans:income_list' %}" hx-trigger="reloadIncomes from:body, afterCopy from:body">{{incomes_list|safe}}</div>
@@ -20,32 +21,28 @@
     <!-- expenses plans -->
     <div>
         <h6>{% translate 'Expenses' %}</h6>
-        {% url 'plans:expense_new' as url_expenses_new %}
-        <button type="button" class="button-outline-success" hx-get="{{ url_expenses_new }}" hx-target="#mainModal">{% translate "Record" context "record button" %}</button>
+        <c-new-button url="{% url 'plans:expense_new' %}" title="{{ record_button_title }}" />
     </div>
     <div hx-get="{% url 'plans:expense_list' %}" hx-trigger="reloadExpenses from:body, afterCopy from:body">{{expenses_list|safe}}</div>
 
     <!-- necessary expenses plans -->
     <div>
         <h6>{% translate 'Additional necessary expenses' %}</h6>
-        {% url 'plans:necessary_new' as url_necessary_new %}
-        <button type="button" class="button-outline-success" hx-get="{{ url_necessary_new }}" hx-target="#mainModal">{% translate "Record" context "record button" %}</button>
+        <c-new-button url="{% url 'plans:necessary_new' %}" title="{{ record_button_title }}" />
     </div>
     <div hx-get="{% url 'plans:necessary_list' %}" hx-trigger="reloadNecessary from:body, afterCopy from:body">{{necessary_list|safe}}</div>
 
     <!-- savings plans -->
     <div>
         <h6>{% translate 'Savings' %}</h6>
-        {% url 'plans:saving_new' as url_savings_new %}
-        <button type="button" class="button-outline-success" hx-get="{{ url_savings_new }}" hx-target="#mainModal">{% translate "Record" context "record button" %}</button>
+        <c-new-button url="{% url 'plans:saving_new' %}" title="{{ record_button_title }}" />
     </div>
     <div hx-get="{% url 'plans:saving_list' %}" hx-trigger="reloadSavings from:body, afterCopy from:body">{{savings_list|safe}}</div>
 
     <!-- day plans -->
     <div>
         <h6>{% translate 'Sum per day' %}</h6>
-        {% url 'plans:day_new' as url_day_new %}
-        <button type="button" class="button-outline-success" hx-get="{{ url_day_new }}" hx-target="#mainModal">{% translate "Record" context "record button" %}</button>
+        <c-new-button url="{% url 'plans:day_new' %}" title="{{ record_button_title }}" />
     </div>
     <div hx-get="{% url 'plans:day_list' %}" hx-trigger="reloadDay from:body, afterCopy from:body">{{day_list|safe}}</div>
 
