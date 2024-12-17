@@ -40,7 +40,7 @@
             <td class="text-left cell-padding">{{ object.account }}</td>
             <td class="text-left">{{ object.remark }}</td>
             <td class="text-center">{% if object.closed %}<i class="bi bi-check-circle-fill"></i>{% endif %}</td>
-            {% include "core/includes/cell_edit.html" with url=url_update %}
+            <c-td-edit :url=url_update />
             <c-td-delete :url=url_delete />
         </tr>
         {% endfor %}

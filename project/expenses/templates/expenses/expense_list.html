@@ -57,7 +57,7 @@
                     {% endif %}
                 </td>
                 <td>{{ object.account }}</td>
-                {% include "core/includes/cell_edit.html" with url=url_update %}
+                <c-td-edit :url=url_update />
                 <c-td-delete :url=url_delete />
             </tr>
             {% endfor %}

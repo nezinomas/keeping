@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load slippers %}
 
 
 {{info_row}}
@@ -22,7 +21,7 @@
         <tr hx-get="{{ url_update }}" hx-target="#mainModal" hx-trigger="dblclick">
             <td class="text-left">{{ obj.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ obj.quantity }}</td>
-            {% edit_cell url=url_update %}
+            <c-td-edit :url=url_update />
             <c-td-delete :url=url_delete />
         </tr>
         {% endfor %}

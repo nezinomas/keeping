@@ -29,7 +29,7 @@
             <td class="text-left">{{ object.remark }}</td>
             <td class="text-center">{{ object.started|date:"Y-m-d" }}</td>
             <td class="text-center">{{ object.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
-            {% edit_cell url=url_update %}
+            <c-td-edit :url=url_update />
             <c-td-delete :url=url_delete />
         </tr>
         {% endfor %}
