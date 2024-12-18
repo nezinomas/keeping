@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 
-{% load tables %}
 {% load i18n %}
 
 
@@ -11,7 +10,7 @@
     <main class="grid-one-col">
     {% if object_list %}
         {% for row in object_list %}
-        <div>{% detailed_table row.name row.items row.total row.total_col row.total_row  %}</div>
+        <div><c-detailed-table :name=row.name :items=row.items :total=row.total :total_col=row.total_col :total_row=row.total_row /></div>
         {% endfor %}
     {% else %}
         <div class="alert alert-warning">
