@@ -15,7 +15,6 @@ def get_obj_attr(obj, attr):
         _attr = getattr(obj, attr)
     except (AttributeError, TypeError):
         _attr = attr
-
     return _attr
 
 
