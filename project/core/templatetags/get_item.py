@@ -10,12 +10,13 @@ def get_item(dictionary, key):
 
 @register.filter
 def get_obj_attr(obj, attr):
+    # print(f'--------------------------->\n{obj=} {attr=}\n')
     _attr = None
     try:
         _attr = getattr(obj, attr)
     except (AttributeError, TypeError):
         _attr = attr
-
+    # print(f'--------------------------->\n{_attr=}\n')
     return _attr
 
 

@@ -1,4 +1,2 @@
-{% load generic_list %}
 
-{% load generic_list %}
-{% generic_list year=request.user.year items=object_list type='expense_type' update='plans:expense_update' delete='plans:expense_delete' %}
+<c-table :year=request.user.year :items=object_list type='expense_type' update='plans:expense_update' delete='plans:expense_delete' />
