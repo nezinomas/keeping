@@ -35,7 +35,7 @@
             {% firstof 'type' as name %}
         {% endif %}
         {% with _('Residual') as residual %}
-        <tr hx-get="{{url_update}}" hx-target="#mainModal" hx-trigger="dblclick" class="{% if residual|safe in name %} plans-residual-row{% endif %}">
+        <tr {% if url_update %}hx-get="{{url_update}}" hx-target="#mainModal" hx-trigger="dblclick"{% endif %} class="{% if residual|safe in name %} plans-residual-row{% endif %}">
         {% endwith%}
             <td class="text-left">
                 {{ name }}
