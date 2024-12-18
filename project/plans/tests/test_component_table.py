@@ -10,7 +10,7 @@ def _remove_line_end(rendered):
 @pytest.fixture(name="table")
 def fixture_table(fake_request):
     def _func(ctx):
-        template = loader.get_template("cotton/table.html")
+        template = loader.get_template("cotton/plans_table.html")
 
         return (
             HttpResponse(template.render(ctx, fake_request))
