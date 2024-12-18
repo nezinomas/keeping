@@ -93,7 +93,7 @@ function chartSavings(container) {
             pointFormat: '{point.y:,.0f}',
             formatter: function () {
                 return `
-                    <div><b>${this.x}</b></div>
+                    <div><b>${chartData.categories[this.x]}</b></div>
                     <div class="">${chartData.text_profit}: ${chartData.proc[this.point.x]}%</div>
                 `
             }
