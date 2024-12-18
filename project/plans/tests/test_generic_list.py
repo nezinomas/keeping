@@ -53,9 +53,11 @@ def test_no_type(table):
 
 def test_necessary_expense_1(table):
     context = {
-        "items": [type("O", (object,), dict(january=11, expense_type=dict(necessary=True)))],
+        "items": [
+            type("O", (object,), dict(january=11, expense_type=dict(necessary=True)))
+        ],
         "type": "TypeRowName",
-        }
+    }
 
     actual = table(context)
     expect = (
