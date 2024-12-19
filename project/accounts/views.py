@@ -20,6 +20,7 @@ class New(CreateViewMixin):
     hx_trigger_django = "afterAccount"
     form_title = _('Account')
 
+
 class Update(UpdateViewMixin):
     model = models.Account
     form_class = forms.AccountForm
