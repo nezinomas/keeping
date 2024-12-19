@@ -212,10 +212,13 @@ class Forecast:
 
 def get_month(year: int) -> int:
     now = datetime.now()
+
     if year > now.year:
         return 1
+
     if year < now.year:
         return 12
+
     return now.month
 
 
