@@ -69,6 +69,7 @@ class New(CreateViewMixin):
     success_url = reverse_lazy("expenses:list")
     hx_trigger_form = "reload"
     form_title = _('Expenses')
+    template_name = "expenses/expense_form.html"
 
 
 class Update(ConvertToCents, UpdateViewMixin):
@@ -77,6 +78,7 @@ class Update(ConvertToCents, UpdateViewMixin):
     success_url = reverse_lazy("expenses:list")
     hx_trigger_django = "reload"
     form_title = _('Expenses')
+    template_name = "expenses/expense_form.html"
 
 
 class Delete(DeleteViewMixin):

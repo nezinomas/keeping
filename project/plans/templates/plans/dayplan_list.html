@@ -1,4 +1,3 @@
-{% load generic_list %}
 {% load i18n %}
 
-{% generic_list year=request.user.year items=object_list type=_('Daily') update='plans:day_update'  delete='plans:day_delete' %}
+<c-plans-table :year=request.user.year :items=object_list type="{% translate 'Daily' %}" update='plans:day_update'  delete='plans:day_delete' />

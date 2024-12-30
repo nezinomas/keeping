@@ -34,7 +34,7 @@ $(function () {
                 let i = this.series.data.indexOf(this.point);
                 return `
                     <table class="hightcharts-tooltip">
-                    <tr><td class="head" colspan="2"><b>${this.x}</b></td></tr>
+                    <tr><td class="head" colspan="2"><b>${chartData.categories[this.x]}</b></td></tr>
                     <tr><td>${chartData.text.incomes}:</td><td>${Highcharts.numberFormat(chartData.incomes[i], 0)}€</td></tr>
                     <tr><td>${chartData.text.savings}:</td><td>${Highcharts.numberFormat(chartData.savings[i], 0)}€</td></tr>
                     <tr><td>${chartData.text.percents}:</td><td>${Highcharts.numberFormat(chartData.percents[i], 1)}%</td></tr>

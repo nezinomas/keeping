@@ -37,7 +37,7 @@
 {% else %}
 
 <div class="alert alert-warning">
-    {% blocktranslate with year=year|default_if_none:'xxxx'|safe %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+    {% blocktranslate with year=request.user.year|default:'xxxx'|safe %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 </div>
 
 {% endif %}
