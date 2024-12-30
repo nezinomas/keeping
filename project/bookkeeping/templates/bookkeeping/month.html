@@ -25,7 +25,7 @@
         {{ chart_targets|json_script:"chart-targets-data" }}
         {{ chart_expenses|json_script:"chart-expenses-data" }}
         <div>
-            <div x-show="show_chart" id="chart-targets-container" hx-get="{% static 'bookkeeping/chart_month_targets.html' %}" hx-trigger="load" hx-target="this"></div>
+            <div x-show="show_chart" id="chart-targets-container" hx-get="{% url 'bookkeeping:month_chart' 'targets' %}" hx-trigger="load" hx-target="this"></div>
 
             <!-- Second chart -->
             <div x-show="!show_chart" id="chart-expenses-container"></div>
@@ -52,7 +52,7 @@
         <c-new-button url="{% url 'transactions:new' %}" title="{% translate 'Transactions' context 'transactions button' %}" />
         <c-new-button url="{% url 'drinks:new' 'index' %}" title="{% translate 'Drinks' context 'drinks button' %}" />
 
-        <button class="button-active" @click="show_chart =! show_chart" hx-get="{% static 'bookkeeping/chart_month_expenses.html' %}" hx-target="#chart-expenses-container" hx-trigger="click once">{% translate 'Show other chart' %}</button>
+        <button class="button-active" @click="show_chart =! show_chart" hx-get="{% url 'bookkeeping:month_chart' 'expenses' %}" hx-target="#chart-expenses-container" hx-trigger="click once">{% translate 'Show other chart' %}</button>
     </div>
 
 </main>

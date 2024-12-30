@@ -138,6 +138,10 @@ class Month(MonthMixin, TemplateViewMixin):
         return super().get_context_data(**kwargs) | context
 
 
+class MonthChart(TemplateViewMixin):
+    template_name = "bookkeeping/includes/month_chart.html"
+
+
 class Detailed(TemplateViewMixin):
     template_name = "bookkeeping/detailed.html"
 

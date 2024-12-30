@@ -41,6 +41,7 @@ urlpatterns = [
     ),
     path("summary/expenses/", views.SummaryExpenses.as_view(), name="summary_expenses"),
     path("month/", views.Month.as_view(), name="month"),
+    path("month/<str:chart_type>", views.MonthChart.as_view(), name="month_chart"),
     path(
         "month/<date:date>/",
         views.ExpandDayExpenses.as_view(),

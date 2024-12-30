@@ -84,3 +84,26 @@ def test_view_expand_day_expenses_ajax(client_logged):
     assert "1999-01-01" in actual
     assert "Expense Type" in actual
     assert "Expense Name" in actual
+
+
+# -------------------------------------------------------------------------------------
+#                                                                          Month Charts
+# -------------------------------------------------------------------------------------
+def test_view_month_chart_func():
+    view = resolve("/month/chart_type")
+
+    assert views.MonthChart == view.func.view_class
+
+
+def test_view_month_chart_200(client_logged):
+    url = reverse("bookkeeping:month_chart", kwargs={"chart_type": "xxx"})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_month_chart_302(client):
+    url = reverse("bookkeeping:month_chart", kwargs={"chart_type": "xxx"})
+    response = client.get(url)
+
+    assert response.status_code == 302
