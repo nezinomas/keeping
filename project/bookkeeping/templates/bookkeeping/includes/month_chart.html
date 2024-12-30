@@ -1,9 +1,9 @@
 {% load static %}
 
 {% if view.kwargs.chart_type == 'targets' %}
-    {% firstof 'js/chart_month_targets.js' as script_path %}
+    {% firstof 'chart_month_targets.js' as script_path %}
 {% else %}
-    {% firstof 'js/chart_month_expenses.js' as script_path %}
+    {% firstof 'chart_month_expenses.js' as script_path %}
 {% endif %}
 
-<script src="{% static script_path %}"></script>
+<script src="{% static 'js/'|add:script_path %}"></script>
