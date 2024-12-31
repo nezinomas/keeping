@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-31 13:34+0200\n"
-"PO-Revision-Date: 2024-12-31 13:35+0200\n"
+"POT-Creation-Date: 2024-12-31 13:42+0200\n"
+"PO-Revision-Date: 2024-12-31 13:42+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -150,13 +150,17 @@ msgid "Start of %(year)s"
 msgstr "%(year)s pradžioje"
 
 #: .\project\bookkeeping\services\index.py:97
-#: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:59
-msgid "End of year"
-msgstr "Metų pabaigoje"
+#, python-format
+msgid "End of %(year)s"
+msgstr "%(year)s pabaigoje"
 
 #: .\project\bookkeeping\services\index.py:97
-msgid "Year balance"
-msgstr "Metų balansas"
+#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:12
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:41
+#: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:9
+#: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:20
+msgid "Balance"
+msgstr "Balansas"
 
 #: .\project\bookkeeping\services\index.py:113
 msgid "Average expenses"
@@ -178,6 +182,7 @@ msgstr "Faktas"
 #: .\project\bookkeeping\services\summary_savings.py:28
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:35
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:13
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:18
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:61
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:13
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:17
@@ -257,13 +262,6 @@ msgstr "Turtas"
 msgid "No records in <b>%(year)s</b>."
 msgstr "<b>%(year)s</b> metais įrašų nėra."
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:12
-#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:41
-#: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:9
-#: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:20
-msgid "Balance"
-msgstr "Balansas"
-
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:13
 msgid "Have"
 msgstr "Turiu"
@@ -290,7 +288,6 @@ msgstr "Rinkos vertė"
 msgid "Loss"
 msgstr "Nuostolis"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:18
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:19
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:20
 msgid "Transferred"
@@ -429,6 +426,10 @@ msgstr "Grąžino"
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:27
 msgid "Money flow"
 msgstr "Pinigų srautas"
+
+#: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:59
+msgid "End of year"
+msgstr "Metų pabaigoje"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_expenses.html:10
 msgid "Expenses statistic"
@@ -1756,6 +1757,9 @@ msgstr ""
 #: .\project\users\views.py:302
 msgid "Delete user"
 msgstr "Trinti vartotoją"
+
+#~ msgid "Year balance"
+#~ msgstr "Metų balansas"
 
 #~ msgid "Past years"
 #~ msgstr "Praėję metai"
