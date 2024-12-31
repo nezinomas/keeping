@@ -8,7 +8,7 @@
     <thead>
         <tr>
             <th class="text-left right-thin-border" rowspan="2"><c-regenerate-balances :type=type /> {{ title }}</th>
-            <th colspan="2" class="text-center">{% translate 'Past years' %}</th>
+            <th colspan="2" class="text-center">{% blocktranslate with year=request.user.year %}Start of {{ year }}{% endblocktranslate %}</th>
             <th colspan="2" class="text-center left-thin-border right-thin-border">{{ request.user.year }}</th>
             <th colspan="4" class="text-center">{% translate 'Total' %}</th>
             <th rowspan="2" colspan="2" class="left-thin-border right-thick-border text-center">{% translate 'Market value' %}</th>
