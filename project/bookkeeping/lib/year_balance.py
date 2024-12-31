@@ -23,7 +23,7 @@ class YearBalance(BalanceBase):
             lend,
             lend_return
         """
-        self._year = data.year
+        self.year = data.year
         self._amount_start = amount_start or 0
         self._balance = self._calc_balance_and_money_flow(data.data)
 
@@ -57,7 +57,7 @@ class YearBalance(BalanceBase):
 
         # if  now().year == user.profile.year
         # calculate average till current month
-        if self._year == _year:
+        if self.year == _year:
             # self._data is from base class
             df = self._data.select(
                 pl.col("expenses").filter(pl.col("date").dt.month() <= _month).sum()

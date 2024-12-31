@@ -6,7 +6,7 @@
     <thead>
         <tr>
             <th class="text-left"><c-regenerate-balances type='accounts' /> {% translate 'Accounts' %}</th>
-            <th>{% translate 'Past years' %}</th>
+            <th>{% blocktranslate with year=request.user.year %}Start of {{ year }}{% endblocktranslate %}</th>
             <th>{% translate 'Incomes' %}</th>
             <th>{% translate 'Expenses' %}</th>
             <th>{% translate 'Balance' %}</th>

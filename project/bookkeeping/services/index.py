@@ -94,7 +94,7 @@ class IndexService:
         end = self._balance.amount_end
 
         return {
-            "title": [_("Start of year"), _("End of year"), _("Year balance")],
+            "title": [_("Start of %(year)s") % ({"year": self._balance.year}), _("End of %(year)s") % ({"year": self._balance.year}), _("Balance")],
             "data": [start, end, (end - start)],
             "highlight": [False, False, True],
         }
