@@ -71,7 +71,7 @@ class FormsetMixin:
         if formset.is_valid():
             objects = []
             for form in formset:
-                if not form.cleaned_data.get("price"):
+                if form.cleaned_data.get("price") is None:
                     continue
 
                 model = form.instance._meta.model  # get worth model

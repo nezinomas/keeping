@@ -56,6 +56,26 @@ def test_formset_new(client_logged):
     assert actual.price == 1
 
 
+def test_formset_new_null_value(client_logged):
+    i = PensionTypeFactory()
+    data = {
+        "form-TOTAL_FORMS": 1,
+        "form-INITIAL_FORMS": 0,
+        "form-0-date": "1999-2-3",
+        "form-0-price": "0",
+        "form-0-pension_type": i.pk,
+    }
+
+    url = reverse("bookkeeping:pensions_worth_new")
+    client_logged.post(url, data)
+
+    actual = PensionWorth.objects.last()
+    assert actual.date.year == 1999
+    assert actual.date.month == 2
+    assert actual.date.day == 3
+    assert not actual.price
+
+
 def test_formset_new_post_save(client_logged):
     i = PensionTypeFactory()
     data = {

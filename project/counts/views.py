@@ -142,7 +142,7 @@ class CountUrlMixin:
 class New(CountUrlMixin, CreateViewMixin):
     model = Count
     form_class = CountForm
-    form_title = _('Counter')
+    form_title = _("Counter")
 
     def get_hx_trigger_django(self):
         tab = self.kwargs.get("tab")
@@ -166,13 +166,13 @@ class Update(CountUrlMixin, UpdateViewMixin):
     model = Count
     form_class = CountForm
     hx_trigger_django = "reloadData"
-    form_title = _('Counter')
+    form_title = _("Counter")
 
 
 class Delete(CountUrlMixin, DeleteViewMixin):
     model = Count
     hx_trigger_django = "reloadData"
-    form_title = _('Delete counter')
+    form_title = _("Delete counter")
 
 
 # -------------------------------------------------------------------------------------
@@ -192,16 +192,18 @@ class TypeNew(TypeUrlMixin, CreateViewMixin):
     form_class = CountTypeForm
     hx_trigger_django = "afterType"
     url = reverse_lazy("counts:type_new")
-    form_title = _('Count type')
+    form_title = _("Count type")
+
 
 class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
     model = CountType
     form_class = CountTypeForm
     hx_trigger_django = "afterType"
-    form_title = _('Count type')
+    form_title = _("Count type")
+
 
 class TypeDelete(TypeUrlMixin, DeleteViewMixin):
     model = CountType
     hx_trigger_django = "afterType"
     hx_redirect = reverse_lazy("counts:redirect")
-    form_title = _('Delete count type')
+    form_title = _("Delete count type")

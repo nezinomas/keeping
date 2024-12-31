@@ -31,7 +31,6 @@ def fixture_info_table(fake_request):
     ],
 )
 def test_info_table_no_data(info_table, ctx):
-
     actual = info_table(ctx)
 
     assert actual == ""
@@ -47,7 +46,7 @@ def test_info_table_with_data_and_title(info_table):
 
 
 def test_info_table_highlight(info_table):
-    ctx ={"data": {"data": [1, -2], "title": ["x", "y"], "highlight": [True, True]}}
+    ctx = {"data": {"data": [1, -2], "title": ["x", "y"], "highlight": [True, True]}}
 
     actual = info_table(ctx)
 
@@ -58,7 +57,7 @@ def test_info_table_highlight(info_table):
 def test_info_table_for_calculate_debt_remains(info_table):
     ctx = {
         "data": {"data": [5, 3], "title": ["x", "y"]},
-        "calculate_debt_remains": True
+        "calculate_debt_remains": True,
     }
 
     actual = info_table(ctx)
