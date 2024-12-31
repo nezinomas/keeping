@@ -95,7 +95,7 @@ class DebtReturnLists(ListViewMixin):
 class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
-    form_title = _('Debt repayment')
+    form_title = _("Debt repayment")
 
     def url(self):
         debt_type = self.kwargs.get("debt_type")
@@ -105,7 +105,7 @@ class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
 class DebtReturnUpdate(ConvertToCents, DebtReturnMixin, UpdateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
-    form_title = _('Debt repayment')
+    form_title = _("Debt repayment")
 
 
 class DebtReturnDelete(DebtReturnMixin, DeleteViewMixin):

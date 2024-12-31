@@ -52,7 +52,7 @@ class TypeNew(CreateViewMixin):
 
     url = reverse_lazy("pensions:type_new")
     success_url = reverse_lazy("pensions:type_list")
-    form_title = _('Pension')
+    form_title = _("Pension")
 
 
 class TypeUpdate(UpdateViewMixin):
@@ -60,4 +60,4 @@ class TypeUpdate(UpdateViewMixin):
     form_class = forms.PensionTypeForm
     hx_trigger_django = "afterPensionType"
     success_url = reverse_lazy("pensions:type_list")
-    form_title = _('Pension')
+    form_title = _("Pension")

@@ -24,7 +24,9 @@ class Expenses(Browser):
         n = ExpenseNameFactory()
 
         # click Add Expenses button
-        self.browser.find_element(By.XPATH, '//button[normalize-space()="Expenses"]').click()
+        self.browser.find_element(
+            By.XPATH, '//button[normalize-space()="Expenses"]'
+        ).click()
         sleep(0.5)
 
         # select expense type
@@ -127,7 +129,9 @@ class Expenses(Browser):
         n1 = ExpenseNameFactory(title="Expense Name 1", parent=t1)
 
         # click Add Expenses button
-        self.browser.find_element(By.XPATH, '//button[normalize-space()="Expenses"]').click()
+        self.browser.find_element(
+            By.XPATH, '//button[normalize-space()="Expenses"]'
+        ).click()
         sleep(0.5)
 
         # select expense type
@@ -184,7 +188,9 @@ class Expenses(Browser):
         self.browser.get(f"{self.live_server_url}/expenses/")
 
         # click Add Expenses button
-        self.browser.find_element(By.XPATH, '//button[normalize-space()="Expenses"]').click()
+        self.browser.find_element(
+            By.XPATH, '//button[normalize-space()="Expenses"]'
+        ).click()
         sleep(0.5)
 
         # click 'Save And Close' button
