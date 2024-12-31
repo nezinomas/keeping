@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-31 13:42+0200\n"
-"PO-Revision-Date: 2024-12-31 13:42+0200\n"
+"POT-Creation-Date: 2024-12-31 14:00+0200\n"
+"PO-Revision-Date: 2024-12-31 14:00+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -182,8 +182,7 @@ msgstr "Faktas"
 #: .\project\bookkeeping\services\summary_savings.py:28
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:35
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:13
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:18
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:61
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:60
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:13
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:17
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:45
@@ -272,7 +271,7 @@ msgid "Delta"
 msgstr "Delta"
 
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:21
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:52
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:51
 msgid "No record of account amount"
 msgstr "Nėra įrašo apie sąskaitos lėšas"
 
@@ -288,17 +287,17 @@ msgstr "Rinkos vertė"
 msgid "Loss"
 msgstr "Nuostolis"
 
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:18
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:19
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:20
 msgid "Transferred"
 msgstr "Pervesta"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:21
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:20
 #: .\project\bookkeeping\templates\bookkeeping\includes\year_balance.html:22
 msgid "Sold"
 msgstr "Parduota"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:24
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:23
 #: .\project\pensions\forms.py:46
 #: .\project\pensions\templates\pensions\pension_list.html:10
 #: .\project\savings\forms.py:32 .\project\savings\forms.py:84
@@ -307,12 +306,12 @@ msgstr "Parduota"
 msgid "Fund"
 msgstr "Fondas"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:25
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:27
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:29
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:31
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:24
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:26
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:28
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:30
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:33
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:34
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:35
 #: .\project\debts\forms.py:62 .\project\debts\forms.py:147
 #: .\project\debts\templates\debts\debt_list.html:19
 #: .\project\debts\templates\debts\debtreturn_list.html:18
@@ -323,10 +322,10 @@ msgstr "Fondas"
 msgid "Sum"
 msgstr "Suma"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:26
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:28
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:30
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:32
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:25
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:27
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:29
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:31
 #: .\project\pensions\templates\pensions\pension_list.html:13
 #: .\project\savings\forms.py:82
 #: .\project\savings\templates\savings\saving_list.html:16
@@ -335,7 +334,7 @@ msgstr "Suma"
 msgid "Fees"
 msgstr "Mokesčiai"
 
-#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:33
+#: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:32
 #: .\project\counts\forms.py:50
 #: .\project\counts\templates\counts\tab_data.html:11
 #: .\project\debts\forms.py:59 .\project\debts\forms.py:144
