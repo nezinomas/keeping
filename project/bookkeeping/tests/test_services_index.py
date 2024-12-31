@@ -23,10 +23,10 @@ def test_balance_short_context():
 
 
 def test_balance_short_context_data():
-    obj = IndexService(balance=MagicMock(amount_start=5, amount_end=70))
+    obj = IndexService(balance=MagicMock(amount_start=5, amount_end=70, year=2021))
     actual = obj.balance_short_context()
 
-    assert actual["title"] == ["Metų pradžioje", "Metų pabaigoje", "Metų balansas"]
+    assert actual["title"] == ["2021 pradžioje", "2021 pabaigoje", "Balansas"]
     assert actual["data"] == [5, 70, 65]
 
 
