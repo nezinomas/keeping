@@ -58,6 +58,26 @@ def test_formset_new(client_logged):
     assert actual.price == 1
 
 
+def test_formset_new_null_value(client_logged):
+    i = AccountFactory()
+    data = {
+        "form-TOTAL_FORMS": 1,
+        "form-INITIAL_FORMS": 0,
+        "form-0-date": "1999-9-9",
+        "form-0-price": "0",
+        "form-0-account": i.pk,
+    }
+
+    url = reverse("bookkeeping:accounts_worth_new")
+    client_logged.post(url, data, follow=True)
+
+    actual = AccountWorth.objects.last()
+    assert actual.date.year == 1999
+    assert actual.date.month == 9
+    assert actual.date.day == 9
+    assert not actual.price
+
+
 def test_formset_new_post_save(client_logged):
     i = AccountFactory()
     data = {
