@@ -42,7 +42,7 @@ class SavingType(TitleAbstract):
 
 class Saving(models.Model):
     date = models.DateField()
-    price = models.PositiveIntegerField()
+    price = models.PositiveIntegerField(null=True, blank=True)
     fee = models.PositiveIntegerField(
         null=True,
         blank=True,
