@@ -4,9 +4,11 @@ import pytest
 import time_machine
 
 from ...accounts.factories import AccountFactory
+from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from ..factories import SavingTypeFactory
 from ..forms import SavingForm, SavingTypeForm
+from ..models import SavingType
 
 pytestmark = pytest.mark.django_db
 
@@ -69,6 +71,19 @@ def test_saving_type_title_null():
     assert not form.is_valid()
 
     assert "title" in form.errors
+
+
+def test_saving_type_title_max_symbols():
+    title = "a" * 50
+    form = SavingTypeForm(
+        data={"title": title, "journal": JournalFactory(), "type": "funds"}
+    )
+
+    assert form.is_valid()
+
+    form.save()
+
+    assert SavingType.objects.first().title == title
 
 
 def test_saving_type_title_too_long():
