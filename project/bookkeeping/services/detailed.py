@@ -51,6 +51,7 @@ class Service:
     def expenses_context(self) -> list[dict]:
         data = __class__.modify_data(self._year, self._expenses)
         name = f'{_("Expenses")} / '
+        print(f'--------------------------->\n{data=}\n')
         return self._create_context(data, self._expenses_types, name)
 
     @staticmethod
@@ -88,8 +89,8 @@ class Service:
 
         df = self._create_df(data)
         for category in categories:
-            context_item = self._create_context_item(df, category, name)
-            context.append(context_item)
+            if context_item := self._create_context_item(df, category, name):
+                context.append(context_item)
         return context
 
     def _create_context_item(self, df, category, name):
@@ -102,6 +103,9 @@ class Service:
         }
 
         df_category = df.filter(pl.col.type_title == category)
+        if df_category.is_empty():
+            return
+
         for df_part in df_category.partition_by("title"):
             total_col = df_part["total_col"].sum()
             context_item["total"] += total_col
