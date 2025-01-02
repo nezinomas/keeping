@@ -1,20 +1,30 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinLengthValidator,
+    MinValueValidator,
+)
 from django.db import models
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from . import managers
 
 
-class SavingType(TitleAbstract):
+class SavingType(models.Model):
     class Types(models.TextChoices):
         SHARES = "shares", _("Shares")
         FUNDS = "funds", _("Funds")
         PENSIONS = "pensions", _("Pensions")
 
+    title = models.CharField(
+        max_length=50, blank=False, validators=[MinLengthValidator(3)]
+    )
+    slug = models.SlugField(
+        editable=False,
+        max_length=50,
+    )
     created = models.DateTimeField(auto_now_add=True)
     closed = models.PositiveIntegerField(
         blank=True,
@@ -35,6 +45,9 @@ class SavingType(TitleAbstract):
     class Meta:
         unique_together = ["journal", "title"]
         ordering = ["type", "title"]
+
+    def __str__(self):
+        return str(self.title)
 
     def get_absolute_url(self):
         return reverse_lazy("savings:type_update", kwargs={"pk": self.pk})
