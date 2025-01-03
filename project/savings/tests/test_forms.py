@@ -4,9 +4,11 @@ import pytest
 import time_machine
 
 from ...accounts.factories import AccountFactory
+from ...journals.factories import JournalFactory
 from ...users.factories import UserFactory
 from ..factories import SavingTypeFactory
 from ..forms import SavingForm, SavingTypeForm
+from ..models import SavingType
 
 pytestmark = pytest.mark.django_db
 
@@ -69,6 +71,19 @@ def test_saving_type_title_null():
     assert not form.is_valid()
 
     assert "title" in form.errors
+
+
+def test_saving_type_title_max_symbols():
+    title = "a" * 50
+    form = SavingTypeForm(
+        data={"title": title, "journal": JournalFactory(), "type": "funds"}
+    )
+
+    assert form.is_valid()
+
+    form.save()
+
+    assert SavingType.objects.first().title == title
 
 
 def test_saving_type_title_too_long():
@@ -209,6 +224,42 @@ def test_saving_valid_data():
     assert data.saving_type.title == t.title
 
 
+@pytest.mark.parametrize(
+    "price",
+    [
+        (""),
+        (None),
+        (0),
+    ],
+)
+@time_machine.travel("1999-1-1")
+def test_saving_valid_data_only_fee(price):
+    a = AccountFactory()
+    t = SavingTypeFactory()
+
+    form = SavingForm(
+        data={
+            "date": "1999-01-01",
+            "price": price,
+            "fee": 0.01,
+            "remark": "remark",
+            "account": a.pk,
+            "saving_type": t.pk,
+        }
+    )
+
+    assert form.is_valid()
+
+    data = form.save()
+
+    assert data.date == date(1999, 1, 1)
+    assert not data.price
+    assert data.fee == 1
+    assert data.remark == "remark"
+    assert data.account.title == a.title
+    assert data.saving_type.title == t.title
+
+
 @time_machine.travel("1999-1-1")
 def test_saving_valid_data_with_no_fee():
     a = AccountFactory()
@@ -269,14 +320,15 @@ def test_saving_blank_data():
     assert "saving_type" in form.errors
 
 
-def test_saving_price_null():
+def test_saving_price_null_and_fee_null():
     a = AccountFactory()
     t = SavingTypeFactory()
 
     form = SavingForm(
         data={
             "date": "2000-01-01",
-            "price": "0",
+            "price": "",
+            "fee": "",
             "remark": "remark",
             "account": a.pk,
             "saving_type": t.pk,

@@ -1,4 +1,4 @@
-from django.core.validators import MinLengthValidator, MinValueValidator
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.text import slugify
 

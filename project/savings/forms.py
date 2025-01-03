@@ -45,8 +45,8 @@ class SavingTypeForm(forms.ModelForm):
 
 
 class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
-    price = forms.FloatField(min_value=0.01)
-    fee = forms.FloatField(min_value=0.01, required=False)
+    price = forms.FloatField(min_value=0, required=False)
+    fee = forms.FloatField(min_value=0, required=False)
 
     class Meta:
         model = Saving
@@ -84,3 +84,17 @@ class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["saving_type"].label = _("Fund")
 
         self.helper = FormHelper()
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        fee = cleaned_data.get("fee")
+        price = cleaned_data.get("price")
+
+        if not price and not fee:
+            _msg = _("The `Sum` and `Fee` fields cannot both be empty.")
+
+            self.add_error("price", _msg)
+            self.add_error("fee", _msg)
+
+        return cleaned_data
