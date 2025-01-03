@@ -5,23 +5,23 @@ function chartExpenses(idData, idContainer) {
 
     // convert data
     for(i = 0; i < chartData.data.length; i++) {
-        for(y = 0; y < chartData.data[i]['data'].length; y++) {
-            chartData.data[i]['data'][y] /= 100
+        for(y = 0; y < chartData.data[i]["data"].length; y++) {
+            chartData.data[i]["data"][y] /= 100
         }
     }
 
     Highcharts.chart(idContainer, {
         chart: {
-            type: 'column',
-            zoomType: 'x',
+            type: "column",
+            zoomType: "x",
             panning: {
                 enabled: true,
-                type: 'x'
+                type: "x"
             },
-            panKey: 'shift'
+            panKey: "shift"
         },
         title: {
-            text: '',
+            text: "",
         },
         xAxis: {
             categories: chartData.categories,
@@ -30,7 +30,7 @@ function chartExpenses(idData, idContainer) {
         },
         yAxis: {
             title: {
-                text: ''
+                text: ""
             },
             labels: {
                 formatter: function () {
@@ -46,7 +46,7 @@ function chartExpenses(idData, idContainer) {
             pointFormat:
                 '<div class=""><span style="color:{series.color};">{series.name}:</span> ' +
                 '<span> <b>{point.y:,.1f}€</b></span></div>',
-            footerFormat: '',
+            footerFormat: "",
             shared: true,
         },
         plotOptions: {

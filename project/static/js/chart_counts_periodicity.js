@@ -5,14 +5,14 @@ function chartPeriodicity(idData, idContainer) {
 
     // if no data
     if (!chartData.categories.length) {
-        chartData.categories = ['0'];
+        chartData.categories = ["0"];
         chartData.data = [0];
     }
 
     Highcharts.chart(idContainer, {
         chart: {
-            type: 'column',
-            height: '300px',
+            type: "column",
+            height: "300px",
         },
         title: {
             text: chartData.title,
@@ -24,19 +24,19 @@ function chartPeriodicity(idData, idContainer) {
             labels: {
                 useHTML: true,
                 formatter: function () { /* use formatter to break word. */
-                    return '<div style="word-wrap: break-word; word-break:break-all; width:40px; text-align: right">' + this.value + '</div>';
+                    return '<div style="word-wrap: break-word; word-break:break-all; width:40px; text-align: right">" + this.value + "</div>';
                 },
                 rotation: -45,
             }
         },
         yAxis: {
             title: {
-                text: ''
+                text: ""
             },
         },
         tooltip: {
             shared: true,
-            headerFormat: '',
+            headerFormat: "",
             pointFormat: '<b>{point.category}</b>:  <span style="color:{series.color}"><b>{point.y:.0f}</b></span>',
         },
         plotOptions: {
@@ -58,8 +58,8 @@ function chartPeriodicity(idData, idContainer) {
                     return (this.y != 0) ? this.y : "";
                 },
                 style: {
-                    fontSize: '11px',
-                    fontWeight: 'bold',
+                    fontSize: "11px",
+                    fontWeight: "bold",
                     textOutline: false
                 }
             }

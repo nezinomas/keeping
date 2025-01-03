@@ -1,5 +1,5 @@
 $(function () {
-    const chartData = JSON.parse(document.getElementById('chart-incomes-types-data').textContent);
+    const chartData = JSON.parse(document.getElementById("chart-incomes-types-data").textContent);
 
     // convert data
     for (i = 0; i < chartData.data.length; i++) {
@@ -8,9 +8,9 @@ $(function () {
         }
     }
 
-    Highcharts.chart('chart-incomes-types-container', {
+    Highcharts.chart("chart-incomes-types-container", {
         chart: {
-            type: 'column',
+            type: "column",
             spacingRight: 25,
         },
         title: {
@@ -27,7 +27,7 @@ $(function () {
         yAxis: {
             min: 0,
             title: {
-                text: '%'
+                text: "%"
             },
         },
         tooltip: {
@@ -36,19 +36,19 @@ $(function () {
         },
         plotOptions: {
             column: {
-                stacking: 'percent',
+                stacking: "percent",
                 dataLabels: {
                     useHTML: true,
                     enabled: true,
                     crop: false,
-                    overflow: 'none',
+                    overflow: "none",
                     formatter:function(){
                         return `<div class="text-center" style="width: ${this.point.pointWidth}px;">${Highcharts.numberFormat(this.point.percentage, 1)}%</div>`;
                     },
                     style: {
-                        fontWeight: 'normal',
-                        textOutline: 'none',
-                        fontSize: '11px',
+                        fontWeight: "normal",
+                        textOutline: "none",
+                        fontSize: "11px",
                     }
                 }
             }

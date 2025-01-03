@@ -5,10 +5,10 @@ function chartCompare(idData, idContainer) {
 
     Highcharts.chart(idContainer, {
         chart: {
-            height: '350px',
+            height: "350px",
         },
         title: {
-            text: ''
+            text: ""
         },
         legend: {
             enabled: true,
@@ -17,7 +17,7 @@ function chartCompare(idData, idContainer) {
         xAxis: {
             min: 0.4,
             max: 10.8,
-            tickmarkPlacement: 'on',
+            tickmarkPlacement: "on",
             categories: chartData.categories,
             labels: {
                 rotation: -45,
@@ -25,7 +25,7 @@ function chartCompare(idData, idContainer) {
         },
         yAxis: {
             title: {
-                text: ''
+                text: ""
             },
         },
         tooltip: {

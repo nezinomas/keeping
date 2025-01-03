@@ -5,7 +5,7 @@ function chartReaded(idData, idContainer) {
 
     Highcharts.chart(idContainer, {
         chart: {
-            type: 'bullet'
+            type: "bullet"
         },
         title: {
             text: chartData.chart_title,
@@ -16,7 +16,7 @@ function chartReaded(idData, idContainer) {
         },
         yAxis: {
             title: {
-                text: ''
+                text: ""
             },
         },
         plotOptions: {
@@ -25,8 +25,8 @@ function chartReaded(idData, idContainer) {
                 targetOptions: {
                     borderWidth: 0,
                     height: 2,
-                    color: 'green',
-                    width: '110%'
+                    color: "green",
+                    width: "110%"
                 }
             },
         },
@@ -39,26 +39,26 @@ function chartReaded(idData, idContainer) {
                 enabled: true,
                 color: `rgba(${chartData.chart_column_color}, 1)`,
                 style: {
-                    fontSize: '11px',
-                    fontWeight: 'bold',
+                    fontSize: "11px",
+                    fontWeight: "bold",
                     textOutline: false
                 }
             }]
         }, {
-            type: 'column',
+            type: "column",
             borderWidth: 0,
             data: chartData.targets,
-            color: 'rgba(0,0,0,0)',
+            color: "rgba(0,0,0,0)",
             dataLabels: [{
                 enabled: true,
-                color: 'green',
-                align: 'left',
+                color: "green",
+                align: "left",
                 x: -28,
                 y: -13,
-                verticalAlign: 'top',
+                verticalAlign: "top",
                 style: {
-                    fontSize: '11px',
-                    fontWeight: 'bold',
+                    fontSize: "11px",
+                    fontWeight: "bold",
                     textOutline: false
                 }
             }]

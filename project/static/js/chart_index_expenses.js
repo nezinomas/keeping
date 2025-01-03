@@ -1,20 +1,20 @@
 $(function () {
-    const chartData = JSON.parse(document.getElementById('chart-expenses-data').textContent);
+    const chartData = JSON.parse(document.getElementById("chart-expenses-data").textContent);
     // convert data
     for (var key in chartData) {
-        chartData[key]['y'] /= 100;
+        chartData[key]["y"] /= 100;
     }
 
-    Highcharts.chart('chart-expenses-container', {
+    Highcharts.chart("chart-expenses-container", {
         chart: {
-            type: 'column',
+            type: "column",
             marginBottom: 74,
         },
         title: {
-            text: ''
+            text: ""
         },
         xAxis: {
-            type: 'category',
+            type: "category",
             gridLineWidth: 0,
             crosshair: true,
             labels: {
@@ -23,7 +23,7 @@ $(function () {
         },
         yAxis: {
             title: {
-                text: ''
+                text: ""
             },
             labels: {
                 formatter: function () {
@@ -54,19 +54,19 @@ $(function () {
                 useHTML: true,
                 enabled: true,
                 rotation: -90,
-                color: '#000',
-                align: 'center',
+                color: "#000",
+                align: "center",
                 crop: false,
                 overflow: "allow",
                 y: 2,
                 style: {
-                    fontSize: '10px',
-                    fontWeight: 'bold',
+                    fontSize: "10px",
+                    fontWeight: "bold",
                     textOutline: false
                 },
                 formatter: function() {
                     const pcnt = (this.y / this.series.data.map(p => p.y).reduce((a, b) => a + b, 0)) * 100;
-                    return Highcharts.numberFormat(pcnt, 1) + '%';
+                    return Highcharts.numberFormat(pcnt, 1) + "%";
                 },
             }
         }]

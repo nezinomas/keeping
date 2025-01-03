@@ -1,4 +1,4 @@
-loadChart('chart-expenses-data', 'chart-expenses-container');
+loadChart("chart-expenses-data", "chart-expenses-container");
 
 function loadChart(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
@@ -7,34 +7,34 @@ function loadChart(idData, idContainer) {
 
     // convert data
     for (var key in chartData) {
-        chartData[key]['y'] /= 100;
+        chartData[key]["y"] /= 100;
 
-        if (chartData[key]['name'].length > max_category_len) {
-            max_category_len = chartData[key]['name'].length;
+        if (chartData[key]["name"].length > max_category_len) {
+            max_category_len = chartData[key]["name"].length;
         }
     }
 
     Highcharts.chart(idContainer, {
         chart: {
-            type: 'bar',
+            type: "bar",
             height: 485,
             marginLeft: max_category_len * 6.55,
         },
         title: {
-            text: ''
+            text: ""
         },
         xAxis: {
-            type: 'category',
+            type: "category",
             gridLineWidth: 0,
             labels: {
                 style: {
-                    fontWeight: 'bold',
+                    fontWeight: "bold",
                 },
             }
         },
         yAxis: {
             title: {
-                text: ''
+                text: ""
             },
         },
         plotOptions: {
@@ -44,21 +44,21 @@ function loadChart(idData, idContainer) {
             }
         },
         tooltip: {
-            headerFormat: '',
-            pointFormat: '{point.name}: <b>{point.y:.1f}</b>',
+            headerFormat: "",
+            pointFormat: "{point.name}: <b>{point.y:.1f}</b>",
         },
         series: [
             {
                 data: chartData,
                 borderRadius: 0,
                 dataLabels: {
-                    format: '{point.y:.0f}',
+                    format: "{point.y:.0f}",
                     enabled: true,
-                    color: '#000',
-                    align: 'left',
+                    color: "#000",
+                    align: "left",
                     y: -0.5,
                     style: {
-                        fontWeight: 'bold',
+                        fontWeight: "bold",
                         textOutline: false
                     }
                 }
