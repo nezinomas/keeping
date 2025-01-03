@@ -56,6 +56,8 @@ $(function () {
                 rotation: -90,
                 color: '#000',
                 align: 'center',
+                crop: false,
+                overflow: "allow",
                 y: 2,
                 style: {
                     fontSize: '10px',
