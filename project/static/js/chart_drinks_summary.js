@@ -15,52 +15,52 @@ function chart_drinks_summary(idData, idContainer) {
             min: 0.49,
             max: chartData.categories.length - 1.49,
             categories: chartData.categories,
-            type: 'category',
-            tickmarkPlacement: 'on',
+            type: "category",
+            tickmarkPlacement: "on",
         },
         yAxis: [{
             labels: {
-                format: '{value:.0f}',
+                format: "{value:.0f}",
                 style: {
-                    color: '#46ab9d',
+                    color: "#46ab9d",
                 },
             },
             title: {
-                text: '',
+                text: "",
                 style: {
-                    color: '#46ab9d',
+                    color: "#46ab9d",
                 }
             },
         }, {
             opposite: true,
             labels: {
-                format: '{value:.0f}',
+                format: "{value:.0f}",
                 style: {
-                    color: '#d13572',
+                    color: "#d13572",
                 },
             },
             title: {
-                text: '',
+                text: "",
                 style: {
-                    color: '#d13572',
+                    color: "#d13572",
                 }
             },
         }],
         tooltip: {
-            pointFormat: '<b>{point.y:,.0f} ml</b><br>',
+            pointFormat: "<b>{point.y:,.0f} ml</b><br>",
         },
         series: [{
             name: chartData.text.per_day,
             yAxis: 0,
             data: chartData.data_ml,
-            color: '#46ab9d',
-            type: 'area',
+            color: "#46ab9d",
+            type: "area",
             dataLabels: {
                 enabled: true,
-                format: '{point.y:.0f}',
+                format: "{point.y:.0f}",
                 y: -25,
-                verticalAlign:'top',
-                color: '#28695f',
+                verticalAlign:"top",
+                color: "#28695f",
                 style: {
                     textOutline: 0,
                 },
@@ -71,13 +71,13 @@ function chart_drinks_summary(idData, idContainer) {
             name: chartData.text.per_year,
             yAxis: 1,
             data: chartData.data_alcohol,
-            color: '#d13572',
-            type: 'line',
+            color: "#d13572",
+            type: "line",
             dataLabels: {
                 enabled: true,
-                format: '{point.y:.1f}',
+                format: "{point.y:.1f}",
                 y: 25,
-                color: '#d13572',
+                color: "#d13572",
                 style: {
                     textOutline: 0,
                 },

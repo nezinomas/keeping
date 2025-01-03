@@ -1,17 +1,17 @@
 $(function () {
-    const chartData = JSON.parse(document.getElementById('chart-balance-data').textContent);
+    const chartData = JSON.parse(document.getElementById("chart-balance-data").textContent);
     // convert data
     for(i = 0; i < 12; i++) {
         chartData.incomes[i] /= 100
         chartData.expenses[i] /= 100
     }
 
-    Highcharts.chart('chart-balance-container', {
+    Highcharts.chart("chart-balance-container", {
         chart: {
             marginBottom: 74,
         },
         title: {
-            text: '',
+            text: "",
         },
         legend: {
             enabled: true,
@@ -21,8 +21,8 @@ $(function () {
             min: 0.49,
             max: chartData.categories.length - 1.49,
             categories: chartData.categories,
-            type: 'category',
-            tickmarkPlacement: 'on',
+            type: "category",
+            tickmarkPlacement: "on",
             labels: {
                 rotation: -45,
             },
@@ -37,12 +37,12 @@ $(function () {
                 },
             },
             title: {
-                text: ''
+                text: ""
             },
         },
         tooltip: {
             split: true,
-            pointFormat: '{series.name}: <b>{point.y:,.0f} €</b><br>',
+            pointFormat: "{series.name}: <b>{point.y:,.0f} €</b><br>",
         },
         plotOptions: {
             area: {
@@ -50,15 +50,15 @@ $(function () {
             }
         },
         series: [{
-            type: 'area',
+            type: "area",
             name: chartData.incomes_title,
             data: chartData.incomes,
-            color: '#5D9C59'
+            color: "#5D9C59"
         }, {
-            type: 'area',
+            type: "area",
             name: chartData.expenses_title,
             data: chartData.expenses,
-            color: '#EB5353'
+            color: "#EB5353"
         }]
     });
 });

@@ -1,11 +1,11 @@
 // prevent default form submission
-$(document).on('submit', '.modal-form', function (e) {
+$(document).on("submit", ".modal-form", function (e) {
     e.preventDefault();
 });
 
 
 // close modal on Close Buton
-$(document).on('click', '.modal-close', function (e) {
+$(document).on("click", ".modal-close", function (e) {
     modal_hide($(this).data("dismiss"));
 });
 
@@ -13,7 +13,7 @@ $(document).on('click', '.modal-close', function (e) {
 // close modal on ESC
 $(document).keydown(function (event) {
     if (event.keyCode == 27) {
-        $('.modal-close').each(function () {
+        $(".modal-close").each(function () {
             modal_hide($(this).data("dismiss"));
         })
     }
@@ -22,11 +22,11 @@ $(document).keydown(function (event) {
 
 // close modal on outside (e.g. containerModal) click
 window.onclick = function(event) {
-    let containers = ['mainModalContainer', 'imgModalContainer'];
+    let containers = ["mainModalContainer", "imgModalContainer"];
 
     if (containers.includes(event.target.id)) {
-        // strip 'Container' prefix
-        let target = event.target.id.replace('Container', '');
+        // strip "Container" prefix
+        let target = event.target.id.replace("Container", "");
         modal_hide(target);
     }
 }
@@ -35,19 +35,19 @@ window.onclick = function(event) {
 // show modal on click button with hx-target="#mainModal"
 htmx.on("htmx:afterSwap", (e) => {
     let target = e.detail.target.id;
-    let modals = ['mainModal', 'imgModal'];
+    let modals = ["mainModal", "imgModal"];
 
     if (modals.includes(target)) {
         $(`#${target}`).parent().show();
 
         // focus on [autofocus] field
         // commented on 2024.05.06
-        // $(`#${target}`).find('[autofocus]').focus();
+        // $(`#${target}`).find("[autofocus]").focus();
 
         // insert image url in imgModal
-        if (target == 'imgModal') {
+        if (target == "imgModal") {
             let {url} = e.detail.requestConfig.triggeringEvent.originalTarget.dataset;
-            let modalBodyInput = imgModal.querySelector('.modal-body .dspl');
+            let modalBodyInput = imgModal.querySelector(".modal-body .dspl");
             modalBodyInput.innerHTML = `<img src="${url}" />`;
         }
     }
@@ -63,24 +63,24 @@ htmx.on("htmx:beforeSwap", (e) => {
         let subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id;
 
         /* remove error messages */
-        $('.invalid-feedback').remove();
-        $('.is-invalid').removeClass('is-invalid');
+        $(".invalid-feedback").remove();
+        $(".is-invalid").removeClass("is-invalid");
 
-        if(subbmiter == '_new') {
+        if(subbmiter == "_new") {
             // reset fields values after submit
             let fields = ["price", "fee", "quantity", "title", "remark", "attachment"];
             for (let i in fields) {
                 let field = $(`#id_${fields[i]}`);
                 if(field) {
-                    field.val('');
+                    field.val("");
                 }
             }
         }
 
-        if(subbmiter == '_close') {
+        if(subbmiter == "_close") {
             modal_hide(target);
 
-            $('#modal-form .modal-form')[0].reset();
+            $("#modal-form .modal-form")[0].reset();
         }
 
         e.detail.shouldSwap = false;
@@ -90,11 +90,11 @@ htmx.on("htmx:beforeSwap", (e) => {
 
 // trigger htmx on form submit if form has data-hx-trigger-form or data-hx-inserted attribute
 function hx_trigger() {
-    let form = $('.modal-form');
+    let form = $(".modal-form");
     let trigger_name = form.attr("data-hx-trigger-form");
-    let data_inserted = form.attr('data-hx-inserted');
+    let data_inserted = form.attr("data-hx-inserted");
 
-    if (trigger_name === 'None' || trigger_name == undefined) {
+    if (trigger_name === "None" || trigger_name == undefined) {
         return;
     }
 

@@ -1,5 +1,5 @@
 $(function () {
-    const chartData = JSON.parse(document.getElementById('chart-incomes-data').textContent);
+    const chartData = JSON.parse(document.getElementById("chart-incomes-data").textContent);
 
     // convert data
     for (i = 0; i < chartData.incomes.length; i++) {
@@ -21,8 +21,8 @@ $(function () {
             min: 0.49,
             max: chartData.categories.length - 1.49,
             categories: chartData.categories,
-            type: 'category',
-            tickmarkPlacement: 'on',
+            type: "category",
+            tickmarkPlacement: "on",
         },
         yAxis: {
             labels: {
@@ -34,20 +34,20 @@ $(function () {
                 },
             },
             title: {
-                text: ''
+                text: ""
             },
 
         },
         tooltip: {
-            pointFormat: '<b>{point.y:,.0f}</b><br>',
+            pointFormat: "<b>{point.y:,.0f}</b><br>",
         },
         plotOptions: {
             area: {
                 dataLabels: {
                     enabled: true,
-                    format: '{point.y:,.0f}',
-                    verticalAlign:'top',
-                    color: '#2d5f2e',
+                    format: "{point.y:,.0f}",
+                    verticalAlign:"top",
+                    color: "#2d5f2e",
                     style: {
                         textOutline: 0,
                     },
@@ -58,9 +58,9 @@ $(function () {
             line: {
                 dataLabels: {
                     enabled: true,
-                    format: '{point.y:,.0f}',
+                    format: "{point.y:,.0f}",
                     y: -5,
-                    color: '#2d5f2e',
+                    color: "#2d5f2e",
                     style: {
                         textOutline: 0,
                     },
@@ -71,14 +71,14 @@ $(function () {
         series: [{
             name: chartData.salary_title,
             data: chartData.salary,
-            type: 'area',
-            color: '#5D9C59',
+            type: "area",
+            color: "#5D9C59",
         }, {
             name: chartData.incomes_title,
             data: chartData.incomes,
-            type: 'line',
+            type: "line",
             lineWidth: 2,
-            color: '#2d5f2e',
+            color: "#2d5f2e",
         }],
     });
 });

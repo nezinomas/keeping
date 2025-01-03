@@ -19,8 +19,8 @@ function annotationLabels(arrTotal, arrProfit, arrInvested) {
 };
 
 function chartSavings(container) {
-    const positive = '#548235';
-    const negative = '#c0504d';
+    const positive = "#548235";
+    const negative = "#c0504d";
     const chartData = JSON.parse(document.getElementById(`${container}_data`).textContent);
 
     // convert data
@@ -32,25 +32,25 @@ function chartSavings(container) {
 
     Highcharts.chart(container, {
         chart: {
-            type: 'column',
+            type: "column",
             spacingRight: 25,
         },
         title: {
             text: chartData.title,
         },
         subtitle: {
-            text: ''
+            text: ""
         },
         annotations: [{
-            draggable: '',
+            draggable: "",
             labelOptions: {
                 useHTML: true,
                 crop: false,
-                overflow: 'none',
+                overflow: "none",
                 y: -8,
                 style: {
-                    fontSize: '11px',
-                    fontFamily: 'Helvetica, sans-serif',
+                    fontSize: "11px",
+                    fontFamily: "Helvetica, sans-serif",
                 },
                 formatter:function(){
                     let i = this.x
@@ -67,7 +67,7 @@ function chartSavings(container) {
         },
         yAxis: {
             title: {
-                text: ''
+                text: ""
             },
             labels: {
                 enabled: true,
@@ -79,7 +79,7 @@ function chartSavings(container) {
                 },
             },
             plotLines: [{
-                color: '#c0c0c0',
+                color: "#c0c0c0",
                 width: 1,
                 value: 0,
                 zIndex:2
@@ -90,7 +90,7 @@ function chartSavings(container) {
             startOnTick: false,
         },
         tooltip: {
-            pointFormat: '{point.y:,.0f}',
+            pointFormat: "{point.y:,.0f}",
             formatter: function () {
                 return `
                     <div><b>${chartData.categories[this.x]}</b></div>
@@ -100,16 +100,16 @@ function chartSavings(container) {
         },
         plotOptions: {
             column: {
-                stacking: 'normal',
+                stacking: "normal",
             },
         },
         series: [{
             name: chartData.text_profit,
             data: chartData.profit,
-            color: '#5D9C59',
+            color: "#5D9C59",
             opacity: 0.8,
-            borderColor: '#548235',
-            borderWidth: '0.5',
+            borderColor: "#548235",
+            borderWidth: "0.5",
             borderRadius: 0,
             dataLabels: {
                 useHTML: true,
@@ -117,7 +117,7 @@ function chartSavings(container) {
                 formatter: function () {
                     let val = Highcharts.numberFormat(this.y, 0)
                     if (val == 0) {
-                        return '';
+                        return "";
                     } else {
                         let color = (val < 0) ? negative : positive;
                         return `<div class="text-center" style="width: ${this.point.pointWidth}px;"><span style="color:${color};">${val}</span></div>`;
@@ -127,19 +127,19 @@ function chartSavings(container) {
         }, {
             name: chartData.text_invested,
             data: chartData.invested,
-            color: 'rgba(222,176,40,0.5)',
-            borderColor: '#bf8f00',
-            borderWidth: '0.5',
+            color: "rgba(222,176,40,0.5)",
+            borderColor: "#bf8f00",
+            borderWidth: "0.5",
             borderRadius: 0,
             dataLabels: {
                 useHTML: true,
                 enabled: true,
-                verticalAlign: 'top',
+                verticalAlign: "top",
                 formatter: function () {
                     return `<div class="text-center" style="width: ${this.point.pointWidth}px;">${Highcharts.numberFormat(this.y, 0)}</div>`;
                 },
                 style: {
-                    color: '#bf8f00'
+                    color: "#bf8f00"
                 },
             }
         }]
@@ -149,7 +149,7 @@ function chartSavings(container) {
         $.each(series.data, function (i, point) {
             if (point.negative) {
                 point.color = negative; /* + tooltip border color */
-                point.graphic.css({ stroke: negative, color: '#EB5353'});
+                point.graphic.css({ stroke: negative, color: "#EB5353"});
             } else {
                 point.update({})
             }
