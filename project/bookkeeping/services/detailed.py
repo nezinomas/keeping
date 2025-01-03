@@ -51,7 +51,6 @@ class Service:
     def expenses_context(self) -> list[dict]:
         data = __class__.modify_data(self._year, self._expenses)
         name = f'{_("Expenses")} / '
-        print(f'--------------------------->\n{data=}\n')
         return self._create_context(data, self._expenses_types, name)
 
     @staticmethod
