@@ -7,14 +7,7 @@ $(function () {
         chartData.salary[i] /= 100
     }
 
-    Highcharts.setOptions({
-        lang: {
-            thousandsSep: '.',
-            decimalPoint: ',',
-        }
-    });
-
-    Highcharts.chart('chart-incomes-container', {
+    Highcharts.chart("chart-incomes-container", {
         chart: {
             spacingRight: 25,
         },
