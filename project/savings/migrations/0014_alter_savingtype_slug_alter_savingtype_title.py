@@ -5,20 +5,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('savings', '0013_savingbalance_profit_proc'),
+        ("savings", "0013_savingbalance_profit_proc"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='savingtype',
-            name='slug',
+            model_name="savingtype",
+            name="slug",
             field=models.SlugField(editable=False),
         ),
         migrations.AlterField(
-            model_name='savingtype',
-            name='title',
-            field=models.CharField(max_length=50, validators=[django.core.validators.MinLengthValidator(3)]),
+            model_name="savingtype",
+            name="title",
+            field=models.CharField(
+                max_length=50, validators=[django.core.validators.MinLengthValidator(3)]
+            ),
         ),
     ]
