@@ -103,7 +103,7 @@ class Service:
 
         df_category = df.filter(pl.col.type_title == category)
         if df_category.is_empty():
-            return
+            return None
 
         for df_part in df_category.partition_by("title"):
             total_col = df_part["total_col"].sum()
