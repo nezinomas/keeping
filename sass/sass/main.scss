@@ -98,7 +98,8 @@ h6 {
     z-index: -1;
 }
 
-.highcharts-tooltip > span {
+.highcharts-tooltip > span,
+.highcharts-tooltip-box {
     background: rgb(255, 255, 255);
 }
 
