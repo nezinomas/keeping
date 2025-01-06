@@ -24,7 +24,7 @@ function chartPeriodicity(idData, idContainer) {
             labels: {
                 useHTML: true,
                 formatter: function () { /* use formatter to break word. */
-                    return '<div style="word-wrap: break-word; word-break:break-all; width:40px; text-align: right">" + this.value + "</div>';
+                    return `<div style="word-wrap: break-word; word-break:break-all; width:40px; text-align: right">${this.value}</div>`;
                 },
                 rotation: -45,
             }
