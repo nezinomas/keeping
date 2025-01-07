@@ -74,6 +74,7 @@ Highcharts.theme = {
         useHTML: true,
         backgroundColor: "#FFF",
         borderWidth: 1,
+        outside : true,
         style: {
             fontSize: "12px",
         },

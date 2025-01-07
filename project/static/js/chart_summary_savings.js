@@ -109,7 +109,7 @@ function chartSavings(container) {
             color: "#5D9C59",
             opacity: 0.8,
             borderColor: "#548235",
-            borderWidth: "0.5",
+            borderWidth: 0.5,
             borderRadius: 0,
             dataLabels: {
                 useHTML: true,
@@ -129,7 +129,7 @@ function chartSavings(container) {
             data: chartData.invested,
             color: "rgba(222,176,40,0.5)",
             borderColor: "#bf8f00",
-            borderWidth: "0.5",
+            borderWidth: 0.5,
             borderRadius: 0,
             dataLabels: {
                 useHTML: true,

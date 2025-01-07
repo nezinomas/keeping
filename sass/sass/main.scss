@@ -91,14 +91,3 @@ h6 {
         text-align: left;
     }
 }
-
-
-// Highcharts tweaks
-.highcharts-data-label > span {
-    z-index: -1;
-}
-
-.highcharts-tooltip > span,
-.highcharts-tooltip-box {
-    background: rgb(255, 255, 255);
-}
