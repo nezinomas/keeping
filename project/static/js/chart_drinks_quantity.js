@@ -3,15 +3,15 @@ function chartQuantity(idData, idContainer) {
 
     Highcharts.chart(idContainer, {
         chart: {
-            type: 'column',
-            height: '350px',
+            type: "column",
+            height: "350px",
         },
         title: {
-            text: ''
+            text: ""
         },
         xAxis: {
             categories: chartData.categories,
-            type: 'category',
+            type: "category",
             gridLineWidth: 0,
             crosshair: true,
             labels: {
@@ -20,18 +20,18 @@ function chartQuantity(idData, idContainer) {
         },
         yAxis: {
             title: {
-                text: ''
+                text: ""
             },
         },
         tooltip: {
             shared: true,
-            headerFormat: '',
-            pointFormat: '{series.name}: <b>{point.y:.1f}</b><br>',
+            headerFormat: "",
+            pointFormat: "{series.name}: <b>{point.y:.1f}</b><br>",
         },
         series: [{
             name: chartData.text.quantity,
-            color: 'rgba(70, 171, 157,0.65)',
-            borderColor: 'rgba(70, 171, 157, 1)',
+            color: "rgba(70, 171, 157,0.65)",
+            borderColor: "rgba(70, 171, 157, 1)",
             data: chartData.data,
             pointPadding: 0,
             pointPlacement: 0,
@@ -39,8 +39,8 @@ function chartQuantity(idData, idContainer) {
             dataLabels: {
                 enabled: true,
                 rotation: 0,
-                color: '#000',
-                format: '{point.y:.1f}',
+                color: "#000",
+                format: "{point.y:.1f}",
             }
         }]
     });

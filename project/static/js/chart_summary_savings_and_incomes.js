@@ -1,5 +1,5 @@
 $(function () {
-    const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+    const chartData = JSON.parse(document.getElementById("chart-data").textContent);
 
     // convert data
     for (i = 0; i < chartData.categories.length; i++) {
@@ -7,7 +7,7 @@ $(function () {
         chartData.savings[i] /= 100
     }
 
-    Highcharts.chart('chart-container', {
+    Highcharts.chart("chart-container", {
         title: {
             text: chartData.text.title,
         },
@@ -23,7 +23,7 @@ $(function () {
                 },
             },
             title: {
-                text: ''
+                text: ""
             },
         },
         legend: {
@@ -52,8 +52,8 @@ $(function () {
             name: chartData.text.incomes,
             data: chartData.incomes,
             opacity: 0.85,
-            type: 'column',
-            borderRadius: '5%',
+            type: "column",
+            borderRadius: "5%",
             states: {
                 inactive: {
                     opacity: 1,
@@ -63,7 +63,7 @@ $(function () {
                 enabled: true,
                 x: 3,
                 style: {
-                    color: 'black',
+                    color: "black",
                     textOutline: false
                 },
                 formatter: function () {
@@ -74,7 +74,7 @@ $(function () {
         }, {
             name: chartData.text.savings,
             data: chartData.savings,
-            type: 'line',
+            type: "line",
             lineWidth: 2,
             marker: {
                 lineWidth: 2,
@@ -89,9 +89,9 @@ $(function () {
                 y: -3,
                 x: 4.5,
                 style: {
-                    fontWeight: 'normal',
+                    fontWeight: "normal",
                     textOutline: false,
-                    color: 'black',
+                    color: "black",
                 },
                 formatter: function () {
                     let i = this.series.data.indexOf(this.point);

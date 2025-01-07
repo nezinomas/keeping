@@ -74,6 +74,7 @@ Highcharts.theme = {
         useHTML: true,
         backgroundColor: "#FFF",
         borderWidth: 1,
+        outside : true,
         style: {
             fontSize: "12px",
         },
@@ -85,8 +86,8 @@ Highcharts.theme = {
         series: {
             dataLabels: {
                 style: {
-                    fontSize: '11px',
-                    fontWeight: 'bold',
+                    fontSize: "11px",
+                    fontWeight: "bold",
                     textOutline: false,
                 },
             }
