@@ -2,7 +2,7 @@
 {% load math %}
 {% load cell_format %}
 
-<table class="main striped hover">
+<table class="main striped hover funds-table">
     <thead>
         <tr>
             <th class="text-left"><c-regenerate-balances type='accounts' /> {% translate 'Accounts' %}</th>
@@ -20,12 +20,12 @@
             <td class="text-left no-right-border">
                 <span class="tip right w100" data-tip="{{ item.latest_check|default_if_none:_('No record of account amount') }}">{{ item.account.title }}</span>
             </td>
-            <td class="w7 {{item.past|css_class_if_none}}">{{item.past|price|cellformat}}</td>
-            <td class="w7 {{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
-            <td class="w7 {{item.expenses|css_class_if_none}}">{{item.expenses|price|cellformat}}</td>
-            <td class="w7 {{item.balance|css_class_if_none}}">{{item.balance|price|cellformat}}</td>
-            <td class="w7 left-thick-border {{item.have|css_class_if_none}}">{{item.have|price|cellformat}}</td>
-            <td class="w7 {{item.delta|positive_negative}}">{{item.delta|price|cellformat:"ok"}}</td>
+            <td class="{{item.past|css_class_if_none}}">{{item.past|price|cellformat}}</td>
+            <td class="{{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
+            <td class="{{item.expenses|css_class_if_none}}">{{item.expenses|price|cellformat}}</td>
+            <td class="{{item.balance|css_class_if_none}}">{{item.balance|price|cellformat}}</td>
+            <td class="left-thick-border {{item.have|css_class_if_none}}">{{item.have|price|cellformat}}</td>
+            <td class="{{item.delta|positive_negative}}">{{item.delta|price|cellformat:"ok"}}</td>
 
         </tr>
         {% endfor %}
