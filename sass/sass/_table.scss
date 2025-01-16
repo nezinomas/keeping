@@ -265,10 +265,6 @@
     width: 7rem !important;
 }
 
-.w7p {
-    width: 7% !important;
-}
-
 .w8 {
     width: 8rem !important;
 }
@@ -337,4 +333,13 @@
 
 .table-group-divider {
     border-top: 3px solid #a2a2a2;
+}
+
+
+.detailed-table {
+    table-layout: fixed;
+    th:first-child {
+        min-width: 17rem;
+        width: 17rem;
+    }
 }
