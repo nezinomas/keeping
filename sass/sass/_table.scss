@@ -140,20 +140,6 @@
         padding-left: .35rem;
     }
 
-    // Month table styles
-    .weekend-col {
-        background-color: rgb(202, 235, 204) !important;
-    }
-
-    .current-day :not([class*="day"]) {
-        background-color: #fde8b2 !important;
-    }
-
-    .table-danger.day-full {
-        background-color: $day-danger;
-        font-weight: 650;
-   }
-
     // Book styles
     .currently-reading-book {
         background-color: #f5ebd7;
@@ -236,6 +222,42 @@
 }
 
 
+// Month table
+.month-table  {
+    .day-expand-col {
+        min-width: 2.5rem;
+        width: 2.5rem;
+    }
+
+    .savings-col {
+        min-width: 4.5rem;
+        width: 4.5rem;
+    }
+
+    .weekday-col {
+        min-width: 5.5rem;
+        width: 5.5rem;
+    }
+
+    .weekend-col {
+        background-color: rgb(202, 235, 204) !important;
+    }
+
+    .current-day :not([class*="day"]) {
+        background-color: #fde8b2 !important;
+    }
+
+    .table-danger.day-full {
+        background-color: $day-danger;
+        font-weight: 650;
+   }
+
+    .empty-column {
+        border-left: #fff solid .5rem;
+    }
+}
+
+
 // Expenses table
 .expenses {
     td:first-child {
@@ -249,28 +271,6 @@
     th.exception,
     td.exception {
         border-left: 5px solid $danger !important;
-    }
-}
-
-
-.month-table {
-    .weekday-col {
-        min-width:5.5rem;
-        width:5.5rem;
-    }
-
-    .savings-col {
-        min-width: 5rem;
-        width: 5rem;
-    }
-
-    .day-expand-col {
-        min-width: 2.5rem;
-        width: 2.5rem;
-    }
-
-    .empty-column {
-        border-left: #fff solid .5rem;
     }
 }
 
