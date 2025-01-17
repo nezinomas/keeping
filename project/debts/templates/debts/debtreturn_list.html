@@ -10,15 +10,15 @@
 <table class="main striped hover">
     <thead>
         <tr>
-            <th class="w5 text-center">{% translate 'Date' %}</th>
-            <th class="w10 text-left cell-padding">
+            <th class="text-center">{% translate 'Date' %}</th>
+            <th class="text-left cell-padding">
                 {% if target == 'lend' %}{% translate 'Borrower' %}{% endif %}
                 {% if target == 'borrow' %}{% translate 'Lender' %}{% endif %}
             </th>
-            <th class="w10 cell-padding">{% translate 'Sum' %}</th>
-            <th class="w10 text-left cell-padding">{% translate 'Account' %}</th>
+            <th class="cell-padding">{% translate 'Sum' %}</th>
+            <th class="text-left cell-padding">{% translate 'Account' %}</th>
             <th class="text-left">{% translate 'Remark' %}</th>
-            <th class="text-center w3">{% translate 'Closed' %}</th>
+            <th class="text-center">{% translate 'Closed' %}</th>
             <th class="edit-cell"></th>
             <th class="delete-cell"></th>
         </tr>
