@@ -120,6 +120,16 @@
         width: 2.5rem;
     }
 
+    .qty-col {
+        min-width: 3rem;
+        width: 3rem;
+    }
+
+    .price-col {
+        min-width: 5rem;
+        width: 5rem;
+    }
+
     .remark-col {
         min-width: 18rem;
         width: 18rem;
@@ -272,6 +282,10 @@
         border-left: 5px solid $danger !important;
     }
 
+    .file-col {
+        min-width: 5rem;
+        width: 5rem;
+    }
     // row colors
     .fee td {
         background-color: #ffdddd !important;
