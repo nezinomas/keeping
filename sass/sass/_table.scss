@@ -217,6 +217,12 @@
 
 // Month table
 .month-table  {
+    table-layout: auto;
+
+    &:has(.expenses-table) .expenses-table {
+        table-layout: auto;
+    }
+
     .day-expand-col {
         min-width: 2.5rem;
         width: 2.5rem;
