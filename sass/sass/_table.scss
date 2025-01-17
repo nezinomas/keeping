@@ -259,7 +259,7 @@
 
 
 // Expenses table
-.expenses {
+.expenses-table {
     td:first-child {
         padding-left: 8px;
     }
@@ -272,24 +272,23 @@
     td.exception {
         border-left: 5px solid $danger !important;
     }
-}
 
+    // row colors
+    .fee td {
+        background-color: #ffdddd !important;
+    }
 
-// Expenses colors
-.fee td {
-    background-color: #ffdddd !important;
-}
+    .food td {
+        background-color: #c5d9f1 !important;
+    }
 
-.food td {
-    background-color: #c5d9f1 !important;
-}
+    .leisure td {
+        background-color: #c4d79b !important;
+    }
 
-.leisure td {
-    background-color: #c4d79b !important;
-}
-
-.work td {
-    background-color: #fff0c1 !important;
+    .work td {
+        background-color: #fff0c1 !important;
+    }
 }
 
 
