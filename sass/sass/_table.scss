@@ -111,12 +111,14 @@
 
     // Cell styles
     .edit-cell {
+        min-width: 35px;
         width: 35px;
         text-align: center;
         border-right: 0;
     }
 
     .delete-cell {
+        min-width: 25px;
         width: 25px;
         text-align: center;
         border-left: 0;
@@ -309,17 +311,12 @@
 }
 
 
-.detailed-table {
-    th:first-child {
-        min-width: 17rem;
-        width: 17rem;
-    }
+.title-col {
+    min-width: 17rem;
+    width: 17rem;
 }
 
-
-.funds-table {
-    th:first-child {
-        min-width: 17rem;
-        width: 17rem;
-    }
+.remark-col {
+    min-width: 18rem;
+    width: 18rem;
 }
