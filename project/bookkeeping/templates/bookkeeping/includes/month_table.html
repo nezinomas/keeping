@@ -5,16 +5,16 @@
 {% load math %}
 
 
-<table class="main striped hover">
+<table class="main striped hover month-table">
     <thead>
         <tr>
-            <th></th>
+            <th class="day-expand-col"></th>
             {% for cat in ctx.expense_types %}<th><span class="tip bottom" data-tip="{{cat}}">{{cat|truncatechars:8}}</span></th>{% endfor %}
             <th class="left-double-border right-double-border">{% translate 'Total' %}</th>
-            <th>{% translate 'Savings' %}</th>
-            <th class="empty-column"></th>
+            <th class="savings-col">{% translate 'Savings' %}</th>
+            <th class="empty-column weekday-col"></th>
             <th>{% translate 'Day' %}</th>
-            <th class="empty-column-wide">{% translate 'Total' %}</th>
+            <th>{% translate 'Total' %}</th>
         </tr>
     </thead>
     <tbody x-data="make_x_data()">

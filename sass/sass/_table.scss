@@ -137,10 +137,6 @@
         background-color: #fde8b2 !important;
     }
 
-    .empty-column {
-        border-left: #fff solid .5rem;
-    }
-
     .table-danger.day-full {
         background-color: $day-danger;
         font-weight: 650;
@@ -241,6 +237,28 @@
     th.exception,
     td.exception {
         border-left: 5px solid $danger !important;
+    }
+}
+
+
+.month-table {
+    .weekday-col {
+        min-width:5.5rem;
+        width:5.5rem;
+    }
+
+    .savings-col {
+        min-width: 5rem;
+        width: 5rem;
+    }
+
+    .day-expand-col {
+        min-width: 2.5rem;
+        width: 2.5rem;
+    }
+
+    .empty-column {
+        border-left: #fff solid .5rem;
     }
 }
 
