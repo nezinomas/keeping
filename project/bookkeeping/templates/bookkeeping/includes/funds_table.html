@@ -7,7 +7,7 @@
 <table class="main striped hover">
     <thead>
         <tr>
-            <th class="text-left right-thin-border" rowspan="2"><c-regenerate-balances :type=type /> {{ title }}</th>
+            <th class="text-left right-thin-border title-col" rowspan="2"><c-regenerate-balances :type=type /> {{ title }}</th>
             <th rowspan="2" colspan="2" class="text-center right-thin-border">{% blocktranslate with year=request.user.year %}Start of {{ year }}{% endblocktranslate %}</th>
             <th colspan="2" class="text-center left-thin-border right-thin-border">{{ request.user.year }}</th>
             <th colspan="4" class="text-center">{% translate 'Total' %}</th>
@@ -39,19 +39,19 @@
         {% for item in object_list %}
         <tr>
             {% if item.saving_type_id %}{% firstof 'saving_type' as obj_type %}{% else %}{% firstof 'pension_type' as obj_type %}{% endif %}
-            <td class="funds-title-col-min-width text-left right-thin-border">{{ item|get_obj_attr:obj_type }}</td>
-            <td class="w6 {{item.past_amount|css_class_if_none}}">{{item.past_amount|price|cellformat}}</td>
-            <td class="w6 right-thin-border {{item.past_fee|css_class_if_none}}">{{item.past_fee|price|cellformat}}</td>
-            <td class="w6 {{item.per_year_incomes|css_class_if_none}}">{{item.per_year_incomes|price|cellformat}}</td>
-            <td class="w6 right-thin-border {{item.per_year_fee|css_class_if_none}}">{{item.per_year_fee|price|cellformat}}</td>
-            <td class="w6 {{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
-            <td class="w6 {{item.fee|css_class_if_none}}">{{item.fee|price|cellformat}}</td>
-            <td class="w6 {{item.sold|css_class_if_none}}">{{item.sold|price|cellformat}}</td>
-            <td class="w6  right-thin-border {{item.sold_fee|css_class_if_none}}">{{item.sold_fee|price|cellformat}}</td>
-            <td class="w6">{{ item.latest_check|date:"Y-m-d"|default_if_none:_('No record of account amount') }}</td>
-            <td class="w6 right-thick-border {{item.market_value|css_class_if_none}}">{{item.market_value|price|cellformat}}</td>
-            <td class="w6 {{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_sum|price|cellformat}}</td>
-            <td class="w6 {{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_proc|cellformat}}%</td>
+            <td class="text-left right-thin-border">{{ item|get_obj_attr:obj_type }}</td>
+            <td class="{{item.past_amount|css_class_if_none}}">{{item.past_amount|price|cellformat}}</td>
+            <td class="right-thin-border {{item.past_fee|css_class_if_none}}">{{item.past_fee|price|cellformat}}</td>
+            <td class="{{item.per_year_incomes|css_class_if_none}}">{{item.per_year_incomes|price|cellformat}}</td>
+            <td class="right-thin-border {{item.per_year_fee|css_class_if_none}}">{{item.per_year_fee|price|cellformat}}</td>
+            <td class="{{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
+            <td class="{{item.fee|css_class_if_none}}">{{item.fee|price|cellformat}}</td>
+            <td class="{{item.sold|css_class_if_none}}">{{item.sold|price|cellformat}}</td>
+            <td class=" right-thin-border {{item.sold_fee|css_class_if_none}}">{{item.sold_fee|price|cellformat}}</td>
+            <td>{{ item.latest_check|date:"Y-m-d"|default_if_none:_('No record of account amount') }}</td>
+            <td class="right-thick-border {{item.market_value|css_class_if_none}}">{{item.market_value|price|cellformat}}</td>
+            <td class="{{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_sum|price|cellformat}}</td>
+            <td class="{{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_proc|cellformat}}%</td>
         </tr>
         {% endfor %}
     </tbody>

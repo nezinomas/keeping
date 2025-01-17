@@ -4,16 +4,17 @@
 {% if object_list %}
 
 
-<table class="main striped hover sticky-table">
+<table class="main book-table striped hover sticky-table">
     <thead>
         <tr>
-            <th class="text-left">Nr</th>
-            <th class="text-left">{% translate 'Author' %}</th>
-            <th class="text-left">{% translate 'Title' %}</th>
-            <th class="text-left">{% translate 'Remark' %}</th>
+            <th class="text-left number-col">Nr</th>
+            <th class="text-left author-col">{% translate 'Author' %}</th>
+            <th class="text-left book-title-col">{% translate 'Title' %}</th>
+            <th class="text-left remark-col">{% translate 'Remark' %}</th>
             <th class="text-center">{% translate 'Started reading' %}</th>
             <th class="text-center">{% translate 'Ended reading' %}</th>
-            <th colspan="2"></th>
+            <th class="edit-col"></th>
+            <th class="delete-col"></th>
         </tr>
     </thead>
     <tbody>

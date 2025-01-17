@@ -11,7 +11,7 @@
             <th class="left-thick-border top"></th>
         </tr>
         <tr>
-            <th class="w5">{{ year|title }}</th>
+            <th>{{ year|title }}</th>
             {% for category in ctx.categories %}<th><span class="tip bottom" data-tip="{{ category }}">{{ category|truncatechars:8 }}</span></th>{% endfor %}
             <th class="left-thick-border">{% translate 'Total' %}</th>
         </tr>
