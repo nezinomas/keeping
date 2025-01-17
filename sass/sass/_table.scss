@@ -115,6 +115,11 @@
         width: 17rem;
     }
 
+    .number-col {
+        min-width: 2.5rem;
+        width: 2.5rem;
+    }
+
     .remark-col {
         min-width: 18rem;
         width: 18rem;
@@ -138,18 +143,6 @@
     .cell-padding {
         padding-right: .35rem;
         padding-left: .35rem;
-    }
-
-    // Book styles
-    .currently-reading-book {
-        background-color: #f5ebd7;
-    }
-
-    // Drink styles
-    .std-av-border {
-        border-top: double #ffc000;
-        border-bottom: double #ffc000;
-        background-color: #fde8b2;
     }
 
     // Hover styles
@@ -292,11 +285,18 @@
 }
 
 
-// Drinks colors
-.drinks td {
-    background-color: #d9d9d9;
-}
+// Book table
+.book-table {
+    .author-col {
+        min-width: 20rem;
+        width: 20rem;
+    }
 
+    .book-title-col {
+        min-width: 40rem;
+        width: 40rem;
+    }
+}
 
 // Button expand
 .panel-heading .button-expand:before {
@@ -309,12 +309,28 @@
     margin-right: .25rem;
 }
 
+
 .panel-heading.active .button-expand:before {
     -webkit-transform: rotate(180deg);
     -moz-transform: rotate(180deg);
     transform: rotate(180deg);
 }
 
+
 .table-group-divider {
     border-top: 3px solid #a2a2a2;
+}
+
+
+// Drink styles
+.std-av-border {
+    border-top: double #ffc000;
+    border-bottom: double #ffc000;
+    background-color: #fde8b2;
+}
+
+
+// Book styles
+.currently-reading-book {
+    background-color: #f5ebd7;
 }
