@@ -8,7 +8,7 @@
 <table class="main striped hover month-table">
     <thead>
         <tr>
-            <th class="day-expand-col"></th>
+            <th class="expand-column-width"></th>
             {% for cat in ctx.expense_types %}<th><span class="tip bottom" data-tip="{{cat}}">{{cat|truncatechars:8}}</span></th>{% endfor %}
             <th class="left-double-border right-double-border">{% translate 'Total' %}</th>
             <th class="savings-col">{% translate 'Savings' %}</th>
@@ -26,7 +26,7 @@
             id="table{{day_int}}"
             {% if ctx.day|slugify == day_int %} class="current-day"{% endif %}>
             <td
-                class="{{weekend_col}} panel-heading expand-column-width text-left"
+                class="{{weekend_col}} panel-heading text-left"
                 :class="open{{day_int}} ? 'active' : ''"
                 @click="open{{day_int}} = !open{{day_int}}"
                 hx-get="{{url_expand}}"

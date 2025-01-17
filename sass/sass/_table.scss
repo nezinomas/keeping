@@ -189,32 +189,6 @@
         tbody tr.current-day:hover > td:not([class*="day"]) {
             background-color: rgb(254, 225, 149) !important;
         }
-
-        // Month expand tr and td styles
-        td.expand-expenses {
-            background-color: white !important;
-
-            &:has([class*="alert"]) {
-                padding-top: $gap;
-            }
-
-            &:has(table) {
-                padding: $gap 0;
-            }
-        }
-
-        tr.expand-expenses:hover {
-            > td {
-                background-color: unset !important;
-            }
-        }
-
-        .expand-column-width {
-            --column-width: 2.5rem;
-
-            min-width: var(--column-width);
-            width: var(--column-width);
-        }
     }
 
     // Striped styles
@@ -244,13 +218,11 @@
 .month-table  {
     table-layout: auto;
 
-    &:has(.expenses-table) .expenses-table {
-        table-layout: auto;
-    }
+    .expand-column-width {
+        --column-width: 2.5rem;
 
-    .day-expand-col {
-        min-width: 2.5rem;
-        width: 2.5rem;
+        min-width: var(--column-width);
+        width: var(--column-width);
     }
 
     .savings-col {
@@ -278,6 +250,30 @@
 
     .empty-column {
         border-left: #fff solid .5rem;
+    }
+
+    // Expand month table row to see expenses
+    &:has(.expand-expenses) {
+        // override expenses table layout, wich is fixed
+        .expenses-table {
+            table-layout: auto;
+        }
+
+        tr.expand-expenses > td {
+            background-color: white !important;
+
+            &:has([class*="alert"]) {
+                padding-top: $gap;
+            }
+
+            &:has(table) {
+                padding: $gap 0;
+            }
+
+            &:hover {
+                background-color: unset !important;
+            }
+        }
     }
 }
 
