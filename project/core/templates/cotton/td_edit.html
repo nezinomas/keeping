@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<td class="edit-cell">
+<td class="edit-col">
     {% if url %}
     <a role="button" hx-get="{{ url }}" hx-target="#mainModal" class="edit" title="{% translate 'Edit' %}"><i class="bi bi-pencil-fill"></i></a>
     {% endif %}

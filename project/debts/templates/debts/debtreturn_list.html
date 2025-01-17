@@ -19,8 +19,8 @@
             <th class="text-left cell-padding">{% translate 'Account' %}</th>
             <th class="text-left">{% translate 'Remark' %}</th>
             <th class="price-col text-center">{% translate 'Closed' %}</th>
-            <th class="edit-cell"></th>
-            <th class="delete-cell"></th>
+            <th class="edit-col"></th>
+            <th class="delete-col"></th>
         </tr>
     </thead>
     <tbody>
@@ -38,8 +38,8 @@
                 <c-td-edit :url=url_update />
                 <c-td-delete :url=url_delete />
             {% else %}
-                <td class="edit-cell"></td>
-                <td class="delete-cell"></td>
+                <td class="edit-col"></td>
+                <td class="delete-col"></td>
             {% endif %}
         </tr>
         {% endfor %}
