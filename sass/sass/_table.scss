@@ -1,9 +1,18 @@
+$day-col-width: 2.5rem;
+$qty-col-width: 3rem;
+$price-col-width: 5rem;
+$date-col-width: 8rem;
+$account-col-width: 10rem;
+$title-col-width: 17rem;
+
+
 .main {
     table-layout: fixed;
     border-collapse: collapse;
     min-width: 100%;
     width: 100%;
     font-size: .65rem;
+    white-space: nowrap;
 
     caption {
         font-weight: bold;
@@ -48,11 +57,12 @@
     }
 
     td, th {
+        overflow: hidden;
+        text-overflow: ellipsis;
         border: 0.5px solid #cacac9;
         padding: 0.15rem 0.25rem;
         text-align: right;
         vertical-align: middle;
-        min-width: max-content;
     }
 
     td:first-child, th:first-child {
@@ -111,43 +121,39 @@
 
     // Columns widths
     .short-title-col {
-        min-width: 8rem;
-        width: 8rem;
+        width: calc($title-col-width / 2);
+    }
+
+    .date-col {
+        width: $date-col-width;
+    }
+
+    .account-col {
+        width: $account-col-width;
     }
 
     .title-col {
-        min-width: 17rem;
-        width: 17rem;
+        width: $title-col-width;
     }
 
-    .number-col {
-        min-width: 2.5rem;
-        width: 2.5rem;
+    .day-col {
+        width: $day-col-width;
     }
 
     .qty-col {
-        min-width: 3rem;
-        width: 3rem;
+        width: $qty-col-width;
     }
 
     .price-col {
-        min-width: 5rem;
-        width: 5rem;
+        width: $price-col-width;
     }
 
     .double-price-col {
-        min-width: 10rem;
-        width: 10rem;
+        width: calc($price-col-width * 2);
     }
 
     .long-price-col {
-        min-width: 7rem;
-        width: 7rem;
-    }
-
-    .remark-col {
-        min-width: 18rem;
-        width: 18rem;
+        width: calc($price-col-width + 2rem);
     }
 
     .edit-col {
@@ -328,6 +334,7 @@
         width: 40rem;
     }
 }
+
 
 // Button expand
 .panel-heading .button-expand:before {

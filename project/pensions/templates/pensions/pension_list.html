@@ -6,9 +6,10 @@
 <table class="main striped hover">
     <thead>
         <tr>
-            <th class="text-left">{% translate 'Date' %}</th>
+            <th class="date-col text-left">{% translate 'Date' %}</th>
             <th class="title-col text-left">{% translate 'Fund' %}</th>
-            <th class="remark-col text-left">{% translate 'Remark' %}</th>
+            <th class="account-col no-right-border"></th>
+            <th class="no-left-border text-left">{% translate 'Remark' %}</th>
             <th class="price-col">{% translate 'Sum' %}</th>
             <th class="price-col">{% translate 'Fees' %}</th>
             <th class="edit-col"></th>
@@ -22,7 +23,8 @@
         <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
             <td class="text-left">{{ object.date|date:"Y-m-d" }}</td>
             <td class="text-left">{{ object.pension_type }}</td>
-            <td class="text-left">{{ object.remark }}</td>
+            <td class="no-right-border"></td>
+            <td class="text-left no-left-border">{{ object.remark }}</td>
             <td>{{object.price|price|cellformat}}</td>
             <td class="{{object.fee|css_class_if_none}}">{{object.fee|price|cellformat}}</td>
             <c-td-edit :url=url_update />
