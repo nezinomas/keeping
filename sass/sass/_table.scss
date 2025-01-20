@@ -4,6 +4,7 @@
     min-width: 100%;
     width: 100%;
     font-size: .65rem;
+    white-space: nowrap;
 
     caption {
         font-weight: bold;
@@ -48,11 +49,12 @@
     }
 
     td, th {
+        overflow: hidden;
+        text-overflow: ellipsis;
         border: 0.5px solid #cacac9;
         padding: 0.15rem 0.25rem;
         text-align: right;
         vertical-align: middle;
-        min-width: max-content;
     }
 
     td:first-child, th:first-child {
