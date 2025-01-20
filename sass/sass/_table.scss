@@ -63,6 +63,10 @@ $title-col-width: 17rem;
         padding: 0.15rem 0.25rem;
         text-align: right;
         vertical-align: middle;
+
+        &:has(.tip) {
+            overflow: visible;
+        }
     }
 
     td:first-child, th:first-child {
