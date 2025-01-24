@@ -23,14 +23,14 @@
         {% with table.date|date:'j' as day_int %}
         {% url 'bookkeeping:expand_day_expenses' table.date|date:'Ymd' as url_expand %}
         <tr
-            id="table{{day_int}}"
+            id="row-{{day_int}}"
             {% if ctx.day|slugify == day_int %} class="current-day"{% endif %}>
             <td
                 class="{{weekend_col}} panel-heading text-left"
                 :class="open{{day_int}} ? 'active' : ''"
                 @click="open{{day_int}} = !open{{day_int}}"
                 hx-get="{{url_expand}}"
-                hx-target="#table{{day_int}}"
+                hx-target="#row-{{day_int}}"
                 hx-swap="afterend"
                 hx-trigger="click once"
             >
