@@ -203,7 +203,9 @@ class Objects:
 
     def _initialize_charts(self) -> Charts:
         return Charts(
-            targets=(self.plans.targets | {_("Savings"): self.plans.filter_df("savings")}),
+            targets=(
+                self.plans.targets | {_("Savings"): self.plans.filter_df("savings")}
+            ),
             totals=self.main_table.total_row,
         )
 
@@ -236,6 +238,7 @@ class Objects:
         delta = plan - fact
 
         return {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)}
+
 
 def load_service(year: int, month: int) -> dict:
     obj = Objects(year, month)
