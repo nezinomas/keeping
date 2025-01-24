@@ -15,7 +15,7 @@
         <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#mainModal">
             <td>{{ obj.qty|floatformat:'1g' }}</td>
             <td>{{ obj.max_bottles|floatformat:'0g' }}</td>
-            <td class="w3">
+            <td>
                 <button type="button" class="button-xs button-secondary" hx-get="{{url_update}}" hx-target="#mainModal">{% translate 'Edit' %}</button>
             </td>
         </tr>

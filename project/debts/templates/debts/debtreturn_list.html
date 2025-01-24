@@ -10,16 +10,17 @@
 <table class="main striped hover">
     <thead>
         <tr>
-            <th class="w5 text-center">{% translate 'Date' %}</th>
-            <th class="w10 text-left cell-padding">
+            <th class="text-center">{% translate 'Date' %}</th>
+            <th class="text-left cell-padding">
                 {% if target == 'lend' %}{% translate 'Borrower' %}{% endif %}
                 {% if target == 'borrow' %}{% translate 'Lender' %}{% endif %}
             </th>
-            <th class="w10 cell-padding">{% translate 'Sum' %}</th>
-            <th class="w10 text-left cell-padding">{% translate 'Account' %}</th>
+            <th class="double-price-col cell-padding">{% translate 'Sum' %}</th>
+            <th class="text-left cell-padding">{% translate 'Account' %}</th>
             <th class="text-left">{% translate 'Remark' %}</th>
-            <th class="text-center w3">{% translate 'Closed' %}</th>
-            <th colspan="2"></th>
+            <th class="price-col text-center">{% translate 'Closed' %}</th>
+            <th class="edit-col"></th>
+            <th class="delete-col"></th>
         </tr>
     </thead>
     <tbody>
@@ -37,8 +38,8 @@
                 <c-td-edit :url=url_update />
                 <c-td-delete :url=url_delete />
             {% else %}
-                <td class="edit-cell"></td>
-                <td class="delete-cell"></td>
+                <td class="edit-col"></td>
+                <td class="delete-col"></td>
             {% endif %}
         </tr>
         {% endfor %}
