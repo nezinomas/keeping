@@ -27,8 +27,8 @@
             {% if ctx.day|slugify == day_int %} class="current-day"{% endif %}>
             <td
                 class="{{weekend_col}} panel-heading text-left"
-                :class="open{{day_int}} ? 'active' : ''"
-                @click="open{{day_int}} = !open{{day_int}}"
+                :class="open_row_{{day_int}} ? 'active' : ''"
+                @click="open_row_{{day_int}} = !open_row_{{day_int}}"
                 hx-get="{{url_expand}}"
                 hx-target="#row-{{day_int}}"
                 hx-swap="afterend"
@@ -81,7 +81,7 @@
     function make_x_data() {
         var dict = {};
         for (var i = 1; i <= 31; i++) {
-            dict['open' + i] = false;
+            dict[`open_row_${i}`] = false;
         }
         return dict;
     }
