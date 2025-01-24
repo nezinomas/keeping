@@ -161,20 +161,33 @@ class Info:
 
 class Objects:
     def __init__(self, year: int, month: int):
-        self.data: MakeDataFrame = None
-        self.plans: PlanCalculateDaySum
-        self.spending: DaySpending
-        self.main_table: MainTable
-        self.charts: Charts
+        self.data: MakeDataFrame = self._get_data(year, month)
+        self.plans: PlanCalculateDaySum = self._initialize_plans(year, month)
+        self.spending: DaySpending = self._initialize_spending(year, month)
+        self.main_table: MainTable = self._initialize_main_table(year, month)
+        self.charts: Charts = self._initialize_charts()
 
-        self._get_data(year, month)
-        self._initialize_objects(year, month)
+    def _get_data(self, year: int, month: int) -> Data:
+        return Data(year, month)
 
-    def _get_data(self, year: int, month: int):
-        self.data = Data(year, month)
+    def _initialize_plans(self, year: int, month: int) -> PlanCalculateDaySum:
+        return PlanCalculateDaySum(data=PlanCollectData(year, month))
 
-    def _initialize_objects(self, year: int, month: int):
-        # expense and saving data_frames
+    def _initialize_spending(self, year: int, month: int) -> DaySpending:
+        expense = MakeDataFrame(
+            year=year,
+            month=month,
+            data=self.data.expenses,
+            columns=self.data.expense_types,
+        )
+        return DaySpending(
+            expense=expense,
+            necessary=self.data.necessary_expense_types,
+            per_day=self.plans.filter_df("day_input"),
+            free=self.plans.filter_df("expenses_free"),
+        )
+
+    def _initialize_main_table(self, year: int, month: int) -> MainTable:
         expense = MakeDataFrame(
             year=year,
             month=month,
@@ -186,26 +199,11 @@ class Objects:
             month=month,
             data=self.data.savings,
         )
+        return MainTable(expense=expense, saving=saving)
 
-        # plans
-        self.plans = PlanCalculateDaySum(data=PlanCollectData(year, month))
-
-        # spending table
-        self.spending = DaySpending(
-            expense=expense,
-            necessary=self.data.necessary_expense_types,
-            per_day=self.plans.filter_df("day_input"),
-            free=self.plans.filter_df("expenses_free"),
-        )
-
-        # main table
-        self.main_table = MainTable(expense=expense, saving=saving)
-
-        # charts
-        self.charts = Charts(
-            targets=(
-                self.plans.targets | {_("Savings"): self.plans.filter_df("savings")}
-            ),
+    def _initialize_charts(self) -> Charts:
+        return Charts(
+            targets=(self.plans.targets | {_("Savings"): self.plans.filter_df("savings")}),
             totals=self.main_table.total_row,
         )
 
@@ -238,7 +236,6 @@ class Objects:
         delta = plan - fact
 
         return {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)}
-
 
 def load_service(year: int, month: int) -> dict:
     obj = Objects(year, month)
