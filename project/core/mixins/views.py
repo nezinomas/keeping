@@ -17,6 +17,7 @@ from vanilla import (
 )
 
 from ...core.lib import search
+from ..lib.paginator import CountlessPaginator
 
 
 def rendered_content(request, view_class, **kwargs):
@@ -166,7 +167,7 @@ class SearchMixin:
         sql = self.get_search_method()(search_str)
 
         page = self.request.GET.get("page", 1)
-        paginator = Paginator(sql, self.per_page)
+        paginator = CountlessPaginator(sql, self.per_page)
         page_range = paginator.get_elided_page_range(number=page)
 
         app = self.request.resolver_match.app_name
@@ -174,10 +175,12 @@ class SearchMixin:
         return {
             "notice": _("No data found"),
             "object_list": paginator.get_page(page),
-            "first_item": paginator.count - (paginator.per_page * (int(page) - 1)),
             "search": search_str,
             "url": reverse(f"{app}:search"),
-            "page_range": page_range,
+            "paginator_object": {
+                "num_pages": paginator.num_pages,
+                "page_range": page_range,
+            },
             **self.search_statistic(sql),
         }
 

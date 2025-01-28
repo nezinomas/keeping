@@ -1,4 +1,5 @@
-{% if page_obj.paginator.num_pages > 1 %}
+{% if paginator_object.num_pages > 1 %}
+
 <ul class="pagination">
     <!-- previous button -->
     {% if page_obj.has_previous %}
@@ -8,23 +9,24 @@
     {% endif %}
 
     <!-- pages -->
-    {% for i in page_range|default_if_none:page_obj.paginator.get_elided_page_range %}
+    {% for i in paginator_object.page_range %}
         {% if page_obj.number == i %}
-            <li class="active">
+        <li class="active">
+            {{ i|title }}
+        </li>
+    {% else %}
+        {% if i == "..." %}
+            <li class="disabled">
                 {{ i|title }}
             </li>
         {% else %}
-            {% if i == page_obj.paginator.ELLIPSIS %}
-                <li class="disabled">
-                    {{ i|title }}
-                </li>
-            {% else %}
-                <li>
-                    <a role="button" hx-get="{{ url }}?page={{ i|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">{{ i|title }}</a>
-                </li>
-            {% endif %}
+            <li>
+                <a role="button" hx-get="{{ url }}?page={{ i|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">{{ i|title }}</a>
+            </li>
         {% endif %}
+    {% endif %}
     {% endfor %}
+
 
     <!-- next button -->
     {% if page_obj.has_next %}
@@ -34,7 +36,6 @@
     {% else %}
         <li class="disabled">&raquo;</li>
     {% endif %}
-
 </ul>
 
 {% endif %}

@@ -1,7 +1,7 @@
-from django.core.paginator import Paginator
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
+from ..core.lib.paginator import CountlessPaginator
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -66,15 +66,18 @@ class Lists(ListViewMixin):
 
     def get_context_data(self, **kwargs):
         page = self.request.GET.get("page", 1)
-        paginator = Paginator(self.get_queryset(), self.per_page)
+        paginator = CountlessPaginator(self.get_queryset(), self.per_page)
         page_range = paginator.get_elided_page_range(number=page)
 
         context = {
             "object_list": paginator.get_page(page),
-            "first_item": paginator.count - (paginator.per_page * (int(page) - 1)),
             "url": reverse("books:list"),
-            "page_range": page_range,
             "tab": self.request.GET.get("tab"),
+            "first_item": paginator.count - (paginator.per_page * (int(page) - 1)),
+            "paginator_object": {
+                "num_pages": paginator.num_pages,
+                "page_range": page_range,
+            },
         }
 
         return super().get_context_data(**kwargs) | context
