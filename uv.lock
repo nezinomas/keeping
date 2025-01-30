@@ -535,6 +535,7 @@ dev = [
     { name = "pytest-forked" },
     { name = "pytest-icdiff" },
     { name = "pytest-mock" },
+    { name = "pytest-picked" },
     { name = "pytest-raises" },
     { name = "pytest-randomly" },
     { name = "pytest-sugar" },
@@ -581,6 +582,7 @@ requires-dist = [
     { name = "pytest-forked", marker = "extra == 'dev'", specifier = ">=1.6.0" },
     { name = "pytest-icdiff", marker = "extra == 'dev'", specifier = ">=0.9" },
     { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.14.0" },
+    { name = "pytest-picked", marker = "extra == 'dev'", specifier = ">=0.5.1" },
     { name = "pytest-raises", marker = "extra == 'dev'", specifier = ">=0.11" },
     { name = "pytest-randomly", marker = "extra == 'dev'", specifier = ">=3.16.0" },
     { name = "pytest-sugar", marker = "extra == 'dev'", specifier = ">=1.0.0" },
@@ -1067,6 +1069,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c6/90/a955c3ab35ccd41ad4de556596fa86685bf4fc5ffcc62d22d856cfd4e29a/pytest-mock-3.14.0.tar.gz", hash = "sha256:2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0", size = 32814 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f2/3b/b26f90f74e2986a82df6e7ac7e319b8ea7ccece1caec9f8ab6104dc70603/pytest_mock-3.14.0-py3-none-any.whl", hash = "sha256:0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f", size = 9863 },
+]
+
+[[package]]
+name = "pytest-picked"
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ba/e4/51a54dd6638fd4a7c45bb20a737235fd92cbb4d24b5ff681d64ace5d02e9/pytest_picked-0.5.1.tar.gz", hash = "sha256:6634c4356a560a5dc3dba35471865e6eb06bbd356b56b69c540593e9d5620ded", size = 8401 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c6/81/450c017746caab376c4b6700439de9f1cc7d8e1f22dec3c1eb235cd9ad3e/pytest_picked-0.5.1-py3-none-any.whl", hash = "sha256:af65c4763b51dc095ae4bc5073a962406902422ad9629c26d8b01122b677d998", size = 6608 },
 ]
 
 [[package]]
