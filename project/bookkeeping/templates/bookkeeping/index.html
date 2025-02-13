@@ -16,7 +16,7 @@
 <main class="bookkeeping-grid">
     <div id="table-balance" class="table-responsive"><c-year-balance :ctx=balance /></div>
 
-    <div id="table-expenses" class="table-responsive">{% include 'bookkeeping/includes/year_expenses.html' with ctx=expenses %}</div>
+    <div id="table-expenses" class="table-responsive"><c-year-expenses :ctx=expenses /></div>
 
     <div id="chart-expenses-container"></div>
 
