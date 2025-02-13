@@ -17,7 +17,7 @@ from .lib import no_incomes
 from .mixins.month import MonthMixin
 
 
-class MainGetContextDataMixin:
+class ReloadIndexContextDataMixin:
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         ind = services.index.load_service(year)
@@ -37,7 +37,7 @@ class MainGetContextDataMixin:
         return super().get_context_data(**kwargs) | context
 
 
-class Index(MainGetContextDataMixin, TemplateViewMixin):
+class Index(ReloadIndexContextDataMixin, TemplateViewMixin):
     template_name = "bookkeeping/index.html"
 
     def get_context_data(self, **kwargs):
