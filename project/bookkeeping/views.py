@@ -51,6 +51,10 @@ class Index(ReloadIndexContextDataMixin, TemplateViewMixin):
         return super().get_context_data(**kwargs) | context
 
 
+class ReloadIndex(ReloadIndexContextDataMixin, TemplateViewMixin):
+    template_name = "bookkeeping/includes/main.html"
+
+
 class Accounts(TemplateViewMixin):
     template_name = "bookkeeping/includes/account_worth_list.html"
 
