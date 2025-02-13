@@ -17,9 +17,7 @@ from .lib import no_incomes
 from .mixins.month import MonthMixin
 
 
-class Index(TemplateViewMixin):
-    template_name = "bookkeeping/index.html"
-
+class ReloadIndexContextDataMixin:
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         ind = services.index.load_service(year)
@@ -35,6 +33,15 @@ class Index(TemplateViewMixin):
             "chart_balance": ind.chart_balance_context(),
             "chart_expenses": exp.chart_context(),
             "expenses": exp.table_context(),
+        }
+        return super().get_context_data(**kwargs) | context
+
+
+class Index(ReloadIndexContextDataMixin, TemplateViewMixin):
+    template_name = "bookkeeping/index.html"
+
+    def get_context_data(self, **kwargs):
+        context = {
             "accounts": rendered_content(self.request, Accounts, **self.kwargs),
             "savings": rendered_content(self.request, Savings, **self.kwargs),
             "pensions": rendered_content(self.request, Pensions, **self.kwargs),
@@ -42,6 +49,10 @@ class Index(TemplateViewMixin):
             "no_incomes": rendered_content(self.request, NoIncomes, **self.kwargs),
         }
         return super().get_context_data(**kwargs) | context
+
+
+class ReloadIndex(ReloadIndexContextDataMixin, TemplateViewMixin):
+    template_name = "bookkeeping/includes/reload_index.html"
 
 
 class Accounts(TemplateViewMixin):
