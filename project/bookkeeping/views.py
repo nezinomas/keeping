@@ -52,7 +52,7 @@ class Index(ReloadIndexContextDataMixin, TemplateViewMixin):
 
 
 class ReloadIndex(ReloadIndexContextDataMixin, TemplateViewMixin):
-    template_name = "bookkeeping/includes/main.html"
+    template_name = "bookkeeping/includes/reload_index.html"
 
 
 class Accounts(TemplateViewMixin):

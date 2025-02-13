@@ -1,0 +1,16 @@
+<div hx-swap-oob="innerHTML:#table-balance"><c-year-balance :ctx=balance /></div>
+
+
+<div hx-swap-oob="innerHTML:#table-expenses"><c-year-expenses :ctx=expenses /></div>
+
+
+<div hx-swap-oob="innerHTML:#chart-balance-data">
+    <script src="/static/js/chart_index_balance.js" defer></script>
+    {{ chart_balance|json_script:"chart-balance-data" }}
+</div>
+
+
+<div hx-swap-oob="innerHTML:#chart-expenses-data">
+    <script src="/static/js/chart_index_expenses.js" defer></script>
+    {{ chart_expenses|json_script:"chart-expenses-data" }}
+</div>
