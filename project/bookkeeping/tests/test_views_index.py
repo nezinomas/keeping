@@ -61,7 +61,7 @@ def test_view_index_regenerate_buttons(client_logged):
 
 
 def test_view_reload_func():
-    view = resolve("/reload_index/")
+    view = resolve("/bookkeeping/reload_index/")
 
     assert views.ReloadIndex == view.func.view_class
 

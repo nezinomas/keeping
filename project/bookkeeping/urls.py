@@ -47,5 +47,5 @@ urlpatterns = [
         views.ExpandDayExpenses.as_view(),
         name="expand_day_expenses",
     ),
-    path("reload_index/", views.ReloadIndex.as_view(), name="reload_index"),
+    path("bookkeeping/reload_index/", views.ReloadIndex.as_view(), name="reload_index"),
 ]
