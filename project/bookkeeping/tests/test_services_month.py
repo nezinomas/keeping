@@ -15,7 +15,9 @@ from ..services.month import Charts, Info, MainTable, Objects
 @patch("project.bookkeeping.services.month.Objects._initialize_spending")
 @patch("project.bookkeeping.services.month.Objects._initialize_main_table")
 @patch("project.bookkeeping.services.month.Objects._initialize_charts")
-def test_info_context(mck_get_data, mck_plans, mck_spending, mck_main_table, mck_charts):
+def test_info_context(
+    mck_get_data, mck_plans, mck_spending, mck_main_table, mck_charts
+):
     obj = Objects(1, 1)
     obj.data = MagicMock(incomes=15)
 
