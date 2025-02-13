@@ -75,13 +75,11 @@
 
 
 <div id="chart-balance-data" style="display: none;">
-    <script src="/static/js/chart_index_balance.js" defer></script>
-    {{ chart_balance|json_script:"chart-balance-data" }}
+    <c-chart-balance-data :data=chart_balance />
 </div>
 
 <div id="chart-expenses-data" style="display: none;">
-    <script src="/static/js/chart_index_expenses.js" defer></script>
-    {{ chart_expenses|json_script:"chart-expenses-data" }}
+    <c-chart-expenses-data :data=chart_expenses />
 </div>
 
 <div hx-get="{% url 'bookkeeping:reload_index' %}" hx-trigger="reload from:body"></div>

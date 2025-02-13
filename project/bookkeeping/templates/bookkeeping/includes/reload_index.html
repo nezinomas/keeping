@@ -5,12 +5,10 @@
 
 
 <div hx-swap-oob="innerHTML:#chart-balance-data">
-    <script src="/static/js/chart_index_balance.js" defer></script>
-    {{ chart_balance|json_script:"chart-balance-data" }}
+    <c-chart-balance-data :data=chart_balance />
 </div>
 
 
 <div hx-swap-oob="innerHTML:#chart-expenses-data">
-    <script src="/static/js/chart_index_expenses.js" defer></script>
-    {{ chart_expenses|json_script:"chart-expenses-data" }}
+    <c-chart-expenses-data :data=chart_expenses />
 </div>
