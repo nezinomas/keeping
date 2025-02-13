@@ -58,3 +58,23 @@ def test_view_index_regenerate_buttons(client_logged):
 
     assert f'hx-get="{ url }"' in content
     assert "Bus atnaujinti visų metų balansai." in content
+
+
+def test_view_reload_func():
+    view = resolve("/reload_index/")
+
+    assert views.ReloadIndex == view.func.view_class
+
+
+def test_view_reload_200(client_logged):
+    url = reverse("bookkeeping:reload_index")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_reload_anonymous(client):
+    url = reverse("bookkeeping:reload_index")
+    response = client.get(url)
+
+    assert response.status_code == 302

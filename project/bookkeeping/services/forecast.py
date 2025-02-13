@@ -216,10 +216,7 @@ def get_month(year: int) -> int:
     if year > now.year:
         return 1
 
-    if year < now.year:
-        return 12
-
-    return now.month
+    return 12 if year < now.year else now.month
 
 
 def load_service(year: int) -> dict:

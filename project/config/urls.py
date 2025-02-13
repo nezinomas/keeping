@@ -1,6 +1,7 @@
 from django.urls import include, path
 from django.views.defaults import page_not_found, permission_denied, server_error
-from .develop_urls import urls
+
+from .develop_urls import urls as develop_urls
 
 urlpatterns = [
     path("", include("project.core.urls")),
@@ -36,4 +37,4 @@ urlpatterns += [
     path("500/", server_error, name="error500"),
 ]
 
-urlpatterns += urls
+urlpatterns += develop_urls

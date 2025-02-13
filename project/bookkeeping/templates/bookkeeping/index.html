@@ -14,9 +14,9 @@
 {% block content %}
 
 <main class="bookkeeping-grid">
-    <div id="table-balance" class="table-responsive">{% include 'bookkeeping/includes/year_balance.html' with ctx=balance %}</div>
+    <div id="table-balance" class="table-responsive"><c-year-balance :ctx=balance /></div>
 
-    <div id="table-expenses" class="table-responsive">{% include 'bookkeeping/includes/year_expenses.html' with ctx=expenses %}</div>
+    <div id="table-expenses" class="table-responsive"><c-year-expenses :ctx=expenses /></div>
 
     <div id="chart-expenses-container"></div>
 
@@ -31,12 +31,12 @@
 
     <div id="accounts-info">
         <!-- Accounts stats -->
-        <div id="accounts" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body">{{accounts}}</div>
+        <div id="accounts" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body, reload from:body">{{accounts}}</div>
 
         <div id="balance-short-and-no-incomes">
             <div>{% include "bookkeeping/includes/balance_short.html" with data=balance_short %}</div>
 
-            <div hx-get="{% url 'bookkeeping:no_incomes' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{no_incomes}}</div>
+            <div hx-get="{% url 'bookkeeping:no_incomes' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body, reload from:body">{{no_incomes}}</div>
         </div>
 
         <div id="wealth-avg-debts">
@@ -49,9 +49,9 @@
         </div>
     </div>
 
-    <div id="savings" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{savings}}</div>
+    <div id="savings" hx-get="{% url 'bookkeeping:savings' %}" hx-trigger="afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body, reload from:body">{{savings}}</div>
 
-    <div id="pensions" hx-get="{% url 'bookkeeping:pensions' %}" hx-trigger="afterPensionWorthNew from:body, afterSignalPensions from:body, afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body">{{pensions}}</div>
+    <div id="pensions" hx-get="{% url 'bookkeeping:pensions' %}" hx-trigger="afterPensionWorthNew from:body, afterSignalPensions from:body, afterSavingWorthNew from:body, afterSignalSavings from:body, afterSignal from:body, reload from:body">{{pensions}}</div>
 
 </main>
 
@@ -73,9 +73,15 @@
     });
 </script>
 
-<script src="/static/js/chart_index_balance.js" defer></script>
-{{ chart_balance|json_script:"chart-balance-data" }}
 
-<script src="/static/js/chart_index_expenses.js" defer></script>
-{{ chart_expenses|json_script:"chart-expenses-data" }}
+<div id="chart-balance-data" style="display: none;">
+    <c-chart-balance-data :data=chart_balance />
+</div>
+
+<div id="chart-expenses-data" style="display: none;">
+    <c-chart-expenses-data :data=chart_expenses />
+</div>
+
+<div hx-get="{% url 'bookkeeping:reload_index' %}" hx-trigger="reload from:body"></div>
+
 {% endblock content %}
