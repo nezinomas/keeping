@@ -35,7 +35,7 @@
 
     <div id="accounts-info">
         <!-- Accounts stats -->
-        <div id="accounts" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body, reload from:body">{{accounts}}</div>
+        <div id="accounts" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body, afterTransaction from:body, reload from:body">{{accounts}}</div>
 
         <div id="balance-short-and-no-incomes">
             <div>{% include "bookkeeping/includes/balance_short.html" with data=balance_short %}</div>
