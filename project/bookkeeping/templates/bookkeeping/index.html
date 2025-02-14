@@ -86,6 +86,6 @@
     <c-chart-expenses-data :data=chart_expenses />
 </div>
 
-<div hx-get="{% url 'bookkeeping:reload_index' %}" hx-trigger="reload from:body"></div>
+<div hx-get="{% url 'bookkeeping:reload_index' %}" hx-trigger="reload from:body" hx-indicator="#indicator"></div>
 
 {% endblock content %}
