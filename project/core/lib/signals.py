@@ -292,7 +292,9 @@ class Savings(SignalBase):
         ]
 
         return (
-            inc.join(exp, on=["id", "year"], how="full", coalesce=True, nulls_equal=True)
+            inc.join(
+                exp, on=["id", "year"], how="full", coalesce=True, nulls_equal=True
+            )
             .join(hv, on=["id", "year"], how="full", coalesce=True, nulls_equal=True)
             .lazy()
             .rename({"have": "market_value"})
