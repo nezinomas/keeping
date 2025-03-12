@@ -19,22 +19,19 @@ class Data:
     expenses_types: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = list(Income.objects.sum_by_month_and_type(self.year))
-        self.savings = list(Saving.objects.sum_by_month_and_type(self.year))
-        self.expenses = list(Expense.objects.sum_by_month_and_name(self.year))
-        self.expenses_types = list(
-            ExpenseType.objects.items().values_list("title", flat=True)
-        )
+        self.incomes = Income.objects.sum_by_month_and_type(self.year)
+        self.savings = Saving.objects.sum_by_month_and_type(self.year)
+        self.expenses = Expense.objects.sum_by_month_and_name(self.year)
+        self.expenses_types = ExpenseType.objects.items().values_list("title", flat=True)
 
 
 class Service:
     def __init__(self, data: Data):
         self._year = data.year
-        self._incomes = data.incomes
-        self._expenses = data.expenses
-        self._savings = data.savings
-        self._expenses_types = data.expenses_types
-        self._expenses_types.sort()
+        self._incomes = list(data.incomes)
+        self._expenses = list(data.expenses)
+        self._savings = list(data.savings)
+        self._expenses_types = sorted(data.expenses_types)
 
     def incomes_context(self) -> list[dict]:
         name = _("Incomes")

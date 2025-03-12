@@ -14,9 +14,13 @@
 {% block content %}
 
 <main class="bookkeeping-grid">
-    <div id="table-balance" class="table-responsive"><c-year-balance :ctx=balance /></div>
+    <div id="table-balance" class="table-responsive">
+        <c-year-balance :ctx=balance />
+    </div>
 
-    <div id="table-expenses" class="table-responsive"><c-year-expenses :ctx=expenses /></div>
+    <div id="table-expenses" class="table-responsive">
+        <c-year-expenses :ctx=expenses />
+    </div>
 
     <div id="chart-expenses-container"></div>
 
@@ -31,7 +35,7 @@
 
     <div id="accounts-info">
         <!-- Accounts stats -->
-        <div id="accounts" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body, reload from:body">{{accounts}}</div>
+        <div id="accounts" hx-get="{% url 'bookkeeping:accounts' %}" hx-trigger="afterAccountWorthNew from:body, afterReset from:body, afterSignalAccounts from:body, afterSignal from:body, afterTransaction from:body, reload from:body">{{accounts}}</div>
 
         <div id="balance-short-and-no-incomes">
             <div>{% include "bookkeeping/includes/balance_short.html" with data=balance_short %}</div>
@@ -82,6 +86,6 @@
     <c-chart-expenses-data :data=chart_expenses />
 </div>
 
-<div hx-get="{% url 'bookkeeping:reload_index' %}" hx-trigger="reload from:body"></div>
+<div hx-get="{% url 'bookkeeping:reload_index' %}" hx-trigger="reload from:body" hx-indicator="#indicator"></div>
 
 {% endblock content %}

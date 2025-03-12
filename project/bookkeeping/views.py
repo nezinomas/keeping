@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -207,6 +209,6 @@ class ExpandDayExpenses(TemplateViewMixin):
     template_name = "bookkeeping/includes/expand_day_expenses.html"
 
     def get_context_data(self, **kwargs):
-        obj = services.expand_day.ExpandDayService(self.kwargs.get("date"))
+        obj = services.expand_day.ExpandDayService(self.kwargs.get("date") or date(1974, 1, 1))
 
         return super().get_context_data(**kwargs) | obj.context()

@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from django.urls import resolve, reverse
 
@@ -41,29 +43,32 @@ def test_view_month_200_set_user_month_value(month, expect, client_logged):
 #                                                                        Month Day List
 # -------------------------------------------------------------------------------------
 def test_view_expand_day_expenses_func():
-    view = resolve("/month/11112233/")
+    view = resolve("/month/1111-2-3/")
 
     assert views.ExpandDayExpenses == view.func.view_class
 
 
 def test_view_expand_day_expenses_200(client_logged):
-    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": "19990101"})
+    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": date(1999, 1, 1)})
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
-@pytest.mark.xfail
 def test_view_expand_day_expenses_str_in_url(client_logged):
     url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": "xx"})
-    client_logged.get(url)
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+    assert response.status_code == 200
+
+    assert "1974-01-01" in actual
 
 
 @pytest.mark.parametrize(
     "dt, expect",
     [
-        ("19701301", "1974-01-01 dieną įrašų nėra"),
-        ("19701232", "1974-01-01 dieną įrašų nėra"),
+        ("1970-13-01", "1974-01-01 dieną įrašų nėra"),
+        ("1970-12-32", "1974-01-01 dieną įrašų nėra"),
     ],
 )
 def test_view_expand_day_expenses_wrong_dates(dt, expect, client_logged):
@@ -77,7 +82,7 @@ def test_view_expand_day_expenses_wrong_dates(dt, expect, client_logged):
 def test_view_expand_day_expenses_ajax(client_logged):
     ExpenseFactory()
 
-    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": "19990101"})
+    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": date(1999, 1, 1)})
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
