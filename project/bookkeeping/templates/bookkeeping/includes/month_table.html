@@ -21,7 +21,7 @@
         {% for table, spending in ctx.expenses %}
         {% with table.date|date:'w'|weekend:'weekend-col' as weekend_col %}
         {% with table.date|date:'j' as day_int %}
-        {% url 'bookkeeping:expand_day_expenses' table.date|date:'Ymd' as url_expand %}
+        {% url 'bookkeeping:expand_day_expenses' table.date as url_expand %}
         <tr
             id="row-{{day_int}}"
             {% if ctx.day|slugify == day_int %} class="current-day"{% endif %}>
