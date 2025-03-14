@@ -13,7 +13,7 @@ if settings.DEBUG:
 
     urls += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urls += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urls += [path('silk/', include('silk.urls', namespace='silk'))]
-    urls = [
+    urls += [path("silk/", include("silk.urls", namespace="silk"))]
+    urls += [
         path("__debug__/", include(debug_toolbar.urls)),
-    ] + urls
+    ]
