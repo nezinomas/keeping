@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from ..services.detailed_expenses import Service
+from ..services.detailed_one_category import Service
 
 
 @pytest.fixture(name="data")
