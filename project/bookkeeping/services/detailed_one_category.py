@@ -20,7 +20,7 @@ class Service:
         "nov",
         "dec",
     ]
-    VALID_ORDERS = {"title", "total", "max_col"}
+    VALID_ORDERS = {"title", "total"}
 
     def __init__(self, year, data, order="title"):
         self.year = year
