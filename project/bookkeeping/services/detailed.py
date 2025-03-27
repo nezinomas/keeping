@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from datetime import date
 
 import polars as pl
+from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
 from ...expenses.models import Expense, ExpenseType
@@ -92,6 +93,7 @@ class Service:
     def _create_context_item(self, df, category, name):
         context_item = {
             "name": name + category,
+            "slug": slugify(category),
             "items": [],
             "total": 0,
             "total_col": [],

@@ -1,5 +1,7 @@
 from datetime import date
+
 import polars as pl
+from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
 
@@ -101,8 +103,10 @@ class Service:
         return df
 
     def _build_context(self, df):
+        type_title = self._data[0]["type_title"]
         context_item = {
-            "name": f"{_('Expenses')} / {self._data[0]['type_title']}",
+            "name": f"{_('Expenses')} / {type_title}",
+            "slug": slugify(type_title),
             "items": [],
             "total": 0,
             "total_col": [],
