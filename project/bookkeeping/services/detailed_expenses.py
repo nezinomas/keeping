@@ -27,6 +27,7 @@ class Service:
         self._data = data
         self._order = self._determine_order(order)
         self._month = self._get_month_index(order)
+        self._category = self._get_category(data)
 
     def _determine_order(self, order):
         order = order.lower()
@@ -56,7 +57,7 @@ class Service:
 
         # Add missing entries for required dates
         missing_data = [
-            {"date": month_date, "sum": 0, "title": title, "type_title": "type1"}
+            {"date": month_date, "sum": 0, "title": title, "type_title": self._category}
             for title in titles
             for month_date in required_dates
             if (title, month_date) not in existing_entries
@@ -122,3 +123,6 @@ class Service:
                 {"title": df_part["title"][0], "data": df_part["sum"].to_list()}
             )
         return context_item
+
+    def _get_category(self, data):
+        return data[0].get("type_title") if data and isinstance(data, list) else None
