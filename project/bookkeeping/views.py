@@ -165,6 +165,18 @@ class Detailed(TemplateViewMixin):
         return super().get_context_data(**kwargs) | context
 
 
+class DetailedCategory(TemplateViewMixin):
+    template_name = "cotton/detailed_table.html"
+
+    def get_context_data(self, **kwargs):
+        year = self.request.user.year
+        context = services.detailed_one_category.load_service(
+            year, self.kwargs["order"], self.kwargs["category"]
+        )
+
+        return super().get_context_data(**kwargs) | context
+
+
 class Summary(TemplateViewMixin):
     template_name = "bookkeeping/summary.html"
 
@@ -209,6 +221,8 @@ class ExpandDayExpenses(TemplateViewMixin):
     template_name = "bookkeeping/includes/expand_day_expenses.html"
 
     def get_context_data(self, **kwargs):
-        obj = services.expand_day.ExpandDayService(self.kwargs.get("date") or date(1974, 1, 1))
+        obj = services.expand_day.ExpandDayService(
+            self.kwargs.get("date") or date(1974, 1, 1)
+        )
 
         return super().get_context_data(**kwargs) | obj.context()
