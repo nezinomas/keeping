@@ -93,7 +93,7 @@ class Service:
     def _create_context_item(self, df, category, name):
         context_item = {
             "name": name + category,
-            "slug": slugify(category),
+            "category": slugify(category),
             "items": [],
             "total": 0,
             "total_col": [],
