@@ -24,11 +24,11 @@ class Service:
 
     def __init__(self, year, data, order="title", category="expenses"):
         self.year = year
-        self._data = data
+        self._data = list(data)
 
         self._order = self._determine_order(order)
         self._month = self._get_month_index(order)
-        self._category = self._determine_category(data, category)
+        self._category_name = self._determine_category(data, category)
 
     @property
     def context(self):
@@ -49,9 +49,13 @@ class Service:
         return order if order in self.VALID_ORDERS else "title"
 
     def _determine_category(self, data, category):
-        if category in ["savings", "incomes"]:
+        if category in [slugify(_("Savings")), "savings"]:
             return _("Savings")
-        return data[0].get("type_title") if data and isinstance(data, list) else None
+
+        if category in [slugify(_("Incomes")), "incomes"]:
+            return _("Incomes")
+
+        return data[0].get("type_title") if data else None
 
     def _get_month_index(self, order):
         return self.MONTHS.index(order.lower()) if order.lower() in self.MONTHS else 0
@@ -63,7 +67,12 @@ class Service:
 
         # Add missing entries for required dates
         missing_data = [
-            {"date": month_date, "sum": 0, "title": title, "type_title": self._category}
+            {
+                "date": month_date,
+                "sum": 0,
+                "title": title,
+                "type_title": self._category_name,
+            }
             for title in titles
             for month_date in required_dates
             if (title, month_date) not in existing_entries
@@ -106,13 +115,13 @@ class Service:
 
     def _build_context(self, df):
         category_name = (
-            self._category
-            if self._category in [_("Savings"), _("Incomes")]
-            else f"{_('Expenses')} / {self._category}"
+            self._category_name
+            if self._category_name in [_("Savings"), _("Incomes")]
+            else f"{_('Expenses')} / {self._category_name}"
         )
         context_item = {
             "name": category_name,
-            "slug": slugify(self._category),
+            "category": slugify(self._category_name),
             "items": [],
             "total": 0,
             "total_col": [],
