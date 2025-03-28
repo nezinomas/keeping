@@ -29,16 +29,6 @@ class Service:
         self._month = self._get_month_index(order)
         self._category = self._determine_category(data, category)
 
-    def _determine_order(self, order):
-        order = order.lower()
-        if order in self.MONTHS:
-            return "month"
-
-        return order if order in self.VALID_ORDERS else "title"
-
-    def _get_month_index(self, order):
-        return self.MONTHS.index(order.lower()) if order.lower() in self.MONTHS else 0
-
     @property
     def context(self):
         if not self._data:
@@ -49,6 +39,21 @@ class Service:
         df = self._sort_dataframe(df)
 
         return self._build_context(df)
+
+    def _determine_order(self, order):
+        order = order.lower()
+        if order in self.MONTHS:
+            return "month"
+
+        return order if order in self.VALID_ORDERS else "title"
+
+    def _determine_category(self, data, category):
+        if category in ["savings", "incomes"]:
+            return _("Savings")
+        return data[0].get("type_title") if data and isinstance(data, list) else None
+
+    def _get_month_index(self, order):
+        return self.MONTHS.index(order.lower()) if order.lower() in self.MONTHS else 0
 
     def _insert_missing_data(self, data):
         required_dates = [date(self.year, 1, 1), date(self.year, 12, 1)]
@@ -122,8 +127,3 @@ class Service:
                 {"title": df_part["title"][0], "data": df_part["sum"].to_list()}
             )
         return context_item
-
-    def _determine_category(self, data, category):
-        if category in ["savings", "incomes"]:
-            return _("Savings")
-        return data[0].get("type_title") if data and isinstance(data, list) else None
