@@ -75,7 +75,7 @@ def test_view_detailed_with_incomes(client_logged):
 
     content = response.content.decode("utf-8")
 
-    assert "Pajamos</th>" in content
+    assert "Pajamos</a></th>" in content
     assert "Income Type" in content
 
 
@@ -112,5 +112,5 @@ def test_view_detailed_with_savings(client_logged):
 
     content = response.content.decode("utf-8")
 
-    assert "Taupymas</th>" in content
+    assert "Taupymas</a></th>" in content
     assert "Savings</td>" in content
