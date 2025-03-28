@@ -4,6 +4,10 @@ import polars as pl
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
+from ...expenses.models import Expense
+from ...incomes.models import Income
+from ...savings.models import Saving
+
 
 class Service:
     MONTHS = [
@@ -137,3 +141,17 @@ class Service:
                 {"title": df_part["title"][0], "data": df_part["sum"].to_list()}
             )
         return context_item
+
+
+def load_service(year, order, category):
+    if category == slugify(_("Incomes")):
+        data = Income.objects.sum_by_month_and_type(year)
+    elif category == slugify(_("Savings")):
+            data = Saving.objects.sum_by_month_and_type(year)
+    else:
+        data = Expense.objects.sum_by_month_and_name(year).filter(
+            expense_type__slug=category
+        )
+
+    service = Service(year, data, order, category)
+    return service.context
