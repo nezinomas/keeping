@@ -27,7 +27,7 @@ class Service:
         self._data = data
         self._order = self._determine_order(order)
         self._month = self._get_month_index(order)
-        self._category = self._get_category(data, category)
+        self._category = self._determine_category(data, category)
 
     def _determine_order(self, order):
         order = order.lower()
@@ -90,27 +90,22 @@ class Service:
         )
 
     def _sort_dataframe(self, df):
-        if self._order == "title":
-            return df.sort(["title", "date"])
+        sort_columns = {
+            "title": ["title", "date"],
+            "month": [-pl.col.max_selected_month_value, pl.col.title, pl.col.date],
+            "total": [-pl.col.total_col, pl.col.title, pl.col.date],
+        }
 
-        if self._order == "month":
-            return df.sort(
-                [-pl.col.max_selected_month_value, pl.col.title, pl.col.date]
-            )
-
-        if self._order == "total":
-            return df.sort([-pl.col.total_col, pl.col.title, pl.col.date])
-
-        return df
+        return df.sort(sort_columns.get(self._order, ["title", "date"]))
 
     def _build_context(self, df):
-        category = (
+        category_name = (
             self._category
             if self._category in [_("Savings"), _("Incomes")]
             else f"{_('Expenses')} / {self._category}"
         )
         context_item = {
-            "name": category,
+            "name": category_name,
             "slug": slugify(self._category),
             "items": [],
             "total": 0,
@@ -128,7 +123,7 @@ class Service:
             )
         return context_item
 
-    def _get_category(self, data, category):
+    def _determine_category(self, data, category):
         if category in ["savings", "incomes"]:
             return _("Savings")
         return data[0].get("type_title") if data and isinstance(data, list) else None
