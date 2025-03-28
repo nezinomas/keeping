@@ -25,6 +25,7 @@ class Service:
     def __init__(self, year, data, order="title", category="expenses"):
         self.year = year
         self._data = data
+
         self._order = self._determine_order(order)
         self._month = self._get_month_index(order)
         self._category = self._determine_category(data, category)
