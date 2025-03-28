@@ -34,7 +34,7 @@ class Service:
         if not self._data:
             return {}
 
-        data = self._insert_missing_data(self._data)
+        data = self._add_date_range(self._data)
         df = self._create_df(data, self._month)
         df = self._sort_dataframe(df)
 
@@ -55,7 +55,7 @@ class Service:
     def _get_month_index(self, order):
         return self.MONTHS.index(order.lower()) if order.lower() in self.MONTHS else 0
 
-    def _insert_missing_data(self, data):
+    def _add_date_range(self, data):
         required_dates = [date(self.year, 1, 1), date(self.year, 12, 1)]
         existing_entries = {(entry["title"], entry["date"]) for entry in data}
         titles = {entry["title"] for entry in data}
