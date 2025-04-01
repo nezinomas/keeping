@@ -43,7 +43,8 @@ def monthnames() -> List[str]:
     return [x.lower() for x in calendar.month_name[1:]]
 
 
-def monthnames1():
+def monthnames_abbr():
+
     return {key.lower()[:3]: val for key, val in month_names().items()}
 
 
