@@ -173,6 +173,7 @@ class DetailedCategory(TemplateViewMixin):
         context = services.detailed_one_category.load_service(
             year, self.kwargs["order"], self.kwargs["category"]
         )
+        context["order"] = self.kwargs["order"]
 
         return super().get_context_data(**kwargs) | context
 
