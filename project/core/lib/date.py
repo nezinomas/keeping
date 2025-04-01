@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import List, Tuple
 
 from . import utils
+from .translation import month_names
 
 
 def current_day(year: int, month: int, return_past_day: bool = True) -> int:
@@ -40,6 +41,10 @@ def monthname(month: int) -> str:
 
 def monthnames() -> List[str]:
     return [x.lower() for x in calendar.month_name[1:]]
+
+
+def monthnames1():
+    return {key.lower()[:3]: val for key, val in month_names().items()}
 
 
 def monthlen(year: int, month_name: str) -> int:
