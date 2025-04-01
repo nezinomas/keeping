@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
+from ..core.lib.translation import month_names
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -161,6 +162,7 @@ class Detailed(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         year = self.request.user.year
         context = services.detailed.load_service(year)
+        context["months"] = {key.lower()[:3]: val for key, val in month_names().items()}
 
         return super().get_context_data(**kwargs) | context
 
@@ -174,6 +176,7 @@ class DetailedCategory(TemplateViewMixin):
             year, self.kwargs["order"], self.kwargs["category"]
         )
         context["order"] = self.kwargs["order"]
+        context["months"] = {key.lower()[:3]: val for key, val in month_names().items()}
 
         return super().get_context_data(**kwargs) | context
 
