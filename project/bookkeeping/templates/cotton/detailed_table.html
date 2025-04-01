@@ -8,20 +8,20 @@
 <table class="main striped hover" id="tbl-{{category}}">
     <thead>
         <tr>
-            <th class="text-left title-col"><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'title' %}" hx-target="#tbl-{{category}}">{{ name }}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'jan' %}" hx-target="#tbl-{{category}}">{% translate 'January' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'feb' %}" hx-target="#tbl-{{category}}">{% translate 'February' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'mar' %}" hx-target="#tbl-{{category}}">{% translate 'March' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'apr' %}" hx-target="#tbl-{{category}}">{% translate 'April' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'may' %}" hx-target="#tbl-{{category}}">{% translate 'May' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'jun' %}" hx-target="#tbl-{{category}}">{% translate 'June' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'jul' %}" hx-target="#tbl-{{category}}">{% translate 'July' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'aug' %}" hx-target="#tbl-{{category}}">{% translate 'August' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'sep' %}" hx-target="#tbl-{{category}}">{% translate 'September' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'oct' %}" hx-target="#tbl-{{category}}">{% translate 'October' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'nov' %}" hx-target="#tbl-{{category}}">{% translate 'November' %}</a></th>
-            <th><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'dec' %}" hx-target="#tbl-{{category}}">{% translate 'December' %}</a></th>
-            <th class=" left-thick-border"><a role="button" hx-get="{% url 'bookkeeping:detailed_category' category 'total' %}" hx-target="#tbl-{{category}}">{% translate 'Total' %}</a></th>
+            <th class="text-left title-col"><a role="button" class="{% if not order or order == 'title' %}detailed-table-sorting{% endif %}" hx-get="{% url 'bookkeeping:detailed_category' category 'title' %}" hx-target="#tbl-{{category}}">{{ name }}</a></th>
+            <th><a role="button" {% if order == 'jan' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'jan' %}" hx-target="#tbl-{{category}}">{% translate 'January' %}</a></th>
+            <th><a role="button" {% if order == 'feb' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'feb' %}" hx-target="#tbl-{{category}}">{% translate 'February' %}</a></th>
+            <th><a role="button" {% if order == 'mar' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'mar' %}" hx-target="#tbl-{{category}}">{% translate 'March' %}</a></th>
+            <th><a role="button" {% if order == 'apr' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'apr' %}" hx-target="#tbl-{{category}}">{% translate 'April' %}</a></th>
+            <th><a role="button" {% if order == 'may' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'may' %}" hx-target="#tbl-{{category}}">{% translate 'May' %}</a></th>
+            <th><a role="button" {% if order == 'jun' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'jun' %}" hx-target="#tbl-{{category}}">{% translate 'June' %}</a></th>
+            <th><a role="button" {% if order == 'jul' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'jul' %}" hx-target="#tbl-{{category}}">{% translate 'July' %}</a></th>
+            <th><a role="button" {% if order == 'aug' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'aug' %}" hx-target="#tbl-{{category}}">{% translate 'August' %}</a></th>
+            <th><a role="button" {% if order == 'sep' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'sep' %}" hx-target="#tbl-{{category}}">{% translate 'September' %}</a></th>
+            <th><a role="button" {% if order == 'oct' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'oct' %}" hx-target="#tbl-{{category}}">{% translate 'October' %}</a></th>
+            <th><a role="button" {% if order == 'nov' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'nov' %}" hx-target="#tbl-{{category}}">{% translate 'November' %}</a></th>
+            <th><a role="button" {% if order == 'dec' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'dec' %}" hx-target="#tbl-{{category}}">{% translate 'December' %}</a></th>
+            <th class=" left-thick-border"><a role="button" {% if order == 'total' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'total' %}" hx-target="#tbl-{{category}}">{% translate 'Total' %}</a></th>
         </tr>
     </thead>
     <tbody>
