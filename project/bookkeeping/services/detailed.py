@@ -23,7 +23,9 @@ class Data:
         self.incomes = Income.objects.sum_by_month_and_type(self.year)
         self.savings = Saving.objects.sum_by_month_and_type(self.year)
         self.expenses = Expense.objects.sum_by_month_and_name(self.year)
-        self.expenses_types = ExpenseType.objects.items().values_list("title", flat=True)
+        self.expenses_types = ExpenseType.objects.items().values_list(
+            "title", flat=True
+        )
 
 
 class Service:
@@ -48,7 +50,7 @@ class Service:
 
     def expenses_context(self) -> list[dict]:
         data = __class__.modify_data(self._year, self._expenses)
-        name = f'{_("Expenses")} / '
+        name = f"{_('Expenses')} / "
         return self._create_context(data, self._expenses_types, name)
 
     @staticmethod

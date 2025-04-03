@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     except FileNotFoundError as e:
         raise FileNotFoundError(
-            f"File not found: {conf_file}. Please create a .conf file with the required settings."
+            f"File not found: {conf_file}. Please create a .conf file with the required settings."  # noqa: E501
         ) from e
 
     # set settings file develop/productions/test
