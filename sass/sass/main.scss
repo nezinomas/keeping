@@ -91,3 +91,13 @@ h6 {
         text-align: left;
     }
 }
+
+.detailed-table-sorting {
+    &::before {
+        font-family: 'Glyphicons Halflings';
+        content: " \e113";
+        padding-right: .25rem;
+        font-size: 8px;
+        color: $active;
+    }
+}

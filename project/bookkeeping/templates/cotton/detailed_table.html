@@ -5,23 +5,16 @@
 {% load cell_format %}
 
 
-<table class="main striped hover">
+<table class="main striped hover" id="tbl-{{category}}">
     <thead>
         <tr>
-            <th class="text-left title-col">{{ name }}</th>
-            <th>{% translate 'January' %}</th>
-            <th>{% translate 'February' %}</th>
-            <th>{% translate 'March' %}</th>
-            <th>{% translate 'April' %}</th>
-            <th>{% translate 'May' %}</th>
-            <th>{% translate 'June' %}</th>
-            <th>{% translate 'July' %}</th>
-            <th>{% translate 'August' %}</th>
-            <th>{% translate 'September' %}</th>
-            <th>{% translate 'October' %}</th>
-            <th>{% translate 'November' %}</th>
-            <th>{% translate 'December' %}</th>
-            <th class=" left-thick-border">{% translate 'Total' %}</th>
+            <th class="text-left title-col"><a role="button" class="{% if not order or order == 'title' %}detailed-table-sorting{% endif %}" hx-get="{% url 'bookkeeping:detailed_category' category 'title' %}" hx-target="#tbl-{{category}}">{{ name }}</a></th>
+
+            {% for month_short, month_name in months.items %}
+                <th><a role="button" {% if order == month_short %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category month_short %}" hx-target="#tbl-{{category}}">{{month_name}}</a></th>
+            {% endfor%}
+
+            <th class=" left-thick-border"><a role="button" {% if order == 'total' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'total' %}" hx-target="#tbl-{{category}}">{% translate 'Total' %}</a></th>
         </tr>
     </thead>
     <tbody>
