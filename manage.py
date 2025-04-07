@@ -6,7 +6,7 @@ from pathlib import Path
 
 if __name__ == "__main__":
     # Set the project base directory
-    conf_file = Path(Path(__file__).absolute().parent, ".conf")
+    conf_file = Path(Path(__file__).absolute().parents[0], ".conf")
 
     # Take environment variables from .conf file
     try:
