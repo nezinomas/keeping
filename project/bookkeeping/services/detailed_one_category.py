@@ -135,7 +135,7 @@ def load_service(year, order, category):
     if category == slugify(_("Incomes")):
         data = Income.objects.sum_by_month_and_type(year)
     elif category == slugify(_("Savings")):
-            data = Saving.objects.sum_by_month_and_type(year)
+        data = Saving.objects.sum_by_month_and_type(year)
     else:
         data = Expense.objects.sum_by_month_and_name(year).filter(
             expense_type__slug=category

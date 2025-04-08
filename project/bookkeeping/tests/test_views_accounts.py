@@ -50,5 +50,5 @@ def test_regenerate_buttons(client_logged):
 
     url = reverse("core:regenerate_balances")
 
-    assert f'hx-get="{ url }?type=accounts"' in content
+    assert f'hx-get="{url}?type=accounts"' in content
     assert "Bus atnaujinti tik šios lentelės balansai." in content

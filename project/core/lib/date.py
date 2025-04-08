@@ -44,7 +44,6 @@ def monthnames() -> List[str]:
 
 
 def monthnames_abbr():
-
     return {key.lower()[:3]: val for key, val in month_names().items()}
 
 
