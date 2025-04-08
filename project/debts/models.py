@@ -74,10 +74,10 @@ class DebtReturn(models.Model):
 
         text = ""
         if self.debt.debt_type == "lend":
-            text = f'{_("Lend return")} {convert_price(price)}'
+            text = f"{_('Lend return')} {convert_price(price)}"
 
         if self.debt.debt_type == "borrow":
-            text = f'{_("Borrow return")} {convert_price(price)}'
+            text = f"{_('Borrow return')} {convert_price(price)}"
 
         return text
 

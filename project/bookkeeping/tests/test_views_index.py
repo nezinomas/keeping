@@ -56,7 +56,7 @@ def test_view_index_regenerate_buttons(client_logged):
 
     url = reverse("core:regenerate_balances")
 
-    assert f'hx-get="{ url }"' in content
+    assert f'hx-get="{url}"' in content
     assert "Bus atnaujinti visų metų balansai." in content
 
 

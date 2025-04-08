@@ -192,7 +192,7 @@ class Stats:
         day = day or calendar.monthrange(year, month)[1]
         weeknumber = date(year, month, day).isocalendar()[1]
         color = self._cell_color(dt, weekday)
-        str_date = str(dt) if dt else f'{year}-{str(month).rjust(2, "0")}'
+        str_date = str(dt) if dt else f"{year}-{str(month).rjust(2, '0')}"
 
         # calendar_df dataframe is made in self._make_calandar_dataframe()
         qty_and_duration = []

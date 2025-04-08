@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('savings', '0014_alter_saving_price'),
-        ('savings', '0014_alter_savingtype_slug_alter_savingtype_title'),
+        ("savings", "0014_alter_saving_price"),
+        ("savings", "0014_alter_savingtype_slug_alter_savingtype_title"),
     ]
 
-    operations = [
-    ]
+    operations = []

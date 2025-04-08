@@ -88,8 +88,8 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields["drink_type"].label = _("Drink type")
 
         _type = _("if the type of drink is")
-        h1 = f'<b>ml</b> - {_type} {_("Beer")} / {_("Wine")} / {_("Vodka")}'
-        h2 = f'<b>{_("pcs")}</b> - {_type} Std Av'
+        h1 = f"<b>ml</b> - {_type} {_('Beer')} / {_('Wine')} / {_('Vodka')}"
+        h2 = f"<b>{_('pcs')}</b> - {_type} Std Av"
         help_text = f"{h1}</br>{h2}"
         self.fields["quantity"].help_text = help_text
 

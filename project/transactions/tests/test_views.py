@@ -999,7 +999,7 @@ def test_view_savings_change_delete_load_form(client_logged):
     actual = response.content.decode("utf-8")
 
     assert '<form method="POST"' in actual
-    assert f'hx-post="{ url }"' in actual
+    assert f'hx-post="{url}"' in actual
     assert (
         "Ar tikrai norite ištrinti: <strong>1999-01-01 Savings From -&gt; Savings To: 0,10</strong>?"  # noqa: E501
         in actual

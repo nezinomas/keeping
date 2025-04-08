@@ -48,12 +48,12 @@ CONN_MAX_AGE = 600
 Make sure you have **mysql client** and [**uv**](https://docs.astral.sh/uv/getting-started/installation/) python package installed.
 
 ```
-uv sync --extra dev
+uv sync --all-extras
 ```
 
 6. If you are using python version lower than 3.11 you must install tomli
 ```
-pip install toml
+uv add toml
 
 change import in files manage.py, wsgi.py, base.py
 

@@ -61,7 +61,7 @@ def test_borrow_return_list_edit_button(client_logged):
 
     link = reverse("debts:return_update", kwargs={"pk": obj.pk, "debt_type": "borrow"})
 
-    assert f'<a role="button" hx-get="{ link }"' in content
+    assert f'<a role="button" hx-get="{link}"' in content
 
 
 def test_borrow_return_list_delete_button(client_logged):
@@ -73,7 +73,7 @@ def test_borrow_return_list_delete_button(client_logged):
 
     link = reverse("debts:return_delete", kwargs={"pk": obj.pk, "debt_type": "borrow"})
 
-    assert f'<a role="button" hx-get="{ link }"' in content
+    assert f'<a role="button" hx-get="{link}"' in content
 
 
 def test_borrow_return_new_func():
@@ -236,7 +236,7 @@ def test_borrow_return_delete_load_form(client_logged):
     assert response.status_code == 200
     assert '<form method="POST"' in actual
     assert f'hx-post="{url}"' in actual
-    assert f"Ar tikrai norite ištrinti: <strong>{ obj }</strong>?" in actual
+    assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
 
 
 def test_borrow_return_delete(client_logged):

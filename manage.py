@@ -6,16 +6,21 @@ from pathlib import Path
 
 if __name__ == "__main__":
     # Set the project base directory
-    conf_file = Path(Path(__file__).cwd(), ".conf")
+    conf_file = Path(__file__).absolute().parents[0] / ".conf"
 
     # Take environment variables from .conf file
     try:
         conf = conf_file.read_text()
-        conf = toml.loads(conf)["django"]
-
     except FileNotFoundError as e:
         raise FileNotFoundError(
-            f"File not found: {conf_file}. Please create a .conf file with the required settings."
+            f"File not found: {conf_file}. Please create a .conf file with the required settings."  # noqa: E501
+        ) from e
+
+    try:
+        conf = toml.loads(conf)["django"]
+    except toml.TomlDecodeError as e:
+        raise toml.TomlDecodeError(
+            f"Failed to decode TOML file: {conf_file}. Please check the file format."  # noqa: E501
         ) from e
 
     # set settings file develop/productions/test

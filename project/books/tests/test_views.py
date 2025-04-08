@@ -35,7 +35,7 @@ def test_books_index_add_button(client_logged):
     content = response.content.decode()
 
     link = reverse("books:new")
-    pattern = re.compile(rf'<button .*? hx-get="{ link }" .*?>(.*?)<\/button>')
+    pattern = re.compile(rf'<button .*? hx-get="{link}" .*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == "Knygą"
@@ -51,7 +51,7 @@ def test_books_index_add_target_button(main_user, client_logged):
     content = response.content.decode()
 
     link = reverse("books:target_new")
-    pattern = re.compile(rf'<button .*? hx-get="{ link }" .*?>(.*?)<\/button>')
+    pattern = re.compile(rf'<button .*? hx-get="{link}" .*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
     assert res[0] == "1111 metų tikslą"
@@ -133,7 +133,7 @@ def test_info_row_update_link(client_logged):
     link = reverse("books:target_update", kwargs={"pk": t.pk})
 
     pattern = re.compile(
-        rf'<a role="button" data-info-row="(\d+)" hx-get="{ link }".*?><\/a>'
+        rf'<a role="button" data-info-row="(\d+)" hx-get="{link}".*?><\/a>'
     )
     res = re.findall(pattern, content)
 

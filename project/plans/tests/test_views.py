@@ -906,7 +906,7 @@ def test_necessary_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert f"Ar tikrai norite ištrinti: <strong>{ p }</strong>?" in actual
+    assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
 
 def test_necessary_delete(client_logged):
