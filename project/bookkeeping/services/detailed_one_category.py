@@ -4,26 +4,14 @@ import polars as pl
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
+from ...core.lib.date import monthnames_abbr
 from ...expenses.models import Expense
 from ...incomes.models import Income
 from ...savings.models import Saving
 
 
 class Service:
-    MONTHS = [
-        "jan",
-        "feb",
-        "mar",
-        "apr",
-        "may",
-        "jun",
-        "jul",
-        "aug",
-        "sep",
-        "oct",
-        "nov",
-        "dec",
-    ]
+    MONTHS = [*monthnames_abbr().keys()]
     VALID_ORDERS = {"title", "total"}
 
     def __init__(self, year, data, order="title", category="expenses"):
