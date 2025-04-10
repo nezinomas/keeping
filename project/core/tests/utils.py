@@ -6,7 +6,7 @@ from django.urls import reverse
 
 
 def clean_content(rendered):
-    return str(rendered).replace("\n", "").replace("\t", "")
+    return str(rendered).replace("\n", "").replace("\t", "").replace("  ", "")
 
 
 def change_profile_year(client, year=1):

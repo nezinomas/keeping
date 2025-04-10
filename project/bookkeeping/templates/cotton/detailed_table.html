@@ -8,13 +8,37 @@
 <table class="main striped hover" id="tbl-{{category}}">
     <thead>
         <tr>
-            <th class="text-left title-col"><a role="button" class="{% if not order or order == 'title' %}detailed-table-sorting{% endif %}" hx-get="{% url 'bookkeeping:detailed_category' category 'title' %}" hx-target="#tbl-{{category}}" hx-indicator="#indicator">{{ name }}</a></th>
+            <th class="text-left title-col">
+                <a role="button"
+                   class="{% if not order or order == 'title' %}detailed-table-sorting{% endif %}"
+                   hx-get="{% url 'bookkeeping:detailed_category' category 'title' %}"
+                   hx-target="#tbl-{{category}}"
+                   hx-indicator="#indicator">
+                   {{ name }}
+                </a>
+            </th>
 
             {% for month_short, month_name in months.items %}
-                <th><a role="button" {% if order == month_short %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category month_short %}" hx-target="#tbl-{{category}}" hx-indicator="#indicator">{{month_name}}</a></th>
+                <th>
+                    <a role="button"
+                       {% if order == month_short %}class="detailed-table-sorting"{% endif %}
+                       hx-get="{% url 'bookkeeping:detailed_category' category month_short %}"
+                       hx-target="#tbl-{{category}}"
+                       hx-indicator="#indicator">
+                       {{month_name}}
+                    </a>
+                </th>
             {% endfor%}
 
-            <th class=" left-thick-border"><a role="button" {% if order == 'total' %}class="detailed-table-sorting"{% endif %} hx-get="{% url 'bookkeeping:detailed_category' category 'total' %}" hx-target="#tbl-{{category}}" hx-indicator="#indicator">{% translate 'Total' %}</a></th>
+            <th class=" left-thick-border">
+                <a role="button"
+                   {% if order == 'total' %}class="detailed-table-sorting"{% endif %}
+                   hx-get="{% url 'bookkeeping:detailed_category' category 'total' %}"
+                   hx-target="#tbl-{{category}}"
+                   hx-indicator="#indicator">
+                   {% translate 'Total' %}
+                </a>
+            </th>
         </tr>
     </thead>
     <tbody>
