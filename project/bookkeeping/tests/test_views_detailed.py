@@ -1,6 +1,7 @@
 import pytest
 from django.urls import resolve, reverse
 
+from ...core.tests.utils import clean_content
 from ...expenses.factories import ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory
@@ -73,7 +74,7 @@ def test_view_detailed_with_incomes(client_logged):
 
     assert response.status_code == 200
 
-    content = response.content.decode("utf-8")
+    content = clean_content(response.content.decode("utf-8"))
 
     assert "Pajamos</a></th>" in content
     assert "Income Type" in content
@@ -97,7 +98,7 @@ def test_view_detailed_no_savings(client_logged):
 
     assert response.status_code == 200
 
-    content = response.content.decode("utf-8")
+    content = clean_content(response.content.decode("utf-8"))
 
     assert "<th>Taupymas</th>" not in content
 
@@ -110,7 +111,7 @@ def test_view_detailed_with_savings(client_logged):
 
     assert response.status_code == 200
 
-    content = response.content.decode("utf-8")
+    content = clean_content(response.content.decode("utf-8"))
 
     assert "Taupymas</a></th>" in content
     assert "Savings</td>" in content
