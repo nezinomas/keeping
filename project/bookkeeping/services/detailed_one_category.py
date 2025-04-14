@@ -90,7 +90,6 @@ class Service:
                 pl.col("sum")
                 .implode()
                 .over("title", mapping_strategy="join")
-                .flatten()
                 .list.get(month)
                 .alias("max_selected_month_value")
             )
