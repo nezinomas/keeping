@@ -10,7 +10,18 @@
     <main class="grid-one-col">
     {% if object_list %}
         {% for row in object_list %}
-        <div><c-detailed-table :name=row.name :items=row.items :total=row.total :total_col=row.total_col :total_row=row.total_row :category=row.category :order=row.order :months=months /></div>
+        <div>
+            <c-detailed-table
+                :name=row.name
+                :items=row.items
+                :total=row.total
+                :total_col=row.total_col
+                :total_row=row.total_row
+                :category=row.category
+                :order=row.order
+                :months=months
+            />
+        </div>
         {% endfor %}
     {% else %}
         <div class="alert alert-warning">
