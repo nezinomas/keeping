@@ -10,7 +10,7 @@ def test_create_objects():
 
     data = [
         dict(
-            id=1,
+            category_id=1,
             year=1999,
             past=1,
             incomes=2,

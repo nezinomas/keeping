@@ -50,7 +50,7 @@ class SignalBase(ABC):
 
     def _make_df(self, arr: list[dict]) -> pl.DataFrame:
         schema = {
-            "id": pl.UInt16,
+            "category_id": pl.UInt16,
             "year": pl.UInt16,
             "incomes": pl.Int32,
             "expenses": pl.Int32,
@@ -67,22 +67,22 @@ class SignalBase(ABC):
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
-            .group_by(["id", "year"])
+            .group_by(["category_id", "year"])
             .agg(pl.all().sum())
-            .sort(["year", "id"])
+            .sort(["year", "category_id"])
             .collect()
         )
 
     def _make_have(self, have: list[dict]) -> pl.DataFrame:
         schema = {
-            "id": pl.UInt16,
+            "category_id": pl.UInt16,
             "year": pl.UInt16,
             "have": pl.UInt32,
             "latest_check": pl.Datetime,
         }
         df = pl.DataFrame(have, schema=schema)
 
-        return df.sort(["year", "id"])
+        return df.sort(["year", "category_id"])
 
     def _get_past_records(self, df: pl.DataFrame) -> pl.Expr:
         years = df.select(pl.col("year").unique().sort())["year"]
@@ -98,7 +98,7 @@ class SignalBase(ABC):
             df.filter(pl.col("year").is_in([prev_year, last_year]))
             .select([pl.all()])
             .group_by(["year"])
-            .agg([pl.col("id").alias("tmp")])
+            .agg([pl.col("category_id").alias("tmp")])
         )
         prev_year_type_list = row_diff[0, 1]
         last_year_type_list = row_diff[1, 1]
@@ -107,8 +107,8 @@ class SignalBase(ABC):
         return df.vstack(
             df.filter(
                 (pl.col("year") == prev_year)
-                & (pl.col("id").is_in(types))
-                & (pl.col("id").is_in(row_diff))
+                & (pl.col("category_id").is_in(types))
+                & (pl.col("category_id").is_in(row_diff))
             )
             .with_columns(year=pl.lit(last_year).cast(pl.UInt16))
             .pipe(self._reset_values, year=last_year)
@@ -117,9 +117,9 @@ class SignalBase(ABC):
     def _insert_missing_values(self, df: pl.DataFrame, field_name: str) -> pl.DataFrame:
         return (
             df.pipe(self._get_past_records)
-            .sort(["id", "year"])
+            .sort(["category_id", "year"])
             .pipe(self._copy_cell_from_previous_year, field_name=field_name)
-            .sort(["year", "id"])
+            .sort(["year", "category_id"])
             .pipe(self._insert_future_data)
         )
 
@@ -127,8 +127,8 @@ class SignalBase(ABC):
         self, df: pl.DataFrame, field_name: str
     ) -> pl.Expr:  # noqa: E501
         return df.with_columns(
-            pl.col("latest_check").forward_fill().over("id"),
-            pl.col(field_name).forward_fill().over("id"),
+            pl.col("latest_check").forward_fill().over("category_id"),
+            pl.col(field_name).forward_fill().over("category_id"),
         ).with_columns(pl.col(field_name).fill_null(0))
 
     def _insert_future_data(self, df: pl.DataFrame) -> pl.DataFrame:
@@ -182,11 +182,11 @@ class Accounts(SignalBase):
             df.pipe(self._insert_missing_values, field_name="have")
             .lazy()
             .with_columns(balance=pl.lit(0), past=pl.lit(0), delta=pl.lit(0))
-            .sort(["id", "year"])
+            .sort(["category_id", "year"])
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
-            .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["id"]))
+            .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["category_id"]))
             .with_columns(
-                past=pl.col("tmp_balance").shift(n=1, fill_value=0).over("id")
+                past=pl.col("tmp_balance").shift(n=1, fill_value=0).over("category_id")
             )
             .with_columns(
                 balance=(pl.col("past") + pl.col("incomes") - pl.col("expenses"))
@@ -198,12 +198,12 @@ class Accounts(SignalBase):
 
     def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
         df = (
-            df.join(hv, on=["id", "year"], how="full", coalesce=True, nulls_equal=True)
+            df.join(hv, on=["category_id", "year"], how="full", coalesce=True, nulls_equal=True)
             .lazy()
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
-            .sort(["year", "id"])
+            .sort(["year", "category_id"])
         )
         return df.collect()
 
@@ -227,14 +227,14 @@ class Savings(SignalBase):
         df = (
             df.pipe(self._insert_missing_values, field_name="market_value")
             .lazy()
-            .sort(["id", "year"])
+            .sort(["category_id", "year"])
             .with_columns(
                 per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
             )
             .pipe(self._calc_past)
             .with_columns(
-                sold=pl.col("sold").cum_sum().over("id"),
-                sold_fee=pl.col("sold_fee").cum_sum().over("id"),
+                sold=pl.col("sold").cum_sum().over("category_id"),
+                sold_fee=pl.col("sold_fee").cum_sum().over("category_id"),
             )
             .with_columns(
                 incomes=(pl.col("past_amount") + pl.col("per_year_incomes")),
@@ -267,10 +267,10 @@ class Savings(SignalBase):
     def _calc_past(self, df: pl.DataFrame) -> pl.Expr:
         return (
             df.lazy()
-            .with_columns(tmp=pl.col("per_year_incomes").cum_sum().over("id"))
-            .with_columns(past_amount=pl.col("tmp").shift(n=1, fill_value=0).over("id"))
-            .with_columns(tmp=pl.col("per_year_fee").cum_sum().over("id"))
-            .with_columns(past_fee=pl.col("tmp").shift(n=1, fill_value=0).over("id"))
+            .with_columns(tmp=pl.col("per_year_incomes").cum_sum().over("category_id"))
+            .with_columns(past_amount=pl.col("tmp").shift(n=1, fill_value=0).over("category_id"))
+            .with_columns(tmp=pl.col("per_year_fee").cum_sum().over("category_id"))
+            .with_columns(past_fee=pl.col("tmp").shift(n=1, fill_value=0).over("category_id"))
             .drop("tmp")
         )
 
@@ -293,13 +293,13 @@ class Savings(SignalBase):
 
         return (
             inc.join(
-                exp, on=["id", "year"], how="full", coalesce=True, nulls_equal=True
+                exp, on=["category_id", "year"], how="full", coalesce=True, nulls_equal=True
             )
-            .join(hv, on=["id", "year"], how="full", coalesce=True, nulls_equal=True)
+            .join(hv, on=["category_id", "year"], how="full", coalesce=True, nulls_equal=True)
             .lazy()
             .rename({"have": "market_value"})
             .with_columns(
-                pl.exclude(["id", "year", "latest_check", "market_value"]).fill_null(0)
+                pl.exclude(["category_id", "year", "latest_check", "market_value"]).fill_null(0)
             )
             .with_columns([pl.lit(0).alias(col) for col in cols])
             .collect()

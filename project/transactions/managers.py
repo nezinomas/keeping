@@ -29,8 +29,8 @@ class BaseMixin(models.QuerySet):
             .annotate(year=ExtractYear(F("date")))
             .values("year", "to_account__title")
             .annotate(incomes=Sum("price"))
-            .values("year", "incomes", id=F("to_account__pk"))
-            .order_by("year", "id")
+            .values("year", "incomes", category_id=F("to_account__pk"))
+            .order_by("year", "category_id")
         )
 
     def annotate_fee(self, fee):
@@ -54,8 +54,8 @@ class BaseMixin(models.QuerySet):
             .values("year", "from_account__title")
             .annotate(expenses=Sum("price"))
             .annotate_fee(fee=fee)
-            .values(*values, id=F("from_account__pk"))
-            .order_by("year", "id")
+            .values(*values, category_id=F("from_account__pk"))
+            .order_by("year", "category_id")
         )
 
     base_expenses.queryset_only = True

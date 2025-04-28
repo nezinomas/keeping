@@ -403,20 +403,20 @@ def test_transaction_balance_incomes(transactions):
     # 1974
     assert actual[0]["year"] == 1970
     assert actual[0]["incomes"] == 525
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
 
     assert actual[1]["year"] == 1970
     assert actual[1]["incomes"] == 125
-    assert actual[1]["id"] == 2
+    assert actual[1]["category_id"] == 2
 
     # 1999
     assert actual[2]["year"] == 1999
     assert actual[2]["incomes"] == 325
-    assert actual[2]["id"] == 1
+    assert actual[2]["category_id"] == 1
 
     assert actual[3]["year"] == 1999
     assert actual[3]["incomes"] == 450
-    assert actual[3]["id"] == 2
+    assert actual[3]["category_id"] == 2
 
 
 def test_transaction_balance_expenses(transactions):
@@ -425,20 +425,20 @@ def test_transaction_balance_expenses(transactions):
     # 1974
     assert actual[0]["year"] == 1970
     assert actual[0]["expenses"] == 125
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
 
     assert actual[1]["year"] == 1970
     assert actual[1]["expenses"] == 525
-    assert actual[1]["id"] == 2
+    assert actual[1]["category_id"] == 2
 
     # 1999
     assert actual[2]["year"] == 1999
     assert actual[2]["expenses"] == 450
-    assert actual[2]["id"] == 1
+    assert actual[2]["category_id"] == 1
 
     assert actual[3]["year"] == 1999
     assert actual[3]["expenses"] == 325
-    assert actual[3]["id"] == 2
+    assert actual[3]["category_id"] == 2
 
 
 # ----------------------------------------------------------------------------
@@ -805,16 +805,16 @@ def test_saving_close_balance_incomes(savings_close):
     # 1974
     assert actual[0]["year"] == 1970
     assert actual[0]["incomes"] == 25
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
 
     # 1999
     assert actual[1]["year"] == 1999
     assert actual[1]["incomes"] == 25
-    assert actual[1]["id"] == 1
+    assert actual[1]["category_id"] == 1
 
     assert actual[2]["year"] == 1999
     assert actual[2]["incomes"] == 1
-    assert actual[2]["id"] == 2
+    assert actual[2]["category_id"] == 2
 
 
 def test_saving_close_balance_expenses(savings_close):
@@ -824,13 +824,13 @@ def test_saving_close_balance_expenses(savings_close):
     assert actual[0]["year"] == 1970
     assert actual[0]["expenses"] == 25
     assert actual[0]["fee"] == 5
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
 
     # 1999
     assert actual[1]["year"] == 1999
     assert actual[1]["expenses"] == 26
     assert actual[1]["fee"] == 6
-    assert actual[1]["id"] == 1
+    assert actual[1]["category_id"] == 1
 
 
 # ----------------------------------------------------------------------------

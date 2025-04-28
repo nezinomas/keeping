@@ -431,19 +431,19 @@ def test_debt_return_incomes():
     actual = DebtReturn.objects.incomes()
 
     assert actual[0]["year"] == 1970
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
     assert actual[0]["incomes"] == 3
 
     assert actual[1]["year"] == 1970
-    assert actual[1]["id"] == 2
+    assert actual[1]["category_id"] == 2
     assert actual[1]["incomes"] == 7
 
     assert actual[2]["year"] == 1999
-    assert actual[2]["id"] == 1
+    assert actual[2]["category_id"] == 1
     assert actual[2]["incomes"] == 30
 
     assert actual[3]["year"] == 1999
-    assert actual[3]["id"] == 2
+    assert actual[3]["category_id"] == 2
     assert actual[3]["incomes"] == 70
 
 
@@ -466,17 +466,17 @@ def test_debt_return_expenses():
     actual = DebtReturn.objects.expenses()
 
     assert actual[0]["year"] == 1970
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
     assert actual[0]["expenses"] == 3
 
     assert actual[1]["year"] == 1970
-    assert actual[1]["id"] == 2
+    assert actual[1]["category_id"] == 2
     assert actual[1]["expenses"] == 7
 
     assert actual[2]["year"] == 1999
-    assert actual[2]["id"] == 1
+    assert actual[2]["category_id"] == 1
     assert actual[2]["expenses"] == 30
 
     assert actual[3]["year"] == 1999
-    assert actual[3]["id"] == 2
+    assert actual[3]["category_id"] == 2
     assert actual[3]["expenses"] == 70

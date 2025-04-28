@@ -32,7 +32,7 @@ class PensionQuerySet(SumMixin, models.QuerySet):
             .annotate(year=ExtractYear(F("date")))
             .values("year", "pension_type__title")
             .annotate(incomes=Sum("price"), fee=Sum("fee"))
-            .values("year", "incomes", "fee", id=F("pension_type__pk"))
+            .values("year", "incomes", "fee", category_id=F("pension_type__pk"))
             .order_by("year", "id")
         )
 

@@ -132,10 +132,10 @@ def test_incomes_income_sum_query_count(django_assert_max_num_queries):
 def test_balance(incomes):
     qs = Income.objects.incomes()
 
-    assert qs[0] == {"year": 1970, "incomes": 525, "id": 1}
-    assert qs[1] == {"year": 1970, "incomes": 450, "id": 2}
-    assert qs[2] == {"year": 1999, "incomes": 325, "id": 1}
-    assert qs[3] == {"year": 1999, "incomes": 350, "id": 2}
+    assert qs[0] == {"year": 1970, "incomes": 525, "category_id": 1}
+    assert qs[1] == {"year": 1970, "incomes": 450, "category_id": 2}
+    assert qs[2] == {"year": 1999, "incomes": 325, "category_id": 1}
+    assert qs[3] == {"year": 1999, "incomes": 350, "category_id": 2}
 
 
 def test_income_month_type_sum():

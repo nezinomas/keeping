@@ -122,7 +122,7 @@ def create_objects(balance_model: Model, categories: dict, data: list[dict]):
     objects = []
     for x in data:
         # extract account/saving_type/pension_type id from dict
-        cid = x.pop("id")
+        cid = x.pop("category_id")
         # drop latest_check if empty
         if not x["latest_check"]:
             x.pop("latest_check")
