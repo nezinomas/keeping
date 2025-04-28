@@ -45,6 +45,12 @@ class SignalBase(ABC):
     def table(self):
         return self._table.to_dicts()
 
+    @property
+    def year_category_id_set(self) -> set:
+        years = self._table["year"].to_numpy()
+        ids = self._table["category_id"].to_numpy()
+        return {(int(year), int(id_)) for id_, year in zip(ids, years)}
+
     @abstractmethod
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame: ...
 

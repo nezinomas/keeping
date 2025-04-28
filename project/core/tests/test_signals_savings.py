@@ -210,6 +210,21 @@ def test_table(incomes, expenses, have, types):
     assert actual[7]["latest_check"] == datetime(2000, 1, 4)
 
 
+@time_machine.travel("2000-12-31")
+def test_year_category_id_set(incomes, expenses, have, types):
+    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
+    actual = Savings(data).table
+
+    actual == {
+        (1999, 1),
+        (2000, 1),
+        (2001, 1),
+        (1999, 2),
+        (2000, 2),
+        (2001, 2),
+    }
+
+
 @time_machine.travel("1999-1-1")
 def test_copy_market_value_and_latest_from_previous_year(types):
     have = [
