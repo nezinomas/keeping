@@ -198,7 +198,13 @@ class Accounts(SignalBase):
 
     def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
         df = (
-            df.join(hv, on=["category_id", "year"], how="full", coalesce=True, nulls_equal=True)
+            df.join(
+                hv,
+                on=["category_id", "year"],
+                how="full",
+                coalesce=True,
+                nulls_equal=True,
+            )
             .lazy()
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
@@ -268,9 +274,13 @@ class Savings(SignalBase):
         return (
             df.lazy()
             .with_columns(tmp=pl.col("per_year_incomes").cum_sum().over("category_id"))
-            .with_columns(past_amount=pl.col("tmp").shift(n=1, fill_value=0).over("category_id"))
+            .with_columns(
+                past_amount=pl.col("tmp").shift(n=1, fill_value=0).over("category_id")
+            )
             .with_columns(tmp=pl.col("per_year_fee").cum_sum().over("category_id"))
-            .with_columns(past_fee=pl.col("tmp").shift(n=1, fill_value=0).over("category_id"))
+            .with_columns(
+                past_fee=pl.col("tmp").shift(n=1, fill_value=0).over("category_id")
+            )
             .drop("tmp")
         )
 
@@ -293,13 +303,25 @@ class Savings(SignalBase):
 
         return (
             inc.join(
-                exp, on=["category_id", "year"], how="full", coalesce=True, nulls_equal=True
+                exp,
+                on=["category_id", "year"],
+                how="full",
+                coalesce=True,
+                nulls_equal=True,
             )
-            .join(hv, on=["category_id", "year"], how="full", coalesce=True, nulls_equal=True)
+            .join(
+                hv,
+                on=["category_id", "year"],
+                how="full",
+                coalesce=True,
+                nulls_equal=True,
+            )
             .lazy()
             .rename({"have": "market_value"})
             .with_columns(
-                pl.exclude(["category_id", "year", "latest_check", "market_value"]).fill_null(0)
+                pl.exclude(
+                    ["category_id", "year", "latest_check", "market_value"]
+                ).fill_null(0)
             )
             .with_columns([pl.lit(0).alias(col) for col in cols])
             .collect()

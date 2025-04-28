@@ -43,10 +43,30 @@ def fixture_expenses():
 @pytest.fixture(name="have")
 def fixture_have():
     return [
-        {"category_id": 1, "year": 1999, "have": 75, "latest_check": datetime(1999, 1, 1)},
-        {"category_id": 1, "year": 2000, "have": 300, "latest_check": datetime(2000, 1, 2)},
-        {"category_id": 2, "year": 1999, "have": 100, "latest_check": datetime(1999, 1, 3)},
-        {"category_id": 2, "year": 2000, "have": 250, "latest_check": datetime(2000, 1, 4)},
+        {
+            "category_id": 1,
+            "year": 1999,
+            "have": 75,
+            "latest_check": datetime(1999, 1, 1),
+        },
+        {
+            "category_id": 1,
+            "year": 2000,
+            "have": 300,
+            "latest_check": datetime(2000, 1, 2),
+        },
+        {
+            "category_id": 2,
+            "year": 1999,
+            "have": 100,
+            "latest_check": datetime(1999, 1, 3),
+        },
+        {
+            "category_id": 2,
+            "year": 2000,
+            "have": 250,
+            "latest_check": datetime(2000, 1, 4),
+        },
     ]
 
 
@@ -193,7 +213,12 @@ def test_table(incomes, expenses, have, types):
 @time_machine.travel("1999-1-1")
 def test_copy_market_value_and_latest_from_previous_year(types):
     have = [
-        {"category_id": 1, "year": 1998, "have": 33, "latest_check": datetime(1998, 1, 1)},
+        {
+            "category_id": 1,
+            "year": 1998,
+            "have": 33,
+            "latest_check": datetime(1998, 1, 1),
+        },
     ]
     incomes = [
         {"year": 1998, "incomes": 10, "fee": 1, "category_id": 1},
