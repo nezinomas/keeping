@@ -40,7 +40,7 @@ def test_create_objects():
     assert actual.latest_check == timezone.make_aware(datetime(1999, 1, 1, 3, 2, 1))
 
 
-def test_insert_new_records_empty_db():
+def test_account_insert_new_records_empty_db():
     account = AccountFactory()
 
     df = pl.DataFrame(
@@ -71,7 +71,7 @@ def test_insert_new_records_empty_db():
 
 
 @pytest.mark.django_db
-def test_insert_new_records():
+def test_account_insert_new_records():
     obj = AccountBalanceFactory()
 
     """Test inserting new records from DataFrame."""
@@ -103,7 +103,7 @@ def test_insert_new_records():
 
 
 @pytest.mark.django_db
-def test_update_existing_records():
+def test_account_update_existing_records():
     obj = AccountBalanceFactory()
     """Test updating existing records from DataFrame."""
     df = pl.DataFrame(
@@ -134,7 +134,7 @@ def test_update_existing_records():
 
 
 @pytest.mark.django_db
-def test_delete_records():
+def test_account_delete_records():
     AccountBalanceFactory()
 
     """Test deleting records not in DataFrame."""
@@ -157,7 +157,7 @@ def test_delete_records():
     assert AccountBalance.objects.count() == 0
 
 
-def test_mixed_operations():
+def test_account_mixed_operations():
     """Test simultaneous insert, update, and delete."""
     account = AccountFactory()
     # Existing record to update
@@ -194,7 +194,7 @@ def test_mixed_operations():
     assert not AccountBalance.objects.filter(account=account, year=2022).exists()
 
 
-def test_null_latest_check():
+def test_account_null_latest_check():
     account = AccountFactory()
     """Test handling null latest_check in DataFrame."""
     df = pl.DataFrame(
@@ -219,7 +219,7 @@ def test_null_latest_check():
     assert record.incomes == 1000
 
 
-def test_empty_dataframe_deletes_all():
+def test_account_empty_dataframe_deletes_all():
     """Test empty DataFrame deletes all records."""
     AccountBalanceFactory(year=2023)
     AccountBalanceFactory(year=2024)
