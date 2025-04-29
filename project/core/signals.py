@@ -9,7 +9,6 @@ from django.utils import timezone
 from django.utils.timezone import make_aware
 
 from ..accounts import models as account
-from ..accounts.models import AccountBalance
 from ..bookkeeping import models as bookkeeping
 from ..debts import models as debt
 from ..expenses import models as expense
