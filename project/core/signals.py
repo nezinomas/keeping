@@ -159,6 +159,7 @@ class BalanceSynchronizer:
             self.KEY_FIELDS + self.FIELDS
         )  # Select only necessary columns
         self.df_db, self.df_map = self._get_existing_records()
+
         self.sync()
 
     def _get_existing_records(self) -> Tuple[pl.DataFrame, pl.DataFrame]:
@@ -171,56 +172,63 @@ class BalanceSynchronizer:
             return pl.DataFrame(), pl.DataFrame()
 
         df_db = pl.DataFrame(list(records)).rename({"account_id": "category_id"})
+        if "latest_check" in df_db.columns:
+                df_db = df_db.with_columns(
+                    pl.col("latest_check").cast(pl.Datetime).dt.replace_time_zone(None)
+                )
         df_map = df_db.select(["id", "year", "category_id"])
         df_db = df_db.drop("id")
 
         return df_db, df_map
 
     def _identify_operations(self) -> Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
-        """Identify records to insert, update, and delete using efficient Polars joins."""
+        """Identify operations using lazy evaluation and minimal joins."""
         if self.df_db.is_empty():
             return self.df, pl.DataFrame(), pl.DataFrame()
 
         if self.df.is_empty():
             return pl.DataFrame(), pl.DataFrame(), self.df_db
 
-        # Use lazy evaluation for joins
-        df_keys = self.df.select(self.KEY_FIELDS).unique()
+        # Use lazy evaluation for all operations
+        df_keys = self.df.select(self.KEY_FIELDS).unique().lazy()
 
-        # Inserts: records in df but not in db
-        inserts = self.df.join(
-            self.df_db.select(self.KEY_FIELDS),
+        inserts = self.df.lazy().join(
+            self.df_db.lazy().select(self.KEY_FIELDS),
             on=self.KEY_FIELDS,
             how="anti",
+        ).collect()
+
+        common = self.df.lazy().join(
+            self.df_db.lazy(),
+            on=self.KEY_FIELDS,
+            how="inner",
+            suffix="_db"
         )
 
-        # Updates: records in both, with differing fields
-        common = self.df.join(
-            self.df_db, on=self.KEY_FIELDS, how="inner", suffix="_db"
-        ).lazy()
-
-        updates = (
-            common.filter(
-                pl.any_horizontal([pl.col(f) != pl.col(f"{f}_db") for f in self.FIELDS])
+        updates = common.filter(
+            pl.any_horizontal(
+                [pl.col(f) != pl.col(f"{f}_db") for f in self.FIELDS]
             )
-            .select(self.df.columns)
-            .collect()
-        )
+        ).select(self.df.columns).collect()
 
-        # Deletes: records in db but not in df
-        deletes = self.df_db.join(df_keys, on=self.KEY_FIELDS, how="anti")
+        deletes = self.df_db.lazy().join(
+            df_keys,
+            on=self.KEY_FIELDS,
+            how="anti"
+        ).collect()
 
         return inserts, updates, deletes
 
     def _delete_records(self, deletes: pl.DataFrame) -> None:
-        """Delete records efficiently using bulk conditions."""
+        """Delete records using a single efficient query."""
         if deletes.is_empty():
             return
 
-        if delete_ids := self.df_map.join(
-            deletes.select(self.KEY_FIELDS), on=self.KEY_FIELDS, how="inner"
-        )["id"].to_list():
-            AccountBalance.objects.filter(id__in=delete_ids).delete()
+        if delete_rows := deletes.select(self.KEY_FIELDS).rows():
+            query = Q()
+            for category_id, year in delete_rows:
+                query |= Q(account_id=category_id, year=year)
+            AccountBalance.objects.filter(query).delete()
 
     def _insert_records(self, inserts: pl.DataFrame) -> None:
         """Insert records using bulk_create with batch processing."""
@@ -238,9 +246,7 @@ class BalanceSynchronizer:
                     incomes=row["incomes"],
                     expenses=row["expenses"],
                     have=row["have"],
-                    latest_check=timezone.make_aware(row["latest_check"])
-                    if row["latest_check"]
-                    else None,
+                    latest_check=row["latest_check"],
                     balance=row["balance"],
                     past=row["past"],
                     delta=row["delta"],
@@ -269,11 +275,7 @@ class BalanceSynchronizer:
                 incomes=row["incomes"],
                 expenses=row["expenses"],
                 have=row["have"],
-                latest_check=(
-                    timezone.make_aware(row["latest_check"])
-                    if row["latest_check"]
-                    else None
-                ),
+                latest_check=row["latest_check"],
                 balance=row["balance"],
                 past=row["past"],
                 delta=row["delta"],
