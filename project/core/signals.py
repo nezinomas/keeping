@@ -177,8 +177,6 @@ class BalanceSynchronizer:
     KEY_FIELDS = ["category_id", "year"]
 
     def __init__(self, model, df) -> None:
-        self.model = model
-
         match model:
             case saving.SavingBalance:
                 self.fk_field = "saving_type_id"
@@ -192,6 +190,7 @@ class BalanceSynchronizer:
                 self.fk_field = "account_id"
                 self.fields = ACCOUNT_FIELDS
 
+        self.model = model
         self.df = df
         self.df_db = self._get_existing_records()
 
