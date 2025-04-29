@@ -148,13 +148,28 @@ def save_objects(balance_model, objects):
     balance_model.objects.bulk_create(objects)
 
 
+ACCOUNT_FIELDS = [
+    "incomes",
+    "expenses",
+    "have",
+    "latest_check",
+    "balance",
+    "past",
+    "delta",
+]
+
+
 class BalanceSynchronizer:
-    FIELDS = ["incomes", "expenses", "have", "latest_check", "balance", "past", "delta"]
     KEY_FIELDS = ["category_id", "year"]
 
-    def __init__(self, model, fk_field, df) -> None:
+    def __init__(self, model, df) -> None:
         self.model = model
-        self.fk_field = fk_field
+
+        match model:
+            case _:
+                self.fk_field = "account_id"
+                self.fields = ACCOUNT_FIELDS
+
         self.df = df
         self.df_db = self._get_existing_records()
 
@@ -163,7 +178,7 @@ class BalanceSynchronizer:
     def _get_existing_records(self) -> pl.DataFrame:
         # Select only necessary fields to reduce memory usage
         records = self.model.objects.related().values(
-            "id", self.fk_field, "year", *self.FIELDS
+            "id", self.fk_field, "year", *self.fields
         )
         if not records:
             return pl.DataFrame()
@@ -207,7 +222,7 @@ class BalanceSynchronizer:
 
         return (
             common.filter(
-                pl.any_horizontal([pl.col(f) != pl.col(f"{f}_db") for f in self.FIELDS])
+                pl.any_horizontal([pl.col(f) != pl.col(f"{f}_db") for f in self.fields])
             )
             .select(self.df.columns)
             .collect()
@@ -244,11 +259,11 @@ class BalanceSynchronizer:
         if objects := [
             self._create_object(row, update=True) for row in updates_with_id
         ]:
-            self.model.objects.bulk_update(objects, self.FIELDS)
+            self.model.objects.bulk_update(objects, self.fields)
 
     def _create_object(self, row: dict, update: bool = False):
         """Create an self.model object from a row."""
-        fields = {field: row[field] for field in self.FIELDS}
+        fields = {field: row[field] for field in self.fields}
         fields["latest_check"] = (
             timezone.make_aware(row["latest_check"]) if row["latest_check"] else None
         )
