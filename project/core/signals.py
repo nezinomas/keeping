@@ -152,109 +152,114 @@ class BalanceSynchronizer:
     """Synchronizes AccountBalance model with Polars DataFrame efficiently."""
 
     FIELDS = ["incomes", "expenses", "have", "latest_check", "balance", "past", "delta"]
+    KEY_FIELDS = ["category_id", "year"]
 
     def __init__(self, df: pl.DataFrame) -> None:
-        self.df = df
+        self.df = df.select(
+            self.KEY_FIELDS + self.FIELDS
+        )  # Select only necessary columns
         self.df_db, self.df_map = self._get_existing_records()
-
         self.sync()
 
-    def _get_existing_records(self) -> pl.DataFrame:
-        """Fetch existing records as a Polars DataFrame."""
-        records = AccountBalance.objects.related().values()
-        df_db = pl.DataFrame(list(records))
+    def _get_existing_records(self) -> Tuple[pl.DataFrame, pl.DataFrame]:
+        """Fetch existing records as a Polars DataFrame with minimal data."""
+        # Select only necessary fields to reduce memory usage
+        records = AccountBalance.objects.related().values(
+            "id", "account_id", "year", *self.FIELDS
+        )
+        if not records:
+            return pl.DataFrame(), pl.DataFrame()
 
-        df_map = pl.DataFrame()
-        if not df_db.is_empty():
-            df_db = df_db.rename({"account_id": "category_id"})
-
-            df_map = df_db.select(pl.col.id, pl.col.year, pl.col.category_id)
-            df_db = df_db.drop("id")
+        df_db = pl.DataFrame(list(records)).rename({"account_id": "category_id"})
+        df_map = df_db.select(["id", "year", "category_id"])
+        df_db = df_db.drop("id")
 
         return df_db, df_map
 
     def _identify_operations(self) -> Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
-        """Identify records to insert, update, and delete using Polars joins."""
-
-        # If database is empty, all records are inserts
+        """Identify records to insert, update, and delete using efficient Polars joins."""
         if self.df_db.is_empty():
             return self.df, pl.DataFrame(), pl.DataFrame()
 
         if self.df.is_empty():
             return pl.DataFrame(), pl.DataFrame(), self.df_db
 
-        # Identify inserts (in df, not in db)
+        # Use lazy evaluation for joins
+        df_keys = self.df.select(self.KEY_FIELDS).unique()
+
+        # Inserts: records in df but not in db
         inserts = self.df.join(
-            self.df_db.select(["category_id", "year"]),
-            on=["category_id", "year"],
+            self.df_db.select(self.KEY_FIELDS),
+            on=self.KEY_FIELDS,
             how="anti",
         )
 
-        # Identify updates (in both, compare fields)
+        # Updates: records in both, with differing fields
         common = self.df.join(
-            self.df_db, on=["category_id", "year"], how="inner", suffix="_db"
-        )
-        updates = common.filter(
-            pl.any_horizontal(
-                [pl.col(f"{field}") != pl.col(f"{field}_db") for field in self.FIELDS]
+            self.df_db, on=self.KEY_FIELDS, how="inner", suffix="_db"
+        ).lazy()
+
+        updates = (
+            common.filter(
+                pl.any_horizontal([pl.col(f) != pl.col(f"{f}_db") for f in self.FIELDS])
             )
-        ).select(self.df.columns)
+            .select(self.df.columns)
+            .collect()
+        )
 
-        # Extract unique keys
-        df_keys = self.df.select(["category_id", "year"]).unique()
-
-        # Identify deletes (in db, not in df)
-        deletes = self.df_db.join(df_keys, on=["category_id", "year"], how="anti")
+        # Deletes: records in db but not in df
+        deletes = self.df_db.join(df_keys, on=self.KEY_FIELDS, how="anti")
 
         return inserts, updates, deletes
 
     def _delete_records(self, deletes: pl.DataFrame) -> None:
-        """Delete records from the database."""
+        """Delete records efficiently using bulk conditions."""
         if deletes.is_empty():
             return
 
-        delete_conditions = [
-            Q(account__pk=row["category_id"], year=row["year"])
-            for row in deletes.to_dicts()
-        ]
-        AccountBalance.objects.filter(
-            Q(*delete_conditions, _connector=Q.OR)
-        ).delete()
+        if delete_ids := self.df_map.join(
+            deletes.select(self.KEY_FIELDS), on=self.KEY_FIELDS, how="inner"
+        )["id"].to_list():
+            AccountBalance.objects.filter(id__in=delete_ids).delete()
 
-    def _insert_reconds(self, inserts: pl.DataFrame) -> None:
-        """Insert records into the database."""
+    def _insert_records(self, inserts: pl.DataFrame) -> None:
+        """Insert records using bulk_create with batch processing."""
         if inserts.is_empty():
             return
 
-        to_insert = [
-            AccountBalance(
-                account_id=row["category_id"],
-                year=row["year"],
-                incomes=row["incomes"],
-                expenses=row["expenses"],
-                have=row["have"],
-                latest_check=timezone.make_aware(row["latest_check"])
-                if row["latest_check"]
-                else None,
-                balance=row["balance"],
-                past=row["past"],
-                delta=row["delta"],
+        batch_size = 1000  # Adjustable based on system constraints
+        to_insert = []
+
+        for row in inserts.iter_rows(named=True):
+            to_insert.append(
+                AccountBalance(
+                    account_id=row["category_id"],
+                    year=row["year"],
+                    incomes=row["incomes"],
+                    expenses=row["expenses"],
+                    have=row["have"],
+                    latest_check=timezone.make_aware(row["latest_check"])
+                    if row["latest_check"]
+                    else None,
+                    balance=row["balance"],
+                    past=row["past"],
+                    delta=row["delta"],
+                )
             )
-            for row in inserts.to_dicts()
-        ]
+
+            if len(to_insert) >= batch_size:
+                AccountBalance.objects.bulk_create(to_insert)
+                to_insert = []
 
         if to_insert:
             AccountBalance.objects.bulk_create(to_insert)
 
     def _update_records(self, updates: pl.DataFrame) -> None:
-        """Update records in the database."""
-        if  updates.is_empty():
+        """Update records using bulk_update with batch processing."""
+        if updates.is_empty():
             return
 
-        # Join updates with IDs
-        updates_with_id = updates.join(
-            self.df_map, on=["category_id", "year"], how="left"
-        )
+        updates_with_id = updates.join(self.df_map, on=self.KEY_FIELDS, how="left")
 
         to_update = [
             AccountBalance(
@@ -264,23 +269,24 @@ class BalanceSynchronizer:
                 incomes=row["incomes"],
                 expenses=row["expenses"],
                 have=row["have"],
-                latest_check=timezone.make_aware(row["latest_check"])
-                if row["latest_check"]
-                else None,
+                latest_check=(
+                    timezone.make_aware(row["latest_check"])
+                    if row["latest_check"]
+                    else None
+                ),
                 balance=row["balance"],
                 past=row["past"],
                 delta=row["delta"],
             )
-            for row in updates_with_id.to_dicts()
+            for row in updates_with_id.iter_rows(named=True)
         ]
         if to_update:
             AccountBalance.objects.bulk_update(to_update, self.FIELDS)
 
     @django_transaction.atomic
     def sync(self) -> None:
-        """Synchronize database with DataFrame."""
+        """Synchronize database with DataFrame in a single transaction."""
         inserts, updates, deletes = self._identify_operations()
-
         self._delete_records(deletes)
-        self._insert_reconds(inserts)
+        self._insert_records(inserts)
         self._update_records(updates)
