@@ -155,10 +155,6 @@ class BalanceSynchronizer:
     KEY_FIELDS = ["category_id", "year"]
 
     def __init__(self, df: pl.DataFrame) -> None:
-        if not df.is_empty():
-            df = df.select(
-                self.KEY_FIELDS + self.FIELDS
-            )  # Select only necessary columns
         self.df = df
         self.df_db = self._get_existing_records()
 
