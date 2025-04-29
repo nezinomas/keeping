@@ -70,5 +70,8 @@ class PensionBalance(models.Model):
     # Managers
     objects = managers.PensionBalanceQuerySet.as_manager()
 
+    class Meta:
+        ordering = ["year", "pension_type__pk"]
+
     def __str__(self):
         return f"{self.pension_type.title}"

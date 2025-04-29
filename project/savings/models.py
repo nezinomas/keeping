@@ -109,5 +109,8 @@ class SavingBalance(models.Model):
     # Managers
     objects = managers.SavingBalanceQuerySet.as_manager()
 
+    class Meta:
+        ordering = ["year", "saving_type__pk"]
+
     def __str__(self):
         return f"{self.saving_type.title}"

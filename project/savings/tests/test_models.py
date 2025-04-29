@@ -804,3 +804,24 @@ def test_sum_by_year():
         {"year": 1999, "incomes": 7, "profit": -7},
         {"year": 2000, "incomes": 7, "profit": -7},
     ]
+
+
+def test_saving_balance_sorting():
+    s1 = SavingTypeFactory(title="1")
+    s2 = SavingTypeFactory(title="2")
+
+    SavingBalanceFactory(year=2000, saving_type=s2)
+    SavingBalanceFactory(year=1999, saving_type=s2)
+    SavingBalanceFactory(year=2000, saving_type=s1)
+    SavingBalanceFactory(year=1999, saving_type=s1)
+
+    actual = SavingBalance.objects.related()
+
+    assert actual[0].year == 1999
+    assert actual[0].saving_type == s1
+    assert actual[1].year == 1999
+    assert actual[1].saving_type == s2
+    assert actual[2].year == 2000
+    assert actual[2].saving_type == s1
+    assert actual[3].year == 2000
+    assert actual[3].saving_type == s2
