@@ -160,28 +160,26 @@ class BalanceSynchronizer:
                 self.KEY_FIELDS + self.FIELDS
             )  # Select only necessary columns
         self.df = df
-        self.df_db, self.df_map = self._get_existing_records()
+        self.df_db = self._get_existing_records()
 
         self.sync()
 
-    def _get_existing_records(self) -> Tuple[pl.DataFrame, pl.DataFrame]:
+    def _get_existing_records(self) -> pl.DataFrame:
         """Fetch existing records as a Polars DataFrame with minimal data."""
         # Select only necessary fields to reduce memory usage
         records = AccountBalance.objects.related().values(
             "id", "account_id", "year", *self.FIELDS
         )
         if not records:
-            return pl.DataFrame(), pl.DataFrame()
+            return pl.DataFrame()
 
         df_db = pl.DataFrame(list(records)).rename({"account_id": "category_id"})
         if "latest_check" in df_db.columns:
             df_db = df_db.with_columns(
                 pl.col("latest_check").cast(pl.Datetime).dt.replace_time_zone(None)
             )
-        df_map = df_db.select(["id", "year", "category_id"])
-        df_db = df_db.drop("id")
 
-        return df_db, df_map
+        return df_db
 
     def _identify_operations(self) -> Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
         if self.df_db.is_empty():
@@ -244,9 +242,9 @@ class BalanceSynchronizer:
         if data.is_empty():
             return
 
-        updates_with_id = data.join(
-            self.df_map, on=self.KEY_FIELDS, how="left"
-        ).to_dicts()
+        df_map = self.df_db.select(["id", "year", "category_id"])
+
+        updates_with_id = data.join(df_map, on=self.KEY_FIELDS, how="left").to_dicts()
 
         if objects := [
             self._create_object(row, update=True) for row in updates_with_id
