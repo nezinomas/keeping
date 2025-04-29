@@ -136,7 +136,7 @@ def create_objects(balance_model: Model, categories: dict, data: list[dict]):
             x["latest_check"] = make_aware(x["latest_check"])
         # create fk_field account|saving_type|pension_type object
         x[fk_field] = categories.get(cid)
-        # create AccountBalance/SavingBalance/PensionBalance object
+        # create self.model/SavingBalance/PensionBalance object
         objects.append(balance_model(**x))
     return objects
 
@@ -149,27 +149,26 @@ def save_objects(balance_model, objects):
 
 
 class BalanceSynchronizer:
-    """Synchronizes AccountBalance model with Polars DataFrame efficiently."""
-
     FIELDS = ["incomes", "expenses", "have", "latest_check", "balance", "past", "delta"]
     KEY_FIELDS = ["category_id", "year"]
 
-    def __init__(self, df: pl.DataFrame) -> None:
+    def __init__(self, model, fk_field, df) -> None:
+        self.model = model
+        self.fk_field = fk_field
         self.df = df
         self.df_db = self._get_existing_records()
 
         self.sync()
 
     def _get_existing_records(self) -> pl.DataFrame:
-        """Fetch existing records as a Polars DataFrame with minimal data."""
         # Select only necessary fields to reduce memory usage
-        records = AccountBalance.objects.related().values(
-            "id", "account_id", "year", *self.FIELDS
+        records = self.model.objects.related().values(
+            "id", self.fk_field, "year", *self.FIELDS
         )
         if not records:
             return pl.DataFrame()
 
-        df_db = pl.DataFrame(list(records)).rename({"account_id": "category_id"})
+        df_db = pl.DataFrame(list(records)).rename({self.fk_field: "category_id"})
         if "latest_check" in df_db.columns:
             df_db = df_db.with_columns(
                 pl.col("latest_check").cast(pl.Datetime).dt.replace_time_zone(None)
@@ -222,8 +221,8 @@ class BalanceSynchronizer:
         if rows := data.select(self.KEY_FIELDS).rows():
             query = Q()
             for category_id, year in rows:
-                query |= Q(account_id=category_id, year=year)
-            AccountBalance.objects.filter(query).delete()
+                query |= Q(**{self.fk_field: category_id, "year": year})
+            self.model.objects.filter(query).delete()
 
     def _insert_records(self, data: pl.DataFrame) -> None:
         """Insert records using bulk_create with batch processing."""
@@ -231,7 +230,7 @@ class BalanceSynchronizer:
             return
 
         if objects := [self._create_object(row) for row in data.to_dicts()]:
-            AccountBalance.objects.bulk_create(objects)
+            self.model.objects.bulk_create(objects)
 
     def _update_records(self, data: pl.DataFrame) -> None:
         """Update records using bulk_update with batch processing."""
@@ -245,20 +244,22 @@ class BalanceSynchronizer:
         if objects := [
             self._create_object(row, update=True) for row in updates_with_id
         ]:
-            AccountBalance.objects.bulk_update(objects, self.FIELDS)
+            self.model.objects.bulk_update(objects, self.FIELDS)
 
-    def _create_object(self, row: dict, update: bool = False) -> AccountBalance:
-        """Create an AccountBalance object from a row."""
+    def _create_object(self, row: dict, update: bool = False):
+        """Create an self.model object from a row."""
         fields = {field: row[field] for field in self.FIELDS}
         fields["latest_check"] = (
             timezone.make_aware(row["latest_check"]) if row["latest_check"] else None
         )
+        fields[self.fk_field] = row["category_id"]
+        fields["year"] = row["year"]
 
         # Set the ID from database for updates
         if update:
             fields["id"] = row["id"]
 
-        return AccountBalance(account_id=row["category_id"], year=row["year"], **fields)
+        return self.model(**fields)
 
     @django_transaction.atomic
     def sync(self) -> None:

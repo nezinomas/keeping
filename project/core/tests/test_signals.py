@@ -57,7 +57,7 @@ def test_insert_new_records_empty_db():
         }
     )
 
-    BalanceSynchronizer(df)
+    BalanceSynchronizer(AccountBalance, "account_id", df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=account, year=2023)
@@ -89,7 +89,7 @@ def test_insert_new_records():
         }
     )
 
-    BalanceSynchronizer(df)
+    BalanceSynchronizer(AccountBalance, "account_id", df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=obj.account, year=2024)
@@ -120,7 +120,7 @@ def test_update_existing_records():
         }
     )
 
-    BalanceSynchronizer(df)
+    BalanceSynchronizer(AccountBalance, "account_id", df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=obj.account, year=1999)
@@ -152,7 +152,7 @@ def test_delete_records():
         }
     )
 
-    BalanceSynchronizer(df)
+    BalanceSynchronizer(AccountBalance, "account_id", df)
 
     assert AccountBalance.objects.count() == 0
 
@@ -179,7 +179,7 @@ def test_mixed_operations():
         }
     )
 
-    BalanceSynchronizer(df)
+    BalanceSynchronizer(AccountBalance, "account_id", df)
 
     assert AccountBalance.objects.count() == 2
     # Check updated record
@@ -211,7 +211,7 @@ def test_null_latest_check():
         }
     )
 
-    BalanceSynchronizer(df)
+    BalanceSynchronizer(AccountBalance, "account_id", df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=account, year=2023)
@@ -238,6 +238,6 @@ def test_empty_dataframe_deletes_all():
         }
     )
 
-    BalanceSynchronizer(df)
+    BalanceSynchronizer(AccountBalance, "account_id", df)
 
     assert AccountBalance.objects.count() == 0
