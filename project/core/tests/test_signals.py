@@ -393,3 +393,32 @@ def test_saving_update_existing_records():
     assert record.market_value == 90
     assert record.profit_sum == 100
     assert record.profit_proc == 110
+
+
+def test_saving_empty_dataframe_deletes_all():
+    """Test empty DataFrame deletes all records."""
+    SavingBalanceFactory(year=2023)
+    SavingBalanceFactory(year=2024)
+
+    df = pl.DataFrame(
+        {
+            "category_id": [],
+            "year": [],
+            "latest_check": [],
+            "past_amount": [],
+            "past_fee": [],
+            "fee": [],
+            "per_year_incomes": [],
+            "per_year_fee": [],
+            "sold": [],
+            "sold_fee": [],
+            "incomes": [],
+            "market_value": [],
+            "profit_sum": [],
+            "profit_proc": [],
+        }
+    )
+
+    BalanceSynchronizer(SavingBalance, df)
+
+    assert SavingBalance.objects.count() == 0
