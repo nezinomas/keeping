@@ -5,10 +5,14 @@ import pytest
 from django.utils import timezone
 
 from ...accounts.factories import AccountBalance, AccountBalanceFactory, AccountFactory
+from ...pensions.factories import (
+    PensionBalance,
+    PensionBalanceFactory,
+    PensionTypeFactory,
+)
 from ...savings.factories import (
     SavingBalance,
     SavingBalanceFactory,
-    SavingFactory,
     SavingTypeFactory,
 )
 from ..signals import BalanceSynchronizer, create_objects
@@ -422,3 +426,182 @@ def test_saving_empty_dataframe_deletes_all():
     BalanceSynchronizer(SavingBalance, df)
 
     assert SavingBalance.objects.count() == 0
+
+
+def test_pension_insert_new_records_empty_db():
+    pension_type = PensionTypeFactory()
+
+    df = pl.DataFrame(
+        {
+            "category_id": [pension_type.pk],
+            "year": [2023],
+            "latest_check": [datetime(2023, 1, 1)],
+            "past_amount": [10],
+            "past_fee": [20],
+            "fee": [30],
+            "per_year_incomes": [40],
+            "per_year_fee": [50],
+            "sold": [60],
+            "sold_fee": [70],
+            "incomes": [80],
+            "market_value": [90],
+            "profit_sum": [100],
+            "profit_proc": [110],
+        }
+    )
+
+    BalanceSynchronizer(PensionBalance, df)
+
+    assert PensionBalance.objects.count() == 1
+
+    record = PensionBalance.objects.get(pension_type=pension_type, year=2023)
+    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 1))
+    assert record.past_amount == 10
+    assert record.past_fee == 20
+    assert record.fee == 30
+    assert record.per_year_incomes == 40
+    assert record.per_year_fee == 50
+    assert record.sold == 60
+    assert record.sold_fee == 70
+    assert record.incomes == 80
+    assert record.market_value == 90
+    assert record.profit_sum == 100
+    assert record.profit_proc == 110
+
+
+def test_pension_insert_new_records():
+    obj = PensionBalanceFactory()
+
+    df = pl.DataFrame(
+        {
+            "category_id": [obj.pension_type.pk],
+            "year": [2023],
+            "latest_check": [datetime(2023, 1, 1)],
+            "past_amount": [10],
+            "past_fee": [20],
+            "fee": [30],
+            "per_year_incomes": [40],
+            "per_year_fee": [50],
+            "sold": [60],
+            "sold_fee": [70],
+            "incomes": [80],
+            "market_value": [90],
+            "profit_sum": [100],
+            "profit_proc": [110],
+        }
+    )
+
+    BalanceSynchronizer(PensionBalance, df)
+
+    assert PensionBalance.objects.count() == 1
+
+    record = PensionBalance.objects.get(pension_type=obj.pension_type, year=2023)
+    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 1))
+    assert record.past_amount == 10
+    assert record.past_fee == 20
+    assert record.fee == 30
+    assert record.per_year_incomes == 40
+    assert record.per_year_fee == 50
+    assert record.sold == 60
+    assert record.sold_fee == 70
+    assert record.incomes == 80
+    assert record.market_value == 90
+    assert record.profit_sum == 100
+    assert record.profit_proc == 110
+
+
+def test_pension_delete_records():
+    PensionBalanceFactory()
+
+    df = pl.DataFrame(
+        {
+            "category_id": [],
+            "year": [],
+            "latest_check": [],
+            "past_amount": [],
+            "past_fee": [],
+            "fee": [],
+            "per_year_incomes": [],
+            "per_year_fee": [],
+            "sold": [],
+            "sold_fee": [],
+            "incomes": [],
+            "market_value": [],
+            "profit_sum": [],
+            "profit_proc": [],
+        }
+    )
+
+    BalanceSynchronizer(PensionBalance, df)
+
+    assert PensionBalance.objects.count() == 0
+
+
+def test_pension_update_existing_records():
+    obj = PensionBalanceFactory()
+
+    df = pl.DataFrame(
+        {
+            "category_id": [obj.pension_type.pk],
+            "year": [1999],
+            "latest_check": [datetime(2023, 1, 1)],
+            "past_amount": [10],
+            "past_fee": [20],
+            "fee": [30],
+            "per_year_incomes": [40],
+            "per_year_fee": [50],
+            "sold": [60],
+            "sold_fee": [70],
+            "incomes": [80],
+            "market_value": [90],
+            "profit_sum": [100],
+            "profit_proc": [110],
+        }
+    )
+
+    BalanceSynchronizer(PensionBalance, df)
+
+    assert PensionBalance.objects.count() == 1
+
+    record = PensionBalance.objects.get(pension_type=obj.pension_type, year=1999)
+    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 1))
+    assert record.past_amount == 10
+    assert record.past_fee == 20
+    assert record.fee == 30
+    assert record.per_year_incomes == 40
+    assert record.per_year_fee == 50
+    assert record.sold == 60
+    assert record.sold_fee == 70
+    assert record.incomes == 80
+    assert record.market_value == 90
+    assert record.profit_sum == 100
+    assert record.profit_proc == 110
+
+
+def test_pension_empty_dataframe_deletes_all():
+    """Test empty DataFrame deletes all records."""
+    PensionBalanceFactory(year=2023)
+    PensionBalanceFactory(year=2024)
+
+    df = pl.DataFrame(
+        {
+            "category_id": [],
+            "year": [],
+            "latest_check": [],
+            "past_amount": [],
+            "past_fee": [],
+            "fee": [],
+            "per_year_incomes": [],
+            "per_year_fee": [],
+            "sold": [],
+            "sold_fee": [],
+            "incomes": [],
+            "market_value": [],
+            "profit_sum": [],
+            "profit_proc": [],
+        }
+    )
+
+    BalanceSynchronizer(PensionBalance, df)
+
+    assert PensionBalance.objects.count() == 0

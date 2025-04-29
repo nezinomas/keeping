@@ -184,6 +184,10 @@ class BalanceSynchronizer:
                 self.fk_field = "saving_type_id"
                 self.fields = SAVING_FIELDS
 
+            case pension.PensionBalance:
+                self.fk_field = "pension_type_id"
+                self.fields = SAVING_FIELDS
+
             case _:
                 self.fk_field = "account_id"
                 self.fields = ACCOUNT_FIELDS
