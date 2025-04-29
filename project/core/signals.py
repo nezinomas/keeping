@@ -155,9 +155,11 @@ class BalanceSynchronizer:
     KEY_FIELDS = ["category_id", "year"]
 
     def __init__(self, df: pl.DataFrame) -> None:
-        self.df = df.select(
-            self.KEY_FIELDS + self.FIELDS
-        )  # Select only necessary columns
+        if not df.is_empty():
+            df = df.select(
+                self.KEY_FIELDS + self.FIELDS
+            )  # Select only necessary columns
+        self.df = df
         self.df_db, self.df_map = self._get_existing_records()
 
         self.sync()
@@ -288,6 +290,7 @@ class BalanceSynchronizer:
     def sync(self) -> None:
         """Synchronize database with DataFrame in a single transaction."""
         inserts, updates, deletes = self._identify_operations()
+
         self._delete_records(deletes)
         self._insert_records(inserts)
         self._update_records(updates)
