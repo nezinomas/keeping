@@ -15,23 +15,20 @@ class GetData:
     types: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = self._get_data(self.conf.get("incomes"), "incomes")
-        self.expenses = self._get_data(self.conf.get("expenses"), "expenses")
-        self.have = self._get_data(self.conf.get("have"), "have")
-        self.types = self._get_data(self.conf.get("types"), "related")
+        self.incomes = list(self._get_data(self.conf.get("incomes"), "incomes"))
+        self.expenses = list(self._get_data(self.conf.get("expenses"), "expenses"))
+        self.have = list(self._get_data(self.conf.get("have"), "have"))
+        self.types = list(self._get_data(self.conf.get("types"), "related"))
 
     def _get_data(self, models: tuple, method: str):
-        items = []
-
         if not models:
-            return items
+            return
 
         for model in models:
-            with contextlib.suppress(AttributeError):
-                _method = getattr(model.objects, method)
+            _method = getattr(model.objects, method, None)
+            if callable(_method):
                 if _qs := _method():
-                    items.extend(list(_qs))
-        return items
+                    yield from _qs
 
 
 class SignalBase(ABC):
