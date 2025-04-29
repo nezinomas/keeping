@@ -184,17 +184,20 @@ class BalanceSynchronizer:
         return df_db, df_map
 
     def _identify_operations(self) -> Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
-        """Identify operations using lazy evaluation and minimal joins."""
         if self.df_db.is_empty():
             return self.df, pl.DataFrame(), pl.DataFrame()
 
         if self.df.is_empty():
             return pl.DataFrame(), pl.DataFrame(), self.df_db
 
-        # Use lazy evaluation for all operations
-        df_keys = self.df.select(self.KEY_FIELDS).unique().lazy()
+        return self._insert_df(), self._update_df(), self._delete_df()
 
-        inserts = (
+    def _delete_df(self):
+        df_keys = self.df.select(self.KEY_FIELDS).unique().lazy()
+        return self.df_db.lazy().join(df_keys, on=self.KEY_FIELDS, how="anti").collect()
+
+    def _insert_df(self):
+        return (
             self.df.lazy()
             .join(
                 self.df_db.lazy().select(self.KEY_FIELDS),
@@ -204,11 +207,12 @@ class BalanceSynchronizer:
             .collect()
         )
 
+    def _update_df(self):
         common = self.df.lazy().join(
             self.df_db.lazy(), on=self.KEY_FIELDS, how="inner", suffix="_db"
         )
 
-        updates = (
+        return (
             common.filter(
                 pl.any_horizontal([pl.col(f) != pl.col(f"{f}_db") for f in self.FIELDS])
             )
@@ -216,37 +220,31 @@ class BalanceSynchronizer:
             .collect()
         )
 
-        deletes = (
-            self.df_db.lazy().join(df_keys, on=self.KEY_FIELDS, how="anti").collect()
-        )
-
-        return inserts, updates, deletes
-
-    def _delete_records(self, deletes: pl.DataFrame) -> None:
+    def _delete_records(self, data: pl.DataFrame) -> None:
         """Delete records using a single efficient query."""
-        if deletes.is_empty():
+        if data.is_empty():
             return
 
-        if delete_rows := deletes.select(self.KEY_FIELDS).rows():
+        if rows := data.select(self.KEY_FIELDS).rows():
             query = Q()
-            for category_id, year in delete_rows:
+            for category_id, year in rows:
                 query |= Q(account_id=category_id, year=year)
             AccountBalance.objects.filter(query).delete()
 
-    def _insert_records(self, inserts: pl.DataFrame) -> None:
+    def _insert_records(self, data: pl.DataFrame) -> None:
         """Insert records using bulk_create with batch processing."""
-        if inserts.is_empty():
+        if data.is_empty():
             return
 
-        if objects := [self._create_object(row) for row in inserts.to_dicts()]:
+        if objects := [self._create_object(row) for row in data.to_dicts()]:
             AccountBalance.objects.bulk_create(objects)
 
-    def _update_records(self, updates: pl.DataFrame) -> None:
+    def _update_records(self, data: pl.DataFrame) -> None:
         """Update records using bulk_update with batch processing."""
-        if updates.is_empty():
+        if data.is_empty():
             return
 
-        updates_with_id = updates.join(
+        updates_with_id = data.join(
             self.df_map, on=self.KEY_FIELDS, how="left"
         ).to_dicts()
 
