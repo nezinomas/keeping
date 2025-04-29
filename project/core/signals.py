@@ -157,6 +157,21 @@ ACCOUNT_FIELDS = [
     "delta",
 ]
 
+SAVING_FIELDS = [
+    "latest_check",
+    "past_amount",
+    "past_fee",
+    "fee",
+    "per_year_incomes",
+    "per_year_fee",
+    "sold",
+    "sold_fee",
+    "incomes",
+    "market_value",
+    "profit_sum",
+    "profit_proc",
+]
+
 
 class BalanceSynchronizer:
     KEY_FIELDS = ["category_id", "year"]
@@ -165,6 +180,10 @@ class BalanceSynchronizer:
         self.model = model
 
         match model:
+            case saving.SavingBalance:
+                self.fk_field = "saving_type_id"
+                self.fields = SAVING_FIELDS
+
             case _:
                 self.fk_field = "account_id"
                 self.fields = ACCOUNT_FIELDS

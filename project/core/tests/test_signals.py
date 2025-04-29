@@ -4,8 +4,13 @@ import polars as pl
 import pytest
 from django.utils import timezone
 
-from ...accounts.factories import AccountBalanceFactory, AccountFactory
-from ...accounts.models import AccountBalance
+from ...accounts.factories import AccountBalance, AccountBalanceFactory, AccountFactory
+from ...savings.factories import (
+    SavingBalance,
+    SavingBalanceFactory,
+    SavingFactory,
+    SavingTypeFactory,
+)
 from ..signals import BalanceSynchronizer, create_objects
 
 pytestmark = pytest.mark.django_db
@@ -70,7 +75,6 @@ def test_account_insert_new_records_empty_db():
     assert record.delta == 0
 
 
-@pytest.mark.django_db
 def test_account_insert_new_records():
     obj = AccountBalanceFactory()
 
@@ -102,7 +106,6 @@ def test_account_insert_new_records():
     assert record.delta == 0
 
 
-@pytest.mark.django_db
 def test_account_update_existing_records():
     obj = AccountBalanceFactory()
     """Test updating existing records from DataFrame."""
@@ -133,7 +136,6 @@ def test_account_update_existing_records():
     assert record.delta == 1
 
 
-@pytest.mark.django_db
 def test_account_delete_records():
     AccountBalanceFactory()
 
@@ -241,3 +243,153 @@ def test_account_empty_dataframe_deletes_all():
     BalanceSynchronizer(AccountBalance, df)
 
     assert AccountBalance.objects.count() == 0
+
+
+def test_saving_insert_new_records_empty_db():
+    saving_type = SavingTypeFactory()
+
+    df = pl.DataFrame(
+        {
+            "category_id": [saving_type.pk],
+            "year": [2023],
+            "latest_check": [datetime(2023, 1, 1)],
+            "past_amount": [10],
+            "past_fee": [20],
+            "fee": [30],
+            "per_year_incomes": [40],
+            "per_year_fee": [50],
+            "sold": [60],
+            "sold_fee": [70],
+            "incomes": [80],
+            "market_value": [90],
+            "profit_sum": [100],
+            "profit_proc": [110],
+        }
+    )
+
+    BalanceSynchronizer(SavingBalance, df)
+
+    assert SavingBalance.objects.count() == 1
+
+    record = SavingBalance.objects.get(saving_type=saving_type, year=2023)
+    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 1))
+    assert record.past_amount == 10
+    assert record.past_fee == 20
+    assert record.fee == 30
+    assert record.per_year_incomes == 40
+    assert record.per_year_fee == 50
+    assert record.sold == 60
+    assert record.sold_fee == 70
+    assert record.incomes == 80
+    assert record.market_value == 90
+    assert record.profit_sum == 100
+    assert record.profit_proc == 110
+
+
+def test_saving_insert_new_records():
+    obj = SavingBalanceFactory()
+
+    df = pl.DataFrame(
+        {
+            "category_id": [obj.saving_type.pk],
+            "year": [2023],
+            "latest_check": [datetime(2023, 1, 1)],
+            "past_amount": [10],
+            "past_fee": [20],
+            "fee": [30],
+            "per_year_incomes": [40],
+            "per_year_fee": [50],
+            "sold": [60],
+            "sold_fee": [70],
+            "incomes": [80],
+            "market_value": [90],
+            "profit_sum": [100],
+            "profit_proc": [110],
+        }
+    )
+
+    BalanceSynchronizer(SavingBalance, df)
+
+    assert SavingBalance.objects.count() == 1
+
+    record = SavingBalance.objects.get(saving_type=obj.saving_type, year=2023)
+    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 1))
+    assert record.past_amount == 10
+    assert record.past_fee == 20
+    assert record.fee == 30
+    assert record.per_year_incomes == 40
+    assert record.per_year_fee == 50
+    assert record.sold == 60
+    assert record.sold_fee == 70
+    assert record.incomes == 80
+    assert record.market_value == 90
+    assert record.profit_sum == 100
+    assert record.profit_proc == 110
+
+
+def test_saving_delete_records():
+    SavingBalanceFactory()
+
+    df = pl.DataFrame(
+        {
+            "category_id": [],
+            "year": [],
+            "latest_check": [],
+            "past_amount": [],
+            "past_fee": [],
+            "fee": [],
+            "per_year_incomes": [],
+            "per_year_fee": [],
+            "sold": [],
+            "sold_fee": [],
+            "incomes": [],
+            "market_value": [],
+            "profit_sum": [],
+            "profit_proc": [],
+        }
+    )
+
+    BalanceSynchronizer(SavingBalance, df)
+
+    assert SavingBalance.objects.count() == 0
+
+
+def test_saving_update_existing_records():
+    obj = SavingBalanceFactory()
+
+    df = pl.DataFrame(
+        {
+            "category_id": [obj.saving_type.pk],
+            "year": [1999],
+            "latest_check": [datetime(2023, 1, 1)],
+            "past_amount": [10],
+            "past_fee": [20],
+            "fee": [30],
+            "per_year_incomes": [40],
+            "per_year_fee": [50],
+            "sold": [60],
+            "sold_fee": [70],
+            "incomes": [80],
+            "market_value": [90],
+            "profit_sum": [100],
+            "profit_proc": [110],
+        }
+    )
+
+    BalanceSynchronizer(SavingBalance, df)
+
+    assert SavingBalance.objects.count() == 1
+
+    record = SavingBalance.objects.get(saving_type=obj.saving_type, year=1999)
+    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 1))
+    assert record.past_amount == 10
+    assert record.past_fee == 20
+    assert record.fee == 30
+    assert record.per_year_incomes == 40
+    assert record.per_year_fee == 50
+    assert record.sold == 60
+    assert record.sold_fee == 70
+    assert record.incomes == 80
+    assert record.market_value == 90
+    assert record.profit_sum == 100
+    assert record.profit_proc == 110
