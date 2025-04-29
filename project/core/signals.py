@@ -238,53 +238,35 @@ class BalanceSynchronizer:
         if inserts.is_empty():
             return
 
-        to_insert = []
-
-        for row in inserts.iter_rows(named=True):
-            to_insert.append(
-                AccountBalance(
-                    account_id=row["category_id"],
-                    year=row["year"],
-                    incomes=row["incomes"],
-                    expenses=row["expenses"],
-                    have=row["have"],
-                    latest_check=timezone.make_aware(row["latest_check"])
-                    if row["latest_check"]
-                    else None,
-                    balance=row["balance"],
-                    past=row["past"],
-                    delta=row["delta"],
-                )
-            )
-
-        if to_insert:
-            AccountBalance.objects.bulk_create(to_insert)
+        if objects := [self._create_object(row) for row in inserts.to_dicts()]:
+            AccountBalance.objects.bulk_create(objects)
 
     def _update_records(self, updates: pl.DataFrame) -> None:
         """Update records using bulk_update with batch processing."""
         if updates.is_empty():
             return
 
-        updates_with_id = updates.join(self.df_map, on=self.KEY_FIELDS, how="left")
+        updates_with_id = updates.join(
+            self.df_map, on=self.KEY_FIELDS, how="left"
+        ).to_dicts()
 
-        if to_update := [
-            AccountBalance(
-                id=row["id"],
-                account_id=row["category_id"],
-                year=row["year"],
-                incomes=row["incomes"],
-                expenses=row["expenses"],
-                have=row["have"],
-                latest_check=timezone.make_aware(row["latest_check"])
-                if row["latest_check"]
-                else None,
-                balance=row["balance"],
-                past=row["past"],
-                delta=row["delta"],
-            )
-            for row in updates_with_id.iter_rows(named=True)
+        if objects := [
+            self._create_object(row, update=True) for row in updates_with_id
         ]:
-            AccountBalance.objects.bulk_update(to_update, self.FIELDS)
+            AccountBalance.objects.bulk_update(objects, self.FIELDS)
+
+    def _create_object(self, row: dict, update: bool = False) -> AccountBalance:
+        """Create an AccountBalance object from a row."""
+        fields = {field: row[field] for field in self.FIELDS}
+        fields["latest_check"] = (
+            timezone.make_aware(row["latest_check"]) if row["latest_check"] else None
+        )
+
+        # Set the ID from database for updates
+        if update:
+            fields["id"] = row["id"]
+
+        return AccountBalance(account_id=row["category_id"], year=row["year"], **fields)
 
     @django_transaction.atomic
     def sync(self) -> None:
