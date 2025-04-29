@@ -173,9 +173,9 @@ class BalanceSynchronizer:
 
         df_db = pl.DataFrame(list(records)).rename({"account_id": "category_id"})
         if "latest_check" in df_db.columns:
-                df_db = df_db.with_columns(
-                    pl.col("latest_check").cast(pl.Datetime).dt.replace_time_zone(None)
-                )
+            df_db = df_db.with_columns(
+                pl.col("latest_check").cast(pl.Datetime).dt.replace_time_zone(None)
+            )
         df_map = df_db.select(["id", "year", "category_id"])
         df_db = df_db.drop("id")
 
@@ -192,30 +192,31 @@ class BalanceSynchronizer:
         # Use lazy evaluation for all operations
         df_keys = self.df.select(self.KEY_FIELDS).unique().lazy()
 
-        inserts = self.df.lazy().join(
-            self.df_db.lazy().select(self.KEY_FIELDS),
-            on=self.KEY_FIELDS,
-            how="anti",
-        ).collect()
-
-        common = self.df.lazy().join(
-            self.df_db.lazy(),
-            on=self.KEY_FIELDS,
-            how="inner",
-            suffix="_db"
+        inserts = (
+            self.df.lazy()
+            .join(
+                self.df_db.lazy().select(self.KEY_FIELDS),
+                on=self.KEY_FIELDS,
+                how="anti",
+            )
+            .collect()
         )
 
-        updates = common.filter(
-            pl.any_horizontal(
-                [pl.col(f) != pl.col(f"{f}_db") for f in self.FIELDS]
-            )
-        ).select(self.df.columns).collect()
+        common = self.df.lazy().join(
+            self.df_db.lazy(), on=self.KEY_FIELDS, how="inner", suffix="_db"
+        )
 
-        deletes = self.df_db.lazy().join(
-            df_keys,
-            on=self.KEY_FIELDS,
-            how="anti"
-        ).collect()
+        updates = (
+            common.filter(
+                pl.any_horizontal([pl.col(f) != pl.col(f"{f}_db") for f in self.FIELDS])
+            )
+            .select(self.df.columns)
+            .collect()
+        )
+
+        deletes = (
+            self.df_db.lazy().join(df_keys, on=self.KEY_FIELDS, how="anti").collect()
+        )
 
         return inserts, updates, deletes
 
@@ -235,7 +236,6 @@ class BalanceSynchronizer:
         if inserts.is_empty():
             return
 
-        batch_size = 1000  # Adjustable based on system constraints
         to_insert = []
 
         for row in inserts.iter_rows(named=True):
@@ -246,16 +246,14 @@ class BalanceSynchronizer:
                     incomes=row["incomes"],
                     expenses=row["expenses"],
                     have=row["have"],
-                    latest_check=row["latest_check"],
+                    latest_check=timezone.make_aware(row["latest_check"])
+                    if row["latest_check"]
+                    else None,
                     balance=row["balance"],
                     past=row["past"],
                     delta=row["delta"],
                 )
             )
-
-            if len(to_insert) >= batch_size:
-                AccountBalance.objects.bulk_create(to_insert)
-                to_insert = []
 
         if to_insert:
             AccountBalance.objects.bulk_create(to_insert)
@@ -267,7 +265,7 @@ class BalanceSynchronizer:
 
         updates_with_id = updates.join(self.df_map, on=self.KEY_FIELDS, how="left")
 
-        to_update = [
+        if to_update := [
             AccountBalance(
                 id=row["id"],
                 account_id=row["category_id"],
@@ -275,14 +273,15 @@ class BalanceSynchronizer:
                 incomes=row["incomes"],
                 expenses=row["expenses"],
                 have=row["have"],
-                latest_check=row["latest_check"],
+                latest_check=timezone.make_aware(row["latest_check"])
+                if row["latest_check"]
+                else None,
                 balance=row["balance"],
                 past=row["past"],
                 delta=row["delta"],
             )
             for row in updates_with_id.iter_rows(named=True)
-        ]
-        if to_update:
+        ]:
             AccountBalance.objects.bulk_update(to_update, self.FIELDS)
 
     @django_transaction.atomic
