@@ -2,7 +2,7 @@ from typing import Tuple
 
 import polars as pl
 from django.db import transaction as django_transaction
-from django.db.models import Model, Q
+from django.db.models import Q
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -39,8 +39,7 @@ from .lib.signals import Accounts, GetData, Savings, SignalBase
 @receiver(post_save, sender=bookkeeping.AccountWorth)
 def accounts_signal(sender: object, instance: object, *args, **kwargs):
     data = accounts_data()
-    objects = create_objects(account.AccountBalance, data.types, data.table)
-    save_objects(account.AccountBalance, objects)
+    BalanceSynchronizer(account.AccountBalance, data.df)
 
 
 def accounts_data() -> SignalBase:
@@ -77,8 +76,7 @@ def accounts_data() -> SignalBase:
 @receiver(post_save, sender=bookkeeping.SavingWorth)
 def savings_signal(sender: object, instance: object, *args, **kwargs):
     data = savings_data()
-    objects = create_objects(saving.SavingBalance, data.types, data.table)
-    save_objects(saving.SavingBalance, objects)
+    BalanceSynchronizer(saving.SavingBalance, data.df)
 
 
 def savings_data() -> SignalBase:
@@ -105,8 +103,7 @@ def savings_data() -> SignalBase:
 @receiver(post_save, sender=bookkeeping.PensionWorth)
 def pensions_signal(sender: object, instance: object, *args, **kwargs):
     data = pensions_data()
-    objects = create_objects(pension.PensionBalance, data.types, data.table)
-    save_objects(pension.PensionBalance, objects)
+    BalanceSynchronizer(pension.PensionBalance, data.df)
 
 
 def pensions_data() -> SignalBase:
@@ -119,33 +116,8 @@ def pensions_data() -> SignalBase:
 
 
 # -------------------------------------------------------------------------------------
-#                                                                        Common methods
+#                                                                      DB Synchronizer
 # -------------------------------------------------------------------------------------
-def create_objects(balance_model: Model, categories: dict, data: list[dict]):
-    fields = balance_model._meta.get_fields()
-    fk_field = [f.name for f in fields if (f.many_to_one)][0]
-    objects = []
-    for x in data:
-        # extract account/saving_type/pension_type id from dict
-        cid = x.pop("category_id")
-        # drop latest_check if empty
-        if not x["latest_check"]:
-            x.pop("latest_check")
-        else:
-            x["latest_check"] = make_aware(x["latest_check"])
-        # create fk_field account|saving_type|pension_type object
-        x[fk_field] = categories.get(cid)
-        # create self.model/SavingBalance/PensionBalance object
-        objects.append(balance_model(**x))
-    return objects
-
-
-def save_objects(balance_model, objects):
-    # delete all records
-    balance_model.objects.related().delete()
-    # bulk create
-    balance_model.objects.bulk_create(objects)
-
 
 ACCOUNT_FIELDS = [
     "incomes",

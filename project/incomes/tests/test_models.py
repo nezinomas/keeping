@@ -319,7 +319,7 @@ def test_income_post_save_update_account_balance_count_qs(
 
     IncomeFactory()
 
-    with django_assert_max_num_queries(17):
+    with django_assert_max_num_queries(18):
         Income.objects.create(date=date(1999, 1, 1), price=2, account=a, income_type=t)
 
 
@@ -339,7 +339,7 @@ def test_income_update_post_save_count_qs(django_assert_max_num_queries):
     assert AccountBalance.objects.all().count() == 2
 
     obj_update = Income.objects.get(pk=obj.pk)
-    with django_assert_max_num_queries(17):
+    with django_assert_max_num_queries(18):
         obj_update.price = 6
         obj_update.save()
 
