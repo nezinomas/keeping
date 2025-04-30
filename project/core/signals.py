@@ -2,7 +2,6 @@ from typing import Tuple
 
 import polars as pl
 from django.db import transaction as django_transaction
-from django.db.models import Q
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -226,11 +225,11 @@ class BalanceSynchronizer:
         if data.is_empty():
             return
 
-        if rows := data.select(self.KEY_FIELDS).rows():
-            query = Q()
-            for category_id, year in rows:
-                query |= Q(**{self.fk_field: category_id, "year": year})
-            self.model.objects.filter(query).delete()
+        category_ids = data["category_id"].unique().to_list()
+        years = data["year"].unique().to_list()
+        self.model.objects.filter(
+            **{f"{self.fk_field}__in": category_ids, "year__in": years}
+        ).delete()
 
     def _insert_records(self, data: pl.DataFrame) -> None:
         """Insert records using bulk_create with batch processing."""
