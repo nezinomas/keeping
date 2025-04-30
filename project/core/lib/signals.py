@@ -15,8 +15,8 @@ class GetData:
     types: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = list(self._get_data(self.conf.get("incomes"), "incomes"))
-        self.expenses = list(self._get_data(self.conf.get("expenses"), "expenses"))
+        self.incomes = self._get_data(self.conf.get("incomes"), "incomes")
+        self.expenses = self._get_data(self.conf.get("expenses"), "expenses")
         self.have = list(self._get_data(self.conf.get("have"), "have"))
         self.types = list(self._get_data(self.conf.get("types"), "related"))
 
