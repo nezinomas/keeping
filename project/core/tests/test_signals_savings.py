@@ -87,7 +87,7 @@ def test_table(incomes, expenses, have, types):
         ]
     )
     data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
-    actual = Savings(data).table
+    actual = Savings(data).df.to_dicts()
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1997
@@ -213,7 +213,7 @@ def test_table(incomes, expenses, have, types):
 @time_machine.travel("2000-12-31")
 def test_year_category_id_set(incomes, expenses, have, types):
     data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
-    actual = Savings(data).table
+    actual = Savings(data).df.to_dicts()
 
     actual == {
         (1999, 1),
@@ -241,7 +241,7 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         {"year": 1998, "incomes": 50, "fee": 5, "category_id": 2},
     ]
     data = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
-    actual = Savings(data).table
+    actual = Savings(data).df.to_dicts()
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1998
@@ -342,7 +342,7 @@ def test_table_with_types(types):
         {"year": 1999, "incomes": 30, "fee": 3, "category_id": 1},
     ]
     data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
-    actual = Savings(data).table
+    actual = Savings(data).df.to_dicts()
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1998
@@ -399,7 +399,7 @@ def test_table_type_without_record(types):
         {"year": 1999, "incomes": 30, "fee": 3, "category_id": 1},
     ]
     data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
-    actual = Savings(data).table
+    actual = Savings(data).df.to_dicts()
 
     assert actual[3]["category_id"] == 2
     assert actual[3]["year"] == 1998
@@ -430,7 +430,7 @@ def test_table_old_type(types):
         {"year": 1999, "incomes": 30, "fee": 3, "category_id": 1},
     ]
     data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
-    actual = Savings(data).table
+    actual = Savings(data).df.to_dicts()
 
     assert actual[3]["category_id"] == 2
     assert actual[3]["year"] == 1998
@@ -456,7 +456,7 @@ def test_table_have_empty(incomes, expenses, types):
     data = SimpleNamespace(
         incomes=incomes[:4], expenses=expenses[:4], have=[], types=types
     )
-    actual = Savings(data).table
+    actual = Savings(data).df.to_dicts()
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1999
@@ -507,7 +507,7 @@ def test_table_have_empty(incomes, expenses, types):
 @time_machine.travel("2000-12-31")
 def test_table_incomes_empty(expenses, types):
     data = SimpleNamespace(incomes=[], expenses=expenses[:4], have=[], types=types)
-    actual = Savings(data).table
+    actual = Savings(data).df.to_dicts()
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1999
@@ -558,7 +558,7 @@ def test_table_incomes_empty(expenses, types):
 @time_machine.travel("2000-12-31")
 def test_table_expenses_empty(incomes, types):
     data = SimpleNamespace(incomes=incomes[:4], expenses=[], have=[], types=types)
-    actual = Savings(data).table
+    actual = Savings(data).df.to_dicts()
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1999
@@ -609,7 +609,7 @@ def test_table_expenses_empty(incomes, types):
 @time_machine.travel("2000-12-31")
 def test_table_only_have(have, types):
     data = SimpleNamespace(incomes=[], expenses=[], have=have[:2], types=types)
-    actual = Savings(data).table
+    actual = Savings(data).df.to_dicts()
 
     assert actual[0]["category_id"] == 1
     assert actual[0]["year"] == 1999

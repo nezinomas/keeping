@@ -39,10 +39,6 @@ class SignalBase(ABC):
         return {category.id: category for category in self._types}
 
     @property
-    def table(self):
-        return self._table.to_dicts()
-
-    @property
     def df(self):
         return self._table
 
