@@ -221,7 +221,6 @@ class BalanceSynchronizer:
         )
 
     def _delete_records(self, data: pl.DataFrame) -> None:
-        """Delete records using a single efficient query."""
         if data.is_empty():
             return
 
@@ -232,7 +231,6 @@ class BalanceSynchronizer:
         ).delete()
 
     def _insert_records(self, data: pl.DataFrame) -> None:
-        """Insert records using bulk_create with batch processing."""
         if data.is_empty():
             return
 
@@ -240,7 +238,6 @@ class BalanceSynchronizer:
             self.model.objects.bulk_create(objects)
 
     def _update_records(self, data: pl.DataFrame) -> None:
-        """Update records using bulk_update with batch processing."""
         if data.is_empty():
             return
 
@@ -269,7 +266,6 @@ class BalanceSynchronizer:
         return self.model(**fields)
 
     def sync(self) -> None:
-        """Synchronize database with DataFrame in a single transaction."""
         inserts, updates, deletes = self._identify_operations()
 
         with django_transaction.atomic():
