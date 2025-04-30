@@ -268,11 +268,11 @@ class BalanceSynchronizer:
 
         return self.model(**fields)
 
-    @django_transaction.atomic
     def sync(self) -> None:
         """Synchronize database with DataFrame in a single transaction."""
         inserts, updates, deletes = self._identify_operations()
 
-        self._delete_records(deletes)
-        self._insert_records(inserts)
-        self._update_records(updates)
+        with django_transaction.atomic():
+            self._delete_records(deletes)
+            self._insert_records(inserts)
+            self._update_records(updates)
