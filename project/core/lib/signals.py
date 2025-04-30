@@ -227,13 +227,67 @@ class Savings(SignalBase):
         self._types = data.types
         self._table = self.make_table(_df)
 
+    def _missing_and_past_values(self, df: pl.DataFrame) -> pl.DataFrame:
+        # Get global max_year
+        global_max_year = df.select(pl.col("year").max()).collect().item()
+
+        # Get min_year per category_id
+        year_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
+
+        # Create a LazyFrame of all years from 0 to global_max_year + 1
+        all_years_df = pl.LazyFrame({"year": range(global_max_year + 2)})
+
+        # Create all combinations of category_id and years, filtering by min_year
+        all_years = (
+            year_ranges.join(all_years_df, how="cross")
+            .filter(pl.col("year") >= pl.col("min_year"))
+            .select(["category_id", "year"])
+        )
+
+        # Join with original DataFrame to include missing years
+        df = all_years.join(df, on=["category_id", "year"], how="left")
+
+        # Define columns to fill
+        numeric_columns = [
+            "incomes",
+            "fee",
+            "sold",
+            "sold_fee",
+            "past_amount",
+            "past_fee",
+            "per_year_incomes",
+            "per_year_fee",
+            "profit_sum",
+        ]
+
+        # Combine null-filling and sorting operations, splitting market_value handling
+        result_df = (
+            df.sort(["category_id", "year"])
+            .with_columns(
+                # Fill numeric columns with 0
+                *[pl.col(col).fill_null(0) for col in numeric_columns],
+                # Forward fill market_value and latest_check
+                pl.col("market_value")
+                .fill_null(strategy="forward")
+                .over("category_id"),
+                pl.col("latest_check")
+                .fill_null(strategy="forward")
+                .over("category_id"),
+            )
+            .with_columns(
+                # Fill remaining market_value nulls with 0
+                pl.col("market_value").fill_null(0)
+            )
+        )
+        return result_df
+
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         if df.is_empty():
             return df
 
         df = (
-            df.pipe(self._insert_missing_values, field_name="market_value")
-            .lazy()
+            df.lazy()
+            .pipe(self._missing_and_past_values)
             .sort(["category_id", "year"])
             .with_columns(
                 per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
