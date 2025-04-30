@@ -274,15 +274,17 @@ class Savings(SignalBase):
     def _calc_past(self, df: pl.DataFrame) -> pl.Expr:
         return (
             df.lazy()
-            .with_columns(tmp=pl.col("per_year_incomes").cum_sum().over("category_id"))
             .with_columns(
-                past_amount=pl.col("tmp").shift(n=1, fill_value=0).over("category_id")
+                tmp_incomes=pl.col("per_year_incomes").cum_sum().over("category_id"),
+                tmp_fee=pl.col("per_year_fee").cum_sum().over("category_id"),
             )
-            .with_columns(tmp=pl.col("per_year_fee").cum_sum().over("category_id"))
             .with_columns(
-                past_fee=pl.col("tmp").shift(n=1, fill_value=0).over("category_id")
+                past_amount=pl.col("tmp_incomes")
+                .shift(n=1, fill_value=0)
+                .over("category_id"),
+                past_fee=pl.col("tmp_fee").shift(n=1, fill_value=0).over("category_id"),
             )
-            .drop("tmp")
+            .drop(["tmp_incomes", "tmp_fee"])
         )
 
     def _join_df(
