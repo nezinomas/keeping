@@ -15,8 +15,8 @@ class GetData:
     types: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = list(self._get_data(self.conf.get("incomes"), "incomes"))
-        self.expenses = list(self._get_data(self.conf.get("expenses"), "expenses"))
+        self.incomes = self._get_data(self.conf.get("incomes"), "incomes")
+        self.expenses = self._get_data(self.conf.get("expenses"), "expenses")
         self.have = list(self._get_data(self.conf.get("have"), "have"))
         self.types = list(self._get_data(self.conf.get("types"), "related"))
 
@@ -39,14 +39,12 @@ class SignalBase(ABC):
         return {category.id: category for category in self._types}
 
     @property
-    def table(self):
-        return self._table.to_dicts()
+    def df(self):
+        return self._table
 
     @property
     def year_category_id_set(self) -> set:
-        years = self._table["year"].to_numpy()
-        ids = self._table["category_id"].to_numpy()
-        return {(int(year), int(id_)) for id_, year in zip(ids, years)}
+        return set(zip(self._table["year"], self._table["category_id"]))
 
     @abstractmethod
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame: ...
@@ -276,15 +274,17 @@ class Savings(SignalBase):
     def _calc_past(self, df: pl.DataFrame) -> pl.Expr:
         return (
             df.lazy()
-            .with_columns(tmp=pl.col("per_year_incomes").cum_sum().over("category_id"))
             .with_columns(
-                past_amount=pl.col("tmp").shift(n=1, fill_value=0).over("category_id")
+                tmp_incomes=pl.col("per_year_incomes").cum_sum().over("category_id"),
+                tmp_fee=pl.col("per_year_fee").cum_sum().over("category_id"),
             )
-            .with_columns(tmp=pl.col("per_year_fee").cum_sum().over("category_id"))
             .with_columns(
-                past_fee=pl.col("tmp").shift(n=1, fill_value=0).over("category_id")
+                past_amount=pl.col("tmp_incomes")
+                .shift(n=1, fill_value=0)
+                .over("category_id"),
+                past_fee=pl.col("tmp_fee").shift(n=1, fill_value=0).over("category_id"),
             )
-            .drop("tmp")
+            .drop(["tmp_incomes", "tmp_fee"])
         )
 
     def _join_df(
