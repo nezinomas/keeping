@@ -196,11 +196,11 @@ class Accounts(SignalBase):
         df = all_years.join(df, on=["category_id", "year"], how="left")
 
         numeric_columns = [
-            col for col, dtype in df.collect_schema().items() if col != "latest_check"
+            col for col, _ in df.collect_schema().items() if col != "latest_check"
         ]
 
         # Combine null-filling, sorting, and new column computations
-        result_df = (
+        return (
             df.sort(["category_id", "year"])
             .with_columns(
                 pl.col("latest_check")
@@ -235,7 +235,6 @@ class Accounts(SignalBase):
                 *[pl.col(col).fill_null(0) for col in numeric_columns],
             )
         )
-        return result_df
 
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         if df.is_empty():
@@ -312,19 +311,12 @@ class Savings(SignalBase):
 
         # Define columns to fill
         numeric_columns = [
-            "incomes",
-            "fee",
-            "sold",
-            "sold_fee",
-            "past_amount",
-            "past_fee",
-            "per_year_incomes",
-            "per_year_fee",
-            "profit_sum",
+            col
+            for col, _ in df.collect_schema().items()
+            if col not in ("latest_check", "market_value")
         ]
 
-        # Combine null-filling and sorting operations, splitting market_value handling
-        result_df = (
+        return (
             df.sort(["category_id", "year"])
             .with_columns(
                 # Fill numeric columns with 0
@@ -342,7 +334,6 @@ class Savings(SignalBase):
                 pl.col("market_value").fill_null(0)
             )
         )
-        return result_df
 
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         if df.is_empty():
