@@ -81,7 +81,7 @@ class SignalBase(ABC):
         }
         return pl.DataFrame(have, schema=schema)
 
-    def _create_year_grid(self, df: pl.DataFrame) -> pl.Expr:
+    def _create_year_grid(self, df: pl.LazyFrame) -> pl.Expr:
         # Get global max_year
         global_max_year = df.select(pl.col("year").max()).collect().item()
 
