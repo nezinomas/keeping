@@ -167,17 +167,13 @@ class Accounts(SignalBase):
         )
 
     def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
-        return (
-            df.join(
-                hv,
-                on=["category_id", "year"],
-                how="full",
-                coalesce=True,
-                nulls_equal=True,
-            )
-            .with_columns(
-                [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
-            )
+        # how = "full" because if df is empty, but hv is not, return df will be empty
+        return df.join(
+            hv,
+            on=["category_id", "year"],
+            how="full",
+            coalesce=True,
+            nulls_equal=True,
         )
 
 
