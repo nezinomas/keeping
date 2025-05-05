@@ -56,12 +56,14 @@ class SignalBase(ABC):
             "incomes": pl.Int32,
             "expenses": pl.Int32,
         }
+
         if self.signal_type == "savings":
             schema |= {"fee": pl.Int32}
 
-        df = pl.DataFrame(arr, schema=schema)
-        if df.is_empty():
-            return df
+        if not arr:
+            return pl.DataFrame(arr, schema=schema)
+
+        df = pl.from_dicts(arr, schema=schema)
 
         return (
             df.with_columns(
