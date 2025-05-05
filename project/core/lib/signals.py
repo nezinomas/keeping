@@ -235,53 +235,37 @@ class Savings(SignalBase):
             df.pipe(self._fill_missing_past_future_rows)
             .sort(["category_id", "year"])
             .with_columns(
-                per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
+                per_year_incomes=pl.col("incomes"),
+                per_year_fee=pl.col("fee"),
+                past_amount=pl.col("incomes")
+                .cum_sum()
+                .shift(1, fill_value=0)
+                .over("category_id"),
+                past_fee=pl.col("fee")
+                .cum_sum()
+                .shift(1, fill_value=0)
+                .over("category_id"),
             )
-            .pipe(self._calc_past)
             .with_columns(
                 sold=pl.col("sold").cum_sum().over("category_id"),
                 sold_fee=pl.col("sold_fee").cum_sum().over("category_id"),
-            )
-            .with_columns(
                 incomes=(pl.col("past_amount") + pl.col("per_year_incomes")),
                 fee=(pl.col("past_fee") + pl.col("per_year_fee")),
             )
             .with_columns(
-                profit_sum=(pl.col("market_value") - pl.col("incomes") - pl.col("fee"))
-            )
-            .with_columns(
+                profit_sum=(pl.col("market_value") - pl.col("incomes") - pl.col("fee")),
                 profit_proc=(
                     pl.when(pl.col("market_value") == 0)
                     .then(0)
+                    .when(pl.col("incomes") == 0)
+                    .then(0)  # Handle zero incomes to avoid division by zero
                     .otherwise(
                         ((pl.col("market_value") - pl.col("fee")) / pl.col("incomes"))
                         * 100
                         - 100
                     )
-                )
+                ).round(2),
             )
-            .with_columns(
-                profit_proc=(
-                    pl.when(pl.col("profit_proc").is_infinite())
-                    .then(0)
-                    .otherwise(pl.col("profit_proc").round(2))
-                )
-            )
-        )
-
-    def _calc_past(self, df: pl.DataFrame) -> pl.Expr:
-        return (
-            df.with_columns(
-                tmp_incomes=pl.col("per_year_incomes").cum_sum().over("category_id"),
-                tmp_fee=pl.col("per_year_fee").cum_sum().over("category_id"),
-            )
-            .with_columns(
-                past_amount=pl.col("tmp_incomes")
-                .shift(n=1, fill_value=0)
-                .over("category_id"),
-                past_fee=pl.col("tmp_fee").shift(n=1, fill_value=0).over("category_id"),
-            )
-            .drop(["tmp_incomes", "tmp_fee"])
         )
 
     def _join_df(
