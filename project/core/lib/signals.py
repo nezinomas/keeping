@@ -85,19 +85,7 @@ class SignalBase(ABC):
 
         return df.sort(["year", "category_id"])
 
-
-class Accounts(SignalBase):
-    signal_type = "accounts"
-
-    def __init__(self, data: GetData):
-        _df = self._make_df(it.chain(data.incomes, data.expenses))
-        _hv = self._make_have(data.have)
-        _df = self._join_df(_df, _hv)
-
-        self._types = data.types
-        self._table = self.make_table(_df)
-
-    def _missing_and_past_values(self, df: pl.DataFrame) -> pl.DataFrame:
+    def _create_year_grid(self, df: pl.DataFrame) -> pl.Expr:
         # Get global max_year
         global_max_year = df.select(pl.col("year").max()).collect().item()
 
@@ -115,14 +103,28 @@ class Accounts(SignalBase):
         )
 
         # Join with original DataFrame to include missing years
-        df = all_years.join(df, on=["category_id", "year"], how="left")
+        return all_years.join(df, on=["category_id", "year"], how="left")
 
+
+class Accounts(SignalBase):
+    signal_type = "accounts"
+
+    def __init__(self, data: GetData):
+        _df = self._make_df(it.chain(data.incomes, data.expenses))
+        _hv = self._make_have(data.have)
+        _df = self._join_df(_df, _hv)
+
+        self._types = data.types
+        self._table = self.make_table(_df)
+
+    def _missing_and_past_values(self, df: pl.DataFrame) -> pl.DataFrame:
         numeric_columns = [
             col for col, _ in df.collect_schema().items() if col != "latest_check"
         ]
 
         return (
-            df.sort(["category_id", "year"])
+            df.pipe(self._create_year_grid)
+            .sort(["category_id", "year"])
             .with_columns(
                 pl.col("latest_check")
                 .fill_null(strategy="forward")
@@ -210,25 +212,6 @@ class Savings(SignalBase):
         self._table = self.make_table(_df)
 
     def _missing_and_past_values(self, df: pl.DataFrame) -> pl.DataFrame:
-        # Get global max_year
-        global_max_year = df.select(pl.col("year").max()).collect().item()
-
-        # Get min_year per category_id
-        year_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
-
-        # Create a LazyFrame of all years from 0 to global_max_year + 1
-        all_years_df = pl.LazyFrame({"year": range(global_max_year + 2)})
-
-        # Create all combinations of category_id and years, filtering by min_year
-        all_years = (
-            year_ranges.join(all_years_df, how="cross")
-            .filter(pl.col("year") >= pl.col("min_year"))
-            .select(["category_id", "year"])
-        )
-
-        # Join with original DataFrame to include missing years
-        df = all_years.join(df, on=["category_id", "year"], how="left")
-
         # Define columns to fill
         numeric_columns = [
             col
@@ -237,7 +220,8 @@ class Savings(SignalBase):
         ]
 
         return (
-            df.sort(["category_id", "year"])
+            df.pipe(self._create_year_grid)
+            .sort(["category_id", "year"])
             .with_columns(
                 # Fill numeric columns with 0
                 *[pl.col(col).fill_null(0) for col in numeric_columns],
