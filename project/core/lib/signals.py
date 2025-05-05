@@ -211,7 +211,7 @@ class Savings(SignalBase):
         self._types = data.types
         self._table = self.make_table(_df)
 
-    def _missing_and_past_values(self, df: pl.DataFrame) -> pl.DataFrame:
+    def _fill_missing_past_future_rows(self, df: pl.DataFrame) -> pl.DataFrame:
         # Define columns to fill
         numeric_columns = [
             col
@@ -245,7 +245,7 @@ class Savings(SignalBase):
 
         df = (
             df.lazy()
-            .pipe(self._missing_and_past_values)
+            .pipe(self._fill_missing_past_future_rows)
             .sort(["category_id", "year"])
             .with_columns(
                 per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
