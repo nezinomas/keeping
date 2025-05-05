@@ -1,4 +1,3 @@
-import contextlib
 import itertools as it
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -56,22 +55,21 @@ class SignalBase(ABC):
             "incomes": pl.Int32,
             "expenses": pl.Int32,
         }
+
         if self.signal_type == "savings":
             schema |= {"fee": pl.Int32}
 
-        df = pl.DataFrame(arr, schema=schema)
-        if df.is_empty():
-            return df
+        if not arr:
+            return pl.DataFrame(arr, schema=schema)
+
+        df = pl.from_dicts(arr, schema=schema)
 
         return (
-            df.lazy()
-            .with_columns(
+            df.with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
             .group_by(["category_id", "year"])
             .agg(pl.all().sum())
-            .sort(["year", "category_id"])
-            .collect()
         )
 
     def _make_have(self, have: list[dict]) -> pl.DataFrame:
@@ -81,9 +79,7 @@ class SignalBase(ABC):
             "have": pl.UInt32,
             "latest_check": pl.Datetime,
         }
-        df = pl.DataFrame(have, schema=schema)
-
-        return df.sort(["year", "category_id"])
+        return pl.DataFrame(have, schema=schema)
 
     def _create_year_grid(self, df: pl.DataFrame) -> pl.Expr:
         # Get global max_year
@@ -112,19 +108,22 @@ class Accounts(SignalBase):
     def __init__(self, data: GetData):
         _df = self._make_df(it.chain(data.incomes, data.expenses))
         _hv = self._make_have(data.have)
-        _df = self._join_df(_df, _hv)
+        _df = self._join_df(_df.lazy(), _hv.lazy())
 
         self._types = data.types
-        self._table = self.make_table(_df)
 
-    def _missing_and_past_values(self, df: pl.DataFrame) -> pl.DataFrame:
+        try:
+            self._table = self.make_table(_df).collect()
+        except TypeError:
+            self._table = _df.collect()
+
+    def _missing_and_past_values(self, df: pl.LazyFrame) -> pl.LazyFrame:
         numeric_columns = [
             col for col, _ in df.collect_schema().items() if col != "latest_check"
         ]
 
         return (
             df.pipe(self._create_year_grid)
-            .sort(["category_id", "year"])
             .with_columns(
                 pl.col("latest_check")
                 .fill_null(strategy="forward")
@@ -137,36 +136,22 @@ class Accounts(SignalBase):
             .drop("have")
             .rename({"have_alt": "have"})
             .with_columns(
-                balance=(
-                    pl.col("incomes")
-                    .sub(pl.col("expenses"))
-                    .cum_sum()
-                    .over("category_id")
-                ),
-                past=(
-                    pl.col("incomes")
-                    .sub(pl.col("expenses"))
-                    .cum_sum()
-                    .shift(1)
-                    .fill_null(0)
-                    .over("category_id")
-                ),
+                balance=(pl.col("incomes") - pl.col("expenses"))
+                .cum_sum()
+                .over("category_id"),
+                past=(pl.col("incomes") - pl.col("expenses"))
+                .cum_sum()
+                .shift(1)
+                .fill_null(0)
+                .over("category_id"),
             )
-            .with_columns(delta=pl.col("balance").sub(pl.col("have")))
-            .with_columns(
-                *[pl.col(col).fill_null(0) for col in numeric_columns],
-            )
+            .with_columns(delta=pl.col("balance") - pl.col("have"))
+            .with_columns([pl.col(col).fill_null(0) for col in numeric_columns])
         )
 
-    def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
-        if df.is_empty():
-            return df
-
-        df = (
-            df.lazy()
-            .pipe(self._missing_and_past_values)
-            .with_columns(balance=pl.lit(0), past=pl.lit(0), delta=pl.lit(0))
-            .sort(["category_id", "year"])
+    def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        return (
+            df.pipe(self._missing_and_past_values)
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
             .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["category_id"]))
             .with_columns(
@@ -177,26 +162,18 @@ class Accounts(SignalBase):
             )
             .with_columns(delta=(pl.col("have") - pl.col("balance")))
             .drop("tmp_balance")
+            .sort(["category_id", "year"])
         )
 
-        return df.collect()
-
-    def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
-        df = (
-            df.join(
-                hv,
-                on=["category_id", "year"],
-                how="full",
-                coalesce=True,
-                nulls_equal=True,
-            )
-            .lazy()
-            .with_columns(
-                [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
-            )
-            .sort(["year", "category_id"])
+    def _join_df(self, df: pl.LazyFrame, hv: pl.LazyFrame) -> pl.LazyFrame:
+        # how = "full" because if df is empty, but hv is not, return df will be empty
+        return df.join(
+            hv,
+            on=["category_id", "year"],
+            how="full",
+            coalesce=True,
+            nulls_equal=True,
         )
-        return df.collect()
 
 
 class Savings(SignalBase):
@@ -206,12 +183,16 @@ class Savings(SignalBase):
         _in = self._make_df(data.incomes)
         _ex = self._make_df(data.expenses)
         _hv = self._make_have(data.have)
-        _df = self._join_df(_in, _ex, _hv)
+        _df = self._join_df(_in.lazy(), _ex.lazy(), _hv.lazy())
 
         self._types = data.types
-        self._table = self.make_table(_df)
 
-    def _fill_missing_past_future_rows(self, df: pl.DataFrame) -> pl.DataFrame:
+        try:
+            self._table = self.make_table(_df).collect()
+        except TypeError:
+            self._table = _df.collect()
+
+    def _fill_missing_past_future_rows(self, df: pl.LazyFrame) -> pl.LazyFrame:
         # Define columns to fill
         numeric_columns = [
             col
@@ -221,7 +202,6 @@ class Savings(SignalBase):
 
         return (
             df.pipe(self._create_year_grid)
-            .sort(["category_id", "year"])
             .with_columns(
                 # Fill numeric columns with 0
                 *[pl.col(col).fill_null(0) for col in numeric_columns],
@@ -239,69 +219,47 @@ class Savings(SignalBase):
             )
         )
 
-    def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
-        if df.is_empty():
-            return df
-
-        df = (
-            df.lazy()
-            .pipe(self._fill_missing_past_future_rows)
-            .sort(["category_id", "year"])
+    def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        return (
+            df.pipe(self._fill_missing_past_future_rows)
             .with_columns(
-                per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
+                per_year_incomes=pl.col("incomes"),
+                per_year_fee=pl.col("fee"),
+                past_amount=pl.col("incomes")
+                .cum_sum()
+                .shift(1, fill_value=0)
+                .over("category_id"),
+                past_fee=pl.col("fee")
+                .cum_sum()
+                .shift(1, fill_value=0)
+                .over("category_id"),
             )
-            .pipe(self._calc_past)
             .with_columns(
                 sold=pl.col("sold").cum_sum().over("category_id"),
                 sold_fee=pl.col("sold_fee").cum_sum().over("category_id"),
-            )
-            .with_columns(
                 incomes=(pl.col("past_amount") + pl.col("per_year_incomes")),
                 fee=(pl.col("past_fee") + pl.col("per_year_fee")),
             )
             .with_columns(
-                profit_sum=(pl.col("market_value") - pl.col("incomes") - pl.col("fee"))
-            )
-            .with_columns(
+                profit_sum=(pl.col("market_value") - pl.col("incomes") - pl.col("fee")),
                 profit_proc=(
                     pl.when(pl.col("market_value") == 0)
                     .then(0)
+                    .when(pl.col("incomes") == 0)
+                    .then(0)  # Handle zero incomes to avoid division by zero
                     .otherwise(
                         ((pl.col("market_value") - pl.col("fee")) / pl.col("incomes"))
                         * 100
                         - 100
                     )
-                )
+                ).round(2),
             )
-            .with_columns(
-                profit_proc=(
-                    pl.when(pl.col("profit_proc").is_infinite())
-                    .then(0)
-                    .otherwise(pl.col("profit_proc").round(2))
-                )
-            )
-        )
-        return df.collect()
-
-    def _calc_past(self, df: pl.DataFrame) -> pl.Expr:
-        return (
-            df.lazy()
-            .with_columns(
-                tmp_incomes=pl.col("per_year_incomes").cum_sum().over("category_id"),
-                tmp_fee=pl.col("per_year_fee").cum_sum().over("category_id"),
-            )
-            .with_columns(
-                past_amount=pl.col("tmp_incomes")
-                .shift(n=1, fill_value=0)
-                .over("category_id"),
-                past_fee=pl.col("tmp_fee").shift(n=1, fill_value=0).over("category_id"),
-            )
-            .drop(["tmp_incomes", "tmp_fee"])
+            .sort(["category_id", "year"])
         )
 
     def _join_df(
-        self, inc: pl.DataFrame, exp: pl.DataFrame, hv: pl.DataFrame
-    ) -> pl.DataFrame:  # noqa: E501
+        self, inc: pl.LazyFrame, exp: pl.LazyFrame, hv: pl.LazyFrame
+    ) -> pl.LazyFrame:
         # drop expenses column
         inc = inc.drop("expenses")
         # drop incomes column, rename fee
@@ -339,5 +297,4 @@ class Savings(SignalBase):
                 ).fill_null(0)
             )
             .with_columns([pl.lit(0).alias(col) for col in cols])
-            .collect()
         )
