@@ -153,7 +153,6 @@ class Accounts(SignalBase):
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         return (
             df.pipe(self._missing_and_past_values)
-            .with_columns(balance=pl.lit(0), past=pl.lit(0), delta=pl.lit(0))
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
             .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["category_id"]))
             .with_columns(
