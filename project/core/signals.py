@@ -6,7 +6,6 @@ from django.db.models import F
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.utils import timezone
-from django.utils.timezone import make_aware
 
 from ..accounts import models as account
 from ..bookkeeping import models as bookkeeping
