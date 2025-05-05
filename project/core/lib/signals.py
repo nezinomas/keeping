@@ -167,6 +167,7 @@ class Accounts(SignalBase):
         )
 
     def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
+        # df and hv as lazyframes
         # how = "full" because if df is empty, but hv is not, return df will be empty
         return df.join(
             hv,
