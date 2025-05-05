@@ -121,7 +121,6 @@ class Accounts(SignalBase):
             col for col, _ in df.collect_schema().items() if col != "latest_check"
         ]
 
-        # Combine null-filling, sorting, and new column computations
         return (
             df.sort(["category_id", "year"])
             .with_columns(
@@ -136,23 +135,22 @@ class Accounts(SignalBase):
             .drop("have")
             .rename({"have_alt": "have"})
             .with_columns(
-                # Compute balance: cumulative sum of (incomes - expenses)
-                balance=pl.col("incomes")
-                .sub(pl.col("expenses"))
-                .cum_sum()
-                .over("category_id"),
-                # Compute past: lagged balance, default 0 for first row
-                past=pl.col("incomes")
-                .sub(pl.col("expenses"))
-                .cum_sum()
-                .shift(1)
-                .fill_null(0)
-                .over("category_id"),
+                balance=(
+                    pl.col("incomes")
+                    .sub(pl.col("expenses"))
+                    .cum_sum()
+                    .over("category_id")
+                ),
+                past=(
+                    pl.col("incomes")
+                    .sub(pl.col("expenses"))
+                    .cum_sum()
+                    .shift(1)
+                    .fill_null(0)
+                    .over("category_id")
+                ),
             )
-            .with_columns(
-                # Compute delta: balance - have
-                delta=pl.col("balance").sub(pl.col("have"))
-            )
+            .with_columns(delta=pl.col("balance").sub(pl.col("have")))
             .with_columns(
                 *[pl.col(col).fill_null(0) for col in numeric_columns],
             )
