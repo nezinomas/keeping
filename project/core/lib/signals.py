@@ -71,7 +71,6 @@ class SignalBase(ABC):
             )
             .group_by(["category_id", "year"])
             .agg(pl.all().sum())
-            .sort(["year", "category_id"])
         )
 
     def _make_have(self, have: list[dict]) -> pl.DataFrame:
@@ -81,9 +80,7 @@ class SignalBase(ABC):
             "have": pl.UInt32,
             "latest_check": pl.Datetime,
         }
-        df = pl.DataFrame(have, schema=schema)
-
-        return df.sort(["year", "category_id"])
+        return pl.DataFrame(have, schema=schema)
 
     def _create_year_grid(self, df: pl.DataFrame) -> pl.Expr:
         # Get global max_year
@@ -128,7 +125,6 @@ class Accounts(SignalBase):
 
         return (
             df.pipe(self._create_year_grid)
-            .sort(["category_id", "year"])
             .with_columns(
                 pl.col("latest_check")
                 .fill_null(strategy="forward")
@@ -152,14 +148,12 @@ class Accounts(SignalBase):
             )
             .with_columns(delta=pl.col("balance") - pl.col("have"))
             .with_columns([pl.col(col).fill_null(0) for col in numeric_columns])
-            .sort(["category_id", "year"])
         )
 
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         return (
             df.pipe(self._missing_and_past_values)
             .with_columns(balance=pl.lit(0), past=pl.lit(0), delta=pl.lit(0))
-            .sort(["category_id", "year"])
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
             .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["category_id"]))
             .with_columns(
@@ -170,6 +164,7 @@ class Accounts(SignalBase):
             )
             .with_columns(delta=(pl.col("have") - pl.col("balance")))
             .drop("tmp_balance")
+            .sort(["category_id", "year"])
         )
 
     def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
@@ -184,7 +179,6 @@ class Accounts(SignalBase):
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
-            .sort(["year", "category_id"])
         )
 
 
@@ -214,7 +208,6 @@ class Savings(SignalBase):
 
         return (
             df.pipe(self._create_year_grid)
-            .sort(["category_id", "year"])
             .with_columns(
                 # Fill numeric columns with 0
                 *[pl.col(col).fill_null(0) for col in numeric_columns],
@@ -235,7 +228,6 @@ class Savings(SignalBase):
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         return (
             df.pipe(self._fill_missing_past_future_rows)
-            .sort(["category_id", "year"])
             .with_columns(
                 per_year_incomes=pl.col("incomes"),
                 per_year_fee=pl.col("fee"),
@@ -268,6 +260,7 @@ class Savings(SignalBase):
                     )
                 ).round(2),
             )
+            .sort(["category_id", "year"])
         )
 
     def _join_df(
