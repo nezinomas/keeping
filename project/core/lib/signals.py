@@ -64,14 +64,12 @@ class SignalBase(ABC):
             return df
 
         return (
-            df.lazy()
-            .with_columns(
+            df.with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
             .group_by(["category_id", "year"])
             .agg(pl.all().sum())
             .sort(["year", "category_id"])
-            .collect()
         )
 
     def _make_have(self, have: list[dict]) -> pl.DataFrame:
@@ -112,10 +110,14 @@ class Accounts(SignalBase):
     def __init__(self, data: GetData):
         _df = self._make_df(it.chain(data.incomes, data.expenses))
         _hv = self._make_have(data.have)
-        _df = self._join_df(_df, _hv)
+        _df = self._join_df(_df.lazy(), _hv.lazy())
 
         self._types = data.types
-        self._table = self.make_table(_df)
+
+        try:
+            self._table = self.make_table(_df).collect()
+        except TypeError:
+            self._table = _df.collect()
 
     def _missing_and_past_values(self, df: pl.DataFrame) -> pl.DataFrame:
         numeric_columns = [
@@ -159,12 +161,8 @@ class Accounts(SignalBase):
         )
 
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
-        if df.is_empty():
-            return df
-
-        df = (
-            df.lazy()
-            .pipe(self._missing_and_past_values)
+        return (
+            df.pipe(self._missing_and_past_values)
             .with_columns(balance=pl.lit(0), past=pl.lit(0), delta=pl.lit(0))
             .sort(["category_id", "year"])
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
@@ -179,10 +177,8 @@ class Accounts(SignalBase):
             .drop("tmp_balance")
         )
 
-        return df.collect()
-
     def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
-        df = (
+        return (
             df.join(
                 hv,
                 on=["category_id", "year"],
@@ -190,13 +186,11 @@ class Accounts(SignalBase):
                 coalesce=True,
                 nulls_equal=True,
             )
-            .lazy()
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
             .sort(["year", "category_id"])
         )
-        return df.collect()
 
 
 class Savings(SignalBase):
@@ -206,10 +200,14 @@ class Savings(SignalBase):
         _in = self._make_df(data.incomes)
         _ex = self._make_df(data.expenses)
         _hv = self._make_have(data.have)
-        _df = self._join_df(_in, _ex, _hv)
+        _df = self._join_df(_in.lazy(), _ex.lazy(), _hv.lazy())
 
         self._types = data.types
-        self._table = self.make_table(_df)
+
+        try:
+            self._table = self.make_table(_df).collect()
+        except TypeError:
+            self._table = _df.collect()
 
     def _fill_missing_past_future_rows(self, df: pl.DataFrame) -> pl.DataFrame:
         # Define columns to fill
@@ -240,12 +238,8 @@ class Savings(SignalBase):
         )
 
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
-        if df.is_empty():
-            return df
-
-        df = (
-            df.lazy()
-            .pipe(self._fill_missing_past_future_rows)
+        return (
+            df.pipe(self._fill_missing_past_future_rows)
             .sort(["category_id", "year"])
             .with_columns(
                 per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
@@ -281,12 +275,10 @@ class Savings(SignalBase):
                 )
             )
         )
-        return df.collect()
 
     def _calc_past(self, df: pl.DataFrame) -> pl.Expr:
         return (
-            df.lazy()
-            .with_columns(
+            df.with_columns(
                 tmp_incomes=pl.col("per_year_incomes").cum_sum().over("category_id"),
                 tmp_fee=pl.col("per_year_fee").cum_sum().over("category_id"),
             )
@@ -301,7 +293,7 @@ class Savings(SignalBase):
 
     def _join_df(
         self, inc: pl.DataFrame, exp: pl.DataFrame, hv: pl.DataFrame
-    ) -> pl.DataFrame:  # noqa: E501
+    ) -> pl.DataFrame:
         # drop expenses column
         inc = inc.drop("expenses")
         # drop incomes column, rename fee
@@ -339,5 +331,4 @@ class Savings(SignalBase):
                 ).fill_null(0)
             )
             .with_columns([pl.lit(0).alias(col) for col in cols])
-            .collect()
         )
