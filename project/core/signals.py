@@ -2,6 +2,7 @@ from typing import Tuple
 
 import polars as pl
 from django.db import transaction as django_transaction
+from django.db.models import F
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -272,3 +273,6 @@ class BalanceSynchronizer:
             self._delete_records(deletes)
             self._insert_records(inserts)
             self._update_records(updates)
+
+            # delete closed account/saving_type/pension_type balances if any exists
+            self.model.objects.filter(year__gt=F(f"{self.fk_field}__closed")).delete()
