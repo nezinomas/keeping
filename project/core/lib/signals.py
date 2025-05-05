@@ -175,13 +175,75 @@ class Accounts(SignalBase):
         self._types = data.types
         self._table = self.make_table(_df)
 
+    def _missing_and_past_values(self, df: pl.DataFrame) -> pl.DataFrame:
+        # Get global max_year
+        global_max_year = df.select(pl.col("year").max()).collect().item()
+
+        # Get min_year per category_id
+        year_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
+
+        # Create a LazyFrame of all years from 0 to global_max_year + 1
+        all_years_df = pl.LazyFrame({"year": range(global_max_year + 2)})
+
+        # Create all combinations of category_id and years, filtering by min_year
+        all_years = (
+            year_ranges.join(all_years_df, how="cross")
+            .filter(pl.col("year") >= pl.col("min_year"))
+            .select(["category_id", "year"])
+        )
+
+        # Join with original DataFrame to include missing years
+        df = all_years.join(df, on=["category_id", "year"], how="left")
+
+        numeric_columns = [
+            col for col, dtype in df.collect_schema().items() if col != "latest_check"
+        ]
+
+        # Combine null-filling, sorting, and new column computations
+        result_df = (
+            df.sort(["category_id", "year"])
+            .with_columns(
+                pl.col("latest_check")
+                .fill_null(strategy="forward")
+                .over("category_id"),
+                pl.col("have")
+                .fill_null(strategy="forward")
+                .over("category_id")
+                .alias("have_alt"),
+            )
+            .drop("have")
+            .rename({"have_alt": "have"})
+            .with_columns(
+                # Compute balance: cumulative sum of (incomes - expenses)
+                balance=pl.col("incomes")
+                .sub(pl.col("expenses"))
+                .cum_sum()
+                .over("category_id"),
+                # Compute past: lagged balance, default 0 for first row
+                past=pl.col("incomes")
+                .sub(pl.col("expenses"))
+                .cum_sum()
+                .shift(1)
+                .fill_null(0)
+                .over("category_id"),
+            )
+            .with_columns(
+                # Compute delta: balance - have
+                delta=pl.col("balance").sub(pl.col("have"))
+            )
+            .with_columns(
+                *[pl.col(col).fill_null(0) for col in numeric_columns],
+            )
+        )
+        return result_df
+
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         if df.is_empty():
             return df
 
         df = (
-            df.pipe(self._insert_missing_values, field_name="have")
-            .lazy()
+            df.lazy()
+            .pipe(self._missing_and_past_values)
             .with_columns(balance=pl.lit(0), past=pl.lit(0), delta=pl.lit(0))
             .sort(["category_id", "year"])
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
@@ -195,6 +257,7 @@ class Accounts(SignalBase):
             .with_columns(delta=(pl.col("have") - pl.col("balance")))
             .drop("tmp_balance")
         )
+
         return df.collect()
 
     def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
