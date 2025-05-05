@@ -85,83 +85,25 @@ class SignalBase(ABC):
 
         return df.sort(["year", "category_id"])
 
-    def _get_past_records(self, df: pl.DataFrame) -> pl.Expr:
-        years = df.select(pl.col("year").unique().sort())["year"]
-        if len(years) < 2:
-            return df
+    def _create_year_grid(self, df: pl.DataFrame) -> pl.Expr:
+        # Get global max_year
+        global_max_year = df.select(pl.col("year").max()).collect().item()
 
-        prev_year = years[-2]
-        last_year = years[-1]
+        # Get min_year per category_id
+        year_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
 
-        types = [x.pk for x in self._types]
+        # Create a LazyFrame of all years from 0 to global_max_year + 1
+        all_years_df = pl.LazyFrame({"year": range(global_max_year + 2)})
 
-        row_diff = (
-            df.filter(pl.col("year").is_in([prev_year, last_year]))
-            .select([pl.all()])
-            .group_by(["year"])
-            .agg([pl.col("category_id").alias("tmp")])
-        )
-        prev_year_type_list = row_diff[0, 1]
-        last_year_type_list = row_diff[1, 1]
-        row_diff = list(set(prev_year_type_list) ^ set(last_year_type_list))
-
-        return df.vstack(
-            df.filter(
-                (pl.col("year") == prev_year)
-                & (pl.col("category_id").is_in(types))
-                & (pl.col("category_id").is_in(row_diff))
-            )
-            .with_columns(year=pl.lit(last_year).cast(pl.UInt16))
-            .pipe(self._reset_values, year=last_year)
+        # Create all combinations of category_id and years, filtering by min_year
+        all_years = (
+            year_ranges.join(all_years_df, how="cross")
+            .filter(pl.col("year") >= pl.col("min_year"))
+            .select(["category_id", "year"])
         )
 
-    def _insert_missing_values(self, df: pl.DataFrame, field_name: str) -> pl.DataFrame:
-        return (
-            df.pipe(self._get_past_records)
-            .sort(["category_id", "year"])
-            .pipe(self._copy_cell_from_previous_year, field_name=field_name)
-            .sort(["year", "category_id"])
-            .pipe(self._insert_future_data)
-        )
-
-    def _copy_cell_from_previous_year(
-        self, df: pl.DataFrame, field_name: str
-    ) -> pl.Expr:  # noqa: E501
-        return df.with_columns(
-            pl.col("latest_check").forward_fill().over("category_id"),
-            pl.col(field_name).forward_fill().over("category_id"),
-        ).with_columns(pl.col(field_name).fill_null(0))
-
-    def _insert_future_data(self, df: pl.DataFrame) -> pl.DataFrame:
-        """copy last year values into future (year + 1)"""
-        last_year = df["year"][-1]
-
-        return pl.concat(
-            [
-                df,
-                (
-                    df.filter(pl.col("year") == last_year)
-                    .with_columns(year=pl.lit(last_year + 1).cast(pl.UInt16))
-                    .pipe(self._reset_values, year=(last_year + 1))
-                ),
-            ],
-            how="vertical",
-        )
-
-    def _reset_values(self, df: pl.DataFrame, year: int) -> pl.Expr:
-        if self.signal_type == "savings":
-            df = df.filter(pl.col("year") == year).with_columns(
-                incomes=pl.lit(0),
-                fee=pl.lit(0),
-                sold=pl.lit(0),
-                sold_fee=pl.lit(0),
-            )
-
-        if self.signal_type == "accounts":
-            df = df.filter(pl.col("year") == year).with_columns(
-                incomes=pl.lit(0), expenses=pl.lit(0)
-            )
-        return df
+        # Join with original DataFrame to include missing years
+        return all_years.join(df, on=["category_id", "year"], how="left")
 
 
 class Accounts(SignalBase):
@@ -175,13 +117,54 @@ class Accounts(SignalBase):
         self._types = data.types
         self._table = self.make_table(_df)
 
+    def _missing_and_past_values(self, df: pl.DataFrame) -> pl.DataFrame:
+        numeric_columns = [
+            col for col, _ in df.collect_schema().items() if col != "latest_check"
+        ]
+
+        return (
+            df.pipe(self._create_year_grid)
+            .sort(["category_id", "year"])
+            .with_columns(
+                pl.col("latest_check")
+                .fill_null(strategy="forward")
+                .over("category_id"),
+                pl.col("have")
+                .fill_null(strategy="forward")
+                .over("category_id")
+                .alias("have_alt"),
+            )
+            .drop("have")
+            .rename({"have_alt": "have"})
+            .with_columns(
+                balance=(
+                    pl.col("incomes")
+                    .sub(pl.col("expenses"))
+                    .cum_sum()
+                    .over("category_id")
+                ),
+                past=(
+                    pl.col("incomes")
+                    .sub(pl.col("expenses"))
+                    .cum_sum()
+                    .shift(1)
+                    .fill_null(0)
+                    .over("category_id")
+                ),
+            )
+            .with_columns(delta=pl.col("balance").sub(pl.col("have")))
+            .with_columns(
+                *[pl.col(col).fill_null(0) for col in numeric_columns],
+            )
+        )
+
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         if df.is_empty():
             return df
 
         df = (
-            df.pipe(self._insert_missing_values, field_name="have")
-            .lazy()
+            df.lazy()
+            .pipe(self._missing_and_past_values)
             .with_columns(balance=pl.lit(0), past=pl.lit(0), delta=pl.lit(0))
             .sort(["category_id", "year"])
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
@@ -195,6 +178,7 @@ class Accounts(SignalBase):
             .with_columns(delta=(pl.col("have") - pl.col("balance")))
             .drop("tmp_balance")
         )
+
         return df.collect()
 
     def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
@@ -227,13 +211,41 @@ class Savings(SignalBase):
         self._types = data.types
         self._table = self.make_table(_df)
 
+    def _fill_missing_past_future_rows(self, df: pl.DataFrame) -> pl.DataFrame:
+        # Define columns to fill
+        numeric_columns = [
+            col
+            for col, _ in df.collect_schema().items()
+            if col not in ("latest_check", "market_value")
+        ]
+
+        return (
+            df.pipe(self._create_year_grid)
+            .sort(["category_id", "year"])
+            .with_columns(
+                # Fill numeric columns with 0
+                *[pl.col(col).fill_null(0) for col in numeric_columns],
+                # Forward fill market_value and latest_check
+                pl.col("market_value")
+                .fill_null(strategy="forward")
+                .over("category_id"),
+                pl.col("latest_check")
+                .fill_null(strategy="forward")
+                .over("category_id"),
+            )
+            .with_columns(
+                # Fill remaining market_value nulls with 0
+                pl.col("market_value").fill_null(0)
+            )
+        )
+
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
         if df.is_empty():
             return df
 
         df = (
-            df.pipe(self._insert_missing_values, field_name="market_value")
-            .lazy()
+            df.lazy()
+            .pipe(self._fill_missing_past_future_rows)
             .sort(["category_id", "year"])
             .with_columns(
                 per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
