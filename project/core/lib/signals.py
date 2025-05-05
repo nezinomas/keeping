@@ -118,7 +118,7 @@ class Accounts(SignalBase):
         except TypeError:
             self._table = _df.collect()
 
-    def _missing_and_past_values(self, df: pl.DataFrame) -> pl.DataFrame:
+    def _missing_and_past_values(self, df: pl.LazyFrame) -> pl.LazyFrame:
         numeric_columns = [
             col for col, _ in df.collect_schema().items() if col != "latest_check"
         ]
@@ -150,7 +150,7 @@ class Accounts(SignalBase):
             .with_columns([pl.col(col).fill_null(0) for col in numeric_columns])
         )
 
-    def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
+    def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return (
             df.pipe(self._missing_and_past_values)
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
@@ -166,8 +166,7 @@ class Accounts(SignalBase):
             .sort(["category_id", "year"])
         )
 
-    def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
-        # df and hv as lazyframes
+    def _join_df(self, df: pl.LazyFrame, hv: pl.LazyFrame) -> pl.LazyFrame:
         # how = "full" because if df is empty, but hv is not, return df will be empty
         return df.join(
             hv,
@@ -194,7 +193,7 @@ class Savings(SignalBase):
         except TypeError:
             self._table = _df.collect()
 
-    def _fill_missing_past_future_rows(self, df: pl.DataFrame) -> pl.DataFrame:
+    def _fill_missing_past_future_rows(self, df: pl.LazyFrame) -> pl.LazyFrame:
         # Define columns to fill
         numeric_columns = [
             col
@@ -221,7 +220,7 @@ class Savings(SignalBase):
             )
         )
 
-    def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
+    def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return (
             df.pipe(self._fill_missing_past_future_rows)
             .with_columns(
@@ -260,8 +259,8 @@ class Savings(SignalBase):
         )
 
     def _join_df(
-        self, inc: pl.DataFrame, exp: pl.DataFrame, hv: pl.DataFrame
-    ) -> pl.DataFrame:
+        self, inc: pl.LazyFrame, exp: pl.LazyFrame, hv: pl.LazyFrame
+    ) -> pl.LazyFrame:
         # drop expenses column
         inc = inc.drop("expenses")
         # drop incomes column, rename fee
