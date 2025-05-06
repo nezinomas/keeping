@@ -164,6 +164,24 @@ def test_table(incomes, expenses, have, types):
     assert actual[7]["latest_check"] == datetime(2000, 1, 6, 3, 2, 1)
 
 
+def test_table_filtered_closed_categories():
+    incomes = [
+        {"year": 1999, "incomes": 50, "category_id": 1},
+        {"year": 1999, "incomes": 55, "category_id": 2},
+        {"year": 2000, "incomes": 110, "category_id": 2},
+    ]
+
+    types =  [
+        SimpleNamespace(pk=1, closed=1999),
+        SimpleNamespace(pk=2, closed=None),
+    ]
+    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
+    actual = Accounts(data).df
+
+    assert actual["category_id"].to_list() == [1, 2, 2, 2]
+    assert actual["year"].to_list() == [1999, 1999, 2000, 2001]
+
+
 def test_year_category_id_set(incomes, expenses, have, types):
     data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
     actual = Accounts(data).year_category_id_set
@@ -315,7 +333,7 @@ def test_table_with_types(types):
 
 
 def test_table_type_without_recods(types):
-    types.append(SimpleNamespace(pk=666))
+    types.append(SimpleNamespace(pk=666, closed=None))
     incomes = [
         {"year": 1998, "incomes": 1, "category_id": 1},
         {"year": 1998, "incomes": 2, "category_id": 2},
@@ -336,7 +354,7 @@ def test_table_type_without_recods(types):
 
 
 def test_table_old_type(types):
-    types.append(SimpleNamespace(pk=666))
+    types.append(SimpleNamespace(pk=666, closed=None))
     incomes = [
         {"year": 1974, "incomes": 1, "category_id": 666},
         {"year": 1998, "incomes": 1, "category_id": 1},
