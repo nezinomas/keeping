@@ -58,10 +58,8 @@ class SignalBase(ABC):
         if not arr:
             return pl.DataFrame(arr, schema=schema)
 
-        df = pl.from_dicts(arr, schema=schema)
-
         return (
-            df.with_columns(
+            pl.from_dicts(arr, schema=schema).with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
             .group_by(["category_id", "year"])
