@@ -121,7 +121,7 @@ class Accounts(SignalBase):
         except TypeError:
             self._table = _df
 
-    def _missing_and_past_values(self, df: pl.LazyFrame) -> pl.LazyFrame:
+    def _fill_missing_past_future_rows(self, df: pl.LazyFrame) -> pl.LazyFrame:
         numeric_columns = [
             col for col, _ in df.collect_schema().items() if col != "latest_check"
         ]
@@ -155,7 +155,7 @@ class Accounts(SignalBase):
 
     def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return (
-            df.pipe(self._missing_and_past_values)
+            df.pipe(self._fill_missing_past_future_rows)
             .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
             .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["category_id"]))
             .with_columns(
