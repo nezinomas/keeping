@@ -182,20 +182,6 @@ def test_table_filtered_closed_categories():
     assert actual["year"].to_list() == [1999, 1999, 2000, 2001]
 
 
-def test_year_category_id_set(incomes, expenses, have, types):
-    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
-    actual = Accounts(data).year_category_id_set
-
-    assert actual == {
-        (1999, 1),
-        (2000, 1),
-        (2001, 1),
-        (1999, 2),
-        (2000, 2),
-        (2001, 2),
-    }
-
-
 def test_table_one_record(types):
     incomes = [{"year": 1997, "incomes": 5, "category_id": 1}]
     data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)

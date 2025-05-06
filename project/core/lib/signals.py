@@ -41,10 +41,6 @@ class SignalBase(ABC):
     def df(self):
         return self._table
 
-    @property
-    def year_category_id_set(self) -> set:
-        return set(zip(self._table["year"], self._table["category_id"]))
-
     @abstractmethod
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame: ...
 
