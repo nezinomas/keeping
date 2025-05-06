@@ -72,11 +72,11 @@ def test_account_worth_have():
     actual = AccountWorth.objects.have()
 
     assert actual[0]["year"] == 1970
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
     assert actual[0]["have"] == 2
 
     assert actual[1]["year"] == 2000
-    assert actual[1]["id"] == 1
+    assert actual[1]["category_id"] == 1
     assert actual[1]["have"] == 4
 
 
@@ -146,11 +146,11 @@ def test_saving_worth_have():
     actual = SavingWorth.objects.have()
 
     assert actual[0]["year"] == 1970
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
     assert actual[0]["have"] == 2
 
     assert actual[1]["year"] == 2000
-    assert actual[1]["id"] == 1
+    assert actual[1]["category_id"] == 1
     assert actual[1]["have"] == 4
 
 
@@ -216,9 +216,9 @@ def test_pension_worth_have():
     actual = PensionWorth.objects.have()
 
     assert actual[0]["year"] == 1970
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
     assert actual[0]["have"] == 2
 
     assert actual[1]["year"] == 2000
-    assert actual[1]["id"] == 1
+    assert actual[1]["category_id"] == 1
     assert actual[1]["have"] == 4

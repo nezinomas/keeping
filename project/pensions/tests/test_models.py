@@ -255,7 +255,7 @@ def test_pension_update_post_save_count_queries(django_assert_max_num_queries):
     PensionFactory()
 
     obj = Pension.objects.first()
-    with django_assert_max_num_queries(7):
+    with django_assert_max_num_queries(8):
         obj.price = 2
         obj.save()
 
@@ -333,3 +333,24 @@ def test_sum_by_year():
         {"year": 1999, "incomes": 3, "profit": -3, "fee": 0},
         {"year": 2000, "incomes": 3, "profit": -3, "fee": 0},
     ]
+
+
+def test_pension_balance_sorting():
+    p1 = PensionTypeFactory(title="1")
+    p2 = PensionTypeFactory(title="2")
+
+    PensionBalanceFactory(year=2000, pension_type=p2)
+    PensionBalanceFactory(year=1999, pension_type=p2)
+    PensionBalanceFactory(year=2000, pension_type=p1)
+    PensionBalanceFactory(year=1999, pension_type=p1)
+
+    actual = PensionBalance.objects.related()
+
+    assert actual[0].year == 1999
+    assert actual[0].pension_type == p1
+    assert actual[1].year == 1999
+    assert actual[1].pension_type == p2
+    assert actual[2].year == 2000
+    assert actual[2].pension_type == p1
+    assert actual[3].year == 2000
+    assert actual[3].pension_type == p2

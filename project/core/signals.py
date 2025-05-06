@@ -1,7 +1,11 @@
-from django.db.models import Model
+from typing import Tuple
+
+import polars as pl
+from django.db import transaction as django_transaction
+from django.db.models import F
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from django.utils.timezone import make_aware
+from django.utils import timezone
 
 from ..accounts import models as account
 from ..bookkeeping import models as bookkeeping
@@ -34,8 +38,7 @@ from .lib.signals import Accounts, GetData, Savings, SignalBase
 @receiver(post_save, sender=bookkeeping.AccountWorth)
 def accounts_signal(sender: object, instance: object, *args, **kwargs):
     data = accounts_data()
-    objects = create_objects(account.AccountBalance, data.types, data.table)
-    save_objects(account.AccountBalance, objects)
+    BalanceSynchronizer(account.AccountBalance, data.df)
 
 
 def accounts_data() -> SignalBase:
@@ -72,8 +75,7 @@ def accounts_data() -> SignalBase:
 @receiver(post_save, sender=bookkeeping.SavingWorth)
 def savings_signal(sender: object, instance: object, *args, **kwargs):
     data = savings_data()
-    objects = create_objects(saving.SavingBalance, data.types, data.table)
-    save_objects(saving.SavingBalance, objects)
+    BalanceSynchronizer(saving.SavingBalance, data.df)
 
 
 def savings_data() -> SignalBase:
@@ -100,8 +102,7 @@ def savings_data() -> SignalBase:
 @receiver(post_save, sender=bookkeeping.PensionWorth)
 def pensions_signal(sender: object, instance: object, *args, **kwargs):
     data = pensions_data()
-    objects = create_objects(pension.PensionBalance, data.types, data.table)
-    save_objects(pension.PensionBalance, objects)
+    BalanceSynchronizer(pension.PensionBalance, data.df)
 
 
 def pensions_data() -> SignalBase:
@@ -114,29 +115,160 @@ def pensions_data() -> SignalBase:
 
 
 # -------------------------------------------------------------------------------------
-#                                                                        Common methods
+#                                                                      DB Synchronizer
 # -------------------------------------------------------------------------------------
-def create_objects(balance_model: Model, categories: dict, data: list[dict]):
-    fields = balance_model._meta.get_fields()
-    fk_field = [f.name for f in fields if (f.many_to_one)][0]
-    objects = []
-    for x in data:
-        # extract account/saving_type/pension_type id from dict
-        cid = x.pop("id")
-        # drop latest_check if empty
-        if not x["latest_check"]:
-            x.pop("latest_check")
-        else:
-            x["latest_check"] = make_aware(x["latest_check"])
-        # create fk_field account|saving_type|pension_type object
-        x[fk_field] = categories.get(cid)
-        # create AccountBalance/SavingBalance/PensionBalance object
-        objects.append(balance_model(**x))
-    return objects
+
+ACCOUNT_FIELDS = [
+    "incomes",
+    "expenses",
+    "have",
+    "latest_check",
+    "balance",
+    "past",
+    "delta",
+]
+
+SAVING_FIELDS = [
+    "latest_check",
+    "past_amount",
+    "past_fee",
+    "fee",
+    "per_year_incomes",
+    "per_year_fee",
+    "sold",
+    "sold_fee",
+    "incomes",
+    "market_value",
+    "profit_sum",
+    "profit_proc",
+]
 
 
-def save_objects(balance_model, objects):
-    # delete all records
-    balance_model.objects.related().delete()
-    # bulk create
-    balance_model.objects.bulk_create(objects)
+class BalanceSynchronizer:
+    KEY_FIELDS = ["category_id", "year"]
+
+    def __init__(self, model, df) -> None:
+        match model:
+            case saving.SavingBalance:
+                self.fk_field = "saving_type_id"
+                self.fields = SAVING_FIELDS
+
+            case pension.PensionBalance:
+                self.fk_field = "pension_type_id"
+                self.fields = SAVING_FIELDS
+
+            case _:
+                self.fk_field = "account_id"
+                self.fields = ACCOUNT_FIELDS
+
+        self.model = model
+        self.df = df
+        self.df_db = self._get_existing_records()
+
+        self.sync()
+
+    def _get_existing_records(self) -> pl.DataFrame:
+        # Select only necessary fields to reduce memory usage
+        records = self.model.objects.related().values(
+            "id", self.fk_field, "year", *self.fields
+        )
+        if not records:
+            return pl.DataFrame()
+
+        df_db = pl.DataFrame(list(records)).rename({self.fk_field: "category_id"})
+        if "latest_check" in df_db.columns:
+            df_db = df_db.with_columns(
+                pl.col("latest_check").cast(pl.Datetime).dt.replace_time_zone(None)
+            )
+
+        return df_db
+
+    def _identify_operations(self) -> Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
+        if self.df_db.is_empty():
+            return self.df, pl.DataFrame(), pl.DataFrame()
+
+        if self.df.is_empty():
+            return pl.DataFrame(), pl.DataFrame(), self.df_db
+
+        return self._insert_df(), self._update_df(), self._delete_df()
+
+    def _delete_df(self):
+        df_keys = self.df.select(self.KEY_FIELDS).unique().lazy()
+        return self.df_db.lazy().join(df_keys, on=self.KEY_FIELDS, how="anti").collect()
+
+    def _insert_df(self):
+        return (
+            self.df.lazy()
+            .join(
+                self.df_db.lazy().select(self.KEY_FIELDS),
+                on=self.KEY_FIELDS,
+                how="anti",
+            )
+            .collect()
+        )
+
+    def _update_df(self):
+        common = self.df.lazy().join(
+            self.df_db.lazy(), on=self.KEY_FIELDS, how="inner", suffix="_db"
+        )
+
+        return (
+            common.filter(
+                pl.any_horizontal([pl.col(f) != pl.col(f"{f}_db") for f in self.fields])
+            )
+            .select(self.df.columns)
+            .collect()
+        )
+
+    def _delete_records(self, data: pl.DataFrame) -> None:
+        if data.is_empty():
+            return
+
+        category_ids = data["category_id"].unique().to_list()
+        years = data["year"].unique().to_list()
+        self.model.objects.filter(
+            **{f"{self.fk_field}__in": category_ids, "year__in": years}
+        ).delete()
+
+    def _insert_records(self, data: pl.DataFrame) -> None:
+        if data.is_empty():
+            return
+
+        if objects := [self._create_object(row) for row in data.to_dicts()]:
+            self.model.objects.bulk_create(objects)
+
+    def _update_records(self, data: pl.DataFrame) -> None:
+        if data.is_empty():
+            return
+
+        df_map = self.df_db.select(["id", "year", "category_id"])
+
+        updates_with_id = data.join(df_map, on=self.KEY_FIELDS, how="left").to_dicts()
+
+        if objects := [
+            self._create_object(row, update=True) for row in updates_with_id
+        ]:
+            self.model.objects.bulk_update(objects, self.fields)
+
+    def _create_object(self, row: dict, update: bool = False):
+        """Create an self.model object from a row."""
+        fields = {field: row[field] for field in self.fields}
+        fields["latest_check"] = (
+            timezone.make_aware(row["latest_check"]) if row["latest_check"] else None
+        )
+        fields[self.fk_field] = row["category_id"]
+        fields["year"] = row["year"]
+
+        # Set the ID from database for updates
+        if update:
+            fields["id"] = row["id"]
+
+        return self.model(**fields)
+
+    def sync(self) -> None:
+        inserts, updates, deletes = self._identify_operations()
+
+        with django_transaction.atomic():
+            self._delete_records(deletes)
+            self._insert_records(inserts)
+            self._update_records(updates)

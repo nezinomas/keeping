@@ -1,4 +1,3 @@
-import contextlib
 import itertools as it
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -17,21 +16,18 @@ class GetData:
     def __post_init__(self):
         self.incomes = self._get_data(self.conf.get("incomes"), "incomes")
         self.expenses = self._get_data(self.conf.get("expenses"), "expenses")
-        self.have = self._get_data(self.conf.get("have"), "have")
-        self.types = self._get_data(self.conf.get("types"), "related")
+        self.have = list(self._get_data(self.conf.get("have"), "have"))
+        self.types = list(self._get_data(self.conf.get("types"), "related"))
 
     def _get_data(self, models: tuple, method: str):
-        items = []
-
         if not models:
-            return items
+            return
 
         for model in models:
-            with contextlib.suppress(AttributeError):
-                _method = getattr(model.objects, method)
+            _method = getattr(model.objects, method, None)
+            if callable(_method):
                 if _qs := _method():
-                    items.extend(list(_qs))
-        return items
+                    yield from _qs
 
 
 class SignalBase(ABC):
@@ -42,125 +38,85 @@ class SignalBase(ABC):
         return {category.id: category for category in self._types}
 
     @property
-    def table(self):
-        return self._table.to_dicts()
+    def df(self):
+        return self._table
+
+    @property
+    def year_category_id_set(self) -> set:
+        return set(zip(self._table["year"], self._table["category_id"]))
 
     @abstractmethod
     def make_table(self, df: pl.DataFrame) -> pl.DataFrame: ...
 
     def _make_df(self, arr: list[dict]) -> pl.DataFrame:
         schema = {
-            "id": pl.UInt16,
+            "category_id": pl.UInt16,
             "year": pl.UInt16,
             "incomes": pl.Int32,
             "expenses": pl.Int32,
         }
+
         if self.signal_type == "savings":
             schema |= {"fee": pl.Int32}
 
-        df = pl.DataFrame(arr, schema=schema)
-        if df.is_empty():
-            return df
+        if not arr:
+            return pl.DataFrame(arr, schema=schema)
+
+        df = pl.from_dicts(arr, schema=schema)
 
         return (
-            df.lazy()
-            .with_columns(
+            df.with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
-            .group_by(["id", "year"])
+            .group_by(["category_id", "year"])
             .agg(pl.all().sum())
-            .sort(["year", "id"])
-            .collect()
         )
 
     def _make_have(self, have: list[dict]) -> pl.DataFrame:
         schema = {
-            "id": pl.UInt16,
+            "category_id": pl.UInt16,
             "year": pl.UInt16,
             "have": pl.UInt32,
             "latest_check": pl.Datetime,
         }
-        df = pl.DataFrame(have, schema=schema)
+        return pl.DataFrame(have, schema=schema)
 
-        return df.sort(["year", "id"])
+    def _create_year_grid(self, df: pl.LazyFrame) -> pl.Expr:
+        # Get global max_year
+        global_max_year = df.select(pl.col("year").max()).collect().item()
+        global_min_year = df.select(pl.col("year").min()).collect().item()
 
-    def _get_past_records(self, df: pl.DataFrame) -> pl.Expr:
-        years = df.select(pl.col("year").unique().sort())["year"]
-        if len(years) < 2:
-            return df
+        # Get min_year per category_id
+        min_year_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
 
-        prev_year = years[-2]
-        last_year = years[-1]
-
-        types = [x.pk for x in self._types]
-
-        row_diff = (
-            df.filter(pl.col("year").is_in([prev_year, last_year]))
-            .select([pl.all()])
-            .group_by(["year"])
-            .agg([pl.col("id").alias("tmp")])
-        )
-        prev_year_type_list = row_diff[0, 1]
-        last_year_type_list = row_diff[1, 1]
-        row_diff = list(set(prev_year_type_list) ^ set(last_year_type_list))
-
-        return df.vstack(
-            df.filter(
-                (pl.col("year") == prev_year)
-                & (pl.col("id").is_in(types))
-                & (pl.col("id").is_in(row_diff))
-            )
-            .with_columns(year=pl.lit(last_year).cast(pl.UInt16))
-            .pipe(self._reset_values, year=last_year)
+        # Create a LazyFrame of all years from 0 to global_max_year + 1
+        all_years_df = pl.LazyFrame(
+            {"year": range(global_min_year, global_max_year + 2)}
         )
 
-    def _insert_missing_values(self, df: pl.DataFrame, field_name: str) -> pl.DataFrame:
+        # Create all combinations of category_id and years, filtering by min_year
+        all_years = (
+            min_year_ranges.join(all_years_df, how="cross")
+            .filter(pl.col("year") >= pl.col("min_year"))
+            .select(["category_id", "year"])
+        )
+
+        # Join with original DataFrame to include missing years
+        df = all_years.join(df, on=["category_id", "year"], how="left")
+
+        #  list of categories with closed years
+        closed = pl.from_dicts(
+            [{"category_id": x.pk, "closed": x.closed} for x in self._types]
+        ).lazy()
+
         return (
-            df.pipe(self._get_past_records)
-            .sort(["id", "year"])
-            .pipe(self._copy_cell_from_previous_year, field_name=field_name)
-            .sort(["year", "id"])
-            .pipe(self._insert_future_data)
-        )
-
-    def _copy_cell_from_previous_year(
-        self, df: pl.DataFrame, field_name: str
-    ) -> pl.Expr:  # noqa: E501
-        return df.with_columns(
-            pl.col("latest_check").forward_fill().over("id"),
-            pl.col(field_name).forward_fill().over("id"),
-        ).with_columns(pl.col(field_name).fill_null(0))
-
-    def _insert_future_data(self, df: pl.DataFrame) -> pl.DataFrame:
-        """copy last year values into future (year + 1)"""
-        last_year = df["year"][-1]
-
-        return pl.concat(
-            [
-                df,
-                (
-                    df.filter(pl.col("year") == last_year)
-                    .with_columns(year=pl.lit(last_year + 1).cast(pl.UInt16))
-                    .pipe(self._reset_values, year=(last_year + 1))
-                ),
-            ],
-            how="vertical",
-        )
-
-    def _reset_values(self, df: pl.DataFrame, year: int) -> pl.Expr:
-        if self.signal_type == "savings":
-            df = df.filter(pl.col("year") == year).with_columns(
-                incomes=pl.lit(0),
-                fee=pl.lit(0),
-                sold=pl.lit(0),
-                sold_fee=pl.lit(0),
+            df.join(closed, on="category_id", how="inner")
+            .filter(
+                (pl.col("closed").is_null())  # Keep rows where closed is null
+                | (pl.col("year") <= pl.col("closed"))  # or year < closed
             )
-
-        if self.signal_type == "accounts":
-            df = df.filter(pl.col("year") == year).with_columns(
-                incomes=pl.lit(0), expenses=pl.lit(0)
-            )
-        return df
+            .select(df.collect_schema().names())
+        )
 
 
 class Accounts(SignalBase):
@@ -169,43 +125,72 @@ class Accounts(SignalBase):
     def __init__(self, data: GetData):
         _df = self._make_df(it.chain(data.incomes, data.expenses))
         _hv = self._make_have(data.have)
-        _df = self._join_df(_df, _hv)
+        _df = self._join_df(_df.lazy(), _hv.lazy())
 
         self._types = data.types
-        self._table = self.make_table(_df)
 
-    def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
-        if df.is_empty():
-            return df
+        try:
+            self._table = self.make_table(_df).collect()
+        except TypeError:
+            self._table = _df.collect()
 
-        df = (
-            df.pipe(self._insert_missing_values, field_name="have")
-            .lazy()
-            .with_columns(balance=pl.lit(0), past=pl.lit(0), delta=pl.lit(0))
-            .sort(["id", "year"])
-            .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
-            .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["id"]))
+    def _missing_and_past_values(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        numeric_columns = [
+            col for col, _ in df.collect_schema().items() if col != "latest_check"
+        ]
+
+        return (
+            df.pipe(self._create_year_grid)
             .with_columns(
-                past=pl.col("tmp_balance").shift(n=1, fill_value=0).over("id")
+                pl.col("latest_check")
+                .fill_null(strategy="forward")
+                .over("category_id"),
+                pl.col("have")
+                .fill_null(strategy="forward")
+                .over("category_id")
+                .alias("have_alt"),
+            )
+            .drop("have")
+            .rename({"have_alt": "have"})
+            .with_columns(
+                balance=(pl.col("incomes") - pl.col("expenses"))
+                .cum_sum()
+                .over("category_id"),
+                past=(pl.col("incomes") - pl.col("expenses"))
+                .cum_sum()
+                .shift(1)
+                .fill_null(0)
+                .over("category_id"),
+            )
+            .with_columns(delta=pl.col("balance") - pl.col("have"))
+            .with_columns([pl.col(col).fill_null(0) for col in numeric_columns])
+        )
+
+    def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        return (
+            df.pipe(self._missing_and_past_values)
+            .with_columns(balance=(pl.col("incomes") - pl.col("expenses")))
+            .with_columns(tmp_balance=pl.col("balance").cum_sum().over(["category_id"]))
+            .with_columns(
+                past=pl.col("tmp_balance").shift(n=1, fill_value=0).over("category_id")
             )
             .with_columns(
                 balance=(pl.col("past") + pl.col("incomes") - pl.col("expenses"))
             )
             .with_columns(delta=(pl.col("have") - pl.col("balance")))
             .drop("tmp_balance")
+            .sort(["category_id", "year"])
         )
-        return df.collect()
 
-    def _join_df(self, df: pl.DataFrame, hv: pl.DataFrame) -> pl.DataFrame:
-        df = (
-            df.join(hv, on=["id", "year"], how="full", coalesce=True, nulls_equal=True)
-            .lazy()
-            .with_columns(
-                [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
-            )
-            .sort(["year", "id"])
+    def _join_df(self, df: pl.LazyFrame, hv: pl.LazyFrame) -> pl.LazyFrame:
+        # how = "full" because if df is empty, but hv is not, return df will be empty
+        return df.join(
+            hv,
+            on=["category_id", "year"],
+            how="full",
+            coalesce=True,
+            nulls_equal=True,
         )
-        return df.collect()
 
 
 class Savings(SignalBase):
@@ -215,68 +200,83 @@ class Savings(SignalBase):
         _in = self._make_df(data.incomes)
         _ex = self._make_df(data.expenses)
         _hv = self._make_have(data.have)
-        _df = self._join_df(_in, _ex, _hv)
+        _df = self._join_df(_in.lazy(), _ex.lazy(), _hv.lazy())
 
         self._types = data.types
-        self._table = self.make_table(_df)
 
-    def make_table(self, df: pl.DataFrame) -> pl.DataFrame:
-        if df.is_empty():
-            return df
+        try:
+            self._table = self.make_table(_df).collect()
+        except TypeError:
+            self._table = _df.collect()
 
-        df = (
-            df.pipe(self._insert_missing_values, field_name="market_value")
-            .lazy()
-            .sort(["id", "year"])
+    def _fill_missing_past_future_rows(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        # Define columns to fill
+        numeric_columns = [
+            col
+            for col, _ in df.collect_schema().items()
+            if col not in ("latest_check", "market_value")
+        ]
+
+        return (
+            df.pipe(self._create_year_grid)
             .with_columns(
-                per_year_incomes=pl.col("incomes"), per_year_fee=pl.col("fee")
+                # Fill numeric columns with 0
+                *[pl.col(col).fill_null(0) for col in numeric_columns],
+                # Forward fill market_value and latest_check
+                pl.col("market_value")
+                .fill_null(strategy="forward")
+                .over("category_id"),
+                pl.col("latest_check")
+                .fill_null(strategy="forward")
+                .over("category_id"),
             )
-            .pipe(self._calc_past)
             .with_columns(
-                sold=pl.col("sold").cum_sum().over("id"),
-                sold_fee=pl.col("sold_fee").cum_sum().over("id"),
+                # Fill remaining market_value nulls with 0
+                pl.col("market_value").fill_null(0)
+            )
+        )
+
+    def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        return (
+            df.pipe(self._fill_missing_past_future_rows)
+            .with_columns(
+                per_year_incomes=pl.col("incomes"),
+                per_year_fee=pl.col("fee"),
+                past_amount=pl.col("incomes")
+                .cum_sum()
+                .shift(1, fill_value=0)
+                .over("category_id"),
+                past_fee=pl.col("fee")
+                .cum_sum()
+                .shift(1, fill_value=0)
+                .over("category_id"),
             )
             .with_columns(
+                sold=pl.col("sold").cum_sum().over("category_id"),
+                sold_fee=pl.col("sold_fee").cum_sum().over("category_id"),
                 incomes=(pl.col("past_amount") + pl.col("per_year_incomes")),
                 fee=(pl.col("past_fee") + pl.col("per_year_fee")),
             )
             .with_columns(
-                profit_sum=(pl.col("market_value") - pl.col("incomes") - pl.col("fee"))
-            )
-            .with_columns(
+                profit_sum=(pl.col("market_value") - pl.col("incomes") - pl.col("fee")),
                 profit_proc=(
                     pl.when(pl.col("market_value") == 0)
                     .then(0)
+                    .when(pl.col("incomes") == 0)
+                    .then(0)  # Handle zero incomes to avoid division by zero
                     .otherwise(
                         ((pl.col("market_value") - pl.col("fee")) / pl.col("incomes"))
                         * 100
                         - 100
                     )
-                )
+                ).round(2),
             )
-            .with_columns(
-                profit_proc=(
-                    pl.when(pl.col("profit_proc").is_infinite())
-                    .then(0)
-                    .otherwise(pl.col("profit_proc").round(2))
-                )
-            )
-        )
-        return df.collect()
-
-    def _calc_past(self, df: pl.DataFrame) -> pl.Expr:
-        return (
-            df.lazy()
-            .with_columns(tmp=pl.col("per_year_incomes").cum_sum().over("id"))
-            .with_columns(past_amount=pl.col("tmp").shift(n=1, fill_value=0).over("id"))
-            .with_columns(tmp=pl.col("per_year_fee").cum_sum().over("id"))
-            .with_columns(past_fee=pl.col("tmp").shift(n=1, fill_value=0).over("id"))
-            .drop("tmp")
+            .sort(["category_id", "year"])
         )
 
     def _join_df(
-        self, inc: pl.DataFrame, exp: pl.DataFrame, hv: pl.DataFrame
-    ) -> pl.DataFrame:  # noqa: E501
+        self, inc: pl.LazyFrame, exp: pl.LazyFrame, hv: pl.LazyFrame
+    ) -> pl.LazyFrame:
         # drop expenses column
         inc = inc.drop("expenses")
         # drop incomes column, rename fee
@@ -293,14 +293,25 @@ class Savings(SignalBase):
 
         return (
             inc.join(
-                exp, on=["id", "year"], how="full", coalesce=True, nulls_equal=True
+                exp,
+                on=["category_id", "year"],
+                how="full",
+                coalesce=True,
+                nulls_equal=True,
             )
-            .join(hv, on=["id", "year"], how="full", coalesce=True, nulls_equal=True)
+            .join(
+                hv,
+                on=["category_id", "year"],
+                how="full",
+                coalesce=True,
+                nulls_equal=True,
+            )
             .lazy()
             .rename({"have": "market_value"})
             .with_columns(
-                pl.exclude(["id", "year", "latest_check", "market_value"]).fill_null(0)
+                pl.exclude(
+                    ["category_id", "year", "latest_check", "market_value"]
+                ).fill_null(0)
             )
             .with_columns([pl.lit(0).alias(col) for col in cols])
-            .collect()
         )

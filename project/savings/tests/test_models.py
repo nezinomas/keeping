@@ -583,22 +583,22 @@ def test_savings_incomes(savings):
     actual = Saving.objects.incomes()
 
     assert actual[0]["year"] == 1970
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
     assert actual[0]["incomes"] == 125
     assert actual[0]["fee"] == 25
 
     assert actual[1]["year"] == 1970
-    assert actual[1]["id"] == 2
+    assert actual[1]["category_id"] == 2
     assert actual[1]["incomes"] == 25
     assert actual[1]["fee"] == 0
 
     assert actual[2]["year"] == 1999
-    assert actual[2]["id"] == 1
+    assert actual[2]["category_id"] == 1
     assert actual[2]["incomes"] == 350
     assert actual[2]["fee"] == 50
 
     assert actual[3]["year"] == 1999
-    assert actual[3]["id"] == 2
+    assert actual[3]["category_id"] == 2
     assert actual[3]["incomes"] == 450
     assert actual[3]["fee"] == 50
 
@@ -607,19 +607,19 @@ def test_savings_expenses(savings):
     actual = Saving.objects.expenses()
 
     assert actual[0]["year"] == 1970
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
     assert actual[0]["expenses"] == 125
 
     assert actual[1]["year"] == 1970
-    assert actual[1]["id"] == 2
+    assert actual[1]["category_id"] == 2
     assert actual[1]["expenses"] == 25
 
     assert actual[2]["year"] == 1999
-    assert actual[2]["id"] == 1
+    assert actual[2]["category_id"] == 1
     assert actual[2]["expenses"] == 350
 
     assert actual[3]["year"] == 1999
-    assert actual[3]["id"] == 2
+    assert actual[3]["category_id"] == 2
     assert actual[3]["expenses"] == 225
 
 
@@ -804,3 +804,24 @@ def test_sum_by_year():
         {"year": 1999, "incomes": 7, "profit": -7},
         {"year": 2000, "incomes": 7, "profit": -7},
     ]
+
+
+def test_saving_balance_sorting():
+    s1 = SavingTypeFactory(title="1")
+    s2 = SavingTypeFactory(title="2")
+
+    SavingBalanceFactory(year=2000, saving_type=s2)
+    SavingBalanceFactory(year=1999, saving_type=s2)
+    SavingBalanceFactory(year=2000, saving_type=s1)
+    SavingBalanceFactory(year=1999, saving_type=s1)
+
+    actual = SavingBalance.objects.related()
+
+    assert actual[0].year == 1999
+    assert actual[0].saving_type == s1
+    assert actual[1].year == 1999
+    assert actual[1].saving_type == s2
+    assert actual[2].year == 2000
+    assert actual[2].saving_type == s1
+    assert actual[3].year == 2000
+    assert actual[3].saving_type == s2

@@ -21,6 +21,7 @@ dependencies = [
     "pyarrow>=19.0.1",
     "python-dateutil>=2.9.0.post0",
     "django-cotton>=2.0.3",
+    "numpy>=2.2.5",
 ]
 
 [project.optional-dependencies]

@@ -12,7 +12,10 @@ class PensionType(TitleAbstract):
         Journal, on_delete=models.CASCADE, related_name="pension_types"
     )
     created = models.DateTimeField(auto_now_add=True)
-
+    closed = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+    )
     # Managers
     objects = managers.PensionTypeQuerySet.as_manager()
 
@@ -69,6 +72,9 @@ class PensionBalance(models.Model):
 
     # Managers
     objects = managers.PensionBalanceQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["year", "pension_type__pk"]
 
     def __str__(self):
         return f"{self.pension_type.title}"
