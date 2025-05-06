@@ -209,7 +209,7 @@ class Savings(SignalBase):
         # Define columns to fill
         numeric_columns = [
             col
-            for col, _ in df.collect_schema().items()
+            for col in df.collect_schema().names()
             if col not in ("latest_check", "market_value")
         ]
 

@@ -177,7 +177,7 @@ class BalanceSynchronizer:
             return pl.DataFrame().lazy()
 
         df_db = pl.from_dicts(records).lazy().rename({self.fk_field: "category_id"})
-        if "latest_check" in df_db.columns:
+        if "latest_check" in df_db.collect_schema().names():
             df_db = df_db.with_columns(
                 pl.col("latest_check").cast(pl.Datetime).dt.replace_time_zone(None)
             )
@@ -209,7 +209,7 @@ class BalanceSynchronizer:
 
         return common.filter(
             pl.any_horizontal([pl.col(f) != pl.col(f"{f}_db") for f in self.fields])
-        ).select(self.df.columns)
+        ).select(self.df.collect_schema().names())
 
     def _delete_records(self, data: pl.LazyFrame) -> None:
         data = data.collect()
