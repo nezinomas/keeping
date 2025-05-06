@@ -140,14 +140,18 @@ class Accounts(SignalBase):
             .drop("have")
             .rename({"have_alt": "have"})
             .with_columns(
-                balance=(pl.col("incomes") - pl.col("expenses"))
-                .cum_sum()
-                .over("category_id"),
-                past=(pl.col("incomes") - pl.col("expenses"))
-                .cum_sum()
-                .shift(1)
-                .fill_null(0)
-                .over("category_id"),
+                balance=(
+                    (pl.col("incomes") - pl.col("expenses"))
+                    .cum_sum()
+                    .over("category_id")
+                ),
+                past=(
+                    (pl.col("incomes") - pl.col("expenses"))
+                    .cum_sum()
+                    .shift(1)
+                    .fill_null(0)
+                    .over("category_id")
+                ),
             )
             .with_columns(delta=pl.col("balance") - pl.col("have"))
             .with_columns([pl.col(col).fill_null(0) for col in numeric_columns])
@@ -217,9 +221,7 @@ class Savings(SignalBase):
                 .fill_null(strategy="forward")
                 .over("category_id"),
             )
-            .with_columns(
-                pl.col("market_value").fill_null(0)
-            )
+            .with_columns(pl.col("market_value").fill_null(0))
         )
 
     def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
