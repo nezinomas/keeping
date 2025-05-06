@@ -175,7 +175,9 @@ class BalanceSynchronizer:
         if not records:
             return pl.DataFrame().lazy()
 
-        df_db = pl.DataFrame(list(records)).lazy().rename({self.fk_field: "category_id"})
+        df_db = (
+            pl.DataFrame(list(records)).lazy().rename({self.fk_field: "category_id"})
+        )
         if "latest_check" in df_db.columns:
             df_db = df_db.with_columns(
                 pl.col("latest_check").cast(pl.Datetime).dt.replace_time_zone(None)
