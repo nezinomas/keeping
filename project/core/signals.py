@@ -185,11 +185,13 @@ class BalanceSynchronizer:
         return df_db
 
     def _identify_operations(self) -> Tuple[pl.LazyFrame, pl.LazyFrame, pl.LazyFrame]:
+        empty_df = pl.DataFrame().lazy()
+
         if self.df_db.limit(1).collect().is_empty():
-            return self.df, pl.DataFrame().lazy(), pl.DataFrame().lazy()
+            return self.df, empty_df, empty_df
 
         if self.df.limit(1).collect().is_empty():
-            return pl.DataFrame().lazy(), pl.DataFrame().lazy(), self.df_db
+            return empty_df, empty_df, self.df_db
 
         return self._insert_df(), self._update_df(), self._delete_df()
 
