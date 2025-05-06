@@ -193,18 +193,18 @@ class BalanceSynchronizer:
 
         return self._insert_df(), self._update_df(), self._delete_df()
 
-    def _delete_df(self):
+    def _delete_df(self) -> pl.LazyFrame:
         df_keys = self.df.select(self.KEY_FIELDS).unique()
         return self.df_db.join(df_keys, on=self.KEY_FIELDS, how="anti")
 
-    def _insert_df(self):
+    def _insert_df(self) -> pl.LazyFrame:
         return self.df.join(
             self.df_db.lazy().select(self.KEY_FIELDS),
             on=self.KEY_FIELDS,
             how="anti",
         )
 
-    def _update_df(self):
+    def _update_df(self) -> pl.LazyFrame:
         common = self.df.join(self.df_db, on=self.KEY_FIELDS, how="inner", suffix="_db")
 
         return common.filter(
