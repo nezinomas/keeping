@@ -169,14 +169,14 @@ class BalanceSynchronizer:
 
     def _get_existing_records(self) -> pl.LazyFrame:
         # Select only necessary fields to reduce memory usage
-        records = self.model.objects.related().values(
+        records = [*self.model.objects.related().values(
             "id", self.fk_field, "year", *self.fields
-        )
+        )]
         if not records:
             return pl.DataFrame().lazy()
 
         df_db = (
-            pl.DataFrame(list(records)).lazy().rename({self.fk_field: "category_id"})
+            pl.from_dicts(records).lazy().rename({self.fk_field: "category_id"})
         )
         if "latest_check" in df_db.columns:
             df_db = df_db.with_columns(
