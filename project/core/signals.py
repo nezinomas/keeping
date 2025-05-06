@@ -272,6 +272,3 @@ class BalanceSynchronizer:
             self._delete_records(deletes)
             self._insert_records(inserts)
             self._update_records(updates)
-
-            # delete closed account/saving_type/pension_type balances if any exists
-            self.model.objects.filter(year__gt=F(f"{self.fk_field}__closed")).delete()

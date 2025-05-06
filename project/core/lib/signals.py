@@ -84,22 +84,39 @@ class SignalBase(ABC):
     def _create_year_grid(self, df: pl.LazyFrame) -> pl.Expr:
         # Get global max_year
         global_max_year = df.select(pl.col("year").max()).collect().item()
+        global_min_year = df.select(pl.col("year").min()).collect().item()
 
         # Get min_year per category_id
-        year_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
+        min_year_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
 
         # Create a LazyFrame of all years from 0 to global_max_year + 1
-        all_years_df = pl.LazyFrame({"year": range(global_max_year + 2)})
+        all_years_df = pl.LazyFrame(
+            {"year": range(global_min_year, global_max_year + 2)}
+        )
 
         # Create all combinations of category_id and years, filtering by min_year
         all_years = (
-            year_ranges.join(all_years_df, how="cross")
+            min_year_ranges.join(all_years_df, how="cross")
             .filter(pl.col("year") >= pl.col("min_year"))
             .select(["category_id", "year"])
         )
 
         # Join with original DataFrame to include missing years
-        return all_years.join(df, on=["category_id", "year"], how="left")
+        df = all_years.join(df, on=["category_id", "year"], how="left")
+
+        #  list of categories with closed years
+        closed = pl.from_dicts(
+            [{"category_id": x.pk, "closed": x.closed} for x in self._types]
+        ).lazy()
+
+        return (
+            df.join(closed, on="category_id", how="inner")
+            .filter(
+                (pl.col("closed").is_null())  # Keep rows where closed is null
+                | (pl.col("year") <= pl.col("closed"))  # or year < closed
+            )
+            .select(df.collect_schema().names())
+        )
 
 
 class Accounts(SignalBase):
