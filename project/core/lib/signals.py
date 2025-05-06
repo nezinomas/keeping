@@ -56,7 +56,7 @@ class SignalBase(ABC):
             schema |= {"fee": pl.Int32}
 
         if not arr:
-            return pl.DataFrame(arr, schema=schema).lazy()
+            return pl.LazyFrame(arr, schema=schema)
 
         return (
             pl.from_dicts(arr, schema=schema)
@@ -75,7 +75,7 @@ class SignalBase(ABC):
             "have": pl.UInt32,
             "latest_check": pl.Datetime,
         }
-        return pl.DataFrame(have, schema=schema).lazy()
+        return pl.LazyFrame(have, schema=schema)
 
     def _create_year_grid(self, df: pl.LazyFrame) -> pl.Expr:
         # Get min_year per category_id

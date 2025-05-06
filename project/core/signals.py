@@ -174,7 +174,7 @@ class BalanceSynchronizer:
             )
         ]
         if not records:
-            return pl.DataFrame().lazy()
+            return pl.LazyFrame()
 
         df_db = pl.from_dicts(records).lazy().rename({self.fk_field: "category_id"})
         if "latest_check" in df_db.collect_schema().names():
@@ -185,7 +185,7 @@ class BalanceSynchronizer:
         return df_db
 
     def _identify_operations(self) -> Tuple[pl.LazyFrame, pl.LazyFrame, pl.LazyFrame]:
-        empty_df = pl.DataFrame().lazy()
+        empty_df = pl.LazyFrame()
 
         if self.df_db.limit(1).collect().is_empty():
             return self.df, empty_df, empty_df
