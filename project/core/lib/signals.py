@@ -269,14 +269,6 @@ class Savings(SignalBase):
         # drop incomes column, rename fee
         exp = exp.drop("incomes")
         exp = exp.rename({"fee": "sold_fee", "expenses": "sold"})
-        # additional columns
-        cols = [
-            "past_amount",
-            "past_fee",
-            "per_year_incomes",
-            "per_year_fee",
-            "profit_sum",
-        ]
 
         return (
             inc.join(
@@ -293,12 +285,5 @@ class Savings(SignalBase):
                 coalesce=True,
                 nulls_equal=True,
             )
-            .lazy()
             .rename({"have": "market_value"})
-            .with_columns(
-                pl.exclude(
-                    ["category_id", "year", "latest_check", "market_value"]
-                ).fill_null(0)
-            )
-            .with_columns([pl.lit(0).alias(col) for col in cols])
         )
