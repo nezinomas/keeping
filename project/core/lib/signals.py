@@ -38,15 +38,11 @@ class SignalBase(ABC):
         return {category.id: category for category in self._types}
 
     @property
-    def df(self):
+    def df(self) -> pl.LazyFrame:
         return self._table
 
-    @property
-    def year_category_id_set(self) -> set:
-        return set(zip(self._table["year"], self._table["category_id"]))
-
     @abstractmethod
-    def make_table(self, df: pl.DataFrame) -> pl.DataFrame: ...
+    def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame: ...
 
     def _make_df(self, arr: list[dict]) -> pl.DataFrame:
         schema = {
@@ -123,16 +119,16 @@ class Accounts(SignalBase):
     signal_type = "accounts"
 
     def __init__(self, data: GetData):
-        _df = self._make_df(it.chain(data.incomes, data.expenses))
-        _hv = self._make_have(data.have)
-        _df = self._join_df(_df.lazy(), _hv.lazy())
+        _df = self._make_df(it.chain(data.incomes, data.expenses)).lazy()
+        _hv = self._make_have(data.have).lazy()
+        _df = self._join_df(_df, _hv)
 
         self._types = data.types
 
         try:
-            self._table = self.make_table(_df).collect()
+            self._table = self.make_table(_df)
         except TypeError:
-            self._table = _df.collect()
+            self._table = _df
 
     def _missing_and_past_values(self, df: pl.LazyFrame) -> pl.LazyFrame:
         numeric_columns = [
@@ -197,17 +193,17 @@ class Savings(SignalBase):
     signal_type = "savings"
 
     def __init__(self, data: GetData):
-        _in = self._make_df(data.incomes)
-        _ex = self._make_df(data.expenses)
-        _hv = self._make_have(data.have)
-        _df = self._join_df(_in.lazy(), _ex.lazy(), _hv.lazy())
+        _in = self._make_df(data.incomes).lazy()
+        _ex = self._make_df(data.expenses).lazy()
+        _hv = self._make_have(data.have).lazy()
+        _df = self._join_df(_in, _ex, _hv)
 
         self._types = data.types
 
         try:
-            self._table = self.make_table(_df).collect()
+            self._table = self.make_table(_df)
         except TypeError:
-            self._table = _df.collect()
+            self._table = _df
 
     def _fill_missing_past_future_rows(self, df: pl.LazyFrame) -> pl.LazyFrame:
         # Define columns to fill

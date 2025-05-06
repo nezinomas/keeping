@@ -35,7 +35,7 @@ def test_account_insert_new_records_empty_db():
             "past": [0],
             "delta": [0],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(AccountBalance, df)
 
@@ -66,7 +66,7 @@ def test_account_insert_new_records():
             "past": [0],
             "delta": [0],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(AccountBalance, df)
 
@@ -96,7 +96,7 @@ def test_account_update_existing_records():
             "past": [1],  # Updated
             "delta": [1],  # Updated
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(AccountBalance, df)
 
@@ -127,7 +127,7 @@ def test_account_delete_records():
             "past": [],
             "delta": [],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(AccountBalance, df)
 
@@ -154,7 +154,7 @@ def test_account_mixed_operations():
             "past": [1, 0],
             "delta": [1, 0],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(AccountBalance, df)
 
@@ -186,7 +186,7 @@ def test_account_null_latest_check():
             "past": [0],
             "delta": [0],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(AccountBalance, df)
 
@@ -213,7 +213,7 @@ def test_account_empty_dataframe_deletes_all():
             "past": [],
             "delta": [],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(AccountBalance, df)
 
@@ -240,7 +240,7 @@ def test_saving_insert_new_records_empty_db():
             "profit_sum": [100],
             "profit_proc": [110],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(SavingBalance, df)
 
@@ -281,7 +281,7 @@ def test_saving_insert_new_records():
             "profit_sum": [100],
             "profit_proc": [110],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(SavingBalance, df)
 
@@ -322,7 +322,7 @@ def test_saving_delete_records():
             "profit_sum": [],
             "profit_proc": [],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(SavingBalance, df)
 
@@ -349,7 +349,7 @@ def test_saving_update_existing_records():
             "profit_sum": [100],
             "profit_proc": [110],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(SavingBalance, df)
 
@@ -392,7 +392,7 @@ def test_saving_empty_dataframe_deletes_all():
             "profit_sum": [],
             "profit_proc": [],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(SavingBalance, df)
 
@@ -419,7 +419,7 @@ def test_pension_insert_new_records_empty_db():
             "profit_sum": [100],
             "profit_proc": [110],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(PensionBalance, df)
 
@@ -460,7 +460,7 @@ def test_pension_insert_new_records():
             "profit_sum": [100],
             "profit_proc": [110],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(PensionBalance, df)
 
@@ -501,7 +501,7 @@ def test_pension_delete_records():
             "profit_sum": [],
             "profit_proc": [],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(PensionBalance, df)
 
@@ -528,7 +528,7 @@ def test_pension_update_existing_records():
             "profit_sum": [100],
             "profit_proc": [110],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(PensionBalance, df)
 
@@ -571,7 +571,7 @@ def test_pension_empty_dataframe_deletes_all():
             "profit_sum": [],
             "profit_proc": [],
         }
-    )
+    ).lazy()
 
     BalanceSynchronizer(PensionBalance, df)
 

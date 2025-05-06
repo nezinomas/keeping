@@ -147,7 +147,7 @@ SAVING_FIELDS = [
 class BalanceSynchronizer:
     KEY_FIELDS = ["category_id", "year"]
 
-    def __init__(self, model, df) -> None:
+    def __init__(self, model, df: pl.LazyFrame) -> None:
         match model:
             case saving.SavingBalance:
                 self.fk_field = "saving_type_id"
@@ -167,15 +167,15 @@ class BalanceSynchronizer:
 
         self.sync()
 
-    def _get_existing_records(self) -> pl.DataFrame:
+    def _get_existing_records(self) -> pl.LazyFrame:
         # Select only necessary fields to reduce memory usage
         records = self.model.objects.related().values(
             "id", self.fk_field, "year", *self.fields
         )
         if not records:
-            return pl.DataFrame()
+            return pl.DataFrame().lazy()
 
-        df_db = pl.DataFrame(list(records)).rename({self.fk_field: "category_id"})
+        df_db = pl.DataFrame(list(records)).lazy().rename({self.fk_field: "category_id"})
         if "latest_check" in df_db.columns:
             df_db = df_db.with_columns(
                 pl.col("latest_check").cast(pl.Datetime).dt.replace_time_zone(None)
@@ -183,44 +183,36 @@ class BalanceSynchronizer:
 
         return df_db
 
-    def _identify_operations(self) -> Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
-        if self.df_db.is_empty():
-            return self.df, pl.DataFrame(), pl.DataFrame()
+    def _identify_operations(self) -> Tuple[pl.LazyFrame, pl.LazyFrame, pl.LazyFrame]:
+        if self.df_db.limit(1).collect().is_empty():
+            return self.df, pl.DataFrame().lazy(), pl.DataFrame().lazy()
 
-        if self.df.is_empty():
-            return pl.DataFrame(), pl.DataFrame(), self.df_db
+        if self.df.limit(1).collect().is_empty():
+            return pl.DataFrame().lazy(), pl.DataFrame().lazy(), self.df_db
 
         return self._insert_df(), self._update_df(), self._delete_df()
 
     def _delete_df(self):
-        df_keys = self.df.select(self.KEY_FIELDS).unique().lazy()
-        return self.df_db.lazy().join(df_keys, on=self.KEY_FIELDS, how="anti").collect()
+        df_keys = self.df.select(self.KEY_FIELDS).unique()
+        return self.df_db.join(df_keys, on=self.KEY_FIELDS, how="anti")
 
     def _insert_df(self):
-        return (
-            self.df.lazy()
-            .join(
-                self.df_db.lazy().select(self.KEY_FIELDS),
-                on=self.KEY_FIELDS,
-                how="anti",
-            )
-            .collect()
+        return self.df.join(
+            self.df_db.lazy().select(self.KEY_FIELDS),
+            on=self.KEY_FIELDS,
+            how="anti",
         )
 
     def _update_df(self):
-        common = self.df.lazy().join(
-            self.df_db.lazy(), on=self.KEY_FIELDS, how="inner", suffix="_db"
-        )
+        common = self.df.join(self.df_db, on=self.KEY_FIELDS, how="inner", suffix="_db")
 
-        return (
-            common.filter(
-                pl.any_horizontal([pl.col(f) != pl.col(f"{f}_db") for f in self.fields])
-            )
-            .select(self.df.columns)
-            .collect()
-        )
+        return common.filter(
+            pl.any_horizontal([pl.col(f) != pl.col(f"{f}_db") for f in self.fields])
+        ).select(self.df.columns)
 
-    def _delete_records(self, data: pl.DataFrame) -> None:
+    def _delete_records(self, data: pl.LazyFrame) -> None:
+        data = data.collect()
+
         if data.is_empty():
             return
 
@@ -230,20 +222,24 @@ class BalanceSynchronizer:
             **{f"{self.fk_field}__in": category_ids, "year__in": years}
         ).delete()
 
-    def _insert_records(self, data: pl.DataFrame) -> None:
+    def _insert_records(self, data: pl.LazyFrame) -> None:
+        data = data.collect()
+
         if data.is_empty():
             return
 
         if objects := [self._create_object(row) for row in data.to_dicts()]:
             self.model.objects.bulk_create(objects)
 
-    def _update_records(self, data: pl.DataFrame) -> None:
-        if data.is_empty():
+    def _update_records(self, data: pl.LazyFrame) -> None:
+        if data.limit(1).collect().is_empty():
             return
 
         df_map = self.df_db.select(["id", "year", "category_id"])
 
-        updates_with_id = data.join(df_map, on=self.KEY_FIELDS, how="left").to_dicts()
+        updates_with_id = (
+            data.join(df_map, on=self.KEY_FIELDS, how="left").collect().to_dicts()
+        )
 
         if objects := [
             self._create_object(row, update=True) for row in updates_with_id
