@@ -44,7 +44,7 @@ class SignalBase(ABC):
     @abstractmethod
     def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame: ...
 
-    def _make_df(self, arr: list[dict]) -> pl.DataFrame:
+    def _make_df(self, arr: list[dict]) -> pl.LazyFrame:
         schema = {
             "category_id": pl.UInt16,
             "year": pl.UInt16,
@@ -56,10 +56,11 @@ class SignalBase(ABC):
             schema |= {"fee": pl.Int32}
 
         if not arr:
-            return pl.DataFrame(arr, schema=schema)
+            return pl.DataFrame(arr, schema=schema).lazy()
 
         return (
             pl.from_dicts(arr, schema=schema)
+            .lazy()
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
             )
@@ -67,14 +68,14 @@ class SignalBase(ABC):
             .agg(pl.all().sum())
         )
 
-    def _make_have(self, have: list[dict]) -> pl.DataFrame:
+    def _make_have(self, have: list[dict]) -> pl.LazyFrame:
         schema = {
             "category_id": pl.UInt16,
             "year": pl.UInt16,
             "have": pl.UInt32,
             "latest_check": pl.Datetime,
         }
-        return pl.DataFrame(have, schema=schema)
+        return pl.DataFrame(have, schema=schema).lazy()
 
     def _create_year_grid(self, df: pl.LazyFrame) -> pl.Expr:
         # Get min_year per category_id
@@ -109,8 +110,8 @@ class Accounts(SignalBase):
     signal_type = "accounts"
 
     def __init__(self, data: GetData):
-        _df = self._make_df(it.chain(data.incomes, data.expenses)).lazy()
-        _hv = self._make_have(data.have).lazy()
+        _df = self._make_df(it.chain(data.incomes, data.expenses))
+        _hv = self._make_have(data.have)
         _df = self._join_df(_df, _hv)
 
         self._types = data.types
@@ -183,9 +184,9 @@ class Savings(SignalBase):
     signal_type = "savings"
 
     def __init__(self, data: GetData):
-        _in = self._make_df(data.incomes).lazy()
-        _ex = self._make_df(data.expenses).lazy()
-        _hv = self._make_have(data.have).lazy()
+        _in = self._make_df(data.incomes)
+        _ex = self._make_df(data.expenses)
+        _hv = self._make_have(data.have)
         _df = self._join_df(_in, _ex, _hv)
 
         self._types = data.types
