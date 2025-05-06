@@ -218,7 +218,6 @@ class Savings(SignalBase):
                 .over("category_id"),
             )
             .with_columns(
-                # Fill remaining market_value nulls with 0
                 pl.col("market_value").fill_null(0)
             )
         )
