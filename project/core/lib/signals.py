@@ -115,7 +115,7 @@ class SignalBase(ABC):
                 (pl.col("closed").is_null())  # Keep rows where closed is null
                 | (pl.col("year") <= pl.col("closed"))  # or year < closed
             )
-            .select(df.columns)
+            .select(df.collect_schema().names())
         )
 
 
