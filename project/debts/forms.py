@@ -1,5 +1,4 @@
 from bootstrap_datepicker_plus.widgets import DatePickerInput
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
@@ -62,8 +61,6 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["price"].label = _("Sum")
         self.fields["remark"].label = _("Remark")
         self.fields["closed"].label = _("Returned")
-
-        self.helper = FormHelper()
 
     def save(self, *args, **kwargs):
         # set debt_type
@@ -146,8 +143,6 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["debt"].label = _name
         self.fields["price"].label = _("Sum")
         self.fields["remark"].label = _("Remark")
-
-        self.helper = FormHelper()
 
     def clean_price(self):
         price = self.cleaned_data["price"]

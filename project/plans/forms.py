@@ -2,7 +2,6 @@ import calendar
 from datetime import datetime
 
 from bootstrap_datepicker_plus.widgets import YearPickerInput
-from crispy_forms.helper import FormHelper
 from dateutil.relativedelta import relativedelta
 from django import forms
 from django.apps import apps
@@ -100,8 +99,6 @@ class IncomePlanForm(YearFormMixin):
         self.fields["income_type"].label = _("Income type")
         common_field_transalion(self)
 
-        self.helper = FormHelper()
-
 
 # ----------------------------------------------------------------------------
 #                                                            Expense Plan Form
@@ -132,8 +129,6 @@ class ExpensePlanForm(YearFormMixin):
         # field translation
         self.fields["expense_type"].label = _("Expense type")
         common_field_transalion(self)
-
-        self.helper = FormHelper()
 
 
 # ----------------------------------------------------------------------------
@@ -166,8 +161,6 @@ class SavingPlanForm(YearFormMixin):
         self.fields["saving_type"].label = _("Saving type")
         common_field_transalion(self)
 
-        self.helper = FormHelper()
-
 
 # ----------------------------------------------------------------------------
 #                                                                Day Plan Form
@@ -194,8 +187,6 @@ class DayPlanForm(YearFormMixin):
 
         # field translation
         common_field_transalion(self)
-
-        self.helper = FormHelper()
 
 
 # ----------------------------------------------------------------------------
@@ -227,8 +218,6 @@ class NecessaryPlanForm(YearFormMixin):
         # field translation
         self.fields["expense_type"].label = _("Expense type")
         common_field_transalion(self)
-
-        self.helper = FormHelper()
 
 
 # ----------------------------------------------------------------------------
@@ -352,5 +341,3 @@ class CopyPlanForm(forms.Form):
         self.fields["saving"].label = _("Savings plans")
         self.fields["day"].label = _("Day plans")
         self.fields["necessary"].label = _("Plans for additional necessary expenses")
-
-        self.helper = FormHelper()

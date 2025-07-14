@@ -1,5 +1,4 @@
 from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -32,8 +31,6 @@ class SavingTypeForm(forms.ModelForm):
         self.fields["title"].label = _("Fund")
         self.fields["closed"].label = _("Closed")
         self.fields["type"].label = _("Type")
-
-        self.helper = FormHelper()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -82,8 +79,6 @@ class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["fee"].label = _("Fees")
         self.fields["remark"].label = _("Remark")
         self.fields["saving_type"].label = _("Fund")
-
-        self.helper = FormHelper()
 
     def clean(self):
         cleaned_data = super().clean()

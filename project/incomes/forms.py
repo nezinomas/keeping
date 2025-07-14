@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -47,8 +46,6 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
         self.fields["remark"].label = _("Remark")
         self.fields["income_type"].label = _("Incomes type")
 
-        self.helper = FormHelper()
-
     def clean_date(self):
         dt = self.cleaned_data["date"]
 
@@ -82,5 +79,3 @@ class IncomeTypeForm(forms.ModelForm):
 
         self.fields["title"].label = _("Incomes type")
         self.fields["type"].label = _("Type")
-
-        self.helper = FormHelper()

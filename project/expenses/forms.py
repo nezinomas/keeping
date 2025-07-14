@@ -2,7 +2,6 @@ import contextlib
 from datetime import datetime
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.core.exceptions import ValidationError
 from django.urls import reverse
@@ -69,8 +68,6 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
             "class": "disabled",
         }
         self.fields["remark"].widget.attrs["rows"] = 3
-
-        self.helper = FormHelper()
 
     def _initial_fields_values(self):
         if not self.instance.pk:
@@ -205,8 +202,6 @@ class ExpenseTypeForm(forms.ModelForm):
         self.fields["title"].label = _("Title")
         self.fields["necessary"].label = _("Necessary")
 
-        self.helper = FormHelper()
-
 
 class ExpenseNameForm(forms.ModelForm):
     class Meta:
@@ -229,8 +224,6 @@ class ExpenseNameForm(forms.ModelForm):
         self.fields["parent"].label = _("Expense type")
         self.fields["title"].label = _("Expense name")
         self.fields["valid_for"].label = _("Valid for")
-
-        self.helper = FormHelper()
 
     def clean(self):
         cleaned_data = super().clean()

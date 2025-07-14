@@ -1,5 +1,4 @@
 from bootstrap_datepicker_plus.widgets import YearPickerInput
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -33,8 +32,6 @@ class AccountForm(forms.ModelForm):
         self.fields["title"].label = _("Account title")
         self.fields["closed"].label = _("Closed")
         self.fields["order"].label = _("Sorting")
-
-        self.helper = FormHelper()
 
     def clean(self):
         cleaned_data = super().clean()

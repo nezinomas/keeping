@@ -1,5 +1,4 @@
 from bootstrap_datepicker_plus.widgets import DatePickerInput
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -29,8 +28,6 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self._overwrite_default_queries()
         self._set_htmx_attributes()
         self._translate_fields()
-
-        self.helper = FormHelper()
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerInput(
@@ -92,8 +89,6 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
             self.fields["close"].initial = True
 
-        self.helper = FormHelper()
-
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerInput(
             options={
@@ -154,8 +149,6 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         # if from_account is closed, update close checkbox value
         if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
             self.fields["close"].initial = True
-
-        self.helper = FormHelper()
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerInput(

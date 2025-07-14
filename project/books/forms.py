@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -49,8 +48,6 @@ class BookForm(forms.ModelForm):
         self.fields["title"].label = _("Title")
         self.fields["author"].label = _("Author")
         self.fields["remark"].label = _("Remark")
-
-        self.helper = FormHelper()
 
     def clean_started(self):
         dt = self.cleaned_data["started"]
@@ -110,8 +107,6 @@ class BookTargetForm(forms.ModelForm):
 
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("How many")
-
-        self.helper = FormHelper()
 
     def clean(self):
         cleaned_data = super().clean()

@@ -51,8 +51,6 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
         self.fields["quantity"].help_text = _help_text
 
-        self.helper = FormHelper()
-
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
         instance.counter_type = App_name
@@ -92,8 +90,6 @@ class DrinkTargetForm(forms.ModelForm):
         h2 = f"<b>{_('pcs')}</b> - {_type} Std Av"
         help_text = f"{h1}</br>{h2}"
         self.fields["quantity"].help_text = help_text
-
-        self.helper = FormHelper()
 
     def clean(self):
         cleaned_data = super().clean()
