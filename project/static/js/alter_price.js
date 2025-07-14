@@ -1,6 +1,12 @@
 $(document).ready(function () {
-    document.getElementById("id_price").type = "text";
-    document.getElementById("id_fee").type = "text";
+    const fields = ["id_price", "id_fee"];
+
+    fields.forEach(field => {
+        let element = document.getElementById(field);
+        if (element) {
+            element.type = "text";
+        }
+    });
 });
 
 

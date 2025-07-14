@@ -43,11 +43,19 @@
 
   document.addEventListener('DOMContentLoaded', function (event) {
     setTimeout(() => findAndProcessInputs(document));
-    document.addEventListener('DOMNodeInserted', function (event) {
-      setTimeout(() => {
-        if (event.target.querySelectorAll) findAndProcessInputs(event.target);
-      });
+    const observer = new MutationObserver((mutationsList, observer) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'childList') {
+          const addedNodes = Array.from(mutation.addedNodes);
+          addedNodes.forEach(node => {
+            if (node.querySelectorAll) {
+              findAndProcessInputs(node);
+            }
+          });
+        }
+      }
     });
+    observer.observe(document, { childList: true, subtree: true });
   });
 
   /**
@@ -83,6 +91,11 @@
     if (config.range_from) config.options.useCurrent = false; // based on https://github.com/Eonasdan/tempus-dominus/issues/1075
     const widgetInstance = createWidgetInstance(inputWrapper, hiddenInputElement, config);
     widgetInstances.set(hiddenInputElement, widgetInstance);
+
+    const form = hiddenInputElement.closest("form");
+    form?.addEventListener("reset", () => {
+      setTimeout(() => inputElement.dispatchEvent(new Event("change")));
+    })
 
     if (config.range_from) {
       const widgetRangeFromInstance = getRangeFromInputElement(hiddenInputElement, config);
