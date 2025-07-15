@@ -1,5 +1,29 @@
+{% extends "core/generic_form.html" %}
+{% load crispy_forms_tags %}
 {% load static %}
+{% load i18n %}
+
+{% block form_field %}
+
+    {% if field.html_name == 'total_sum' %}
+    <!-- add price field -->
+    <div class="item-price">
+        {{ field|as_crispy_field }}
+        <div id="div_sum_prices"><button type="button" id="add_price" class="button-secondary">{% translate 'Add' %}</button></div>
+    </div>
+    {% else %}
+        {{ field|as_crispy_field }}
+    {% endif %}
+
+{% endblock form_field %}
+
+
+
+<!-- Include additional scripts -->
+{% block from_scripts %}
+
+{{ block.super }}
 
 <script src="{% static 'js/expense_form.js' %}"></script>
 
-{% include 'core/generic_form.html' %}
+{% endblock from_scripts %}

@@ -2,9 +2,9 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
+
 <form method="POST" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted">
     {% csrf_token %}
-    {% include 'core/form_date_scripts.html' %}
     <div class="modal-header">
         <h5 class="modal-title">{{ form_title|safe }}</h5>
         <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
@@ -15,21 +15,23 @@
         {% for field in form %}
         {% if not field.is_hidden %}
 
-            {% if field.html_name == 'total_sum' %}
-            <!-- add price field -->
-            <div class="item-price">
+            {% block form_field %}
                 {{ field|as_crispy_field }}
-                <div id="div_sum_prices"><button type="button" id="add_price" class="button-secondary">{% translate 'Add' %}</button></div>
-            </div>
-            {% else %}
-            {{ field|as_crispy_field }}
-            {% endif %}
+            {% endblock form_field %}
         {% endif %}
         {% endfor %}
     </div>
 
-
-    {% include 'core/form_footer.html' %}
+    {% block form_footer %}
+        {% include 'core/form_footer.html' %}
+    {% endblock form_footer %}
 </form>
 
-{% if 'price' or 'fee' in form.fields %}<script src="{% static 'js/alter_price.js' %}"></script>{% endif %}
+
+{% block from_scripts %}
+    {% include 'core/form_date_scripts.html' %}
+    {% if 'price' or 'fee' in form.fields %}
+        <script src="{% static 'js/alter_price.js' %}"></script>
+    {% endif %}
+{% endblock from_scripts %}
+
