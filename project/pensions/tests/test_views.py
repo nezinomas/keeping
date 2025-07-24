@@ -4,6 +4,7 @@ import pytest
 import time_machine
 from django.urls import resolve, reverse
 
+from ...core.tests.utils import clean_content
 from .. import models, views
 from ..factories import Pension, PensionFactory, PensionTypeFactory
 
@@ -91,7 +92,7 @@ def test_pensions_load_update_form_button(client_logged):
 
     url = reverse("pensions:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
-    form = response.content.decode("utf-8")
+    form = clean_content(response.content.decode("utf-8"))
 
     assert "Atnaujinti ir uždaryti</button>" in form
 
