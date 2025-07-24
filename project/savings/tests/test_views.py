@@ -5,6 +5,7 @@ import time_machine
 from django.urls import resolve, reverse
 
 from ...accounts.factories import AccountFactory
+from ...core.tests.utils import clean_content
 from .. import models, views
 from ..factories import Saving, SavingFactory, SavingTypeFactory
 
@@ -125,7 +126,7 @@ def test_savings_load_update_form_button(client_logged):
     response = client_logged.get(url)
     form = response.content.decode("utf-8")
 
-    assert "Atnaujinti ir uždaryti</button>" in form
+    assert "Atnaujinti ir uždaryti</button>" in clean_content(form)
 
 
 def test_savings_load_update_form_field_values(client_logged):

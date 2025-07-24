@@ -1,24 +1,31 @@
-{% load crispy_forms_tags %}
 {% load i18n %}
 
 <form method="post" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{% url 'users:invite' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
     {% csrf_token %}
+
     <div class="modal-header">
         <h5 class="modal-title">{% translate 'Invitation' %}</h5>
         <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
+
     <div class="modal-body">
         {% if not send %}
-        {{ form|as_crispy_errors }}
-        {% for field in form %}{{ field|as_crispy_field }}{% endfor %}
+            <c-form-errors :errors=form.non_field_errors />
+            <c-form-body :form=form />
         {% else %}
-        <p>{% translate 'Email sent' %}</p>
+            <p>{% translate 'Email sent' %}</p>
         {% endif %}
-
     </div>
+
     <div class="modal-footer">
         {% if not send %}
-        <button type="submit" id="submit" class="button-secondary">{% translate 'Send invitation' %}</button>
+            <button type="submit" id="submit" class="button-secondary">
+                {% translate 'Send invitation' %}
+            </button>
         {% endif %}
-        <button type="button" class="button-active modal-close" data-dismiss="mainModal">{% translate 'Close' %}</button></div>
+
+        <button type="button" class="button-active modal-close" data-dismiss="mainModal">
+            {% translate 'Close' %}
+        </button>
+    </div>
 </form>

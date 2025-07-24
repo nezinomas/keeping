@@ -1,6 +1,5 @@
 {% extends 'users/users_base.html' %}
 {% load i18n %}
-{% load crispy_forms_tags %}
 
 
 {% block content %}
@@ -12,36 +11,37 @@
         <form method="post" class="login-form" novalidate>
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">
-            {% include 'core/form_errors.html' %}
-            {% for field in form %}{{ field|as_crispy_field }}{% endfor %}
+
+            <c-form-errors :errors=form.non_field_errors />
+            <c-form-body :form=form />
+
             <button type="submit" class="button-active">{{ submit_button_text }}</button>
         </form>
     </div>
 
     {% if signup_link and not form.errors %}
-    <div class="login-footer">
-        {% translate 'New to this site?' %} <a href="{% url 'users:signup' %}">{% translate 'Sign up' %}</a>
-    </div>
+        <div class="login-footer">
+            {% translate 'New to this site?' %} <a href="{% url 'users:signup' %}">{% translate 'Sign up' %}</a>
+        </div>
     {% endif %}
 
 
     {% if login_link and not form.errors %}
-    <div class="login-footer">
-        {% translate 'Already have an account?' %} <a href="{% url 'users:login' %}">{% translate 'Log in' %}</a>
-    </div>
+        <div class="login-footer">
+            {% translate 'Already have an account?' %} <a href="{% url 'users:login' %}">{% translate 'Log in' %}</a>
+        </div>
     {% endif %}
 
 
     {% if reset_link and form.errors %}
-    <div class="login-footer">
-        <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
-    </div>
-
-
-{% endif %}
+        <div class="login-footer">
+            <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
+        </div>
+    {% endif %}
 
 {% else %}
     <p>{% translate 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' %}</p>
 {% endif %}
 </div>
+
 {% endblock %}

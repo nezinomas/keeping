@@ -78,7 +78,7 @@ class CreateUpdateMixin:
 
     def get_context_data(self, **kwargs):
         context = {
-            "form_title": getattr(self, "form_title", None),
+            "modal_form_title": getattr(self, "modal_form_title", None),
             "modal_body_css_class": getattr(self, "modal_body_css_class", ""),
             "form_action": self.form_action,
             "url": self.url,
@@ -121,7 +121,7 @@ class DeleteMixin:
     def get_context_data(self, **kwargs):
         context = {
             "url": self.url,
-            "form_title": self.form_title,
+            "modal_form_title": self.modal_form_title,
         }
         return super().get_context_data(**kwargs) | context
 

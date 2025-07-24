@@ -5,7 +5,7 @@ import time_machine
 from django.urls import resolve, reverse
 
 from ...accounts.factories import AccountFactory
-from ...core.tests.utils import change_profile_year
+from ...core.tests.utils import change_profile_year, clean_content
 from .. import models
 from ..factories import Expense, ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..views import expenses, expenses_name, expenses_type
@@ -146,7 +146,7 @@ def test_expenses_load_new_form(main_user, client_logged):
     url = reverse("expenses:new")
 
     response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
+    actual = clean_content(response.content.decode("utf-8"))
 
     assert "3000-08-08" in actual
     assert "Įrašyti</button>" in actual
@@ -200,7 +200,7 @@ def test_expenses_load_update_form_button(client_logged):
 
     url = reverse("expenses:update", kwargs={"pk": e.pk})
     response = client_logged.get(url)
-    form = response.content.decode("utf-8")
+    form = clean_content(response.content.decode("utf-8"))
 
     assert "Atnaujinti ir uždaryti</button>" in form
 
