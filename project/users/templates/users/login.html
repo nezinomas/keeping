@@ -38,11 +38,11 @@
         <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
     </div>
 
-
 {% endif %}
 
 {% else %}
     <p>{% translate 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' %}</p>
 {% endif %}
 </div>
+
 {% endblock %}
