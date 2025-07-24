@@ -91,5 +91,6 @@ class FormsetMixin:
         context = {
             "formset": self.get_formset(self.request.POST or None),
             "modal_form_title": getattr(self, "modal_form_title", None),
+            "modal_body_css_class": getattr(self, "modal_body_css_class", "worth-form"),
         }
         return super().get_context_data(**kwargs) | context
