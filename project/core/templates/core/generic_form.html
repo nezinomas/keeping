@@ -13,6 +13,7 @@
 
     <div class="modal-body {{modal_body_css_class}}">
         {% block form %}
+            <c-form-errors :errors=form.non_field_errors />
             <c-form-body :form=form />
         {% endblock form %}
     </div>

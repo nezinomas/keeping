@@ -12,8 +12,10 @@
         <form method="post" class="login-form" novalidate>
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">
-            {% include 'core/form_errors.html' %}
-            {% for field in form %}{{ field|as_crispy_field }}{% endfor %}
+            <c-form-errors :errors=form.non_field_errors />
+            {% for field in form %}
+                {{ field|as_crispy_field }}
+            {% endfor %}
             <button type="submit" class="button-active">{{ submit_button_text }}</button>
         </form>
     </div>

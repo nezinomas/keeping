@@ -7,13 +7,7 @@
 {% block form %}
     {{ formset.management_form }}
 
-    {% if formset.non_form_errors %}
-    <div class="alert alert-danger">
-        {% for error in formset.non_form_errors %}
-            <strong>{{ error|escape }}</strong>
-        {% endfor %}
-    </div>
-    {% endif %}
+    <c-form-errors :errors=formset.non_form_errors />
 
     {% for form in formset.forms %}
         <c-form-body :form=form />
