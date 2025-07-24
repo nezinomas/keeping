@@ -5,7 +5,7 @@
 <form method="post" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted" >
     {% csrf_token %}
     {% include 'core/form_date_scripts.html' %}
-    {{ formset.management_form|crispy }}
+    {{ formset.management_form }}
 
     <div class="modal-header">
         <h5 class="modal-title">{{ modal_form_title|safe }}</h5>
