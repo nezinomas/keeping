@@ -90,6 +90,6 @@ class FormsetMixin:
     def get_context_data(self, **kwargs):
         context = {
             "formset": self.get_formset(self.request.POST or None),
-            "formset_title": getattr(self, "formset_title", None),
+            "modal_form_title": getattr(self, "modal_form_title", None),
         }
         return super().get_context_data(**kwargs) | context

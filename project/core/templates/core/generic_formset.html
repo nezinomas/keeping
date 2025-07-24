@@ -8,7 +8,7 @@
     {{ formset.management_form|crispy }}
 
     <div class="modal-header">
-        <h5 class="modal-title">{{ formset_title }}</h5>
+        <h5 class="modal-title">{{ modal_form_title|safe }}</h5>
         <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body worth-form">
