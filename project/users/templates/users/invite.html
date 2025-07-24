@@ -2,10 +2,12 @@
 
 <form method="post" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{% url 'users:invite' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
     {% csrf_token %}
+
     <div class="modal-header">
         <h5 class="modal-title">{% translate 'Invitation' %}</h5>
         <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
+
     <div class="modal-body">
         {% if not send %}
             <c-form-errors :errors=form.non_field_errors />
@@ -13,8 +15,8 @@
         {% else %}
             <p>{% translate 'Email sent' %}</p>
         {% endif %}
-
     </div>
+
     <div class="modal-footer">
         {% if not send %}
             <button type="submit" id="submit" class="button-secondary">
@@ -23,6 +25,7 @@
         {% endif %}
 
         <button type="button" class="button-active modal-close" data-dismiss="mainModal">
-            {% translate 'Close' %}</button>
-        </div>
+            {% translate 'Close' %}
+        </button>
+    </div>
 </form>
