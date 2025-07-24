@@ -11,15 +11,7 @@
     </div>
     <div class="modal-body {{modal_body_css_class}}">
         {% block form %}
-            {% include 'core/form_errors.html' %}
-
-            {% for field in form %}
-                {% if not field.is_hidden %}
-                    {% block form_field %}
-                        {{ field|as_crispy_field }}
-                    {% endblock form_field %}
-                {% endif %}
-            {% endfor %}
+            <c-form-body :form=form />
         {% endblock form %}
     </div>
 

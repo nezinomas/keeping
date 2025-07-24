@@ -16,7 +16,7 @@
     {% endif %}
 
     {% for form in formset.forms %}
-        {{ block.super}}
+        <c-form-body :form=form />
     {% endfor %}
 
 {% endblock form %}
