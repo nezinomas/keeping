@@ -12,17 +12,19 @@
 
     {% if found %}
 
-    <div id="chart-container">
-        {{chart|json_script:"chart-data"}}
-        <script src="/static/js/chart_summary_expenses.js"></script>
-        <script>
-            chartExpenses('chart-data', 'chart-container');
-        </script>
-    </div>
+        <div id="chart-container">
+            {{chart|json_script:"chart-data"}}
+            <script src="/static/js/chart_summary_expenses.js"></script>
+            <script>
+                chartExpenses('chart-data', 'chart-container');
+            </script>
+        </div>
 
-    {% include 'bookkeeping/includes/summary_expenses_table.html' %}</div>
+        {% include 'bookkeeping/includes/summary_expenses_table.html' %}</div>
 
     {% elif not found and error %}
-    <div class="alert alert-danger">{{error}}</div>
+
+        <div class="alert alert-danger">{{error}}</div>
+
     {% endif %}
 </div>
