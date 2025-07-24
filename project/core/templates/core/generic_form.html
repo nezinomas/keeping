@@ -10,15 +10,17 @@
         <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
     </div>
     <div class="modal-body {{modal_body_css_class}}">
-        {% include 'core/form_errors.html' %}
+        {% block form %}
+            {% include 'core/form_errors.html' %}
 
-        {% for field in form %}
-            {% if not field.is_hidden %}
-                {% block form_field %}
-                    {{ field|as_crispy_field }}
-                {% endblock form_field %}
-            {% endif %}
-        {% endfor %}
+            {% for field in form %}
+                {% if not field.is_hidden %}
+                    {% block form_field %}
+                        {{ field|as_crispy_field }}
+                    {% endblock form_field %}
+                {% endif %}
+            {% endfor %}
+        {% endblock form %}
     </div>
 
     {% block form_footer %}

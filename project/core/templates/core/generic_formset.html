@@ -1,30 +1,22 @@
+{% extends "core/generic_form.html" %}
+
 {% load crispy_forms_tags %}
 {% load i18n %}
 
 
-<form method="post" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-encoding="multipart/form-data"  data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted" >
-    {% csrf_token %}
-    {% include 'core/form_date_scripts.html' %}
+{% block form %}
     {{ formset.management_form }}
-
-    <div class="modal-header">
-        <h5 class="modal-title">{{ modal_form_title|safe }}</h5>
-        <button type="button" class="button-close modal-close" data-dismiss="mainModal" aria-label="{% translate 'Close' %}"></button>
+    {% if formset.non_form_errors %}
+    <div class="alert alert-danger">
+    {% for error in formset.non_form_errors %}<strong>{{ error|escape }}</strong>{% endfor %}
     </div>
-    <div class="modal-body {{modal_body_css_class}}">
-        {% if formset.non_form_errors %}
-        <div class="alert alert-danger">
-        {% for error in formset.non_form_errors %}<strong>{{ error|escape }}</strong>{% endfor %}
-        </div>
-        {% endif %}
+    {% endif %}
 
-        {% for form in formset.forms %}
-        {% include 'core/form_errors.html' %}
-            {% for field in form %}
+    {% for form in formset.forms %}
+    {% include 'core/form_errors.html' %}
+        {% for field in form %}
             {{ field|as_crispy_field }}
-            {% endfor %}
         {% endfor %}
-    </div>
+    {% endfor %}
 
-    {% include 'core/form_footer.html' %}
-</form>
+{% endblock form %}
