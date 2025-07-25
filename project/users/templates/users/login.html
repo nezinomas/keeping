@@ -3,6 +3,7 @@
 
 
 {% block content %}
+<!-- main div start -->
 <div>
 {% if valid_link %}
     <div class="grid-one-col">
@@ -18,36 +19,36 @@
         </form>
     </div>
 
+    <!-- footer start -->
+    <div class="login-footer">
     {% if form.errors %}
 
         {% if reset_link %}
-            <div class="login-footer">
-                <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
-            </div>
+            <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
         {% endif %}
 
     {% else %}
 
         {% if signup_link %}
-            <div class="login-footer">
-                {% translate 'New to this site?' %} <a href="{% url 'users:signup' %}">{% translate 'Sign up' %}</a>
-            </div>
+            {% translate 'New to this site?' %} <a href="{% url 'users:signup' %}">{% translate 'Sign up' %}</a>
         {% endif %}
 
 
         {% if login_link %}
-            <div class="login-footer">
-                {% translate 'Already have an account?' %} <a href="{% url 'users:login' %}">{% translate 'Log in' %}</a>
-            </div>
+            {% translate 'Already have an account?' %} <a href="{% url 'users:login' %}">{% translate 'Log in' %}</a>
         {% endif %}
 
     {% endif %}
+    </div>
+    <!-- footer end -->
 
 {% else %}
 
     <p>{% translate 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' %}</p>
 
 {% endif %}
+
 </div>
+<!-- main div end -->
 
 {% endblock %}
