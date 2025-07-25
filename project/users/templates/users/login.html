@@ -19,28 +19,35 @@
         </form>
     </div>
 
-    {% if signup_link and not form.errors %}
-        <div class="login-footer">
-            {% translate 'New to this site?' %} <a href="{% url 'users:signup' %}">{% translate 'Sign up' %}</a>
-        </div>
-    {% endif %}
+    {% if form.errors %}
+
+        {% if reset_link %}
+            <div class="login-footer">
+                <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
+            </div>
+        {% endif %}
+
+    {% else %}
+
+        {% if signup_link %}
+            <div class="login-footer">
+                {% translate 'New to this site?' %} <a href="{% url 'users:signup' %}">{% translate 'Sign up' %}</a>
+            </div>
+        {% endif %}
 
 
-    {% if login_link and not form.errors %}
-        <div class="login-footer">
-            {% translate 'Already have an account?' %} <a href="{% url 'users:login' %}">{% translate 'Log in' %}</a>
-        </div>
-    {% endif %}
+        {% if login_link %}
+            <div class="login-footer">
+                {% translate 'Already have an account?' %} <a href="{% url 'users:login' %}">{% translate 'Log in' %}</a>
+            </div>
+        {% endif %}
 
-
-    {% if reset_link and form.errors %}
-        <div class="login-footer">
-            <a href="{% url 'users:password_reset' %}">{% translate 'Forgot your password?' %}</a>
-        </div>
     {% endif %}
 
 {% else %}
+
     <p>{% translate 'It seems that your invitation is no longer valid. Ask a friend to provide a new link.' %}</p>
+
 {% endif %}
 </div>
 
