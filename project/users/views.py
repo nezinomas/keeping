@@ -50,7 +50,7 @@ class Login(auth_views.LoginView):
         context = super().get_context_data(**kwargs)
         context["submit_button_text"] = _("Log in")
         context["reset_link"] = True
-        context["signup_link"] = True
+        context["signup_link"] = settings.ENV["CAN_SIGN_UP"]
         context["valid_link"] = True
         return context
 
@@ -84,6 +84,12 @@ class Signup(CreateView):
     template_name = "users/login.html"
     success_url = reverse_lazy("bookkeeping:index")
     form_class = forms.SignUpForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not settings.ENV["CAN_SIGN_UP"]:
+            return redirect(reverse("users:login"))
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
