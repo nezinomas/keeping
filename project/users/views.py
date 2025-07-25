@@ -49,7 +49,6 @@ class Login(auth_views.LoginView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["submit_button_text"] = _("Log in")
-        context["card_title"] = _("Log in")
         context["reset_link"] = True
         context["signup_link"] = True
         context["valid_link"] = True
@@ -89,7 +88,6 @@ class Signup(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["submit_button_text"] = _("Sign up")
-        context["card_title"] = _("Sign up")
         context["login_link"] = True
         context["valid_link"] = True
         return context
@@ -114,7 +112,6 @@ class PasswordReset(auth_views.PasswordResetView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["submit_button_text"] = _("Send password reset email")
-        context["card_title"] = _("Reset your password")
         context["card_text"] = _(
             "Enter your email address and system will send you a link to reset your pasword."  # noqa: E501
         )
@@ -131,7 +128,6 @@ class PasswordResetDone(auth_views.PasswordResetDoneView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["card_title"] = _("Reset your password")
         context["card_text"] = _(
             "Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder."  # noqa: E501
         )
@@ -150,7 +146,6 @@ class PasswordChange(auth_views.PasswordChangeView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["submit_button_text"] = _("Change password")
-        context["card_title"] = _("Change password")
         context["valid_link"] = True
 
         return context
@@ -232,7 +227,6 @@ class InviteSignup(CreateView):
         context = super().get_context_data(**kwargs)
 
         context["submit_button_text"] = _("Sign up")
-        context["card_title"] = _("Sign up")
         context["login_link"] = True
         context["valid_link"] = self.valid_link
         return context
