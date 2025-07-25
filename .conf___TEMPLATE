@@ -5,6 +5,7 @@ DJANGO_SETTINGS_MODULE = "project.config.settings.develop"
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 MEDIA_ROOT = "\path\to\media\folder\"
 LOG_FILE = "\path\to\log_file.log"
+CAN_SIGN_UP = true
 
 [database]
 NAME = "database name"

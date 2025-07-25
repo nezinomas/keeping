@@ -49,9 +49,8 @@ class Login(auth_views.LoginView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["submit_button_text"] = _("Log in")
-        context["card_title"] = _("Log in")
         context["reset_link"] = True
-        context["signup_link"] = True
+        context["signup_link"] = settings.ENV["CAN_SIGN_UP"]
         context["valid_link"] = True
         return context
 
@@ -86,10 +85,15 @@ class Signup(CreateView):
     success_url = reverse_lazy("bookkeeping:index")
     form_class = forms.SignUpForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not settings.ENV["CAN_SIGN_UP"]:
+            return redirect(reverse("users:login"))
+
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["submit_button_text"] = _("Sign up")
-        context["card_title"] = _("Sign up")
         context["login_link"] = True
         context["valid_link"] = True
         return context
@@ -114,7 +118,6 @@ class PasswordReset(auth_views.PasswordResetView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["submit_button_text"] = _("Send password reset email")
-        context["card_title"] = _("Reset your password")
         context["card_text"] = _(
             "Enter your email address and system will send you a link to reset your pasword."  # noqa: E501
         )
@@ -131,7 +134,6 @@ class PasswordResetDone(auth_views.PasswordResetDoneView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["card_title"] = _("Reset your password")
         context["card_text"] = _(
             "Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder."  # noqa: E501
         )
@@ -150,7 +152,6 @@ class PasswordChange(auth_views.PasswordChangeView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["submit_button_text"] = _("Change password")
-        context["card_title"] = _("Change password")
         context["valid_link"] = True
 
         return context
@@ -232,7 +233,6 @@ class InviteSignup(CreateView):
         context = super().get_context_data(**kwargs)
 
         context["submit_button_text"] = _("Sign up")
-        context["card_title"] = _("Sign up")
         context["login_link"] = True
         context["valid_link"] = self.valid_link
         return context
@@ -244,7 +244,7 @@ class InviteSignup(CreateView):
         orig = signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
 
         with contextlib.suppress(AttributeError, ObjectDoesNotExist):
-            user = User.objects.related().get(pk=orig["usr"])
+            user = User.objects.get(pk=orig["usr"], journal__pk=orig["jrn"])
 
         if user:
             obj = form.save(commit=False)

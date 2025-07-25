@@ -6,7 +6,6 @@
 <div>
 {% if valid_link %}
     <div class="grid-one-col">
-        <h3>{{ card_title }}</h3>
         {% if card_text %}<p>{{ card_text }}</p>{% endif %}
         <form method="post" class="login-form" novalidate>
             {% csrf_token %}

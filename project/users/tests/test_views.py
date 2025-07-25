@@ -13,6 +13,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.signing import TimestampSigner
+from django.test import override_settings
 from django.urls import resolve, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -96,6 +97,7 @@ def test_user_no_reset_link(client):
     assert f'href="{reset}"' not in content
 
 
+@override_settings(ENV={"CAN_SIGN_UP": "True"})
 def test_user_signup_link(client):
     url = reverse("users:login")
     response = client.get(url)
@@ -140,6 +142,7 @@ def test_signup_func():
     assert views.Signup == view.func.view_class
 
 
+@override_settings(ENV={"CAN_SIGN_UP": "True"})
 def test_signup_200(client):
     url = reverse("users:signup")
     response = client.get(url)
@@ -147,6 +150,7 @@ def test_signup_200(client):
     assert response.status_code == 200
 
 
+@override_settings(ENV={"CAN_SIGN_UP": "True"})
 def test_signup_no_link(client):
     url = reverse("users:signup")
     response = client.get(url)
@@ -156,6 +160,7 @@ def test_signup_no_link(client):
     assert f'href="{signup}"' not in content
 
 
+@override_settings(ENV={"CAN_SIGN_UP": "True"})
 def test_signup_login_link(client):
     url = reverse("users:signup")
     response = client.get(url)
@@ -165,6 +170,7 @@ def test_signup_login_link(client):
     assert f'href="{login}"' in content
 
 
+@override_settings(ENV={"CAN_SIGN_UP": "True"})
 def test_signup_form(client):
     url = reverse("users:signup")
     response = client.get(url)
@@ -174,6 +180,7 @@ def test_signup_form(client):
     assert isinstance(form, forms.SignUpForm)
 
 
+@override_settings(ENV={"CAN_SIGN_UP": "True"})
 def test_signup_form_inputs(client):
     url = reverse("users:signup")
     response = client.get(url)
@@ -189,6 +196,7 @@ def test_signup_form_inputs(client):
 
 
 @pytest.fixture
+@override_settings(ENV={"CAN_SIGN_UP": "True"})
 def _signuped_client(client):
     url = reverse("users:signup")
     data = {
@@ -235,6 +243,7 @@ def test_signup_journal_creation(_signuped_client):
     assert str(journal) == "john Journal"
 
 
+@override_settings(ENV={"CAN_SIGN_UP": "True"})
 @pytest.mark.disable_get_user_patch
 def test_signup_invalid_status_code(client):
     url = reverse("users:signup")
@@ -243,6 +252,7 @@ def test_signup_invalid_status_code(client):
     assert response.status_code == 200
 
 
+@override_settings(ENV={"CAN_SIGN_UP": "True"})
 @pytest.mark.disable_get_user_patch
 def test_signup_form_errors(client):
     url = reverse("users:signup")
@@ -252,6 +262,7 @@ def test_signup_form_errors(client):
     assert form.errors
 
 
+@override_settings(ENV={"CAN_SIGN_UP": "True"})
 @pytest.mark.disable_get_user_patch
 def test_signup_dont_create_user(client):
     url = reverse("users:signup")
@@ -792,7 +803,7 @@ def test_invite_signup_redirection(_invite_client):
 
 @patch("project.users.views.User")
 def test_invite_signup_broken_user(mck, client, main_user):
-    mck.objects.related.side_effect = AttributeError
+    mck.objects.get.side_effect = AttributeError
 
     signer_ = TimestampSigner(salt=settings.SALT)
     token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
@@ -812,7 +823,7 @@ def test_invite_signup_broken_user(mck, client, main_user):
 
 @patch("project.users.views.User")
 def test_invite_signup_broken_user_no_object(mck, client, main_user):
-    mck.objects.related.return_value.get.side_effect = ObjectDoesNotExist
+    mck.objects.get.side_effect = ObjectDoesNotExist
 
     signer_ = TimestampSigner(salt=settings.SALT)
     token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
