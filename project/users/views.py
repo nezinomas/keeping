@@ -244,7 +244,7 @@ class InviteSignup(CreateView):
         orig = signer.unsign_object(token, max_age=timedelta(days=self.valid_days))
 
         with contextlib.suppress(AttributeError, ObjectDoesNotExist):
-            user = User.objects.related().get(pk=orig["usr"])
+            user = User.objects.get(pk=orig["usr"], journal__pk=orig["jrn"])
 
         if user:
             obj = form.save(commit=False)
