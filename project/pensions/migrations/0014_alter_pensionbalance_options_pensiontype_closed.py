@@ -4,19 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('pensions', '0013_pensionbalance_profit_proc'),
+        ("pensions", "0013_pensionbalance_profit_proc"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='pensionbalance',
-            options={'ordering': ['year', 'pension_type__pk']},
+            name="pensionbalance",
+            options={"ordering": ["year", "pension_type__pk"]},
         ),
         migrations.AddField(
-            model_name='pensiontype',
-            name='closed',
+            model_name="pensiontype",
+            name="closed",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
     ]

@@ -171,7 +171,7 @@ def test_table_filtered_closed_categories():
         {"year": 2000, "incomes": 110, "category_id": 2},
     ]
 
-    types =  [
+    types = [
         SimpleNamespace(pk=1, closed=1999),
         SimpleNamespace(pk=2, closed=None),
     ]

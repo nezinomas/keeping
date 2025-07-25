@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('savings', '0015_merge_20250103_1014'),
+        ("savings", "0015_merge_20250103_1014"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='savingbalance',
-            options={'ordering': ['year', 'saving_type__pk']},
+            name="savingbalance",
+            options={"ordering": ["year", "saving_type__pk"]},
         ),
     ]
