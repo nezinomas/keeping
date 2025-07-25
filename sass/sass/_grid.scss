@@ -272,6 +272,10 @@
         grid-column-end: 3;
     }
 
+    >div:has([class*="broken-invite-link"]) {
+        text-align: center;
+    }
+
     h3 {
         font-size: 2em;
     }
