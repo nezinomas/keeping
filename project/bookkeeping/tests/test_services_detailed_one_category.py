@@ -87,6 +87,7 @@ def test_order_by_total_col(data):
     assert actual["total_col"] == [26.0, 13.0]
     assert actual["total"] == 39.0
 
+
 @pytest.mark.parametrize(
     "category",
     [
