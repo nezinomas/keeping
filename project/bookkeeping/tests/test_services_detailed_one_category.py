@@ -91,7 +91,7 @@ def test_order_by_total_col(data):
 @patch("project.incomes.models.Income.objects.sum_by_month_and_type")
 @patch("project.expenses.models.Expense.objects.sum_by_month_and_name")
 @patch("project.savings.models.Saving.objects.sum_by_month_and_type")
-@patch.object(Service, "context", new_callable=PropertyMock, return_value="mocked_context")
+@patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
 def test_load_service_category_income(
     mck_service, mck_saving, mck_expenses, mck_incomes
 ):
@@ -111,7 +111,7 @@ def test_load_service_category_income(
 @patch("project.incomes.models.Income.objects.sum_by_month_and_type")
 @patch("project.expenses.models.Expense.objects.sum_by_month_and_name")
 @patch("project.savings.models.Saving.objects.sum_by_month_and_type")
-@patch.object(Service, "context", new_callable=PropertyMock, return_value="mocked_context")
+@patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
 def test_load_service_category_saving(
     mck_service, mck_saving, mck_expenses, mck_incomes
 ):
@@ -120,7 +120,7 @@ def test_load_service_category_saving(
     category = "taupymas"
 
     ctx = load_service(year, order, category)
-    assert ctx == "mocked_context"
+    assert ctx == "mck_ctx"
 
     assert not mck_incomes.called
     assert mck_saving.called
@@ -130,7 +130,7 @@ def test_load_service_category_saving(
 @patch("project.incomes.models.Income.objects.sum_by_month_and_type")
 @patch("project.expenses.models.Expense.objects.sum_by_month_and_name")
 @patch("project.savings.models.Saving.objects.sum_by_month_and_type")
-@patch.object(Service, "context", new_callable=PropertyMock, return_value="mocked_context")
+@patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
 def test_load_service_category_expense(
     mck_service, mck_saving, mck_expenses, mck_incomes
 ):
@@ -139,7 +139,7 @@ def test_load_service_category_expense(
     category = "category_name"
 
     ctx = load_service(year, order, category)
-    assert ctx == "mocked_context"
+    assert ctx == "mck_ctx"
 
     assert not mck_incomes.called
     assert not mck_saving.called
