@@ -112,6 +112,21 @@ def test_expenses_context_data():
     assert actual[1]["total"] == 18
 
 
+def test_expenses_context_data_empty():
+    d = SimpleNamespace(
+        year=1999,
+        incomes=[],
+        expenses=[
+            {"date": date(1999, 2, 1), "sum": 1, "title": "X", "type_title": "T"}
+        ],
+        savings=[],
+        expenses_types=["A"],
+    )
+    actual = Service(data=d).expenses_context()
+
+    assert actual == []
+
+
 def test_insert_type(data):
     actual = Service.insert_type("T", data)
 
