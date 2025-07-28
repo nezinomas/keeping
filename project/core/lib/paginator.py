@@ -61,8 +61,10 @@ class CountlessPaginator:
             number = int(number)
         except (TypeError, ValueError) as e:
             raise PageNotAnInteger(_("Page number is not an integer")) from e
+
         if number < 1:
             raise EmptyPage(_("Page number is less than 1"))
+
         return number
 
     def get_page(self, number):

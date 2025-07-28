@@ -1,8 +1,9 @@
 from datetime import date
 
 import pytest
+from mock import PropertyMock, patch
 
-from ..services.detailed_one_category import Service
+from ..services.detailed_one_category import Service, load_service
 
 
 @pytest.fixture(name="data")
@@ -85,3 +86,75 @@ def test_order_by_total_col(data):
     assert actual["total_row"] == [14.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25.0, 0]
     assert actual["total_col"] == [26.0, 13.0]
     assert actual["total"] == 39.0
+
+
+@pytest.mark.parametrize(
+    "category",
+    [
+        ("pajamos"),
+        ("incomes"),
+    ],
+)
+@patch("project.incomes.models.Income.objects.sum_by_month_and_type")
+@patch("project.expenses.models.Expense.objects.sum_by_month_and_name")
+@patch("project.savings.models.Saving.objects.sum_by_month_and_type")
+@patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
+def test_load_service_category_income(
+    mck_service, mck_saving, mck_expenses, mck_incomes, category
+):
+    year = 2021
+    order = "jan"
+    category = category
+
+    load_service(year, order, category)
+
+    assert mck_incomes.called
+    assert not mck_saving.called
+    assert not mck_expenses.called
+
+    assert mck_service.called
+
+
+@pytest.mark.parametrize(
+    "category",
+    [
+        ("taupymas"),
+        ("savings"),
+    ],
+)
+@patch("project.incomes.models.Income.objects.sum_by_month_and_type")
+@patch("project.expenses.models.Expense.objects.sum_by_month_and_name")
+@patch("project.savings.models.Saving.objects.sum_by_month_and_type")
+@patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
+def test_load_service_category_saving(
+    mck_service, mck_saving, mck_expenses, mck_incomes, category
+):
+    year = 2021
+    order = "jan"
+    category = category
+
+    ctx = load_service(year, order, category)
+    assert ctx == "mck_ctx"
+
+    assert not mck_incomes.called
+    assert mck_saving.called
+    assert not mck_expenses.called
+
+
+@patch("project.incomes.models.Income.objects.sum_by_month_and_type")
+@patch("project.expenses.models.Expense.objects.sum_by_month_and_name")
+@patch("project.savings.models.Saving.objects.sum_by_month_and_type")
+@patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
+def test_load_service_category_expense(
+    mck_service, mck_saving, mck_expenses, mck_incomes
+):
+    year = 2021
+    order = "jan"
+    category = "category_name"
+
+    ctx = load_service(year, order, category)
+    assert ctx == "mck_ctx"
+
+    assert not mck_incomes.called
+    assert not mck_saving.called
+    assert mck_expenses.called

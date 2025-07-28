@@ -34,10 +34,6 @@ class SignalBase(ABC):
     signal_type = None
 
     @property
-    def types(self) -> dict:
-        return {category.id: category for category in self._types}
-
-    @property
     def df(self) -> pl.LazyFrame:
         return self._table
 

@@ -56,9 +56,6 @@ class Index(CountTypetObjectMixin, TemplateViewMixin):
     template_name = "counts/index.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return super().dispatch(request, *args, **kwargs)
-
         super().get_object()
 
         if not self.object:

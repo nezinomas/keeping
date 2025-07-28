@@ -97,7 +97,7 @@ def test_user_no_reset_link(client):
     assert f'href="{reset}"' not in content
 
 
-@override_settings(ENV={"CAN_SIGN_UP": "True"})
+@override_settings(ENV={"CAN_SIGN_UP": True})
 def test_user_signup_link(client):
     url = reverse("users:login")
     response = client.get(url)
@@ -142,7 +142,7 @@ def test_signup_func():
     assert views.Signup == view.func.view_class
 
 
-@override_settings(ENV={"CAN_SIGN_UP": "True"})
+@override_settings(ENV={"CAN_SIGN_UP": True})
 def test_signup_200(client):
     url = reverse("users:signup")
     response = client.get(url)
@@ -150,7 +150,15 @@ def test_signup_200(client):
     assert response.status_code == 200
 
 
-@override_settings(ENV={"CAN_SIGN_UP": "True"})
+@override_settings(ENV={"CAN_SIGN_UP": False})
+def test_signup_redirects_to_login(client):
+    url = reverse("users:signup")
+    response = client.get(url, follow=True)
+
+    assert response.resolver_match.view_name == "users:login"
+
+
+@override_settings(ENV={"CAN_SIGN_UP": True})
 def test_signup_no_link(client):
     url = reverse("users:signup")
     response = client.get(url)
@@ -160,7 +168,7 @@ def test_signup_no_link(client):
     assert f'href="{signup}"' not in content
 
 
-@override_settings(ENV={"CAN_SIGN_UP": "True"})
+@override_settings(ENV={"CAN_SIGN_UP": True})
 def test_signup_login_link(client):
     url = reverse("users:signup")
     response = client.get(url)
@@ -170,7 +178,7 @@ def test_signup_login_link(client):
     assert f'href="{login}"' in content
 
 
-@override_settings(ENV={"CAN_SIGN_UP": "True"})
+@override_settings(ENV={"CAN_SIGN_UP": True})
 def test_signup_form(client):
     url = reverse("users:signup")
     response = client.get(url)
@@ -180,7 +188,7 @@ def test_signup_form(client):
     assert isinstance(form, forms.SignUpForm)
 
 
-@override_settings(ENV={"CAN_SIGN_UP": "True"})
+@override_settings(ENV={"CAN_SIGN_UP": True})
 def test_signup_form_inputs(client):
     url = reverse("users:signup")
     response = client.get(url)
@@ -196,7 +204,7 @@ def test_signup_form_inputs(client):
 
 
 @pytest.fixture
-@override_settings(ENV={"CAN_SIGN_UP": "True"})
+@override_settings(ENV={"CAN_SIGN_UP": True})
 def _signuped_client(client):
     url = reverse("users:signup")
     data = {
@@ -243,7 +251,7 @@ def test_signup_journal_creation(_signuped_client):
     assert str(journal) == "john Journal"
 
 
-@override_settings(ENV={"CAN_SIGN_UP": "True"})
+@override_settings(ENV={"CAN_SIGN_UP": True})
 @pytest.mark.disable_get_user_patch
 def test_signup_invalid_status_code(client):
     url = reverse("users:signup")
@@ -252,7 +260,7 @@ def test_signup_invalid_status_code(client):
     assert response.status_code == 200
 
 
-@override_settings(ENV={"CAN_SIGN_UP": "True"})
+@override_settings(ENV={"CAN_SIGN_UP": True})
 @pytest.mark.disable_get_user_patch
 def test_signup_form_errors(client):
     url = reverse("users:signup")
@@ -262,7 +270,7 @@ def test_signup_form_errors(client):
     assert form.errors
 
 
-@override_settings(ENV={"CAN_SIGN_UP": "True"})
+@override_settings(ENV={"CAN_SIGN_UP": True})
 @pytest.mark.disable_get_user_patch
 def test_signup_dont_create_user(client):
     url = reverse("users:signup")
