@@ -1,7 +1,7 @@
 import pytest
+from django.core.paginator import EmptyPage, PageNotAnInteger
 
 from ..lib.paginator import CountlessPage, CountlessPaginator
-from django.core.paginator import EmptyPage, PageNotAnInteger
 
 
 def test_page_str():
@@ -42,12 +42,9 @@ def test_prev_page_number_no_prev():
 
 @pytest.mark.parametrize(
     "number",
-    [
-        (1.1),
-        ("a")
-    ],
+    [(1.1), ("a")],
 )
-@pytest.mark.xfail(raises= PageNotAnInteger)
+@pytest.mark.xfail(raises=PageNotAnInteger)
 def test_validate_number_not_integer(number):
     CountlessPaginator([], 10).validate_number(number)
 
@@ -92,14 +89,36 @@ def test_elided_page_range_2():
     paginator = CountlessPaginator(list(range(1, 22)), 2)
     page_range = paginator.get_elided_page_range(8)
 
-    assert list(page_range) == [1, 2, CountlessPaginator.ELLIPSIS, 5, 6, 7, 8, 9, 10, 11]
+    assert list(page_range) == [
+        1,
+        2,
+        CountlessPaginator.ELLIPSIS,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+    ]
 
 
 def test_elided_page_range_3():
     paginator = CountlessPaginator(list(range(1, 22)), 2)
     page_range = paginator.get_elided_page_range(4)
 
-    assert list(page_range) == [1, 2, 3, 4, 5, 6, 7, CountlessPaginator.ELLIPSIS, 10, 11]
+    assert list(page_range) == [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        CountlessPaginator.ELLIPSIS,
+        10,
+        11,
+    ]
 
 
 def test_elided_page_range_4():
