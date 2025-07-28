@@ -150,6 +150,14 @@ def test_signup_200(client):
     assert response.status_code == 200
 
 
+@override_settings(ENV={"CAN_SIGN_UP": False})
+def test_signup_redirects_to_login(client):
+    url = reverse("users:signup")
+    response = client.get(url, follow=True)
+
+    assert response.resolver_match.view_name == "users:login"
+
+
 @override_settings(ENV={"CAN_SIGN_UP": "True"})
 def test_signup_no_link(client):
     url = reverse("users:signup")
