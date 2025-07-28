@@ -87,17 +87,23 @@ def test_order_by_total_col(data):
     assert actual["total_col"] == [26.0, 13.0]
     assert actual["total"] == 39.0
 
-
+@pytest.mark.parametrize(
+    "category",
+    [
+        ("pajamos"),
+        ("incomes"),
+    ],
+)
 @patch("project.incomes.models.Income.objects.sum_by_month_and_type")
 @patch("project.expenses.models.Expense.objects.sum_by_month_and_name")
 @patch("project.savings.models.Saving.objects.sum_by_month_and_type")
 @patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
 def test_load_service_category_income(
-    mck_service, mck_saving, mck_expenses, mck_incomes
+    mck_service, mck_saving, mck_expenses, mck_incomes, category
 ):
     year = 2021
     order = "jan"
-    category = "pajamos"
+    category = category
 
     load_service(year, order, category)
 
@@ -108,16 +114,23 @@ def test_load_service_category_income(
     assert mck_service.called
 
 
+@pytest.mark.parametrize(
+    "category",
+    [
+        ("taupymas"),
+        ("savings"),
+    ],
+)
 @patch("project.incomes.models.Income.objects.sum_by_month_and_type")
 @patch("project.expenses.models.Expense.objects.sum_by_month_and_name")
 @patch("project.savings.models.Saving.objects.sum_by_month_and_type")
 @patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
 def test_load_service_category_saving(
-    mck_service, mck_saving, mck_expenses, mck_incomes
+    mck_service, mck_saving, mck_expenses, mck_incomes, category
 ):
     year = 2021
     order = "jan"
-    category = "taupymas"
+    category = category
 
     ctx = load_service(year, order, category)
     assert ctx == "mck_ctx"
