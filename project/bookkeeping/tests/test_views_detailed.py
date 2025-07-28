@@ -2,7 +2,7 @@ import pytest
 from django.urls import resolve, reverse
 
 from ...core.tests.utils import clean_content
-from ...expenses.factories import ExpenseTypeFactory
+from ...expenses.factories import ExpenseFactory, ExpenseTypeFactory
 from ...incomes.factories import IncomeFactory
 from ...savings.factories import SavingFactory
 from .. import views
@@ -115,3 +115,43 @@ def test_view_detailed_with_savings(client_logged):
 
     assert "Taupymas</a></th>" in content
     assert "Savings</td>" in content
+
+
+def test_view_detailed_category_func():
+    view = resolve("/detailed/category/jan/")
+
+    assert views.DetailedCategory == view.func.view_class
+
+
+def test_view_detailed_category_200(client_logged):
+    obj = ExpenseFactory()
+    url = reverse(
+        "bookkeeping:detailed_category",
+        kwargs={"category": obj.expense_type.slug, "order": "jan"},
+    )
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_detailed_category_no_data(client_logged):
+    obj = ExpenseTypeFactory()
+
+    url = reverse(
+        "bookkeeping:detailed_category",
+        kwargs={"category": obj.slug, "order": "jan"},
+    )
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_view_detailed_category_302(client):
+    obj = ExpenseFactory()
+    url = reverse(
+        "bookkeeping:detailed_category",
+        kwargs={"category": obj.expense_type.slug, "order": "jan"},
+    )
+    response = client.get(url)
+
+    assert response.status_code == 302
