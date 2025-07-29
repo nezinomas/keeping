@@ -75,7 +75,7 @@ def test_get_page(page_number, expected):
     paginator = CountlessPaginator([1, 2, 3], 1)
     page = paginator.get_page(page_number)
 
-    assert page.number == expected
+    assert page.current_page == expected
 
 
 def test_elided_page_range_1():

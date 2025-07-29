@@ -5,19 +5,19 @@ from django.utils.translation import gettext_lazy as _
 
 
 class CountlessPage(collections.abc.Sequence):
-    def __init__(self, object_list, number, page_size):
+    def __init__(self, object_list, current_page, page_size):
         self.object_list = object_list
-        self.number = number
+        self.current_page = current_page
         self.page_size = page_size
 
         if not isinstance(self.object_list, list):
             self.object_list = list(self.object_list)
 
         self._has_next = len(self.object_list) > len(self.object_list[: self.page_size])
-        self._has_previous = self.number > 1
+        self._has_previous = self.current_page > 1
 
     def __repr__(self):
-        return f"<Page {self.number}>"
+        return f"<Page {self.current_page}>"
 
     def __len__(self):
         return len(self.object_list)
@@ -38,12 +38,12 @@ class CountlessPage(collections.abc.Sequence):
 
     def next_page_number(self):
         if self.has_next():
-            return self.number + 1
+            return self.current_page + 1
         raise EmptyPage(_("Next page does not exist"))
 
     def previous_page_number(self):
         if self.has_previous():
-            return self.number - 1
+            return self.current_page - 1
         raise EmptyPage(_("Previous page does not exist"))
 
 
@@ -74,11 +74,12 @@ class CountlessPaginator:
             number = 1
         return self.page(number)
 
-    def page(self, number):
-        number = self.validate_number(number)
-        bottom = (number - 1) * self.per_page
+    def page(self, current_page):
+        current_page = self.validate_number(current_page)
+        print(f'--------------------------->\n{current_page=}\n')
+        bottom = (current_page - 1) * self.per_page
         top = bottom + self.per_page
-        return CountlessPage(self.object_list[bottom:top], number, self.per_page)
+        return CountlessPage(self.object_list[bottom:top], current_page, self.per_page)
 
     @property
     def page_range(self):

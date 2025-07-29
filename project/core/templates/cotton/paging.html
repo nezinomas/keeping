@@ -10,7 +10,7 @@
 
     <!-- pages -->
     {% for i in paginator_object.page_range %}
-        {% if page_obj.number == i %}
+        {% if page_obj.current_page == i %}
         <li class="active">
             {{ i|title }}
         </li>
