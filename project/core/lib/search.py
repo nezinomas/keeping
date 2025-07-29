@@ -154,7 +154,14 @@ def search_expenses(search_str):
 def search_incomes(search_str):
     category_list = ["income_type__title"]
 
-    return generic_search(Income, search_str, category_list)
+    return generic_search(Income, search_str, category_list).values(
+        "id",
+        "date",
+        "income_type__title",
+        "account__title",
+        "price",
+        "remark",
+    )
 
 
 def search_books(search_str):
