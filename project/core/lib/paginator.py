@@ -78,14 +78,14 @@ class CountlessPaginator:
         current_page = self.validate_number(current_page)
         bottom = (current_page - 1) * self.per_page
         top = bottom + self.per_page
-        return CountlessPage(self.object_list[bottom:top], self.num_pages, current_page, self.per_page)
+        return CountlessPage(self.object_list[bottom:top], self.total_pages, current_page, self.per_page)
 
     @property
     def page_range(self):
-        return range(1, self.num_pages + 1)
+        return range(1, self.total_pages + 1)
 
     @property
-    def num_pages(self):
+    def total_pages(self):
         return len(self.object_list) // self.per_page + 1
 
     @property
@@ -105,7 +105,7 @@ class CountlessPaginator:
         """
         number = self.validate_number(number)
 
-        if self.num_pages <= (on_each_side + on_ends) * 2:
+        if self.total_pages <= (on_each_side + on_ends) * 2:
             yield from self.page_range
             return
 
@@ -116,9 +116,9 @@ class CountlessPaginator:
         else:
             yield from range(1, number + 1)
 
-        if number < (self.num_pages - on_each_side - on_ends) - 1:
+        if number < (self.total_pages - on_each_side - on_ends) - 1:
             yield from range(number + 1, number + on_each_side + 1)
             yield self.ELLIPSIS
-            yield from range(self.num_pages - on_ends + 1, self.num_pages + 1)
+            yield from range(self.total_pages - on_ends + 1, self.total_pages + 1)
         else:
-            yield from range(number + 1, self.num_pages + 1)
+            yield from range(number + 1, self.total_pages + 1)
