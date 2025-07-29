@@ -43,8 +43,8 @@
 
             <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% firstof object.expense_type.pk|bg_color or object.expense_type__pk|bg_color %} {% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
                 <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
-                <td class="text-left">{% firstof object.expense_type object.expense_type__title %}</td>
-                <td class="text-left">{% firstof object.expense_name object.expense_name__title %}</td>
+                <td class="text-left">{% firstof object.expense_type.title object.expense_type__title %}</td>
+                <td class="text-left">{% firstof object.expense_name.title object.expense_name__title %}</td>
                 <td>{{ object.quantity }}</td>
                 <td>{{object.price|price|cellformat}}</td>
                 <td class="text-left cell-padding">{{ object.remark|linebreaksbr }}</td>

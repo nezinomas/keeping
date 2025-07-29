@@ -46,7 +46,9 @@ class Lists(GetMonthMixin, ListViewMixin):
         if month in range(1, 13):
             qs = qs.filter(date__month=month)
 
-        return qs.order_by("-date", "expense_type", F("expense_name").asc())
+        return qs.order_by(
+            "-date", "expense_type__title", F("expense_name__title").asc()
+        )
 
     def get_context_data(self, **kwargs):
         month = self.get_month()
