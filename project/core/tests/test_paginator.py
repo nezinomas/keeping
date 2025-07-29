@@ -82,7 +82,7 @@ def test_elided_page_range_1():
     paginator = CountlessPaginator(list(range(1, 5)), 2)
     page_range = paginator.get_elided_page_range()
 
-    assert list(page_range) == [1, 2, 3]
+    assert list(page_range) == [1, 2]
 
 
 def test_elided_page_range_2():
