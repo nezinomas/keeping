@@ -130,7 +130,7 @@ def generic_search(model, search_str, category_list, date_field="date"):
         operator_ = and_ if search_type == "with_args" else or_
         query = query.filter(reduce(operator_, combined_filters))
 
-    return query.order_by(f"{date_field}")
+    return query.order_by(f"-{date_field}")
 
 
 def search_expenses(search_str):
