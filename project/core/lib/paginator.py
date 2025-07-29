@@ -5,13 +5,10 @@ from django.utils.translation import gettext_lazy as _
 
 
 class CountlessPage(collections.abc.Sequence):
-    def __init__(self, object_list, total_pages, current_page, page_size):
+    def __init__(self, object_list: list, total_pages: int, current_page: int, page_size: int):
         self.object_list = object_list
         self.current_page = current_page
         self.page_size = page_size
-
-        if not isinstance(self.object_list, list):
-            self.object_list = [*self.object_list]
 
         self._has_next = self.current_page < total_pages
         self._has_previous = self.current_page > 1
