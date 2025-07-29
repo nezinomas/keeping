@@ -76,7 +76,6 @@ class CountlessPaginator:
 
     def page(self, current_page):
         current_page = self.validate_number(current_page)
-        print(f'--------------------------->\n{current_page=}\n')
         bottom = (current_page - 1) * self.per_page
         top = bottom + self.per_page
         return CountlessPage(self.object_list[bottom:top], current_page, self.per_page)
