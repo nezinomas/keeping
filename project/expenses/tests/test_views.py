@@ -106,7 +106,7 @@ def test_expenses_lists_context(client_logged):
     actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 1
-    assert actual[0].date == date(1999, 2, 7)
+    assert actual[0]["date"] == date(1999, 2, 7)
 
 
 @time_machine.travel("1999-02-08")
@@ -118,7 +118,7 @@ def test_expenses_lists_alternative_context(client_logged):
     actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 1
-    assert actual[0].date == date(1999, 2, 7)
+    assert actual[0]["date"] == date(1999, 2, 7)
 
 
 def test_expenses_lists_302(client):
@@ -457,7 +457,7 @@ def test_expenses_list_month_not_set(client_logged):
     actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 1
-    assert actual[0].date == date(1999, 1, 1)
+    assert actual[0]["date"] == date(1999, 1, 1)
 
 
 @time_machine.travel("1999-1-1")
@@ -470,7 +470,7 @@ def test_expenses_list_january(client_logged):
     actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 1
-    assert actual[0].date == date(1999, 1, 1)
+    assert actual[0]["date"] == date(1999, 1, 1)
 
 
 @time_machine.travel("1999-1-1")
