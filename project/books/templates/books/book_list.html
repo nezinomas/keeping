@@ -23,7 +23,7 @@
         {% url 'books:delete' object.id as url_delete %}
 
         <tr hx-get="{{ url_update }}{% if tab %}?tab={{ tab }}{% endif %}" hx-trigger="dblclick" hx-target="#mainModal" class="{% if not object.ended %} currently-reading-book{% endif %}">
-            <td class="text-left">{{ first_item|sub:forloop.counter0 }}</td>
+            <td class="text-left">{% firstof first_item|sub:forloop.counter0 forloop.counter %}</td>
             <td class="text-left">{{ object.author }}</td>
             <td class="text-left">„{{ object.title }}”</td>
             <td class="text-left">{{ object.remark }}</td>
