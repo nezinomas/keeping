@@ -178,8 +178,9 @@ class SearchMixin:
             "search": search_str,
             "url": reverse(f"{app}:search"),
             "paginator_object": {
-                "num_pages": paginator.num_pages,
+                "total_pages": paginator.total_pages,
                 "page_range": page_range,
+                "ELLIPSIS": paginator.ELLIPSIS,
             },
             **self.search_statistic(sql),
         }

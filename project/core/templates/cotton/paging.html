@@ -1,4 +1,4 @@
-{% if paginator_object.num_pages > 1 %}
+{% if paginator_object.total_pages > 1 %}
 
 <ul class="pagination">
     <!-- previous button -->
@@ -10,14 +10,14 @@
 
     <!-- pages -->
     {% for i in paginator_object.page_range %}
-        {% if page_obj.number == i %}
+        {% if page_obj.current_page == i %}
         <li class="active">
             {{ i|title }}
         </li>
     {% else %}
-        {% if i == "..." %}
+        {% if i == paginator_object.ELLIPSIS %}
             <li class="disabled">
-                {{ i|title }}
+                {{ paginator_object.ELLIPSIS }}
             </li>
         {% else %}
             <li>

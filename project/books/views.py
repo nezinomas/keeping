@@ -75,8 +75,9 @@ class Lists(ListViewMixin):
             "tab": self.request.GET.get("tab"),
             "first_item": paginator.count - (paginator.per_page * (int(page) - 1)),
             "paginator_object": {
-                "num_pages": paginator.num_pages,
+                "total_pages": paginator.total_pages,
                 "page_range": page_range,
+                "ELLIPSIS": paginator.ELLIPSIS,
             },
         }
 
