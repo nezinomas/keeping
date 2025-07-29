@@ -1,9 +1,11 @@
+{% load i18n %}
+
 {% if paginator_object.total_pages > 1 %}
 
 <ul class="pagination">
     <!-- previous button -->
     {% if page_obj.has_previous %}
-        <li><a role="button" hx-get="{{ url }}?page={{ page_obj.previous_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">&laquo;</a></li>
+        <li><a role="button" title="{% translate 'Previous page' %}" hx-get="{{ url }}?page={{ page_obj.previous_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">&laquo;</a></li>
     {% else %}
         <li class="disabled">&laquo;</li>
     {% endif %}
@@ -31,7 +33,7 @@
     <!-- next button -->
     {% if page_obj.has_next %}
         <li>
-            <a role="button" hx-get="{{ url }}?page={{ page_obj.next_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">&raquo;</a>
+            <a role="button" title="{% translate 'Next page' %}" hx-get="{{ url }}?page={{ page_obj.next_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">&raquo;</a>
         </li>
     {% else %}
         <li class="disabled">&raquo;</li>
