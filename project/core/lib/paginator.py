@@ -5,15 +5,15 @@ from django.utils.translation import gettext_lazy as _
 
 
 class CountlessPage(collections.abc.Sequence):
-    def __init__(self, object_list, current_page, page_size):
+    def __init__(self, object_list, total_pages, current_page, page_size):
         self.object_list = object_list
         self.current_page = current_page
         self.page_size = page_size
 
         if not isinstance(self.object_list, list):
-            self.object_list = list(self.object_list)
+            self.object_list = [*self.object_list]
 
-        self._has_next = len(self.object_list) > len(self.object_list[: self.page_size])
+        self._has_next = self.current_page < total_pages
         self._has_previous = self.current_page > 1
 
     def __repr__(self):
@@ -78,7 +78,7 @@ class CountlessPaginator:
         current_page = self.validate_number(current_page)
         bottom = (current_page - 1) * self.per_page
         top = bottom + self.per_page
-        return CountlessPage(self.object_list[bottom:top], current_page, self.per_page)
+        return CountlessPage(self.object_list[bottom:top], self.num_pages, current_page, self.per_page)
 
     @property
     def page_range(self):
