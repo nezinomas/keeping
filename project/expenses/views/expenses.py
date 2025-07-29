@@ -48,6 +48,18 @@ class Lists(GetMonthMixin, ListViewMixin):
 
         return qs.order_by(
             "-date", "expense_type__title", F("expense_name__title").asc()
+        ).values(
+            "id",
+            "date",
+            "account__title",
+            "expense_type__pk",
+            "expense_type__title",
+            "expense_name__title",
+            "price",
+            "quantity",
+            "remark",
+            "attachment",
+            "exception",
         )
 
     def get_context_data(self, **kwargs):
