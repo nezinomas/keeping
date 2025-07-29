@@ -167,4 +167,11 @@ def search_incomes(search_str):
 def search_books(search_str):
     category_list = ["author", "title"]
 
-    return generic_search(Book, search_str, category_list, "started")
+    return generic_search(Book, search_str, category_list, "started").values(
+        "id",
+        "author",
+        "title",
+        "remark",
+        "started",
+        "ended",
+    )
