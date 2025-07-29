@@ -15,9 +15,9 @@
             {{ i|title }}
         </li>
     {% else %}
-        {% if i == "..." %}
+        {% if i == paginator_object.ELLIPSIS %}
             <li class="disabled">
-                {{ i|title }}
+                {{ paginator_object.ELLIPSIS }}
             </li>
         {% else %}
             <li>

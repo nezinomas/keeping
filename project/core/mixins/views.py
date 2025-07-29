@@ -180,6 +180,7 @@ class SearchMixin:
             "paginator_object": {
                 "num_pages": paginator.num_pages,
                 "page_range": page_range,
+                "ELLIPSIS": paginator.ELLIPSIS,
             },
             **self.search_statistic(sql),
         }
