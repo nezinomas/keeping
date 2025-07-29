@@ -66,7 +66,7 @@ class Lists(ListViewMixin):
 
     def get_context_data(self, **kwargs):
         page = self.request.GET.get("page", 1)
-        paginator = CountlessPaginator(self.get_queryset(), self.per_page)
+        paginator = CountlessPaginator([*self.get_queryset()], self.per_page)
         page_range = paginator.get_elided_page_range(number=page)
 
         context = {

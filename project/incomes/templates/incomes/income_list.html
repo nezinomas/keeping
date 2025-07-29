@@ -23,8 +23,8 @@
             {% url 'incomes:delete' object.id as url_delete %}
             <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
                 <td class="text-left">{{ object.date|date:"Y-m-d" }}</td>
-                <td class="text-left">{{ object.income_type }}</td>
-                <td class="text-left">{{ object.account }}</td>
+                <td class="text-left">{% firstof object.income_type object.income_type__title %}</td>
+                <td class="text-left">{% firstof object.account.title object.account__title %}</td>
                 <td class="text-left">{{ object.remark }}</td>
                 <td>{{object.price|price|cellformat}}</td>
                 <c-td-edit :url=url_update />
