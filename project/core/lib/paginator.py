@@ -86,7 +86,7 @@ class CountlessPaginator:
 
     @property
     def total_pages(self):
-        return len(self.object_list) // self.per_page + 1
+        return (self.count + self.per_page - 1) // self.per_page
 
     @property
     def count(self):

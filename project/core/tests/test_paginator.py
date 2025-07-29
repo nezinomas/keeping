@@ -133,3 +133,16 @@ def test_elided_page_range_5():
     page_range = paginator.get_elided_page_range(5)
 
     assert list(page_range) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+
+
+@pytest.mark.parametrize(
+    "object_list, per_page, expected",
+    [
+        ([1, 2, 3, 4], 4, 1),
+        ([1, 2, 3, 4, 5], 4, 2),
+    ],
+)
+def test_total_pages(object_list, per_page, expected):
+    paginator = CountlessPaginator(object_list, per_page)
+
+    assert paginator.total_pages == expected
