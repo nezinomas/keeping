@@ -167,7 +167,7 @@ class SearchMixin:
         sql = self.get_search_method()(search_str)
 
         page = self.request.GET.get("page", 1)
-        paginator = CountlessPaginator(sql, self.per_page)
+        paginator = CountlessPaginator([*sql], self.per_page)
         page_range = paginator.get_elided_page_range(number=page)
 
         app = self.request.resolver_match.app_name
