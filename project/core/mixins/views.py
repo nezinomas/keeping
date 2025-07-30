@@ -184,7 +184,9 @@ class SearchMixin:
 
         page = self.request.GET.get("page", 1)
         paginator = CountlessPaginator(
-            query=sql, total_records=stats.get("count", 0), per_page=self.per_page
+            query=sql,
+            total_records=stats.get("count") or sql.count(),
+            per_page=self.per_page,
         )
         page_range = paginator.get_elided_page_range(page)
 
