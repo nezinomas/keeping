@@ -46,16 +46,16 @@ def test_prev_page_number_no_prev():
 )
 @pytest.mark.xfail(raises=PageNotAnInteger)
 def test_validate_number_not_integer(number):
-    CountlessPaginator([], 10).validate_number(number)
+    CountlessPaginator([], 0, 10).validate_number(number)
 
 
 @pytest.mark.xfail(raises=EmptyPage)
 def test_validate_number_empty_page():
-    CountlessPaginator([], 10).validate_number(0)
+    CountlessPaginator([], 0, 10).validate_number(0)
 
 
 def test_validate_number_valid():
-    paginator = CountlessPaginator([], 10)
+    paginator = CountlessPaginator([], 0, 10)
 
     assert paginator.validate_number(1) == 1
     assert paginator.validate_number(2) == 2
@@ -72,21 +72,21 @@ def test_validate_number_valid():
     ],
 )
 def test_get_page(page_number, expected):
-    paginator = CountlessPaginator([1, 2, 3], 1)
+    paginator = CountlessPaginator([1, 2, 3], 3, 1)
     page = paginator.get_page(page_number)
 
     assert page.current_page == expected
 
 
 def test_elided_page_range_1():
-    paginator = CountlessPaginator(list(range(1, 5)), 2)
+    paginator = CountlessPaginator(list(range(1, 5)), 5, 2)
     page_range = paginator.get_elided_page_range()
 
-    assert list(page_range) == [1, 2]
+    assert list(page_range) == [1, 2, 3]
 
 
 def test_elided_page_range_2():
-    paginator = CountlessPaginator(list(range(1, 22)), 2)
+    paginator = CountlessPaginator(list(range(1, 22)), 22, 2)
     page_range = paginator.get_elided_page_range(8)
 
     assert list(page_range) == [
@@ -104,7 +104,7 @@ def test_elided_page_range_2():
 
 
 def test_elided_page_range_3():
-    paginator = CountlessPaginator(list(range(1, 22)), 2)
+    paginator = CountlessPaginator(list(range(1, 22)), 22, 2)
     page_range = paginator.get_elided_page_range(4)
 
     assert list(page_range) == [
@@ -122,27 +122,27 @@ def test_elided_page_range_3():
 
 
 def test_elided_page_range_4():
-    paginator = CountlessPaginator(list(range(1, 22)), 2)
+    paginator = CountlessPaginator(list(range(1, 22)), 22, 2)
     page_range = paginator.get_elided_page_range(2)
 
     assert list(page_range) == [1, 2, 3, 4, 5, CountlessPaginator.ELLIPSIS, 10, 11]
 
 
 def test_elided_page_range_5():
-    paginator = CountlessPaginator(list(range(1, 22)), 2)
+    paginator = CountlessPaginator(list(range(1, 22)), 22, 2)
     page_range = paginator.get_elided_page_range(5)
 
     assert list(page_range) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
 
 @pytest.mark.parametrize(
-    "object_list, per_page, expected",
+    "object_list, total_records, per_page, expected",
     [
-        ([1, 2, 3, 4], 4, 1),
-        ([1, 2, 3, 4, 5], 4, 2),
+        ([1, 2, 3, 4], 4, 4, 1),
+        ([1, 2, 3, 4, 5], 5, 4, 2),
     ],
 )
-def test_total_pages(object_list, per_page, expected):
-    paginator = CountlessPaginator(object_list, per_page)
+def test_total_pages(object_list, total_records, per_page, expected):
+    paginator = CountlessPaginator(object_list, total_records, per_page)
 
     assert paginator.total_pages == expected

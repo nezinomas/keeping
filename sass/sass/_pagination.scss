@@ -1,15 +1,13 @@
 .pagination {
     display: flex;
     justify-content: center;
-    align-items: center;
     margin: $gap 0;
+    column-gap: $gap;
 
     a,
     li:not(:has(a)) {
-        font-size: .8rem;
-        padding: 0.35rem 0.75rem;
-        margin: 0 0.25rem;
         border-bottom: 3px solid transparent;
+        padding: 0 .5rem;
     }
 
     a {
@@ -19,8 +17,12 @@
         }
     }
 
-    > li {
-        display: flex;
+    li {
+        font-size: .85rem;
+
+        > * {
+            padding-bottom: .25rem;
+        }
 
         &.active {
             color: $active;

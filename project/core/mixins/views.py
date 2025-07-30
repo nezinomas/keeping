@@ -1,7 +1,7 @@
 import json
 
-from django.core.paginator import Paginator
-from django.db.models import Sum
+from django.core.exceptions import FieldError
+from django.db.models import Count, F, Sum
 from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -151,24 +151,42 @@ class SearchMixin:
             if search_method is 'search_expenses'
         :rtype: dict or None
         """
-        return (
-            sql.aggregate(
-                sum_price=Sum("price"),
-                sum_quantity=Sum("quantity"),
-                average=Sum("price") / Sum("quantity"),
+
+        if self.search_method not in ["search_expenses"]:
+            return {}
+
+        try:
+            q = (
+                sql.annotate(count=Count("id"))
+                .values("count")
+                .annotate(
+                    sum_price=Sum("price"),
+                    sum_quantity=Sum("quantity"),
+                )
+                .order_by("count")
+                .values(
+                    "count",
+                    "sum_price",
+                    "sum_quantity",
+                    average=F("sum_price") / F("sum_quantity"),
+                )
             )
-            if sql and self.search_method in ["search_expenses"]
-            else {}
-        )
+        except (AttributeError, FieldError):
+            return {}
+
+        return q[0] if q else {}
 
     def search(self):
         search_str = self.request.GET.get("search")
 
         sql = self.get_search_method()(search_str)
+        stats = self.search_statistic(sql)
 
         page = self.request.GET.get("page", 1)
-        paginator = CountlessPaginator([*sql], self.per_page)
-        page_range = paginator.get_elided_page_range(number=page)
+        paginator = CountlessPaginator(
+            query=sql, total_records=stats.get("count", 0), per_page=self.per_page
+        )
+        page_range = paginator.get_elided_page_range(page)
 
         app = self.request.resolver_match.app_name
 
@@ -182,7 +200,7 @@ class SearchMixin:
                 "page_range": page_range,
                 "ELLIPSIS": paginator.ELLIPSIS,
             },
-            **self.search_statistic(sql),
+            **stats,
         }
 
 

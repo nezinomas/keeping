@@ -47,8 +47,9 @@ class CountlessPage(collections.abc.Sequence):
 class CountlessPaginator:
     ELLIPSIS = "…"
 
-    def __init__(self, object_list, per_page) -> None:
-        self.object_list = object_list
+    def __init__(self, query, total_records, per_page) -> None:
+        self.query = query
+        self.total_records = total_records
         self.per_page = per_page
 
     def validate_number(self, number):
@@ -64,18 +65,19 @@ class CountlessPaginator:
 
         return number
 
-    def get_page(self, number):
+    def get_page(self, page):
         try:
-            number = self.validate_number(number)
+            page = self.validate_number(page)
         except (PageNotAnInteger, EmptyPage):
-            number = 1
-        return self.page(number)
+            page = 1
+        return self.page(page)
 
     def page(self, current_page):
-        current_page = self.validate_number(current_page)
         bottom = (current_page - 1) * self.per_page
         top = bottom + self.per_page
-        return CountlessPage(self.object_list[bottom:top], self.total_pages, current_page, self.per_page)
+        query = self.query[bottom:top]
+
+        return CountlessPage(query, self.total_pages, current_page, self.per_page)
 
     @property
     def page_range(self):
@@ -87,9 +89,9 @@ class CountlessPaginator:
 
     @property
     def count(self):
-        return len(self.object_list)
+        return self.total_records
 
-    def get_elided_page_range(self, number=1, *, on_each_side=3, on_ends=2):
+    def get_elided_page_range(self, page=1, *, on_each_side=3, on_ends=2):
         """
         Return a 1-based range of pages with some values elided.
 
@@ -100,22 +102,22 @@ class CountlessPaginator:
 
             1, 2, …, 40, 41, 42, 43, 44, 45, 46, …, 49, 50.
         """
-        number = self.validate_number(number)
+        page = self.validate_number(page)
 
         if self.total_pages <= (on_each_side + on_ends) * 2:
             yield from self.page_range
             return
 
-        if number > (1 + on_each_side + on_ends) + 1:
+        if page > (1 + on_each_side + on_ends) + 1:
             yield from range(1, on_ends + 1)
             yield self.ELLIPSIS
-            yield from range(number - on_each_side, number + 1)
+            yield from range(page - on_each_side, page + 1)
         else:
-            yield from range(1, number + 1)
+            yield from range(1, page + 1)
 
-        if number < (self.total_pages - on_each_side - on_ends) - 1:
-            yield from range(number + 1, number + on_each_side + 1)
+        if page < (self.total_pages - on_each_side - on_ends) - 1:
+            yield from range(page + 1, page + on_each_side + 1)
             yield self.ELLIPSIS
             yield from range(self.total_pages - on_ends + 1, self.total_pages + 1)
         else:
-            yield from range(number + 1, self.total_pages + 1)
+            yield from range(page + 1, self.total_pages + 1)

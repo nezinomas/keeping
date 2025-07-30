@@ -26,7 +26,7 @@ def test_queryset_retun_qs():
 
 def test_search_mixin_no_query():
     class Dummy(views.SearchViewMixin):
-        pass
+        search_method = "search_expenses"
 
     assert Dummy().search_statistic(None) == {}
 
@@ -61,4 +61,4 @@ def test_search_mixin_with_sql():
 
     actual = Dummy().search_statistic(sql)
 
-    assert actual == {"sum_price": 224, "sum_quantity": 26, "average": 8.0}
+    assert actual == {"count": 2, "sum_price": 224, "sum_quantity": 26, "average": 8.0}

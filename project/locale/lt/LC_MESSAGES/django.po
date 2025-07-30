@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-25 09:22+0300\n"
-"PO-Revision-Date: 2025-07-25 09:23+0300\n"
+"POT-Creation-Date: 2025-07-30 15:15+0300\n"
+"PO-Revision-Date: 2025-07-30 15:17+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -119,8 +119,8 @@ msgstr "Pajamos"
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:11
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:23
 #: .\project\bookkeeping\templates\cotton\year_balance.html:19
-#: .\project\expenses\views\expenses.py:71
-#: .\project\expenses\views\expenses.py:80
+#: .\project\expenses\views\expenses.py:85
+#: .\project\expenses\views\expenses.py:94
 #: .\project\plans\templates\plans\index.html:23
 #: .\project\templates\base.html:55 .\project\templates\base.html:129
 #: .\project\templates\base.html:132
@@ -137,7 +137,7 @@ msgid "Average salary"
 msgstr "Vidutinis atlyginimas"
 
 #: .\project\bookkeeping\services\chart_summary_expenses.py:115
-#: .\project\core\mixins\views.py:176
+#: .\project\core\mixins\views.py:194
 msgid "No data found"
 msgstr "Nieko nerasta"
 
@@ -259,7 +259,7 @@ msgstr "Turtas"
 #: .\project\debts\templates\debts\debt_list.html:54
 #: .\project\debts\templates\debts\debtreturn_list.html:53
 #: .\project\expenses\templates\expenses\expense_list.html:86
-#: .\project\expenses\views\expenses.py:58
+#: .\project\expenses\views\expenses.py:72
 #: .\project\incomes\templates\incomes\income_list.html:49
 #: .\project\pensions\templates\pensions\pension_list.html:40
 #: .\project\plans\templates\cotton\plans_table.html:64
@@ -610,23 +610,23 @@ msgstr "Skaitomos"
 msgid "Goal"
 msgstr "Tikslas"
 
-#: .\project\books\views.py:91
+#: .\project\books\views.py:95
 msgid "New book"
 msgstr "Nauja knyga"
 
-#: .\project\books\views.py:99
+#: .\project\books\views.py:103
 msgid "Update book"
 msgstr "Atnaujinti knygą"
 
-#: .\project\books\views.py:105
+#: .\project\books\views.py:109
 msgid "Delete book"
 msgstr "Trinti knygą"
 
-#: .\project\books\views.py:123 .\project\drinks\views.py:172
+#: .\project\books\views.py:127 .\project\drinks\views.py:172
 msgid "New goal"
 msgstr "Naujas tikslas"
 
-#: .\project\books\views.py:130 .\project\drinks\views.py:196
+#: .\project\books\views.py:134 .\project\drinks\views.py:196
 msgid "Update goal"
 msgstr "Atnaujinti tikslą"
 
@@ -683,21 +683,21 @@ msgstr "Ankstesnis mėnesis"
 msgid "Insert"
 msgstr "Įrašyti"
 
-#: .\project\core\lib\paginator.py:42
+#: .\project\core\lib\paginator.py:39
 msgid "Next page does not exist"
-msgstr ""
+msgstr "Kitas puslapis neegzistuoa"
 
-#: .\project\core\lib\paginator.py:47
+#: .\project\core\lib\paginator.py:44
 msgid "Previous page does not exist"
 msgstr "Ankstesnis puslapis neegzistuoja"
 
-#: .\project\core\lib\paginator.py:63
+#: .\project\core\lib\paginator.py:61
 msgid "Page number is not an integer"
-msgstr ""
+msgstr "Puslapio numeris nėra sveikas skaičius"
 
-#: .\project\core\lib\paginator.py:65
+#: .\project\core\lib\paginator.py:64
 msgid "Page number is less than 1"
-msgstr ""
+msgstr "Puslapio numeris yra mažesnis nei 1"
 
 #: .\project\core\lib\translation.py:6
 #: .\project\plans\templates\cotton\plans_table.html:11
@@ -840,6 +840,14 @@ msgstr "uždaryta"
 msgid "Add"
 msgstr "Pridėti"
 
+#: .\project\core\templates\cotton\paging.html:8
+msgid "Previous page"
+msgstr "Ankstesnis puslapis"
+
+#: .\project\core\templates\cotton\paging.html:36
+msgid "Next page"
+msgstr "Kitas puslapis"
+
 #: .\project\core\templates\cotton\regenerate_balances.html:2
 msgid "Only the balances in this table will be updated."
 msgstr "Bus atnaujinti tik šios lentelės balansai."
@@ -869,8 +877,8 @@ msgstr "Redaguoti"
 msgid "Quantity"
 msgstr "Kiekis"
 
-#: .\project\counts\forms.py:49 .\project\counts\views.py:195
-#: .\project\counts\views.py:202
+#: .\project\counts\forms.py:49 .\project\counts\views.py:192
+#: .\project\counts\views.py:199
 msgid "Count type"
 msgstr "Skaitiklis"
 
@@ -948,16 +956,16 @@ msgctxt "counter button"
 msgid "Counter"
 msgstr "Skaitiklį"
 
-#: .\project\counts\views.py:145 .\project\counts\views.py:169
+#: .\project\counts\views.py:142 .\project\counts\views.py:166
 #: .\project\templates\base.html:107
 msgid "Counter"
 msgstr "Kiek"
 
-#: .\project\counts\views.py:175
+#: .\project\counts\views.py:172
 msgid "Delete counter"
 msgstr "Trinti skaitiklį"
 
-#: .\project\counts\views.py:209
+#: .\project\counts\views.py:206
 msgid "Delete count type"
 msgstr "Trinti skaitiklį"
 
@@ -1274,12 +1282,12 @@ msgctxt "expenses type button"
 msgid "Expenses type"
 msgstr "Išlaidų rūšį"
 
-#: .\project\expenses\views\expenses.py:54
+#: .\project\expenses\views\expenses.py:68
 #, python-format
 msgid "There are no records for month <b>%(month)s</b>."
 msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 
-#: .\project\expenses\views\expenses.py:87
+#: .\project\expenses\views\expenses.py:101
 msgid "Delete expense"
 msgstr "Trinti išlaidas"
 
@@ -1569,7 +1577,7 @@ msgstr "Išsiregistruoti"
 
 #: .\project\templates\base.html:167
 #: .\project\users\templates\users\password_reset_confirm.html:14
-#: .\project\users\views.py:148
+#: .\project\users\views.py:154
 msgid "Change password"
 msgstr "Keisti slaptažodį"
 
@@ -1651,7 +1659,7 @@ msgstr "Laiškas išsiųstas"
 msgid "Send invitation"
 msgstr "Siųsti pakvietimą"
 
-#: .\project\users\templates\users\login.html:25
+#: .\project\users\templates\users\login.html:27
 msgid "Forgot your password?"
 msgstr "Pamiršai slaptažodį?"
 
@@ -1659,20 +1667,20 @@ msgstr "Pamiršai slaptažodį?"
 msgid "New to this site?"
 msgstr "Pirmą kartą šioje svetainėje?"
 
-#: .\project\users\templates\users\login.html:33 .\project\users\views.py:90
-#: .\project\users\views.py:229
+#: .\project\users\templates\users\login.html:33 .\project\users\views.py:96
+#: .\project\users\views.py:235
 msgid "Sign up"
 msgstr "Užsiregistruoti"
 
-#: .\project\users\templates\users\login.html:40
+#: .\project\users\templates\users\login.html:38
 msgid "Already have an account?"
 msgstr "Jau turite paskyrą?"
 
-#: .\project\users\templates\users\login.html:40 .\project\users\views.py:51
+#: .\project\users\templates\users\login.html:38 .\project\users\views.py:51
 msgid "Log in"
 msgstr "Prisijungti"
 
-#: .\project\users\templates\users\login.html:48
+#: .\project\users\templates\users\login.html:47
 msgid ""
 "It seems that your invitation is no longer valid. Ask a friend to provide a "
 "new link."
@@ -1740,11 +1748,11 @@ msgstr "Siųsti pakvietimo nuorodą"
 msgid "Unneccessary expenses"
 msgstr "Nebūtinos išlaidos"
 
-#: .\project\users\views.py:114
+#: .\project\users\views.py:120
 msgid "Send password reset email"
 msgstr "Siųsti slaptažodžio atstatymo nuorodą"
 
-#: .\project\users\views.py:116
+#: .\project\users\views.py:122
 msgid ""
 "Enter your email address and system will send you a link to reset your "
 "pasword."
@@ -1752,7 +1760,7 @@ msgstr ""
 "Įveskite savo el. pašto adresą ir sistema atsiųs nuorodą, kad atstatytumėte "
 "slaptažodį."
 
-#: .\project\users\views.py:132
+#: .\project\users\views.py:138
 msgid ""
 "Check your email for a link to reset your password. If it doesn't appear "
 "within a few minutes, check your spam folder."
@@ -1761,7 +1769,7 @@ msgstr ""
 "atstatymo nuoroda. Jei laiško negausite per kelias minutes, patikrinkite "
 "šlamšto aplanką."
 
-#: .\project\users\views.py:296
+#: .\project\users\views.py:302
 msgid "Delete user"
 msgstr "Trinti vartotoją"
 
