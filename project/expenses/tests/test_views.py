@@ -828,6 +828,7 @@ def test_seach_statistic_not_found(client_logged):
     url = reverse("expenses:search")
     response = client_logged.get(url, {"page": 2, "search": "xxx"})
 
-    assert "sum_price" not in response.context
-    assert "sum_quantity" not in response.context
-    assert "average" not in response.context
+    assert not response.context["sum_price"]
+    assert not response.context["sum_quantity"]
+    assert not response.context["average"]
+    assert response.context["count"] == 0
