@@ -5,7 +5,9 @@ from django.utils.translation import gettext_lazy as _
 
 
 class CountlessPage(collections.abc.Sequence):
-    def __init__(self, object_list: list, total_pages: int, current_page: int, page_size: int):
+    def __init__(
+        self, object_list: list, total_pages: int, current_page: int, page_size: int
+    ):
         self.object_list = object_list
         self.current_page = current_page
         self.page_size = page_size
