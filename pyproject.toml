@@ -7,7 +7,7 @@ requires-python = ">=3.11"
 dependencies = [
     "crispy-bootstrap5>=2025.6",
     "django-bootstrap-datepicker-plus>=5.0.5",
-    "django>=5.2.4",
+    "django>=5.2.5",
     "django-bootstrap-datepicker-widget>=0.1",
     "django-crequest>=2018.5.11",
     "django-crispy-forms>=2.4",
@@ -17,7 +17,7 @@ dependencies = [
     "django-widget-tweaks>=1.5.0",
     "mysqlclient>=2.2.7",
     "pillow>=11.3.0",
-    "polars>=1.32.0",
+    "polars>=1.32.2",
     "pyarrow>=21.0.0",
     "python-dateutil>=2.9.0.post0",
     "django-cotton>=2.1.3",
