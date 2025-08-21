@@ -1,3 +1,4 @@
+import itertools as it
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -72,13 +73,15 @@ class Data:
             If the month does not exist in the dataset, the price will be 0.
         """
 
-        arr = [0] * 12
+        monthly_totals = [0] * 12
         month_map = {name: idx for idx, name in enumerate(monthnames())}
-        for row in data:
-            for month, price in row.items():
-                if price:
-                    arr[month_map[month]] += price
-        return arr
+
+        for month, price in it.chain.from_iterable(row.items() for row in data):
+            if not price or month not in month_map:
+                continue
+            monthly_totals[month_map[month]] += price
+
+        return monthly_totals
 
 
 class Forecast:
