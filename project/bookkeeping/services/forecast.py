@@ -55,11 +55,8 @@ class Data:
         """
 
         arr = [0] * 12
-
         for row in data:
-            month = row["date"].month
-            arr[month - 1] = row["sum"]
-
+            arr[row["date"].month - 1] = row["sum"]
         return arr
 
     def _make_planned_data(self, data: QuerySet) -> list[int]:
