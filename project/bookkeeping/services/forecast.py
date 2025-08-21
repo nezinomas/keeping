@@ -73,15 +73,11 @@ class Data:
         """
 
         arr = [0] * 12
-        month_map = dict(zip(monthnames(), range(1, 13)))
-
+        month_map = {name: idx for idx, name in enumerate(monthnames())}
         for row in data:
             for month, price in row.items():
-                if not price:
-                    continue
-
-                month_index = month_map[month] - 1
-                arr[month_index] += price
+                if price:
+                    arr[month_map[month]] += price
         return arr
 
 
