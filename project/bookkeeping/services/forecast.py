@@ -185,24 +185,19 @@ class Forecast:
         """
         avg = self.medians()
         current = self.current_month()
-
-        expenses_avg = avg["expenses"]
-        expenses_current = max(current["expenses"], expenses_avg)
-
-        savings_avg = avg["savings"]
-        savings_current = max(current["savings"], savings_avg)
-
-        incomes_current = max(current["incomes"], current["planned_incomes"])
-
         month_left = 12 - self._month
+
+        expenses = max(current["expenses"], avg["expenses"])
+        savings = max(current["savings"], avg["savings"])
+        incomes = max(current["incomes"], current["planned_incomes"])
 
         return (
             0
             + self.balance()
             + self.planned_incomes()
-            + incomes_current
-            - (expenses_current + expenses_avg * month_left)
-            - (savings_current + savings_avg * month_left)
+            + incomes
+            - (expenses + avg["expenses"] * month_left)
+            - (savings + avg["savings"] * month_left)
         )
 
 
