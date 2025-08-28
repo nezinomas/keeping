@@ -1,3 +1,8 @@
+// Constants for modal and container IDs
+const MODALS = ['mainModal', 'imgModal'];
+const CONTAINERS = ['mainModalContainer', 'imgModalContainer'];
+const FORM_FIELDS = ['price', 'fee', 'quantity', 'title', 'remark', 'attachment'];
+
 // prevent default form submission
 $(document).on("submit", ".modal-form", function (e) {
     e.preventDefault();
