@@ -3,114 +3,122 @@ const MODALS = ['mainModal', 'imgModal'];
 const CONTAINERS = ['mainModalContainer', 'imgModalContainer'];
 const FORM_FIELDS = ['price', 'fee', 'quantity', 'title', 'remark', 'attachment'];
 
+
 // prevent default form submission
-$(document).on("submit", ".modal-form", function (e) {
-    e.preventDefault();
+document.addEventListener('submit', (event) => {
+    if (event.target.matches('.modal-form')) {
+        event.preventDefault();
+    }
 });
 
 
 // close modal on Close Buton
-$(document).on("click", ".modal-close", function (e) {
-    modal_hide($(this).data("dismiss"));
+document.addEventListener('click', (event) => {
+    if (event.target.matches('.modal-close')) {
+        const modalId = event.target.dataset.dismiss;
+        if (modalId) {
+            modalHide(modalId);
+        }
+    }
 });
 
 
 // close modal on ESC
-$(document).keydown(function (event) {
-    if (event.keyCode == 27) {
-        $(".modal-close").each(function () {
-            modal_hide($(this).data("dismiss"));
-        })
+document.addEventListener('keydown', (event) => {
+    if (event.keyCode === 27) {
+        document.querySelectorAll('.modal-close').forEach((button) => {
+            const modalId = button.dataset.dismiss;
+            if (modalId) {
+                modalHide(modalId);
+            }
+        });
     }
 });
 
 
 // close modal on outside (e.g. containerModal) click
-window.onclick = function(event) {
-    let containers = ["mainModalContainer", "imgModalContainer"];
-
-    if (containers.includes(event.target.id)) {
-        // strip "Container" prefix
-        let target = event.target.id.replace("Container", "");
-        modal_hide(target);
+document.addEventListener('click', (event) => {
+    const targetId = event.target.id;
+    if (CONTAINERS.includes(targetId)) {
+        const modalId = targetId.replace('Container', '');
+        modalHide(modalId);
     }
-}
+});
 
 
 // show modal on click button with hx-target="#mainModal"
-htmx.on("htmx:afterSwap", (e) => {
-    let target = e.detail.target.id;
-    let modals = ["mainModal", "imgModal"];
+htmx.on('htmx:afterSwap', (event) => {
+    const targetId = event.detail.target?.id;
+    if (!MODALS.includes(targetId)) return;
 
-    if (modals.includes(target)) {
-        $(`#${target}`).parent().show();
+    const modalContainer = document.querySelector(`#${targetId}Container`);
+    if (modalContainer) {
+        modalContainer.style.display = 'block';
+    }
 
-        // focus on [autofocus] field
-        // commented on 2024.05.06
-        // $(`#${target}`).find("[autofocus]").focus();
-
-        // insert image url in imgModal
-        if (target == "imgModal") {
-            let {url} = e.detail.requestConfig.triggeringEvent.originalTarget.dataset;
-            let modalBodyInput = imgModal.querySelector(".modal-body .dspl");
-            modalBodyInput.innerHTML = `<img src="${url}" />`;
+    if (targetId === 'imgModal') {
+        const url = event.detail.requestConfig?.triggeringEvent?.originalTarget?.dataset?.url;
+        if (url) {
+            const modalBodyInput = document.querySelector(`#${targetId} .modal-body`);
+            if (modalBodyInput) {
+                modalBodyInput.innerHTML = `<img src="${url}" />`;
+            }
         }
     }
-})
+});
 
 
 // reload modal form with error messages or reset fields and close modal form
-htmx.on("htmx:beforeSwap", (e) => {
-    let target = e.detail.target.id;
+htmx.on('htmx:beforeSwap', (event) => {
+    const targetId = event.detail.target?.id;
+    if (targetId === 'mainModal' && !event.detail.xhr.response) {
+        const submitterId = event.detail.requestConfig?.triggeringEvent?.submitter?.id;
 
-    if (target == "mainModal" && !e.detail.xhr.response) {
-        /* find submit button id */
-        let subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id;
+        // Remove error messages
+        document.querySelectorAll('.invalid-feedback').forEach((el) => el.remove());
+        document.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
 
-        /* remove error messages */
-        $(".invalid-feedback").remove();
-        $(".is-invalid").removeClass("is-invalid");
-
-        if(subbmiter == "_new") {
-            // reset fields values after submit
-            let fields = ["price", "fee", "quantity", "title", "remark", "attachment"];
-            for (let i in fields) {
-                let field = $(`#id_${fields[i]}`);
-                if(field) {
-                    field.val("");
+        if (submitterId === '_new') {
+            // Reset fields
+            FORM_FIELDS.forEach((field) => {
+                const input = document.querySelector(`#id_${field}`);
+                if (input) {
+                    input.value = '';
                 }
+            });
+        }
+
+        if (submitterId === '_close') {
+            modalHide(targetId);
+            const form = document.querySelector('#modal-form .modal-form');
+            if (form) {
+                form.reset();
             }
         }
 
-        if(subbmiter == "_close") {
-            modal_hide(target);
-
-            $("#modal-form .modal-form")[0].reset();
-        }
-
-        e.detail.shouldSwap = false;
+        event.detail.shouldSwap = false;
     }
-})
+});
+
 
 
 // trigger htmx on form submit if form has data-hx-trigger-form or data-hx-inserted attribute
-function hx_trigger() {
-    let form = $(".modal-form");
-    let trigger_name = form.attr("data-hx-trigger-form");
-    let data_inserted = form.attr("data-hx-inserted");
+function hxTrigger() {
+    const form = document.querySelector('.modal-form');
+    const triggerName = form?.dataset.hxTriggerForm;
+    const dataInserted = form?.dataset.hxInserted;
 
-    if (trigger_name === "None" || trigger_name == undefined) {
-        return;
-    }
-
-    if(trigger_name && data_inserted) {
-        htmx.trigger("body", trigger_name, { });
+    if (triggerName && triggerName !== 'None' && dataInserted) {
+        htmx.trigger('body', triggerName, {});
     }
 }
 
 
-// hide modal
-function modal_hide(target) {
-    $(`#${target}`).parent().hide();
-    hx_trigger();
+// Hide modal
+function modalHide(target) {
+    const modalContainer = document.querySelector(`#${target}Container`);
+    if (modalContainer) {
+        modalContainer.style.display = 'none';
+        hxTrigger();
+    }
 }
