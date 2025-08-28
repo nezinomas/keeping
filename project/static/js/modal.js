@@ -37,11 +37,16 @@ class Modal {
             return;
         }
 
+        let formSetForms = this.form.querySelector("#id_form-TOTAL_FORMS")?.value;
+
         FORM_FIELDS.forEach((field) => {
-            const input = this.form.querySelector(`#id_${field}`);
-            if (input) {
-                input.value = '';
-            }
+            if (formSetForms) {
+                for(let i = 0; i < formSetForms; i++ ) {
+                    this.#resetField(`#id_form-${i}-${field}`);
+                };
+            } else  {
+                this.#resetField(`#id_${field}`)
+            };
         });
     }
 
@@ -52,6 +57,11 @@ class Modal {
         if (triggerName && triggerName !== 'None' && dataInserted) {
             htmx.trigger('body', triggerName, {});
         }
+    }
+
+    #resetField(field) {
+        const input = this.form.querySelector(field);
+        input && (input.value = '');
     }
 }
 
