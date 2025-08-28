@@ -50,6 +50,16 @@ class Modal {
         });
     }
 
+    resetErrorMessages() {
+        if (!this.form) {
+            return;
+        }
+
+        // Remove error messages and invalid classes
+        this.form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+        this.form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    }
+
     #hxTrigger() {
         const triggerName = this.form?.dataset.hxTriggerForm;
         const dataInserted = this.form?.dataset.hxInserted;
@@ -129,10 +139,10 @@ function initializeModals() {
             return;
         }
 
-        const submitterId = e.detail.requestConfig?.triggeringEvent?.submitter?.id;
-
+        MODALS.mainModal.resetErrorMessages();
         MODALS.mainModal.resetForm();
 
+        const submitterId = e.detail.requestConfig?.triggeringEvent?.submitter?.id;
         if (submitterId === '_close') {
             MODALS.mainModal.hide();
         }
