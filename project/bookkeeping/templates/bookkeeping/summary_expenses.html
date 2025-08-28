@@ -19,17 +19,17 @@
 
 <script>
     function options_class() {
-        $('#id_types option').addClass(function () {
-            if(this.value.includes(':')) {
-                return 'spacer';
-            } else {
-                return 'root';
-            }
+        const options = document.querySelectorAll('#id_types option');
+        options.forEach(option => {
+            option.classList.add(option.value.includes(':') ? 'spacer' : 'root');
         });
-    };
+    }
 
-    $(document).ready(options_class);
-    $(document).ajaxComplete(options_class);
+    /* check on page load */
+    document.addEventListener('DOMContentLoaded', options_class);
+
+    /* check on ajax complete */
+    document.addEventListener('ajaxComplete', options_class);
 </script>
 
 {% endblock content %}
