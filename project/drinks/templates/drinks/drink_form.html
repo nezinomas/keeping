@@ -1,16 +1,13 @@
 {% include 'core/generic_form.html' %}
 
 <script>
-    $(document).ready(function () {
-        document.getElementById('id_quantity').type = 'text';
-    });
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('id_quantity');
+        input.type = 'text';
 
-    var input = document.getElementById("id_quantity");
-    input.addEventListener("keyup", function (event) {
-        event.preventDefault();
-
-        var val = String(input.value).replaceAll(',', '.');
-
-        input.value = val;
-    });
+        input.addEventListener('keyup', (event) => {
+            event.preventDefault();
+            input.value = input.value.replace(/,/g, '.');
+        });
+  });
 </script>
