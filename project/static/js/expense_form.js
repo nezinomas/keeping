@@ -26,6 +26,48 @@ function sumPrices() {
 };
 
 
+/**
+ * Resets form fields after submission if triggered by the "_new" button.
+ */
+function resetFormFields(event) {
+    const targetId = event.detail.target?.id;
+    const response = event.detail.xhr?.response;
+
+    // Exit if the target is not mainModal or there's a response
+    if (targetId !== "mainModal" || response) {
+        return;
+    }
+
+    const submitterId = event.detail.requestConfig?.triggeringEvent?.submitter?.id;
+
+    if (submitterId === "_new") {
+        // Define default field values
+        const defaultValues = {
+            quantity: "1",
+            price: "0.0"
+        };
+
+        // Reset form fields
+        for (const [key, value] of Object.entries(defaultValues)) {
+            const field = document.getElementById(`id_${key}`);
+            if (field) {
+                field.value = value;
+            } else {
+                console.warn(`Element with ID 'id_${key}' not found.`);
+            }
+        }
+
+        // Reset exception checkbox
+        const exceptionCheckbox = document.getElementById("id_exception");
+        if (exceptionCheckbox) {
+            exceptionCheckbox.checked = false;
+        } else {
+            console.warn("Element with ID 'id_exception' not found.");
+        }
+    }
+}
+
+
 document.getElementById("add_price").addEventListener("click", sumPrices);
 
 
@@ -42,30 +84,4 @@ document.getElementById("modal-form").addEventListener("keypress", (e) => {
 });
 
 
-htmx.on("htmx:beforeSwap", (e) => {
-    const targetId = e.detail.target?.id;
-    if (targetId !== 'mainModal' || e.detail.xhr.response) {
-        return;
-    }
-    /* find submit button id */
-    const submitterId = e.detail.requestConfig?.triggeringEvent?.submitter?.id;
-
-    if(submitterId === "_new") {
-        // reset fields values after submit
-        const fields = {
-            "quantity": 1,
-            "price": "0.0"
-        };
-
-        for (const [key, value] of Object.entries(fields)) {
-            const field = document.getElementById(`id_${key}`);
-            field && (field.value = value);
-        }
-
-        // reset exception checkbox
-        const exceptionCheckbox = document.getElementById("id_exception");
-        if (exceptionCheckbox) {
-            exceptionCheckbox.checked = false;
-        }
-    };
-});
+htmx.on("htmx:beforeSwap", resetFormFields);
