@@ -126,7 +126,7 @@ function initializeModals() {
     htmx.on('htmx:beforeSwap', (e) => {
         const targetId = e.detail.target?.id;
         if (targetId !== 'mainModal' || e.detail.xhr.response) {
-        return;
+            return;
         }
 
         const submitterId = e.detail.requestConfig?.triggeringEvent?.submitter?.id;
