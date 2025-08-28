@@ -13,7 +13,6 @@ class Modal {
         this.id = id;
         this.container = document.querySelector(`#${id}Container`);
         this.form = this.container?.querySelector('#modal-form');
-
     }
 
     show() {
