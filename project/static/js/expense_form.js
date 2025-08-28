@@ -1,59 +1,71 @@
 /* sum prices */
-function sum_prices() {
-    let total_field = document.getElementById("id_price");
-    let total_value = parseFloat(total_field.value);
-    let price_field = document.getElementById("id_total_sum");
-    let price_value = String(price_field.value).replaceAll(",", ".");
+function sumPrices() {
+    let totalField = document.getElementById("id_price");
+    let priceField = document.getElementById("id_total_sum");
 
-    price_value = eval(price_value.replace(/[^\d\-\.\+\/\*]/g, ""));
+    let totalValue = parseFloat(totalField.value) || 0;
+    let priceValue = priceField.value.replace(/,/g, ".");
 
-    if (!price_value || price_value === Infinity) {
-        price_value = 0;
+    // Safely evaluate the expression, removing non-mathematical characters
+    try {
+        priceValue = eval(priceValue.replace(/[^\d\-\.\+\/\*]/g, ""));
+        if (!priceValue || priceValue === Infinity) {
+            priceValue = 0;
+        }
+    } catch (e) {
+        priceValue = 0;
     }
 
-    let final_price = total_value + price_value;
-    if (!final_price || final_price <= 0) {
-        final_price = 0;
+    let finalPrice = totalValue + priceValue;
+    if (!finalPrice || finalPrice <= 0) {
+        finalPrice = 0;
     }
 
-    total_field.value = final_price.toFixed(2);
-    price_field.value = "";
+    totalField.value = finalPrice.toFixed(2);
+    priceField.value = "";
 };
 
 
-$("#add_price").click(function () {
-    sum_prices();
-});
+document.getElementById("add_price").addEventListener("click", sumPrices);
 
 
 /*
 Enter allowed in texarea
-Enter on id_total_sum input calls sum_prices()
+Enter on id_total_sum input calls sumPrices()
 Enter disabled on rest of form inputs
 */
-document.getElementById("modal-form").addEventListener("keypress", function (e) {
-    if (e.key === "Enter" && e.target.id == "id_total_sum") {
+document.getElementById("modal-form").addEventListener("keypress", (e) => {
+    if (e.key === "Enter" && e.target.id === "id_total_sum") {
         e.preventDefault();
-        sum_prices();
+        sumPrices();
     }
 });
 
-htmx.on("htmx:beforeSwap", (e) => {
-    if (e.detail.target.id == "mainModal" && !e.detail.xhr.response) {
-        /* find submit button id */
-        let subbmiter = e.detail.requestConfig.triggeringEvent.submitter.id;
 
-        if(subbmiter == "_new") {
-            // reset fields values after submit
-            const fields = {"quantity": 1, "price": "0.0"};
-            for (const [key, value] of Object.entries(fields)) {
-                const field = $(`#id_${key}`);
-                if(field) {
-                    field.val(value);
-                }
-            }
-            // reset exception checkbox
-            $("#id_exception").prop("checked", false);
-        }
+htmx.on("htmx:beforeSwap", (e) => {
+    const targetId = e.detail.target?.id;
+    if (targetId !== 'mainModal' || e.detail.xhr.response) {
+        return;
     }
-})
+    /* find submit button id */
+    const submitterId = e.detail.requestConfig?.triggeringEvent?.submitter?.id;
+
+    if(submitterId === "_new") {
+        // reset fields values after submit
+        const fields = {
+            "quantity": 1,
+            "price": "0.0"
+        };
+
+        for (const [key, value] of Object.entries(fields)) {
+            const field = document.getElementById(`id_${key}`);
+            field && (field.value = value);
+        }
+
+        // reset exception checkbox
+        const exceptionCheckbox = document.getElementById("id_exception");
+        if (exceptionCheckbox) {
+            exceptionCheckbox.checked = false;
+        }
+    };
+});
