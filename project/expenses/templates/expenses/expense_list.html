@@ -1,3 +1,4 @@
+{% load static %}
 {% load i18n %}
 {% load humanize %}
 {% load colorize %}
@@ -48,11 +49,12 @@
                 <td>{{ object.quantity }}</td>
                 <td>{{object.price|price|cellformat}}</td>
                 <td class="text-left cell-padding">{{ object.remark|linebreaksbr }}</td>
-                <td>{% if object.attachment %}
-                    {% if not 'pdf' in object.attachment.url %}
-                    <button type="button" class="button-secondary transparent button-xs" hx-get="{% url 'core:modal_image' %}" hx-trigger="click" hx-target="#imgModal" data-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
+                <td>
+                    {% if object.attachment %}
+                    {% if not 'pdf' in object.attachment %}
+                    <button type="button" class="button-secondary transparent button-xs" hx-get="{% url 'core:modal_image' %}" hx-trigger="click" hx-target="#imgModal" data-url="{% get_media_prefix %}{{ object.attachment }}">{% translate 'Image' %}</button>
                     {% else %}
-                    <a role="button" class="button-outline-primary transparent button-xs" href="{{ object.attachment.url }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
+                    <a role="button" class="button-outline-primary transparent button-xs" href="{% get_media_prefix %}{{ object.attachment }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
                     {% endif %}
                     {% endif %}
                 </td>
