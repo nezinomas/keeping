@@ -35,7 +35,10 @@
         {% endfor %}
     </tbody>
 </table>
-<script>$('.sticky-table').stickyTableHeaders();</script>
+<script>
+    let elements = document.querySelectorAll('.sticky-table')
+    stickyThead.apply(elements);
+</script>
 
 {% else %}
 <div class="alert alert-warning">

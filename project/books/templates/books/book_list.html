@@ -37,7 +37,10 @@
 </table>
 
 
-<script>$('.sticky-table').stickyTableHeaders();</script>
+<script>
+    let elements = document.querySelectorAll('.sticky-table')
+    stickyThead.apply(elements);
+</script>
 
 <c-paging :tab=tab :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#data"/>
 
