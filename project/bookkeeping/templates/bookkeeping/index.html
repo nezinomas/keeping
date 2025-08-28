@@ -61,15 +61,15 @@
 
 <script>
     function compareValues() {
-        var c = $('.check');
-        c.removeClass('check-accounts-balance');
-        if (c[0].outerText != c[1].outerText) {
-            c.addClass('check-accounts-balance');
+        const elements = document.querySelectorAll('.check');
+        elements.forEach(element => element.classList.remove('check-accounts-balance'));
+        if (elements[0].textContent !== elements[1].textContent) {
+            elements.forEach(element => element.classList.add('check-accounts-balance'));
         }
     }
 
     /* check on page load */
-    $(document).ready(compareValues);
+    document.addEventListener('DOMContentLoaded', compareValues);
 
     /* check on ajax reload */
     htmx.on("htmx:afterSwap", (e) => {
