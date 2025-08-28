@@ -50,20 +50,12 @@ function resetFormFields(event) {
         // Reset form fields
         for (const [key, value] of Object.entries(defaultValues)) {
             const field = document.getElementById(`id_${key}`);
-            if (field) {
-                field.value = value;
-            } else {
-                console.warn(`Element with ID 'id_${key}' not found.`);
-            }
+            field && (field.value = value);
         }
 
         // Reset exception checkbox
         const exceptionCheckbox = document.getElementById("id_exception");
-        if (exceptionCheckbox) {
-            exceptionCheckbox.checked = false;
-        } else {
-            console.warn("Element with ID 'id_exception' not found.");
-        }
+        exceptionCheckbox && (exceptionCheckbox.checked = false);
     }
 }
 
