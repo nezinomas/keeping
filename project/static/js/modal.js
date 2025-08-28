@@ -135,7 +135,10 @@ function initializeModals() {
     // reload modal form with error messages or reset fields and close modal form
     htmx.on('htmx:beforeSwap', (e) => {
         const targetId = e.detail.target?.id;
-        if (targetId !== 'mainModal' || e.detail.xhr.response) {
+        const response = e.detail.xhr?.response;
+
+        // Exit if the target is not mainModal or there's a response
+        if (targetId !== "mainModal" || response) {
             return;
         }
 
