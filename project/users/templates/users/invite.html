@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<form method="post" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{% url 'users:invite' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
+<form method="post" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{% url 'users:invite' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
     {% csrf_token %}
 
     <div class="modal-header">
