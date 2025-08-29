@@ -98,9 +98,12 @@ function initializeModals() {
     // close modal on ESC
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
-            document.querySelectorAll('.modal-close').forEach((button) => {
-                const modalId = button.dataset.dismiss;
-                MODALS[modalId]?.hide();
+            const visibleModals = document.querySelectorAll('.modal[style*="display: block"]');
+            visibleModals.forEach((visibleModal) => {
+                const modalId = visibleModal.querySelector('.modal-dialog')?.id;
+                if(modalId) {
+                    MODALS[modalId]?.hide();
+                }
             });
         }
     });
