@@ -1,5 +1,4 @@
 // Constants for modal and container IDs
-const CONTAINERS = ['mainModalContainer', 'imgModalContainer'];
 const FORM_FIELDS = ['price', 'fee', 'quantity', 'title', 'remark', 'attachment'];
 const MODALS = {
     mainModal: null,
@@ -106,10 +105,9 @@ function initializeModals() {
 
 
     // close modal on outside (e.g. containerModal) click
-    document.addEventListener('click', (event) => {
-        const targetId = event.target.id;
-        if (CONTAINERS.includes(targetId)) {
-            const modalId = targetId.replace('Container', '');
+    document.addEventListener('click', function(event) {
+        const modalId = event.target.querySelector('div[id]')?.id;
+        if (modalId) {
             MODALS[modalId]?.hide();
         }
     });
