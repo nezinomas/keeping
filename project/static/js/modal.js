@@ -87,8 +87,10 @@ function initializeModals() {
     // close modal on Close Buton
     document.addEventListener('click', (event) => {
         if (event.target.matches('.modal-close')) {
-            const modalId = event.target.dataset.dismiss;
-            MODALS[modalId]?.hide();
+            const modalId = event.target.closest('.modal-dialog')?.id;
+            if(modalId) {
+                MODALS[modalId]?.hide();
+            }
         }
     });
 
