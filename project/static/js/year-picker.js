@@ -1,0 +1,1 @@
+window.initYearPicker('year-picker', {});
