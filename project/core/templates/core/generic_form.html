@@ -42,8 +42,16 @@
 
 
 {% block from_scripts %}
-    {% include 'core/form_date_scripts.html' %}
-    {% if 'price' or 'fee' in form.fields %}
+    {% if 'date' in form.fields %}
+        <script src="{% static 'js/date-picker.js' %}"></script>
+    {% endif %}
+
+    {% if 'year' in form.fields or 'closed' in form.fields %}
+        <script src="{% static 'js/year-picker.js' %}"></script>
+    {% endif %}
+
+    {% if 'price' in form.fields or 'fee' in form.fields %}
         <script src="{% static 'js/alter_price.js' %}"></script>
     {% endif %}
+
 {% endblock from_scripts %}
