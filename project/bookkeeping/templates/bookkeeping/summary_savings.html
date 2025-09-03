@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
+{% load static %}
 {% load get_item %}
 
 {% block head %}
     {% include 'highcharts.html' with annotations="True" %}
+    <script src="{% static 'js/chart_summary_savings.js' %}"></script>
 {% endblock head %}
 
 
