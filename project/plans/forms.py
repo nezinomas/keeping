@@ -1,15 +1,15 @@
 import calendar
 from datetime import datetime
 
-from bootstrap_datepicker_plus.widgets import YearPickerInput
 from dateutil.relativedelta import relativedelta
 from django import forms
 from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
 
-from ..core.lib import form_utils, utils
+from ..core.lib import utils
 from ..core.lib.date import monthnames, set_year_for_form
+from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
@@ -52,11 +52,6 @@ class YearFormMixin(forms.ModelForm):
     november = forms.FloatField(min_value=0.01, required=False)
     december = forms.FloatField(min_value=0.01, required=False)
 
-    def clean(self):
-        cleaned_data = super().clean()
-        form_utils.clean_year_picker_input("year", self.data, cleaned_data, self.errors)
-        return cleaned_data
-
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
 
@@ -78,7 +73,7 @@ class IncomePlanForm(YearFormMixin):
         fields = ["journal", "year", "income_type"] + monthnames()
 
         widgets = {
-            "year": YearPickerInput(),
+            "year": YearPickerWidget(),
         }
 
     field_order = ["year", "income_type"] + monthnames()
@@ -109,7 +104,7 @@ class ExpensePlanForm(YearFormMixin):
         fields = ["journal", "year", "expense_type"] + monthnames()
 
         widgets = {
-            "year": YearPickerInput(),
+            "year": YearPickerWidget(),
         }
 
     field_order = ["year", "expense_type"] + monthnames()
@@ -140,7 +135,7 @@ class SavingPlanForm(YearFormMixin):
         fields = ["journal", "year", "saving_type"] + monthnames()
 
         widgets = {
-            "year": YearPickerInput(),
+            "year": YearPickerWidget(),
         }
 
     field_order = ["year", "saving_type"] + monthnames()
@@ -171,7 +166,7 @@ class DayPlanForm(YearFormMixin):
         fields = ["journal", "year"] + monthnames()
 
         widgets = {
-            "year": YearPickerInput(),
+            "year": YearPickerWidget(),
         }
 
     field_order = ["year"] + monthnames()
@@ -198,7 +193,7 @@ class NecessaryPlanForm(YearFormMixin):
         fields = ["journal", "year", "expense_type", "title"] + monthnames()
 
         widgets = {
-            "year": YearPickerInput(),
+            "year": YearPickerWidget(),
         }
 
     field_order = ["year", "expense_type", "title"] + monthnames()
@@ -225,11 +220,11 @@ class NecessaryPlanForm(YearFormMixin):
 # ----------------------------------------------------------------------------
 class CopyPlanForm(forms.Form):
     year_from = forms.IntegerField(
-        widget=YearPickerInput(),
+        widget=YearPickerWidget(),
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
     year_to = forms.IntegerField(
-        widget=YearPickerInput(),
+        widget=YearPickerWidget(),
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
     income = forms.BooleanField(required=False)
@@ -260,13 +255,6 @@ class CopyPlanForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         dict_ = self._get_cleaned_checkboxes(cleaned_data)
-
-        form_utils.clean_year_picker_input(
-            "year_from", self.data, cleaned_data, self.errors
-        )
-        form_utils.clean_year_picker_input(
-            "year_to", self.data, cleaned_data, self.errors
-        )
 
         year_from = cleaned_data.get("year_from")
         year_to = cleaned_data.get("year_to")

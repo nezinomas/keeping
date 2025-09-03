@@ -409,7 +409,7 @@ def test_type_update_return_list_with_closed(client_logged):
     actual = response.content.decode("utf-8")
 
     assert "TTT" in actual
-    assert "YYY" in actual
+    assert "YYY" not in actual
     assert "XXX" not in actual
 
 

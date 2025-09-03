@@ -77,7 +77,6 @@ def test_income_current_user_types(second_user):
 @pytest.mark.parametrize(
     "year",
     [
-        ("1999-01-01"),
         ("1999"),
         (1999),
     ],
@@ -256,7 +255,6 @@ def test_expense_current_user_types(second_user):
 @pytest.mark.parametrize(
     "year",
     [
-        ("1999-01-01"),
         ("1999"),
         (1999),
     ],
@@ -394,7 +392,6 @@ def test_saving_current_user_types(second_user):
 @pytest.mark.parametrize(
     "year",
     [
-        ("1999-01-01"),
         ("1999"),
         (1999),
     ],
@@ -558,7 +555,6 @@ def test_day_year_initial_value():
 @pytest.mark.parametrize(
     "year",
     [
-        ("1999-01-01"),
         ("1999"),
         (1999),
     ],
@@ -668,7 +664,6 @@ def test_income_year_initial_value1():
 @pytest.mark.parametrize(
     "year",
     [
-        ("1999-01-01"),
         ("1999"),
         (1999),
     ],

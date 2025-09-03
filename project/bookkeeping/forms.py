@@ -1,15 +1,14 @@
 from datetime import datetime, timezone
 from typing import Callable
 
-from bootstrap_datepicker_plus.widgets import DatePickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.lib import date as core_date
-from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
+from ..core.lib.form_widgets import DatePickerWidget
 from ..expenses.models import ExpenseType
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
@@ -57,11 +56,7 @@ class SavingWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
         self.fields["date"].initial = core_date.set_year_for_form()
 
         # overwrite FK
@@ -85,11 +80,7 @@ class AccountWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
         self.fields["date"].initial = core_date.set_year_for_form()
 
         # overwrite FK
@@ -113,11 +104,7 @@ class PensionWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
         self.fields["date"].initial = core_date.set_year_for_form()
 
         # overwrite FK

@@ -1,14 +1,14 @@
 from datetime import datetime
 
-from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
 from crispy_forms.helper import FormHelper
 from django import forms
 from django.db.models import F
 from django.db.models.functions import ExtractYear
 from django.utils.translation import gettext as _
 
-from ..core.lib import form_utils, utils
+from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
+from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
 from .models import MAX_BOTTLES, Drink, DrinkTarget
@@ -24,11 +24,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
 
         # user input
         self.fields["user"].initial = utils.get_user()
@@ -65,7 +61,7 @@ class DrinkTargetForm(forms.ModelForm):
         fields = ["user", "year", "drink_type", "quantity"]
 
         widgets = {
-            "year": YearPickerInput(),
+            "year": YearPickerWidget(),
         }
 
     field_order = ["year", "drink_type", "quantity"]
@@ -90,11 +86,6 @@ class DrinkTargetForm(forms.ModelForm):
         h2 = f"<b>{_('pcs')}</b> - {_type} Std Av"
         help_text = f"{h1}</br>{h2}"
         self.fields["quantity"].help_text = help_text
-
-    def clean(self):
-        cleaned_data = super().clean()
-        form_utils.clean_year_picker_input("year", self.data, cleaned_data, self.errors)
-        return cleaned_data
 
     def clean_year(self):
         year = self.cleaned_data["year"]

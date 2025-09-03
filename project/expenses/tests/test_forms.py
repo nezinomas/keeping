@@ -352,7 +352,6 @@ def test_expense_name_current_user_expense_types(second_user):
 @pytest.mark.parametrize(
     "valid_for",
     [
-        ("2000-01-01"),
         ("2000"),
         (2000),
     ],

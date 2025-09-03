@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib import form_utils, utils
+from ..core.lib import utils
 from ..core.lib.date import set_year_for_form, years
+from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from .models import Book, BookTarget
 
 
@@ -22,27 +22,18 @@ class BookForm(forms.ModelForm):
         user = utils.get_user()
         lang = user.journal.lang
 
-        self.fields["started"].widget = DatePickerInput(
-            options={
-                "locale": lang,
-            }
-        )
+        self.fields["started"].widget = DatePickerWidget()
+        self.fields["ended"].widget = DatePickerWidget()
 
-        self.fields["ended"].widget = DatePickerInput(
-            range_from="started",
-            options={
-                "locale": lang,
-            },
-        )
+        # initial values
+        self.fields["started"].initial = set_year_for_form()
 
         # user input
         self.fields["user"].initial = user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
-        # inital values
-        self.fields["started"].initial = set_year_for_form()
-
+        # labels
         self.fields["started"].label = _("Started reading")
         self.fields["ended"].label = _("Ended reading")
         self.fields["title"].label = _("Title")
@@ -90,7 +81,7 @@ class BookTargetForm(forms.ModelForm):
         model = BookTarget
         fields = ["user", "year", "quantity"]
 
-        widgets = {"year": YearPickerInput()}
+        widgets = {"year": YearPickerWidget()}
 
     field_order = ["year", "quantity"]
 
@@ -107,12 +98,6 @@ class BookTargetForm(forms.ModelForm):
 
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("How many")
-
-    def clean(self):
-        cleaned_data = super().clean()
-        form_utils.clean_year_picker_input("year", self.data, cleaned_data, self.errors)
-
-        return cleaned_data
 
     def clean_year(self):
         year = self.cleaned_data["year"]

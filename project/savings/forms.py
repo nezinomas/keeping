@@ -1,10 +1,13 @@
-from bootstrap_datepicker_plus.widgets import DatePickerInput, YearPickerInput
+from datetime import datetime
+
 from django import forms
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
-from ..core.lib import date, form_utils, utils
+from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
+from ..core.lib.date import set_year_for_form
+from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Saving, SavingType
 
@@ -17,11 +20,7 @@ class SavingTypeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["closed"].widget = YearPickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["closed"].widget = YearPickerWidget()
 
         # journal input
         self.fields["journal"].initial = utils.get_user().journal
@@ -31,14 +30,6 @@ class SavingTypeForm(forms.ModelForm):
         self.fields["title"].label = _("Fund")
         self.fields["closed"].label = _("Closed")
         self.fields["type"].label = _("Type")
-
-    def clean(self):
-        cleaned_data = super().clean()
-        form_utils.clean_year_picker_input(
-            "closed", self.data, cleaned_data, self.errors
-        )
-
-        return cleaned_data
 
 
 class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
@@ -54,11 +45,8 @@ class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
+
 
         # form inputs settings
         self.fields["price"].widget.attrs = {"step": "0.01"}
@@ -67,7 +55,7 @@ class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
         # inital values
         self.fields["account"].initial = Account.objects.items().first()
-        self.fields["date"].initial = date.set_year_for_form()
+        self.fields["date"].initial = set_year_for_form()
 
         # overwrite ForeignKey saving_type and account queryset
         self.fields["saving_type"].queryset = SavingType.objects.items()

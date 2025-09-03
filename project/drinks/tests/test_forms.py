@@ -150,7 +150,6 @@ def test_drink_target_valid_data(type, qty, expect):
 @pytest.mark.parametrize(
     "year",
     [
-        ("2000-01-01"),
         ("2000"),
         (2000),
     ],
