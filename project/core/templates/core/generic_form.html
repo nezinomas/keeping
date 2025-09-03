@@ -43,6 +43,8 @@
 
 {% block from_scripts %}
     {% if 'date' in form.fields %}
+        {% get_current_language as LANG %}
+        <script src="{% static 'litepicker/translations/'|add:LANG|add:'.js' %}"></script>
         <script src="{% static 'js/date-picker.js' %}"></script>
     {% endif %}
 
