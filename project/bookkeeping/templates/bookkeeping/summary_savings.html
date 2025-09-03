@@ -1,13 +1,9 @@
 {% extends 'base.html' %}
 
-{% load static %}
 {% load get_item %}
 
 {% block head %}
-<script src="https://code.highcharts.com/highcharts.src.js"></script>
-<script src="https://code.highcharts.com/modules/annotations.js"></script>
-<script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
-<link rel="stylesheet" href="{% static 'js/highcharts_themes/my-theme.css' %}">
+    {% include 'highcharts.html' with annotations="True" %}
 {% endblock head %}
 
 
@@ -31,7 +27,6 @@
 
 {% endif %}
 
-<script src="/static/js/chart_summary_savings.js"></script>
 
 {% for chart in pointers %}
     {% firstof chart|add:"_data" as data_id %}

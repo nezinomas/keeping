@@ -4,11 +4,9 @@
 {% load i18n %}
 
 {% block head %}
-<script src="https://code.highcharts.com/highcharts.src.js"></script>
-<script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
-<link rel="stylesheet" href="{% static 'js/highcharts_themes/my-theme.css' %}">
-
+    {% include 'highcharts.html' with bullet="True" %}
 {% endblock head %}
+
 
 {% block content %}
 
