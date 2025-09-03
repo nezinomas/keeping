@@ -47,7 +47,6 @@ class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
         self.fields["date"].widget = DatePickerWidget()
 
-
         # form inputs settings
         self.fields["price"].widget.attrs = {"step": "0.01"}
         self.fields["fee"].widget.attrs = {"step": "0.01"}
