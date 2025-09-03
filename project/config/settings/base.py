@@ -132,7 +132,6 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "crequest",
     "django_htmx",
-    "widget_tweaks",
     "django_cotton",
 ]
 INSTALLED_APPS.extend(f"project.{app}" for app in PROJECT_APPS)
