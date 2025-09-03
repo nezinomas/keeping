@@ -89,18 +89,18 @@ function loadChart(idData, idContainer) {
     ]
     }, function (chartObj) {
         /* align datalabels for expenses that exceeds targets */
-        $.each(chartObj.series[1].data, function (i, point) {
+        chartObj.series[1].data.forEach((point, i) => {
             let max = chartObj.series[0].data[point.x].y;
             let {y} = point;
 
             max = parseFloat(max.toFixed(1));
             y = parseFloat(y.toFixed(1));
 
+            let color;
             if (y <= max) {
                 color = "#5D9C59";
-            }
-            else {
-                p = 28;
+            } else {
+                let p = 28;
                 if (y < 100) { p = 21; }
                 if (y < 10) { p = -2; }
                 point.dataLabel.attr({ x: point.dataLabel.x + p });

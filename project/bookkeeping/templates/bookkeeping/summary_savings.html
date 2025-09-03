@@ -39,12 +39,11 @@
 {% endfor %}
 
 <script>
-    $(document).ready( function () {
+    document.addEventListener('DOMContentLoaded', () => {
         {{pointers|safe}}.forEach(element => {
             chartSavings(String(element));
         });
     });
-
 </script>
 
 {% endblock content %}
