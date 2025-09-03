@@ -48,7 +48,7 @@
         <script src="{% static 'js/date-picker.js' %}"></script>
     {% endif %}
 
-    {% if 'year' in form.fields or 'closed' in form.fields or 'valid_for' in form.fields %}
+    {% if 'year' in form.fields or 'closed' in form.fields or 'valid_for' in form.fields or 'year_from' in form.fields or 'year_to' in form.fields %}
         <script src="{% static 'js/year-picker.js' %}"></script>
     {% endif %}
 

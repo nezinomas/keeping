@@ -313,8 +313,8 @@ class CopyPlanForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # initail values
-        self.fields["year_from"].initial = datetime.now()
-        self.fields["year_to"].initial = datetime.now() + relativedelta(years=1)
+        self.fields["year_from"].initial = datetime.now().year
+        self.fields["year_to"].initial = datetime.now().year + 1
         self.fields["income"].initial = True
         self.fields["expense"].initial = True
         self.fields["saving"].initial = True
