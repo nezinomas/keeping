@@ -30,7 +30,10 @@ class QsMixin:
             .values("c")
             .annotate(year=ExtractYear(F("date")))
             .values(
-                "year", latest_check=F("date"), id=F(f"{field}__id"), have=F("price")
+                "year",
+                latest_check=F("date"),
+                category_id=F(f"{field}__id"),
+                have=F("price"),
             )
             if items
             else None

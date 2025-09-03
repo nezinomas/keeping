@@ -1,12 +1,11 @@
 from datetime import datetime
 
-from bootstrap_datepicker_plus.widgets import DatePickerInput
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
+from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Pension, PensionType
 
@@ -24,11 +23,7 @@ class PensionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
 
         # form inputs settings
         self.fields["remark"].widget.attrs["rows"] = 3
@@ -44,8 +39,6 @@ class PensionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["fee"].label = _("Fee")
         self.fields["remark"].label = _("Remark")
         self.fields["pension_type"].label = _("Fund")
-
-        self.helper = FormHelper()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -75,5 +68,3 @@ class PensionTypeForm(forms.ModelForm):
         self.fields["journal"].widget = forms.HiddenInput()
 
         self.fields["title"].label = _("Fund title")
-
-        self.helper = FormHelper()

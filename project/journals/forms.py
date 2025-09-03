@@ -2,7 +2,6 @@ import contextlib
 import json
 from json.decoder import JSONDecodeError
 
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -34,8 +33,6 @@ class UnnecessaryForm(forms.Form):
         self.fields["savings"].label = _("Savings")
         self.fields["choices"].label = False
 
-        self.helper = FormHelper()
-
     def save(self):
         journal = utils.get_user().journal
 
@@ -64,8 +61,6 @@ class SettingsForm(forms.Form):
 
         self.fields["lang"].label = _("Journal language")
         self.fields["title"].label = _("Journal title")
-
-        self.helper = FormHelper()
 
     def save(self):
         journal = utils.get_user().journal

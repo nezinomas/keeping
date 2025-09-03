@@ -60,7 +60,7 @@ class DebtQuerySet(models.QuerySet):
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(incomes=Sum("price"))
-            .values("year", "incomes", id=F("account__pk"))
+            .values("year", "incomes", category_id=F("account__pk"))
             .order_by("year", "account")
         )
 
@@ -74,7 +74,7 @@ class DebtQuerySet(models.QuerySet):
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))
-            .values("year", "expenses", id=F("account__pk"))
+            .values("year", "expenses", category_id=F("account__pk"))
             .order_by("year", "account")
         )
 
@@ -120,8 +120,8 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(incomes=Sum("price"))
-            .values("year", "incomes", id=F("account__pk"))
-            .order_by("year", "id")
+            .values("year", "incomes", category_id=F("account__pk"))
+            .order_by("year", "category_id")
         )
 
     def expenses(self):
@@ -134,6 +134,6 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))
-            .values("year", "expenses", id=F("account__pk"))
-            .order_by("year", "id")
+            .values("year", "expenses", category_id=F("account__pk"))
+            .order_by("year", "category_id")
         )

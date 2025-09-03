@@ -66,8 +66,11 @@ class Lists(ListViewMixin):
 
     def get_context_data(self, **kwargs):
         page = self.request.GET.get("page", 1)
-        paginator = CountlessPaginator(self.get_queryset(), self.per_page)
-        page_range = paginator.get_elided_page_range(number=page)
+        sql = self.get_queryset()
+        paginator = CountlessPaginator(
+            query=sql, total_records=len(sql), per_page=self.per_page
+        )
+        page_range = paginator.get_elided_page_range(page=page)
 
         context = {
             "object_list": paginator.get_page(page),
@@ -75,8 +78,9 @@ class Lists(ListViewMixin):
             "tab": self.request.GET.get("tab"),
             "first_item": paginator.count - (paginator.per_page * (int(page) - 1)),
             "paginator_object": {
-                "num_pages": paginator.num_pages,
+                "total_pages": paginator.total_pages,
                 "page_range": page_range,
+                "ELLIPSIS": paginator.ELLIPSIS,
             },
         }
 
@@ -88,7 +92,7 @@ class New(CreateViewMixin):
     form_class = forms.BookForm
     hx_trigger_django = "reload"
     success_url = reverse_lazy("books:list")
-    form_title = _("New book")
+    modal_form_title = _("New book")
 
 
 class Update(UpdateViewMixin):
@@ -96,13 +100,13 @@ class Update(UpdateViewMixin):
     form_class = forms.BookForm
     hx_trigger_django = "reload"
     success_url = reverse_lazy("books:list")
-    form_title = _("Update book")
+    modal_form_title = _("Update book")
 
 
 class Delete(DeleteViewMixin):
     model = models.Book
     success_url = reverse_lazy("books:list")
-    form_title = _("Delete book")
+    modal_form_title = _("Delete book")
 
 
 class Search(SearchViewMixin):
@@ -120,11 +124,11 @@ class TargetNew(CreateViewMixin):
     hx_trigger_django = "afterTarget"
     form_class = forms.BookTargetForm
     url = reverse_lazy("books:target_new")
-    form_title = _("New goal")
+    modal_form_title = _("New goal")
 
 
 class TargetUpdate(UpdateViewMixin):
     model = models.BookTarget
     hx_trigger_django = "afterTarget"
     form_class = forms.BookTargetForm
-    form_title = _("Update goal")
+    modal_form_title = _("Update goal")

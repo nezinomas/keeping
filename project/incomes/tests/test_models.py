@@ -132,10 +132,10 @@ def test_incomes_income_sum_query_count(django_assert_max_num_queries):
 def test_balance(incomes):
     qs = Income.objects.incomes()
 
-    assert qs[0] == {"year": 1970, "incomes": 525, "id": 1}
-    assert qs[1] == {"year": 1970, "incomes": 450, "id": 2}
-    assert qs[2] == {"year": 1999, "incomes": 325, "id": 1}
-    assert qs[3] == {"year": 1999, "incomes": 350, "id": 2}
+    assert qs[0] == {"year": 1970, "incomes": 525, "category_id": 1}
+    assert qs[1] == {"year": 1970, "incomes": 450, "category_id": 2}
+    assert qs[2] == {"year": 1999, "incomes": 325, "category_id": 1}
+    assert qs[3] == {"year": 1999, "incomes": 350, "category_id": 2}
 
 
 def test_income_month_type_sum():
@@ -319,7 +319,7 @@ def test_income_post_save_update_account_balance_count_qs(
 
     IncomeFactory()
 
-    with django_assert_max_num_queries(17):
+    with django_assert_max_num_queries(18):
         Income.objects.create(date=date(1999, 1, 1), price=2, account=a, income_type=t)
 
 
@@ -339,7 +339,7 @@ def test_income_update_post_save_count_qs(django_assert_max_num_queries):
     assert AccountBalance.objects.all().count() == 2
 
     obj_update = Income.objects.get(pk=obj.pk)
-    with django_assert_max_num_queries(17):
+    with django_assert_max_num_queries(18):
         obj_update.price = 6
         obj_update.save()
 

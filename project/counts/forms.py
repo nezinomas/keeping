@@ -1,10 +1,9 @@
-from bootstrap_datepicker_plus.widgets import DatePickerInput
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib import utils
 from ..core.lib.date import set_year_for_form
+from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Count, CountType
 
@@ -23,14 +22,8 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
         self._overwrite_default_queries()
         self._translate_fields()
 
-        self.helper = FormHelper()
-
     def _initial_fields_values(self):
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
         self.fields["date"].initial = set_year_for_form()
         self.fields["quantity"].initial = 1
 
@@ -66,8 +59,6 @@ class CountTypeForm(forms.ModelForm):
         self.fields["user"].widget = forms.HiddenInput()
 
         self.fields["title"].label = _("Title")
-
-        self.helper = FormHelper()
 
     def clean_title(self):
         reserved_titles = [

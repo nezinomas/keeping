@@ -18,8 +18,8 @@ if __name__ == "__main__":
 
     try:
         conf = toml.loads(conf)["django"]
-    except toml.TomlDecodeError as e:
-        raise toml.TomlDecodeError(
+    except toml.TOMLDecodeError as e:
+        raise toml.TOMLDecodeError(
             f"Failed to decode TOML file: {conf_file}. Please check the file format."  # noqa: E501
         ) from e
 

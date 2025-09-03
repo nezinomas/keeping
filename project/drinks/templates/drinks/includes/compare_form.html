@@ -1,18 +1,20 @@
 {% load i18n %}
-{% load crispy_forms_tags %}
 
 <div class="row">
-    <div><b>{% translate 'Year comparison' %}</b></div>
+    <div>
+        <b>{% translate 'Year comparison' %}</b>
+    </div>
+
     <form novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#compare-form-and-chart">
         {% csrf_token %}
-        {{ form.year1|as_crispy_field }}
-        {{ form.year2|as_crispy_field }}
+        <c-form-body :form=form />
         <button type="submit" class="button-secondary" name="search">{% translate 'Filter' %}</button>
     </form>
 </div>
 
 <div id="chart-compare-two-container"></div>
+
 {% if chart.serries  %}
-{{chart|json_script:"chart-compare-two-data"}}
-<script>chartCompare('chart-compare-two-data', 'chart-compare-two-container')</script>
+    {{chart|json_script:"chart-compare-two-data"}}
+    <script>chartCompare('chart-compare-two-data', 'chart-compare-two-container')</script>
 {% endif %}

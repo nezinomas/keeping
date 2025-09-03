@@ -66,7 +66,7 @@ class ExpensesNew(CssClassMixin, CreateViewMixin):
     url = reverse_lazy("plans:expense_new")
     success_url = reverse_lazy("plans:expense_list")
     hx_trigger_django = "reloadExpenses"
-    form_title = _("Expenses plans")
+    modal_form_title = _("Expenses plans")
 
 
 class ExpensesUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
@@ -74,14 +74,14 @@ class ExpensesUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     form_class = forms.ExpensePlanForm
     success_url = reverse_lazy("plans:expense_list")
     hx_trigger_django = "reloadExpenses"
-    form_title = _("Expenses plans")
+    modal_form_title = _("Expenses plans")
 
 
 class ExpensesDelete(DeleteViewMixin):
     model = models.ExpensePlan
     success_url = reverse_lazy("plans:expense_list")
     hx_trigger_django = "reloadExpenses"
-    form_title = _("Delete plan")
+    modal_form_title = _("Delete plan")
 
 
 # -------------------------------------------------------------------------------------
@@ -100,7 +100,7 @@ class IncomesNew(CssClassMixin, CreateViewMixin):
     url = reverse_lazy("plans:income_new")
     success_url = reverse_lazy("plans:income_list")
     hx_trigger_django = "reloadIncomes"
-    form_title = _("Incomes plans")
+    modal_form_title = _("Incomes plans")
 
 
 class IncomesUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
@@ -108,14 +108,14 @@ class IncomesUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     form_class = forms.IncomePlanForm
     success_url = reverse_lazy("plans:income_list")
     hx_trigger_django = "reloadIncomes"
-    form_title = _("Incomes plans")
+    modal_form_title = _("Incomes plans")
 
 
 class IncomesDelete(DeleteViewMixin):
     model = models.IncomePlan
     success_url = reverse_lazy("plans:income_list")
     hx_trigger_django = "reloadIncomes"
-    form_title = _("Delete plan")
+    modal_form_title = _("Delete plan")
 
 
 # -------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ class SavingsNew(CssClassMixin, CreateViewMixin):
     url = reverse_lazy("plans:saving_new")
     success_url = reverse_lazy("plans:saving_list")
     hx_trigger_django = "reloadSavings"
-    form_title = _("Savings plans")
+    modal_form_title = _("Savings plans")
 
 
 class SavingsUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
@@ -142,14 +142,14 @@ class SavingsUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     form_class = forms.SavingPlanForm
     success_url = reverse_lazy("plans:saving_list")
     hx_trigger_django = "reloadSavings"
-    form_title = _("Savings plans")
+    modal_form_title = _("Savings plans")
 
 
 class SavingsDelete(DeleteViewMixin):
     model = models.SavingPlan
     success_url = reverse_lazy("plans:saving_list")
     hx_trigger_django = "reloadSavings"
-    form_title = _("Delete plan")
+    modal_form_title = _("Delete plan")
 
 
 # -------------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ class DayNew(CssClassMixin, CreateViewMixin):
     url = reverse_lazy("plans:day_new")
     success_url = reverse_lazy("plans:day_list")
     hx_trigger_django = "reloadDay"
-    form_title = _("Day plans")
+    modal_form_title = _("Day plans")
 
 
 class DayUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
@@ -176,14 +176,14 @@ class DayUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     form_class = forms.DayPlanForm
     success_url = reverse_lazy("plans:day_list")
     hx_trigger_django = "reloadDay"
-    form_title = _("Day plans")
+    modal_form_title = _("Day plans")
 
 
 class DayDelete(DeleteViewMixin):
     model = models.DayPlan
     success_url = reverse_lazy("plans:day_list")
     hx_trigger_django = "reloadDay"
-    form_title = _("Delete plan")
+    modal_form_title = _("Delete plan")
 
 
 # -------------------------------------------------------------------------------------
@@ -202,7 +202,7 @@ class NecessaryNew(CssClassMixin, CreateViewMixin):
     url = reverse_lazy("plans:necessary_new")
     success_url = reverse_lazy("plans:necessary_list")
     hx_trigger_django = "reloadNecessary"
-    form_title = _("Additional necessary expenses")
+    modal_form_title = _("Additional necessary expenses")
 
 
 class NecessaryUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
@@ -210,14 +210,14 @@ class NecessaryUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     form_class = forms.NecessaryPlanForm
     success_url = reverse_lazy("plans:necessary_list")
     hx_trigger_django = "reloadNecessary"
-    form_title = _("Additional necessary expenses")
+    modal_form_title = _("Additional necessary expenses")
 
 
 class NecessaryDelete(DeleteViewMixin):
     model = models.NecessaryPlan
     success_url = reverse_lazy("plans:necessary_list")
     hx_trigger_django = "reloadNecessary"
-    form_title = _("Delete plan")
+    modal_form_title = _("Delete plan")
 
 
 # -------------------------------------------------------------------------------------
@@ -227,7 +227,7 @@ class CopyPlans(FormViewMixin):
     form_class = forms.CopyPlanForm
     success_url = reverse_lazy("plans:index")
     hx_trigger_django = "afterCopy"
-    form_title = _("Copy plans")
+    modal_form_title = _("Copy plans")
 
     def get_context_data(self, **kwargs):
         context = {

@@ -1,13 +1,10 @@
 {% extends 'base.html' %}
 
-{% load static %}
 {% load i18n %}
 
-{% block head %}
 
-<script src="https://code.highcharts.com/highcharts.src.js"></script>
-<script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
-<link rel="stylesheet" href="{% static 'js/highcharts_themes/my-theme.css' %}">
+{% block head %}
+    {% include 'highcharts.html' %}
 {% endblock head %}
 
 
@@ -61,15 +58,15 @@
 
 <script>
     function compareValues() {
-        var c = $('.check');
-        c.removeClass('check-accounts-balance');
-        if (c[0].outerText != c[1].outerText) {
-            c.addClass('check-accounts-balance');
+        const elements = document.querySelectorAll('.check');
+        elements.forEach(element => element.classList.remove('check-accounts-balance'));
+        if (elements[0].textContent !== elements[1].textContent) {
+            elements.forEach(element => element.classList.add('check-accounts-balance'));
         }
     }
 
     /* check on page load */
-    $(document).ready(compareValues);
+    document.addEventListener('DOMContentLoaded', compareValues);
 
     /* check on ajax reload */
     htmx.on("htmx:afterSwap", (e) => {

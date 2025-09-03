@@ -136,16 +136,42 @@ def generic_search(model, search_str, category_list, date_field="date"):
 def search_expenses(search_str):
     category_list = ["expense_type__title", "expense_name__title"]
 
-    return generic_search(Expense, search_str, category_list)
+    return generic_search(Expense, search_str, category_list).values(
+        "id",
+        "date",
+        "account__title",
+        "expense_type__pk",
+        "expense_type__title",
+        "expense_name__title",
+        "price",
+        "quantity",
+        "remark",
+        "attachment",
+        "exception",
+    )
 
 
 def search_incomes(search_str):
     category_list = ["income_type__title"]
 
-    return generic_search(Income, search_str, category_list)
+    return generic_search(Income, search_str, category_list).values(
+        "id",
+        "date",
+        "income_type__title",
+        "account__title",
+        "price",
+        "remark",
+    )
 
 
 def search_books(search_str):
     category_list = ["author", "title"]
 
-    return generic_search(Book, search_str, category_list, "started")
+    return generic_search(Book, search_str, category_list, "started").values(
+        "id",
+        "author",
+        "title",
+        "remark",
+        "started",
+        "ended",
+    )

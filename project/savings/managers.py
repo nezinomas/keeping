@@ -89,8 +89,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .annotate(year=ExtractYear(F("date")))
             .values("year", "saving_type__title")
             .annotate(incomes=Sum("price"), fee=Sum("fee"))
-            .values("year", "incomes", "fee", id=F("saving_type__pk"))
-            .order_by("year", "id")
+            .values("year", "incomes", "fee", category_id=F("saving_type__pk"))
+            .order_by("year", "category_id")
         )
 
     def expenses(self):
@@ -103,8 +103,8 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))
-            .values("year", "expenses", id=F("account__pk"))
-            .order_by("year", "id")
+            .values("year", "expenses", category_id=F("account__pk"))
+            .order_by("year", "category_id")
         )
 
 

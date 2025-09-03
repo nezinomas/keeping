@@ -193,6 +193,12 @@ def fixture_data_empty():
     )
 
 
+def test_filter_df_wrong_type(data):
+    actual = PlanCalculateDaySum(data).filter_df("xxx")
+
+    assert actual == {}
+
+
 def test_incomes(data):
     actual = PlanCalculateDaySum(data).filter_df("incomes")
 

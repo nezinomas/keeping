@@ -1,4 +1,4 @@
-$(function () {
+document.addEventListener('DOMContentLoaded', () => {
     const chartData = JSON.parse(document.getElementById("chart-balance-data").textContent);
     // convert data
     for(i = 0; i < 12; i++) {

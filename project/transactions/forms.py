@@ -1,5 +1,5 @@
-from bootstrap_datepicker_plus.widgets import DatePickerInput
-from crispy_forms.helper import FormHelper
+from datetime import datetime
+
 from django import forms
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -9,6 +9,7 @@ from ..accounts.models import Account
 from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
+from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import SavingChange, SavingClose, SavingType, Transaction
 
@@ -30,14 +31,8 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self._set_htmx_attributes()
         self._translate_fields()
 
-        self.helper = FormHelper()
-
     def _initial_fields_values(self):
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
 
         # initial values
         self.fields["price"].widget.attrs = {"step": "0.01"}
@@ -92,15 +87,8 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
             self.fields["close"].initial = True
 
-        self.helper = FormHelper()
-
     def _initial_fields_values(self):
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
-
+        self.fields["date"].widget = DatePickerWidget()
         self.fields["date"].initial = set_year_for_form()
 
     def _overwrite_default_queries(self):
@@ -155,14 +143,8 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         if hasattr(self.instance, "from_account") and self.instance.from_account.closed:
             self.fields["close"].initial = True
 
-        self.helper = FormHelper()
-
     def _initial_fields_values(self):
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
 
         # initial values
         self.fields["date"].initial = set_year_for_form()

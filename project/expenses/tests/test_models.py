@@ -659,17 +659,17 @@ def test_expenses(expenses):
     actual = Expense.objects.expenses()
 
     assert actual[0]["year"] == 1970
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
     assert actual[0]["expenses"] == 250
 
     assert actual[1]["year"] == 1970
-    assert actual[1]["id"] == 2
+    assert actual[1]["category_id"] == 2
     assert actual[1]["expenses"] == 225
 
     assert actual[2]["year"] == 1999
-    assert actual[2]["id"] == 1
+    assert actual[2]["category_id"] == 1
     assert actual[2]["expenses"] == 50
 
     assert actual[3]["year"] == 1999
-    assert actual[3]["id"] == 2
+    assert actual[3]["category_id"] == 2
     assert actual[3]["expenses"] == 125

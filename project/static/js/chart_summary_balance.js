@@ -1,4 +1,4 @@
-$(function () {
+document.addEventListener('DOMContentLoaded', () => {
     const chartData = JSON.parse(
         document.getElementById("chart-balance-data").textContent
     );

@@ -71,7 +71,7 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = Account
     model = models.AccountWorth
     form_class = forms.AccountWorthForm
-    formset_title = _("Worth of accounts")
+    modal_form_title = _("Worth of accounts")
     url = reverse_lazy("bookkeeping:accounts_worth_new")
     hx_trigger_django = "afterAccountWorthNew"
 
@@ -88,7 +88,7 @@ class SavingsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = SavingType
     model = models.SavingWorth
     form_class = forms.SavingWorthForm
-    formset_title = _("Worth of savings")
+    modal_form_title = _("Worth of savings")
     url = reverse_lazy("bookkeeping:savings_worth_new")
     hx_trigger_django = "afterSavingWorthNew"
 
@@ -106,7 +106,7 @@ class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     type_model = PensionType
     model = models.PensionWorth
     form_class = forms.PensionWorthForm
-    formset_title = _("Worth of pensions")
+    modal_form_title = _("Worth of pensions")
     url = reverse_lazy("bookkeeping:pensions_worth_new")
     hx_trigger_django = "afterPensionWorthNew"
 

@@ -1,0 +1,20 @@
+{% load static %}
+
+<script src="{% static 'highcharts/highcharts.js' %}"></script>
+<script src="{% static 'highcharts/themes/theme.js' %}"></script>
+<link rel="stylesheet" href="{% static 'highcharts/themes/theme.css' %}">
+
+
+{% if bullet %}
+    <script src="{% static 'highcharts/modules/bullet.js' %}"></script>
+{% endif %}
+
+
+{% if annotations %}
+    <script src="{% static 'highcharts/modules/annotations.js' %}"></script>
+{% endif %}
+
+
+{% if heatmap %}
+    <script src="{% static 'highcharts/modules/heatmap.js' %}"></script>
+{% endif %}

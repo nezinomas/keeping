@@ -1,3 +1,4 @@
+{% load static %}
 {% load i18n %}
 {% load humanize %}
 {% load colorize %}
@@ -41,22 +42,23 @@
             {% url 'expenses:update' object.id as url_update %}
             {% url 'expenses:delete' object.id as url_delete %}
 
-            <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{{ object.expense_type.pk|bg_color }} {% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+            <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% firstof object.expense_type.pk|bg_color or object.expense_type__pk|bg_color %} {% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
                 <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
-                <td class="text-left">{{ object.expense_type }}</td>
-                <td class="text-left">{{ object.expense_name }}</td>
+                <td class="text-left">{% firstof object.expense_type.title object.expense_type__title %}</td>
+                <td class="text-left">{% firstof object.expense_name.title object.expense_name__title %}</td>
                 <td>{{ object.quantity }}</td>
                 <td>{{object.price|price|cellformat}}</td>
                 <td class="text-left cell-padding">{{ object.remark|linebreaksbr }}</td>
-                <td>{% if object.attachment %}
-                    {% if not 'pdf' in object.attachment.url %}
-                    <button type="button" class="button-secondary transparent button-xs" hx-get="{% url 'core:modal_image' %}" hx-trigger="click" hx-target="#imgModal" data-url="{{ object.attachment.url }}">{% translate 'Image' %}</button>
+                <td>
+                    {% if object.attachment %}
+                    {% if not 'pdf' in object.attachment %}
+                    <button type="button" class="button-secondary transparent button-xs" hx-get="{% url 'core:modal_image' %}" hx-trigger="click" hx-target="#imgModal" data-url="{% get_media_prefix %}{{ object.attachment }}">{% translate 'Image' %}</button>
                     {% else %}
-                    <a role="button" class="button-outline-primary transparent button-xs" href="{{ object.attachment.url }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
+                    <a role="button" class="button-outline-primary transparent button-xs" href="{% get_media_prefix %}{{ object.attachment }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
                     {% endif %}
                     {% endif %}
                 </td>
-                <td>{{ object.account }}</td>
+                <td>{% firstof object.account.title object.account__title %}</td>
                 <c-td-edit :url=url_update />
                 <c-td-delete :url=url_delete />
             </tr>
@@ -65,7 +67,10 @@
     </table>
 </div>
 
-<script>$('.sticky-table').stickyTableHeaders();</script>
+<script>
+    let elements = document.querySelectorAll('.sticky-table')
+    stickyThead.apply(elements);
+</script>
 
 
 <c-paging :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#data"/>

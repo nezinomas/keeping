@@ -146,12 +146,12 @@ function chartSavings(container) {
     }, function (chartObj) {
         // paint in red negative profit
         let series = chartObj.series[0];
-        $.each(series.data, function (i, point) {
+        series.data.forEach((point, i) => {
             if (point.negative) {
                 point.color = negative; /* + tooltip border color */
-                point.graphic.css({ stroke: negative, color: "#EB5353"});
+                point.graphic.css({ stroke: negative, color: "#EB5353" });
             } else {
-                point.update({})
+                point.update({});
             }
         });
     });

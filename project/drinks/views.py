@@ -115,7 +115,7 @@ class New(CreateViewMixin):
     model = models.Drink
     form_class = forms.DrinkForm
     success_url = reverse_lazy("drinks:tab_data")
-    form_title = _("Drinks")
+    modal_form_title = _("Drinks")
 
     def get_hx_trigger_django(self):
         tab = self.kwargs.get("tab")
@@ -139,7 +139,7 @@ class Update(UpdateViewMixin):
     form_class = forms.DrinkForm
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
-    form_title = _("Drinks")
+    modal_form_title = _("Drinks")
 
     def get_object(self):
         obj = super().get_object()
@@ -154,7 +154,7 @@ class Delete(DeleteViewMixin):
     model = models.Drink
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
-    form_title = _("Delete drinks")
+    modal_form_title = _("Delete drinks")
 
 
 class TargetLists(ListViewMixin):
@@ -169,7 +169,7 @@ class TargetNew(CreateViewMixin):
     model = models.DrinkTarget
     form_class = forms.DrinkTargetForm
     success_url = reverse_lazy("drinks:index")
-    form_title = _("New goal")
+    modal_form_title = _("New goal")
 
     def get_hx_trigger_django(self):
         tab = self.kwargs.get("tab")
@@ -193,7 +193,7 @@ class TargetUpdate(UpdateViewMixin):
     form_class = forms.DrinkTargetForm
     hx_trigger_django = "reloadIndex"
     success_url = reverse_lazy("drinks:tab_index")
-    form_title = _("Update goal")
+    modal_form_title = _("Update goal")
 
     def get_object(self):
         obj = super().get_object()

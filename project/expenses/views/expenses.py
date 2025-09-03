@@ -46,7 +46,21 @@ class Lists(GetMonthMixin, ListViewMixin):
         if month in range(1, 13):
             qs = qs.filter(date__month=month)
 
-        return qs.order_by("-date", "expense_type", F("expense_name").asc())
+        return qs.order_by(
+            "-date", "expense_type__title", F("expense_name__title").asc()
+        ).values(
+            "id",
+            "date",
+            "account__title",
+            "expense_type__pk",
+            "expense_type__title",
+            "expense_name__title",
+            "price",
+            "quantity",
+            "remark",
+            "attachment",
+            "exception",
+        )
 
     def get_context_data(self, **kwargs):
         month = self.get_month()
@@ -68,7 +82,7 @@ class New(CreateViewMixin):
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_form = "reload"
-    form_title = _("Expenses")
+    modal_form_title = _("Expenses")
     template_name = "expenses/expense_form.html"
 
 
@@ -77,14 +91,14 @@ class Update(ConvertToCents, UpdateViewMixin):
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_django = "reload"
-    form_title = _("Expenses")
+    modal_form_title = _("Expenses")
     template_name = "expenses/expense_form.html"
 
 
 class Delete(DeleteViewMixin):
     model = models.Expense
     success_url = reverse_lazy("expenses:list")
-    form_title = _("Delete expense")
+    modal_form_title = _("Delete expense")
 
 
 class Search(SearchViewMixin):

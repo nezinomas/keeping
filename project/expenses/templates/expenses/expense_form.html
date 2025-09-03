@@ -1,5 +1,11 @@
+{% extends "core/generic_form.html" %}
 {% load static %}
+
+<!-- Include additional scripts -->
+{% block from_scripts %}
+
+{{ block.super }}
 
 <script src="{% static 'js/expense_form.js' %}"></script>
 
-{% include 'core/generic_form.html' %}
+{% endblock from_scripts %}

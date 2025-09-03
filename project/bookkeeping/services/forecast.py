@@ -1,3 +1,4 @@
+import itertools as it
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -55,11 +56,8 @@ class Data:
         """
 
         arr = [0] * 12
-
         for row in data:
-            month = row["date"].month
-            arr[month - 1] = row["sum"]
-
+            arr[row["date"].month - 1] = row["sum"]
         return arr
 
     def _make_planned_data(self, data: QuerySet) -> list[int]:
@@ -75,17 +73,15 @@ class Data:
             If the month does not exist in the dataset, the price will be 0.
         """
 
-        arr = [0] * 12
-        month_map = dict(zip(monthnames(), range(1, 13)))
+        monthly_totals = [0] * 12
+        month_map = {name: idx for idx, name in enumerate(monthnames())}
 
-        for row in data:
-            for month, price in row.items():
-                if not price:
-                    continue
+        for month, price in it.chain.from_iterable(row.items() for row in data):
+            if not price or month not in month_map:
+                continue
+            monthly_totals[month_map[month]] += price
 
-                month_index = month_map[month] - 1
-                arr[month_index] += price
-        return arr
+        return monthly_totals
 
 
 class Forecast:
@@ -189,24 +185,19 @@ class Forecast:
         """
         avg = self.medians()
         current = self.current_month()
-
-        expenses_avg = avg["expenses"]
-        expenses_current = max(current["expenses"], expenses_avg)
-
-        savings_avg = avg["savings"]
-        savings_current = max(current["savings"], savings_avg)
-
-        incomes_current = max(current["incomes"], current["planned_incomes"])
-
         month_left = 12 - self._month
+
+        expenses = max(current["expenses"], avg["expenses"])
+        savings = max(current["savings"], avg["savings"])
+        incomes = max(current["incomes"], current["planned_incomes"])
 
         return (
             0
             + self.balance()
             + self.planned_incomes()
-            + incomes_current
-            - (expenses_current + expenses_avg * month_left)
-            - (savings_current + savings_avg * month_left)
+            + incomes
+            - (expenses + avg["expenses"] * month_left)
+            - (savings + avg["savings"] * month_left)
         )
 
 

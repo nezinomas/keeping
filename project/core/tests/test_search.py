@@ -322,9 +322,9 @@ def test_expense_search(_search, expect):
     q = search.search_expenses(_search)
 
     for i in range(len(q)):
-        assert q[i].expense_type.title == expect[i]["type"]
-        assert q[i].expense_name.title == expect[i]["name"]
-        assert q[i].remark == expect[i]["remark"]
+        assert q[i]["expense_type__title"] == expect[i]["type"]
+        assert q[i]["expense_name__title"] == expect[i]["name"]
+        assert q[i]["remark"] == expect[i]["remark"]
 
 
 @pytest.mark.django_db
@@ -334,8 +334,8 @@ def test_expense_search_ordering():
 
     q = search.search_expenses("remark")
 
-    assert q[0].date == date(1999, 1, 1)
-    assert q[1].date == date(1000, 1, 1)
+    assert q[0]["date"] == date(1999, 1, 1)
+    assert q[1]["date"] == date(1000, 1, 1)
 
 
 # -------------------------------------------------------------------------------------
@@ -373,8 +373,8 @@ def test_incomes_search(_search, cnt, income_type):
     if q:
         q = q[0]
 
-        assert q.date == date(1999, 1, 1)
-        assert q.income_type.title == income_type
+        assert q["date"] == date(1999, 1, 1)
+        assert q["income_type__title"] == income_type
 
 
 @pytest.mark.django_db
@@ -384,8 +384,8 @@ def test_incomes_search_ordering():
 
     q = search.search_incomes("remark")
 
-    assert q[0].date == date(1999, 1, 1)
-    assert q[1].date == date(1000, 1, 1)
+    assert q[0]["date"] == date(1999, 1, 1)
+    assert q[1]["date"] == date(1000, 1, 1)
 
 
 # -------------------------------------------------------------------------------------
@@ -425,10 +425,10 @@ def test_books_search(_search, author, title, remark):
     if q:
         q = q[0]
 
-        assert q.started == date(1999, 1, 1)
-        assert q.author == author
-        assert q.title == title
-        assert q.remark == remark
+        assert q["started"] == date(1999, 1, 1)
+        assert q["author"] == author
+        assert q["title"] == title
+        assert q["remark"] == remark
 
 
 @pytest.mark.django_db
@@ -437,6 +437,6 @@ def test_books_search_ordering():
     BookFactory()
 
     q = search.search_books("remark")
-
-    assert q[0].started == date(1999, 1, 1)
-    assert q[1].started == date(1000, 1, 1)
+    print(q)
+    assert q[0]["started"] == date(1999, 1, 1)
+    assert q[1]["started"] == date(1000, 1, 1)

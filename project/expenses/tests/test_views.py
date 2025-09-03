@@ -5,7 +5,7 @@ import time_machine
 from django.urls import resolve, reverse
 
 from ...accounts.factories import AccountFactory
-from ...core.tests.utils import change_profile_year
+from ...core.tests.utils import change_profile_year, clean_content
 from .. import models
 from ..factories import Expense, ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..views import expenses, expenses_name, expenses_type
@@ -106,7 +106,7 @@ def test_expenses_lists_context(client_logged):
     actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 1
-    assert actual[0].date == date(1999, 2, 7)
+    assert actual[0]["date"] == date(1999, 2, 7)
 
 
 @time_machine.travel("1999-02-08")
@@ -118,7 +118,7 @@ def test_expenses_lists_alternative_context(client_logged):
     actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 1
-    assert actual[0].date == date(1999, 2, 7)
+    assert actual[0]["date"] == date(1999, 2, 7)
 
 
 def test_expenses_lists_302(client):
@@ -146,7 +146,7 @@ def test_expenses_load_new_form(main_user, client_logged):
     url = reverse("expenses:new")
 
     response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
+    actual = clean_content(response.content.decode("utf-8"))
 
     assert "3000-08-08" in actual
     assert "Įrašyti</button>" in actual
@@ -200,7 +200,7 @@ def test_expenses_load_update_form_button(client_logged):
 
     url = reverse("expenses:update", kwargs={"pk": e.pk})
     response = client_logged.get(url)
-    form = response.content.decode("utf-8")
+    form = clean_content(response.content.decode("utf-8"))
 
     assert "Atnaujinti ir uždaryti</button>" in form
 
@@ -458,7 +458,7 @@ def test_expenses_list_month_not_set(client_logged):
     actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 1
-    assert actual[0].date == date(1999, 1, 1)
+    assert actual[0]["date"] == date(1999, 1, 1)
 
 
 @time_machine.travel("1999-1-1")
@@ -471,7 +471,7 @@ def test_expenses_list_january(client_logged):
     actual = client_logged.get(url).context["object_list"]
 
     assert len(actual) == 1
-    assert actual[0].date == date(1999, 1, 1)
+    assert actual[0]["date"] == date(1999, 1, 1)
 
 
 @time_machine.travel("1999-1-1")
@@ -829,6 +829,7 @@ def test_seach_statistic_not_found(client_logged):
     url = reverse("expenses:search")
     response = client_logged.get(url, {"page": 2, "search": "xxx"})
 
-    assert "sum_price" not in response.context
-    assert "sum_quantity" not in response.context
-    assert "average" not in response.context
+    assert not response.context["sum_price"]
+    assert not response.context["sum_quantity"]
+    assert not response.context["average"]
+    assert response.context["count"] == 0

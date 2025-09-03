@@ -90,21 +90,21 @@ def test_transaction_year_query_count(django_assert_max_num_queries):
 def test_transaction_new_post_save():
     TransactionFactory()
 
-    actual = AccountBalance.objects.items()
+    assert AccountBalance.objects.items().count() == 4
 
-    assert actual.count() == 4
+    a1 = AccountBalance.objects.get(account_id=2, year=1999)
+    assert a1.account.title == "Account1"
+    assert a1.incomes == 0
+    assert a1.expenses == 200
+    assert a1.balance == -200
+    assert a1.delta == 200
 
-    assert actual[0].account.title == "Account2"
-    assert actual[0].incomes == 200
-    assert actual[0].expenses == 0
-    assert actual[0].balance == 200
-    assert actual[0].delta == -200
-
-    assert actual[2].account.title == "Account1"
-    assert actual[2].incomes == 0
-    assert actual[2].expenses == 200
-    assert actual[2].balance == -200
-    assert actual[2].delta == 200
+    a2 = AccountBalance.objects.get(account_id=1, year=1999)
+    assert a2.account.title == "Account2"
+    assert a2.incomes == 200
+    assert a2.expenses == 0
+    assert a2.balance == 200
+    assert a2.delta == -200
 
 
 def test_transaction_update_post_save():
@@ -378,21 +378,22 @@ def test_transaction_post_delete_with_update():
     obj = TransactionFactory()
     Transaction.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.items()
+    assert AccountBalance.objects.items().count() == 4
 
-    assert actual.count() == 4
+    a1 = AccountBalance.objects.get(account_id=1, year=1999)
 
-    assert actual[0].account.title == "Account2"
-    assert actual[0].incomes == 10
-    assert actual[0].expenses == 0
-    assert actual[0].balance == 10
-    assert actual[0].delta == -10
+    assert a1.account.title == "Account2"
+    assert a1.incomes == 10
+    assert a1.expenses == 0
+    assert a1.balance == 10
+    assert a1.delta == -10
 
-    assert actual[2].account.title == "Account1"
-    assert actual[2].incomes == 0
-    assert actual[2].expenses == 10
-    assert actual[2].balance == -10
-    assert actual[2].delta == 10
+    a2 = AccountBalance.objects.get(account_id=2, year=1999)
+    assert a2.account.title == "Account1"
+    assert a2.incomes == 0
+    assert a2.expenses == 10
+    assert a2.balance == -10
+    assert a2.delta == 10
 
     assert Transaction.objects.all().count() == 1
 
@@ -403,20 +404,20 @@ def test_transaction_balance_incomes(transactions):
     # 1974
     assert actual[0]["year"] == 1970
     assert actual[0]["incomes"] == 525
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
 
     assert actual[1]["year"] == 1970
     assert actual[1]["incomes"] == 125
-    assert actual[1]["id"] == 2
+    assert actual[1]["category_id"] == 2
 
     # 1999
     assert actual[2]["year"] == 1999
     assert actual[2]["incomes"] == 325
-    assert actual[2]["id"] == 1
+    assert actual[2]["category_id"] == 1
 
     assert actual[3]["year"] == 1999
     assert actual[3]["incomes"] == 450
-    assert actual[3]["id"] == 2
+    assert actual[3]["category_id"] == 2
 
 
 def test_transaction_balance_expenses(transactions):
@@ -425,20 +426,20 @@ def test_transaction_balance_expenses(transactions):
     # 1974
     assert actual[0]["year"] == 1970
     assert actual[0]["expenses"] == 125
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
 
     assert actual[1]["year"] == 1970
     assert actual[1]["expenses"] == 525
-    assert actual[1]["id"] == 2
+    assert actual[1]["category_id"] == 2
 
     # 1999
     assert actual[2]["year"] == 1999
     assert actual[2]["expenses"] == 450
-    assert actual[2]["id"] == 1
+    assert actual[2]["category_id"] == 1
 
     assert actual[3]["year"] == 1999
     assert actual[3]["expenses"] == 325
-    assert actual[3]["id"] == 2
+    assert actual[3]["category_id"] == 2
 
 
 # ----------------------------------------------------------------------------
@@ -805,16 +806,16 @@ def test_saving_close_balance_incomes(savings_close):
     # 1974
     assert actual[0]["year"] == 1970
     assert actual[0]["incomes"] == 25
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
 
     # 1999
     assert actual[1]["year"] == 1999
     assert actual[1]["incomes"] == 25
-    assert actual[1]["id"] == 1
+    assert actual[1]["category_id"] == 1
 
     assert actual[2]["year"] == 1999
     assert actual[2]["incomes"] == 1
-    assert actual[2]["id"] == 2
+    assert actual[2]["category_id"] == 2
 
 
 def test_saving_close_balance_expenses(savings_close):
@@ -824,13 +825,13 @@ def test_saving_close_balance_expenses(savings_close):
     assert actual[0]["year"] == 1970
     assert actual[0]["expenses"] == 25
     assert actual[0]["fee"] == 5
-    assert actual[0]["id"] == 1
+    assert actual[0]["category_id"] == 1
 
     # 1999
     assert actual[1]["year"] == 1999
     assert actual[1]["expenses"] == 26
     assert actual[1]["fee"] == 6
-    assert actual[1]["id"] == 1
+    assert actual[1]["category_id"] == 1
 
 
 # ----------------------------------------------------------------------------

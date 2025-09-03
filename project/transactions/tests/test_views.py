@@ -6,6 +6,7 @@ import time_machine
 from django.urls import resolve, reverse
 
 from ...accounts.factories import AccountFactory
+from ...core.tests.utils import clean_content
 from ...savings.factories import SavingTypeFactory
 from ...savings.models import SavingType
 from .. import models, views
@@ -115,7 +116,7 @@ def test_transactions_load_update_form_button(client_logged):
 
     url = reverse("transactions:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
-    form = response.content.decode("utf-8")
+    form = clean_content(response.content.decode("utf-8"))
 
     assert "Atnaujinti ir uždaryti</button>" in form
 

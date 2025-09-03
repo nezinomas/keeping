@@ -6,14 +6,12 @@
 <html lang="{{ LANGUAGE_CODE }}">
   <head>
     <meta charset="utf-8">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="{% static 'htmx/htmx_2.0.4.js' %}"></script> <!-- Htmx -->
+    <script src="{% static 'htmx/htmx.min.js' %}"></script> <!-- Htmx -->
     <script defer src="{% static 'alpinejs/alpinejs_morth_3.14.8.js' %}"></script> <!-- Alpine Plugins -->
     <script defer src="{% static 'alpinejs/alpinejs_3.14.8.js' %}"></script> <!-- Alpine Core -->
-    {% include 'core/form_date_scripts.html' %}
-
-    <link rel="stylesheet" href="{% static 'bootstrap_datepicker/css/bootstrap-datetimepicker.min.css' %}">
-    <link rel="stylesheet" href="{% static 'bootstrap_datepicker_plus/css/datepicker-widget.css' %}">
+    <script defer src="{% static 'litepicker/litepicker.js' %}"></script>
+    <script defer src="{% static 'yearpicker/year_picker.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'yearpicker/year_picker.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
 

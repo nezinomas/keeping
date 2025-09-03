@@ -16,7 +16,7 @@ class New(CreateViewMixin):
 
     url = reverse_lazy("expenses:type_new")
     hx_trigger_django = "afterType"
-    form_title = _("Expense type")
+    modal_form_title = _("Expense type")
 
 
 class Update(UpdateViewMixin):
@@ -25,4 +25,4 @@ class Update(UpdateViewMixin):
     success_url = reverse_lazy("expenses:type_list")
 
     hx_trigger_django = "afterType"
-    form_title = _("Expense type")
+    modal_form_title = _("Expense type")

@@ -47,5 +47,8 @@ class AccountBalance(models.Model):
     # Managers
     objects = managers.AccountBalanceQuerySet.as_manager()
 
+    class Meta:
+        ordering = ["year", "account__pk"]
+
     def __str__(self):
         return f"{self.account.title}"
