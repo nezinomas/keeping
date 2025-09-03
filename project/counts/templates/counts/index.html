@@ -5,14 +5,10 @@
 
 
 {% block head %}
-<script src="{% static 'highcharts/highcharts.js' %}"></script>
-<script src="https://code.highcharts.com/modules/heatmap.js"></script>
-<script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
-<link rel="stylesheet" href="{% static 'js/highcharts_themes/my-theme.css' %}">
-<script src="{% static 'js/chart_calendar.js' %}"></script>
-<script src="{% static 'js/chart_counts_periodicity.js' %}"></script>
-<script src="{% static 'js/sticky-table-headers.js' %}"></script>
-
+    {% include 'highcharts.html' with heatmap="True" %}
+    <script src="{% static 'js/chart_calendar.js' %}"></script>
+    <script src="{% static 'js/chart_counts_periodicity.js' %}"></script>
+    <script src="{% static 'js/sticky-table-headers.js' %}"></script>
 {% endblock head %}
 
 

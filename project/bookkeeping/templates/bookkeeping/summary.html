@@ -2,12 +2,9 @@
 
 {% load static %}
 
+
 {% block head %}
-
-<script src="{% static 'highcharts/highcharts.js' %}"></script>
-<script src="{% static 'js/highcharts_themes/my-theme.js' %}"></script>
-<link rel="stylesheet" href="{% static 'js/highcharts_themes/my-theme.css' %}">
-
+    {% include 'highcharts.html' %}
 {% endblock head %}
 
 
