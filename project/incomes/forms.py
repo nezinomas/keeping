@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from bootstrap_datepicker_plus.widgets import DatePickerInput
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -8,6 +7,7 @@ from ..accounts.models import Account
 from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_year_for_form
+from ..core.lib.form_widgets import DatePickerWidget
 from .models import Income, IncomeType
 
 
@@ -23,11 +23,7 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
 
         # form inputs settings
         self.fields["remark"].widget.attrs["rows"] = 3

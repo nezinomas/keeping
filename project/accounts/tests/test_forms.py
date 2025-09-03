@@ -27,7 +27,6 @@ def test_account_form_has_fields():
 @pytest.mark.parametrize(
     "closed",
     [
-        ("2000-01-01"),
         ("2000"),
         (2000),
     ],

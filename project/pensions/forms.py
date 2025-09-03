@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from bootstrap_datepicker_plus.widgets import DatePickerInput
 from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
+from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Pension, PensionType
 
@@ -23,11 +23,7 @@ class PensionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerInput(
-            options={
-                "locale": utils.get_user().journal.lang,
-            }
-        )
+        self.fields["date"].widget = DatePickerWidget()
 
         # form inputs settings
         self.fields["remark"].widget.attrs["rows"] = 3

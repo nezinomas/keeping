@@ -1,8 +1,8 @@
-from bootstrap_datepicker_plus.widgets import YearPickerInput
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib import form_utils, utils
+from ..core.lib import utils
+from ..core.lib.form_widgets import YearPickerWidget
 from .models import Account
 
 
@@ -18,11 +18,7 @@ class AccountForm(forms.ModelForm):
 
         journal = utils.get_user().journal
 
-        self.fields["closed"].widget = YearPickerInput(
-            options={
-                "locale": journal.lang,
-            }
-        )
+        self.fields["closed"].widget = YearPickerWidget()
 
         # journal input
         self.fields["journal"].initial = journal
@@ -32,11 +28,3 @@ class AccountForm(forms.ModelForm):
         self.fields["title"].label = _("Account title")
         self.fields["closed"].label = _("Closed")
         self.fields["order"].label = _("Sorting")
-
-    def clean(self):
-        cleaned_data = super().clean()
-        form_utils.clean_year_picker_input(
-            "closed", self.data, cleaned_data, self.errors
-        )
-
-        return cleaned_data

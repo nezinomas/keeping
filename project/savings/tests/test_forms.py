@@ -31,7 +31,6 @@ def test_saving_type_init_fields():
 @pytest.mark.parametrize(
     "closed",
     [
-        ("2000-01-01"),
         ("2000"),
         (2000),
     ],

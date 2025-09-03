@@ -219,7 +219,6 @@ def test_book_target_year_initial_value():
 @pytest.mark.parametrize(
     "year",
     [
-        ("2000-01-01"),
         ("2000"),
         (2000),
     ],
