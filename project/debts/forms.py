@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
-from ..core.lib.date import set_year_for_form
+from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from . import models
@@ -36,7 +36,7 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
         # inital values
         self.fields["account"].initial = Account.objects.items().first()
-        self.fields["date"].initial = set_year_for_form()
+        self.fields["date"].initial = set_date_with_user_year()
 
         # overwrite ForeignKey expense_type queryset
         self.fields["account"].queryset = Account.objects.items()
@@ -113,7 +113,7 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["remark"].widget.attrs["rows"] = 3
 
         # inital values
-        self.fields["date"].initial = set_year_for_form()
+        self.fields["date"].initial = set_date_with_user_year()
         self.fields["account"].initial = Account.objects.items().first()
 
         # overwrite ForeignKey expense_type queryset

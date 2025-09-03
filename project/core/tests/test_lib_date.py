@@ -102,7 +102,7 @@ def test_monthlen_wrong_input():
 def test_set_year_for_month(main_user):
     UserFactory()
 
-    actual = lib_date.set_year_for_form()
+    actual = lib_date.set_date_with_user_year()
 
     assert actual == datetime(1999, 1, 1)
 

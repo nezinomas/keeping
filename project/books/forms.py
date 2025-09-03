@@ -4,7 +4,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib import utils
-from ..core.lib.date import set_year_for_form, years
+from ..core.lib.date import set_date_with_user_year, years
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from .models import Book, BookTarget
 
@@ -26,7 +26,7 @@ class BookForm(forms.ModelForm):
         self.fields["ended"].widget = DatePickerWidget()
 
         # initial values
-        self.fields["started"].initial = set_year_for_form()
+        self.fields["started"].initial = set_date_with_user_year()
 
         # user input
         self.fields["user"].initial = user
@@ -94,7 +94,7 @@ class BookTargetForm(forms.ModelForm):
         self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields["year"].initial = set_year_for_form().year
+        self.fields["year"].initial = set_date_with_user_year().year
 
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("How many")

@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
-from ..core.lib.date import set_year_for_form
+from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import SavingChange, SavingClose, SavingType, Transaction
@@ -37,7 +37,7 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         # initial values
         self.fields["price"].widget.attrs = {"step": "0.01"}
         self.fields["price"].label = _("Amount")
-        self.fields["date"].initial = set_year_for_form()
+        self.fields["date"].initial = set_date_with_user_year()
 
     def _overwrite_default_queries(self):
         from_account = self.fields["from_account"]
@@ -89,7 +89,7 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_year_for_form()
+        self.fields["date"].initial = set_date_with_user_year()
 
     def _overwrite_default_queries(self):
         self.fields["from_account"].queryset = SavingType.objects.items()
@@ -147,7 +147,7 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["date"].widget = DatePickerWidget()
 
         # initial values
-        self.fields["date"].initial = set_year_for_form()
+        self.fields["date"].initial = set_date_with_user_year()
 
     def _overwrite_default_queries(self):
         from_account = self.fields["from_account"]

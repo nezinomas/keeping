@@ -57,7 +57,7 @@ class SavingWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = core_date.set_year_for_form()
+        self.fields["date"].initial = core_date.set_date_with_user_year()
 
         # overwrite FK
         self.fields["saving_type"].queryset = SavingType.objects.items()
@@ -81,7 +81,7 @@ class AccountWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = core_date.set_year_for_form()
+        self.fields["date"].initial = core_date.set_date_with_user_year()
 
         # overwrite FK
         self.fields["account"].queryset = Account.objects.items()
@@ -105,7 +105,7 @@ class PensionWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = core_date.set_year_for_form()
+        self.fields["date"].initial = core_date.set_date_with_user_year()
 
         # overwrite FK
         self.fields["pension_type"].queryset = PensionType.objects.items()

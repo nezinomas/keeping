@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from ..accounts.models import Account
 from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
-from ..core.lib.date import set_year_for_form
+from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from .models import Income, IncomeType
 
@@ -30,7 +30,7 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
 
         # inital values
         self.fields["account"].initial = Account.objects.items().first()
-        self.fields["date"].initial = set_year_for_form()
+        self.fields["date"].initial = set_date_with_user_year()
 
         # overwrite ForeignKey expense_type queryset
         self.fields["income_type"].queryset = IncomeType.objects.items()

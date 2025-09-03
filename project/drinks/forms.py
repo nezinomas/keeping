@@ -7,7 +7,7 @@ from django.db.models.functions import ExtractYear
 from django.utils.translation import gettext as _
 
 from ..core.lib import utils
-from ..core.lib.date import set_year_for_form
+from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
@@ -32,7 +32,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields["date"].initial = set_year_for_form()
+        self.fields["date"].initial = set_date_with_user_year()
 
         self.fields["date"].label = _("Date")
         self.fields["option"].label = _("Drink type")
@@ -75,7 +75,7 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields["year"].initial = set_year_for_form().year
+        self.fields["year"].initial = set_date_with_user_year().year
 
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("Quantity")

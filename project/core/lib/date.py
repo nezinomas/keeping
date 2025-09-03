@@ -66,7 +66,7 @@ def years() -> List[int]:
     return list(range(start, now + 2))
 
 
-def set_year_for_form():
+def set_date_with_user_year():
     now = datetime.now()
     month = now.month
     day = now.day

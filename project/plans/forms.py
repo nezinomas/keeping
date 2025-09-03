@@ -8,7 +8,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
 
 from ..core.lib import utils
-from ..core.lib.date import monthnames, set_year_for_form
+from ..core.lib.date import monthnames, set_date_with_user_year
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
 from ..expenses.models import ExpenseType
@@ -85,7 +85,7 @@ class IncomePlanForm(YearFormMixin):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields["year"].initial = set_year_for_form().year
+        self.fields["year"].initial = set_date_with_user_year().year
 
         # overwrite ForeignKey expense_type queryset
         self.fields["income_type"].queryset = IncomeType.objects.items()
@@ -116,7 +116,7 @@ class ExpensePlanForm(YearFormMixin):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields["year"].initial = set_year_for_form().year
+        self.fields["year"].initial = set_date_with_user_year().year
 
         # overwrite ForeignKey expense_type queryset
         self.fields["expense_type"].queryset = ExpenseType.objects.items()
@@ -150,7 +150,7 @@ class SavingPlanForm(YearFormMixin):
         self.fields["saving_type"].queryset = SavingType.objects.items()
 
         # inital values
-        self.fields["year"].initial = set_year_for_form().year
+        self.fields["year"].initial = set_date_with_user_year().year
 
         # field translation
         self.fields["saving_type"].label = _("Saving type")
@@ -178,7 +178,7 @@ class DayPlanForm(YearFormMixin):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields["year"].initial = set_year_for_form().year
+        self.fields["year"].initial = set_date_with_user_year().year
 
         # field translation
         common_field_transalion(self)
@@ -205,7 +205,7 @@ class NecessaryPlanForm(YearFormMixin):
         set_journal_field(self.fields)
 
         # inital values
-        self.fields["year"].initial = set_year_for_form().year
+        self.fields["year"].initial = set_date_with_user_year().year
 
         # overwrite ForeignKey expense_type queryset
         self.fields["expense_type"].queryset = ExpenseType.objects.items()

@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..core.lib import utils
-from ..core.lib.date import set_year_for_form
+from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Count, CountType
@@ -24,7 +24,7 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_year_for_form()
+        self.fields["date"].initial = set_date_with_user_year()
         self.fields["quantity"].initial = 1
 
         if slug := utils.get_request_kwargs("slug"):
