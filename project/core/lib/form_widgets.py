@@ -1,11 +1,12 @@
 from django import forms
+from django.utils.translation import gettext as _
 
 
 class DatePickerWidget(forms.DateInput):
     def __init__(self, attrs=None):
         default_attrs = {
             'class': 'date-picker',
-            'placeholder': 'Select a date',
+            'placeholder': _('Select a date'),
         }
         if attrs:
             default_attrs |= attrs
@@ -16,7 +17,7 @@ class YearPickerWidget(forms.TextInput):
     def __init__(self, attrs=None):
         default_attrs = {
             'class': 'year-picker',
-            'placeholder': 'Select a year',
+            'placeholder': _('Select a year'),
         }
         if attrs:
             default_attrs |= attrs
