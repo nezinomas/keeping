@@ -9,7 +9,7 @@ class Lists(ListViewMixin):
     model = models.Account
 
     def get_queryset(self):
-        return models.Account.objects.related()
+        return models.Account.objects.related().order_by('closed', 'title')
 
 
 class New(CreateViewMixin):
