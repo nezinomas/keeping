@@ -61,7 +61,7 @@ class TypeLists(ListViewMixin):
     model = models.SavingType
 
     def get_queryset(self):
-        return models.SavingType.objects.related()
+        return models.SavingType.objects.related().order_by('closed', 'type', 'title')
 
 
 class TypeNew(CreateViewMixin):
