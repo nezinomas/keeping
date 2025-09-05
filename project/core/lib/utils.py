@@ -11,13 +11,31 @@ def get_request_kwargs(name):
     return crequest.resolver_match.kwargs.get(name) if crequest else None
 
 
-def total_row(data, fields) -> dict:
-    row = {field: sum(getattr(d, field, 0) for d in data) for field in fields}
+def total_row(data, fields: list[str]) -> dict:
+    # Fields to subtract when sold is truthy
+    subtract_fields = {"incomes", "profit_sum"}
 
-    if not row.get("profit_proc"):
-        return row
+    # Initialize result dictionary
+    row = {field: 0 for field in fields}
 
-    row["profit_proc"] = calculate_percents(row)
+    # Process each object
+    for obj in data:
+        # Get all field values in one pass
+        values = obj.__dict__
+        sold = values.get("sold", 0)
+
+        # Update sums for all fields
+        for field in fields:
+            value = values[field]
+            row[field] += value
+
+            # Subtract fields if sold is truthy
+            if field in subtract_fields and sold:
+                row[field] -= value
+
+    # Update profit_proc if applicable
+    if "profit_proc" in fields and row.get("market_value"):
+        row["profit_proc"] = calculate_percents(row)
 
     return row
 
