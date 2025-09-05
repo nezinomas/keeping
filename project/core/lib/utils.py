@@ -26,7 +26,7 @@ def total_row(data, fields: list[str]) -> dict:
 
         # Update sums for all fields
         for field in fields:
-            value = values[field]
+            value = values.get(field, 0)
             row[field] += value
 
             # Subtract fields if sold is truthy
