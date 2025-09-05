@@ -48,10 +48,17 @@
             <td class="{{item.fee|css_class_if_none}}">{{item.fee|price|cellformat}}</td>
             <td class="{{item.sold|css_class_if_none}}">{{item.sold|price|cellformat}}</td>
             <td class=" right-thin-border {{item.sold_fee|css_class_if_none}}">{{item.sold_fee|price|cellformat}}</td>
+            {% if item.market_value %}
             <td>{{ item.latest_check|date:"Y-m-d"|default_if_none:_('No record of account amount') }}</td>
             <td class="right-thick-border {{item.market_value|css_class_if_none}}">{{item.market_value|price|cellformat}}</td>
             <td class="{{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_sum|price|cellformat}}</td>
             <td class="{{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_proc|cellformat}}%</td>
+            {% else %}
+            <td class="dash">-</td>
+            <td class="right-thick-border dash">-</td>
+            <td class="dash">-</td>
+            <td class="dash">-</td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>

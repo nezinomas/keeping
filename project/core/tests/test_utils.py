@@ -43,3 +43,15 @@ def test_total_row_no_data():
         "A": 0,
         "B": 0,
     }
+
+
+def test_total_row_with_sold():
+    data = [
+        SimpleNamespace(incomes=100, sold=0, profit_sum=200),
+        SimpleNamespace(incomes=50, sold=100, profit_sum=100),
+    ]
+
+    actual = utils.total_row(data, fields=["incomes", "profit_sum", "sold"])
+
+    assert actual == {'incomes': 100, 'profit_sum': 200, 'sold': 100}
+
