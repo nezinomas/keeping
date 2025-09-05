@@ -26,12 +26,11 @@ def total_row(data, fields: list[str]) -> dict:
 
         # Update sums for all fields
         for field in fields:
+            if field in subtract_fields and sold:
+                continue
+
             value = values.get(field, 0)
             row[field] += value
-
-            # Subtract fields if sold is truthy
-            if field in subtract_fields and sold:
-                row[field] -= value
 
     # Update profit_proc if applicable
     if "profit_proc" in fields and row.get("market_value"):
