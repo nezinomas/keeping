@@ -49,7 +49,7 @@ MEDIA_URL = "/media/"
 
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(SITE_ROOT, "static")
+STATIC_ROOT = Path(SITE_ROOT) / 'static'
 
 
 DEBUG = False
