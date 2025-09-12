@@ -49,13 +49,18 @@ dev = [
     "selenium>=4.26.1",
     "time-machine>=2.16.0",
     "webdriver-manager>=4.0.2",
-    "ruff>=0.7.4",
+    "ruff>=0.13.0",
     "django-silk>=5.3.2",
     "pytest-picked>=0.5.1",
 ]
 production = [
     "gunicorn>=23.0.0",
 ]
+
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
 
 [tool.ruff.lint]
 select = [
