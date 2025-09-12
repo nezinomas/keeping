@@ -53,6 +53,9 @@ dev = [
     "django-silk>=5.3.2",
     "pytest-picked>=0.5.1",
 ]
+production = [
+    "gunicorn>=23.0.0",
+]
 
 [tool.ruff.lint]
 select = [
