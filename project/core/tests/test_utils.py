@@ -53,5 +53,4 @@ def test_total_row_with_sold():
 
     actual = utils.total_row(data, fields=["incomes", "profit_sum", "sold"])
 
-    assert actual == {'incomes': 100, 'profit_sum': 200, 'sold': 100}
-
+    assert actual == {"incomes": 100, "profit_sum": 200, "sold": 100}
