@@ -250,8 +250,10 @@ $current-day: rgb(252, 192, 39);
         background-color: rgb(202, 235, 204) !important;
     }
 
-    .current-day :not([class*="day"]) {
-        background-color: #fde8b2 !important;
+    .current-day {
+        & :not([class*="day"]) {
+            background-color: #fde8b2 !important;
+        }
     }
 
     .current-day {
