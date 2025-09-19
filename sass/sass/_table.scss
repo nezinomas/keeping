@@ -5,6 +5,7 @@ $date-col-width: 8rem;
 $account-col-width: 10rem;
 $title-col-width: 17rem;
 
+$current-day: rgb(252, 192, 39);
 
 .main {
     table-layout: fixed;
@@ -254,10 +255,9 @@ $title-col-width: 17rem;
     }
 
     .current-day {
-        --color: rgb(252, 192, 39);
         --h: 1px;
-        border-top:  var(--color) var(--h) double !important;
-        border-bottom: var(--color) var(--h) double !important;
+        border-top:  $current-day var(--h) double !important;
+        border-bottom: $current-day var(--h) double !important;
     }
 
     .table-danger.day-full {
