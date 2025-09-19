@@ -253,6 +253,13 @@ $title-col-width: 17rem;
         background-color: #fde8b2 !important;
     }
 
+    .current-day {
+        --color: rgb(252, 192, 39);
+        --h: 1px;
+        border-top:  var(--color) var(--h) double !important;
+        border-bottom: var(--color) var(--h) double !important;
+    }
+
     .table-danger.day-full {
         background-color: $day-danger;
         font-weight: 650;
