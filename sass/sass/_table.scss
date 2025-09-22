@@ -252,7 +252,12 @@ $current-day: rgb(252, 192, 39);
 
     .current-day {
         & :not([class*="day"]) {
-            background-color: #fde8b2 !important;
+            background-color: #fff2cc !important;
+        }
+
+        & :not(:first-child):not(.table-danger):not(.empty-column) {
+            color: #002b5b;
+            font-weight: 600;
         }
     }
 
