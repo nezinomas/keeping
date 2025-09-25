@@ -1,7 +1,9 @@
+@use "sass:color";
+
+@import 'root';
 @import 'variables';
 @import 'mixins';
 @import 'utilities';
-@import 'root';
 @import 'normalize';
 @import 'grid';
 @import 'table';
