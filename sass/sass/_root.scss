@@ -1,5 +1,17 @@
 :root {
-    --chart-positive: #C1E1A6;
-    --chart-negative: #ff8e8e;
-    --chart-neutral: #ffe597;
+    --chart-positive: #{$chart-positive};
+    --chart-negative: #{$chart-negative};
+    --chart-neutral: #{$chart-neutral};
+
+    --chart-color-0: #{$chart-color-0};
+    --chart-color-1: #{$chart-color-1};
+    --chart-color-2: #{$chart-color-2};
+    --chart-color-3: #{$chart-color-3};
+    --chart-color-4: #{$chart-color-4};
+    --chart-color-5: #{$chart-color-5};
+    --chart-color-6: #{$chart-color-6};
+    --chart-color-7: #{$chart-color-7};
+    --chart-color-8: #{$chart-color-8};
+    --chart-color-9: #{$chart-color-9};
+    --chart-color-10: #{$chart-color-10};
 }
