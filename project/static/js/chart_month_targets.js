@@ -45,7 +45,7 @@ function loadChart(idData, idContainer) {
         series: [{
             name: chartData.targetTitle,
             type: "bar",
-            color: "rgba(0,0,0,0.07)",
+            color: "rgba(0, 0, 0, 0.015)",
             data: chartData.target,
             pointWidth: 19,
             dataLabels: {
@@ -68,6 +68,8 @@ function loadChart(idData, idContainer) {
             data: chartData.fact,
             pointWidth: 13,
             borderRadius: 0,
+            backgroundColor: 'red',
+            borderWidth: 0,
             targetOptions: {
                 borderWidth: 0,
                 height: 2,
@@ -98,14 +100,14 @@ function loadChart(idData, idContainer) {
 
             let color;
             if (y <= max) {
-                color = "#5D9C59";
+                color = "var(--chart-positive)";
             } else {
                 let p = 28;
                 if (y < 100) { p = 21; }
                 if (y < 10) { p = -2; }
                 point.dataLabel.attr({ x: point.dataLabel.x + p });
 
-                color = (y <= max * 1.1) ? "#FEB56A" : "#EB5353";
+                color = (y <= max * 1.1) ? "var(--chart-neutral)" : "var(--chart-negative)";
             }
             point.color = color;
             point.graphic.attr({ fill: color });
