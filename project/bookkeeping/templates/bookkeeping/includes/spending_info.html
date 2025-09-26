@@ -3,7 +3,7 @@
 {% load math %}
 
 
-<table class="main hover">
+<table class="main">
     <thead>
         <tr>
             <th></th>
@@ -13,35 +13,39 @@
         </tr>
     </thead>
     <tbody>
-        <tr>
+        <tr class="{{ctx.delta.income|positive_negative}}">
             <td class="text-left cell-padding">{% translate "Incomes" %}</td>
             <td>{{ctx.plan.income|price|cellformat}}</td>
-            <td class="{{ctx.delta.income|positive_negative}}">{{ctx.fact.income|price|cellformat:"0,00"}}</td>
-            <td class="{{ctx.delta.income|positive_negative}}">{{ctx.delta.income|price|cellformat:"0,00"}}</td>
+            <td>{{ctx.fact.income|price|cellformat:"0,00"}}</td>
+            <td>{{ctx.delta.income|price|cellformat:"0,00"}}</td>
         </tr>
-        <tr>
+
+        <tr class={{ctx.delta.expense|positive_negative}}>
             <td class="text-left cell-padding">{% translate "Expenses" %}</td>
             <td>{{ctx.plan.expense|price|cellformat:"0,00"}}</td>
-            <td class="{{ctx.delta.expense|positive_negative}}">{{ctx.fact.expense|price|cellformat:"0,00"}}</td>
-            <td class="{{ctx.delta.expense|positive_negative}}">{{ctx.delta.expense|price|cellformat:"0,00"}}</td>
+            <td>{{ctx.fact.expense|price|cellformat:"0,00"}}</td>
+            <td>{{ctx.delta.expense|price|cellformat:"0,00"}}</td>
         </tr>
-        <tr>
+
+        <tr class={{ctx.delta.saving|positive_negative}}>
             <td class="text-left cell-padding">{% translate "Savings" %}</td>
             <td>{{ctx.plan.saving|price|cellformat:"0,00"}}</td>
-            <td class="{{ctx.delta.saving|positive_negative}}">{{ctx.fact.saving|price|cellformat:"0,00"}}</td>
-            <td class="{{ctx.delta.saving|positive_negative}}">{{ctx.delta.saving|price|cellformat:"0,00"}}</td>
+            <td>{{ctx.fact.saving|price|cellformat:"0,00"}}</td>
+            <td>{{ctx.delta.saving|price|cellformat:"0,00"}}</td>
         </tr>
-        <tr>
+
+        <tr class="{{ctx.delta.per_day|positive_negative}}">
             <td class="text-left cell-padding">{% translate "Per day" %}</td>
             <td>{{ctx.plan.per_day|price|cellformat:"0,00"}}</td>
-            <td class="{{ctx.delta.per_day|positive_negative}}">{{ctx.fact.per_day|price|cellformat:"0,00"}}</td>
-            <td class="{{ctx.delta.per_day|positive_negative}}">{{ctx.delta.per_day|price|cellformat:"0,00"}}</td>
+            <td>{{ctx.fact.per_day|price|cellformat:"0,00"}}</td>
+            <td>{{ctx.delta.per_day|price|cellformat:"0,00"}}</td>
         </tr>
-        <tr>
+
+        <tr class="{{ctx.delta.balance|positive_negative}}">
             <td class="text-left cell-padding">{% translate "Balance" %}</td>
             <td>{{ctx.plan.balance|price|cellformat:"0,00"}}</td>
-            <td class="{{ctx.delta.balance|positive_negative}}">{{ctx.fact.balance|price|cellformat:"0,00"}}</td>
-            <td class="{{ctx.delta.balance|positive_negative}}">{{ctx.delta.balance|price|cellformat:"0,00"}}</td>
+            <td>{{ctx.fact.balance|price|cellformat:"0,00"}}</td>
+            <td>{{ctx.delta.balance|price|cellformat:"0,00"}}</td>
         </tr>
     </tbody>
 </table>
