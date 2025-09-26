@@ -30,3 +30,13 @@
         --chart-color-#{$i}: #{$color};
     }
 }
+
+
+@mixin gradient-alpha($base) {
+    @for $i from 4 through 16 {
+        $step: $i * 5;
+        $alpha: $step * 1%;
+        $color: color.change($base, $alpha: $alpha);
+        --primary-alpha-#{$step}: #{$color};
+    }
+}
