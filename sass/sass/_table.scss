@@ -368,5 +368,12 @@ $title-col-width: 17rem;
 
 // Book styles
 .currently-reading-book {
-    background-color: #f5ebd7;
+    border-top:
+        $table-current-day-border-color 1px double !important;
+    border-bottom:
+        $table-current-day-border-color 1px double !important;
+
+    > td {
+        background-color: $table-current-day !important;
+    }
 }
