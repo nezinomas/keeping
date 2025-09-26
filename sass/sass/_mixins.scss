@@ -26,7 +26,7 @@
 @mixin gradient-tint($base) {
     @for $i from 0 through 20 {
         $step: $i * 5;
-        $tint-ratio: ($i / 15) * 100%;
+        $tint-ratio: $i / 20 * 100%;
         $color: mix(white, $base, $tint-ratio);
         --primary-tint-#{$step}: #{$color};
     }
@@ -34,7 +34,7 @@
 
 
 @mixin gradient-alpha($base) {
-    @for $i from 4 through 16 {
+    @for $i from 2 through 16 {
         $step: $i * 5;
         $alpha: $step * 1%;
         $color: color.change($base, $alpha: $alpha);
