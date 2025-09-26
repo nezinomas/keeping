@@ -5,6 +5,6 @@
     --chart-negative: #{$chart-negative};
     --chart-neutral: #{$chart-neutral};
 
-    @include gradient-scale($primary);
+    @include gradient-tint($primary);
     @include gradient-alpha($primary);
 }
