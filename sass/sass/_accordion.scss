@@ -54,7 +54,7 @@ ul.accordion {
     }
 
     .accordion__dropdown__item {
-        border-bottom: rgb(255, 104, 115, 0.25) 1px solid;
+        border-bottom: lighten($primary, 25) 1px solid;
         padding: calc($gap / 2) 0;
     }
 
