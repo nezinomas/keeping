@@ -21,3 +21,12 @@
         padding-right: .25rem;
     }
 }
+
+
+@mixin gradient-scale($base, $steps: 16) {
+    @for $i from 0 through ($steps - 1) {
+        $tint-ratio: $i / ($steps - 1) * 100%;
+        $color: mix(white, $base, $tint-ratio);
+        --chart-color-#{$i}: #{$color};
+    }
+}

@@ -11,6 +11,13 @@ Highcharts.theme = {
         "var(--chart-color-8)",
         "var(--chart-color-9)",
         "var(--chart-color-10)",
+        "var(--chart-color-11)",
+        "var(--chart-color-12)",
+        "var(--chart-color-13)",
+        "var(--chart-color-14)",
+        "var(--chart-color-15)",
+        "var(--chart-color-16)",
+        "var(--chart-color-17)",
     ],
     chart: {
         backgroundColor: null,
