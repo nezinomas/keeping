@@ -5,7 +5,6 @@ $date-col-width: 8rem;
 $account-col-width: 10rem;
 $title-col-width: 17rem;
 
-$current-day: rgb(252, 192, 39);
 
 .main {
     table-layout: fixed;
@@ -25,6 +24,7 @@ $current-day: rgb(252, 192, 39);
 
     thead  {
         border-bottom: $active solid 3px;
+        color: $table-thead-text;
     }
 
     thead th {
@@ -84,11 +84,17 @@ $current-day: rgb(252, 192, 39);
     }
 
     .table-success {
-        background-color: #d1e7dd;
+        background-color: $positive-bg;
     }
 
     .table-danger {
-        background-color: lighten($danger, 35%);
+        background-color: $negative-bg;
+
+        &.day-full {
+            background-color: $negative-full-bg;
+            color: $text-muted;
+            font-weight: 650;
+        }
     }
 
     // Border styles
@@ -185,20 +191,10 @@ $current-day: rgb(252, 192, 39);
     &.hover {
         tbody tr:hover {
             > td {
-                background-color: $hover-bg !important;
+                background-color: $table-hover-bg !important;
+                border-bottom: darken($table-hover-bg, 20) 1px double !important;
+                border-top: darken($table-hover-bg, 20) 1px double !important;
             }
-
-            > td.table-success {
-                background-color: #c1d6cc !important;
-            }
-
-            > td.table-danger {
-                background-color: #e5c7ca !important;
-            }
-        }
-
-        tbody tr.current-day:hover > td:not([class*="day"]) {
-            background-color: rgb(254, 225, 149) !important;
         }
     }
 
@@ -206,19 +202,23 @@ $current-day: rgb(252, 192, 39);
     &.striped {
         tbody tr:nth-child(even) {
             > td {
-                background-color: rgba(0, 0, 0, 0.05);
+                background-color: rgba(0, 0, 0, 0.03);
             }
 
             > td.table-success {
-                background-color: #c7dbd2;
+                background-color: darken($positive-bg, 2);
             }
 
             > td.table-danger {
-                background-color: lighten($danger, 33);
+                background-color: darken($negative-bg, 2)
             }
 
             > td.table-danger.day-full {
-                background-color: darken($day-danger, 5);
+                background-color: $negative-full-bg;
+            }
+
+            > td.table-danger.day {
+                background-color: $negative-bg;
             }
         }
     }
@@ -247,30 +247,26 @@ $current-day: rgb(252, 192, 39);
     }
 
     .weekend-col {
-        background-color: rgb(202, 235, 204) !important;
-    }
-
-    .current-day {
-        & :not([class*="day"]) {
-            background-color: #fff2cc !important;
-        }
-
-        & :not(:first-child):not(.table-danger):not(.empty-column) {
-            color: #002b5b;
-            font-weight: 600;
-        }
+        background-color: $table-weekend !important;
+        color: $table-weekend-color;
     }
 
     .current-day {
         --h: 1px;
-        border-top:  $current-day var(--h) double !important;
-        border-bottom: $current-day var(--h) double !important;
-    }
+        border-top:
+            $table-current-day-border-color var(--h) double !important;
+        border-bottom:
+            $table-current-day-border-color var(--h) double !important;
 
-    .table-danger.day-full {
-        background-color: $day-danger;
-        font-weight: 650;
-   }
+        & :not([class*="day"]) {
+            background-color: $table-current-day !important;
+        }
+
+        & :not(:first-child):not(.table-danger):not(.empty-column) {
+            color: $table-current-day-font-color;
+            font-weight: 600;
+        }
+    }
 
     .empty-column {
         border-left: #fff solid .5rem;

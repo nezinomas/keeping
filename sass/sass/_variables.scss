@@ -1,11 +1,6 @@
 $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
 $font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !default;
 
-$table-thead: #f5ebd7;
-
-$nav-bg: rgba(248, 249, 250, 1);
-$active: rgb(250, 124, 145, 1);
-
 
 $font-size: 0.7rem;
 $gap: 0.75rem;
@@ -28,17 +23,30 @@ $danger-text-clr: #58151c;
 $danger-bg: #f8d7da;
 $danger-border: #f1aeb5;
 
+$text-muted: #333;
 
-$day-danger: rgb(254, 83, 106);
-
-$hover-bg: rgba(161, 160, 160, 0.25);
-
-// $black:   #585858;
 $black:   black;
 $primary: #0d6efd;
 $disabled: #E9ECEF;
 
 $modal-border-radius: 0.25rem;
+
+$nav-bg: rgba(248, 249, 250, 1);
+// $active: #fd8a3d;
+$active: rgb(170, 60, 249);
+
+$table-thead: color.adjust($active, $lightness: 37%, $alpha: 0.05);
+$table-thead-text: #333333;
+
+// $table-current-day: #fff2cc;
+$table-current-day: color.adjust($active, $lightness: 34%, $alpha: 0.05);
+$table-current-day-font-color: $black;
+$table-current-day-border-color: color.adjust($table-current-day, $lightness: -25%, $alpha: 0.05);
+
+$table-weekend: #e5e4e4;
+$table-weekend-color: $text-muted;
+
+$table-hover-bg: color.adjust($active, $lightness: 32%, $alpha: 0.05);
 
 
 $chart-positive: #C1E1A6;
@@ -56,3 +64,12 @@ $chart-color-7: #55BF3B;
 $chart-color-8: #DF5353;
 $chart-color-9: #7798BF;
 $chart-color-10: #aaeeee;
+
+
+$negative-bg: #fedbd9;
+$negative-full-bg: #ff6e67;
+$negative-color: #633531;
+
+
+$positive-bg: #E0F2E9;
+$positive-color: #3C3F2A;
