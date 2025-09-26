@@ -35,7 +35,7 @@ $nav-bg: rgba(248, 249, 250, 1);
 // $active: #fd8a3d;
 $active: rgb(170, 60, 249);
 
-$table-thead: color.adjust($active, $lightness: 37%, $alpha: 0.05);
+$table-thead: lighten($active, 37%);
 $table-thead-text: #333333;
 
 // $table-current-day: #fff2cc;
