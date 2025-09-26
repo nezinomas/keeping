@@ -43,7 +43,8 @@
     }
 
     > *:hover {
-        background-color: lighten($active, 25%);
+        background-color: lighten($active, 30%);
+        color: $text-muted !important;
     }
 
     > *.dropdown-divider {
