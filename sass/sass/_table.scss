@@ -23,7 +23,7 @@ $title-col-width: 17rem;
     }
 
     thead  {
-        border-bottom: $active solid 3px;
+        border-bottom: $primary solid 3px;
         color: $table-thead-text;
     }
 
@@ -357,7 +357,7 @@ $title-col-width: 17rem;
     float: right;
     vertical-align: middle;
     transition: all 0.5s;
-    color: $active;
+    color: $primary;
     margin-right: .25rem;
 }
 

@@ -25,28 +25,28 @@ $danger-border: #f1aeb5;
 
 $text-muted: #333;
 
+
+// $primary: #fd8a3d;
+$primary: rgb(170, 60, 249);
 $black:   black;
-$primary: #0d6efd;
 $disabled: #E9ECEF;
 
 $modal-border-radius: 0.25rem;
 
 $nav-bg: rgba(248, 249, 250, 1);
-// $active: #fd8a3d;
-$active: rgb(170, 60, 249);
 
-$table-thead: lighten($active, 37%);
+$table-thead: lighten($primary, 37%);
 $table-thead-text: #333333;
 
 // $table-current-day: #fff2cc;
-$table-current-day: color.adjust($active, $lightness: 34%, $alpha: 0.05);
+$table-current-day: color.adjust($primary, $lightness: 34%, $alpha: 0.05);
 $table-current-day-font-color: $black;
 $table-current-day-border-color: color.adjust($table-current-day, $lightness: -25%, $alpha: 0.05);
 
 $table-weekend: #e5e4e4;
 $table-weekend-color: $text-muted;
 
-$table-hover-bg: color.adjust($active, $lightness: 32%, $alpha: 0.05);
+$table-hover-bg: color.adjust($primary, $lightness: 32%, $alpha: 0.05);
 
 
 $chart-positive: #C1E1A6;

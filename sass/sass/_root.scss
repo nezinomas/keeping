@@ -3,5 +3,5 @@
     --chart-negative: #{$chart-negative};
     --chart-neutral: #{$chart-neutral};
 
-    @include gradient-scale($active);
+    @include gradient-scale($primary);
 }

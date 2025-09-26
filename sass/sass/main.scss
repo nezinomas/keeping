@@ -61,7 +61,7 @@ h6 {
     text-align: center;
     margin-bottom: $gap;
     padding: 0.25rem 0 0.4rem 0;
-    color: $active;
+    color: primary;
 }
 
 .plans-residual-row {
@@ -69,7 +69,7 @@ h6 {
 }
 
 .plans-star {
-    color: $active;
+    color: primary;
     margin-left: .5rem;
 }
 
@@ -100,6 +100,6 @@ h6 {
         content: " \e113";
         padding-right: .25rem;
         font-size: 8px;
-        color: $active;
+        color: primary;
     }
 }
