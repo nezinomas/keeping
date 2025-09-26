@@ -28,6 +28,7 @@ $text-muted: #333;
 
 // $primary: #fd8a3d;
 $primary: rgb(170, 60, 249);
+
 $black:   black;
 $disabled: #E9ECEF;
 
@@ -36,7 +37,7 @@ $modal-border-radius: 0.25rem;
 $nav-bg: rgba(248, 249, 250, 1);
 
 $table-thead: lighten($primary, 37%);
-$table-thead-text: #333333;
+$table-thead-text: #333;
 
 // $table-current-day: #fff2cc;
 $table-current-day: color.adjust($primary, $lightness: 34%, $alpha: 0.05);
