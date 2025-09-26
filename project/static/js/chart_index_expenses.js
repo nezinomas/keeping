@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         series: [{
             data: chartData,
             borderRadius: 0,
+            borderWidth: 0,
             dataLabels: {
                 useHTML: true,
                 enabled: true,
