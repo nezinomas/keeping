@@ -67,9 +67,9 @@ function loadChart(idData, idContainer) {
             type: "bullet",
             data: chartData.fact,
             pointWidth: 13,
+            borderWidth: 0,
             borderRadius: 0,
             backgroundColor: 'red',
-            borderWidth: 0,
             targetOptions: {
                 borderWidth: 0,
                 height: 2,
