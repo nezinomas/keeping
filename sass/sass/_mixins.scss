@@ -23,21 +23,21 @@
 }
 
 
-@mixin gradient-tint($base) {
+@mixin gradient-tint($base, $name) {
     @for $i from 0 through 20 {
         $step: $i * 5;
         $tint-ratio: $i / 20 * 100%;
         $color: mix(white, $base, $tint-ratio);
-        --primary-tint-#{$step}: #{$color};
+        --#{$name}-#{$step}: #{$color};
     }
 }
 
 
-@mixin gradient-alpha($base) {
+@mixin gradient-alpha($base, $name) {
     @for $i from 2 through 16 {
         $step: $i * 5;
         $alpha: $step * 1%;
         $color: color.change($base, $alpha: $alpha);
-        --primary-alpha-#{$step}: #{$color};
+        --#{$name}-#{$step}: #{$color};
     }
 }
