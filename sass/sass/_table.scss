@@ -252,11 +252,10 @@ $title-col-width: 17rem;
     }
 
     .current-day {
-        --h: 1px;
         border-top:
-            $table-current-day-border-color var(--h) double !important;
+            $table-current-day-border-color 1px double !important;
         border-bottom:
-            $table-current-day-border-color var(--h) double !important;
+            $table-current-day-border-color 1px double !important;
 
         & :not([class*="day"]) {
             background-color: $table-current-day !important;
