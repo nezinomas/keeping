@@ -61,7 +61,7 @@ function chartConsumption(idData, idContainer) {
         },
         plotOptions: {
             area: {
-                fillOpacity: 0.4
+                fillOpacity: 0.25
             }
         },
         series: [{
@@ -69,7 +69,7 @@ function chartConsumption(idData, idContainer) {
             name: chartData.text.alcohol,
             showInLegend: false,
             data: chartData.data,
-            color: "#c0504d",
+            color: "var(--primary)",
                 dataLabels: {
                 enabled: true,
                 color: "#000",
