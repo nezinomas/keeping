@@ -265,6 +265,10 @@ $title-col-width: 17rem;
             color: $table-current-day-font-color;
             font-weight: 600;
         }
+
+        &:hover .button-expand {
+            background-color: transparent !important;
+        }
     }
 
     .empty-column {
