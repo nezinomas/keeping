@@ -32,12 +32,12 @@ function chartReaded(idData, idContainer) {
         },
         series: [{
             data: chartData.data,
-            color: `var(--primary-alpha-50)`,
-            borderColor: `var(--primary)`,
+            color: "var(--primary-alpha-25)",
+            borderColor: "var(--primary)",
             borderRadius: 0,
             dataLabels: [{
                 enabled: true,
-                color: `var(--primary)`,
+                color: "var(--primary)",
                 style: {
                     fontSize: "11px",
                     fontWeight: "bold",
