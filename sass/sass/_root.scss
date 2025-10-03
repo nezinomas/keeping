@@ -5,6 +5,18 @@
     --chart-negative: #{$chart-negative};
     --chart-neutral: #{$chart-neutral};
 
+    --chart-color-0: #7cb5ec;
+    --chart-color-1: #f7a35c;
+    --chart-color-2: #90ee7e;
+    --chart-color-3: #7798bf;
+    --chart-color-4: #aaeeee;
+    --chart-color-5: #ff0066;
+    --chart-color-6: #eeaaee;
+    --chart-color-7: #55bf3b;
+    --chart-color-8: #df5353;
+    --chart-color-9: #7798bf;
+
     @include gradient-tint($primary, "primary-tint");
     @include gradient-alpha($primary, "primary-alpha");
+
 }
