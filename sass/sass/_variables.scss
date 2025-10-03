@@ -28,6 +28,13 @@ $text-muted: #333;
 
 // $primary: #fd8a3d;
 $primary: rgb(170, 60, 249);
+// $primary: #f492f0;
+// $primary: #f1700d;
+$secondary: darken($primary, 10%);
+$secondary: #5e429c;
+
+$primary-light: lighten($primary, 37%);
+$secondary-light: lighten($primary, 35%);
 
 $black:   black;
 $disabled: #E9ECEF;
@@ -36,18 +43,18 @@ $modal-border-radius: 0.25rem;
 
 $nav-bg: rgba(248, 249, 250, 1);
 
-$table-thead: lighten($primary, 37%);
+$table-thead: $primary-light;
 $table-thead-text: #333;
 
 // $table-current-day: #fff2cc;
-$table-current-day: color.adjust($primary, $lightness: 34%, $alpha: 0.05);
+$table-current-day: $primary-light;
 $table-current-day-font-color: $black;
-$table-current-day-border-color: color.adjust($table-current-day, $lightness: -25%, $alpha: 0.05);
+$table-current-day-border-color: $primary;
 
 $table-weekend: #e5e4e4;
 $table-weekend-color: $text-muted;
 
-$table-hover-bg: color.adjust($primary, $lightness: 32%, $alpha: 0.05);
+$table-hover-bg: $secondary-light;
 
 
 $chart-positive: #C1E1A6;
