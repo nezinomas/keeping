@@ -77,11 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
             marker: {
                 lineWidth: 2,
             },
-            states: {
-                inactive: {
-                    opacity: 1,
-                },
-            },
             dataLabels: {
                 enabled: true,
                 y: -3,
