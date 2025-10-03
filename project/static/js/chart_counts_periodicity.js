@@ -50,6 +50,7 @@ function chartPeriodicity(idData, idContainer) {
             color: `var(--primary-alpha-25)`,
             borderColor: `var(--primary)`,
             borderRadius: 0,
+            borderWidth: 0.5,
             dataLabels: {
                 enabled: true,
                 rotation: 0,
