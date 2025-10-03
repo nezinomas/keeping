@@ -33,6 +33,7 @@ function chartQuantity(idData, idContainer) {
             color: `var(--primary-alpha-25)`,
             borderColor: `var(--primary)`,
             borderRadius: 0,
+            borderWidth: 0.5,
             data: chartData.data,
             pointPadding: 0,
             pointPlacement: 0,

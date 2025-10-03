@@ -37,6 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
         plotOptions: {
             column: {
                 stacking: "percent",
+                borderRadius: 0,
+                borderWidth: 0,
                 dataLabels: {
                     useHTML: true,
                     enabled: true,

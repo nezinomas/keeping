@@ -51,14 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
         series: [{
             name: chartData.text.incomes,
             data: chartData.incomes,
-            opacity: 0.85,
+            color: "var(--primary)",
+            opacity: 0.6,
             type: "column",
-            borderRadius: "5%",
-            states: {
-                inactive: {
-                    opacity: 1,
-                },
-            },
+            borderRadius: 0,
+            borderWidth: 0.5,
             dataLabels: {
                 enabled: true,
                 x: 3,
@@ -75,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: chartData.text.savings,
             data: chartData.savings,
             type: "line",
+            color: "var(--secondary)",
             lineWidth: 2,
             marker: {
                 lineWidth: 2,
