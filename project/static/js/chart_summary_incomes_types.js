@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 stacking: "percent",
                 borderRadius: 0,
                 borderWidth: 0,
+                opacity: 0.8,
                 dataLabels: {
                     useHTML: true,
                     enabled: true,

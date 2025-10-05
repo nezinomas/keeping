@@ -45,18 +45,25 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         plotOptions: {
             area: {
-                fillOpacity: 0.6
+                fillOpacity: 0.6,
+                marker: {
+                    symbol: "circle",
+                    fillColor: '#FFFFFF',
+                    lineWidth: 2,
+                    lineColor: null // inherit from series
+                }
             }
         },
         series: [{
             name: chartData.incomes_title,
             data: chartData.incomes,
-            color: "#5D9C59",
-            type: "area"
+            color: "var(--chart-positive)",
+            type: "area",
+
         }, {
             name: chartData.expenses_title,
             data: chartData.expenses,
-            color: "#EB5353",
+            color: "var(--chart-negative)",
             type: "area"
         }]
     });
