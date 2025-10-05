@@ -46,19 +46,19 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         plotOptions: {
             area: {
-                fillOpacity: 0.6
+                fillOpacity: 0.6,
             }
         },
         series: [{
             type: "area",
             name: chartData.incomes_title,
             data: chartData.incomes,
-            color: "#5D9C59"
+            color: "var(--chart-positive)"
         }, {
             type: "area",
             name: chartData.expenses_title,
             data: chartData.expenses,
-            color: "#EB5353"
+            color: "var(--chart-negative)"
         }]
     });
 });
