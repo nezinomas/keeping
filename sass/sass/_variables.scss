@@ -9,11 +9,6 @@ $transition: 280ms all var(--delay) ease-out;
 $accordion-transition: all 0.25s ease-in-out;
 
 
-$danger: #db606d;
-$danger-text-clr: #58151c;
-$danger-bg: #f8d7da;
-$danger-border: #f1aeb5;
-
 $text-muted: #333;
 
 
@@ -49,9 +44,11 @@ $table-hover-bg: $secondary-light;
 
 
 // Negative colors
+$negative: #db606d;
 $negative-bg: #fedbd9;
 $negative-full-bg: #ff6e67;
-$negative-color: #633531;
+$negative-text: #58151c;
+$negative-border: #f1aeb5;
 
 
 // Warning colors
