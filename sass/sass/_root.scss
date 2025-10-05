@@ -2,7 +2,14 @@
     --primary: #{$primary};
     --secondary: #{$secondary};
 
+    --positive-bg: #{$positive-bg};
+    --positive-text: #{$positive-text};
+
+    --negative-bg: #{$negative-bg};
+
     --chart-positive: #{$chart-positive};
+    --chart-positive-25: #{darken($chart-positive, 25%)};
+
     --chart-negative: #{$chart-negative};
     --chart-neutral: #{$chart-neutral};
 
