@@ -69,7 +69,7 @@ function loadChart(idData, idContainer) {
             pointWidth: 13,
             borderWidth: 0,
             borderRadius: 0,
-            backgroundColor: 'red',
+            opacity: 0.95,
             targetOptions: {
                 borderWidth: 0,
                 height: 2,
@@ -81,7 +81,7 @@ function loadChart(idData, idContainer) {
                 enabled: true,
                 color: "#000",
                 align: "right",
-                y: -1,
+                y: -2,
                 style: {
                     fontWeight: "bold",
                     textOutline: false,
