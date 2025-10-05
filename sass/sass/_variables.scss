@@ -8,10 +8,6 @@ $gap: 0.75rem;
 $transition: 280ms all var(--delay) ease-out;
 $accordion-transition: all 0.25s ease-in-out;
 
-$warning: #ffc107;
-$warning-text-clr: #664d03;
-$warning-bg: #fff3cd;
-$warning-border: #ffe69c;
 
 $danger: #db606d;
 $danger-text-clr: #58151c;
@@ -58,6 +54,12 @@ $negative-full-bg: #ff6e67;
 $negative-color: #633531;
 
 
+// Warning colors
+$warning-text: #664d03;
+$warning-bg: #fff3cd;
+$warning-border: #ffe69c;
+
+
 // Positive colors
 $positive-bg: #e0f2e3;
 $positive-text: #0a3622;
@@ -67,4 +69,4 @@ $positive-border: #a3cfbb;
 // Chart colors
 $chart-positive: darken($positive-bg, 15%);
 $chart-negative: darken($negative-bg, 15%);
-$chart-neutral: #ffe597;
+$chart-neutral: darken($warning-bg, 5%);
