@@ -1,6 +1,8 @@
 function chartConsumption(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
+    const avg_line_color = (chartData.avg > chartData.target) ? "var(--chart-negative-super-dark)" : "var(--chart-warning-super-dark)";
+
     Highcharts.chart(idContainer, {
         chart: {
             height: "350px",
@@ -25,8 +27,9 @@ function chartConsumption(idData, idContainer) {
             title: {
                 text: ""
             },
+            min: 0,
             plotLines: [{
-                color: "#04a41f",
+                color: "#333",
                 width: 2,
                 value: chartData.target,
                 label: {
@@ -35,12 +38,12 @@ function chartConsumption(idData, idContainer) {
                     x: -5,
                     y: chartData.target_label_y,
                     style: {
-                        color: "#04a41f",
+                        color: "#333",
                         fontWeight: "bold"
                     }
                 }
             }, {
-                color: "#ffc000",
+                color: avg_line_color,
                 width: 2,
                 value: chartData.avg,
                 label: {
@@ -49,7 +52,7 @@ function chartConsumption(idData, idContainer) {
                     x: -5,
                     y: chartData.avg_label_y,
                     style: {
-                        color: "#ffc000",
+                        color: avg_line_color,
                         fontWeight: "bold"
                     }
                 }
@@ -62,25 +65,21 @@ function chartConsumption(idData, idContainer) {
         plotOptions: {
             area: {
                 fillOpacity: 0.25
-            }
+            },
         },
         series: [{
             type: "area",
             name: chartData.text.alcohol,
             showInLegend: false,
             data: chartData.data,
-            color: "var(--primary)",
-                dataLabels: {
+            threshold: chartData.target,
+            color: "var(--chart-negative-super-dark)",
+            negativeColor: 'var(--chart-positive-super-dark)',
+            dataLabels: {
                 enabled: true,
                 color: "#000",
                 align: "left",
                 format: "{point.y:.0f}",
-                style: {
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    fontFamily: "Calibri, sans-serif",
-                    textOutline: false
-                }
             }
         }]
     });
