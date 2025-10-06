@@ -3,6 +3,9 @@ function chartConsumption(idData, idContainer) {
 
     const avg_line_color = (chartData.avg > chartData.target) ? "var(--chart-negative-super-dark)" : "var(--chart-warning-super-dark)";
 
+    const avg_label_y = (chartData.target - 50 <= chartData.avg && chartData.avg <= chartData.target) ? 15 : -5
+    const target_label_y = (chartData.avg - 50 <= chartData.target && chartData.target <= chartData.avg) ? 15 : -5;
+
     Highcharts.chart(idContainer, {
         chart: {
             height: "350px",
@@ -36,7 +39,7 @@ function chartConsumption(idData, idContainer) {
                     text: `${chartData.text.limit}: ${chartData.target.toFixed()}`,
                     align: "right",
                     x: -5,
-                    y: chartData.target_label_y,
+                    y: target_label_y,
                     style: {
                         color: "#333",
                         fontWeight: "bold"
@@ -50,7 +53,7 @@ function chartConsumption(idData, idContainer) {
                     text: `Avg: ${chartData.avg.toFixed()}`,
                     align: "right",
                     x: -5,
-                    y: chartData.avg_label_y,
+                    y: avg_label_y,
                     style: {
                         color: avg_line_color,
                         fontWeight: "bold"
