@@ -73,18 +73,6 @@
     }
 }
 
-.button-success {
-    @include button();
-    color: #fff;
-    background-color: #198754;
-    border-color: #198754;
-
-    &:hover {
-        background-color: #157347;
-        border-color: #146c43;
-    }
-}
-
 
 .button-danger {
     @include button();

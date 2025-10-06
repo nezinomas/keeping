@@ -14,7 +14,7 @@ class CountsIntegrationTests(Browser):
     def test_create(self):
         self.browser.get(f"{self.live_server_url}/counts/")
 
-        self.browser.find_element(By.CSS_SELECTOR, ".button-success").click()
+        self.browser.find_element(By.CSS_SELECTOR, ".button-secondary").click()
         sleep(0.5)
 
         self.browser.find_element(By.ID, "id_title").send_keys("-AAA-")
