@@ -70,6 +70,7 @@ function chartExpenses(idData, idContainer) {
                 pointPadding: 0.2,
                 borderWidth: 0,
                 borderRadius: 0,
+                opacity: 0.85,
             }
         },
         series: chartData.data,
