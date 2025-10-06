@@ -6,16 +6,21 @@
     --positive-text: #{$positive-text};
 
     --negative-bg: #{$negative-bg};
-    --chart-negative-25: #{darken($chart-negative, 25%)};
+    --negative-text: #{$negative-text};
+
+    --chart-negative: #{$chart-negative};
     --chart-negative-dark: #{darken($chart-negative, 15%)};
+    --chart-negative-super-dark: #{darken($chart-negative, 35%)};
 
     --chart-positive: #{$chart-positive};
     --chart-positive-dark: #{darken($chart-positive, 15%)};
     --chart-positive-super-dark: #{darken($chart-positive, 35%)};
 
-    --chart-negative: #{$chart-negative};
-    --chart-neutral: #{$chart-neutral};
-
+    --warning-text: #{$warning-text};
+    --chart-warning: #{$chart-warning};
+    --chart-warning-dark: #{darken($chart-warning, 15%)};
+    --chart-warning-super-dark: #{darken($chart-warning, 35%)};
+ 
     --chart-color-0: #7cb5ec;
     --chart-color-1: #f7a35c;
     --chart-color-2: #90ee7e;

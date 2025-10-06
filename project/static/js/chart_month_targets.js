@@ -107,7 +107,7 @@ function loadChart(idData, idContainer) {
                 if (y < 10) { p = -2; }
                 point.dataLabel.attr({ x: point.dataLabel.x + p });
 
-                color = (y <= max * 1.1) ? "var(--chart-neutral)" : "var(--chart-negative)";
+                color = (y <= max * 1.1) ? "var(--chart-warning)" : "var(--chart-negative)";
             }
             point.color = color;
             point.graphic.attr({ fill: color });
