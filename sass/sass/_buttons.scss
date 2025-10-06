@@ -4,8 +4,10 @@
     background-color: $active-bg;
     border-color: $active-border;
 
+    
     &:hover {
         background-color: darken($active-bg, 10%);
+        border-color: darken($active-border, 10%)
     }
 
     &:focus,
@@ -21,11 +23,12 @@
 
 .button-secondary {
     @include button();
-    background-color: lighten($active-bg, 52%);
-    border-color: lighten($active-border, 40%);
+    background-color: lighten($active-bg, 40%);
+    border-color: lighten($active-border, 30%);
 
     &:hover {
-        background-color: lighten($active-bg, 42%);
+        background-color: lighten($active-bg, 30%);
+        border-color: lighten($active-border, 20%);
     }
 
     &:focus,
