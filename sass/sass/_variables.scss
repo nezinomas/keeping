@@ -45,8 +45,8 @@ $table-hover-bg: $secondary-light;
 
 // Negative colors
 $negative: #db606d;
-$negative-bg: #fedbd9;
-$negative-full-bg: #ff6e67;
+$negative-bg: #facfcd;
+$negative-full-bg: #f5a29f;
 $negative-text: #58151c;
 $negative-border: #f1aeb5;
 
@@ -65,5 +65,5 @@ $positive-border: #a3cfad;
 
 // Chart colors
 $chart-positive: darken($positive-bg, 15%);
-$chart-negative: darken($negative-bg, 15%);
+$chart-negative: darken($negative-bg, 10%);
 $chart-neutral: darken($warning-bg, 5%);

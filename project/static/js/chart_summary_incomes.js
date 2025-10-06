@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: chartData.salary_title,
             data: chartData.salary,
             type: "area",
-            color: "var(--chart-positive)",
+            color: "var(--chart-positive-dark)",
             marker: {
                 fillColor: '#FFFFFF',
                 lineWidth: 2,
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data: chartData.incomes,
             type: "line",
             lineWidth: 2,
-            color: "var(--chart-positive-25)",
+            color: "var(--chart-positive-super-dark)",
         }],
     });
 });

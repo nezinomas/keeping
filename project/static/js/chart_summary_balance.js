@@ -57,13 +57,13 @@ document.addEventListener('DOMContentLoaded', () => {
         series: [{
             name: chartData.incomes_title,
             data: chartData.incomes,
-            color: "var(--chart-positive)",
+            color: "var(--chart-positive-dark)",
             type: "area",
 
         }, {
             name: chartData.expenses_title,
             data: chartData.expenses,
-            color: "var(--chart-negative)",
+            color: "var(--chart-negative-dark)",
             type: "area"
         }]
     });

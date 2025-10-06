@@ -6,9 +6,12 @@
     --positive-text: #{$positive-text};
 
     --negative-bg: #{$negative-bg};
+    --chart-negative-25: #{darken($chart-negative, 25%)};
+    --chart-negative-dark: #{darken($chart-negative, 15%)};
 
     --chart-positive: #{$chart-positive};
-    --chart-positive-25: #{darken($chart-positive, 25%)};
+    --chart-positive-dark: #{darken($chart-positive, 15%)};
+    --chart-positive-super-dark: #{darken($chart-positive, 35%)};
 
     --chart-negative: #{$chart-negative};
     --chart-neutral: #{$chart-neutral};
