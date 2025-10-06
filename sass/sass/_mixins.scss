@@ -9,6 +9,8 @@
 @mixin button {
     --button-border-radius: 0.1rem;
 
+    transition: 250ms all 50ms ease-out;
+
     border-radius: var(--button-border-radius);
     padding-left: .5rem;
     padding-right: .5rem;
