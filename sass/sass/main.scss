@@ -65,7 +65,11 @@ h6 {
 }
 
 .plans-residual-row {
-    background-color: $warning-bg;
+    background-color: $table-current-day;
+    border-top:
+        $table-current-day-border-color 1px double !important;
+    border-bottom:
+        $table-current-day-border-color 1px double !important;
 }
 
 .plans-star {

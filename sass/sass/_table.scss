@@ -381,22 +381,11 @@ $title-col-width: 17rem;
 }
 
 
-// Drink styles
+.currently-reading-book,
 .std-av-border {
-    border-top: double #ffc000;
-    border-bottom: double #ffc000;
-    background-color: #fde8b2;
-}
-
-
-// Book styles
-.currently-reading-book {
+    background-color: $table-current-day;
     border-top:
         $table-current-day-border-color 1px double !important;
     border-bottom:
         $table-current-day-border-color 1px double !important;
-
-    > td {
-        background-color: $table-current-day !important;
-    }
 }
