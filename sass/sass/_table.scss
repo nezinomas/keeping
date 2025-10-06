@@ -297,6 +297,7 @@ $title-col-width: 17rem;
         &.day-warning {
             background-color: $warning-bg;
             color: $warning-text;
+            font-weight: 650;
         }
 
         &.day-negative {
