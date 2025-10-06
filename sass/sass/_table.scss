@@ -89,16 +89,6 @@ $title-col-width: 17rem;
 
     .table-danger {
         background-color: $negative-bg;
-
-        &.day-warning {
-            background-color: $warning-bg;
-            color: $warning-text;
-        }
-
-        &.day-negative {
-            color: $negative-text;
-            font-weight: 650;
-        }
     }
 
     // Border styles
@@ -299,6 +289,30 @@ $title-col-width: 17rem;
 
             &:hover {
                 background-color: unset !important;
+            }
+        }
+    }
+
+    .table-danger {
+        &.day-warning {
+            background-color: $warning-bg;
+            color: $warning-text;
+        }
+
+        &.day-negative {
+            color: $negative-text;
+            font-weight: 650;
+        }
+    }
+
+    &.striped {
+        tbody tr:nth-child(even) {
+            > td.table-danger.day-negative {
+                background-color: $negative-bg;
+            }
+
+            > td.table-danger.day-warning {
+                background-color: $warning-bg;
             }
         }
     }
