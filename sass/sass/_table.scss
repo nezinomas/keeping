@@ -90,9 +90,13 @@ $title-col-width: 17rem;
     .table-danger {
         background-color: $negative-bg;
 
-        &.day-full {
-            background-color: $negative-full-bg;
-            color: $text-muted;
+        &.day-warning {
+            background-color: $warning-bg;
+            color: $warning-text;
+        }
+
+        &.day-negative {
+            color: $negative-text;
             font-weight: 650;
         }
     }
@@ -213,12 +217,12 @@ $title-col-width: 17rem;
                 background-color: darken($negative-bg, 2)
             }
 
-            > td.table-danger.day-full {
-                background-color: $negative-full-bg;
+            > td.table-danger.day-negative {
+                background-color: $negative-bg;
             }
 
-            > td.table-danger.day {
-                background-color: $negative-bg;
+            > td.table-danger.day-warning {
+                background-color: $warning-bg;
             }
         }
     }
@@ -345,7 +349,7 @@ $title-col-width: 17rem;
         float: right;
         vertical-align: middle;
         transition: all 0.5s;
-        color: $secondary;
+        color: $primary;
         margin-right: .25rem;
     }
 
