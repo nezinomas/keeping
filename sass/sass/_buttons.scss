@@ -41,13 +41,14 @@
 
 .button-outline-success {
     @include button();
-    color: #198754;
+    color: $positive;
     background-color: #fff;
-    border-color: #198754;
+    border-color: $positive;
 
     &:hover {
         color: #fff;
-        background-color: #198754;
+        background-color: $positive;
+        border-color: darken($positive, 10%);
     }
 
     &:focus,
@@ -55,8 +56,8 @@
     &:active {
         outline: 0;
         box-shadow:
-            inset 0 1px 2px rgba(#198754, .075),
-            0 0 0 0.15rem rgba(#198754, 0.1);
+            inset 0 1px 2px rgba($positive, .075),
+            0 0 0 0.15rem rgba($positive, 0.1);
     }
 
     &::before {
@@ -89,11 +90,11 @@
     @include button();
     color: #fff;
     background-color: $negative;
-    border-color: $negative;
+    border-color: darken($negative, 10%);
 
     &:hover {
-        background-color: #bb2d3b;
-        border-color: #b02a37;
+        background-color: darken($negative, 15%);
+        border-color: darken($negative, 25%);
     }
 
     &:focus,
