@@ -23,16 +23,16 @@
     --chart-warning-dark: #{darken($chart-warning, 15%)};
     --chart-warning-super-dark: #{darken($chart-warning, 35%)};
 
-    --chart-color-0: #7cb5ec;
-    --chart-color-1: #f7a35c;
-    --chart-color-2: #90ee7e;
-    --chart-color-3: #7798bf;
-    --chart-color-4: #aaeeee;
-    --chart-color-5: #ff0066;
-    --chart-color-6: #eeaaee;
-    --chart-color-7: #55bf3b;
-    --chart-color-8: #df5353;
-    --chart-color-9: #7798bf;
+    --chart-color-0: #3b82f6;
+    --chart-color-1: #06b6d4;
+    --chart-color-2: #10b981;
+    --chart-color-3: #84cc16;
+    --chart-color-4: #eab308;
+    --chart-color-5: #f97316;
+    --chart-color-6: #ef4444;
+    --chart-color-7: #8b5cf6;
+    --chart-color-8: #ec4899;
+    --chart-color-9: #6b7280;
 
     @include gradient-tint($primary, "primary-tint");
     @include gradient-alpha($primary, "primary-alpha");
