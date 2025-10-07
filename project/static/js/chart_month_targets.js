@@ -69,7 +69,7 @@ function loadChart(idData, idContainer) {
             pointWidth: 13,
             borderWidth: 0,
             borderRadius: 0,
-            opacity: 0.95,
+            opacity: 0.9,
             targetOptions: {
                 borderWidth: 0,
                 height: 2,
@@ -100,14 +100,14 @@ function loadChart(idData, idContainer) {
 
             let color;
             if (y <= max) {
-                color = "var(--chart-positive)";
+                color = "var(--chart-positive-dark)";
             } else {
                 let p = 28;
                 if (y < 100) { p = 21; }
                 if (y < 10) { p = -2; }
                 point.dataLabel.attr({ x: point.dataLabel.x + p });
 
-                color = (y <= max * 1.1) ? "var(--chart-warning)" : "var(--chart-negative)";
+                color = (y <= max * 1.1) ? "var(--chart-warning-dark)" : "var(--chart-negative-dark)";
             }
             point.color = color;
             point.graphic.attr({ fill: color });

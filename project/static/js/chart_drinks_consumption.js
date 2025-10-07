@@ -69,7 +69,7 @@ function chartConsumption(idData, idContainer) {
         },
         plotOptions: {
             area: {
-                fillOpacity: 0.25
+                fillOpacity: 0.6
             },
         },
         series: [{
@@ -78,8 +78,8 @@ function chartConsumption(idData, idContainer) {
             showInLegend: false,
             data: chartData.data,
             threshold: chartData.target,
-            color: "var(--chart-negative-super-dark)",
-            negativeColor: 'var(--chart-positive-super-dark)',
+            color: "var(--chart-negative-dark)",
+            negativeColor: 'var(--chart-positive-dark)',
             dataLabels: {
                 enabled: true,
                 color: "#000",
