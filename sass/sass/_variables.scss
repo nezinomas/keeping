@@ -13,10 +13,7 @@ $modal-border-radius: 0.25rem;
 
 // Main color schema
 $primary: #8d6e63;
-$primary-light: lighten($primary, 45%);
-
-$secondary: #a1887f;
-$secondary-light: lighten($secondary, 30%);
+$secondary: lighten($primary, 45%);
 
 $black: #000;
 $black-muted: #333;
@@ -29,14 +26,14 @@ $nav-bg: lighten($primary, 50%);
 
 
 // Tables (adapted for earth tones)
-$table-thead: lighten($primary, 47%);
+$table-thead: $secondary;
 $table-thead-text: $black-muted;
 
 $table-current-day: lighten($primary, 40%);
 $table-current-day-font-color: $black;
 $table-current-day-border-color: $primary;
 
-$table-weekend: lighten($primary, 45%);
+$table-weekend: $secondary;
 $table-weekend-color: $black-muted;
 
 $table-hover-bg: lighten($primary, 35%);
