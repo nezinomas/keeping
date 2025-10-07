@@ -120,3 +120,12 @@
 .transparent {
     background-color: transparent !important;
 }
+
+
+.truncate {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
