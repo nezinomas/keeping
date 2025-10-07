@@ -383,7 +383,7 @@ $title-col-width: 17rem;
 
 .currently-reading-book,
 .std-av-border {
-    background-color: $table-current-day;
+    background-color: lighten($primary, 45%);
     border-top:
         $table-current-day-border-color 1px double !important;
     border-bottom:
