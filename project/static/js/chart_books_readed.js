@@ -25,19 +25,20 @@ function chartReaded(idData, idContainer) {
                 targetOptions: {
                     borderWidth: 0,
                     height: 2,
-                    color: "green",
+                    color: "#000",
                     width: "110%"
                 }
             },
         },
         series: [{
             data: chartData.data,
-            color: `rgba(${chartData.chart_column_color}, 0.65)`,
-            borderColor: `rgba(${chartData.chart_column_color}, 1)`,
+            color: "var(--primary-alpha-25)",
+            borderColor: "var(--primary)",
             borderRadius: 0,
+            borderWidth: 0.5,
             dataLabels: [{
                 enabled: true,
-                color: `rgba(${chartData.chart_column_color}, 1)`,
+                color: "var(--primary)",
                 style: {
                     fontSize: "11px",
                     fontWeight: "bold",
@@ -51,7 +52,7 @@ function chartReaded(idData, idContainer) {
             color: "rgba(0,0,0,0)",
             dataLabels: [{
                 enabled: true,
-                color: "green",
+                color: "#000",
                 align: "left",
                 x: -28,
                 y: -13,

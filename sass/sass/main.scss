@@ -1,7 +1,9 @@
+@use "sass:color";
+
 @import 'variables';
 @import 'mixins';
-@import 'utilities';
 @import 'root';
+@import 'utilities';
 @import 'normalize';
 @import 'grid';
 @import 'table';
@@ -59,15 +61,19 @@ h6 {
     text-align: center;
     margin-bottom: $gap;
     padding: 0.25rem 0 0.4rem 0;
-    color: $active;
+    color: primary;
 }
 
 .plans-residual-row {
-    background-color: $warning-bg;
+    background-color: $table-current-day;
+    border-top:
+        $table-current-day-border-color 1px double !important;
+    border-bottom:
+        $table-current-day-border-color 1px double !important;
 }
 
 .plans-star {
-    color: $active;
+    color: primary;
     margin-left: .5rem;
 }
 
@@ -98,6 +104,6 @@ h6 {
         content: " \e113";
         padding-right: .25rem;
         font-size: 8px;
-        color: $active;
+        color: primary;
     }
 }

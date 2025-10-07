@@ -1,11 +1,13 @@
 .button-active {
     @include button();
-    color: #fff;
-    background-color: rgb(108, 117, 125);
-    border-color: rgb(84, 90, 96);
+    color: $active;
+    background-color: $active-bg;
+    border-color: $active-border;
 
+    
     &:hover {
-        background-color: #5c6e64;
+        background-color: darken($active-bg, 10%);
+        border-color: darken($active-border, 10%)
     }
 
     &:focus,
@@ -21,11 +23,12 @@
 
 .button-secondary {
     @include button();
-    background-color: #f7f7f7;
-    border-color: #989898;
+    background-color: lighten($active-bg, 40%);
+    border-color: lighten($active-border, 30%);
 
     &:hover {
-        background-color: #e1e1e1;
+        background-color: lighten($active-bg, 30%);
+        border-color: lighten($active-border, 20%);
     }
 
     &:focus,
@@ -41,13 +44,14 @@
 
 .button-outline-success {
     @include button();
-    color: #198754;
+    color: $positive;
     background-color: #fff;
-    border-color: #198754;
+    border-color: $positive;
 
     &:hover {
         color: #fff;
-        background-color: #198754;
+        background-color: $positive;
+        border-color: darken($positive, 10%);
     }
 
     &:focus,
@@ -55,8 +59,8 @@
     &:active {
         outline: 0;
         box-shadow:
-            inset 0 1px 2px rgba(#198754, .075),
-            0 0 0 0.15rem rgba(#198754, 0.1);
+            inset 0 1px 2px rgba($positive, .075),
+            0 0 0 0.15rem rgba($positive, 0.1);
     }
 
     &::before {
@@ -72,28 +76,16 @@
     }
 }
 
-.button-success {
-    @include button();
-    color: #fff;
-    background-color: #198754;
-    border-color: #198754;
-
-    &:hover {
-        background-color: #157347;
-        border-color: #146c43;
-    }
-}
-
 
 .button-danger {
     @include button();
     color: #fff;
-    background-color: $danger;
-    border-color: $danger;
+    background-color: $negative;
+    border-color: darken($negative, 10%);
 
     &:hover {
-        background-color: #bb2d3b;
-        border-color: #b02a37;
+        background-color: darken($negative, 15%);
+        border-color: darken($negative, 25%);
     }
 
     &:focus,
@@ -102,7 +94,7 @@
         outline: 0;
         box-shadow:
             inset 0 1px 2px rgba($black, .075),
-            0 0 0 0.15rem rgba($danger, 0.17) !important;
+            0 0 0 0.15rem rgba($negative, 0.17) !important;
     }
 }
 

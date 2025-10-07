@@ -22,13 +22,13 @@ function chart_drinks_summary(idData, idContainer) {
             labels: {
                 format: "{value:.0f}",
                 style: {
-                    color: "#46ab9d",
+                    color: "var(--chart-negative)",
                 },
             },
             title: {
                 text: "",
                 style: {
-                    color: "#46ab9d",
+                    color: "var(--chart-negative)",
                 }
             },
         }, {
@@ -36,13 +36,13 @@ function chart_drinks_summary(idData, idContainer) {
             labels: {
                 format: "{value:.0f}",
                 style: {
-                    color: "#d13572",
+                    color: "var(--chart-negative-super-dark)",
                 },
             },
             title: {
                 text: "",
                 style: {
-                    color: "#d13572",
+                    color: "var(--chart-negative-super-dark)",
                 }
             },
         }],
@@ -53,14 +53,19 @@ function chart_drinks_summary(idData, idContainer) {
             name: chartData.text.per_day,
             yAxis: 0,
             data: chartData.data_ml,
-            color: "#46ab9d",
+            color: "var(--chart-negative)",
             type: "area",
+            marker: {
+                fillColor: '#FFFFFF',
+                lineWidth: 2,
+                lineColor: null // inherit from series
+            },
             dataLabels: {
                 enabled: true,
                 format: "{point.y:.0f}",
                 y: -25,
                 verticalAlign:"top",
-                color: "#28695f",
+                color: "var(--chart-negative-super-dark)",
                 style: {
                     textOutline: 0,
                 },
@@ -71,13 +76,13 @@ function chart_drinks_summary(idData, idContainer) {
             name: chartData.text.per_year,
             yAxis: 1,
             data: chartData.data_alcohol,
-            color: "#d13572",
+            color: "var(--chart-negative-super-dark)",
             type: "line",
             dataLabels: {
                 enabled: true,
                 format: "{point.y:.1f}",
                 y: 25,
-                color: "#d13572",
+                color: "var(--chart-negative-super-dark)",
                 style: {
                     textOutline: 0,
                 },

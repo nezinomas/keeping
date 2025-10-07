@@ -9,6 +9,8 @@
 @mixin button {
     --button-border-radius: 0.1rem;
 
+    transition: 250ms all 50ms ease-out;
+
     border-radius: var(--button-border-radius);
     padding-left: .5rem;
     padding-right: .5rem;
@@ -19,5 +21,25 @@
         vertical-align: middle;
         padding-bottom: .25rem;
         padding-right: .25rem;
+    }
+}
+
+
+@mixin gradient-tint($base, $name) {
+    @for $i from 0 through 20 {
+        $step: $i * 5;
+        $tint-ratio: $i / 20 * 100%;
+        $color: mix(white, $base, $tint-ratio);
+        --#{$name}-#{$step}: #{$color};
+    }
+}
+
+
+@mixin gradient-alpha($base, $name) {
+    @for $i from 2 through 16 {
+        $step: $i * 5;
+        $alpha: $step * 1%;
+        $color: color.change($base, $alpha: $alpha);
+        --#{$name}-#{$step}: #{$color};
     }
 }

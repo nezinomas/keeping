@@ -1,0 +1,39 @@
+:root {
+    --primary: #{$primary};
+    --secondary: #{$secondary};
+
+    --positive: #{$positive};
+    --positive-bg: #{$positive-bg};
+    --positive-text: #{$positive-text};
+
+    --negative: #{$negative};
+    --negative-bg: #{$negative-bg};
+    --negative-text: #{$negative-text};
+
+    --chart-negative: #{$chart-negative};
+    --chart-negative-dark: #{darken($chart-negative, 15%)};
+    --chart-negative-super-dark: #{darken($chart-negative, 35%)};
+
+    --chart-positive: #{$chart-positive};
+    --chart-positive-dark: #{darken($chart-positive, 15%)};
+    --chart-positive-super-dark: #{darken($chart-positive, 35%)};
+
+    --warning-text: #{$warning-text};
+    --chart-warning: #{$chart-warning};
+    --chart-warning-dark: #{darken($chart-warning, 15%)};
+    --chart-warning-super-dark: #{darken($chart-warning, 35%)};
+
+    --chart-color-0: #3b82f6;
+    --chart-color-1: #06b6d4;
+    --chart-color-2: #10b981;
+    --chart-color-3: #84cc16;
+    --chart-color-4: #eab308;
+    --chart-color-5: #f97316;
+    --chart-color-6: #ef4444;
+    --chart-color-7: #8b5cf6;
+    --chart-color-8: #ec4899;
+    --chart-color-9: #6b7280;
+
+    @include gradient-tint($primary, "primary-tint");
+    @include gradient-alpha($primary, "primary-alpha");
+}

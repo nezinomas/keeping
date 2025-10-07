@@ -43,7 +43,8 @@
     }
 
     > *:hover {
-        background-color: lighten($active, 25%);
+        background-color: lighten($primary, 30%);
+        color: $black-muted !important;
     }
 
     > *.dropdown-divider {
@@ -85,7 +86,7 @@
     a:focus,
     .dropdown__btn:hover {
         transition: $transition;
-        color: $active;
+        color: $primary;
     }
 
     > div {
@@ -119,7 +120,7 @@ nav#main-nav {
         &:hover,
         &:focus {
             transition: $transition;
-            border-bottom-color: $active;
+            border-bottom-color: $primary;
         }
     }
 
@@ -133,7 +134,7 @@ nav#main-nav {
     }
 
     > .active {
-        border-bottom: 3px solid $active;
+        border-bottom: 3px solid $primary;
     }
 }
 

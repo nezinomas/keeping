@@ -12,8 +12,8 @@
 
     a {
         &:hover, &:focus {
-            color: $active;
-            border-bottom-color: $active;
+            color: $primary;
+            border-bottom-color: $primary;
         }
     }
 
@@ -25,12 +25,12 @@
         }
 
         &.active {
-            color: $active;
-            border-bottom: 3px solid $active;
+            color: $primary;
+            border-bottom: 3px solid $primary;
         }
 
         &.disabled {
-            color: #cecece;
+            color: $disabled;
         }
     }
 }

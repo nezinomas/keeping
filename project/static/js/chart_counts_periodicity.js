@@ -47,13 +47,14 @@ function chartPeriodicity(idData, idContainer) {
         },
         series: [{
             data: chartData.data,
-            color: `rgba(${chartData.chart_column_color}, 0.65)`,
-            borderColor: `rgba(${chartData.chart_column_color}, 1)`,
+            color: `var(--primary-alpha-25)`,
+            borderColor: `var(--primary)`,
             borderRadius: 0,
+            borderWidth: 0.5,
             dataLabels: {
                 enabled: true,
                 rotation: 0,
-                color: `rgba(${chartData.chart_column_color}, 1)`,
+                color: `#333`,
                 formatter: function () {
                     return (this.y != 0) ? this.y : "";
                 },

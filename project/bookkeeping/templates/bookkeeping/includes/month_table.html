@@ -49,9 +49,9 @@
 
             <!-- spending -->
             <td class="text-left empty-column {{weekend_col}}">{{spending.date|date:'l'}}</td>
-            {% with spending.day as val%}<td class="{{val|negative}} day {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
+            {% with spending.day as val%}<td class="{{val|negative}} day-warning {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
 
-            {% with spending.full as val%}<td class="{{val|negative}} day-full {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
+            {% with spending.full as val%}<td class="{{val|negative}} day-negative {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
 
         </tr>{% endwith %}{% endwith %}
         {% endfor %}

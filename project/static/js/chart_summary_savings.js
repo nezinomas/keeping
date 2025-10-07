@@ -19,8 +19,8 @@ function annotationLabels(arrTotal, arrProfit, arrInvested) {
 };
 
 function chartSavings(container) {
-    const positive = "#548235";
-    const negative = "#c0504d";
+    const positive_text = "var(--positive-text)";
+    const negative_text = "var(--negative-text)";
     const chartData = JSON.parse(document.getElementById(`${container}_data`).textContent);
 
     // convert data
@@ -101,14 +101,15 @@ function chartSavings(container) {
         plotOptions: {
             column: {
                 stacking: "normal",
+                opacity: 0.9,
             },
         },
         series: [{
             name: chartData.text_profit,
             data: chartData.profit,
-            color: "#5D9C59",
+            color: "var(--chart-positive-dark)",
             opacity: 0.8,
-            borderColor: "#548235",
+            borderColor: "var(--chart-positive-super-dark)",
             borderWidth: 0.5,
             borderRadius: 0,
             dataLabels: {
@@ -119,7 +120,7 @@ function chartSavings(container) {
                     if (val == 0) {
                         return "";
                     } else {
-                        let color = (val < 0) ? negative : positive;
+                        let color = (val < 0) ? negative_text : positive_text;
                         return `<div class="text-center" style="width: ${this.point.pointWidth}px;"><span style="color:${color};">${val}</span></div>`;
                     }
                 },
@@ -127,8 +128,8 @@ function chartSavings(container) {
         }, {
             name: chartData.text_invested,
             data: chartData.invested,
-            color: "rgba(222,176,40,0.5)",
-            borderColor: "#bf8f00",
+            color: "var(--chart-warning)",
+            borderColor: "var(--chart-warning-super-dark)",
             borderWidth: 0.5,
             borderRadius: 0,
             dataLabels: {
@@ -139,7 +140,7 @@ function chartSavings(container) {
                     return `<div class="text-center" style="width: ${this.point.pointWidth}px;">${Highcharts.numberFormat(this.y, 0)}</div>`;
                 },
                 style: {
-                    color: "#bf8f00"
+                    color: "var(--warning-text)"
                 },
             }
         }]
@@ -148,8 +149,8 @@ function chartSavings(container) {
         let series = chartObj.series[0];
         series.data.forEach((point, i) => {
             if (point.negative) {
-                point.color = negative; /* + tooltip border color */
-                point.graphic.css({ stroke: negative, color: "#EB5353" });
+                point.color = negative_text; /* + tooltip border color */
+                point.graphic.css({ stroke: "var(--chart-negative-super-dark)", color: "var(--chart-negative-dark)" });
             } else {
                 point.update({});
             }

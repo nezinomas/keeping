@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     enabled: true,
                     format: "{point.y:,.0f}",
                     verticalAlign:"top",
-                    color: "#2d5f2e",
+                    color: "var(--positive-text)",
                     style: {
                         textOutline: 0,
                     },
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     enabled: true,
                     format: "{point.y:,.0f}",
                     y: -5,
-                    color: "#2d5f2e",
+                    color: "var(--positive-text)",
                     style: {
                         textOutline: 0,
                     },
@@ -72,13 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
             name: chartData.salary_title,
             data: chartData.salary,
             type: "area",
-            color: "#5D9C59",
+            color: "var(--chart-positive-dark)",
+            marker: {
+                fillColor: '#FFFFFF',
+                lineWidth: 2,
+                lineColor: null // inherit from series
+            }
         }, {
             name: chartData.incomes_title,
             data: chartData.incomes,
             type: "line",
             lineWidth: 2,
-            color: "#2d5f2e",
+            color: "var(--chart-positive-super-dark)",
         }],
     });
 });

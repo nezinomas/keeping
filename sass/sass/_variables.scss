@@ -1,41 +1,68 @@
 $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
 $font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !default;
 
-$table-thead: #f5ebd7;
-
-$nav-bg: rgba(248, 249, 250, 1);
-$active: rgb(250, 124, 145, 1);
-
 
 $font-size: 0.7rem;
 $gap: 0.75rem;
 
-$transition: 280ms all var(--delay) ease-out;
+$transition: 280ms all 50ms ease-out;
 $accordion-transition: all 0.25s ease-in-out;
 
-$success: #28a745;
-$success-text-clr: #0a3622;
-$success-bg: #d1e7dd;
-$success-border: #a3cfbb;
+$modal-border-radius: 0.25rem;
 
-$warning: #ffc107;
-$warning-text-clr: #664d03;
+
+// Main color schema
+$primary: #8d6e63;
+$secondary: lighten($primary, 45%);
+
+$black: #000;
+$black-muted: #333;
+
+$disabled: #E9ECEF;
+
+
+// Navigation
+$nav-bg: lighten($primary, 50%);
+
+
+// Tables (adapted for earth tones)
+$table-thead: $secondary;
+$table-thead-text: $black-muted;
+
+$table-current-day: lighten($primary, 40%);
+$table-current-day-font-color: $black;
+$table-current-day-border-color: $primary;
+
+$table-weekend: $secondary;
+$table-weekend-color: $black-muted;
+
+$table-hover-bg: lighten($primary, 35%);
+
+
+// Negative colors
+$negative: #db606d;;
+$negative-bg: #ffcdd2;
+$negative-text: #c62828;
+$negative-border: #ef9a9a;
+
+// Warning colors
+$warning-text: #c18b03;
 $warning-bg: #fff3cd;
 $warning-border: #ffe69c;
 
-$danger: #dc3545;
-$danger-text-clr: #58151c;
-$danger-bg: #f8d7da;
-$danger-border: #f1aeb5;
+
+// Positive colors
+$positive: #3b873e;
+$positive-bg: #c8e6c9;
+$positive-text: #2e7532;
+$positive-border: #a5d6a7;
+
+$active: #fff;
+$active-bg: #8a949d;
+$active-border: #545a60;
 
 
-$day-danger: rgb(254, 83, 106);
-
-$hover-bg: rgba(161, 160, 160, 0.25);
-
-// $black:   #585858;
-$black:   black;
-$primary: #0d6efd;
-$disabled: #E9ECEF;
-
-$modal-border-radius: 0.25rem;
+// Chart colors
+$chart-positive: darken($positive-bg, 5%);
+$chart-negative: darken($negative-bg, 5%);
+$chart-warning: darken($warning-bg, 5%);

@@ -68,12 +68,6 @@ class IndexService:
             "data": self._drink_stats.per_day_of_month,
             "target": self._target,
             "avg": self._per_day_of_year,
-            "avg_label_y": self._avg_label_position(
-                self._per_day_of_year, self._target
-            ),
-            "target_label_y": self._target_label_position(
-                self._per_day_of_year, self._target
-            ),
             "text": {
                 "limit": _("Limit"),
                 "alcohol": _("Alcohol consumption per day, milliliters"),
@@ -103,12 +97,6 @@ class IndexService:
 
     def tbl_std_av(self) -> str:
         return {"items": self._std_av(self._drink_stats.year, self._quantity_of_year)}
-
-    def _avg_label_position(self, avg: float, target: float) -> int:
-        return 15 if target - 50 <= avg <= target else -5
-
-    def _target_label_position(self, avg: float, target: float) -> int:
-        return 15 if avg - 50 <= target <= avg else -5
 
     def _std_av(self, year: int, qty: float) -> List[Dict]:
         if not qty:

@@ -38,54 +38,6 @@ def test_dry_days_no_records():
     assert not actual
 
 
-def test_target_label_position_between():
-    actual = service.IndexService(drink_stats=DrinkStats())._target_label_position(
-        avg=55, target=50
-    )
-
-    assert actual == 15
-
-
-def test_target_label_position_higher():
-    actual = service.IndexService(drink_stats=DrinkStats())._target_label_position(
-        avg=55, target=500
-    )
-
-    assert actual == -5
-
-
-def test_target_label_position_lower():
-    actual = service.IndexService(drink_stats=DrinkStats())._target_label_position(
-        avg=500, target=50
-    )
-
-    assert actual == -5
-
-
-def test_avg_label_position_between():
-    actual = service.IndexService(drink_stats=DrinkStats())._avg_label_position(
-        avg=50, target=55
-    )
-
-    assert actual == 15
-
-
-def test_avg_label_position_higher():
-    actual = service.IndexService(drink_stats=DrinkStats())._avg_label_position(
-        avg=55, target=500
-    )
-
-    assert actual == -5
-
-
-def test_avg_label_position_lower():
-    actual = service.IndexService(drink_stats=DrinkStats())._avg_label_position(
-        avg=500, target=50
-    )
-
-    assert actual == -5
-
-
 @time_machine.travel("2019-10-10")
 def test_std_av():
     actual = service.IndexService(drink_stats=DrinkStats())._std_av(2019, 273.5)

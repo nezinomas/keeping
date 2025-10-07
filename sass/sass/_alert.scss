@@ -7,19 +7,19 @@
 }
 
 .alert.alert-success {
-    border-color: $success-border;
-    background-color: $success-bg;
-    color: $success-text-clr;
+    border-color: $positive-border;
+    background-color: $positive-bg;
+    color: $positive-text;
 }
 
 .alert.alert-warning {
     border-color: $warning-border;
     background-color: $warning-bg;
-    color: $warning-text-clr;
+    color: $warning-text;
 }
 
 .alert.alert-danger {
-    border-color: $danger-border;
-    background-color: $danger-bg;
-    color: $danger-text-clr;
+    border-color: $negative-border;
+    background-color: $negative-bg;
+    color: $negative-text;
 }

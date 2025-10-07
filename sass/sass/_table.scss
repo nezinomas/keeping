@@ -23,7 +23,8 @@ $title-col-width: 17rem;
     }
 
     thead  {
-        border-bottom: $active solid 3px;
+        border-bottom: $primary solid 3px;
+        color: $table-thead-text;
     }
 
     thead th {
@@ -83,11 +84,11 @@ $title-col-width: 17rem;
     }
 
     .table-success {
-        background-color: #d1e7dd;
+        background-color: $positive-bg;
     }
 
     .table-danger {
-        background-color: lighten($danger, 35%);
+        background-color: $negative-bg;
     }
 
     // Border styles
@@ -172,7 +173,7 @@ $title-col-width: 17rem;
         width: 25px;
         text-align: center;
         border-left: 0;
-        color: $danger;
+        color: $negative;
     }
 
     .cell-padding {
@@ -184,20 +185,10 @@ $title-col-width: 17rem;
     &.hover {
         tbody tr:hover {
             > td {
-                background-color: $hover-bg !important;
+                background-color: $table-hover-bg !important;
+                border-bottom: darken($table-hover-bg, 20) 1px double !important;
+                border-top: darken($table-hover-bg, 20) 1px double !important;
             }
-
-            > td.table-success {
-                background-color: #c1d6cc !important;
-            }
-
-            > td.table-danger {
-                background-color: #e5c7ca !important;
-            }
-        }
-
-        tbody tr.current-day:hover > td:not([class*="day"]) {
-            background-color: rgb(254, 225, 149) !important;
         }
     }
 
@@ -205,19 +196,23 @@ $title-col-width: 17rem;
     &.striped {
         tbody tr:nth-child(even) {
             > td {
-                background-color: rgba(0, 0, 0, 0.05);
+                background-color: rgba(0, 0, 0, 0.03);
             }
 
             > td.table-success {
-                background-color: #c7dbd2;
+                background-color: darken($positive-bg, 2);
             }
 
             > td.table-danger {
-                background-color: lighten($danger, 33);
+                background-color: darken($negative-bg, 2)
             }
 
-            > td.table-danger.day-full {
-                background-color: darken($day-danger, 5);
+            > td.table-danger.day-negative {
+                background-color: $negative-bg;
+            }
+
+            > td.table-danger.day-warning {
+                background-color: $warning-bg;
             }
         }
     }
@@ -246,24 +241,29 @@ $title-col-width: 17rem;
     }
 
     .weekend-col {
-        background-color: rgb(202, 235, 204) !important;
-    }
-
-    .current-day :not([class*="day"]) {
-        background-color: #fde8b2 !important;
+        background-color: $table-weekend !important;
+        color: $table-weekend-color;
     }
 
     .current-day {
-        --color: rgb(252, 192, 39);
-        --h: 1px;
-        border-top:  var(--color) var(--h) double !important;
-        border-bottom: var(--color) var(--h) double !important;
-    }
+        border-top:
+            $table-current-day-border-color 1px double !important;
+        border-bottom:
+            $table-current-day-border-color 1px double !important;
 
-    .table-danger.day-full {
-        background-color: $day-danger;
-        font-weight: 650;
-   }
+        & :not([class*="day"]) {
+            background-color: $table-current-day !important;
+        }
+
+        & :not(:first-child):not(.table-danger):not(.empty-column) {
+            color: $table-current-day-font-color;
+            font-weight: 600;
+        }
+
+        &:hover .button-expand {
+            background-color: transparent !important;
+        }
+    }
 
     .empty-column {
         border-left: #fff solid .5rem;
@@ -292,6 +292,31 @@ $title-col-width: 17rem;
             }
         }
     }
+
+    .table-danger {
+        &.day-warning {
+            background-color: $warning-bg;
+            color: $warning-text;
+            font-weight: 650;
+        }
+
+        &.day-negative {
+            color: $negative-text;
+            font-weight: 650;
+        }
+    }
+
+    &.striped {
+        tbody tr:nth-child(even) {
+            > td.table-danger.day-negative {
+                background-color: $negative-bg;
+            }
+
+            > td.table-danger.day-warning {
+                background-color: $warning-bg;
+            }
+        }
+    }
 }
 
 
@@ -307,28 +332,12 @@ $title-col-width: 17rem;
 
     th.exception,
     td.exception {
-        border-left: 5px solid $danger !important;
+        border-left: 5px solid $primary !important;
     }
 
     .file-col {
         min-width: 5rem;
         width: 5rem;
-    }
-    // row colors
-    .fee td {
-        background-color: #ffdddd !important;
-    }
-
-    .food td {
-        background-color: #c5d9f1 !important;
-    }
-
-    .leisure td {
-        background-color: #c4d79b !important;
-    }
-
-    .work td {
-        background-color: #fff0c1 !important;
     }
 }
 
@@ -348,21 +357,22 @@ $title-col-width: 17rem;
 
 
 // Button expand
-.panel-heading .button-expand:before {
-    font-family: 'Glyphicons Halflings';
-    content: "\e114";
-    float: right;
-    vertical-align: middle;
-    transition: all 0.5s;
-    color: #fe536a;
-    margin-right: .25rem;
-}
+.panel-heading {
+    .button-expand:before {
+        font-family: 'Glyphicons Halflings';
+        content: "\e114";
+        float: right;
+        vertical-align: middle;
+        transition: all 0.5s;
+        color: $primary;
+        margin-right: .25rem;
+    }
 
-
-.panel-heading.active .button-expand:before {
-    -webkit-transform: rotate(180deg);
-    -moz-transform: rotate(180deg);
-    transform: rotate(180deg);
+    &.active .button-expand:before {
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
 }
 
 
@@ -371,15 +381,11 @@ $title-col-width: 17rem;
 }
 
 
-// Drink styles
+.currently-reading-book,
 .std-av-border {
-    border-top: double #ffc000;
-    border-bottom: double #ffc000;
-    background-color: #fde8b2;
-}
-
-
-// Book styles
-.currently-reading-book {
-    background-color: #f5ebd7;
+    background-color: lighten($primary, 45%);
+    border-top:
+        $table-current-day-border-color 1px double !important;
+    border-bottom:
+        $table-current-day-border-color 1px double !important;
 }

@@ -30,12 +30,13 @@ function chartQuantity(idData, idContainer) {
         },
         series: [{
             name: chartData.text.quantity,
-            color: "rgba(70, 171, 157,0.65)",
-            borderColor: "rgba(70, 171, 157, 1)",
+            color: `var(--primary-alpha-25)`,
+            borderColor: `var(--primary)`,
+            borderRadius: 0,
+            borderWidth: 0.5,
             data: chartData.data,
             pointPadding: 0,
             pointPlacement: 0,
-            borderRadius: 0,
             dataLabels: {
                 enabled: true,
                 rotation: 0,

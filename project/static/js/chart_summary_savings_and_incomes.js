@@ -51,19 +51,16 @@ document.addEventListener('DOMContentLoaded', () => {
         series: [{
             name: chartData.text.incomes,
             data: chartData.incomes,
-            opacity: 0.85,
+            color: "var(--chart-positive)",
+            opacity: 0.8,
             type: "column",
-            borderRadius: "5%",
-            states: {
-                inactive: {
-                    opacity: 1,
-                },
-            },
+            borderRadius: 0,
+            borderWidth: 0.5,
             dataLabels: {
                 enabled: true,
                 x: 3,
                 style: {
-                    color: "black",
+                    color: "var(--positive-text)",
                     textOutline: false
                 },
                 formatter: function () {
@@ -75,14 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
             name: chartData.text.savings,
             data: chartData.savings,
             type: "line",
+            color: "var(--chart-positive-super-dark)",
             lineWidth: 2,
             marker: {
                 lineWidth: 2,
-            },
-            states: {
-                inactive: {
-                    opacity: 1,
-                },
             },
             dataLabels: {
                 enabled: true,
@@ -91,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 style: {
                     fontWeight: "normal",
                     textOutline: false,
-                    color: "black",
+                    color: "var(--positive-text)",
                 },
                 formatter: function () {
                     let i = this.series.data.indexOf(this.point);
