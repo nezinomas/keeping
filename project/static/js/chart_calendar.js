@@ -21,7 +21,7 @@ function chartCalender (idData, idContainer) {
                             bbox.height + 20
                         )
                         .attr({align: "center"})
-                        .css({color: "#666666", fontSize: "12px"})
+                        .css({color: "#333", fontSize: "12px", fontWeight: "bold"})
                         .add();
                     }, this);
                 }
@@ -68,11 +68,9 @@ function chartCalender (idData, idContainer) {
                 [0.00002, "#dfdfdf"],  /* saturday */
                 [0.00003, "#c3c4c2"],  /*	sunday */
                 [0.00005, "#c9edff"],  /*	current day */
-                [0.25 / ratio, "#58a70f"],
-                [1.0 / ratio, "#FFFE55"],
-                [1.5 / ratio, "#F5C142"],
-                [2.0 / ratio, "#DF8244"],
-                [2.5 / ratio, "#B02418"]
+                [0.25 / ratio, "var(--chart-positive-dark)"],
+                [0.5 / ratio, "var(--chart-warning-dark)"],
+                [2 / ratio, "var(--chart-negative-super-dark)"],
             ],
             labels: {
                 enabled: true
