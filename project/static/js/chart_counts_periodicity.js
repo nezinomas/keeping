@@ -54,7 +54,7 @@ function chartPeriodicity(idData, idContainer) {
             dataLabels: {
                 enabled: true,
                 rotation: 0,
-                color: `var(--primary)`,
+                color: `#333`,
                 formatter: function () {
                     return (this.y != 0) ? this.y : "";
                 },
