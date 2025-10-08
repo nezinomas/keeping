@@ -4,8 +4,8 @@
     <caption>{% translate 'Max per day' %}</caption>
     <thead>
         <tr>
-            <th>{% translate 'ml' %}</th>
-            <th>{% translate 'pcs' %}</th>
+            <th style="width: 25%">{% translate 'ml' %}</th>
+            <th style="width: 25%">{% translate 'pcs' %}</th>
             <th></th>
         </tr>
     </thead>
@@ -15,7 +15,7 @@
         <tr hx-get="{{url_update}}" hx-trigger="dblclick" hx-target="#mainModal">
             <td>{{ obj.qty|floatformat:'1g' }}</td>
             <td>{{ obj.max_bottles|floatformat:'0g' }}</td>
-            <td>
+            <td class="text-center">
                 <button type="button" class="button-xs button-secondary truncate" title="{% translate 'Edit' %}" hx-get="{{url_update}}" hx-target="#mainModal">{% translate 'Edit' %}</button>
             </td>
         </tr>
