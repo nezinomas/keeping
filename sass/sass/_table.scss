@@ -332,7 +332,7 @@ $title-col-width: 17rem;
 
     th.exception,
     td.exception {
-        border-left: 5px solid $primary !important;
+        border-left: 5px solid $exception !important;
     }
 
     .file-col {
@@ -364,7 +364,7 @@ $title-col-width: 17rem;
         float: right;
         vertical-align: middle;
         transition: all 0.5s;
-        color: darken($secondary, 10%);
+        color: $arrow;
         margin-right: .25rem;
     }
 
@@ -383,7 +383,7 @@ $title-col-width: 17rem;
 
 .currently-reading-book,
 .std-av-border {
-    background-color: lighten($secondary, 45%);
+    background-color: $table-currently-reading;
     border-top:
         $table-current-day-border-color 1px double !important;
     border-bottom:

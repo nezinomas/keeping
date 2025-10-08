@@ -33,10 +33,18 @@ $table-current-day: lighten($secondary, 45%);
 $table-current-day-font-color: $black;
 $table-current-day-border-color: $secondary;
 
+$table-currently-reading: $table-current-day;
+
+
 $table-weekend: lighten($primary, 71%);
 $table-weekend-color: $black-muted;
 
 $table-hover-bg: lighten($secondary, 40%);
+
+
+// Menus
+$arrow: darken($secondary, 10%);
+$exception: $secondary;
 
 
 // Negative colors
