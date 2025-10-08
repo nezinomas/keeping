@@ -34,6 +34,6 @@
     --chart-color-8: #ec4899;
     --chart-color-9: #6b7280;
 
-    @include gradient-tint($primary, "primary-tint");
-    @include gradient-alpha($primary, "primary-alpha");
+    @include gradient-tint($secondary, "primary-tint");
+    @include gradient-alpha($secondary, "primary-alpha");
 }
