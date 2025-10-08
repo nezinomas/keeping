@@ -30,7 +30,7 @@ function chartQuantity(idData, idContainer) {
         },
         series: [{
             name: chartData.text.quantity,
-            color: `var(--primary-alpha-25)`,
+            color: `var(--chart-alpha-25)`,
             borderColor: `var(--secondary)`,
             borderRadius: 0,
             borderWidth: 0.5,
