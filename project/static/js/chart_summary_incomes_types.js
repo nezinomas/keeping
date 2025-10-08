@@ -54,12 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 stacking: "percent",
                 borderRadius: 0,
                 borderWidth: 0,
-                opacity: 0.8,
+                opacity: 0.7,
                 dataLabels: {
                     useHTML: true,
                     enabled: true,
                     crop: false,
                     overflow: "none",
+                    color: "#333",
                     formatter:function(){
                         return `<div class="text-center" style="width: ${this.point.pointWidth}px;">${Highcharts.numberFormat(this.point.percentage, 1)}%</div>`;
                     },

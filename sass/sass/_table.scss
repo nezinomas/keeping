@@ -364,7 +364,7 @@ $title-col-width: 17rem;
         float: right;
         vertical-align: middle;
         transition: all 0.5s;
-        color: $primary;
+        color: darken($secondary, 10%);
         margin-right: .25rem;
     }
 
@@ -383,7 +383,7 @@ $title-col-width: 17rem;
 
 .currently-reading-book,
 .std-av-border {
-    background-color: lighten($primary, 45%);
+    background-color: lighten($secondary, 45%);
     border-top:
         $table-current-day-border-color 1px double !important;
     border-bottom:

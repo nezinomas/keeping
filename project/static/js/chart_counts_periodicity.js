@@ -47,8 +47,8 @@ function chartPeriodicity(idData, idContainer) {
         },
         series: [{
             data: chartData.data,
-            color: `var(--primary-alpha-25)`,
-            borderColor: `var(--primary)`,
+            color: `var(--chart-alpha-25)`,
+            borderColor: `var(--secondary)`,
             borderRadius: 0,
             borderWidth: 0.5,
             dataLabels: {
