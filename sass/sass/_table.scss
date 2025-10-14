@@ -246,6 +246,7 @@ $title-col-width: 17rem;
     }
 
     .current-day {
+        font-weight: 600;
         border-top:
             $table-current-day-border-color 1px double !important;
         border-bottom:
@@ -257,7 +258,6 @@ $title-col-width: 17rem;
 
         & :not(:first-child):not(.table-danger):not(.empty-column) {
             color: $table-current-day-font-color;
-            font-weight: 600;
         }
 
         &:hover .button-expand {
