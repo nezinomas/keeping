@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import os
 import sys
-import tomllib as toml
 from pathlib import Path
+
+import tomllib as toml
 
 if __name__ == "__main__":
     # Set the project base directory
