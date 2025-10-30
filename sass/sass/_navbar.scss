@@ -1,7 +1,6 @@
 .dropdown {
     &:active,
     &:focus,
-    &:hover,
     &:focus-within {
         .dropdown__menu {
             opacity: 1;
@@ -164,5 +163,17 @@ nav#drinks-nav {
     .dropdown__menu {
         left: 50%;
         transform: translate(-50%, 0);
+    }
+}
+
+
+// mobile devices
+@media(pointer: coarse) {
+    .dropdown__btn:hover + .dropdown__menu,
+    .dropdown__menu:hover {
+        opacity: 1;
+        transform: rotateX(0) translateX(0);
+        visibility: visible;
+        pointer-events: auto;
     }
 }
