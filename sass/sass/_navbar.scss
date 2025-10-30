@@ -1,6 +1,7 @@
 .dropdown {
     &:active,
     &:focus,
+    &:hover,
     &:focus-within {
         .dropdown__menu {
             opacity: 1;
@@ -58,6 +59,8 @@
 .dropdown__btn {
     border: 0;
     background-color: transparent;
+    cursor: pointer;
+    touch-action: manipulation;
 
     &::after {
         font-family: 'Glyphicons Halflings';
