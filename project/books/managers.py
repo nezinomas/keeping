@@ -1,14 +1,18 @@
+from typing import Optional
+
 from django.db import models
 from django.db.models import Count, F, Q
 from django.db.models.functions import ExtractYear, TruncYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
+from ..users.models import User
 
 
 class BooksQuerySet(SumMixin, models.QuerySet):
-    def related(self):
-        user = utils.get_user()
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        user = user or utils.get_user()
         return self.select_related("user").filter(user=user)
 
     def year(self, year):
@@ -50,8 +54,9 @@ class BooksQuerySet(SumMixin, models.QuerySet):
 
 
 class BookTargetQuerySet(SumMixin, models.QuerySet):
-    def related(self):
-        user = utils.get_user()
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore User
+        user = user or utils.get_user()
         return self.select_related("user").filter(user=user)
 
     def year(self, year):

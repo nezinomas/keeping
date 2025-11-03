@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from django.db import models
 from django.db.models import Count, F, Sum, Value
@@ -6,11 +6,13 @@ from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
+from ..journals.models import Journal
 
 
 class IncomeTypeQuerySet(models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
+    def related(self, journal: Optional[Journal] = None):
+        #Todo: Refactore Journal
+        journal = journal or utils.get_user().journal
         return self.select_related("journal").filter(journal=journal)
 
     def items(self):
@@ -18,8 +20,9 @@ class IncomeTypeQuerySet(models.QuerySet):
 
 
 class IncomeQuerySet(SumMixin, models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
+    def related(self, journal: Optional[Journal] = None):
+        #Todo: delete this line
+        journal = journal or utils.get_user().journal
         return self.select_related("account", "income_type").filter(
             income_type__journal=journal
         )
@@ -68,13 +71,13 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .values("date", "sum", title=F("income_type__title"))
         )
 
-    def incomes(self):
+    def incomes(self, journal: Journal):
         """
-        method used only in post_save signal
-        method sum prices by year
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
         """
         return (
-            self.related()
+            self.related(journal=journal)
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(incomes=Sum("price"))

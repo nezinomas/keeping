@@ -1,14 +1,18 @@
+from typing import Optional
+
 from django.db import models
 from django.db.models import F, Sum, Value
 from django.db.models.functions import ExtractYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
+from ..journals.models import Journal
 
 
 class BaseMixin(models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
+    def related(self, journal: Optional[Journal] = None):
+        #Todo: Refactore journal
+        journal = journal or utils.get_user().journal
         return self.select_related("from_account", "to_account").filter(
             from_account__journal=journal, to_account__journal=journal
         )
@@ -19,13 +23,13 @@ class BaseMixin(models.QuerySet):
     def items(self):
         return self.related()
 
-    def incomes(self):
+    def incomes(self, journal: Journal):
         """
-        method used only in post_save signal
-        method sum prices by year
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
         """
         return (
-            self.related()
+            self.related(journal)
             .annotate(year=ExtractYear(F("date")))
             .values("year", "to_account__title")
             .annotate(incomes=Sum("price"))
@@ -38,10 +42,10 @@ class BaseMixin(models.QuerySet):
 
     annotate_fee.queryset_only = True
 
-    def base_expenses(self, fee=False):
+    def base_expenses(self, journal: Journal, fee=False):
         """
-        method used only in post_save signal
-        method sum prices by year
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
         """
         values = ["year", "expenses"]
 
@@ -49,7 +53,7 @@ class BaseMixin(models.QuerySet):
             values.append("fee")
 
         return (
-            self.related()
+            self.related(journal)
             .annotate(year=ExtractYear(F("date")))
             .values("year", "from_account__title")
             .annotate(expenses=Sum("price"))
@@ -62,12 +66,12 @@ class BaseMixin(models.QuerySet):
 
 
 class TransactionQuerySet(BaseMixin):
-    def expenses(self):
+    def expenses(self, journal: Journal):
         """
-        method used only in post_save signal
-        method sum prices by year
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
         """
-        return self.base_expenses()
+        return self.base_expenses(journal=journal)
 
 
 class SavingCloseQuerySet(BaseMixin, SumMixin):
@@ -78,18 +82,18 @@ class SavingCloseQuerySet(BaseMixin, SumMixin):
             .annotate(title=Value("savings_close"))
         )
 
-    def expenses(self):
+    def expenses(self, journal: Journal):
         """
-        method used only in post_save signal
-        method sum prices by year
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
         """
-        return self.base_expenses(fee=True)
+        return self.base_expenses(journal=journal, fee=True)
 
 
 class SavingChangeQuerySet(BaseMixin):
-    def expenses(self):
+    def expenses(self, journal: Journal):
         """
-        method used only in post_save signal
-        method sum prices by year
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
         """
-        return self.base_expenses(fee=True)
+        return self.base_expenses(journal=journal, fee=True)
