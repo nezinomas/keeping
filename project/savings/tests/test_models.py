@@ -143,14 +143,16 @@ def test_saving_get_absolute_url():
     assert obj.get_absolute_url() == reverse("savings:update", kwargs={"pk": obj.pk})
 
 
-def test_saving_related(second_user):
+def test_saving_related(main_user, second_user):
+    a1 = AccountFactory(title="A1")
+    a2 = AccountFactory(title="A2", journal=second_user.journal)
     t1 = SavingTypeFactory(title="T1")
     t2 = SavingTypeFactory(title="T2", journal=second_user.journal)
 
-    SavingFactory(saving_type=t1)
-    SavingFactory(saving_type=t2)
+    SavingFactory(saving_type=t1, account=a1)
+    SavingFactory(saving_type=t2, account=a2)
 
-    actual = Saving.objects.related()
+    actual = Saving.objects.related(main_user.journal)
 
     assert len(actual) == 1
     assert str(actual[0].saving_type) == "T1"
@@ -571,7 +573,7 @@ def test_saving_post_delete_with_update():
     assert Saving.objects.all().count() == 1
 
 
-def test_savings_incomes(savings):
+def test_savings_incomes(main_user, savings):
     SavingFactory(
         date=date(1999, 1, 1),
         price=225,
@@ -580,7 +582,7 @@ def test_savings_incomes(savings):
         saving_type=SavingTypeFactory(title="Saving2"),
     )
 
-    actual = Saving.objects.incomes()
+    actual = Saving.objects.incomes(main_user.journal)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -603,8 +605,8 @@ def test_savings_incomes(savings):
     assert actual[3]["fee"] == 50
 
 
-def test_savings_expenses(savings):
-    actual = Saving.objects.expenses()
+def test_savings_expenses(main_user, savings):
+    actual = Saving.objects.expenses(main_user.journal)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -646,14 +648,17 @@ def test_saving_balance_str():
 
 
 @pytest.mark.django_db
-def test_saving_balance_related_for_user(second_user):
+def test_saving_balance_related_for_user(main_user, second_user):
+    a1 = AccountFactory(title="A1")
+    a2 = AccountFactory(title="A2", journal=second_user.journal)
     s1 = SavingTypeFactory(title="S1")
     s2 = SavingTypeFactory(title="S2", journal=second_user.journal)
 
-    SavingFactory(saving_type=s1)
-    SavingFactory(saving_type=s2)
+    SavingFactory(saving_type=s1, account=a1)
+    SavingFactory(saving_type=s2, account=a2)
 
-    actual = SavingBalance.objects.related()
+
+    actual = SavingBalance.objects.related(main_user.journal)
 
     assert len(actual) == 2
     assert str(actual[0].saving_type) == "S1"

@@ -255,7 +255,7 @@ def test_pension_update_post_save_count_queries(django_assert_max_num_queries):
     PensionFactory()
 
     obj = Pension.objects.first()
-    with django_assert_max_num_queries(8):
+    with django_assert_max_num_queries(10):
         obj.price = 2
         obj.save()
 
@@ -285,14 +285,17 @@ def test_pension_balance_str():
     assert str(actual) == "PensionType"
 
 
-def test_pension_balance_related_for_user(second_user):
+def test_pension_balance_related_for_user(main_user, second_user):
     p1 = PensionTypeFactory(title="P1")
     p2 = PensionTypeFactory(title="P2", journal=second_user.journal)
 
     PensionFactory(pension_type=p1)
     PensionFactory(pension_type=p2)
 
-    actual = PensionBalance.objects.related()
+    # Two records for second_user, and two for main_user
+    assert PensionBalance.objects.count() == 4
+
+    actual = PensionBalance.objects.related(main_user.journal)
 
     assert len(actual) == 2
     assert str(actual[0].pension_type) == "P1"

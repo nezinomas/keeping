@@ -2,11 +2,13 @@ from crequest.middleware import CrequestMiddleware
 
 
 def get_user():
+    print(f'--------------------------->utils.get_user() Must Not Be Called!!!\n')
     request = CrequestMiddleware.get_request()
     return request.user
 
 
 def get_request_kwargs(name):
+    print(f'--------------------------->utils.get_request_kwargs() Must Not Be Called!!!\n')
     crequest = CrequestMiddleware.get_request()
     return crequest.resolver_match.kwargs.get(name) if crequest else None
 

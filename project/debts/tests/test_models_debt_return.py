@@ -412,7 +412,7 @@ def test_borrow_return_post_delete_with_updt():
     assert actual.balance == 99
 
 
-def test_debt_return_incomes():
+def test_debt_return_incomes(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
 
@@ -428,7 +428,7 @@ def test_debt_return_incomes():
 
     BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
 
-    actual = DebtReturn.objects.incomes()
+    actual = DebtReturn.objects.incomes(main_user.journal)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -447,7 +447,7 @@ def test_debt_return_incomes():
     assert actual[3]["incomes"] == 70
 
 
-def test_debt_return_expenses():
+def test_debt_return_expenses(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
 
@@ -463,7 +463,7 @@ def test_debt_return_expenses():
 
     LendReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
 
-    actual = DebtReturn.objects.expenses()
+    actual = DebtReturn.objects.expenses(main_user.journal)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

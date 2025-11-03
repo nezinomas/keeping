@@ -4,9 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.urls import resolve
 
-from . import signals
 from .lib.date import years
 from .mixins.views import TemplateViewMixin, http_htmx_response
+from .services import signals_service
 from .tests.utils import timer
 
 
@@ -27,10 +27,7 @@ class RegenerateBalances(TemplateViewMixin):
     def get(self, request, *args, **kwargs):
         _type = request.GET.get("type")
         _types = ["accounts", "savings", "pensions"]
-        _kwargs = {
-            "sender": None,
-            "instance": None,
-        }
+        _journal = request.user.journal
 
         hx_trigger_name = "afterSignal"
         if _type and _type in _types:
@@ -38,7 +35,7 @@ class RegenerateBalances(TemplateViewMixin):
             hx_trigger_name += _type.title()
 
         for _type in _types:
-            getattr(signals, f"{_type}_signal")(**_kwargs)
+            getattr(signals_service, f"sync_{_type}")(instance=None, journal=_journal)
 
         return http_htmx_response(hx_trigger_name)
 

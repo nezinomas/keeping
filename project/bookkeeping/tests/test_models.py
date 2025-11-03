@@ -63,13 +63,13 @@ def test_account_worth_post_save_new():
     assert actual.have == 5
 
 
-def test_account_worth_have():
+def test_account_worth_have(main_user):
     AccountWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo("UTC")), price=1)
     AccountWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo("UTC")), price=2)
     AccountWorthFactory(date=dt(2000, 12, 31, 1, 1, 1, tzinfo=ZoneInfo("UTC")), price=3)
     AccountWorthFactory(date=dt(2000, 12, 31, 3, 2, 1, tzinfo=ZoneInfo("UTC")), price=4)
 
-    actual = AccountWorth.objects.have()
+    actual = AccountWorth.objects.have(main_user.journal)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -137,13 +137,13 @@ def test_saving_worth_post_save_new():
     assert actual.market_value == 30
 
 
-def test_saving_worth_have():
+def test_saving_worth_have(main_user):
     SavingWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo("UTC")), price=1)
     SavingWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo("UTC")), price=2)
     SavingWorthFactory(date=dt(2000, 1, 1, tzinfo=ZoneInfo("UTC")), price=3)
     SavingWorthFactory(date=dt(2000, 12, 31, tzinfo=ZoneInfo("UTC")), price=4)
 
-    actual = SavingWorth.objects.have()
+    actual = SavingWorth.objects.have(main_user.journal)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -207,13 +207,13 @@ def test_pension_worth_post_save_new():
     assert actual.market_value == 3
 
 
-def test_pension_worth_have():
+def test_pension_worth_have(main_user):
     PensionWorthFactory(date=dt(1970, 1, 1, tzinfo=ZoneInfo("UTC")), price=1)
     PensionWorthFactory(date=dt(1970, 12, 31, tzinfo=ZoneInfo("UTC")), price=2)
     PensionWorthFactory(date=dt(2000, 1, 1, tzinfo=ZoneInfo("UTC")), price=3)
     PensionWorthFactory(date=dt(2000, 12, 31, tzinfo=ZoneInfo("UTC")), price=4)
 
-    actual = PensionWorth.objects.have()
+    actual = PensionWorth.objects.have(main_user.journal)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
@@ -8,11 +9,13 @@ from django.utils.translation import gettext as _
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
+from ..journals.models import Journal
 
 
 class SavingTypeQuerySet(models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
+    def related(self, journal: Optional[Journal] = None):
+        #Todo: Refactore Journal
+        journal = journal or utils.get_user().journal
         return self.select_related("journal").filter(journal=journal)
 
     def items(self, year=None):
@@ -21,8 +24,9 @@ class SavingTypeQuerySet(models.QuerySet):
 
 
 class SavingQuerySet(SumMixin, models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
+    def related(self, journal: Optional[Journal] = None):
+        #Todo: Refactore journal
+        journal = journal or utils.get_user().journal
         return self.select_related("account", "saving_type").filter(
             saving_type__journal=journal
         )
@@ -79,13 +83,13 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             self.related().filter(date__range=(end, start)).aggregate(sum=Sum("price"))
         )
 
-    def incomes(self):
+    def incomes(self, journal: Journal):
         """
-        method used only in post_save signal
-        method sum prices by year
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
         """
         return (
-            self.related()
+            self.related(journal)
             .annotate(year=ExtractYear(F("date")))
             .values("year", "saving_type__title")
             .annotate(incomes=Sum("price"), fee=Sum("fee"))
@@ -93,13 +97,13 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .order_by("year", "category_id")
         )
 
-    def expenses(self):
+    def expenses(self, journal: Journal):
         """
-        method used only in post_save signal
-        method sum prices by year
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
         """
         return (
-            self.related()
+            self.related(journal)
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))
@@ -109,9 +113,9 @@ class SavingQuerySet(SumMixin, models.QuerySet):
 
 
 class SavingBalanceQuerySet(models.QuerySet):
-    def related(self):
-        user = utils.get_user()
-        journal = user.journal
+    def related(self, journal: Optional[Journal] = None):
+        #Todo: Refactore journal
+        journal = journal or utils.get_user().journal
         return self.select_related("saving_type").filter(saving_type__journal=journal)
 
     def items(self):

@@ -487,7 +487,7 @@ def test_debt_sum_all_not_closed(mck):
     assert expect == actual
 
 
-def test_debt_incomes():
+def test_debt_incomes(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
 
@@ -503,7 +503,7 @@ def test_debt_incomes():
 
     LendFactory()
 
-    actual = Debt.objects.incomes()
+    actual = Debt.objects.incomes(main_user.journal)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -522,7 +522,7 @@ def test_debt_incomes():
     assert actual[3]["incomes"] == 70
 
 
-def test_debt_expenses():
+def test_debt_expenses(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
 
@@ -538,7 +538,7 @@ def test_debt_expenses():
 
     BorrowFactory()
 
-    actual = Debt.objects.expenses()
+    actual = Debt.objects.expenses(main_user.journal)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

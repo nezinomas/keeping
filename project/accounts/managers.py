@@ -1,12 +1,16 @@
+from typing import Optional
+
 from django.db import models
 from django.db.models import Q
 
 from ..core.lib import utils
+from ..journals.models import Journal
 
 
 class AccountQuerySet(models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
+    def related(self, journal: Optional[Journal] = None):
+        #Todo: Refactore
+        journal = journal or utils.get_user().journal
         return self.select_related("journal").filter(journal=journal)
 
     def items(self, year=None):
@@ -15,9 +19,10 @@ class AccountQuerySet(models.QuerySet):
 
 
 class AccountBalanceQuerySet(models.QuerySet):
-    def related(self):
-        user = utils.get_user()
-        journal = user.journal
+    def related(self, journal: Optional[Journal] = None):
+        #Todo: Refactore
+        journal = journal or utils.get_user().journal
+
         return self.select_related("account").filter(account__journal=journal)
 
     def items(self):

@@ -236,15 +236,16 @@ def test_expense_attachment_field(main_user):
     assert str(e.attachment) == f"{pk}/expense-type/1974.01_test1.jpg"
 
 
-def test_expense_related(second_user):
+def test_expense_related(main_user, second_user):
+    a1 = AccountFactory(title="A1")
+    a2 = AccountFactory(title="A2", journal=second_user.journal)
     t1 = ExpenseTypeFactory(title="T1")  # user bob, current user
     t2 = ExpenseTypeFactory(title="T2", journal=second_user.journal)  # user X
 
-    ExpenseFactory(expense_type=t1)
-    ExpenseFactory(expense_type=t2)
-
+    ExpenseFactory(expense_type=t1, account=a1)
+    ExpenseFactory(expense_type=t2, account=a2)
     # must by selected bob expenses
-    actual = Expense.objects.related()
+    actual = Expense.objects.related(main_user.journal)
 
     assert len(actual) == 1
     assert str(actual[0].expense_type) == "T1"
@@ -655,8 +656,8 @@ def test_expense_sum_by_year_name_filtering():
     assert actual[1]["sum"] == 12
 
 
-def test_expenses(expenses):
-    actual = Expense.objects.expenses()
+def test_expenses(main_user, expenses):
+    actual = Expense.objects.expenses(main_user.journal)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

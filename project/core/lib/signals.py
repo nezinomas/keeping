@@ -4,10 +4,13 @@ from dataclasses import dataclass, field
 
 import polars as pl
 
+from ...journals.models import Journal
+
 
 @dataclass
 class GetData:
-    conf: dict[tuple] = field(default_factory=dict)
+    journal: Journal
+    conf: dict = field(default_factory=dict)
     incomes: list[dict] = field(init=False, default_factory=list)
     expenses: list[dict] = field(init=False, default_factory=list)
     have: list[dict] = field(init=False, default_factory=list)
@@ -26,7 +29,7 @@ class GetData:
         for model in models:
             _method = getattr(model.objects, method, None)
             if callable(_method):
-                if _qs := _method():
+                if _qs := _method(journal=self.journal):
                     yield from _qs
 
 
@@ -73,7 +76,7 @@ class SignalBase(ABC):
         }
         return pl.LazyFrame(have, schema=schema)
 
-    def _create_year_grid(self, df: pl.LazyFrame) -> pl.Expr:
+    def _create_year_grid(self, df: pl.LazyFrame) -> pl.LazyFrame:
         # Get min_year per category_id
         years_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
 

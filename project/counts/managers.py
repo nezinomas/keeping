@@ -1,16 +1,19 @@
 from datetime import date
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from django.db import models
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
+from ..users.models import User
 
 
 class CountQuerySet(SumMixin, models.QuerySet):
-    def related(self):
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore User
+        user = user or utils.get_user()
         return (
-            self.select_related("user").filter(user=utils.get_user()).order_by("-date")
+            self.select_related("user").filter(user=user).order_by("-date")
         )
 
     def year(self, year, count_type=None):
@@ -55,8 +58,9 @@ class CountQuerySet(SumMixin, models.QuerySet):
 
 
 class CountTypeQuerySet(models.QuerySet):
-    def related(self):
-        user = utils.get_user()
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore User
+        user = user or utils.get_user()
 
         return self.select_related("user").filter(user=user)
 
