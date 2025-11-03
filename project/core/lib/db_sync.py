@@ -1,12 +1,13 @@
 from typing import Tuple
 
 import polars as pl
+from django.db import models
 from django.db import transaction as django_transaction
 from django.utils import timezone
 
+from ...journals.models import Journal
 from ...pensions import models as pension
 from ...savings import models as saving
-
 
 ACCOUNT_FIELDS = [
     "incomes",
@@ -37,7 +38,7 @@ SAVING_FIELDS = [
 class BalanceSynchronizer:
     KEY_FIELDS = ["category_id", "year"]
 
-    def __init__(self, model, df: pl.LazyFrame) -> None:
+    def __init__(self, model: models.Model, journal: Journal, df: pl.LazyFrame) -> None:
         match model:
             case saving.SavingBalance:
                 self.fk_field = "saving_type_id"
@@ -52,6 +53,7 @@ class BalanceSynchronizer:
                 self.fields = ACCOUNT_FIELDS
 
         self.model = model
+        self.journal = journal
         self.df = df
         self.df_db = self._get_existing_records()
 
@@ -60,7 +62,7 @@ class BalanceSynchronizer:
     def _get_existing_records(self) -> pl.LazyFrame:
         # Select only necessary fields to reduce memory usage
         records = [
-            *self.model.objects.related().values(
+            *self.model.objects.related(self.journal).values(
                 "id", self.fk_field, "year", *self.fields
             )
         ]
