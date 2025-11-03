@@ -129,8 +129,8 @@ def test_incomes_income_sum_query_count(django_assert_max_num_queries):
         list([x["date"] for x in qs])
 
 
-def test_balance(incomes):
-    qs = Income.objects.incomes()
+def test_balance(main_user, incomes):
+    qs = Income.objects.incomes(main_user.journal)
 
     assert qs[0] == {"year": 1970, "incomes": 525, "category_id": 1}
     assert qs[1] == {"year": 1970, "incomes": 450, "category_id": 2}
@@ -339,7 +339,7 @@ def test_income_update_post_save_count_qs(django_assert_max_num_queries):
     assert AccountBalance.objects.all().count() == 2
 
     obj_update = Income.objects.get(pk=obj.pk)
-    with django_assert_max_num_queries(18):
+    with django_assert_max_num_queries(20):
         obj_update.price = 6
         obj_update.save()
 

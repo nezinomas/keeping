@@ -309,7 +309,11 @@ def test_view_saving_delete(client_logged):
 
 def test_savings_delete_other_journal_get_form(client_logged, second_user):
     it2 = SavingTypeFactory(title="yyy", journal=second_user.journal)
-    i2 = SavingFactory(saving_type=it2, price=666)
+    i2 = SavingFactory(
+        saving_type=it2,
+        account=AccountFactory(title="A2", journal=second_user.journal),
+        price=666,
+    )
 
     url = reverse("savings:delete", kwargs={"pk": i2.pk})
     response = client_logged.get(url)
@@ -319,7 +323,11 @@ def test_savings_delete_other_journal_get_form(client_logged, second_user):
 
 def test_savings_delete_other_journal_post_form(client_logged, second_user):
     it2 = SavingTypeFactory(title="yyy", journal=second_user.journal)
-    i2 = SavingFactory(saving_type=it2, price=666)
+    i2 = SavingFactory(
+        saving_type=it2,
+        account=AccountFactory(title="A2", journal=second_user.journal),
+        price=666,
+    )
 
     url = reverse("savings:delete", kwargs={"pk": i2.pk})
     client_logged.post(url, follow=True)

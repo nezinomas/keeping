@@ -567,7 +567,11 @@ def test_view_expenses_delete(client_logged):
 
 def test_expenses_delete_other_journal_get_form(client_logged, second_user):
     it2 = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
-    i2 = ExpenseFactory(expense_type=it2, price=666)
+    i2 = ExpenseFactory(
+        expense_type=it2,
+        account=AccountFactory(title="A2", journal=second_user.journal),
+        price=666,
+    )
 
     url = reverse("expenses:delete", kwargs={"pk": i2.pk})
     response = client_logged.get(url)
@@ -577,7 +581,11 @@ def test_expenses_delete_other_journal_get_form(client_logged, second_user):
 
 def test_expenses_delete_other_journal_post_form(client_logged, second_user):
     it2 = ExpenseTypeFactory(title="yyy", journal=second_user.journal)
-    i2 = ExpenseFactory(expense_type=it2, price=666)
+    i2 = ExpenseFactory(
+        expense_type=it2,
+        account=AccountFactory(title="A2", journal=second_user.journal),
+        price=666,
+    )
 
     url = reverse("expenses:delete", kwargs={"pk": i2.pk})
     client_logged.post(url)

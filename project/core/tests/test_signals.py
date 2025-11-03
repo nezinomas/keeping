@@ -15,12 +15,12 @@ from ...savings.factories import (
     SavingBalanceFactory,
     SavingTypeFactory,
 )
-from ..signals import BalanceSynchronizer
+from ..lib.db_sync import BalanceSynchronizer
 
 pytestmark = pytest.mark.django_db
 
 
-def test_account_insert_new_records_empty_db():
+def test_account_insert_new_records_empty_db(main_user):
     account = AccountFactory()
 
     df = pl.DataFrame(
@@ -37,7 +37,7 @@ def test_account_insert_new_records_empty_db():
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, df)
+    BalanceSynchronizer(AccountBalance, main_user.journal, df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=account, year=2023)
@@ -50,7 +50,7 @@ def test_account_insert_new_records_empty_db():
     assert record.delta == 0
 
 
-def test_account_insert_new_records():
+def test_account_insert_new_records(main_user):
     obj = AccountBalanceFactory()
 
     """Test inserting new records from DataFrame."""
@@ -68,7 +68,7 @@ def test_account_insert_new_records():
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, df)
+    BalanceSynchronizer(AccountBalance, main_user.journal, df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=obj.account, year=2024)
@@ -81,7 +81,7 @@ def test_account_insert_new_records():
     assert record.delta == 0
 
 
-def test_account_update_existing_records():
+def test_account_update_existing_records(main_user):
     obj = AccountBalanceFactory()
     """Test updating existing records from DataFrame."""
     df = pl.DataFrame(
@@ -98,7 +98,7 @@ def test_account_update_existing_records():
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, df)
+    BalanceSynchronizer(AccountBalance, main_user.journal, df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=obj.account, year=1999)
@@ -111,7 +111,7 @@ def test_account_update_existing_records():
     assert record.delta == 1
 
 
-def test_account_delete_records():
+def test_account_delete_records(main_user):
     AccountBalanceFactory()
 
     """Test deleting records not in DataFrame."""
@@ -129,12 +129,12 @@ def test_account_delete_records():
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, df)
+    BalanceSynchronizer(AccountBalance, main_user.journal, df)
 
     assert AccountBalance.objects.count() == 0
 
 
-def test_account_mixed_operations():
+def test_account_mixed_operations(main_user):
     """Test simultaneous insert, update, and delete."""
     account = AccountFactory()
     # Existing record to update
@@ -156,7 +156,7 @@ def test_account_mixed_operations():
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, df)
+    BalanceSynchronizer(AccountBalance, main_user.journal, df)
 
     assert AccountBalance.objects.count() == 2
     # Check updated record
@@ -171,7 +171,7 @@ def test_account_mixed_operations():
     assert not AccountBalance.objects.filter(account=account, year=2022).exists()
 
 
-def test_account_null_latest_check():
+def test_account_null_latest_check(main_user):
     account = AccountFactory()
     """Test handling null latest_check in DataFrame."""
     df = pl.DataFrame(
@@ -188,7 +188,7 @@ def test_account_null_latest_check():
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, df)
+    BalanceSynchronizer(AccountBalance, main_user.journal, df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=account, year=2023)
@@ -196,7 +196,7 @@ def test_account_null_latest_check():
     assert record.incomes == 1000
 
 
-def test_account_empty_dataframe_deletes_all():
+def test_account_empty_dataframe_deletes_all(main_user):
     """Test empty DataFrame deletes all records."""
     AccountBalanceFactory(year=2023)
     AccountBalanceFactory(year=2024)
@@ -215,12 +215,12 @@ def test_account_empty_dataframe_deletes_all():
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, df)
+    BalanceSynchronizer(AccountBalance, main_user.journal, df)
 
     assert AccountBalance.objects.count() == 0
 
 
-def test_saving_insert_new_records_empty_db():
+def test_saving_insert_new_records_empty_db(main_user):
     saving_type = SavingTypeFactory()
 
     df = pl.DataFrame(
@@ -242,7 +242,7 @@ def test_saving_insert_new_records_empty_db():
         }
     ).lazy()
 
-    BalanceSynchronizer(SavingBalance, df)
+    BalanceSynchronizer(SavingBalance, main_user.journal, df)
 
     assert SavingBalance.objects.count() == 1
 
@@ -261,7 +261,7 @@ def test_saving_insert_new_records_empty_db():
     assert record.profit_proc == 110
 
 
-def test_saving_insert_new_records():
+def test_saving_insert_new_records(main_user):
     obj = SavingBalanceFactory()
 
     df = pl.DataFrame(
@@ -283,7 +283,7 @@ def test_saving_insert_new_records():
         }
     ).lazy()
 
-    BalanceSynchronizer(SavingBalance, df)
+    BalanceSynchronizer(SavingBalance, main_user.journal, df)
 
     assert SavingBalance.objects.count() == 1
 
@@ -302,7 +302,7 @@ def test_saving_insert_new_records():
     assert record.profit_proc == 110
 
 
-def test_saving_delete_records():
+def test_saving_delete_records(main_user):
     SavingBalanceFactory()
 
     df = pl.DataFrame(
@@ -324,12 +324,12 @@ def test_saving_delete_records():
         }
     ).lazy()
 
-    BalanceSynchronizer(SavingBalance, df)
+    BalanceSynchronizer(SavingBalance, main_user.journal, df)
 
     assert SavingBalance.objects.count() == 0
 
 
-def test_saving_update_existing_records():
+def test_saving_update_existing_records(main_user):
     obj = SavingBalanceFactory()
 
     df = pl.DataFrame(
@@ -351,7 +351,7 @@ def test_saving_update_existing_records():
         }
     ).lazy()
 
-    BalanceSynchronizer(SavingBalance, df)
+    BalanceSynchronizer(SavingBalance, main_user.journal, df)
 
     assert SavingBalance.objects.count() == 1
 
@@ -370,7 +370,7 @@ def test_saving_update_existing_records():
     assert record.profit_proc == 110
 
 
-def test_saving_empty_dataframe_deletes_all():
+def test_saving_empty_dataframe_deletes_all(main_user):
     """Test empty DataFrame deletes all records."""
     SavingBalanceFactory(year=2023)
     SavingBalanceFactory(year=2024)
@@ -394,12 +394,12 @@ def test_saving_empty_dataframe_deletes_all():
         }
     ).lazy()
 
-    BalanceSynchronizer(SavingBalance, df)
+    BalanceSynchronizer(SavingBalance, main_user.journal, df)
 
     assert SavingBalance.objects.count() == 0
 
 
-def test_pension_insert_new_records_empty_db():
+def test_pension_insert_new_records_empty_db(main_user):
     pension_type = PensionTypeFactory()
 
     df = pl.DataFrame(
@@ -421,7 +421,7 @@ def test_pension_insert_new_records_empty_db():
         }
     ).lazy()
 
-    BalanceSynchronizer(PensionBalance, df)
+    BalanceSynchronizer(PensionBalance, main_user.journal, df)
 
     assert PensionBalance.objects.count() == 1
 
@@ -440,7 +440,7 @@ def test_pension_insert_new_records_empty_db():
     assert record.profit_proc == 110
 
 
-def test_pension_insert_new_records():
+def test_pension_insert_new_records(main_user):
     obj = PensionBalanceFactory()
 
     df = pl.DataFrame(
@@ -462,7 +462,7 @@ def test_pension_insert_new_records():
         }
     ).lazy()
 
-    BalanceSynchronizer(PensionBalance, df)
+    BalanceSynchronizer(PensionBalance, main_user.journal, df)
 
     assert PensionBalance.objects.count() == 1
 
@@ -481,7 +481,7 @@ def test_pension_insert_new_records():
     assert record.profit_proc == 110
 
 
-def test_pension_delete_records():
+def test_pension_delete_records(main_user):
     PensionBalanceFactory()
 
     df = pl.DataFrame(
@@ -503,12 +503,12 @@ def test_pension_delete_records():
         }
     ).lazy()
 
-    BalanceSynchronizer(PensionBalance, df)
+    BalanceSynchronizer(PensionBalance, main_user.journal, df)
 
     assert PensionBalance.objects.count() == 0
 
 
-def test_pension_update_existing_records():
+def test_pension_update_existing_records(main_user):
     obj = PensionBalanceFactory()
 
     df = pl.DataFrame(
@@ -530,7 +530,7 @@ def test_pension_update_existing_records():
         }
     ).lazy()
 
-    BalanceSynchronizer(PensionBalance, df)
+    BalanceSynchronizer(PensionBalance, main_user.journal, df)
 
     assert PensionBalance.objects.count() == 1
 
@@ -549,7 +549,7 @@ def test_pension_update_existing_records():
     assert record.profit_proc == 110
 
 
-def test_pension_empty_dataframe_deletes_all():
+def test_pension_empty_dataframe_deletes_all(main_user):
     """Test empty DataFrame deletes all records."""
     PensionBalanceFactory(year=2023)
     PensionBalanceFactory(year=2024)
@@ -573,6 +573,6 @@ def test_pension_empty_dataframe_deletes_all():
         }
     ).lazy()
 
-    BalanceSynchronizer(PensionBalance, df)
+    BalanceSynchronizer(PensionBalance, main_user.journal, df)
 
     assert PensionBalance.objects.count() == 0

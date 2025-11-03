@@ -398,8 +398,8 @@ def test_transaction_post_delete_with_update():
     assert Transaction.objects.all().count() == 1
 
 
-def test_transaction_balance_incomes(transactions):
-    actual = Transaction.objects.incomes()
+def test_transaction_balance_incomes(main_user, transactions):
+    actual = Transaction.objects.incomes(main_user.journal)
 
     # 1974
     assert actual[0]["year"] == 1970
@@ -420,8 +420,8 @@ def test_transaction_balance_incomes(transactions):
     assert actual[3]["category_id"] == 2
 
 
-def test_transaction_balance_expenses(transactions):
-    actual = Transaction.objects.expenses()
+def test_transaction_balance_expenses(main_user, transactions):
+    actual = Transaction.objects.expenses(main_user.journal)
 
     # 1974
     assert actual[0]["year"] == 1970
@@ -800,8 +800,8 @@ def test_saving_close_post_delete_with_update():
     assert SavingClose.objects.all().count() == 1
 
 
-def test_saving_close_balance_incomes(savings_close):
-    actual = SavingClose.objects.incomes()
+def test_saving_close_balance_incomes(main_user, savings_close):
+    actual = SavingClose.objects.incomes(main_user.journal)
 
     # 1974
     assert actual[0]["year"] == 1970
@@ -818,8 +818,8 @@ def test_saving_close_balance_incomes(savings_close):
     assert actual[2]["category_id"] == 2
 
 
-def test_saving_close_balance_expenses(savings_close):
-    actual = SavingClose.objects.expenses()
+def test_saving_close_balance_expenses(main_user, savings_close):
+    actual = SavingClose.objects.expenses(main_user.journal)
 
     # 1974
     assert actual[0]["year"] == 1970
