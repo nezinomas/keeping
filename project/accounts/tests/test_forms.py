@@ -15,8 +15,8 @@ def test_account_init():
     AccountForm()
 
 
-def test_account_form_has_fields():
-    form = AccountForm().as_p()
+def test_account_form_has_fields(main_user):
+    form = AccountForm(user=main_user).as_p()
 
     assert '<input type="text" name="title"' in form
     assert '<input type="number" name="order"' in form
@@ -31,13 +31,14 @@ def test_account_form_has_fields():
         (2000),
     ],
 )
-def test_account_valid_data(closed):
+def test_account_valid_data(main_user, closed):
     form = AccountForm(
         data={
             "title": "Title",
             "order": "1",
             "closed": closed,
-        }
+        },
+        user=main_user
     )
 
     assert form.is_valid()
@@ -50,8 +51,8 @@ def test_account_valid_data(closed):
     assert data.journal.users.first().username == "bob"
 
 
-def test_account_blank_data():
-    form = AccountForm(data={})
+def test_account_blank_data(main_user):
+    form = AccountForm(user=main_user, data={})
 
     assert not form.is_valid()
 

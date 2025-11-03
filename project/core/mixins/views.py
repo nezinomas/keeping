@@ -1,10 +1,13 @@
 import json
+from typing import Any, cast
 
 from django.core.exceptions import FieldError
 from django.db.models import Count, F, Sum
 from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django.views.generic import View
+from django.views.generic.edit import FormMixin
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 from vanilla import (
     CreateView,
@@ -43,6 +46,13 @@ def http_htmx_response(hx_trigger_name=None, status_code=204):
 # -------------------------------------------------------------------------------------
 #                                                                                Mixins
 # -------------------------------------------------------------------------------------
+class AddUserToKwargsMixin(FormMixin):
+    def get_form_kwargs(self) -> dict[str, Any]:
+        kwargs: dict[str, Any] = cast(FormMixin, self).get_form_kwargs()
+        kwargs['user'] = cast(View, self).request.user
+        return kwargs
+
+
 class GetQuerysetMixin:
     object = None
 
