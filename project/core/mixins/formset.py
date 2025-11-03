@@ -81,7 +81,7 @@ class FormsetMixin:
             # if any objects, bulk_create and call signal method
             if objects:
                 model.objects.bulk_create(objects)
-                SIGNALS.get(model)(None, None)
+                SIGNALS.get(model)(sender=model, instance=next(iter(objects)))
 
             return http_htmx_response(self.get_hx_trigger_django())
 
