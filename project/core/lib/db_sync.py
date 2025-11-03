@@ -105,24 +105,24 @@ class BalanceSynchronizer:
         ).select(self.df.collect_schema().names())
 
     def _delete_records(self, data: pl.LazyFrame) -> None:
-        data = data.collect()
+        df = data.collect()
 
-        if data.is_empty():
+        if df.is_empty():
             return
 
-        category_ids = data["category_id"].unique().to_list()
-        years = data["year"].unique().to_list()
+        category_ids = df["category_id"].unique().to_list()
+        years = df["year"].unique().to_list()
         self.model.objects.filter(
             **{f"{self.fk_field}__in": category_ids, "year__in": years}
         ).delete()
 
     def _insert_records(self, data: pl.LazyFrame) -> None:
-        data = data.collect()
+        df = data.collect()
 
-        if data.is_empty():
+        if df.is_empty():
             return
 
-        if objects := [self._create_object(row) for row in data.to_dicts()]:
+        if objects := [self._create_object(row) for row in df.to_dicts()]:
             self.model.objects.bulk_create(objects)
 
     def _update_records(self, data: pl.LazyFrame) -> None:
