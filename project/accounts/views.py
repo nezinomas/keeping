@@ -7,13 +7,16 @@ from ..core.mixins.views import (
     UpdateViewMixin,
 )
 from . import forms, models
+from .services.model_services import AccountModelService
 
 
 class Lists(ListViewMixin):
     model = models.Account
 
     def get_queryset(self):
-        return models.Account.objects.related().order_by("closed", "title")
+        return (
+            AccountModelService(self.request.user).related().order_by("closed", "title")
+        )
 
 
 class New(CreateViewMixin):
@@ -33,7 +36,7 @@ class Update(UpdateViewMixin):
     modal_form_title = _("Account")
 
     def get_queryset(self):
-        return models.Account.objects.related()
+        return AccountModelService(self.request.user).related()
 
 
 class LoadAccount(ListViewMixin):
@@ -49,6 +52,8 @@ class LoadAccount(ListViewMixin):
             pk = None
 
         if pk:
-            self.object_list = models.Account.objects.items().exclude(pk=pk)
+            self.object_list = (
+                AccountModelService(self.request.user).items().exclude(pk=pk)
+            )
 
         return self.render_to_response({"object_list": self.object_list})

@@ -27,7 +27,7 @@ def test_account_items_current_journal(main_user, second_user):
     AccountFactory(title="A1")
     AccountFactory(title="A2", journal=second_user.journal)
 
-    actual = Account.objects.items(main_user)
+    actual = Account.objects.items(main_user, main_user.year)
 
     assert len(actual) == 1
     assert str(actual[0]) == "A1"
@@ -41,7 +41,7 @@ def test_account_closed_in_past(main_user):
     AccountFactory(title="A1", journal=main_user.journal)
     AccountFactory(title="A2", journal=main_user.journal, closed=2000)
 
-    actual = Account.objects.items(main_user)
+    actual = Account.objects.items(main_user, main_user.year)
 
     assert actual.count() == 1
 
@@ -51,7 +51,7 @@ def test_account_closed_in_future(main_user):
 
     AccountFactory(title="A1")
     AccountFactory(title="A2", closed=2000)
-    actual = Account.objects.items(main_user)
+    actual = Account.objects.items(main_user, main_user.year)
 
     assert actual.count() == 2
 
@@ -62,7 +62,7 @@ def test_account_closed_in_current_year(main_user):
     AccountFactory(title="A1")
     AccountFactory(title="A2", closed=2000)
 
-    actual = Account.objects.items(main_user)
+    actual = Account.objects.items(main_user, main_user.year)
 
     assert actual.count() == 2
 
@@ -71,7 +71,7 @@ def test_account_items_current_journal_with_year(main_user, second_user):
     AccountFactory(title="A1")
     AccountFactory(title="A2", journal=second_user.journal)
 
-    actual = Account.objects.items(main_user, year=1999)
+    actual = Account.objects.items(main_user, year=main_user.year)
 
     assert len(actual) == 1
     assert str(actual[0]) == "A1"

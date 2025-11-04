@@ -25,7 +25,7 @@ def test_view_update_func():
     assert views.Update is view.func.view_class
 
 
-def test_save_account(client_logged):
+def test_save_account(main_user, client_logged):
     data = {"title": "Title", "order": "111"}
 
     url = reverse("accounts:new")
