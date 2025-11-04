@@ -49,7 +49,7 @@ def http_htmx_response(hx_trigger_name=None, status_code=204):
 class AddUserToKwargsMixin(FormMixin):
     def get_form_kwargs(self) -> dict[str, Any]:
         kwargs: dict[str, Any] = cast(FormMixin, self).get_form_kwargs()
-        kwargs['user'] = cast(View, self).request.user
+        kwargs["user"] = cast(View, self).request.user
         return kwargs
 
 
