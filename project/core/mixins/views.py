@@ -219,7 +219,9 @@ class SearchMixin:
 # -------------------------------------------------------------------------------------
 #                                                                          Views Mixins
 # -------------------------------------------------------------------------------------
-class CreateViewMixin(GetQuerysetMixin, CreateUpdateMixin, CreateView):
+class CreateViewMixin(
+    GetQuerysetMixin, AddUserToKwargsMixin, CreateUpdateMixin, CreateView
+):
     template_name = "core/generic_form.html"
     form_action = "insert"
 
@@ -228,7 +230,9 @@ class CreateViewMixin(GetQuerysetMixin, CreateUpdateMixin, CreateView):
         return reverse_lazy(f"{app}:new")
 
 
-class UpdateViewMixin(GetQuerysetMixin, CreateUpdateMixin, UpdateView):
+class UpdateViewMixin(
+    GetQuerysetMixin, AddUserToKwargsMixin, CreateUpdateMixin, UpdateView
+):
     template_name = "core/generic_form.html"
     form_action = "update"
 
@@ -236,7 +240,7 @@ class UpdateViewMixin(GetQuerysetMixin, CreateUpdateMixin, UpdateView):
         return self.object.get_absolute_url() if self.object else None
 
 
-class DeleteViewMixin(GetQuerysetMixin, DeleteMixin, DeleteView):
+class DeleteViewMixin(GetQuerysetMixin, AddUserToKwargsMixin, DeleteMixin, DeleteView):
     template_name = "core/generic_delete_form.html"
 
 
@@ -252,7 +256,7 @@ class ListViewMixin(GetQuerysetMixin, ListView):
     pass
 
 
-class FormViewMixin(FormView):
+class FormViewMixin(AddUserToKwargsMixin, FormView):
     template_name = "core/generic_form.html"
 
 

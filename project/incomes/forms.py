@@ -3,8 +3,7 @@ from datetime import datetime
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..accounts.models import Account
-from ..core.lib import utils
+from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
@@ -21,6 +20,7 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
     field_order = ["date", "account", "income_type", "price", "remark"]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -29,12 +29,12 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
         self.fields["remark"].widget.attrs["rows"] = 3
 
         # inital values
-        self.fields["account"].initial = Account.objects.items().first()
-        self.fields["date"].initial = set_date_with_user_year()
+        self.fields["account"].initial = AccountModelService(self.user).items().first()
+        self.fields["date"].initial = set_date_with_user_year(self.user.year)
 
         # overwrite ForeignKey expense_type queryset
         self.fields["income_type"].queryset = IncomeType.objects.items()
-        self.fields["account"].queryset = Account.objects.items()
+        self.fields["account"].queryset = AccountModelService(self.user).items()
 
         self.fields["date"].label = _("Date")
         self.fields["account"].label = _("Account")
@@ -45,7 +45,7 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
     def clean_date(self):
         dt = self.cleaned_data["date"]
 
-        year_user = utils.get_user().year
+        year_user = self.user.year
         year_instance = dt.year
         year_now = datetime.now().year
 
@@ -66,10 +66,11 @@ class IncomeTypeForm(forms.ModelForm):
         fields = ["journal", "title", "type"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # user input
-        self.fields["journal"].initial = utils.get_user().journal
+        self.fields["journal"].initial = user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
 

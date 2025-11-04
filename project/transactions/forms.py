@@ -3,7 +3,6 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
-from ..accounts.models import Account
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
@@ -22,6 +21,7 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "from_account", "to_account", "price"]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -35,19 +35,21 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         # initial values
         self.fields["price"].widget.attrs = {"step": "0.01"}
         self.fields["price"].label = _("Amount")
-        self.fields["date"].initial = set_date_with_user_year()
+        self.fields["date"].initial = set_date_with_user_year(self.user)
 
     def _overwrite_default_queries(self):
+        account = AccountModelService(self.user)
+
         from_account = self.fields["from_account"]
         to_account = self.fields["to_account"]
 
-        from_account.queryset = Account.objects.items()
-        to_account.queryset = Account.objects.none()
+        from_account.queryset = account.items()
+        to_account.queryset = account.none()
 
         _from = getattr(self.instance, "from_account", None)
         _from_pk = getattr(_from, "pk", None)
         if from_account_pk := self.data.get("from_account") or _from_pk:
-            to_account.queryset = Account.objects.items().exclude(pk=from_account_pk)
+            to_account.queryset = account.items().exclude(pk=from_account_pk)
 
     def _set_htmx_attributes(self):
         url = reverse("accounts:load")
@@ -75,6 +77,7 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "from_account", "to_account", "price", "fee", "close"]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -87,11 +90,11 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year()
+        self.fields["date"].initial = set_date_with_user_year(self.user)
 
     def _overwrite_default_queries(self):
         self.fields["from_account"].queryset = SavingType.objects.items()
-        self.fields["to_account"].queryset = Account.objects.items()
+        self.fields["to_account"].queryset = AccountModelService(self.user).items()
 
     def _translate_fields(self):
         self.fields["price"].label = _("Amount")
@@ -130,6 +133,7 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "from_account", "to_account", "price", "fee", "close"]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -145,7 +149,7 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["date"].widget = DatePickerWidget()
 
         # initial values
-        self.fields["date"].initial = set_date_with_user_year()
+        self.fields["date"].initial = set_date_with_user_year(self.user)
 
     def _overwrite_default_queries(self):
         from_account = self.fields["from_account"]

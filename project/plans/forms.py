@@ -1,13 +1,11 @@
 import calendar
 from datetime import datetime
 
-from dateutil.relativedelta import relativedelta
 from django import forms
 from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
 
-from ..core.lib import utils
 from ..core.lib.date import monthnames, set_date_with_user_year
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
@@ -31,9 +29,9 @@ def common_field_transalion(self):
         self.fields[key.lower()].label = val
 
 
-def set_journal_field(fields):
+def set_journal_field(user, fields):
     # journal input
-    fields["journal"].initial = utils.get_user().journal
+    fields["journal"].initial = user.journal
     fields["journal"].disabled = True
     fields["journal"].widget = forms.HiddenInput()
 
@@ -79,13 +77,14 @@ class IncomePlanForm(YearFormMixin):
     field_order = ["year", "income_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        set_journal_field(self.fields)
+        set_journal_field(user, self.fields)
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         # overwrite ForeignKey expense_type queryset
         self.fields["income_type"].queryset = IncomeType.objects.items()
@@ -110,13 +109,14 @@ class ExpensePlanForm(YearFormMixin):
     field_order = ["year", "expense_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        set_journal_field(self.fields)
+        set_journal_field(user, self.fields)
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         # overwrite ForeignKey expense_type queryset
         self.fields["expense_type"].queryset = ExpenseType.objects.items()
@@ -141,16 +141,17 @@ class SavingPlanForm(YearFormMixin):
     field_order = ["year", "saving_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        set_journal_field(self.fields)
+        set_journal_field(user, self.fields)
 
         # overwrite ForeignKey expense_type queryset
         self.fields["saving_type"].queryset = SavingType.objects.items()
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         # field translation
         self.fields["saving_type"].label = _("Saving type")
@@ -172,13 +173,14 @@ class DayPlanForm(YearFormMixin):
     field_order = ["year"] + monthnames()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        set_journal_field(self.fields)
+        set_journal_field(user, self.fields)
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         # field translation
         common_field_transalion(self)
@@ -199,13 +201,14 @@ class NecessaryPlanForm(YearFormMixin):
     field_order = ["year", "expense_type", "title"] + monthnames()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        set_journal_field(self.fields)
+        set_journal_field(user, self.fields)
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         # overwrite ForeignKey expense_type queryset
         self.fields["expense_type"].queryset = ExpenseType.objects.items()
@@ -310,6 +313,7 @@ class CopyPlanForm(forms.Form):
                     obj.save()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # initail values

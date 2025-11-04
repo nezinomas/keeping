@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
+from ..accounts.services.model_services import AccountModelService
 from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_date_with_user_year
@@ -46,6 +47,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
     ]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         user = utils.get_user()
@@ -68,15 +70,17 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
     def _initial_fields_values(self):
         if not self.instance.pk:
-            self.fields["date"].initial = set_date_with_user_year()
-            self.fields["account"].initial = Account.objects.items().first()
+            self.fields["date"].initial = set_date_with_user_year(self.user)
+            self.fields["account"].initial = (
+                AccountModelService(self.user).items().first()
+            )
             self.fields["price"].initial = "0.00"
 
     def _overwrite_account_query(self):
         if self.instance.pk:
-            qs = Account.objects.items(year=self.instance.date.year)
+            qs = AccountModelService(self.user, self.instance.date.year).items()
         else:
-            qs = Account.objects.items()
+            qs = AccountModelService(self.user).items()
 
         self.fields["account"].queryset = qs
 
@@ -189,10 +193,11 @@ class ExpenseTypeForm(forms.ModelForm):
         fields = ["journal", "title", "necessary"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        self.fields["journal"].initial = utils.get_user().journal
+        self.fields["journal"].initial = user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
 
@@ -212,6 +217,7 @@ class ExpenseNameForm(forms.ModelForm):
     field_order = ["parent", "title", "valid_for"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # overwrite ForeignKey parent queryset

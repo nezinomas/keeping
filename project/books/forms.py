@@ -17,6 +17,7 @@ class BookForm(forms.ModelForm):
     field_order = ["started", "ended", "author", "title", "remark"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         user = utils.get_user()
@@ -86,6 +87,7 @@ class BookTargetForm(forms.ModelForm):
     field_order = ["year", "quantity"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # user input

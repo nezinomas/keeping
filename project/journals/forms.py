@@ -6,7 +6,6 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from ..core.lib import utils
 from ..expenses.models import ExpenseType
 
 
@@ -17,24 +16,24 @@ class UnnecessaryForm(forms.Form):
     savings = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self.fields["choices"].queryset = ExpenseType.objects.items()
 
-        user = utils.get_user()
         checked_expenses = []
 
         with contextlib.suppress(JSONDecodeError, TypeError):
-            checked_expenses = json.loads(user.journal.unnecessary_expenses)
+            checked_expenses = json.loads(self.user.journal.unnecessary_expenses)
 
         self.initial["choices"] = checked_expenses
-        self.initial["savings"] = user.journal.unnecessary_savings
+        self.initial["savings"] = self.user.journal.unnecessary_savings
 
         self.fields["savings"].label = _("Savings")
         self.fields["choices"].label = False
 
     def save(self):
-        journal = utils.get_user().journal
+        journal = self.user.journal
 
         choices = None
         if self.cleaned_data.get("choices"):
@@ -52,9 +51,10 @@ class SettingsForm(forms.Form):
     title = forms.CharField(required=True, min_length=3, max_length=254)
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        journal = utils.get_user().journal
+        journal = self.user.journal
 
         self.fields["lang"].initial = journal.lang
         self.fields["title"].initial = journal.title
@@ -63,7 +63,7 @@ class SettingsForm(forms.Form):
         self.fields["title"].label = _("Journal title")
 
     def save(self):
-        journal = utils.get_user().journal
+        journal = self.user.journal
 
         if lang := self.cleaned_data.get("lang"):
             journal.lang = lang

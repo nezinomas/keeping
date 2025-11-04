@@ -22,6 +22,7 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "account", "name", "price", "remark", "closed"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -105,6 +106,7 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "account", "debt", "price", "remark"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()

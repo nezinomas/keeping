@@ -22,17 +22,18 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "option", "quantity"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
 
         # user input
-        self.fields["user"].initial = utils.get_user()
+        self.fields["user"].initial = user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields["date"].initial = set_date_with_user_year()
+        self.fields["date"].initial = set_date_with_user_year(user)
 
         self.fields["date"].label = _("Date")
         self.fields["option"].label = _("Drink type")
@@ -67,15 +68,16 @@ class DrinkTargetForm(forms.ModelForm):
     field_order = ["year", "drink_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # user input
-        self.fields["user"].initial = utils.get_user()
+        self.fields["user"].initial = user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("Quantity")
@@ -110,6 +112,7 @@ class DrinkCompareForm(forms.Form):
     field_order = ["year1", "year2"]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self.fields["year1"].label = None

@@ -3,7 +3,6 @@ from datetime import datetime
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
@@ -21,6 +20,7 @@ class PensionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "pension_type", "price", "fee", "remark"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -60,10 +60,11 @@ class PensionTypeForm(forms.ModelForm):
         fields = ["journal", "title"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        self.fields["journal"].initial = utils.get_user().journal
+        self.fields["journal"].initial = user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
 
