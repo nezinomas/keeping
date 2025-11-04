@@ -6,13 +6,17 @@ from django.db.models.functions import ExtractYear, TruncMonth
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
-from ..journals.models import Journal
+from ..users.models import User
 
 
 class DebtQuerySet(models.QuerySet):
-    def related(self, journal: Optional[Journal] = None, debt_type=None):
-        #Todo: Refactore
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None, debt_type=None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
 
         if not debt_type:
             debt_type = utils.get_request_kwargs("debt_type")
@@ -54,13 +58,13 @@ class DebtQuerySet(models.QuerySet):
             .aggregate(debt=Sum("price"), debt_return=Sum("returned"))
         )
 
-    def incomes(self, journal: Journal):
+    def incomes(self, user: User):
         """
         Used only in the post_save signal.
         Calculates and returns the total price for each year
         """
         return (
-            self.related(journal=journal, debt_type="borrow")
+            self.related(user, debt_type="borrow")
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(incomes=Sum("price"))
@@ -68,13 +72,13 @@ class DebtQuerySet(models.QuerySet):
             .order_by("year", "account")
         )
 
-    def expenses(self, journal: Journal):
+    def expenses(self, user: User):
         """
         Used only in the post_save signal.
         Calculates and returns the total price for each year
         """
         return (
-            self.related(journal=journal, debt_type="lend")
+            self.related(user, debt_type="lend")
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))
@@ -84,8 +88,13 @@ class DebtQuerySet(models.QuerySet):
 
 
 class DebtReturnQuerySet(SumMixin, models.QuerySet):
-    def related(self, journal: Optional[Journal] = None, debt_type=None):
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None, debt_type=None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
 
         if not debt_type:
             debt_type = utils.get_request_kwargs("debt_type")
@@ -114,13 +123,13 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
             .order_by("date")
         )
 
-    def incomes(self, journal: Journal):
+    def incomes(self, user: User):
         """
         Used only in the post_save signal.
         Calculates and returns the total value of lend debts for each year
         """
         return (
-            self.related(journal=journal, debt_type="lend")
+            self.related(user, debt_type="lend")
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(incomes=Sum("price"))
@@ -128,13 +137,13 @@ class DebtReturnQuerySet(SumMixin, models.QuerySet):
             .order_by("year", "category_id")
         )
 
-    def expenses(self, journal: Journal):
+    def expenses(self, user: User):
         """
         Used only in the post_save signal.
         Calculates and returns the total value of borrow debts for each year
         """
         return (
-            self.related(journal=journal, debt_type="borrow")
+            self.related(user, debt_type="borrow")
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))

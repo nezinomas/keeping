@@ -6,13 +6,17 @@ from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
-from ..journals.models import Journal
+from ..users.models import User
 
 
 class IncomeTypeQuerySet(models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore Journal
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("journal").filter(journal=journal)
 
     def items(self):
@@ -20,9 +24,13 @@ class IncomeTypeQuerySet(models.QuerySet):
 
 
 class IncomeQuerySet(SumMixin, models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: delete this line
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("account", "income_type").filter(
             income_type__journal=journal
         )
@@ -71,13 +79,13 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .values("date", "sum", title=F("income_type__title"))
         )
 
-    def incomes(self, journal: Journal):
+    def incomes(self, user: User):
         """
         Used only in the post_save signal.
         Calculates and returns the total price for each year
         """
         return (
-            self.related(journal=journal)
+            self.related(user)
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(incomes=Sum("price"))

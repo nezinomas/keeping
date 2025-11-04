@@ -9,13 +9,17 @@ from django.utils.translation import gettext as _
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
-from ..journals.models import Journal
+from ..users.models import User
 
 
 class SavingTypeQuerySet(models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore Journal
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("journal").filter(journal=journal)
 
     def items(self, year=None):
@@ -24,9 +28,13 @@ class SavingTypeQuerySet(models.QuerySet):
 
 
 class SavingQuerySet(SumMixin, models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore journal
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("account", "saving_type").filter(
             saving_type__journal=journal
         )
@@ -83,13 +91,13 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             self.related().filter(date__range=(end, start)).aggregate(sum=Sum("price"))
         )
 
-    def incomes(self, journal: Journal):
+    def incomes(self, user: User):
         """
         Used only in the post_save signal.
         Calculates and returns the total price for each year
         """
         return (
-            self.related(journal)
+            self.related(user)
             .annotate(year=ExtractYear(F("date")))
             .values("year", "saving_type__title")
             .annotate(incomes=Sum("price"), fee=Sum("fee"))
@@ -97,13 +105,13 @@ class SavingQuerySet(SumMixin, models.QuerySet):
             .order_by("year", "category_id")
         )
 
-    def expenses(self, journal: Journal):
+    def expenses(self, user: User):
         """
         Used only in the post_save signal.
         Calculates and returns the total price for each year
         """
         return (
-            self.related(journal)
+            self.related(user)
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))
@@ -113,9 +121,13 @@ class SavingQuerySet(SumMixin, models.QuerySet):
 
 
 class SavingBalanceQuerySet(models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore journal
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("saving_type").filter(saving_type__journal=journal)
 
     def items(self):
