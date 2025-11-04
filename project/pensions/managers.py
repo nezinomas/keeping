@@ -6,13 +6,17 @@ from django.db.models.functions import ExtractYear
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
-from ..journals.models import Journal
+from ..users.models import User
 
 
 class PensionTypeQuerySet(models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore Journal
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("journal").filter(journal=journal)
 
     def items(self, year: int = None):
@@ -20,9 +24,13 @@ class PensionTypeQuerySet(models.QuerySet):
 
 
 class PensionQuerySet(SumMixin, models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore Journal
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("pension_type").filter(pension_type__journal=journal)
 
     def year(self, year):
@@ -31,13 +39,13 @@ class PensionQuerySet(SumMixin, models.QuerySet):
     def items(self):
         return self.related().all()
 
-    def incomes(self, journal: Journal):
+    def incomes(self, user: User):
         """
         Used only in the post_save signal.
         Calculates and returns the total price for each year
         """
         return (
-            self.related(journal)
+            self.related(user)
             .annotate(year=ExtractYear(F("date")))
             .values("year", "pension_type__title")
             .annotate(incomes=Sum("price"), fee=Sum("fee"))
@@ -47,9 +55,13 @@ class PensionQuerySet(SumMixin, models.QuerySet):
 
 
 class PensionBalanceQuerySet(models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore Journal
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("pension_type").filter(pension_type__journal=journal)
 
     def items(self):

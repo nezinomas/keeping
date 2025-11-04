@@ -14,13 +14,17 @@ from django.db.models.functions import (
 
 from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
-from ..journals.models import Journal
+from ..users.models import User
 
 
 class ExpenseTypeQuerySet(models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore journal
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return (
             self.select_related("journal")
             .prefetch_related("expensename_set")
@@ -32,9 +36,13 @@ class ExpenseTypeQuerySet(models.QuerySet):
 
 
 class ExpenseNameQuerySet(models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore Journal
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("parent").filter(parent__journal=journal)
 
     def year(self, year):
@@ -45,9 +53,13 @@ class ExpenseNameQuerySet(models.QuerySet):
 
 
 class ExpenseQuerySet(SumMixin, models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore journal
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
 
         return self.select_related("expense_type", "expense_name", "account").filter(
             expense_type__journal=journal
@@ -183,13 +195,13 @@ class ExpenseQuerySet(SumMixin, models.QuerySet):
             .values("sum", title=models.F("expense_type__title"))
         )
 
-    def expenses(self, journal: Journal):
+    def expenses(self, user: User):
         """
         Used only in the post_save signal.
         Calculates and returns the total price for each year
         """
         return (
-            self.related(journal)
+            self.related(user)
             .annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))

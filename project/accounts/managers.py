@@ -4,24 +4,33 @@ from django.db import models
 from django.db.models import Q
 
 from ..core.lib import utils
-from ..journals.models import Journal
+from ..users.models import User
 
 
 class AccountQuerySet(models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("journal").filter(journal=journal)
 
     def items(self, year=None):
+        #Todo: Refactore user
         year = year or utils.get_user().year
         return self.related().filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
 
 class AccountBalanceQuerySet(models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo: Refactore
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
 
         return self.select_related("account").filter(account__journal=journal)
 

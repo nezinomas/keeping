@@ -7,14 +7,14 @@ from django.db.models import Count, F, Max, Q
 from django.db.models.functions import ExtractYear
 
 from ..core.lib import utils
-from ..journals.models import Journal
+from ..users.models import User
 
 
 class QsMixin:
-    def latest_have(self, journal: Journal, field: str):
+    def latest_have(self, user: User, field: str):
         qs = [
             *(
-                self.related(journal)
+                self.related(user.journal)
                 .annotate(year=ExtractYear(F("date")))
                 .values("year", f"{field}_id")
                 .annotate(latest_date=Max("date"))
@@ -43,30 +43,42 @@ class QsMixin:
 
 
 class AccountWorthQuerySet(QsMixin, models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo Refator this!
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("account").filter(account__journal=journal)
 
-    def have(self, journal: Journal):
-        return self.latest_have(journal=journal, field="account")
+    def have(self, user: User):
+        return self.latest_have(user, field="account")
 
 
 class SavingWorthQuerySet(QsMixin, models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo Refator this!
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("saving_type").filter(saving_type__journal=journal)
 
-    def have(self, journal: Journal):
-        return self.latest_have(journal=journal, field="saving_type")
+    def have(self, user: User):
+        return self.latest_have(user, field="saving_type")
 
 
 class PensionWorthQuerySet(QsMixin, models.QuerySet):
-    def related(self, journal: Optional[Journal] = None):
-        #Todo Refator this!
-        journal = journal or utils.get_user().journal
+    def related(self, user: Optional[User] = None):
+        #Todo: Refactore user
+        try:
+            journal = user.journal
+        except AttributeError:
+            print("Getting journal from utils.get_user() in exception")
+            journal = utils.get_user().journal
         return self.select_related("pension_type").filter(pension_type__journal=journal)
 
-    def have(self, journal: Journal):
-        return self.latest_have(journal=journal, field="pension_type")
+    def have(self, user: User):
+        return self.latest_have(user, field="pension_type")
