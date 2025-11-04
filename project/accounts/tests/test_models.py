@@ -156,7 +156,7 @@ def test_account_balance_items():
     assert len(actual) == 1
 
 
-def test_account_balance_sorting():
+def test_account_balance_sorting(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
 
@@ -165,7 +165,7 @@ def test_account_balance_sorting():
     AccountBalanceFactory(year=2000, account=a1)
     AccountBalanceFactory(year=1999, account=a1)
 
-    actual = AccountBalance.objects.related()
+    actual = AccountBalance.objects.related(main_user)
 
     assert actual[0].year == 1999
     assert actual[0].account == a1
