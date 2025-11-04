@@ -46,11 +46,22 @@ def http_htmx_response(hx_trigger_name=None, status_code=204):
 # -------------------------------------------------------------------------------------
 #                                                                                Mixins
 # -------------------------------------------------------------------------------------
-class AddUserToKwargsMixin(FormMixin):
-    def get_form_kwargs(self) -> dict[str, Any]:
-        kwargs: dict[str, Any] = cast(FormMixin, self).get_form_kwargs()
-        kwargs["user"] = cast(View, self).request.user
-        return kwargs
+class AddUserToKwargsMixin:
+    def get_form(self, data=None, files=None, **kwargs):
+            # Build form manually
+            form_kwargs: dict[str, Any] = {
+                "data": data,
+                "files": files,
+            }
+
+            # UpdateView: instance
+            if hasattr(self, "object") and self.object:
+                form_kwargs["instance"] = self.object
+
+            # INJECT USER
+            form_kwargs["user"] = self.request.user
+
+            return self.form_class(**form_kwargs)
 
 
 class GetQuerysetMixin:
@@ -58,7 +69,7 @@ class GetQuerysetMixin:
 
     def get_queryset(self):
         try:
-            qs = self.model.objects.related()
+            qs = self.model.objects.related(self.reguest.user)
         except AttributeError as e:
             raise Http404(
                 _("No %(verbose_name)s found matching the query")
@@ -220,7 +231,7 @@ class SearchMixin:
 #                                                                          Views Mixins
 # -------------------------------------------------------------------------------------
 class CreateViewMixin(
-    GetQuerysetMixin, AddUserToKwargsMixin, CreateUpdateMixin, CreateView
+    AddUserToKwargsMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView
 ):
     template_name = "core/generic_form.html"
     form_action = "insert"
@@ -231,7 +242,7 @@ class CreateViewMixin(
 
 
 class UpdateViewMixin(
-    GetQuerysetMixin, AddUserToKwargsMixin, CreateUpdateMixin, UpdateView
+    AddUserToKwargsMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
 ):
     template_name = "core/generic_form.html"
     form_action = "update"
@@ -240,7 +251,7 @@ class UpdateViewMixin(
         return self.object.get_absolute_url() if self.object else None
 
 
-class DeleteViewMixin(GetQuerysetMixin, AddUserToKwargsMixin, DeleteMixin, DeleteView):
+class DeleteViewMixin(AddUserToKwargsMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
     template_name = "core/generic_delete_form.html"
 
 
