@@ -4,12 +4,12 @@ from dataclasses import dataclass, field
 
 import polars as pl
 
-from ...journals.models import Journal
+from ...users.models import User
 
 
 @dataclass
 class GetData:
-    journal: Journal
+    user: User
     conf: dict = field(default_factory=dict)
     incomes: list[dict] = field(init=False, default_factory=list)
     expenses: list[dict] = field(init=False, default_factory=list)
@@ -29,7 +29,7 @@ class GetData:
         for model in models:
             _method = getattr(model.objects, method, None)
             if callable(_method):
-                if _qs := _method(journal=self.journal):
+                if _qs := _method(user=self.user):
                     yield from _qs
 
 

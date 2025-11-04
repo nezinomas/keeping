@@ -9,7 +9,7 @@ from ...bookkeeping import models as bookkeeping
 from ...debts import models as debt
 from ...expenses import models as expense
 from ...incomes import models as income
-from ...journals.models import Journal
+from ...users.models import User
 from ...pensions import models as pension
 from ...pensions.models import PensionBalance
 from ...savings import models as saving
@@ -59,42 +59,42 @@ PENSIONS_CONF = {
 }
 
 
-def sync_accounts(instance: models.Model, journal: Optional[Journal] = None):
-    journal = journal or _get_journal_from_instance(instance)
-    if not journal:
+def sync_accounts(instance: models.Model, user: Optional[User] = None):
+    user = user or _get_user_from_instance(instance)
+    if not user:
         return
 
-    get_data = GetData(journal, ACCOUNTS_CONF)
+    get_data = GetData(user, ACCOUNTS_CONF)
     data = Accounts(get_data)
 
-    BalanceSynchronizer(AccountBalance, journal, data.df)
+    BalanceSynchronizer(AccountBalance, user, data.df)
 
 
-def sync_savings(instance: models.Model, journal: Optional[Journal] = None):
-    journal = journal or _get_journal_from_instance(instance)
-    if not journal:
+def sync_savings(instance: models.Model, user: Optional[User] = None):
+    user = user or _get_user_from_instance(instance)
+    if not user:
         return
 
-    get_data = GetData(journal, SAVINGS_CONF)
+    get_data = GetData(user, SAVINGS_CONF)
     data = Savings(get_data)
 
-    BalanceSynchronizer(SavingBalance, journal, data.df)
+    BalanceSynchronizer(SavingBalance, user, data.df)
 
 
-def sync_pensions(instance: models.Model, journal: Optional[Journal] = None):
-    journal = journal or _get_journal_from_instance(instance)
+def sync_pensions(instance: models.Model, user: Optional[User] = None):
+    user = user or _get_user_from_instance(instance)
 
-    if not journal:
+    if not user:
         return
 
-    get_data = GetData(journal, PENSIONS_CONF)
+    get_data = GetData(user, PENSIONS_CONF)
     data = Savings(get_data)
 
-    BalanceSynchronizer(PensionBalance, journal, data.df)
+    BalanceSynchronizer(PensionBalance, user, data.df)
 
 
-def _get_journal_from_instance(instance: models.Model) -> Optional[Journal]:
-    """Return the journal via the first FK field."""
+def _get_user_from_instance(instance: models.Model) -> Optional[User]:
+    """Return the user via the first FK field."""
     try:
         # Get first FK field name
         fk_field = next(
@@ -102,8 +102,10 @@ def _get_journal_from_instance(instance: models.Model) -> Optional[Journal]:
             for f in instance._meta.get_fields()
             if f.many_to_one and not f.auto_created
         )
-        # Follow FK → related object → journal
+        # Follow FK → related object → journal -> first user
         related = getattr(instance, fk_field)
-        return getattr(related, "journal", None)
+        journal = getattr(related, "journal", None)
+
+        return journal.users.first()
     except StopIteration:
         return None
