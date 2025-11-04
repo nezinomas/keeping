@@ -27,7 +27,6 @@ class RegenerateBalances(TemplateViewMixin):
     def get(self, request, *args, **kwargs):
         _type = request.GET.get("type")
         _types = ["accounts", "savings", "pensions"]
-        _journal = request.user.journal
 
         hx_trigger_name = "afterSignal"
         if _type and _type in _types:
@@ -35,7 +34,7 @@ class RegenerateBalances(TemplateViewMixin):
             hx_trigger_name += _type.title()
 
         for _type in _types:
-            getattr(signals_service, f"sync_{_type}")(instance=None, journal=_journal)
+            getattr(signals_service, f"sync_{_type}")(instance=None, user=request.user)
 
         return http_htmx_response(hx_trigger_name)
 
