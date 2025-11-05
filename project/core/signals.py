@@ -58,6 +58,10 @@ def pensions_signal(sender: object, instance: models.Model, *args, **kwargs):
     signals_service.sync_pensions(instance)
 
 
+
+# -------------------------------------------------------------------------------------
+#                                                     Update Journal first_record field
+# -------------------------------------------------------------------------------------
 @receiver(post_save, sender=income.Income)
 def update_journal_first_record(sender, instance, created, **kwargs):
     journal = instance.account.journal
@@ -65,6 +69,6 @@ def update_journal_first_record(sender, instance, created, **kwargs):
     if not journal:
         return
 
-    if not journal.first_record or journal.first_record > instance.date:
+    if journal.first_record > instance.date:
         journal.first_record = instance.date
         journal.save(update_fields=["first_record"])

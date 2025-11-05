@@ -6,6 +6,7 @@ from django.urls import reverse
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...journals.models import Journal
+from ...users.models import User
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
 
@@ -280,6 +281,27 @@ def test_income_post_save_change_account():
     assert actual.account.title == "XXX"
     assert actual.incomes == 5.0
     assert actual.balance == 5.0
+
+
+def test_income_post_save_create_new_object_user_model_year(main_user):
+    assert date(1999, 1, 1) == Journal.objects.get(pk=main_user.journal.pk).first_record
+
+    IncomeFactory(date=date(1974, 2, 3), price=5)
+
+    assert date(1974, 2, 3) == Journal.objects.get(pk=main_user.journal.pk).first_record
+
+
+def test_income_post_save_update_object_user_model_year(main_user):
+    assert date(1999, 1, 1) == Journal.objects.get(pk=main_user.journal.pk).first_record
+
+    obj = IncomeFactory(price=5)
+
+    income = Income.objects.get(pk=obj.pk)
+
+    income.date = date(1974, 2, 3)
+    income.save()
+
+    assert date(1974, 2, 3) == Journal.objects.get(pk=main_user.journal.pk).first_record
 
 
 def test_income_post_delete(main_user):
