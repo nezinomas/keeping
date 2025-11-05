@@ -12,6 +12,7 @@ from ..core.mixins.views import (
 )
 from ..pensions import views as pension_views
 from . import forms, models
+from .services.model_services import SavingModelService, SavingTypeModelService
 
 
 class Index(TemplateViewMixin):
@@ -32,7 +33,8 @@ class Lists(ListViewMixin):
     model = models.Saving
 
     def get_queryset(self):
-        return models.Saving.objects.year(year=self.request.user.year)
+        user = self.request.user
+        return SavingModelService(user).year(user.year)
 
 
 class New(CreateViewMixin):
@@ -61,7 +63,11 @@ class TypeLists(ListViewMixin):
     model = models.SavingType
 
     def get_queryset(self):
-        return models.SavingType.objects.related().order_by("closed", "type", "title")
+        return (
+            SavingTypeModelService(self.request.user)
+            .all()
+            .order_by("closed", "type", "title")
+        )
 
 
 class TypeNew(CreateViewMixin):

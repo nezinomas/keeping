@@ -16,12 +16,12 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                                  Saving Type
 # ----------------------------------------------------------------------------
-def test_saving_type_init():
-    SavingTypeForm()
+def test_saving_type_init(main_user):
+    SavingTypeForm(user=main_user)
 
 
-def test_saving_type_init_fields():
-    form = SavingTypeForm().as_p()
+def test_saving_type_init_fields(main_user):
+    form = SavingTypeForm(user=main_user).as_p()
 
     assert '<input type="text" name="title"' in form
     assert '<input type="text" name="closed"' in form
@@ -35,8 +35,9 @@ def test_saving_type_init_fields():
         (2000),
     ],
 )
-def test_saving_type_valid_data(closed):
+def test_saving_type_valid_data(main_user, closed):
     form = SavingTypeForm(
+        user=main_user,
         data={
             "title": "Title",
             "closed": closed,
@@ -54,8 +55,8 @@ def test_saving_type_valid_data(closed):
     assert data.journal.users.first().username == "bob"
 
 
-def test_saving_type_blank_data():
-    form = SavingTypeForm(data={})
+def test_saving_type_blank_data(main_user):
+    form = SavingTypeForm(user=main_user, data={})
 
     assert not form.is_valid()
 
@@ -64,17 +65,18 @@ def test_saving_type_blank_data():
     assert "type" in form.errors
 
 
-def test_saving_type_title_null():
-    form = SavingTypeForm(data={"title": None})
+def test_saving_type_title_null(main_user):
+    form = SavingTypeForm(user=main_user, data={"title": None})
 
     assert not form.is_valid()
 
     assert "title" in form.errors
 
 
-def test_saving_type_title_max_symbols():
+def test_saving_type_title_max_symbols(main_user):
     title = "a" * 50
     form = SavingTypeForm(
+        user=main_user,
         data={"title": title, "journal": JournalFactory(), "type": "funds"}
     )
 
@@ -85,16 +87,16 @@ def test_saving_type_title_max_symbols():
     assert SavingType.objects.first().title == title
 
 
-def test_saving_type_title_too_long():
-    form = SavingTypeForm(data={"title": "a" * 255})
+def test_saving_type_title_too_long(main_user):
+    form = SavingTypeForm(user=main_user, data={"title": "a" * 255})
 
     assert not form.is_valid()
 
     assert "title" in form.errors
 
 
-def test_saving_type_title_too_short():
-    form = SavingTypeForm(data={"title": "aa"})
+def test_saving_type_title_too_short(main_user):
+    form = SavingTypeForm(user=main_user, data={"title": "aa"})
 
     assert not form.is_valid()
 
@@ -103,11 +105,12 @@ def test_saving_type_title_too_short():
 
 def test_saving_type_closed_in_past(main_user):
     main_user.year = 3000
+    main_user.save()
 
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
 
-    form = SavingForm(data={})
+    form = SavingForm(user=main_user, data={})
 
     assert "S1" in str(form["saving_type"])
     assert "S2" not in str(form["saving_type"])
@@ -115,11 +118,12 @@ def test_saving_type_closed_in_past(main_user):
 
 def test_saving_type_closed_in_future(main_user):
     main_user.year = 1000
+    main_user.save()
 
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
 
-    form = SavingForm(data={})
+    form = SavingForm(user=main_user, data={})
 
     assert "S1" in str(form["saving_type"])
     assert "S2" in str(form["saving_type"])
@@ -127,20 +131,22 @@ def test_saving_type_closed_in_future(main_user):
 
 def test_saving_type_closed_in_current_year(main_user):
     main_user.year = 2000
+    main_user.save()
 
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
 
-    form = SavingForm(data={})
+    form = SavingForm(user=main_user, data={})
 
     assert "S1" in str(form["saving_type"])
     assert "S2" in str(form["saving_type"])
 
 
-def test_saving_type_unique_name():
+def test_saving_type_unique_name(main_user):
     b = SavingTypeFactory(title="XXX")
 
     form = SavingTypeForm(
+        user=main_user,
         data={
             "title": "XXX",
         },
@@ -152,55 +158,56 @@ def test_saving_type_unique_name():
 # ----------------------------------------------------------------------------
 #                                                                       Saving
 # ----------------------------------------------------------------------------
-def test_saving_init():
-    SavingForm()
+def test_saving_init(main_user):
+    SavingForm(user=main_user)
 
 
 @time_machine.travel("1974-01-01")
-def test_saving_year_initial_value():
+def test_saving_year_initial_value(main_user):
     UserFactory()
 
-    form = SavingForm().as_p()
+    form = SavingForm(user=main_user).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_saving_current_user_types(second_user):
+def test_saving_current_user_types(main_user, second_user):
     SavingTypeFactory(title="T1")  # user bob, current user
     SavingTypeFactory(title="T2", journal=second_user.journal)  # user X
 
-    form = SavingForm().as_p()
+    form = SavingForm(user=main_user).as_p()
 
     assert "T1" in form
     assert "T2" not in form
 
 
-def test_saving_current_user_accounts(second_user):
+def test_saving_current_user_accounts(main_user, second_user):
     AccountFactory(title="S1")  # user bob, current user
     AccountFactory(title="S2", journal=second_user.journal)  # user X
 
-    form = SavingForm().as_p()
+    form = SavingForm(user=main_user).as_p()
 
     assert "S1" in form
     assert "S2" not in form
 
 
-def test_saving_select_first_account(second_user):
+def test_saving_select_first_account(main_user, second_user):
     AccountFactory(title="S1", journal=second_user.journal)
     s2 = AccountFactory(title="S2")
 
-    form = SavingForm().as_p()
+    form = SavingForm(user=main_user).as_p()
 
     expect = f'<option value="{s2.pk}" selected>{s2}</option>'
     assert expect in form
 
 
 @time_machine.travel("1999-1-1")
-def test_saving_valid_data():
+def test_saving_valid_data(main_user):
     a = AccountFactory()
     t = SavingTypeFactory()
 
     form = SavingForm(
+        user=main_user,
         data={
             "date": "1999-01-01",
             "price": 0.01,
@@ -232,11 +239,12 @@ def test_saving_valid_data():
     ],
 )
 @time_machine.travel("1999-1-1")
-def test_saving_valid_data_only_fee(price):
+def test_saving_valid_data_only_fee(main_user, price):
     a = AccountFactory()
     t = SavingTypeFactory()
 
     form = SavingForm(
+        user=main_user,
         data={
             "date": "1999-01-01",
             "price": price,
@@ -260,11 +268,12 @@ def test_saving_valid_data_only_fee(price):
 
 
 @time_machine.travel("1999-1-1")
-def test_saving_valid_data_with_no_fee():
+def test_saving_valid_data_with_no_fee(main_user):
     a = AccountFactory()
     t = SavingTypeFactory()
 
     form = SavingForm(
+        user=main_user,
         data={
             "date": "1999-01-01",
             "price": 0.01,
@@ -288,11 +297,12 @@ def test_saving_valid_data_with_no_fee():
 
 @time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
-def test_saving_invalid_date(year):
+def test_saving_invalid_date(main_user, year):
     a = AccountFactory()
     t = SavingTypeFactory()
 
     form = SavingForm(
+        user=main_user,
         data={
             "date": f"{year}-01-01",
             "price": "10",
@@ -308,8 +318,8 @@ def test_saving_invalid_date(year):
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
-def test_saving_blank_data():
-    form = SavingForm(data={})
+def test_saving_blank_data(main_user):
+    form = SavingForm(user=main_user, data={})
 
     assert not form.is_valid()
 
@@ -319,11 +329,12 @@ def test_saving_blank_data():
     assert "saving_type" in form.errors
 
 
-def test_saving_price_null_and_fee_null():
+def test_saving_price_null_and_fee_null(main_user):
     a = AccountFactory()
     t = SavingTypeFactory()
 
     form = SavingForm(
+        user=main_user,
         data={
             "date": "2000-01-01",
             "price": "",
