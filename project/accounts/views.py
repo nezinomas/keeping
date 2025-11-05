@@ -14,9 +14,7 @@ class Lists(ListViewMixin):
     model = models.Account
 
     def get_queryset(self):
-        return (
-            AccountModelService(self.request.user).related().order_by("closed", "title")
-        )
+        return AccountModelService(self.request.user).all().order_by("closed", "title")
 
 
 class New(CreateViewMixin):
@@ -36,7 +34,7 @@ class Update(UpdateViewMixin):
     modal_form_title = _("Account")
 
     def get_queryset(self):
-        return AccountModelService(self.request.user).related()
+        return AccountModelService(self.request.user).items()
 
 
 class LoadAccount(ListViewMixin):
