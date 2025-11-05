@@ -1,13 +1,10 @@
 import json
-from typing import Any, cast
 
 from django.core.exceptions import FieldError
 from django.db.models import Count, F, Sum
 from django.http import Http404, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import View
-from django.views.generic.edit import FormMixin
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 from vanilla import (
     CreateView,
@@ -48,20 +45,8 @@ def http_htmx_response(hx_trigger_name=None, status_code=204):
 # -------------------------------------------------------------------------------------
 class AddUserToKwargsMixin:
     def get_form(self, data=None, files=None, **kwargs):
-            # Build form manually
-            form_kwargs: dict[str, Any] = {
-                "data": data,
-                "files": files,
-            }
-
-            # UpdateView: instance
-            if hasattr(self, "object") and self.object:
-                form_kwargs["instance"] = self.object
-
-            # INJECT USER
-            form_kwargs["user"] = self.request.user
-
-            return self.form_class(**form_kwargs)
+        kwargs["user"] = self.request.user
+        return self.form_class(data, files, **kwargs)
 
 
 class GetQuerysetMixin:
@@ -69,7 +54,7 @@ class GetQuerysetMixin:
 
     def get_queryset(self):
         try:
-            qs = self.model.objects.related(self.reguest.user)
+            qs = self.model.objects.related(self.request.user)
         except AttributeError as e:
             raise Http404(
                 _("No %(verbose_name)s found matching the query")
@@ -200,7 +185,7 @@ class SearchMixin:
     def search(self):
         search_str = self.request.GET.get("search")
 
-        sql = self.get_search_method()(search_str)
+        sql = self.get_search_method()(self.request.user, search_str)
         stats = self.search_statistic(sql)
 
         page = self.request.GET.get("page", 1)
@@ -271,5 +256,5 @@ class FormViewMixin(AddUserToKwargsMixin, FormView):
     template_name = "core/generic_form.html"
 
 
-class SearchViewMixin(SearchMixin, TemplateView):
+class SearchViewMixin(AddUserToKwargsMixin, SearchMixin, TemplateView):
     pass
