@@ -4,57 +4,46 @@ from django.db import models
 from django.db.models import Count, F, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
-from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..users.models import User
 
 
 class IncomeTypeQuerySet(models.QuerySet):
-    def related(self, user: Optional[User] = None):
-        #Todo: Refactore user
-        try:
-            journal = user.journal
-        except AttributeError:
-            print("Getting journal from utils.get_user() in exception")
-            journal = utils.get_user().journal
-        return self.select_related("journal").filter(journal=journal)
+    def related(self, user: User):
+        return self.select_related("journal").filter(journal=user.journal)
 
-    def items(self):
-        return self.related()
+    def items(self, user: User):
+        return self.related(user)
 
 
 class IncomeQuerySet(SumMixin, models.QuerySet):
-    def related(self, user: Optional[User] = None):
-        #Todo: Refactore user
-        try:
-            journal = user.journal
-        except AttributeError:
-            print("Getting journal from utils.get_user() in exception")
-            journal = utils.get_user().journal
+    def related(self, user: User):
         return self.select_related("account", "income_type").filter(
-            income_type__journal=journal
+            income_type__journal=user.journal
         )
 
-    def year(self, year):
-        return self.related().filter(date__year=year)
+    def year(self, user: User, year: int):
+        return self.related(user).filter(date__year=year)
 
-    def items(self):
-        return self.related().all()
+    def items(self, user: User):
+        return self.related(user).all()
 
-    def sum_by_year(self, income_type: List[str] = None):
-        qs = self.related()
+    def sum_by_year(self, user: User, income_type: Optional[list] = None):
+        qs = self.related(user)
 
         if income_type:
             qs = qs.filter(income_type__type__in=income_type)
 
         return qs.year_sum()
 
-    def sum_by_month(self, year, month=None):
-        return self.related().month_sum(year, month).annotate(title=Value("incomes"))
-
-    def sum_by_month_and_type(self, year):
+    def sum_by_month(self, user: User, year: int, month: Optional[int] = None):
         return (
-            self.related()
+            self.related(user).month_sum(year, month).annotate(title=Value("incomes"))
+        )
+
+    def sum_by_month_and_type(self, user: User, year):
+        return (
+            self.related(user)
             .filter(date__year=year)
             .annotate(cnt=Count("income_type"))
             .values("income_type")
@@ -66,9 +55,9 @@ class IncomeQuerySet(SumMixin, models.QuerySet):
             .values("date", "sum", title=F("income_type__title"))
         )
 
-    def sum_by_year_and_type(self):
+    def sum_by_year_and_type(self, user: User):
         return (
-            self.related()
+            self.related(user)
             .annotate(cnt=Count("income_type"))
             .values("income_type")
             .annotate(date=TruncYear("date"))

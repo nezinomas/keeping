@@ -7,6 +7,7 @@ from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
+from ..incomes.services.model_services import IncomeTypeModelService
 from .models import Income, IncomeType
 
 
@@ -28,13 +29,16 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
         # form inputs settings
         self.fields["remark"].widget.attrs["rows"] = 3
 
+        accounts = AccountModelService(self.user)
+        incomes = IncomeTypeModelService(self.user)
+
         # inital values
-        self.fields["account"].initial = AccountModelService(self.user).items().first()
-        self.fields["date"].initial = set_date_with_user_year(self.user.year)
+        self.fields["account"].initial = accounts.items().first()
+        self.fields["date"].initial = set_date_with_user_year(self.user)
 
         # overwrite ForeignKey expense_type queryset
-        self.fields["income_type"].queryset = IncomeType.objects.items()
-        self.fields["account"].queryset = AccountModelService(self.user).items()
+        self.fields["income_type"].queryset = incomes.items()
+        self.fields["account"].queryset = accounts.items()
 
         self.fields["date"].label = _("Date")
         self.fields["account"].label = _("Account")

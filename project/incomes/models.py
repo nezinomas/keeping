@@ -3,7 +3,6 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.lib import utils
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .managers import IncomeQuerySet, IncomeTypeQuerySet
@@ -55,16 +54,6 @@ class Income(models.Model):
 
     def __str__(self):
         return f"{(self.date)}: {self.income_type}"
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        user = utils.get_user()
-        journal = Journal.objects.get(pk=user.journal.pk)
-
-        if journal.first_record > self.date:
-            journal.first_record = self.date
-            journal.save()
 
     def get_absolute_url(self):
         return reverse_lazy("incomes:update", kwargs={"pk": self.pk})

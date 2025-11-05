@@ -11,6 +11,7 @@ from ..core.mixins.views import (
     UpdateViewMixin,
 )
 from . import forms, models
+from .services.model_services import IncomeModelService
 
 
 class Index(TemplateViewMixin):
@@ -21,8 +22,8 @@ class Lists(ListViewMixin):
     model = models.Income
 
     def get_queryset(self):
-        year = self.request.user.year
-        return models.Income.objects.year(year).order_by("-date", "price")
+        user = self.request.user
+        return IncomeModelService(user).year(user.year).order_by("-date", "price")
 
 
 class New(CreateViewMixin):
