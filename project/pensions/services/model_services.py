@@ -3,7 +3,7 @@ from typing import cast
 from django.db.models import F, Sum
 
 from ...users.models import User
-from .. import models, managers
+from .. import managers, models
 
 
 class PensionTypeModelService:
