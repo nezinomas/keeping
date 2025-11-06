@@ -37,7 +37,7 @@ def test_account_insert_new_records_empty_db(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, main_user.journal, df)
+    BalanceSynchronizer(AccountBalance, main_user, df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=account, year=2023)
@@ -68,7 +68,7 @@ def test_account_insert_new_records(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, main_user.journal, df)
+    BalanceSynchronizer(AccountBalance, main_user, df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=obj.account, year=2024)
@@ -98,7 +98,7 @@ def test_account_update_existing_records(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, main_user.journal, df)
+    BalanceSynchronizer(AccountBalance, main_user, df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=obj.account, year=1999)
@@ -129,7 +129,7 @@ def test_account_delete_records(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, main_user.journal, df)
+    BalanceSynchronizer(AccountBalance, main_user, df)
 
     assert AccountBalance.objects.count() == 0
 
@@ -156,7 +156,7 @@ def test_account_mixed_operations(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, main_user.journal, df)
+    BalanceSynchronizer(AccountBalance, main_user, df)
 
     assert AccountBalance.objects.count() == 2
     # Check updated record
@@ -188,7 +188,7 @@ def test_account_null_latest_check(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, main_user.journal, df)
+    BalanceSynchronizer(AccountBalance, main_user, df)
 
     assert AccountBalance.objects.count() == 1
     record = AccountBalance.objects.get(account=account, year=2023)
@@ -215,7 +215,7 @@ def test_account_empty_dataframe_deletes_all(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(AccountBalance, main_user.journal, df)
+    BalanceSynchronizer(AccountBalance, main_user, df)
 
     assert AccountBalance.objects.count() == 0
 
@@ -242,7 +242,7 @@ def test_saving_insert_new_records_empty_db(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(SavingBalance, main_user.journal, df)
+    BalanceSynchronizer(SavingBalance, main_user, df)
 
     assert SavingBalance.objects.count() == 1
 
@@ -283,7 +283,7 @@ def test_saving_insert_new_records(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(SavingBalance, main_user.journal, df)
+    BalanceSynchronizer(SavingBalance, main_user, df)
 
     assert SavingBalance.objects.count() == 1
 
@@ -324,7 +324,7 @@ def test_saving_delete_records(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(SavingBalance, main_user.journal, df)
+    BalanceSynchronizer(SavingBalance, main_user, df)
 
     assert SavingBalance.objects.count() == 0
 
@@ -351,7 +351,7 @@ def test_saving_update_existing_records(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(SavingBalance, main_user.journal, df)
+    BalanceSynchronizer(SavingBalance, main_user, df)
 
     assert SavingBalance.objects.count() == 1
 
@@ -394,7 +394,7 @@ def test_saving_empty_dataframe_deletes_all(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(SavingBalance, main_user.journal, df)
+    BalanceSynchronizer(SavingBalance, main_user, df)
 
     assert SavingBalance.objects.count() == 0
 
@@ -421,7 +421,7 @@ def test_pension_insert_new_records_empty_db(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(PensionBalance, main_user.journal, df)
+    BalanceSynchronizer(PensionBalance, main_user, df)
 
     assert PensionBalance.objects.count() == 1
 
@@ -462,7 +462,7 @@ def test_pension_insert_new_records(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(PensionBalance, main_user.journal, df)
+    BalanceSynchronizer(PensionBalance, main_user, df)
 
     assert PensionBalance.objects.count() == 1
 
@@ -503,7 +503,7 @@ def test_pension_delete_records(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(PensionBalance, main_user.journal, df)
+    BalanceSynchronizer(PensionBalance, main_user, df)
 
     assert PensionBalance.objects.count() == 0
 
@@ -530,7 +530,7 @@ def test_pension_update_existing_records(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(PensionBalance, main_user.journal, df)
+    BalanceSynchronizer(PensionBalance, main_user, df)
 
     assert PensionBalance.objects.count() == 1
 
@@ -573,6 +573,6 @@ def test_pension_empty_dataframe_deletes_all(main_user):
         }
     ).lazy()
 
-    BalanceSynchronizer(PensionBalance, main_user.journal, df)
+    BalanceSynchronizer(PensionBalance, main_user, df)
 
     assert PensionBalance.objects.count() == 0

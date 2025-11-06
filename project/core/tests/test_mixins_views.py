@@ -1,6 +1,8 @@
 from types import SimpleNamespace
 
 import pytest
+from django.http import Http404
+from mock import Mock
 
 from ...expenses.factories import ExpenseFactory
 from ...expenses.models import Expense
@@ -17,11 +19,29 @@ def test_queryset_fail():
 
 def test_queryset_retun_qs():
     class Dummy(views.GetQuerysetMixin):
-        model = SimpleNamespace(objects=SimpleNamespace(related=lambda: "xxx"))
+        model = SimpleNamespace(
+            _meta=SimpleNamespace(verbose_name="ModelName"),
+            objects=SimpleNamespace(related=lambda user: "xxx"),
+        )
+        request = Mock()
 
     actual = Dummy().get_queryset()
 
     assert actual == "xxx"
+
+
+def test_queryset_raises_404():
+    class Dummy(views.GetQuerysetMixin):
+        model = SimpleNamespace(
+            _meta=SimpleNamespace(verbose_name="ModelName"),
+            objects=SimpleNamespace(related=lambda: "xxx"),
+        )
+        request = Mock()
+
+    with pytest.raises(Http404) as exc:
+        Dummy().get_queryset()
+
+    assert "ModelName užklausos nėra" in str(exc.value)
 
 
 def test_search_mixin_no_query():

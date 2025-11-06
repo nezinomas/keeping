@@ -8,7 +8,7 @@ class YearBetweenMixin:
         dt = self.cleaned_data["date"]
 
         year_instance = dt.year
-        years_ = years()
+        years_ = years(self.user)
 
         if year_instance not in years_:
             self.add_error(

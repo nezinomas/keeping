@@ -12,8 +12,8 @@ from .tests.utils import timer
 
 @login_required()
 def set_year(request, year):
-    if year in years():
-        user = request.user
+    user = request.user
+    if year in years(user):
         user.year = year
         user.save()
 

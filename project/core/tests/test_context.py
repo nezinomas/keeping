@@ -1,46 +1,39 @@
 from datetime import date
-from types import SimpleNamespace
 
 import pytest
 import time_machine
-from mock import patch
 
-from ...journals.factories import JournalFactory
-from ...users.factories import UserFactory
 from ..context import context_months, yday, years
+
+pytestmark = pytest.mark.django_db
 
 
 @time_machine.travel("2006-01-01")
-@pytest.mark.disable_get_user_patch
-def test_years(rf):
-    expect = {"years": [2007, 2006]}
-    r = rf.get("/fake/")
+def test_years(main_user, rf):
+    expect = {"years": [2007, 2006, 2005]}
 
-    actual = years(r)
+    main_user.journal.first_record = date(2005, 2, 3)
+    rf.user = main_user
 
-    assert len(actual["years"]) == 2
+    actual = years(rf)
+
+    assert len(actual["years"]) == 3
     assert expect == actual
 
 
-@pytest.mark.django_db
-@pytest.mark.disable_get_user_patch
 @time_machine.travel("2006-01-01")
-@patch("project.core.lib.utils.get_user")
-def test_year_first_record_from_journal(mck, rf):
-    jrn = JournalFactory(first_record=date(2004, 1, 1))
-    usr = UserFactory(journal=jrn)
-    mck.return_value = usr
+def test_year_first_record_from_journal(main_user, rf):
+    main_user.journal.first_record = date(2004, 2, 3)
 
-    r = rf.get("/fake/")
+    rf.user = main_user
 
-    actual = years(r)
+    actual = years(rf)
     expect = [2007, 2006, 2005, 2004]
 
     assert expect == actual["years"]
 
 
 @time_machine.travel("2020-6-6")
-@pytest.mark.django_db
 @pytest.mark.parametrize(
     "year, expect",
     [
@@ -49,31 +42,25 @@ def test_year_first_record_from_journal(mck, rf):
         (2020, {"yday": 158, "ydays": 366}),
     ],
 )
-def test_yday(year, expect, rf, main_user):
+def test_yday(main_user, year, expect, rf):
     main_user.year = year
+    rf.user = main_user
 
-    r = rf.get("fake")
-
-    actual = yday(r)
+    actual = yday(rf.user)
 
     assert actual == expect
 
 
 @time_machine.travel("2020-1-1")
-@patch("project.core.lib.utils.get_user", return_value=SimpleNamespace())
-def test_yday_anonymous_user(mck, rf):
-    r = rf.get("fake")
-
-    actual = yday(r)
+def test_yday_anonymous_user(rf):
+    actual = yday(rf)
 
     assert actual == {"yday": 1, "ydays": 366}
 
 
 @time_machine.travel("1974-1-1")
 def test_context_months(rf):
-    r = rf.get("/fake/")
-
-    actual = context_months(r)
+    actual = context_months(rf)
 
     assert len(actual["context_months"]) == 12
     assert actual["context_months"][0] == date(1974, 1, 1)

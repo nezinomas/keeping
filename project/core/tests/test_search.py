@@ -287,7 +287,7 @@ def test_filter_short_search_words(search_dict, expect):
         ),
     ],
 )
-def test_expense_search(_search, expect):
+def test_expense_search(main_user, _search, expect):
     ExpenseFactory(
         date=date(1999, 1, 1),
         expense_type=ExpenseTypeFactory(title="Type_A"),
@@ -319,7 +319,7 @@ def test_expense_search(_search, expect):
         remark="ąčęėįšųūž",
     )
 
-    q = search.search_expenses(_search)
+    q = search.search_expenses(main_user, _search)
 
     for i in range(len(q)):
         assert q[i]["expense_type__title"] == expect[i]["type"]
@@ -328,11 +328,11 @@ def test_expense_search(_search, expect):
 
 
 @pytest.mark.django_db
-def test_expense_search_ordering():
+def test_expense_search_ordering(main_user):
     ExpenseFactory(date=date(1000, 1, 1))
     ExpenseFactory()
 
-    q = search.search_expenses("remark")
+    q = search.search_expenses(main_user, "remark")
 
     assert q[0]["date"] == date(1999, 1, 1)
     assert q[1]["date"] == date(1000, 1, 1)
@@ -361,13 +361,13 @@ def test_expense_search_ordering():
         ("-y 1999 -m 1 -c type", 1, "Income Type"),
     ],
 )
-def test_incomes_search(_search, cnt, income_type):
+def test_incomes_search(main_user, _search, cnt, income_type):
     IncomeFactory()
     IncomeFactory(
         date=date(3333, 1, 1), income_type=IncomeTypeFactory(title="Y"), remark="ZZZ"
     )
 
-    q = search.search_incomes(_search)
+    q = search.search_incomes(main_user, _search)
     assert q.count() == cnt
 
     if q:
@@ -378,11 +378,11 @@ def test_incomes_search(_search, cnt, income_type):
 
 
 @pytest.mark.django_db
-def test_incomes_search_ordering():
+def test_incomes_search_ordering(main_user):
     IncomeFactory(date=date(1000, 1, 1))
     IncomeFactory()
 
-    q = search.search_incomes("remark")
+    q = search.search_incomes(main_user, "remark")
 
     assert q[0]["date"] == date(1999, 1, 1)
     assert q[1]["date"] == date(1000, 1, 1)
@@ -416,13 +416,11 @@ def test_incomes_search_ordering():
         ("-y 1999 -m 1 -c titl", "Author", "Book Title", "Remark"),
     ],
 )
-def test_books_search(_search, author, title, remark):
+def test_books_search(main_user, _search, author, title, remark):
     BookFactory()
     BookFactory(started=date(3333, 1, 1), author="A", title="T", remark="ZZZ")
 
-    q = search.search_books(_search)
-
-    if q:
+    if q := search.search_books(main_user, _search):
         q = q[0]
 
         assert q["started"] == date(1999, 1, 1)
@@ -432,11 +430,11 @@ def test_books_search(_search, author, title, remark):
 
 
 @pytest.mark.django_db
-def test_books_search_ordering():
+def test_books_search_ordering(main_user):
     BookFactory(started=date(1000, 1, 1))
     BookFactory()
 
-    q = search.search_books("remark")
+    q = search.search_books(main_user, "remark")
     print(q)
     assert q[0]["started"] == date(1999, 1, 1)
     assert q[1]["started"] == date(1000, 1, 1)

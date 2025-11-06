@@ -93,13 +93,13 @@ def _get(search_dict, key, default_value):
     return value or default_value
 
 
-def generic_search(model, search_str, category_list, date_field="date"):
+def generic_search(user, model, search_str, category_list, date_field="date"):
     search_dict, search_type = make_search_dict(search_str)
 
     if all(value is None for value in search_dict.values()):
         return model.objects.none()
 
-    query = model.objects.items()
+    query = model.objects.related(user)
 
     # Date filters
     for key in ["year", "month"]:
@@ -133,10 +133,10 @@ def generic_search(model, search_str, category_list, date_field="date"):
     return query.order_by(f"-{date_field}")
 
 
-def search_expenses(search_str):
+def search_expenses(user, search_str):
     category_list = ["expense_type__title", "expense_name__title"]
 
-    return generic_search(Expense, search_str, category_list).values(
+    return generic_search(user, Expense, search_str, category_list).values(
         "id",
         "date",
         "account__title",
@@ -151,10 +151,10 @@ def search_expenses(search_str):
     )
 
 
-def search_incomes(search_str):
+def search_incomes(user, search_str):
     category_list = ["income_type__title"]
 
-    return generic_search(Income, search_str, category_list).values(
+    return generic_search(user, Income, search_str, category_list).values(
         "id",
         "date",
         "income_type__title",
@@ -164,10 +164,10 @@ def search_incomes(search_str):
     )
 
 
-def search_books(search_str):
+def search_books(user, search_str):
     category_list = ["author", "title"]
 
-    return generic_search(Book, search_str, category_list, "started").values(
+    return generic_search(user, Book, search_str, category_list, "started").values(
         "id",
         "author",
         "title",

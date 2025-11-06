@@ -105,7 +105,6 @@ def _get_user_from_instance(instance: models.Model) -> Optional[User]:
         # Follow FK → related object → journal -> first user
         related = getattr(instance, fk_field)
         journal = getattr(related, "journal", None)
-
         return journal.users.first()
     except StopIteration:
         return None

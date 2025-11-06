@@ -48,15 +48,14 @@ def test_current_day(year, month, return_past_day, expect):
 def test_years_user_logged(main_user):
     main_user.journal.first_record = datetime(1999, 1, 1, tzinfo=pytz.utc)
 
-    actual = lib_date.years()
+    actual = lib_date.years(main_user)
 
     assert actual == [1999, 2000, 2001, 2002]
 
 
 @pytest.mark.django_db
 @time_machine.travel("2001-01-01")
-@patch("project.core.lib.utils.get_user", return_value=SimpleNamespace())
-def test_years_user_anonymous_user(mck):
+def test_years_user_anonymous_user():
     actual = lib_date.years()
 
     assert actual == [2001, 2002]
@@ -102,7 +101,7 @@ def test_monthlen_wrong_input():
 def test_set_year_for_month(main_user):
     UserFactory()
 
-    actual = lib_date.set_date_with_user_year()
+    actual = lib_date.set_date_with_user_year(main_user)
 
     assert actual == datetime(1999, 1, 1)
 

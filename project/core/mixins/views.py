@@ -55,7 +55,7 @@ class GetQuerysetMixin:
     def get_queryset(self):
         try:
             qs = self.model.objects.related(self.request.user)
-        except AttributeError as e:
+        except (TypeError, AttributeError) as e:
             raise Http404(
                 _("No %(verbose_name)s found matching the query")
                 % {"verbose_name": self.model._meta.verbose_name}
