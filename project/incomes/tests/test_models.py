@@ -5,6 +5,9 @@ from django.urls import reverse
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
+from ...accounts.services.model_services import (
+    AccountBalanceModelService,
+)
 from ...journals.models import Journal
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
@@ -195,7 +198,7 @@ def test_income_year_type_sum(main_user):
 def test_income_new_post_save(main_user):
     IncomeFactory()
 
-    actual = AccountBalance.objects.year(main_user, 1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -214,7 +217,7 @@ def test_income_update_post_save(main_user):
     obj_update.price = 1
     obj_update.save()
 
-    actual = AccountBalance.objects.year(main_user, 1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -241,7 +244,7 @@ def test_income_post_save_update_with_nothing_changed(main_user):
     obj_update = Income.objects.get(pk=obj.pk)
     obj_update.save()
 
-    actual = AccountBalance.objects.year(main_user, 1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -308,7 +311,7 @@ def test_income_post_delete(main_user):
     obj = IncomeFactory()
     Income.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.year(main_user, 1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 0
     assert Income.objects.all().count() == 0
