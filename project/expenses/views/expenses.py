@@ -14,6 +14,11 @@ from ...core.mixins.views import (
     UpdateViewMixin,
 )
 from .. import forms, models
+from ..services.model_services import (
+    ExpenseModelService,
+    ExpenseNameModelService,
+    ExpenseTypeModelService,
+)
 
 
 class GetMonthMixin:
@@ -41,7 +46,8 @@ class Lists(GetMonthMixin, ListViewMixin):
 
     def get_queryset(self):
         month = self.get_month()
-        qs = super().get_queryset().year(year=self.request.user.year)
+        user = self.request.user
+        qs = ExpenseModelService(user).year(user.year)
 
         if month in range(1, 13):
             qs = qs.filter(date__month=month)
@@ -121,8 +127,8 @@ class LoadExpenseName(ListViewMixin):
 
         if expense_type_pk:
             self.object_list = (
-                models.ExpenseName.objects.related()
-                .filter(parent=expense_type_pk)
+                ExpenseNameModelService(request.user)
                 .year(request.user.year)
+                .filter(parent=expense_type_pk)
             )
         return self.render_to_response({"object_list": self.object_list})

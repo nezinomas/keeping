@@ -143,6 +143,8 @@ def test_expenses_update_func():
 @time_machine.travel("1974-08-08")
 def test_expenses_load_new_form(main_user, client_logged):
     main_user.year = 3000
+    main_user.save()
+
     url = reverse("expenses:new")
 
     response = client_logged.get(url)

@@ -4,7 +4,6 @@ from django.db.models import F
 from django.urls import reverse_lazy
 
 from ..accounts.models import Account
-from ..core.lib import utils
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
@@ -85,14 +84,3 @@ class Expense(models.Model):
 
     def get_delete_url(self):
         return reverse_lazy("expenses:delete", kwargs={"pk": self.pk})
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        # update first journal record
-        user = utils.get_user()
-        journal = Journal.objects.get(pk=user.journal.pk)
-
-        if journal.first_record > self.date:
-            journal.first_record = self.date
-            journal.save()

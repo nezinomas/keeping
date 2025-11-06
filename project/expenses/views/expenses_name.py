@@ -3,11 +3,12 @@ from django.utils.translation import gettext_lazy as _
 
 from ...core.mixins.views import CreateViewMixin, UpdateViewMixin
 from .. import forms, models
+from ..services.model_services import ExpenseNameModelService
 
 
 class QuerySetMixin:
     def get_queryset(self):
-        return models.ExpenseName.objects.items()
+        return ExpenseNameModelService(self.request.user).items()
 
 
 class New(QuerySetMixin, CreateViewMixin):
