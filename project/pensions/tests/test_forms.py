@@ -12,19 +12,20 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                                  PensionType
 # ----------------------------------------------------------------------------
-def test_pension_type_init():
-    PensionTypeForm()
+def test_pension_type_init(main_user):
+    PensionTypeForm(user=main_user)
 
 
-def test_pension_type_init_fields():
-    form = PensionTypeForm().as_p()
+def test_pension_type_init_fields(main_user):
+    form = PensionTypeForm(user=main_user).as_p()
 
     assert '<input type="text" name="title"' in form
     assert '<select name="user"' not in form
 
 
-def test_pension_type_valid_data():
+def test_pension_type_valid_data(main_user):
     form = PensionTypeForm(
+        user=main_user,
         data={
             "title": "Title",
         }
@@ -39,8 +40,8 @@ def test_pension_type_valid_data():
     assert data.journal.users.first().username == "bob"
 
 
-def test_pension_type_blank_data():
-    form = PensionTypeForm(data={})
+def test_pension_type_blank_data(main_user):
+    form = PensionTypeForm(user=main_user, data={})
 
     assert not form.is_valid()
 
@@ -48,34 +49,35 @@ def test_pension_type_blank_data():
     assert "title" in form.errors
 
 
-def test_pension_type_title_null():
-    form = PensionTypeForm(data={"title": None})
+def test_pension_type_title_null(main_user):
+    form = PensionTypeForm(user=main_user, data={"title": None})
 
     assert not form.is_valid()
 
     assert "title" in form.errors
 
 
-def test_pension_type_title_too_long():
-    form = PensionTypeForm(data={"title": "a" * 255})
+def test_pension_type_title_too_long(main_user):
+    form = PensionTypeForm(user=main_user, data={"title": "a" * 255})
 
     assert not form.is_valid()
 
     assert "title" in form.errors
 
 
-def test_pension_type_title_too_short():
-    form = PensionTypeForm(data={"title": "aa"})
+def test_pension_type_title_too_short(main_user):
+    form = PensionTypeForm(user=main_user, data={"title": "aa"})
 
     assert not form.is_valid()
 
     assert "title" in form.errors
 
 
-def test_pensiong_type_unique_name():
+def test_pensiong_type_unique_name(main_user):
     PensionTypeFactory(title="XXX")
 
     form = PensionTypeForm(
+        user=main_user,
         data={
             "title": "XXX",
         },
@@ -87,12 +89,12 @@ def test_pensiong_type_unique_name():
 # ----------------------------------------------------------------------------
 #                                                                      Pension
 # ----------------------------------------------------------------------------
-def test_pension_init():
-    PensionForm()
+def test_pension_init(main_user):
+    PensionForm(user=main_user)
 
 
-def test_pension_init_fields():
-    form = PensionForm().as_p()
+def test_pension_init_fields(main_user):
+    form = PensionForm(user=main_user).as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<select name="pension_type"' in form
@@ -101,20 +103,21 @@ def test_pension_init_fields():
     assert '<textarea name="remark"' in form
 
 
-def test_saving_current_user_types(second_user):
+def test_saving_current_user_types(main_user, second_user):
     PensionTypeFactory(title="T1")  # user bob, current user
     PensionTypeFactory(title="T2", journal=second_user.journal)  # user X
 
-    form = PensionForm().as_p()
+    form = PensionForm(user=main_user).as_p()
 
     assert "T1" in form
     assert "T2" not in form
 
 
-def test_pension_valid_data():
+def test_pension_valid_data(main_user):
     t = PensionTypeFactory()
 
     form = PensionForm(
+        user=main_user,
         data={
             "date": "2000-01-01",
             "price": 0.01,
@@ -134,10 +137,11 @@ def test_pension_valid_data():
     assert data.pension_type.title == t.title
 
 
-def test_pension_valid_data_no_price():
+def test_pension_valid_data_no_price(main_user):
     t = PensionTypeFactory()
 
     form = PensionForm(
+        user=main_user,
         data={
             "date": "2000-01-01",
             "fee": 0.01,
@@ -156,10 +160,11 @@ def test_pension_valid_data_no_price():
     assert data.pension_type.title == t.title
 
 
-def test_pension_valid_data_no_fee():
+def test_pension_valid_data_no_fee(main_user):
     t = PensionTypeFactory()
 
     form = PensionForm(
+        user=main_user,
         data={
             "date": "2000-01-01",
             "price": 0.01,
@@ -180,10 +185,11 @@ def test_pension_valid_data_no_fee():
 
 @time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
-def test_pension_invalid_date(year):
+def test_pension_invalid_date(main_user, year):
     t = PensionTypeFactory()
 
     form = PensionForm(
+        user=main_user,
         data={
             "date": f"{year}-01-01",
             "price": "1.0",
@@ -198,8 +204,8 @@ def test_pension_invalid_date(year):
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
-def test_pension_blank_data():
-    form = PensionForm(data={})
+def test_pension_blank_data(main_user):
+    form = PensionForm(user=main_user, data={})
 
     assert not form.is_valid()
 
@@ -209,10 +215,11 @@ def test_pension_blank_data():
     assert "pension_type" in form.errors
 
 
-def test_pension_price_and_fee_null():
+def test_pension_price_and_fee_null(main_user):
     t = PensionTypeFactory()
 
     form = PensionForm(
+        user=main_user,
         data={
             "date": "2000-01-01",
             "price": "0",
@@ -227,10 +234,11 @@ def test_pension_price_and_fee_null():
     assert "fee" in form.errors
 
 
-def test_pension_price_negative():
+def test_pension_price_negative(main_user):
     t = PensionTypeFactory()
 
     form = PensionForm(
+        user=main_user,
         data={
             "date": "2000-01-01",
             "price": "-10",
@@ -244,10 +252,11 @@ def test_pension_price_negative():
     assert "fee" in form.errors
 
 
-def test_pension_fee_negative():
+def test_pension_fee_negative(main_user):
     t = PensionTypeFactory()
 
     form = PensionForm(
+        user=main_user,
         data={
             "date": "2000-01-01",
             "fee": "-10",

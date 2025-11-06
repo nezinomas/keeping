@@ -7,6 +7,7 @@ from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Pension, PensionType
+from .services.model_services import PensionModelService, PensionTypeModelService
 
 
 class PensionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
@@ -20,7 +21,7 @@ class PensionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "pension_type", "price", "fee", "remark"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -32,7 +33,9 @@ class PensionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["date"].initial = datetime.now()
 
         # overwrite ForeignKey saving_type queryset
-        self.fields["pension_type"].queryset = PensionType.objects.items()
+        self.fields["pension_type"].queryset = PensionTypeModelService(
+            self.user
+        ).items()
 
         self.fields["date"].label = _("Date")
         self.fields["price"].label = _("Sum")
@@ -60,7 +63,7 @@ class PensionTypeForm(forms.ModelForm):
         fields = ["journal", "title"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
