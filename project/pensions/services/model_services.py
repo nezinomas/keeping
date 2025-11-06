@@ -3,8 +3,7 @@ from typing import cast
 from django.db.models import F, Sum
 
 from ...users.models import User
-from ..managers import PensionBalanceQuerySet, PensionQuerySet, PensionTypeQuerySet
-from ..models import Pension, PensionBalance, PensionType
+from .. import models, managers
 
 
 class PensionTypeModelService:
@@ -15,11 +14,12 @@ class PensionTypeModelService:
         if not user.is_authenticated:
             raise ValueError("Authenticated user required")
 
-        self.user = user
-        self.model = cast(PensionTypeQuerySet, PensionType.objects)
+        self.objects = cast(
+            managers.PensionTypeQuerySet, models.PensionType.objects
+        ).related(user)
 
     def items(self):
-        return self.model.related(self.user).all()
+        return self.objects.all()
 
 
 class PensionModelService:
@@ -30,14 +30,15 @@ class PensionModelService:
         if not user.is_authenticated:
             raise ValueError("Authenticated user required")
 
-        self.user = user
-        self.model = cast(PensionQuerySet, Pension.objects)
+        self.objects = cast(managers.PensionQuerySet, models.Pension.objects).related(
+            user
+        )
 
     def year(self, year: int):
-        return self.model.related(self.user).filter(date__year=year)
+        return self.objects.filter(date__year=year)
 
     def items(self):
-        return self.model.related(self.user).all()
+        return self.objects.all()
 
 
 class PensionBalanceModelService:
@@ -48,19 +49,19 @@ class PensionBalanceModelService:
         if not user.is_authenticated:
             raise ValueError("Authenticated user required")
 
-        self.user = user
-        self.model = cast(PensionBalanceQuerySet, PensionBalance.objects)
+        self.objects = cast(
+            managers.PensionBalanceQuerySet, models.PensionBalance.objects
+        ).related(user)
 
     def year(self, year: int):
-        return self.model.related(self.user).filter(year=year)
+        return self.objects.filter(year=year)
 
     def items(self):
-        return self.model.related(self.user).all()
+        return self.objects.all()
 
     def sum_by_year(self):
         return (
-            self.model.related(self.user)
-            .annotate(y=F("year"))
+            self.objects.annotate(y=F("year"))
             .values("y")
             .annotate(incomes=Sum("incomes"), profit=Sum("profit_sum"), fee=Sum("fee"))
             .order_by("year")
