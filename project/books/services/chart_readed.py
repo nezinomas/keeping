@@ -3,17 +3,19 @@ from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
-from ..models import Book, BookTarget
+from .model_services import BookModelService, BookTargetModelService
+from ...users.models import User
 
 
 @dataclass
 class ChartReadedData:
+    user: User
     targets: dict = field(init=False, default_factory=dict)
     readed: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
-        self.targets = dict(BookTarget.objects.items().values_list("year", "quantity"))
-        self.readed = dict(Book.objects.readed().values_list("year", "cnt"))
+        self.targets = dict(BookTargetModelService(self.user).objects.values_list("year", "quantity"))
+        self.readed = dict(BookModelService(self.user).readed().values_list("year", "cnt"))
 
 
 class ChartReaded:

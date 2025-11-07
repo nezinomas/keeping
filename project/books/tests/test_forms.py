@@ -10,12 +10,12 @@ from ..forms import BookForm, BookTargetForm
 pytestmark = pytest.mark.django_db
 
 
-def test_book_init():
-    BookForm()
+def test_book_init(main_user):
+    BookForm(user=main_user)
 
 
-def test_book_init_fields():
-    form = BookForm().as_p()
+def test_book_init_fields(main_user):
+    form = BookForm(user=main_user).as_p()
 
     assert '<input type="text" name="started"' in form
     assert '<input type="text" name="ended"' in form
@@ -26,22 +26,23 @@ def test_book_init_fields():
 
 
 @time_machine.travel("1974-01-01")
-def test_book_year_initial_value():
+def test_book_year_initial_value(main_user):
     UserFactory()
 
-    form = BookForm().as_p()
+    form = BookForm(user=main_user).as_p()
 
     assert '<input type="text" name="started" value="1999-01-01"' in form
 
 
-def test_book_valid_data():
+def test_book_valid_data(main_user):
     form = BookForm(
+        user=main_user,
         data={
             "started": "1999-01-01",
             "ended": "1999-01-31",
             "author": "Author",
             "title": "Title",
-        }
+        },
     )
 
     assert form.is_valid()
@@ -57,13 +58,14 @@ def test_book_valid_data():
 
 @time_machine.travel("2000-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
-def test_book_invalid_start_year(year):
+def test_book_invalid_start_year(year, main_user):
     form = BookForm(
+        user=main_user,
         data={
             "started": f"{year}-1-1",
             "author": "Author",
             "title": "Title",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -72,13 +74,14 @@ def test_book_invalid_start_year(year):
 
 
 @time_machine.travel("2000-2-2")
-def test_book_invalid_start_date():
+def test_book_invalid_start_date(main_user):
     form = BookForm(
+        user=main_user,
         data={
             "started": "2000-2-3",
             "author": "Author",
             "title": "Title",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -87,14 +90,15 @@ def test_book_invalid_start_date():
 
 
 @time_machine.travel("2000-2-2")
-def test_book_invalid_end_date():
+def test_book_invalid_end_date(main_user):
     form = BookForm(
+        user=main_user,
         data={
             "started": "1999-1-1",
             "ended": "2000-2-3",
             "author": "Author",
             "title": "Title",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -103,14 +107,15 @@ def test_book_invalid_end_date():
 
 
 @time_machine.travel("2000-2-2")
-def test_book_end_date_earlier_than_start_date():
+def test_book_end_date_earlier_than_start_date(main_user):
     form = BookForm(
+        user=main_user,
         data={
             "started": "1999-1-2",
             "ended": "1999-1-1",
             "author": "Author",
             "title": "Title",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -121,8 +126,8 @@ def test_book_end_date_earlier_than_start_date():
     )
 
 
-def test_book_blank_data():
-    form = BookForm(data={})
+def test_book_blank_data(main_user):
+    form = BookForm(user=main_user, data={})
 
     assert not form.is_valid()
 
@@ -132,14 +137,15 @@ def test_book_blank_data():
     assert "title" in form.errors
 
 
-def test_book_author_too_long():
+def test_book_author_too_long(main_user):
     form = BookForm(
+        user=main_user,
         data={
             "started": "1999-01-01",
             "ended": "1999-01-31",
             "author": "Author" * 250,
             "title": "Title",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -147,14 +153,15 @@ def test_book_author_too_long():
     assert "author" in form.errors
 
 
-def test_book_title_too_long():
+def test_book_title_too_long(main_user):
     form = BookForm(
+        user=main_user,
         data={
             "started": "1999-01-01",
             "ended": "1999-01-31",
             "author": "Author",
             "title": "Title" * 254,
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -162,14 +169,15 @@ def test_book_title_too_long():
     assert "title" in form.errors
 
 
-def test_book_author_too_short():
+def test_book_author_too_short(main_user):
     form = BookForm(
+        user=main_user,
         data={
             "started": "1999-01-01",
             "ended": "1999-01-31",
             "author": "AA",
             "title": "Title",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -177,14 +185,15 @@ def test_book_author_too_short():
     assert "author" in form.errors
 
 
-def test_book_title_too_short():
+def test_book_title_too_short(main_user):
     form = BookForm(
+        user=main_user,
         data={
             "started": "1999-01-01",
             "ended": "1999-01-31",
             "author": "Author",
             "title": "T",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -195,12 +204,12 @@ def test_book_title_too_short():
 # -------------------------------------------------------------------------------------
 #                                                                           Book Target
 # -------------------------------------------------------------------------------------
-def test_book_target_init():
-    BookTargetForm()
+def test_book_target_init(main_user):
+    BookTargetForm(user=main_user)
 
 
-def test_book_target_init_fields():
-    form = BookTargetForm().as_p()
+def test_book_target_init_fields(main_user):
+    form = BookTargetForm(user=main_user).as_p()
 
     assert '<input type="text" name="year"' in form
     assert '<input type="number" name="quantity"' in form
@@ -208,10 +217,10 @@ def test_book_target_init_fields():
 
 
 @time_machine.travel("1974-01-01")
-def test_book_target_year_initial_value():
+def test_book_target_year_initial_value(main_user):
     UserFactory()
 
-    form = BookTargetForm().as_p()
+    form = BookTargetForm(user=main_user).as_p()
 
     assert '<input type="text" name="year" value="1999"' in form
 
@@ -223,8 +232,8 @@ def test_book_target_year_initial_value():
         (2000),
     ],
 )
-def test_book_target_valid_data(year):
-    form = BookTargetForm(data={"year": year, "quantity": 1.0})
+def test_book_target_valid_data(year, main_user):
+    form = BookTargetForm(user=main_user, data={"year": year, "quantity": 1.0})
 
     assert form.is_valid()
 
@@ -235,18 +244,18 @@ def test_book_target_valid_data(year):
     assert data.user.username == "bob"
 
 
-def test_book_target_year_validation():
+def test_book_target_year_validation(main_user):
     BookTargetFactory()
 
-    form = BookTargetForm(data={"year": 1999, "quantity": 200})
+    form = BookTargetForm(user=main_user, data={"year": 1999, "quantity": 200})
 
     assert not form.is_valid()
 
     assert "year" in form.errors
 
 
-def test_book_target_blank_data():
-    form = BookTargetForm(data={})
+def test_book_target_blank_data(main_user):
+    form = BookTargetForm(user=main_user, data={})
 
     assert not form.is_valid()
 

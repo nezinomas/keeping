@@ -12,6 +12,7 @@ from ..core.mixins.views import (
     rendered_content,
 )
 from . import forms, models, services
+from .services.model_services import BookModelService, BookTargetModelService
 
 
 class Index(TemplateViewMixin):
@@ -31,7 +32,7 @@ class ChartReaded(TemplateViewMixin):
     template_name = "books/readed_books.html"
 
     def get_context_data(self, **kwargs):
-        data = services.ChartReadedData()
+        data = services.ChartReadedData(self.request.user)
         obj = services.ChartReaded(data)
 
         # if not data.readed:
@@ -45,7 +46,7 @@ class InfoRow(TemplateViewMixin):
     template_name = "books/info_row.html"
 
     def get_context_data(self, **kwargs):
-        obj = services.InfoRow(self.request.user.year)
+        obj = services.InfoRow(self.request.user)
         context = {
             "readed": obj.readed,
             "reading": obj.reading,
@@ -59,10 +60,9 @@ class Lists(ListViewMixin):
     per_page = 50
 
     def get_queryset(self):
-        if self.request.GET.get("tab"):
-            return models.Book.objects.items()
-
-        return models.Book.objects.year(year=self.request.user.year)
+        user = self.request.user
+        service = BookModelService(user)
+        return service.objects if self.request.GET.get("tab") else service.year(user.year)
 
     def get_context_data(self, **kwargs):
         page = self.request.GET.get("page", 1)
