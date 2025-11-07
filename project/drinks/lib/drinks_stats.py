@@ -1,15 +1,26 @@
 import calendar
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import date, datetime
 from typing import Optional
 
 from ...core.lib.date import ydays
 from ..lib.drinks_options import DrinksOptions
 
 
+@dataclass
+class DataRow:
+    date: date
+    qty: float
+    stdav: float
+
+    def ml(self, options: DrinksOptions) -> float:
+        """Convert stdav to ml using options."""
+        return options.stdav_to_ml(self.stdav)
+
+
 class DrinkStats:
     def __init__(self, options: DrinksOptions, data: Optional[list] = None):
         self.options = options
-        self.data = data
 
         self.year = None
         self.per_month = [0.0] * 12
@@ -18,43 +29,34 @@ class DrinkStats:
         self.qty_of_month = [0.0] * 12
         self.qty_of_year = 0.0
 
+        if not data:
+            return
+
+        self.year = data[0]["date"].year
+        self.data = self.rows = [DataRow(**row) for row in data]
         self._calc_month()
         self._calc_year()
 
     def _calc_month(self) -> None:
-        if not self.data:
-            return
-
         for row in self.data:
-            _stdav = row.get("stdav")
-            _ml = self.options.stdav_to_ml(_stdav)
+            month_idx = row.date.month - 1
+            ml = row.ml(self.options)
+            month_len = calendar.monthrange(row.date.year, row.date.month)[1]
 
-            _date = row.get("date")
-            _year = _date.year
-            _month = _date.month
-            _monthlen = calendar.monthrange(_year, _month)[1]
+            self.per_month[month_idx] = ml
+            self.per_day_of_month[month_idx] = ml / month_len
+            self.qty_of_month[month_idx] = row.qty
 
-            if not self.year:
-                self.year = _year
+    def _calc_year(self) -> None:
+        today = datetime.now().date()
 
-            idx = _month - 1
-
-            self.per_month[idx] = _ml
-            self.per_day_of_month[idx] = _ml / _monthlen
-            self.qty_of_month[idx] = row.get("qty")
-
-    def _calc_year(self):
-        if not self.data:
-            return
-
-        dt = datetime.now().date()
-
-        if self.year == dt.year:
-            day_of_year = dt.timetuple().tm_yday
-            month = dt.month
+        if self.year == today.year:
+            day_of_year = today.timetuple().tm_yday
+            month_limit = today.month
         else:
             day_of_year = ydays(self.year)
-            month = 12
+            month_limit = 12
 
+        total_ml = sum(self.per_month[:month_limit])
+        self.per_day_of_year = total_ml / day_of_year if day_of_year else 0.0
         self.qty_of_year = sum(self.qty_of_month)
-        self.per_day_of_year = sum(self.per_month[:month]) / day_of_year
