@@ -1,61 +1,15 @@
-from typing import Optional
-
 from django.db import models
-from django.db.models import Count, F, Q, Sum, Value
-from django.db.models.functions import ExtractYear, TruncMonth
+from django.db.models import F, Sum
+from django.db.models.functions import ExtractYear
 
-from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..users.models import User
 
 
 class DebtQuerySet(models.QuerySet):
-    def related(self, user: Optional[User] = None, debt_type=None):
-        #Todo: Refactore user
-        try:
-            journal = user.journal
-        except AttributeError:
-            print("Getting journal from utils.get_user() in exception")
-            journal = utils.get_user().journal
-
-        if not debt_type:
-            debt_type = utils.get_request_kwargs("debt_type")
-
+    def related(self, user: User, debt_type: str):
         return self.select_related("account", "journal").filter(
-            journal=journal, debt_type=debt_type
-        )
-
-    def items(self):
-        return self.related().filter(closed=False)
-
-    def year(self, year):
-        return self.related().filter(
-            Q(date__year=year) | (Q(date__year__lt=year) & Q(closed=False))
-        )
-
-    def sum_by_month(self, year, debt_type=None, closed=False):
-        qs = self.related(debt_type=debt_type)
-
-        if not closed:
-            qs = qs.filter(closed=False)
-
-        return (
-            qs.filter(date__year=year)
-            .annotate(cnt=Count("id"))
-            .values("id")
-            .annotate(date=TruncMonth("date"))
-            .values("date")
-            .annotate(sum_debt=Sum("price"))
-            .annotate(sum_return=Sum("returned"))
-            .annotate(title=Value(f"{debt_type}"))
-            .order_by("date")
-        )
-
-    def sum_all(self, debt_type=None):
-        return (
-            self.related(debt_type=debt_type)
-            .filter(closed=False)
-            .aggregate(debt=Sum("price"), debt_return=Sum("returned"))
+            journal=user.journal, debt_type=debt_type
         )
 
     def incomes(self, user: User):
@@ -88,39 +42,9 @@ class DebtQuerySet(models.QuerySet):
 
 
 class DebtReturnQuerySet(SumMixin, models.QuerySet):
-    def related(self, user: Optional[User] = None, debt_type=None):
-        #Todo: Refactore user
-        try:
-            journal = user.journal
-        except AttributeError:
-            print("Getting journal from utils.get_user() in exception")
-            journal = utils.get_user().journal
-
-        if not debt_type:
-            debt_type = utils.get_request_kwargs("debt_type")
-
+    def related(self, user: User, debt_type: str):
         return self.select_related("account", "debt").filter(
-            debt__journal=journal, debt__debt_type=debt_type
-        )
-
-    def items(self):
-        return self.related().all()
-
-    def year(self, year):
-        return self.related().filter(date__year=year)
-
-    def sum_by_month(self, year, debt_type=None):
-        qs = self.related(debt_type=debt_type)
-
-        return (
-            qs.filter(date__year=year)
-            .annotate(cnt=Count("id"))
-            .values("id")
-            .annotate(date=TruncMonth("date"))
-            .values("date")
-            .annotate(sum=Sum("price"))
-            .annotate(title=Value(f"{debt_type}_return"))
-            .order_by("date")
+            debt__journal=user.journal, debt__debt_type=debt_type
         )
 
     def incomes(self, user: User):

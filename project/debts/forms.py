@@ -4,6 +4,7 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
+from ..accounts.services.model_services import AccountModelService
 from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_date_with_user_year
@@ -35,12 +36,13 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
 
+        accounts = AccountModelService(user).items()
         # inital values
-        self.fields["account"].initial = Account.objects.items().first()
-        self.fields["date"].initial = set_date_with_user_year()
+        self.fields["account"].initial = accounts.first()
+        self.fields["date"].initial = set_date_with_user_year(user)
 
         # overwrite ForeignKey expense_type queryset
-        self.fields["account"].queryset = Account.objects.items()
+        self.fields["account"].queryset = accounts
 
         # fields labels
         debt_type = utils.get_request_kwargs("debt_type")
@@ -114,12 +116,13 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         # form inputs settings
         self.fields["remark"].widget.attrs["rows"] = 3
 
+        accounts = AccountModelService(user).items()
         # inital values
-        self.fields["date"].initial = set_date_with_user_year()
-        self.fields["account"].initial = Account.objects.items().first()
+        self.fields["date"].initial = set_date_with_user_year(user)
+        self.fields["account"].initial = accounts.first()
 
         # overwrite ForeignKey expense_type queryset
-        self.fields["account"].queryset = Account.objects.items()
+        self.fields["account"].queryset = accounts
         self.fields["debt"].queryset = models.Debt.objects.items().filter(closed=False)
 
         # fields labels
