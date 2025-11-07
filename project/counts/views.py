@@ -14,13 +14,18 @@ from ..core.mixins.views import (
 )
 from . import services
 from .forms import CountForm, CountTypeForm
-from .lib.views_helper import CountTypetObjectMixin, InfoRowData
+from .lib.views_helper import (
+    CountTypetObjectMixin,
+    InfoRowData,
+    CountUrlMixin,
+)
 from .models import Count, CountType
+from .services.model_services import CountModelService, CountTypeModelService
 
 
 class Redirect(RedirectViewMixin):
     def get_redirect_url(self, *args, **kwargs):
-        if qs := CountType.objects.related().first():
+        if qs := CountTypeModelService(self.request.user).objects.first():
             return reverse("counts:index", kwargs={"slug": qs.slug})
 
         return reverse("counts:empty")
@@ -36,9 +41,10 @@ class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         super().get_object()
 
-        year = self.request.user.year
+        user = self.request.user
+        year = user.year
         week = weeknumber(year)
-        data = InfoRowData(year, self.object.slug)
+        data = InfoRowData(user, self.object.slug)
 
         context = {
             "object": self.object,
@@ -79,9 +85,9 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         super().get_object()
 
-        year = self.request.user.year
+        user = self.request.user
         count_type = self.object.slug
-        context = services.index.load_index_service(year, count_type)
+        context = services.index.load_index_service(user, count_type)
 
         return {
             **super().get_context_data(**self.kwargs),
@@ -100,7 +106,7 @@ class TabData(ListViewMixin):
         year = self.request.user.year
         slug = self.kwargs.get("slug")
 
-        return Count.objects.year(year=year, count_type=slug)
+        return CountModelService(self.request.user).year(year=year, count_type=slug)
 
     def get_context_data(self, **kwargs):
         return {
@@ -115,9 +121,9 @@ class TabHistory(TemplateViewMixin):
     template_name = "counts/tab_history.html"
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
+        user = self.request.user
         count_type = self.kwargs.get("slug")
-        context = services.index.load_history_service(year, count_type)
+        context = services.index.load_history_service(user, count_type)
 
         return {
             **super().get_context_data(**self.kwargs),
@@ -130,16 +136,14 @@ class TabHistory(TemplateViewMixin):
         }
 
 
-class CountUrlMixin:
-    def get_success_url(self):
-        slug = self.object.count_type.slug
-        return reverse_lazy("counts:tab_data", kwargs={"slug": slug})
-
-
 class New(CountUrlMixin, CreateViewMixin):
     model = Count
     form_class = CountForm
     modal_form_title = _("Counter")
+
+    def get_form(self, data=None, files=None, **kwargs):
+        kwargs["counter_type"] = self.kwargs.get("slug")
+        return super().get_form(data, files, **kwargs)
 
     def get_hx_trigger_django(self):
         tab = self.kwargs.get("tab")

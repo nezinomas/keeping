@@ -1,6 +1,8 @@
+import tempfile
 from time import sleep
 
 import pytest
+from django.test import override_settings
 from selenium.webdriver.common.by import By
 
 from ...core.tests.test_integration_browser import Browser
@@ -11,6 +13,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.mark.webtest
 class CountsIntegrationTests(Browser):
+    @override_settings(MEDIA_ROOT=tempfile.gettempdir())
     def test_create(self):
         self.browser.get(f"{self.live_server_url}/counts/")
 
@@ -24,6 +27,7 @@ class CountsIntegrationTests(Browser):
         page = self.browser.page_source
         assert "-AAA-" in page
 
+    @override_settings(MEDIA_ROOT=tempfile.gettempdir())
     def test_delete(self):
         CountTypeFactory(title="-AAA-")
 

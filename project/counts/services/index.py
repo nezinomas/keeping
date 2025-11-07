@@ -6,8 +6,10 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
 from ...core.lib.translation import weekday_names
+from ...users.models import User
 from ..lib.stats import Stats
 from ..models import Count
+from ..services.model_services import CountModelService
 
 
 class IndexService:
@@ -75,17 +77,18 @@ class IndexService:
 
 
 class Data:
-    def __init__(self, year: int, count_type: str):
-        self.year: int = year
+    def __init__(self, user: User, count_type: str):
+        self.user = user
+        self.year = user.year
         self.count_type: str = count_type
 
     @property
     def sum_by_day(self) -> list[dict]:
-        return Count.objects.sum_by_day(year=self.year, count_type=self.count_type)
+        return CountModelService(self.user).sum_by_day(year=self.year, count_type=self.count_type)
 
     @property
     def items(self) -> list[dict]:
-        return Count.objects.items(count_type=self.count_type).values(
+        return CountModelService(self.user).items(count_type=self.count_type).values(
             "date", "quantity"
         )
 
@@ -94,7 +97,7 @@ class Data:
         past_last_record = None
         with contextlib.suppress(Count.DoesNotExist, AttributeError):
             past_last_record = (
-                Count.objects.related()
+                CountModelService(self.user).objects
                 .filter(date__year__lt=self.year, count_type__slug=self.count_type)
                 .latest()
                 .date
@@ -102,8 +105,9 @@ class Data:
         return past_last_record
 
 
-def load_index_service(year: int, count_type: str) -> dict:
-    data = Data(year, count_type)
+def load_index_service(user, count_type: str) -> dict:
+    year = user.year
+    data = Data(user, count_type)
     stats = Stats(year=year, data=data.sum_by_day, past_latest=data.past_latest)
     srv = IndexService(year, stats)
 
@@ -119,8 +123,9 @@ def load_index_service(year: int, count_type: str) -> dict:
     }
 
 
-def load_history_service(year: int, count_type: str) -> dict:
-    data = Data(year, count_type).items
+def load_history_service(user, count_type: str) -> dict:
+    year = user.year
+    data = Data(user, count_type).items
     stats = Stats(data=data)
     srv = IndexService(year, stats)
 

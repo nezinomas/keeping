@@ -3,9 +3,17 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from django.db.models import Sum
+from django.urls import reverse_lazy
 
+from ...users.models import User
 from .. import models
-from ..models import CountType
+from ..services.model_services import CountModelService, CountTypeModelService
+
+
+class CountUrlMixin:
+    def get_success_url(self):
+        slug = self.object.count_type.slug
+        return reverse_lazy("counts:tab_data", kwargs={"slug": slug})
 
 
 class CountTypetObjectMixin:
@@ -18,8 +26,10 @@ class CountTypetObjectMixin:
             return
 
         if count_type_slug := self.kwargs.get("slug"):
-            with contextlib.suppress(CountType.DoesNotExist):
-                self.object = CountType.objects.related().get(slug=count_type_slug)
+            with contextlib.suppress(models.CountType.DoesNotExist):
+                self.object = CountTypeModelService(self.request.user).objects.get(
+                    slug=count_type_slug
+                )
 
                 # push self.object to self.kwargs
                 self.kwargs["object"] = self.object
@@ -27,19 +37,21 @@ class CountTypetObjectMixin:
 
 @dataclass
 class InfoRowData:
-    year: int
+    user: User
     slug: str
+    year: int = field(init=False, default=None)
     total: int = field(init=False, default=0)
     gap: int = field(init=False, default=0)
 
     def __post_init__(self):
+        self.year = self.user.year
         self.gap = self._get_gap(self.year, self.slug)
         self.total = self._get_total(self.year, self.slug)
 
     def _get_total(self, year, slug):
         qs_total = (
-            models.Count.objects.related()
-            .filter(count_type__slug=slug, date__year=year)
+            CountModelService(self.user)
+            .objects.filter(count_type__slug=slug, date__year=year)
             .aggregate(total=Sum("quantity"))
         )
 
@@ -51,8 +63,8 @@ class InfoRowData:
         if year == datetime.now().year:
             with contextlib.suppress(models.Count.DoesNotExist):
                 qs_latest = (
-                    models.Count.objects.related()
-                    .filter(count_type__slug=slug)
+                    CountModelService(self.user)
+                    .objects.filter(count_type__slug=slug)
                     .latest()
                 )
                 gap = (datetime.now().date() - qs_latest.date).days

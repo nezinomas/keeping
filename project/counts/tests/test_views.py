@@ -125,6 +125,20 @@ def test_view_new(client_logged):
     assert '<a role="button" hx-get="/counts/delete/1/"' in actual
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_view_new_load_form(client_logged):
+    o1 = CountTypeFactory(title="XXX")
+    o2 = CountTypeFactory(title="ZZZ")
+
+    url = reverse("counts:new", kwargs={"slug": "zzz", "tab": "data"})
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'<option value="{o1.pk}">{o1.title}</option>' in actual
+    assert f'<option value="{o2.pk}" selected>{o2.title}</option>' in actual
+
+
+
 def test_view_new_invalid_data(client_logged):
     data = {"date": -2, "quantity": "x"}
 
@@ -134,6 +148,21 @@ def test_view_new_invalid_data(client_logged):
     form = response.context["form"]
 
     assert not form.is_valid()
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_view_update_load_form(client_logged):
+    count_type_1 = CountTypeFactory(title="ZZZ")
+    count_type_2 = CountTypeFactory(title="AAA")
+
+    count = CountFactory(count_type=count_type_1)
+
+    url = reverse("counts:update", kwargs={"pk": count.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'<option value="{count_type_1.pk}" selected>{count_type_1.title}</option>' in actual
+    assert f'<option value="{count_type_2.pk}">{count_type_2.title}</option>' in actual
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -681,6 +710,7 @@ def test_count_type_htmx_redirect_header(client_logged):
     )
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_new_invalid_data(client_logged):
     data = {"title": "X"}
     url = reverse("counts:type_new")

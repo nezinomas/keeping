@@ -10,6 +10,7 @@ from mock import patch
 
 from ..factories import CountFactory, CountTypeFactory
 from ..models import Count, CountType
+from ..services.model_services import CountModelService, CountTypeModelService
 
 pytestmark = pytest.mark.django_db
 
@@ -17,9 +18,9 @@ pytestmark = pytest.mark.django_db
 # -------------------------------------------------------------------------------------
 #                                                                                 Count
 # --------------------------------------------------------------------------------------
-@pytest.fixture()
+@pytest.fixture(name="counters")
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def _counters(second_user):
+def fixture_counters(second_user):
     CountFactory(date=date(1999, 1, 1), quantity=1.0)
     CountFactory(date=date(1999, 1, 1), quantity=1.5)
     CountFactory(date=date(1999, 2, 1), quantity=2.0)
@@ -39,9 +40,9 @@ def _counters(second_user):
     )
 
 
-@pytest.fixture()
+@pytest.fixture(name="different_users")
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def _different_users(second_user):
+def fixture_different_users(second_user):
     CountFactory()
     CountFactory(count_type=CountTypeFactory(title="X"))
     CountFactory(count_type=CountTypeFactory(title="X"), user=second_user)
@@ -53,37 +54,37 @@ def test_count_str():
     assert str(actual) == "1999-01-01: 1"
 
 
-def test_count_related(_different_users):
-    actual = Count.objects.related()
+def test_count_related(main_user, different_users):
+    actual = Count.objects.related(main_user)
 
     assert len(actual) == 2
     assert actual[0].user.username == "bob"
 
 
-def test_count_items(_different_users):
-    actual = Count.objects.items()
+def test_count_items(main_user, different_users):
+    actual = CountModelService(main_user).items()
 
     assert len(actual) == 2
     assert actual[0].user.username == "bob"
 
 
-def test_count_items_with_count_type(_different_users):
-    actual = Count.objects.items(count_type="count-type")
+def test_count_items_with_count_type(main_user, different_users):
+    actual = CountModelService(main_user).items(count_type="count-type")
 
     assert len(actual) == 1
     assert actual[0].user.username == "bob"
 
 
-def test_count_year(_different_users):
-    actual = list(Count.objects.year(1999))
+def test_count_year(main_user, different_users):
+    actual = list(CountModelService(main_user).year(1999))
 
     assert len(actual) == 2
     assert actual[0].date == date(1999, 1, 1)
     assert actual[0].user.username == "bob"
 
 
-def test_count_year_with_count_type(_different_users):
-    actual = list(Count.objects.year(1999, count_type="count-type"))
+def test_count_year_with_count_type(main_user, different_users):
+    actual = list(CountModelService(main_user).year(1999, count_type="count-type"))
 
     assert len(actual) == 1
     assert actual[0].date == date(1999, 1, 1)
@@ -109,37 +110,39 @@ def test_count_quantity_int():
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_count_order():
+def test_count_order(main_user):
     CountFactory(date=date(1999, 1, 1))
     CountFactory(date=date(1999, 12, 1))
 
-    actual = list(Count.objects.year(1999))
+    actual = list(CountModelService(main_user).year(1999))
 
     assert str(actual[0]) == "1999-12-01: 1.0"
     assert str(actual[1]) == "1999-01-01: 1.0"
 
 
-def test_count_quantity_for_one_year(_counters):
-    actual = Count.objects.sum_by_year(year=1999, count_type="count-type")
+def test_count_quantity_for_one_year(main_user, counters):
+    actual = CountModelService(main_user).sum_by_year(
+        year=1999, count_type="count-type"
+    )
     actual = list(actual)
 
     assert actual[0]["qty"] == 5.5
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_count_quantity_for_all_years(_counters):
+def test_count_quantity_for_all_years(main_user, counters):
     CountFactory(date=date(2020, 1, 1), quantity=10)
     CountFactory(date=date(2020, 12, 1), quantity=5)
 
-    actual = Count.objects.sum_by_year(count_type="count-type")
+    actual = CountModelService(main_user).sum_by_year(count_type="count-type")
     actual = list(actual)
 
     assert actual[0]["qty"] == 5.5
     assert actual[1]["qty"] == 15
 
 
-def test_count_days_quantity_sum(_counters):
-    actual = Count.objects.sum_by_day(1999, count_type="count-type")
+def test_count_days_quantity_sum(main_user, counters):
+    actual = CountModelService(main_user).sum_by_day(1999, count_type="count-type")
 
     actual = actual.values_list("qty", flat=True)
 
@@ -148,8 +151,10 @@ def test_count_days_quantity_sum(_counters):
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-def test_count_days_quantity_sum_for_january(_counters):
-    actual = Count.objects.sum_by_day(year=1999, month=1, count_type="count-type")
+def test_count_days_quantity_sum_for_january(main_user, counters):
+    actual = CountModelService(main_user).sum_by_day(
+        year=1999, month=1, count_type="count-type"
+    )
     actual = actual.values_list("qty", flat=True)
 
     expect = [2.5]
@@ -181,30 +186,29 @@ def test_count_type_unique_for_users(main_user, second_user):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_count_type_related(second_user):
+def test_count_type_related(main_user, second_user):
     CountTypeFactory(title="X1")
     CountTypeFactory(title="X2", user=second_user)
 
-    actual = CountType.objects.related()
+    actual = CountType.objects.related(main_user)
 
     assert actual.count() == 1
     assert actual[0].title == "X1"
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_count_type_items(second_user):
+def test_count_type_items(main_user, second_user):
     CountTypeFactory(title="X1")
     CountTypeFactory(title="X2", user=second_user)
 
-    actual = CountType.objects.items()
+    actual = CountTypeModelService(main_user).items()
 
     assert actual.count() == 1
     assert actual[0].title == "X1"
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@patch("project.core.lib.utils.get_request_kwargs", return_value="x1")
-def test_count_type_not_update_other_user_count(mck, second_user):
+def test_count_type_not_update_other_user_count(second_user):
     u1 = CountTypeFactory(title="X1")
     u2 = CountTypeFactory(title="X1", user=second_user)
 
@@ -219,8 +223,7 @@ def test_count_type_not_update_other_user_count(mck, second_user):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@patch("project.core.lib.utils.get_request_kwargs", return_value="x1")
-def test_count_type_not_delete_other_user_count(mck, second_user):
+def test_count_type_not_delete_other_user_count(second_user):
     u1 = CountTypeFactory(title="X1")
     u2 = CountTypeFactory(title="X1", user=second_user)
 
@@ -256,7 +259,7 @@ def test_count_type_update():
 #                                                                         generate menu
 # -------------------------------------------------------------------------------------
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@patch("project.counts.models.render_to_string")
+@patch("project.counts.signals.render_to_string")
 @patch("builtins.open")
 def test_menu_create_journal_id_folder(open_mock, render_mock, main_user):
     journal_pk = main_user.journal.pk
