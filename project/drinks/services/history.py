@@ -3,15 +3,17 @@ from datetime import datetime
 import polars as pl
 from django.utils.translation import gettext as _
 
+from ...users.models import User
 from .. import models
 from ..lib.drinks_options import DrinksOptions
 from ..managers import DrinkQuerySet
+from ..services.model_services import DrinkModelService
 
 
 class HistoryService:
-    def __init__(self, data: list[dict]):
+    def __init__(self, user: User, data: list[dict]):
         self.df: pl.DataFrame = pl.DataFrame()
-        self.options: DrinksOptions = DrinksOptions()
+        self.options: DrinksOptions = DrinksOptions(user.drink_type)
 
         if data:
             if isinstance(data, DrinkQuerySet):
@@ -98,9 +100,9 @@ class HistoryService:
         return self._data_frame_col("qty")
 
 
-def load_service() -> dict:
-    data = models.Drink.objects.sum_by_year()
-    obj = HistoryService(data)
+def load_service(user) -> dict:
+    data = DrinkModelService(user).sum_by_year()
+    obj = HistoryService(user, data)
 
     return {
         "records": len(obj.years) if len(obj.years) > 1 else 0,

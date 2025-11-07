@@ -8,38 +8,43 @@ from ...core.lib.date import ydays, years
 from ...core.lib.translation import month_names
 from ..lib.drinks_options import DrinksOptions
 from ..lib.drinks_stats import DrinkStats
-from ..managers import DrinkQuerySet
 from ..models import Drink, DrinkTarget
+from ..services.model_services import DrinkModelService, DrinkTargetModelService
 from .calendar_chart import CalendarChart
 
 
 class IndexServiceData:
-    sum_by_month: DrinkQuerySet.sum_by_month = None
-    sum_by_day: DrinkQuerySet.sum_by_day = None
+    sum_by_month: list
+    sum_by_day: list
 
     target: float = 0.0
     latest_past_date: date = None
     latest_current_date: date = None
 
-    def __init__(self, year):
-        self.sum_by_month = Drink.objects.sum_by_month(year)
-        self.sum_by_day = Drink.objects.sum_by_day(year)
+    def __init__(self, user, year):
+        self.sum_by_month = DrinkModelService(user).sum_by_month(year)
+        self.sum_by_day = DrinkModelService(user).sum_by_day(year)
 
         with contextlib.suppress(Drink.DoesNotExist):
             self.latest_past_date = (
-                Drink.objects.related().filter(date__year__lt=year).latest().date
+                DrinkModelService(user)
+                .items()
+                .filter(date__year__lt=year)
+                .latest()
+                .date
             )
 
         with contextlib.suppress(Drink.DoesNotExist):
-            self.latest_current_date = Drink.objects.year(year).latest().date
+            self.latest_current_date = DrinkModelService(user).year(year).latest().date
 
         with contextlib.suppress(DrinkTarget.DoesNotExist):
-            self.target = DrinkTarget.objects.year(year).get(year=year).qty
+            self.target = DrinkTargetModelService(user).year(year).get(year=year).qty
 
 
 class IndexService:
     def __init__(
         self,
+        user,
         drink_stats: DrinkStats,
         target: float = 0.0,
         latest_past_date: date = None,
@@ -53,7 +58,7 @@ class IndexService:
         self._per_day_of_year = drink_stats.per_day_of_year
         self._quantity_of_year = drink_stats.qty_of_year
 
-        self._options = DrinksOptions()
+        self._options = DrinksOptions(user.drink_type)
 
     def chart_quantity(self) -> List[Dict]:
         return {
@@ -145,12 +150,14 @@ class IndexService:
         return (_days, _weeks, 12)
 
 
-def load_service(year: int) -> dict:
-    data = IndexServiceData(year)
-
+def load_service(user, year: int) -> dict:
+    data = IndexServiceData(user, year)
+    options = DrinksOptions(user.drink_type)
+    stats = DrinkStats(options, data.sum_by_month)
     # Index Tab service
     index_service = IndexService(
-        drink_stats=DrinkStats(data.sum_by_month),
+        user,
+        drink_stats=stats,
         target=data.target,
         latest_past_date=data.latest_past_date,
         latest_current_date=data.latest_current_date,
@@ -158,7 +165,10 @@ def load_service(year: int) -> dict:
 
     # calendar chart service
     calendar_service = CalendarChart(
-        year=year, data=data.sum_by_day, latest_past_date=data.latest_past_date
+        year=year,
+        drink_type=user.drink_type,
+        data=data.sum_by_day,
+        latest_past_date=data.latest_past_date,
     )
 
     return {

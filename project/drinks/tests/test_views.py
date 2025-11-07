@@ -400,7 +400,7 @@ def test_tab_history_drinks_data_alcohol(
 
 
 @time_machine.travel("1999-12-31")
-def test_tab_history_categories_with_empty_year_in_between(fake_request):
+def test_tab_history_categories_with_empty_year_in_between(main_user, rf):
     DrinkFactory(date=date(1997, 1, 1), quantity=15)
     DrinkFactory(date=date(1999, 1, 1), quantity=15)
     DrinkFactory(date=date(1999, 1, 1), quantity=15)
@@ -408,7 +408,8 @@ def test_tab_history_categories_with_empty_year_in_between(fake_request):
     class Dummy(views.TabHistory):
         pass
 
-    view = setup_view(Dummy(), fake_request)
+    rf.user = main_user
+    view = setup_view(Dummy(), rf)
     actual = view.get_context_data()
 
     assert actual["chart"]["categories"] == [1997, 1998, 1999]
@@ -426,8 +427,9 @@ def test_tab_history_categories_with_empty_year_in_between(fake_request):
     ],
 )
 def test_tab_history_categories_with_empty_current_year(
-    user_drink_type, drink_type, ml, alcohol, main_user, fake_request
+    user_drink_type, drink_type, ml, alcohol, main_user, rf
 ):
+    rf.user = main_user
     main_user.drink_type = user_drink_type
 
     DrinkFactory(date=date(1998, 1, 1), quantity=1, option=drink_type)
@@ -435,7 +437,7 @@ def test_tab_history_categories_with_empty_current_year(
     class Dummy(views.TabHistory):
         pass
 
-    view = setup_view(Dummy(), fake_request)
+    view = setup_view(Dummy(), rf)
     actual = view.get_context_data()
 
     assert actual["chart"]["categories"] == [1998, 1999]
@@ -617,7 +619,10 @@ def test_update(client_logged):
         ("stdav", 10.0),
     ],
 )
-def test_update_load_form_convert_quantity(drink_type, expect, client_logged):
+def test_update_load_form_convert_quantity(drink_type, expect, client_logged, main_user):
+    main_user.drink_type = drink_type
+    main_user.save()
+
     p = DrinkFactory(quantity=10, option=drink_type)
 
     url = reverse("drinks:update", kwargs={"pk": p.pk})
@@ -832,6 +837,7 @@ def test_target_lists(
     user_drink_type, drink_type, ml, expect_ml, expect_pcs, main_user, client_logged
 ):
     main_user.drink_type = user_drink_type
+    main_user.save()
 
     DrinkTargetFactory(drink_type=drink_type, quantity=ml)
 

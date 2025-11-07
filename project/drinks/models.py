@@ -33,7 +33,7 @@ class Drink(models.Model):
         get_latest_by = ["date"]
 
     def __str__(self):
-        qty = DrinksOptions().ratio
+        qty = DrinksOptions(self.user.drink_type).ratio
         return f"{self.date}: {round(self.quantity * qty, 2)}"
 
     def save(self, *args, **kwargs):
@@ -78,7 +78,7 @@ class DrinkTarget(models.Model):
     objects = managers.DrinkTargetQuerySet.as_manager()
 
     def __str__(self):
-        obj = DrinksOptions()
+        obj = DrinksOptions(self.user.drink_type)
         ml = obj.stdav_to_ml(drink_type=self.drink_type, stdav=self.quantity)
 
         return f"{self.year}: {ml}"
@@ -89,7 +89,7 @@ class DrinkTarget(models.Model):
 
     def save(self, *args, **kwargs):
         if self.drink_type != "stdav":
-            obj = DrinksOptions()
+            obj = DrinksOptions(self.user.drink_type)
             self.quantity = obj.ml_to_stdav(
                 drink_type=self.drink_type, ml=self.quantity
             )

@@ -7,9 +7,15 @@ import time_machine
 from project.drinks.lib.drinks_stats import DrinkStats
 
 from ..factories import DrinkFactory
+from ..lib.drinks_options import DrinksOptions
 from ..services import index as service
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture(name="drinks_options")
+def fixture_drinks_options():
+    return DrinksOptions("beer")
 
 
 @pytest.mark.parametrize(
@@ -22,25 +28,32 @@ pytestmark = pytest.mark.django_db
     ],
 )
 @time_machine.travel("1999-01-03")
-def test_dry_days(past, current, expect):
+def test_dry_days(past, current, expect, main_user, drinks_options):
     DrinkFactory()
 
     actual = service.IndexService(
-        drink_stats=DrinkStats(), latest_past_date=past, latest_current_date=current
+        user=main_user,
+        drink_stats=DrinkStats(drinks_options),
+        latest_past_date=past,
+        latest_current_date=current,
     ).tbl_dry_days()
 
     assert actual == expect
 
 
-def test_dry_days_no_records():
-    actual = service.IndexService(drink_stats=DrinkStats()).tbl_dry_days()
+def test_dry_days_no_records(main_user, drinks_options):
+    actual = service.IndexService(
+        user=main_user, drink_stats=DrinkStats(drinks_options)
+    ).tbl_dry_days()
 
     assert not actual
 
 
 @time_machine.travel("2019-10-10")
-def test_std_av():
-    actual = service.IndexService(drink_stats=DrinkStats())._std_av(2019, 273.5)
+def test_std_av(main_user, drinks_options):
+    actual = service.IndexService(
+        user=main_user, drink_stats=DrinkStats(drinks_options)
+    )._std_av(2019, 273.5)
 
     expect = [
         {
@@ -84,8 +97,10 @@ def test_std_av():
 
 
 @time_machine.travel("2019-10-10")
-def test_std_av_past_recods():
-    actual = service.IndexService(drink_stats=DrinkStats())._std_av(1999, 273.5)
+def test_std_av_past_recods(main_user, drinks_options):
+    actual = service.IndexService(
+        user=main_user, drink_stats=DrinkStats(drinks_options)
+    )._std_av(1999, 273.5)
 
     expect = [
         {
@@ -137,7 +152,7 @@ def test_std_av_past_recods():
         ("stdav", 10, 0.1),
     ],
 )
-def test_tbl_alcohol(drink_type, qty, expect, main_user):
+def test_tbl_alcohol(drink_type, qty, expect, main_user, drinks_options):
     main_user.drink_type = drink_type
 
     stats = SimpleNamespace(
@@ -146,6 +161,6 @@ def test_tbl_alcohol(drink_type, qty, expect, main_user):
         per_day_of_year=0.0,
     )
 
-    actual = service.IndexService(drink_stats=stats).tbl_alcohol()
+    actual = service.IndexService(user=main_user, drink_stats=stats).tbl_alcohol()
 
     assert actual["liters"] == expect

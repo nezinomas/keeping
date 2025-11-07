@@ -15,6 +15,7 @@ from ..core.mixins.views import (
 )
 from . import forms, models, services
 from .lib.drinks_options import DrinksOptions
+from .services.model_services import DrinkModelService, DrinkTargetModelService
 
 
 class Index(TemplateViewMixin):
@@ -31,7 +32,7 @@ class TabIndex(TemplateViewMixin):
     template_name = "drinks/tab_index.html"
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
+        user = self.request.user
 
         return {
             **super().get_context_data(**kwargs),
@@ -40,7 +41,7 @@ class TabIndex(TemplateViewMixin):
                 "target": rendered_content(self.request, TargetLists, **kwargs),
             },
             **services.helper.drink_type_dropdown(self.request),
-            **services.index.load_service(year),
+            **services.index.load_service(user, user.year),
         }
 
 
@@ -49,8 +50,8 @@ class TabData(ListViewMixin):
     template_name = "drinks/tab_data.html"
 
     def get_queryset(self):
-        year = self.request.user.year
-        return models.Drink.objects.year(year=year)
+        user = self.request.user
+        return DrinkModelService(user).year(user.year)
 
     def get_context_data(self, **kwargs):
         return {
@@ -68,7 +69,7 @@ class TabHistory(TemplateViewMixin):
             **super().get_context_data(**kwargs),
             **{"tab": "history"},
             **services.helper.drink_type_dropdown(self.request),
-            **services.history.load_service(),
+            **services.history.load_service(self.request.user),
         }
 
 
@@ -76,10 +77,11 @@ class Compare(TemplateViewMixin):
     template_name = "drinks/includes/history.html"
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year + 1
+        user = self.request.user
+        year = user.year + 1
         qty = self.kwargs.get("qty", 0)
         chart_serries = services.helper.several_years_consumption(
-            range(year - qty, year)
+            user=user, years=range(year - qty, year)
         )
         return {
             "chart": {
@@ -98,7 +100,9 @@ class CompareTwo(FormViewMixin):
         context = {}
         year1 = form.cleaned_data["year1"]
         year2 = form.cleaned_data["year2"]
-        chart_serries = services.helper.several_years_consumption([year1, year2])
+        chart_serries = services.helper.several_years_consumption(
+            user=self.request.user, years=[year1, year2]
+        )
 
         if len(chart_serries) == 2:
             context |= {
@@ -145,7 +149,8 @@ class Update(UpdateViewMixin):
         obj = super().get_object()
 
         if obj:
-            obj.quantity = obj.quantity * DrinksOptions(drink_type=obj.option).ratio
+            options = DrinksOptions(self.request.user.drink_type)
+            obj.quantity = obj.quantity * options.ratio
 
         return obj
 
@@ -161,8 +166,8 @@ class TargetLists(ListViewMixin):
     model = models.DrinkTarget
 
     def get_queryset(self):
-        year = self.request.user.year
-        return super().get_queryset().year(year)
+        user = self.request.user
+        return DrinkTargetModelService(user).year(user.year)
 
 
 class TargetNew(CreateViewMixin):
@@ -202,7 +207,9 @@ class TargetUpdate(UpdateViewMixin):
             if obj.drink_type == "stdav":
                 return obj
 
-            obj.quantity = DrinksOptions().stdav_to_ml(
+            # Todo: revisit this drink type from reqeust and from object
+            drink_type = self.request.user.drink_type
+            obj.quantity = DrinksOptions(drink_type).stdav_to_ml(
                 drink_type=obj.drink_type, stdav=obj.quantity
             )
 

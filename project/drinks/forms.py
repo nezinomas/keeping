@@ -6,12 +6,12 @@ from django.db.models import F
 from django.db.models.functions import ExtractYear
 from django.utils.translation import gettext as _
 
-from ..core.lib import utils
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
 from .models import MAX_BOTTLES, Drink, DrinkTarget
+from .services.model_services import DrinkModelService, DrinkTargetModelService
 
 
 class DrinkForm(YearBetweenMixin, forms.ModelForm):
@@ -22,18 +22,18 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "option", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
 
         # user input
-        self.fields["user"].initial = user
+        self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields["date"].initial = set_date_with_user_year(user)
+        self.fields["date"].initial = set_date_with_user_year(self.user)
 
         self.fields["date"].label = _("Date")
         self.fields["option"].label = _("Drink type")
@@ -68,16 +68,16 @@ class DrinkTargetForm(forms.ModelForm):
     field_order = ["year", "drink_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # user input
-        self.fields["user"].initial = user
+        self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
+        self.fields["year"].initial = set_date_with_user_year(self.user).year
 
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("Quantity")
@@ -97,7 +97,7 @@ class DrinkTargetForm(forms.ModelForm):
             return year
 
         # if new record
-        qs = DrinkTarget.objects.year(year)
+        qs = DrinkTargetModelService(self.user).year(year)
         if qs.exists():
             msg = _("already has a goal.")
             raise forms.ValidationError(f"{year} {msg}")
@@ -136,7 +136,7 @@ class DrinkCompareForm(forms.Form):
         year2 = cleaned.get("year2")
 
         years = (
-            Drink.objects.items()
+            DrinkModelService(self.user).items()
             .dates("date", "year")
             .annotate(year=ExtractYear(F("date")))
             .values_list("year", flat=True)

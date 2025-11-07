@@ -1,4 +1,3 @@
-from ...core.lib import utils
 from ...core.lib.date import ydays
 
 
@@ -10,10 +9,7 @@ class DrinksOptions:
         "stdav": {"stdav": 1, "ml": 10},  # 10ml -> 1 std_av
     }
 
-    def __init__(self, drink_type: str = None):
-        if not drink_type:
-            drink_type = utils.get_user().drink_type
-
+    def __init__(self, drink_type: str):
         self.drink_type = drink_type
 
     @property

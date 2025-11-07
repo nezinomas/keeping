@@ -14,7 +14,7 @@ from ..lib.drinks_options import DrinksOptions
     ],
 )
 def test_ratio(drink_type, expect):
-    actual = DrinksOptions(drink_type=drink_type).ratio
+    actual = DrinksOptions(drink_type).ratio
 
     assert actual == expect
 
@@ -30,7 +30,7 @@ def test_ratio(drink_type, expect):
     ],
 )
 def test_ml_to_stdav(drink_type, ml, expect):
-    actual = DrinksOptions().ml_to_stdav(drink_type=drink_type, ml=ml)
+    actual = DrinksOptions(drink_type).ml_to_stdav(drink_type=drink_type, ml=ml)
 
     assert actual == expect
 
@@ -61,7 +61,7 @@ def test_ml_to_stdav_01(drink_type, ml, expect):
     ],
 )
 def test_stdav_to_ml(drink_type, stdav, expect):
-    actual = DrinksOptions().stdav_to_ml(drink_type=drink_type, stdav=stdav)
+    actual = DrinksOptions(drink_type).stdav_to_ml(stdav=stdav, drink_type=drink_type)
 
     assert actual == expect
 
@@ -92,7 +92,7 @@ def test_stdav_to_ml_01(drink_type, stdav, expect):
     ],
 )
 def test_ratio_drink_type_from_user(drink_type, expect):
-    actual = DrinksOptions(drink_type=drink_type).ratio
+    actual = DrinksOptions(drink_type).ratio
 
     assert actual == expect
 
@@ -108,7 +108,7 @@ def test_ratio_drink_type_from_user(drink_type, expect):
     ],
 )
 def test_stdav(drink_type, expect):
-    actual = DrinksOptions(drink_type=drink_type).stdav
+    actual = DrinksOptions(drink_type).stdav
 
     assert actual == expect
 
@@ -124,7 +124,7 @@ def test_stdav(drink_type, expect):
     ],
 )
 def test_stdav_drink_type_from_user(drink_type, expect):
-    actual = DrinksOptions(drink_type=drink_type).stdav
+    actual = DrinksOptions(drink_type).stdav
 
     assert actual == expect
 
@@ -152,30 +152,6 @@ def test_convert(qty, from_, to, expect):
 
 
 @pytest.mark.parametrize(
-    "qty, from_, to, expect",
-    [
-        (1, "beer", "beer", 1),
-        (1, "beer", "wine", 0.31),
-        (1, "beer", "vodka", 0.06),
-        (1, "beer", "stdav", 2.5),
-        (1, "wine", "beer", 3.2),
-        (1, "wine", "wine", 1),
-        (1, "wine", "vodka", 0.2),
-        (1, "wine", "stdav", 8),
-        (1, "vodka", "beer", 16),
-        (1, "vodka", "wine", 5),
-        (1, "vodka", "vodka", 1),
-        (1, "vodka", "stdav", 40),
-    ],
-)
-def test_convert_from_user(qty, from_, to, expect, main_user):
-    main_user.drink_type = from_
-
-    actual = DrinksOptions().convert(qty, to)
-    round(actual, 2) == expect
-
-
-@pytest.mark.parametrize(
     "drink_type, stdav, expect",
     [
         ("beer", 2.5, 0.025),
@@ -184,24 +160,7 @@ def test_convert_from_user(qty, from_, to, expect, main_user):
         ("stdav", 1, 0.01),
     ],
 )
-def test_stdav_to_alkohol(drink_type, stdav, expect, main_user):
-    main_user.drink_type = drink_type
-
-    actual = DrinksOptions().stdav_to_alcohol(stdav)
-
-    assert actual == expect
-
-
-@pytest.mark.parametrize(
-    "drink_type, stdav, expect",
-    [
-        ("beer", 2.5, 0.025),
-        ("wine", 8, 0.08),
-        ("vodka", 40, 0.4),
-        ("stdav", 1, 0.01),
-    ],
-)
-def test_stdav_to_alkohol_01(drink_type, stdav, expect):
+def test_stdav_to_alkohol(drink_type, stdav, expect):
     actual = DrinksOptions(drink_type).stdav_to_alcohol(stdav)
 
     assert actual == expect
@@ -216,9 +175,7 @@ def test_stdav_to_alkohol_01(drink_type, stdav, expect):
         ("stdav", 1999, 1, 365),
     ],
 )
-def test_stdav_to_bottles(drink_type, year, stdav, expect, main_user):
-    main_user.drink_type = drink_type
-
-    actual = DrinksOptions().stdav_to_bottles(year=year, max_stdav=stdav)
+def test_stdav_to_bottles(drink_type, year, stdav, expect):
+    actual = DrinksOptions(drink_type).stdav_to_bottles(year=year, max_stdav=stdav)
 
     assert actual == expect

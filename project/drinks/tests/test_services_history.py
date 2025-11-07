@@ -19,9 +19,9 @@ def test_insert_empty_values():
 
 
 @time_machine.travel("2000-01-01")
-def test_years():
+def test_years(main_user):
     qs = [{"year": 1998, "qty": 1, "stdav": 2.5}]
-    actual = history.HistoryService(qs).years
+    actual = history.HistoryService(main_user, qs).years
 
     assert actual == [1998, 1999, 2000]
 
@@ -41,7 +41,7 @@ def test_pure_alcohol(drink_type, qty, stdav, expect, main_user):
 
     qs = [{"year": 1999, "qty": qty, "stdav": stdav}]
 
-    actual = history.HistoryService(qs).alcohol
+    actual = history.HistoryService(main_user, qs).alcohol
 
     assert actual == expect
 
@@ -61,7 +61,7 @@ def test_per_day(drink_type, qty, stdav, expect, main_user):
 
     qs = [{"year": 1999, "qty": qty, "stdav": stdav}]
 
-    actual = history.HistoryService(qs).per_day
+    actual = history.HistoryService(main_user, qs).per_day
 
     assert actual == expect
 
@@ -84,7 +84,7 @@ def test_per_day_adjusted_for_current_year(drink_type, qty, stdav, expect, main_
         {"year": 2000, "qty": qty, "stdav": stdav},
     ]
 
-    actual = history.HistoryService(qs).per_day
+    actual = history.HistoryService(main_user, qs).per_day
 
     assert actual == expect
 
@@ -104,6 +104,6 @@ def test_quantity(drink_type, qty, stdav, expect, main_user):
 
     qs = [{"year": 1999, "qty": qty, "stdav": stdav}]
 
-    actual = history.HistoryService(qs).quantity
+    actual = history.HistoryService(main_user, qs).quantity
 
     assert actual == expect

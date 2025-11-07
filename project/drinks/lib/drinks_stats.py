@@ -1,37 +1,30 @@
 import calendar
-from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Optional
 
 from ...core.lib.date import ydays
 from ..lib.drinks_options import DrinksOptions
-from ..managers import DrinkQuerySet
-from .drinks_options import DrinksOptions
 
 
-def empty_list():
-    return [0.0 for _ in range(12)]
-
-
-@dataclass
 class DrinkStats:
-    data: DrinkQuerySet.sum_by_month = None
-    per_month: list[float] = field(init=False, default_factory=empty_list)
-    per_day_of_month: list[float] = field(init=False, default_factory=empty_list)
-    per_day_of_year: float = field(init=False, default=0.0)
-    qty_of_month: list[float] = field(init=False, default_factory=empty_list)
-    qty_of_year: float = field(init=False, default=0.0)
-    options: DrinksOptions = field(init=False, default_factory=DrinksOptions)
+    def __init__(self, options: DrinksOptions, data: Optional[list] = None):
+        self.options = options
+        self.data = data
 
-    year: int = field(init=False, default=None)
-
-    def __post_init__(self):
-        if not self.data:
-            return
+        self.year = None
+        self.per_month = [0.0] * 12
+        self.per_day_of_month = [0.0] * 12
+        self.per_day_of_year = 0.0
+        self.qty_of_month = [0.0] * 12
+        self.qty_of_year = 0.0
 
         self._calc_month()
         self._calc_year()
 
     def _calc_month(self) -> None:
+        if not self.data:
+            return
+
         for row in self.data:
             _stdav = row.get("stdav")
             _ml = self.options.stdav_to_ml(_stdav)
@@ -51,6 +44,9 @@ class DrinkStats:
             self.qty_of_month[idx] = row.get("qty")
 
     def _calc_year(self):
+        if not self.data:
+            return
+
         dt = datetime.now().date()
 
         if self.year == dt.year:
