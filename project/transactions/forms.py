@@ -3,12 +3,15 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
+from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
+from ..savings.services.model_services import (
+    SavingTypeModelService,
+)
 from .models import SavingChange, SavingClose, SavingType, Transaction
-from ..accounts.services.model_services import AccountModelService
 
 
 class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
@@ -93,7 +96,7 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["date"].initial = set_date_with_user_year(self.user)
 
     def _overwrite_default_queries(self):
-        self.fields["from_account"].queryset = SavingType.objects.items()
+        self.fields["from_account"].queryset = SavingTypeModelService(self.user).items()
         self.fields["to_account"].queryset = AccountModelService(self.user).items()
 
     def _translate_fields(self):
@@ -155,13 +158,15 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         from_account = self.fields["from_account"]
         to_account = self.fields["to_account"]
 
-        from_account.queryset = SavingType.objects.items()
-        to_account.queryset = SavingType.objects.none()
+        saving_model = SavingTypeModelService(self.user)
+
+        from_account.queryset = saving_model.items()
+        to_account.queryset = saving_model.none()
 
         _from = getattr(self.instance, "from_account", None)
         _from_pk = getattr(_from, "pk", None)
         if from_account_pk := self.data.get("from_account") or _from_pk:
-            to_account.queryset = SavingType.objects.items().exclude(pk=from_account_pk)
+            to_account.queryset = saving_model.items().exclude(pk=from_account_pk)
 
     def _set_htmx_attributes(self):
         url = reverse("transactions:load_saving_type")

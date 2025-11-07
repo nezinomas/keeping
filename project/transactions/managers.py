@@ -1,31 +1,16 @@
-from typing import Optional
-
 from django.db import models
-from django.db.models import F, Sum, Value
+from django.db.models import F, Sum
 from django.db.models.functions import ExtractYear
 
-from ..core.lib import utils
 from ..core.mixins.queryset_sum import SumMixin
 from ..users.models import User
 
 
 class BaseMixin(models.QuerySet):
-    def related(self, user: Optional[User] = None):
-        #Todo: Refactore user
-        try:
-            journal = user.journal
-        except AttributeError:
-            print("Getting journal from utils.get_user() in exception")
-            journal = utils.get_user().journal
+    def related(self, user: User):
         return self.select_related("from_account", "to_account").filter(
-            from_account__journal=journal, to_account__journal=journal
+            from_account__journal=user.journal, to_account__journal=user.journal
         )
-
-    def year(self, year):
-        return self.related().filter(date__year=year)
-
-    def items(self):
-        return self.related()
 
     def incomes(self, user: User):
         """
@@ -79,13 +64,6 @@ class TransactionQuerySet(BaseMixin):
 
 
 class SavingCloseQuerySet(BaseMixin, SumMixin):
-    def sum_by_month(self, year, month=None):
-        return (
-            self.related()
-            .month_sum(year=year, month=month)
-            .annotate(title=Value("savings_close"))
-        )
-
     def expenses(self, user: User):
         """
         Used only in the post_save signal.
