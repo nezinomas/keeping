@@ -11,7 +11,13 @@ from ..core.mixins.views import (
     UpdateViewMixin,
     rendered_content,
 )
+from ..savings.services.model_services import SavingTypeModelService
 from . import forms, models
+from .services.model_services import (
+    SavingChangeModelService,
+    SavingCloseModelService,
+    TransactionModelService,
+)
 
 
 class Index(TemplateViewMixin):
@@ -43,7 +49,7 @@ class LoadSavingType(ListViewMixin):
             pk = None
 
         if pk:
-            self.object_list = models.SavingType.objects.items().exclude(pk=pk)
+            self.object_list = SavingTypeModelService(request.user).items().exclude(pk=pk)
 
         return self.render_to_response({"object_list": self.object_list})
 
@@ -52,7 +58,8 @@ class Lists(ListViewMixin):
     model = models.Transaction
 
     def get_queryset(self):
-        return models.Transaction.objects.year(year=self.request.user.year)
+        user = self.request.user
+        return TransactionModelService(user).year(user.year)
 
 
 class New(CreateViewMixin):
@@ -82,7 +89,8 @@ class SavingsCloseLists(ListViewMixin):
     model = models.SavingClose
 
     def get_queryset(self):
-        return models.SavingClose.objects.year(year=self.request.user.year)
+        user = self.request.user
+        return SavingCloseModelService(user).year(year=user.year)
 
 
 class SavingsCloseNew(CreateViewMixin):
@@ -114,7 +122,8 @@ class SavingsChangeLists(ListViewMixin):
     model = models.SavingChange
 
     def get_queryset(self):
-        return models.SavingChange.objects.year(year=self.request.user.year)
+        user = self.request.user
+        return SavingChangeModelService(user).year(year=user.year)
 
 
 class SavingsChangeNew(CreateViewMixin):
