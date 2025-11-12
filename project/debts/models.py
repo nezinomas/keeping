@@ -66,30 +66,3 @@ class DebtReturn(models.Model):
             text = f"{_('Borrow return')} {convert_price(price)}"
 
         return text
-
-    # def save(self, *args, **kwargs):
-    #     qs = Debt.objects.filter(id=self.debt_id)
-    #     obj = qs[0]
-
-    #     _returned = obj.returned or 0
-    #     if not self.pk:
-    #         _returned += self.price
-    #     else:
-    #         old = DebtReturn.objects.get(pk=self.pk)
-    #         dif = self.price - old.price
-    #         _returned += dif
-
-    #     qs.update(returned=_returned)
-
-    #     super().save(*args, **kwargs)
-
-    # def delete(self, *args, **kwargs):
-    #     try:
-    #         super().delete(*args, **kwargs)
-    #     except Exception as e:
-    #         raise e
-
-    #     qs = Debt.objects.filter(id=self.debt_id)
-    #     _returned = qs[0].returned - self.price
-
-    #     qs.update(returned=_returned)
