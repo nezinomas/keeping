@@ -20,6 +20,7 @@ from ..factories import (
 )
 
 pytestmark = pytest.mark.django_db
+from ..services.model_services import ModelService
 
 
 # -------------------------------------------------------------------------------------
@@ -954,14 +955,14 @@ def test_copy_200(client_logged):
     assert response.status_code == 200
 
 
-def test_copy_success(client_logged):
+def test_copy_success(main_user, client_logged):
     IncomePlanFactory(year=1999)
     data = {"year_from": "1999", "year_to": "2000", "income": True}
 
     url = reverse("plans:copy")
     client_logged.post(url, data, follow=True)
 
-    actual = models.IncomePlan.objects.year(2000)
+    actual = ModelService(models.IncomePlan, main_user).year(2000)
 
     assert actual[0].year == 2000
 
