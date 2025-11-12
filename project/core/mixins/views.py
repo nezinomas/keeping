@@ -44,9 +44,23 @@ def http_htmx_response(hx_trigger_name=None, status_code=204):
 #                                                                                Mixins
 # -------------------------------------------------------------------------------------
 class AddUserToKwargsMixin:
-    def get_form(self, data=None, files=None, **kwargs):
+    def get_form_kwargs(self, **kwargs):
         kwargs["user"] = self.request.user
+        return kwargs
+
+    def get_form(self, data=None, files=None, **kwargs):
+        kwargs = self.get_form_kwargs(**kwargs)
         return self.form_class(data, files, **kwargs)
+
+    def get_formset_class(self):
+        base_form = self.form_class
+
+        class UserAwareForm(base_form):
+            def __init__(self, *args, **form_kwargs):
+                form_kwargs = self.get_form_kwargs(**form_kwargs)
+                super().__init__(*args, **form_kwargs)
+
+        return UserAwareForm
 
 
 class GetQuerysetMixin:
@@ -120,9 +134,6 @@ class DeleteMixin:
 
     def get_hx_redirect(self):
         return self.hx_redirect
-
-    def url(self):
-        return self.object.get_delete_url() if self.object else None
 
     def get_context_data(self, **kwargs):
         context = {
@@ -233,11 +244,24 @@ class UpdateViewMixin(
     form_action = "update"
 
     def url(self):
-        return self.object.get_absolute_url() if self.object else None
+        app = self.request.resolver_match.app_name
+        return (
+            reverse_lazy(f"{app}:update", kwargs={"pk": self.object.pk})
+            if self.object
+            else None
+        )
 
 
 class DeleteViewMixin(AddUserToKwargsMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
     template_name = "core/generic_delete_form.html"
+
+    def url(self):
+        app = self.request.resolver_match.app_name
+        return (
+            reverse_lazy(f"{app}:delete", kwargs={"pk": self.object.pk})
+            if self.object
+            else None
+        )
 
 
 class RedirectViewMixin(RedirectView):
