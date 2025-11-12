@@ -8,11 +8,7 @@ from .. import managers, models
 
 
 class DebtModelService:
-    def __init__(
-        self,
-        user: User,
-        debt_type: str
-    ):
+    def __init__(self, user: User, debt_type: str):
         if not user:
             raise ValueError("User required")
 
@@ -21,10 +17,9 @@ class DebtModelService:
 
         self.debt_type = debt_type
 
-        self.objects = cast(
-            managers.DebtQuerySet, models.Debt.objects
-        ).related(user, self.debt_type)
-
+        self.objects = cast(managers.DebtQuerySet, models.Debt.objects).related(
+            user, self.debt_type
+        )
 
     def items(self):
         return self.objects.filter(closed=False)
@@ -53,19 +48,13 @@ class DebtModelService:
         )
 
     def sum_all(self):
-        return (
-            self.objects
-            .filter(closed=False)
-            .aggregate(debt=Sum("price"), debt_return=Sum("returned"))
+        return self.objects.filter(closed=False).aggregate(
+            debt=Sum("price"), debt_return=Sum("returned")
         )
 
 
 class DebtReturnModelService:
-    def __init__(
-        self,
-        user: User,
-        debt_type: str
-    ):
+    def __init__(self, user: User, debt_type: str):
         if not user:
             raise ValueError("User required")
 
@@ -77,7 +66,6 @@ class DebtReturnModelService:
         self.objects = cast(
             managers.DebtReturnQuerySet, models.DebtReturn.objects
         ).related(user, self.debt_type)
-
 
     def items(self):
         return self.objects.all()
@@ -97,4 +85,12 @@ class DebtReturnModelService:
             .annotate(sum=Sum("price"))
             .annotate(title=Value(f"{self.debt_type}_return"))
             .order_by("date")
+        )
+
+    def total_returned_for_debt(self, debt_return_instance):
+        return (
+            self.objects.filter(debt=debt_return_instance.debt).aggregate(
+                total=Sum("price")
+            )["total"]
+            or 0
         )

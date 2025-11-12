@@ -2,10 +2,10 @@ from datetime import date
 
 import pytest
 from django.urls import resolve, reverse
-from mock import patch
 
 from ...accounts.factories import AccountFactory
 from .. import factories, models, views
+from ..services.model_services import DebtReturnModelService
 
 pytestmark = pytest.mark.django_db
 
@@ -97,16 +97,16 @@ def test_borrow_return_load_form(client_logged):
     assert f'hx-post="{url}"' in content
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="borrow")
-def test_borrow_return_save(mck, client_logged):
+def test_borrow_return_save(main_user, client_logged):
+    debt_type = "borrow"
     a = AccountFactory()
     b = factories.BorrowFactory()
 
     data = {"date": "1999-1-3", "debt": b.pk, "price": "1", "account": a.pk}
-    url = reverse("debts:return_new", kwargs={"debt_type": "borrow"})
+    url = reverse("debts:return_new", kwargs={"debt_type": debt_type})
     client_logged.post(url, data, follow=True)
 
-    actual = models.DebtReturn.objects.items()[0]
+    actual = DebtReturnModelService(main_user, debt_type).items()[0]
     assert actual.date == date(1999, 1, 3)
     assert actual.account.title == "Account1"
     assert actual.price == 100
@@ -148,13 +148,14 @@ def test_borrow_return_load_update_form(client_logged):
     assert form.instance.remark == "Borrow Return Remark"
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="borrow")
-def test_borrow_return_update(mck, client_logged):
+def test_borrow_return_update(client_logged):
+    debt_type = "borrow"
+
     debt = factories.BorrowFactory(price=200)
     e = factories.BorrowReturnFactory(debt=debt)
     a = AccountFactory(title="AAA")
 
-    assert models.Debt.objects.items().get(pk=debt.pk).returned == 5
+    assert models.Debt.objects.get(pk=debt.pk).returned == 5
 
     data = {
         "date": "1999-1-2",
@@ -163,7 +164,7 @@ def test_borrow_return_update(mck, client_logged):
         "account": a.pk,
         "debt": debt.pk,
     }
-    url = reverse("debts:return_update", kwargs={"pk": e.pk, "debt_type": "borrow"})
+    url = reverse("debts:return_update", kwargs={"pk": e.pk, "debt_type": debt_type})
     client_logged.post(url, data)
 
     actual = models.DebtReturn.objects.get(pk=e.pk)
@@ -172,11 +173,12 @@ def test_borrow_return_update(mck, client_logged):
     assert actual.price == 100
     assert actual.account.title == "AAA"
     assert actual.remark == "Pastaba"
-    assert models.Debt.objects.items().get(pk=debt.pk).returned == 100
+    assert models.Debt.objects.get(pk=debt.pk).returned == 100
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="borrow")
-def test_borrow_return_update_with_returns(mck, client_logged):
+def test_borrow_return_update_with_returns(client_logged):
+    debt_type = "borrow"
+
     debt = factories.BorrowFactory(price=100 * 100)
     factories.BorrowReturnFactory(debt=debt, price=40 * 100)
     factories.BorrowReturnFactory(debt=debt, price=50 * 100)
@@ -190,7 +192,7 @@ def test_borrow_return_update_with_returns(mck, client_logged):
         "account": a.pk,
         "debt": debt.pk,
     }
-    url = reverse("debts:return_update", kwargs={"pk": e.pk, "debt_type": "borrow"})
+    url = reverse("debts:return_update", kwargs={"pk": e.pk, "debt_type": debt_type})
     response = client_logged.post(url, data, follow=True)
 
     assert not response.context.get("form")

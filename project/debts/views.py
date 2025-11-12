@@ -11,6 +11,13 @@ from ..core.mixins.views import (
     rendered_content,
 )
 from . import forms, models
+from .services.model_services import DebtModelService, DebtReturnModelService
+
+
+class AddDebtTypeMixin:
+    def get_form_kwargs(self, **kwargs):
+        kwargs["debt_type"] = self.kwargs.get("debt_type")
+        return super().get_form_kwargs(**kwargs)
 
 
 class DebtMixin:
@@ -61,10 +68,11 @@ class DebtLists(ListViewMixin):
     model = models.Debt
 
     def get_queryset(self):
-        return models.Debt.objects.year(year=self.request.user.year)
+        user = self.request.user
+        return DebtModelService(user, self.kwargs["debt_type"]).year(user.year)
 
 
-class DebtNew(DebtMixin, CreateViewMixin):
+class DebtNew(AddDebtTypeMixin, DebtMixin, CreateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
     modal_form_title = _("Debt")
@@ -74,25 +82,52 @@ class DebtNew(DebtMixin, CreateViewMixin):
         return reverse_lazy("debts:new", kwargs={"debt_type": debt_type})
 
 
-class DebtUpdate(ConvertToCents, DebtMixin, UpdateViewMixin):
+class DebtUpdate(ConvertToCents, AddDebtTypeMixin, DebtMixin, UpdateViewMixin):
     model = models.Debt
     form_class = forms.DebtForm
     modal_form_title = _("Debt")
 
+    def get_queryset(self):
+        return DebtModelService(self.request.user, self.kwargs["debt_type"]).objects
 
-class DebtDelete(DebtMixin, DeleteViewMixin):
+    def url(self):
+        return (
+            reverse_lazy(
+                f"debts:update",
+                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
+            )
+            if self.object
+            else None
+        )
+
+
+class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
     model = models.Debt
     modal_form_title = _("Delete debt")
+
+    def get_queryset(self):
+        return DebtModelService(self.request.user, self.kwargs["debt_type"]).objects
+
+    def url(self):
+        return (
+            reverse_lazy(
+                f"debts:delete",
+                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
+            )
+            if self.object
+            else None
+        )
 
 
 class DebtReturnLists(ListViewMixin):
     model = models.DebtReturn
 
     def get_queryset(self):
-        return models.DebtReturn.objects.year(year=self.request.user.year)
+        user = self.request.user
+        return DebtReturnModelService(user, self.kwargs["debt_type"]).year(user.year)
 
 
-class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
+class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
     modal_form_title = _("Debt repayment")
@@ -102,12 +137,45 @@ class DebtReturnNew(DebtReturnMixin, CreateViewMixin):
         return reverse_lazy("debts:return_new", kwargs={"debt_type": debt_type})
 
 
-class DebtReturnUpdate(ConvertToCents, DebtReturnMixin, UpdateViewMixin):
+class DebtReturnUpdate(
+    ConvertToCents, AddDebtTypeMixin, DebtReturnMixin, UpdateViewMixin
+):
     model = models.DebtReturn
     form_class = forms.DebtReturnForm
     modal_form_title = _("Debt repayment")
 
+    def get_queryset(self):
+        return DebtReturnModelService(
+            self.request.user, self.kwargs["debt_type"]
+        ).objects
 
-class DebtReturnDelete(DebtReturnMixin, DeleteViewMixin):
+    def url(self):
+        return (
+            reverse_lazy(
+                "debts:return_update",
+                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
+            )
+            if self.object
+            else None
+        )
+
+
+
+class DebtReturnDelete(AddDebtTypeMixin, DebtReturnMixin, DeleteViewMixin):
     model = models.DebtReturn
     modal_form_title = _("Delete debt repayment")
+
+    def get_queryset(self):
+        return DebtReturnModelService(
+            self.request.user, self.kwargs["debt_type"]
+        ).objects
+
+    def url(self):
+        return (
+            reverse_lazy(
+                "debts:return_delete",
+                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
+            )
+            if self.object
+            else None
+        )

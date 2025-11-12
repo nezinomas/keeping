@@ -1,14 +1,14 @@
 from datetime import date as dt
-from os import close
 
 import pytest
-from mock import patch
 
 from ...accounts.factories import AccountBalance, AccountFactory
+from ...accounts.services.model_services import AccountBalanceModelService
 from ...incomes.factories import IncomeFactory
 from ...journals.factories import JournalFactory
 from ..factories import BorrowFactory, LendFactory
 from ..models import Debt
+from ..services.model_services import DebtModelService
 
 pytestmark = pytest.mark.django_db
 
@@ -31,64 +31,59 @@ def test_debt_fields():
     assert Debt._meta.get_field("remark")
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_related(mck, second_user):
+def test_lend_related(main_user, second_user):
     o = LendFactory()
     LendFactory(journal=second_user.journal)
 
-    actual = Debt.objects.related()
+    actual = Debt.objects.related(main_user, "lend")
 
     assert len(actual) == 1
     assert str(actual[0]) == str(o)
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="borrow")
-def test_borrow_related(mck, second_user):
+def test_borrow_related(main_user, second_user):
     o = BorrowFactory()
     BorrowFactory(journal=second_user.journal)
 
-    actual = Debt.objects.related()
+    actual = Debt.objects.related(main_user, "borrow")
 
     assert len(actual) == 1
     assert str(actual[0]) == str(o)
 
 
-def test_debt_related_queries(django_assert_num_queries):
+def test_debt_related_queries(main_user, django_assert_num_queries):
     LendFactory()
     LendFactory()
 
     with django_assert_num_queries(1):
-        list(x.account.title for x in list(Debt.objects.related()))
+        list(x.account.title for x in list(Debt.objects.related(main_user, "lend")))
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_sort(mck):
+def test_debt_sort(main_user):
     o1 = LendFactory(date=dt(1999, 1, 2))
     o2 = LendFactory(date=dt(1999, 12, 13))
 
-    actual = Debt.objects.related()
+    actual = Debt.objects.related(main_user, "lend")
 
     assert actual[0].date == o2.date
     assert actual[1].date == o1.date
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_items(mck, second_user):
+def test_debt_items(main_user, second_user):
     o = LendFactory()
     LendFactory(name="X1", journal=second_user.journal)
 
-    actual = Debt.objects.items()
+    actual = DebtModelService(main_user, "lend").items()
 
     assert actual.count() == 1
     assert str(actual[0]) == str(o)
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_year(mck):
+def test_debt_year(main_user):
     o = LendFactory(name="N1", date=dt(1999, 2, 3))
     LendFactory(name="N2", date=dt(2999, 2, 3), price=2)
 
-    actual = Debt.objects.year(1999)
+    actual = DebtModelService(main_user, "lend").year(1999)
 
     assert actual.count() == 1
     assert str(actual[0]) == str(o)
@@ -97,14 +92,13 @@ def test_debt_year(mck):
     assert actual[0].price == 100
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_year_and_not_closed(mck):
+def test_debt_year_and_not_closed(main_user):
     o1 = LendFactory(date=dt(1974, 1, 1), closed=False)
     LendFactory(date=dt(1974, 12, 1), closed=True)
     o2 = LendFactory(date=dt(1999, 1, 1), closed=False)
     o3 = LendFactory(date=dt(1999, 12, 1), closed=True)
 
-    actual = Debt.objects.year(1999)
+    actual = DebtModelService(main_user, "lend").year(1999)
 
     assert actual.count() == 3
 
@@ -113,10 +107,10 @@ def test_debt_year_and_not_closed(mck):
     assert actual[2].date == o1.date
 
 
-def test_lend_post_save_new():
+def test_lend_post_save_new(main_user):
     LendFactory()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -128,10 +122,10 @@ def test_lend_post_save_new():
     assert actual.balance == -100.0
 
 
-def test_borrow_post_save_new():
+def test_borrow_post_save_new(main_user):
     BorrowFactory()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -185,7 +179,7 @@ def test_borrow_post_save_update():
     assert actual.balance == 2.0
 
 
-def test_lend_post_save_first_record():
+def test_lend_post_save_first_record(main_user):
     a = AccountFactory()
     j = JournalFactory()
 
@@ -198,7 +192,7 @@ def test_lend_post_save_first_record():
         date=dt(1999, 1, 1), price=1, account=a, journal=j, debt_type="lend"
     )
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -211,7 +205,7 @@ def test_lend_post_save_first_record():
     assert actual.balance == 4.0
 
 
-def test_borrow_post_save_first_record():
+def test_borrow_post_save_first_record(main_user):
     a = AccountFactory()
     j = JournalFactory()
 
@@ -224,7 +218,7 @@ def test_borrow_post_save_first_record():
         date=dt(1999, 1, 1), price=1, account=a, journal=j, debt_type="borrow"
     )
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -237,14 +231,14 @@ def test_borrow_post_save_first_record():
     assert actual.balance == 6.0
 
 
-def test_lend_post_save_update_with_nothing_changed():
+def test_lend_post_save_update_with_nothing_changed(main_user):
     obj = LendFactory(price=5)
 
     # update price
     obj_update = Debt.objects.get(pk=obj.pk)
     obj_update.save()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -256,14 +250,14 @@ def test_lend_post_save_update_with_nothing_changed():
     assert actual.balance == -5.0
 
 
-def test_borrow_post_save_update_with_nothing_changed():
+def test_borrow_post_save_update_with_nothing_changed(main_user):
     obj = BorrowFactory(price=5)
 
     # update price
     obj_update = Debt.objects.get(pk=obj.pk)
     obj_update.save()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -420,8 +414,7 @@ def test_debt_unique_users(second_user):
     LendFactory(name="T1", journal=second_user.journal)
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_sum_all_months(mck):
+def test_debt_sum_all_months(main_user):
     LendFactory(date=dt(1999, 1, 1), price=1, returned=1)
     LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
     LendFactory(date=dt(1999, 2, 1), price=4, returned=1)
@@ -434,13 +427,12 @@ def test_debt_sum_all_months(mck):
         {"date": dt(1999, 2, 1), "sum_debt": 5, "sum_return": 2, "title": "lend"},
     ]
 
-    actual = list(Debt.objects.sum_by_month(1999, "lend"))
+    actual = list(DebtModelService(main_user, "lend").sum_by_month(1999))
 
     assert expect == actual
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_sum_all_months_with_closed(mck):
+def test_debt_sum_all_months_with_closed(main_user):
     LendFactory(date=dt(1999, 1, 1), price=1, returned=1)
     LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
     LendFactory(date=dt(1999, 2, 1), price=4, returned=1)
@@ -453,13 +445,12 @@ def test_debt_sum_all_months_with_closed(mck):
         {"date": dt(1999, 2, 1), "sum_debt": 5, "sum_return": 2, "title": "lend"},
     ]
 
-    actual = list(Debt.objects.sum_by_month(1999, "lend", closed=True))
+    actual = list(DebtModelService(main_user, "lend").sum_by_month(1999, closed=True))
 
     assert expect == actual
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_sum_all_months_ordering(mck, second_user):
+def test_debt_sum_all_months_ordering(main_user, second_user):
     LendFactory(date=dt(1999, 1, 1), price=1)
     LendFactory(date=dt(1999, 1, 2), price=2)
     LendFactory(date=dt(1999, 1, 2), price=2, journal=second_user.journal)
@@ -467,14 +458,13 @@ def test_debt_sum_all_months_ordering(mck, second_user):
     LendFactory(date=dt(1999, 2, 2), price=1)
     LendFactory(date=dt(1999, 2, 2), price=6, journal=second_user.journal)
 
-    actual = list(Debt.objects.sum_by_month(1999))
+    actual = list(DebtModelService(main_user, "lend").sum_by_month(1999))
 
     assert actual[0]["date"] == dt(1999, 1, 1)
     assert actual[1]["date"] == dt(1999, 2, 1)
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_sum_all_not_closed(mck):
+def test_debt_sum_all_not_closed(main_user):
     LendFactory(date=dt(1999, 1, 1), price=12, closed=True)
     LendFactory(date=dt(1999, 1, 1), price=2, returned=1)
     LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
@@ -482,7 +472,7 @@ def test_debt_sum_all_not_closed(mck):
 
     expect = {"debt": 7, "debt_return": 4}
 
-    actual = Debt.objects.sum_all()
+    actual = DebtModelService(main_user, "lend").sum_all()
 
     assert expect == actual
 
@@ -503,7 +493,7 @@ def test_debt_incomes(main_user):
 
     LendFactory()
 
-    actual = Debt.objects.incomes(main_user.journal)
+    actual = Debt.objects.incomes(main_user)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -538,7 +528,7 @@ def test_debt_expenses(main_user):
 
     BorrowFactory()
 
-    actual = Debt.objects.expenses(main_user.journal)
+    actual = Debt.objects.expenses(main_user)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

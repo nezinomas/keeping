@@ -3,14 +3,13 @@ from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.utils.translation import gettext as _
 
-from ..accounts.models import Account
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib import utils
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from . import models
+from .services.model_services import DebtModelService, DebtReturnModelService
 
 
 class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
@@ -23,7 +22,9 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "account", "name", "price", "remark", "closed"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
+        self.debt_type = kwargs.pop("debt_type")
+
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -32,26 +33,25 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["remark"].widget.attrs["rows"] = 3
 
         # journal input
-        self.fields["journal"].initial = utils.get_user().journal
+        self.fields["journal"].initial = self.user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
 
-        accounts = AccountModelService(user).items()
+        accounts = AccountModelService(self.user).items()
         # inital values
         self.fields["account"].initial = accounts.first()
-        self.fields["date"].initial = set_date_with_user_year(user)
+        self.fields["date"].initial = set_date_with_user_year(self.user)
 
         # overwrite ForeignKey expense_type queryset
         self.fields["account"].queryset = accounts
 
         # fields labels
-        debt_type = utils.get_request_kwargs("debt_type")
         _name = _("Debtor")
 
-        if debt_type == "lend":
+        if self.debt_type == "lend":
             _name = _("Borrower")
 
-        if debt_type == "borrow":
+        if self.debt_type == "borrow":
             _name = _("Lender")
 
         self.fields["date"].label = _("Date")
@@ -64,7 +64,8 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     def save(self, *args, **kwargs):
         # set debt_type
         if not self.instance.pk:
-            self.instance.debt_type = utils.get_request_kwargs("debt_type") or "lend"
+            self.instance.debt_type = self.debt_type
+
         return super().save(*args, **kwargs)
 
     def clean(self):
@@ -76,7 +77,7 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
         # can't update name
         if not closed and name != self.instance.name:
-            qs = models.Debt.objects.items().filter(name=name)
+            qs = DebtModelService(self.user, self.debt_type).items().filter(name=name)
             if qs.exists():
                 self.add_error("name", _("The name of the lender must be unique."))
 
@@ -108,7 +109,8 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "account", "debt", "price", "remark"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
+        self.debt_type = kwargs.pop("debt_type", None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -116,23 +118,22 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         # form inputs settings
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        accounts = AccountModelService(user).items()
+        accounts = AccountModelService(self.user).items()
         # inital values
-        self.fields["date"].initial = set_date_with_user_year(user)
+        self.fields["date"].initial = set_date_with_user_year(self.user)
         self.fields["account"].initial = accounts.first()
 
         # overwrite ForeignKey expense_type queryset
         self.fields["account"].queryset = accounts
-        self.fields["debt"].queryset = models.Debt.objects.items().filter(closed=False)
+        self.fields["debt"].queryset = DebtModelService(self.user, self.debt_type).items().filter(closed=False)
 
         # fields labels
-        debt_type = utils.get_request_kwargs("debt_type")
         _name = _("Debtor")
 
-        if debt_type == "lend":
+        if self.debt_type == "lend":
             _name = _("Borrower")
 
-        if debt_type == "borrow":
+        if self.debt_type == "borrow":
             _name = _("Lender")
 
         self.fields["date"].label = _("Date")
@@ -149,7 +150,7 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
             return price
 
         qs = (
-            models.DebtReturn.objects.related()
+            DebtReturnModelService(self.user, self.debt_type).objects
             .filter(debt=debt)
             .exclude(pk=self.instance.pk)
             .aggregate(Sum("price"))

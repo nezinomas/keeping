@@ -3,21 +3,20 @@ from datetime import date
 import pytest
 import time_machine
 from django.forms.models import model_to_dict
-from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...users.factories import UserFactory
-from .. import factories, forms, models
+from .. import factories, forms
 
 pytestmark = pytest.mark.django_db
 
 
-def test_debt_init():
-    forms.DebtForm()
+def test_debt_init(main_user):
+    forms.DebtForm(user=main_user, debt_type="lend")
 
 
-def test_debt_init_fields():
-    form = forms.DebtForm().as_p()
+def test_debt_init_fields(main_user):
+    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<select name="account"' in form
@@ -30,58 +29,58 @@ def test_debt_init_fields():
     assert '<input type="number" name="returned"' not in form
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_name_field_label_for_lend(mck):
-    form = forms.DebtForm().as_p()
+def test_debt_name_field_label_for_lend(main_user):
+    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
 
     assert '<label for="id_name">Paskolos gavėjas:</label>' in form
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="borrow")
-def test_debt_name_field_label_for_borrow(mck):
-    form = forms.DebtForm().as_p()
+def test_debt_name_field_label_for_borrow(main_user):
+    form = forms.DebtForm(user=main_user, debt_type="borrow").as_p()
 
     assert '<label for="id_name">Paskolos davėjas:</label>' in form
 
 
 @time_machine.travel("1974-01-01")
-def test_debt_initial_values():
+def test_debt_initial_values(main_user):
     UserFactory()
 
-    form = forms.DebtForm().as_p()
+    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_debt_current_user_accounts(second_user):
+def test_debt_current_user_accounts(main_user, second_user):
     AccountFactory(title="A1")  # user bob, current user
     AccountFactory(title="A2", journal=second_user.journal)  # user X
 
-    form = forms.DebtForm().as_p()
+    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
 
     assert "A1" in form
     assert "A2" not in form
 
 
-def test_debt_select_first_account(second_user):
+def test_debt_select_first_account(main_user, second_user):
     AccountFactory(title="A1", journal=second_user.journal)
 
     a2 = AccountFactory(title="A2")
 
-    form = forms.DebtForm().as_p()
+    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
 
     expect = f'<option value="{a2.pk}" selected>{a2}</option>'
     assert expect in form
 
 
-def test_debt_name_too_short():
+def test_debt_name_too_short(main_user):
     form = forms.DebtForm(
+        user=main_user,
+        debt_type="lend",
         data={
             "date": "1974-01-01",
             "name": "AA",
             "price": "1",
             "account": AccountFactory(),
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -89,14 +88,16 @@ def test_debt_name_too_short():
     assert "name" in form.errors
 
 
-def test_debt_name_too_long():
+def test_debt_name_too_long(main_user):
     form = forms.DebtForm(
+        user=main_user,
+        debt_type="lend",
         data={
             "date": "1974-01-01",
             "name": "A" * 101,
             "price": "1",
             "account": AccountFactory(),
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -104,10 +105,12 @@ def test_debt_name_too_long():
     assert "name" in form.errors
 
 
-def test_debt_valid_data():
+def test_debt_valid_data(main_user):
     a = AccountFactory()
 
     form = forms.DebtForm(
+        user=main_user,
+        debt_type="lend",
         data={
             "date": "1999-01-01",
             "name": "Name",
@@ -130,41 +133,14 @@ def test_debt_valid_data():
     assert not e.closed
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="xxx")
-def test_debt_valid_data_type_from_request(mck):
-    a = AccountFactory()
-
-    form = forms.DebtForm(
-        data={
-            "date": "1999-01-01",
-            "name": "Name",
-            "price": "0.01",
-            "account": a.pk,
-            "closed": False,
-            "remark": "Rm",
-        },
-    )
-    assert form.is_valid()
-
-    form.save()
-
-    actual = models.Debt.objects.first()
-
-    assert actual.date == date(1999, 1, 1)
-    assert actual.name == "Name"
-    assert actual.price == 1
-    assert actual.account == a
-    assert not actual.closed
-    assert actual.remark == "Rm"
-    assert actual.debt_type == "xxx"
-
-
 @time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
-def test_debt_invalid_date(year):
+def test_debt_invalid_date(year, main_user):
     a = AccountFactory()
 
     form = forms.DebtForm(
+        user=main_user,
+        debt_type="lend",
         data={
             "date": f"{year}-01-01",
             "name": "Name",
@@ -180,8 +156,8 @@ def test_debt_invalid_date(year):
     assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
 
 
-def test_debt_blank_data():
-    form = forms.DebtForm(data={})
+def test_debt_blank_data(main_user):
+    form = forms.DebtForm(user=main_user, debt_type="lend", data={})
 
     assert not form.is_valid()
 
@@ -192,44 +168,44 @@ def test_debt_blank_data():
     assert "account" in form.errors
 
 
-def test_debt_same_name_for_diff_journal(second_user):
+def test_debt_same_name_for_diff_journal(main_user, second_user):
     factories.LendFactory(name="XXX", journal=second_user.journal)
 
     form = forms.DebtForm(
-        {
+        user=main_user,
+        debt_type="lend",
+        data={
             "date": "1999-01-04",
             "name": "XXX",
             "account": AccountFactory(),
             "price": "12",
-        }
+        },
     )
 
     assert form.is_bound
     assert form.is_valid()
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_unique_name(mck):
+def test_debt_unique_name(main_user):
     factories.LendFactory(name="XXX")
     obj = factories.LendFactory(name="YYY")
     d = model_to_dict(obj)
     d["name"] = "XXX"
 
-    form = forms.DebtForm(data=d)
+    form = forms.DebtForm(user=main_user, debt_type="lend", data=d)
 
     assert not form.is_valid()
     assert "name" in form.errors
     assert form.errors["name"] == ["Skolintojo vardas turi būti unikalus."]
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_debt_unique_name_unclose_with_same_name(mck):
+def test_debt_unique_name_unclose_with_same_name(main_user):
     factories.LendFactory(name="XXX")
 
     obj = factories.LendFactory(name="XXX", closed=True)
     obj.closed = False
 
-    form = forms.DebtForm(data=model_to_dict(obj))
+    form = forms.DebtForm(user=main_user, debt_type="lend", data=model_to_dict(obj))
 
     assert form.is_bound
     assert not form.is_valid()
@@ -237,9 +213,9 @@ def test_debt_unique_name_unclose_with_same_name(mck):
     assert form.errors["name"] == ["Skolintojo vardas turi būti unikalus."]
 
 
-def test_debt_cant_close():
+def test_debt_cant_close(main_user):
     obj = factories.LendFactory(name="Xxx", closed=True)
-    form = forms.DebtForm(data=model_to_dict(obj))
+    form = forms.DebtForm(user=main_user, debt_type="lend", data=model_to_dict(obj))
 
     assert not form.is_valid()
     assert len(form.errors) == 1

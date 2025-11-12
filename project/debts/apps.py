@@ -8,3 +8,4 @@ class DebtsConfig(AppConfig):
 
     def ready(self):
         from ..core.signals import accounts_signal
+        from .signals import update_debt_model
