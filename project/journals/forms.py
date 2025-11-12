@@ -6,7 +6,7 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from ..expenses.models import ExpenseType
+from ..expenses.services.model_services import ExpenseTypeModelService
 
 
 class UnnecessaryForm(forms.Form):
@@ -19,7 +19,7 @@ class UnnecessaryForm(forms.Form):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        self.fields["choices"].queryset = ExpenseType.objects.items()
+        self.fields["choices"].queryset = ExpenseTypeModelService(self.user).objects
 
         checked_expenses = []
 
