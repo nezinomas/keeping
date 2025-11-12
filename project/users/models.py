@@ -26,6 +26,3 @@ class User(AbstractUser):
             self.is_superuser = True
 
         return super().save(*args, **kwarg)
-
-    def get_delete_url(self):
-        return reverse_lazy("users:settings_users_delete", kwargs={"pk": self.pk})

@@ -53,8 +53,8 @@ def test_invite_form_inputs():
     assert expected == actual
 
 
-def test_invite_form_same_as_admin_email():
-    form = InviteForm(data={"email": "bob@bob.com"})
+def test_invite_form_same_as_admin_email(main_user):
+    form = InviteForm(user=main_user, data={"email": "bob@bob.com"})
 
     assert not form.is_valid()
     assert "email" in form.errors
@@ -63,8 +63,8 @@ def test_invite_form_same_as_admin_email():
 
 
 @pytest.mark.django_db
-def test_invite_form_email_exists(second_user):
-    form = InviteForm(data={"email": "x@x.xx"})
+def test_invite_form_email_exists(main_user, second_user):
+    form = InviteForm(user=main_user, data={"email": "x@x.xx"})
 
     assert not form.is_valid()
     assert "email" in form.errors
