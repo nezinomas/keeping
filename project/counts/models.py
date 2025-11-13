@@ -20,16 +20,6 @@ class CountType(TitleAbstract):
     def __str__(self):
         return str(self.title)
 
-    def get_absolute_url(self):
-        kwargs = {"pk": self.pk}
-
-        return reverse_lazy("counts:type_update", kwargs=kwargs)
-
-    def get_delete_url(self):
-        kwargs = {"pk": self.pk}
-
-        return reverse_lazy("counts:type_delete", kwargs=kwargs)
-
 
 class Count(models.Model):
     date = models.DateField()
@@ -47,14 +37,3 @@ class Count(models.Model):
     class Meta:
         ordering = ["-date"]
         get_latest_by = ["date"]
-
-    def get_absolute_url(self):
-        pk = self.pk
-        kwargs = {"pk": pk}
-
-        return reverse_lazy("counts:update", kwargs=kwargs)
-
-    def get_delete_url(self):
-        kwargs = {"pk": self.pk}
-
-        return reverse_lazy("counts:delete", kwargs=kwargs)

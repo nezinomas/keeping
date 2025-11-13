@@ -134,6 +134,7 @@ def test_view_new_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert f'<option value="{o1.pk}">{o1.title}</option>' in actual
     assert f'<option value="{o2.pk}" selected>{o2.title}</option>' in actual
 
@@ -161,6 +162,7 @@ def test_view_update_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert f'<option value="{count_type_1.pk}" selected>{count_type_1.title}</option>' in actual
     assert f'<option value="{count_type_2.pk}">{count_type_2.title}</option>' in actual
 
@@ -650,7 +652,16 @@ def test_count_type_new_200(client_logged):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_count_type_load_form(client_logged):
+def test_count_type_new_load_form(client_logged):
+    url = reverse("counts:type_new")
+    response = client_logged.get(url)
+
+    content = response.content.decode("utf-8")
+    assert f'hx-post="{url}"' in content
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_count_type_update_load_form(client_logged):
     obj = CountTypeFactory()
 
     url = reverse("counts:type_update", kwargs={"pk": obj.pk})
@@ -658,10 +669,11 @@ def test_count_type_load_form(client_logged):
     content = response.content.decode("utf-8")
 
     assert response.status_code == 200
-    assert "Count Type" in content
+    assert obj.title in content
+    assert f'hx-post="{url}"' in content
 
 
-def test_count_type_form(client_logged):
+def test_count_type_new_form(client_logged):
     url = reverse("counts:type_new")
     response = client_logged.get(url)
     form = response.context.get("form")
@@ -669,7 +681,7 @@ def test_count_type_form(client_logged):
     assert isinstance(form, forms.CountTypeForm)
 
 
-def test_count_type_form_fields(client_logged):
+def test_count_type_new_form_fields(client_logged):
     url = reverse("counts:type_new")
     response = client_logged.get(url)
     actual = response.content.decode()

@@ -16,8 +16,8 @@ from . import services
 from .forms import CountForm, CountTypeForm
 from .lib.views_helper import (
     CountTypetObjectMixin,
-    InfoRowData,
     CountUrlMixin,
+    InfoRowData,
 )
 from .models import Count, CountType
 from .services.model_services import CountModelService, CountTypeModelService
@@ -154,13 +154,13 @@ class New(CountUrlMixin, CreateViewMixin):
         return "reloadData"
 
     def url(self):
-        count_type_slug = self.kwargs.get("slug")
+        count_type = self.kwargs.get("slug")
         tab = self.kwargs.get("tab")
 
         if tab not in ["index", "data", "history"]:
             tab = "index"
 
-        return reverse_lazy("counts:new", kwargs={"slug": count_type_slug, "tab": tab})
+        return reverse_lazy("counts:new", kwargs={"slug": count_type, "tab": tab})
 
 
 class Update(CountUrlMixin, UpdateViewMixin):
@@ -195,6 +195,9 @@ class TypeNew(TypeUrlMixin, CreateViewMixin):
     url = reverse_lazy("counts:type_new")
     modal_form_title = _("Count type")
 
+    def url(self):
+        return reverse_lazy("counts:type_new")
+
 
 class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
     model = CountType
@@ -202,9 +205,15 @@ class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
     hx_trigger_django = "afterType"
     modal_form_title = _("Count type")
 
+    def url(self):
+        return reverse_lazy("counts:type_update", kwargs={"pk": self.object.pk})
+
 
 class TypeDelete(TypeUrlMixin, DeleteViewMixin):
     model = CountType
     hx_trigger_django = "afterType"
     hx_redirect = reverse_lazy("counts:redirect")
     modal_form_title = _("Delete count type")
+
+    def url(self):
+        return reverse_lazy("counts:type_delete", kwargs={"pk": self.object.pk})
