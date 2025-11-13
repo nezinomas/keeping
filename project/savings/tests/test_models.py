@@ -47,14 +47,6 @@ def test_saving_type_str():
     assert str(i) == "1999-01-01: Savings"
 
 
-def test_saving_type_get_absolute_url():
-    obj = SavingTypeFactory()
-
-    assert obj.get_absolute_url() == reverse(
-        "savings:type_update", kwargs={"pk": obj.pk}
-    )
-
-
 def test_saving_type_items_user(main_user, second_user):
     SavingTypeFactory(title="T1")
     SavingTypeFactory(title="T2", journal=second_user.journal)
@@ -141,12 +133,6 @@ def test_saving_str():
     actual = SavingTypeFactory.build()
 
     assert str(actual) == "Savings"
-
-
-def test_saving_get_absolute_url():
-    obj = SavingFactory()
-
-    assert obj.get_absolute_url() == reverse("savings:update", kwargs={"pk": obj.pk})
 
 
 def test_saving_related(main_user, second_user):

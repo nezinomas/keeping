@@ -49,9 +49,6 @@ class SavingType(models.Model):
     def __str__(self):
         return str(self.title)
 
-    def get_absolute_url(self):
-        return reverse_lazy("savings:type_update", kwargs={"pk": self.pk})
-
 
 class Saving(models.Model):
     date = models.DateField()
@@ -78,12 +75,6 @@ class Saving(models.Model):
 
     def __str__(self):
         return f"{self.date}: {self.saving_type}"
-
-    def get_absolute_url(self):
-        return reverse_lazy("savings:update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("savings:delete", kwargs={"pk": self.pk})
 
 
 class SavingBalance(models.Model):
