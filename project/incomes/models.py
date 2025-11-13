@@ -30,9 +30,6 @@ class IncomeType(TitleAbstract):
         unique_together = ["journal", "title"]
         ordering = ["title"]
 
-    def get_absolute_url(self):
-        return reverse_lazy("incomes:type_update", kwargs={"pk": self.pk})
-
 
 class Income(models.Model):
     date = models.DateField()
@@ -54,9 +51,3 @@ class Income(models.Model):
 
     def __str__(self):
         return f"{(self.date)}: {self.income_type}"
-
-    def get_absolute_url(self):
-        return reverse_lazy("incomes:update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("incomes:delete", kwargs={"pk": self.pk})

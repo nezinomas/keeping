@@ -25,14 +25,6 @@ def test_income_type_str():
     assert str(i) == "Income Type"
 
 
-def test_income_type_get_absolute_url():
-    obj = IncomeTypeFactory()
-
-    assert obj.get_absolute_url() == reverse(
-        "incomes:type_update", kwargs={"pk": obj.pk}
-    )
-
-
 def test_income_type_items_journal(main_user, second_user):
     IncomeTypeFactory(title="T1")
     IncomeTypeFactory(title="T2", journal=second_user.journal)
