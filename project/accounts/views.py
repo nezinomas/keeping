@@ -21,7 +21,6 @@ class New(CreateViewMixin):
     model = models.Account
     form_class = forms.AccountForm
     success_url = reverse_lazy("accounts:list")
-    url = reverse_lazy("accounts:new")
     hx_trigger_django = "afterAccount"
     modal_form_title = _("Account")
 
