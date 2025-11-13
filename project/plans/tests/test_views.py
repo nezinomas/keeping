@@ -82,9 +82,10 @@ def test_income_update_func():
 def test_income_load_form(client_logged):
     url = reverse("plans:income_new")
     response = client_logged.get(url)
-    actual = response.context["form"].as_p()
+    actual = response.content.decode()
 
     assert response.status_code == 200
+    assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
 
@@ -107,6 +108,16 @@ def test_income_invalid_data(client_logged):
     form = response.context["form"]
 
     assert not form.is_valid()
+
+
+def test_income_load_update_load_form(client_logged):
+    obj = IncomePlanFactory()
+
+    url = reverse("plans:income_update", kwargs={"pk": obj.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode()
+
+    assert f'hx-post="{url}"' in actual
 
 
 def test_income_load_update_form_field_values(client_logged):
@@ -202,6 +213,7 @@ def test_incomes_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
 
@@ -259,6 +271,7 @@ def test_expense_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
 
@@ -282,6 +295,16 @@ def test_expense_invalid_data(client_logged):
     form = response.context["form"]
 
     assert not form.is_valid()
+
+
+def test_expense_load_update_load_form(client_logged):
+    obj = ExpensePlanFactory()
+
+    url = reverse("plans:expense_update", kwargs={"pk": obj.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode()
+
+    assert f'hx-post="{url}"' in actual
 
 
 def test_expense_load_update_form_field_values(client_logged):
@@ -380,6 +403,7 @@ def test_expense_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
 
@@ -436,6 +460,7 @@ def test_saving_year_input(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
 
@@ -458,6 +483,16 @@ def test_saving_invalid_data(client_logged):
     form = response.context["form"]
 
     assert not form.is_valid()
+
+
+def test_saving_load_update_load_form(client_logged):
+    obj = SavingPlanFactory()
+
+    url = reverse("plans:saving_update", kwargs={"pk": obj.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode()
+
+    assert f'hx-post="{url}"' in actual
 
 
 def test_saving_load_update_form_field_values(client_logged):
@@ -554,6 +589,7 @@ def test_saving_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
 
@@ -614,6 +650,14 @@ def test_day(client_logged):
     assert '<input type="text" name="year" value="1999"' in actual
 
 
+def test_day_load_form(client_logged):
+    url = reverse("plans:day_new")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
+
+
 def test_day_new(client_logged):
     data = {"year": "1999", "january": 0.01}
 
@@ -654,6 +698,16 @@ def test_day_load_update_form_field_values(client_logged):
     assert form.instance.october == 0.01
     assert form.instance.november == 0.01
     assert form.instance.december == 0.01
+
+
+def test_day_load_update_load_form(client_logged):
+    obj = DayPlanFactory()
+
+    url = reverse("plans:day_update", kwargs={"pk": obj.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode()
+
+    assert f'hx-post="{url}"' in actual
 
 
 def test_day_update(client_logged):
@@ -726,6 +780,7 @@ def test_day_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
 
@@ -776,11 +831,12 @@ def test_necessary_update_func():
 
 
 @time_machine.travel("1999-1-1")
-def test_necessary(client_logged):
+def test_necessary_load_form(client_logged):
     url = reverse("plans:necessary_new")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
 
@@ -814,6 +870,16 @@ def test_necessary_invalid_data(client_logged):
     form = response.context["form"]
 
     assert not form.is_valid()
+
+
+def test_necessary_load_update_load_form(client_logged):
+    obj = NecessaryPlanFactory()
+
+    url = reverse("plans:necessary_update", kwargs={"pk": obj.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode()
+
+    assert f'hx-post="{url}"' in actual
 
 
 def test_necessary_load_update_form_field_values(client_logged):
@@ -907,6 +973,7 @@ def test_necessary_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
 
