@@ -48,18 +48,6 @@ class Drink(models.Model):
 
         super().save(*args, **kwargs)
 
-    def get_absolute_url(self):
-        pk = self.pk
-        kwargs = {"pk": pk}
-
-        return reverse_lazy("drinks:update", kwargs=kwargs)
-
-    def get_delete_url(self):
-        pk = self.pk
-        kwargs = {"pk": pk}
-
-        return reverse_lazy("drinks:delete", kwargs=kwargs)
-
 
 class DrinkTarget(models.Model):
     year = models.PositiveIntegerField(
@@ -95,9 +83,3 @@ class DrinkTarget(models.Model):
             )
 
         super().save(*args, **kwargs)
-
-    def get_absolute_url(self):
-        pk = self.pk
-        kwargs = {"pk": pk}
-
-        return reverse_lazy("drinks:target_update", kwargs=kwargs)

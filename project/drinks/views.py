@@ -197,6 +197,7 @@ class TargetUpdate(UpdateViewMixin):
     model = models.DrinkTarget
     form_class = forms.DrinkTargetForm
     hx_trigger_django = "reloadIndex"
+    url_name = "target_update"
     success_url = reverse_lazy("drinks:tab_index")
     modal_form_title = _("Update goal")
 

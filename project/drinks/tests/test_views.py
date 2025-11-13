@@ -605,6 +605,7 @@ def test_update(client_logged):
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode()
 
+    assert url in actual
     assert "0,68" in actual
     assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
     assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
@@ -667,6 +668,7 @@ def test_view_drinks_delete_load_form(client_logged):
     response = client_logged.get(url, {})
     actual = response.content.decode()
 
+    assert url in actual
     assert f'hx-post="{url}"' in actual
     assert "Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?" in actual
 
@@ -748,6 +750,7 @@ def test_target_new_load_form(client_logged, tab, expect_url):
     actual = response.content.decode()
 
     assert response.status_code == 200
+
     assert f'hx-post="{expect_url}"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
@@ -797,6 +800,16 @@ def test_target_update_load_form_convert_quantity(drink_type, expect, client_log
     form = response.context["form"]
 
     assert f'name="quantity" value="{expect}"' in form.as_p()
+
+
+def test_target_update_load_form(client_logged):
+    p = DrinkTargetFactory()
+
+    url = reverse("drinks:target_update", kwargs={"pk": p.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode()
+
+    assert url in actual
 
 
 @pytest.mark.parametrize(
