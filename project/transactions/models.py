@@ -32,12 +32,6 @@ class Transaction(models.Model):
         _to = f"{self.to_account}: {cellformat(price(self.price))}"
         return f"{_from} -> {_to}"
 
-    def get_absolute_url(self):
-        return reverse_lazy("transactions:update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("transactions:delete", kwargs={"pk": self.pk})
-
 
 class SavingClose(models.Model):
     date = models.DateField()
@@ -67,12 +61,6 @@ class SavingClose(models.Model):
         _to = f"{self.to_account}: {cellformat(price(self.price))}"
         return f"{_from} -> {_to}"
 
-    def get_absolute_url(self):
-        return reverse_lazy("transactions:savings_close_update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("transactions:savings_close_delete", kwargs={"pk": self.pk})
-
 
 class SavingChange(models.Model):
     date = models.DateField()
@@ -101,13 +89,3 @@ class SavingChange(models.Model):
         _from = f"{self.date} {self.from_account}"
         _to = f"{self.to_account}: {cellformat(price(self.price))}"
         return f"{_from} -> {_to}"
-
-    def get_absolute_url(self):
-        return reverse_lazy(
-            "transactions:savings_change_update", kwargs={"pk": self.pk}
-        )
-
-    def get_delete_url(self):
-        return reverse_lazy(
-            "transactions:savings_change_delete", kwargs={"pk": self.pk}
-        )

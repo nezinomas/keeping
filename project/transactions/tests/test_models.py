@@ -32,14 +32,6 @@ def test_transaction_str():
     assert str(t) == "1999-01-01 Account1 -> Account2: 2,00"
 
 
-def test_transaction_get_absolute_url():
-    obj = TransactionFactory()
-
-    assert obj.get_absolute_url() == reverse(
-        "transactions:update", kwargs={"pk": obj.pk}
-    )
-
-
 def test_transaction_related(main_user, second_user):
     t1 = AccountFactory(title="T1")
     f1 = AccountFactory(title="F1")
@@ -460,14 +452,6 @@ def test_saving_close_str():
     assert str(s) == "1999-01-01 Savings From -> Account To: 0,10"
 
 
-def test_saving_close_get_absolute_url():
-    obj = SavingCloseFactory()
-
-    assert obj.get_absolute_url() == reverse(
-        "transactions:savings_close_update", kwargs={"pk": obj.pk}
-    )
-
-
 def test_saving_close_related(main_user, second_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2", journal=second_user.journal)
@@ -850,14 +834,6 @@ def test_savings_change_str():
     s = SavingChangeFactory.build()
 
     assert str(s) == "1999-01-01 Savings From -> Savings To: 0,10"
-
-
-def test_savings_change_get_absolute_url():
-    obj = SavingChangeFactory()
-
-    assert obj.get_absolute_url() == reverse(
-        "transactions:savings_change_update", kwargs={"pk": obj.pk}
-    )
 
 
 def test_saving_change_related(main_user, second_user):
