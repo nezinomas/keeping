@@ -190,30 +190,23 @@ class TypeUrlMixin:
 
 class TypeNew(TypeUrlMixin, CreateViewMixin):
     model = CountType
+    url_name = "type_new"
     form_class = CountTypeForm
     hx_trigger_django = "afterType"
-    url = reverse_lazy("counts:type_new")
     modal_form_title = _("Count type")
-
-    def url(self):
-        return reverse_lazy("counts:type_new")
 
 
 class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
     model = CountType
+    url_name = "type_update"
     form_class = CountTypeForm
     hx_trigger_django = "afterType"
     modal_form_title = _("Count type")
 
-    def url(self):
-        return reverse_lazy("counts:type_update", kwargs={"pk": self.object.pk})
-
 
 class TypeDelete(TypeUrlMixin, DeleteViewMixin):
     model = CountType
+    url_name = "type_delete"
     hx_trigger_django = "afterType"
     hx_redirect = reverse_lazy("counts:redirect")
     modal_form_title = _("Delete count type")
-
-    def url(self):
-        return reverse_lazy("counts:type_delete", kwargs={"pk": self.object.pk})
