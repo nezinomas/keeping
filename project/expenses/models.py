@@ -23,9 +23,6 @@ class ExpenseType(TitleAbstract):
         unique_together = ["journal", "title"]
         ordering = ["title"]
 
-    def get_absolute_url(self):
-        return reverse_lazy("expenses:type_update", kwargs={"pk": self.pk})
-
 
 class ExpenseName(TitleAbstract):
     title = models.CharField(
@@ -43,9 +40,6 @@ class ExpenseName(TitleAbstract):
 
     # Managers
     objects = ExpenseNameQuerySet.as_manager()
-
-    def get_absolute_url(self):
-        return reverse_lazy("expenses:name_update", kwargs={"pk": self.pk})
 
 
 class Expense(models.Model):
@@ -78,9 +72,3 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{(self.date)}/{self.expense_type}/{self.expense_name}"
-
-    def get_absolute_url(self):
-        return reverse_lazy("expenses:update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("expenses:delete", kwargs={"pk": self.pk})

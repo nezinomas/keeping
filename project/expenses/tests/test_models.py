@@ -44,14 +44,6 @@ def test_expense_type_str():
     assert str(e) == "Expense Type"
 
 
-def test_expense_type_get_absolute_url():
-    obj = ExpenseTypeFactory()
-
-    assert obj.get_absolute_url() == reverse(
-        "expenses:type_update", kwargs={"pk": obj.pk}
-    )
-
-
 def test_month_expense_type(main_user, expenses):
     expect = [
         {"date": date(1999, 1, 1), "sum": 50, "title": "Expense Type"},
@@ -138,14 +130,6 @@ def test_expnese_name_str():
     e = ExpenseNameFactory.build()
 
     assert str(e) == "Expense Name"
-
-
-def test_expense_name_get_absolute_url():
-    obj = ExpenseNameFactory()
-
-    assert obj.get_absolute_url() == reverse(
-        "expenses:name_update", kwargs={"pk": obj.pk}
-    )
 
 
 def test_expense_name_items(main_user):

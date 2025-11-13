@@ -12,17 +12,16 @@ class Lists(ListViewMixin):
 class New(CreateViewMixin):
     model = models.ExpenseType
     form_class = forms.ExpenseTypeForm
-    success_url = reverse_lazy("expenses:type_list")
-
-    url = reverse_lazy("expenses:type_new")
     hx_trigger_django = "afterType"
     modal_form_title = _("Expense type")
+    url_name = "type_new"
+    success_url = reverse_lazy("expenses:type_list")
 
 
 class Update(UpdateViewMixin):
     model = models.ExpenseType
     form_class = forms.ExpenseTypeForm
-    success_url = reverse_lazy("expenses:type_list")
-
     hx_trigger_django = "afterType"
     modal_form_title = _("Expense type")
+    url_name = "type_update"
+    success_url = reverse_lazy("expenses:type_list")

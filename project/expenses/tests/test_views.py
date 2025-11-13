@@ -150,6 +150,7 @@ def test_expenses_load_new_form(main_user, client_logged):
     response = client_logged.get(url)
     actual = clean_content(response.content.decode("utf-8"))
 
+    assert f'hx-post="{url}"' in actual
     assert "3000-08-08" in actual
     assert "Įrašyti</button>" in actual
     assert "Įrašyti ir uždaryti</button>" in actual
@@ -197,14 +198,15 @@ def test_expenses_save_invalid_data(client_logged):
     assert not actual.is_valid()
 
 
-def test_expenses_load_update_form_button(client_logged):
+def test_expenses_load_update_form(client_logged):
     e = ExpenseFactory()
 
     url = reverse("expenses:update", kwargs={"pk": e.pk})
     response = client_logged.get(url)
-    form = clean_content(response.content.decode("utf-8"))
+    actual = clean_content(response.content.decode("utf-8"))
 
-    assert "Atnaujinti ir uždaryti</button>" in form
+    assert f'hx-post="{url}"' in actual
+    assert "Atnaujinti ir uždaryti</button>" in actual
 
 
 def test_expenses_load_update_form_instance_field_values(client_logged):
@@ -549,6 +551,7 @@ def test_view_expenses_delete_load_form(client_logged):
     actual = response.content.decode("utf-8")
 
     assert response.status_code == 200
+    assert f'hx-post="{url}"' in actual
     assert '<form method="POST"' in actual
     assert (
         "Ar tikrai norite ištrinti: <strong>1999-01-01/Expense Type/Expense Name</strong>?"  # noqa: E501
@@ -622,6 +625,28 @@ def test_expense_type_not_load_other_journal(client_logged, second_user):
     assert obj.title not in form
 
 
+def test_expense_type_new_load_form(client_logged):
+    url = reverse("expenses:type_new")
+
+    response = client_logged.get(url)
+
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
+
+
+def test_expense_type_updae_load_form(client_logged):
+    obj = ExpenseTypeFactory()
+
+    url = reverse("expenses:type_update", kwargs={"pk": obj.pk})
+
+    response = client_logged.get(url)
+
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
+
+
 # -------------------------------------------------------------------------------------
 #                                                                           ExpenseName
 # -------------------------------------------------------------------------------------
@@ -635,6 +660,17 @@ def test_expenses_name_update_func():
     view = resolve("/expenses/name/update/1/")
 
     assert expenses_name.Update == view.func.view_class
+
+
+def test_expense_name_new_load_form(client_logged):
+    url = reverse("expenses:name_new")
+    p = ExpenseTypeFactory()
+
+    response = client_logged.get(url)
+
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
 
 
 def test_expense_name_save_data(client_logged):
@@ -669,6 +705,7 @@ def test_expense_name_load_for_form_for_update(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="title" value="XXX"' in actual
 
 
