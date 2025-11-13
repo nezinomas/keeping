@@ -70,9 +70,10 @@ def test_transaction_index_context(client_logged):
 def test_transactions_load_form(client_logged):
     url = reverse("transactions:new")
     response = client_logged.get(url)
-    form = response.context["form"]
+    actual = response.content.decode("utf8")
 
-    assert "1999-01-01" in form.as_p()
+    assert "1999-01-01" in actual
+    assert url in actual
 
 
 def test_transactions_save(client_logged):
@@ -111,14 +112,15 @@ def test_transactions_save_invalid_data(client_logged):
     assert not form.is_valid()
 
 
-def test_transactions_load_update_form_button(client_logged):
+def test_transactions_load_update_form(client_logged):
     obj = TransactionFactory()
 
     url = reverse("transactions:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
-    form = clean_content(response.content.decode("utf-8"))
+    actual = clean_content(response.content.decode("utf-8"))
 
-    assert "Atnaujinti ir uždaryti</button>" in form
+    assert "Atnaujinti ir uždaryti</button>" in actual
+    assert url in actual
 
 
 def test_transactions_load_update_form_field_values(client_logged):
@@ -239,6 +241,7 @@ def test_view_transactions_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert url in actual
     assert '<form method="POST"' in actual
     assert (
         "Ar tikrai norite ištrinti: <strong>1999-01-01 Account1 -&gt; Account2: 2,00</strong>?"  # noqa: E501
@@ -308,6 +311,7 @@ def test_savings_close_load_form(client_logged):
     actual = response.content.decode("utf-8")
 
     assert "1999-01-01" in actual
+    assert url in actual
 
 
 def test_savings_close_save(client_logged):
@@ -365,6 +369,16 @@ def test_savings_close_save_invalid_data(client_logged):
     form = response.context["form"]
 
     assert not form.is_valid()
+
+
+def test_savings_close_load_update_form(client_logged):
+    obj = SavingCloseFactory(price=1, fee=1)
+
+    url = reverse("transactions:savings_close_update", kwargs={"pk": obj.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode()
+
+    assert url in actual
 
 
 def test_savings_close_load_update_form_field_values(client_logged):
@@ -580,6 +594,7 @@ def test_view_savings_close_delete_load_form(client_logged):
     response = client_logged.get(url)
     form = response.content.decode("utf-8")
 
+    assert url in form
     assert '<form method="POST"' in form
     assert f'hx-post="{url}"' in form
     assert (
@@ -649,6 +664,7 @@ def test_savings_change_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert url in actual
     assert "1999-01-01" in actual
 
 
@@ -700,6 +716,16 @@ def test_savings_change_not_show_other_journal_types(client_logged, second_user)
 
     assert not form.is_valid()
     assert "XXX" not in form.as_p()
+
+
+def test_savings_change_load_update_form(client_logged):
+    obj = SavingChangeFactory(price=1, fee=1)
+
+    url = reverse("transactions:savings_change_update", kwargs={"pk": obj.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode()
+
+    assert url in actual
 
 
 def test_savings_change_load_update_form_field_values(client_logged):
@@ -999,6 +1025,7 @@ def test_view_savings_change_delete_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert url in actual
     assert '<form method="POST"' in actual
     assert f'hx-post="{url}"' in actual
     assert (
