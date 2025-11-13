@@ -26,12 +26,6 @@ class Book(models.Model):
     def __str__(self):
         return str(self.title)
 
-    def get_absolute_url(self):
-        return reverse_lazy("books:update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("books:delete", kwargs={"pk": self.pk})
-
 
 class BookTarget(models.Model):
     year = models.PositiveIntegerField(

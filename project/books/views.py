@@ -91,22 +91,22 @@ class New(CreateViewMixin):
     model = models.Book
     form_class = forms.BookForm
     hx_trigger_django = "reload"
-    success_url = reverse_lazy("books:list")
     modal_form_title = _("New book")
+    success_url = reverse_lazy("books:list")
 
 
 class Update(UpdateViewMixin):
     model = models.Book
     form_class = forms.BookForm
     hx_trigger_django = "reload"
-    success_url = reverse_lazy("books:list")
     modal_form_title = _("Update book")
+    success_url = reverse_lazy("books:list")
 
 
 class Delete(DeleteViewMixin):
     model = models.Book
-    success_url = reverse_lazy("books:list")
     modal_form_title = _("Delete book")
+    success_url = reverse_lazy("books:list")
 
 
 class Search(SearchViewMixin):
@@ -123,7 +123,7 @@ class TargetNew(CreateViewMixin):
     model = models.BookTarget
     hx_trigger_django = "afterTarget"
     form_class = forms.BookTargetForm
-    url = reverse_lazy("books:target_new")
+    url_name = "target_new"
     modal_form_title = _("New goal")
 
 
@@ -131,4 +131,5 @@ class TargetUpdate(UpdateViewMixin):
     model = models.BookTarget
     hx_trigger_django = "afterTarget"
     form_class = forms.BookTargetForm
+    url_name = "target_update"
     modal_form_title = _("Update goal")
