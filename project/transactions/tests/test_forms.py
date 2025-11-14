@@ -191,7 +191,7 @@ def test_saving_change_valid_data(main_user):
             "to_account": a_to.pk,
             "price": "0.01",
             "fee": "0.01",
-        }
+        },
     )
 
     assert form.is_valid()
@@ -216,7 +216,7 @@ def test_saving_change_valid_data_with_no_fee(main_user):
             "from_account": a_from.pk,
             "to_account": a_to.pk,
             "price": "0.01",
-        }
+        },
     )
 
     assert form.is_valid()
@@ -244,7 +244,7 @@ def test_saving_change_invalid_date(year, main_user):
             "to_account": a_to.pk,
             "price": "1.0",
             "fee": "0.25",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -274,7 +274,7 @@ def test_saving_change_price_null(main_user):
             "from_account": a_from.pk,
             "to_account": a_to.pk,
             "price": "0",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -341,7 +341,7 @@ def test_saving_change_save_and_close_from_account(main_user):
             "price": "0.01",
             "fee": "0.01",
             "close": True,
-        }
+        },
     )
     assert form.is_valid()
 
@@ -411,7 +411,7 @@ def test_saving_close_valid_data(main_user):
             "to_account": a_to.pk,
             "price": "0.01",
             "fee": "0.01",
-        }
+        },
     )
 
     assert form.is_valid()
@@ -436,7 +436,7 @@ def test_saving_close_valid_data_no_fee(main_user):
             "from_account": a_from.pk,
             "to_account": a_to.pk,
             "price": "0.01",
-        }
+        },
     )
 
     assert form.is_valid()
@@ -464,7 +464,7 @@ def test_saving_close_in_valid_date(year, main_user):
             "to_account": a_to.pk,
             "price": "1.0",
             "fee": "0.25",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -494,7 +494,7 @@ def test_saving_close_price_null(main_user):
             "from_account": a_from.pk,
             "to_account": a_to.pk,
             "price": "0",
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -552,7 +552,7 @@ def test_saving_close_save_and_close_saving_account(main_user):
             "price": "0.01",
             "fee": "0.01",
             "close": True,
-        }
+        },
     )
 
     assert form.is_valid()

@@ -46,8 +46,8 @@ class Data:
 
     def amount_at_beginning_of_year(self) -> int:
         return (
-            AccountBalanceModelService(self.user).objects
-            .filter(year=self.year)
+            AccountBalanceModelService(self.user)
+            .objects.filter(year=self.year)
             .aggregate(Sum("past"))["past__sum"]
             or 0
         )

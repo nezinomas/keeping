@@ -125,7 +125,9 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
 
         # overwrite ForeignKey expense_type queryset
         self.fields["account"].queryset = accounts
-        self.fields["debt"].queryset = DebtModelService(self.user, self.debt_type).items().filter(closed=False)
+        self.fields["debt"].queryset = (
+            DebtModelService(self.user, self.debt_type).items().filter(closed=False)
+        )
 
         # fields labels
         _name = _("Debtor")
@@ -150,8 +152,8 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
             return price
 
         qs = (
-            DebtReturnModelService(self.user, self.debt_type).objects
-            .filter(debt=debt)
+            DebtReturnModelService(self.user, self.debt_type)
+            .objects.filter(debt=debt)
             .exclude(pk=self.instance.pk)
             .aggregate(Sum("price"))
         )

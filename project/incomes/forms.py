@@ -21,7 +21,7 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
     field_order = ["date", "account", "income_type", "price", "remark"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -70,7 +70,7 @@ class IncomeTypeForm(forms.ModelForm):
         fields = ["journal", "title", "type"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # user input

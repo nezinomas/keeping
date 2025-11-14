@@ -620,7 +620,9 @@ def test_update(client_logged):
         ("stdav", 10.0),
     ],
 )
-def test_update_load_form_convert_quantity(drink_type, expect, client_logged, main_user):
+def test_update_load_form_convert_quantity(
+    drink_type, expect, client_logged, main_user
+):
     main_user.drink_type = drink_type
     main_user.save()
 

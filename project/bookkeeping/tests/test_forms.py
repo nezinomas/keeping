@@ -46,7 +46,7 @@ def test_saving_worth_valid_data(main_user):
             "date": "1999-1-2",
             "price": "0.01",
             "saving_type": t.pk,
-        }
+        },
     )
     assert form.is_valid()
 
@@ -67,7 +67,7 @@ def test_saving_worth_valid_data_reset(main_user):
             "date": "1999-1-2",
             "price": "0",
             "saving_type": t.pk,
-        }
+        },
     )
     assert form.is_valid()
 
@@ -137,7 +137,7 @@ def test_saving_worth_account_closed_date(closed, date, valid, main_user):
             "date": date,
             "price": "1.0",
             "saving_type": a.pk,
-        }
+        },
     )
 
     if valid:
@@ -182,7 +182,7 @@ def test_account_worth_valid_data(main_user):
             "date": "1999-1-2",
             "price": "0.01",
             "account": a.pk,
-        }
+        },
     )
 
     assert form.is_valid()
@@ -204,7 +204,7 @@ def test_account_worth_valid_data_reset(main_user):
             "date": "1999-1-2",
             "price": "0",
             "account": a.pk,
-        }
+        },
     )
 
     assert form.is_valid()
@@ -239,7 +239,7 @@ def test_account_worth_account_closed_date(closed, date, valid, main_user):
             "date": date,
             "price": "1.0",
             "account": a.pk,
-        }
+        },
     )
 
     if valid:
@@ -284,7 +284,7 @@ def test_pension_worth_valid_data(main_user):
             "date": "1999-1-2",
             "price": "0.01",
             "pension_type": p.pk,
-        }
+        },
     )
 
     assert form.is_valid()
@@ -306,7 +306,7 @@ def test_pension_worth_valid_data_reset(main_user):
             "date": "1999-1-2",
             "price": "0",
             "pension_type": p.pk,
-        }
+        },
     )
 
     assert form.is_valid()

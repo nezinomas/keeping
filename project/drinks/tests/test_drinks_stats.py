@@ -20,6 +20,7 @@ def fixture_set_drink_type(drinks_options):
     def _set(drink_type):
         drinks_options.drink_type = drink_type
         return drinks_options
+
     return _set
 
 

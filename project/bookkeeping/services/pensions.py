@@ -9,8 +9,8 @@ from ...savings.services.model_services import SavingBalanceModelService
 
 def get_data(user, year) -> list:
     pensions = PensionBalanceModelService(user).year(year)
-    savings_as_pensions = SavingBalanceModelService(user).year(year).filter(
-        saving_type__type="pensions"
+    savings_as_pensions = (
+        SavingBalanceModelService(user).year(year).filter(saving_type__type="pensions")
     )
     return list(it.chain(savings_as_pensions, pensions))
 

@@ -152,6 +152,7 @@ class SavingsUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
     url_name = "saving_update"
     success_url = reverse_lazy("plans:saving_list")
 
+
 class SavingsDelete(DeleteViewMixin):
     model = models.SavingPlan
     hx_trigger_django = "reloadSavings"

@@ -443,7 +443,6 @@ def test_type_update_return_list_with_closed(client_logged):
     assert "XXX" not in actual
 
 
-
 def test_saving_type_not_load_other_journal(client_logged, second_user):
     SavingTypeFactory(title="xxx")
     obj = SavingTypeFactory(title="yyy", journal=second_user.journal)

@@ -57,7 +57,9 @@ def test_form_selected_savings(main_user):
 def test_form_save_checked_all(main_user):
     e1 = ExpenseTypeFactory(title="X")
     e2 = ExpenseTypeFactory(title="Y")
-    form = UnnecessaryForm(user=main_user, data={"savings": True, "choices": {e1.pk: True, e2: True}})
+    form = UnnecessaryForm(
+        user=main_user, data={"savings": True, "choices": {e1.pk: True, e2: True}}
+    )
 
     assert form.is_valid()
 

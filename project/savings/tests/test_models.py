@@ -649,7 +649,6 @@ def test_saving_balance_related_for_user(main_user, second_user):
     SavingFactory(saving_type=s1, account=a1)
     SavingFactory(saving_type=s2, account=a2)
 
-
     actual = SavingBalance.objects.related(main_user)
 
     assert len(actual) == 2

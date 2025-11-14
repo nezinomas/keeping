@@ -22,7 +22,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "option", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -68,7 +68,7 @@ class DrinkTargetForm(forms.ModelForm):
     field_order = ["year", "drink_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # user input
@@ -112,7 +112,7 @@ class DrinkCompareForm(forms.Form):
     field_order = ["year1", "year2"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["year1"].label = None
@@ -136,7 +136,8 @@ class DrinkCompareForm(forms.Form):
         year2 = cleaned.get("year2")
 
         years = (
-            DrinkModelService(self.user).items()
+            DrinkModelService(self.user)
+            .items()
             .dates("date", "year")
             .annotate(year=ExtractYear(F("date")))
             .values_list("year", flat=True)

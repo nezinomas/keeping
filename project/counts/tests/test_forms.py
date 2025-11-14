@@ -43,7 +43,9 @@ def test_form_year_initial_value(main_user):
 def test_form_valid_data(main_user):
     obj = CountTypeFactory(title="Xxx")
 
-    form = CountForm(user=main_user, data={"date": "1999-01-01", "count_type": obj, "quantity": 1.0})
+    form = CountForm(
+        user=main_user, data={"date": "1999-01-01", "count_type": obj, "quantity": 1.0}
+    )
 
     assert form.is_valid()
 
@@ -62,7 +64,10 @@ def test_form_valid_data(main_user):
 def test_form_invalid_date(year, main_user):
     obj = CountTypeFactory(title="xxx")
 
-    form = CountForm(user=main_user, data={"date": f"{year}-01-01", "count_type": obj, "quantity": 1.0})
+    form = CountForm(
+        user=main_user,
+        data={"date": f"{year}-01-01", "count_type": obj, "quantity": 1.0},
+    )
 
     assert not form.is_valid()
     assert "date" in form.errors

@@ -3,7 +3,7 @@ from typing import Optional, cast
 from django.db.models import Q
 
 from ...users.models import User
-from .. import models, managers
+from .. import managers, models
 
 
 class AccountModelService:

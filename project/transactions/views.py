@@ -49,7 +49,9 @@ class LoadSavingType(ListViewMixin):
             pk = None
 
         if pk:
-            self.object_list = SavingTypeModelService(request.user).items().exclude(pk=pk)
+            self.object_list = (
+                SavingTypeModelService(request.user).items().exclude(pk=pk)
+            )
 
         return self.render_to_response({"object_list": self.object_list})
 

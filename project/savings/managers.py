@@ -56,4 +56,3 @@ class SavingBalanceQuerySet(models.QuerySet):
         return self.select_related("saving_type").filter(
             saving_type__journal=user.journal
         )
-

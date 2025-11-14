@@ -39,14 +39,18 @@ class Data:
 
     def get_incomes(self):
         self.incomes = (
-            IncomeModelService(self.user).objects
-            .filter(date__year=self.user.year, date__month=self.user.month)
+            IncomeModelService(self.user)
+            .objects.filter(date__year=self.user.year, date__month=self.user.month)
             .aggregate(Sum("price", default=0))["price__sum"]
         )
 
     def get_expenses(self):
         self.expenses = list(
-            list(ExpenseModelService(self.user).sum_by_day_ant_type(self.user.year, self.user.month))
+            list(
+                ExpenseModelService(self.user).sum_by_day_ant_type(
+                    self.user.year, self.user.month
+                )
+            )
         )
 
     def get_expense_types(self):
@@ -56,13 +60,15 @@ class Data:
 
     def get_necessary_expense_types(self):
         self.necessary_expense_types = list(
-            ExpenseTypeModelService(self.user).objects
-            .filter(necessary=True)
+            ExpenseTypeModelService(self.user)
+            .objects.filter(necessary=True)
             .values_list("title", flat=True)
         )
 
     def get_savings(self):
-        self.savings = list(SavingModelService(self.user).sum_by_day(self.user.year, self.user.month))
+        self.savings = list(
+            SavingModelService(self.user).sum_by_day(self.user.year, self.user.month)
+        )
 
 
 class Charts:

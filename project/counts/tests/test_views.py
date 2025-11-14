@@ -139,7 +139,6 @@ def test_view_new_load_form(client_logged):
     assert f'<option value="{o2.pk}" selected>{o2.title}</option>' in actual
 
 
-
 def test_view_new_invalid_data(client_logged):
     data = {"date": -2, "quantity": "x"}
 
@@ -163,7 +162,10 @@ def test_view_update_load_form(client_logged):
     actual = response.content.decode("utf-8")
 
     assert f'hx-post="{url}"' in actual
-    assert f'<option value="{count_type_1.pk}" selected>{count_type_1.title}</option>' in actual
+    assert (
+        f'<option value="{count_type_1.pk}" selected>{count_type_1.title}</option>'
+        in actual
+    )
     assert f'<option value="{count_type_2.pk}">{count_type_2.title}</option>' in actual
 
 

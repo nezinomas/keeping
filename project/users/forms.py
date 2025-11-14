@@ -14,7 +14,7 @@ class SignUpForm(UserCreationForm):
         fields = ("username", "email", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["email"].label = _("Email")
@@ -27,7 +27,7 @@ class InviteForm(forms.Form):
         fields = "email"
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["email"].label = _("Email")

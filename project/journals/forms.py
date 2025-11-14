@@ -16,7 +16,7 @@ class UnnecessaryForm(forms.Form):
     savings = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["choices"].queryset = ExpenseTypeModelService(self.user).objects
@@ -51,7 +51,7 @@ class SettingsForm(forms.Form):
     title = forms.CharField(required=True, min_length=3, max_length=254)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         journal = self.user.journal

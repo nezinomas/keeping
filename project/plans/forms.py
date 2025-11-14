@@ -10,8 +10,11 @@ from ..core.lib.date import monthnames, set_date_with_user_year
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
 from ..expenses.models import ExpenseType
+from ..expenses.services.model_services import ExpenseTypeModelService
 from ..incomes.models import IncomeType
+from ..incomes.services.model_services import IncomeTypeModelService
 from ..savings.models import SavingType
+from ..savings.services.model_services import SavingTypeModelService
 from .models import (
     DayPlan,
     ExpensePlan,
@@ -21,9 +24,7 @@ from .models import (
     SavingType,
 )
 from .services.model_services import ModelService
-from ..savings.services.model_services import SavingTypeModelService
-from ..incomes.services.model_services import IncomeTypeModelService
-from ..expenses.services.model_services import ExpenseTypeModelService
+
 
 def common_field_transalion(self):
     self.fields["year"].label = _("Years")
@@ -80,7 +81,7 @@ class IncomePlanForm(YearFormMixin):
     field_order = ["year", "income_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
@@ -112,7 +113,7 @@ class ExpensePlanForm(YearFormMixin):
     field_order = ["year", "expense_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
@@ -144,7 +145,7 @@ class SavingPlanForm(YearFormMixin):
     field_order = ["year", "saving_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
@@ -176,7 +177,7 @@ class DayPlanForm(YearFormMixin):
     field_order = ["year"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
@@ -204,7 +205,7 @@ class NecessaryPlanForm(YearFormMixin):
     field_order = ["year", "expense_type", "title"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
@@ -240,7 +241,7 @@ class CopyPlanForm(forms.Form):
     necessary = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
     def _get_cleaned_checkboxes(self, cleaned_data):
@@ -311,7 +312,11 @@ class CopyPlanForm(forms.Form):
         for k, v in dict_.items():
             if v:
                 model = self._get_model(k)
-                qs = ModelService(model, self.user).year(year_from).values_list("pk", flat=True)
+                qs = (
+                    ModelService(model, self.user)
+                    .year(year_from)
+                    .values_list("pk", flat=True)
+                )
 
                 for i in qs:
                     obj = model.objects.get(pk=i)

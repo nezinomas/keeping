@@ -59,7 +59,7 @@ class SavingWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         fields = ["date", "saving_type", "price"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -84,7 +84,7 @@ class AccountWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         fields = ["date", "account", "price"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
@@ -109,14 +109,16 @@ class PensionWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         fields = ["date", "pension_type", "price"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
         self.fields["date"].initial = core_date.set_date_with_user_year(self.user)
 
         # overwrite FK
-        self.fields["pension_type"].queryset = PensionTypeModelService(self.user).objects
+        self.fields["pension_type"].queryset = PensionTypeModelService(
+            self.user
+        ).objects
 
         self.helper = FormHelper()
         self.helper.form_show_labels = False
@@ -126,7 +128,7 @@ class SummaryExpensesForm(forms.Form):
     types = forms.MultipleChoiceField(required=False)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         choices = []

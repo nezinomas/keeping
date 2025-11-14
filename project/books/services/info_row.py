@@ -25,7 +25,11 @@ class InfoRow:
         return qs[0]["cnt"] if qs.exists() else 0
 
     def _reading(self):
-        return qs["reading"] if (qs := BookModelService(self.user).reading(self.year)) else 0
+        return (
+            qs["reading"]
+            if (qs := BookModelService(self.user).reading(self.year))
+            else 0
+        )
 
     def _target(self):
         try:

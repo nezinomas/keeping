@@ -28,7 +28,7 @@ def test_pension_type_valid_data(main_user):
         user=main_user,
         data={
             "title": "Title",
-        }
+        },
     )
 
     assert form.is_valid()
@@ -124,7 +124,7 @@ def test_pension_valid_data(main_user):
             "fee": 0.01,
             "remark": "remark",
             "pension_type": t.pk,
-        }
+        },
     )
     assert form.is_valid()
 
@@ -147,7 +147,7 @@ def test_pension_valid_data_no_price(main_user):
             "fee": 0.01,
             "remark": "remark",
             "pension_type": t.pk,
-        }
+        },
     )
     assert form.is_valid()
 
@@ -170,7 +170,7 @@ def test_pension_valid_data_no_fee(main_user):
             "price": 0.01,
             "remark": "remark",
             "pension_type": t.pk,
-        }
+        },
     )
     assert form.is_valid()
 
@@ -196,7 +196,7 @@ def test_pension_invalid_date(main_user, year):
             "fee": "0.0",
             "remark": "remark",
             "pension_type": t.pk,
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -226,7 +226,7 @@ def test_pension_price_and_fee_null(main_user):
             "fee": "0",
             "remark": "remark",
             "pension_type": t.pk,
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -244,7 +244,7 @@ def test_pension_price_negative(main_user):
             "price": "-10",
             "remark": "remark",
             "pension_type": t.pk,
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -262,7 +262,7 @@ def test_pension_fee_negative(main_user):
             "fee": "-10",
             "remark": "remark",
             "pension_type": t.pk,
-        }
+        },
     )
 
     assert not form.is_valid()

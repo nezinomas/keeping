@@ -58,7 +58,6 @@ def pensions_signal(sender: object, instance: models.Model, *args, **kwargs):
     signals_service.sync_pensions(instance)
 
 
-
 # -------------------------------------------------------------------------------------
 #                                                     Update Journal first_record field
 # -------------------------------------------------------------------------------------

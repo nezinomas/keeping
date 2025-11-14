@@ -62,7 +62,9 @@ class Lists(ListViewMixin):
     def get_queryset(self):
         user = self.request.user
         service = BookModelService(user)
-        return service.objects if self.request.GET.get("tab") else service.year(user.year)
+        return (
+            service.objects if self.request.GET.get("tab") else service.year(user.year)
+        )
 
     def get_context_data(self, **kwargs):
         page = self.request.GET.get("page", 1)

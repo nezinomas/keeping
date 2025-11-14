@@ -1,7 +1,7 @@
 from typing import cast
 
 from django.db.models import Count, F, Q
-from django.db.models.functions import TruncYear, ExtractYear
+from django.db.models.functions import ExtractYear, TruncYear
 
 from ...users.models import User
 from .. import managers, models

@@ -38,7 +38,7 @@ def test_account_valid_data(main_user, closed):
             "order": "1",
             "closed": closed,
         },
-        user=main_user
+        user=main_user,
     )
 
     assert form.is_valid()

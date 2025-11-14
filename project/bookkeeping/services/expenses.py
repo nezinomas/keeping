@@ -25,7 +25,9 @@ class ExpenseServiceData:
             ExpenseTypeModelService(self.user).items().values_list("title", flat=True)
         )
 
-        self.expenses = list(ExpenseModelService(self.user).sum_by_month_and_type(self.year))
+        self.expenses = list(
+            ExpenseModelService(self.user).sum_by_month_and_type(self.year)
+        )
 
 
 class ExpenseService:

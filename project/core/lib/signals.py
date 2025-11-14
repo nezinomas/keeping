@@ -17,6 +17,7 @@ class GetData:
     types: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
+        # Todo Refactore this, provide method in conf
         self.incomes = self._get_data(self.conf.get("incomes"), "incomes")
         self.expenses = self._get_data(self.conf.get("expenses"), "expenses")
         self.have = list(self._get_data(self.conf.get("have"), "have"))

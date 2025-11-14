@@ -215,7 +215,9 @@ class SummaryExpenses(FormViewMixin):
         form_data = form.cleaned_data.get("types")
         context = {
             "form": form,
-            **services.chart_summary_expenses.load_service(self.request.user, form_data),
+            **services.chart_summary_expenses.load_service(
+                self.request.user, form_data
+            ),
         }
 
         return render(self.request, self.template_name, context)
@@ -226,8 +228,7 @@ class ExpandDayExpenses(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         obj = services.expand_day.ExpandDayService(
-            self.request.user,
-            self.kwargs.get("date") or date(1974, 1, 1)
+            self.request.user, self.kwargs.get("date") or date(1974, 1, 1)
         )
 
         return super().get_context_data(**kwargs) | obj.context()

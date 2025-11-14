@@ -3,18 +3,17 @@ from typing import Optional
 from django.db import models
 
 from ...accounts import models as account
-
 from ...accounts.models import AccountBalance
 from ...bookkeeping import models as bookkeeping
 from ...debts import models as debt
 from ...expenses import models as expense
 from ...incomes import models as income
-from ...users.models import User
 from ...pensions import models as pension
 from ...pensions.models import PensionBalance
 from ...savings import models as saving
 from ...savings.models import SavingBalance
 from ...transactions import models as transaction
+from ...users.models import User
 from ..lib.db_sync import BalanceSynchronizer
 from ..lib.signals import Accounts, GetData, Savings
 

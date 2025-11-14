@@ -18,9 +18,9 @@ from ..factories import (
     SavingPlan,
     SavingPlanFactory,
 )
+from ..services.model_services import ModelService
 
 pytestmark = pytest.mark.django_db
-from ..services.model_services import ModelService
 
 
 # -------------------------------------------------------------------------------------

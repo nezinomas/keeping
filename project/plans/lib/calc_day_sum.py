@@ -29,18 +29,29 @@ class PlanCollectData:
 
         month_names = monthnames()
 
-        self.incomes = ModelService(IncomePlan, self.user).year(self.year).values(*month_names)
-
-        self.expenses = ModelService(ExpensePlan, self.user).year(self.year).values(
-            *month_names,
-            necessary=F("expense_type__necessary"),
-            title=F("expense_type__title"),
+        self.incomes = (
+            ModelService(IncomePlan, self.user).year(self.year).values(*month_names)
         )
 
-        self.savings = ModelService(SavingPlan, self.user).year(self.year).values(*month_names)
-        self.days = ModelService(DayPlan, self.user).year(self.year).values(*month_names)
+        self.expenses = (
+            ModelService(ExpensePlan, self.user)
+            .year(self.year)
+            .values(
+                *month_names,
+                necessary=F("expense_type__necessary"),
+                title=F("expense_type__title"),
+            )
+        )
+
+        self.savings = (
+            ModelService(SavingPlan, self.user).year(self.year).values(*month_names)
+        )
+        self.days = (
+            ModelService(DayPlan, self.user).year(self.year).values(*month_names)
+        )
         self.necessary = (
-            ModelService(NecessaryPlan, self.user).year(self.year)
+            ModelService(NecessaryPlan, self.user)
+            .year(self.year)
             .values(*month_names)
             .annotate(title=F("expense_type__title"))
         )

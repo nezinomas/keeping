@@ -42,7 +42,7 @@ def test_saving_type_valid_data(main_user, closed):
             "title": "Title",
             "closed": closed,
             "type": "funds",
-        }
+        },
     )
 
     assert form.is_valid()
@@ -77,7 +77,7 @@ def test_saving_type_title_max_symbols(main_user):
     title = "a" * 50
     form = SavingTypeForm(
         user=main_user,
-        data={"title": title, "journal": JournalFactory(), "type": "funds"}
+        data={"title": title, "journal": JournalFactory(), "type": "funds"},
     )
 
     assert form.is_valid()
@@ -215,7 +215,7 @@ def test_saving_valid_data(main_user):
             "remark": "remark",
             "account": a.pk,
             "saving_type": t.pk,
-        }
+        },
     )
 
     assert form.is_valid()
@@ -252,7 +252,7 @@ def test_saving_valid_data_only_fee(main_user, price):
             "remark": "remark",
             "account": a.pk,
             "saving_type": t.pk,
-        }
+        },
     )
 
     assert form.is_valid()
@@ -280,7 +280,7 @@ def test_saving_valid_data_with_no_fee(main_user):
             "remark": "remark",
             "account": a.pk,
             "saving_type": t.pk,
-        }
+        },
     )
 
     assert form.is_valid()
@@ -310,7 +310,7 @@ def test_saving_invalid_date(main_user, year):
             "remark": "remark",
             "account": a.pk,
             "saving_type": t.pk,
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -342,7 +342,7 @@ def test_saving_price_null_and_fee_null(main_user):
             "remark": "remark",
             "account": a.pk,
             "saving_type": t.pk,
-        }
+        },
     )
 
     assert not form.is_valid()

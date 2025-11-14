@@ -4,7 +4,6 @@ from django.db.models import F
 
 from ...users.models import User
 from .. import managers, models
-
 from ..lib.drinks_options import DrinksOptions
 
 

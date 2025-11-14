@@ -73,7 +73,8 @@ def test_lend_return_valid_data(main_user):
     b = factories.LendFactory()
 
     form = forms.DebtReturnForm(
-        user=main_user, debt_type="lend",
+        user=main_user,
+        debt_type="lend",
         data={
             "date": "1999-12-02",
             "debt": b.pk,
@@ -98,7 +99,8 @@ def test_borrow_return_valid_data(main_user):
     b = factories.BorrowFactory()
 
     form = forms.DebtReturnForm(
-        user=main_user, debt_type="borrow",
+        user=main_user,
+        debt_type="borrow",
         data={
             "date": "1999-12-02",
             "debt": b.pk,
@@ -125,7 +127,8 @@ def test_debt_return_invalid_date(year, main_user):
     b = factories.LendFactory()
 
     form = forms.DebtReturnForm(
-        user=main_user, debt_type="x",
+        user=main_user,
+        debt_type="x",
         data={
             "date": f"{year}-12-02",
             "debt": b.pk,
@@ -177,7 +180,8 @@ def test_lend_return_price_higher(main_user):
     b = factories.LendFactory(price=1)
 
     form = forms.DebtReturnForm(
-        user=main_user, debt_type="lend",
+        user=main_user,
+        debt_type="lend",
         data={
             "date": "1999-1-1",
             "debt": b.pk,
@@ -196,7 +200,8 @@ def test_borrow_return_price_higher(main_user):
     b = factories.BorrowFactory(price=1)
 
     form = forms.DebtReturnForm(
-        user=main_user, debt_type="borrow",
+        user=main_user,
+        debt_type="borrow",
         data={
             "date": "1999-1-1",
             "debt": b.pk,
@@ -215,7 +220,8 @@ def test_debt_return_date_earlier(main_user):
     b = factories.LendFactory(date=date(2001, 1, 1))
 
     form = forms.DebtReturnForm(
-        user=main_user, debt_type="lend",
+        user=main_user,
+        debt_type="lend",
         data={
             "date": "2000-01-01",
             "debt": b.pk,

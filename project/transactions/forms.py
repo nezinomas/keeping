@@ -24,7 +24,7 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "from_account", "to_account", "price"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -80,7 +80,7 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "from_account", "to_account", "price", "fee", "close"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -136,7 +136,7 @@ class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "from_account", "to_account", "price", "fee", "close"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()

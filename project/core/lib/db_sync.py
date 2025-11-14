@@ -5,9 +5,9 @@ from django.db import models
 from django.db import transaction as django_transaction
 from django.utils import timezone
 
-from ...users.models import User
 from ...pensions import models as pension
 from ...savings import models as saving
+from ...users.models import User
 
 ACCOUNT_FIELDS = [
     "incomes",

@@ -43,14 +43,16 @@ class Data:
         )
 
         self.fund_sum = (
-            SavingBalanceModelService(self.user).items()
+            SavingBalanceModelService(self.user)
+            .items()
             .filter(year=self.year, saving_type__type__in=["shares", "funds"])
             .aggregate(Sum("market_value"))["market_value__sum"]
             or 0
         )
 
         self.pension_sum = (
-            SavingBalanceModelService(self.user).items()
+            SavingBalanceModelService(self.user)
+            .items()
             .filter(year=self.year, saving_type__type="pensions")
             .aggregate(Sum("market_value"))["market_value__sum"]
             or 0
@@ -59,7 +61,8 @@ class Data:
         if self.unnecessary_expenses:
             arr = json.loads(self.unnecessary_expenses)
             self.unnecessary = list(
-                ExpenseTypeModelService(self.user).items()
+                ExpenseTypeModelService(self.user)
+                .items()
                 .filter(pk__in=arr)
                 .values_list("title", flat=True)
             )

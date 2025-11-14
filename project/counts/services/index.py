@@ -84,12 +84,16 @@ class Data:
 
     @property
     def sum_by_day(self) -> list[dict]:
-        return CountModelService(self.user).sum_by_day(year=self.year, count_type=self.count_type)
+        return CountModelService(self.user).sum_by_day(
+            year=self.year, count_type=self.count_type
+        )
 
     @property
     def items(self) -> list[dict]:
-        return CountModelService(self.user).items(count_type=self.count_type).values(
-            "date", "quantity"
+        return (
+            CountModelService(self.user)
+            .items(count_type=self.count_type)
+            .values("date", "quantity")
         )
 
     @property
@@ -97,8 +101,10 @@ class Data:
         past_last_record = None
         with contextlib.suppress(Count.DoesNotExist, AttributeError):
             past_last_record = (
-                CountModelService(self.user).objects
-                .filter(date__year__lt=self.year, count_type__slug=self.count_type)
+                CountModelService(self.user)
+                .objects.filter(
+                    date__year__lt=self.year, count_type__slug=self.count_type
+                )
                 .latest()
                 .date
             )

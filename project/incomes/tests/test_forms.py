@@ -32,7 +32,7 @@ def test_income_type_valid_data(main_user):
         data={
             "title": "Title",
             "type": "salary",
-        }
+        },
     )
 
     assert form.is_valid()
@@ -160,7 +160,7 @@ def test_income_valid_data(main_user):
             "remark": "remark",
             "account": a.pk,
             "income_type": t.pk,
-        }
+        },
     )
 
     assert form.is_valid()
@@ -187,7 +187,7 @@ def test_income_insert_only_one_year_to_future(main_user):
             "remark": "remark",
             "account": a.pk,
             "income_type": t.pk,
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -218,7 +218,7 @@ def test_income_price_null(main_user):
             "remark": "remark",
             "account": a.pk,
             "income_type": t.pk,
-        }
+        },
     )
 
     assert not form.is_valid()
