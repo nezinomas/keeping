@@ -265,7 +265,7 @@ def test_saving_last_months_qs_count(main_user, django_assert_max_num_queries):
     SavingFactory(date=date(1999, 1, 1), price=2)
 
     with django_assert_max_num_queries(1):
-        print(SavingModelService(main_user).last_months())
+        list(SavingModelService(main_user).last_months())
 
 
 def test_saving_post_save(main_user):

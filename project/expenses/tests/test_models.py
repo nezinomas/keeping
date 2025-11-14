@@ -335,7 +335,7 @@ def test_expense_avg_last_months_qs_count(main_user, django_assert_max_num_queri
     ExpenseFactory(date=date(1999, 1, 1), price=2)
 
     with django_assert_max_num_queries(1):
-        print(ExpenseModelService(main_user).last_months())
+        list(ExpenseModelService(main_user).last_months())
 
 
 def test_expense_years_sum(main_user):
