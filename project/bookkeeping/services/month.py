@@ -258,7 +258,7 @@ def load_service(user) -> dict:
                 obj.main_table.table,
                 obj.spending.spending,
             ),
-            "expense_types": obj.data.expense_types,
+            "expense_types": data.expense_types,
             "total_row": obj.main_table.total_row,
         },
         "info": obj.info_table(),
