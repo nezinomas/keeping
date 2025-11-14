@@ -39,32 +39,40 @@ class FormsetMixin:
     template_name = "core/generic_formset.html"
 
     def formset_initial(self):
-        _list = []
+        return_list = []
 
         # get self.model ForeignKey field name
         foreign_key = [f.name for f in self.model._meta.get_fields() if (f.many_to_one)]
 
         if not foreign_key:
-            return _list
+            return return_list
 
-        model = self.get_type_model()
-        _objects = model.objects.items()
-        _list.extend({"price": None, foreign_key[0]: _object} for _object in _objects)
+        items = self.model_service(self.request.user).items()
 
-        return _list
+        return_list.extend({"price": None, foreign_key[0]: item} for item in items)
 
-    def get_type_model(self):
-        return self.type_model or self.model
+        return return_list
 
     def get_formset(self, post=None, **kwargs):
-        form = self.get_form_class()
+        user = self.request.user
+        base_form = self.form_class
+
+        class UserAwareForm(base_form):
+            def __init__(self, *args, **form_kwargs):
+                form_kwargs["user"] = user
+                super().__init__(*args, **form_kwargs)
+
         formset = modelformset_factory(
             model=self.model,
-            form=form,
+            form=UserAwareForm,
             formset=BaseTypeFormSet,
             extra=0,
         )
-        return formset(post) if post else formset(initial=self.formset_initial())
+        return (
+            formset(post, **kwargs)
+            if post
+            else formset(initial=self.formset_initial(), **kwargs)
+        )
 
     def post(self, request, *args, **kwargs):
         formset = self.get_formset(request.POST or None)
