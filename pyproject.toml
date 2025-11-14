@@ -7,7 +7,6 @@ requires-python = ">=3.11"
 dependencies = [
     "crispy-bootstrap5>=2025.6",
     "django>=5.2.7",
-    "django-crequest>=2018.5.11",
     "django-crispy-forms>=2.4",
     "django-extensions>=4.1",
     "django-htmx>=1.26.0",

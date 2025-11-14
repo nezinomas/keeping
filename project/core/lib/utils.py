@@ -1,11 +1,3 @@
-def get_user():
-    raise Exception("utils.get_user() Must Not Be Called!!!")
-
-
-def get_request_kwargs(name):
-    raise Exception("utils.get_request_kwargs() Must Not Be Called!!!")
-
-
 def total_row(data, fields: list[str]) -> dict:
     # Fields to subtract when sold is truthy
     subtract_fields = {"incomes", "profit_sum"}

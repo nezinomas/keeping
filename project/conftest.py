@@ -37,9 +37,6 @@ def main_user(monkeypatch, request):
     else:
         user = UserFactory.build()
 
-    mock_func = "project.core.lib.utils.get_user"
-    monkeypatch.setattr(mock_func, lambda: user)
-
     return user
 
 
@@ -69,7 +66,6 @@ def fake_request(rf):
 @pytest.fixture()
 def client_logged(client):
     client.login(username="bob", password="123")
-
     return client
 
 
