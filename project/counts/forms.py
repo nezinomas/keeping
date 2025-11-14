@@ -18,7 +18,6 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         self.counter_type = kwargs.pop("counter_type", None)
-        print(f'--------------------------->CountType form init method {self.counter_type=}\n')
 
         super().__init__(*args, **kwargs)
 

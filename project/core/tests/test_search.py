@@ -435,6 +435,6 @@ def test_books_search_ordering(main_user):
     BookFactory()
 
     q = search.search_books(main_user, "remark")
-    print(q)
+
     assert q[0]["started"] == date(1999, 1, 1)
     assert q[1]["started"] == date(1000, 1, 1)

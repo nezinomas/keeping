@@ -160,7 +160,6 @@ class DebtReturnUpdate(
         )
 
 
-
 class DebtReturnDelete(AddDebtTypeMixin, DebtReturnMixin, DeleteViewMixin):
     model = models.DebtReturn
     modal_form_title = _("Delete debt repayment")
