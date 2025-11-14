@@ -3,13 +3,14 @@ from dataclasses import dataclass, field
 from django.db.models import Model, Sum
 from django.utils.translation import gettext as _
 
-from ...accounts.models import AccountBalance
-from ...pensions.models import PensionBalance
-from ...savings.models import SavingBalance
-
+from ...users.models import User
+from ...accounts.services.model_services import AccountBalanceModelService
+from ...savings.services.model_services import SavingBalanceModelService
+from ...pensions.services.model_services import PensionBalanceModelService
 
 @dataclass
 class Data:
+    user: User
     year: int
 
     account_balance: float = field(init=False, default=0)
@@ -17,13 +18,13 @@ class Data:
     pension_balance: float = field(init=False, default=0)
 
     def __post_init__(self):
-        self.account_balance = self.get_balance("balance", AccountBalance)
-        self.saving_balance = self.get_balance("market_value", SavingBalance)
-        self.pension_balance = self.get_balance("market_value", PensionBalance)
+        self.account_balance = self.get_balance("balance", AccountBalanceModelService)
+        self.saving_balance = self.get_balance("market_value", SavingBalanceModelService)
+        self.pension_balance = self.get_balance("market_value", PensionBalanceModelService)
 
     def get_balance(self, field_name: str, model: Model) -> int:
         return (
-            model.objects.related()
+            model(self.user).year(self.year)
             .filter(year=self.year)
             .aggregate(Sum(field_name))[f"{field_name}__sum"]
             or 0
@@ -48,8 +49,8 @@ class Wealth:
         )
 
 
-def load_service(year: int) -> dict:
-    obj = Wealth(Data(year))
+def load_service(user, year: int) -> dict:
+    obj = Wealth(Data(user, year))
 
     return {
         "data": {

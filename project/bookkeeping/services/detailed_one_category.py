@@ -5,9 +5,9 @@ from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import monthnames_abbr
-from ...expenses.models import Expense
-from ...incomes.models import Income
-from ...savings.models import Saving
+from ...expenses.services.model_services import ExpenseModelService
+from ...incomes.services.model_services import IncomeModelService
+from ...savings.services.model_services import SavingModelService
 
 
 class Service:
@@ -130,15 +130,17 @@ class Service:
         return context_item
 
 
-def load_service(year, order, category):
+def load_service(user, order, category):
     if category in [slugify(_("Incomes")), "incomes"]:
-        data = Income.objects.sum_by_month_and_type(year)
+        data = IncomeModelService(user).sum_by_month_and_type(user.year)
     elif category in [slugify(_("Savings")), "savings"]:
-        data = Saving.objects.sum_by_month_and_type(year)
+        data = SavingModelService(user).sum_by_month_and_type(user.year)
     else:
-        data = Expense.objects.sum_by_month_and_name(year).filter(
-            expense_type__slug=category
+        data = (
+            ExpenseModelService(user)
+            .sum_by_month_and_name(user.year)
+            .filter(expense_type__slug=category)
         )
 
-    service = Service(year, data, order, category)
+    service = Service(user.year, data, order, category)
     return service.context

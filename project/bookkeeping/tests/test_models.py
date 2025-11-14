@@ -5,6 +5,7 @@ import pytest
 
 from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import AccountBalance
+from ...accounts.services.model_services import AccountBalanceModelService
 from ...pensions.factories import PensionBalanceFactory, PensionTypeFactory
 from ...pensions.models import PensionBalance
 from ...savings.factories import SavingFactory, SavingTypeFactory
@@ -24,24 +25,24 @@ def test_account_worth_str():
     assert str(actual) == "1999-01-01 02:03 - Account1"
 
 
-def test_account_worth_related(second_user):
+def test_account_worth_related(main_user, second_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2", journal=second_user.journal)
 
     AccountWorthFactory(account=a1)
     AccountWorthFactory(account=a2)
 
-    actual = AccountWorth.objects.related()
+    actual = AccountWorth.objects.related(main_user)
 
     assert len(actual) == 1
     assert str(actual[0].account) == "A1"
     assert actual[0].account.journal.users.first().username == "bob"
 
 
-def test_account_worth_post_save():
+def test_account_worth_post_save(main_user):
     AccountWorthFactory(date=dt(1999, 1, 1, tzinfo=ZoneInfo("UTC")))
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
     assert actual[0].incomes == 0
@@ -89,14 +90,14 @@ def test_saving_worth_str():
     assert str(model) == "1999-01-01 02:03 - Savings"
 
 
-def test_saving_worth_related(second_user):
+def test_saving_worth_related(main_user, second_user):
     s1 = SavingTypeFactory(title="S1")
     s2 = SavingTypeFactory(title="S2", journal=second_user.journal)
 
     SavingWorthFactory(saving_type=s1)
     SavingWorthFactory(saving_type=s2)
 
-    actual = SavingWorth.objects.related()
+    actual = SavingWorth.objects.related(main_user)
 
     assert len(actual) == 1
     assert str(actual[0].saving_type) == "S1"
@@ -163,14 +164,14 @@ def test_pension_worth_str():
     assert str(model) == "1999-01-01 02:03 - PensionType"
 
 
-def test_pension_worth_related(second_user):
+def test_pension_worth_related(main_user, second_user):
     p1 = PensionTypeFactory(title="P1")
     p2 = PensionTypeFactory(title="P2", journal=second_user.journal)
 
     PensionWorthFactory(pension_type=p1)
     PensionWorthFactory(pension_type=p2)
 
-    actual = PensionWorth.objects.related()
+    actual = PensionWorth.objects.related(main_user)
 
     assert len(actual) == 1
     assert str(actual[0].pension_type) == "P1"

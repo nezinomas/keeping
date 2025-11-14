@@ -41,8 +41,9 @@ def test_view_context(client_logged):
 
 
 @time_machine.travel("2000-1-1")
-def test_view_context_categories(client_logged):
+def test_view_context_categories(main_user, client_logged):
     IncomeFactory(date=date(2000, 1, 1))
+
     url = reverse("bookkeeping:summary_savings_and_incomes")
     response = client_logged.get(url)
 

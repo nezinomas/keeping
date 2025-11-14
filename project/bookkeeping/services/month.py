@@ -8,18 +8,21 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import current_day
-from ...expenses.models import Expense, ExpenseType
-from ...incomes.models import Income
+from ...expenses.services.model_services import (
+    ExpenseModelService,
+    ExpenseTypeModelService,
+)
+from ...incomes.services.model_services import IncomeModelService
 from ...plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
-from ...savings.models import Saving
+from ...savings.services.model_services import SavingModelService
+from ...users.models import User
 from ..lib.day_spending import DaySpending
 from ..lib.make_dataframe import MakeDataFrame
 
 
 @dataclass
 class Data:
-    year: int
-    month: int
+    user: User
 
     incomes: int = field(init=False, default=0)
     expenses: list[dict] = field(init=False, default_factory=list)
@@ -36,30 +39,30 @@ class Data:
 
     def get_incomes(self):
         self.incomes = (
-            Income.objects.related()
-            .filter(date__year=self.year, date__month=self.month)
+            IncomeModelService(self.user).objects
+            .filter(date__year=self.user.year, date__month=self.user.month)
             .aggregate(Sum("price", default=0))["price__sum"]
         )
 
     def get_expenses(self):
         self.expenses = list(
-            list(Expense.objects.sum_by_day_ant_type(self.year, self.month))
+            list(ExpenseModelService(self.user).sum_by_day_ant_type(self.user.year, self.user.month))
         )
 
     def get_expense_types(self):
         self.expense_types = list(
-            ExpenseType.objects.items().values_list("title", flat=True)
+            ExpenseTypeModelService(self.user).objects.values_list("title", flat=True)
         )
 
     def get_necessary_expense_types(self):
         self.necessary_expense_types = list(
-            ExpenseType.objects.items()
+            ExpenseTypeModelService(self.user).objects
             .filter(necessary=True)
             .values_list("title", flat=True)
         )
 
     def get_savings(self):
-        self.savings = list(list(Saving.objects.sum_by_day(self.year, self.month)))
+        self.savings = list(SavingModelService(self.user).sum_by_day(self.user.year, self.user.month))
 
 
 class Charts:
@@ -160,23 +163,24 @@ class Info:
 
 
 class Objects:
-    def __init__(self, year: int, month: int):
-        self.data: MakeDataFrame = self._get_data(year, month)
-        self.plans: PlanCalculateDaySum = self._initialize_plans(year, month)
-        self.spending: DaySpending = self._initialize_spending(year, month)
-        self.main_table: MainTable = self._initialize_main_table(year, month)
+    def __init__(self, user):
+        self.user = user
+        self.data: MakeDataFrame = self._get_data()
+        self.plans: PlanCalculateDaySum = self._initialize_plans()
+        self.spending: DaySpending = self._initialize_spending()
+        self.main_table: MainTable = self._initialize_main_table()
         self.charts: Charts = self._initialize_charts()
 
-    def _get_data(self, year: int, month: int) -> Data:
-        return Data(year, month)
+    def _get_data(self) -> Data:
+        return Data(self.user)
 
-    def _initialize_plans(self, year: int, month: int) -> PlanCalculateDaySum:
-        return PlanCalculateDaySum(data=PlanCollectData(year, month))
+    def _initialize_plans(self) -> PlanCalculateDaySum:
+        return PlanCalculateDaySum(data=PlanCollectData(self.user, self.user.month))
 
-    def _initialize_spending(self, year: int, month: int) -> DaySpending:
+    def _initialize_spending(self) -> DaySpending:
         expense = MakeDataFrame(
-            year=year,
-            month=month,
+            year=self.user.year,
+            month=self.user.month,
             data=self.data.expenses,
             columns=self.data.expense_types,
         )
@@ -187,16 +191,16 @@ class Objects:
             free=self.plans.filter_df("expenses_free"),
         )
 
-    def _initialize_main_table(self, year: int, month: int) -> MainTable:
+    def _initialize_main_table(self) -> MainTable:
         expense = MakeDataFrame(
-            year=year,
-            month=month,
+            year=self.user.year,
+            month=self.user.month,
             data=self.data.expenses,
             columns=self.data.expense_types,
         )
         saving = MakeDataFrame(
-            year=year,
-            month=month,
+            year=self.user.year,
+            month=self.user.month,
             data=self.data.savings,
         )
         return MainTable(expense=expense, saving=saving)
@@ -240,12 +244,11 @@ class Objects:
         return {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)}
 
 
-def load_service(year: int, month: int) -> dict:
-    obj = Objects(year, month)
-
+def load_service(user) -> dict:
+    obj = Objects(user)
     return {
         "month_table": {
-            "day": current_day(year, month, False),
+            "day": current_day(user.year, user.month, False),
             "expenses": it.zip_longest(
                 obj.main_table.table,
                 obj.spending.spending,

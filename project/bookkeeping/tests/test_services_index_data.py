@@ -23,8 +23,8 @@ def fixture_data_dummy(mocker):
     )
 
 
-def test_init(amount_start, data_dummy):
-    actual = IndexServiceData(1999)
+def test_init(main_user, amount_start, data_dummy):
+    actual = IndexServiceData(main_user)
 
     assert actual.amount_start == 8
     assert actual.data == {"foo": "bar"}

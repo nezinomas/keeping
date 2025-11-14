@@ -4,8 +4,11 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ...core.lib import utils
-from ...incomes.models import Income
-from ...savings.models import Saving, SavingBalance
+from ...incomes.services.model_services import IncomeModelService
+from ...savings.services.model_services import (
+    SavingBalanceModelService,
+    SavingModelService,
+)
 
 
 @dataclass
@@ -15,25 +18,25 @@ class Data:
     incomes_total: int
 
 
-def get_data(year: int) -> Data:
+def get_data(user, year: int) -> Data:
     incomes_total = (
-        Income.objects.related()
-        .year(year=year)
-        .aggregate(Sum("price", default=0))["price__sum"]
-    )
-
-    savings_total = (
-        Saving.objects.related()
+        IncomeModelService(user)
         .year(year)
         .aggregate(Sum("price", default=0))["price__sum"]
     )
-
-    savings = SavingBalance.objects.year(year).exclude(saving_type__type="pensions")
+    savings_total = (
+        SavingModelService(user)
+        .year(year)
+        .aggregate(Sum("price", default=0))["price__sum"]
+    )
+    savings = (
+        SavingBalanceModelService(user).year(year).exclude(saving_type__type="pensions")
+    )
     return Data(savings, savings_total, incomes_total)
 
 
-def load_service(year: int) -> dict:
-    data = get_data(year)
+def load_service(user, year: int) -> dict:
+    data = get_data(user, year)
     fields = [
         "past_amount",
         "past_fee",

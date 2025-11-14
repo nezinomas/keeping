@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..accounts.models import Account
+from ..accounts.services.model_services import AccountModelService
 from ..core.lib.date import monthnames_abbr
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (
@@ -13,8 +13,8 @@ from ..core.mixins.views import (
     TemplateViewMixin,
     rendered_content,
 )
-from ..pensions.models import PensionType
-from ..savings.models import SavingType
+from ..pensions.services.model_services import PensionTypeModelService
+from ..savings.services.model_services import SavingTypeModelService
 from . import forms, models, services
 from .lib import no_incomes
 from .mixins.month import MonthMixin
@@ -22,12 +22,12 @@ from .mixins.month import MonthMixin
 
 class ReloadIndexContextDataMixin:
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        ind = services.index.load_service(year)
-        exp = services.expenses.load_service(year)
+        user = self.request.user
+        ind = services.index.load_service(user)
+        exp = services.expenses.load_service(user)
 
         context = {
-            "year": self.request.user.year,
+            "year": user.year,
             "averages": ind.averages_context(),
             "borrow": ind.borrow_context(),
             "lend": ind.lend_context(),
@@ -62,14 +62,15 @@ class Accounts(TemplateViewMixin):
     template_name = "bookkeeping/includes/account_worth_list.html"
 
     def get_context_data(self, **kwargs):
-        context = services.accounts.load_service(self.request.user.year)
+        user = self.request.user
+        context = services.accounts.load_service(user, user.year)
 
         return super().get_context_data(**kwargs) | context
 
 
 class AccountsWorthNew(FormsetMixin, CreateViewMixin):
-    type_model = Account
     model = models.AccountWorth
+    model_service = AccountModelService
     form_class = forms.AccountWorthForm
     modal_form_title = _("Worth of accounts")
     url = reverse_lazy("bookkeeping:accounts_worth_new")
@@ -80,13 +81,14 @@ class Savings(TemplateViewMixin):
     template_name = "bookkeeping/savings.html"
 
     def get_context_data(self, **kwargs):
-        context = services.savings.load_service(self.request.user.year)
+        user = self.request.user
+        context = services.savings.load_service(user, user.year)
         return super().get_context_data(**kwargs) | context
 
 
 class SavingsWorthNew(FormsetMixin, CreateViewMixin):
-    type_model = SavingType
     model = models.SavingWorth
+    model_service = SavingTypeModelService
     form_class = forms.SavingWorthForm
     modal_form_title = _("Worth of savings")
     url = reverse_lazy("bookkeeping:savings_worth_new")
@@ -97,14 +99,15 @@ class Pensions(TemplateViewMixin):
     template_name = "bookkeeping/includes/funds_table.html"
 
     def get_context_data(self, **kwargs):
-        context = services.pensions.load_service(self.request.user.year)
+        user = self.request.user
+        context = services.pensions.load_service(user, user.year)
 
         return super().get_context_data(**kwargs) | context
 
 
 class PensionsWorthNew(FormsetMixin, CreateViewMixin):
-    type_model = PensionType
     model = models.PensionWorth
+    model_service = PensionTypeModelService
     form_class = forms.PensionWorthForm
     modal_form_title = _("Worth of pensions")
     url = reverse_lazy("bookkeeping:pensions_worth_new")
@@ -115,7 +118,8 @@ class Wealth(TemplateViewMixin):
     template_name = "cotton/info_table.html"
 
     def get_context_data(self, **kwargs):
-        context = services.wealth.load_service(self.request.user.year)
+        user = self.request.user
+        context = services.wealth.load_service(user, user.year)
         return super().get_context_data(**kwargs) | context
 
 
@@ -123,8 +127,7 @@ class Forecast(TemplateViewMixin):
     template_name = "bookkeeping/includes/forecast.html"
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        context = services.forecast.load_service(year)
+        context = services.forecast.load_service(self.request.user)
 
         return super().get_context_data(**kwargs) | context
 
@@ -133,9 +136,8 @@ class NoIncomes(TemplateViewMixin):
     template_name = "bookkeeping/includes/no_incomes.html"
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        journal = self.request.user.journal
-        context = no_incomes.load_service(year, journal)
+        user = self.request.user
+        context = no_incomes.load_service(user, user.year)
 
         return super().get_context_data(**kwargs) | context
 
@@ -146,8 +148,7 @@ class Month(MonthMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         self.set_month()
 
-        user = self.request.user
-        context = services.month.load_service(user.year, user.month)
+        context = services.month.load_service(self.request.user)
 
         return super().get_context_data(**kwargs) | context
 
@@ -160,8 +161,7 @@ class Detailed(TemplateViewMixin):
     template_name = "bookkeeping/detailed.html"
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
-        context = services.detailed.load_service(year)
+        context = services.detailed.load_service(self.request.user)
         context["months"] = monthnames_abbr()
 
         return super().get_context_data(**kwargs) | context
@@ -171,9 +171,9 @@ class DetailedCategory(TemplateViewMixin):
     template_name = "cotton/detailed_table.html"
 
     def get_context_data(self, **kwargs):
-        year = self.request.user.year
+        user = self.request.user
         context = services.detailed_one_category.load_service(
-            year, self.kwargs["order"], self.kwargs["category"]
+            user, self.kwargs["order"], self.kwargs["category"]
         )
         context["order"] = self.kwargs["order"]
         context["months"] = monthnames_abbr()
@@ -185,7 +185,7 @@ class Summary(TemplateViewMixin):
     template_name = "bookkeeping/summary.html"
 
     def get_context_data(self, **kwargs):
-        context = services.chart_summary.load_service()
+        context = services.chart_summary.load_service(self.request.user)
         return super().get_context_data(**kwargs) | context
 
 
@@ -193,7 +193,7 @@ class SummarySavings(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings.html"
 
     def get_context_data(self, **kwargs):
-        data = services.summary_savings.get_data()
+        data = services.summary_savings.get_data(self.request.user)
         context = services.summary_savings.load_service(data)
         return super().get_context_data(**kwargs) | context
 
@@ -202,7 +202,7 @@ class SummarySavingsAndIncomes(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings_and_incomes.html"
 
     def get_context_data(self, **kwargs):
-        context = services.summary_savings_and_incomes.load_service()
+        context = services.summary_savings_and_incomes.load_service(self.request.user)
         return super().get_context_data(**kwargs) | context
 
 
@@ -215,7 +215,7 @@ class SummaryExpenses(FormViewMixin):
         form_data = form.cleaned_data.get("types")
         context = {
             "form": form,
-            **services.chart_summary_expenses.load_service(form_data),
+            **services.chart_summary_expenses.load_service(self.request.user, form_data),
         }
 
         return render(self.request, self.template_name, context)
@@ -226,6 +226,7 @@ class ExpandDayExpenses(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         obj = services.expand_day.ExpandDayService(
+            self.request.user,
             self.kwargs.get("date") or date(1974, 1, 1)
         )
 

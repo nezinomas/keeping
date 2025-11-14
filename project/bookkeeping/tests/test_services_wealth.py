@@ -10,8 +10,8 @@ from ..services.wealth import Data, Wealth
 pytestmark = pytest.mark.django_db
 
 
-def test_data_service_empty_db():
-    obj = Data(1999)
+def test_data_service_empty_db(main_user):
+    obj = Data(main_user, 1999)
 
     assert obj.year == 1999
     assert obj.account_balance == 0
@@ -19,29 +19,29 @@ def test_data_service_empty_db():
     assert obj.pension_balance == 0
 
 
-def test_data_service_account_balance():
+def test_data_service_account_balance(main_user):
     AccountBalanceFactory()
     AccountBalanceFactory()
 
-    obj = Data(1999)
+    obj = Data(main_user, 1999)
 
     assert obj.account_balance == 250
 
 
-def test_data_service_saving_balance():
+def test_data_service_saving_balance(main_user):
     SavingBalanceFactory()
     SavingBalanceFactory()
 
-    obj = Data(1999)
+    obj = Data(main_user, 1999)
 
     assert obj.saving_balance == 50
 
 
-def test_data_service_pension_balance():
+def test_data_service_pension_balance(main_user):
     PensionBalanceFactory()
     PensionBalanceFactory()
 
-    obj = Data(1999)
+    obj = Data(main_user, 1999)
 
     assert obj.pension_balance == 50
 

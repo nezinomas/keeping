@@ -4,6 +4,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from ...savings.factories import SavingBalance, SavingBalanceFactory
+from ...savings.services.model_services import SavingBalanceModelService
 from ..services.summary_savings import load_service, make_chart
 
 pytestmark = pytest.mark.django_db
@@ -121,12 +122,12 @@ def test_chart_data_6():
 
 
 @pytest.mark.django_db
-def test_chart_data_db1():
+def test_chart_data_db1(main_user):
     SavingBalanceFactory(year=1999, incomes=0, profit_sum=0)
     SavingBalanceFactory(year=2000, incomes=1, profit_sum=1)
     SavingBalanceFactory(year=2001, incomes=2, profit_sum=2)
 
-    qs = SavingBalance.objects.sum_by_type()
+    qs = SavingBalanceModelService(main_user).sum_by_type()
 
     actual = make_chart("x", list(qs.filter(type="funds")))
 

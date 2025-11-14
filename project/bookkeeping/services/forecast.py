@@ -1,30 +1,40 @@
 import itertools as it
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 import polars as pl
 from django.db.models import QuerySet, Sum
 
-from ...accounts.models import AccountBalance
+from ...accounts.services.model_services import AccountBalanceModelService
 from ...core.lib.date import monthnames
-from ...expenses.models import Expense
-from ...incomes.models import Income
+from ...expenses.services.model_services import ExpenseModelService
+from ...incomes.services.model_services import IncomeModelService
 from ...plans.models import IncomePlan
-from ...savings.models import Saving
-from ...transactions.models import SavingClose
+from ...plans.services.model_services import ModelService
+from ...savings.services.model_services import SavingModelService
+from ...transactions.services.model_services import SavingCloseModelService
+from ...users.models import User
 
 
 @dataclass
 class Data:
-    year: int
+    user: User
+    year: int = field(init=False, default=1974)
+
+    def __post_init__(self):
+        self.year = self.user.year
 
     def data(self) -> dict[str, list[int]]:
-        incomes = self._make_data(Income.objects.sum_by_month(self.year))
-        expenses = self._make_data(Expense.objects.sum_by_month(self.year))
-        savings = self._make_data(Saving.objects.sum_by_month(self.year))
-        savings_close = self._make_data(SavingClose.objects.sum_by_month(self.year))
+        incomes = self._make_data(IncomeModelService(self.user).sum_by_month(self.year))
+        expenses = self._make_data(
+            ExpenseModelService(self.user).sum_by_month(self.year)
+        )
+        savings = self._make_data(SavingModelService(self.user).sum_by_month(self.year))
+        savings_close = self._make_data(
+            SavingCloseModelService(self.user).sum_by_month(self.year)
+        )
         planned_incomes = self._make_planned_data(
-            IncomePlan.objects.year(self.year).values(*monthnames())
+            ModelService(IncomePlan, self.user).year(self.year).values(*monthnames())
         )
         return {
             "incomes": incomes,
@@ -36,7 +46,7 @@ class Data:
 
     def amount_at_beginning_of_year(self) -> int:
         return (
-            AccountBalance.objects.related()
+            AccountBalanceModelService(self.user).objects
             .filter(year=self.year)
             .aggregate(Sum("past"))["past__sum"]
             or 0
@@ -210,8 +220,9 @@ def get_month(year: int) -> int:
     return 12 if year < now.year else now.month
 
 
-def load_service(year: int) -> dict:
-    data = Data(year)
+def load_service(user: User) -> dict:
+    year = user.year
+    data = Data(user)
     month = get_month(year)
     forecast = Forecast(month, data.data()).forecast()
 

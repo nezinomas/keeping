@@ -15,32 +15,33 @@ pytestmark = pytest.mark.django_db
 # -------------------------------------------------------------------------------------
 #                                                                          Saving Worth
 # -------------------------------------------------------------------------------------
-def test_saving_worth_init():
-    SavingWorthForm()
+def test_saving_worth_init(main_user):
+    SavingWorthForm(user=main_user)
 
 
-def test_saving_worth_init_fields():
-    form = SavingWorthForm().as_p()
+def test_saving_worth_init_fields(main_user):
+    form = SavingWorthForm(user=main_user).as_p()
 
     assert '<input type="number" name="price"' in form
     assert '<select name="saving_type"' in form
 
 
-def test_saving_worth_current_user_types(second_user):
+def test_saving_worth_current_user_types(main_user, second_user):
     SavingTypeFactory(title="T1")  # user bob, current user
     SavingTypeFactory(title="T2", journal=second_user.journal)  # user tom
 
-    form = SavingWorthForm().as_p()
+    form = SavingWorthForm(user=main_user).as_p()
 
     assert "T1" in form
     assert "T2" not in form
 
 
 @time_machine.travel("1999-2-2 03:02:01")
-def test_saving_worth_valid_data():
+def test_saving_worth_valid_data(main_user):
     t = SavingTypeFactory()
 
     form = SavingWorthForm(
+        user=main_user,
         data={
             "date": "1999-1-2",
             "price": "0.01",
@@ -57,10 +58,11 @@ def test_saving_worth_valid_data():
 
 
 @time_machine.travel("1999-2-2 03:02:01")
-def test_saving_worth_valid_data_reset():
+def test_saving_worth_valid_data_reset(main_user):
     t = SavingTypeFactory()
 
     form = SavingWorthForm(
+        user=main_user,
         data={
             "date": "1999-1-2",
             "price": "0",
@@ -74,8 +76,8 @@ def test_saving_worth_valid_data_reset():
     assert data.price == 0
 
 
-def test_saving_blank_data():
-    form = SavingWorthForm({})
+def test_saving_blank_data(main_user):
+    form = SavingWorthForm(user=main_user, data={})
 
     assert not form.is_valid()
 
@@ -88,7 +90,7 @@ def test_saving_form_type_closed_in_past(main_user):
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
 
-    form = SavingWorthForm()
+    form = SavingWorthForm(user=main_user)
 
     assert "S1" in str(form["saving_type"])
     assert "S2" not in str(form["saving_type"])
@@ -100,7 +102,7 @@ def test_saving_form_type_closed_in_future(main_user):
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
 
-    form = SavingWorthForm()
+    form = SavingWorthForm(user=main_user)
 
     assert "S1" in str(form["saving_type"])
     assert "S2" in str(form["saving_type"])
@@ -112,7 +114,7 @@ def test_saving_form_type_closed_in_current_year(main_user):
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
 
-    form = SavingWorthForm()
+    form = SavingWorthForm(user=main_user)
 
     assert "S1" in str(form["saving_type"])
     assert "S2" in str(form["saving_type"])
@@ -126,10 +128,11 @@ def test_saving_form_type_closed_in_current_year(main_user):
         ("1999", "1998-12-31", True),
     ],
 )
-def test_saving_worth_account_closed_date(closed, date, valid):
+def test_saving_worth_account_closed_date(closed, date, valid, main_user):
     a = SavingTypeFactory(closed=closed)
 
     form = SavingWorthForm(
+        user=main_user,
         data={
             "date": date,
             "price": "1.0",
@@ -148,32 +151,33 @@ def test_saving_worth_account_closed_date(closed, date, valid):
 # -------------------------------------------------------------------------------------
 #                                                                         Account Worth
 # -------------------------------------------------------------------------------------
-def test_account_worth_init():
-    AccountWorthForm()
+def test_account_worth_init(main_user):
+    AccountWorthForm(user=main_user)
 
 
-def test_account_worth_init_fields():
-    form = AccountWorthForm().as_p()
+def test_account_worth_init_fields(main_user):
+    form = AccountWorthForm(user=main_user).as_p()
 
     assert '<input type="number" name="price"' in form
     assert '<select name="account"' in form
 
 
-def test_account_worth_current_user_types(second_user):
+def test_account_worth_current_user_types(main_user, second_user):
     AccountFactory(title="T1")  # user bob, current user
     AccountFactory(title="T2", journal=second_user.journal)  # user tom
 
-    form = AccountWorthForm().as_p()
+    form = AccountWorthForm(user=main_user).as_p()
 
     assert "T1" in form
     assert "T2" not in form
 
 
 @time_machine.travel("1999-01-02 03:02:01")
-def test_account_worth_valid_data():
+def test_account_worth_valid_data(main_user):
     a = AccountFactory()
 
     form = AccountWorthForm(
+        user=main_user,
         data={
             "date": "1999-1-2",
             "price": "0.01",
@@ -191,10 +195,11 @@ def test_account_worth_valid_data():
 
 
 @time_machine.travel("1999-01-02 03:02:01")
-def test_account_worth_valid_data_reset():
+def test_account_worth_valid_data_reset(main_user):
     a = AccountFactory()
 
     form = AccountWorthForm(
+        user=main_user,
         data={
             "date": "1999-1-2",
             "price": "0",
@@ -209,8 +214,8 @@ def test_account_worth_valid_data_reset():
     assert data.price == 0
 
 
-def test_account_worth_blank_data():
-    form = AccountWorthForm(data={})
+def test_account_worth_blank_data(main_user):
+    form = AccountWorthForm(user=main_user, data={})
 
     assert not form.is_valid()
 
@@ -225,10 +230,11 @@ def test_account_worth_blank_data():
         ("1999", "1998-12-31", True),
     ],
 )
-def test_account_worth_account_closed_date(closed, date, valid):
+def test_account_worth_account_closed_date(closed, date, valid, main_user):
     a = AccountFactory(closed=closed)
 
     form = AccountWorthForm(
+        user=main_user,
         data={
             "date": date,
             "price": "1.0",
@@ -247,32 +253,33 @@ def test_account_worth_account_closed_date(closed, date, valid):
 # -------------------------------------------------------------------------------------
 #                                                                         Pension Worth
 # -------------------------------------------------------------------------------------
-def test_pension_worth_init():
-    PensionWorthForm()
+def test_pension_worth_init(main_user):
+    PensionWorthForm(user=main_user)
 
 
-def test_pension_worth_init_fields():
-    form = PensionWorthForm().as_p()
+def test_pension_worth_init_fields(main_user):
+    form = PensionWorthForm(user=main_user).as_p()
 
     assert '<input type="number" name="price"' in form
     assert '<select name="pension_type"' in form
 
 
-def test_pension_worth_current_user_types(second_user):
+def test_pension_worth_current_user_types(main_user, second_user):
     PensionTypeFactory(title="T1")  # user bob, current user
     PensionTypeFactory(title="T2", journal=second_user.journal)  # user tom
 
-    form = PensionWorthForm().as_p()
+    form = PensionWorthForm(user=main_user).as_p()
 
     assert "T1" in form
     assert "T2" not in form
 
 
 @time_machine.travel("1999-12-12 3:2:1")
-def test_pension_worth_valid_data():
+def test_pension_worth_valid_data(main_user):
     p = PensionTypeFactory()
 
     form = PensionWorthForm(
+        user=main_user,
         data={
             "date": "1999-1-2",
             "price": "0.01",
@@ -290,10 +297,11 @@ def test_pension_worth_valid_data():
 
 
 @time_machine.travel("1999-12-12 3:2:1")
-def test_pension_worth_valid_data_reset():
+def test_pension_worth_valid_data_reset(main_user):
     p = PensionTypeFactory()
 
     form = PensionWorthForm(
+        user=main_user,
         data={
             "date": "1999-1-2",
             "price": "0",
@@ -308,8 +316,8 @@ def test_pension_worth_valid_data_reset():
     assert data.price == 0
 
 
-def test_pension_worth_blank_data():
-    form = PensionWorthForm(data={})
+def test_pension_worth_blank_data(main_user):
+    form = PensionWorthForm(user=main_user, data={})
 
     assert not form.is_valid()
 

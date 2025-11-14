@@ -6,19 +6,21 @@ import time_machine
 from ..services.forecast import Data, Forecast, get_month
 
 
-def test_get_data():
+def test_get_data(main_user):
+    main_user.year = 1000
+
     data = [
         {"date": date(1000, 1, 1), "sum": 1, "title": "incomes"},
         {"date": date(1000, 12, 1), "sum": 2, "title": "incomes"},
     ]
 
-    actual = Data(1000)._make_data(data)
+    actual = Data(main_user)._make_data(data)
     expect = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]
 
     assert actual == expect
 
 
-def test_get_planned_data():
+def test_get_planned_data(main_user):
     data = [
         {
             "january": 1,
@@ -35,13 +37,14 @@ def test_get_planned_data():
             "december": 2,
         }
     ]
-    actual = Data(1000)._make_planned_data(data)
+    main_user.year = 1000
+    actual = Data(main_user)._make_planned_data(data)
     expect = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]
 
     assert actual == expect
 
 
-def test_get_planned_data_few_records():
+def test_get_planned_data_few_records(main_user):
     data = [
         {
             "january": 1,
@@ -72,7 +75,8 @@ def test_get_planned_data_few_records():
             "december": 6,
         },
     ]
-    actual = Data(1000)._make_planned_data(data)
+    main_user.year = 1000
+    actual = Data(main_user)._make_planned_data(data)
     expect = [5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0]
 
     assert actual == expect

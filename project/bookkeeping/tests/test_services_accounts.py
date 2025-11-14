@@ -19,10 +19,10 @@ def fixture_data():
 
 
 @patch("project.bookkeeping.services.accounts.get_data")
-def test_total_row(mck, data):
+def test_total_row(mck, data, main_user):
     mck.return_value = data
 
-    actual = load_service(1)["total_row"]
+    actual = load_service(main_user, 1)["total_row"]
 
     assert actual["past"] == 2
     assert actual["incomes"] == 4
@@ -33,9 +33,9 @@ def test_total_row(mck, data):
 
 
 @patch("project.bookkeeping.services.accounts.get_data")
-def test_total_row_no_data(mck):
+def test_total_row_no_data(mck, main_user):
     mck.return_value = []
-    actual = load_service(1)["total_row"]
+    actual = load_service(main_user, 1)["total_row"]
 
     assert actual["past"] == 0
     assert actual["incomes"] == 0

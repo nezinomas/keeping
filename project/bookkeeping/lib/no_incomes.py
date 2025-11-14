@@ -5,14 +5,21 @@ from typing import Dict, List
 from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 
-from ...accounts.models import AccountBalance
-from ...expenses.models import Expense, ExpenseType
-from ...savings.models import Saving, SavingBalance
-from ...users.models import Journal
+from ...accounts.services.model_services import AccountBalanceModelService
+from ...expenses.services.model_services import (
+    ExpenseModelService,
+    ExpenseTypeModelService,
+)
+from ...savings.services.model_services import (
+    SavingBalanceModelService,
+    SavingModelService,
+)
+from ...users.models import User
 
 
 @dataclass
 class Data:
+    user: User
     year: int
     months: int = field(default=6)
     unnecessary_expenses: list = field(default_factory=list)
@@ -27,23 +34,23 @@ class Data:
     unnecessary: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.expenses = Expense.objects.last_months(months=self.months)
+        self.expenses = ExpenseModelService(self.user).last_months(months=self.months)
         self.account_sum = (
-            AccountBalance.objects.related()
-            .filter(year=self.year)
+            AccountBalanceModelService(self.user)
+            .year(self.year)
             .aggregate(Sum("balance"))["balance__sum"]
             or 0
         )
 
         self.fund_sum = (
-            SavingBalance.objects.related()
+            SavingBalanceModelService(self.user).items()
             .filter(year=self.year, saving_type__type__in=["shares", "funds"])
             .aggregate(Sum("market_value"))["market_value__sum"]
             or 0
         )
 
         self.pension_sum = (
-            SavingBalance.objects.related()
+            SavingBalanceModelService(self.user).items()
             .filter(year=self.year, saving_type__type="pensions")
             .aggregate(Sum("market_value"))["market_value__sum"]
             or 0
@@ -52,14 +59,14 @@ class Data:
         if self.unnecessary_expenses:
             arr = json.loads(self.unnecessary_expenses)
             self.unnecessary = list(
-                ExpenseType.objects.related()
+                ExpenseTypeModelService(self.user).items()
                 .filter(pk__in=arr)
                 .values_list("title", flat=True)
             )
 
         if self.unnecessary_savings:
             self.unnecessary.append(_("Savings"))
-            self.savings = Saving.objects.last_months(months=self.months)
+            self.savings = SavingModelService(self.user).last_months(months=self.months)
 
 
 @dataclass
@@ -137,11 +144,12 @@ class NoIncomes:
         return incomes / expenses if expenses else 0
 
 
-def load_service(year: int, journal: Journal) -> dict:
+def load_service(user: User, year: int) -> dict:
     data = Data(
+        user=user,
         year=year,
-        unnecessary_expenses=journal.unnecessary_expenses,
-        unnecessary_savings=journal.unnecessary_savings,
+        unnecessary_expenses=user.journal.unnecessary_expenses,
+        unnecessary_savings=user.journal.unnecessary_savings,
     )
     obj = NoIncomes(data)
 
