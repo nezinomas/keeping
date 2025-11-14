@@ -1,3 +1,4 @@
+
 import contextlib
 import itertools as it
 from dataclasses import asdict, dataclass, field
@@ -169,16 +170,13 @@ class Info:
 
 
 class Objects:
-    def __init__(self, user):
+    def __init__(self, user, data: MakeDataFrame):
         self.user = user
-        self.data: MakeDataFrame = self._get_data()
+        self.data: MakeDataFrame = data
         self.plans: PlanCalculateDaySum = self._initialize_plans()
         self.spending: DaySpending = self._initialize_spending()
         self.main_table: MainTable = self._initialize_main_table()
         self.charts: Charts = self._initialize_charts()
-
-    def _get_data(self) -> Data:
-        return Data(self.user)
 
     def _initialize_plans(self) -> PlanCalculateDaySum:
         return PlanCalculateDaySum(data=PlanCollectData(self.user, self.user.month))
@@ -251,7 +249,8 @@ class Objects:
 
 
 def load_service(user) -> dict:
-    obj = Objects(user)
+    data = Data(user)
+    obj = Objects(user, data)
     return {
         "month_table": {
             "day": current_day(user.year, user.month, False),

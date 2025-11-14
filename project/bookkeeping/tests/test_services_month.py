@@ -10,18 +10,17 @@ from ..services.month import Charts, Info, MainTable, Objects
 
 
 @time_machine.travel("1999-1-1")
-@patch("project.bookkeeping.services.month.Objects._get_data")
 @patch("project.bookkeeping.services.month.Objects._initialize_plans")
 @patch("project.bookkeeping.services.month.Objects._initialize_spending")
 @patch("project.bookkeeping.services.month.Objects._initialize_main_table")
 @patch("project.bookkeeping.services.month.Objects._initialize_charts")
 def test_info_context(
-    mck_get_data, mck_plans, mck_spending, mck_main_table, mck_charts, main_user
+    mck_plans, mck_spending, mck_main_table, mck_charts, main_user
 ):
     main_user.year = 1
     main_user.month = 1
 
-    obj = Objects(main_user)
+    obj = Objects(main_user, MagicMock())
     obj.data = MagicMock(incomes=15)
 
     # obj.plans side effect for method filter_df is called 7 times
