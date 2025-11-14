@@ -29,8 +29,8 @@ class SavingTypeModelService:
         return SavingType.objects.none()
 
     def items(self, year=None):
-        _year = year or self.user.year
-        return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=_year))
+        year = year or self.user.year
+        return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
     def all(self):
         return self.objects
