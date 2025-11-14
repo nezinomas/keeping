@@ -12,6 +12,7 @@ from .bookkeeping.factories import (
 from .debts.factories import LendFactory, LendReturnFactory
 from .expenses.factories import ExpenseFactory
 from .incomes.factories import IncomeFactory
+from .journals.factories import JournalFactory
 from .pensions.factories import PensionFactory
 from .savings.factories import SavingFactory, SavingTypeFactory
 from .transactions.factories import (
@@ -36,9 +37,6 @@ def main_user(monkeypatch, request):
     else:
         user = UserFactory.build()
 
-    mock_func = "project.core.lib.utils.get_user"
-    monkeypatch.setattr(mock_func, lambda: user)
-
     return user
 
 
@@ -60,6 +58,7 @@ def second_user(request):
 def fake_request(rf):
     request = rf.get("/fake/")
     request.user = UserFactory.build()
+    request.user.journal = JournalFactory.build()
 
     return request
 
@@ -67,7 +66,6 @@ def fake_request(rf):
 @pytest.fixture()
 def client_logged(client):
     client.login(username="bob", password="123")
-
     return client
 
 

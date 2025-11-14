@@ -55,9 +55,10 @@ def test_pensions_load_form(admin_client):
     url = reverse("pensions:new")
 
     response = admin_client.get(url)
-    form = response.context["form"]
+    actual = response.content.decode()
 
-    assert "2000-01-01" in form.as_p()
+    assert f'hx-post="{url}"' in actual
+    assert "2000-01-01" in actual
 
 
 def test_pensions_save(client_logged):
@@ -87,14 +88,15 @@ def test_pensions_save_invalid_data(client_logged):
     assert not form.is_valid()
 
 
-def test_pensions_load_update_form_button(client_logged):
+def test_pensions_load_update_load_form(client_logged):
     obj = PensionFactory()
 
     url = reverse("pensions:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
-    form = clean_content(response.content.decode("utf-8"))
+    actual = clean_content(response.content.decode("utf-8"))
 
-    assert "Atnaujinti ir uždaryti</button>" in form
+    assert f'hx-post="{url}"' in actual
+    assert "Atnaujinti ir uždaryti</button>" in actual
 
 
 def test_pensions_load_update_form_field_values(client_logged):
@@ -244,10 +246,11 @@ def test_view_pensions_delete_load_form(client_logged):
 
     url = reverse("pensions:delete", kwargs={"pk": p.pk})
     response = client_logged.get(url)
-    form = response.content.decode("utf-8")
+    actual = response.content.decode("utf-8")
 
-    assert '<form method="POST"' in form
-    assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in form
+    assert f'hx-post="{url}"' in actual
+    assert '<form method="POST"' in actual
+    assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
 
 def test_view_pensions_delete(client_logged):
@@ -295,7 +298,6 @@ def test_type_load_form(admin_client):
     assert response.status_code == 200
 
 
-@time_machine.travel("1999-01-01")
 def test_type_save(client_logged):
     data = {"title": "TTT"}
     url = reverse("pensions:type_new")
@@ -304,6 +306,15 @@ def test_type_save(client_logged):
     actual = response.content.decode("utf-8")
 
     assert "TTT" in actual
+
+
+def test_type_new_load_form(client_logged):
+    url = reverse("pensions:type_new")
+
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
 
 
 def test_type_save_invalid_data(client_logged):
@@ -316,6 +327,18 @@ def test_type_save_invalid_data(client_logged):
     form = response.context["form"]
 
     assert not form.is_valid()
+
+
+def test_type_update_load_form(client_logged):
+    pension = PensionTypeFactory()
+
+    data = {"title": "TTT"}
+    url = reverse("pensions:type_update", kwargs={"pk": pension.pk})
+
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
 
 
 def test_type_update(client_logged):

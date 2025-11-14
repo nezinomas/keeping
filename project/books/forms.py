@@ -3,10 +3,10 @@ from datetime import datetime
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib import utils
 from ..core.lib.date import set_date_with_user_year, years
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from .models import Book, BookTarget
+from .services.model_services import BookModelService, BookTargetModelService
 
 
 class BookForm(forms.ModelForm):
@@ -17,19 +17,17 @@ class BookForm(forms.ModelForm):
     field_order = ["started", "ended", "author", "title", "remark"]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
-
-        user = utils.get_user()
-        lang = user.journal.lang
 
         self.fields["started"].widget = DatePickerWidget()
         self.fields["ended"].widget = DatePickerWidget()
 
         # initial values
-        self.fields["started"].initial = set_date_with_user_year()
+        self.fields["started"].initial = set_date_with_user_year(self.user)
 
         # user input
-        self.fields["user"].initial = user
+        self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
@@ -43,7 +41,7 @@ class BookForm(forms.ModelForm):
     def clean_started(self):
         dt = self.cleaned_data["started"]
         year_instance = dt.year
-        years_ = years()[:-1]
+        years_ = years(self.user)[:-1]
         if year_instance not in years_:
             self.add_error(
                 "started",
@@ -86,15 +84,16 @@ class BookTargetForm(forms.ModelForm):
     field_order = ["year", "quantity"]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # user input
-        self.fields["user"].initial = utils.get_user()
+        self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(self.user).year
 
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("How many")
@@ -107,7 +106,7 @@ class BookTargetForm(forms.ModelForm):
             return year
 
         # if new record
-        qs = BookTarget.objects.year(year)
+        qs = BookTargetModelService(self.user).year(year)
         if qs.exists():
             msg = _("already has a goal.")
             raise forms.ValidationError(f"{year} {msg}")

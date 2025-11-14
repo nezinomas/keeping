@@ -43,13 +43,33 @@ def http_htmx_response(hx_trigger_name=None, status_code=204):
 # -------------------------------------------------------------------------------------
 #                                                                                Mixins
 # -------------------------------------------------------------------------------------
+class AddUserToKwargsMixin:
+    def get_form_kwargs(self, **kwargs):
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def get_form(self, data=None, files=None, **kwargs):
+        kwargs = self.get_form_kwargs(**kwargs)
+        return self.form_class(data, files, **kwargs)
+
+    def get_formset_class(self):
+        base_form = self.form_class
+
+        class UserAwareForm(base_form):
+            def __init__(self, *args, **form_kwargs):
+                form_kwargs = self.get_form_kwargs(**form_kwargs)
+                super().__init__(*args, **form_kwargs)
+
+        return UserAwareForm
+
+
 class GetQuerysetMixin:
     object = None
 
     def get_queryset(self):
         try:
-            qs = self.model.objects.related()
-        except AttributeError as e:
+            qs = self.model.objects.related(self.request.user)
+        except (TypeError, AttributeError) as e:
             raise Http404(
                 _("No %(verbose_name)s found matching the query")
                 % {"verbose_name": self.model._meta.verbose_name}
@@ -115,9 +135,6 @@ class DeleteMixin:
     def get_hx_redirect(self):
         return self.hx_redirect
 
-    def url(self):
-        return self.object.get_delete_url() if self.object else None
-
     def get_context_data(self, **kwargs):
         context = {
             "url": self.url,
@@ -179,7 +196,7 @@ class SearchMixin:
     def search(self):
         search_str = self.request.GET.get("search")
 
-        sql = self.get_search_method()(search_str)
+        sql = self.get_search_method()(self.request.user, search_str)
         stats = self.search_statistic(sql)
 
         page = self.request.GET.get("page", 1)
@@ -209,25 +226,48 @@ class SearchMixin:
 # -------------------------------------------------------------------------------------
 #                                                                          Views Mixins
 # -------------------------------------------------------------------------------------
-class CreateViewMixin(GetQuerysetMixin, CreateUpdateMixin, CreateView):
+class CreateViewMixin(
+    AddUserToKwargsMixin, GetQuerysetMixin, CreateUpdateMixin, CreateView
+):
     template_name = "core/generic_form.html"
     form_action = "insert"
+    url_name = None
 
     def url(self):
         app = self.request.resolver_match.app_name
-        return reverse_lazy(f"{app}:new")
+        url_name = self.url_name or "new"
+        return reverse_lazy(f"{app}:{url_name}")
 
 
-class UpdateViewMixin(GetQuerysetMixin, CreateUpdateMixin, UpdateView):
+class UpdateViewMixin(
+    AddUserToKwargsMixin, GetQuerysetMixin, CreateUpdateMixin, UpdateView
+):
     template_name = "core/generic_form.html"
     form_action = "update"
+    url_name = None
 
     def url(self):
-        return self.object.get_absolute_url() if self.object else None
+        app = self.request.resolver_match.app_name
+        url_name = self.url_name or "update"
+        return (
+            reverse_lazy(f"{app}:{url_name}", kwargs={"pk": self.object.pk})
+            if self.object
+            else None
+        )
 
 
-class DeleteViewMixin(GetQuerysetMixin, DeleteMixin, DeleteView):
+class DeleteViewMixin(AddUserToKwargsMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
     template_name = "core/generic_delete_form.html"
+    url_name = None
+
+    def url(self):
+        app = self.request.resolver_match.app_name
+        url_name = self.url_name or "delete"
+        return (
+            reverse_lazy(f"{app}:{url_name}", kwargs={"pk": self.object.pk})
+            if self.object
+            else None
+        )
 
 
 class RedirectViewMixin(RedirectView):
@@ -242,9 +282,9 @@ class ListViewMixin(GetQuerysetMixin, ListView):
     pass
 
 
-class FormViewMixin(FormView):
+class FormViewMixin(AddUserToKwargsMixin, FormView):
     template_name = "core/generic_form.html"
 
 
-class SearchViewMixin(SearchMixin, TemplateView):
+class SearchViewMixin(AddUserToKwargsMixin, SearchMixin, TemplateView):
     pass

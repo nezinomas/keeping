@@ -23,9 +23,6 @@ class PensionType(TitleAbstract):
         unique_together = ["journal", "title"]
         ordering = ["title"]
 
-    def get_absolute_url(self):
-        return reverse_lazy("pensions:type_update", kwargs={"pk": self.pk})
-
 
 class Pension(models.Model):
     date = models.DateField()
@@ -42,12 +39,6 @@ class Pension(models.Model):
 
     def __str__(self):
         return f"{(self.date)}: {self.pension_type}"
-
-    def get_absolute_url(self):
-        return reverse_lazy("pensions:update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("pensions:delete", kwargs={"pk": self.pk})
 
 
 class PensionBalance(models.Model):

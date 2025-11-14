@@ -6,12 +6,15 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from ..accounts.models import Account
-from ..core.lib import utils
+from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from .models import Expense, ExpenseName, ExpenseType
+from .services.model_services import (
+    ExpenseNameModelService,
+    ExpenseTypeModelService,
+)
 
 
 class ExpenseForm(ConvertToPrice, forms.ModelForm):
@@ -46,14 +49,13 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
     ]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
-
-        user = utils.get_user()
 
         self._initial_fields_values()
         self._overwrite_account_query()
         self._overwrite_expense_type_query()
-        self._overwrite_expense_name_query(user)
+        self._overwrite_expense_name_query()
         self._set_htmx_attributes()
         self._translate_fields()
 
@@ -68,22 +70,26 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
     def _initial_fields_values(self):
         if not self.instance.pk:
-            self.fields["date"].initial = set_date_with_user_year()
-            self.fields["account"].initial = Account.objects.items().first()
+            self.fields["date"].initial = set_date_with_user_year(self.user)
+            self.fields["account"].initial = (
+                AccountModelService(self.user).items().first()
+            )
             self.fields["price"].initial = "0.00"
 
     def _overwrite_account_query(self):
         if self.instance.pk:
-            qs = Account.objects.items(year=self.instance.date.year)
+            qs = AccountModelService(self.user).items(self.instance.date.year)
         else:
-            qs = Account.objects.items()
+            qs = AccountModelService(self.user).items()
 
         self.fields["account"].queryset = qs
 
     def _overwrite_expense_type_query(self):
-        self.fields["expense_type"].queryset = ExpenseType.objects.items()
+        self.fields["expense_type"].queryset = ExpenseTypeModelService(
+            self.user
+        ).items()
 
-    def _overwrite_expense_name_query(self, user):
+    def _overwrite_expense_name_query(self):
         expense_type_pk = None
         with contextlib.suppress(TypeError, ValueError):
             expense_type_pk = int(self.data.get("expense_type"))
@@ -93,12 +99,12 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
 
         if expense_type_pk:
             qs = (
-                ExpenseName.objects.related()
+                ExpenseNameModelService(self.user)
+                .year(self.user.year)
                 .filter(parent=expense_type_pk)
-                .year(user.year)
             )
         else:
-            qs = ExpenseName.objects.none()
+            qs = ExpenseNameModelService(self.user).none()
 
         self.fields["expense_name"].queryset = qs
 
@@ -148,7 +154,7 @@ class ExpenseForm(ConvertToPrice, forms.ModelForm):
     def clean_date(self):
         dt = self.cleaned_data["date"]
 
-        year_user = utils.get_user().year
+        year_user = self.user.year
         year_instance = dt.year
         year_now = datetime.now().year
 
@@ -189,10 +195,11 @@ class ExpenseTypeForm(forms.ModelForm):
         fields = ["journal", "title", "necessary"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        self.fields["journal"].initial = utils.get_user().journal
+        self.fields["journal"].initial = user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
 
@@ -212,10 +219,11 @@ class ExpenseNameForm(forms.ModelForm):
     field_order = ["parent", "title", "valid_for"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # overwrite ForeignKey parent queryset
-        self.fields["parent"].queryset = ExpenseType.objects.items()
+        self.fields["parent"].queryset = ExpenseTypeModelService(user).items()
 
         # field labels
         self.fields["parent"].label = _("Expense type")

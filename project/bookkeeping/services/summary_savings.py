@@ -7,7 +7,9 @@ import polars as pl
 from django.utils.translation import gettext as _
 
 from ...pensions.models import PensionBalance
+from ...pensions.services.model_services import PensionBalanceModelService
 from ...savings.models import SavingBalance
+from ...savings.services.model_services import SavingBalanceModelService
 
 
 @dataclass
@@ -90,14 +92,17 @@ def chart_keys_map():
     ]
 
 
-def get_data(saving_type: list = None):
-    if saving_type is None:
-        saving_type = ["funds", "shares", "pensions"]
+def get_data(user, saving_types: list = None):
+    if saving_types is None:
+        saving_types = ["funds", "shares", "pensions"]
 
     data = {
-        t: list(SavingBalance.objects.sum_by_type().filter(type=t)) for t in saving_type
+        saving_type: list(
+            SavingBalanceModelService(user).sum_by_type().filter(type=saving_type)
+        )
+        for saving_type in saving_types
     }
-    data["pensions2"] = list(PensionBalance.objects.sum_by_year())
+    data["pensions2"] = list(PensionBalanceModelService(user).sum_by_year())
 
     return data
 

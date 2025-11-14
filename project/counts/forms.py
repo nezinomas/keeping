@@ -1,11 +1,11 @@
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib import utils
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Count, CountType
+from .services.model_services import CountModelService, CountTypeModelService
 
 
 class CountForm(YearBetweenMixin, forms.ModelForm):
@@ -16,6 +16,9 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "count_type", "quantity"]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        self.counter_type = kwargs.pop("counter_type", None)
+
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -24,20 +27,24 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
 
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year()
+        self.fields["date"].initial = set_date_with_user_year(self.user)
         self.fields["quantity"].initial = 1
 
-        if slug := utils.get_request_kwargs("slug"):
-            obj = CountType.objects.filter(slug=slug).first()
+        if self.counter_type:
+            obj = (
+                CountTypeModelService(self.user)
+                .objects.filter(slug=self.counter_type)
+                .first()
+            )
             self.fields["count_type"].initial = obj
 
         # initial value for user field
-        self.fields["user"].initial = utils.get_user()
+        self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
     def _overwrite_default_queries(self):
-        self.fields["count_type"].queryset = CountType.objects.items()
+        self.fields["count_type"].queryset = CountTypeModelService(self.user).items()
 
     def _translate_fields(self):
         self.fields["date"].label = _("Date")
@@ -51,10 +58,11 @@ class CountTypeForm(forms.ModelForm):
         fields = ["user", "title"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # user input
-        self.fields["user"].initial = utils.get_user()
+        self.fields["user"].initial = user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 

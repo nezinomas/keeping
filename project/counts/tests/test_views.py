@@ -125,6 +125,20 @@ def test_view_new(client_logged):
     assert '<a role="button" hx-get="/counts/delete/1/"' in actual
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_view_new_load_form(client_logged):
+    o1 = CountTypeFactory(title="XXX")
+    o2 = CountTypeFactory(title="ZZZ")
+
+    url = reverse("counts:new", kwargs={"slug": "zzz", "tab": "data"})
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
+    assert f'<option value="{o1.pk}">{o1.title}</option>' in actual
+    assert f'<option value="{o2.pk}" selected>{o2.title}</option>' in actual
+
+
 def test_view_new_invalid_data(client_logged):
     data = {"date": -2, "quantity": "x"}
 
@@ -134,6 +148,25 @@ def test_view_new_invalid_data(client_logged):
     form = response.context["form"]
 
     assert not form.is_valid()
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_view_update_load_form(client_logged):
+    count_type_1 = CountTypeFactory(title="ZZZ")
+    count_type_2 = CountTypeFactory(title="AAA")
+
+    count = CountFactory(count_type=count_type_1)
+
+    url = reverse("counts:update", kwargs={"pk": count.pk})
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
+    assert (
+        f'<option value="{count_type_1.pk}" selected>{count_type_1.title}</option>'
+        in actual
+    )
+    assert f'<option value="{count_type_2.pk}">{count_type_2.title}</option>' in actual
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
@@ -621,7 +654,16 @@ def test_count_type_new_200(client_logged):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_count_type_load_form(client_logged):
+def test_count_type_new_load_form(client_logged):
+    url = reverse("counts:type_new")
+    response = client_logged.get(url)
+
+    content = response.content.decode("utf-8")
+    assert f'hx-post="{url}"' in content
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+def test_count_type_update_load_form(client_logged):
     obj = CountTypeFactory()
 
     url = reverse("counts:type_update", kwargs={"pk": obj.pk})
@@ -629,10 +671,11 @@ def test_count_type_load_form(client_logged):
     content = response.content.decode("utf-8")
 
     assert response.status_code == 200
-    assert "Count Type" in content
+    assert obj.title in content
+    assert f'hx-post="{url}"' in content
 
 
-def test_count_type_form(client_logged):
+def test_count_type_new_form(client_logged):
     url = reverse("counts:type_new")
     response = client_logged.get(url)
     form = response.context.get("form")
@@ -640,7 +683,7 @@ def test_count_type_form(client_logged):
     assert isinstance(form, forms.CountTypeForm)
 
 
-def test_count_type_form_fields(client_logged):
+def test_count_type_new_form_fields(client_logged):
     url = reverse("counts:type_new")
     response = client_logged.get(url)
     actual = response.content.decode()
@@ -681,6 +724,7 @@ def test_count_type_htmx_redirect_header(client_logged):
     )
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_new_invalid_data(client_logged):
     data = {"title": "X"}
     url = reverse("counts:type_new")

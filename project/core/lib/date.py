@@ -3,7 +3,7 @@ import contextlib
 from datetime import date, datetime
 from typing import List, Tuple
 
-from . import utils
+from ...users.models import User
 from .translation import month_names
 
 
@@ -56,21 +56,21 @@ def monthlen(year: int, month_name: str) -> int:
     return calendar.monthrange(year, month)[1]
 
 
-def years() -> List[int]:
+def years(user: User = None) -> List[int]:
     now = datetime.now().year
     start = now
 
     with contextlib.suppress(AttributeError):
-        start = utils.get_user().journal.first_record.year
+        start = user.journal.first_record.year
 
     return list(range(start, now + 2))
 
 
-def set_date_with_user_year():
+def set_date_with_user_year(user):
     now = datetime.now()
     month = now.month
     day = now.day
-    year = utils.get_user().year
+    year = user.year
 
     return datetime(year, month, day)
 

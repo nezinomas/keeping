@@ -3,7 +3,6 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
-from ..core.lib import utils
 from .models import User
 
 
@@ -15,6 +14,7 @@ class SignUpForm(UserCreationForm):
         fields = ("username", "email", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["email"].label = _("Email")
@@ -27,13 +27,14 @@ class InviteForm(forms.Form):
         fields = "email"
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["email"].label = _("Email")
 
     def clean_email(self):
         email = self.cleaned_data["email"]
-        admin_email = utils.get_user().email
+        admin_email = self.user.email
 
         if email == admin_email:
             raise ValidationError(_("You entered your own Email."))

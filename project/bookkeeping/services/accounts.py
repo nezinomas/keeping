@@ -1,14 +1,15 @@
 from project.core.lib import utils
 
-from ...accounts.models import AccountBalance
+from ...accounts.services.model_services import AccountBalanceModelService
+from ...users.models import User
 
 
-def get_data(year: int) -> AccountBalance:
-    return AccountBalance.objects.year(year)
+def get_data(user: User, year: int):
+    return AccountBalanceModelService(user).year(year)
 
 
-def load_service(year: int) -> dict:
-    data = get_data(year)
+def load_service(user: User, year: int) -> dict:
+    data = get_data(user, year)
     fields = [
         "past",
         "incomes",

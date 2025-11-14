@@ -1,10 +1,10 @@
 from datetime import date as dt
 
 import pytest
-from mock import patch
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
+from ...accounts.services.model_services import AccountBalanceModelService
 from ...incomes.factories import IncomeFactory
 from ..factories import (
     BorrowFactory,
@@ -13,6 +13,7 @@ from ..factories import (
     LendReturnFactory,
 )
 from ..models import Debt, DebtReturn
+from ..services.model_services import DebtModelService, DebtReturnModelService
 
 pytestmark = pytest.mark.django_db
 
@@ -37,183 +38,88 @@ def test_debt_return_fields():
     assert DebtReturn._meta.get_field("remark")
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_return_related(mck, second_user):
+def test_lend_return_related(main_user, second_user):
     b1 = LendFactory(name="B1", price=1)
     b2 = LendFactory(name="B2", price=2, journal=second_user.journal)
 
     LendReturnFactory(debt=b1, price=1.1)
     LendReturnFactory(debt=b2, price=2.1)
 
-    actual = DebtReturn.objects.related()
+    actual = DebtReturn.objects.related(main_user, "lend")
 
     assert actual.count() == 1
     assert str(actual[0]) == "Grąžino 0.01"
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="borrow")
-def test_borrow_return_related(mck, second_user):
+def test_borrow_return_related(main_user, second_user):
     b1 = BorrowFactory(name="B1", price=1)
     b2 = BorrowFactory(name="B2", price=2, journal=second_user.journal)
 
     BorrowReturnFactory(debt=b1, price=1.1)
     BorrowReturnFactory(debt=b2, price=2.1)
 
-    actual = DebtReturn.objects.related()
+    actual = DebtReturn.objects.related(main_user, "borrow")
 
     assert actual.count() == 1
     assert str(actual[0]) == "Grąžinau 0.01"
 
 
-def test_lend_return_related_queries(django_assert_num_queries):
+def test_lend_return_related_queries(main_user, django_assert_num_queries):
     LendReturnFactory()
     LendReturnFactory()
 
     with django_assert_num_queries(1):
-        list(x.account.title for x in list(DebtReturn.objects.related()))
+        list(
+            x.account.title for x in list(DebtReturn.objects.related(main_user, "lend"))
+        )
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_return_items(mck):
+def test_lend_return_items(main_user):
     LendReturnFactory()
     LendReturnFactory()
 
-    actual = DebtReturn.objects.items()
+    actual = DebtReturnModelService(main_user, "lend").items()
 
     assert actual.count() == 2
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_return_year(mck):
+def test_lend_return_year(main_user):
     LendReturnFactory()
     LendReturnFactory(date=dt(1974, 1, 2))
 
-    actual = DebtReturn.objects.year(1999)
+    actual = DebtReturnModelService(main_user, "lend").year(1999)
 
     assert actual.count() == 1
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_return_sum_by_month(mck):
+def test_lend_return_sum_by_month(main_user):
     LendReturnFactory()
     LendReturnFactory(date=dt(1974, 3, 2), price=1)
     LendReturnFactory(date=dt(1974, 3, 3), price=2)
     LendReturnFactory(date=dt(1974, 3, 4), price=3)
 
-    actual = DebtReturn.objects.sum_by_month(1974, "lend")
+    actual = DebtReturnModelService(main_user, "lend").sum_by_month(1974)
 
     assert list(actual) == [{"date": dt(1974, 3, 1), "title": "lend_return", "sum": 6}]
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="borrow")
-def test_borrow_return_sum_by_month(mck):
+def test_borrow_return_sum_by_month(main_user):
     BorrowReturnFactory()
     BorrowReturnFactory(date=dt(1974, 3, 2), price=1)
     BorrowReturnFactory(date=dt(1974, 3, 3), price=2)
     BorrowReturnFactory(date=dt(1974, 3, 4), price=3)
 
-    actual = DebtReturn.objects.sum_by_month(1974, "borrow")
+    actual = DebtReturnModelService(main_user, "borrow").sum_by_month(1974)
 
     assert list(actual) == [
         {"date": dt(1974, 3, 1), "title": "borrow_return", "sum": 6}
     ]
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_return_new_record_updates_debt_tbl(mck):
-    LendReturnFactory(price=30)
-
-    actual = Debt.objects.items()
-
-    assert actual.count() == 1
-    assert actual[0].returned == 30
-
-
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_return_update(mck):
-    obj = LendReturnFactory(price=30)
-
-    actual = Debt.objects.items()
-    assert actual[0].returned == 30
-
-    obj.price = 20
-    obj.save()
-
-    assert DebtReturn.objects.items().count() == 1
-
-    actual = Debt.objects.items()
-    assert actual[0].returned == 20
-
-
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_return_new_record_updates_debt_tbl_empty_returned_field(mck):
-    LendReturnFactory(debt=LendFactory(returned=None))
-
-    actual = Debt.objects.items()
-
-    assert actual.count() == 1
-    assert actual[0].returned == 6
-
-
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-@patch("project.debts.models.Debt.objects.filter")
-def test_lend_return_new_record_updates_debt_tbl_error_on_save_parent(mck, m):
-    mck.side_effect = TypeError
-
-    LendFactory(returned=25)
-    try:
-        LendReturnFactory()
-    except TypeError:
-        pass
-
-    actual = Debt.objects.items()
-    assert actual[0].returned == 25
-
-    assert DebtReturn.objects.count() == 0
-
-
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_return_delete_record_updates_debt_tbl(mck):
-    obj = LendReturnFactory(price=30)
-
-    actual = Debt.objects.items()
-
-    assert actual.count() == 1
-    assert actual[0].returned == 30
-
-    obj.delete()
-
-    actual = Debt.objects.items()
-
-    assert actual.count() == 1
-    assert actual[0].returned == 0
-
-
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_return_delete_record_updates_debt_tbl_error_on_save(mck):
-    obj = LendReturnFactory(price=30)
-
-    actual = Debt.objects.items()
-
-    assert actual[0].returned == 30
-
-    with patch("project.debts.models.super") as mck:
-        mck.side_effect = TypeError
-
-        try:
-            obj.delete()
-        except:  # noqa: E722
-            pass
-
-    actual = Debt.objects.items()
-
-    assert actual[0].returned == 30
-
-
-def test_lend_return_post_save_new():
+def test_lend_return_post_save_new(main_user):
     LendReturnFactory()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -224,10 +130,63 @@ def test_lend_return_post_save_new():
     assert actual.balance == -94
 
 
-def test_borrow_return_post_save_new():
+def test_lend_return_post_save_debt_return_value(main_user):
+    debt1 = LendFactory(name="A")
+    debt2 = LendFactory(name="Z")
+
+    LendReturnFactory(debt=debt1, price=10)
+    LendReturnFactory(debt=debt2, price=20)
+
+    actual = Debt.objects.get(pk=debt1.pk)
+
+    assert actual.returned == 10
+
+
+def test_lend_return_post_save_after_update_debt_return_value(main_user):
+    debt1 = LendFactory(name="A", returned=50)
+    debt2 = LendFactory(name="Z")
+
+    LendReturnFactory(debt=debt1, price=10)
+    LendReturnFactory(debt=debt2, price=20)
+
+    actual = Debt.objects.get(pk=debt1.pk)
+
+    assert actual.returned == 10
+
+
+def test_lend_return_post_save_two_records_debt_return_value(main_user):
+    debt1 = LendFactory(name="A")
+    debt2 = LendFactory(name="Z")
+
+    LendReturnFactory(debt=debt1, price=10)
+    LendReturnFactory(debt=debt1, price=11)
+    LendReturnFactory(debt=debt2, price=22)
+
+    actual = Debt.objects.get(pk=debt1.pk)
+
+    assert actual.returned == 21
+
+
+def test_lend_return_post_delete_debt_return_value(main_user):
+    debt1 = LendFactory(name="A")
+    debt2 = LendFactory(name="Z")
+
+    debt_return = LendReturnFactory(debt=debt1, price=10)
+    LendReturnFactory(debt=debt2, price=20)
+
+    actual = Debt.objects.get(pk=debt1.pk)
+    assert actual.returned == 10
+
+    debt_return.delete()
+
+    actual = Debt.objects.get(pk=debt1.pk)
+    assert actual.returned == 0
+
+
+def test_borrow_return_post_save_new(main_user):
     BorrowReturnFactory()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -280,7 +239,7 @@ def test_borrow_return_post_save_update():
     assert actual.balance == 99
 
 
-def test_lend_return_post_save_first_record():
+def test_lend_return_post_save_first_record(main_user):
     obj = LendFactory(price=5)
 
     IncomeFactory(date=dt(1998, 1, 1), price=1)
@@ -290,7 +249,7 @@ def test_lend_return_post_save_first_record():
 
     LendReturnFactory(date=dt(1999, 1, 1), debt=obj, price=2)
 
-    actual = AccountBalance.objects.items()
+    actual = AccountBalanceModelService(main_user).items()
 
     assert actual[0].year == 1998
     assert actual[0].past == 0
@@ -307,7 +266,7 @@ def test_lend_return_post_save_first_record():
     assert actual[1].delta == 2
 
 
-def test_borrow_return_post_save_first_record():
+def test_borrow_return_post_save_first_record(main_user):
     obj = BorrowFactory(price=5)
 
     IncomeFactory(date=dt(1998, 1, 1), price=1)
@@ -317,7 +276,7 @@ def test_borrow_return_post_save_first_record():
 
     BorrowReturnFactory(date=dt(1999, 1, 1), debt=obj, price=2)
 
-    actual = AccountBalance.objects.items()
+    actual = AccountBalanceModelService(main_user).items()
 
     assert actual[0].year == 1998
     assert actual[0].past == 0
@@ -412,7 +371,7 @@ def test_borrow_return_post_delete_with_updt():
     assert actual.balance == 99
 
 
-def test_debt_return_incomes():
+def test_debt_return_incomes(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
 
@@ -428,7 +387,7 @@ def test_debt_return_incomes():
 
     BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
 
-    actual = DebtReturn.objects.incomes()
+    actual = DebtReturn.objects.incomes(main_user)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -447,7 +406,7 @@ def test_debt_return_incomes():
     assert actual[3]["incomes"] == 70
 
 
-def test_debt_return_expenses():
+def test_debt_return_expenses(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
 
@@ -463,7 +422,7 @@ def test_debt_return_expenses():
 
     LendReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
 
-    actual = DebtReturn.objects.expenses()
+    actual = DebtReturn.objects.expenses(main_user)
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -480,3 +439,16 @@ def test_debt_return_expenses():
     assert actual[3]["year"] == 1999
     assert actual[3]["category_id"] == 2
     assert actual[3]["expenses"] == 70
+
+
+def test_debt_return_total_returned_for_debt(main_user):
+    debt1 = LendFactory(name="A")
+    debt2 = LendFactory(name="Z")
+
+    rtn = LendReturnFactory(debt=debt1, price=1)
+    LendReturnFactory(debt=debt1, price=2)
+    LendReturnFactory(debt=debt2, price=5)
+
+    actual = DebtReturnModelService(main_user, "lend").total_returned_for_debt(rtn)
+
+    assert actual == 3

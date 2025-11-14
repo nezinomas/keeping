@@ -1,19 +1,20 @@
 import calendar
 from datetime import datetime
 
-from dateutil.relativedelta import relativedelta
 from django import forms
 from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
 
-from ..core.lib import utils
 from ..core.lib.date import monthnames, set_date_with_user_year
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
 from ..expenses.models import ExpenseType
+from ..expenses.services.model_services import ExpenseTypeModelService
 from ..incomes.models import IncomeType
+from ..incomes.services.model_services import IncomeTypeModelService
 from ..savings.models import SavingType
+from ..savings.services.model_services import SavingTypeModelService
 from .models import (
     DayPlan,
     ExpensePlan,
@@ -22,6 +23,7 @@ from .models import (
     SavingPlan,
     SavingType,
 )
+from .services.model_services import ModelService
 
 
 def common_field_transalion(self):
@@ -31,9 +33,9 @@ def common_field_transalion(self):
         self.fields[key.lower()].label = val
 
 
-def set_journal_field(fields):
+def set_journal_field(user, fields):
     # journal input
-    fields["journal"].initial = utils.get_user().journal
+    fields["journal"].initial = user.journal
     fields["journal"].disabled = True
     fields["journal"].widget = forms.HiddenInput()
 
@@ -79,16 +81,17 @@ class IncomePlanForm(YearFormMixin):
     field_order = ["year", "income_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        set_journal_field(self.fields)
+        set_journal_field(user, self.fields)
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         # overwrite ForeignKey expense_type queryset
-        self.fields["income_type"].queryset = IncomeType.objects.items()
+        self.fields["income_type"].queryset = IncomeTypeModelService(user).items()
 
         # field translation
         self.fields["income_type"].label = _("Income type")
@@ -110,16 +113,17 @@ class ExpensePlanForm(YearFormMixin):
     field_order = ["year", "expense_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        set_journal_field(self.fields)
+        set_journal_field(user, self.fields)
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         # overwrite ForeignKey expense_type queryset
-        self.fields["expense_type"].queryset = ExpenseType.objects.items()
+        self.fields["expense_type"].queryset = ExpenseTypeModelService(user).items()
 
         # field translation
         self.fields["expense_type"].label = _("Expense type")
@@ -141,16 +145,17 @@ class SavingPlanForm(YearFormMixin):
     field_order = ["year", "saving_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        set_journal_field(self.fields)
+        set_journal_field(user, self.fields)
 
         # overwrite ForeignKey expense_type queryset
-        self.fields["saving_type"].queryset = SavingType.objects.items()
+        self.fields["saving_type"].queryset = SavingTypeModelService(user).items()
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         # field translation
         self.fields["saving_type"].label = _("Saving type")
@@ -172,13 +177,14 @@ class DayPlanForm(YearFormMixin):
     field_order = ["year"] + monthnames()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        set_journal_field(self.fields)
+        set_journal_field(user, self.fields)
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         # field translation
         common_field_transalion(self)
@@ -199,16 +205,17 @@ class NecessaryPlanForm(YearFormMixin):
     field_order = ["year", "expense_type", "title"] + monthnames()
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # journal input
-        set_journal_field(self.fields)
+        set_journal_field(user, self.fields)
 
         # inital values
-        self.fields["year"].initial = set_date_with_user_year().year
+        self.fields["year"].initial = set_date_with_user_year(user).year
 
         # overwrite ForeignKey expense_type queryset
-        self.fields["expense_type"].queryset = ExpenseType.objects.items()
+        self.fields["expense_type"].queryset = ExpenseTypeModelService(user).items()
 
         # field translation
         self.fields["expense_type"].label = _("Expense type")
@@ -232,6 +239,10 @@ class CopyPlanForm(forms.Form):
     saving = forms.BooleanField(required=False)
     day = forms.BooleanField(required=False)
     necessary = forms.BooleanField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
 
     def _get_cleaned_checkboxes(self, cleaned_data):
         return {
@@ -274,7 +285,7 @@ class CopyPlanForm(forms.Form):
         for k, v in dict_.items():
             if v:
                 model = self._get_model(k)
-                qs = model.objects.year(year_from)
+                qs = ModelService(model, self.user).year(year_from)
                 if not qs.exists():
                     self._append_error_message(msg, errors, k)
 
@@ -284,7 +295,7 @@ class CopyPlanForm(forms.Form):
         for k, v in dict_.items():
             if v:
                 model = self._get_model(k)
-                qs = model.objects.year(year_to)
+                qs = ModelService(model, self.user).year(year_to)
                 if qs.exists():
                     self._append_error_message(msg, errors, k)
 
@@ -301,16 +312,17 @@ class CopyPlanForm(forms.Form):
         for k, v in dict_.items():
             if v:
                 model = self._get_model(k)
-                qs = model.objects.year(year_from).values_list("pk", flat=True)
+                qs = (
+                    ModelService(model, self.user)
+                    .year(year_from)
+                    .values_list("pk", flat=True)
+                )
 
                 for i in qs:
                     obj = model.objects.get(pk=i)
                     obj.pk = None
                     obj.year = year_to
                     obj.save()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
         # initail values
         self.fields["year_from"].initial = datetime.now().year

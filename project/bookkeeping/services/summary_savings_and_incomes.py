@@ -3,27 +3,30 @@ from dataclasses import dataclass, field
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import years
-from ...incomes.models import Income
-from ...savings.models import Saving
+from ...incomes.services.model_services import IncomeModelService
+from ...savings.services.model_services import SavingModelService
+from ...users.models import User
 
 
 @dataclass
 class Data:
+    user: User
     incomes: list = field(init=False, default_factory=list)
     savings: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = Income.objects.sum_by_year()
-        self.savings = Saving.objects.sum_by_year()
+        self.incomes = IncomeModelService(self.user).sum_by_year()
+        self.savings = SavingModelService(self.user).sum_by_year()
 
 
 class Service:
-    def __init__(self, data: Data):
+    def __init__(self, user: User, data: Data):
+        self.user = user
         self._incomes = data.incomes
         self._savings = data.savings
 
     def chart_data(self):
-        _categories = years()[:-1]
+        _categories = years(self.user)[:-1]
         _incomes = {x["year"]: x["sum"] for x in self._incomes}
         _savings = {x["year"]: x["sum"] for x in self._savings}
 
@@ -45,9 +48,9 @@ class Service:
         }
 
 
-def load_service() -> dict:
-    data = Data()
-    obj = Service(data)
+def load_service(user: User) -> dict:
+    data = Data(user)
+    obj = Service(user, data)
 
     text = {
         "text": {

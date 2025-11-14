@@ -287,7 +287,7 @@ class SettingsQueryMixin:
     def get_queryset(self):
         user = self.request.user
 
-        return models.User.objects.related().exclude(pk=user.pk)
+        return models.User.objects.related(user).exclude(pk=user.pk)
 
 
 class SettingsUsers(SettingsQueryMixin, ListViewMixin):
@@ -300,6 +300,13 @@ class SettingsUsersDelete(SettingsQueryMixin, DeleteViewMixin):
     hx_trigger_django = "delete_user"
     success_url = reverse_lazy("users:settings_users")
     modal_form_title = _("Delete user")
+
+    def url(self):
+        return (
+            reverse_lazy("users:settings_users_delete", kwargs={"pk": self.object.pk})
+            if self.object
+            else None
+        )
 
 
 class SettingsUnnecessary(FormViewMixin):

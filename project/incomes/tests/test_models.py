@@ -5,9 +5,13 @@ from django.urls import reverse
 
 from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
+from ...accounts.services.model_services import (
+    AccountBalanceModelService,
+)
 from ...journals.models import Journal
 from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
+from ..services.model_services import IncomeModelService, IncomeTypeModelService
 
 pytestmark = pytest.mark.django_db
 
@@ -21,28 +25,20 @@ def test_income_type_str():
     assert str(i) == "Income Type"
 
 
-def test_income_type_get_absolute_url():
-    obj = IncomeTypeFactory()
-
-    assert obj.get_absolute_url() == reverse(
-        "incomes:type_update", kwargs={"pk": obj.pk}
-    )
-
-
-def test_income_type_items_journal(second_user):
+def test_income_type_items_journal(main_user, second_user):
     IncomeTypeFactory(title="T1")
     IncomeTypeFactory(title="T2", journal=second_user.journal)
 
-    actual = IncomeType.objects.items()
+    actual = IncomeTypeModelService(main_user).items()
 
     assert actual.count() == 1
     assert actual[0].title == "T1"
 
 
-def test_income_type_items_journal_queries(django_assert_max_num_queries):
+def test_income_type_items_journal_queries(main_user, django_assert_max_num_queries):
     IncomeTypeFactory()
     with django_assert_max_num_queries(1):
-        qs = IncomeType.objects.items().values()
+        IncomeTypeModelService(main_user).items().values()
 
 
 @pytest.mark.xfail
@@ -65,72 +61,72 @@ def test_income_str():
     assert str(i) == "1999-01-01: Income Type"
 
 
-def test_income_related(second_user):
+def test_income_related(main_user, second_user):
     t1 = IncomeTypeFactory(title="T1")
     t2 = IncomeTypeFactory(title="T2", journal=second_user.journal)
 
     IncomeFactory(income_type=t1)
     IncomeFactory(income_type=t2)
 
-    actual = Income.objects.related()
+    actual = Income.objects.related(main_user)
 
     assert len(actual) == 1
     assert str(actual[0].income_type) == "T1"
 
 
-def test_sum_all_months(incomes):
+def test_sum_all_months(main_user, incomes):
     expect = [
         {"date": date(1999, 1, 1), "sum": 550, "title": "incomes"},
         {"date": date(1999, 2, 1), "sum": 125, "title": "incomes"},
     ]
 
-    actual = list(Income.objects.sum_by_month(1999))
+    actual = list(IncomeModelService(main_user).sum_by_month(1999))
 
     assert expect == actual
 
 
-def test_sum_all_months_ordering(incomes):
-    actual = list(Income.objects.sum_by_month(1999))
+def test_sum_all_months_ordering(main_user, incomes):
+    actual = list(IncomeModelService(main_user).sum_by_month(1999))
 
     assert actual[0]["date"] == date(1999, 1, 1)
     assert actual[1]["date"] == date(1999, 2, 1)
 
 
-def test_sum_one_month(incomes):
+def test_sum_one_month(main_user, incomes):
     expect = [{"date": date(1999, 1, 1), "sum": 550, "title": "incomes"}]
 
-    actual = list(Income.objects.sum_by_month(1999, 1))
+    actual = list(IncomeModelService(main_user).sum_by_month(1999, 1))
 
     assert len(expect) == 1
     assert expect == actual
 
 
-def test_incomes_items():
+def test_incomes_items(main_user):
     IncomeFactory()
 
-    assert len(Income.objects.items()) == 1
+    assert len(IncomeModelService(main_user).items()) == 1
 
 
-def test_incomes_items_query_count(django_assert_max_num_queries):
+def test_incomes_items_query_count(main_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        qs = Income.objects.items()
+        qs = IncomeModelService(main_user).items()
         list([x["date"] for x in qs])
 
 
-def test_incomes_year_query_count(django_assert_max_num_queries):
+def test_incomes_year_query_count(main_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        qs = Income.objects.year(1999)
+        qs = IncomeModelService(main_user).year(1999)
         list([x["date"] for x in qs])
 
 
-def test_incomes_income_sum_query_count(django_assert_max_num_queries):
+def test_incomes_income_sum_query_count(main_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        qs = Income.objects.sum_by_month(1999)
+        qs = IncomeModelService(main_user).sum_by_month(1999)
         list([x["date"] for x in qs])
 
 
-def test_balance(incomes):
-    qs = Income.objects.incomes()
+def test_balance(main_user, incomes):
+    qs = Income.objects.incomes(main_user)
 
     assert qs[0] == {"year": 1970, "incomes": 525, "category_id": 1}
     assert qs[1] == {"year": 1970, "incomes": 450, "category_id": 2}
@@ -138,7 +134,7 @@ def test_balance(incomes):
     assert qs[3] == {"year": 1999, "incomes": 350, "category_id": 2}
 
 
-def test_income_month_type_sum():
+def test_income_month_type_sum(main_user):
     IncomeFactory(
         price=4, date=date(1999, 1, 2), income_type=IncomeTypeFactory(title="I-2")
     )
@@ -159,12 +155,12 @@ def test_income_month_type_sum():
         {"date": date(1999, 1, 1), "title": "I-1", "sum": 3},
         {"date": date(1999, 1, 1), "title": "I-2", "sum": 7},
     ]
-    actual = Income.objects.sum_by_month_and_type(1999)
+    actual = IncomeModelService(main_user).sum_by_month_and_type(1999)
 
     assert expect == [*actual]
 
 
-def test_income_year_type_sum():
+def test_income_year_type_sum(main_user):
     IncomeFactory(
         price=1, date=date(1974, 1, 1), income_type=IncomeTypeFactory(title="I-1")
     )
@@ -186,15 +182,15 @@ def test_income_year_type_sum():
         {"date": date(1999, 1, 1), "title": "I-1", "sum": 3},
         {"date": date(1999, 1, 1), "title": "I-2", "sum": 7},
     ]
-    actual = Income.objects.sum_by_year_and_type()
+    actual = IncomeModelService(main_user).sum_by_year_and_type()
 
     assert expect == [*actual]
 
 
-def test_income_new_post_save():
+def test_income_new_post_save(main_user):
     IncomeFactory()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -205,7 +201,7 @@ def test_income_new_post_save():
     assert actual.balance == 1000
 
 
-def test_income_update_post_save():
+def test_income_update_post_save(main_user):
     obj = IncomeFactory(price=5)
 
     # update price
@@ -213,7 +209,7 @@ def test_income_update_post_save():
     obj_update.price = 1
     obj_update.save()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -233,14 +229,14 @@ def test_income_post_save_different_accounts():
     assert actual.count() == 4
 
 
-def test_income_post_save_update_with_nothing_changed():
+def test_income_post_save_update_with_nothing_changed(main_user):
     obj = IncomeFactory(price=5)
 
     # update price
     obj_update = Income.objects.get(pk=obj.pk)
     obj_update.save()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 1
 
@@ -282,11 +278,32 @@ def test_income_post_save_change_account():
     assert actual.balance == 5.0
 
 
-def test_income_post_delete():
+def test_income_post_save_create_new_object_user_model_year(main_user):
+    assert date(1999, 1, 1) == Journal.objects.get(pk=main_user.journal.pk).first_record
+
+    IncomeFactory(date=date(1974, 2, 3), price=5)
+
+    assert date(1974, 2, 3) == Journal.objects.get(pk=main_user.journal.pk).first_record
+
+
+def test_income_post_save_update_object_user_model_year(main_user):
+    assert date(1999, 1, 1) == Journal.objects.get(pk=main_user.journal.pk).first_record
+
+    obj = IncomeFactory(price=5)
+
+    income = Income.objects.get(pk=obj.pk)
+
+    income.date = date(1974, 2, 3)
+    income.save()
+
+    assert date(1974, 2, 3) == Journal.objects.get(pk=main_user.journal.pk).first_record
+
+
+def test_income_post_delete(main_user):
     obj = IncomeFactory()
     Income.objects.get(pk=obj.pk).delete()
 
-    actual = AccountBalance.objects.year(1999)
+    actual = AccountBalanceModelService(main_user).year(1999)
 
     assert actual.count() == 0
     assert Income.objects.all().count() == 0
@@ -319,7 +336,7 @@ def test_income_post_save_update_account_balance_count_qs(
 
     IncomeFactory()
 
-    with django_assert_max_num_queries(18):
+    with django_assert_max_num_queries(20):
         Income.objects.create(date=date(1999, 1, 1), price=2, account=a, income_type=t)
 
 
@@ -339,7 +356,7 @@ def test_income_update_post_save_count_qs(django_assert_max_num_queries):
     assert AccountBalance.objects.all().count() == 2
 
     obj_update = Income.objects.get(pk=obj.pk)
-    with django_assert_max_num_queries(18):
+    with django_assert_max_num_queries(22):
         obj_update.price = 6
         obj_update.save()
 
@@ -431,13 +448,13 @@ def test_income_post_delete_empty_account_balance_table():
     assert actual[0].delta == -5
 
 
-def test_income_years_sum():
+def test_income_years_sum(main_user):
     IncomeFactory(date=date(1998, 1, 1), price=4.0)
     IncomeFactory(date=date(1998, 1, 1), price=4.0)
     IncomeFactory(date=date(1999, 1, 1), price=5.0)
     IncomeFactory(date=date(1999, 1, 1), price=5.0)
 
-    actual = Income.objects.sum_by_year()
+    actual = IncomeModelService(main_user).sum_by_year()
 
     assert actual[0]["year"] == 1998
     assert actual[0]["sum"] == 8.0
@@ -446,15 +463,15 @@ def test_income_years_sum():
     assert actual[1]["sum"] == 10.0
 
 
-def test_income_year_sum_count_qs(django_assert_max_num_queries):
+def test_income_year_sum_count_qs(main_user, django_assert_max_num_queries):
     IncomeFactory()
 
     with django_assert_max_num_queries(1):
-        actual = [x["year"] for x in Income.objects.sum_by_year()]
+        actual = [x["year"] for x in IncomeModelService(main_user).sum_by_year()]
         assert len(list(actual)) == 1
 
 
-def test_income_year_sum_filter():
+def test_income_year_sum_filter(main_user):
     IncomeFactory(
         date=date(1999, 1, 1),
         price=5.0,
@@ -471,13 +488,13 @@ def test_income_year_sum_filter():
         income_type=IncomeTypeFactory(title="xxx", type="o"),
     )
 
-    actual = Income.objects.sum_by_year(["s"])
+    actual = IncomeModelService(main_user).sum_by_year(["s"])
 
     assert actual[0]["year"] == 1999
     assert actual[0]["sum"] == 10.0
 
 
-def test_income_year_sum_filter_two_types():
+def test_income_year_sum_filter_two_types(main_user):
     IncomeFactory(
         date=date(1999, 1, 1),
         price=5.0,
@@ -499,17 +516,17 @@ def test_income_year_sum_filter_two_types():
         income_type=IncomeTypeFactory(title="4", type="z"),
     )
 
-    actual = Income.objects.sum_by_year(["x", "y"])
+    actual = IncomeModelService(main_user).sum_by_year(["x", "y"])
 
     assert actual[0]["year"] == 1999
     assert actual[0]["sum"] == 25.0
 
 
-def test_income_year_sum_filter_count_qs(django_assert_max_num_queries):
+def test_income_year_sum_filter_count_qs(main_user, django_assert_max_num_queries):
     IncomeFactory()
 
     with django_assert_max_num_queries(1):
-        list([x["year"] for x in Income.objects.sum_by_year(["x"])])
+        list([x["year"] for x in IncomeModelService(main_user).sum_by_year(["x"])])
 
 
 def test_income_updates_journal_first_record():

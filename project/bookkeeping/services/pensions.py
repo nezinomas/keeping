@@ -3,20 +3,20 @@ import itertools as it
 from django.utils.translation import gettext as _
 
 from ...core.lib import utils
-from ...pensions.models import PensionBalance
-from ...savings.models import SavingBalance
+from ...pensions.services.model_services import PensionBalanceModelService
+from ...savings.services.model_services import SavingBalanceModelService
 
 
-def get_data(year) -> list:
-    pensions = PensionBalance.objects.year(year)
-    savings_as_pensions = SavingBalance.objects.year(year).filter(
-        saving_type__type="pensions"
+def get_data(user, year) -> list:
+    pensions = PensionBalanceModelService(user).year(year)
+    savings_as_pensions = (
+        SavingBalanceModelService(user).year(year).filter(saving_type__type="pensions")
     )
     return list(it.chain(savings_as_pensions, pensions))
 
 
-def load_service(year: int) -> dict:
-    data = get_data(year)
+def load_service(user, year: int) -> dict:
+    data = get_data(user, year)
     fields = [
         "past_amount",
         "past_fee",

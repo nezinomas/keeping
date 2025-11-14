@@ -3,23 +3,29 @@ from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
-from ...expenses.models import Expense
-from ...incomes.models import Income
+from ...expenses.services.model_services import ExpenseModelService
+from ...incomes.services.model_services import IncomeModelService
+from ...users.models import User
 from . import common
 
 
 @dataclass
 class Data:
+    user: User
     incomes: list = field(init=False, default_factory=list)
     incomes_types: list = field(init=False, default_factory=list)
     expenses: list = field(init=False, default_factory=list)
     salary: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = Income.objects.sum_by_year()
-        self.incomes_types = Income.objects.sum_by_year_and_type()
-        self.salary = Income.objects.sum_by_year().filter(income_type__type="salary")
-        self.expenses = Expense.objects.sum_by_year()
+        self.incomes = IncomeModelService(self.user).sum_by_year()
+        self.incomes_types = IncomeModelService(self.user).sum_by_year_and_type()
+        self.salary = (
+            IncomeModelService(self.user)
+            .sum_by_year()
+            .filter(income_type__type="salary")
+        )
+        self.expenses = ExpenseModelService(self.user).sum_by_year()
 
 
 class Charts:
@@ -91,8 +97,8 @@ class Charts:
         }
 
 
-def load_service() -> dict:
-    data = Data()
+def load_service(user: User) -> dict:
+    data = Data(user)
     obj = Charts(data)
 
     return {

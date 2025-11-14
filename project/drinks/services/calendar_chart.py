@@ -6,13 +6,14 @@ from django.utils.translation import gettext as _
 from ...core.lib.translation import weekday_names
 from ...counts.lib.stats import Stats as CountStats
 from ..lib.drinks_options import DrinksOptions
-from ..managers import DrinkQuerySet
+from ..services.model_services import DrinkModelService
 
 
 @dataclass
 class CalendarChart:
     year: int
-    data: DrinkQuerySet.sum_by_day
+    drink_type: str
+    data: DrinkModelService.sum_by_day
     latest_past_date: date = None
 
     chart_data: CountStats.chart_calendar = field(init=False, default_factory=list)
@@ -29,7 +30,7 @@ class CalendarChart:
         return {
             "data": data,
             "categories": [x[0] for x in list(weekday_names().values())],
-            "ratio": DrinksOptions().stdav,
+            "ratio": DrinksOptions(self.drink_type).stdav,
             "text": {
                 "gap": _("Gap"),
                 "quantity": _("Quantity"),

@@ -12,35 +12,35 @@ pytestmark = pytest.mark.django_db
 # -------------------------------------------------------------------------------------
 #                                                                       ChartReadedData
 # -------------------------------------------------------------------------------------
-def test_data_targets_no_data():
-    actual = ChartReadedData().targets
+def test_data_targets_no_data(main_user):
+    actual = ChartReadedData(main_user).targets
 
     assert actual == {}
 
 
-def test_data_targets():
+def test_data_targets(main_user):
     BookTargetFactory(year=1, quantity=10)
     BookTargetFactory(year=2, quantity=20)
 
-    actual = ChartReadedData().targets
+    actual = ChartReadedData(main_user).targets
 
     assert actual == {1: 10, 2: 20}
 
 
-def test_data_readed_no_data():
-    actual = ChartReadedData().readed
+def test_data_readed_no_data(main_user):
+    actual = ChartReadedData(main_user).readed
 
     assert actual == {}
 
 
-def test_data_readed():
+def test_data_readed(main_user):
     BookFactory(started=date(2000, 1, 1))
     BookFactory(started=date(2000, 1, 1), ended=date(2000, 1, 31))
     BookFactory(started=date(2000, 1, 1), ended=date(2000, 1, 31))
     BookFactory(started=date(1998, 1, 1))
     BookFactory(started=date(1998, 1, 1), ended=date(1998, 1, 31))
 
-    actual = ChartReadedData().readed
+    actual = ChartReadedData(main_user).readed
 
     assert actual == {1998: 1, 2000: 2}
 

@@ -4,31 +4,34 @@ from dataclasses import dataclass, field
 from django.db.models import F, Sum
 from django.utils.translation import gettext as _
 
-from ...accounts.models import AccountBalance
+from ...accounts.services.model_services import AccountBalanceModelService
 from ...core.lib.translation import month_names
-from ...debts.models import Debt, DebtReturn
-from ...expenses.models import Expense
-from ...incomes.models import Income
-from ...savings.models import Saving
-from ...transactions.models import SavingClose
+from ...debts.services.model_services import DebtModelService, DebtReturnModelService
+from ...expenses.services.model_services import ExpenseModelService
+from ...incomes.services.model_services import IncomeModelService
+from ...savings.services.model_services import SavingModelService
+from ...transactions.services.model_services import SavingCloseModelService
+from ...users.models import User
 from ..lib.make_dataframe import MakeDataFrame
 from ..lib.year_balance import YearBalance
 
 
 @dataclass
 class IndexServiceData:
-    year: int
+    user: User
+    year: int = field(init=False, default=1974)
     amount_start: int = field(init=False, default=0)
-    data: dict = field(init=False, default_factory=dict)
+    data: list = field(init=False, default_factory=list)
     debts: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
+        self.year = self.user.year
         self.amount_start = self.get_amount_start()
         self.data = self.get_data()
         self.debts = self.get_debts()
 
     @property
-    def columns(self) -> tuple[str]:
+    def columns(self) -> tuple:
         return (
             "incomes",
             "expenses",
@@ -44,8 +47,8 @@ class IndexServiceData:
 
     def get_amount_start(self) -> int:
         return (
-            AccountBalance.objects.related()
-            .filter(year=self.year)
+            AccountBalanceModelService(self.user)
+            .year(self.year)
             .aggregate(Sum("past"))["past__sum"]
             or 0
         )
@@ -53,26 +56,28 @@ class IndexServiceData:
     def get_data(self) -> list[dict]:
         return list(
             it.chain(
-                Income.objects.sum_by_month(self.year),
-                Expense.objects.sum_by_month(self.year),
-                Saving.objects.sum_by_month(self.year),
-                SavingClose.objects.sum_by_month(self.year),
+                IncomeModelService(self.user).sum_by_month(self.year),
+                ExpenseModelService(self.user).sum_by_month(self.year),
+                SavingModelService(self.user).sum_by_month(self.year),
+                SavingCloseModelService(self.user).sum_by_month(self.year),
                 self._get_debt("lend"),
                 self._get_debt("borrow"),
-                DebtReturn.objects.sum_by_month(self.year, debt_type="lend"),
-                DebtReturn.objects.sum_by_month(self.year, debt_type="borrow"),
+                DebtReturnModelService(self.user, "lend").sum_by_month(self.year),
+                DebtReturnModelService(self.user, "borrow").sum_by_month(self.year),
             )
         )
 
     def _get_debt(self, debt_type):
-        return Debt.objects.sum_by_month(
-            self.year, debt_type=debt_type, closed=True
-        ).values("date", "title", sum=F("sum_debt"))
+        return (
+            DebtModelService(self.user, debt_type)
+            .sum_by_month(self.year, closed=True)
+            .values("date", "title", sum=F("sum_debt"))
+        )
 
     def get_debts(self) -> dict:
         return {
-            "lend": Debt.objects.sum_all(debt_type="lend"),
-            "borrow": Debt.objects.sum_all(debt_type="borrow"),
+            "lend": DebtModelService(self.user, "lend").sum_all(),
+            "borrow": DebtModelService(self.user, "borrow").sum_all(),
         }
 
 
@@ -135,8 +140,8 @@ class IndexService:
         }
 
 
-def load_service(year):
-    data = IndexServiceData(year)
-    df = MakeDataFrame(year, data.data, data.columns)
+def load_service(user):
+    data = IndexServiceData(user)
+    df = MakeDataFrame(user.year, data.data, data.columns)
     balance = YearBalance(data=df, amount_start=data.amount_start)
     return IndexService(balance=balance, debts=data.debts)

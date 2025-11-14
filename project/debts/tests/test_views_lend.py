@@ -3,10 +3,10 @@ from datetime import date
 import pytest
 import time_machine
 from django.urls import resolve, reverse
-from mock import patch
 
 from ...accounts.factories import AccountFactory
 from .. import factories, models, views
+from ..services.model_services import DebtModelService, DebtReturnModelService
 
 pytestmark = pytest.mark.django_db
 
@@ -108,15 +108,14 @@ def test_lend_load_form(client_logged):
     assert '<input type="text" name="date" value="1999-01-01"' in actual
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_save(mck, client_logged):
+def test_lend_save(main_user, client_logged):
     a = AccountFactory()
 
     data = {"date": "1999-01-01", "name": "AAA", "price": "1", "account": a.pk}
     url = reverse("debts:new", kwargs={"debt_type": "lend"})
     client_logged.post(url, data)
 
-    actual = models.Debt.objects.items()[0]
+    actual = DebtModelService(main_user, "lend").items()[0]
     assert actual.date == date(1999, 1, 1)
     assert actual.account.title == "Account1"
     assert actual.name == "AAA"
@@ -160,8 +159,8 @@ def test_lend_load_update_form(client_logged):
     assert form.instance.remark == "Lend Remark"
 
 
-@patch("project.core.lib.utils.get_request_kwargs", return_value="lend")
-def test_lend_update(mck, client_logged):
+def test_lend_update(main_user, client_logged):
+    debt_type = "lend"
     e = factories.LendFactory()
 
     data = {
@@ -172,10 +171,10 @@ def test_lend_update(mck, client_logged):
         "account": 1,
         "closed": False,
     }
-    url = reverse("debts:update", kwargs={"pk": e.pk, "debt_type": "lend"})
+    url = reverse("debts:update", kwargs={"pk": e.pk, "debt_type": debt_type})
     client_logged.post(url, data)
 
-    actual = models.Debt.objects.items()
+    actual = DebtModelService(main_user, debt_type).items()
     assert actual.count() == 1
 
     actual = actual[0]

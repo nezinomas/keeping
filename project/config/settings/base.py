@@ -114,7 +114,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
-    "crequest.middleware.CrequestMiddleware",
 ]
 
 
@@ -130,7 +129,6 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "crispy_forms",
     "crispy_bootstrap5",
-    "crequest",
     "django_htmx",
     "django_cotton",
 ]

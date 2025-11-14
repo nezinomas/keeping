@@ -6,25 +6,32 @@ import polars as pl
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
-from ...expenses.models import Expense, ExpenseType
-from ...incomes.models import Income
-from ...savings.models import Saving
+from ...expenses.services.model_services import (
+    ExpenseModelService,
+    ExpenseTypeModelService,
+)
+from ...incomes.services.model_services import IncomeModelService
+from ...savings.services.model_services import SavingModelService
+from ...users.models import User
 
 
 @dataclass
 class Data:
-    year: int
+    user: User
+    year: int = field(init=False, default=1974)
     incomes: list[dict] = field(init=False, default_factory=list)
     expenses: list[dict] = field(init=False, default_factory=list)
     savings: list[dict] = field(init=False, default_factory=list)
     expenses_types: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        self.incomes = Income.objects.sum_by_month_and_type(self.year)
-        self.savings = Saving.objects.sum_by_month_and_type(self.year)
-        self.expenses = Expense.objects.sum_by_month_and_name(self.year)
-        self.expenses_types = ExpenseType.objects.items().values_list(
-            "title", flat=True
+        self.year = self.user.year
+
+        self.incomes = IncomeModelService(self.user).sum_by_month_and_type(self.year)
+        self.savings = SavingModelService(self.user).sum_by_month_and_type(self.year)
+        self.expenses = ExpenseModelService(self.user).sum_by_month_and_name(self.year)
+        self.expenses_types = (
+            ExpenseTypeModelService(self.user).items().values_list("title", flat=True)
         )
 
 
@@ -137,8 +144,8 @@ class Service:
         return df.collect()
 
 
-def load_service(year: int) -> dict:
-    data = Data(year)
+def load_service(user: User) -> dict:
+    data = Data(user)
     obj = Service(data)
 
     return {

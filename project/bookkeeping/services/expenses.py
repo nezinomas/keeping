@@ -3,23 +3,31 @@ from dataclasses import dataclass, field
 
 from django.utils.translation import gettext_lazy as _
 
-from ...expenses.models import Expense, ExpenseType
+from ...expenses.services.model_services import (
+    ExpenseModelService,
+    ExpenseTypeModelService,
+)
+from ...users.models import User
 from ..lib.balance_base import BalanceBase
 from ..lib.make_dataframe import MakeDataFrame
 
 
 @dataclass
 class ExpenseServiceData:
-    year: int
+    user: User
+    year: int = field(init=False, default=1974)
     expense_types: list = field(init=False, default_factory=list)
     expenses: list = field(init=False, default_factory=list)
 
     def __post_init__(self):
+        self.year = self.user.year
         self.expense_types = list(
-            ExpenseType.objects.items().values_list("title", flat=True)
+            ExpenseTypeModelService(self.user).items().values_list("title", flat=True)
         )
 
-        self.expenses = list(Expense.objects.sum_by_month_and_type(self.year))
+        self.expenses = list(
+            ExpenseModelService(self.user).sum_by_month_and_type(self.year)
+        )
 
 
 class ExpenseService:
@@ -58,7 +66,7 @@ class ExpenseService:
         return sum(values) / 12 if (values := data.values()) else 0
 
 
-def load_service(year):
-    data = ExpenseServiceData(year)
-    df = MakeDataFrame(year, data.expenses, data.expense_types)
+def load_service(user):
+    data = ExpenseServiceData(user)
+    df = MakeDataFrame(user.year, data.expenses, data.expense_types)
     return ExpenseService(BalanceBase(df.data))

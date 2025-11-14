@@ -110,13 +110,14 @@ def test_formset_invalid_data(client_logged):
     assert not form.is_valid()
 
 
-def test_formset_saving_type_closed_in_past(main_user, fake_request):
+def test_formset_saving_type_closed_in_past(main_user, rf):
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=1000)
 
     main_user.year = 2000
+    rf.user = main_user
 
-    view = setup_view(views.SavingsWorthNew(), fake_request)
+    view = setup_view(views.SavingsWorthNew(), rf)
 
     actual = str(view.get_formset())  # pylint: disable=protected-access
 
@@ -124,13 +125,14 @@ def test_formset_saving_type_closed_in_past(main_user, fake_request):
     assert "S2" not in actual
 
 
-def test_formset_saving_type_closed_in_current(main_user, fake_request):
+def test_formset_saving_type_closed_in_current(main_user, rf):
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=1000)
 
     main_user.year = 1000
+    rf.user = main_user
 
-    view = setup_view(views.SavingsWorthNew(), fake_request)
+    view = setup_view(views.SavingsWorthNew(), rf)
 
     actual = str(view.get_formset())  # pylint: disable=protected-access
 
@@ -138,13 +140,14 @@ def test_formset_saving_type_closed_in_current(main_user, fake_request):
     assert "S2" in actual
 
 
-def test_formset_saving_type_closed_in_future(main_user, fake_request):
+def test_formset_saving_type_closed_in_future(main_user, rf):
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=1000)
 
     main_user.year = 1
+    rf.user = main_user
 
-    view = setup_view(views.SavingsWorthNew(), fake_request)
+    view = setup_view(views.SavingsWorthNew(), rf)
 
     actual = str(view.get_formset())  # pylint: disable=protected-access
 

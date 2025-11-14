@@ -7,13 +7,16 @@ from django.db.models import F
 from django.utils.translation import gettext as _
 
 from ...core.lib.date import monthlen, monthname, monthnames
+from ...users.models import User
 from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
+from ..services.model_services import ModelService
 
 
 @dataclass
 class PlanCollectData:
-    year: int = 1970
+    user: User
     month: int = 0
+    year: int = field(init=False, default=1970)
 
     incomes: list[dict] = field(init=False, default_factory=list)
     expenses: list[dict] = field(init=False, default_factory=list)
@@ -22,20 +25,33 @@ class PlanCollectData:
     necessary: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
+        self.year = self.user.year
+
         month_names = monthnames()
 
-        self.incomes = IncomePlan.objects.year(self.year).values(*month_names)
-
-        self.expenses = ExpensePlan.objects.year(self.year).values(
-            *month_names,
-            necessary=F("expense_type__necessary"),
-            title=F("expense_type__title"),
+        self.incomes = (
+            ModelService(IncomePlan, self.user).year(self.year).values(*month_names)
         )
 
-        self.savings = SavingPlan.objects.year(self.year).values(*month_names)
-        self.days = DayPlan.objects.year(self.year).values(*month_names)
+        self.expenses = (
+            ModelService(ExpensePlan, self.user)
+            .year(self.year)
+            .values(
+                *month_names,
+                necessary=F("expense_type__necessary"),
+                title=F("expense_type__title"),
+            )
+        )
+
+        self.savings = (
+            ModelService(SavingPlan, self.user).year(self.year).values(*month_names)
+        )
+        self.days = (
+            ModelService(DayPlan, self.user).year(self.year).values(*month_names)
+        )
         self.necessary = (
-            NecessaryPlan.objects.year(self.year)
+            ModelService(NecessaryPlan, self.user)
+            .year(self.year)
             .values(*month_names)
             .annotate(title=F("expense_type__title"))
         )

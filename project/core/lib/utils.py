@@ -1,16 +1,3 @@
-from crequest.middleware import CrequestMiddleware
-
-
-def get_user():
-    request = CrequestMiddleware.get_request()
-    return request.user
-
-
-def get_request_kwargs(name):
-    crequest = CrequestMiddleware.get_request()
-    return crequest.resolver_match.kwargs.get(name) if crequest else None
-
-
 def total_row(data, fields: list[str]) -> dict:
     # Fields to subtract when sold is truthy
     subtract_fields = {"incomes", "profit_sum"}

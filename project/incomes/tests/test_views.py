@@ -65,6 +65,7 @@ def test_income_load_form(client_logged):
     actual = response.content.decode("utf-8")
 
     assert response.status_code == 200
+    assert f'hx-post="{url}"' in actual
     assert "1999-01-01" in actual
 
 
@@ -117,13 +118,14 @@ def test_income_load_update_form(client_logged):
 
     response = client_logged.get(url)
 
-    form = response.context.get("form").as_p()
+    actual = response.content.decode()
 
-    assert '<input type="text" name="date" value="1999-01-01"' in form
-    assert f'<input type="number" name="price" value="77.77"' in form
-    assert '<option value="1" selected>Account1</option>' in form
-    assert '<option value="1" selected>Income Type</option>' in form
-    assert "remark" in form
+    assert f'hx-post="{url}"' in actual
+    assert '<input type="text" name="date" value="1999-01-01"' in actual
+    assert f'<input type="number" name="price" value="77.77"' in actual
+    assert '<option value="1" selected>Account1</option>' in actual
+    assert '<option value="1" selected>Income Type</option>' in actual
+    assert "remark" in actual
 
 
 def test_income_not_load_other_journal(client_logged, second_user):
@@ -273,6 +275,7 @@ def test_view_incomes_delete_load_form(client_logged):
 
     actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
     assert '<form method="POST"' in actual
     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
@@ -313,13 +316,21 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
 # ----------------------------------------------------------------------------
 #                                                                 Income Type
 # ----------------------------------------------------------------------------
-@time_machine.travel("2000-01-01")
-def test_type_load_form(client_logged):
+def test_type_load_form_200(client_logged):
     url = reverse("incomes:type_new")
 
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+def test_type_load_form(client_logged):
+    url = reverse("incomes:type_new")
+
+    response = client_logged.get(url)
+    actual = response.content.decode()
+
+    assert f'hx-post="{url}"' in actual
 
 
 def test_type_save(client_logged):
@@ -347,6 +358,17 @@ def test_type_save_invalid_data(client_logged):
     form = response.context.get("form")
 
     assert not form.is_valid()
+
+
+def test_type_update_load_form(client_logged):
+    income = IncomeTypeFactory()
+
+    url = reverse("incomes:type_update", kwargs={"pk": income.pk})
+
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
 
 
 def test_type_update(client_logged):

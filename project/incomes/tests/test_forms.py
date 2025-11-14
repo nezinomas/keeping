@@ -14,24 +14,25 @@ pytestmark = pytest.mark.django_db
 # ----------------------------------------------------------------------------
 #                                                                  Income Type
 # ----------------------------------------------------------------------------
-def test_income_type_init():
-    IncomeTypeForm()
+def test_income_type_init(main_user):
+    IncomeTypeForm(user=main_user)
 
 
-def test_income_type_init_fields():
-    form = IncomeTypeForm().as_p()
+def test_income_type_init_fields(main_user):
+    form = IncomeTypeForm(user=main_user).as_p()
 
     assert '<input type="text" name="title"' in form
     assert '<select name="type"' in form
     assert '<select name="user"' not in form
 
 
-def test_income_type_valid_data():
+def test_income_type_valid_data(main_user):
     form = IncomeTypeForm(
+        user=main_user,
         data={
             "title": "Title",
             "type": "salary",
-        }
+        },
     )
 
     assert form.is_valid()
@@ -44,8 +45,8 @@ def test_income_type_valid_data():
     assert data.journal.users.first().username == "bob"
 
 
-def test_income_type_blank_data():
-    form = IncomeTypeForm(data={})
+def test_income_type_blank_data(main_user):
+    form = IncomeTypeForm(user=main_user, data={})
 
     assert not form.is_valid()
 
@@ -54,34 +55,35 @@ def test_income_type_blank_data():
     assert "type" in form.errors
 
 
-def test_income_type_title_null():
-    form = IncomeTypeForm(data={"title": None})
+def test_income_type_title_null(main_user):
+    form = IncomeTypeForm(user=main_user, data={"title": None})
 
     assert not form.is_valid()
 
     assert "title" in form.errors
 
 
-def test_income_type_title_too_long():
-    form = IncomeTypeForm(data={"title": "a" * 255})
+def test_income_type_title_too_long(main_user):
+    form = IncomeTypeForm(user=main_user, data={"title": "a" * 255})
 
     assert not form.is_valid()
 
     assert "title" in form.errors
 
 
-def test_income_type_title_too_short():
-    form = IncomeTypeForm(data={"title": "aa"})
+def test_income_type_title_too_short(main_user):
+    form = IncomeTypeForm(user=main_user, data={"title": "aa"})
 
     assert not form.is_valid()
 
     assert "title" in form.errors
 
 
-def test_income_type_unique_name():
+def test_income_type_unique_name(main_user):
     b = IncomeTypeFactory(title="XXX")
 
     form = IncomeTypeForm(
+        user=main_user,
         data={
             "title": "XXX",
         },
@@ -90,11 +92,11 @@ def test_income_type_unique_name():
     assert not form.is_valid()
 
 
-def test_form_income_type_and_second_user(second_user):
-    IncomeTypeFactory(title="T1")
+def test_form_income_type_and_second_user(main_user, second_user):
+    IncomeTypeFactory(title="T1", journal=main_user.journal)
     IncomeTypeFactory(title="T2", journal=second_user.journal)
 
-    form = IncomeForm().as_p()
+    form = IncomeForm(user=main_user).as_p()
 
     assert '<option value="1">T1</option>' in form
     assert '<option value="2">T2</option>' not in form
@@ -103,61 +105,62 @@ def test_form_income_type_and_second_user(second_user):
 # ----------------------------------------------------------------------------
 #                                                                       Income
 # ----------------------------------------------------------------------------
-def test_income_init():
-    IncomeForm()
+def test_income_init(main_user):
+    IncomeForm(user=main_user)
 
 
 @time_machine.travel("1974-01-01")
-def test_income_year_initial_value():
+def test_income_year_initial_value(main_user):
     UserFactory()
 
-    form = IncomeForm().as_p()
+    form = IncomeForm(user=main_user).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_income_current_user_types(second_user):
+def test_income_current_user_types(main_user, second_user):
     IncomeTypeFactory(title="T1")  # user bob, current user
     IncomeTypeFactory(title="T2", journal=second_user.journal)  # user X
 
-    form = IncomeForm().as_p()
+    form = IncomeForm(user=main_user).as_p()
 
     assert "T1" in form
     assert "T2" not in form
 
 
-def test_income_current_user_accounts(second_user):
+def test_income_current_user_accounts(main_user, second_user):
     AccountFactory(title="A1")  # user bob, current user
     AccountFactory(title="A2", journal=second_user.journal)  # user X
 
-    form = IncomeForm().as_p()
+    form = IncomeForm(user=main_user).as_p()
 
     assert "A1" in form
     assert "A2" not in form
 
 
-def test_expense_select_first_account(second_user):
+def test_expense_select_first_account(main_user, second_user):
     a2 = AccountFactory(title="A2")
     AccountFactory(title="A1", journal=second_user.journal)
 
-    form = IncomeForm().as_p()
+    form = IncomeForm(user=main_user).as_p()
 
     expect = f'<option value="{a2.pk}" selected>{a2}</option>'
     assert expect in form
 
 
-def test_income_valid_data():
+def test_income_valid_data(main_user):
     a = AccountFactory()
     t = IncomeTypeFactory()
 
     form = IncomeForm(
+        user=main_user,
         data={
             "date": "2000-01-01",
             "price": 0.01,
             "remark": "remark",
             "account": a.pk,
             "income_type": t.pk,
-        }
+        },
     )
 
     assert form.is_valid()
@@ -172,18 +175,19 @@ def test_income_valid_data():
 
 
 @time_machine.travel("1999-1-1")
-def test_income_insert_only_one_year_to_future():
+def test_income_insert_only_one_year_to_future(main_user):
     a = AccountFactory()
     t = IncomeTypeFactory()
 
     form = IncomeForm(
+        user=main_user,
         data={
             "date": "2001-01-01",
             "price": "1.0",
             "remark": "remark",
             "account": a.pk,
             "income_type": t.pk,
-        }
+        },
     )
 
     assert not form.is_valid()
@@ -191,8 +195,8 @@ def test_income_insert_only_one_year_to_future():
     assert "Metai negali būti didesni nei 2000" in form.errors["date"]
 
 
-def test_income_blank_data():
-    form = IncomeForm({})
+def test_income_blank_data(main_user):
+    form = IncomeForm(user=main_user, data={})
 
     assert not form.is_valid()
 
@@ -202,18 +206,19 @@ def test_income_blank_data():
     assert "income_type" in form.errors
 
 
-def test_income_price_null():
+def test_income_price_null(main_user):
     a = AccountFactory()
     t = IncomeTypeFactory()
 
     form = IncomeForm(
+        user=main_user,
         data={
             "date": "2000-01-01",
             "price": "0",
             "remark": "remark",
             "account": a.pk,
             "income_type": t.pk,
-        }
+        },
     )
 
     assert not form.is_valid()

@@ -244,10 +244,11 @@ def test_load_books_form(client_logged):
 
     response = client_logged.get(url, {})
 
-    actual = response.context["form"].as_p()
+    actual = response.content.decode()
 
     assert response.status_code == 200
     assert '<input type="text" name="started" value="1999-01-01"' in actual
+    assert url in actual
 
 
 def test_save_book(client_logged):
@@ -304,12 +305,13 @@ def test_books_load_update_form(client_logged):
     url = reverse("books:update", kwargs={"pk": i.pk})
 
     response = client_logged.get(url, follow=True)
-    form = response.context["form"].as_p()
+    actual = response.content.decode()
 
-    assert "1999-01-01" in form
-    assert "Author" in form
-    assert "Book Title" in form
-    assert "Remark" in form
+    assert url in actual
+    assert "1999-01-01" in actual
+    assert "Author" in actual
+    assert "Book Title" in actual
+    assert "Remark" in actual
 
 
 def test_book_update_to_another_year(client_logged):
@@ -407,6 +409,7 @@ def test_view_books_delete_load_form(client_logged):
 
     actual = response.content.decode("utf-8")
 
+    assert url in actual
     assert '<form method="POST"' in actual
     assert f"Ar tikrai norite ištrinti: <strong>Book Title</strong>?" in actual
 
@@ -525,6 +528,7 @@ def test_target_load_form(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
+    assert url in actual
     assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
@@ -569,4 +573,5 @@ def test_target_load_update_form(client_logged):
     response = client_logged.get(url, data)
     actual = response.content.decode("utf-8")
 
+    assert url in actual
     assert '<input type="text" name="year" value="1999"' in actual

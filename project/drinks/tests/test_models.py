@@ -6,6 +6,7 @@ from django.core.validators import ValidationError
 from ...users.factories import UserFactory
 from ..factories import DrinkFactory, DrinkTargetFactory
 from ..models import Drink, DrinkTarget
+from ..services.model_services import DrinkModelService, DrinkTargetModelService
 
 pytestmark = pytest.mark.django_db
 
@@ -23,49 +24,49 @@ def _drinks(second_user):
 # ----------------------------------------------------------------------------
 #                                                                        Drink
 # ----------------------------------------------------------------------------
-def test_drink_related(second_user):
+def test_drink_related(main_user, second_user):
     DrinkFactory()
     DrinkFactory(user=second_user)
 
-    actual = Drink.objects.related()
+    actual = Drink.objects.related(main_user)
 
     assert len(actual) == 1
     assert actual[0].user.username == "bob"
 
 
-def test_drink_items(second_user):
+def test_drink_items(main_user, second_user):
     DrinkFactory()
     DrinkFactory(user=second_user)
 
-    actual = Drink.objects.items()
+    actual = DrinkModelService(main_user).items()
 
     assert len(actual) == 1
     assert actual[0].user.username == "bob"
 
 
-def test_drink_items_different_counters(second_user):
+def test_drink_items_different_counters(main_user, second_user):
     DrinkFactory()
     DrinkFactory(user=second_user)
 
-    actual = Drink.objects.items()
+    actual = DrinkModelService(main_user).items()
 
     assert len(actual) == 1
 
 
-def test_drink_items_different_counters_default_value(second_user):
+def test_drink_items_different_counters_default_value(main_user, second_user):
     DrinkFactory()
     DrinkFactory(user=second_user)
 
-    actual = Drink.objects.items()
+    actual = DrinkModelService(main_user).items()
 
     assert len(actual) == 1
 
 
-def test_drink_year(second_user):
+def test_drink_year(main_user, second_user):
     DrinkFactory()
     DrinkFactory(user=second_user)
 
-    actual = list(Drink.objects.year(1999))
+    actual = list(DrinkModelService(main_user).year(1999))
 
     assert len(actual) == 1
     assert actual[0].date == date(1999, 1, 1)
@@ -82,6 +83,8 @@ def test_drink_year(second_user):
 )
 def test_drink_str(user_drink_type, drink_type, expect, main_user):
     main_user.drink_type = user_drink_type
+    main_user.save()
+
     p = DrinkFactory(quantity=1, option=drink_type)
 
     p.full_clean()
@@ -89,11 +92,11 @@ def test_drink_str(user_drink_type, drink_type, expect, main_user):
     assert str(p) == f"1999-01-01: {expect}"
 
 
-def test_drink_order():
+def test_drink_order(main_user):
     DrinkFactory(date=date(1999, 1, 1))
     DrinkFactory(date=date(1999, 12, 1))
 
-    actual = list(Drink.objects.year(1999))
+    actual = list(DrinkModelService(main_user).year(1999))
 
     assert str(actual[0]) == "1999-12-01: 1.0"
     assert str(actual[1]) == "1999-01-01: 1.0"
@@ -110,6 +113,7 @@ def test_drink_order():
 )
 def test_drink_sum_by_year(drink_type, stdav, qty, main_user):
     main_user.drink_type = drink_type
+    main_user.save()
 
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option="beer")
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option="beer")
@@ -118,7 +122,7 @@ def test_drink_sum_by_year(drink_type, stdav, qty, main_user):
     DrinkFactory(date=date(1999, 2, 1), quantity=1.0, option="beer")
     DrinkFactory(date=date(2000, 2, 1), quantity=1.0, option="beer")
 
-    actual = Drink.objects.sum_by_year()
+    actual = DrinkModelService(main_user).sum_by_year()
 
     # filter per_month key from return list
     actual_stdav = [x["stdav"] for x in actual]
@@ -147,7 +151,7 @@ def test_drink_sum_by_month(drink_type, stdav, qty, main_user):
     DrinkFactory(date=date(1999, 2, 1), quantity=1.0, option="beer")
     DrinkFactory(date=date(2000, 2, 1), quantity=1.0, option="beer")
 
-    actual = Drink.objects.sum_by_month(1999)
+    actual = DrinkModelService(main_user).sum_by_month(1999)
 
     # filter per_month key from return list
     actual_stdav = [x["stdav"] for x in actual]
@@ -157,12 +161,12 @@ def test_drink_sum_by_month(drink_type, stdav, qty, main_user):
     assert actual_qty == qty
 
 
-def test_drink_months_sum_no_records_for_current_year(second_user):
+def test_drink_months_sum_no_records_for_current_year(main_user, second_user):
     DrinkFactory(date=date(1970, 1, 1), quantity=1.0)
     DrinkFactory(date=date(2000, 1, 1), quantity=1.5)
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5, user=second_user)
 
-    actual = Drink.objects.sum_by_month(1999)
+    actual = DrinkModelService(main_user).sum_by_month(1999)
 
     assert not actual
 
@@ -186,7 +190,7 @@ def test_drink_sum_by_day(drink_type, stdav, qty, main_user):
     DrinkFactory(date=date(1999, 2, 1), quantity=1.0, option="beer")
     DrinkFactory(date=date(2000, 2, 1), quantity=1.0, option="beer")
 
-    actual = Drink.objects.sum_by_day(1999, 1)
+    actual = DrinkModelService(main_user).sum_by_day(1999, 1)
 
     actual_stdav = [x["stdav"] for x in actual]
     actual_qty = [round(x["qty"], 2) for x in actual]
@@ -206,6 +210,7 @@ def test_drink_sum_by_day(drink_type, stdav, qty, main_user):
 )
 def test_drink_sum_by_day_all_months(drink_type, stdav, qty, main_user):
     main_user.drink_type = drink_type
+    main_user.save()
 
     DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option="beer")
     DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option="beer")
@@ -214,7 +219,7 @@ def test_drink_sum_by_day_all_months(drink_type, stdav, qty, main_user):
     DrinkFactory(date=date(1999, 2, 1), quantity=1.0, option="beer")
     DrinkFactory(date=date(2000, 2, 1), quantity=1.0, option="beer")
 
-    actual = Drink.objects.sum_by_day(1999)
+    actual = DrinkModelService(main_user).sum_by_day(1999)
 
     actual_stdav = [x["stdav"] for x in actual]
     actual_qty = [round(x["qty"], 2) for x in actual]
@@ -281,31 +286,31 @@ def test_drink_target_str():
     assert str(actual) == "1999: 100.0"
 
 
-def test_drink_target_related():
+def test_drink_target_related(main_user):
     DrinkTargetFactory()
     DrinkTargetFactory(user=UserFactory(username="XXX", email="x@x.x"))
 
-    actual = DrinkTarget.objects.related()
+    actual = DrinkTarget.objects.related(main_user)
 
     assert len(actual) == 1
     assert actual[0].user.username == "bob"
 
 
-def test_drink_target_items():
+def test_drink_target_items(main_user):
     DrinkTargetFactory(year=1999)
     DrinkTargetFactory(year=2000, user=UserFactory(username="XXX", email="x@x.x"))
 
-    actual = DrinkTarget.objects.items()
+    actual = DrinkTargetModelService(main_user).items()
 
     assert len(actual) == 1
     assert actual[0].user.username == "bob"
 
 
-def test_drink_target_year():
+def test_drink_target_year(main_user):
     DrinkTargetFactory(year=1999, quantity=1, drink_type="beer")
     DrinkTargetFactory(year=1999, user=UserFactory(username="XXX", email="x@x.x"))
 
-    actual = DrinkTarget.objects.year(1999)
+    actual = DrinkTargetModelService(main_user).year(1999)
 
     assert len(actual) == 1
     assert actual[0].year == 1999

@@ -298,15 +298,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-crequest"
-version = "2018.5.11"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/0f/61/d2e95ff46d2d117b79873d6922665d711b35357b50b854a0e9cf42806431/django-crequest-2018.5.11.tar.gz", hash = "sha256:e623ec6b2933790717307d5a59cf9db39ff4928b53c506948e1d05776ef4a034", size = 4357, upload-time = "2018-05-11T09:37:55.361Z" }
-
-[[package]]
 name = "django-crispy-forms"
 version = "2.4"
 source = { registry = "https://pypi.org/simple" }
@@ -541,7 +532,6 @@ dependencies = [
     { name = "crispy-bootstrap5" },
     { name = "django" },
     { name = "django-cotton" },
-    { name = "django-crequest" },
     { name = "django-crispy-forms" },
     { name = "django-extensions" },
     { name = "django-htmx" },
@@ -595,7 +585,6 @@ requires-dist = [
     { name = "crispy-bootstrap5", specifier = ">=2025.6" },
     { name = "django", specifier = ">=5.2.7" },
     { name = "django-cotton", specifier = ">=2.1.3" },
-    { name = "django-crequest", specifier = ">=2018.5.11" },
     { name = "django-crispy-forms", specifier = ">=2.4" },
     { name = "django-debug-toolbar", marker = "extra == 'dev'", specifier = ">=4.4.6" },
     { name = "django-extensions", specifier = ">=4.1" },

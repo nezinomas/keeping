@@ -74,6 +74,7 @@ def test_saving_load_new_form(client_logged):
     actual = response.content.decode("utf-8")
 
     assert "1999-01-01" in actual
+    assert url in actual
 
 
 @time_machine.travel("1999-1-1")
@@ -119,13 +120,14 @@ def test_saving_save_invalid_data(client_logged):
     assert "saving_type" in actual.errors
 
 
-def test_savings_load_update_form_button(client_logged):
+def test_savings_load_update_form(client_logged):
     obj = SavingFactory()
 
     url = reverse("savings:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
     form = response.content.decode("utf-8")
 
+    assert url in form
     assert "Atnaujinti ir uždaryti</button>" in clean_content(form)
 
 
@@ -291,6 +293,7 @@ def test_view_saving_delete_load_form(client_logged):
 
     form = response.content.decode("utf-8")
 
+    assert url in form
     assert '<form method="POST"' in form
     assert f'hx-post="{url}"' in form
     assert "Ar tikrai norite ištrinti: <strong>1999-01-01: Savings</strong>?" in form
@@ -309,7 +312,11 @@ def test_view_saving_delete(client_logged):
 
 def test_savings_delete_other_journal_get_form(client_logged, second_user):
     it2 = SavingTypeFactory(title="yyy", journal=second_user.journal)
-    i2 = SavingFactory(saving_type=it2, price=666)
+    i2 = SavingFactory(
+        saving_type=it2,
+        account=AccountFactory(title="A2", journal=second_user.journal),
+        price=666,
+    )
 
     url = reverse("savings:delete", kwargs={"pk": i2.pk})
     response = client_logged.get(url)
@@ -319,7 +326,11 @@ def test_savings_delete_other_journal_get_form(client_logged, second_user):
 
 def test_savings_delete_other_journal_post_form(client_logged, second_user):
     it2 = SavingTypeFactory(title="yyy", journal=second_user.journal)
-    i2 = SavingFactory(saving_type=it2, price=666)
+    i2 = SavingFactory(
+        saving_type=it2,
+        account=AccountFactory(title="A2", journal=second_user.journal),
+        price=666,
+    )
 
     url = reverse("savings:delete", kwargs={"pk": i2.pk})
     client_logged.post(url, follow=True)
@@ -330,13 +341,21 @@ def test_savings_delete_other_journal_post_form(client_logged, second_user):
 # ----------------------------------------------------------------------------
 #                                                                  Saving Type
 # ----------------------------------------------------------------------------
-@time_machine.travel("2000-01-01")
-def test_type_load_form(client_logged):
+def test_type_load_form_200(client_logged):
     url = reverse("savings:type_new")
 
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+def test_type_load_form(client_logged):
+    url = reverse("savings:type_new")
+
+    response = client_logged.get(url)
+    actual = response.content.decode()
+
+    assert url in actual
 
 
 def test_type_save(client_logged):
@@ -380,6 +399,17 @@ def test_type_save_invalid_data(client_logged):
     assert not actual.is_valid()
 
 
+def test_type_update_load_form(client_logged):
+    saving = SavingTypeFactory()
+
+    url = reverse("savings:type_update", kwargs={"pk": saving.pk})
+
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert url in actual
+
+
 def test_type_update(client_logged):
     saving = SavingTypeFactory()
 
@@ -409,7 +439,7 @@ def test_type_update_return_list_with_closed(client_logged):
     actual = response.content.decode("utf-8")
 
     assert "TTT" in actual
-    assert "YYY" not in actual
+    assert "YYY" in actual
     assert "XXX" not in actual
 
 

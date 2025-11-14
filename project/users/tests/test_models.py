@@ -19,6 +19,6 @@ def test_user_reversed():
     assert str(actual.journal) == "bob Journal"
 
 
-def test_user_related_queries(django_assert_max_num_queries):
+def test_user_related_queries(main_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        list(x.journal.title for x in User.objects.related())
+        list(x.journal.title for x in User.objects.related(main_user))

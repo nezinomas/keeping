@@ -1,26 +1,6 @@
 from types import SimpleNamespace
 
-from mock import patch
-
 from ..lib import utils
-
-
-@patch("project.core.lib.utils.CrequestMiddleware")
-def test_get_request_kwargs(mck):
-    mck.get_request.return_value = SimpleNamespace(
-        resolver_match=SimpleNamespace(kwargs={"Foo": "Boo"})
-    )
-    actual = utils.get_request_kwargs("Foo")
-    assert actual == "Boo"
-
-
-@patch("project.core.lib.utils.CrequestMiddleware")
-def test_get_request_kwargs_no_name(mck):
-    mck.get_request.return_value = SimpleNamespace(
-        resolver_match=SimpleNamespace(kwargs={})
-    )
-    actual = utils.get_request_kwargs("Foo")
-    assert not actual
 
 
 def test_total_row_objects():

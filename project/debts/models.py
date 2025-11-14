@@ -1,10 +1,8 @@
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.lib import utils
 from ..core.templatetags.math import price as convert_price
 from ..journals.models import Journal
 from . import managers
@@ -42,18 +40,6 @@ class Debt(models.Model):
     def __str__(self):
         return str(self.name)
 
-    def get_absolute_url(self):
-        debt_type = utils.get_request_kwargs("debt_type")
-        return reverse_lazy(
-            "debts:update", kwargs={"pk": self.pk, "debt_type": debt_type}
-        )
-
-    def get_delete_url(self):
-        debt_type = utils.get_request_kwargs("debt_type")
-        return reverse_lazy(
-            "debts:delete", kwargs={"pk": self.pk, "debt_type": debt_type}
-        )
-
 
 class DebtReturn(models.Model):
     date = models.DateField()
@@ -80,42 +66,3 @@ class DebtReturn(models.Model):
             text = f"{_('Borrow return')} {convert_price(price)}"
 
         return text
-
-    def get_absolute_url(self):
-        debt_type = utils.get_request_kwargs("debt_type")
-        return reverse_lazy(
-            "debts:return_update", kwargs={"pk": self.pk, "debt_type": debt_type}
-        )
-
-    def get_delete_url(self):
-        debt_type = utils.get_request_kwargs("debt_type")
-        return reverse_lazy(
-            "debts:return_delete", kwargs={"pk": self.pk, "debt_type": debt_type}
-        )
-
-    def save(self, *args, **kwargs):
-        qs = Debt.objects.filter(id=self.debt_id)
-        obj = qs[0]
-
-        _returned = obj.returned or 0
-        if not self.pk:
-            _returned += self.price
-        else:
-            old = DebtReturn.objects.get(pk=self.pk)
-            dif = self.price - old.price
-            _returned += dif
-
-        qs.update(returned=_returned)
-
-        super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        try:
-            super().delete(*args, **kwargs)
-        except Exception as e:
-            raise e
-
-        qs = Debt.objects.filter(id=self.debt_id)
-        _returned = qs[0].returned - self.price
-
-        qs.update(returned=_returned)

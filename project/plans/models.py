@@ -40,12 +40,6 @@ class IncomePlan(MonthAbstract):
                 % ({"year": self.year, "title": self.income_type.title})
             ) from e
 
-    def get_absolute_url(self):
-        return reverse_lazy("plans:income_update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("plans:income_delete", kwargs={"pk": self.pk})
-
 
 class ExpensePlan(MonthAbstract):
     year = models.PositiveIntegerField(
@@ -73,12 +67,6 @@ class ExpensePlan(MonthAbstract):
                 _("%(year)s year already has %(title)s plan.")
                 % ({"year": self.year, "title": self.expense_type.title})
             ) from e
-
-    def get_absolute_url(self):
-        return reverse_lazy("plans:expense_update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("plans:expense_delete", kwargs={"pk": self.pk})
 
 
 class SavingPlan(MonthAbstract):
@@ -108,12 +96,6 @@ class SavingPlan(MonthAbstract):
                 % ({"year": self.year, "title": self.saving_type.title})
             ) from e
 
-    def get_absolute_url(self):
-        return reverse_lazy("plans:saving_update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("plans:saving_delete", kwargs={"pk": self.pk})
-
 
 class DayPlan(MonthAbstract):
     year = models.PositiveIntegerField(
@@ -141,12 +123,6 @@ class DayPlan(MonthAbstract):
                 _("%(year)s year already has %(title)s plan.")
                 % ({"year": self.year, "title": title})
             ) from e
-
-    def get_absolute_url(self):
-        return reverse_lazy("plans:day_update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("plans:day_delete", kwargs={"pk": self.pk})
 
 
 class NecessaryPlan(MonthAbstract):
@@ -182,9 +158,3 @@ class NecessaryPlan(MonthAbstract):
                     }
                 )
             ) from e
-
-    def get_absolute_url(self):
-        return reverse_lazy("plans:necessary_update", kwargs={"pk": self.pk})
-
-    def get_delete_url(self):
-        return reverse_lazy("plans:necessary_delete", kwargs={"pk": self.pk})

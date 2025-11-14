@@ -10,7 +10,7 @@ from django.test import override_settings
 from ...core.exceptions import MethodInvalidError
 from ..factories import CountFactory
 from ..lib.stats import Stats
-from ..models import Count
+from ..services.model_services import CountModelService
 
 month_days_1999 = [
     (1, 31),
@@ -196,9 +196,9 @@ def test_months_stats(data):
 
 
 @pytest.mark.django_db
-def test_months_stats_db(data_db):
+def test_months_stats_db(main_user, data_db):
     year = 1999
-    qs = Count.objects.sum_by_day(year=year, count_type="count-type")
+    qs = CountModelService(main_user).sum_by_day(year=year, count_type="count-type")
     actual = Stats(year=year, data=qs).months_stats()
 
     expect = [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
@@ -207,9 +207,9 @@ def test_months_stats_db(data_db):
 
 
 @pytest.mark.django_db
-def test_months_stats_db_nodata():
+def test_months_stats_db_nodata(main_user):
     year = 1999
-    qs = Count.objects.sum_by_day(year=year, count_type="count-type")
+    qs = CountModelService(main_user).sum_by_day(year=year, count_type="count-type")
     actual = Stats(year=year, data=qs).months_stats()
 
     expect = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -390,9 +390,9 @@ def test_chart_calendar(data, chart_calendar_expect_january_with_data):
 
 
 @pytest.mark.django_db
-def test_chart_calendar_db(chart_calendar_expect_january_with_data, data_db):
+def test_chart_calendar_db(chart_calendar_expect_january_with_data, data_db, main_user):
     year = 1999
-    qs = Count.objects.sum_by_day(year=year, count_type="count-type")
+    qs = CountModelService(main_user).sum_by_day(year=year, count_type="count-type")
     actual = Stats(year=year, data=qs).chart_calendar()
 
     assert actual[0] == chart_calendar_expect_january_with_data

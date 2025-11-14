@@ -1,6 +1,5 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.urls import reverse_lazy
 
 from ..journals.models import Journal
 from . import managers
@@ -26,6 +25,3 @@ class User(AbstractUser):
             self.is_superuser = True
 
         return super().save(*args, **kwarg)
-
-    def get_delete_url(self):
-        return reverse_lazy("users:settings_users_delete", kwargs={"pk": self.pk})

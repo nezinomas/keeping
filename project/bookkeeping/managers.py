@@ -5,14 +5,14 @@ from django.db import models
 from django.db.models import Count, F, Max, Q
 from django.db.models.functions import ExtractYear
 
-from ..core.lib import utils
+from ..users.models import User
 
 
 class QsMixin:
-    def latest_have(self, field):
+    def latest_have(self, user: User, field: str):
         qs = [
             *(
-                self.related()
+                self.related(user)
                 .annotate(year=ExtractYear(F("date")))
                 .values("year", f"{field}_id")
                 .annotate(latest_date=Max("date"))
@@ -41,27 +41,28 @@ class QsMixin:
 
 
 class AccountWorthQuerySet(QsMixin, models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
-        return self.select_related("account").filter(account__journal=journal)
+    def related(self, user: User):
+        return self.select_related("account").filter(account__journal=user.journal)
 
-    def have(self):
-        return self.latest_have(field="account")
+    def have(self, user: User):
+        return self.latest_have(user, field="account")
 
 
 class SavingWorthQuerySet(QsMixin, models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
-        return self.select_related("saving_type").filter(saving_type__journal=journal)
+    def related(self, user: User):
+        return self.select_related("saving_type").filter(
+            saving_type__journal=user.journal
+        )
 
-    def have(self):
-        return self.latest_have(field="saving_type")
+    def have(self, user: User):
+        return self.latest_have(user, field="saving_type")
 
 
 class PensionWorthQuerySet(QsMixin, models.QuerySet):
-    def related(self):
-        journal = utils.get_user().journal
-        return self.select_related("pension_type").filter(pension_type__journal=journal)
+    def related(self, user: User):
+        return self.select_related("pension_type").filter(
+            pension_type__journal=user.journal
+        )
 
-    def have(self):
-        return self.latest_have(field="pension_type")
+    def have(self, user: User):
+        return self.latest_have(user, field="pension_type")

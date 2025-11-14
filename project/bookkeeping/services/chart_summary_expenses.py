@@ -5,10 +5,13 @@ from dataclasses import dataclass, field
 from django.utils.translation import gettext as _
 
 from ...expenses.models import Expense
+from ...expenses.services.model_services import ExpenseModelService
+from ...users.models import User
 
 
 @dataclass
 class ChartSummaryExpensesServiceData:
+    user: User
     form_data: list[dict] = field(default_factory=list)
     data: list[dict] = field(init=False, default_factory=list)
 
@@ -34,10 +37,10 @@ class ChartSummaryExpensesServiceData:
         return types, names
 
     def _get_types(self, types: list) -> list[dict]:
-        return Expense.objects.sum_by_year_type(types)
+        return ExpenseModelService(self.user).sum_by_year_type(types)
 
     def _get_names(self, names: list) -> list[dict]:
-        return Expense.objects.sum_by_year_name(names)
+        return ExpenseModelService(self.user).sum_by_year_name(names)
 
 
 @dataclass
@@ -97,8 +100,8 @@ class ChartSummaryExpensesService:
         self.total_row = [sum(idx) for idx in zip(*matrix)]
 
 
-def load_service(form_data):
-    data = ChartSummaryExpensesServiceData(form_data)
+def load_service(user, form_data):
+    data = ChartSummaryExpensesServiceData(user, form_data)
     obj = ChartSummaryExpensesService(data=data)
 
     if obj.serries_data:

@@ -5,21 +5,20 @@ from pathlib import Path
 from django.conf import settings
 from django.utils.safestring import mark_safe
 
-from ..core.lib import utils
 from .lib import date as lib_date
 
 
-def years(context):
-    _years = lib_date.years()
+def years(request):
+    _years = lib_date.years(request.user)
 
     return {"years": _years[::-1]}
 
 
-def yday(context):
+def yday(request):
     _year = datetime.now().year
 
     with contextlib.suppress(AttributeError):
-        _year = utils.get_user().year
+        _year = request.year
 
     _yday, _ydays = lib_date.yday(_year)
 

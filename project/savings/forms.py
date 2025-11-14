@@ -1,15 +1,13 @@
-from datetime import datetime
-
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..accounts.models import Account
-from ..core.lib import utils
+from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import ConvertToPrice
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Saving, SavingType
+from .services.model_services import SavingTypeModelService
 
 
 class SavingTypeForm(forms.ModelForm):
@@ -18,12 +16,13 @@ class SavingTypeForm(forms.ModelForm):
         fields = ["journal", "title", "type", "closed"]
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["closed"].widget = YearPickerWidget()
 
         # journal input
-        self.fields["journal"].initial = utils.get_user().journal
+        self.fields["journal"].initial = user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
 
@@ -43,7 +42,10 @@ class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "account", "saving_type", "price", "fee", "remark"]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+
+        account_items = AccountModelService(self.user).items()
 
         self.fields["date"].widget = DatePickerWidget()
 
@@ -53,12 +55,12 @@ class SavingForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["remark"].widget.attrs["rows"] = 3
 
         # inital values
-        self.fields["account"].initial = Account.objects.items().first()
-        self.fields["date"].initial = set_date_with_user_year()
+        self.fields["account"].initial = account_items.first()
+        self.fields["date"].initial = set_date_with_user_year(self.user)
 
         # overwrite ForeignKey saving_type and account queryset
-        self.fields["saving_type"].queryset = SavingType.objects.items()
-        self.fields["account"].queryset = Account.objects.items()
+        self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
+        self.fields["account"].queryset = account_items
 
         self.fields["date"].label = _("Date")
         self.fields["account"].label = _("From account")
