@@ -11,10 +11,6 @@ class SavingTypeQuerySet(models.QuerySet):
     def related(self, user: User):
         return self.select_related("journal").filter(journal=user.journal)
 
-    def items(self, user: User, year=None):
-        _year = year or user.year
-        return self.related(user).filter(Q(closed__isnull=True) | Q(closed__gte=_year))
-
 
 class SavingQuerySet(SumMixin, models.QuerySet):
     def related(self, user: User):
