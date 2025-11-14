@@ -54,17 +54,9 @@ class FormsetMixin:
         return return_list
 
     def get_formset(self, post=None, **kwargs):
-        user = self.request.user
-        base_form = self.form_class
-
-        class UserAwareForm(base_form):
-            def __init__(self, *args, **form_kwargs):
-                form_kwargs["user"] = user
-                super().__init__(*args, **form_kwargs)
-
         formset = modelformset_factory(
             model=self.model,
-            form=UserAwareForm,
+            form=self.get_formset_class(),
             formset=BaseTypeFormSet,
             extra=0,
         )

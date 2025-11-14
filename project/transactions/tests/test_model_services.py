@@ -1,8 +1,11 @@
 import pytest
 from django.contrib.auth.models import AnonymousUser
 
-from ..services.model_services import TransactionModelService, SavingChangeModelService, SavingCloseModelService
-
+from ..services.model_services import (
+    SavingChangeModelService,
+    SavingCloseModelService,
+    TransactionModelService,
+)
 
 
 def test_transaction_init_raises_if_no_user():
