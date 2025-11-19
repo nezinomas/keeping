@@ -12,6 +12,8 @@ from ...users.models import User
 from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 from ..services.model_services import ModelService
 
+MONTH_NAMES = monthnames()
+
 
 @dataclass
 class PlanCollectData:
@@ -28,32 +30,30 @@ class PlanCollectData:
     def __post_init__(self):
         self.year = self.user.year
 
-        month_names = monthnames()
-
         self.incomes = (
-            ModelService(IncomePlan, self.user).year(self.year).values(*month_names)
+            ModelService(IncomePlan, self.user).year(self.year).values(*MONTH_NAMES)
         )
 
         self.expenses = (
             ModelService(ExpensePlan, self.user)
             .year(self.year)
             .values(
-                *month_names,
+                *MONTH_NAMES,
                 necessary=F("expense_type__necessary"),
                 title=F("expense_type__title"),
             )
         )
 
         self.savings = (
-            ModelService(SavingPlan, self.user).year(self.year).values(*month_names)
+            ModelService(SavingPlan, self.user).year(self.year).values(*MONTH_NAMES)
         )
         self.days = (
-            ModelService(DayPlan, self.user).year(self.year).values(*month_names)
+            ModelService(DayPlan, self.user).year(self.year).values(*MONTH_NAMES)
         )
         self.necessary = (
             ModelService(NecessaryPlan, self.user)
             .year(self.year)
-            .values(*month_names)
+            .values(*MONTH_NAMES)
             .annotate(title=F("expense_type__title"))
         )
 
@@ -64,8 +64,6 @@ class PlanCollectData:
 
 class PlanCalculateDaySum:
     def __init__(self, data: PlanCollectData, month: int | None = None):
-        self.std_columns = monthnames()
-
         self._data = data
         self.month = month
 
@@ -74,7 +72,7 @@ class PlanCalculateDaySum:
 
     def filter_df(self, name: str) -> dict | float:
         if not self.calculated and self.df.is_empty():
-            self.df = self._calc_df() 
+            self.df = self._calc_df()
             self.calculated = True
 
         if self.df.is_empty() or name not in self.df["name"]:
@@ -86,7 +84,7 @@ class PlanCalculateDaySum:
 
     @property
     def plans_stats(self):
-        Items = namedtuple("Items", ["type", *self.std_columns])
+        Items = namedtuple("Items", ["type", *MONTH_NAMES])
 
         _incomes = _("Incomes")
         _median = _("median")
@@ -137,7 +135,7 @@ class PlanCalculateDaySum:
 
     def _return_data(self, data: pl.DataFrame) -> float | dict:
         """If data is polars Serries convert data to dictionary"""
-        select = monthname(self.month) if self.month else self.std_columns
+        select = monthname(self.month) if self.month else MONTH_NAMES
         data = data.select(select)
         return data.item() if self.month else data.to_dicts()[0]
 
@@ -207,7 +205,7 @@ class PlanCalculateDaySum:
                     + pl.col("expenses_necessary")
                     + pl.col("savings")
                     + pl.col("necessary")
-                )
+                ),
             )
             .with_columns(
                 expenses_free=(pl.col.incomes_avg - pl.col.expenses_necessary)
@@ -225,6 +223,6 @@ class PlanCalculateDaySum:
             .with_columns(expenses_remains=(pl.col.incomes_avg - pl.col.expenses_full))
             .collect()
             .transpose(
-                include_header=True, header_name="name", column_names=self.std_columns
+                include_header=True, header_name="name", column_names=MONTH_NAMES
             )
         )
