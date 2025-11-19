@@ -1,12 +1,13 @@
+import contextlib
+import itertools as it
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass, field
-from typing import Union
 
 import polars as pl
 from django.db.models import F
 from django.utils.translation import gettext as _
 
-from ...core.lib.date import monthlen, monthname, monthnames
+from ...core.lib.date import monthlen, monthname, monthnames, MOTHS_WITH_DAYS_GENERIC
 from ...users.models import User
 from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 from ..services.model_services import ModelService
@@ -15,14 +16,14 @@ from ..services.model_services import ModelService
 @dataclass
 class PlanCollectData:
     user: User
-    month: int = 0
-    year: int = field(init=False, default=1970)
+    year: int = field(init=False, default=1974)
 
     incomes: list[dict] = field(init=False, default_factory=list)
     expenses: list[dict] = field(init=False, default_factory=list)
     savings: list[dict] = field(init=False, default_factory=list)
     days: list[dict] = field(init=False, default_factory=list)
     necessary: list[dict] = field(init=False, default_factory=list)
+    month_len: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self.year = self.user.year
@@ -56,20 +57,31 @@ class PlanCollectData:
             .annotate(title=F("expense_type__title"))
         )
 
+        self.month_len = MOTHS_WITH_DAYS_GENERIC
+        # update february value
+        self.month_len["february"] = monthlen(self.year, "february")
+
 
 class PlanCalculateDaySum:
-    def __init__(self, data: PlanCollectData):
+    def __init__(self, data: PlanCollectData, month: int | None = None):
         self.std_columns = monthnames()
 
         self._data = data
-        self._year = data.year
-        self._df = self._calc_df()
+        self.month = month
 
-    def filter_df(self, name: str) -> pl.DataFrame:
-        if name not in self._df["name"]:
+        self.df: pl.DataFrame = pl.DataFrame()
+        self.calculated: bool = False
+
+    def filter_df(self, name: str) -> dict | float:
+        if not self.calculated and self.df.is_empty():
+            self.df = self._calc_df() 
+            self.calculated = True
+
+        if self.df.is_empty() or name not in self.df["name"]:
             return {}
 
-        data = self._df.filter(pl.col("name") == name)
+        data = self.df.filter(pl.col("name") == name)
+
         return self._return_data(data)
 
     @property
@@ -108,13 +120,13 @@ class PlanCalculateDaySum:
         ]
 
     @property
-    def targets(self) -> dict[str, float]:
+    def targets(self) -> dict:
         rtn = defaultdict(int)
 
-        if not self._data.month:
+        if not self.month:
             return rtn
 
-        month = monthname(self._data.month)
+        month = monthname(self.month)
         data = [*self._data.expenses, *self._data.necessary]
         for item in data:
             title = item.get("title", "unknown")
@@ -123,39 +135,73 @@ class PlanCalculateDaySum:
 
         return rtn
 
-    def _return_data(self, data: Union[pl.Series, float]) -> Union[dict, float]:
+    def _return_data(self, data: pl.DataFrame) -> float | dict:
         """If data is polars Serries convert data to dictionary"""
-        select = monthname(self._data.month) if self._data.month else self.std_columns
+        select = monthname(self.month) if self.month else self.std_columns
         data = data.select(select)
-        return data[0, 0] if self._data.month else data.to_dicts()[0]
+        return data.item() if self.month else data.to_dicts()[0]
 
     def _create_df(self) -> pl.DataFrame:
-        expenses_necessary = filter(lambda x: x["necessary"], self._data.expenses)
-        expenses_free = filter(lambda x: not x["necessary"], self._data.expenses)
+        data = list(
+            it.chain(
+                [{"name": "incomes", **d} for d in self._data.incomes],
+                [{"name": "expenses", **d} for d in self._data.expenses],
+                [{"name": "savings", **d} for d in self._data.savings],
+                [{"name": "day_input", **d} for d in self._data.days],
+                [{"name": "necessary", **d} for d in self._data.necessary],
+                [{"name": "month_len", **self._data.month_len}],
+            )
+        )
+        df = pl.DataFrame(data)
 
-        df_data = {
-            "month_len": [monthlen(self._year, x) for x in self.std_columns],
-            "incomes": self._sum_dicts(self._data.incomes),
-            "savings": self._sum_dicts(self._data.savings),
-            "day_input": self._sum_dicts(self._data.days),
-            "necessary": self._sum_dicts(self._data.necessary),
-            "expenses_necessary": self._sum_dicts(list(expenses_necessary)),
-            "expenses_free2": self._sum_dicts(list(expenses_free)),
-        }
-        return pl.DataFrame(df_data)
+        df = self._insert_missing_rows(df)
 
-    def _sum_dicts(self, data: list[dict]) -> list[int]:
-        return [
-            sum(map(lambda x: x.get(month) or 0, data)) for month in self.std_columns
+        with contextlib.suppress(pl.exceptions.ColumnNotFoundError):
+            df = (
+                df.with_columns(
+                    pl.when(pl.col("name") != "expenses")
+                    .then(pl.col("name"))
+                    .when(pl.col("necessary") == True)
+                    .then(pl.lit("expenses_necessary"))
+                    .otherwise(pl.lit("expenses_free2"))
+                    .alias("name")
+                )
+                .group_by("name")
+                .agg(pl.col(pl.Int64).sum())
+                .sort("name")
+            )
+
+        return df.transpose(column_names="name")
+
+    def _insert_missing_rows(self, df: pl.DataFrame) -> pl.DataFrame:
+        names = [
+            "incomes",
+            "savings",
+            "day_input",
+            "necessary",
+            "expenses_necessary",
+            "expenses_free2",
         ]
+        rows = set(df["name"].to_list())
 
-    def _calc_df(self) -> None:
+        empty_row = df.clear(1)
+
+        for name in names:
+            if name not in rows:
+                row = empty_row.with_columns(
+                    name=pl.lit(name),
+                ).fill_null(0)
+                df = df.vstack(row)
+
+        return df
+
+    def _calc_df(self) -> pl.DataFrame:
         df = self._create_df()
 
         return (
             df.lazy()
-            .with_columns(incomes_avg=pl.col.incomes.median())
             .with_columns(
+                incomes_avg=pl.col.incomes.median(),
                 expenses_necessary=(
                     pl.lit(0)
                     + pl.col("expenses_necessary")

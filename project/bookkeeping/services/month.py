@@ -179,7 +179,7 @@ class Objects:
         self.charts: Charts = self._initialize_charts()
 
     def _initialize_plans(self) -> PlanCalculateDaySum:
-        return PlanCalculateDaySum(data=PlanCollectData(self.user, self.user.month))
+        return PlanCalculateDaySum(data=PlanCollectData(self.user), month=self.user.month)
 
     def _initialize_spending(self) -> DaySpending:
         expense = MakeDataFrame(

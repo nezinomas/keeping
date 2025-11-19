@@ -1,4 +1,6 @@
+import polars as pl
 import pytest
+from mock import patch
 
 from ..lib.calc_day_sum import PlanCalculateDaySum
 
@@ -6,10 +8,6 @@ from ..lib.calc_day_sum import PlanCalculateDaySum
 @pytest.fixture(name="data")
 def fixture_data():
     obj = type("PlanCollectData", (object,), {})
-
-    obj.year = 2020
-    obj.month = 0
-
     obj.incomes = [
         {
             "january": 400,
@@ -173,6 +171,21 @@ def fixture_data():
         },
     ]
 
+    obj.month_len = {
+        "january": 31,
+        "february": 29,
+        "march": 31,
+        "april": 30,
+        "may": 31,
+        "june": 30,
+        "july": 31,
+        "august": 31,
+        "september": 30,
+        "october": 31,
+        "november": 30,
+        "december": 31,
+    }
+
     return obj
 
 
@@ -182,13 +195,25 @@ def fixture_data_empty():
         "PlanCollectData",
         (object,),
         {
-            "year": 2020,
-            "month": 0,
             "incomes": [],
             "expenses": [],
             "savings": [],
             "days": [],
             "necessary": [],
+            "month_len": {
+                "january": 31,
+                "february": 29,
+                "march": 31,
+                "april": 30,
+                "may": 31,
+                "june": 30,
+                "july": 31,
+                "august": 31,
+                "september": 30,
+                "october": 31,
+                "november": 30,
+                "december": 31,
+            },
         },
     )
 
@@ -203,15 +228,42 @@ def test_incomes(data):
     actual = PlanCalculateDaySum(data).filter_df("incomes")
 
     assert len(actual) == 12
-    assert round(actual["january"], 2) == 900
+    assert actual["january"] == 900
     assert actual["december"] == 450
 
 
-def test_incomes_with_month(data):
-    data.month = 1
-    actual = PlanCalculateDaySum(data).filter_df("incomes")
+@patch("project.plans.lib.calc_day_sum.PlanCalculateDaySum._calc_df")
+def test_calc_df_called_once_then_dataframe_not_empty(mck, data_empty):
+    mck.return_value = pl.DataFrame([{"name": "A", "january": 66}])
+    obj = PlanCalculateDaySum(data_empty, 1)
 
-    assert round(actual, 2) == 900
+    result1 = obj.filter_df("A")
+    result2 = obj.filter_df("A")
+
+    assert result1 == 66
+    assert result2 == 66
+
+    mck.assert_called_once()
+
+
+@patch("project.plans.lib.calc_day_sum.PlanCalculateDaySum._calc_df")
+def test_calc_df_called_once_then_dataframe_is_empty(mck, data_empty):
+    mck.return_value = pl.DataFrame()
+    obj = PlanCalculateDaySum(data_empty, 1)
+
+    result1 = obj.filter_df("A")
+    result2 = obj.filter_df("B")
+
+    assert result1 == {}
+    assert result2 == {}
+
+    mck.assert_called_once()
+
+
+def test_incomes_with_month(data):
+    actual = PlanCalculateDaySum(data, 1).filter_df("incomes")
+
+    assert actual == 900
 
 
 def test_incomes_no_data(data_empty):
@@ -231,9 +283,9 @@ def test_savings(data):
 
 def test_savings_with_month(data):
     data.month = 1
-    actual = PlanCalculateDaySum(data).filter_df("savings")
+    actual = PlanCalculateDaySum(data, 1).filter_df("savings")
 
-    assert round(actual, 2) == 190
+    assert actual == 190
 
 
 def test_expenses_free(data):
@@ -253,10 +305,9 @@ def test_expenses_free(data):
     ],
 )
 def test_expenses_free_with_month(month, expect, data):
-    data.month = month
-    actual = PlanCalculateDaySum(data).filter_df("expenses_free")
+    actual = PlanCalculateDaySum(data, month).filter_df("expenses_free")
 
-    assert round(actual, 2) == expect
+    assert actual == expect
 
 
 def test_expenses_necessary(data):
@@ -276,10 +327,9 @@ def test_expenses_necessary(data):
     ],
 )
 def test_expenses_necessary_with_month(month, expect, data):
-    data.month = month
-    actual = PlanCalculateDaySum(data).filter_df("expenses_necessary")
+    actual = PlanCalculateDaySum(data, month).filter_df("expenses_necessary")
 
-    assert round(actual, 2) == expect
+    assert actual == expect
 
 
 @pytest.mark.parametrize(
@@ -291,10 +341,9 @@ def test_expenses_necessary_with_month(month, expect, data):
     ],
 )
 def test_expenses_full(month, expect, data):
-    data.month = month
-    actual = PlanCalculateDaySum(data).filter_df("expenses_full")
+    actual = PlanCalculateDaySum(data, month).filter_df("expenses_full")
 
-    assert round(actual, 2) == expect
+    assert actual == expect
 
 
 @pytest.mark.parametrize(
@@ -306,10 +355,9 @@ def test_expenses_full(month, expect, data):
     ],
 )
 def test_expenses_remains(month, expect, data):
-    data.month = month
-    actual = PlanCalculateDaySum(data).filter_df("expenses_remains")
+    actual = PlanCalculateDaySum(data, month).filter_df("expenses_remains")
 
-    assert round(actual, 2) == expect
+    assert actual == expect
 
 
 def test_day_calced(data):
@@ -329,8 +377,7 @@ def test_day_calced(data):
     ],
 )
 def test_day_calced_with_month(month, expect, data):
-    data.month = month
-    actual = PlanCalculateDaySum(data).filter_df("day_calced")
+    actual = PlanCalculateDaySum(data, month).filter_df("day_calced")
 
     assert round(actual, 2) == expect
 
@@ -352,8 +399,7 @@ def test_day_input(data):
     ],
 )
 def test_day_input_with_month(month, expect, data):
-    data.month = month
-    actual = PlanCalculateDaySum(data).filter_df("day_input")
+    actual = PlanCalculateDaySum(data, month).filter_df("day_input")
 
     assert round(actual, 2) == expect
 
@@ -399,8 +445,7 @@ def test_remains_only_necessary_expenses(data):
     ],
 )
 def test_remains_with_month(month, expect, data):
-    data.month = month
-    actual = PlanCalculateDaySum(data).filter_df("remains")
+    actual = PlanCalculateDaySum(data, month).filter_df("remains")
 
     assert round(actual, 2) == expect
 
@@ -422,8 +467,7 @@ def test_additional_necessary(data):
     ],
 )
 def test_additional_necessary_with_month(month, expect, data):
-    data.month = month
-    actual = PlanCalculateDaySum(data).filter_df("necessary")
+    actual = PlanCalculateDaySum(data, month).filter_df("necessary")
 
     assert round(actual, 2) == expect
 
@@ -500,8 +544,7 @@ def test_plans_stats_remains(data):
 
 
 def test_targets(data):
-    data.month = 2
-    obj = PlanCalculateDaySum(data)
+    obj = PlanCalculateDaySum(data, 2)
 
     actual = obj.targets
 
@@ -513,8 +556,7 @@ def test_targets(data):
 def test_targets_with_same_title_for_expense_and_necessary(data):
     data.necessary[0]["title"] = "T1"
 
-    data.month = 2
-    obj = PlanCalculateDaySum(data)
+    obj = PlanCalculateDaySum(data, 2)
 
     actual = obj.targets
 
@@ -532,12 +574,11 @@ def test_targets_no_month(data):
 
 
 def test_target_with_nones(data_empty):
-    data_empty.month = 2
     data_empty.expenses = [
         {"january": 0, "february": 0, "necessary": False, "title": "T1"}
     ]
 
-    obj = PlanCalculateDaySum(data_empty)
+    obj = PlanCalculateDaySum(data_empty, 2)
 
     actual = obj.targets
 
