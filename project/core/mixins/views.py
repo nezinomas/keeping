@@ -59,7 +59,7 @@ class AddUserToKwargsMixin:
 
         class UserAwareForm(base_form):
             def __init__(self, *args, **form_kwargs):
-                form_kwargs = get_kwargs(**form_kwargs) # using captured closure
+                form_kwargs = get_kwargs(**form_kwargs)  # using captured closure
                 super().__init__(*args, **form_kwargs)
 
         return UserAwareForm

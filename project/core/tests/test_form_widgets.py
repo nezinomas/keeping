@@ -1,5 +1,6 @@
-from mock import patch
 from django.utils.translation import gettext_lazy as _
+from mock import patch
+
 from ..lib.form_widgets import DatePickerWidget, YearPickerWidget
 
 

@@ -1,8 +1,8 @@
 import pytest
 from django.contrib.auth.models import AnonymousUser
 
+from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 from ..services.model_services import ModelService
-from ..models import DayPlan, IncomePlan, SavingPlan, ExpensePlan, NecessaryPlan
 
 
 @pytest.mark.parametrize(
@@ -50,5 +50,3 @@ def test_init_raises_if_anonymous_user(model):
 def test_init_succeeds_with_real_user(model, main_user):
     # No need to save — just check __init__
     ModelService(model, user=main_user)
-
-

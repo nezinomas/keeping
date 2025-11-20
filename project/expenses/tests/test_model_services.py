@@ -1,7 +1,11 @@
 import pytest
 from django.contrib.auth.models import AnonymousUser
 
-from ..services.model_services import ExpenseModelService, ExpenseNameModelService, ExpenseTypeModelService
+from ..services.model_services import (
+    ExpenseModelService,
+    ExpenseNameModelService,
+    ExpenseTypeModelService,
+)
 
 
 def test_expense_init_raises_if_no_user():

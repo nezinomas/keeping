@@ -6,20 +6,19 @@ from typing import List, Tuple
 from ...users.models import User
 from .translation import month_names
 
-
 MOTHS_WITH_DAYS_GENERIC = {
-        "january": 31,
-        "february": 29,
-        "march": 31,
-        "april": 30,
-        "may": 31,
-        "june": 30,
-        "july": 31,
-        "august": 31,
-        "september": 30,
-        "october": 31,
-        "november": 30,
-        "december": 31,
+    "january": 31,
+    "february": 29,
+    "march": 31,
+    "april": 30,
+    "may": 31,
+    "june": 30,
+    "july": 31,
+    "august": 31,
+    "september": 30,
+    "october": 31,
+    "november": 30,
+    "december": 31,
 }
 
 

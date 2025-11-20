@@ -1,7 +1,11 @@
 import pytest
 from django.contrib.auth.models import AnonymousUser
 
-from ..services.model_services import SavingModelService, SavingTypeModelService, SavingBalanceModelService
+from ..services.model_services import (
+    SavingBalanceModelService,
+    SavingModelService,
+    SavingTypeModelService,
+)
 
 
 def test_saving_init_raises_if_no_user():

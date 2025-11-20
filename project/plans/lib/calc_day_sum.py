@@ -97,8 +97,9 @@ class PlanCalculateDaySum:
         Dynamically provide access to calculated plan rows.
 
         Attributes like ``incomes_avg``, ``day_calced``, ``expenses_necessary``, etc.
-        are not stored as individual instance attributes. Instead, when first accessed
-        they are resolved from the internal DataFrame that is built lazily in ``_calc_df()``.
+        are not stored as individual instance attributes. Instead, when first
+        accessed they are resolved from the internal DataFrame that is built
+        lazily in ``_calc_df()``.
 
         The mapping is driven by the ``Row`` StrEnum: the attribute name is upper-cased
         and used to look up the corresponding enum member. This keeps the public API
