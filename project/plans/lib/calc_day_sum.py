@@ -115,10 +115,6 @@ class PlanCalculateDaySum:
                 f"{self.__class__.__name__} has no attribute '{name}'"
             ) from exc
 
-    @cached_property
-    def month_len(self) -> dict | float:
-        return self._get_row(Row.MONTH_LEN)
-
     @property
     def plans_stats(self):
         Items = namedtuple("Items", ["type", *MONTH_NAMES])
