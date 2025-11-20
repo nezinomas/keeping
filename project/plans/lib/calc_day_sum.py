@@ -2,6 +2,7 @@ import contextlib
 import itertools as it
 from collections import namedtuple
 from dataclasses import dataclass, field
+from functools import cached_property
 
 import polars as pl
 from django.db.models import F
@@ -70,50 +71,74 @@ class PlanCalculateDaySum:
         self.df: pl.DataFrame = pl.DataFrame()
         self.calculated: bool = False
 
-    def filter_df(self, name: str) -> dict | float:
-        if not self.calculated and self.df.is_empty():
-            self.df = self._calc_df()
-            self.calculated = True
+    @cached_property
+    def incomes(self) -> dict | float:
+        return self._get_row("incomes")
 
-        if self.df.is_empty() or name not in self.df["name"]:
-            return {}
+    @cached_property
+    def incomes_avg(self) -> dict | float:
+        return self._get_row("incomes_avg")
 
-        data = self.df.filter(pl.col("name") == name)
+    @cached_property
+    def savings(self) -> dict | float:
+        return self._get_row("savings")
 
-        return self._return_data(data)
+    @cached_property
+    def expenses_necessary(self) -> dict | float:
+        return self._get_row("expenses_necessary")
+
+    @cached_property
+    def expenses_free(self) -> dict | float:
+        return self._get_row("expenses_free")
+
+    @cached_property
+    def expenses_free2(self) -> dict | float:
+        return self._get_row("expenses_free2")
+
+    @cached_property
+    def expenses_full(self) -> dict | float:
+        return self._get_row("expenses_full")
+
+    @cached_property
+    def expenses_remains(self) -> dict | float:
+        return self._get_row("expenses_remains")
+
+    @cached_property
+    def day_calced(self) -> dict | float:
+        return self._get_row("day_calced")
+
+    @cached_property
+    def day_input(self) -> dict | float:
+        return self._get_row("day_input")
+
+    @cached_property
+    def remains(self) -> dict | float:
+        return self._get_row("remains")
 
     @property
     def plans_stats(self):
         Items = namedtuple("Items", ["type", *MONTH_NAMES])
 
-        _incomes = _("Incomes")
-        _median = _("median")
-        _necessary = _("Necessary expenses")
-        _remain = _("Remains for everyday")
-        _full = _("Full expenses")
-        _residual = _("Residual")
-        _sum_per_day = _("Sum per day")
-        _days = _("days in month")
-        _from_tables = _("from tables above")
-
         return [
-            Items(type=f"1. {_incomes} ({_median})", **self.filter_df("incomes_avg")),
-            Items(type=f"2. {_necessary}", **self.filter_df("expenses_necessary")),
-            Items(type=f"3. {_remain} (1 - 2)", **self.filter_df("expenses_free")),
+            Items(type=f"1. {_('Incomes')} ({_('median')})", **self.incomes_avg),
+            Items(type=f"2. {_('Necessary expenses')}", **self.expenses_necessary),
+            Items(type=f"3. {_('Remains for everyday')} (1 - 2)", **self.expenses_free),
             Items(
-                type=f"4. {_remain} ({_from_tables})",
-                **self.filter_df("expenses_free2"),
+                type=f"4. {_('Remains for everyday')} ({_('from tables above')})",
+                **self.expenses_free2,
             ),
-            Items(type=f"5. {_full} (1 + 4)", **self.filter_df("expenses_full")),
+            Items(type=f"5. {_('Full expenses')} (1 + 4)", **self.expenses_full),
             Items(
-                type=f"6. {_incomes} - {_full} (1 - 5)",
-                **self.filter_df("expenses_remains"),
-            ),
-            Items(
-                type=f"7. {_sum_per_day} (3 / {_days})", **self.filter_df("day_calced")
+                type=f"6. {_('Incomes')} - {_('Full expenses')} (1 - 5)",
+                **self.expenses_remains,
             ),
             Items(
-                type=f"8. {_residual} (3 - 7 * {_days})", **self.filter_df("remains")
+                type=f"7. {_('Sum per day')} (3 / {_('days in month')})",
+                **self.day_calced,
+            ),
+            Items(
+                type=f"8. {_('Residual')} (3 - 7 * {_('days in month')})",
+                **self.remains,
             ),
         ]
 
@@ -140,6 +165,18 @@ class PlanCalculateDaySum:
             .sort("title")
         )
         return dict(zip(df["title"], df[month]))
+
+    def _get_row(self, name: str) -> dict | float:
+        if not self.calculated and self.df.is_empty():
+            self.df = self._calc_df()
+            self.calculated = True
+
+        if self.df.is_empty() or name not in self.df["name"]:
+            return {}
+
+        data = self.df.filter(pl.col("name") == name)
+
+        return self._return_data(data)
 
     def _return_data(self, data: pl.DataFrame) -> float | dict:
         """If data is polars Serries convert data to dictionary"""

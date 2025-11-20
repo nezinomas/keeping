@@ -192,8 +192,8 @@ class Objects:
         return DaySpending(
             expense=expense,
             necessary=self.data.necessary_expense_types,
-            per_day=self.plans.filter_df("day_input"),
-            free=self.plans.filter_df("expenses_free"),
+            per_day=self.plans.day_input,
+            free=self.plans.expenses_free,
         )
 
     def _initialize_main_table(self) -> MainTable:
@@ -230,16 +230,16 @@ class Objects:
         )
 
         plan = Info(
-            income=self.plans.filter_df("incomes"),
+            income=self.plans.incomes,
             expense=(
                 0
-                + self.plans.filter_df("expenses_necessary")
-                + self.plans.filter_df("expenses_free")
-                - self.plans.filter_df("savings")
+                + self.plans.expenses_necessary
+                + self.plans.expenses_free
+                - self.plans.savings
             ),
-            saving=self.plans.filter_df("savings"),
-            per_day=self.plans.filter_df("day_input"),
-            balance=self.plans.filter_df("remains"),
+            saving=self.plans.savings,
+            per_day=self.plans.day_input,
+            balance=self.plans.remains,
         )
 
         delta = plan - fact
