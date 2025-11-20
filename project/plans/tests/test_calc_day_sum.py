@@ -546,7 +546,7 @@ def test_plans_stats_remains(data):
 def test_targets(data):
     obj = PlanCalculateDaySum(data, 2)
 
-    actual = obj.targets
+    actual = obj.monthly_plan_by_category
 
     expect = {"T1": 120, "T2": 140, "T3": 160, "T4": 180, "NNN": 100, "Taupymas": 200}
 
@@ -558,7 +558,7 @@ def test_targets_with_same_title_for_expense_and_necessary(data):
 
     obj = PlanCalculateDaySum(data, 2)
 
-    actual = obj.targets
+    actual = obj.monthly_plan_by_category
 
     expect = {"T1": 220, "T2": 140, "T3": 160, "T4": 180, "Taupymas": 200}
 
@@ -568,7 +568,7 @@ def test_targets_with_same_title_for_expense_and_necessary(data):
 def test_targets_no_month(data):
     obj = PlanCalculateDaySum(data)
 
-    actual = obj.targets
+    actual = obj.monthly_plan_by_category
 
     assert not actual
 
@@ -580,7 +580,7 @@ def test_target_with_nones(data_empty):
 
     obj = PlanCalculateDaySum(data_empty, 2)
 
-    actual = obj.targets
+    actual = obj.monthly_plan_by_category
 
     expect = {"T1": 0}
 

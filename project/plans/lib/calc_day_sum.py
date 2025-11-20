@@ -118,7 +118,7 @@ class PlanCalculateDaySum:
         ]
 
     @property
-    def targets(self) -> dict:
+    def monthly_plan_by_category(self) -> dict:
         pl.Config(fmt_str_lengths=50)
         pl.Config(tbl_cols=-1)
         pl.Config(set_tbl_width_chars=250)

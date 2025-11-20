@@ -212,7 +212,7 @@ class Objects:
 
     def _initialize_charts(self) -> Charts:
         return Charts(
-            targets=self.plans.targets,
+            targets=self.plans.monthly_plan_by_category,
             totals=self.main_table.total_row,
         )
 
