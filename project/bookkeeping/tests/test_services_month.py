@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 import time_machine
-from mock import MagicMock, patch
+from mock import MagicMock, PropertyMock, patch
 
 from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
@@ -23,17 +23,13 @@ def test_info_context(
     obj = Objects(main_user, MagicMock())
     obj.data = MagicMock(incomes=15)
 
-    # obj.plans side effect for method filter_df is called 7 times
-    # side effect return values are
-    # 0) incomes=100,
-    # 1) expense_necessary=5,
-    # 2) expense_free=88,
-    # 3) savings=12,
-    # 4) savings=12,
-    # 5) day_input=3,
-    # 6) remains=-85,
     obj.plans = MagicMock()
-    obj.plans.filter_df.side_effect = [100, 5, 88, 12, 12, 3, -85]
+    type(obj.plans).incomes = PropertyMock(return_value=100)
+    type(obj.plans).expenses_necessary = PropertyMock(return_value=5)
+    type(obj.plans).expenses_free = PropertyMock(return_value=88)
+    type(obj.plans).savings = PropertyMock(return_value=12)
+    type(obj.plans).day_input = PropertyMock(return_value=3)
+    type(obj.plans).remains = PropertyMock(return_value=-85)
 
     obj.main_table = MagicMock(total_row={"Viso": 5, "Taupymas": 12})
     obj.spending = MagicMock(avg_per_day=2)
