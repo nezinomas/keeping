@@ -3,7 +3,6 @@ import itertools as it
 from collections import namedtuple
 from dataclasses import dataclass, field
 from enum import StrEnum
-from functools import cached_property
 
 import polars as pl
 from django.db.models import F
