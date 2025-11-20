@@ -68,9 +68,11 @@ class PlanCollectData:
         self.savings = (
             ModelService(SavingPlan, self.user).year(self.year).values(*MONTH_NAMES)
         )
+
         self.days = (
             ModelService(DayPlan, self.user).year(self.year).values(*MONTH_NAMES)
         )
+
         self.necessary = (
             ModelService(NecessaryPlan, self.user)
             .year(self.year)
