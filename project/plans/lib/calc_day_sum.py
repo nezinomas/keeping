@@ -3,7 +3,6 @@ import itertools as it
 from collections import namedtuple
 from dataclasses import dataclass, field
 from enum import StrEnum
-from functools import cached_property
 
 import polars as pl
 from django.db.models import F
@@ -69,9 +68,11 @@ class PlanCollectData:
         self.savings = (
             ModelService(SavingPlan, self.user).year(self.year).values(*MONTH_NAMES)
         )
+
         self.days = (
             ModelService(DayPlan, self.user).year(self.year).values(*MONTH_NAMES)
         )
+
         self.necessary = (
             ModelService(NecessaryPlan, self.user)
             .year(self.year)
@@ -115,10 +116,6 @@ class PlanCalculateDaySum:
             raise AttributeError(
                 f"{self.__class__.__name__} has no attribute '{name}'"
             ) from exc
-
-    @cached_property
-    def month_len(self) -> dict | float:
-        return self._get_row(Row.MONTH_LEN)
 
     @property
     def plans_stats(self):
@@ -178,8 +175,20 @@ class PlanCalculateDaySum:
 
         return self._return_data(data)
 
-    def _return_data(self, data: pl.DataFrame) -> float | dict:
-        """If data is polars Serries convert data to dictionary"""
+    def _return_data(self, data: pl.DataFrame) -> int | dict:
+        """
+        Convert a filtered Polars DataFrame row into the appropriate return format.
+
+        Behaviour depends on whether a specific ``month`` was requested during
+        instantiation of the class:
+
+        - If ``self.month`` is set (e.g. ``month=1`` for January):
+        Returns a single ``int`` – the value for the selected month.
+
+        - If ``self.month`` is ``None``:
+        Returns a ``dict`` mapping month names to their values:
+        ``{"january": 1500, "february": 1600, ..., "december": 1400}``.
+        """
         select = monthname(self.month) if self.month else MONTH_NAMES
         data = data.select(select)
         return data.item() if self.month else data.to_dicts()[0]
