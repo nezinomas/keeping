@@ -23,11 +23,8 @@ class DaySpending(BalanceBase):
         self._spending = self._calculate_spending(expense.data, expense.exceptions)
 
     @property
-    def spending(self) -> list[dict]:
-        if self._spending.is_empty():
-            return self._spending
-
-        return self._spending.to_dicts()
+    def spending(self) -> list:
+        return [] if self._spending.is_empty() else self._spending.to_dicts()
 
     @property
     def avg_per_day(self) -> float:
@@ -65,10 +62,10 @@ class DaySpending(BalanceBase):
             .collect()
         )
 
-    def _remove_necessary_if_any(self, df: pl.DataFrame) -> pl.Expr:
+    def _remove_necessary_if_any(self, df: pl.DataFrame) -> pl.DataFrame:
         return df.select(pl.exclude(self._necessary)) if self._necessary else df
 
-    def _calculate_spending_columns(self, df: pl.DataFrame) -> pl.Expr:
+    def _calculate_spending_columns(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return (
             df.with_columns(day=(self._per_day - pl.col("total")))
             .with_columns(
