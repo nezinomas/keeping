@@ -111,7 +111,9 @@ class PlanCalculateDaySum:
         try:
             return self._get_row(Row[name.upper()])
         except KeyError as exc:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{name}'") from exc
+            raise AttributeError(
+                f"{self.__class__.__name__} has no attribute '{name}'"
+            ) from exc
 
     @cached_property
     def month_len(self) -> dict | float:
@@ -181,32 +183,30 @@ class PlanCalculateDaySum:
         data = data.select(select)
         return data.item() if self.month else data.to_dicts()[0]
 
-    def _create_df(self) -> pl.DataFrame:
-        data = list(
+    def _create_data(self):
+        expenses_necessary, expenses_free2 = [], []
+
+        for row in self._data.expenses:
+            if row.get("necessary"):
+                expenses_necessary.append({"name": Row.EXPENSES_NECESSARY, **row})
+            else:
+                expenses_free2.append({"name": Row.EXPENSES_FREE2, **row})
+
+        return list(
             it.chain(
                 [{"name": Row.INCOMES, **d} for d in self._data.incomes],
                 [{"name": Row.SAVINGS, **d} for d in self._data.savings],
                 [{"name": Row.DAY_INPUT, **d} for d in self._data.days],
                 [{"name": Row.NECESSARY, **d} for d in self._data.necessary],
                 [{"name": Row.MONTH_LEN, **self._data.month_len}],
-                [
-                    {
-                        "name": Row.EXPENSES_NECESSARY,
-                        **{k: v for k, v in d.items() if k in MONTH_NAMES},
-                    }
-                    for d in self._data.expenses
-                    if d.get("necessary")
-                ],
-                [
-                    {
-                        "name": Row.EXPENSES_FREE2,
-                        **{k: v for k, v in d.items() if k in MONTH_NAMES},
-                    }
-                    for d in self._data.expenses
-                    if not d.get("necessary")
-                ],
+                expenses_necessary,
+                expenses_free2,
             )
         )
+
+    def _create_df(self) -> pl.DataFrame:
+        data = self._create_data()
+
         df = pl.DataFrame(data)
 
         df = self._insert_missing_rows(df)
