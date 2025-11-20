@@ -1,6 +1,6 @@
 import contextlib
 import itertools as it
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 from dataclasses import dataclass, field
 
 import polars as pl
@@ -132,7 +132,6 @@ class PlanCalculateDaySum:
 
         df = (
             pl.DataFrame(data)
-            # .drop("necessary")
             .with_columns(pl.col("title").fill_null(_("Savings")))
             .fill_null(0)
             .group_by("title")
