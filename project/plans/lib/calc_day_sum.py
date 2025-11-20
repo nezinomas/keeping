@@ -2,6 +2,7 @@ import contextlib
 import itertools as it
 from collections import namedtuple
 from dataclasses import dataclass, field
+from enum import StrEnum
 from functools import cached_property
 
 import polars as pl
@@ -14,6 +15,26 @@ from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 from ..services.model_services import ModelService
 
 MONTH_NAMES = monthnames()
+
+
+class Row(StrEnum):
+    """All possible row names in the calculation dataframe."""
+
+    INCOMES = "incomes"
+    SAVINGS = "savings"
+    DAY_INPUT = "day_input"
+    NECESSARY = "necessary"
+    MONTH_LEN = "month_len"
+
+    # Calculated / derived rows
+    INCOMES_AVG = "incomes_avg"
+    EXPENSES_NECESSARY = "expenses_necessary"
+    EXPENSES_FREE = "expenses_free"
+    EXPENSES_FREE2 = "expenses_free2"
+    EXPENSES_FULL = "expenses_full"
+    EXPENSES_REMAINS = "expenses_remains"
+    DAY_CALCED = "day_calced"
+    REMAINS = "remains"
 
 
 @dataclass
@@ -73,47 +94,47 @@ class PlanCalculateDaySum:
 
     @cached_property
     def incomes(self) -> dict | float:
-        return self._get_row("incomes")
+        return self._get_row(Row.INCOMES)
 
     @cached_property
     def incomes_avg(self) -> dict | float:
-        return self._get_row("incomes_avg")
+        return self._get_row(Row.INCOMES_AVG)
 
     @cached_property
     def savings(self) -> dict | float:
-        return self._get_row("savings")
+        return self._get_row(Row.SAVINGS)
 
     @cached_property
     def expenses_necessary(self) -> dict | float:
-        return self._get_row("expenses_necessary")
+        return self._get_row(Row.EXPENSES_NECESSARY)
 
     @cached_property
     def expenses_free(self) -> dict | float:
-        return self._get_row("expenses_free")
+        return self._get_row(Row.EXPENSES_FREE)
 
     @cached_property
     def expenses_free2(self) -> dict | float:
-        return self._get_row("expenses_free2")
+        return self._get_row(Row.EXPENSES_FREE2)
 
     @cached_property
     def expenses_full(self) -> dict | float:
-        return self._get_row("expenses_full")
+        return self._get_row(Row.EXPENSES_FULL)
 
     @cached_property
     def expenses_remains(self) -> dict | float:
-        return self._get_row("expenses_remains")
+        return self._get_row(Row.EXPENSES_REMAINS)
 
     @cached_property
     def day_calced(self) -> dict | float:
-        return self._get_row("day_calced")
+        return self._get_row(Row.DAY_CALCED)
 
     @cached_property
     def day_input(self) -> dict | float:
-        return self._get_row("day_input")
+        return self._get_row(Row.DAY_INPUT)
 
     @cached_property
     def remains(self) -> dict | float:
-        return self._get_row("remains")
+        return self._get_row(Row.REMAINS)
 
     @property
     def plans_stats(self):
@@ -187,12 +208,12 @@ class PlanCalculateDaySum:
     def _create_df(self) -> pl.DataFrame:
         data = list(
             it.chain(
-                [{"name": "incomes", **d} for d in self._data.incomes],
+                [{"name": Row.INCOMES, **d} for d in self._data.incomes],
                 [{"name": "expenses", **d} for d in self._data.expenses],
-                [{"name": "savings", **d} for d in self._data.savings],
-                [{"name": "day_input", **d} for d in self._data.days],
-                [{"name": "necessary", **d} for d in self._data.necessary],
-                [{"name": "month_len", **self._data.month_len}],
+                [{"name": Row.SAVINGS, **d} for d in self._data.savings],
+                [{"name": Row.DAY_INPUT, **d} for d in self._data.days],
+                [{"name": Row.NECESSARY, **d} for d in self._data.necessary],
+                [{"name": Row.MONTH_LEN, **self._data.month_len}],
             )
         )
         df = pl.DataFrame(data)
@@ -205,37 +226,33 @@ class PlanCalculateDaySum:
                     pl.when(pl.col("name") != "expenses")
                     .then(pl.col("name"))
                     .when(pl.col("necessary") == True)
-                    .then(pl.lit("expenses_necessary"))
-                    .otherwise(pl.lit("expenses_free2"))
+                    .then(pl.lit(Row.EXPENSES_NECESSARY))
+                    .otherwise(pl.lit(Row.EXPENSES_FREE2))
                     .alias("name")
                 )
                 .group_by("name")
                 .agg(pl.col(pl.Int64).sum())
                 .sort("name")
             )
-
         return df.transpose(column_names="name")
 
     def _insert_missing_rows(self, df: pl.DataFrame) -> pl.DataFrame:
-        names = [
-            "incomes",
-            "savings",
-            "day_input",
-            "necessary",
-            "expenses_necessary",
-            "expenses_free2",
+        required_rows = [
+            Row.INCOMES,
+            Row.SAVINGS,
+            Row.DAY_INPUT,
+            Row.NECESSARY,
+            Row.EXPENSES_NECESSARY,
+            Row.EXPENSES_FREE2,
         ]
-        rows = set(df["name"].to_list())
-
+        current_rows = set(df["name"].to_list())
         empty_row = df.clear(1)
 
-        for name in names:
-            if name not in rows:
-                row = empty_row.with_columns(
-                    name=pl.lit(name),
-                ).fill_null(0)
-                df = df.vstack(row)
-
+        for row_name in required_rows:
+            if row_name not in current_rows:
+                df = df.vstack(
+                    empty_row.with_columns(pl.lit(row_name).alias("name")).fill_null(0)
+                )
         return df
 
     def _calc_df(self) -> pl.DataFrame:
@@ -244,28 +261,34 @@ class PlanCalculateDaySum:
         return (
             df.lazy()
             .with_columns(
-                incomes_avg=pl.col.incomes.median(),
+                incomes_avg=pl.col(Row.INCOMES).median(),
                 expenses_necessary=(
                     pl.lit(0)
-                    + pl.col("expenses_necessary")
-                    + pl.col("savings")
-                    + pl.col("necessary")
+                    + pl.col(Row.EXPENSES_NECESSARY)
+                    + pl.col(Row.SAVINGS)
+                    + pl.col(Row.NECESSARY)
                 ),
             )
             .with_columns(
-                expenses_free=(pl.col.incomes_avg - pl.col.expenses_necessary)
+                expenses_free=(pl.col(Row.INCOMES_AVG) - pl.col(Row.EXPENSES_NECESSARY))
             )
             .with_columns(
-                expenses_full=(pl.col("expenses_necessary") + pl.col("expenses_free2"))
-            )
-            .with_columns(day_calced=(pl.col("expenses_free") / pl.col("month_len")))
-            .with_columns(
-                remains=(
-                    pl.col("expenses_free")
-                    - (pl.col("day_input") * pl.col("month_len"))
+                expenses_full=(
+                    pl.col(Row.EXPENSES_NECESSARY) + pl.col(Row.EXPENSES_FREE2)
                 )
             )
-            .with_columns(expenses_remains=(pl.col.incomes_avg - pl.col.expenses_full))
+            .with_columns(
+                day_calced=(pl.col(Row.EXPENSES_FREE) / pl.col(Row.MONTH_LEN))
+            )
+            .with_columns(
+                remains=(
+                    pl.col(Row.EXPENSES_FREE)
+                    - (pl.col(Row.DAY_INPUT) * pl.col(Row.MONTH_LEN))
+                )
+            )
+            .with_columns(
+                expenses_remains=(pl.col(Row.INCOMES_AVG) - pl.col(Row.EXPENSES_FULL))
+            )
             .collect()
             .transpose(
                 include_header=True, header_name="name", column_names=MONTH_NAMES
