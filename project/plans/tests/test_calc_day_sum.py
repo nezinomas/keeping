@@ -548,7 +548,7 @@ def test_targets(data):
 
     actual = obj.targets
 
-    expect = {"T1": 120, "T2": 140, "T3": 160, "T4": 180, "NNN": 100}
+    expect = {"T1": 120, "T2": 140, "T3": 160, "T4": 180, "NNN": 100, "Taupymas": 200}
 
     assert actual == expect
 
@@ -560,7 +560,7 @@ def test_targets_with_same_title_for_expense_and_necessary(data):
 
     actual = obj.targets
 
-    expect = {"T1": 220, "T2": 140, "T3": 160, "T4": 180}
+    expect = {"T1": 220, "T2": 140, "T3": 160, "T4": 180, "Taupymas": 200}
 
     assert actual == expect
 

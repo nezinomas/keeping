@@ -84,8 +84,8 @@ class Charts:
 
         for entry in data:
             category = entry["name"]
-            target = float(self.targets.get(category, 0))
-            fact = float(entry["y"])
+            target = self.targets.get(category, 0)
+            fact = entry["y"]
 
             categories.append(category.upper())
             data_target.append(target)
@@ -179,7 +179,9 @@ class Objects:
         self.charts: Charts = self._initialize_charts()
 
     def _initialize_plans(self) -> PlanCalculateDaySum:
-        return PlanCalculateDaySum(data=PlanCollectData(self.user), month=self.user.month)
+        return PlanCalculateDaySum(
+            data=PlanCollectData(self.user), month=self.user.month
+        )
 
     def _initialize_spending(self) -> DaySpending:
         expense = MakeDataFrame(
@@ -211,9 +213,7 @@ class Objects:
 
     def _initialize_charts(self) -> Charts:
         return Charts(
-            targets=(
-                self.plans.targets | {_("Savings"): self.plans.filter_df("savings")}
-            ),
+            targets=self.plans.targets,
             totals=self.main_table.total_row,
         )
 

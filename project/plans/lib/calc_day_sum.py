@@ -7,7 +7,7 @@ import polars as pl
 from django.db.models import F
 from django.utils.translation import gettext as _
 
-from ...core.lib.date import monthlen, monthname, monthnames, MOTHS_WITH_DAYS_GENERIC
+from ...core.lib.date import MOTHS_WITH_DAYS_GENERIC, monthlen, monthname, monthnames
 from ...users.models import User
 from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 from ..services.model_services import ModelService
@@ -119,19 +119,27 @@ class PlanCalculateDaySum:
 
     @property
     def targets(self) -> dict:
-        rtn = defaultdict(int)
-
-        if not self.month:
-            return rtn
+        pl.Config(fmt_str_lengths=50)
+        pl.Config(tbl_cols=-1)
+        pl.Config(set_tbl_width_chars=250)
+        pl.Config.set_tbl_rows(100)
 
         month = monthname(self.month)
-        data = [*self._data.expenses, *self._data.necessary]
-        for item in data:
-            title = item.get("title", "unknown")
-            val = item.get(month, 0) or 0
-            rtn[title] += val
+        data = [*self._data.expenses, *self._data.necessary, *self._data.savings]
 
-        return rtn
+        if not self.month or not data:
+            return {}
+
+        df = (
+            pl.DataFrame(data)
+            # .drop("necessary")
+            .with_columns(pl.col("title").fill_null(_("Savings")))
+            .fill_null(0)
+            .group_by("title")
+            .agg(pl.col(pl.Int64).sum())
+            .sort("title")
+        )
+        return dict(zip(df["title"], df[month]))
 
     def _return_data(self, data: pl.DataFrame) -> float | dict:
         """If data is polars Serries convert data to dictionary"""
