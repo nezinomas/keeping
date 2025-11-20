@@ -585,3 +585,64 @@ def test_target_with_nones(data_empty):
     expect = {"T1": 0}
 
     assert actual == expect
+
+
+def test_properties_incomes(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert obj.incomes == 900
+
+
+def test_properties_incomes_avg(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert obj.incomes_avg == 450
+
+
+def test_properties_savings(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert obj.savings == 190
+
+
+def test_properties_expenses_necessary(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert obj.expenses_necessary == 490
+
+
+def test_properties_expenses_free(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert obj.expenses_free == -40
+
+
+def test_properties_expenses_free2(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert obj.expenses_free2 == 260
+
+
+def test_properties_expenses_remains(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert obj.expenses_remains == -300
+
+
+def test_properties_day_calced(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert round(obj.day_calced, 2) == -1.29
+
+
+def test_properties_day_input(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert obj.day_input == 25
+
+
+def test_properties_remains(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert obj.remains == -815
+
+
+def test_properties_month_len(data):
+    obj = PlanCalculateDaySum(data, 1)
+    assert obj.month_len == 31
+
+
+@pytest.mark.xfail
+def test_properties_no_exists(data):
+    obj = PlanCalculateDaySum(data, 1)
+    obj.X

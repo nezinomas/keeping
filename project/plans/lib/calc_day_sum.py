@@ -92,49 +92,30 @@ class PlanCalculateDaySum:
         self.df: pl.DataFrame = pl.DataFrame()
         self.calculated: bool = False
 
-    @cached_property
-    def incomes(self) -> dict | float:
-        return self._get_row(Row.INCOMES)
+    def __getattr__(self, name: str):
+        """
+        Dynamically provide access to calculated plan rows.
+
+        Attributes like ``incomes_avg``, ``day_calced``, ``expenses_necessary``, etc.
+        are not stored as individual instance attributes. Instead, when first accessed
+        they are resolved from the internal DataFrame that is built lazily in ``_calc_df()``.
+
+        The mapping is driven by the ``Row`` StrEnum: the attribute name is upper-cased
+        and used to look up the corresponding enum member. This keeps the public API
+        concise and DRY while guaranteeing a one-to-one relationship with the enum
+        that is the single source of truth for row identifiers.
+
+        If the name does not match any ``Row`` member, a standard ``AttributeError``
+        is raised so that typos are caught early and IDE tooling remains accurate.
+        """
+        try:
+            return self._get_row(Row[name.upper()])
+        except KeyError as exc:
+            raise AttributeError(f"{self.__class__.__name__} has no attribute '{name}'") from exc
 
     @cached_property
-    def incomes_avg(self) -> dict | float:
-        return self._get_row(Row.INCOMES_AVG)
-
-    @cached_property
-    def savings(self) -> dict | float:
-        return self._get_row(Row.SAVINGS)
-
-    @cached_property
-    def expenses_necessary(self) -> dict | float:
-        return self._get_row(Row.EXPENSES_NECESSARY)
-
-    @cached_property
-    def expenses_free(self) -> dict | float:
-        return self._get_row(Row.EXPENSES_FREE)
-
-    @cached_property
-    def expenses_free2(self) -> dict | float:
-        return self._get_row(Row.EXPENSES_FREE2)
-
-    @cached_property
-    def expenses_full(self) -> dict | float:
-        return self._get_row(Row.EXPENSES_FULL)
-
-    @cached_property
-    def expenses_remains(self) -> dict | float:
-        return self._get_row(Row.EXPENSES_REMAINS)
-
-    @cached_property
-    def day_calced(self) -> dict | float:
-        return self._get_row(Row.DAY_CALCED)
-
-    @cached_property
-    def day_input(self) -> dict | float:
-        return self._get_row(Row.DAY_INPUT)
-
-    @cached_property
-    def remains(self) -> dict | float:
-        return self._get_row(Row.REMAINS)
+    def month_len(self) -> dict | float:
+        return self._get_row(Row.MONTH_LEN)
 
     @property
     def plans_stats(self):
@@ -182,7 +163,7 @@ class PlanCalculateDaySum:
         )
         return dict(zip(df["title"], df[month]))
 
-    def _get_row(self, name: str) -> dict | float:
+    def _get_row(self, name: Row) -> dict | float:
         if not self.calculated and self.df.is_empty():
             self.df = self._calc_df()
             self.calculated = True
@@ -204,11 +185,26 @@ class PlanCalculateDaySum:
         data = list(
             it.chain(
                 [{"name": Row.INCOMES, **d} for d in self._data.incomes],
-                [{"name": "expenses", **d} for d in self._data.expenses],
                 [{"name": Row.SAVINGS, **d} for d in self._data.savings],
                 [{"name": Row.DAY_INPUT, **d} for d in self._data.days],
                 [{"name": Row.NECESSARY, **d} for d in self._data.necessary],
                 [{"name": Row.MONTH_LEN, **self._data.month_len}],
+                [
+                    {
+                        "name": Row.EXPENSES_NECESSARY,
+                        **{k: v for k, v in d.items() if k in MONTH_NAMES},
+                    }
+                    for d in self._data.expenses
+                    if d.get("necessary")
+                ],
+                [
+                    {
+                        "name": Row.EXPENSES_FREE2,
+                        **{k: v for k, v in d.items() if k in MONTH_NAMES},
+                    }
+                    for d in self._data.expenses
+                    if not d.get("necessary")
+                ],
             )
         )
         df = pl.DataFrame(data)
@@ -216,38 +212,26 @@ class PlanCalculateDaySum:
         df = self._insert_missing_rows(df)
 
         with contextlib.suppress(pl.exceptions.ColumnNotFoundError):
-            df = (
-                df.with_columns(
-                    pl.when(pl.col("name") != "expenses")
-                    .then(pl.col("name"))
-                    .when(pl.col("necessary") == True)
-                    .then(pl.lit(Row.EXPENSES_NECESSARY))
-                    .otherwise(pl.lit(Row.EXPENSES_FREE2))
-                    .alias("name")
-                )
-                .group_by("name")
-                .agg(pl.col(pl.Int64).sum())
-                .sort("name")
-            )
+            df = df.group_by("name").agg(pl.col(pl.Int64).sum()).sort("name")
         return df.transpose(column_names="name")
 
     def _insert_missing_rows(self, df: pl.DataFrame) -> pl.DataFrame:
-        required_rows = [
+        required_rows = {
             Row.INCOMES,
             Row.SAVINGS,
             Row.DAY_INPUT,
             Row.NECESSARY,
             Row.EXPENSES_NECESSARY,
             Row.EXPENSES_FREE2,
-        ]
+        }
         current_rows = set(df["name"].to_list())
+
         empty_row = df.clear(1)
 
-        for row_name in required_rows:
-            if row_name not in current_rows:
-                df = df.vstack(
-                    empty_row.with_columns(pl.lit(row_name).alias("name")).fill_null(0)
-                )
+        for row_name in required_rows - current_rows:
+            df = df.vstack(
+                empty_row.with_columns(pl.lit(row_name).alias("name")).fill_null(0)
+            )
         return df
 
     def _calc_df(self) -> pl.DataFrame:
