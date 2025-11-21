@@ -169,7 +169,7 @@ class Info:
 
 
 class Objects:
-    def __init__(self, user, data: MakeDataFrame):
+    def __init__(self, user, data: Data):
         self.user = user
         self.data: MakeDataFrame = data
         self.plans: PlanCalculateDaySum = self._initialize_plans()

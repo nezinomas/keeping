@@ -17,7 +17,7 @@ class BalanceBase:
         return sorted(self._data.select(pl.exclude("date")).columns)
 
     @property
-    def total(self) -> float:
+    def total(self) -> int:
         """
         Return total sum of all columns
         """
@@ -31,7 +31,7 @@ class BalanceBase:
         return self._data.select(pl.sum_horizontal(pl.exclude("date")).sum())[0, 0]
 
     @property
-    def total_column(self) -> dict[str, float]:
+    def total_column(self) -> list:
         if self.is_empty(self._data):
             return []
 
