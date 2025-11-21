@@ -66,11 +66,8 @@ class DaySpending(BalanceBase):
         return df.select(pl.exclude(self._necessary)) if self._necessary else df
 
     def _calculate_spending_columns(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        return (
-            df.with_columns(day=(self._per_day - pl.col("total")))
-            .with_columns(
-                teoretical=(self._free - (self._per_day * pl.col("date").dt.day()))
-            )
-            .with_columns(real=(self._free - pl.col("total").cum_sum()))
-            .with_columns(full=(pl.col("real") - pl.col("teoretical")))
-        )
+        return df.with_columns(
+            day=(self._per_day - pl.col("total")),
+            teoretical=(self._free - (self._per_day * pl.col("date").dt.day())),
+            real=(self._free - pl.col("total").cum_sum()),
+        ).with_columns(full=(pl.col("real") - pl.col("teoretical")))
