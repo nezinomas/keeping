@@ -3,6 +3,7 @@ import itertools as it
 from collections import namedtuple
 from dataclasses import dataclass, field
 from enum import StrEnum
+from typing import cast
 
 import polars as pl
 from django.db.models import F
@@ -86,14 +87,14 @@ class PlanCollectData:
 
 
 class PlanCalculateDaySum:
-    def __init__(self, data: PlanCollectData, month: int | None = None):
-        self._data = data
-        self.month = month
+    def __init__(self, data: PlanCollectData, month: int = 0):
+        self._data: PlanCollectData = data
+        self.month: int = month
 
         self.df: pl.DataFrame = pl.DataFrame()
         self.calculated: bool = False
 
-    def __getattr__(self, name: str):
+    def __getattr__(self, name: str) -> int | dict:
         """
         Dynamically provide access to calculated plan rows.
 
@@ -121,25 +122,37 @@ class PlanCalculateDaySum:
         Items = namedtuple("Items", ["type", *MONTH_NAMES])
 
         return [
-            Items(type=f"1. {_('Incomes')} ({_('median')})", **self.incomes_avg),
-            Items(type=f"2. {_('Necessary expenses')}", **self.expenses_necessary),
-            Items(type=f"3. {_('Remains for everyday')} (1 - 2)", **self.expenses_free),
+            Items(
+                type=f"1. {_('Incomes')} ({_('median')})",
+                **cast(dict, self.incomes_avg),
+            ),
+            Items(
+                type=f"2. {_('Necessary expenses')}",
+                **cast(dict, self.expenses_necessary),
+            ),
+            Items(
+                type=f"3. {_('Remains for everyday')} (1 - 2)",
+                **cast(dict, self.expenses_free),
+            ),
             Items(
                 type=f"4. {_('Remains for everyday')} ({_('from tables above')})",
-                **self.expenses_free2,
+                **cast(dict, self.expenses_free2),
             ),
-            Items(type=f"5. {_('Full expenses')} (1 + 4)", **self.expenses_full),
+            Items(
+                type=f"5. {_('Full expenses')} (1 + 4)",
+                **cast(dict, self.expenses_full),
+            ),
             Items(
                 type=f"6. {_('Incomes')} - {_('Full expenses')} (1 - 5)",
-                **self.expenses_remains,
+                **cast(dict, self.expenses_remains),
             ),
             Items(
                 type=f"7. {_('Sum per day')} (3 / {_('days in month')})",
-                **self.day_calced,
+                **cast(dict, self.day_calced),
             ),
             Items(
                 type=f"8. {_('Residual')} (3 - 7 * {_('days in month')})",
-                **self.remains,
+                **cast(dict, self.remains),
             ),
         ]
 
@@ -162,7 +175,7 @@ class PlanCalculateDaySum:
         )
         return dict(zip(df["title"], df[month]))
 
-    def _get_row(self, name: Row) -> dict | float:
+    def _get_row(self, name: Row) -> int | dict:
         if not self.calculated and self.df.is_empty():
             self.df = self._calc_df()
             self.calculated = True
