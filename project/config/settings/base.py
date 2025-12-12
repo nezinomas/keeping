@@ -101,7 +101,6 @@ TEMPLATES = [
     },
 ]
 
-FORM_RENDERER = "django.forms.renderers.DjangoDivFormRenderer"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
