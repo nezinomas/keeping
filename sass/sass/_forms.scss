@@ -7,6 +7,12 @@ textarea {
     }
 }
 
+fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
 .invalid-feedback {
     font-size: .875em;
     color: $negative;
