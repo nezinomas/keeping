@@ -8,7 +8,6 @@ sass/node_modules/
 .idea/
 project.pyproj*
 *.p
-.python-version
 
 # Distribution / packaging
 .Python
