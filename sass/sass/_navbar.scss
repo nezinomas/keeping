@@ -91,6 +91,10 @@
         color: $primary;
     }
 
+    > *:first-child {
+        padding-left: .5rem;
+    }
+
     > div {
         display: flex;
         align-items: center;
