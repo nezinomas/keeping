@@ -3,17 +3,17 @@ name = "keeping"
 version = "0.1.0"
 description = "Home Bookkeeping"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13.5"
 dependencies = [
     "crispy-bootstrap5>=2025.6",
-    "django>=5.2.8",
+    "django>=6.0",
     "django-crispy-forms>=2.5",
     "django-extensions>=4.1",
     "django-htmx>=1.26.0",
     "django-vanilla-views>=3.0.0",
-    "django-widget-tweaks>=1.5.0",
+    "django-widget-tweaks>=1.5.1",
     "mysqlclient>=2.2.7",
-    "pillow>=12.0.0",
+    "pillow>=12.1.0",
     "polars>=1.35.2",
     "pyarrow>=22.0.0",
     "python-dateutil>=2.9.0.post0",
