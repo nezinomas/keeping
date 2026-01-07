@@ -142,8 +142,8 @@ class ExpenseModelService:
 
     def sum_by_year_type(self, expense_type: list | None = None):
         return (
-            self.objects.annotate(cnt=Count("expense_type"))
-            .filter_types(expense_type)
+            self.objects.filter_types(expense_type)
+            .annotate(cnt=Count("expense_type"))
             .values("expense_type")
             .annotate(
                 date=TruncYear("date"), year=ExtractYear(F("date")), sum=Sum("price")
@@ -155,8 +155,8 @@ class ExpenseModelService:
 
     def sum_by_year_name(self, expense_name: list | None = None):
         return (
-            self.objects.annotate(cnt=Count("expense_name"))
-            .filter_names(expense_name)
+            self.objects.filter_names(expense_name)
+            .annotate(cnt=Count("expense_name"))
             .values("expense_name")
             .annotate(
                 date=TruncYear("date"), year=ExtractYear(F("date")), sum=Sum("price")
