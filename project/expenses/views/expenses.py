@@ -18,7 +18,6 @@ from .. import forms, models
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
-    ExpenseTypeModelService,
 )
 
 
