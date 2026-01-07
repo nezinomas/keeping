@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any, cast
 
 from django.db.models import CharField, F, Value
 from django.db.models.functions import Cast, Concat
@@ -14,6 +15,7 @@ from ...core.mixins.views import (
     TemplateViewMixin,
     UpdateViewMixin,
 )
+from ...users.models import User
 from .. import forms, models
 from ..services.model_services import (
     ExpenseModelService,
@@ -22,16 +24,10 @@ from ..services.model_services import (
 
 
 class GetMonthMixin:
+    kwargs: dict[str, Any]
+
     def get_month(self):
-        month = self.kwargs.get("month")
-        now = datetime.now().month
-
-        try:
-            month = int(month)
-        except (ValueError, TypeError):
-            month = now
-
-        return month
+        return self.kwargs.get("month") or datetime.now().month
 
 
 class Index(GetMonthMixin, TemplateViewMixin):
@@ -46,8 +42,9 @@ class Lists(GetMonthMixin, ListViewMixin):
 
     def get_queryset(self):
         month = self.get_month()
-        user = self.request.user
-        qs = ExpenseModelService(user).year(user.year)
+        user = cast(User, self.request.user)
+        year = cast(int, user.year)
+        qs = ExpenseModelService(user).year(year)
 
         if month in range(1, 13):
             qs = qs.filter(date__month=month)
@@ -106,7 +103,7 @@ class Lists(GetMonthMixin, ListViewMixin):
         }
         if month == 13 or not month:
             notice = _("No records in <b>%(year)s</b>.") % {
-                "year": self.request.user.year
+                "year": cast(User, self.request.user).year
             }
 
         context = {"notice": notice}
