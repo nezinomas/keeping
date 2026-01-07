@@ -11,6 +11,15 @@ INSTALLED_APPS += []
 
 
 TEMPLATES[0]["APP_DIRS"] = True
+TEMPLATES[0]["OPTIONS"]["loaders"] = [
+    (
+        "django.template.loaders.cached.Loader",
+        [
+            "django.template.loaders.filesystem.Loader",
+            "django.template.loaders.app_directories.Loader",
+        ],
+    ),
+]
 
 
 SECURE_HSTS_PRELOAD = True

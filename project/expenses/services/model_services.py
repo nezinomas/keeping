@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import Optional, cast
+from typing import cast
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import Case, Count, F, Q, Sum, Value, When
@@ -140,26 +140,27 @@ class ExpenseModelService:
     def sum_by_year(self):
         return self.objects.year_sum()
 
-    def sum_by_year_type(self, expense_type: Optional[list[int]] = None):
+    def sum_by_year_type(self, expense_type: list | None = None):
         return (
-            self.objects.annotate(cnt=Count("expense_type"))
+            self.objects.filter_types(expense_type)
+            .annotate(cnt=Count("expense_type"))
             .values("expense_type")
-            .filter_types(expense_type)
-            .annotate(date=TruncYear("date"))
-            .annotate(year=ExtractYear(F("date")))
+            .annotate(
+                date=TruncYear("date"), year=ExtractYear(F("date")), sum=Sum("price")
+            )
             .annotate(sum=Sum("price"))
             .order_by("year")
             .values("year", "sum", title=F("expense_type__title"))
         )
 
-    def sum_by_year_name(self, expense_name: Optional[list[int]] = None):
+    def sum_by_year_name(self, expense_name: list | None = None):
         return (
-            self.objects.annotate(cnt=Count("expense_name"))
+            self.objects.filter_names(expense_name)
+            .annotate(cnt=Count("expense_name"))
             .values("expense_name")
-            .filter_names(expense_name)
-            .annotate(date=TruncYear("date"))
-            .annotate(year=ExtractYear(F("date")))
-            .annotate(sum=Sum("price"))
+            .annotate(
+                date=TruncYear("date"), year=ExtractYear(F("date")), sum=Sum("price")
+            )
             .order_by("year")
             .values(
                 "year",

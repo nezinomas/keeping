@@ -39,10 +39,8 @@
         </thead>
         <tbody>
             {% for object in object_list %}
-            {% url 'expenses:update' object.id as url_update %}
-            {% url 'expenses:delete' object.id as url_delete %}
 
-            <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% firstof object.expense_type.pk|bg_color or object.expense_type__pk|bg_color %} {% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% firstof object.expense_type.pk|bg_color or object.expense_type__pk|bg_color %} {% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
                 <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
                 <td class="text-left">{% firstof object.expense_type.title object.expense_type__title %}</td>
                 <td class="text-left">{% firstof object.expense_name.title object.expense_name__title %}</td>
@@ -59,8 +57,8 @@
                     {% endif %}
                 </td>
                 <td>{% firstof object.account.title object.account__title %}</td>
-                <c-td-edit :url=url_update />
-                <c-td-delete :url=url_delete />
+                <c-td-edit :url=object.url_update />
+                <c-td-delete :url=object.url_delete />
             </tr>
             {% endfor %}
         </tbody>
