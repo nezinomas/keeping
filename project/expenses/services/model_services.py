@@ -170,7 +170,7 @@ class ExpenseModelService:
             )
         )
 
-    def last_months(self, months: int = 6) -> float:
+    def last_months(self, months: int = 6):
         # previous month
         # if today February, then start is 2020-01-31
         one_day = timedelta(days=1)
