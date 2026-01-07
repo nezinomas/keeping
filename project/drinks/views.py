@@ -1,3 +1,5 @@
+from typing import cast
+
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -13,6 +15,7 @@ from ..core.mixins.views import (
     UpdateViewMixin,
     rendered_content,
 )
+from ..users.models import User
 from . import forms, models, services
 from .lib.drinks_options import DrinksOptions
 from .services.model_services import DrinkModelService, DrinkTargetModelService
@@ -32,7 +35,8 @@ class TabIndex(TemplateViewMixin):
     template_name = "drinks/tab_index.html"
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
+        user = cast(User, self.request.user)
+        year = cast(int, user.year)
 
         return {
             **super().get_context_data(**kwargs),
@@ -41,7 +45,7 @@ class TabIndex(TemplateViewMixin):
                 "target": rendered_content(self.request, TargetLists, **kwargs),
             },
             **services.helper.drink_type_dropdown(self.request),
-            **services.index.load_service(user, user.year),
+            **services.index.load_service(user, year),
         }
 
 
@@ -50,7 +54,7 @@ class TabData(ListViewMixin):
     template_name = "drinks/tab_data.html"
 
     def get_queryset(self):
-        user = self.request.user
+        user = cast(User, self.request.user)
         return DrinkModelService(user).year(user.year)
 
     def get_context_data(self, **kwargs):
@@ -77,8 +81,10 @@ class Compare(TemplateViewMixin):
     template_name = "drinks/includes/history.html"
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
-        year = user.year + 1
+        user = cast(User, self.request.user)
+        year = cast(int, user.year)
+
+        year = year + 1
         qty = self.kwargs.get("qty", 0)
         chart_serries = services.helper.several_years_consumption(
             user=user, years=range(year - qty, year)
@@ -166,7 +172,7 @@ class TargetLists(ListViewMixin):
     model = models.DrinkTarget
 
     def get_queryset(self):
-        user = self.request.user
+        user = cast(User, self.request.user)
         return DrinkTargetModelService(user).year(user.year)
 
 
@@ -224,8 +230,8 @@ class SelectDrink(RedirectViewMixin):
         if drink_type not in models.DrinkType.values:
             drink_type = models.DrinkType.BEER.value
 
-        user = self.request.user
-        user.drink_type = drink_type
+        user = cast(User, self.request.user)
+        user.drink_type = cast(str, drink_type)
         user.save()
 
         return reverse_lazy("drinks:index")
