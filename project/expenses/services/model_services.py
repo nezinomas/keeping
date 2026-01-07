@@ -94,8 +94,7 @@ class ExpenseModelService:
             .values("expense_type")
             .annotate(date=TruncMonth("date"))
             .values("date")
-            .annotate(c=Count("id"))
-            .annotate(sum=Sum("price"))
+            .annotate(c=Count("id"), sum=Sum("price"))
             .order_by("date")
             .values("date", "sum", title=F("expense_type__title"))
         )
@@ -109,8 +108,7 @@ class ExpenseModelService:
             .values("expense_name")
             .annotate(date=TruncMonth("date"))
             .values("date")
-            .annotate(c=Count("id"))
-            .annotate(sum=Sum("price"))
+            .annotate(c=Count("id"), sum=Sum("price"))
             .order_by("expense_name__title", "date")
             .values(
                 "date",
@@ -123,15 +121,14 @@ class ExpenseModelService:
     def sum_by_day_ant_type(self, year: int, month: int):
         # Todo: refactore mistyped method name
         return (
-            self.objects.filter(date__year=year)
-            .filter(date__month=month)
+            self.objects.filter(date__year=year, date__month=month)
             .annotate(cnt_id=Count("id"))
             .values("cnt_id")
             .annotate(date=TruncDay("date"))
             .values("date")
-            .annotate(sum=Sum("price"))
             .annotate(
-                exception_sum=Sum(Case(When(exception=1, then="price"), default=0))
+                sum=Sum("price"),
+                exception_sum=Sum(Case(When(exception=1, then="price"), default=0)),
             )
             .order_by("date")
             .values("date", "sum", "exception_sum", title=F("expense_type__title"))
@@ -148,7 +145,6 @@ class ExpenseModelService:
             .annotate(
                 date=TruncYear("date"), year=ExtractYear(F("date")), sum=Sum("price")
             )
-            .annotate(sum=Sum("price"))
             .order_by("year")
             .values("year", "sum", title=F("expense_type__title"))
         )

@@ -26,11 +26,11 @@ class DrinksOptions:
         node = self.get_node(drink_type)
         return stdav / node.get("stdav", 1)
 
-    def ml_to_stdav(self, ml: int, drink_type: str = None) -> float:
+    def ml_to_stdav(self, ml: int | float, drink_type: str | None = None) -> float:
         node = self.get_node(drink_type)
         return (ml * node["stdav"]) / node["ml"] if node else ml
 
-    def stdav_to_ml(self, stdav: float, drink_type: str = None) -> float:
+    def stdav_to_ml(self, stdav: float, drink_type: str | None = None) -> float:
         node = self.get_node(drink_type)
         return (stdav * node["ml"]) / node["stdav"] if node else stdav
 
@@ -43,7 +43,7 @@ class DrinksOptions:
         node = self.ratios.get(self.drink_type, {})
         return (max_stdav * days) / node["stdav"] if node else max_stdav * days
 
-    def get_node(self, drink_type: str = None):
+    def get_node(self, drink_type: str | None = None):
         if not drink_type:
             drink_type = self.drink_type
 
