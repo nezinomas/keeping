@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, cast
 
-from django.db.models import CharField, F, Value
+from django.db.models import BooleanField, Case, CharField, F, Value, When
 from django.db.models.functions import Cast, Concat, TruncMonth
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
@@ -64,6 +64,11 @@ class Lists(GetMonthMixin, ListViewMixin):
 
         return (
             qs.annotate(
+                is_pdf=Case(
+                    When(attachment__endswith='.pdf', then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField()
+                ),
                 month_group=TruncMonth("date"),
                 url_update=Concat(
                     Value(u_prefix),
@@ -91,6 +96,7 @@ class Lists(GetMonthMixin, ListViewMixin):
                 "remark",
                 "attachment",
                 "exception",
+                "is_pdf",
                 "month_group",
                 "url_update",
                 "url_delete",
