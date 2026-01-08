@@ -46,7 +46,7 @@
                 <td class="text-left">{% firstof object.expense_name.title object.expense_name__title %}</td>
                 <td>{{ object.quantity }}</td>
                 <td>{{object.price|price|cellformat}}</td>
-                <td class="text-left cell-padding">{{ object.remark|linebreaksbr }}</td>
+                <td class="text-left cell-padding remark">{{ object.remark }}</td>
                 <td>
                     {% if object.attachment %}
                     {% if not 'pdf' in object.attachment %}
