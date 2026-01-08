@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Any, cast
 
-from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.convert_price import ConvertToCents
+from ...core.lib.utils import get_action_buttons_html
 from ...core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -61,11 +61,8 @@ class Lists(GetMonthMixin, ListViewMixin):
                 "year": cast(User, self.request.user).year
             }
 
-        edit_col = render_to_string("cotton/td_edit.html", {"url": "[[url]]"})
-        delete_col = render_to_string("cotton/td_delete.html", {"url": "[[url]]"})
-
-        context = {"notice": notice, "edit_col": edit_col, "delete_col": delete_col}
-        return super().get_context_data(**kwargs) | context
+        context = {"notice": notice}
+        return super().get_context_data(**kwargs) | context | get_action_buttons_html()
 
 
 class New(CreateViewMixin):

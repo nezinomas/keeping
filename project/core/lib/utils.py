@@ -1,3 +1,8 @@
+from functools import lru_cache
+
+from django.template.loader import render_to_string
+
+
 def total_row(data, fields: list[str]) -> dict:
     # Fields to subtract when sold is truthy
     subtract_fields = {"incomes", "profit_sum"}
@@ -32,3 +37,15 @@ def calculate_percents(data):
     market_value = data.get("market_value", 0)
 
     return ((market_value - fee) / incomes * 100) - 100 if incomes else 0
+
+
+@lru_cache(maxsize=1)
+def get_action_buttons_html() -> dict[str, str]:
+    """
+    Returns the pre-compiled HTML strings for the action buttons.
+    Cached indefinitely since the template code doesn't change during runtime.
+    """
+    return {
+        "edit_col": render_to_string("cotton/td_edit.html", {"url": "[[url]]"}),
+        "delete_col": render_to_string("cotton/td_delete.html", {"url": "[[url]]"}),
+    }
