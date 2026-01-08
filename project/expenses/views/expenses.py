@@ -3,6 +3,7 @@ from typing import Any, cast
 
 from django.db.models import CharField, F, Value
 from django.db.models.functions import Cast, Concat
+from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
@@ -62,8 +63,7 @@ class Lists(GetMonthMixin, ListViewMixin):
         d_prefix, d_suffix = delete_pattern.split(str(dummy_id))
 
         return (
-            qs
-            .annotate(
+            qs.annotate(
                 url_update=Concat(
                     Value(u_prefix),
                     Cast("id", output_field=CharField()),
@@ -106,7 +106,14 @@ class Lists(GetMonthMixin, ListViewMixin):
                 "year": cast(User, self.request.user).year
             }
 
-        context = {"notice": notice}
+        edit_col = render_to_string(
+            "cotton/td_edit.html", {"url": "[[url]]"}
+        )
+
+        delete_col = render_to_string(
+            "cotton/td_delete.html", {"url": "[[url]]"}
+        )
+        context = {"notice": notice, "edit_col": edit_col, "delete_col": delete_col}
         return super().get_context_data(**kwargs) | context
 
 

@@ -4,7 +4,7 @@
 {% load colorize %}
 {% load math %}
 {% load cell_format %}
-
+{% load fast_rendering %}
 
 {% if object_list %}
 
@@ -57,8 +57,8 @@
                     {% endif %}
                 </td>
                 <td>{% firstof object.account.title object.account__title %}</td>
-                <c-td-edit :url=object.url_update />
-                <c-td-delete :url=object.url_delete />
+                {{ edit_col|inject_url:object.url_update }}
+                {{ delete_col|inject_url:object.url_delete }}
             </tr>
             {% endfor %}
         </tbody>
