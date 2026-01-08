@@ -5,9 +5,9 @@ from operator import and_, or_
 
 from django.db.models import Q
 
-from ...books.models import Book
-from ...expenses.models import Expense
-from ...incomes.models import Income
+from ...books.services.model_services import BookModelService
+from ...expenses.services.model_services import ExpenseModelService
+from ...incomes.services.model_services import IncomeModelService
 
 SEARCH_DICT = {"category": None, "year": None, "month": None, "remark": None}
 
@@ -93,13 +93,11 @@ def _get(search_dict, key, default_value):
     return value or default_value
 
 
-def generic_search(user, model, search_str, category_list, date_field="date"):
+def generic_search(query, search_str, category_list, date_field="date"):
     search_dict, search_type = make_search_dict(search_str)
 
     if all(value is None for value in search_dict.values()):
-        return model.objects.none()
-
-    query = model.objects.related(user)
+        return query.none()
 
     # Date filters
     for key in ["year", "month"]:
@@ -136,25 +134,21 @@ def generic_search(user, model, search_str, category_list, date_field="date"):
 def search_expenses(user, search_str):
     category_list = ["expense_type__title", "expense_name__title"]
 
-    return generic_search(user, Expense, search_str, category_list).values(
-        "id",
-        "date",
-        "account__title",
-        "expense_type__pk",
-        "expense_type__title",
-        "expense_name__title",
-        "price",
-        "quantity",
-        "remark",
-        "attachment",
-        "exception",
-    )
+    service = ExpenseModelService(user)
+    qs = service.items()
+    qs = generic_search(qs, search_str, category_list)
+
+    return service.expenses_list(qs)
 
 
 def search_incomes(user, search_str):
     category_list = ["income_type__title"]
 
-    return generic_search(user, Income, search_str, category_list).values(
+    service = IncomeModelService(user)
+    qs = service.items()
+    qs = generic_search(qs, search_str, category_list)
+
+    return qs.values(
         "id",
         "date",
         "income_type__title",
@@ -167,7 +161,11 @@ def search_incomes(user, search_str):
 def search_books(user, search_str):
     category_list = ["author", "title"]
 
-    return generic_search(user, Book, search_str, category_list, "started").values(
+    service = BookModelService(user)
+    qs = service.items()
+    qs = generic_search(qs, search_str, category_list, "started")
+
+    return qs.values(
         "id",
         "author",
         "title",

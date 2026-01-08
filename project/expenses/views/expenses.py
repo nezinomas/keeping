@@ -1,12 +1,11 @@
 from datetime import datetime
 from typing import Any, cast
 
-from django.db.models import CharField, F, Value
-from django.db.models.functions import Cast, Concat
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.convert_price import ConvertToCents
+from ...core.lib.utils import get_action_buttons_html
 from ...core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -44,56 +43,12 @@ class Lists(GetMonthMixin, ListViewMixin):
         month = self.get_month()
         user = cast(User, self.request.user)
         year = cast(int, user.year)
-        qs = ExpenseModelService(user).year(year)
-
+        service = ExpenseModelService(user)
+        qs = service.year(year)
         if month in range(1, 13):
             qs = qs.filter(date__month=month)
 
-        # 1. Dummy URL using a unique placeholder ID
-        dummy_id = 0
-
-        update_pattern = reverse("expenses:update", args=[dummy_id])
-        delete_pattern = reverse("expenses:delete", args=[dummy_id])
-
-        # 2. Split the URL around the ID
-        # prefix becomes "/expenses/update/"
-        # suffix becomes "/"
-        u_prefix, u_suffix = update_pattern.split(str(dummy_id))
-        d_prefix, d_suffix = delete_pattern.split(str(dummy_id))
-
-        return (
-            qs
-            .annotate(
-                url_update=Concat(
-                    Value(u_prefix),
-                    Cast("id", output_field=CharField()),
-                    Value(u_suffix),
-                    output_field=CharField(),
-                ),
-                url_delete=Concat(
-                    Value(d_prefix),
-                    Cast("id", output_field=CharField()),
-                    Value(d_suffix),
-                    output_field=CharField(),
-                ),
-            )
-            .order_by("-date", "expense_type__title", F("expense_name__title").asc())
-            .values(
-                "id",
-                "date",
-                "account__title",
-                "expense_type__pk",
-                "expense_type__title",
-                "expense_name__title",
-                "price",
-                "quantity",
-                "remark",
-                "attachment",
-                "exception",
-                "url_update",
-                "url_delete",
-            )
-        )
+        return service.expenses_list(qs)
 
     def get_context_data(self, **kwargs):
         month = self.get_month()
@@ -107,7 +62,7 @@ class Lists(GetMonthMixin, ListViewMixin):
             }
 
         context = {"notice": notice}
-        return super().get_context_data(**kwargs) | context
+        return super().get_context_data(**kwargs) | context | get_action_buttons_html()
 
 
 class New(CreateViewMixin):

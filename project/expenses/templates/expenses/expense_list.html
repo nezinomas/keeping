@@ -4,7 +4,7 @@
 {% load colorize %}
 {% load math %}
 {% load cell_format %}
-
+{% load fast_rendering %}
 
 {% if object_list %}
 
@@ -38,27 +38,30 @@
             </tr>
         </thead>
         <tbody>
+            {% url 'core:modal_image' as modal_image_url %}
+            {% get_media_prefix as media_url %}
+
             {% for object in object_list %}
 
-            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% firstof object.expense_type.pk|bg_color or object.expense_type__pk|bg_color %} {% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+            <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% firstof object.expense_type.pk|bg_color or object.expense_type__pk|bg_color %} {% ifchanged object.month_group %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
                 <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
-                <td class="text-left">{% firstof object.expense_type.title object.expense_type__title %}</td>
-                <td class="text-left">{% firstof object.expense_name.title object.expense_name__title %}</td>
+                <td class="text-left">{{ object.expense_type__title }}</td>
+                <td class="text-left">{{ object.expense_name__title }}</td>
                 <td>{{ object.quantity }}</td>
-                <td>{{object.price|price|cellformat}}</td>
-                <td class="text-left cell-padding">{{ object.remark|linebreaksbr }}</td>
+                <td>{{ object.price_str }}</td>
+                <td class="text-left cell-padding remark">{{ object.remark }}</td>
                 <td>
                     {% if object.attachment %}
-                    {% if not 'pdf' in object.attachment %}
-                    <button type="button" class="button-secondary transparent button-xs" hx-get="{% url 'core:modal_image' %}" hx-trigger="click" hx-target="#imgModal" data-url="{% get_media_prefix %}{{ object.attachment }}">{% translate 'Image' %}</button>
+                    {% if not object.is_pdf %}
+                    <button type="button" class="button-secondary transparent button-xs" hx-get="{{ modal_image_url }}" hx-trigger="click" hx-target="#imgModal" data-url="{{ media_url }}{{ object.attachment }}">{% translate 'Image' %}</button>
                     {% else %}
-                    <a role="button" class="button-outline-primary transparent button-xs" href="{% get_media_prefix %}{{ object.attachment }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
+                    <a role="button" class="button-outline-primary transparent button-xs" href="{{ media_url }}{{ object.attachment }}" target="_blank" rel="noopener noreferrer">{% translate 'Pdf file' %}</a>
                     {% endif %}
                     {% endif %}
                 </td>
-                <td>{% firstof object.account.title object.account__title %}</td>
-                <c-td-edit :url=object.url_update />
-                <c-td-delete :url=object.url_delete />
+                <td>{{ object.account__title }}</td>
+                {{ edit_col|inject_url:object.url_update }}
+                {{ delete_col|inject_url:object.url_delete }}
             </tr>
             {% endfor %}
         </tbody>

@@ -181,6 +181,10 @@ $title-col-width: 17rem;
         padding-left: .35rem;
     }
 
+    .remark {
+        white-space: pre-wrap;
+    }
+
     // Hover styles
     &.hover {
         tbody tr:hover {
