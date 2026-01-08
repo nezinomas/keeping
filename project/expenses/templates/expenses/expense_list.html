@@ -45,10 +45,10 @@
 
             <tr hx-get="{{ object.url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% firstof object.expense_type.pk|bg_color or object.expense_type__pk|bg_color %} {% ifchanged object.month_group %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
                 <td class="text-left {%if object.exception %}exception{% else %}expense-ordinary{% endif %}">{{ object.date|date:"Y-m-d" }}</td>
-                <td class="text-left">{% firstof object.expense_type__title object.expense_type.title %}</td>
-                <td class="text-left">{% firstof object.expense_name__title object.expense_name.title %}</td>
+                <td class="text-left">{{ object.expense_type__title }}</td>
+                <td class="text-left">{{ object.expense_name__title }}</td>
                 <td>{{ object.quantity }}</td>
-                <td>{{ object.price|price|cellformat }}</td>
+                <td>{{ object.price_str }}</td>
                 <td class="text-left cell-padding remark">{{ object.remark }}</td>
                 <td>
                     {% if object.attachment %}
@@ -59,7 +59,7 @@
                     {% endif %}
                     {% endif %}
                 </td>
-                <td>{% firstof object.account__title object.account.title %}</td>
+                <td>{{ object.account__title }}</td>
                 {{ edit_col|inject_url:object.url_update }}
                 {{ delete_col|inject_url:object.url_delete }}
             </tr>
