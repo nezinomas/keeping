@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, cast
 
 from django.db.models import CharField, F, Value
-from django.db.models.functions import Cast, Concat
+from django.db.models.functions import Cast, Concat, TruncMonth
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -64,6 +64,7 @@ class Lists(GetMonthMixin, ListViewMixin):
 
         return (
             qs.annotate(
+                month_group=TruncMonth("date"),
                 url_update=Concat(
                     Value(u_prefix),
                     Cast("id", output_field=CharField()),
@@ -90,6 +91,7 @@ class Lists(GetMonthMixin, ListViewMixin):
                 "remark",
                 "attachment",
                 "exception",
+                "month_group",
                 "url_update",
                 "url_delete",
             )
@@ -106,13 +108,9 @@ class Lists(GetMonthMixin, ListViewMixin):
                 "year": cast(User, self.request.user).year
             }
 
-        edit_col = render_to_string(
-            "cotton/td_edit.html", {"url": "[[url]]"}
-        )
+        edit_col = render_to_string("cotton/td_edit.html", {"url": "[[url]]"})
 
-        delete_col = render_to_string(
-            "cotton/td_delete.html", {"url": "[[url]]"}
-        )
+        delete_col = render_to_string("cotton/td_delete.html", {"url": "[[url]]"})
         context = {"notice": notice, "edit_col": edit_col, "delete_col": delete_col}
         return super().get_context_data(**kwargs) | context
 
