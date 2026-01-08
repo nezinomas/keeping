@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, cast
 
 from django.template.loader import render_to_string
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.convert_price import ConvertToCents
