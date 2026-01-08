@@ -155,9 +155,15 @@ class TestExpenseService:
         It should order by Date DESC, then ExpenseType, then ExpenseName ASC.
         """
 
-        e1 = factories.ExpenseFactory(date=date(2000, 1, 1), expense_name__title="Z_Name")
-        e2 = factories.ExpenseFactory(date=date(2025, 1, 1), expense_name__title="B_Name")
-        e3 = factories.ExpenseFactory(date=date(2025, 1, 1), expense_name__title="A_Name")
+        e1 = factories.ExpenseFactory(
+            date=date(2000, 1, 1), expense_name__title="Z_Name"
+        )
+        e2 = factories.ExpenseFactory(
+            date=date(2025, 1, 1), expense_name__title="B_Name"
+        )
+        e3 = factories.ExpenseFactory(
+            date=date(2025, 1, 1), expense_name__title="A_Name"
+        )
 
         qs = models.Expense.objects.all()
 

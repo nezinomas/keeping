@@ -1,4 +1,5 @@
 from django.utils.safestring import SafeString
+
 from ..templatetags.fast_rendering import inject_url
 
 

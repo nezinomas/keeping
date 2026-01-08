@@ -156,7 +156,11 @@ class DeleteMixin:
 
 class SearchMixin:
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | self.search() | get_action_buttons_html()
+        return (
+            super().get_context_data(**kwargs)
+            | self.search()
+            | get_action_buttons_html()
+        )
 
     def get_search_method(self):
         return getattr(search, self.search_method)
