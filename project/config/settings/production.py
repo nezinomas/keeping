@@ -1,3 +1,5 @@
+from django.utils.csp import CSP
+
 from .base import *
 
 DEBUG = False
@@ -20,6 +22,18 @@ TEMPLATES[0]["OPTIONS"]["loaders"] = [
         ],
     ),
 ]
+
+
+MIDDLEWARE += [
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
+]
+
+
+SECURE_CSP = {
+    "default-src": [CSP.SELF],
+    "script-src": [CSP.SELF, "https://fonts.googleapis.com"],
+    "img-src": [CSP.SELF, "https:"],
+}
 
 
 SECURE_HSTS_PRELOAD = True
