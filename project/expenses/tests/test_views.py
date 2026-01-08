@@ -502,6 +502,7 @@ def test_expenses_list_all_any_num(client_logged):
 
 
 @time_machine.travel("1999-1-1")
+@pytest.mark.usefixtures("mock_mariadb_functions")
 def test_expenses_list_price_converted(client_logged):
     ExpenseFactory(price=7777)
 
@@ -513,6 +514,7 @@ def test_expenses_list_price_converted(client_logged):
 
 
 @time_machine.travel("1999-1-1")
+@pytest.mark.usefixtures("mock_mariadb_functions")
 def test_expenses_list_price_converted_with_thousands(client_logged):
     ExpenseFactory(price=100_000)
 

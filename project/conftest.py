@@ -2,6 +2,7 @@ from datetime import date, datetime
 
 import pytest
 import pytz
+from django.db.backends.signals import connection_created
 
 from .accounts.factories import AccountFactory
 from .bookkeeping.factories import (
@@ -67,6 +68,51 @@ def fake_request(rf):
 def client_logged(client):
     client.login(username="bob", password="123")
     return client
+
+
+def _sqlite_format(value, decimals, locale=None):
+    """
+    Python simulation of MariaDB's FORMAT(X, D, locale).
+    """
+    if value is None:
+        return None
+    try:
+        val = float(value)
+        # 1. Format with standard English commas: "1,234.56"
+        formatted = f"{val:,.{int(decimals)}f}"
+
+        # 2. Swap dots and commas to mimic European style if locale is present
+        if locale:
+            return formatted.replace(",", "X").replace(".", ",").replace("X", ".")
+        return formatted
+    except (ValueError, TypeError):
+        return str(value)
+
+
+@pytest.fixture
+def mock_mariadb_functions():
+    """
+    Explicitly registers custom SQL functions for SQLite.
+    Use this fixture only in tests that need 'FORMAT()'.
+    """
+
+    def register_functions(sender, connection, **kwargs):
+        if connection.vendor == "sqlite":
+            # Check if function exists to avoid 'function already exists' errors
+            # (Though create_function usually overwrites safely)
+            connection.connection.create_function("FORMAT", 3, _sqlite_format)
+
+    # 1. Connect signal
+    connection_created.connect(register_functions)
+
+    from django.db import connection
+
+    if connection.vendor == "sqlite" and connection.connection:
+        connection.connection.create_function("FORMAT", 3, _sqlite_format)
+
+    yield
+
+    connection_created.disconnect(register_functions)
 
 
 @pytest.fixture()
