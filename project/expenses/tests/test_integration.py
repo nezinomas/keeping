@@ -56,7 +56,7 @@ class Expenses(Browser):
         page = self.browser.page_source
         assert "Account1" in page
         assert "Expense Name" in page
-        assert "123.45" in page
+        assert "123,45" in page
 
     def test_add_one_expense_and_hit_enter_key(self):
         self._fill_selects()
@@ -78,7 +78,7 @@ class Expenses(Browser):
         page = self.browser.page_source
         assert "Expense Type" in page
         assert "Expense Name" in page
-        assert "123.45" in page
+        assert "123,45" in page
 
     def test_add_one_expense_check_quantity_and_price_fields_values(self):
         self._fill_selects()
@@ -177,11 +177,11 @@ class Expenses(Browser):
 
         assert t.title in page
         assert n.title in page
-        assert "123.45" in page
+        assert "123,45" in page
 
         assert t1.title in page
         assert n1.title in page
-        assert "65.78" in page
+        assert "65,78" in page
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_empty_required_fields(self):
