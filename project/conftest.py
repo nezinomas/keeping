@@ -2,6 +2,7 @@ from datetime import date, datetime
 
 import pytest
 import pytz
+from django.db import connection
 from django.db.backends.signals import connection_created
 
 from .accounts.factories import AccountFactory
@@ -89,26 +90,18 @@ def _sqlite_format(value, decimals, locale=None):
         return str(value)
 
 
-@pytest.fixture
-def mock_mariadb_functions():
+@pytest.fixture(scope="session", autouse=True)
+def fix_sqlite_format_function():
     """
-    Explicitly registers custom SQL functions for SQLite.
-    Use this fixture only in tests that need 'FORMAT()'.
+    Runs ONCE per test session.
+    Ensures that whenever a SQLite connection is created, it has the FORMAT function.
     """
 
     def register_functions(sender, connection, **kwargs):
         if connection.vendor == "sqlite":
-            # Check if function exists to avoid 'function already exists' errors
-            # (Though create_function usually overwrites safely)
             connection.connection.create_function("FORMAT", 3, _sqlite_format)
 
-    # 1. Connect signal
     connection_created.connect(register_functions)
-
-    from django.db import connection
-
-    if connection.vendor == "sqlite" and connection.connection:
-        connection.connection.create_function("FORMAT", 3, _sqlite_format)
 
     yield
 

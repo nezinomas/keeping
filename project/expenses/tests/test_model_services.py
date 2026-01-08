@@ -64,7 +64,6 @@ def test_expense_name_init_succeeds_with_real_user(main_user):
 
 
 @pytest.mark.django_db
-@pytest.mark.usefixtures("mock_mariadb_functions")  # Activates the FORMAT mock
 class TestExpenseService:
     @pytest.fixture
     def service(self, main_user):
