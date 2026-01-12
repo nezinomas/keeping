@@ -2,7 +2,7 @@ import re
 
 import pytest
 from django.contrib.auth.models import AnonymousUser
-from mock import MagicMock, patch
+from mock import MagicMock
 
 from ..services.model_services import (
     SavingBalanceModelService,
@@ -62,11 +62,11 @@ def test_saving_balance_init_succeeds_with_real_user(main_user):
     SavingBalanceModelService(user=main_user)
 
 
-@patch(
-    "project.savings.services.model_services.SavingTypeModelService.get_queryset",
-    return_value="X",
-)
-def test_year_method_raises_not_implemented_error(mck):
+def test_year_method_raises_not_implemented_error(mocker):
+    mocker.patch(
+        "project.savings.services.model_services.SavingTypeModelService.get_queryset",
+        return_value="X",
+    )
     service = SavingTypeModelService(user=MagicMock())
 
     expected_msg = (
@@ -76,11 +76,12 @@ def test_year_method_raises_not_implemented_error(mck):
         service.year(2023)
 
 
-@patch(
-    "project.savings.services.model_services.SavingTypeModelService.get_queryset",
-    return_value="X",
-)
-def test_year_method_does_not_call_database(mck):
+def test_year_method_does_not_call_database(mocker):
+    mck = mocker.MagicMock()
+    mocker.patch(
+        "project.savings.services.model_services.SavingTypeModelService.get_queryset",
+        return_value=mck,
+    )
     service = SavingTypeModelService(MagicMock())
 
     with pytest.raises(NotImplementedError):

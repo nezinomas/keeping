@@ -4,7 +4,7 @@ from datetime import date
 import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
-from mock import MagicMock, patch
+from mock import MagicMock
 
 from .. import factories, models
 from ..services.model_services import (
@@ -184,11 +184,11 @@ class TestExpenseService:
         assert not list(results)
 
 
-@patch(
-    "project.expenses.services.model_services.ExpenseTypeModelService.get_queryset",
-    return_value="X",
-)
-def test_year_method_raises_not_implemented_error(mck):
+def test_year_method_raises_not_implemented_error(mocker):
+    mocker.patch(
+        "project.expenses.services.model_services.ExpenseTypeModelService.get_queryset",
+        return_value="X",
+    )
     service = ExpenseTypeModelService(user=MagicMock())
 
     expected_msg = (
@@ -198,14 +198,16 @@ def test_year_method_raises_not_implemented_error(mck):
         service.year(2023)
 
 
-@patch(
-    "project.expenses.services.model_services.ExpenseTypeModelService.get_queryset",
-    return_value="X",
-)
-def test_year_method_does_not_call_database(mck):
-    service = ExpenseTypeModelService(MagicMock())
+def test_year_method_does_not_call_database_pure_pytest(mocker):
+    mock_qs = mocker.MagicMock()
+    mocker.patch(
+        "project.expenses.services.model_services.ExpenseTypeModelService.get_queryset",
+        return_value=mock_qs
+    )
+
+    service = ExpenseTypeModelService(mocker.MagicMock())
 
     with pytest.raises(NotImplementedError):
         service.year(2023)
 
-    mck.filter.assert_not_called()
+    mock_qs.filter.assert_not_called()

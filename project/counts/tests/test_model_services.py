@@ -2,7 +2,7 @@ import re
 
 import pytest
 from django.contrib.auth.models import AnonymousUser
-from mock import MagicMock, patch
+from mock import MagicMock
 
 from ..services.model_services import CountModelService, CountTypeModelService
 
@@ -41,11 +41,11 @@ def test_count_type_init_succeeds_with_real_user(main_user):
     CountTypeModelService(user=main_user)
 
 
-@patch(
-    "project.counts.services.model_services.CountTypeModelService.get_queryset",
-    return_value="X",
-)
-def test_year_method_raises_not_implemented_error(mck):
+def test_year_method_raises_not_implemented_error(mocker):
+    mocker.patch(
+        "project.counts.services.model_services.CountTypeModelService.get_queryset",
+        return_value="X",
+    )
     service = CountTypeModelService(user=MagicMock())
 
     expected_msg = "CountTypeModelService.year is not implemented. Use items() instead."
@@ -53,14 +53,15 @@ def test_year_method_raises_not_implemented_error(mck):
         service.year(2023)
 
 
-@patch(
-    "project.counts.services.model_services.CountTypeModelService.get_queryset",
-    return_value="X",
-)
-def test_year_method_does_not_call_database(mck):
+def test_year_method_does_not_call_database(mocker):
+    mock_qs = mocker.MagicMock()
+    mocker.patch(
+        "project.counts.services.model_services.CountTypeModelService.get_queryset",
+        return_value=mock_qs,
+    )
     service = CountTypeModelService(MagicMock())
 
     with pytest.raises(NotImplementedError):
         service.year(2023)
 
-    mck.filter.assert_not_called()
+    mock_qs.filter.assert_not_called()
