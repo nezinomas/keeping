@@ -1,5 +1,8 @@
+import re
+
 import pytest
 from django.contrib.auth.models import AnonymousUser
+from mock import MagicMock, patch
 
 from ..services.model_services import (
     PensionBalanceModelService,
@@ -57,3 +60,28 @@ def test_pension_balance_init_raises_if_anonymous_user():
 def test_pension_balance_init_succeeds_with_real_user(main_user):
     # No need to save — just check __init__
     PensionBalanceModelService(user=main_user)
+
+
+@patch(
+    "project.pensions.services.model_services.PensionTypeModelService.get_queryset",
+    return_value="X",
+)
+def test_year_method_raises_not_implemented_error(mck):
+    service = PensionTypeModelService(user=MagicMock())
+
+    expected_msg = "PensionTypeModelService.year is not implemented. Use items() instead."
+    with pytest.raises(NotImplementedError, match=re.escape(expected_msg)):
+        service.year(2023)
+
+
+@patch(
+    "project.pensions.services.model_services.PensionTypeModelService.get_queryset",
+    return_value="X",
+)
+def test_year_method_does_not_call_database(mck):
+    service = PensionTypeModelService(MagicMock())
+
+    with pytest.raises(NotImplementedError):
+        service.year(2023)
+
+    mck.filter.assert_not_called()

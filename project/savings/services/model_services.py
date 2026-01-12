@@ -18,7 +18,7 @@ class SavingTypeModelService(BaseModelService[managers.SavingTypeQuerySet]):
 
     def year(self, year):
         raise NotImplementedError(
-            "SavingTypeModelService.year is not implemented. User .items() instead."
+            "SavingTypeModelService.year is not implemented. Use items() instead."
         )
 
     def all(self):

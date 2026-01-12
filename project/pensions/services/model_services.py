@@ -13,7 +13,9 @@ class PensionTypeModelService(BaseModelService[managers.PensionTypeQuerySet]):
         )
 
     def year(self, year: int):
-        return self.objects
+        raise NotImplementedError(
+            "PensionTypeModelService.year is not implemented. Use items() instead."
+        )
 
     def items(self):
         return self.objects

@@ -15,7 +15,9 @@ class IncomeTypeModelService(BaseModelService[managers.IncomeTypeQuerySet]):
         )
 
     def year(self, year: int):
-        return self.objects
+        raise NotImplementedError(
+            "IncomeTypeModelService.year is not implemented. Use items() instead."
+        )
 
     def items(self):
         return self.objects

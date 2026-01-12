@@ -56,7 +56,7 @@ class CountTypeModelService(BaseModelService[managers.CountTypeQuerySet]):
 
     def year(self, year):
         raise NotImplementedError(
-            "CountTypeModelService.year is not implemented. User .items() instead."
+            "CountTypeModelService.year is not implemented. Use items() instead."
         )
 
     def items(self):

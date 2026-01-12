@@ -36,7 +36,7 @@ class ExpenseTypeModelService(BaseModelService[managers.ExpenseTypeQuerySet]):
 
     def year(self, year: int):
         raise NotImplementedError(
-            "ExpenseTypeModelService.year is not implemented. User .items() instead."
+            "ExpenseTypeModelService.year is not implemented. Use items() instead."
         )
 
     def items(self):

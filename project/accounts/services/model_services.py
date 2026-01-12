@@ -12,7 +12,7 @@ class AccountModelService(BaseModelService[managers.AccountQuerySet]):
 
     def year(self, year: int):
         raise NotImplementedError(
-            "AccountModelService.year is not implemented. User .items() instead."
+            "AccountModelService.year is not implemented. Use items() instead."
         )
 
     def items(self, year: Optional[int] = None):

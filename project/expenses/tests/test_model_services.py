@@ -1,8 +1,10 @@
+import re
 from datetime import date
 
 import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
+from mock import MagicMock, patch
 
 from .. import factories, models
 from ..services.model_services import (
@@ -180,3 +182,28 @@ class TestExpenseService:
         qs = models.Expense.objects.none()
         results = service.expenses_list(qs)
         assert not list(results)
+
+
+@patch(
+    "project.expenses.services.model_services.ExpenseTypeModelService.get_queryset",
+    return_value="X",
+)
+def test_year_method_raises_not_implemented_error(mck):
+    service = ExpenseTypeModelService(user=MagicMock())
+
+    expected_msg = "ExpenseTypeModelService.year is not implemented. Use items() instead."
+    with pytest.raises(NotImplementedError, match=re.escape(expected_msg)):
+        service.year(2023)
+
+
+@patch(
+    "project.expenses.services.model_services.ExpenseTypeModelService.get_queryset",
+    return_value="X",
+)
+def test_year_method_does_not_call_database(mck):
+    service = ExpenseTypeModelService(MagicMock())
+
+    with pytest.raises(NotImplementedError):
+        service.year(2023)
+
+    mck.filter.assert_not_called()
