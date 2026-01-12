@@ -7,6 +7,7 @@ from ...accounts.services.model_services import AccountBalanceModelService
 from ...pensions.services.model_services import PensionBalanceModelService
 from ...savings.services.model_services import SavingBalanceModelService
 from ...users.models import User
+from ...core.services.model_services import BaseModelService
 
 
 @dataclass
@@ -32,9 +33,7 @@ class Data:
     def get_balance(
         self,
         field_name: str,
-        service: AccountBalanceModelService
-        | PensionBalanceModelService
-        | SavingBalanceModelService,
+        service: BaseModelService,
     ) -> int:
         return (
             service.year(self.year).aggregate(Sum(field_name))[f"{field_name}__sum"]
