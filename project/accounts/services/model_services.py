@@ -2,22 +2,16 @@ from typing import Optional, cast
 
 from django.db.models import Q
 
-from ...users.models import User
+from ...core.services.model_services import BaseModelService
 from .. import managers, models
 
 
-class AccountModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
+class AccountModelService(BaseModelService[managers.AccountQuerySet]):
+    def get_queryset(self):
+        return cast(managers.AccountQuerySet, models.Account.objects).related(self.user)
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.user = user
-        self.objects = cast(managers.AccountQuerySet, models.Account.objects).related(
-            self.user
-        )
+    def year(self, year: int):
+        return self.objects
 
     def items(self, year: Optional[int] = None):
         year = year or self.user.year
@@ -30,17 +24,11 @@ class AccountModelService:
         return models.Account.objects.none()
 
 
-class AccountBalanceModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
+class AccountBalanceModelService(BaseModelService[managers.AccountBalanceQuerySet]):
+    def get_queryset(self):
+        return cast(
             managers.AccountBalanceQuerySet, models.AccountBalance.objects
-        ).related(user)
+        ).related(self.user)
 
     def items(self):
         return self.objects.all()

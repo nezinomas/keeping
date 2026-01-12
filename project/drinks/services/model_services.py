@@ -2,23 +2,14 @@ from typing import cast
 
 from django.db.models import F
 
-from ...users.models import User
+from ...core.services.model_services import BaseModelService
 from .. import managers, models
 from ..lib.drinks_options import DrinksOptions
 
 
-class DrinkModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.user = user
-        self.objects = cast(managers.DrinkQuerySet, models.Drink.objects).related(
-            self.user
-        )
+class DrinkModelService(BaseModelService[managers.DrinkQuerySet]):
+    def get_queryset(self):
+        return cast(managers.DrinkQuerySet, models.Drink.objects).related(self.user)
 
     def year(self, year):
         return self.objects.filter(date__year=year)
@@ -42,7 +33,7 @@ class DrinkModelService:
             .order_by("date")
         )
 
-    def sum_by_month(self, year: int, month: int = None) -> list[dict]:
+    def sum_by_month(self, year: int, month: int | None = None) -> list[dict]:
         """
         Returns
         DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
@@ -58,7 +49,7 @@ class DrinkModelService:
             .order_by("date")
         )
 
-    def sum_by_day(self, year: int, month: int = None) -> list[dict]:
+    def sum_by_day(self, year: int, month: int | None = None) -> list[dict]:
         """
         Returns
         DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
@@ -75,18 +66,11 @@ class DrinkModelService:
         )
 
 
-class DrinkTargetModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.user = user
-        self.objects = cast(
-            managers.DrinkTargetQuerySet, models.DrinkTarget.objects
-        ).related(self.user)
+class DrinkTargetModelService(BaseModelService[managers.DrinkTargetQuerySet]):
+    def get_queryset(self):
+        return cast(managers.DrinkTargetQuerySet, models.DrinkTarget.objects).related(
+            self.user
+        )
 
     def year(self, year):
         obj = DrinksOptions(self.user.drink_type)

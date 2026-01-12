@@ -1,39 +1,29 @@
-from typing import Optional, cast
+from typing import Optional
 
 from django.db.models import Count, F, Sum, Value
 from django.db.models.functions import TruncMonth, TruncYear
 
-from ...users.models import User
 from .. import managers, models
+from typing import cast
+from ...core.services.model_services import BaseModelService
 
 
-class IncomeTypeModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
+class IncomeTypeModelService(BaseModelService[managers.IncomeTypeQuerySet]):
+    def get_queryset(self):
+        return cast(managers.IncomeTypeQuerySet, models.IncomeType.objects).related(
+            self.user
+        )
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.IncomeTypeQuerySet, models.IncomeType.objects
-        ).related(user)
+    def year(self, year: int):
+        return self.objects
 
     def items(self):
-        return self.objects.all()
+        return self.objects
 
 
-class IncomeModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(managers.IncomeQuerySet, models.Income.objects).related(
-            user
-        )
+class IncomeModelService(BaseModelService[managers.IncomeQuerySet]):
+    def get_queryset(self):
+        return cast(managers.IncomeQuerySet, models.Income.objects).related(self.user)
 
     def year(self, year: int):
         return self.objects.filter(date__year=year)

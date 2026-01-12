@@ -1,12 +1,14 @@
 from typing import cast
 
-from django.db.models import Value
+from django.db.models import QuerySet, Value
 
-from ...users.models import User
+from ...core.services.model_services import BaseModelService
 from .. import managers, models
 
 
 class CommonMethodsMixin:
+    objects: QuerySet
+
     def year(self, year):
         return self.objects.filter(date__year=year)
 
@@ -14,36 +16,24 @@ class CommonMethodsMixin:
         return self.objects
 
 
-class TransactionModelService(CommonMethodsMixin):
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.TransactionQuerySet, models.Transaction.objects
-        ).related(user)
+class TransactionModelService(
+    CommonMethodsMixin, BaseModelService[managers.TransactionQuerySet]
+):
+    def get_queryset(self):
+        return cast(managers.TransactionQuerySet, models.Transaction.objects).related(
+            self.user
+        )
 
 
-class SavingCloseModelService(CommonMethodsMixin):
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
+class SavingCloseModelService(
+    CommonMethodsMixin, BaseModelService[managers.SavingCloseQuerySet]
+):
+    objects: managers.SavingCloseQuerySet
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.SavingCloseQuerySet, models.SavingClose.objects
-        ).related(user)
+    def get_queryset(self):
+        return cast(managers.SavingCloseQuerySet, models.SavingClose.objects).related(
+            self.user
+        )
 
     def sum_by_month(self, year, month=None):
         return self.objects.month_sum(year=year, month=month).annotate(
@@ -51,17 +41,10 @@ class SavingCloseModelService(CommonMethodsMixin):
         )
 
 
-class SavingChangeModelService(CommonMethodsMixin):
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.SavingChangeQuerySet, models.SavingChange.objects
-        ).related(user)
+class SavingChangeModelService(
+    CommonMethodsMixin, BaseModelService[managers.SavingChangeQuerySet]
+):
+    def get_queryset(self):
+        return cast(managers.SavingChangeQuerySet, models.SavingChange.objects).related(
+            self.user
+        )

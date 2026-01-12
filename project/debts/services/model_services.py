@@ -3,22 +3,20 @@ from typing import cast
 from django.db.models import Count, Q, Sum, Value
 from django.db.models.functions import TruncMonth
 
+from ...core.services.model_services import BaseModelService
 from ...users.models import User
 from .. import managers, models
 
 
-class DebtModelService:
+class DebtModelService(BaseModelService):
     def __init__(self, user: User, debt_type: str):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
         self.debt_type = debt_type
 
-        self.objects = cast(managers.DebtQuerySet, models.Debt.objects).related(
-            user, self.debt_type
+        super().__init__(user)
+
+    def get_queryset(self):
+        return cast(managers.DebtQuerySet, models.Debt.objects).related(
+            self.user, self.debt_type
         )
 
     def items(self):
@@ -53,19 +51,16 @@ class DebtModelService:
         )
 
 
-class DebtReturnModelService:
+class DebtReturnModelService(BaseModelService[managers.DebtReturnQuerySet]):
     def __init__(self, user: User, debt_type: str):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
         self.debt_type = debt_type
 
-        self.objects = cast(
-            managers.DebtReturnQuerySet, models.DebtReturn.objects
-        ).related(user, self.debt_type)
+        super().__init__(user)
+
+    def get_queryset(self):
+        return cast(managers.DebtReturnQuerySet, models.DebtReturn.objects).related(
+            self.user, self.debt_type
+        )
 
     def items(self):
         return self.objects.all()
