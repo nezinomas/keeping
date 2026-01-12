@@ -11,7 +11,9 @@ class AccountModelService(BaseModelService[managers.AccountQuerySet]):
         return cast(managers.AccountQuerySet, models.Account.objects).related(self.user)
 
     def year(self, year: int):
-        return self.objects
+        raise NotImplementedError(
+            "AccountModelService.year is not implemented. User .items() instead."
+        )
 
     def items(self, year: Optional[int] = None):
         year = year or self.user.year
