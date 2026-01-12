@@ -17,10 +17,10 @@ class BaseModelService(ABC, Generic[_QS]):
             raise ValueError("Authenticated user required")
 
         self.user = user
-        self.objects = self.get_queryset(user)
+        self.objects = self.get_queryset()
 
     @abstractmethod
-    def get_queryset(self, user: User) -> _QS: ...
+    def get_queryset(self) -> _QS: ...
 
     @abstractmethod
     def year(self, year: int): ...
