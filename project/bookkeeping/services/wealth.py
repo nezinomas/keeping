@@ -31,7 +31,6 @@ class Data:
         return (
             model(self.user)
             .year(self.year)
-            .filter(year=self.year)
             .aggregate(Sum(field_name))[f"{field_name}__sum"]
             or 0
         )
