@@ -3,19 +3,13 @@ from typing import cast
 from django.db.models import Count, F, Q
 from django.db.models.functions import ExtractYear, TruncYear
 
-from ...users.models import User
+from ...core.services.model_services import BaseModelService
 from .. import managers, models
 
 
-class BookModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(managers.BooksQuerySet, models.Book.objects).related(user)
+class BookModelService(BaseModelService[managers.BooksQuerySet]):
+    def get_queryset(self):
+        return cast(managers.BooksQuerySet, models.Book.objects).related(self.user)
 
     def year(self, year):
         return self.objects.filter(Q(ended__year=year) | Q(ended__isnull=True)).filter(
@@ -51,17 +45,11 @@ class BookModelService:
         )
 
 
-class BookTargetModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.BookTargetQuerySet, models.BookTarget.objects
-        ).related(user)
+class BookTargetModelService(BaseModelService[managers.BookTargetQuerySet]):
+    def get_queryset(self):
+        return cast(managers.BookTargetQuerySet, models.BookTarget.objects).related(
+            self.user
+        )
 
     def year(self, year):
         return self.objects.filter(year=year)

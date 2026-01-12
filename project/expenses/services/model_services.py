@@ -24,43 +24,28 @@ from django.db.models.functions import (
 )
 from django.urls import reverse
 
-from ...users.models import User
 from .. import managers, models
+from ...core.services.model_services import BaseModelService
 
 
-class ExpenseTypeModelService:
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
+class ExpenseTypeModelService(BaseModelService[managers.ExpenseTypeQuerySet]):
+    def get_queryset(self):
+        return cast(managers.ExpenseTypeQuerySet, models.ExpenseType.objects).related(
+            self.user
+        )
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.ExpenseTypeQuerySet, models.ExpenseType.objects
-        ).related(user)
+    def year(self, year: int):
+        return self.objects
 
     def items(self):
-        return self.objects.all()
+        return self.objects
 
 
-class ExpenseNameModelService:
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.ExpenseNameQuerySet, models.ExpenseName.objects
-        ).related(user)
+class ExpenseNameModelService(BaseModelService[managers.ExpenseNameQuerySet]):
+    def get_queryset(self):
+        return cast(managers.ExpenseNameQuerySet, models.ExpenseName.objects).related(
+            self.user
+        )
 
     def year(self, year: int):
         return self.objects.filter(Q(valid_for__isnull=True) | Q(valid_for=year))
@@ -72,17 +57,9 @@ class ExpenseNameModelService:
         return models.ExpenseName.objects.none()
 
 
-class ExpenseModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(managers.ExpenseQuerySet, models.Expense.objects).related(
-            user
-        )
+class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
+    def get_queryset(self):
+        return cast(managers.ExpenseQuerySet, models.Expense.objects).related(self.user)
 
     def year(self, year: int):
         return self.objects.filter(date__year=year)

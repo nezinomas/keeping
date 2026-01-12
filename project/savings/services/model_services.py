@@ -6,49 +6,33 @@ from django.db.models import Count, F, Q, Sum, Value
 from django.db.models.functions import TruncMonth
 from django.utils.translation import gettext as _
 
-from ...users.models import User
-from ..managers import SavingBalanceQuerySet, SavingQuerySet, SavingTypeQuerySet
-from ..models import Saving, SavingBalance, SavingType
+from .. import managers, models
+from ...core.services.model_services import BaseModelService
 
 
-class SavingTypeModelService:
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
+class SavingTypeModelService(BaseModelService[managers.SavingTypeQuerySet]):
+    def get_queryset(self):
+        return cast(managers.SavingTypeQuerySet, models.SavingType.objects).related(
+            self.user
+        )
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
+    def year(self, year):
+        return self.objects
 
-        self.user = user
-        self.objects = cast(SavingTypeQuerySet, SavingType.objects).related(self.user)
+    def all(self):
+        return self.objects
 
     def none(self):
-        return SavingType.objects.none()
+        return self.objects.none()
 
     def items(self, year=None):
         year = year or self.user.year
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
-    def all(self):
-        return self.objects
 
-
-class SavingModelService:
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.user = user
-        self.objects = cast(SavingQuerySet, Saving.objects).related(self.user)
+class SavingModelService(BaseModelService[managers.SavingQuerySet]):
+    def get_queryset(self):
+        return cast(managers.SavingQuerySet, models.Saving.objects).related(self.user)
 
     def year(self, year):
         return self.objects.filter(date__year=year)
@@ -85,7 +69,7 @@ class SavingModelService:
             title=Value(_("Savings"))
         )
 
-    def last_months(self, months: int = 6) -> float:
+    def last_months(self, months: int = 6):
         # previous month
         # if today February, then start is 2020-01-31
         start = date.today().replace(day=1) - timedelta(days=1)
@@ -96,18 +80,11 @@ class SavingModelService:
         return self.objects.filter(date__range=(end, start)).aggregate(sum=Sum("price"))
 
 
-class SavingBalanceModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.user = user
-        self.objects = cast(SavingBalanceQuerySet, SavingBalance.objects).related(
-            self.user
-        )
+class SavingBalanceModelService(BaseModelService[managers.SavingBalanceQuerySet]):
+    def get_queryset(self):
+        return cast(
+            managers.SavingBalanceQuerySet, models.SavingBalance.objects
+        ).related(self.user)
 
     def items(self):
         return self.objects

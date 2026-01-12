@@ -1,17 +1,18 @@
+from typing import Any, cast
 from django.db.models import Model
 
 from ...users.models import User
+from ...core.services.model_services import BaseModelService
 
 
-class ModelService:
+class ModelService(BaseModelService):
     def __init__(self, model: Model, user: User):
-        if not user:
-            raise ValueError("User required")
+        self.model_cls = model
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
+        super().__init__(user)
 
-        self.objects = model.objects.related(user)
+    def get_queryset(self):
+        return cast(Any, self.model_cls.objects).related(self.user)
 
     def year(self, year):
         return self.objects.filter(year=year)

@@ -2,37 +2,26 @@ from typing import cast
 
 from django.db.models import F, Sum
 
-from ...users.models import User
 from .. import managers, models
+from ...core.services.model_services import BaseModelService
 
 
-class PensionTypeModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
+class PensionTypeModelService(BaseModelService[managers.PensionTypeQuerySet]):
+    def get_queryset(self):
+        return cast(managers.PensionTypeQuerySet, models.PensionType.objects).related(
+            self.user
+        )
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.PensionTypeQuerySet, models.PensionType.objects
-        ).related(user)
+    def year(self, year: int):
+        return self.objects
 
     def items(self):
-        return self.objects.all()
+        return self.objects
 
 
-class PensionModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(managers.PensionQuerySet, models.Pension.objects).related(
-            user
-        )
+class PensionModelService(BaseModelService[managers.PensionQuerySet]):
+    def get_queryset(self):
+        return cast(managers.PensionQuerySet, models.Pension.objects).related(self.user)
 
     def year(self, year: int):
         return self.objects.filter(date__year=year)
@@ -41,17 +30,11 @@ class PensionModelService:
         return self.objects.all()
 
 
-class PensionBalanceModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
+class PensionBalanceModelService(BaseModelService[managers.PensionBalanceQuerySet]):
+    def get_queryset(self):
+        return cast(
             managers.PensionBalanceQuerySet, models.PensionBalance.objects
-        ).related(user)
+        ).related(self.user)
 
     def year(self, year: int):
         return self.objects.filter(year=year)

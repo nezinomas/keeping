@@ -1,18 +1,11 @@
 from typing import cast
-
-from ...users.models import User
 from .. import managers, models
+from ...core.services.model_services import BaseModelService
 
 
-class CountModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(managers.CountQuerySet, models.Count.objects).related(user)
+class CountModelService(BaseModelService[managers.CountQuerySet]):
+    def get_queryset(self):
+        return cast(managers.CountQuerySet, models.Count.objects).related(self.user)
 
     def year(self, year, count_type=None):
         qs = self.objects
@@ -55,17 +48,14 @@ class CountModelService:
         ).order_by("date")
 
 
-class CountTypeModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
+class CountTypeModelService(BaseModelService[managers.CountTypeQuerySet]):
+    def get_queryset(self):
+        return cast(managers.CountTypeQuerySet, models.CountType.objects).related(
+            self.user
+        )
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.CountTypeQuerySet, models.CountType.objects
-        ).related(user)
+    def year(self, year):
+        return self.objects
 
     def items(self):
         return self.objects
