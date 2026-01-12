@@ -23,7 +23,7 @@ class AccountModelService(BaseModelService[managers.AccountQuerySet]):
         return self.objects.all()
 
     def none(self):
-        return models.Account.objects.none()
+        return self.objects.none()
 
 
 class AccountBalanceModelService(BaseModelService[managers.AccountBalanceQuerySet]):

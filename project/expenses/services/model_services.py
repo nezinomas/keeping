@@ -56,7 +56,7 @@ class ExpenseNameModelService(BaseModelService[managers.ExpenseNameQuerySet]):
         return self.objects
 
     def none(self):
-        return models.ExpenseName.objects.none()
+        return self.objects.none()
 
 
 class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
