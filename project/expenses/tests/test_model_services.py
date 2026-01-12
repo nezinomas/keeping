@@ -191,7 +191,9 @@ class TestExpenseService:
 def test_year_method_raises_not_implemented_error(mck):
     service = ExpenseTypeModelService(user=MagicMock())
 
-    expected_msg = "ExpenseTypeModelService.year is not implemented. Use items() instead."
+    expected_msg = (
+        "ExpenseTypeModelService.year is not implemented. Use items() instead."
+    )
     with pytest.raises(NotImplementedError, match=re.escape(expected_msg)):
         service.year(2023)
 

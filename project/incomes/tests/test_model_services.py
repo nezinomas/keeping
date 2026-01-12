@@ -48,7 +48,9 @@ def test_income_type_init_succeeds_with_real_user(main_user):
 def test_year_method_raises_not_implemented_error(mck):
     service = IncomeTypeModelService(user=MagicMock())
 
-    expected_msg = "IncomeTypeModelService.year is not implemented. Use items() instead."
+    expected_msg = (
+        "IncomeTypeModelService.year is not implemented. Use items() instead."
+    )
     with pytest.raises(NotImplementedError, match=re.escape(expected_msg)):
         service.year(2023)
 

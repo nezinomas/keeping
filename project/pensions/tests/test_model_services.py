@@ -69,7 +69,9 @@ def test_pension_balance_init_succeeds_with_real_user(main_user):
 def test_year_method_raises_not_implemented_error(mck):
     service = PensionTypeModelService(user=MagicMock())
 
-    expected_msg = "PensionTypeModelService.year is not implemented. Use items() instead."
+    expected_msg = (
+        "PensionTypeModelService.year is not implemented. Use items() instead."
+    )
     with pytest.raises(NotImplementedError, match=re.escape(expected_msg)):
         service.year(2023)
 
