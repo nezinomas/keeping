@@ -57,7 +57,7 @@ def test_year_method_does_not_call_database_pure_pytest(mocker):
     mock_qs = mocker.MagicMock()
     mocker.patch(
         "project.accounts.services.model_services.AccountModelService.get_queryset",
-        return_value=mock_qs
+        return_value=mock_qs,
     )
 
     service = AccountModelService(mocker.MagicMock())
