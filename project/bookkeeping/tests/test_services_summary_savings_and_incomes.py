@@ -1,9 +1,11 @@
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
-from mock import patch
 
-from ..services.summary_savings_and_incomes import Service
+from ..services.summary_savings_and_incomes import Data, Service
+
+MODULE_PATH = "project.bookkeeping.services.summary_savings_and_incomes.years"
 
 
 @pytest.fixture(name="incomes")
@@ -24,90 +26,66 @@ def fixture_savings():
     ]
 
 
-@patch(
-    "project.bookkeeping.services.summary_savings_and_incomes.years",
-    return_value=[1, 2, 3],
-)
-def test_chart_data_categories(mck, main_user):
-    actual = Service(main_user, SimpleNamespace(incomes=[], savings=[])).chart_data()
+def test_chart_data_categories(mocker, main_user):
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3])
+
+    data = cast(Data, SimpleNamespace(incomes=[], savings=[]))
+    actual = Service(main_user, data).chart_data()
 
     assert actual["categories"] == [1, 2]
 
 
-@patch(
-    "project.bookkeeping.services.summary_savings_and_incomes.years",
-    return_value=[1, 2, 3, 4],
-)
-def test_chart_data_incomes(mck, incomes, main_user):
-    actual = Service(
-        main_user, SimpleNamespace(incomes=incomes, savings=[])
-    ).chart_data()
+def test_chart_data_incomes(mocker, incomes, main_user):
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
+
+    data = cast(Data, SimpleNamespace(incomes=incomes, savings=[]))
+    actual = Service(main_user, data).chart_data()
 
     assert actual["incomes"] == [10, 11, 12]
 
 
-@patch(
-    "project.bookkeeping.services.summary_savings_and_incomes.years",
-    return_value=[1, 2, 3, 4],
-)
-def test_chart_data_incomes_no_record(mck, incomes, main_user):
+def test_chart_data_incomes_no_record(mocker, incomes, main_user):
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
     del incomes[1]
 
-    actual = Service(
-        main_user, SimpleNamespace(incomes=incomes, savings=[])
-    ).chart_data()
+    data = cast(Data, SimpleNamespace(incomes=incomes, savings=[]))
+    actual = Service(main_user, data).chart_data()
 
     assert actual["incomes"] == [10, 0, 12]
 
 
-@patch(
-    "project.bookkeeping.services.summary_savings_and_incomes.years",
-    return_value=[1, 2, 3, 4],
-)
-def test_chart_data_savings(mck, incomes, savings, main_user):
-    actual = Service(
-        main_user, SimpleNamespace(incomes=incomes, savings=savings)
-    ).chart_data()
+def test_chart_data_savings(mocker, incomes, savings, main_user):
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
+    data = cast(Data, SimpleNamespace(incomes=incomes, savings=savings))
+    actual = Service(main_user, data).chart_data()
 
     assert actual["savings"] == [20, 21, 22]
 
 
-@patch(
-    "project.bookkeeping.services.summary_savings_and_incomes.years",
-    return_value=[1, 2, 3, 4],
-)
-def test_chart_data_savings_no_record(mck, incomes, savings, main_user):
+def test_chart_data_savings_no_record(mocker, incomes, savings, main_user):
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
     del savings[1]
 
-    actual = Service(
-        main_user, SimpleNamespace(incomes=incomes, savings=savings)
-    ).chart_data()
+    data = cast(Data, SimpleNamespace(incomes=incomes, savings=savings))
+    actual = Service(main_user, data).chart_data()
 
     assert actual["savings"] == [20, 0, 22]
 
 
-@patch(
-    "project.bookkeeping.services.summary_savings_and_incomes.years",
-    return_value=[1, 2, 3, 4],
-)
-def test_chart_data_percents(mck, incomes, savings, main_user):
-    actual = Service(
-        main_user, SimpleNamespace(incomes=incomes, savings=savings)
-    ).chart_data()
+def test_chart_data_percents(mocker, incomes, savings, main_user):
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
+    data = cast(Data, SimpleNamespace(incomes=incomes, savings=savings))
+    actual = Service(main_user, data).chart_data()
 
     assert actual["percents"] == pytest.approx([200, 190.91, 183.33], 0.01)
 
 
-@patch(
-    "project.bookkeeping.services.summary_savings_and_incomes.years",
-    return_value=[1, 2, 3, 4],
-)
-def test_chart_data_percents_no_record(mck, incomes, savings, main_user):
+def test_chart_data_percents_no_record(mocker, incomes, savings, main_user):
+    mocker.patch(MODULE_PATH, return_value=[1, 2, 3, 4])
     del incomes[1]
     del savings[2]
 
-    actual = Service(
-        main_user, SimpleNamespace(incomes=incomes, savings=savings)
-    ).chart_data()
+    data = cast(Data, SimpleNamespace(incomes=incomes, savings=savings))
+    actual = Service(main_user, data).chart_data()
 
     assert actual["percents"] == [200, 0, 0]
