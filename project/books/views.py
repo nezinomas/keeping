@@ -1,3 +1,5 @@
+from typing import cast
+
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
@@ -11,16 +13,19 @@ from ..core.mixins.views import (
     UpdateViewMixin,
     rendered_content,
 )
+from ..users.models import User
 from . import forms, models, services
-from .services.model_services import BookModelService, BookTargetModelService
+from .services.model_services import BookModelService
 
 
 class Index(TemplateViewMixin):
     template_name = "books/index.html"
 
     def get_context_data(self, **kwargs):
+        user = cast(User, self.request.user)
+        year = cast(int, user.year)
         context = {
-            "year": self.request.user.year,
+            "year": year,
             "tab": self.request.GET.get("tab"),
             "info_row": rendered_content(self.request, InfoRow, **self.kwargs),
             "books": rendered_content(self.request, Lists, **self.kwargs),
@@ -32,12 +37,9 @@ class ChartReaded(TemplateViewMixin):
     template_name = "books/readed_books.html"
 
     def get_context_data(self, **kwargs):
-        data = services.ChartReadedData(self.request.user)
+        user = cast(User, self.request.user)
+        data = services.ChartReadedData(user)
         obj = services.ChartReaded(data)
-
-        # if not data.readed:
-        #     self.template_name = "empty.html"
-        #     return {}
 
         return super().get_context_data(**kwargs) | {"chart": obj.context()}
 
@@ -46,7 +48,8 @@ class InfoRow(TemplateViewMixin):
     template_name = "books/info_row.html"
 
     def get_context_data(self, **kwargs):
-        obj = services.InfoRow(self.request.user)
+        user = cast(User, self.request.user)
+        obj = services.InfoRow(user)
         context = {
             "readed": obj.readed,
             "reading": obj.reading,
@@ -60,14 +63,13 @@ class Lists(ListViewMixin):
     per_page = 50
 
     def get_queryset(self):
-        user = self.request.user
+        user = cast(User, self.request.user)
+        year = cast(int, user.year)
         service = BookModelService(user)
-        return (
-            service.objects if self.request.GET.get("tab") else service.year(user.year)
-        )
+        return service.objects if self.request.GET.get("tab") else service.year(year)
 
     def get_context_data(self, **kwargs):
-        page = self.request.GET.get("page", 1)
+        page = int(self.request.GET.get("page", 1))
         sql = self.get_queryset()
         paginator = CountlessPaginator(
             query=sql, total_records=len(sql), per_page=self.per_page
@@ -78,7 +80,7 @@ class Lists(ListViewMixin):
             "object_list": paginator.get_page(page),
             "url": reverse("books:list"),
             "tab": self.request.GET.get("tab"),
-            "first_item": paginator.count - (paginator.per_page * (int(page) - 1)),
+            "first_item": paginator.count - paginator.per_page * (page - 1),
             "paginator_object": {
                 "total_pages": paginator.total_pages,
                 "page_range": page_range,
