@@ -1,7 +1,7 @@
 from datetime import date
+from types import SimpleNamespace
 
 import pytest
-from mock import Mock, PropertyMock, patch
 
 from ..services.detailed_one_category import Service, load_service
 
@@ -88,70 +88,51 @@ def test_order_by_total_col(data):
     assert actual["total"] == 39.0
 
 
-@pytest.mark.parametrize(
-    "category",
-    [
-        ("pajamos"),
-        ("incomes"),
-    ],
-)
-@patch("project.bookkeeping.services.detailed_one_category.IncomeModelService")
-@patch("project.bookkeeping.services.detailed_one_category.ExpenseModelService")
-@patch("project.bookkeeping.services.detailed_one_category.SavingModelService")
-@patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
-def test_load_service_category_income(
-    mck_service, mck_saving, mck_expenses, mck_incomes, category, main_user
-):
-    order = "jan"
-    category = category
+@pytest.fixture(name="mock_detailed_service")
+def fixture_mock_detailed_service(mocker):
+    module_path = "project.bookkeeping.services.detailed_one_category"
 
-    load_service(main_user, order, category)
+    mck_incomes = mocker.patch(f"{module_path}.IncomeModelService")
+    mck_expenses = mocker.patch(f"{module_path}.ExpenseModelService")
+    mck_saving = mocker.patch(f"{module_path}.SavingModelService")
 
-    assert mck_incomes.called
-    assert not mck_saving.called
-    assert not mck_expenses.called
-
-    assert mck_service.called
+    mck_context = mocker.patch.object(
+        Service, "context", new_callable=mocker.PropertyMock, return_value="mck_ctx"
+    )
+    return SimpleNamespace(
+        incomes=mck_incomes,
+        expenses=mck_expenses,
+        saving=mck_saving,
+        context=mck_context,
+    )
 
 
-@pytest.mark.parametrize(
-    "category",
-    [
-        ("taupymas"),
-        ("savings"),
-    ],
-)
-@patch("project.bookkeeping.services.detailed_one_category.IncomeModelService")
-@patch("project.bookkeeping.services.detailed_one_category.ExpenseModelService")
-@patch("project.bookkeeping.services.detailed_one_category.SavingModelService")
-@patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
-def test_load_service_category_saving(
-    mck_service, mck_saving, mck_expenses, mck_incomes, category, main_user
-):
-    order = "jan"
-    category = category
+@pytest.mark.parametrize("category", [("pajamos"), ("incomes")])
+def test_load_service_category_income(mock_detailed_service, category, main_user):
+    load_service(main_user, "jan", category)
 
-    ctx = load_service(main_user, order, category)
-    assert ctx == "mck_ctx"
+    mock_detailed_service.incomes.assert_called_once_with(main_user)
+    mock_detailed_service.saving.assert_not_called()
+    mock_detailed_service.expenses.assert_not_called()
 
-    assert not mck_incomes.called
-    assert mck_saving.called
-    assert not mck_expenses.called
+    mock_detailed_service.context.assert_called_once()
 
 
-@patch("project.bookkeeping.services.detailed_one_category.IncomeModelService")
-@patch("project.bookkeeping.services.detailed_one_category.ExpenseModelService")
-@patch("project.bookkeeping.services.detailed_one_category.SavingModelService")
-@patch.object(Service, "context", new_callable=PropertyMock, return_value="mck_ctx")
-def test_load_service_category_expense(
-    mck_service, mck_saving, mck_expenses, mck_incomes, main_user
-):
-    order = "jan"
-    category = "category_name"
+@pytest.mark.parametrize("category", [("taupymas"), ("savings")])
+def test_load_service_category_saving(mock_detailed_service, category, main_user):
+    load_service(main_user, "jan", category)
 
-    ctx = load_service(main_user, order, category)
-    assert ctx == "mck_ctx"
+    mock_detailed_service.incomes.assert_not_called()
+    mock_detailed_service.saving.assert_called_once_with(main_user)
+    mock_detailed_service.expenses.assert_not_called()
+    mock_detailed_service.context.assert_called_once()
 
-    assert not mck_incomes.called
-    assert not mck_saving.called
-    assert mck_expenses.called
+
+def test_load_service_category_expense(mock_detailed_service, main_user):
+    load_service(main_user, "jan", "category_name")
+
+    mock_detailed_service.incomes.assert_not_called()
+    mock_detailed_service.saving.assert_not_called()
+    mock_detailed_service.expenses.assert_called_once_with(main_user)
+
+    mock_detailed_service.context.assert_called_once()
