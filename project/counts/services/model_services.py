@@ -1,6 +1,7 @@
 from typing import cast
-from .. import managers, models
+
 from ...core.services.model_services import BaseModelService
+from .. import managers, models
 
 
 class CountModelService(BaseModelService[managers.CountQuerySet]):

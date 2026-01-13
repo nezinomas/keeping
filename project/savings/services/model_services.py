@@ -6,8 +6,8 @@ from django.db.models import Count, F, Q, Sum, Value
 from django.db.models.functions import TruncMonth
 from django.utils.translation import gettext as _
 
-from .. import managers, models
 from ...core.services.model_services import BaseModelService
+from .. import managers, models
 
 
 class SavingTypeModelService(BaseModelService[managers.SavingTypeQuerySet]):

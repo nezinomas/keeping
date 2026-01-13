@@ -1,11 +1,10 @@
-from typing import Optional
+from typing import Optional, cast
 
 from django.db.models import Count, F, Sum, Value
 from django.db.models.functions import TruncMonth, TruncYear
 
-from .. import managers, models
-from typing import cast
 from ...core.services.model_services import BaseModelService
+from .. import managers, models
 
 
 class IncomeTypeModelService(BaseModelService[managers.IncomeTypeQuerySet]):

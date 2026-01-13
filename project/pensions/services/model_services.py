@@ -2,8 +2,8 @@ from typing import cast
 
 from django.db.models import F, Sum
 
-from .. import managers, models
 from ...core.services.model_services import BaseModelService
+from .. import managers, models
 
 
 class PensionTypeModelService(BaseModelService[managers.PensionTypeQuerySet]):

@@ -1,8 +1,9 @@
 from typing import Any, cast
+
 from django.db.models import Model
 
-from ...users.models import User
 from ...core.services.model_services import BaseModelService
+from ...users.models import User
 
 
 class ModelService(BaseModelService):

@@ -24,8 +24,8 @@ from django.db.models.functions import (
 )
 from django.urls import reverse
 
-from .. import managers, models
 from ...core.services.model_services import BaseModelService
+from .. import managers, models
 
 
 class ExpenseTypeModelService(BaseModelService[managers.ExpenseTypeQuerySet]):

@@ -4,10 +4,10 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ...accounts.services.model_services import AccountBalanceModelService
+from ...core.services.model_services import BaseModelService
 from ...pensions.services.model_services import PensionBalanceModelService
 from ...savings.services.model_services import SavingBalanceModelService
 from ...users.models import User
-from ...core.services.model_services import BaseModelService
 
 
 @dataclass
