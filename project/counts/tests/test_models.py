@@ -259,9 +259,10 @@ def test_count_type_update():
 #                                                                         generate menu
 # -------------------------------------------------------------------------------------
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-@patch("project.counts.signals.render_to_string")
-@patch("builtins.open")
-def test_menu_create_journal_id_folder(open_mock, render_mock, main_user):
+def test_menu_create_journal_id_folder(mocker, main_user):
+    render_mock = mocker.patch("project.counts.signals.render_to_string")
+    open_mock = mocker.patch("builtins.open")
+
     journal_pk = main_user.journal.pk
     folder = Path(settings.MEDIA_ROOT) / str(journal_pk)
 

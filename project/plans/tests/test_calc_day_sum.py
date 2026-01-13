@@ -1,6 +1,5 @@
 import polars as pl
 import pytest
-from mock import patch
 
 from ..lib.calc_day_sum import PlanCalculateDaySum
 
@@ -232,9 +231,12 @@ def test_incomes(data):
     assert actual["december"] == 450
 
 
-@patch("project.plans.lib.calc_day_sum.PlanCalculateDaySum._calc_df")
-def test_calc_df_called_once_then_dataframe_not_empty(mck, data_empty):
-    mck.return_value = pl.DataFrame([{"name": "A", "january": 66}])
+def test_calc_df_called_once_then_dataframe_not_empty(mocker, data_empty):
+    mck = mocker.patch(
+        "project.plans.lib.calc_day_sum.PlanCalculateDaySum._calc_df",
+        return_value=pl.DataFrame([{"name": "A", "january": 66}]),
+    )
+
     obj = PlanCalculateDaySum(data_empty, 1)
 
     result1 = obj._get_row("A")
@@ -246,9 +248,12 @@ def test_calc_df_called_once_then_dataframe_not_empty(mck, data_empty):
     mck.assert_called_once()
 
 
-@patch("project.plans.lib.calc_day_sum.PlanCalculateDaySum._calc_df")
-def test_calc_df_called_once_then_dataframe_is_empty(mck, data_empty):
-    mck.return_value = pl.DataFrame()
+def test_calc_df_called_once_then_dataframe_is_empty(mocker, data_empty):
+    mck = mocker.patch(
+        "project.plans.lib.calc_day_sum.PlanCalculateDaySum._calc_df",
+        return_value=pl.DataFrame(),
+    )
+
     obj = PlanCalculateDaySum(data_empty, 1)
 
     result1 = obj._get_row("A")

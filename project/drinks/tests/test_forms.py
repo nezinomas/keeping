@@ -2,7 +2,6 @@ from datetime import date
 
 import pytest
 import time_machine
-from mock import patch
 
 from ...users.factories import UserFactory
 from ..factories import DrinkFactory, DrinkTargetFactory
@@ -54,8 +53,9 @@ def test_drink_option_initial_value(main_user):
     assert '<option value="beer" selected>Alus</option>' in form
 
 
-@patch("project.drinks.forms.App_name", "Counter Type")
-def test_drink_valid_data(main_user):
+def test_drink_valid_data(mocker, main_user):
+    mocker.patch("project.drinks.forms.App_name", "Counter Type")
+
     form = DrinkForm(
         user=main_user,
         data={
@@ -75,10 +75,11 @@ def test_drink_valid_data(main_user):
     assert data.counter_type == "Counter Type"
 
 
-@patch("project.drinks.forms.App_name", "Counter Type")
 @time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
-def test_drink_invalid_date(main_user, year):
+def test_drink_invalid_date(mocker, main_user, year):
+    mocker.patch("project.drinks.forms.App_name", "Counter Type")
+
     form = DrinkForm(
         user=main_user,
         data={

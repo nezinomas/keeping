@@ -2,19 +2,22 @@ from datetime import date
 
 import pytest
 import time_machine
-from mock import MagicMock, PropertyMock, patch
+from mock import MagicMock, PropertyMock
 
 from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
 from ..services.month import Charts, Info, MainTable, Objects
 
+MODULE_PATH = "project.bookkeeping.services.month.Objects"
+
 
 @time_machine.travel("1999-1-1")
-@patch("project.bookkeeping.services.month.Objects._initialize_plans")
-@patch("project.bookkeeping.services.month.Objects._initialize_spending")
-@patch("project.bookkeeping.services.month.Objects._initialize_main_table")
-@patch("project.bookkeeping.services.month.Objects._initialize_charts")
-def test_info_context(mck_plans, mck_spending, mck_main_table, mck_charts, main_user):
+def test_info_context(mocker, main_user):
+    mocker.patch(f"{MODULE_PATH}._initialize_plans")
+    mocker.patch(f"{MODULE_PATH}._initialize_spending")
+    mocker.patch(f"{MODULE_PATH}._initialize_main_table")
+    mocker.patch(f"{MODULE_PATH}._initialize_charts")
+
     main_user.year = 1
     main_user.month = 1
 
