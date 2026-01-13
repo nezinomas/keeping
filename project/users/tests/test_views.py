@@ -1,5 +1,5 @@
 import re
-from datetime import date, timedelta
+from datetime import timedelta
 
 import pytest
 import time_machine
@@ -17,7 +17,6 @@ from django.test import override_settings
 from django.urls import resolve, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from mock import patch
 
 from ...journals.models import Journal
 from ...users.factories import UserFactory
@@ -56,10 +55,8 @@ def test_user_journal(client):
 
 
 @pytest.mark.disable_get_user_patch
-@patch("project.users.views.datetime")
-def test_user_year_month_values_fill_on_login_if_empty(dt_mock, client):
-    dt_mock.now.return_value = date(2000, 12, 1)
-
+@time_machine.travel("2000-12-15")
+def test_user_year_month_values_fill_on_login_if_empty(client):
     UserFactory(year=None, month=None)
 
     url = reverse("users:login")
@@ -809,8 +806,8 @@ def test_invite_signup_redirection(_invite_client):
     assert _invite_client.status_code == 302
 
 
-@patch("project.users.views.User")
-def test_invite_signup_broken_user(mck, client, main_user):
+def test_invite_signup_broken_user(mocker, client, main_user):
+    mck = mocker.patch("project.users.views.User")
     mck.objects.get.side_effect = AttributeError
 
     signer_ = TimestampSigner(salt=settings.SALT)
@@ -829,8 +826,8 @@ def test_invite_signup_broken_user(mck, client, main_user):
     assert User.objects.all().count() == 1
 
 
-@patch("project.users.views.User")
-def test_invite_signup_broken_user_no_object(mck, client, main_user):
+def test_invite_signup_broken_user_no_object(mocker, client, main_user):
+    mck = mocker.patch("project.users.views.User")
     mck.objects.get.side_effect = ObjectDoesNotExist
 
     signer_ = TimestampSigner(salt=settings.SALT)

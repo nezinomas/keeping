@@ -1,9 +1,10 @@
 from types import SimpleNamespace
 
 import pytest
-from mock import patch
 
 from ..services.accounts import load_service
+
+SERVICE = "project.bookkeeping.services.accounts.get_data"
 
 
 @pytest.fixture(name="data")
@@ -18,9 +19,8 @@ def fixture_data():
     ]
 
 
-@patch("project.bookkeeping.services.accounts.get_data")
-def test_total_row(mck, data, main_user):
-    mck.return_value = data
+def test_total_row(mocker, data, main_user):
+    mocker.patch(SERVICE, return_value=data)
 
     actual = load_service(main_user, 1)["total_row"]
 
@@ -32,9 +32,8 @@ def test_total_row(mck, data, main_user):
     assert actual["delta"] == 12
 
 
-@patch("project.bookkeeping.services.accounts.get_data")
-def test_total_row_no_data(mck, main_user):
-    mck.return_value = []
+def test_total_row_no_data(mocker, main_user):
+    mocker.patch(SERVICE, return_value=[])
     actual = load_service(main_user, 1)["total_row"]
 
     assert actual["past"] == 0

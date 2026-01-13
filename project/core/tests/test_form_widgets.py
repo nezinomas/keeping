@@ -1,5 +1,4 @@
 from django.utils.translation import gettext_lazy as _
-from mock import patch
 
 from ..lib.form_widgets import DatePickerWidget, YearPickerWidget
 
@@ -62,7 +61,8 @@ def test_year_picker_none_attrs():
     assert widget.attrs["placeholder"] == str(_("Select a year"))
 
 
-@patch("project.core.lib.form_widgets._", return_value="Translated Date")
-def test_date_picker_uses_gettext_lazy(mock_gettext):
+def test_date_picker_uses_gettext_lazy(mocker):
+    mocker.patch("project.core.lib.form_widgets._", return_value="Translated Date")
+
     widget = DatePickerWidget()
     assert widget.attrs["placeholder"] == "Translated Date"
