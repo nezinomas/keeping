@@ -2,6 +2,7 @@ function chartConsumption(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
     const avg_line_color = (chartData.avg > chartData.target) ? "var(--chart-negative-dark)" : "var(--chart-positive-dark)";
+    const avg_text_color = (chartData.avg > chartData.target) ? "var(--chart-negative-super-dark)" : "var(--chart-positive-super-dark)";
 
     const avg_label_y = (chartData.target - 50 <= chartData.avg && chartData.avg <= chartData.target) ? 15 : -5
     const target_label_y = (chartData.avg - 50 <= chartData.target && chartData.target <= chartData.avg) ? 15 : -5;
@@ -59,7 +60,7 @@ function chartConsumption(idData, idContainer) {
                     x: -5,
                     y: avg_label_y,
                     style: {
-                        color: avg_line_color,
+                        color: avg_text_color,
                         fontWeight: "bold"
                     }
                 }
