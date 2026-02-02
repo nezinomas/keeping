@@ -31,7 +31,8 @@ function chartConsumption(idData, idContainer) {
                 text: ""
             },
             min: 0,
-            plotLines: [{
+            plotLines: [
+            {
                 color: "#333",
                 width: 2,
                 value: chartData.target,
@@ -46,7 +47,8 @@ function chartConsumption(idData, idContainer) {
                         fontWeight: "bold"
                     }
                 }
-            }, {
+            },
+            {
                 color: avg_line_color,
                 width: 2,
                 value: chartData.avg,
