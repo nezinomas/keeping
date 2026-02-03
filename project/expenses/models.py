@@ -1,7 +1,6 @@
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import F
-from django.urls import reverse_lazy
 
 from ..accounts.models import Account
 from ..core.models import TitleAbstract
