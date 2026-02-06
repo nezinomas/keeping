@@ -49,7 +49,12 @@ class ConvertToPriceMixin:
         return self._convert_field("fee")
 
     def _convert_field(self, name):
-        val = self.cleaned_data.get(name)
-        val_cents = float_to_int_cents(val) if val is not None else val
-        self.cleaned_data[name] = val_cents
-        return val_cents
+        price_original = self.cleaned_data.get(name)
+
+        if not price_original:
+            return price_original
+
+        price_converted = float_to_int_cents(price_original)
+        self.cleaned_data[name] = price_converted
+        return price_converted
+
