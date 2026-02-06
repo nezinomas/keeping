@@ -30,7 +30,7 @@ class ConvertToCents:
         return obj
 
 
-class PlansConvertToCents:
+class PlansConvertToCentsMixin:
     def get_object(self):
         obj = super().get_object()
 
