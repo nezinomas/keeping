@@ -41,7 +41,7 @@ class PlansConvertToCents:
         return obj
 
 
-class ConvertToPrice:
+class ConvertToPriceMixin:
     def clean_price(self):
         return self._convert_field("price")
 
