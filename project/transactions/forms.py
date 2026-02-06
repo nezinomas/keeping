@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertToPrice
+from ..core.lib.convert_price import ConvertToPriceMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
@@ -14,7 +14,7 @@ from ..savings.services.model_services import (
 from .models import SavingChange, SavingClose, SavingType, Transaction
 
 
-class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
+class TransactionForm(ConvertToPriceMixin, YearBetweenMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
 
     class Meta:
@@ -68,7 +68,7 @@ class TransactionForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["to_account"].label = _("To account")
 
 
-class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
+class SavingCloseForm(ConvertToPriceMixin, YearBetweenMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
     fee = forms.FloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
@@ -124,7 +124,7 @@ class SavingCloseForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         return super().save(*args, **kwargs)
 
 
-class SavingChangeForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
+class SavingChangeForm(ConvertToPriceMixin, YearBetweenMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
     fee = forms.FloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)

@@ -30,7 +30,7 @@ class ConvertToCents:
         return obj
 
 
-class PlansConvertToCents:
+class PlansConvertToCentsMixin:
     def get_object(self):
         obj = super().get_object()
 
@@ -41,15 +41,16 @@ class PlansConvertToCents:
         return obj
 
 
-class ConvertToPrice:
-    def clean_price(self):
-        return self._convert_field("price")
+class ConvertToPriceMixin:
+    price_fields = ["price", "fee"]
 
-    def clean_fee(self):
-        return self._convert_field("fee")
+    def clean(self):
+        cleaned_data = super().clean()
 
-    def _convert_field(self, name):
-        val = self.cleaned_data.get(name)
-        val_cents = float_to_int_cents(val) if val is not None else val
-        self.cleaned_data[name] = val_cents
-        return val_cents
+        for field_name in self.price_fields:
+            if not (val := cleaned_data.get(field_name)):
+                continue
+
+            cleaned_data[field_name] = float_to_int_cents(val)
+
+        return cleaned_data

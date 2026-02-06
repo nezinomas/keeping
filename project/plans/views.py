@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.convert_price import PlansConvertToCents
+from ..core.lib.convert_price import PlansConvertToCentsMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -70,7 +70,7 @@ class ExpensesNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:expense_list")
 
 
-class ExpensesUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
+class ExpensesUpdate(CssClassMixin, PlansConvertToCentsMixin, UpdateViewMixin):
     model = models.ExpensePlan
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reloadExpenses"
@@ -107,7 +107,7 @@ class IncomesNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Incomes plans")
 
 
-class IncomesUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
+class IncomesUpdate(CssClassMixin, PlansConvertToCentsMixin, UpdateViewMixin):
     model = models.IncomePlan
     form_class = forms.IncomePlanForm
     hx_trigger_django = "reloadIncomes"
@@ -144,7 +144,7 @@ class SavingsNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Savings plans")
 
 
-class SavingsUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
+class SavingsUpdate(CssClassMixin, PlansConvertToCentsMixin, UpdateViewMixin):
     model = models.SavingPlan
     form_class = forms.SavingPlanForm
     hx_trigger_django = "reloadSavings"
@@ -181,7 +181,7 @@ class DayNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Day plans")
 
 
-class DayUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
+class DayUpdate(CssClassMixin, PlansConvertToCentsMixin, UpdateViewMixin):
     model = models.DayPlan
     form_class = forms.DayPlanForm
     hx_trigger_django = "reloadDay"
@@ -218,7 +218,7 @@ class NecessaryNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:necessary_list")
 
 
-class NecessaryUpdate(CssClassMixin, PlansConvertToCents, UpdateViewMixin):
+class NecessaryUpdate(CssClassMixin, PlansConvertToCentsMixin, UpdateViewMixin):
     model = models.NecessaryPlan
     form_class = forms.NecessaryPlanForm
     hx_trigger_django = "reloadNecessary"

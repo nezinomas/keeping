@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertToPrice
+from ..core.lib.convert_price import ConvertToPriceMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
@@ -12,7 +12,7 @@ from . import models
 from .services.model_services import DebtModelService, DebtReturnModelService
 
 
-class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
+class DebtForm(ConvertToPriceMixin, YearBetweenMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
 
     class Meta:
@@ -99,7 +99,7 @@ class DebtForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         return cleaned_data
 
 
-class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
+class DebtReturnForm(ConvertToPriceMixin, YearBetweenMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
 
     class Meta:
@@ -145,8 +145,6 @@ class DebtReturnForm(ConvertToPrice, YearBetweenMixin, forms.ModelForm):
         self.fields["remark"].label = _("Remark")
 
     def clean_price(self):
-        super().clean_price()
-
         price = self.cleaned_data["price"]
         debt = self.cleaned_data.get("debt")
 
