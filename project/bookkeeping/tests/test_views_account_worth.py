@@ -78,13 +78,22 @@ def test_formset_new_null_value(client_logged):
     assert not actual.price
 
 
-def test_formset_new_post_save(client_logged):
+@pytest.mark.parametrize(
+    "price, expected",
+    [
+        ("0.01", 1),
+        ("4669.73", 466973),
+        ("4669.736", 466973),
+        ("466.73", 46673),    # Trap case: ensures binary noise is handled
+    ],
+)
+def test_formset_new_post(client_logged, price, expected):
     i = AccountFactory()
     data = {
         "form-TOTAL_FORMS": 1,
         "form-INITIAL_FORMS": 0,
         "form-0-date": "1999-9-9",
-        "form-0-price": "0.01",
+        "form-0-price": price,
         "form-0-account": i.pk,
     }
 
@@ -92,7 +101,7 @@ def test_formset_new_post_save(client_logged):
     client_logged.post(url, data, follow=True)
 
     actual = AccountBalance.objects.get(year=1999)
-    assert actual.have == 1
+    assert actual.have == expected
 
 
 def test_formset_new_post_save_empty_price(client_logged):
