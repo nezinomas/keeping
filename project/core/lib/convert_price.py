@@ -42,19 +42,15 @@ class PlansConvertToCentsMixin:
 
 
 class ConvertToPriceMixin:
-    def clean_price(self):
-        return self._convert_field("price")
+    price_fields = ["price", "fee"]
 
-    def clean_fee(self):
-        return self._convert_field("fee")
+    def clean(self):
+        cleaned_data = super().clean()
 
-    def _convert_field(self, name):
-        price_original = self.cleaned_data.get(name)
+        for field_name in self.price_fields:
+            if not (val := cleaned_data.get(field_name)):
+                continue
 
-        if not price_original:
-            return price_original
+            cleaned_data[field_name] = float_to_int_cents(val)
 
-        price_converted = float_to_int_cents(price_original)
-        self.cleaned_data[name] = price_converted
-        return price_converted
-
+        return cleaned_data

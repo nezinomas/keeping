@@ -145,8 +145,6 @@ class DebtReturnForm(ConvertToPriceMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["remark"].label = _("Remark")
 
     def clean_price(self):
-        super().clean_price()
-
         price = self.cleaned_data["price"]
         debt = self.cleaned_data.get("debt")
 
