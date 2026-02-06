@@ -14,3 +14,17 @@ from ..lib.convert_price import float_to_int_cents
 )
 def test_float_to_int_conversion(price_float, expected_int):
     assert float_to_int_cents(price_float) == expected_int
+
+
+@pytest.mark.parametrize(
+    "cents_int, expected_float",
+    [
+        (1, 0.01),
+        (466973, 4669.73),
+        (46673, 466.73),
+        (0, 0.0),
+        (100, 1.0),
+    ],
+)
+def test_int_cents_to_float_conversion(cents_int, expected_float):
+    assert int_cents_to_float(cents_int) == pytest.approx(expected_float)

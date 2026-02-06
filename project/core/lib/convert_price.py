@@ -13,6 +13,10 @@ def float_to_int_cents(value: float) -> int:
     return int(value * 100 + 0.00001)
 
 
+def int_cents_to_float(value: int) -> float:
+    return 0.0 if value is None else value / 100.0
+
+
 class ConvertToCents:
     def get_object(self):
         obj = super().get_object()
