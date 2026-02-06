@@ -1,6 +1,18 @@
 import calendar
 
 
+def float_to_int_cents(value: float) -> int:
+    """
+    Converts float to integer cents, discarding digits beyond two decimal places.
+    Handles IEEE 754 precision issues using epsilon nudging.
+    """
+    if value is None:
+        return 0
+    # Multiply by 100 and add epsilon to bridge binary noise
+    # Then cast to int to truncate (discard) remaining decimals
+    return int(value * 100 + 0.00001)
+
+
 class ConvertToCents:
     def get_object(self):
         obj = super().get_object()
