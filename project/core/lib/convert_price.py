@@ -22,10 +22,10 @@ class ConvertToCents:
         obj = super().get_object()
 
         if hasattr(obj, "price") and obj.price:
-            obj.price = obj.price / 100
+            obj.price = int_cents_to_float(obj.price)
 
         if hasattr(obj, "fee") and obj.fee:
-            obj.fee = obj.fee / 100
+            obj.fee = int_cents_to_float(obj.fee)
 
         return obj
 
