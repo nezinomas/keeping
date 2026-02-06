@@ -42,11 +42,14 @@ class PlansConvertToCents:
 
 
 class ConvertToPrice:
-    def save(self, *args, **kwargs):
-        if price := self.cleaned_data.get("price"):
-            self.instance.price = round(price * 100)
+    def clean_price(self):
+        return self._convert_field("price")
 
-        if fee := self.cleaned_data.get("fee"):
-            self.instance.fee = round(fee * 100)
+    def clean_fee(self):
+        return self._convert_field("fee")
 
-        return super().save(*args, **kwargs)
+    def _convert_field(self, name):
+        val = self.cleaned_data.get(name)
+        val_cents = float_to_int_cents(val) if val is not None else val
+        self.cleaned_data[name] = val_cents
+        return val_cents

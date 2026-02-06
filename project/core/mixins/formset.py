@@ -75,7 +75,6 @@ class FormsetMixin:
                     continue
 
                 model = form.instance._meta.model  # get worth model
-                form.cleaned_data["price"] *= 100  # convert price to cents
                 objects.append(model(**form.cleaned_data))  # create worth object
 
             # if any objects, bulk_create and call signal method
