@@ -4,7 +4,7 @@ from typing import Any, cast
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ...core.lib.convert_price import ConvertToCents
+from ...core.lib.convert_price import ConvertToCentsMixin
 from ...core.lib.utils import get_action_buttons_html
 from ...core.mixins.views import (
     CreateViewMixin,
@@ -74,7 +74,7 @@ class New(CreateViewMixin):
     template_name = "expenses/expense_form.html"
 
 
-class Update(ConvertToCents, UpdateViewMixin):
+class Update(ConvertToCentsMixin, UpdateViewMixin):
     model = models.Expense
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")

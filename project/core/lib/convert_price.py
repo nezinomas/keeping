@@ -17,7 +17,7 @@ def int_cents_to_float(value: int) -> float:
     return 0.0 if value is None else value / 100.0
 
 
-class ConvertToCents:
+class ConvertToCentsMixin:
     def get_object(self):
         obj = super().get_object()
 
