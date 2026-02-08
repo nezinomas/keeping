@@ -29,4 +29,4 @@ def test_float_to_int_conversion(price_float, expected_int):
     ],
 )
 def test_int_cents_to_float_conversion(cents_int, expected_float):
-    assert int_cents_to_float(cents_int) == pytest.approx(expected_float)
+    assert int_cents_to_float(cents_int) == expected_float
