@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertToPriceMixin
+from ..core.lib.convert_price import ConvertToCentsMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
@@ -31,7 +31,7 @@ class SavingTypeForm(forms.ModelForm):
         self.fields["type"].label = _("Type")
 
 
-class SavingForm(ConvertToPriceMixin, YearBetweenMixin, forms.ModelForm):
+class SavingForm(ConvertToCentsMixin, YearBetweenMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0, required=False)
     fee = forms.FloatField(min_value=0, required=False)
 

@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.convert_price import ConvertToCentsMixin
+from ..core.lib.convert_price import ConvertToPriceMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -34,7 +34,7 @@ class New(CreateViewMixin):
     modal_form_title = _("Incomes")
 
 
-class Update(ConvertToCentsMixin, UpdateViewMixin):
+class Update(ConvertToPriceMixin, UpdateViewMixin):
     model = models.Income
     form_class = forms.IncomeForm
     success_url = reverse_lazy("incomes:list")

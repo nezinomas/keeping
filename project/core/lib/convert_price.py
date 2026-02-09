@@ -17,7 +17,7 @@ def int_cents_to_float(value: int) -> float:
     return 0.0 if value is None else value / 100.0
 
 
-class ConvertToCentsMixin:
+class ConvertToPriceMixin:
     # Core defaults that should always be processed
     _base_price_fields = ["price", "fee"]
 
@@ -50,12 +50,12 @@ class PlansConvertToCentsMixin:
         return obj
 
 
-class ConvertToPriceMixin:
+class ConvertToCentsMixin:
     price_fields = ["price", "fee"]
 
     def clean(self):
         cleaned_data = super().clean()
-
+        print(f'--------------------------->\n{cleaned_data=}\n')
         for field_name in self.price_fields:
             if not (val := cleaned_data.get(field_name)):
                 continue

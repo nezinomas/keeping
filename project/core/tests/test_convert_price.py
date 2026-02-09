@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from ..lib.convert_price import (
     float_to_int_cents,
     int_cents_to_float,
-    ConvertToCentsMixin,
+    ConvertToPriceMixin,
 )
 
 
@@ -53,7 +53,7 @@ def test_covert_to_cents_mixin_has_fields(mocker, cents, expected_float):
     mock_obj = SimpleNamespace(price=cents, fee=cents)
     mocker.patch.object(DummmyClassForGetOject, "get_object", return_value=mock_obj)
 
-    class DummyClass(ConvertToCentsMixin, DummmyClassForGetOject):
+    class DummyClass(ConvertToPriceMixin, DummmyClassForGetOject):
         pass
 
     view = DummyClass()
@@ -67,7 +67,7 @@ def test_covert_to_cents_mixin_missing_fields(mocker):
     mock_obj = SimpleNamespace(price=1000)
     mocker.patch.object(DummmyClassForGetOject, "get_object", return_value=mock_obj)
 
-    class DummyClass(ConvertToCentsMixin, DummmyClassForGetOject):
+    class DummyClass(ConvertToPriceMixin, DummmyClassForGetOject):
         pass
 
     view = DummyClass()
@@ -78,7 +78,7 @@ def test_covert_to_cents_mixin_missing_fields(mocker):
 
 
 def test_covert_to_cents_mixin_merges_fields(mocker):
-    class DummyClass(ConvertToCentsMixin, DummmyClassForGetOject):
+    class DummyClass(ConvertToPriceMixin, DummmyClassForGetOject):
         price_fields = ["new_field"]
 
     mock_obj = SimpleNamespace(price=1000, fee=2000, new_field=3000)
