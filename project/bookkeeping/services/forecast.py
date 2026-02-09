@@ -1,8 +1,10 @@
 import itertools as it
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import cast
 
 import polars as pl
+from django.db import models
 from django.db.models import QuerySet, Sum
 
 from ...accounts.services.model_services import AccountBalanceModelService
@@ -22,7 +24,7 @@ class Data:
     year: int = field(init=False, default=1974)
 
     def __post_init__(self):
-        self.year = self.user.year
+        self.year = cast(int, self.user.year)
 
     def data(self) -> dict[str, list[int]]:
         incomes = self._make_data(IncomeModelService(self.user).sum_by_month(self.year))
@@ -34,7 +36,9 @@ class Data:
             SavingCloseModelService(self.user).sum_by_month(self.year)
         )
         planned_incomes = self._make_planned_data(
-            ModelService(IncomePlan, self.user).year(self.year).values(*monthnames())
+            ModelService(cast(models.Model, IncomePlan), self.user)
+            .year(self.year)
+            .values(*monthnames())
         )
         return {
             "incomes": incomes,
@@ -221,7 +225,7 @@ def get_month(year: int) -> int:
 
 
 def load_service(user: User) -> dict:
-    year = user.year
+    year = cast(int, user.year)
     data = Data(user)
     month = get_month(year)
     forecast = Forecast(month, data.data()).forecast()
