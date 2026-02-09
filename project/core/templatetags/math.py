@@ -1,12 +1,14 @@
 from django import template
 
+from ..lib.convert_price import int_cents_to_float
+
 register = template.Library()
 
 
 @register.filter
 def price(value: int) -> float:
     try:
-        return value / 100
+        return int_cents_to_float(value)
     except TypeError:
         return value
 
