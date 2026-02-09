@@ -84,7 +84,7 @@ def test_formset_new_null_value(client_logged):
         ("0.01", 1),
         ("4669.73", 466973),
         ("4669.736", 466973),
-        ("466.73", 46673),    # Trap case: ensures binary noise is handled
+        ("466.73", 46673),  # Trap case: ensures binary noise is handled
     ],
 )
 def test_formset_new_post(client_logged, price, expected):

@@ -1,9 +1,11 @@
-import pytest
 from types import SimpleNamespace
+
+import pytest
+
 from ..lib.convert_price import (
+    ConvertPriceMixin,
     float_to_int_cents,
     int_cents_to_float,
-    ConvertPriceMixin,
 )
 
 
@@ -55,7 +57,9 @@ class DummyClassForConvertPriceMixin:
 )
 def test_covert_to_price_mixin_has_fields(mocker, cents, expected_float):
     mock_obj = SimpleNamespace(price=cents, fee=cents)
-    mocker.patch.object(DummyClassForConvertPriceMixin, "get_object", return_value=mock_obj)
+    mocker.patch.object(
+        DummyClassForConvertPriceMixin, "get_object", return_value=mock_obj
+    )
 
     class DummyClass(ConvertPriceMixin, DummyClassForConvertPriceMixin):
         pass
@@ -69,7 +73,9 @@ def test_covert_to_price_mixin_has_fields(mocker, cents, expected_float):
 
 def test_covert_to_price_mixin_missing_fields(mocker):
     mock_obj = SimpleNamespace(price=1000)
-    mocker.patch.object(DummyClassForConvertPriceMixin, "get_object", return_value=mock_obj)
+    mocker.patch.object(
+        DummyClassForConvertPriceMixin, "get_object", return_value=mock_obj
+    )
 
     class DummyClass(ConvertPriceMixin, DummyClassForConvertPriceMixin):
         pass
@@ -86,7 +92,9 @@ def test_covert_to_price_mixin_merges_fields(mocker):
         price_fields = ["new_field"]
 
     mock_obj = SimpleNamespace(price=1000, fee=2000, new_field=3000)
-    mocker.patch.object(DummyClassForConvertPriceMixin, "get_object", return_value=mock_obj)
+    mocker.patch.object(
+        DummyClassForConvertPriceMixin, "get_object", return_value=mock_obj
+    )
 
     view = DummyClass()
     result = view.get_object()
