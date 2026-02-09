@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.convert_price import ConvertToPriceMixin
+from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -28,7 +28,7 @@ class New(CreateViewMixin):
     modal_form_title = _("Pension")
 
 
-class Update(ConvertToPriceMixin, UpdateViewMixin):
+class Update(ConvertPriceMixin, UpdateViewMixin):
     model = models.Pension
     form_class = forms.PensionForm
     hx_trigger_django = "afterPension"
