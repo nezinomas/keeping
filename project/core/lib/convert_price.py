@@ -17,7 +17,7 @@ def int_cents_to_float(value: int) -> float:
     return value if value is None else value / 100
 
 
-class ConvertToPriceMixin:
+class ConvertPriceMixin:
     # Core defaults that should always be processed
     _base_price_fields = ["price", "fee"]
 
@@ -37,29 +37,6 @@ class ConvertToPriceMixin:
 
         return obj
 
-
-class PlansConvertToPriceMixin:
-    def get_object(self):
-        obj = super().get_object()
-
-        months = list(calendar.month_name[1:])
-        for month in months:
-            if value := getattr(obj, month.lower()):
-                setattr(obj, month.lower(), int_cents_to_float(value))
-        return obj
-
-
-class ConvertToCentsMixin:
-    # Core defaults that should always be processed
-    _base_price_fields = ["price", "fee"]
-
-    # Subclasses define additional fields here
-    price_fields = []
-
-    def get_all_price_fields(self):
-        """Merges base fields with subclass-specific fields."""
-        return set(self._base_price_fields + getattr(self, "price_fields", []))
-
     def clean(self):
         cleaned_data = super().clean()
 
@@ -70,3 +47,14 @@ class ConvertToCentsMixin:
             cleaned_data[field_name] = float_to_int_cents(val)
 
         return cleaned_data
+
+
+class PlansConvertToPriceMixin:
+    def get_object(self):
+        obj = super().get_object()
+
+        months = list(calendar.month_name[1:])
+        for month in months:
+            if value := getattr(obj, month.lower()):
+                setattr(obj, month.lower(), int_cents_to_float(value))
+        return obj

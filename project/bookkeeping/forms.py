@@ -9,13 +9,10 @@ from ..accounts.services.model_services import (
     AccountModelService,
 )
 from ..core.lib import date as core_date
-from ..core.lib.convert_price import ConvertToCentsMixin
+from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.lib.form_widgets import DatePickerWidget
-from ..expenses.models import ExpenseType
 from ..expenses.services.model_services import ExpenseTypeModelService
-from ..pensions.models import PensionType
 from ..pensions.services.model_services import PensionTypeModelService
-from ..savings.models import SavingType
 from ..savings.services.model_services import SavingTypeModelService
 from .models import AccountWorth, PensionWorth, SavingWorth
 
@@ -51,7 +48,7 @@ class DateFieldMixin:
         )
 
 
-class SavingWorthForm(ConvertToCentsMixin, DateFieldMixin, forms.ModelForm):
+class SavingWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0, required=False)
 
     class Meta:
@@ -76,7 +73,7 @@ class SavingWorthForm(ConvertToCentsMixin, DateFieldMixin, forms.ModelForm):
         return clean_date_and_closed("saving_type", cleaned, self.add_error)
 
 
-class AccountWorthForm(ConvertToCentsMixin, DateFieldMixin, forms.ModelForm):
+class AccountWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0, required=False)
 
     class Meta:
@@ -101,7 +98,7 @@ class AccountWorthForm(ConvertToCentsMixin, DateFieldMixin, forms.ModelForm):
         return clean_date_and_closed("account", cleaned, self.add_error)
 
 
-class PensionWorthForm(ConvertToCentsMixin, DateFieldMixin, forms.ModelForm):
+class PensionWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0, required=False)
 
     class Meta:
