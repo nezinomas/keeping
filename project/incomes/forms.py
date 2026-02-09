@@ -4,14 +4,14 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertToPriceMixin
+from ..core.lib.convert_price import ConvertToCentsMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..incomes.services.model_services import IncomeTypeModelService
 from .models import Income, IncomeType
 
 
-class IncomeForm(ConvertToPriceMixin, forms.ModelForm):
+class IncomeForm(ConvertToCentsMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
 
     class Meta:

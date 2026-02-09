@@ -17,15 +17,24 @@ def int_cents_to_float(value: int) -> float:
     return 0.0 if value is None else value / 100.0
 
 
-class ConvertToCentsMixin:
+class ConvertToPriceMixin:
+    # Core defaults that should always be processed
+    _base_price_fields = ["price", "fee"]
+
+    # Subclasses define additional fields here
+    price_fields = []
+
+    def get_all_price_fields(self):
+        """Merges base fields with subclass-specific fields."""
+        return set(self._base_price_fields + getattr(self, "price_fields", []))
+
     def get_object(self):
         obj = super().get_object()
 
-        if hasattr(obj, "price") and obj.price:
-            obj.price = int_cents_to_float(obj.price)
-
-        if hasattr(obj, "fee") and obj.fee:
-            obj.fee = int_cents_to_float(obj.fee)
+        for field_name in self.get_all_price_fields():
+            # Use getattr with a default of None for safety
+            if (val := getattr(obj, field_name, None)) is not None:
+                setattr(obj, field_name, int_cents_to_float(val))
 
         return obj
 
@@ -41,13 +50,21 @@ class PlansConvertToCentsMixin:
         return obj
 
 
-class ConvertToPriceMixin:
-    price_fields = ["price", "fee"]
+class ConvertToCentsMixin:
+    # Core defaults that should always be processed
+    _base_price_fields = ["price", "fee"]
+
+    # Subclasses define additional fields here
+    price_fields = []
+
+    def get_all_price_fields(self):
+        """Merges base fields with subclass-specific fields."""
+        return set(self._base_price_fields + getattr(self, "price_fields", []))
 
     def clean(self):
         cleaned_data = super().clean()
 
-        for field_name in self.price_fields:
+        for field_name in self.get_all_price_fields():
             if not (val := cleaned_data.get(field_name)):
                 continue
 
