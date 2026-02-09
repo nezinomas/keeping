@@ -1,6 +1,10 @@
 import pytest
-
-from ..lib.convert_price import float_to_int_cents, int_cents_to_float
+from types import SimpleNamespace
+from ..lib.convert_price import (
+    float_to_int_cents,
+    int_cents_to_float,
+    ConvertToCentsMixin,
+)
 
 
 @pytest.mark.parametrize(
@@ -30,3 +34,60 @@ def test_float_to_int_conversion(price_float, expected_int):
 )
 def test_int_cents_to_float_conversion(cents_int, expected_float):
     assert int_cents_to_float(cents_int) == expected_float
+
+
+class BaseView:
+    def get_object(self):
+        pass
+
+
+@pytest.mark.parametrize(
+    "cents, expected_float",
+    [
+        (466973, 4669.73),
+        (100, 1.0),
+        (0, 0),  # Note: 0 remains 0 if using the walrus operator check
+    ],
+)
+def test_get_price_conversion(mocker, cents, expected_float):
+    mock_obj = SimpleNamespace(price=cents, fee=cents)
+    mocker.patch.object(BaseView, "get_object", return_value=mock_obj)
+
+    class DummyClass(ConvertToCentsMixin, BaseView):
+        pass
+
+    view = DummyClass()
+    result = view.get_object()
+
+    assert result.price == expected_float
+    assert result.fee == expected_float
+
+
+def test_get_object_missing_fields(mocker):
+    mock_obj = SimpleNamespace(price=1000)
+    mocker.patch.object(BaseView, "get_object", return_value=mock_obj)
+
+    class DummyClass(ConvertToCentsMixin, BaseView):
+        pass
+
+    view = DummyClass()
+    result = view.get_object()
+
+    assert result.price == 10.0  # Converted
+    assert not hasattr(result, "fee")  # Still doesn't exist, didn't crash
+
+
+def test_mixin_merges_fields(mocker):
+    class DummyClass(ConvertToCentsMixin, BaseView):
+        price_fields = ["new_field"]
+
+    mock_obj = SimpleNamespace(price=1000, fee=2000, new_field=3000)
+    mocker.patch.object(BaseView, 'get_object', return_value=mock_obj)
+
+    view = DummyClass()
+    result = view.get_object()
+
+    assert result.new_field == 30.0
+
+    assert result.price == 10.0
+    assert result.fee == 20.0

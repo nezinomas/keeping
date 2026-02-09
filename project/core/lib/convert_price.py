@@ -18,14 +18,23 @@ def int_cents_to_float(value: int) -> float:
 
 
 class ConvertToCentsMixin:
+    # Core defaults that should always be processed
+    _base_price_fields = ["price", "fee"]
+
+    # Subclasses define additional fields here
+    price_fields = []
+
+    def get_all_price_fields(self):
+        """Merges base fields with subclass-specific fields."""
+        return set(self._base_price_fields + getattr(self, "price_fields", []))
+
     def get_object(self):
         obj = super().get_object()
 
-        if hasattr(obj, "price") and obj.price:
-            obj.price = int_cents_to_float(obj.price)
-
-        if hasattr(obj, "fee") and obj.fee:
-            obj.fee = int_cents_to_float(obj.fee)
+        for field_name in self.get_all_price_fields():
+            # Use getattr with a default of None for safety
+            if (val := getattr(obj, field_name, None)) is not None:
+                setattr(obj, field_name, int_cents_to_float(val))
 
         return obj
 
