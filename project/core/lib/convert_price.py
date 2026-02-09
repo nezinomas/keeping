@@ -46,7 +46,7 @@ class PlansConvertToCentsMixin:
         months = list(calendar.month_name[1:])
         for month in months:
             if value := getattr(obj, month.lower()):
-                setattr(obj, month.lower(), value / 100)
+                setattr(obj, month.lower(), int_cents_to_float(value))
         return obj
 
 
