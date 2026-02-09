@@ -49,7 +49,7 @@ class DummmyClassForGetOject:
         (0, 0),  # Note: 0 remains 0 if using the walrus operator check
     ],
 )
-def test_covert_to_cents_mixin_has_fields(mocker, cents, expected_float):
+def test_covert_to_price_mixin_has_fields(mocker, cents, expected_float):
     mock_obj = SimpleNamespace(price=cents, fee=cents)
     mocker.patch.object(DummmyClassForGetOject, "get_object", return_value=mock_obj)
 
@@ -63,7 +63,7 @@ def test_covert_to_cents_mixin_has_fields(mocker, cents, expected_float):
     assert result.fee == expected_float
 
 
-def test_covert_to_cents_mixin_missing_fields(mocker):
+def test_covert_to_price_mixin_missing_fields(mocker):
     mock_obj = SimpleNamespace(price=1000)
     mocker.patch.object(DummmyClassForGetOject, "get_object", return_value=mock_obj)
 
@@ -77,7 +77,7 @@ def test_covert_to_cents_mixin_missing_fields(mocker):
     assert not hasattr(result, "fee")  # Still doesn't exist, didn't crash
 
 
-def test_covert_to_cents_mixin_merges_fields(mocker):
+def test_covert_to_price_mixin_merges_fields(mocker):
     class DummyClass(ConvertToPriceMixin, DummmyClassForGetOject):
         price_fields = ["new_field"]
 
