@@ -51,12 +51,20 @@ class PlansConvertToCentsMixin:
 
 
 class ConvertToCentsMixin:
-    price_fields = ["price", "fee"]
+    # Core defaults that should always be processed
+    _base_price_fields = ["price", "fee"]
+
+    # Subclasses define additional fields here
+    price_fields = []
+
+    def get_all_price_fields(self):
+        """Merges base fields with subclass-specific fields."""
+        return set(self._base_price_fields + getattr(self, "price_fields", []))
 
     def clean(self):
         cleaned_data = super().clean()
-        print(f'--------------------------->\n{cleaned_data=}\n')
-        for field_name in self.price_fields:
+
+        for field_name in self.get_all_price_fields():
             if not (val := cleaned_data.get(field_name)):
                 continue
 
