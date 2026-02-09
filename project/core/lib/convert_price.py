@@ -32,7 +32,6 @@ class ConvertToPriceMixin:
         obj = super().get_object()
 
         for field_name in self.get_all_price_fields():
-            # Use getattr with a default of None for safety
             if (val := getattr(obj, field_name, None)) is not None:
                 setattr(obj, field_name, int_cents_to_float(val))
 
