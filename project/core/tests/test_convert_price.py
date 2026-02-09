@@ -36,7 +36,7 @@ def test_int_cents_to_float_conversion(cents_int, expected_float):
     assert int_cents_to_float(cents_int) == expected_float
 
 
-class BaseView:
+class DummmyClassForGetOject:
     def get_object(self):
         pass
 
@@ -51,9 +51,9 @@ class BaseView:
 )
 def test_get_price_conversion(mocker, cents, expected_float):
     mock_obj = SimpleNamespace(price=cents, fee=cents)
-    mocker.patch.object(BaseView, "get_object", return_value=mock_obj)
+    mocker.patch.object(DummmyClassForGetOject, "get_object", return_value=mock_obj)
 
-    class DummyClass(ConvertToCentsMixin, BaseView):
+    class DummyClass(ConvertToCentsMixin, DummmyClassForGetOject):
         pass
 
     view = DummyClass()
@@ -65,9 +65,9 @@ def test_get_price_conversion(mocker, cents, expected_float):
 
 def test_get_object_missing_fields(mocker):
     mock_obj = SimpleNamespace(price=1000)
-    mocker.patch.object(BaseView, "get_object", return_value=mock_obj)
+    mocker.patch.object(DummmyClassForGetOject, "get_object", return_value=mock_obj)
 
-    class DummyClass(ConvertToCentsMixin, BaseView):
+    class DummyClass(ConvertToCentsMixin, DummmyClassForGetOject):
         pass
 
     view = DummyClass()
@@ -78,11 +78,11 @@ def test_get_object_missing_fields(mocker):
 
 
 def test_mixin_merges_fields(mocker):
-    class DummyClass(ConvertToCentsMixin, BaseView):
+    class DummyClass(ConvertToCentsMixin, DummmyClassForGetOject):
         price_fields = ["new_field"]
 
     mock_obj = SimpleNamespace(price=1000, fee=2000, new_field=3000)
-    mocker.patch.object(BaseView, 'get_object', return_value=mock_obj)
+    mocker.patch.object(DummmyClassForGetOject, 'get_object', return_value=mock_obj)
 
     view = DummyClass()
     result = view.get_object()
