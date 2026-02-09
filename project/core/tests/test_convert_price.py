@@ -17,6 +17,7 @@ from ..lib.convert_price import (
         (466.73, 46673),  # Known binary noise case
         (0.0, 0),  # Zero case
         (0.019, 1),  # Truncation verification
+        (None, 0),
     ],
 )
 def test_float_to_int_conversion(price_float, expected_int):
