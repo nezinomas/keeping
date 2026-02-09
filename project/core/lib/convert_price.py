@@ -14,7 +14,7 @@ def float_to_int_cents(value: float) -> int:
 
 
 def int_cents_to_float(value: int) -> float:
-    return 0.0 if value is None else value / 100.0
+    return value if value is None else value / 100
 
 
 class ConvertToPriceMixin:
@@ -39,14 +39,14 @@ class ConvertToPriceMixin:
         return obj
 
 
-class PlansConvertToCentsMixin:
+class PlansConvertToPriceMixin:
     def get_object(self):
         obj = super().get_object()
 
         months = list(calendar.month_name[1:])
         for month in months:
             if value := getattr(obj, month.lower()):
-                setattr(obj, month.lower(), value / 100)
+                setattr(obj, month.lower(), int_cents_to_float(value))
         return obj
 
 
