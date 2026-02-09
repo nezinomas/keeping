@@ -109,6 +109,7 @@ class DummmyClassForClean:
         (466.73, 46673),  # Known binary noise case
         (0.0, 0),  # Zero case
         (0.019, 1),  # Truncation verification
+        (None, 0),
     ],
 )
 def test_convert_to_cents_mixin_has_fields(mocker, price, expected_int):
