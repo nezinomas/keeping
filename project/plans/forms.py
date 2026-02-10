@@ -6,6 +6,7 @@ from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
 
+from ..core.lib.convert_price import PlansConvertToPriceMixin
 from ..core.lib.date import monthnames, set_date_with_user_year
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
@@ -40,7 +41,7 @@ def set_journal_field(user, fields):
     fields["journal"].widget = forms.HiddenInput()
 
 
-class YearFormMixin(forms.ModelForm):
+class YearFormMixin(PlansConvertToPriceMixin, forms.ModelForm):
     january = forms.FloatField(min_value=0.01, required=False)
     february = forms.FloatField(min_value=0.01, required=False)
     march = forms.FloatField(min_value=0.01, required=False)
@@ -59,8 +60,9 @@ class YearFormMixin(forms.ModelForm):
 
         months = list(calendar.month_name[1:])
         for month in months:
-            if value := self.cleaned_data.get(month.lower()):
-                setattr(instance, month.lower(), int(value * 100))
+            month = month.lower()
+            if value := self.cleaned_data.get(month):
+                setattr(instance, month, value)
 
         instance.save()
         return instance

@@ -58,3 +58,16 @@ class PlansConvertToPriceMixin:
             if value := getattr(obj, month.lower()):
                 setattr(obj, month.lower(), int_cents_to_float(value))
         return obj
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        months = list(calendar.month_name[1:])
+        for month in months:
+            field_name = month.lower()
+            if not (val := cleaned_data.get(field_name)):
+                continue
+
+            cleaned_data[field_name] = float_to_int_cents(val)
+
+        return cleaned_data
