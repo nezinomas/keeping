@@ -1,4 +1,3 @@
-import calendar
 from datetime import datetime
 
 from django import forms
@@ -25,20 +24,6 @@ from .services.model_services import ModelService
 MONTH_FIELD_KWARGS = {"min_value": 0.01, "required": False}
 
 
-def common_field_transalion(self):
-    self.fields["year"].label = _("Years")
-
-    for key, val in month_names().items():
-        self.fields[key.lower()].label = val
-
-
-def set_journal_field(user, fields):
-    # journal input
-    fields["journal"].initial = user.journal
-    fields["journal"].disabled = True
-    fields["journal"].widget = forms.HiddenInput()
-
-
 class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
     january = forms.FloatField(**MONTH_FIELD_KWARGS)
     february = forms.FloatField(**MONTH_FIELD_KWARGS)
@@ -53,161 +38,128 @@ class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
     november = forms.FloatField(**MONTH_FIELD_KWARGS)
     december = forms.FloatField(**MONTH_FIELD_KWARGS)
 
+    class Meta:
+        widgets = {
+            "year": YearPickerWidget(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
+        self._set_journal_field()
+        self._set_year_field_initial_value()
+        self._common_field_transalion()
+
+    def _common_field_transalion(self):
+        self.fields["year"].label = _("Years")
+
+        for key, val in month_names().items():
+            self.fields[key.lower()].label = val
+
+    def _set_journal_field(self):
+        # journal input
+        self.fields["journal"].initial = self.user.journal
+        self.fields["journal"].disabled = True
+        self.fields["journal"].widget = forms.HiddenInput()
+
+    def _set_year_field_initial_value(self):
+        self.fields["year"].initial = set_date_with_user_year(self.user).year
+
 
 # ----------------------------------------------------------------------------
 #                                                             Income Plan Form
 # ----------------------------------------------------------------------------
 class IncomePlanForm(YearFormMixin):
-    class Meta:
+    class Meta(YearFormMixin.Meta):
         model = IncomePlan
         fields = ["journal", "year", "income_type"] + monthnames()
-
-        widgets = {
-            "year": YearPickerWidget(),
-        }
 
     field_order = ["year", "income_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # journal input
-        set_journal_field(user, self.fields)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
-
         # overwrite ForeignKey expense_type queryset
-        self.fields["income_type"].queryset = IncomeTypeModelService(user).items()
+        self.fields["income_type"].queryset = IncomeTypeModelService(self.user).items()
 
         # field translation
         self.fields["income_type"].label = _("Income type")
-        common_field_transalion(self)
 
 
 # ----------------------------------------------------------------------------
 #                                                            Expense Plan Form
 # ----------------------------------------------------------------------------
 class ExpensePlanForm(YearFormMixin):
-    class Meta:
+    class Meta(YearFormMixin.Meta):
         model = ExpensePlan
         fields = ["journal", "year", "expense_type"] + monthnames()
-
-        widgets = {
-            "year": YearPickerWidget(),
-        }
 
     field_order = ["year", "expense_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # journal input
-        set_journal_field(user, self.fields)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
-
         # overwrite ForeignKey expense_type queryset
-        self.fields["expense_type"].queryset = ExpenseTypeModelService(user).items()
+        self.fields["expense_type"].queryset = ExpenseTypeModelService(
+            self.user
+        ).items()
 
         # field translation
         self.fields["expense_type"].label = _("Expense type")
-        common_field_transalion(self)
 
 
 # ----------------------------------------------------------------------------
 #                                                              Saving Plan Form
 # ----------------------------------------------------------------------------
 class SavingPlanForm(YearFormMixin):
-    class Meta:
+    class Meta(YearFormMixin.Meta):
         model = SavingPlan
         fields = ["journal", "year", "saving_type"] + monthnames()
-
-        widgets = {
-            "year": YearPickerWidget(),
-        }
 
     field_order = ["year", "saving_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # journal input
-        set_journal_field(user, self.fields)
-
         # overwrite ForeignKey expense_type queryset
-        self.fields["saving_type"].queryset = SavingTypeModelService(user).items()
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
+        self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
 
         # field translation
         self.fields["saving_type"].label = _("Saving type")
-        common_field_transalion(self)
 
 
 # ----------------------------------------------------------------------------
 #                                                                Day Plan Form
 # ----------------------------------------------------------------------------
 class DayPlanForm(YearFormMixin):
-    class Meta:
+    class Meta(YearFormMixin.Meta):
         model = DayPlan
         fields = ["journal", "year"] + monthnames()
 
-        widgets = {
-            "year": YearPickerWidget(),
-        }
-
     field_order = ["year"] + monthnames()
-
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
-        super().__init__(*args, **kwargs)
-
-        # journal input
-        set_journal_field(user, self.fields)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
-
-        # field translation
-        common_field_transalion(self)
 
 
 # ----------------------------------------------------------------------------
 #                                                          Necessary Plan Form
 # ----------------------------------------------------------------------------
 class NecessaryPlanForm(YearFormMixin):
-    class Meta:
+    class Meta(YearFormMixin.Meta):
         model = NecessaryPlan
         fields = ["journal", "year", "expense_type", "title"] + monthnames()
-
-        widgets = {
-            "year": YearPickerWidget(),
-        }
 
     field_order = ["year", "expense_type", "title"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # journal input
-        set_journal_field(user, self.fields)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
-
         # overwrite ForeignKey expense_type queryset
-        self.fields["expense_type"].queryset = ExpenseTypeModelService(user).items()
+        self.fields["expense_type"].queryset = ExpenseTypeModelService(
+            self.user
+        ).items()
 
         # field translation
         self.fields["expense_type"].label = _("Expense type")
-        common_field_transalion(self)
 
 
 # ----------------------------------------------------------------------------
