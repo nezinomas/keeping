@@ -1,3 +1,4 @@
+import calendar
 from datetime import datetime
 
 from django import forms
@@ -21,6 +22,8 @@ from .models import (
 )
 from .services.model_services import ModelService
 
+MONTH_FIELD_KWARGS = {"min_value": 0.01, "required": False}
+
 
 def common_field_transalion(self):
     self.fields["year"].label = _("Years")
@@ -37,18 +40,18 @@ def set_journal_field(user, fields):
 
 
 class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
-    january = forms.FloatField(min_value=0.01, required=False)
-    february = forms.FloatField(min_value=0.01, required=False)
-    march = forms.FloatField(min_value=0.01, required=False)
-    april = forms.FloatField(min_value=0.01, required=False)
-    may = forms.FloatField(min_value=0.01, required=False)
-    june = forms.FloatField(min_value=0.01, required=False)
-    july = forms.FloatField(min_value=0.01, required=False)
-    august = forms.FloatField(min_value=0.01, required=False)
-    september = forms.FloatField(min_value=0.01, required=False)
-    october = forms.FloatField(min_value=0.01, required=False)
-    november = forms.FloatField(min_value=0.01, required=False)
-    december = forms.FloatField(min_value=0.01, required=False)
+    january = forms.FloatField(**MONTH_FIELD_KWARGS)
+    february = forms.FloatField(**MONTH_FIELD_KWARGS)
+    march = forms.FloatField(**MONTH_FIELD_KWARGS)
+    april = forms.FloatField(**MONTH_FIELD_KWARGS)
+    may = forms.FloatField(**MONTH_FIELD_KWARGS)
+    june = forms.FloatField(**MONTH_FIELD_KWARGS)
+    july = forms.FloatField(**MONTH_FIELD_KWARGS)
+    august = forms.FloatField(**MONTH_FIELD_KWARGS)
+    september = forms.FloatField(**MONTH_FIELD_KWARGS)
+    october = forms.FloatField(**MONTH_FIELD_KWARGS)
+    november = forms.FloatField(**MONTH_FIELD_KWARGS)
+    december = forms.FloatField(**MONTH_FIELD_KWARGS)
 
 
 # ----------------------------------------------------------------------------
