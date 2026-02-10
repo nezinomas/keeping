@@ -39,6 +39,11 @@ class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
     november = forms.FloatField(**MONTH_FIELD_KWARGS)
     december = forms.FloatField(**MONTH_FIELD_KWARGS)
 
+    class Meta:
+        widgets = {
+            "year": YearPickerWidget(),
+        }
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
@@ -67,13 +72,9 @@ class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
 #                                                             Income Plan Form
 # ----------------------------------------------------------------------------
 class IncomePlanForm(YearFormMixin):
-    class Meta:
+    class Meta(YearFormMixin.Meta):
         model = IncomePlan
         fields = ["journal", "year", "income_type"] + monthnames()
-
-        widgets = {
-            "year": YearPickerWidget(),
-        }
 
     field_order = ["year", "income_type"] + monthnames()
 
@@ -91,13 +92,9 @@ class IncomePlanForm(YearFormMixin):
 #                                                            Expense Plan Form
 # ----------------------------------------------------------------------------
 class ExpensePlanForm(YearFormMixin):
-    class Meta:
+    class Meta(YearFormMixin.Meta):
         model = ExpensePlan
         fields = ["journal", "year", "expense_type"] + monthnames()
-
-        widgets = {
-            "year": YearPickerWidget(),
-        }
 
     field_order = ["year", "expense_type"] + monthnames()
 
@@ -115,13 +112,9 @@ class ExpensePlanForm(YearFormMixin):
 #                                                              Saving Plan Form
 # ----------------------------------------------------------------------------
 class SavingPlanForm(YearFormMixin):
-    class Meta:
+    class Meta(YearFormMixin.Meta):
         model = SavingPlan
         fields = ["journal", "year", "saving_type"] + monthnames()
-
-        widgets = {
-            "year": YearPickerWidget(),
-        }
 
     field_order = ["year", "saving_type"] + monthnames()
 
@@ -139,13 +132,9 @@ class SavingPlanForm(YearFormMixin):
 #                                                                Day Plan Form
 # ----------------------------------------------------------------------------
 class DayPlanForm(YearFormMixin):
-    class Meta:
+    class Meta(YearFormMixin.Meta):
         model = DayPlan
         fields = ["journal", "year"] + monthnames()
-
-        widgets = {
-            "year": YearPickerWidget(),
-        }
 
     field_order = ["year"] + monthnames()
 
@@ -154,13 +143,9 @@ class DayPlanForm(YearFormMixin):
 #                                                          Necessary Plan Form
 # ----------------------------------------------------------------------------
 class NecessaryPlanForm(YearFormMixin):
-    class Meta:
+    class Meta(YearFormMixin.Meta):
         model = NecessaryPlan
         fields = ["journal", "year", "expense_type", "title"] + monthnames()
-
-        widgets = {
-            "year": YearPickerWidget(),
-        }
 
     field_order = ["year", "expense_type", "title"] + monthnames()
 
