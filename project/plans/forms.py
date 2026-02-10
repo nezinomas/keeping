@@ -1,4 +1,3 @@
-import calendar
 from datetime import datetime
 
 from django import forms
