@@ -43,8 +43,9 @@ class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        self._common_field_transalion()
         self._set_journal_field()
+        self._set_year_field_initial_value()
+        self._common_field_transalion()
 
     def _common_field_transalion(self):
         self.fields["year"].label = _("Years")
@@ -57,6 +58,9 @@ class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
         self.fields["journal"].initial = self.user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
+
+    def _set_year_field_initial_value(self):
+        self.fields["year"].initial = set_date_with_user_year(self.user).year
 
 
 # ----------------------------------------------------------------------------
@@ -75,9 +79,6 @@ class IncomePlanForm(YearFormMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
 
         # overwrite ForeignKey expense_type queryset
         self.fields["income_type"].queryset = IncomeTypeModelService(self.user).items()
@@ -102,9 +103,6 @@ class ExpensePlanForm(YearFormMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
 
         # overwrite ForeignKey expense_type queryset
         self.fields["expense_type"].queryset = ExpenseTypeModelService(self.user).items()
@@ -133,9 +131,6 @@ class SavingPlanForm(YearFormMixin):
         # overwrite ForeignKey expense_type queryset
         self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
 
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
-
         # field translation
         self.fields["saving_type"].label = _("Saving type")
 
@@ -156,10 +151,6 @@ class DayPlanForm(YearFormMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
-
 
 # ----------------------------------------------------------------------------
 #                                                          Necessary Plan Form
