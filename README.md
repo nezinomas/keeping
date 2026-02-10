@@ -3,7 +3,7 @@
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.13-blue)
-![Django](https://img.shields.io/badge/django-5.0-blue)
+![Django](https://img.shields.io/badge/django-6.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 **Author:** Audrius Nznm  
@@ -45,7 +45,7 @@ password: 9J4wj#^zD0eFwS
 
 ## **4️⃣ Technical Stack**
 
-- **Backend:** Python 3.13, Django 5.0  
+- **Backend:** Python 3.13, Django 6.0  
 - **Database:** MySQL
 - **Testing:** Pytest, 100% coverage  
 - **Deployment:** Standard Django stack
