@@ -6,9 +6,9 @@
 ![Django](https://img.shields.io/badge/django-6.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-**Author:** Audrius Nznm  
-**GitHub:** [github.com/nezinomas](https://github.com/nezinomas)  
-**Demo:** [https://stats.unknownbug.net](https://stats.unknownbug.net)  
+**Author:** Audrius Nznm
+**GitHub:** [github.com/nezinomas](https://github.com/nezinomas)
+**Demo:** [https://stats.unknownbug.net](https://stats.unknownbug.net)
 ```
 username: demo
 password: 9J4wj#^zD0eFwS
@@ -18,12 +18,12 @@ password: 9J4wj#^zD0eFwS
 
 ## **1️⃣ Project Overview**
 
-**Keeping** is a self-hosted web platform for **personal and household finance management** combined with **life tracking**.  
+**Keeping** is a self-hosted web platform for **personal and household finance management** combined with **life tracking**.
 
-- Track **expenses, incomes, transfers, debts, savings, pensions, and plans** collaboratively.  
-- **Central statistics (`bookkeeping`)** aggregates financial data for reports and dashboards.  
-- Track **personal metrics** privately (**books, drinks, counters**) per user.  
-- Designed for **shared household finances**: superuser + other users can manage financial apps together.  
+- Track **expenses, incomes, transfers, debts, savings, pensions, and plans** collaboratively.
+- **Central statistics (`bookkeeping`)** aggregates financial data for reports and dashboards.
+- Track **personal metrics** privately (**books, drinks, counters**) per user.
+- Designed for **shared household finances**: superuser + other users can manage financial apps together.
 - Fully tested backend (**pytest 100% coverage**) and modular Django architecture.
 
 ---
@@ -45,20 +45,20 @@ password: 9J4wj#^zD0eFwS
 
 ## **4️⃣ Technical Stack**
 
-- **Backend:** Python 3.13, Django 6.0  
+- **Backend:** Python 3.13, Django 6.0
 - **Database:** MySQL
-- **Testing:** Pytest, 100% coverage  
+- **Testing:** Pytest, 100% coverage
 - **Deployment:** Standard Django stack
-- **Configuration:** `.conf` for environment, media, logs  
+- **Configuration:** `.conf` for environment, media, logs
 
 ---
 
 ## **5️⃣ Why Keeping is Special**
 
-1. **Engineer-focused:** modular, reliable, test-covered architecture.  
-2. **Household collaboration:** all users manage financial data together.  
-3. **Private personal metrics:** users maintain their own habits without exposing them to others.  
-4. **Portfolio-ready:** clear structure, dashboards, and modular extensibility.  
+1. **Engineer-focused:** modular, reliable, test-covered architecture.
+2. **Household collaboration:** all users manage financial data together.
+3. **Private personal metrics:** users maintain their own habits without exposing them to others.
+4. **Portfolio-ready:** clear structure, dashboards, and modular extensibility.
 
 ---
 
@@ -99,6 +99,6 @@ slow: uv run pytest
 
 ---
 
-**License:** MIT  
-**Author:** Audrius Nznm  
+**License:** MIT
+**Author:** Audrius Nznm
 [GitHub](https://github.com/nezinomas)
