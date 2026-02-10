@@ -55,18 +55,6 @@ class YearFormMixin(PlansConvertToPriceMixin, forms.ModelForm):
     november = forms.FloatField(min_value=0.01, required=False)
     december = forms.FloatField(min_value=0.01, required=False)
 
-    def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
-
-        months = list(calendar.month_name[1:])
-        for month in months:
-            month = month.lower()
-            if value := self.cleaned_data.get(month):
-                setattr(instance, month, value)
-
-        instance.save()
-        return instance
-
 
 # ----------------------------------------------------------------------------
 #                                                             Income Plan Form
