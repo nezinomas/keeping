@@ -25,13 +25,6 @@ from .services.model_services import ModelService
 MONTH_FIELD_KWARGS = {"min_value": 0.01, "required": False}
 
 
-def set_journal_field(user, fields):
-    # journal input
-    fields["journal"].initial = user.journal
-    fields["journal"].disabled = True
-    fields["journal"].widget = forms.HiddenInput()
-
-
 class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
     january = forms.FloatField(**MONTH_FIELD_KWARGS)
     february = forms.FloatField(**MONTH_FIELD_KWARGS)
@@ -51,12 +44,19 @@ class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self._common_field_transalion()
+        self._set_journal_field()
 
     def _common_field_transalion(self):
         self.fields["year"].label = _("Years")
 
         for key, val in month_names().items():
             self.fields[key.lower()].label = val
+
+    def _set_journal_field(self):
+        # journal input
+        self.fields["journal"].initial = self.user.journal
+        self.fields["journal"].disabled = True
+        self.fields["journal"].widget = forms.HiddenInput()
 
 
 # ----------------------------------------------------------------------------
@@ -75,9 +75,6 @@ class IncomePlanForm(YearFormMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # journal input
-        set_journal_field(self.user, self.fields)
 
         # inital values
         self.fields["year"].initial = set_date_with_user_year(self.user).year
@@ -106,9 +103,6 @@ class ExpensePlanForm(YearFormMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # journal input
-        set_journal_field(self.user, self.fields)
-
         # inital values
         self.fields["year"].initial = set_date_with_user_year(self.user).year
 
@@ -135,9 +129,6 @@ class SavingPlanForm(YearFormMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # journal input
-        set_journal_field(self.user, self.fields)
 
         # overwrite ForeignKey expense_type queryset
         self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
@@ -166,9 +157,6 @@ class DayPlanForm(YearFormMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # journal input
-        set_journal_field(self.user, self.fields)
-
         # inital values
         self.fields["year"].initial = set_date_with_user_year(self.user).year
 
@@ -189,9 +177,6 @@ class NecessaryPlanForm(YearFormMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # journal input
-        set_journal_field(self.user, self.fields)
 
         # inital values
         self.fields["year"].initial = set_date_with_user_year(self.user).year
