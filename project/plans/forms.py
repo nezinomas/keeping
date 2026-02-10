@@ -149,8 +149,6 @@ class DayPlanForm(YearFormMixin):
 
     field_order = ["year"] + monthnames()
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
 # ----------------------------------------------------------------------------
 #                                                          Necessary Plan Form
