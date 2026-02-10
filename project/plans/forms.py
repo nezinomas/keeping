@@ -101,7 +101,9 @@ class ExpensePlanForm(YearFormMixin):
         super().__init__(*args, **kwargs)
 
         # overwrite ForeignKey expense_type queryset
-        self.fields["expense_type"].queryset = ExpenseTypeModelService(self.user).items()
+        self.fields["expense_type"].queryset = ExpenseTypeModelService(
+            self.user
+        ).items()
 
         # field translation
         self.fields["expense_type"].label = _("Expense type")
@@ -152,7 +154,9 @@ class NecessaryPlanForm(YearFormMixin):
         super().__init__(*args, **kwargs)
 
         # overwrite ForeignKey expense_type queryset
-        self.fields["expense_type"].queryset = ExpenseTypeModelService(self.user).items()
+        self.fields["expense_type"].queryset = ExpenseTypeModelService(
+            self.user
+        ).items()
 
         # field translation
         self.fields["expense_type"].label = _("Expense type")
