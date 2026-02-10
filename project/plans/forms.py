@@ -1,4 +1,3 @@
-import calendar
 from datetime import datetime
 
 from django import forms
@@ -10,11 +9,8 @@ from ..core.lib.convert_price import PlansConvertToPriceMixin
 from ..core.lib.date import monthnames, set_date_with_user_year
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
-from ..expenses.models import ExpenseType
 from ..expenses.services.model_services import ExpenseTypeModelService
-from ..incomes.models import IncomeType
 from ..incomes.services.model_services import IncomeTypeModelService
-from ..savings.models import SavingType
 from ..savings.services.model_services import SavingTypeModelService
 from .models import (
     DayPlan,
@@ -22,7 +18,6 @@ from .models import (
     IncomePlan,
     NecessaryPlan,
     SavingPlan,
-    SavingType,
 )
 from .services.model_services import ModelService
 
