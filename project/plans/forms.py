@@ -169,9 +169,6 @@ class NecessaryPlanForm(YearFormMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
-
         # overwrite ForeignKey expense_type queryset
         self.fields["expense_type"].queryset = ExpenseTypeModelService(self.user).items()
 
