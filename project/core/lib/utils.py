@@ -1,6 +1,26 @@
+import contextlib
 from functools import lru_cache
+from urllib.parse import urlparse
 
 from django.template.loader import render_to_string
+from django.urls import Resolver404, resolve
+from django.utils.http import url_has_allowed_host_and_scheme
+
+
+def get_safe_redirect(request, url, fallback="/"):
+    if not url or not url_has_allowed_host_and_scheme(
+        url=url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return fallback
+
+    with contextlib.suppress(Resolver404):
+        path = urlparse(url).path
+        if resolve(path):
+            return path
+
+    return fallback
 
 
 def total_row(data, fields: list[str]) -> dict:
