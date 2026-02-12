@@ -19,21 +19,25 @@ def set_year(request, year):
         user.year = year
         user.save()
 
-    if referer := request.META.get("HTTP_REFERER"):
-        parsed = urlparse(referer)
-        target_path = parsed.path
+    referer = request.META.get("HTTP_REFERER")
 
-        # 1. Check if the URL is safe (belongs to your domain)
-        # 2. Check if the path actually exists in your URLconf
-        is_safe = url_has_allowed_host_and_scheme(
-            url=referer,
-            allowed_hosts={request.get_host()},
-            require_https=request.is_secure(),
-        )
+    if not referer:
+        return redirect("/")
 
-        with contextlib.suppress(Resolver404):
-            if is_safe and resolve(target_path):
-                return redirect(target_path)
+    parsed = urlparse(referer)
+    target_path = parsed.path
+
+    # 1. Check if the URL is safe (belongs to domain)
+    # 2. Check if the path actually exists in URLconf
+    is_safe = url_has_allowed_host_and_scheme(
+        url=referer,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    )
+
+    with contextlib.suppress(Resolver404):
+        if is_safe and resolve(target_path):
+            return redirect(target_path)
 
     return redirect("/")
 
