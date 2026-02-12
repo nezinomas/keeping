@@ -1,8 +1,10 @@
+import contextlib
 from urllib.parse import urlparse
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
-from django.urls import resolve
+from django.urls import Resolver404, resolve
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .lib.date import years
 from .mixins.views import TemplateViewMixin, http_htmx_response
@@ -17,9 +19,23 @@ def set_year(request, year):
         user.year = year
         user.save()
 
-    parsed = urlparse(request.META.get("HTTP_REFERER"))
+    if referer := request.META.get("HTTP_REFERER"):
+        parsed = urlparse(referer)
+        target_path = parsed.path
 
-    return redirect(parsed.path) if resolve(parsed.path) else redirect("/")
+        # 1. Check if the URL is safe (belongs to your domain)
+        # 2. Check if the path actually exists in your URLconf
+        is_safe = url_has_allowed_host_and_scheme(
+            url=referer,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        )
+
+        with contextlib.suppress(Resolver404):
+            if is_safe and resolve(target_path):
+                return redirect(target_path)
+
+    return redirect("/")
 
 
 class RegenerateBalances(TemplateViewMixin):
