@@ -19,13 +19,8 @@ def set_year(request, year):
         user.year = year
         user.save()
 
+    referer_to = "/"
     referer = request.META.get("HTTP_REFERER")
-
-    if not referer:
-        return redirect("/")
-
-    parsed = urlparse(referer)
-    target_path = parsed.path
 
     # 1. Check if the URL is safe (belongs to domain)
     # 2. Check if the path actually exists in URLconf
@@ -35,11 +30,13 @@ def set_year(request, year):
         require_https=request.is_secure(),
     )
 
-    with contextlib.suppress(Resolver404):
-        if is_safe and resolve(target_path):
-            return redirect(target_path)
+    if referer and is_safe:
+        target_path = urlparse(referer).path
+        with contextlib.suppress(Resolver404):
+            if resolve(target_path):
+                referer_to = target_path
 
-    return redirect("/")
+    return redirect(referer_to)
 
 
 class RegenerateBalances(TemplateViewMixin):
