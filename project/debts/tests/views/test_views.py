@@ -3,7 +3,7 @@ import re
 import pytest
 from django.urls import resolve, reverse
 
-from .. import views
+from ... import views
 
 pytestmark = pytest.mark.django_db
 

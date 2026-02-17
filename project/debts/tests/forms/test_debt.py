@@ -4,9 +4,10 @@ import pytest
 import time_machine
 from django.forms.models import model_to_dict
 
-from ...accounts.factories import AccountFactory
-from ...users.factories import UserFactory
-from .. import factories, forms
+from ....accounts.tests.factories import AccountFactory
+from ....users.tests.factories import UserFactory
+from ... import forms
+from .. import factories
 
 pytestmark = pytest.mark.django_db
 

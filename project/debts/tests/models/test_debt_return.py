@@ -2,18 +2,18 @@ from datetime import date as dt
 
 import pytest
 
-from ...accounts.factories import AccountFactory
-from ...accounts.models import AccountBalance
-from ...accounts.services.model_services import AccountBalanceModelService
-from ...incomes.factories import IncomeFactory
+from ....accounts.models import AccountBalance
+from ....accounts.services.model_services import AccountBalanceModelService
+from ....accounts.tests.factories import AccountFactory
+from ....incomes.tests.factories import IncomeFactory
+from ...models import Debt, DebtReturn
+from ...services.model_services import DebtReturnModelService
 from ..factories import (
     BorrowFactory,
     BorrowReturnFactory,
     LendFactory,
     LendReturnFactory,
 )
-from ..models import Debt, DebtReturn
-from ..services.model_services import DebtModelService, DebtReturnModelService
 
 pytestmark = pytest.mark.django_db
 

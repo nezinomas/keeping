@@ -3,9 +3,10 @@ from datetime import date
 import pytest
 from django.urls import resolve, reverse
 
-from ...accounts.factories import AccountFactory
-from .. import factories, models, views
-from ..services.model_services import DebtReturnModelService
+from ....accounts.tests.factories import AccountFactory
+from ... import models, views
+from ...services.model_services import DebtReturnModelService
+from .. import factories
 
 pytestmark = pytest.mark.django_db
 

@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth.models import AnonymousUser
 
-from ..services.model_services import DebtModelService, DebtReturnModelService
+from ...services.model_services import DebtModelService, DebtReturnModelService
 
 
 def test_debt_init_raises_if_no_user():
