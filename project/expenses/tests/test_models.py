@@ -8,19 +8,18 @@ from django.db import models
 from django.urls import reverse
 from override_storage import override_storage
 
-from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
-from ...expenses.factories import ExpenseFactory
+from ...accounts.tests.factories import AccountFactory
 from ...journals.models import Journal
-from ...users.factories import UserFactory
-from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
+from ...users.tests.factories import UserFactory
 from ..models import Expense, ExpenseName, ExpenseType
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
     ExpenseTypeModelService,
 )
+from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 

@@ -1,4 +1,4 @@
-from ..templatetags.colorize import bg_color
+from ...templatetags.colorize import bg_color
 
 
 def test_value_exists():

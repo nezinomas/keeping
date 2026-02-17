@@ -6,8 +6,8 @@ from django.core.files import File
 from mock import MagicMock
 from override_storage import override_storage
 
+from ...helpers import models_helper as helper
 from ..factories import ExpenseFactory
-from ..helpers import models_helper as helper
 
 pytestmark = pytest.mark.django_db
 
