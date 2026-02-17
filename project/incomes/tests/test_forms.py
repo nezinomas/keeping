@@ -3,10 +3,10 @@ from datetime import date
 import pytest
 import time_machine
 
-from ...accounts.factories import AccountFactory
-from ...users.factories import UserFactory
-from ..factories import IncomeTypeFactory
+from ...accounts.tests.factories import AccountFactory
+from ...users.tests.factories import UserFactory
 from ..forms import IncomeForm, IncomeTypeForm
+from .factories import IncomeTypeFactory
 
 pytestmark = pytest.mark.django_db
 

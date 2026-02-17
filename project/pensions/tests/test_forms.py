@@ -3,8 +3,8 @@ from datetime import date
 import pytest
 import time_machine
 
-from ..factories import PensionTypeFactory
 from ..forms import PensionForm, PensionTypeForm
+from .factories import PensionTypeFactory
 
 pytestmark = pytest.mark.django_db
 

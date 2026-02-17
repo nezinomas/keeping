@@ -4,13 +4,13 @@ import pytest
 import time_machine
 from django.urls import reverse
 
-from ..factories import PensionBalanceFactory, PensionFactory, PensionTypeFactory
 from ..models import Pension, PensionBalance, PensionType
 from ..services.model_services import (
     PensionBalanceModelService,
     PensionModelService,
     PensionTypeModelService,
 )
+from .factories import PensionBalanceFactory, PensionFactory, PensionTypeFactory
 
 pytestmark = pytest.mark.django_db
 

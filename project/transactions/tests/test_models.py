@@ -1,24 +1,23 @@
 from datetime import date
 
 import pytest
-from django.urls import reverse
 
-from ...accounts.factories import AccountBalance, AccountFactory
 from ...accounts.services.model_services import (
     AccountBalanceModelService,
 )
-from ...expenses.factories import ExpenseFactory
-from ...incomes.factories import IncomeFactory
-from ...savings.factories import SavingFactory, SavingTypeFactory
+from ...accounts.tests.factories import AccountBalance, AccountFactory
+from ...expenses.tests.factories import ExpenseFactory
+from ...incomes.tests.factories import IncomeFactory
 from ...savings.models import SavingBalance
 from ...savings.services.model_services import SavingBalanceModelService
-from ..factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
+from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..models import SavingChange, SavingClose, Transaction
 from ..services.model_services import (
     SavingChangeModelService,
     SavingCloseModelService,
     TransactionModelService,
 )
+from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
 
 pytestmark = pytest.mark.django_db
 

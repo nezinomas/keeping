@@ -6,11 +6,10 @@ from pathlib import Path
 import pytest
 from django.conf import settings
 from django.test import override_settings
-from mock import patch
 
-from ..factories import CountFactory, CountTypeFactory
 from ..models import Count, CountType
 from ..services.model_services import CountModelService, CountTypeModelService
+from .factories import CountFactory, CountTypeFactory
 
 pytestmark = pytest.mark.django_db
 

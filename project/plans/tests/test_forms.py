@@ -2,17 +2,10 @@ import pytest
 import time_machine
 
 from ...core.lib.translation import month_names
-from ...expenses.factories import ExpenseTypeFactory
-from ...incomes.factories import IncomeTypeFactory
-from ...savings.factories import SavingTypeFactory
-from ...users.factories import UserFactory
-from ..factories import (
-    DayPlanFactory,
-    ExpensePlanFactory,
-    IncomePlanFactory,
-    NecessaryPlanFactory,
-    SavingPlanFactory,
-)
+from ...expenses.tests.factories import ExpenseTypeFactory
+from ...incomes.tests.factories import IncomeTypeFactory
+from ...savings.tests.factories import SavingTypeFactory
+from ...users.tests.factories import UserFactory
 from ..forms import (
     CopyPlanForm,
     DayPlanForm,
@@ -23,6 +16,13 @@ from ..forms import (
 )
 from ..models import IncomePlan
 from ..services.model_services import ModelService
+from .factories import (
+    DayPlanFactory,
+    ExpensePlanFactory,
+    IncomePlanFactory,
+    NecessaryPlanFactory,
+    SavingPlanFactory,
+)
 
 pytestmark = pytest.mark.django_db
 

@@ -6,9 +6,9 @@ import time_machine
 from django.urls import resolve, reverse, reverse_lazy
 
 from ...core.tests.utils import change_profile_year, setup_view
-from ...users.factories import User
+from ...users.tests.factories import User
 from .. import models, views
-from ..factories import DrinkFactory, DrinkTargetFactory
+from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
 

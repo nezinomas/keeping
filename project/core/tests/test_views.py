@@ -4,13 +4,13 @@ import pytest
 import time_machine
 from django.urls import resolve, reverse
 
-from ...accounts.factories import AccountBalance
-from ...expenses.factories import ExpenseFactory
-from ...incomes.factories import IncomeFactory
-from ...journals.factories import JournalFactory
-from ...pensions.factories import PensionBalance, PensionFactory
-from ...savings.factories import SavingBalance, SavingFactory
-from ...users.factories import UserFactory
+from ...accounts.tests.factories import AccountBalance
+from ...expenses.tests.factories import ExpenseFactory
+from ...incomes.tests.factories import IncomeFactory
+from ...journals.tests.factories import JournalFactory
+from ...pensions.tests.factories import PensionBalance, PensionFactory
+from ...savings.tests.factories import SavingBalance, SavingFactory
+from ...users.tests.factories import UserFactory
 from .. import views
 from .utils import setup_view
 

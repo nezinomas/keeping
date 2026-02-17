@@ -7,9 +7,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 
-from ...accounts.factories import AccountFactory
+from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
-from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
+from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 

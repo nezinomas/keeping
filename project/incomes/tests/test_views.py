@@ -4,9 +4,9 @@ import pytest
 import time_machine
 from django.urls import resolve, reverse
 
-from ...accounts.factories import AccountFactory
+from ...accounts.tests.factories import AccountFactory
 from .. import models, views
-from ..factories import Income, IncomeFactory, IncomeTypeFactory
+from .factories import Income, IncomeFactory, IncomeTypeFactory
 
 pytestmark = pytest.mark.django_db
 

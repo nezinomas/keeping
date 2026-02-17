@@ -5,8 +5,8 @@ from ...expenses.forms import ExpenseForm
 from ...incomes.forms import IncomeForm
 from ...savings.forms import SavingForm
 from ...transactions.forms import SavingCloseForm, TransactionForm
-from ..factories import AccountFactory
 from ..forms import AccountForm
+from .factories import AccountFactory
 
 pytestmark = pytest.mark.django_db
 

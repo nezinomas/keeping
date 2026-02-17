@@ -2,14 +2,17 @@ from datetime import date
 
 import pytest
 import time_machine
-from django.urls import reverse
 
-from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
-from ...incomes.factories import IncomeFactory
-from ...savings.factories import SavingBalanceFactory, SavingFactory, SavingTypeFactory
+from ...accounts.tests.factories import AccountFactory
+from ...incomes.tests.factories import IncomeFactory
 from ...savings.models import SavingBalance
+from ...savings.tests.factories import (
+    SavingBalanceFactory,
+    SavingFactory,
+    SavingTypeFactory,
+)
 from ..models import Saving, SavingBalance, SavingType
 from ..services.model_services import (
     SavingBalanceModelService,

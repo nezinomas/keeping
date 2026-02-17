@@ -2,27 +2,26 @@ from datetime import date, datetime
 
 import pytest
 import pytz
-from django.db import connection
 from django.db.backends.signals import connection_created
 
-from .accounts.factories import AccountFactory
-from .bookkeeping.factories import (
+from .accounts.tests.factories import AccountFactory
+from .bookkeeping.tests.factories import (
     AccountWorthFactory,
     PensionWorthFactory,
     SavingWorthFactory,
 )
-from .debts.factories import LendFactory, LendReturnFactory
-from .expenses.factories import ExpenseFactory
-from .incomes.factories import IncomeFactory
-from .journals.factories import JournalFactory
-from .pensions.factories import PensionFactory
-from .savings.factories import SavingFactory, SavingTypeFactory
-from .transactions.factories import (
+from .debts.tests.factories import LendFactory, LendReturnFactory
+from .expenses.tests.factories import ExpenseFactory
+from .incomes.tests.factories import IncomeFactory
+from .journals.tests.factories import JournalFactory
+from .pensions.tests.factories import PensionFactory
+from .savings.tests.factories import SavingFactory, SavingTypeFactory
+from .transactions.tests.factories import (
     SavingChangeFactory,
     SavingCloseFactory,
     TransactionFactory,
 )
-from .users.factories import UserFactory
+from .users.tests.factories import UserFactory
 
 
 @pytest.fixture(autouse=True)

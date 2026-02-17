@@ -2,11 +2,11 @@ from datetime import date
 
 import pytest
 
-from ...expenses.factories import ExpenseFactory
+from ...expenses.tests.factories import ExpenseFactory
 from ...journals.models import Journal
-from ...users.factories import UserFactory
-from ..factories import JournalFactory
+from ...users.tests.factories import UserFactory
 from ..models import Journal
+from .factories import JournalFactory
 
 pytestmark = pytest.mark.django_db
 

@@ -2,7 +2,7 @@ import pytest
 from django.urls import resolve, reverse
 
 from .. import views
-from ..factories import AccountFactory
+from .factories import AccountFactory
 
 pytestmark = pytest.mark.django_db
 

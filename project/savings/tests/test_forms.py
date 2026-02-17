@@ -3,12 +3,12 @@ from datetime import date
 import pytest
 import time_machine
 
-from ...accounts.factories import AccountFactory
-from ...journals.factories import JournalFactory
-from ...users.factories import UserFactory
-from ..factories import SavingTypeFactory
+from ...accounts.tests.factories import AccountFactory
+from ...journals.tests.factories import JournalFactory
+from ...users.tests.factories import UserFactory
 from ..forms import SavingForm, SavingTypeForm
 from ..models import SavingType
+from .factories import SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 

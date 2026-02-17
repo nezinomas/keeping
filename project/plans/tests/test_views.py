@@ -2,11 +2,12 @@ import pytest
 import time_machine
 from django.urls import resolve, reverse
 
-from ...expenses.factories import ExpenseTypeFactory
-from ...incomes.factories import IncomeTypeFactory
-from ...savings.factories import SavingTypeFactory
+from ...expenses.tests.factories import ExpenseTypeFactory
+from ...incomes.tests.factories import IncomeTypeFactory
+from ...savings.tests.factories import SavingTypeFactory
 from .. import models, views
-from ..factories import (
+from ..services.model_services import ModelService
+from .factories import (
     DayPlan,
     DayPlanFactory,
     ExpensePlan,
@@ -18,7 +19,6 @@ from ..factories import (
     SavingPlan,
     SavingPlanFactory,
 )
-from ..services.model_services import ModelService
 
 pytestmark = pytest.mark.django_db
 

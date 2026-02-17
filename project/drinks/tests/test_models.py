@@ -3,10 +3,10 @@ from datetime import date
 import pytest
 from django.core.validators import ValidationError
 
-from ...users.factories import UserFactory
-from ..factories import DrinkFactory, DrinkTargetFactory
+from ...users.tests.factories import UserFactory
 from ..models import Drink, DrinkTarget
 from ..services.model_services import DrinkModelService, DrinkTargetModelService
+from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
 

@@ -1,6 +1,6 @@
 import pytest
 
-from ..factories import TitleDummyFactory
+from .factories import TitleDummyFactory
 
 pytestmark = pytest.mark.django_db
 

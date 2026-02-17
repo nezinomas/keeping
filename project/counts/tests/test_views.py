@@ -9,8 +9,8 @@ from django.urls import resolve, reverse
 
 from ...users.views import Login
 from .. import forms, views
-from ..factories import CountFactory, CountTypeFactory
 from ..models import Count, CountType
+from .factories import CountFactory, CountTypeFactory
 
 pytestmark = pytest.mark.django_db
 

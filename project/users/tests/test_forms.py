@@ -1,7 +1,7 @@
 import pytest
 
-from ..factories import UserFactory
 from ..forms import InviteForm, SignUpForm
+from .factories import UserFactory
 
 
 # -------------------------------------------------------------------------------------
