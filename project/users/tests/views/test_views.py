@@ -18,10 +18,10 @@ from django.urls import resolve, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from ...journals.models import Journal
-from ...users.factories import UserFactory
-from ...users.models import User
-from .. import forms, views
+from ....journals.models import Journal
+from ....users.models import User
+from ....users.tests.factories import UserFactory
+from ... import forms, views
 
 pytestmark = pytest.mark.django_db
 

@@ -1,11 +1,11 @@
 import pytest
 from django.urls import resolve, reverse
 
-from ...expenses.factories import ExpenseTypeFactory
-from ...journals.factories import JournalFactory
-from ...journals.models import Journal
-from ...users.factories import User, UserFactory
-from .. import views
+from ....expenses.tests.factories import ExpenseTypeFactory
+from ....journals.models import Journal
+from ....journals.tests.factories import JournalFactory
+from ... import views
+from ..factories import User, UserFactory
 
 pytestmark = pytest.mark.django_db
 
