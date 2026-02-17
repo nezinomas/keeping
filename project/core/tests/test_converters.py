@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from ..converters import DateConverter
+from ..converters import DateConverter, SignerConverter
 
 
 @pytest.fixture(name="date_converter")
@@ -47,3 +47,36 @@ def test_to_url_attribute_error(date_converter):
 
     # Verify the hardcoded fallback date is returned
     assert result == "1974-1-1"
+
+
+@pytest.fixture(name="signer_converter")
+def fixture_signer_converter():
+    """Provides a fresh instance of SignerConverter for each test."""
+    return SignerConverter()
+
+
+@pytest.fixture
+def sample_token():
+    """Provides a realistic token string that matches the regex constraints."""
+    # 23 chars : 5 chars : 43 chars
+    part1 = "a-valid-token-string-12"
+    part2 = "abcde"
+    part3 = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v"
+    return f"{part1}:{part2}:{part3}"
+
+
+def test_signer_converter_regex(signer_converter):
+    """Ensure the regex matches the expected Django URL pattern for a signed token."""
+    assert signer_converter.regex == r"([\w\-]{23,}:[\w\-]{5,}:[\w\-]{43})"
+
+
+def test_to_python_returns_unmodified_value(signer_converter, sample_token):
+    """Test that to_python returns the token exactly as received from the URL."""
+    result = signer_converter.to_python(sample_token)
+    assert result == sample_token
+
+
+def test_to_url_returns_unmodified_token(signer_converter, sample_token):
+    """Test that to_url returns the token string exactly as passed to the URL dispatcher."""
+    result = signer_converter.to_url(sample_token)
+    assert result == sample_token
