@@ -9,8 +9,8 @@ from django.urls import resolve, reverse
 from ....expenses.tests.factories import ExpenseTypeFactory
 from ....journals.tests.factories import JournalFactory
 from ....savings.tests.factories import SavingTypeFactory
-from ...lib.no_incomes import NoIncomes
 from ... import views
+from ...lib.no_incomes import NoIncomes
 
 pytestmark = pytest.mark.django_db
 

@@ -5,8 +5,8 @@ import time_machine
 
 from ....accounts.tests.factories import AccountFactory
 from ....pensions.tests.factories import PensionTypeFactory
-from ..factories import SavingTypeFactory
 from ...forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
+from ..factories import SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 

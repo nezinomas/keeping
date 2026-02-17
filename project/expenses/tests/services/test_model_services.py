@@ -6,13 +6,13 @@ from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
 from mock import MagicMock
 
-from .. import factories
 from ... import models
 from ...services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
     ExpenseTypeModelService,
 )
+from .. import factories
 
 
 def test_expense_init_raises_if_no_user():

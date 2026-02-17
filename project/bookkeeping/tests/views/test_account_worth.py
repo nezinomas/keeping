@@ -4,12 +4,12 @@ import pytest
 import pytz
 from django.urls import resolve, reverse
 
-from ....accounts.tests.factories import AccountBalanceFactory, AccountFactory
 from ....accounts.models import AccountBalance
+from ....accounts.tests.factories import AccountBalanceFactory, AccountFactory
 from ....core.tests.utils import setup_view
 from ... import views
-from ..factories import AccountWorthFactory
 from ...models import AccountWorth
+from ..factories import AccountWorthFactory
 
 pytestmark = pytest.mark.django_db
 

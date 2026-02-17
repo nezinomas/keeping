@@ -5,8 +5,8 @@ from django.urls import resolve, reverse
 from ....core.tests.utils import setup_view
 from ....savings.models import SavingBalance
 from ....savings.tests.factories import SavingTypeFactory
-from ...models import SavingWorth
 from ... import views
+from ...models import SavingWorth
 
 pytestmark = pytest.mark.django_db
 

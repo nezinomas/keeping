@@ -77,6 +77,9 @@ def test_to_python_returns_unmodified_value(signer_converter, sample_token):
 
 
 def test_to_url_returns_unmodified_token(signer_converter, sample_token):
-    """Test that to_url returns the token string exactly as passed to the URL dispatcher."""
+    """
+        Test that to_url returns the token string exactly
+        as it was passed to the URL dispatcher.
+    """
     result = signer_converter.to_url(sample_token)
     assert result == sample_token

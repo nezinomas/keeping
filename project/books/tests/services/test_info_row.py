@@ -2,8 +2,8 @@ from datetime import date
 
 import pytest
 
-from ..factories import BookFactory, BookTargetFactory
 from ...services.info_row import InfoRow
+from ..factories import BookFactory, BookTargetFactory
 
 pytestmark = pytest.mark.django_db
 

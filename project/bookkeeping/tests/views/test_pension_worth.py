@@ -3,8 +3,8 @@ from django.urls import resolve, reverse
 
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
-from ...models import PensionWorth
 from ... import views
+from ...models import PensionWorth
 
 pytestmark = pytest.mark.django_db
 

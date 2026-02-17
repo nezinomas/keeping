@@ -4,8 +4,8 @@ import pytest
 from django.http import Http404
 from mock import Mock
 
-from ....expenses.tests.factories import ExpenseFactory
 from ....expenses.models import Expense
+from ....expenses.tests.factories import ExpenseFactory
 from ...mixins import views
 
 
