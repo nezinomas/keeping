@@ -1,10 +1,10 @@
 import pytest
 from django.urls import reverse
 
-from ...journals.factories import JournalFactory
-from ..factories import AccountBalanceFactory, AccountFactory
+from ...journals.tests.factories import JournalFactory
 from ..models import Account, AccountBalance
 from ..services.model_services import AccountBalanceModelService, AccountModelService
+from .factories import AccountBalanceFactory, AccountFactory
 
 pytestmark = pytest.mark.django_db
 

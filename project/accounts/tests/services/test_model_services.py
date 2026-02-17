@@ -4,7 +4,7 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 from mock import MagicMock
 
-from ..services.model_services import AccountBalanceModelService, AccountModelService
+from ...services.model_services import AccountBalanceModelService, AccountModelService
 
 
 def test_balance_init_raises_if_no_user():
