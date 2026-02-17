@@ -6,9 +6,9 @@ import pytz
 from django.db import models
 from django.db.models import signals
 
-from ..accounts.factories import AccountFactory
-from ..journals.factories import JournalFactory
-from .models import Saving, SavingBalance, SavingType
+from ...accounts.tests.factories import AccountFactory
+from ...journals.tests.factories import JournalFactory
+from ..models import Saving, SavingBalance, SavingType
 
 
 class SavingTypeFactory(factory.django.DjangoModelFactory):

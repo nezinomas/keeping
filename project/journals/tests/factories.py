@@ -2,7 +2,7 @@ from datetime import date
 
 from factory.django import DjangoModelFactory
 
-from . import models
+from .. import models
 
 
 class JournalFactory(DjangoModelFactory):

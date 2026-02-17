@@ -6,8 +6,8 @@ import pytz
 from django.db import models
 from django.db.models import signals
 
-from ..journals.factories import JournalFactory
-from .models import Pension, PensionBalance, PensionType
+from ...journals.tests.factories import JournalFactory
+from ..models import Pension, PensionBalance, PensionType
 
 
 class PensionTypeFactory(factory.django.DjangoModelFactory):

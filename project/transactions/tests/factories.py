@@ -2,9 +2,9 @@ from datetime import date as dt
 
 import factory
 
-from ..accounts.factories import AccountFactory
-from ..savings.factories import SavingTypeFactory
-from .models import SavingChange, SavingClose, Transaction
+from ...accounts.tests.factories import AccountFactory
+from ...savings.tests.factories import SavingTypeFactory
+from ..models import SavingChange, SavingClose, Transaction
 
 
 class TransactionFactory(factory.django.DjangoModelFactory):

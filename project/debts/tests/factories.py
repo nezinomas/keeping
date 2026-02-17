@@ -2,9 +2,9 @@ from datetime import date as dt
 
 import factory
 
-from ..accounts.factories import AccountFactory
-from ..journals.factories import JournalFactory
-from . import models
+from ...accounts.tests.factories import AccountFactory
+from ...journals.tests.factories import JournalFactory
+from .. import models
 
 
 class BorrowFactory(factory.django.DjangoModelFactory):

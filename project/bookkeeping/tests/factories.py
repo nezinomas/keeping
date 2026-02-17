@@ -4,10 +4,10 @@ from zoneinfo import ZoneInfo
 import factory
 from factory.django import DjangoModelFactory
 
-from ..accounts.factories import AccountFactory
-from ..pensions.factories import PensionTypeFactory
-from ..savings.factories import SavingTypeFactory
-from . import models
+from ...accounts.tests.factories import AccountFactory
+from ...pensions.tests.factories import PensionTypeFactory
+from ...savings.tests.factories import SavingTypeFactory
+from .. import models
 
 
 class SavingWorthFactory(DjangoModelFactory):

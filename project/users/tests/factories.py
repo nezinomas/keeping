@@ -4,7 +4,7 @@ import factory
 import pytz
 from django.contrib.auth.hashers import make_password
 
-from ..users.models import User
+from ...users.models import User
 
 
 class UserFactory(factory.django.DjangoModelFactory):

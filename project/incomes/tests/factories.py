@@ -2,9 +2,9 @@ from datetime import date as dt
 
 import factory
 
-from ..accounts.factories import AccountFactory
-from ..journals.factories import JournalFactory
-from .models import Income, IncomeType
+from ...accounts.tests.factories import AccountFactory
+from ...journals.tests.factories import JournalFactory
+from ..models import Income, IncomeType
 
 
 class IncomeTypeFactory(factory.django.DjangoModelFactory):

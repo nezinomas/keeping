@@ -5,8 +5,8 @@ import pytz
 from django.db import models
 from django.db.models import signals
 
-from ..journals.factories import JournalFactory
-from .models import Account, AccountBalance
+from ...journals.tests.factories import JournalFactory
+from ..models import Account, AccountBalance
 
 
 class AccountFactory(factory.django.DjangoModelFactory):
