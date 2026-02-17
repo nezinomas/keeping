@@ -1,6 +1,6 @@
 import factory
 
-from . import models
+from .. import models
 
 
 class TitleDummy(models.TitleAbstract):
