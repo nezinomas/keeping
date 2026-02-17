@@ -4,7 +4,7 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 from mock import MagicMock
 
-from ..services.model_services import (
+from ...services.model_services import (
     SavingBalanceModelService,
     SavingModelService,
     SavingTypeModelService,

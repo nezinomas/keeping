@@ -4,10 +4,10 @@ import pytest
 import time_machine
 from django.urls import resolve, reverse
 
-from ...accounts.factories import AccountFactory
+from ...accounts.tests.factories import AccountFactory
 from ...core.tests.utils import clean_content
 from .. import models, views
-from ..factories import Saving, SavingFactory, SavingTypeFactory
+from .factories import Saving, SavingFactory, SavingTypeFactory
 
 pytestmark = pytest.mark.django_db
 
