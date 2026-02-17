@@ -1,13 +1,11 @@
 from datetime import date, datetime
-from types import SimpleNamespace
 
 import pytest
 import pytz
 import time_machine
-from mock import patch
 
-from ...users.factories import UserFactory
-from ..lib import date as lib_date
+from ....users.tests.factories import UserFactory
+from ...lib import date as lib_date
 
 
 def test_year_month_list():

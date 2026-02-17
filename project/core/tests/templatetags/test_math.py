@@ -2,7 +2,7 @@ import pytest
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from ..templatetags import math
+from ...templatetags import math
 
 numbers_strategy = st.one_of(
     st.integers(min_value=0),

@@ -4,18 +4,22 @@ import polars as pl
 import pytest
 from django.utils import timezone
 
-from ...accounts.factories import AccountBalance, AccountBalanceFactory, AccountFactory
-from ...pensions.factories import (
+from ....accounts.tests.factories import (
+    AccountBalance,
+    AccountBalanceFactory,
+    AccountFactory,
+)
+from ....pensions.tests.factories import (
     PensionBalance,
     PensionBalanceFactory,
     PensionTypeFactory,
 )
-from ...savings.factories import (
+from ....savings.tests.factories import (
     SavingBalance,
     SavingBalanceFactory,
     SavingTypeFactory,
 )
-from ..lib.db_sync import BalanceSynchronizer
+from ...lib.db_sync import BalanceSynchronizer
 
 pytestmark = pytest.mark.django_db
 

@@ -1,8 +1,8 @@
 import pytest
 from mock import Mock
 
-from ...incomes.factories import IncomeFactory
-from ..services.signals_service import (
+from ....incomes.tests.factories import IncomeFactory
+from ...services.signals_service import (
     _get_user_from_instance,
     sync_accounts,
     sync_pensions,

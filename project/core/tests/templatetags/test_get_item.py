@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from ..templatetags import get_item
+from ...templatetags import get_item
 
 
 @pytest.fixture()

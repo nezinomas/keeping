@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ..lib.signals import Accounts
+from ...lib.signals import Accounts
 
 
 @pytest.fixture(name="incomes")

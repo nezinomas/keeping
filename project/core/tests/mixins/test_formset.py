@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 from mock import Mock
 
-from ..mixins.formset import FormsetMixin
-from .utils import setup_view
+from ...mixins.formset import FormsetMixin
+from ..utils import setup_view
 
 
 def test_model_type_without_foreignkey(fake_request):

@@ -1,7 +1,7 @@
 import pytest
 from django.core.paginator import EmptyPage, PageNotAnInteger
 
-from ..lib.paginator import CountlessPage, CountlessPaginator
+from ...lib.paginator import CountlessPage, CountlessPaginator
 
 
 def test_page_str():

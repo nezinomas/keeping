@@ -1,6 +1,6 @@
 from django.utils.translation import gettext_lazy as _
 
-from ..lib.form_widgets import DatePickerWidget, YearPickerWidget
+from ...lib.form_widgets import DatePickerWidget, YearPickerWidget
 
 
 def test_date_picker_widget_default_attrs():

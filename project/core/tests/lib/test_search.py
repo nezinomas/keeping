@@ -2,10 +2,10 @@ from datetime import date
 
 import pytest
 
-from ...books.factories import BookFactory
-from ...expenses.factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
-from ...incomes.factories import IncomeFactory, IncomeTypeFactory
-from ..lib import search
+from ....books.tests.factories import BookFactory
+from ....expenses.tests.factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
+from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
+from ...lib import search
 
 
 def test_sanitize_search_str():

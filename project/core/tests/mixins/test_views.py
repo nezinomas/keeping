@@ -4,9 +4,9 @@ import pytest
 from django.http import Http404
 from mock import Mock
 
-from ...expenses.factories import ExpenseFactory
-from ...expenses.models import Expense
-from ..mixins import views
+from ....expenses.tests.factories import ExpenseFactory
+from ....expenses.models import Expense
+from ...mixins import views
 
 
 @pytest.mark.xfail

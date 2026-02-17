@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ..lib.convert_price import (
+from ...lib.convert_price import (
     ConvertPriceMixin,
     float_to_int_cents,
     int_cents_to_float,

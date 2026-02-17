@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from django.test import override_settings
 from django.urls import Resolver404
 
-from ..lib import utils
+from ...lib import utils
 
 
 def test_total_row_objects():

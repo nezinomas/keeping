@@ -1,6 +1,6 @@
 import pytest
 
-from ..templatetags.cell_format import (
+from ...templatetags.cell_format import (
     cellformat,
     compare,
     negative,
