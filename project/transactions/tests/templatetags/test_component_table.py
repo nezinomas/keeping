@@ -1,6 +1,6 @@
 import pytest
 from django.http import HttpResponse
-from django.template import Context, Template, loader
+from django.template import loader
 
 
 @pytest.fixture(name="table")
