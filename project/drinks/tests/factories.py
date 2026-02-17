@@ -2,8 +2,8 @@ from datetime import date
 
 import factory
 
-from ..users.factories import UserFactory
-from .models import Drink, DrinkTarget
+from ...users.tests.factories import UserFactory
+from ..models import Drink, DrinkTarget
 
 
 class DrinkFactory(factory.django.DjangoModelFactory):

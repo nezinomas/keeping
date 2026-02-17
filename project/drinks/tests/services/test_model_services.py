@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth.models import AnonymousUser
 
-from ..services.model_services import DrinkModelService, DrinkTargetModelService
+from ...services.model_services import DrinkModelService, DrinkTargetModelService
 
 
 def test_drink_init_raises_if_no_user():

@@ -1,4 +1,4 @@
-from ..templatetags.drinks_templatetags import convert
+from ...templatetags.drinks_templatetags import convert
 
 
 def test_convert():

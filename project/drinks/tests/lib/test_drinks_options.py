@@ -1,6 +1,6 @@
 import pytest
 
-from ..lib.drinks_options import DrinksOptions
+from ...lib.drinks_options import DrinksOptions
 
 
 @pytest.mark.parametrize(

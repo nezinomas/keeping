@@ -1,7 +1,7 @@
 import pytest
 import time_machine
 
-from ..services import history
+from ...services import history
 
 pytestmark = pytest.mark.django_db
 

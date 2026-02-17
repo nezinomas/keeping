@@ -1,11 +1,10 @@
-from dataclasses import replace
 from datetime import date
 
 import pytest
 import time_machine
 
-from ..lib.drinks_options import DrinksOptions
-from ..lib.drinks_stats import DrinkStats
+from ...lib.drinks_options import DrinksOptions
+from ...lib.drinks_stats import DrinkStats
 
 pytestmark = pytest.mark.django_db
 

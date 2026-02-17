@@ -6,9 +6,9 @@ import time_machine
 
 from project.drinks.lib.drinks_stats import DrinkStats
 
+from ...lib.drinks_options import DrinksOptions
+from ...services import index as service
 from ..factories import DrinkFactory
-from ..lib.drinks_options import DrinksOptions
-from ..services import index as service
 
 pytestmark = pytest.mark.django_db
 

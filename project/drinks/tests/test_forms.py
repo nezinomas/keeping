@@ -3,9 +3,9 @@ from datetime import date
 import pytest
 import time_machine
 
-from ...users.factories import UserFactory
-from ..factories import DrinkFactory, DrinkTargetFactory
+from ...users.tests.factories import UserFactory
 from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
+from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
 
