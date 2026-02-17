@@ -1,17 +1,16 @@
 from datetime import date
 
 import pytest
-from django.urls import reverse
 
-from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import (
     AccountBalanceModelService,
 )
+from ...accounts.tests.factories import AccountFactory
 from ...journals.models import Journal
-from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
 from ..services.model_services import IncomeModelService, IncomeTypeModelService
+from .factories import IncomeFactory, IncomeTypeFactory
 
 pytestmark = pytest.mark.django_db
 
