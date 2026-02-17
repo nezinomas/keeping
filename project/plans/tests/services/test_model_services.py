@@ -1,8 +1,8 @@
 import pytest
 from django.contrib.auth.models import AnonymousUser
 
-from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
-from ..services.model_services import ModelService
+from ...models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
+from ...services.model_services import ModelService
 
 
 @pytest.mark.parametrize(

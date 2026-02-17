@@ -1,10 +1,10 @@
 import factory
 
-from ..expenses.factories import ExpenseTypeFactory
-from ..incomes.factories import IncomeTypeFactory
-from ..journals.factories import JournalFactory
-from ..savings.factories import SavingTypeFactory
-from .models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
+from ...expenses.tests.factories import ExpenseTypeFactory
+from ...incomes.tests.factories import IncomeTypeFactory
+from ...journals.tests.factories import JournalFactory
+from ...savings.tests.factories import SavingTypeFactory
+from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 
 
 class ExpensePlanFactory(factory.django.DjangoModelFactory):

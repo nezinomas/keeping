@@ -1,7 +1,7 @@
 import polars as pl
 import pytest
 
-from ..lib.calc_day_sum import PlanCalculateDaySum
+from ...lib.calc_day_sum import PlanCalculateDaySum
 
 
 @pytest.fixture(name="data")

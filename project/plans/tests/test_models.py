@@ -1,17 +1,17 @@
 import pytest
 
-from ...expenses.factories import ExpenseTypeFactory
-from ...incomes.factories import IncomeTypeFactory
-from ...savings.factories import SavingTypeFactory
-from ..factories import (
+from ...expenses.tests.factories import ExpenseTypeFactory
+from ...incomes.tests.factories import IncomeTypeFactory
+from ...savings.tests.factories import SavingTypeFactory
+from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
+from ..services.model_services import ModelService
+from .factories import (
     DayPlanFactory,
     ExpensePlanFactory,
     IncomePlanFactory,
     NecessaryPlanFactory,
     SavingPlanFactory,
 )
-from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
-from ..services.model_services import ModelService
 
 pytestmark = pytest.mark.django_db
 
