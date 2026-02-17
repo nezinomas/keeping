@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth.models import AnonymousUser
 
-from ..services.model_services import BookModelService, BookTargetModelService
+from ...services.model_services import BookModelService, BookTargetModelService
 
 
 def test_book_init_raises_if_no_user():

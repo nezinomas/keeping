@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 
 from ..factories import BookFactory, BookTargetFactory
-from ..services.info_row import InfoRow
+from ...services.info_row import InfoRow
 
 pytestmark = pytest.mark.django_db
 

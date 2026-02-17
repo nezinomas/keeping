@@ -5,9 +5,9 @@ import pytest
 import time_machine
 from django.urls import resolve, reverse
 
-from ...users.factories import UserFactory
+from ...users.tests.factories import UserFactory
 from .. import models, views
-from ..factories import Book, BookFactory, BookTargetFactory
+from .factories import Book, BookFactory, BookTargetFactory
 
 pytestmark = pytest.mark.django_db
 

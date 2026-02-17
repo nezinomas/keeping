@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from ..factories import BookFactory, BookTargetFactory
-from ..services.chart_readed import ChartReaded, ChartReadedData
+from ...services.chart_readed import ChartReaded, ChartReadedData
 
 pytestmark = pytest.mark.django_db
 
