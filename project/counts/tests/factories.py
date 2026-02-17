@@ -2,8 +2,8 @@ from datetime import date
 
 import factory
 
-from ..users.factories import UserFactory
-from .models import Count, CountType
+from ...users.tests.factories import UserFactory
+from ..models import Count, CountType
 
 
 class CountTypeFactory(factory.django.DjangoModelFactory):

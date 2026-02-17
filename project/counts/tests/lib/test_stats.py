@@ -7,10 +7,10 @@ import pytest
 import time_machine
 from django.test import override_settings
 
-from ...core.exceptions import MethodInvalidError
+from ....core.exceptions import MethodInvalidError
 from ..factories import CountFactory
-from ..lib.stats import Stats
-from ..services.model_services import CountModelService
+from ...lib.stats import Stats
+from ...services.model_services import CountModelService
 
 month_days_1999 = [
     (1, 31),

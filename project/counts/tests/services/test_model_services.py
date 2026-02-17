@@ -4,7 +4,7 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 from mock import MagicMock
 
-from ..services.model_services import CountModelService, CountTypeModelService
+from ...services.model_services import CountModelService, CountTypeModelService
 
 
 def test_count_init_raises_if_no_user():
