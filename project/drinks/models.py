@@ -30,8 +30,16 @@ class Drink(models.Model):
         get_latest_by = ["date"]
 
     def __str__(self):
-        qty = DrinksOptions(self.user.drink_type).ratio
-        return f"{self.date}: {round(self.quantity * qty, 2)}"
+        options = DrinksOptions(self.user.drink_type)
+
+        msg = f"{self.date}, {self.option}, "
+        if self.option == "stdav":
+            qty = str(self.quantity)
+        else:
+            _ = options.stdav_to_ml(stdav=self.quantity, drink_type=self.option)
+            qty = f"{int(_)}ml"
+
+        return msg + qty
 
 
 class DrinkTarget(models.Model):
