@@ -6,8 +6,6 @@ from ..users.models import User
 from . import managers
 from .lib.drinks_options import DrinksOptions
 
-MAX_BOTTLES = 20
-
 
 class DrinkType(models.TextChoices):
     BEER = "beer", _l("Beer")
@@ -34,18 +32,6 @@ class Drink(models.Model):
     def __str__(self):
         qty = DrinksOptions(self.user.drink_type).ratio
         return f"{self.date}: {round(self.quantity * qty, 2)}"
-
-    def save(self, *args, **kwargs):
-        obj = DrinksOptions(drink_type=self.option)
-
-        if self.quantity > MAX_BOTTLES:
-            q = obj.ml_to_stdav(drink_type=self.option, ml=self.quantity)
-        else:
-            q = self.quantity / obj.ratio
-
-        self.quantity = q
-
-        super().save(*args, **kwargs)
 
 
 class DrinkTarget(models.Model):

@@ -5,6 +5,7 @@ import time_machine
 
 from ...users.tests.factories import UserFactory
 from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
+from ..models import Drink
 from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
@@ -73,6 +74,45 @@ def test_drink_valid_data(mocker, main_user):
     assert data.quantity == 2.5
     assert data.user.username == "bob"
     assert data.counter_type == "Counter Type"
+
+
+@pytest.mark.parametrize(
+    "ml, drink_type, expect",
+    [
+        (1, "beer", 2.5),
+        (21, "beer", 0.1),
+        (500, "beer", 2.5),
+        (1, "wine", 8),
+        (20, "wine", 160),
+        (21, "wine", 0.22),
+        (750, "wine", 8),
+        (1, "vodka", 40),
+        (20, "vodka", 800),
+        (21, "vodka", 0.84),
+        (1000, "vodka", 40),
+        (1, "stdav", 1),
+        (20, "stdav", 20),
+        (21, "stdav", 21),
+    ],
+)
+def test_drink_recalculate_ml_on_save(mocker, main_user, ml, drink_type, expect):
+    mocker.patch("project.drinks.forms.App_name", "Counter Type")
+
+    form = DrinkForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "quantity": ml,
+            "option": drink_type,
+        },
+    )
+
+    form.save()
+
+    actual = Drink.objects.last()
+
+    assert actual.option == drink_type
+    assert round(actual.quantity, 2) == expect
 
 
 @time_machine.travel("1999-2-2")

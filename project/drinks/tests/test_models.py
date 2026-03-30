@@ -228,48 +228,6 @@ def test_drink_sum_by_day_all_months(drink_type, stdav, qty, main_user):
     assert actual_qty == qty
 
 
-@pytest.mark.parametrize(
-    "ml, drink_type, expect",
-    [
-        (20, "beer", 50),
-        (21, "beer", 0.1),
-        (350, "beer", 1.75),
-        (20, "wine", 160),
-        (21, "wine", 0.22),
-        (350, "wine", 3.73),
-        (20, "vodka", 800),
-        (21, "vodka", 0.84),
-        (350, "vodka", 14),
-    ],
-)
-def test_drink_recalculate_ml_on_save(ml, drink_type, expect):
-    d = DrinkFactory(quantity=ml, option=drink_type)
-
-    assert round(d.quantity, 2) == expect
-
-
-@pytest.mark.parametrize(
-    "drink_type, quantity, stdav",
-    [
-        ("beer", 1, 2.5),
-        ("beer", 500, 2.5),
-        ("wine", 1, 8),
-        ("wine", 750, 8),
-        ("vodka", 1, 40),
-        ("vodka", 1000, 40),
-        ("stdav", 1, 1),
-        ("stdav", 10, 10),
-    ],
-)
-def test_drink_save_convert_quantity(drink_type, quantity, stdav):
-    obj = DrinkFactory(date=date(1999, 1, 1), quantity=quantity, option=drink_type)
-
-    actual = Drink.objects.get(pk=obj.pk)
-
-    assert actual.option == drink_type
-    assert actual.quantity == stdav
-
-
 # ----------------------------------------------------------------------------
 #                                                                 Drink Target
 # ----------------------------------------------------------------------------

@@ -10,7 +10,8 @@ from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
-from .models import MAX_BOTTLES, Drink, DrinkTarget
+from .lib.drinks_options import MAX_BOTTLES, DrinksOptions
+from .models import Drink, DrinkTarget
 from .services.model_services import DrinkModelService, DrinkTargetModelService
 
 
@@ -48,9 +49,26 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
         self.fields["quantity"].help_text = _help_text
 
+    def recalculate_quantity(self, instance):
+        if instance.option == "stdav":
+            return instance.quantity
+
+        options = DrinksOptions(drink_type=instance.option)
+
+        if instance.quantity > MAX_BOTTLES:
+            q = options.ml_to_stdav(drink_type=instance.option, ml=instance.quantity)
+        else:
+            q = instance.quantity / options.ratio
+
+        return q
+
+
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
+
         instance.counter_type = App_name
+        instance.quantity = self.recalculate_quantity(instance)
+
         instance.save()
 
         return instance
