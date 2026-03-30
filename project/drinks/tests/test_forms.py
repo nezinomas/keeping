@@ -22,7 +22,7 @@ def test_drink_init_fields(main_user):
     form = DrinkForm(user=main_user).as_p()
 
     assert '<input type="text" name="date"' in form
-    assert '<input type="number" name="quantity"' in form
+    assert '<input type="number" name="stdav"' in form
     assert '<select name="option"' in form
     assert '<select name="user"' not in form
     assert '<input type="text" name="counter_type"' not in form
@@ -61,7 +61,7 @@ def test_drink_valid_data(mocker, main_user):
         user=main_user,
         data={
             "date": "1999-01-01",
-            "quantity": 1.0,
+            "stdav": 1.0,
             "option": "beer",
         },
     )
@@ -71,7 +71,7 @@ def test_drink_valid_data(mocker, main_user):
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.quantity == 2.5
+    assert data.stdav == 2.5
     assert data.user.username == "bob"
     assert data.counter_type == "Counter Type"
 
@@ -102,7 +102,7 @@ def test_drink_recalculate_ml_on_save(mocker, main_user, ml, drink_type, expect)
         user=main_user,
         data={
             "date": "1999-01-01",
-            "quantity": ml,
+            "stdav": ml,
             "option": drink_type,
         },
     )
@@ -112,7 +112,7 @@ def test_drink_recalculate_ml_on_save(mocker, main_user, ml, drink_type, expect)
     actual = Drink.objects.last()
 
     assert actual.option == drink_type
-    assert round(actual.quantity, 2) == expect
+    assert round(actual.stdav, 2) == expect
 
 
 @time_machine.travel("1999-2-2")
@@ -124,7 +124,7 @@ def test_drink_invalid_date(mocker, main_user, year):
         user=main_user,
         data={
             "date": f"{year}-01-01",
-            "quantity": 1.0,
+            "stdav": 1.0,
             "option": "beer",
         },
     )
@@ -141,7 +141,7 @@ def test_drink_blank_data(main_user):
 
     assert len(form.errors) == 3
     assert "date" in form.errors
-    assert "quantity" in form.errors
+    assert "stdav" in form.errors
     assert "option" in form.errors
 
 

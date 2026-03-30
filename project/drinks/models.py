@@ -16,7 +16,7 @@ class DrinkType(models.TextChoices):
 
 class Drink(models.Model):
     date = models.DateField()
-    quantity = models.FloatField(validators=[MinValueValidator(0.1)])
+    stdav = models.FloatField(validators=[MinValueValidator(0.1)])
     option = models.CharField(
         max_length=7,
         choices=DrinkType.choices,
@@ -34,12 +34,12 @@ class Drink(models.Model):
 
         msg = f"{self.date}, {self.option}, "
         if self.option == "stdav":
-            qty = str(self.quantity)
+            stdav = str(self.stdav)
         else:
-            _ = options.stdav_to_ml(stdav=self.quantity, drink_type=self.option)
-            qty = f"{int(_)}ml"
+            _ = options.stdav_to_ml(stdav=self.stdav, drink_type=self.option)
+            stdav = f"{int(_)}ml"
 
-        return msg + qty
+        return msg + stdav
 
 
 class DrinkTarget(models.Model):

@@ -27,7 +27,7 @@ class DrinkModelService(BaseModelService[managers.DrinkQuerySet]):
 
         return (
             self.objects.year_sum(
-                year=year, sum_annotation="stdav", sum_column="quantity"
+                year=year, sum_annotation="stdav", sum_column="stdav"
             )
             .annotate(qty=F("stdav") * ratio)
             .order_by("date")
@@ -43,7 +43,7 @@ class DrinkModelService(BaseModelService[managers.DrinkQuerySet]):
 
         return (
             self.objects.month_sum(
-                year=year, month=month, sum_annotation="stdav", sum_column="quantity"
+                year=year, month=month, sum_annotation="stdav", sum_column="stdav"
             )
             .annotate(qty=F("stdav") * ratio)
             .order_by("date")
@@ -59,7 +59,7 @@ class DrinkModelService(BaseModelService[managers.DrinkQuerySet]):
 
         return (
             self.objects.day_sum(
-                year=year, month=month, sum_annotation="stdav", sum_column="quantity"
+                year=year, month=month, sum_annotation="stdav", sum_column="stdav"
             )
             .annotate(qty=F("stdav") * ratio)
             .order_by("date")

@@ -156,7 +156,7 @@ class Update(UpdateViewMixin):
 
         if obj:
             options = DrinksOptions(self.request.user.drink_type)
-            obj.quantity = obj.quantity * options.ratio
+            obj.stdav = obj.stdav * options.ratio
 
         return obj
 

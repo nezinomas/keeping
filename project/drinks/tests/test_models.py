@@ -13,12 +13,12 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture()
 def _drinks(second_user):
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0)
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.5)
-    DrinkFactory(date=date(1999, 2, 1), quantity=2.0)
-    DrinkFactory(date=date(1999, 2, 1), quantity=1.0)
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.0)
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.5)
+    DrinkFactory(date=date(1999, 2, 1), stdav=2.0)
+    DrinkFactory(date=date(1999, 2, 1), stdav=1.0)
 
-    DrinkFactory(date=date(1999, 2, 1), quantity=100.0, user=second_user)
+    DrinkFactory(date=date(1999, 2, 1), stdav=100.0, user=second_user)
 
 
 # ----------------------------------------------------------------------------
@@ -82,7 +82,7 @@ def test_drink_year(main_user, second_user):
     ],
 )
 def test_drink_str_drinks(drink_type, stdav, expect):
-    p = DrinkFactory(quantity=stdav, option=drink_type)
+    p = DrinkFactory(stdav=stdav, option=drink_type)
 
     p.full_clean()
 
@@ -96,7 +96,7 @@ def test_drink_str_drinks(drink_type, stdav, expect):
     ],
 )
 def test_drink_str_stdav(drink_type, stdav, expect):
-    p = DrinkFactory(quantity=stdav, option=drink_type)
+    p = DrinkFactory(stdav=stdav, option=drink_type)
 
     p.full_clean()
 
@@ -126,12 +126,12 @@ def test_drink_sum_by_year(drink_type, stdav, qty, main_user):
     main_user.drink_type = drink_type
     main_user.save()
 
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option="beer")
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option="beer")
-    DrinkFactory(date=date(2000, 1, 1), quantity=1.5, option="beer")
-    DrinkFactory(date=date(1999, 2, 1), quantity=2.0, option="beer")
-    DrinkFactory(date=date(1999, 2, 1), quantity=1.0, option="beer")
-    DrinkFactory(date=date(2000, 2, 1), quantity=1.0, option="beer")
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.0, option="beer")
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.5, option="beer")
+    DrinkFactory(date=date(2000, 1, 1), stdav=1.5, option="beer")
+    DrinkFactory(date=date(1999, 2, 1), stdav=2.0, option="beer")
+    DrinkFactory(date=date(1999, 2, 1), stdav=1.0, option="beer")
+    DrinkFactory(date=date(2000, 2, 1), stdav=1.0, option="beer")
 
     actual = DrinkModelService(main_user).sum_by_year()
 
@@ -155,12 +155,12 @@ def test_drink_sum_by_year(drink_type, stdav, qty, main_user):
 def test_drink_sum_by_month(drink_type, stdav, qty, main_user):
     main_user.drink_type = drink_type
 
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option="beer")
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option="beer")
-    DrinkFactory(date=date(2000, 1, 1), quantity=1.5, option="beer")
-    DrinkFactory(date=date(1999, 2, 1), quantity=2.0, option="beer")
-    DrinkFactory(date=date(1999, 2, 1), quantity=1.0, option="beer")
-    DrinkFactory(date=date(2000, 2, 1), quantity=1.0, option="beer")
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.0, option="beer")
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.5, option="beer")
+    DrinkFactory(date=date(2000, 1, 1), stdav=1.5, option="beer")
+    DrinkFactory(date=date(1999, 2, 1), stdav=2.0, option="beer")
+    DrinkFactory(date=date(1999, 2, 1), stdav=1.0, option="beer")
+    DrinkFactory(date=date(2000, 2, 1), stdav=1.0, option="beer")
 
     actual = DrinkModelService(main_user).sum_by_month(1999)
 
@@ -173,9 +173,9 @@ def test_drink_sum_by_month(drink_type, stdav, qty, main_user):
 
 
 def test_drink_months_sum_no_records_for_current_year(main_user, second_user):
-    DrinkFactory(date=date(1970, 1, 1), quantity=1.0)
-    DrinkFactory(date=date(2000, 1, 1), quantity=1.5)
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, user=second_user)
+    DrinkFactory(date=date(1970, 1, 1), stdav=1.0)
+    DrinkFactory(date=date(2000, 1, 1), stdav=1.5)
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.5, user=second_user)
 
     actual = DrinkModelService(main_user).sum_by_month(1999)
 
@@ -194,12 +194,12 @@ def test_drink_months_sum_no_records_for_current_year(main_user, second_user):
 def test_drink_sum_by_day(drink_type, stdav, qty, main_user):
     main_user.drink_type = drink_type
 
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option="beer")
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option="beer")
-    DrinkFactory(date=date(2000, 1, 1), quantity=1.5, option="beer")
-    DrinkFactory(date=date(1999, 2, 1), quantity=2.0, option="beer")
-    DrinkFactory(date=date(1999, 2, 1), quantity=1.0, option="beer")
-    DrinkFactory(date=date(2000, 2, 1), quantity=1.0, option="beer")
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.0, option="beer")
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.5, option="beer")
+    DrinkFactory(date=date(2000, 1, 1), stdav=1.5, option="beer")
+    DrinkFactory(date=date(1999, 2, 1), stdav=2.0, option="beer")
+    DrinkFactory(date=date(1999, 2, 1), stdav=1.0, option="beer")
+    DrinkFactory(date=date(2000, 2, 1), stdav=1.0, option="beer")
 
     actual = DrinkModelService(main_user).sum_by_day(1999, 1)
 
@@ -223,12 +223,12 @@ def test_drink_sum_by_day_all_months(drink_type, stdav, qty, main_user):
     main_user.drink_type = drink_type
     main_user.save()
 
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.0, option="beer")
-    DrinkFactory(date=date(1999, 1, 1), quantity=1.5, option="beer")
-    DrinkFactory(date=date(2000, 1, 1), quantity=1.5, option="beer")
-    DrinkFactory(date=date(1999, 2, 1), quantity=2.0, option="beer")
-    DrinkFactory(date=date(1999, 2, 1), quantity=1.0, option="beer")
-    DrinkFactory(date=date(2000, 2, 1), quantity=1.0, option="beer")
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.0, option="beer")
+    DrinkFactory(date=date(1999, 1, 1), stdav=1.5, option="beer")
+    DrinkFactory(date=date(2000, 1, 1), stdav=1.5, option="beer")
+    DrinkFactory(date=date(1999, 2, 1), stdav=2.0, option="beer")
+    DrinkFactory(date=date(1999, 2, 1), stdav=1.0, option="beer")
+    DrinkFactory(date=date(2000, 2, 1), stdav=1.0, option="beer")
 
     actual = DrinkModelService(main_user).sum_by_day(1999)
 

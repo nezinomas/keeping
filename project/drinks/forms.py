@@ -18,9 +18,9 @@ from .services.model_services import DrinkModelService, DrinkTargetModelService
 class DrinkForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Drink
-        fields = ["user", "date", "quantity", "option"]
+        fields = ["user", "date", "stdav", "option"]
 
-    field_order = ["date", "option", "quantity"]
+    field_order = ["date", "option", "stdav"]
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
@@ -38,7 +38,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
         self.fields["date"].label = _("Date")
         self.fields["option"].label = _("Drink type")
-        self.fields["quantity"].label = _("Quantity")
+        self.fields["stdav"].label = _("Quantity")
 
         _h1 = _("1 Beer = 0.5L")
         _h2 = _("1 Wine = 0.75L")
@@ -47,18 +47,18 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
             "cnt": MAX_BOTTLES
         }
         _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
-        self.fields["quantity"].help_text = _help_text
+        self.fields["stdav"].help_text = _help_text
 
-    def recalculate_quantity(self, instance):
+    def recalculate_stdav(self, instance):
         if instance.option == "stdav":
-            return instance.quantity
+            return instance.stdav
 
         options = DrinksOptions(drink_type=instance.option)
 
-        if instance.quantity > MAX_BOTTLES:
-            q = options.ml_to_stdav(drink_type=instance.option, ml=instance.quantity)
+        if instance.stdav > MAX_BOTTLES:
+            q = options.ml_to_stdav(drink_type=instance.option, ml=instance.stdav)
         else:
-            q = instance.quantity / options.ratio
+            q = instance.stdav / options.ratio
 
         return q
 
@@ -67,7 +67,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         instance = super().save(commit=False)
 
         instance.counter_type = App_name
-        instance.quantity = self.recalculate_quantity(instance)
+        instance.stdav = self.recalculate_stdav(instance)
 
         instance.save()
 

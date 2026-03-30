@@ -193,20 +193,20 @@ def test_tab_index_drinked_date(client_logged):
 
 
 @pytest.mark.parametrize(
-    "user_drink_type, drink_type, expect",
+    "user_drink_type, drink_type, stdav, expect",
     [
-        ("beer", "beer", 14),
-        ("beer", "wine", 44),
-        ("beer", "vodka", 219),
+        ("beer", "beer", 2.5, 1),
+        ("beer", "wine", 8, 4),
+        ("beer", "vodka", 40, 22),
     ],
 )
 @time_machine.travel("1999-12-31")
 def test_tab_index_chart_consumption_avg(
-    user_drink_type, drink_type, expect, main_user, client_logged
+    user_drink_type, drink_type, stdav, expect, main_user, client_logged
 ):
     main_user.drink_type = user_drink_type
 
-    DrinkFactory(quantity=10, option=drink_type)
+    DrinkFactory(stdav=stdav, option=drink_type)
 
     url = reverse("drinks:tab_index")
     response = client_logged.get(url)
@@ -240,8 +240,8 @@ def test_tab_index_chart_consumption_limit(
 
 @time_machine.travel("1999-1-1")
 def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
-    DrinkFactory(date=date(1999, 1, 2))
-    DrinkFactory(date=date(1998, 1, 1))
+    DrinkFactory(date=date(1999, 1, 2), stdav=2.5)
+    DrinkFactory(date=date(1998, 1, 1), stdav=2.5)
 
     url = reverse("drinks:tab_index")
     response = client_logged.get(url)
@@ -284,7 +284,7 @@ def test_tab_data_empty_current_year(client_logged):
 
 
 def test_tab_data(client_logged):
-    p = DrinkFactory(quantity=19)
+    p = DrinkFactory(stdav=47.5)
     response = client_logged.get(reverse("drinks:tab_data"))
 
     assert response.status_code == 200
@@ -354,21 +354,21 @@ def test_tab_history_drinks_years(client_logged):
 
 
 @pytest.mark.parametrize(
-    "user_drink_type, drink_type, ml",
+    "user_drink_type, drink_type, stdav, ml",
     [
-        ("beer", "beer", [2.74, 1.37]),
-        ("beer", "wine", [8.77, 4.38]),
-        ("beer", "vodka", [43.84, 21.92]),
+        ("beer", "beer", [2.5, 5], [2.74, 1.37]),
+        ("beer", "wine", [8, 16], [8.77, 4.38]),
+        ("beer", "vodka", [40, 80], [43.84, 21.92]),
     ],
 )
 @time_machine.travel("1999-12-31")
 def test_tab_history_drinks_data_ml(
-    user_drink_type, drink_type, ml, main_user, client_logged
+    user_drink_type, drink_type, stdav, ml, main_user, client_logged
 ):
     main_user.drink_type = user_drink_type
 
-    DrinkFactory(date=date(1999, 1, 1), quantity=1, option=drink_type)
-    DrinkFactory(date=date(1998, 1, 1), quantity=2, option=drink_type)
+    DrinkFactory(date=date(1999, 1, 1), stdav=stdav[0], option=drink_type)
+    DrinkFactory(date=date(1998, 1, 1), stdav=stdav[1], option=drink_type)
 
     url = reverse("drinks:tab_history")
     response = client_logged.get(url)
@@ -378,20 +378,20 @@ def test_tab_history_drinks_data_ml(
 
 @time_machine.travel("1999-12-31")
 @pytest.mark.parametrize(
-    "user_drink_type, drink_type, expect",
+    "user_drink_type, drink_type, stdav, expect",
     [
-        ("beer", "beer", [0.05, 0.025]),
-        ("beer", "wine", [0.16, 0.08]),
-        ("beer", "vodka", [0.8, 0.4]),
+        ("beer", "beer", [2.5, 5], [0.05, 0.025]),
+        ("beer", "wine", [8, 16], [0.16, 0.08]),
+        ("beer", "vodka", [40, 80], [0.8, 0.4]),
     ],
 )
 def test_tab_history_drinks_data_alcohol(
-    user_drink_type, drink_type, expect, main_user, client_logged
+    user_drink_type, drink_type, stdav, expect, main_user, client_logged
 ):
     main_user.drink_type = user_drink_type
 
-    DrinkFactory(quantity=1, option=drink_type)
-    DrinkFactory(date=date(1998, 1, 1), quantity=2, option=drink_type)
+    DrinkFactory(stdav=stdav[0], option=drink_type)
+    DrinkFactory(date=date(1998, 1, 1), stdav=stdav[1], option=drink_type)
 
     url = reverse("drinks:tab_history")
     response = client_logged.get(url)
@@ -401,9 +401,9 @@ def test_tab_history_drinks_data_alcohol(
 
 @time_machine.travel("1999-12-31")
 def test_tab_history_categories_with_empty_year_in_between(main_user, rf):
-    DrinkFactory(date=date(1997, 1, 1), quantity=15)
-    DrinkFactory(date=date(1999, 1, 1), quantity=15)
-    DrinkFactory(date=date(1999, 1, 1), quantity=15)
+    DrinkFactory(date=date(1997, 1, 1), stdav=37.5)
+    DrinkFactory(date=date(1999, 1, 1), stdav=37.5)
+    DrinkFactory(date=date(1999, 1, 1), stdav=37.5)
 
     class Dummy(views.TabHistory):
         pass
@@ -419,20 +419,22 @@ def test_tab_history_categories_with_empty_year_in_between(main_user, rf):
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize(
-    "user_drink_type, drink_type, ml, alcohol",
+    "user_drink_type, drink_type, stdav, ml, alcohol",
     [
-        ("beer", "beer", [1.37, 0.0], [0.025, 0.0]),
-        ("beer", "wine", [4.38, 0.0], [0.08, 0.0]),
-        ("beer", "vodka", [21.92, 0.0], [0.4, 0.0]),
+        # 1stdv ~ 200ml of beer.
+        ("beer", "beer", 2.5, [(200*2.5)/365, 0.0], [2.5*0.01, 0.0]),
+        ("beer", "wine", 8, [(200*8)/365, 0.0], [8*0.01, 0.0]),
+        ("beer", "vodka", 40, [(200*40)/365, 0.0], [40*0.01, 0.0]),
+        ("beer", "stdav", 1, [(200*1)/365, 0.0], [1*0.01, 0.0]),
     ],
 )
 def test_tab_history_categories_with_empty_current_year(
-    user_drink_type, drink_type, ml, alcohol, main_user, rf
+    user_drink_type, drink_type, stdav, ml, alcohol, main_user, rf
 ):
     rf.user = main_user
     main_user.drink_type = user_drink_type
 
-    DrinkFactory(date=date(1998, 1, 1), quantity=1, option=drink_type)
+    DrinkFactory(date=date(1998, 1, 1), stdav=stdav, option=drink_type)
 
     class Dummy(views.TabHistory):
         pass
@@ -464,7 +466,7 @@ def test_compare_data_200(client_logged):
 
 
 def test_compare_data_chart(client_logged):
-    DrinkFactory()
+    DrinkFactory(stdav=2.5)
 
     url = reverse("drinks:compare", kwargs={"qty": 2})
     response = client_logged.get(url)
@@ -510,8 +512,8 @@ def test_comparetwo_form_is_valid(client_logged):
 
 
 def test_comparetwo_chart_data(client_logged):
-    DrinkFactory()
-    DrinkFactory(date=date(2020, 1, 1), quantity=10)
+    DrinkFactory(stdav=2.5)
+    DrinkFactory(date=date(2020, 1, 1), stdav=25)
 
     url = reverse("drinks:compare_two")
     response = client_logged.post(url, {"year1": "1999", "year2": "2020"})
@@ -578,7 +580,7 @@ def test_new_load_form(client_logged, tab, expect_url):
 
 
 def test_new_tab_data(client_logged):
-    data = {"date": "1999-01-01", "quantity": 19, "option": "beer"}
+    data = {"date": "1999-01-01", "stdav": 19, "option": "beer"}
     url = reverse("drinks:new", kwargs={"tab": "data"})
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode()
@@ -589,7 +591,7 @@ def test_new_tab_data(client_logged):
 
 
 def test_new_invalid_data(client_logged):
-    data = {"date": -2, "quantity": "x"}
+    data = {"date": -2, "stdav": "x"}
     url = reverse("drinks:new", kwargs={"tab": "data"})
     response = client_logged.post(url, data)
     form = response.context["form"]
@@ -600,7 +602,7 @@ def test_new_invalid_data(client_logged):
 def test_update(client_logged):
     p = DrinkFactory()
 
-    data = {"date": "1999-01-01", "quantity": 0.68, "option": "beer"}
+    data = {"date": "1999-01-01", "stdav": 0.68, "option": "beer"}
     url = reverse("drinks:update", kwargs={"pk": p.pk})
     response = client_logged.post(url, data, follow=True)
     actual = response.content.decode()
@@ -612,32 +614,55 @@ def test_update(client_logged):
 
 
 @pytest.mark.parametrize(
-    "drink_type, expect",
+    "drink_type, stdav, expect",
     [
-        ("beer", 10.0),
-        ("wine", 10.0),
-        ("vodka", 10.0),
-        ("stdav", 10.0),
+        ("beer", 2.5, 1.0),
+        ("wine", 8, 1.0),
+        ("vodka", 40, 1.0),
+        ("stdav", 1, 1.0),
     ],
 )
 def test_update_load_form_convert_quantity(
-    drink_type, expect, client_logged, main_user
+    drink_type, stdav, expect, client_logged, main_user
 ):
     main_user.drink_type = drink_type
     main_user.save()
 
-    p = DrinkFactory(quantity=10, option=drink_type)
+    p = DrinkFactory(stdav=stdav, option=drink_type)
 
     url = reverse("drinks:update", kwargs={"pk": p.pk})
     response = client_logged.get(url)
     form = response.context["form"]
 
-    assert f'name="quantity" value="{expect}"' in form.as_p()
+    assert f'name="stdav" value="{expect}"' in form.as_p()
+
+
+@pytest.mark.parametrize(
+    "drink_type, value, expect",
+    [
+        ("beer", 2.5, 1),
+        ("beer", 0.1, 21),
+        ("beer", 2.5, 500),
+    ],
+)
+def test_update_load_form_convert_ml(
+    drink_type, value, expect, client_logged, main_user
+):
+    main_user.drink_type = drink_type
+    main_user.save()
+
+    p = DrinkFactory(stdav=value, option=drink_type)
+
+    url = reverse("drinks:update", kwargs={"pk": p.pk})
+    response = client_logged.get(url)
+    form = response.context["form"]
+
+    assert f'name="stdav" value="{expect}"' in form.as_p()
 
 
 def test_drinks_update_not_load_other_user(client_logged, second_user):
     DrinkFactory()
-    obj = DrinkFactory(date=date(1111, 1, 1), quantity=0.666, user=second_user)
+    obj = DrinkFactory(date=date(1111, 1, 1), stdav=0.666, user=second_user)
 
     url = reverse("drinks:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
@@ -672,7 +697,7 @@ def test_view_drinks_delete_load_form(client_logged):
 
     assert url in actual
     assert f'hx-post="{url}"' in actual
-    assert "Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?" in actual
+    assert "Ar tikrai norite ištrinti: <strong>1999-01-01, beer, 200ml</strong>?" in actual
 
 
 def test_view_drinks_delete(client_logged):

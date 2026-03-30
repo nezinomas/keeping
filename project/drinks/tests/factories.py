@@ -11,7 +11,7 @@ class DrinkFactory(factory.django.DjangoModelFactory):
         model = Drink
 
     date = date(1999, 1, 1)
-    quantity = 1
+    stdav = 1
     option = "beer"
     user = factory.SubFactory(UserFactory)
 
