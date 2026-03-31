@@ -52,7 +52,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
     def recalculate_stdav_on_update(self):
         if not self.instance.pk or self.instance.option == "stdav":
-            return None
+            return
 
         options = DrinksOptions(drink_type=self.instance.option)
         if self.instance.converted_from_ml:

@@ -2,6 +2,7 @@ from ...core.lib.date import ydays
 
 MAX_BOTTLES = 20
 
+
 class DrinksOptions:
     ratios = {
         "beer": {"stdav": 2.5, "ml": 500},  # 500ml -> 2.5 std_av

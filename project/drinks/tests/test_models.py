@@ -76,7 +76,7 @@ def test_drink_year(main_user, second_user):
 @pytest.mark.parametrize(
     "drink_type, stdav, expect",
     [
-        ("beer", 2.5,  500),
+        ("beer", 2.5, 500),
         ("wine", 8, 750),
         ("vodka", 40, 1000),
     ],
@@ -116,10 +116,10 @@ def test_drink_order(main_user):
 @pytest.mark.parametrize(
     "drink_type, stdav, qty",
     [
-        ("beer", [5.5, 2.5], [5.5/2.5, 2.5/2.5]),
-        ("wine", [5.5, 2.5], [5.5/8, 2.5/8]),
-        ("vodka", [5.5, 2.5], [5.5/40, 2.5/40]),
-        ("stdav", [5.5, 2.5], [5.5/1, 2.5/1]),
+        ("beer", [5.5, 2.5], [5.5 / 2.5, 2.5 / 2.5]),
+        ("wine", [5.5, 2.5], [5.5 / 8, 2.5 / 8]),
+        ("vodka", [5.5, 2.5], [5.5 / 40, 2.5 / 40]),
+        ("stdav", [5.5, 2.5], [5.5 / 1, 2.5 / 1]),
     ],
 )
 def test_drink_sum_by_year(drink_type, stdav, qty, main_user):
@@ -146,10 +146,10 @@ def test_drink_sum_by_year(drink_type, stdav, qty, main_user):
 @pytest.mark.parametrize(
     "drink_type, stdav, qty",
     [
-        ("beer", [2.5, 3.0], [2.5/2.5, 3.0/2.5]),
-        ("wine", [2.5, 3.0], [2.5/8, 3.0/8]),
-        ("vodka", [2.5, 3.0], [2.5/40, 3.0/40]),
-        ("stdav", [2.5, 3.0], [2.5/1, 3.0/1]),
+        ("beer", [2.5, 3.0], [2.5 / 2.5, 3.0 / 2.5]),
+        ("wine", [2.5, 3.0], [2.5 / 8, 3.0 / 8]),
+        ("vodka", [2.5, 3.0], [2.5 / 40, 3.0 / 40]),
+        ("stdav", [2.5, 3.0], [2.5 / 1, 3.0 / 1]),
     ],
 )
 def test_drink_sum_by_month(drink_type, stdav, qty, main_user):
@@ -185,10 +185,10 @@ def test_drink_months_sum_no_records_for_current_year(main_user, second_user):
 @pytest.mark.parametrize(
     "drink_type, stdav, qty",
     [
-        ("beer", [2.5], [2.5/2.5]),
-        ("wine", [2.5], [2.5/8]),
-        ("vodka", [2.5], [2.5/40]),
-        ("stdav", [2.5], [2.5/1]),
+        ("beer", [2.5], [2.5 / 2.5]),
+        ("wine", [2.5], [2.5 / 8]),
+        ("vodka", [2.5], [2.5 / 40]),
+        ("stdav", [2.5], [2.5 / 1]),
     ],
 )
 def test_drink_sum_by_day(drink_type, stdav, qty, main_user):
@@ -213,10 +213,10 @@ def test_drink_sum_by_day(drink_type, stdav, qty, main_user):
 @pytest.mark.parametrize(
     "drink_type, stdav, qty",
     [
-        ("beer", [2.5, 3.0], [2.5/2.5, 3.0/2.5]),
-        ("wine", [2.5, 3.0], [2.5/8, 3.0/8]),
-        ("vodka", [2.5, 3.0], [2.5/40, 3.0/40]),
-        ("stdav", [2.5, 3.0], [2.5/1, 3.0/1]),
+        ("beer", [2.5, 3.0], [2.5 / 2.5, 3.0 / 2.5]),
+        ("wine", [2.5, 3.0], [2.5 / 8, 3.0 / 8]),
+        ("vodka", [2.5, 3.0], [2.5 / 40, 3.0 / 40]),
+        ("stdav", [2.5, 3.0], [2.5 / 1, 3.0 / 1]),
     ],
 )
 def test_drink_sum_by_day_all_months(drink_type, stdav, qty, main_user):

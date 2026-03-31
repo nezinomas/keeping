@@ -26,9 +26,7 @@ class DrinkModelService(BaseModelService[managers.DrinkQuerySet]):
         ratio = DrinksOptions(self.user.drink_type).ratio
 
         return (
-            self.objects.year_sum(
-                year=year, sum_annotation="stdav", sum_column="stdav"
-            )
+            self.objects.year_sum(year=year, sum_annotation="stdav", sum_column="stdav")
             .annotate(qty=F("stdav") * ratio)
             .order_by("date")
         )

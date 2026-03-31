@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('drinks', '0003_rename_quantity_drink_stdav'),
+        ("drinks", "0003_rename_quantity_drink_stdav"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='drink',
-            name='converted_from_ml',
+            model_name="drink",
+            name="converted_from_ml",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -95,7 +95,9 @@ def test_drink_valid_data(mocker, main_user):
         (21, "stdav", 21, False),
     ],
 )
-def test_drink_recalculate_ml_on_save(mocker, main_user, ml, drink_type, expect_stdav, expect_converted_from_ml):
+def test_drink_recalculate_ml_on_save(
+    mocker, main_user, ml, drink_type, expect_stdav, expect_converted_from_ml
+):
     mocker.patch("project.drinks.forms.App_name", "Counter Type")
 
     form = DrinkForm(

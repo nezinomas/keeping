@@ -314,6 +314,7 @@ def test_tab_data_quantity_value(client_logged, drink_type, stdav, converted, ex
 
     assert expect in actual
 
+
 # -------------------------------------------------------------------------------------
 #                                                                       TabHistory View
 # -------------------------------------------------------------------------------------
