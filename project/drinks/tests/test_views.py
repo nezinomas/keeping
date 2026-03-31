@@ -296,6 +296,24 @@ def test_tab_data(client_logged):
     assert f'<a role="button" hx-get="/drinks/delete/{p.pk}/"' in actual
 
 
+@pytest.mark.parametrize(
+    "drink_type, stdav, converted, expect",
+    [
+        ("beer", 2.5, False, "1,0 vnt"),
+        ("beer", 2.5, True, "500 ml"),
+        ("beer", 5, True, "1.000 ml"),
+    ],
+)
+def test_tab_data_quantity_value(client_logged, drink_type, stdav, converted, expect):
+    DrinkFactory(stdav=stdav, option=drink_type, converted_from_ml=converted)
+    response = client_logged.get(reverse("drinks:tab_data"))
+
+    assert response.status_code == 200
+
+    actual = response.content.decode("utf-8")
+
+    assert expect in actual
+
 # -------------------------------------------------------------------------------------
 #                                                                       TabHistory View
 # -------------------------------------------------------------------------------------
@@ -608,7 +626,7 @@ def test_update(client_logged):
     actual = response.content.decode()
 
     assert url in actual
-    assert "0,68" in actual
+    assert "0,7 vnt" in actual
     assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
     assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
 
