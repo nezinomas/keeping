@@ -422,10 +422,10 @@ def test_tab_history_categories_with_empty_year_in_between(main_user, rf):
     "user_drink_type, drink_type, stdav, ml, alcohol",
     [
         # 1stdv ~ 200ml of beer.
-        ("beer", "beer", 2.5, [(200*2.5)/365, 0.0], [2.5*0.01, 0.0]),
-        ("beer", "wine", 8, [(200*8)/365, 0.0], [8*0.01, 0.0]),
-        ("beer", "vodka", 40, [(200*40)/365, 0.0], [40*0.01, 0.0]),
-        ("beer", "stdav", 1, [(200*1)/365, 0.0], [1*0.01, 0.0]),
+        ("beer", "beer", 2.5, [(200 * 2.5) / 365, 0.0], [2.5 * 0.01, 0.0]),
+        ("beer", "wine", 8, [(200 * 8) / 365, 0.0], [8 * 0.01, 0.0]),
+        ("beer", "vodka", 40, [(200 * 40) / 365, 0.0], [40 * 0.01, 0.0]),
+        ("beer", "stdav", 1, [(200 * 1) / 365, 0.0], [1 * 0.01, 0.0]),
     ],
 )
 def test_tab_history_categories_with_empty_current_year(
@@ -638,20 +638,22 @@ def test_update_load_form_convert_quantity(
 
 
 @pytest.mark.parametrize(
-    "drink_type, value, expect",
+    "drink_type, converted, value, expect",
     [
-        ("beer", 2.5, 1),
-        ("beer", 0.1, 21),
-        ("beer", 2.5, 500),
+        ("beer", False, 2.5, 1.0),
+        ("beer", True, 2.5, 500.0),
+        ("wine", False, 8, 1.0),
+        ("wine", True, 8, 750.0),
+        ("vodka", False, 20, 0.5),
+        ("vodka", True, 40, 1000.0),
+        ("stdav", False, 10, 10.0),
+        ("stdav", True, 21, 21.0),
     ],
 )
 def test_update_load_form_convert_ml(
-    drink_type, value, expect, client_logged, main_user
+    drink_type, converted, value, expect, client_logged
 ):
-    main_user.drink_type = drink_type
-    main_user.save()
-
-    p = DrinkFactory(stdav=value, option=drink_type)
+    p = DrinkFactory(stdav=value, option=drink_type, converted_from_ml=converted)
 
     url = reverse("drinks:update", kwargs={"pk": p.pk})
     response = client_logged.get(url)
@@ -697,7 +699,9 @@ def test_view_drinks_delete_load_form(client_logged):
 
     assert url in actual
     assert f'hx-post="{url}"' in actual
-    assert "Ar tikrai norite ištrinti: <strong>1999-01-01, beer, 200ml</strong>?" in actual
+    assert (
+        "Ar tikrai norite ištrinti: <strong>1999-01-01, beer, 200ml</strong>?" in actual
+    )
 
 
 def test_view_drinks_delete(client_logged):

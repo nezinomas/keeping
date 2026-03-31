@@ -22,6 +22,7 @@ class Drink(models.Model):
         choices=DrinkType.choices,
         default=DrinkType.BEER,
     )
+    converted_from_ml = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     objects = managers.DrinkQuerySet.as_manager()

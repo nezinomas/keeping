@@ -151,15 +151,6 @@ class Update(UpdateViewMixin):
     success_url = reverse_lazy("drinks:tab_data")
     modal_form_title = _("Drinks")
 
-    def get_object(self):
-        obj = super().get_object()
-
-        if obj:
-            options = DrinksOptions(self.request.user.drink_type)
-            obj.stdav = obj.stdav * options.ratio
-
-        return obj
-
 
 class Delete(DeleteViewMixin):
     model = models.Drink

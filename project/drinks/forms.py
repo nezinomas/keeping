@@ -35,6 +35,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
         # inital values
         self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.recalculate_stdav_on_update()
 
         self.fields["date"].label = _("Date")
         self.fields["option"].label = _("Drink type")
@@ -49,25 +50,43 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
         self.fields["stdav"].help_text = _help_text
 
-    def recalculate_stdav(self, instance):
-        if instance.option == "stdav":
-            return instance.stdav
+    def recalculate_stdav_on_update(self):
+        if not self.instance.pk or self.instance.option == "stdav":
+            return None
 
-        options = DrinksOptions(drink_type=instance.option)
-
-        if instance.stdav > MAX_BOTTLES:
-            q = options.ml_to_stdav(drink_type=instance.option, ml=instance.stdav)
+        options = DrinksOptions(drink_type=self.instance.option)
+        if self.instance.converted_from_ml:
+            val = options.stdav_to_ml(
+                drink_type=self.instance.option, stdav=self.instance.stdav
+            )
         else:
-            q = instance.stdav / options.ratio
+            val = self.instance.stdav * options.ratio
 
-        return q
+        self.initial["stdav"] = val
 
+    def recalculate_stdav_on_save(self):
+        converted = False
+
+        if self.instance.option == "stdav":
+            return self.instance.stdav, converted
+
+        options = DrinksOptions(drink_type=self.instance.option)
+
+        if self.instance.stdav > MAX_BOTTLES:
+            stdav = options.ml_to_stdav(
+                drink_type=self.instance.option, ml=self.instance.stdav
+            )
+            converted = True
+        else:
+            stdav = self.instance.stdav / options.ratio
+
+        return stdav, converted
 
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
 
         instance.counter_type = App_name
-        instance.stdav = self.recalculate_stdav(instance)
+        instance.stdav, instance.converted_from_ml = self.recalculate_stdav_on_save()
 
         instance.save()
 

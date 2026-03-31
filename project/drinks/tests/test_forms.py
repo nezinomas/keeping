@@ -77,25 +77,25 @@ def test_drink_valid_data(mocker, main_user):
 
 
 @pytest.mark.parametrize(
-    "ml, drink_type, expect",
+    "ml, drink_type, expect_stdav, expect_converted_from_ml",
     [
-        (1, "beer", 2.5),
-        (21, "beer", 0.1),
-        (500, "beer", 2.5),
-        (1, "wine", 8),
-        (20, "wine", 160),
-        (21, "wine", 0.22),
-        (750, "wine", 8),
-        (1, "vodka", 40),
-        (20, "vodka", 800),
-        (21, "vodka", 0.84),
-        (1000, "vodka", 40),
-        (1, "stdav", 1),
-        (20, "stdav", 20),
-        (21, "stdav", 21),
+        (1, "beer", 2.5, False),
+        (21, "beer", 0.1, True),
+        (500, "beer", 2.5, True),
+        (1, "wine", 8, False),
+        (20, "wine", 160, False),
+        (21, "wine", 0.22, True),
+        (750, "wine", 8, True),
+        (1, "vodka", 40, False),
+        (20, "vodka", 800, False),
+        (21, "vodka", 0.84, True),
+        (1000, "vodka", 40, True),
+        (1, "stdav", 1, False),
+        (20, "stdav", 20, False),
+        (21, "stdav", 21, False),
     ],
 )
-def test_drink_recalculate_ml_on_save(mocker, main_user, ml, drink_type, expect):
+def test_drink_recalculate_ml_on_save(mocker, main_user, ml, drink_type, expect_stdav, expect_converted_from_ml):
     mocker.patch("project.drinks.forms.App_name", "Counter Type")
 
     form = DrinkForm(
@@ -112,7 +112,8 @@ def test_drink_recalculate_ml_on_save(mocker, main_user, ml, drink_type, expect)
     actual = Drink.objects.last()
 
     assert actual.option == drink_type
-    assert round(actual.stdav, 2) == expect
+    assert round(actual.stdav, 2) == expect_stdav
+    assert actual.converted_from_ml == expect_converted_from_ml
 
 
 @time_machine.travel("1999-2-2")
