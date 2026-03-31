@@ -6,8 +6,6 @@ from ..users.models import User
 from . import managers
 from .lib.drinks_options import DrinksOptions
 
-MAX_BOTTLES = 20
-
 
 class DrinkType(models.TextChoices):
     BEER = "beer", _l("Beer")
@@ -18,12 +16,13 @@ class DrinkType(models.TextChoices):
 
 class Drink(models.Model):
     date = models.DateField()
-    quantity = models.FloatField(validators=[MinValueValidator(0.1)])
+    stdav = models.FloatField(validators=[MinValueValidator(0.1)])
     option = models.CharField(
         max_length=7,
         choices=DrinkType.choices,
         default=DrinkType.BEER,
     )
+    converted_from_ml = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     objects = managers.DrinkQuerySet.as_manager()
@@ -32,20 +31,16 @@ class Drink(models.Model):
         get_latest_by = ["date"]
 
     def __str__(self):
-        qty = DrinksOptions(self.user.drink_type).ratio
-        return f"{self.date}: {round(self.quantity * qty, 2)}"
+        options = DrinksOptions(self.user.drink_type)
 
-    def save(self, *args, **kwargs):
-        obj = DrinksOptions(drink_type=self.option)
-
-        if self.quantity > MAX_BOTTLES:
-            q = obj.ml_to_stdav(drink_type=self.option, ml=self.quantity)
+        msg = f"{self.date}, {self.option}, "
+        if self.option == "stdav":
+            stdav = str(self.stdav)
         else:
-            q = self.quantity / obj.ratio
+            _ = options.stdav_to_ml(stdav=self.stdav, drink_type=self.option)
+            stdav = f"{int(_)}ml"
 
-        self.quantity = q
-
-        super().save(*args, **kwargs)
+        return msg + stdav
 
 
 class DrinkTarget(models.Model):

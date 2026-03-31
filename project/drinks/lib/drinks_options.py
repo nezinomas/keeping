@@ -1,5 +1,6 @@
 from ...core.lib.date import ydays
 
+MAX_BOTTLES = 20
 
 class DrinksOptions:
     ratios = {

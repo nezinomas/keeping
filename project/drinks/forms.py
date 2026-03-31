@@ -10,16 +10,17 @@ from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
-from .models import MAX_BOTTLES, Drink, DrinkTarget
+from .lib.drinks_options import MAX_BOTTLES, DrinksOptions
+from .models import Drink, DrinkTarget
 from .services.model_services import DrinkModelService, DrinkTargetModelService
 
 
 class DrinkForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Drink
-        fields = ["user", "date", "quantity", "option"]
+        fields = ["user", "date", "stdav", "option"]
 
-    field_order = ["date", "option", "quantity"]
+    field_order = ["date", "option", "stdav"]
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
@@ -34,10 +35,11 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
         # inital values
         self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.recalculate_stdav_on_update()
 
         self.fields["date"].label = _("Date")
         self.fields["option"].label = _("Drink type")
-        self.fields["quantity"].label = _("Quantity")
+        self.fields["stdav"].label = _("Quantity")
 
         _h1 = _("1 Beer = 0.5L")
         _h2 = _("1 Wine = 0.75L")
@@ -46,11 +48,46 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
             "cnt": MAX_BOTTLES
         }
         _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
-        self.fields["quantity"].help_text = _help_text
+        self.fields["stdav"].help_text = _help_text
+
+    def recalculate_stdav_on_update(self):
+        if not self.instance.pk or self.instance.option == "stdav":
+            return None
+
+        options = DrinksOptions(drink_type=self.instance.option)
+        if self.instance.converted_from_ml:
+            val = options.stdav_to_ml(
+                drink_type=self.instance.option, stdav=self.instance.stdav
+            )
+        else:
+            val = self.instance.stdav * options.ratio
+
+        self.initial["stdav"] = val
+
+    def recalculate_stdav_on_save(self):
+        converted = False
+
+        if self.instance.option == "stdav":
+            return self.instance.stdav, converted
+
+        options = DrinksOptions(drink_type=self.instance.option)
+
+        if self.instance.stdav > MAX_BOTTLES:
+            stdav = options.ml_to_stdav(
+                drink_type=self.instance.option, ml=self.instance.stdav
+            )
+            converted = True
+        else:
+            stdav = self.instance.stdav / options.ratio
+
+        return stdav, converted
 
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
+
         instance.counter_type = App_name
+        instance.stdav, instance.converted_from_ml = self.recalculate_stdav_on_save()
+
         instance.save()
 
         return instance
