@@ -27,24 +27,31 @@ class DebtForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerWidget()
-
-        # form inputs settings
+        # remark textarea settings
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        # journal input
+        self.date_field_settings()
+        self.journal_field_settings()
+        self.account_field_settings()
+
+        self.translations()
+
+    def date_field_settings(self):
+        self.fields["date"].widget = DatePickerWidget()
+        self.fields["date"].initial = set_date_with_user_year(self.user)
+
+    def journal_field_settings(self):
         self.fields["journal"].initial = self.user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
 
+    def account_field_settings(self):
         accounts = AccountModelService(self.user).items()
-        # inital values
-        self.fields["account"].initial = accounts.first()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
 
-        # overwrite ForeignKey expense_type queryset
+        self.fields["account"].initial = accounts.first()
         self.fields["account"].queryset = accounts
 
+    def translations(self):
         # fields labels
         _name = _("Debtor")
 
@@ -113,23 +120,30 @@ class DebtReturnForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         self.debt_type = kwargs.pop("debt_type", None)
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerWidget()
-
-        # form inputs settings
+        # Remark textarea settings
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        accounts = AccountModelService(self.user).items()
-        # inital values
-        self.fields["date"].initial = set_date_with_user_year(self.user)
-        self.fields["account"].initial = accounts.first()
+        self.date_field_settings()
+        self.account_field_settings()
+        self.debt_field_settings()
 
-        # overwrite ForeignKey expense_type queryset
+        self.translations()
+
+    def date_field_settings(self):
+        self.fields["date"].widget = DatePickerWidget()
+        self.fields["date"].initial = set_date_with_user_year(self.user)
+
+    def account_field_settings(self):
+        accounts = AccountModelService(self.user).items()
+        self.fields["account"].initial = accounts.first()
         self.fields["account"].queryset = accounts
+
+    def debt_field_settings(self):
         self.fields["debt"].queryset = (
             DebtModelService(self.user, self.debt_type).items().filter(closed=False)
         )
 
-        # fields labels
+    def translations(self):
         _name = _("Debtor")
 
         if self.debt_type == "lend":
