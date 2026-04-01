@@ -5,6 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import F
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
@@ -175,7 +176,7 @@ class DrinkCompareForm(forms.Form):
         self.fields["year2"].label = None
 
         # inital values
-        self.fields["year2"].initial = datetime.now().year
+        self.fields["year2"].initial = timezone.now().year
 
     @cached_property
     def helper(self):

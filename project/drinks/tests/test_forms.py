@@ -249,7 +249,7 @@ def test_drink_filter_init_fields():
     assert '<input type="number" name="year2"' in form
 
 
-@time_machine.travel("1999-01-01")
+@time_machine.travel("1999-01-01 12:05:04")
 def test_drink_filter_initial_values():
     form = DrinkCompareForm().as_p()
 
