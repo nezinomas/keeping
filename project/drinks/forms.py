@@ -31,7 +31,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.user_field_settings()
         self.translations()
 
-        self.recalculate_stdav_on_update()
+        self.recalculate_stdav_on_opening_form()
 
     def date_field_settings(self):
         self.fields["date"].widget = DatePickerWidget()
@@ -56,7 +56,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
         self.fields["stdav"].help_text = _help_text
 
-    def recalculate_stdav_on_update(self):
+    def recalculate_stdav_on_opening_form(self):
         if not self.instance.pk or self.instance.option == "stdav":
             return
 
