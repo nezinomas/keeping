@@ -190,9 +190,9 @@ class DrinkCompareForm(forms.Form):
         years = (
             DrinkModelService(self.user)
             .items()
-            .dates("date", "year")
-            .annotate(year=ExtractYear(F("date")))
-            .values_list("year", flat=True)
+            .values_list("date__year", flat=True)
+            .order_by()
+            .distinct()
         )
 
         msg_no_records = _("No records this year")
