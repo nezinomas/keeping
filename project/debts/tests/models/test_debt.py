@@ -70,13 +70,27 @@ def test_debt_sort(main_user):
 
 
 def test_debt_items(main_user, second_user):
-    o = LendFactory()
+    o1 = LendFactory()
+    o2 = LendFactory(closed=True)
     LendFactory(name="X1", journal=second_user.journal)
 
     actual = DebtModelService(main_user, "lend").items()
 
+    assert actual.count() == 2
+    assert str(actual[0]) == str(o1)
+    assert str(actual[1]) == str(o2)
+
+
+def test_debt_open_items(main_user, second_user):
+    o1 = LendFactory(closed=False)
+    LendFactory(closed=True)
+
+    LendFactory(closed=False, journal=second_user.journal)
+
+    actual = DebtModelService(main_user, "lend").open_items()
+
     assert actual.count() == 1
-    assert str(actual[0]) == str(o)
+    assert actual[0].pk == o1.pk
 
 
 def test_debt_year(main_user):

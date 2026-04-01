@@ -20,7 +20,7 @@ class DebtModelService(BaseModelService):
         )
 
     def items(self):
-        return self.objects.filter(closed=False)
+        return self.objects.all()
 
     def year(self, year):
         return self.objects.filter(
@@ -28,22 +28,24 @@ class DebtModelService(BaseModelService):
         )
 
     def sum_by_month(self, year, closed=False):
-        qs = self.objects
+        qs = self.objects if closed else self.objects.filter(closed=False)
 
-        if not closed:
-            qs = qs.filter(closed=False)
-
-        return (
+        aggregated = (
             qs.filter(date__year=year)
-            .annotate(cnt=Count("id"))
-            .values("id")
-            .annotate(date=TruncMonth("date"))
-            .values("date")
-            .annotate(sum_debt=Sum("price"))
-            .annotate(sum_return=Sum("returned"))
-            .annotate(title=Value(f"{self.debt_type}"))
-            .order_by("date")
+            .annotate(month=TruncMonth("date"))
+            .values("month")  # Safe grouping, no ORM conflict
+            .annotate(
+                sum_debt=Sum("price"),
+                sum_return=Sum("returned"),
+                title=Value(self.debt_type)
+            )
+            .order_by("month")
         )
+
+        # Rename 'month' back to 'date' at the Python level
+        return [
+            {"date": row.pop("month"), **row} for row in aggregated
+        ]
 
     def sum_all(self):
         return self.objects.filter(closed=False).aggregate(
@@ -83,9 +85,7 @@ class DebtReturnModelService(BaseModelService[managers.DebtReturnQuerySet]):
         )
 
     def total_returned_for_debt(self, debt_return_instance):
-        return (
-            self.objects.filter(debt=debt_return_instance.debt).aggregate(
-                total=Sum("price")
-            )["total"]
-            or 0
+        result = self.objects.filter(debt=debt_return_instance.debt).aggregate(
+            total=Sum("price")
         )
+        return result.get("total") or 0
