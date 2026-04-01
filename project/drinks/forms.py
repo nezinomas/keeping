@@ -1,10 +1,10 @@
-from datetime import datetime
 from functools import cached_property
 
 from crispy_forms.helper import FormHelper
 from django import forms
-from django.db.models import F
-from django.db.models.functions import ExtractYear
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
@@ -27,6 +27,9 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
+        # Set the counter type for the instance
+        self.instance.counter_type = App_name
+
         self.date_field_settings()
         self.user_field_settings()
         self.translations()
@@ -47,14 +50,10 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.fields["option"].label = _("Drink type")
         self.fields["stdav"].label = _("Quantity")
 
-        _h1 = _("1 Beer = 0.5L")
-        _h2 = _("1 Wine = 0.75L")
-        _h3 = _("1 Vodka = 1L")
-        _h4 = _("Millilitres are assumed if more than %(cnt)s is entered.") % {
-            "cnt": MAX_BOTTLES
-        }
-        _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
-        self.fields["stdav"].help_text = _help_text
+        self.fields["stdav"].help_text = render_to_string(
+            "drinks/includes/drink_quantity_help.html",
+            {"cnt": MAX_BOTTLES}
+        )
 
     def recalculate_stdav_on_opening_form(self):
         if not self.instance.pk or self.instance.option == "stdav":
@@ -70,33 +69,32 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
         self.initial["stdav"] = val
 
-    def recalculate_stdav_on_save(self):
-        converted = False
+    def calculate_stdav_conversion(self, drink_type_input, stdav_input):
+        options = DrinksOptions(drink_type=drink_type_input)
 
-        if self.instance.option == "stdav":
-            return self.instance.stdav, converted
-
-        options = DrinksOptions(drink_type=self.instance.option)
-
-        if self.instance.stdav > MAX_BOTTLES:
-            stdav = options.ml_to_stdav(
-                drink_type=self.instance.option, ml=self.instance.stdav
-            )
+        if stdav_input > MAX_BOTTLES:
+            stdav = options.ml_to_stdav(drink_type=drink_type_input, ml=stdav_input)
             converted = True
         else:
-            stdav = self.instance.stdav / options.ratio
+            stdav = stdav_input / options.ratio
+            converted = False
 
         return stdav, converted
 
-    def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
+    def clean(self):
+        cleaned_data = super().clean()
 
-        instance.counter_type = App_name
-        instance.stdav, instance.converted_from_ml = self.recalculate_stdav_on_save()
+        drink_type_input = cleaned_data.get("option")
+        stdav_input = cleaned_data.get("stdav")
 
-        instance.save()
+        if drink_type_input and stdav_input is not None and drink_type_input != "stdav":
+            stdav, converted = self.calculate_stdav_conversion(
+                drink_type_input, stdav_input
+            )
+            cleaned_data["stdav"] = stdav
+            self.instance.converted_from_ml = converted
 
-        return instance
+        return cleaned_data
 
 
 class DrinkTargetForm(forms.ModelForm):
@@ -114,7 +112,7 @@ class DrinkTargetForm(forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # inital values
+        # initial values
         self.fields["year"].initial = set_date_with_user_year(self.user).year
 
         self.user_field_settings()
@@ -131,11 +129,9 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields["quantity"].label = _("Quantity")
         self.fields["drink_type"].label = _("Drink type")
 
-        _type = _("if the type of drink is")
-        h1 = f"<b>ml</b> - {_type} {_('Beer')} / {_('Wine')} / {_('Vodka')}"
-        h2 = f"<b>{_('pcs')}</b> - {_type} Std Av"
-        help_text = f"{h1}</br>{h2}"
-        self.fields["quantity"].help_text = help_text
+        self.fields["quantity"].help_text = render_to_string(
+            "drinks/includes/drink_target_quantity_help.html"
+        )
 
     def clean_year(self):
         year = self.cleaned_data["year"]
@@ -147,23 +143,21 @@ class DrinkTargetForm(forms.ModelForm):
         # if new record
         qs = DrinkTargetModelService(self.user).year(year)
         if qs.exists():
-            msg = _("already has a goal.")
-            raise forms.ValidationError(f"{year} {msg}")
+            msg = _("%(year)s already has a goal.") % {"year": year}
+            raise forms.ValidationError(msg)
 
         return year
 
 
 class DrinkCompareForm(forms.Form):
-    year1 = forms.IntegerField()
-    year2 = forms.IntegerField()
+    year1 = forms.IntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2100)]
+    )
+    year2 = forms.IntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2100)]
+    )
 
     field_order = ["year1", "year2"]
-
-    @cached_property
-    def helper(self):
-        helper = FormHelper()
-        helper.form_show_labels = False
-        return helper
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
@@ -173,13 +167,13 @@ class DrinkCompareForm(forms.Form):
         self.fields["year2"].label = None
 
         # inital values
-        self.fields["year2"].initial = datetime.now().year
+        self.fields["year2"].initial = timezone.now().year
 
-    def clean_year1(self):
-        return self._clean_year_field("year1")
-
-    def clean_year2(self):
-        return self._clean_year_field("year2")
+    @cached_property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        return helper
 
     def clean(self):
         cleaned = super().clean()
@@ -189,9 +183,9 @@ class DrinkCompareForm(forms.Form):
         years = (
             DrinkModelService(self.user)
             .items()
-            .dates("date", "year")
-            .annotate(year=ExtractYear(F("date")))
-            .values_list("year", flat=True)
+            .values_list("date__year", flat=True)
+            .order_by()
+            .distinct()
         )
 
         msg_no_records = _("No records this year")
@@ -207,12 +201,3 @@ class DrinkCompareForm(forms.Form):
             self.add_error("year2", msg_different)
 
         return cleaned
-
-    def _validation_error(self, field):
-        if len(str(abs(field))) != 4:
-            raise forms.ValidationError(_("Must be 4 digits."))
-
-    def _clean_year_field(self, field_name):
-        year = self.cleaned_data[field_name]
-        self._validation_error(year)
-        return year
