@@ -29,6 +29,9 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
+        # Set the counter type for the instance
+        self.instance.counter_type = App_name
+
         self.date_field_settings()
         self.user_field_settings()
         self.translations()
@@ -93,7 +96,6 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     def save(self, *args, **kwargs):
         instance = super().save(commit=False)
 
-        instance.counter_type = App_name
         instance.stdav, instance.converted_from_ml = self.recalculate_stdav_on_save()
 
         instance.save()
