@@ -112,7 +112,7 @@ class DrinkTargetForm(forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # inital values
+        # initial values
         self.fields["year"].initial = set_date_with_user_year(self.user).year
 
         self.user_field_settings()
