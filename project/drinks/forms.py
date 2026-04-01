@@ -137,7 +137,7 @@ class DrinkTargetForm(forms.ModelForm):
         _type = _("if the type of drink is")
         _txt1 = f"<b>ml</b> - {_type} {_('Beer')} / {_('Wine')} / {_('Vodka')}"
         _txt2 = f"<b>{_('pcs')}</b> - {_type} Std Av"
-        _txt3 = f"{_txt1}</br>{_txt2}"
+        _txt3 = f"{_txt1}<br>{_txt2}"
 
         self.fields["quantity"].help_text = mark_safe(_txt3)
 
