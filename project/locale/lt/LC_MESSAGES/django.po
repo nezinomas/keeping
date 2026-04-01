@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 13:12+0300\n"
-"PO-Revision-Date: 2026-04-01 13:13+0300\n"
+"POT-Creation-Date: 2026-04-01 13:32+0300\n"
+"PO-Revision-Date: 2026-04-01 13:30+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -348,7 +348,7 @@ msgstr "Mokesčiai"
 #: .\project\debts\forms.py:57 .\project\debts\forms.py:141
 #: .\project\debts\templates\debts\debt_list.html:14
 #: .\project\debts\templates\debts\debtreturn_list.html:13
-#: .\project\drinks\forms.py:51 .\project\expenses\forms.py:120
+#: .\project\drinks\forms.py:49 .\project\expenses\forms.py:120
 #: .\project\expenses\templates\expenses\expense_list.html:28
 #: .\project\incomes\forms.py:43
 #: .\project\incomes\templates\incomes\income_list.html:11
@@ -458,7 +458,7 @@ msgid "Percentage of income saved"
 msgstr "Pajamų dalis pervedama taupymui"
 
 #: .\project\bookkeeping\templates\bookkeeping\summary_savings_and_incomes.html:23
-#: .\project\books\forms.py:98 .\project\drinks\forms.py:134
+#: .\project\books\forms.py:98 .\project\drinks\forms.py:128
 msgid "Year"
 msgstr "Metai"
 
@@ -679,7 +679,8 @@ msgstr "Kitas mėnuo"
 msgid "Previous Month"
 msgstr "Ankstesnis mėnesis"
 
-#: .\project\core\i18n.py:13 .\project\core\templates\core\generic_form.html:23
+#: .\project\core\i18n.py:13
+#: .\project\core\templates\core\generic_form.html:23
 msgid "Insert"
 msgstr "Įrašyti"
 
@@ -883,7 +884,7 @@ msgstr "Redaguoti"
 #: .\project\counts\forms.py:51 .\project\counts\services\index.py:65
 #: .\project\counts\templates\counts\info_row.html:37
 #: .\project\counts\templates\counts\tab_data.html:12
-#: .\project\drinks\forms.py:53 .\project\drinks\forms.py:135
+#: .\project\drinks\forms.py:51 .\project\drinks\forms.py:129
 #: .\project\drinks\services\calendar_chart.py:36
 #: .\project\drinks\services\index.py:67
 #: .\project\drinks\templates\drinks\tab_data.html:13
@@ -1047,41 +1048,20 @@ msgstr "Skolos gražinimas"
 msgid "Delete debt repayment"
 msgstr "Trinti skolos gražinimą"
 
-#: .\project\drinks\forms.py:52 .\project\drinks\forms.py:136
+#: .\project\drinks\forms.py:50 .\project\drinks\forms.py:130
 msgid "Drink type"
 msgstr "Gėrimo tipas"
 
-#: .\project\drinks\forms.py:55
-msgid "1 Beer = 0.5L"
-msgstr "1 Alus = 0.5L"
-
-#: .\project\drinks\forms.py:56
-msgid "1 Wine = 0.75L"
-msgstr "1 Vynas = 0.75L"
-
-#: .\project\drinks\forms.py:57
-msgid "1 Vodka = 1L"
-msgstr "1 Degtinė = 1L"
-
-#: .\project\drinks\forms.py:58
-#, python-format
-msgid "Millilitres are assumed if more than %(cnt)s is entered."
-msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mililitrai."
-
-#: .\project\drinks\forms.py:138
-msgid "if the type of drink is"
-msgstr "jei gėrimo tipas yra"
-
-#: .\project\drinks\forms.py:155
+#: .\project\drinks\forms.py:146
 #, python-format
 msgid "%(year)s already has a goal."
 msgstr "%(year)s metai jau turi tikslą."
 
-#: .\project\drinks\forms.py:200
+#: .\project\drinks\forms.py:191
 msgid "No records this year"
 msgstr "Šiais metais įrašų nėra"
 
-#: .\project\drinks\forms.py:207
+#: .\project\drinks\forms.py:198
 msgid "Years must be different"
 msgstr "Metai turi būti skirtingi"
 
@@ -1141,6 +1121,41 @@ msgstr "Neįvestas tikslas"
 #: .\project\drinks\templates\drinks\includes\compare_form.html:5
 msgid "Year comparison"
 msgstr "Metų palyginimas"
+
+#: .\project\drinks\templates\drinks\includes\drink_quantity_help.html:3
+msgid "1 Beer = 0.5L"
+msgstr "1 Alus = 0.5L"
+
+#: .\project\drinks\templates\drinks\includes\drink_quantity_help.html:4
+msgid "1 Wine = 0.75L"
+msgstr "1 Vynas = 0.75L"
+
+#: .\project\drinks\templates\drinks\includes\drink_quantity_help.html:5
+msgid "1 Vodka = 1L"
+msgstr "1 Degtinė = 1L"
+
+#: .\project\drinks\templates\drinks\includes\drink_quantity_help.html:7
+#, python-format
+msgid "Millilitres are assumed if more than %(cnt)s is entered."
+msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mililitrai."
+
+#: .\project\drinks\templates\drinks\includes\drink_target_quantity_help.html:3
+#, python-format
+msgid ""
+"\n"
+"%(b)sml%(endb)s - if the type of drink is Beer / Wine / Vodka\n"
+msgstr ""
+"\n"
+"%(b)sml%(endb)s - jei gėrimo tipas yra Alus / Vynas / Degtinė\n"
+
+#: .\project\drinks\templates\drinks\includes\drink_target_quantity_help.html:7
+#, python-format
+msgid ""
+"\n"
+"%(b)spcs%(endb)s - if the type of drink is Std Av\n"
+msgstr ""
+"\n"
+"%(b)svnt%(endb)s - jei gėrimo tipas yra Std Av\n"
 
 #: .\project\drinks\templates\drinks\includes\navbar.html:37
 msgid "Goal for the year"
