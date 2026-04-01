@@ -1,12 +1,10 @@
-from datetime import datetime
 from functools import cached_property
 
 from crispy_forms.helper import FormHelper
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import F
+from django.template.loader import render_to_string
 from django.utils import timezone
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
@@ -52,14 +50,10 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.fields["option"].label = _("Drink type")
         self.fields["stdav"].label = _("Quantity")
 
-        _txt1 = _("1 Beer = 0.5L")
-        _txt2 = _("1 Wine = 0.75L")
-        _txt3 = _("1 Vodka = 1L")
-        _txt4 = _("Millilitres are assumed if more than %(cnt)s is entered.") % {
-            "cnt": MAX_BOTTLES
-        }
-        _help_text = f"{_txt1}<br>{_txt2}<br>{_txt3}<br><br>{_txt4}"
-        self.fields["stdav"].help_text = mark_safe(_help_text)
+        self.fields["stdav"].help_text = render_to_string(
+            "drinks/includes/drink_quantity_help.html",
+            {"cnt": MAX_BOTTLES}
+        )
 
     def recalculate_stdav_on_opening_form(self):
         if not self.instance.pk or self.instance.option == "stdav":
@@ -135,12 +129,9 @@ class DrinkTargetForm(forms.ModelForm):
         self.fields["quantity"].label = _("Quantity")
         self.fields["drink_type"].label = _("Drink type")
 
-        _type = _("if the type of drink is")
-        _txt1 = f"<b>ml</b> - {_type} {_('Beer')} / {_('Wine')} / {_('Vodka')}"
-        _txt2 = f"<b>{_('pcs')}</b> - {_type} Std Av"
-        _txt3 = f"{_txt1}<br>{_txt2}"
-
-        self.fields["quantity"].help_text = mark_safe(_txt3)
+        self.fields["quantity"].help_text = render_to_string(
+            "drinks/includes/drink_target_quantity_help.html"
+        )
 
     def clean_year(self):
         year = self.cleaned_data["year"]
