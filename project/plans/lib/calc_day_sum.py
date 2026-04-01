@@ -122,37 +122,48 @@ class PlanCalculateDaySum:
     def plans_stats(self):
         Items = namedtuple("Items", ["type", *MONTH_NAMES])
 
+        # Define strings cleanly so xgettext never misses them
+        _incomes = _("Incomes")
+        _median = _("median")
+        _necessary = _("Necessary expenses")
+        _remains = _("Remains for everyday")
+        _from_tables = _("from tables above")
+        _full = _("Full expenses")
+        _sum_per_day = _("Sum per day")
+        _days_in_month = _("days in month")
+        _residual = _("Residual")
+
         return [
             Items(
-                type=f"1. {_('Incomes')} ({_('median')})",
+                type=f"1. {_incomes} ({_median})",
                 **cast(dict, self.incomes_avg),
             ),
             Items(
-                type=f"2. {_('Necessary expenses')}",
+                type=f"2. {_necessary}",
                 **cast(dict, self.expenses_necessary),
             ),
             Items(
-                type=f"3. {_('Remains for everyday')} (1 - 2)",
+                type=f"3. {_remains} (1 - 2)",
                 **cast(dict, self.expenses_free),
             ),
             Items(
-                type=f"4. {_('Remains for everyday')} ({_('from tables above')})",
+                type=f"4. {_remains} ({_from_tables})",
                 **cast(dict, self.expenses_free2),
             ),
             Items(
-                type=f"5. {_('Full expenses')} (1 + 4)",
+                type=f"5. {_full} (1 + 4)",
                 **cast(dict, self.expenses_full),
             ),
             Items(
-                type=f"6. {_('Incomes')} - {_('Full expenses')} (1 - 5)",
+                type=f"6. {_incomes} - {_full} (1 - 5)",
                 **cast(dict, self.expenses_remains),
             ),
             Items(
-                type=f"7. {_('Sum per day')} (3 / {_('days in month')})",
+                type=f"7. {_sum_per_day} (3 / {_days_in_month})",
                 **cast(dict, self.day_calced),
             ),
             Items(
-                type=f"8. {_('Residual')} (3 - 7 * {_('days in month')})",
+                type=f"8. {_residual} (3 - 7 * {_days_in_month})",
                 **cast(dict, self.remains),
             ),
         ]

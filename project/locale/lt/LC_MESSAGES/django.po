@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 13:32+0300\n"
-"PO-Revision-Date: 2026-04-01 13:30+0300\n"
+"POT-Creation-Date: 2026-04-01 14:14+0300\n"
+"PO-Revision-Date: 2026-04-01 14:16+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -73,7 +73,7 @@ msgstr "Reikia pasirinkti bent vieną kategoriją."
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:71
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:31
 #: .\project\bookkeeping\templates\cotton\year_balance.html:10
-#: .\project\journals\forms.py:32 .\project\plans\lib\calc_day_sum.py:170
+#: .\project\journals\forms.py:32 .\project\plans\lib\calc_day_sum.py:181
 #: .\project\plans\templates\plans\index.html:37
 #: .\project\savings\services\model_services.py:71
 #: .\project\savings\views.py:45 .\project\savings\views.py:53
@@ -108,6 +108,7 @@ msgstr "Pajamos ir išlaidos"
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:17
 #: .\project\bookkeeping\templates\cotton\year_balance.html:18
 #: .\project\incomes\views.py:34 .\project\incomes\views.py:42
+#: .\project\plans\lib\calc_day_sum.py:126
 #: .\project\plans\templates\plans\index.html:13
 #: .\project\templates\base.html:69 .\project\templates\base.html:127
 #: .\project\templates\base.html:128
@@ -679,8 +680,7 @@ msgstr "Kitas mėnuo"
 msgid "Previous Month"
 msgstr "Ankstesnis mėnesis"
 
-#: .\project\core\i18n.py:13
-#: .\project\core\templates\core\generic_form.html:23
+#: .\project\core\i18n.py:13 .\project\core\templates\core\generic_form.html:23
 msgid "Insert"
 msgstr "Įrašyti"
 
@@ -1455,6 +1455,40 @@ msgstr "Dienos planai"
 msgid "Plans for additional necessary expenses"
 msgstr "Papildomų būtinų išlaidų planus"
 
+#: .\project\plans\lib\calc_day_sum.py:127
+msgid "median"
+msgstr "mediana"
+
+#: .\project\plans\lib\calc_day_sum.py:128
+msgid "Necessary expenses"
+msgstr "Būtinos išlaidos"
+
+#: .\project\plans\lib\calc_day_sum.py:129
+msgid "Remains for everyday"
+msgstr "Lieka kasdienybei"
+
+#: .\project\plans\lib\calc_day_sum.py:130
+msgid "from tables above"
+msgstr "iš lentelių viršuje"
+
+#: .\project\plans\lib\calc_day_sum.py:131
+msgid "Full expenses"
+msgstr "Visos išlaidos"
+
+#: .\project\plans\lib\calc_day_sum.py:132
+#: .\project\plans\templates\plans\index.html:44
+msgid "Sum per day"
+msgstr "Suma dienai"
+
+#: .\project\plans\lib\calc_day_sum.py:133
+msgid "days in month"
+msgstr "mėnesio dienų skaičius"
+
+#: .\project\plans\lib\calc_day_sum.py:134
+#: .\project\plans\templates\cotton\plans_table.html:38
+msgid "Residual"
+msgstr "Likutis"
+
 #: .\project\plans\models.py:38 .\project\plans\models.py:66
 #: .\project\plans\models.py:94 .\project\plans\models.py:122
 #, python-format
@@ -1471,10 +1505,6 @@ msgstr "Dienos"
 msgid "%(year)s year and %(type)s already has %(title)s plan."
 msgstr "%(year)s metai ir %(type)s jau turi %(title)s planą."
 
-#: .\project\plans\templates\cotton\plans_table.html:38
-msgid "Residual"
-msgstr "Likutis"
-
 #: .\project\plans\templates\plans\dayplan_list.html:3
 msgid "Daily"
 msgstr "Dienai"
@@ -1487,10 +1517,6 @@ msgstr "Kopijuoti planus"
 #: .\project\plans\views.py:225
 msgid "Additional necessary expenses"
 msgstr "Papildomos būtinos išlaidos"
-
-#: .\project\plans\templates\plans\index.html:44
-msgid "Sum per day"
-msgstr "Suma dienai"
 
 #: .\project\plans\templates\plans\index.html:51
 msgid "Calculations"
@@ -1777,257 +1803,3 @@ msgstr ""
 #: .\project\users\views.py:302
 msgid "Delete user"
 msgstr "Trinti vartotoją"
-
-#~ msgid "Must be 4 digits."
-#~ msgstr "Turi būti 4 skaitmenys."
-
-#~ msgid "median"
-#~ msgstr "mediana"
-
-#~ msgid "Necessary expenses"
-#~ msgstr "Būtinos išlaidos"
-
-#~ msgid "Remains for everyday"
-#~ msgstr "Lieka kasdienybei"
-
-#~ msgid "Full expenses"
-#~ msgstr "Visos išlaidos"
-
-#~ msgid "days in month"
-#~ msgstr "mėnesio dienų skaičius"
-
-#~ msgid "from tables above"
-#~ msgstr "iš lentelių viršuje"
-
-#~ msgid "Year balance"
-#~ msgstr "Metų balansas"
-
-#~ msgid "Past years"
-#~ msgstr "Praėję metai"
-
-#~ msgid "Change Password"
-#~ msgstr "Keisti slaptažodį"
-
-#~ msgctxt "book form title"
-#~ msgid "Book"
-#~ msgstr "Knyga"
-
-#~ msgctxt "expenses form title"
-#~ msgid "Expenses"
-#~ msgstr "Išlaidos"
-
-#~ msgid "Delete plans"
-#~ msgstr "Trinti planus"
-
-#, fuzzy
-#~| msgid "Residual"
-#~ msgid "residual"
-#~ msgstr "Likutis"
-
-#~ msgid "Sum per day, max possible"
-#~ msgstr "Suma dienai, max galima"
-
-#~ msgid "Main"
-#~ msgstr "Bendra"
-
-#~ msgid "Depts"
-#~ msgstr "Skolos"
-
-#~ msgid "Money for a day"
-#~ msgstr "Pinigai dienai"
-
-#, python-format
-#~ msgid "Expenses / %(title)s"
-#~ msgstr "Išlaidos / %(title)s"
-
-#~ msgid "Summary"
-#~ msgstr "Suvestinės"
-
-#~ msgid "The amount to be paid is more than the debt!"
-#~ msgstr "Gražinama suma yra didesnė nei skola!"
-
-#~ msgid "Part of the income is transferred to savings"
-#~ msgstr "Pajamų dalis pervedama taupymui"
-
-#~ msgid ""
-#~ "You cannot update to an amount lower than the amount already returned."
-#~ msgstr "Negalite atnaujinti į mažesnę sumą nei jau sugrąžinta suma."
-
-#~ msgid "The date is earlier than the date of the debt."
-#~ msgstr "Pasirinkta data yra ankstesnė nei skolos data."
-
-#, python-format
-#~ msgid "If more than %(cnt)s is entered, it will be assumed to be mL"
-#~ msgstr "Įvedus daugiau nei %(cnt)s, bus manoma kad tai yra mL"
-
-#~ msgid "Your password has been changed!"
-#~ msgstr "Jūsų slaptažodis pakeistas!"
-
-#~ msgid "Left"
-#~ msgstr "Liko"
-
-#~ msgid "No market value entered"
-#~ msgstr "Neįvesta rinkos vertė"
-
-#~ msgid "Not specified"
-#~ msgstr "Nenurodyta"
-
-#~ msgid "Not verified"
-#~ msgstr "Netikrinta"
-
-#, fuzzy
-#~| msgid "Not specified"
-#~ msgid "Not checked"
-#~ msgstr "Nenurodyta"
-
-#, fuzzy
-#~| msgid "Savings plans"
-#~ msgid "Savings and Incomes"
-#~ msgstr "Taupymo planai"
-
-#~ msgid "From incomes"
-#~ msgstr "Nuo pajamų"
-
-#, python-format
-#~ msgid "Year cannot be less than %(year)s"
-#~ msgstr "Metai negali būti mažesni nei %(year)s"
-
-#~ msgid "Purchased"
-#~ msgstr "Pirkta"
-
-#~ msgid "01.01 transferred"
-#~ msgstr "01.01 pervesta"
-
-#~ msgid "01.01 fee"
-#~ msgstr "01.01 mokesčiai"
-
-#~ msgid "Found nothing"
-#~ msgstr "Nieko nerasta"
-
-#~ msgid "Warning"
-#~ msgstr "Įspėjimas"
-
-#~ msgid "You cannot delete yourself."
-#~ msgstr "Negalite ištrinti savęs."
-
-#~ msgid "Counter name"
-#~ msgstr "Skaitiklio pavadinimas"
-
-#~ msgid "Months, %(year)s year"
-#~ msgstr "Mėnesiai, %(year)s metai"
-
-#~ msgid "Form is broken."
-#~ msgstr "Forma neveikia."
-
-#~ msgid "Reset search"
-#~ msgstr "Panaikinti paiešką"
-
-#~ msgid "drunk"
-#~ msgstr "išgerta"
-
-#~ msgid "Average consumption"
-#~ msgstr "Vidutiniškai išgerta"
-
-#~ msgid "Beer (drunk)"
-#~ msgstr "Alus (išgerta)"
-
-#~ msgid "Quantity (0,5L beer bottle)"
-#~ msgstr "Kiekis (0,5L alaus)"
-
-#~ msgctxt "lend button"
-#~ msgid "Lend"
-#~ msgstr "Skolą"
-
-#~ msgid "Update %(year)s balance"
-#~ msgstr "Atnaujinti %(year)s balansą"
-
-#~ msgid "Return to Log In"
-#~ msgstr "Grįžti į Prisijungimo puslapį"
-
-#~ msgid "Returned borrow"
-#~ msgstr "Gražino"
-
-#~ msgid "Lend returned"
-#~ msgstr "Gražino"
-
-#, fuzzy
-#~| msgid "Returned lent"
-#~ msgid "Returned lend"
-#~ msgstr "Gražinau"
-
-#~ msgid "Lent"
-#~ msgstr "Pasiskolinta"
-
-#~ msgid "Dept repayment"
-#~ msgstr "Skolos gražinimas"
-
-#, fuzzy
-#~| msgid "From account"
-#~ msgid "Close 'From account'"
-#~ msgstr "Iš sąskaitos"
-
-#, fuzzy
-#~| msgid "Delete savings"
-#~ msgid "Close saving"
-#~ msgstr "Trinti fondus"
-
-#~ msgid "vnt"
-#~ msgstr "pcs"
-
-#~ msgid "Couldn't read uploaded image"
-#~ msgstr "Nepavyko perskaityti įkelto vaizdo"
-
-#~ msgid "Not Found"
-#~ msgstr "Nerasta"
-
-#, fuzzy
-#~| msgid "Log in"
-#~ msgid "Log In"
-#~ msgstr "Prisijungti"
-
-#, fuzzy
-#~| msgid "Sign up"
-#~ msgid "Sign Up"
-#~ msgstr "Užsiregistruoti"
-
-#~ msgid "Return to log in"
-#~ msgstr "Grįžti į Prisijungimo puslapį"
-
-#, fuzzy
-#~| msgctxt "record button"
-#~| msgid "Record"
-#~ msgid "Record"
-#~ msgstr "Įrašą"
-
-#~ msgid "update"
-#~ msgstr "atnaujinti"
-
-#~ msgid "insert"
-#~ msgstr "įrašyti"
-
-#~ msgid "%(title)s plan"
-#~ msgstr "%(title)s planas"
-
-#~ msgid "Additional necessary expenses plans"
-#~ msgstr "Papildomų būtinų išlaidų planai"
-
-#, fuzzy
-#~| msgid "Incomes plans"
-#~ msgid "Incomes plan"
-#~ msgstr "Pajamų planai"
-
-#, fuzzy
-#~| msgid "Delete incomes"
-#~ msgid "Delete incomes plan"
-#~ msgstr "Trinti pajamas"
-
-#~ msgid "Borrowed"
-#~ msgstr "Pasiskolinta"
-
-#~ msgid "Target"
-#~ msgstr "Tikslas"
-
-#, fuzzy
-#~| msgid "Amount"
-#~ msgid "Ammount"
-#~ msgstr "Suma"
