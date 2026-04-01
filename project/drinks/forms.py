@@ -27,17 +27,22 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        self.fields["date"].widget = DatePickerWidget()
+        self.date_field_settings()
+        self.user_field_settings()
+        self.translations()
 
-        # user input
+        self.recalculate_stdav_on_update()
+
+    def date_field_settings(self):
+        self.fields["date"].widget = DatePickerWidget()
+        self.fields["date"].initial = set_date_with_user_year(self.user)
+
+    def user_field_settings(self):
         self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
-        # inital values
-        self.fields["date"].initial = set_date_with_user_year(self.user)
-        self.recalculate_stdav_on_update()
-
+    def translations(self):
         self.fields["date"].label = _("Date")
         self.fields["option"].label = _("Drink type")
         self.fields["stdav"].label = _("Quantity")
