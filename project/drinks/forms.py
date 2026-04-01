@@ -51,8 +51,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.fields["stdav"].label = _("Quantity")
 
         self.fields["stdav"].help_text = render_to_string(
-            "drinks/includes/drink_quantity_help.html",
-            {"cnt": MAX_BOTTLES}
+            "drinks/includes/drink_quantity_help.html", {"cnt": MAX_BOTTLES}
         )
 
     def recalculate_stdav_on_opening_form(self):
