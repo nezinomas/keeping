@@ -3,6 +3,7 @@ from functools import cached_property
 
 from crispy_forms.helper import FormHelper
 from django import forms
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import F
 from django.db.models.functions import ExtractYear
 from django.utils.safestring import mark_safe
@@ -155,8 +156,12 @@ class DrinkTargetForm(forms.ModelForm):
 
 
 class DrinkCompareForm(forms.Form):
-    year1 = forms.IntegerField()
-    year2 = forms.IntegerField()
+    year1 = forms.IntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2100)]
+    )
+    year2 = forms.IntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2100)]
+    )
 
     field_order = ["year1", "year2"]
 
@@ -175,12 +180,6 @@ class DrinkCompareForm(forms.Form):
         helper = FormHelper()
         helper.form_show_labels = False
         return helper
-
-    def clean_year1(self):
-        return self._clean_year_field("year1")
-
-    def clean_year2(self):
-        return self._clean_year_field("year2")
 
     def clean(self):
         cleaned = super().clean()
@@ -208,12 +207,3 @@ class DrinkCompareForm(forms.Form):
             self.add_error("year2", msg_different)
 
         return cleaned
-
-    def _validation_error(self, field):
-        if len(str(abs(field))) != 4:
-            raise forms.ValidationError(_("Must be 4 digits."))
-
-    def _clean_year_field(self, field_name):
-        year = self.cleaned_data[field_name]
-        self._validation_error(year)
-        return year
