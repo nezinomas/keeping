@@ -5,7 +5,6 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import F
-from django.db.models.functions import ExtractYear
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
@@ -75,32 +74,32 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
 
         self.initial["stdav"] = val
 
-    def recalculate_stdav_on_save(self):
-        converted = False
+    def calculate_stdav_conversion(self, drink_type_input, stdav_input):
+        options = DrinksOptions(drink_type=drink_type_input)
 
-        if self.instance.option == "stdav":
-            return self.instance.stdav, converted
-
-        options = DrinksOptions(drink_type=self.instance.option)
-
-        if self.instance.stdav > MAX_BOTTLES:
-            stdav = options.ml_to_stdav(
-                drink_type=self.instance.option, ml=self.instance.stdav
-            )
+        if stdav_input > MAX_BOTTLES:
+            stdav = options.ml_to_stdav(drink_type=drink_type_input, ml=stdav_input)
             converted = True
         else:
-            stdav = self.instance.stdav / options.ratio
+            stdav = stdav_input / options.ratio
+            converted = False
 
         return stdav, converted
 
-    def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
+    def clean(self):
+        cleaned_data = super().clean()
 
-        instance.stdav, instance.converted_from_ml = self.recalculate_stdav_on_save()
+        drink_type_input = cleaned_data.get("option")
+        stdav_input = cleaned_data.get("stdav")
 
-        instance.save()
+        if drink_type_input and stdav_input is not None and drink_type_input != "stdav":
+            stdav, converted = self.calculate_stdav_conversion(
+                drink_type_input, stdav_input
+            )
+            cleaned_data["stdav"] = stdav
+            self.instance.converted_from_ml = converted
 
-        return instance
+        return cleaned_data
 
 
 class DrinkTargetForm(forms.ModelForm):
