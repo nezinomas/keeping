@@ -114,14 +114,19 @@ class DrinkTargetForm(forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # user input
+        # inital values
+        self.fields["year"].initial = set_date_with_user_year(self.user).year
+
+        self.user_field_settings()
+
+        self.translations()
+
+    def user_field_settings(self):
         self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
-
+    def translations(self):
         self.fields["year"].label = _("Year")
         self.fields["quantity"].label = _("Quantity")
         self.fields["drink_type"].label = _("Drink type")
