@@ -135,7 +135,7 @@ class DebtReturnForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
 
     def debt_field_settings(self):
         self.fields["debt"].queryset = (
-            DebtModelService(self.user, self.debt_type).items().filter(closed=False)
+            DebtModelService(self.user, self.debt_type).open_items()
         )
 
     def translations(self):

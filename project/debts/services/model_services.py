@@ -22,13 +22,16 @@ class DebtModelService(BaseModelService):
     def items(self):
         return self.objects.all()
 
+    def open_items(self):
+        return self.objects.filter(closed=False)
+
     def year(self, year):
         return self.objects.filter(
             Q(date__year=year) | (Q(date__year__lt=year) & Q(closed=False))
         )
 
     def sum_by_month(self, year, closed=False):
-        qs = self.objects if closed else self.objects.filter(closed=False)
+        qs = self.objects if closed else self.open_items()
 
         aggregated = (
             qs.filter(date__year=year)
@@ -48,7 +51,7 @@ class DebtModelService(BaseModelService):
         ]
 
     def sum_all(self):
-        return self.objects.filter(closed=False).aggregate(
+        return self.open_items().aggregate(
             debt=Sum("price"), debt_return=Sum("returned")
         )
 
