@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import cached_property
 
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -148,6 +149,12 @@ class DrinkCompareForm(forms.Form):
 
     field_order = ["year1", "year2"]
 
+    @cached_property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        return helper
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
@@ -157,9 +164,6 @@ class DrinkCompareForm(forms.Form):
 
         # inital values
         self.fields["year2"].initial = datetime.now().year
-
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean_year1(self):
         return self._clean_year_field("year1")
