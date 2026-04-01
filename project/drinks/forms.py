@@ -5,6 +5,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.db.models import F
 from django.db.models.functions import ExtractYear
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
@@ -47,14 +48,14 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.fields["option"].label = _("Drink type")
         self.fields["stdav"].label = _("Quantity")
 
-        _h1 = _("1 Beer = 0.5L")
-        _h2 = _("1 Wine = 0.75L")
-        _h3 = _("1 Vodka = 1L")
-        _h4 = _("Millilitres are assumed if more than %(cnt)s is entered.") % {
+        _txt1 = _("1 Beer = 0.5L")
+        _txt2 = _("1 Wine = 0.75L")
+        _txt3 = _("1 Vodka = 1L")
+        _txt4 = _("Millilitres are assumed if more than %(cnt)s is entered.") % {
             "cnt": MAX_BOTTLES
         }
-        _help_text = f"{_h1}</br>{_h2}</br>{_h3}</br></br>{_h4}"
-        self.fields["stdav"].help_text = _help_text
+        _help_text = f"{_txt1}<br>{_txt2}<br>{_txt3}<br><br>{_txt4}"
+        self.fields["stdav"].help_text = mark_safe(_help_text)
 
     def recalculate_stdav_on_opening_form(self):
         if not self.instance.pk or self.instance.option == "stdav":
