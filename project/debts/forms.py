@@ -27,6 +27,10 @@ class DebtForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
+        # Set debt_type for new instance
+        if not self.instance.pk:
+            self.instance.debt_type = self.debt_type
+
         # remark textarea settings
         self.fields["remark"].widget.attrs["rows"] = 3
 
@@ -52,13 +56,11 @@ class DebtForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["account"].queryset = accounts
 
     def translations(self):
-        # fields labels
         _name = _("Debtor")
 
         if self.debt_type == "lend":
             _name = _("Borrower")
-
-        if self.debt_type == "borrow":
+        elif self.debt_type == "borrow":
             _name = _("Lender")
 
         self.fields["date"].label = _("Date")
@@ -67,13 +69,6 @@ class DebtForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["price"].label = _("Sum")
         self.fields["remark"].label = _("Remark")
         self.fields["closed"].label = _("Returned")
-
-    def save(self, *args, **kwargs):
-        # set debt_type
-        if not self.instance.pk:
-            self.instance.debt_type = self.debt_type
-
-        return super().save(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -167,7 +162,8 @@ class DebtReturnForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
 
         qs = (
             DebtReturnModelService(self.user, self.debt_type)
-            .objects.filter(debt=debt)
+            .items()
+            .filter(debt=debt)
             .exclude(pk=self.instance.pk)
             .aggregate(Sum("price"))
         )
@@ -185,7 +181,7 @@ class DebtReturnForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
 
         date = cleaned_data.get("date")
         debt = cleaned_data.get("debt")
-        if debt and date < debt.date:
+        if debt and date and date < debt.date:
             self.add_error("date", _("The date preceding the debt's date."))
 
         return cleaned_data
