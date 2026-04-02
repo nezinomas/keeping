@@ -507,7 +507,7 @@ def test_debt_incomes(main_user):
 
     LendFactory()
 
-    actual = Debt.objects.incomes(main_user)
+    actual = DebtModelService(main_user, "borrow").incomes()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -542,7 +542,7 @@ def test_debt_expenses(main_user):
 
     BorrowFactory()
 
-    actual = Debt.objects.expenses(main_user)
+    actual = DebtModelService(main_user, "lend").expenses()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

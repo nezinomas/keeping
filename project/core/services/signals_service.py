@@ -5,8 +5,7 @@ from django.db import models
 from ...accounts import models as account
 from ...accounts.models import AccountBalance
 from ...bookkeeping import models as bookkeeping
-from ...debts import models as debt
-from ...expenses import models as expense
+from ...debts.services.model_services import DebtModelService, DebtReturnModelService
 from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
 from ...pensions import models as pension
@@ -21,15 +20,15 @@ from ..lib.signals import Accounts, GetData, Savings
 ACCOUNTS_CONF = {
     "incomes": (
         lambda user: IncomeModelService(user).incomes(),
-        lambda user: debt.Debt.objects.incomes(user),
-        lambda user: debt.DebtReturn.objects.incomes(user),
+        lambda user: DebtModelService(user, "borrow").incomes(),
+        lambda user: DebtReturnModelService(user, "lend").incomes(),
         lambda user: transaction.Transaction.objects.incomes(user),
         lambda user: transaction.SavingClose.objects.incomes(user),
     ),
     "expenses": (
         lambda user: ExpenseModelService(user).expenses(),
-        lambda user: debt.Debt.objects.expenses(user),
-        lambda user: debt.DebtReturn.objects.expenses(user),
+        lambda user: DebtModelService(user, "lend").expenses(),
+        lambda user: DebtReturnModelService(user, "borrow").expenses(),
         lambda user: transaction.Transaction.objects.expenses(user),
         lambda user: saving.Saving.objects.expenses(user),
     ),
