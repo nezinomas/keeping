@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import F, Sum
 from django.db.models.functions import ExtractYear
 
-from ..core.mixins.queryset_sum import SumMixin
+from ..core.mixins.sum import SumMixin
 from ..users.models import User
 
 

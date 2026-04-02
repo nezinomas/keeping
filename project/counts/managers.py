@@ -1,6 +1,6 @@
 from django.db import models
 
-from ..core.mixins.queryset_sum import SumMixin
+from ..core.mixins.sum import SumMixin
 from ..users.models import User
 
 
