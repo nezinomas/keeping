@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 
 from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...core import signals
-from ...core.mixins.views import http_htmx_response
+from ...core.lib.utils import http_htmx_response
 
 SIGNALS = {
     AccountWorth: signals.accounts_signal,

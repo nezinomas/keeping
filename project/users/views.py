@@ -17,12 +17,12 @@ from django.views.generic import CreateView
 
 from project.users import models
 
+from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     DeleteViewMixin,
     FormViewMixin,
     ListViewMixin,
     TemplateViewMixin,
-    rendered_content,
 )
 from ..journals.forms import SettingsForm, UnnecessaryForm
 from ..users.models import User

@@ -2,8 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 
 from .lib.date import years
-from .lib.utils import get_safe_redirect
-from .mixins.views import TemplateViewMixin, http_htmx_response
+from .lib.utils import get_safe_redirect, http_htmx_response
+from .mixins.views import TemplateViewMixin
 from .services import signals_service
 from .tests.utils import timer
 

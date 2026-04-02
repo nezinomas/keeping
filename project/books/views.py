@@ -4,6 +4,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.paginator import CountlessPaginator
+from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -11,7 +12,6 @@ from ..core.mixins.views import (
     SearchViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
 from ..users.models import User
 from . import forms, models, services

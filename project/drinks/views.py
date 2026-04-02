@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.translation import month_names
+from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -13,7 +14,6 @@ from ..core.mixins.views import (
     RedirectViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
 from ..users.models import User
 from . import forms, models, services

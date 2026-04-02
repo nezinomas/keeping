@@ -3,13 +3,13 @@ from django.utils.translation import gettext_lazy as _
 
 from ..accounts import views as accounts_views
 from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
     ListViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
 from ..savings.services.model_services import SavingTypeModelService
 from . import forms, models

@@ -6,19 +6,19 @@ from mock import Mock
 
 from ....expenses.models import Expense
 from ....expenses.tests.factories import ExpenseFactory
-from ...mixins import views
+from ...mixins import queryset, views
 
 
 @pytest.mark.xfail
 def test_queryset_fail():
-    class Dummy(views.GetQuerysetMixin):
+    class Dummy(queryset.GetQuerysetMixin):
         model = SimpleNamespace(objects=SimpleNamespace())
 
     Dummy().get_queryset()
 
 
 def test_queryset_retun_qs():
-    class Dummy(views.GetQuerysetMixin):
+    class Dummy(queryset.GetQuerysetMixin):
         model = SimpleNamespace(
             _meta=SimpleNamespace(verbose_name="ModelName"),
             objects=SimpleNamespace(related=lambda user: "xxx"),
@@ -31,7 +31,7 @@ def test_queryset_retun_qs():
 
 
 def test_queryset_raises_improperly_configured():
-    class Dummy(views.GetQuerysetMixin):
+    class Dummy(queryset.GetQuerysetMixin):
         model = None
         request = Mock()
 

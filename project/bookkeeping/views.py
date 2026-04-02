@@ -6,12 +6,12 @@ from django.utils.translation import gettext_lazy as _
 
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.date import monthnames_abbr
+from ..core.lib.utils import rendered_content
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     FormViewMixin,
     TemplateViewMixin,
-    rendered_content,
 )
 from ..pensions.services.model_services import PensionTypeModelService
 from ..savings.services.model_services import SavingTypeModelService
