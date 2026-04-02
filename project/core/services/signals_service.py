@@ -56,7 +56,7 @@ SAVINGS_CONF = {
 
 
 PENSIONS_CONF = {
-    "incomes": (lambda user: pension.Pension.objects.incomes(user),),
+    "incomes": (lambda user: PensionModelService(user).incomes(),),
     "have": (lambda user: bookkeeping.PensionWorth.objects.have(user),),
     "types": (lambda user: PensionTypeModelService(user).items(),),
 }

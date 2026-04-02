@@ -1,6 +1,7 @@
 from typing import cast
 
 from django.db.models import F, Sum
+from django.db.models.functions import ExtractYear
 
 from ...core.services.model_services import BaseModelService
 from .. import managers, models
@@ -18,7 +19,7 @@ class PensionTypeModelService(BaseModelService[managers.PensionTypeQuerySet]):
         )
 
     def items(self):
-        return self.objects
+        return self.objects.all()
 
 
 class PensionModelService(BaseModelService[managers.PensionQuerySet]):
@@ -30,6 +31,20 @@ class PensionModelService(BaseModelService[managers.PensionQuerySet]):
 
     def items(self):
         return self.objects.all()
+
+    def incomes(self):
+        """
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
+        """
+        return (
+            self.objects
+            .annotate(year=ExtractYear(F("date")))
+            .values("year", "pension_type__title")
+            .annotate(incomes=Sum("price"), fee=Sum("fee"))
+            .values("year", "incomes", "fee", category_id=F("pension_type__pk"))
+            .order_by("year", "id")
+        )
 
 
 class PensionBalanceModelService(BaseModelService[managers.PensionBalanceQuerySet]):
