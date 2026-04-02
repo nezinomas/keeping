@@ -105,8 +105,6 @@ class TestExpenseService:
             "price_str",
             "is_pdf",
             "month_group",
-            "url_update",
-            "url_delete",
         }
         assert expected_keys.issubset(result.keys())
 
@@ -131,13 +129,6 @@ class TestExpenseService:
         qs = models.Expense.objects.all()
 
         result = service.expenses_list(qs)[0]
-
-        # We expect the URL to match the standard Django reverse for this ID
-        expected_update = reverse("expenses:update", args=[obj.pk])
-        expected_delete = reverse("expenses:delete", args=[obj.pk])
-
-        assert result["url_update"] == expected_update
-        assert result["url_delete"] == expected_delete
 
     def test_expenses_list_pdf_detection_vs_image(self, service):
         """

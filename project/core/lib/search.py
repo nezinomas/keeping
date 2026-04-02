@@ -6,8 +6,10 @@ from operator import and_, or_
 from django.db.models import Q
 
 from ...books.services.model_services import BookModelService
+from ...expenses.apps import App_name as ExpensesApp_name
 from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
+from .utils import add_fast_urls
 
 SEARCH_DICT = {"category": None, "year": None, "month": None, "remark": None}
 

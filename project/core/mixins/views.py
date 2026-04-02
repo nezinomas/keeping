@@ -17,7 +17,7 @@ from vanilla import (
 )
 
 from ...core.lib import search
-from ...core.lib.utils import get_action_buttons_html
+from ...core.lib.utils import add_fast_urls, get_action_buttons_html
 from ..lib.paginator import CountlessPaginator
 
 
@@ -154,6 +154,10 @@ class DeleteMixin:
 
 
 class SearchMixin:
+    # Set to True in child class to enable fast URLs reverse for update and delete
+    # for search results (like expenses list)
+    use_fast_urls = False
+
     def get_context_data(self, **kwargs):
         return (
             super().get_context_data(**kwargs)
@@ -212,12 +216,17 @@ class SearchMixin:
             per_page=self.per_page,
         )
         page_range = paginator.get_elided_page_range(page)
+        page_obj = paginator.get_page(page)
 
         app = self.request.resolver_match.app_name
 
+        # Add fast URLs if enabled and if the view supports it (like expenses list)
+        if self.use_fast_urls:
+            page_obj.object_list = add_fast_urls(list(page_obj.object_list), app)
+
         return {
             "notice": _("No data found"),
-            "object_list": paginator.get_page(page),
+            "object_list": page_obj,
             "search": search_str,
             "url": reverse(f"{app}:search"),
             "paginator_object": {

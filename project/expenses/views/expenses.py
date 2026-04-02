@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.convert_price import ConvertPriceMixin
-from ...core.lib.utils import get_action_buttons_html
+from ...core.lib.utils import add_fast_urls, get_action_buttons_html
 from ...core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -16,6 +16,7 @@ from ...core.mixins.views import (
 )
 from ...users.models import User
 from .. import forms, models
+from ..apps import App_name
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
@@ -48,7 +49,9 @@ class Lists(GetMonthMixin, ListViewMixin):
         if month in range(1, 13):
             qs = qs.filter(date__month=month)
 
-        return service.expenses_list(qs)
+        data = service.expenses_list(qs)
+
+        return add_fast_urls(data=data, app_name=App_name)
 
     def get_context_data(self, **kwargs):
         month = self.get_month()
@@ -93,6 +96,7 @@ class Search(SearchViewMixin):
     template_name = "expenses/expense_list.html"
     search_method = "search_expenses"
     per_page = 50
+    use_fast_urls = True
 
 
 class LoadExpenseName(ListViewMixin):
