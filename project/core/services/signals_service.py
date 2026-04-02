@@ -2,21 +2,27 @@ from typing import Optional
 
 from django.db import models
 
-from ...accounts import models as account
 from ...accounts.models import AccountBalance
+from ...accounts.services.model_services import AccountModelService
 from ...bookkeeping import models as bookkeeping
 from ...debts.services.model_services import DebtModelService, DebtReturnModelService
 from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
-from ...pensions import models as pension
 from ...pensions.models import PensionBalance
-from ...savings import models as saving
+from ...pensions.services.model_services import (
+    PensionModelService,
+    PensionTypeModelService,
+)
 from ...savings.models import SavingBalance
 from ...savings.services.model_services import (
     SavingModelService,
     SavingTypeModelService,
 )
-from ...transactions import models as transaction
+from ...transactions.services.model_services import (
+    SavingChangeModelService,
+    SavingCloseModelService,
+    TransactionModelService,
+)
 from ...users.models import User
 from ..lib.db_sync import BalanceSynchronizer
 from ..lib.signals import Accounts, GetData, Savings
@@ -26,14 +32,14 @@ ACCOUNTS_CONF = {
         lambda user: IncomeModelService(user).incomes(),
         lambda user: DebtModelService(user, "borrow").incomes(),
         lambda user: DebtReturnModelService(user, "lend").incomes(),
-        lambda user: transaction.Transaction.objects.incomes(user),
-        lambda user: transaction.SavingClose.objects.incomes(user),
+        lambda user: TransactionModelService(user).incomes(),
+        lambda user: SavingCloseModelService(user).incomes(),
     ),
     "expenses": (
         lambda user: ExpenseModelService(user).expenses(),
         lambda user: DebtModelService(user, "lend").expenses(),
         lambda user: DebtReturnModelService(user, "borrow").expenses(),
-        lambda user: transaction.Transaction.objects.expenses(user),
+        lambda user: TransactionModelService(user).expenses(),
         lambda user: SavingModelService(user).expenses(),
     ),
     "have": (lambda user: bookkeeping.AccountWorth.objects.have(user),),
@@ -44,11 +50,11 @@ ACCOUNTS_CONF = {
 SAVINGS_CONF = {
     "incomes": (
         lambda user: SavingModelService(user).incomes(),
-        lambda user: transaction.SavingChange.objects.incomes(user),
+        lambda user: SavingChangeModelService(user).incomes(),
     ),
     "expenses": (
-        lambda user: transaction.SavingClose.objects.expenses(user),
-        lambda user: transaction.SavingChange.objects.expenses(user),
+        lambda user: SavingCloseModelService(user).expenses(),
+        lambda user: SavingChangeModelService(user).expenses(),
     ),
     "have": (lambda user: bookkeeping.SavingWorth.objects.have(user),),
     "types": (lambda user: SavingTypeModelService(user).all(),),
