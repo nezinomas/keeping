@@ -19,7 +19,7 @@ class IncomeTypeModelService(BaseModelService[managers.IncomeTypeQuerySet]):
         )
 
     def items(self):
-        return self.objects
+        return self.objects.all()
 
 
 class IncomeModelService(BaseModelService[managers.IncomeQuerySet]):
@@ -46,24 +46,27 @@ class IncomeModelService(BaseModelService[managers.IncomeQuerySet]):
     def sum_by_month_and_type(self, year: int):
         return (
             self.objects.filter(date__year=year)
-            .annotate(cnt=Count("income_type"))
-            .values("income_type")
-            .annotate(date=TruncMonth("date"))
-            .values("date")
-            .annotate(c=Count("id"))
-            .annotate(sum=Sum("price"))
+            .annotate(month=TruncMonth("date"))
+            .values("month", "income_type")
+            .annotate(
+                sum=Sum("price"),
+                title=F("income_type__title"),
+                date=F("month"),
+            )
             .order_by("income_type__title", "date")
-            .values("date", "sum", title=F("income_type__title"))
+            .values("date", "sum", "title")
         )
 
     def sum_by_year_and_type(self):
         return (
             self.objects.annotate(cnt=Count("income_type"))
-            .values("income_type")
-            .annotate(date=TruncYear("date"))
-            .values("date")
-            .annotate(c=Count("id"))
-            .annotate(sum=Sum("price"))
+            .annotate(year=TruncYear("date"))
+            .values("year", "income_type")
+            .annotate(
+                sum=Sum("price"),
+                title=F("income_type__title"),
+                date=F("year"),
+            )
             .order_by("income_type__title", "date")
-            .values("date", "sum", title=F("income_type__title"))
+            .values("date", "sum", "title")
         )
