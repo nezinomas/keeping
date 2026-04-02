@@ -110,8 +110,7 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
             )
         )
 
-    def sum_by_day_ant_type(self, year: int, month: int):
-        # Todo: refactore mistyped method name
+    def sum_by_day_and_type(self, year: int, month: int):
         return (
             self.objects.filter(date__year=year, date__month=month)
             .annotate(cnt_id=Count("id"))

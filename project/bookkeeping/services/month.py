@@ -47,7 +47,7 @@ class Data:
     def get_expenses(self):
         self.expenses = list(
             list(
-                ExpenseModelService(self.user).sum_by_day_ant_type(
+                ExpenseModelService(self.user).sum_by_day_and_type(
                     self.user.year, self.user.month
                 )
             )

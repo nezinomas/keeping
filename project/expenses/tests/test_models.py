@@ -70,7 +70,7 @@ def test_day_expense_type(main_user, expenses_january):
         },
     ]
 
-    actual = [*ExpenseModelService(main_user).sum_by_day_ant_type(1999, 1)]
+    actual = [*ExpenseModelService(main_user).sum_by_day_and_type(1999, 1)]
 
     assert actual == expect
 
