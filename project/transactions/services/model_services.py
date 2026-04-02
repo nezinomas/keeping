@@ -13,7 +13,7 @@ class CommonMethodsMixin:
         return self.objects.filter(date__year=year)
 
     def items(self):
-        return self.objects
+        return self.objects.all()
 
 
 class TransactionModelService(
