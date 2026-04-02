@@ -6,7 +6,6 @@ from django.db.models import (
     BooleanField,
     Case,
     CharField,
-    Count,
     F,
     Func,
     Q,
@@ -15,14 +14,11 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import (
-    Cast,
     Concat,
     ExtractYear,
     TruncDay,
     TruncMonth,
-    TruncYear,
 )
-from django.urls import reverse
 
 from ...core.services.model_services import BaseModelService
 from .. import managers, models
