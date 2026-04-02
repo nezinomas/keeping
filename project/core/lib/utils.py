@@ -1,7 +1,9 @@
 import contextlib
+import json
 from functools import lru_cache
 from urllib.parse import urlparse
 
+from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.urls import Resolver404, resolve, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -95,3 +97,23 @@ def add_fast_urls(data: list[dict], app_name: str, pk_key: str = "id") -> list[d
         }
         for row in data
     ]
+
+
+def rendered_content(request, view_class, **kwargs):
+    # update request kwargs
+    request.resolver_match.kwargs.update({**kwargs})
+
+    return view_class.as_view()(request, **kwargs).rendered_content
+
+
+def http_htmx_response(hx_trigger_name=None, status_code=204):
+    headers = {}
+    if hx_trigger_name:
+        headers = {
+            "HX-Trigger": json.dumps({hx_trigger_name: None}),
+        }
+
+    return HttpResponse(
+        status=status_code,
+        headers=headers,
+    )

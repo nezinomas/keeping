@@ -2,13 +2,13 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
     ListViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
 from ..pensions import views as pension_views
 from . import forms, models
