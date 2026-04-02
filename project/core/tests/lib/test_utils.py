@@ -82,3 +82,46 @@ def test_get_safe_redirect_custom_fallback(rf):
     """Should return custom fallback if validation fails."""
     request = rf.get("/")
     assert utils.get_safe_redirect(request, None, fallback="/dashboard") == "/dashboard"
+
+
+def test_add_fast_urls_basic(mocker):
+    # Patch the reference inside your specific utils file!
+    mock_reverse = mocker.patch("project.core.lib.utils.reverse")
+
+    def side_effect(viewname, args):
+        app_action = viewname.replace(":", "/")
+        return f"/{app_action}/{args[0]}/"
+
+    mock_reverse.side_effect = side_effect
+
+    raw_data = [
+        {"id": 1, "title": "Coffee"},
+        {"id": 99, "title": "Laptop"},
+    ]
+
+    actual = utils.add_fast_urls(data=raw_data, app_name="expenses")
+
+    assert len(actual) == 2
+    assert actual[0]["url_update"] == "/expenses/update/1/"
+    assert actual[0]["url_delete"] == "/expenses/delete/1/"
+    assert actual[1]["url_update"] == "/expenses/update/99/"
+    assert actual[1]["url_delete"] == "/expenses/delete/99/"
+
+
+def test_add_fast_urls_custom_pk_key(mocker):
+    # Patch the reference inside your specific utils file!
+    mock_reverse = mocker.patch("project.core.lib.utils.reverse")
+
+    # Use side_effect here too, since reverse is called twice (update & delete)
+    def side_effect(viewname, args):
+        app_action = viewname.replace(":", "/")
+        return f"/{app_action}/{args[0]}/"
+
+    mock_reverse.side_effect = side_effect
+
+    raw_data = [{"custom_pk": 42}]
+
+    actual = utils.add_fast_urls(data=raw_data, app_name="app", pk_key="custom_pk")
+
+    assert actual[0]["url_update"] == "/app/update/42/"
+    assert actual[0]["url_delete"] == "/app/delete/42/"
