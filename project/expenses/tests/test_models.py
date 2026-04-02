@@ -3,9 +3,9 @@ from datetime import date
 import mock
 import pytest
 import time_machine
+from django.conf import settings
 from django.core.files import File
 from django.db import models
-from django.urls import reverse
 from override_storage import override_storage
 
 from ...accounts.models import AccountBalance
@@ -22,6 +22,7 @@ from ..services.model_services import (
 from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
+is_sqlite = 'sqlite3' in settings.DATABASES['default']['ENGINE']
 
 
 @pytest.fixture()
@@ -759,3 +760,36 @@ def test_sum_by_day_and_type_ignores_other_dates(main_user):
     assert len(actual) == 1
     assert actual[0]["date"] == date(1999, 1, 15)
     assert actual[0]["sum"] == 10
+
+
+@pytest.mark.skipif(is_sqlite, reason="SQLite does not support MariaDB's FORMAT() function.")
+def test_expenses_list_dynamic_locale_lt(main_user):
+    # 1. Ensure user is set to Lithuanian
+    main_user.journal.lang = "lt"
+    main_user.journal.save()
+
+    # 2. Create an expense for 12.50 (assuming stored as cents: 1250)
+    ExpenseFactory(price=1250)
+
+    qs = ExpenseModelService(main_user).items()
+    actual = list(ExpenseModelService(main_user).expenses_list(qs))
+
+    assert len(actual) == 1
+    # MariaDB 'lt_LT' uses a comma for decimals
+    assert actual[0]["price_str"] == "12,50"
+
+
+@pytest.mark.skipif(is_sqlite, reason="SQLite does not support MariaDB's FORMAT() function.")
+def test_expenses_list_dynamic_locale_en(main_user):
+    # 1. Switch user to English
+    main_user.journal.lang = "en"
+    main_user.journal.save()
+
+    ExpenseFactory(price=1250)
+
+    qs = ExpenseModelService(main_user).items()
+    actual = list(ExpenseModelService(main_user).expenses_list(qs))
+
+    assert len(actual) == 1
+    # MariaDB 'en_US' uses a period for decimals
+    assert actual[0]["price_str"] == "12.50"

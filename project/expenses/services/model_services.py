@@ -174,6 +174,14 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
         and applies the high-performance formatting, annotations, and .values().
         """
 
+        # --- DYNAMIC LOCALE MAPPING ---
+        # Map user's 2-letter lang code to MariaDB's required locale format
+        locale_map = {
+            "lt": "lt_LT",
+            "en": "en_US",
+        }
+        db_locale = locale_map.get(self.user.journal.lang, "lt_LT")  # Default fallback
+
         # 1. Calculate URL patterns (Dynamic Annotation Strategy)
         dummy_id = 0
         update_pattern = reverse("expenses:update", args=[dummy_id])
@@ -190,7 +198,7 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
                 price_str=Func(
                     F("price") / Value(100.0),
                     Value(2),
-                    Value("lt_LT"),
+                    Value(db_locale),
                     function="FORMAT",
                     output_field=CharField(),
                 ),
