@@ -130,7 +130,6 @@ class TestExpenseService:
 
         result = service.expenses_list(qs)[0]
 
-
     def test_expenses_list_pdf_detection_vs_image(self, service):
         """
         It should correctly flag PDF files (True) vs images (False).

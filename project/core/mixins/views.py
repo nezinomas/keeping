@@ -154,7 +154,8 @@ class DeleteMixin:
 
 
 class SearchMixin:
-    # Set to True in child class to enable fast URLs addition for search results (like expenses list)
+    # Set to True in child class to enable fast URLs reverse for update and delete
+    # for search results (like expenses list)
     use_fast_urls = False
 
     def get_context_data(self, **kwargs):

@@ -126,10 +126,7 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
             self.objects.filter_types(expense_type)
             .annotate(year=ExtractYear("date"))
             .values("year", "expense_type")
-            .annotate(
-                sum=Sum("price"),
-                title=F("expense_type__title")
-            )
+            .annotate(sum=Sum("price"), title=F("expense_type__title"))
             .order_by("year")
             .values("year", "sum", "title")
         )
@@ -195,7 +192,6 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
                 ),
                 # Grouping for "If Month Changed" logic
                 month_group=TruncMonth("date"),
-
             )
             .order_by("-date", "expense_type__title", F("expense_name__title").asc())
             .values(
