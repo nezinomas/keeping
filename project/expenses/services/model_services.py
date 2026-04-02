@@ -122,9 +122,14 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
         return self.objects.year_sum()
 
     def sum_by_year_type(self, expense_type: list | None = None):
+        objects = (
+            self.objects.filter(expense_type__in=expense_type)
+            if expense_type
+            else self.objects
+        )
+
         return (
-            self.objects.filter_types(expense_type)
-            .annotate(year=ExtractYear("date"))
+            objects.annotate(year=ExtractYear("date"))
             .values("year", "expense_type")
             .annotate(sum=Sum("price"), title=F("expense_type__title"))
             .order_by("year")
@@ -132,9 +137,14 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
         )
 
     def sum_by_year_name(self, expense_name: list | None = None):
+        objects = (
+            self.objects.filter(expense_name__in=expense_name)
+            if expense_name
+            else self.objects
+        )
+
         return (
-            self.objects.filter_names(expense_name)
-            .annotate(year=ExtractYear("date"))
+            objects.annotate(year=ExtractYear("date"))
             .values("year", "expense_name")
             .annotate(
                 sum=Sum("price"),
@@ -209,4 +219,17 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
                 "is_pdf",
                 "month_group",
             )
+        )
+
+    def expenses(self):
+        """
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
+        """
+        return (
+            self.objects.annotate(year=ExtractYear(F("date")))
+            .values("year", "account__title")
+            .annotate(expenses=Sum("price"))
+            .values("year", "expenses", category_id=F("account__pk"))
+            .order_by("year", "category_id")
         )

@@ -7,6 +7,7 @@ from ...accounts.models import AccountBalance
 from ...bookkeeping import models as bookkeeping
 from ...debts import models as debt
 from ...expenses import models as expense
+from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
 from ...pensions import models as pension
 from ...pensions.models import PensionBalance
@@ -26,7 +27,7 @@ ACCOUNTS_CONF = {
         lambda user: transaction.SavingClose.objects.incomes(user),
     ),
     "expenses": (
-        lambda user: expense.Expense.objects.expenses(user),
+        lambda user: ExpenseModelService(user).expenses(),
         lambda user: debt.Debt.objects.expenses(user),
         lambda user: debt.DebtReturn.objects.expenses(user),
         lambda user: transaction.Transaction.objects.expenses(user),
