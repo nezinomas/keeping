@@ -7,8 +7,6 @@ _QS = TypeVar("_QS")
 
 
 class BaseModelService(ABC, Generic[_QS]):
-    objects: _QS
-
     def __init__(self, user: User):
         if not user:
             raise ValueError("User required")
@@ -17,7 +15,11 @@ class BaseModelService(ABC, Generic[_QS]):
             raise ValueError("Authenticated user required")
 
         self.user = user
-        self.objects = self.get_queryset()
+
+    @property
+    def objects(self) -> _QS:
+        """Returns a freshly constructed base queryset on every access."""
+        return self.get_queryset()
 
     @abstractmethod
     def get_queryset(self) -> _QS: ...
