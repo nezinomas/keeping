@@ -19,42 +19,56 @@ from ..lib.signals import Accounts, GetData, Savings
 
 ACCOUNTS_CONF = {
     "incomes": (
-        income.Income,
-        debt.Debt,
-        debt.DebtReturn,
-        transaction.Transaction,
-        transaction.SavingClose,
+        lambda user: income.Income.objects.incomes(user),
+        lambda user: debt.Debt.objects.incomes(user),
+        lambda user: debt.DebtReturn.objects.incomes(user),
+        lambda user: transaction.Transaction.objects.incomes(user),
+        lambda user: transaction.SavingClose.objects.incomes(user),
     ),
     "expenses": (
-        expense.Expense,
-        debt.Debt,
-        debt.DebtReturn,
-        transaction.Transaction,
-        saving.Saving,
+        lambda user: expense.Expense.objects.expenses(user),
+        lambda user: debt.Debt.objects.expenses(user),
+        lambda user: debt.DebtReturn.objects.expenses(user),
+        lambda user: transaction.Transaction.objects.expenses(user),
+        lambda user: saving.Saving.objects.expenses(user),
     ),
-    "have": (bookkeeping.AccountWorth,),
-    "types": (account.Account,),
+    "have": (
+        lambda user: bookkeeping.AccountWorth.objects.have(user),
+    ),
+    "types": (
+        lambda user: account.Account.objects.related(user),
+    ),
 }
 
 
 SAVINGS_CONF = {
     "incomes": (
-        saving.Saving,
-        transaction.SavingChange,
+        lambda user: saving.Saving.objects.incomes(user),
+        lambda user: transaction.SavingChange.objects.incomes(user),
     ),
     "expenses": (
-        transaction.SavingClose,
-        transaction.SavingChange,
+        lambda user: transaction.SavingClose.objects.expenses(user),
+        lambda user: transaction.SavingChange.objects.expenses(user),
     ),
-    "have": (bookkeeping.SavingWorth,),
-    "types": (saving.SavingType,),
+    "have": (
+        lambda user: bookkeeping.SavingWorth.objects.have(user),
+    ),
+    "types": (
+        lambda user: saving.SavingType.objects.related(user),
+    ),
 }
 
 
 PENSIONS_CONF = {
-    "incomes": (pension.Pension,),
-    "have": (bookkeeping.PensionWorth,),
-    "types": (pension.PensionType,),
+    "incomes": (
+        lambda user: pension.Pension.objects.incomes(user),
+    ),
+    "have": (
+        lambda user: bookkeeping.PensionWorth.objects.have(user),
+    ),
+    "types": (
+        lambda user: pension.PensionType.objects.related(user),
+    ),
 }
 
 
