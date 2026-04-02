@@ -1,6 +1,4 @@
 from django.db import models
-from django.db.models import F, Sum
-from django.db.models.functions import ExtractYear
 
 from ..core.mixins.sum import SumMixin
 from ..users.models import User
@@ -15,34 +13,6 @@ class SavingQuerySet(SumMixin, models.QuerySet):
     def related(self, user: User):
         return self.select_related("account", "saving_type").filter(
             saving_type__journal=user.journal
-        )
-
-    def incomes(self, user: User):
-        """
-        Used only in the post_save signal.
-        Calculates and returns the total price for each year
-        """
-        return (
-            self.related(user)
-            .annotate(year=ExtractYear(F("date")))
-            .values("year", "saving_type__title")
-            .annotate(incomes=Sum("price"), fee=Sum("fee"))
-            .values("year", "incomes", "fee", category_id=F("saving_type__pk"))
-            .order_by("year", "category_id")
-        )
-
-    def expenses(self, user: User):
-        """
-        Used only in the post_save signal.
-        Calculates and returns the total price for each year
-        """
-        return (
-            self.related(user)
-            .annotate(year=ExtractYear(F("date")))
-            .values("year", "account__title")
-            .annotate(expenses=Sum("price"))
-            .values("year", "expenses", category_id=F("account__pk"))
-            .order_by("year", "category_id")
         )
 
 

@@ -3,7 +3,7 @@ from typing import Optional, cast
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import Count, F, Q, Sum, Value
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import ExtractYear, TruncMonth
 from django.utils.translation import gettext as _
 
 from ...core.services.model_services import BaseModelService
@@ -22,7 +22,7 @@ class SavingTypeModelService(BaseModelService[managers.SavingTypeQuerySet]):
         )
 
     def all(self):
-        return self.objects
+        return self.objects.all()
 
     def none(self):
         return self.objects.none()
@@ -81,6 +81,33 @@ class SavingModelService(BaseModelService[managers.SavingQuerySet]):
 
         return self.objects.filter(date__range=(end, start)).aggregate(sum=Sum("price"))
 
+    def incomes(self):
+        """
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
+        """
+        return (
+            self.objects
+            .annotate(year=ExtractYear(F("date")))
+            .values("year", "saving_type__title")
+            .annotate(incomes=Sum("price"), fee=Sum("fee"))
+            .values("year", "incomes", "fee", category_id=F("saving_type__pk"))
+            .order_by("year", "category_id")
+        )
+
+    def expenses(self):
+        """
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
+        """
+        return (
+            self.objects
+            .annotate(year=ExtractYear(F("date")))
+            .values("year", "account__title")
+            .annotate(expenses=Sum("price"))
+            .values("year", "expenses", category_id=F("account__pk"))
+            .order_by("year", "category_id")
+        )
 
 class SavingBalanceModelService(BaseModelService[managers.SavingBalanceQuerySet]):
     def get_queryset(self):

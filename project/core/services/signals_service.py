@@ -12,6 +12,10 @@ from ...pensions import models as pension
 from ...pensions.models import PensionBalance
 from ...savings import models as saving
 from ...savings.models import SavingBalance
+from ...savings.services.model_services import (
+    SavingModelService,
+    SavingTypeModelService,
+)
 from ...transactions import models as transaction
 from ...users.models import User
 from ..lib.db_sync import BalanceSynchronizer
@@ -30,7 +34,7 @@ ACCOUNTS_CONF = {
         lambda user: DebtModelService(user, "lend").expenses(),
         lambda user: DebtReturnModelService(user, "borrow").expenses(),
         lambda user: transaction.Transaction.objects.expenses(user),
-        lambda user: saving.Saving.objects.expenses(user),
+        lambda user: SavingModelService(user).expenses(),
     ),
     "have": (lambda user: bookkeeping.AccountWorth.objects.have(user),),
     "types": (lambda user: AccountModelService(user).all(),),
@@ -39,7 +43,7 @@ ACCOUNTS_CONF = {
 
 SAVINGS_CONF = {
     "incomes": (
-        lambda user: saving.Saving.objects.incomes(user),
+        lambda user: SavingModelService(user).incomes(),
         lambda user: transaction.SavingChange.objects.incomes(user),
     ),
     "expenses": (
