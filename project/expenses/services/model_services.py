@@ -174,24 +174,13 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
         and applies the high-performance formatting, annotations, and .values().
         """
 
-        # --- DYNAMIC LOCALE MAPPING ---
         # Map user's 2-letter lang code to MariaDB's required locale format
         locale_map = {
             "lt": "lt_LT",
             "en": "en_US",
         }
-        db_locale = locale_map.get(self.user.journal.lang, "lt_LT")  # Default fallback
+        db_locale = locale_map.get(self.user.journal.lang, "lt_LT")
 
-        # 1. Calculate URL patterns (Dynamic Annotation Strategy)
-        dummy_id = 0
-        update_pattern = reverse("expenses:update", args=[dummy_id])
-        delete_pattern = reverse("expenses:delete", args=[dummy_id])
-
-        # Split patterns to get prefix/suffix
-        u_prefix, u_suffix = update_pattern.split(str(dummy_id))
-        d_prefix, d_suffix = delete_pattern.split(str(dummy_id))
-
-        # 2. Apply all Annotations & Optimizations to the incoming QS
         return (
             qs.annotate(
                 # Database-level Price Formatting (MariaDB/MySQL)
@@ -210,19 +199,7 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
                 ),
                 # Grouping for "If Month Changed" logic
                 month_group=TruncMonth("date"),
-                # Fast URL Construction
-                url_update=Concat(
-                    Value(u_prefix),
-                    Cast("id", output_field=CharField()),
-                    Value(u_suffix),
-                    output_field=CharField(),
-                ),
-                url_delete=Concat(
-                    Value(d_prefix),
-                    Cast("id", output_field=CharField()),
-                    Value(d_suffix),
-                    output_field=CharField(),
-                ),
+
             )
             .order_by("-date", "expense_type__title", F("expense_name__title").asc())
             .values(
@@ -239,7 +216,5 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
                 "price_str",
                 "is_pdf",
                 "month_group",
-                "url_update",
-                "url_delete",
             )
         )
