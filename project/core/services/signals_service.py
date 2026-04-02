@@ -4,7 +4,11 @@ from django.db import models
 
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountModelService
-from ...bookkeeping import models as bookkeeping
+from ...bookkeeping.services.model_services import (
+    AccountWorthModelService,
+    PensionWorthModelService,
+    SavingWorthModelService,
+)
 from ...debts.services.model_services import DebtModelService, DebtReturnModelService
 from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
@@ -42,7 +46,7 @@ ACCOUNTS_CONF = {
         lambda user: TransactionModelService(user).expenses(),
         lambda user: SavingModelService(user).expenses(),
     ),
-    "have": (lambda user: bookkeeping.AccountWorth.objects.have(user),),
+    "have": (lambda user: AccountWorthModelService(user).have(),),
     "types": (lambda user: AccountModelService(user).all(),),
 }
 
@@ -56,14 +60,14 @@ SAVINGS_CONF = {
         lambda user: SavingCloseModelService(user).expenses(),
         lambda user: SavingChangeModelService(user).expenses(),
     ),
-    "have": (lambda user: bookkeeping.SavingWorth.objects.have(user),),
+    "have": (lambda user: SavingWorthModelService(user).have(),),
     "types": (lambda user: SavingTypeModelService(user).all(),),
 }
 
 
 PENSIONS_CONF = {
     "incomes": (lambda user: PensionModelService(user).incomes(),),
-    "have": (lambda user: bookkeeping.PensionWorth.objects.have(user),),
+    "have": (lambda user: PensionWorthModelService(user).have(),),
     "types": (lambda user: PensionTypeModelService(user).items(),),
 }
 
