@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
-from django.http import Http404
+from django.core.exceptions import ImproperlyConfigured
 from mock import Mock
 
 from ....expenses.models import Expense
@@ -30,18 +30,15 @@ def test_queryset_retun_qs():
     assert actual == "xxx"
 
 
-def test_queryset_raises_404():
+def test_queryset_raises_improperly_configured():
     class Dummy(views.GetQuerysetMixin):
-        model = SimpleNamespace(
-            _meta=SimpleNamespace(verbose_name="ModelName"),
-            objects=SimpleNamespace(related=lambda: "xxx"),
-        )
+        model = None
         request = Mock()
 
-    with pytest.raises(Http404) as exc:
+    with pytest.raises(ImproperlyConfigured) as exc:
         Dummy().get_queryset()
 
-    assert "ModelName užklausos nėra" in str(exc.value)
+    assert "Dummy is missing a model definition. Define Dummy.model." in str(exc.value)
 
 
 def test_search_mixin_no_query():

@@ -1,8 +1,8 @@
 import json
 
-from django.core.exceptions import FieldError
+from django.core.exceptions import FieldError, ImproperlyConfigured
 from django.db.models import Count, F, Sum
-from django.http import Http404, HttpResponse
+from django.http import HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
@@ -70,15 +70,14 @@ class GetQuerysetMixin:
     object = None
 
     def get_queryset(self):
-        try:
-            qs = self.model.objects.related(self.request.user)
-        except (TypeError, AttributeError) as e:
-            raise Http404(
-                _("No %(verbose_name)s found matching the query")
-                % {"verbose_name": self.model._meta.verbose_name}
-            ) from e
+        # 1. Protect against developer error (forgetting to set the model)
+        if self.model is None:
+            raise ImproperlyConfigured(
+                f"{self.__class__.__name__} is missing a model definition. "
+                f"Define {self.__class__.__name__}.model."
+            )
 
-        return qs
+        return self.model.objects.related(self.request.user)
 
 
 class CreateUpdateMixin:
