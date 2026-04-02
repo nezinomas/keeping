@@ -1,7 +1,7 @@
 from typing import Optional, cast
 
 from django.db.models import Count, F, Sum, Value
-from django.db.models.functions import TruncMonth, TruncYear
+from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ...core.services.model_services import BaseModelService
 from .. import managers, models
@@ -69,4 +69,18 @@ class IncomeModelService(BaseModelService[managers.IncomeQuerySet]):
             )
             .order_by("income_type__title", "date")
             .values("date", "sum", "title")
+        )
+
+    def incomes(self):
+        """
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
+        """
+        return (
+            self.objects
+            .annotate(year=ExtractYear(F("date")))
+            .values("year", "account__title")
+            .annotate(incomes=Sum("price"))
+            .values("year", "incomes", category_id=F("account__pk"))
+            .order_by("year", "account")
         )

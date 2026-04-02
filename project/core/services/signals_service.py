@@ -7,7 +7,7 @@ from ...accounts.models import AccountBalance
 from ...bookkeeping import models as bookkeeping
 from ...debts import models as debt
 from ...expenses import models as expense
-from ...incomes import models as income
+from ...incomes.services.model_services import IncomeModelService
 from ...pensions import models as pension
 from ...pensions.models import PensionBalance
 from ...savings import models as saving
@@ -19,7 +19,7 @@ from ..lib.signals import Accounts, GetData, Savings
 
 ACCOUNTS_CONF = {
     "incomes": (
-        lambda user: income.Income.objects.incomes(user),
+        lambda user: IncomeModelService(user).incomes(),
         lambda user: debt.Debt.objects.incomes(user),
         lambda user: debt.DebtReturn.objects.incomes(user),
         lambda user: transaction.Transaction.objects.incomes(user),

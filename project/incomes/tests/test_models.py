@@ -125,7 +125,7 @@ def test_incomes_income_sum_query_count(main_user, django_assert_max_num_queries
 
 
 def test_balance(main_user, incomes):
-    qs = Income.objects.incomes(main_user)
+    qs = IncomeModelService(main_user).incomes()
 
     assert qs[0] == {"year": 1970, "incomes": 525, "category_id": 1}
     assert qs[1] == {"year": 1970, "incomes": 450, "category_id": 2}
