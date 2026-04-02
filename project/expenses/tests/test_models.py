@@ -684,3 +684,78 @@ def test_expenses(main_user, expenses):
     assert actual[3]["year"] == 1999
     assert actual[3]["category_id"] == 2
     assert actual[3]["expenses"] == 125
+
+
+def test_sum_by_day_and_type_basic_grouping(main_user):
+    t1 = ExpenseTypeFactory(title="T1")
+    t2 = ExpenseTypeFactory(title="T2")
+
+    # Same day, same type -> should sum together
+    ExpenseFactory(date=date(1999, 1, 1), price=10, expense_type=t1)
+    ExpenseFactory(date=date(1999, 1, 1), price=20, expense_type=t1)
+
+    # Same day, different type -> should be a separate group
+    ExpenseFactory(date=date(1999, 1, 1), price=50, expense_type=t2)
+
+    # Different day, same type -> should be a separate group
+    ExpenseFactory(date=date(1999, 1, 2), price=100, expense_type=t1)
+
+    actual = list(ExpenseModelService(main_user).sum_by_day_and_type(1999, 1))
+
+    assert len(actual) == 3
+
+    # Group 1: Jan 1st, Type T1 (10 + 20)
+    assert actual[0]["date"] == date(1999, 1, 1)
+    assert actual[0]["title"] == "T1"
+    assert actual[0]["sum"] == 30
+    assert actual[0]["exception_sum"] == 0
+
+    # Group 2: Jan 1st, Type T2
+    assert actual[1]["date"] == date(1999, 1, 1)
+    assert actual[1]["title"] == "T2"
+    assert actual[1]["sum"] == 50
+    assert actual[1]["exception_sum"] == 0
+
+    # Group 3: Jan 2nd, Type T1
+    assert actual[2]["date"] == date(1999, 1, 2)
+    assert actual[2]["title"] == "T1"
+    assert actual[2]["sum"] == 100
+    assert actual[2]["exception_sum"] == 0
+
+
+def test_sum_by_day_and_type_calculates_exceptions(main_user):
+    t1 = ExpenseTypeFactory(title="T1")
+
+    # Exception flag True
+    ExpenseFactory(date=date(1999, 1, 1), price=15, expense_type=t1, exception=1)
+
+    # Exception flag False
+    ExpenseFactory(date=date(1999, 1, 1), price=25, expense_type=t1, exception=0)
+
+    actual = list(ExpenseModelService(main_user).sum_by_day_and_type(1999, 1))
+
+    assert len(actual) == 1
+
+    # Total sum should be 40, but exception_sum should only be 15
+    assert actual[0]["sum"] == 40
+    assert actual[0]["exception_sum"] == 15
+
+
+def test_sum_by_day_and_type_ignores_other_dates(main_user):
+    t1 = ExpenseTypeFactory(title="T1")
+
+    # Correct Target (Jan 1999)
+    ExpenseFactory(date=date(1999, 1, 15), price=10, expense_type=t1)
+
+    # Wrong Month (Feb 1999)
+    ExpenseFactory(date=date(1999, 2, 15), price=20, expense_type=t1)
+
+    # Wrong Year (Jan 1998)
+    ExpenseFactory(date=date(1998, 1, 15), price=30, expense_type=t1)
+
+    actual = list(ExpenseModelService(main_user).sum_by_day_and_type(1999, 1))
+
+    # Should strictly return the single expense from Jan 1999
+    assert len(actual) == 1
+    assert actual[0]["date"] == date(1999, 1, 15)
+    assert actual[0]["sum"] == 10
