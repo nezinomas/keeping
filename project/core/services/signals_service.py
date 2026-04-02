@@ -32,12 +32,8 @@ ACCOUNTS_CONF = {
         lambda user: transaction.Transaction.objects.expenses(user),
         lambda user: saving.Saving.objects.expenses(user),
     ),
-    "have": (
-        lambda user: bookkeeping.AccountWorth.objects.have(user),
-    ),
-    "types": (
-        lambda user: account.Account.objects.related(user),
-    ),
+    "have": (lambda user: bookkeeping.AccountWorth.objects.have(user),),
+    "types": (lambda user: account.Account.objects.related(user),),
 }
 
 
@@ -50,25 +46,15 @@ SAVINGS_CONF = {
         lambda user: transaction.SavingClose.objects.expenses(user),
         lambda user: transaction.SavingChange.objects.expenses(user),
     ),
-    "have": (
-        lambda user: bookkeeping.SavingWorth.objects.have(user),
-    ),
-    "types": (
-        lambda user: saving.SavingType.objects.related(user),
-    ),
+    "have": (lambda user: bookkeeping.SavingWorth.objects.have(user),),
+    "types": (lambda user: saving.SavingType.objects.related(user),),
 }
 
 
 PENSIONS_CONF = {
-    "incomes": (
-        lambda user: pension.Pension.objects.incomes(user),
-    ),
-    "have": (
-        lambda user: bookkeeping.PensionWorth.objects.have(user),
-    ),
-    "types": (
-        lambda user: pension.PensionType.objects.related(user),
-    ),
+    "incomes": (lambda user: pension.Pension.objects.incomes(user),),
+    "have": (lambda user: bookkeeping.PensionWorth.objects.have(user),),
+    "types": (lambda user: pension.PensionType.objects.related(user),),
 }
 
 
