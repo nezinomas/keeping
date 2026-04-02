@@ -1,6 +1,6 @@
 from typing import cast
 
-from django.db.models import Count, Q, Sum, Value
+from django.db.models import Count, F, Q, Sum, Value
 from django.db.models.functions import TruncMonth
 
 from ...core.services.model_services import BaseModelService
@@ -8,7 +8,7 @@ from ...users.models import User
 from .. import managers, models
 
 
-class DebtModelService(BaseModelService):
+class DebtModelService(BaseModelService[managers.DebtQuerySet]):
     def __init__(self, user: User, debt_type: str):
         self.debt_type = debt_type
 
@@ -33,22 +33,19 @@ class DebtModelService(BaseModelService):
     def sum_by_month(self, year, closed=False):
         qs = self.objects if closed else self.open_items()
 
-        aggregated = (
+        return (
             qs.filter(date__year=year)
             .annotate(month=TruncMonth("date"))
-            .values("month")  # Safe grouping, no ORM conflict
+            .values("month")
             .annotate(
                 sum_debt=Sum("price"),
                 sum_return=Sum("returned"),
-                title=Value(self.debt_type)
+                title=Value(self.debt_type),
+                date=F("month"),
             )
             .order_by("month")
+            .values("date", "title", "sum_debt", "sum_return")
         )
-
-        # Rename 'month' back to 'date' at the Python level
-        return [
-            {"date": row.pop("month"), **row} for row in aggregated
-        ]
 
     def sum_all(self):
         return self.open_items().aggregate(
@@ -74,17 +71,17 @@ class DebtReturnModelService(BaseModelService[managers.DebtReturnQuerySet]):
         return self.objects.filter(date__year=year)
 
     def sum_by_month(self, year):
-        qs = self.objects
-
         return (
-            qs.filter(date__year=year)
-            .annotate(cnt=Count("id"))
-            .values("id")
-            .annotate(date=TruncMonth("date"))
-            .values("date")
-            .annotate(sum=Sum("price"))
-            .annotate(title=Value(f"{self.debt_type}_return"))
-            .order_by("date")
+            self.objects.filter(date__year=year)
+            .annotate(month=TruncMonth("date"))
+            .values("month")
+            .annotate(
+                sum=Sum("price"),
+                title=Value(f"{self.debt_type}_return"),
+                date=F("month"),
+            )
+            .order_by("month")
+            .values("date", "sum", "title")
         )
 
     def total_returned_for_debt(self, debt_return_instance):
