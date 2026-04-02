@@ -1,7 +1,6 @@
 from django.db import models
-from django.db.models import F, Q, Sum
+from django.db.models import F, Sum
 from django.db.models.functions import ExtractYear
-from django.utils.translation import gettext as _
 
 from ..core.mixins.sum import SumMixin
 from ..users.models import User
