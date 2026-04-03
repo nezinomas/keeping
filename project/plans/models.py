@@ -9,7 +9,6 @@ from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..journals.models import Journal
 from ..savings.models import SavingType
-from . import managers
 
 
 class IncomePlan(MonthAbstract):
@@ -20,8 +19,6 @@ class IncomePlan(MonthAbstract):
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="income_plans"
     )
-
-    objects = managers.YearManager("income_type")
 
     def __str__(self):
         return f"{self.year}/{self.income_type.title}"
@@ -49,8 +46,6 @@ class ExpensePlan(MonthAbstract):
         Journal, on_delete=models.CASCADE, related_name="expense_plans"
     )
 
-    objects = managers.YearManager("expense_type")
-
     def __str__(self):
         return f"{self.year}/{self.expense_type.title}"
 
@@ -77,8 +72,6 @@ class SavingPlan(MonthAbstract):
         Journal, on_delete=models.CASCADE, related_name="saving_plans"
     )
 
-    objects = managers.YearManager("saving_type")
-
     def __str__(self):
         return f"{self.year}/{self.saving_type.title}"
 
@@ -103,8 +96,6 @@ class DayPlan(MonthAbstract):
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="day_plans"
     )
-
-    objects = managers.YearManager()
 
     def __str__(self):
         return f"{self.year}"
@@ -133,8 +124,6 @@ class NecessaryPlan(MonthAbstract):
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="necessary_plans"
     )
-
-    objects = managers.YearManager()
 
     def __str__(self):
         return f"{self.year}/{self.title}"

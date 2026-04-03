@@ -11,9 +11,15 @@ from ..core.mixins.views import (
     TemplateViewMixin,
     UpdateViewMixin,
 )
-from . import forms, models
+from . import forms
 from .lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
-from .services.model_services import ModelService
+from .services.model_services import (
+    DayPlanModelService,
+    ExpensePlanModelService,
+    IncomePlanModelService,
+    NecessaryPlanModelService,
+    SavingPlanModelService,
+)
 
 
 class CssClassMixin:
@@ -53,15 +59,12 @@ class Index(TemplateViewMixin):
 #                                                                         Expense Plans
 # -------------------------------------------------------------------------------------
 class ExpensesLists(ListViewMixin):
-    model = models.ExpensePlan
-
-    def get_queryset(self):
-        user = self.request.user
-        return ModelService(models.ExpensePlan, user).year(user.year)
+    template_name = "plans/expenseplan_list.html"
+    service_class = ExpensePlanModelService
 
 
 class ExpensesNew(CssClassMixin, CreateViewMixin):
-    model = models.ExpensePlan
+    service_class = ExpensePlanModelService
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reloadExpenses"
     modal_form_title = _("Expenses plans")
@@ -70,7 +73,7 @@ class ExpensesNew(CssClassMixin, CreateViewMixin):
 
 
 class ExpensesUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
-    model = models.ExpensePlan
+    service_class = ExpensePlanModelService
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reloadExpenses"
     modal_form_title = _("Expenses plans")
@@ -79,7 +82,7 @@ class ExpensesUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
 
 
 class ExpensesDelete(DeleteViewMixin):
-    model = models.ExpensePlan
+    service_class = ExpensePlanModelService
     hx_trigger_django = "reloadExpenses"
     modal_form_title = _("Delete plan")
     url_name = "expense_delete"
@@ -90,15 +93,12 @@ class ExpensesDelete(DeleteViewMixin):
 #                                                                          Income Plans
 # -------------------------------------------------------------------------------------
 class IncomesLists(ListViewMixin):
-    model = models.IncomePlan
-
-    def get_queryset(self):
-        user = self.request.user
-        return ModelService(models.IncomePlan, user).year(user.year)
+    template_name = "plans/incomeplan_list.html"
+    service_class = IncomePlanModelService
 
 
 class IncomesNew(CssClassMixin, CreateViewMixin):
-    model = models.IncomePlan
+    service_class = IncomePlanModelService
     form_class = forms.IncomePlanForm
     url_name = "income_new"
     success_url = reverse_lazy("plans:income_list")
@@ -107,7 +107,7 @@ class IncomesNew(CssClassMixin, CreateViewMixin):
 
 
 class IncomesUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
-    model = models.IncomePlan
+    service_class = IncomePlanModelService
     form_class = forms.IncomePlanForm
     hx_trigger_django = "reloadIncomes"
     modal_form_title = _("Incomes plans")
@@ -116,7 +116,7 @@ class IncomesUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
 
 
 class IncomesDelete(DeleteViewMixin):
-    model = models.IncomePlan
+    service_class = IncomePlanModelService
     hx_trigger_django = "reloadIncomes"
     modal_form_title = _("Delete plan")
     url_name = "income_delete"
@@ -127,15 +127,12 @@ class IncomesDelete(DeleteViewMixin):
 #                                                                          Saving Plans
 # -------------------------------------------------------------------------------------
 class SavingsLists(ListViewMixin):
-    model = models.SavingPlan
-
-    def get_queryset(self):
-        user = self.request.user
-        return ModelService(models.SavingPlan, user).year(user.year)
+    template_name = "plans/savingplan_list.html"
+    service_class = SavingPlanModelService
 
 
 class SavingsNew(CssClassMixin, CreateViewMixin):
-    model = models.SavingPlan
+    service_class = SavingPlanModelService
     form_class = forms.SavingPlanForm
     url_name = "saving_new"
     success_url = reverse_lazy("plans:saving_list")
@@ -144,7 +141,7 @@ class SavingsNew(CssClassMixin, CreateViewMixin):
 
 
 class SavingsUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
-    model = models.SavingPlan
+    service_class = SavingPlanModelService
     form_class = forms.SavingPlanForm
     hx_trigger_django = "reloadSavings"
     modal_form_title = _("Savings plans")
@@ -153,7 +150,7 @@ class SavingsUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
 
 
 class SavingsDelete(DeleteViewMixin):
-    model = models.SavingPlan
+    service_class = SavingPlanModelService
     hx_trigger_django = "reloadSavings"
     modal_form_title = _("Delete plan")
     url_name = "saving_delete"
@@ -164,15 +161,12 @@ class SavingsDelete(DeleteViewMixin):
 #                                                                             Day Plans
 # -------------------------------------------------------------------------------------
 class DayLists(ListViewMixin):
-    model = models.DayPlan
-
-    def get_queryset(self):
-        user = self.request.user
-        return ModelService(models.DayPlan, user).year(user.year)
+    template_name = "plans/dayplan_list.html"
+    service_class = DayPlanModelService
 
 
 class DayNew(CssClassMixin, CreateViewMixin):
-    model = models.DayPlan
+    service_class = DayPlanModelService
     form_class = forms.DayPlanForm
     url_name = "day_new"
     success_url = reverse_lazy("plans:day_list")
@@ -181,7 +175,7 @@ class DayNew(CssClassMixin, CreateViewMixin):
 
 
 class DayUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
-    model = models.DayPlan
+    service_class = DayPlanModelService
     form_class = forms.DayPlanForm
     hx_trigger_django = "reloadDay"
     modal_form_title = _("Day plans")
@@ -190,7 +184,7 @@ class DayUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
 
 
 class DayDelete(DeleteViewMixin):
-    model = models.DayPlan
+    service_class = DayPlanModelService
     hx_trigger_django = "reloadDay"
     modal_form_title = _("Delete plan")
     url_name = "day_delete"
@@ -201,15 +195,12 @@ class DayDelete(DeleteViewMixin):
 #                                                                       Necessary Plans
 # -------------------------------------------------------------------------------------
 class NecessaryLists(ListViewMixin):
-    model = models.NecessaryPlan
-
-    def get_queryset(self):
-        user = self.request.user
-        return ModelService(models.NecessaryPlan, user).year(user.year)
+    template_name = "plans/necessaryplan_list.html"
+    service_class = NecessaryPlanModelService
 
 
 class NecessaryNew(CssClassMixin, CreateViewMixin):
-    model = models.NecessaryPlan
+    service_class = NecessaryPlanModelService
     form_class = forms.NecessaryPlanForm
     url_name = "necessary_new"
     hx_trigger_django = "reloadNecessary"
@@ -218,7 +209,7 @@ class NecessaryNew(CssClassMixin, CreateViewMixin):
 
 
 class NecessaryUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
-    model = models.NecessaryPlan
+    service_class = NecessaryPlanModelService
     form_class = forms.NecessaryPlanForm
     hx_trigger_django = "reloadNecessary"
     modal_form_title = _("Additional necessary expenses")
@@ -227,7 +218,7 @@ class NecessaryUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
 
 
 class NecessaryDelete(DeleteViewMixin):
-    model = models.NecessaryPlan
+    service_class = NecessaryPlanModelService
     hx_trigger_django = "reloadNecessary"
     modal_form_title = _("Delete plan")
     url_name = "necessary_delete"

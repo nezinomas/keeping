@@ -14,8 +14,9 @@ from ..forms import (
     NecessaryPlanForm,
     SavingPlanForm,
 )
-from ..models import IncomePlan
-from ..services.model_services import ModelService
+from ..services.model_services import (
+    IncomePlanModelService,
+)
 from .factories import (
     DayPlanFactory,
     ExpensePlanFactory,
@@ -882,7 +883,7 @@ def test_copy_data(main_user):
 
     form.save()
 
-    data = ModelService(IncomePlan, main_user).year(2000)
+    data = IncomePlanModelService(main_user).year(2000)
 
     assert data.exists()
     assert data[0].year == 2000

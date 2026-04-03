@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from django import forms
-from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
 
@@ -19,9 +18,23 @@ from .models import (
     NecessaryPlan,
     SavingPlan,
 )
-from .services.model_services import ModelService
+from .services.model_services import (
+    DayPlanModelService,
+    ExpensePlanModelService,
+    IncomePlanModelService,
+    NecessaryPlanModelService,
+    SavingPlanModelService,
+)
 
 MONTH_FIELD_KWARGS = {"min_value": 0.01, "required": False}
+
+COPY_PLAN_MAP = {
+    "income": lambda user: IncomePlanModelService(user),
+    "expense": lambda user: ExpensePlanModelService(user),
+    "saving": lambda user: SavingPlanModelService(user),
+    "day": lambda user: DayPlanModelService(user),
+    "necessary": lambda user: NecessaryPlanModelService(user),
+}
 
 
 class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
@@ -193,9 +206,6 @@ class CopyPlanForm(forms.Form):
             "necessary": cleaned_data.get("necessary"),
         }
 
-    def _get_model(self, name):
-        return apps.get_model(f"plans.{name.title()}Plan")
-
     def _append_error_message(self, msg, errors, key):
         if err := errors.get(key):
             err.append(msg)
@@ -224,8 +234,7 @@ class CopyPlanForm(forms.Form):
         msg = _("There is nothing to copy.")
         for k, v in dict_.items():
             if v:
-                model = self._get_model(k)
-                qs = ModelService(model, self.user).year(year_from)
+                qs = COPY_PLAN_MAP.get(k)(self.user).year(year_from)
                 if not qs.exists():
                     self._append_error_message(msg, errors, k)
 
@@ -234,8 +243,7 @@ class CopyPlanForm(forms.Form):
 
         for k, v in dict_.items():
             if v:
-                model = self._get_model(k)
-                qs = ModelService(model, self.user).year(year_to)
+                qs = COPY_PLAN_MAP.get(k)(self.user).year(year_to)
                 if qs.exists():
                     self._append_error_message(msg, errors, k)
 
@@ -251,15 +259,14 @@ class CopyPlanForm(forms.Form):
 
         for k, v in dict_.items():
             if v:
-                model = self._get_model(k)
                 qs = (
-                    ModelService(model, self.user)
+                    COPY_PLAN_MAP.get(k)(self.user)
                     .year(year_from)
                     .values_list("pk", flat=True)
                 )
 
                 for i in qs:
-                    obj = model.objects.get(pk=i)
+                    obj = COPY_PLAN_MAP.get(k)(self.user).objects.get(pk=i)
                     obj.pk = None
                     obj.year = year_to
                     obj.save()

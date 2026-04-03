@@ -3,8 +3,14 @@ import pytest
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
 from ...savings.tests.factories import SavingTypeFactory
-from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
-from ..services.model_services import ModelService
+from ..models import ExpensePlan, IncomePlan, SavingPlan
+from ..services.model_services import (
+    DayPlanModelService,
+    ExpensePlanModelService,
+    IncomePlanModelService,
+    NecessaryPlanModelService,
+    SavingPlanModelService,
+)
 from .factories import (
     DayPlanFactory,
     ExpensePlanFactory,
@@ -29,7 +35,7 @@ def test_income_related(main_user, second_user):
     IncomePlanFactory()
     IncomePlanFactory(journal=second_user.journal)
 
-    actual = IncomePlan.objects.related(main_user)
+    actual = IncomePlanModelService(main_user).items()
 
     assert len(actual) == 1
     assert actual[0].journal.users.first().username == "bob"
@@ -39,7 +45,7 @@ def test_income_year(main_user, second_user):
     IncomePlanFactory()
     IncomePlanFactory(year=1974, journal=second_user.journal)
 
-    actual = list(ModelService(IncomePlan, main_user).year(1999))
+    actual = list(IncomePlanModelService(main_user).year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
@@ -55,7 +61,7 @@ def test_income_items(main_user, second_user):
 
     IncomePlanFactory(journal=second_user.journal)
 
-    actual = ModelService(IncomePlan, main_user).items()
+    actual = IncomePlanModelService(main_user).items()
 
     assert len(actual) == 2
     assert str(actual[0].income_type) == "T1"
@@ -84,7 +90,7 @@ def test_expense_related(main_user, second_user):
     ExpensePlanFactory()
     ExpensePlanFactory(journal=second_user.journal)
 
-    actual = ExpensePlan.objects.related(main_user)
+    actual = ExpensePlanModelService(main_user).items()
 
     assert len(actual) == 1
     assert actual[0].journal.users.first().username == "bob"
@@ -94,7 +100,7 @@ def test_expense_year(main_user, second_user):
     ExpensePlanFactory()
     ExpensePlanFactory(year=1974, journal=second_user.journal)
 
-    actual = list(ModelService(ExpensePlan, main_user).year(1999))
+    actual = list(ExpensePlanModelService(main_user).year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
@@ -110,7 +116,7 @@ def test_expense_items(main_user, second_user):
 
     ExpensePlanFactory(journal=second_user.journal)
 
-    actual = ModelService(ExpensePlan, main_user).items()
+    actual = ExpensePlanModelService(main_user).items()
 
     assert len(actual) == 2
     assert str(actual[0].expense_type) == "T1"
@@ -128,12 +134,12 @@ def test_expense_no_dublicates():
 
 def test_expense_year_query_count(main_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        list(ModelService(ExpensePlan, main_user).year(1999))
+        list(ExpensePlanModelService(main_user).year(1999))
 
 
 def test_expense_items_query_count(main_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        list(ModelService(ExpensePlan, main_user).items())
+        list(ExpensePlanModelService(main_user).items())
 
 
 # ----------------------------------------------------------------------------
@@ -149,7 +155,7 @@ def test_saving_related(main_user, second_user):
     SavingPlanFactory()
     SavingPlanFactory(journal=second_user.journal)
 
-    actual = SavingPlan.objects.related(main_user)
+    actual = SavingPlanModelService(main_user).items()
 
     assert len(actual) == 1
     assert actual[0].journal.users.first().username == "bob"
@@ -159,7 +165,7 @@ def test_saving_year(main_user, second_user):
     SavingPlanFactory()
     SavingPlanFactory(year=1974, journal=second_user.journal)
 
-    actual = list(ModelService(SavingPlan, main_user).year(1999))
+    actual = list(SavingPlanModelService(main_user).year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
@@ -175,7 +181,7 @@ def test_saving_items(main_user, second_user):
 
     SavingPlanFactory(journal=second_user.journal)
 
-    actual = ModelService(SavingPlan, main_user).items()
+    actual = SavingPlanModelService(main_user).items()
 
     assert len(actual) == 2
     assert str(actual[0].saving_type) == "T1"
@@ -204,7 +210,7 @@ def test_day_related(main_user, second_user):
     DayPlanFactory()
     DayPlanFactory(journal=second_user.journal)
 
-    actual = DayPlan.objects.related(main_user)
+    actual = DayPlanModelService(main_user).items()
 
     assert len(actual) == 1
     assert actual[0].journal.users.first().username == "bob"
@@ -214,7 +220,7 @@ def test_day_year(main_user, second_user):
     DayPlanFactory()
     DayPlanFactory(year=1974, journal=second_user.journal)
 
-    actual = list(ModelService(DayPlan, main_user).year(1999))
+    actual = list(DayPlanModelService(main_user).year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
@@ -226,7 +232,7 @@ def test_day_items(main_user, second_user):
     DayPlanFactory(year=1974)
     DayPlanFactory(year=1974, journal=second_user.journal)
 
-    actual = ModelService(DayPlan, main_user).items()
+    actual = DayPlanModelService(main_user).items()
 
     assert len(actual) == 2
     assert actual[0].journal.users.first().username == "bob"
@@ -254,7 +260,7 @@ def test_necessary_related(main_user, second_user):
     NecessaryPlanFactory()
     NecessaryPlanFactory(journal=second_user.journal)
 
-    actual = NecessaryPlan.objects.related(main_user)
+    actual = NecessaryPlanModelService(main_user).items()
 
     assert len(actual) == 1
     assert actual[0].journal.users.first().username == "bob"
@@ -264,7 +270,7 @@ def test_necessary_year(main_user, second_user):
     NecessaryPlanFactory()
     NecessaryPlanFactory(year=1974, journal=second_user.journal)
 
-    actual = list(ModelService(NecessaryPlan, main_user).year(1999))
+    actual = list(NecessaryPlanModelService(main_user).year(1999))
 
     assert len(actual) == 1
     assert actual[0].year == 1999
@@ -276,7 +282,7 @@ def test_necessary_items(main_user, second_user):
     NecessaryPlanFactory(year=1974)
     NecessaryPlanFactory(year=1974, journal=second_user.journal)
 
-    actual = ModelService(NecessaryPlan, main_user).items()
+    actual = NecessaryPlanModelService(main_user).items()
 
     assert len(actual) == 2
 
@@ -303,7 +309,7 @@ def test_necessary_same_title(main_user):
         year=2000, title="A", expense_type=ExpenseTypeFactory(title="Y")
     )
 
-    actual = ModelService(NecessaryPlan, main_user).items()
+    actual = NecessaryPlanModelService(main_user).items()
 
     assert len(actual) == 2
 

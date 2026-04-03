@@ -12,7 +12,13 @@ from django.utils.translation import gettext as _
 from ...core.lib.date import MOTHS_WITH_DAYS_GENERIC, monthlen, monthname, monthnames
 from ...users.models import User
 from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
-from ..services.model_services import ModelService
+from ..services.model_services import (
+    DayPlanModelService,
+    ExpensePlanModelService,
+    IncomePlanModelService,
+    NecessaryPlanModelService,
+    SavingPlanModelService,
+)
 
 MONTH_NAMES = monthnames()
 
@@ -53,11 +59,11 @@ class PlanCollectData:
         self.year = self.user.year
 
         self.incomes = (
-            ModelService(IncomePlan, self.user).year(self.year).values(*MONTH_NAMES)
+            IncomePlanModelService(self.user).year(self.year).values(*MONTH_NAMES)
         )
 
         self.expenses = (
-            ModelService(ExpensePlan, self.user)
+            ExpensePlanModelService(self.user)
             .year(self.year)
             .values(
                 *MONTH_NAMES,
@@ -67,15 +73,15 @@ class PlanCollectData:
         )
 
         self.savings = (
-            ModelService(SavingPlan, self.user).year(self.year).values(*MONTH_NAMES)
+            SavingPlanModelService(self.user).year(self.year).values(*MONTH_NAMES)
         )
 
         self.days = (
-            ModelService(DayPlan, self.user).year(self.year).values(*MONTH_NAMES)
+            DayPlanModelService(self.user).year(self.year).values(*MONTH_NAMES)
         )
 
         self.necessary = (
-            ModelService(NecessaryPlan, self.user)
+            NecessaryPlanModelService(self.user)
             .year(self.year)
             .values(*MONTH_NAMES)
             .annotate(title=F("expense_type__title"))
