@@ -3,14 +3,15 @@ from typing import cast
 from django.db.models import F, Sum
 from django.db.models.functions import ExtractYear
 
+from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
-from .. import managers, models
+from .. import models
 
 
-class PensionTypeModelService(BaseModelService[managers.PensionTypeQuerySet]):
+class PensionTypeModelService(BaseModelService):
     def get_queryset(self):
-        return cast(managers.PensionTypeQuerySet, models.PensionType.objects).related(
-            self.user
+        return models.PensionType.objects.select_related("journal").filter(
+            journal=self.user.journal
         )
 
     def year(self, year: int):
@@ -22,9 +23,11 @@ class PensionTypeModelService(BaseModelService[managers.PensionTypeQuerySet]):
         return self.objects.all()
 
 
-class PensionModelService(BaseModelService[managers.PensionQuerySet]):
+class PensionModelService(SumMixin, BaseModelService):
     def get_queryset(self):
-        return cast(managers.PensionQuerySet, models.Pension.objects).related(self.user)
+        return models.Pension.objects.select_related("pension_type").filter(
+            pension_type__journal=self.user.journal
+        )
 
     def year(self, year: int):
         return self.objects.filter(date__year=year)
@@ -38,8 +41,7 @@ class PensionModelService(BaseModelService[managers.PensionQuerySet]):
         Calculates and returns the total price for each year
         """
         return (
-            self.objects
-            .annotate(year=ExtractYear(F("date")))
+            self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "pension_type__title")
             .annotate(incomes=Sum("price"), fee=Sum("fee"))
             .values("year", "incomes", "fee", category_id=F("pension_type__pk"))
@@ -47,11 +49,11 @@ class PensionModelService(BaseModelService[managers.PensionQuerySet]):
         )
 
 
-class PensionBalanceModelService(BaseModelService[managers.PensionBalanceQuerySet]):
+class PensionBalanceModelService(BaseModelService):
     def get_queryset(self):
-        return cast(
-            managers.PensionBalanceQuerySet, models.PensionBalance.objects
-        ).related(self.user)
+        return models.PensionBalance.objects.select_related("pension_type").filter(
+            pension_type__journal=self.user.journal
+        )
 
     def year(self, year: int):
         return self.objects.filter(year=year)
