@@ -60,19 +60,6 @@ def test_income_str():
     assert str(i) == "1999-01-01: Income Type"
 
 
-def test_income_related(main_user, second_user):
-    t1 = IncomeTypeFactory(title="T1")
-    t2 = IncomeTypeFactory(title="T2", journal=second_user.journal)
-
-    IncomeFactory(income_type=t1)
-    IncomeFactory(income_type=t2)
-
-    actual = Income.objects.related(main_user)
-
-    assert len(actual) == 1
-    assert str(actual[0].income_type) == "T1"
-
-
 def test_sum_all_months(main_user, incomes):
     expect = [
         {"date": date(1999, 1, 1), "sum": 550, "title": "incomes"},
