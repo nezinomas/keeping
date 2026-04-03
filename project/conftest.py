@@ -14,7 +14,7 @@ from .debts.tests.factories import LendFactory, LendReturnFactory
 from .expenses.tests.factories import ExpenseFactory
 from .incomes.tests.factories import IncomeFactory
 from .journals.tests.factories import JournalFactory
-from .pensions.tests.factories import PensionFactory
+from .pensions.tests.factories import PensionFactory, PensionTypeFactory
 from .savings.tests.factories import SavingFactory, SavingTypeFactory
 from .transactions.tests.factories import (
     SavingChangeFactory,
@@ -109,252 +109,256 @@ def fix_sqlite_format_function():
 
 @pytest.fixture()
 def incomes():
-    IncomeFactory(
-        price=525, date=date(1970, 1, 1), account=AccountFactory(title="Account1")
-    )
-    IncomeFactory(
-        price=225, date=date(1970, 1, 1), account=AccountFactory(title="Account2")
-    )
-    IncomeFactory(
-        price=225, date=date(1970, 1, 31), account=AccountFactory(title="Account2")
-    )
-    IncomeFactory(
-        price=325, date=date(1999, 1, 1), account=AccountFactory(title="Account1")
-    )
-    IncomeFactory(
-        price=225, date=date(1999, 1, 1), account=AccountFactory(title="Account2")
-    )
-    IncomeFactory(
-        price=125, date=date(1999, 2, 1), account=AccountFactory(title="Account2")
-    )
+    a1 = AccountFactory(title="Account1")
+    a2 = AccountFactory(title="Account2")
+
+    IncomeFactory(price=525, date=date(1970, 1, 1), account=a1)
+    IncomeFactory(price=225, date=date(1970, 1, 1), account=a2)
+    IncomeFactory(price=225, date=date(1970, 1, 31), account=a2)
+    IncomeFactory(price=325, date=date(1999, 1, 1), account=a1)
+    IncomeFactory(price=225, date=date(1999, 1, 1), account=a2)
+    IncomeFactory(price=125, date=date(1999, 2, 1), account=a2)
 
 
 @pytest.fixture()
 def expenses():
-    ExpenseFactory(
-        date=date(1999, 1, 1), price=25, account=AccountFactory(title="Account1")
-    )
-    ExpenseFactory(
-        date=date(1999, 1, 1), price=25, account=AccountFactory(title="Account1")
-    )
-    ExpenseFactory(
-        date=date(1999, 12, 1), price=125, account=AccountFactory(title="Account2")
-    )
-    ExpenseFactory(
-        date=date(1970, 1, 1), price=125, account=AccountFactory(title="Account1")
-    )
-    ExpenseFactory(
-        date=date(1970, 1, 1), price=125, account=AccountFactory(title="Account1")
-    )
-    ExpenseFactory(
-        date=date(1970, 1, 1), price=225, account=AccountFactory(title="Account2")
-    )
+    a1 = AccountFactory(title="Account1")
+    a2 = AccountFactory(title="Account2")
+
+    ExpenseFactory(date=date(1999, 1, 1), price=25, account=a1)
+    ExpenseFactory(date=date(1999, 1, 1), price=25, account=a1)
+    ExpenseFactory(date=date(1999, 12, 1), price=125, account=a2)
+    ExpenseFactory(date=date(1970, 1, 1), price=125, account=a1)
+    ExpenseFactory(date=date(1970, 1, 1), price=125, account=a1)
+    ExpenseFactory(date=date(1970, 1, 1), price=225, account=a2)
 
 
 @pytest.fixture()
 def expenses_january():
+    a1 = AccountFactory(title="Account1")
+    a2 = AccountFactory(title="Account2")
+
     ExpenseFactory(
         date=date(1999, 1, 1),
         price=25,
-        account=AccountFactory(title="Account1"),
+        account=a1,
         exception=True,
     )
-    ExpenseFactory(
-        date=date(1999, 1, 1), price=25, account=AccountFactory(title="Account1")
-    )
-    ExpenseFactory(
-        date=date(1999, 1, 11), price=25, account=AccountFactory(title="Account1")
-    )
-    ExpenseFactory(
-        date=date(1999, 1, 11), price=25, account=AccountFactory(title="Account1")
-    )
-    ExpenseFactory(
-        date=date(1970, 1, 1), price=225, account=AccountFactory(title="Account2")
-    )
+    ExpenseFactory(date=date(1999, 1, 1), price=25, account=a1)
+    ExpenseFactory(date=date(1999, 1, 11), price=25, account=a1)
+    ExpenseFactory(date=date(1999, 1, 11), price=25, account=a1)
+    ExpenseFactory(date=date(1970, 1, 1), price=225, account=a2)
 
 
 @pytest.fixture()
 def transactions():
+    a1 = AccountFactory(title="Account1")
+    a2 = AccountFactory(title="Account2")
+
     TransactionFactory(
         date=date(1999, 1, 1),
         price=225,
-        from_account=AccountFactory(title="Account1"),
-        to_account=AccountFactory(title="Account2"),
+        from_account=a1,
+        to_account=a2,
     )
     TransactionFactory(
         date=date(1999, 1, 1),
         price=225,
-        from_account=AccountFactory(title="Account1"),
-        to_account=AccountFactory(title="Account2"),
+        from_account=a1,
+        to_account=a2,
     )
     TransactionFactory(
         date=date(1999, 1, 1),
         price=325,
-        from_account=AccountFactory(title="Account2"),
-        to_account=AccountFactory(title="Account1"),
+        from_account=a2,
+        to_account=a1,
     )
     TransactionFactory(
         date=date(1970, 1, 1),
         price=125,
-        from_account=AccountFactory(title="Account1"),
-        to_account=AccountFactory(title="Account2"),
+        from_account=a1,
+        to_account=a2,
     )
     TransactionFactory(
         date=date(1970, 1, 1),
         price=525,
-        from_account=AccountFactory(title="Account2"),
-        to_account=AccountFactory(title="Account1"),
+        from_account=a2,
+        to_account=a1,
     )
 
 
 @pytest.fixture()
 def savings():
+    a1 = AccountFactory(title="Account1")
+    a2 = AccountFactory(title="Account2")
+    s1 = SavingTypeFactory(title="Saving1")
+    s2 = SavingTypeFactory(title="Saving2")
+
     SavingFactory(
         date=date(1970, 1, 1),
         price=125,
         fee=25,
-        account=AccountFactory(title="Account1"),
-        saving_type=SavingTypeFactory(title="Saving1"),
+        account=a1,
+        saving_type=s1,
     )
     SavingFactory(
         date=date(1970, 1, 1),
         price=25,
         fee=0,
-        account=AccountFactory(title="Account2"),
-        saving_type=SavingTypeFactory(title="Saving2"),
+        account=a2,
+        saving_type=s2,
     )
     SavingFactory(
         date=date(1999, 1, 1),
         price=125,
         fee=25,
-        account=AccountFactory(title="Account1"),
-        saving_type=SavingTypeFactory(title="Saving1"),
+        account=a1,
+        saving_type=s1,
     )
     SavingFactory(
         date=date(1999, 1, 1),
         price=225,
         fee=25,
-        account=AccountFactory(title="Account1"),
-        saving_type=SavingTypeFactory(title="Saving1"),
+        account=a1,
+        saving_type=s1,
     )
     SavingFactory(
         date=date(1999, 1, 1),
         price=225,
         fee=25,
-        account=AccountFactory(title="Account2"),
-        saving_type=SavingTypeFactory(title="Saving2"),
+        account=a2,
+        saving_type=s2,
     )
 
 
 @pytest.fixture()
 def savings_close():
+    a1 = AccountFactory(title="Account1")
+    a2 = AccountFactory(title="Account2")
+    s1 = SavingTypeFactory(title="Saving1")
+
     SavingCloseFactory(
         date=date(1999, 1, 1),
         price=25,
         fee=5,
-        to_account=AccountFactory(title="Account1"),
-        from_account=SavingTypeFactory(title="Saving1"),
+        to_account=a1,
+        from_account=s1,
     )
     SavingCloseFactory(
         date=date(1999, 1, 1),
         price=1,
         fee=1,
-        to_account=AccountFactory(title="Account2"),
-        from_account=SavingTypeFactory(title="Saving1"),
+        to_account=a2,
+        from_account=s1,
     )
     SavingCloseFactory(
         date=date(1970, 1, 1),
         price=25,
         fee=5,
-        to_account=AccountFactory(title="Account1"),
-        from_account=SavingTypeFactory(title="Saving1"),
+        to_account=a1,
+        from_account=s1,
     )
 
 
 @pytest.fixture()
 def savings_change():
+    s1 = SavingTypeFactory(title="Saving1")
+    s2 = SavingTypeFactory(title="Saving2")
+
     SavingChangeFactory(
         date=date(1999, 1, 1),
         price=125,
         fee=5,
-        to_account=SavingTypeFactory(title="Saving2"),
-        from_account=SavingTypeFactory(title="Saving1"),
+        to_account=s2,
+        from_account=s1,
     )
     SavingChangeFactory(
         date=date(1970, 1, 1),
         price=225,
         fee=15,
-        to_account=SavingTypeFactory(title="Saving2"),
-        from_account=SavingTypeFactory(title="Saving1"),
+        to_account=s2,
+        from_account=s1,
     )
 
 
 @pytest.fixture()
 def pensions():
+    p = PensionTypeFactory(title="Pension1")
+
     PensionFactory(
         price=125,
         fee=0,
         date=date(1974, 1, 1),
+        pension_type=p,
     )
     PensionFactory(
         price=225,
         fee=25,
         date=date(1974, 1, 1),
+        pension_type=p,
     )
     PensionFactory(
         price=225,
         fee=0,
         date=date(1999, 1, 1),
+        pension_type=p,
     )
     PensionFactory(
         price=225,
         fee=5,
         date=date(1999, 1, 1),
+        pension_type=p,
     )
 
 
 @pytest.fixture()
 def accounts_worth():
+    a1 = AccountFactory(title="Account1")
+    a2 = AccountFactory(title="Account2")
+
     AccountWorthFactory(
         date=datetime(1970, 1, 1, tzinfo=pytz.utc),
         price=10,
-        account=AccountFactory(title="Account1"),
+        account=a1,
     )
     AccountWorthFactory(
         date=datetime(1970, 1, 1, tzinfo=pytz.utc),
         price=20,
-        account=AccountFactory(title="Account2"),
+        account=a2,
     )
 
     AccountWorthFactory(
         date=datetime(1999, 1, 2, tzinfo=pytz.utc),
         price=3,
-        account=AccountFactory(title="Account1"),
+        account=a1,
     )
     AccountWorthFactory(
         date=datetime(1999, 1, 1, tzinfo=pytz.utc),
         price=8,
-        account=AccountFactory(title="Account2"),
+        account=a2,
     )
 
 
 @pytest.fixture()
 def savings_worth():
+    s1 = SavingTypeFactory(title="Saving1")
+    s2 = SavingTypeFactory(title="Saving2")
+
     SavingWorthFactory(
         date=datetime(1970, 1, 1, tzinfo=pytz.utc),
         price=10,
-        saving_type=SavingTypeFactory(title="Saving1"),
+        saving_type=s1,
     )
 
     SavingWorthFactory(
         date=datetime(1999, 1, 2, tzinfo=pytz.utc),
         price=15,
-        saving_type=SavingTypeFactory(title="Saving1"),
+        saving_type=s1,
     )
     SavingWorthFactory(
         date=datetime(1999, 1, 1, tzinfo=pytz.utc),
         price=6,
-        saving_type=SavingTypeFactory(title="Saving2"),
+        saving_type=s2,
     )
 
 
