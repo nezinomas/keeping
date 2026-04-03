@@ -4,7 +4,6 @@ from django.urls import reverse_lazy
 
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
-from . import managers
 
 
 class Account(TitleAbstract):
@@ -17,9 +16,6 @@ class Account(TitleAbstract):
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="accounts"
     )
-
-    # Managers
-    objects = managers.AccountQuerySet.as_manager()
 
     class Meta:
         unique_together = ["journal", "title"]
@@ -43,9 +39,6 @@ class AccountBalance(models.Model):
     balance = models.IntegerField(default=0)
     have = models.IntegerField(default=0)
     delta = models.IntegerField(default=0)
-
-    # Managers
-    objects = managers.AccountBalanceQuerySet.as_manager()
 
     class Meta:
         ordering = ["year", "account__pk"]

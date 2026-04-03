@@ -169,7 +169,7 @@ def test_account_balance_sorting(main_user):
     AccountBalanceFactory(year=2000, account=a1)
     AccountBalanceFactory(year=1999, account=a1)
 
-    actual = AccountBalance.objects.related(main_user)
+    actual = AccountBalanceModelService(main_user).objects
 
     assert actual[0].year == 1999
     assert actual[0].account == a1
