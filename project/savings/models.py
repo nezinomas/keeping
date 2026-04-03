@@ -4,12 +4,10 @@ from django.core.validators import (
     MinValueValidator,
 )
 from django.db import models
-from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
 from ..journals.models import Journal
-from . import managers
 
 
 class SavingType(models.Model):
@@ -39,9 +37,6 @@ class SavingType(models.Model):
         default=Types.FUNDS,
     )
 
-    # Managers
-    objects = managers.SavingTypeQuerySet.as_manager()
-
     class Meta:
         unique_together = ["journal", "title"]
         ordering = ["type", "title"]
@@ -62,9 +57,6 @@ class Saving(models.Model):
     account = models.ForeignKey(
         Account, on_delete=models.CASCADE, related_name="savings"
     )
-
-    # Managers
-    objects = managers.SavingQuerySet.as_manager()
 
     class Meta:
         ordering = ["-date", "saving_type"]
@@ -96,9 +88,6 @@ class SavingBalance(models.Model):
     market_value = models.IntegerField(default=0)
     profit_sum = models.IntegerField(default=0)
     profit_proc = models.FloatField(default=0.0)
-
-    # Managers
-    objects = managers.SavingBalanceQuerySet.as_manager()
 
     class Meta:
         ordering = ["year", "saving_type__pk"]

@@ -1,19 +1,20 @@
 from datetime import date, timedelta
-from typing import Optional, cast
+from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import Count, F, Q, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth
 from django.utils.translation import gettext as _
 
+from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
-from .. import managers, models
+from .. import models
 
 
-class SavingTypeModelService(BaseModelService[managers.SavingTypeQuerySet]):
+class SavingTypeModelService(BaseModelService):
     def get_queryset(self):
-        return cast(managers.SavingTypeQuerySet, models.SavingType.objects).related(
-            self.user
+        return models.SavingType.objects.select_related("journal").filter(
+            journal=self.user.journal
         )
 
     def year(self, year):
@@ -32,9 +33,11 @@ class SavingTypeModelService(BaseModelService[managers.SavingTypeQuerySet]):
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
 
-class SavingModelService(BaseModelService[managers.SavingQuerySet]):
+class SavingModelService(SumMixin, BaseModelService):
     def get_queryset(self):
-        return cast(managers.SavingQuerySet, models.Saving.objects).related(self.user)
+        return models.Saving.objects.select_related("account", "saving_type").filter(
+            saving_type__journal=self.user.journal
+        )
 
     def year(self, year):
         return self.objects.filter(date__year=year)
@@ -43,10 +46,10 @@ class SavingModelService(BaseModelService[managers.SavingQuerySet]):
         return self.objects
 
     def sum_by_year(self):
-        return self.objects.year_sum()
+        return self.year_sum(self.objects)
 
     def sum_by_month(self, year: int, month: Optional[int] = None):
-        return self.objects.month_sum(year, month).annotate(title=Value("savings"))
+        return self.month_sum(self.objects, year, month).annotate(title=Value("savings"))
 
     def sum_by_month_and_type(self, year: int):
         return (
@@ -62,12 +65,12 @@ class SavingModelService(BaseModelService[managers.SavingQuerySet]):
         )
 
     def sum_by_day_and_type(self, year: int, month: int):
-        return self.objects.day_sum(year=year, month=month).values(
+        return self.day_sum(self.objects, year=year, month=month).values(
             "date", "sum", title=F("saving_type__title")
         )
 
     def sum_by_day(self, year: int, month: int):
-        return self.objects.day_sum(year=year, month=month).annotate(
+        return self.day_sum(self.objects, year=year, month=month).annotate(
             title=Value(_("Savings"))
         )
 
@@ -87,8 +90,7 @@ class SavingModelService(BaseModelService[managers.SavingQuerySet]):
         Calculates and returns the total price for each year
         """
         return (
-            self.objects
-            .annotate(year=ExtractYear(F("date")))
+            self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "saving_type__title")
             .annotate(incomes=Sum("price"), fee=Sum("fee"))
             .values("year", "incomes", "fee", category_id=F("saving_type__pk"))
@@ -101,19 +103,19 @@ class SavingModelService(BaseModelService[managers.SavingQuerySet]):
         Calculates and returns the total price for each year
         """
         return (
-            self.objects
-            .annotate(year=ExtractYear(F("date")))
+            self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))
             .values("year", "expenses", category_id=F("account__pk"))
             .order_by("year", "category_id")
         )
 
-class SavingBalanceModelService(BaseModelService[managers.SavingBalanceQuerySet]):
+
+class SavingBalanceModelService(BaseModelService):
     def get_queryset(self):
-        return cast(
-            managers.SavingBalanceQuerySet, models.SavingBalance.objects
-        ).related(self.user)
+        return models.SavingBalance.objects.select_related("saving_type").filter(
+            saving_type__journal=self.user.journal
+        )
 
     def items(self):
         return self.objects
