@@ -1,15 +1,12 @@
-from typing import cast
-
-from django.db.models import F, QuerySet, Sum, Value
+from django.db.models import F, Sum, Value
 from django.db.models.functions import ExtractYear
 
+from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
-from .. import managers, models
+from .. import models
 
 
 class CommonMethodsMixin:
-    objects: QuerySet
-
     def year(self, year):
         return self.objects.filter(date__year=year)
 
@@ -54,12 +51,13 @@ class CommonMethodsMixin:
         )
 
 
-class TransactionModelService(
-    CommonMethodsMixin, BaseModelService[managers.TransactionQuerySet]
-):
+class TransactionModelService(CommonMethodsMixin, BaseModelService):
     def get_queryset(self):
-        return cast(managers.TransactionQuerySet, models.Transaction.objects).related(
-            self.user
+        return models.Transaction.objects.select_related(
+            "from_account", "to_account"
+        ).filter(
+            from_account__journal=self.user.journal,
+            to_account__journal=self.user.journal,
         )
 
     def expenses(self):
@@ -70,18 +68,17 @@ class TransactionModelService(
         return self.base_expenses()
 
 
-class SavingCloseModelService(
-    CommonMethodsMixin, BaseModelService[managers.SavingCloseQuerySet]
-):
-    objects: managers.SavingCloseQuerySet
-
+class SavingCloseModelService(SumMixin, CommonMethodsMixin, BaseModelService):
     def get_queryset(self):
-        return cast(managers.SavingCloseQuerySet, models.SavingClose.objects).related(
-            self.user
+        return models.SavingClose.objects.select_related(
+            "from_account", "to_account"
+        ).filter(
+            from_account__journal=self.user.journal,
+            to_account__journal=self.user.journal,
         )
 
     def sum_by_month(self, year, month=None):
-        return self.objects.month_sum(year=year, month=month).annotate(
+        return self.month_sum(self.objects, year=year, month=month).annotate(
             title=Value("savings_close")
         )
 
@@ -93,12 +90,13 @@ class SavingCloseModelService(
         return self.base_expenses(fee=True)
 
 
-class SavingChangeModelService(
-    CommonMethodsMixin, BaseModelService[managers.SavingChangeQuerySet]
-):
+class SavingChangeModelService(CommonMethodsMixin, BaseModelService):
     def get_queryset(self):
-        return cast(managers.SavingChangeQuerySet, models.SavingChange.objects).related(
-            self.user
+        return models.SavingChange.objects.select_related(
+            "from_account", "to_account"
+        ).filter(
+            from_account__journal=self.user.journal,
+            to_account__journal=self.user.journal,
         )
 
     def expenses(self):

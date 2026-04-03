@@ -41,7 +41,7 @@ def test_transaction_related(main_user, second_user):
     TransactionFactory(to_account=t1, from_account=f1)
     TransactionFactory(to_account=t2, from_account=f2)
 
-    actual = Transaction.objects.related(main_user)
+    actual = TransactionModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].from_account) == "F1"
@@ -58,7 +58,7 @@ def test_transaction_items(main_user, second_user):
     TransactionFactory(to_account=t1, from_account=f1)
     TransactionFactory(to_account=t2, from_account=f2)
 
-    actual = Transaction.objects.related(main_user)
+    actual = TransactionModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].from_account) == "F1"
@@ -461,7 +461,7 @@ def test_saving_close_related(main_user, second_user):
     SavingCloseFactory(to_account=a1, from_account=s1)
     SavingCloseFactory(to_account=a2, from_account=s2)
 
-    actual = SavingClose.objects.related(main_user)
+    actual = SavingCloseModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].from_account) == "S1"
@@ -845,7 +845,7 @@ def test_saving_change_related(main_user, second_user):
     SavingChangeFactory(from_account=f1, to_account=t1)
     SavingChangeFactory(from_account=f2, to_account=t2)
 
-    actual = SavingChange.objects.related(main_user)
+    actual = SavingChangeModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].from_account) == "F1"
