@@ -35,7 +35,7 @@ def test_missing_service_class_raises_improperly_configured():
 def test_service_class_is_not_callable(mocker):
     """If a developer accidentally sets service_class to a string or instance, it should fail."""
     view = TestView()
-    view.service_class = "IncomeModelService" 
+    view.service_class = "IncomeModelService"
     view.request = mocker.Mock()
 
     with pytest.raises(TypeError):
