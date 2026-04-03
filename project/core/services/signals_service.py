@@ -3,7 +3,10 @@ from typing import Optional
 from django.db import models
 
 from ...accounts.models import AccountBalance
-from ...accounts.services.model_services import AccountModelService
+from ...accounts.services.model_services import (
+    AccountBalanceModelService,
+    AccountModelService,
+)
 from ...bookkeeping.services.model_services import (
     AccountWorthModelService,
     PensionWorthModelService,
@@ -14,11 +17,13 @@ from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
 from ...pensions.models import PensionBalance
 from ...pensions.services.model_services import (
+    PensionBalanceModelService,
     PensionModelService,
     PensionTypeModelService,
 )
 from ...savings.models import SavingBalance
 from ...savings.services.model_services import (
+    SavingBalanceModelService,
     SavingModelService,
     SavingTypeModelService,
 )
@@ -80,7 +85,7 @@ def sync_accounts(instance: models.Model, user: Optional[User] = None):
     get_data = GetData(user, ACCOUNTS_CONF)
     data = Accounts(get_data)
 
-    BalanceSynchronizer(AccountBalance, user, data.df)
+    BalanceSynchronizer(AccountBalanceModelService, user, data.df)
 
 
 def sync_savings(instance: models.Model, user: Optional[User] = None):
@@ -91,7 +96,7 @@ def sync_savings(instance: models.Model, user: Optional[User] = None):
     get_data = GetData(user, SAVINGS_CONF)
     data = Savings(get_data)
 
-    BalanceSynchronizer(SavingBalance, user, data.df)
+    BalanceSynchronizer(SavingBalanceModelService, user, data.df)
 
 
 def sync_pensions(instance: models.Model, user: Optional[User] = None):
@@ -103,7 +108,7 @@ def sync_pensions(instance: models.Model, user: Optional[User] = None):
     get_data = GetData(user, PENSIONS_CONF)
     data = Savings(get_data)
 
-    BalanceSynchronizer(PensionBalance, user, data.df)
+    BalanceSynchronizer(PensionBalanceModelService, user, data.df)
 
 
 def _get_user_from_instance(instance: models.Model) -> Optional[User]:

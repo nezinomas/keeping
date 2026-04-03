@@ -1,7 +1,6 @@
 from typing import Tuple
 
 import polars as pl
-from django.db import models
 from django.db import transaction as django_transaction
 from django.utils import timezone
 
@@ -38,8 +37,13 @@ SAVING_FIELDS = [
 class BalanceSynchronizer:
     KEY_FIELDS = ["category_id", "year"]
 
-    def __init__(self, model: models.Model, user: User, df: pl.LazyFrame) -> None:
-        match model:
+    def __init__(self, model_service_class, user: User, df: pl.LazyFrame) -> None:
+        self.model_service_class = model_service_class
+        self.user = user
+
+        service = model_service_class(self.user)
+
+        match service.objects.model:
             case saving.SavingBalance:
                 self.fk_field = "saving_type_id"
                 self.fields = SAVING_FIELDS
@@ -52,8 +56,6 @@ class BalanceSynchronizer:
                 self.fk_field = "account_id"
                 self.fields = ACCOUNT_FIELDS
 
-        self.model = model
-        self.user = user
         self.df = df
         self.df_db = self._get_existing_records()
 
@@ -62,7 +64,7 @@ class BalanceSynchronizer:
     def _get_existing_records(self) -> pl.LazyFrame:
         # Select only necessary fields to reduce memory usage
         records = [
-            *self.model.objects.related(self.user).values(
+            *self.model_service_class(self.user).objects.values(
                 "id", self.fk_field, "year", *self.fields
             )
         ]
@@ -114,7 +116,7 @@ class BalanceSynchronizer:
 
         category_ids = df["category_id"].unique().to_list()
         years = df["year"].unique().to_list()
-        self.model.objects.filter(
+        self.model_service_class(self.user).objects.filter(
             **{f"{self.fk_field}__in": category_ids, "year__in": years}
         ).delete()
 
@@ -125,7 +127,7 @@ class BalanceSynchronizer:
             return
 
         if objects := [self._create_object(row) for row in df.to_dicts()]:
-            self.model.objects.bulk_create(objects)
+            self.model_service_class(self.user).objects.bulk_create(objects)
 
     def _update_records(self, data: pl.LazyFrame) -> None:
         if data.limit(1).collect().is_empty():
@@ -140,10 +142,10 @@ class BalanceSynchronizer:
         if objects := [
             self._create_object(row, update=True) for row in updates_with_id
         ]:
-            self.model.objects.bulk_update(objects, self.fields)
+            self.model_service_class(self.user).objects.bulk_update(objects, self.fields)
 
     def _create_object(self, row: dict, update: bool = False):
-        """Create an self.model object from a row."""
+        """Create an self.model_service_class object from a row."""
         fields = {field: row[field] for field in self.fields}
         fields["latest_check"] = (
             timezone.make_aware(row["latest_check"]) if row["latest_check"] else None
@@ -155,7 +157,10 @@ class BalanceSynchronizer:
         if update:
             fields["id"] = row["id"]
 
-        return self.model(**fields)
+        service = self.model_service_class(self.user)
+        DjangoModelClass = service.objects.model
+
+        return DjangoModelClass(**fields)
 
     def sync(self) -> None:
         inserts, updates, deletes = self._identify_operations()
