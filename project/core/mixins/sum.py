@@ -3,64 +3,61 @@ from django.db.models.functions import ExtractYear, TruncDay, TruncMonth, TruncY
 
 
 class SumMixin:
-    def year_filter(self, year, field="date"):
-        return self.filter(**{f"{field}__year": year}) if year else self
+    def _year_filter(self, qs, year, field="date"):
+        return qs.filter(**{f"{field}__year": year}) if year else qs
 
-    year_filter.queryset_only = True
-
-    def month_filter(self, month, field="date"):
-        return self.filter(**{f"{field}__month": month}) if month else self
-
-    month_filter.queryset_only = True
+    def _month_filter(self, qs, month, field="date"):
+        return qs.filter(**{f"{field}__month": month}) if month else qs
 
     def year_sum(
-        self, year=None, sum_annotation="sum", groupby="id", sum_column="price"
+        self, qs, year=None, sum_annotation="sum", groupby="id", sum_column="price"
     ):
+        qs = self._year_filter(qs, year)
         return (
-            self.year_filter(year)
-            .annotate(cnt=Count(groupby))
-            .values(groupby)
-            .annotate(date=TruncYear("date"))
-            .values("date")
-            .annotate(c=Count("id"))
+            qs
+            .annotate(cnt=Count(groupby), y=TruncYear("date"))
+            .values("cnt", "y")
             .annotate(**{sum_annotation: Sum(sum_column)})
-            .order_by("date")
-            .annotate(year=ExtractYear(F("date")))
-            .values("year", sum_annotation)
+            .order_by("y")
+            .values(sum_annotation, year=ExtractYear(F("y")))
         )
-
-    year_sum.queryset_only = True
 
     def month_sum(
-        self, year, month=None, sum_annotation="sum", sum_column="price", groupby="id"
+        self,
+        qs,
+        year,
+        month=None,
+        sum_annotation="sum",
+        sum_column="price",
+        groupby="id",
     ):
+        qs = self._year_filter(qs, year)
+        qs = self._month_filter(qs, month)
         return (
-            self.year_filter(year)
-            .month_filter(month)
-            .annotate(cnt=Count(groupby))
-            .values(groupby)
-            .annotate(date=TruncMonth("date"))
-            .values("date")
-            .annotate(c=Count("id"))
+            qs
+            .annotate(grouped_by=Count(groupby), month=TruncMonth("date"))
+            .values("grouped_by", "month")
             .annotate(**{sum_annotation: Sum(sum_column)})
-            .order_by("date")
-            .values("date", sum_annotation)
+            .order_by("month")
+            .values(sum_annotation, date=F("month"))
         )
-
-    month_sum.queryset_only = True
 
     def day_sum(
-        self, year, month=None, sum_annotation="sum", sum_column="price", groupby="id"
+        self,
+        qs,
+        year,
+        month=None,
+        sum_annotation="sum",
+        sum_column="price",
+        groupby="id",
     ):
+        qs = self._year_filter(qs, year)
+        qs = self._month_filter(qs, month)
         return (
-            self.year_filter(year)
-            .month_filter(month)
-            .annotate(c=Count(groupby))
-            .values("c")
-            .annotate(date=TruncDay("date"))
+            qs
+            .annotate(grouped_by=Count(groupby), day=TruncDay("date"))
+            .values("grouped_by", "day")
             .annotate(**{sum_annotation: Sum(sum_column)})
-            .order_by("date")
-            .values("date", sum_annotation)
+            .order_by("day")
+            .values(sum_annotation, date=F("day"))
         )
-
-    day_sum.queryset_only = True
