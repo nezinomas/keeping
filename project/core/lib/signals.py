@@ -17,22 +17,20 @@ class GetData:
     types: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        # Todo Refactore this, provide method in conf
-        self.incomes = self._get_data(self.conf.get("incomes"), "incomes")
-        self.expenses = self._get_data(self.conf.get("expenses"), "expenses")
-        self.have = list(self._get_data(self.conf.get("have"), "have"))
-        self.types = list(self._get_data(self.conf.get("types"), "related"))
+        # Pass the tuple directly. No string method names needed!
+        self.incomes = list(self._get_data(self.conf.get("incomes")))
+        self.expenses = list(self._get_data(self.conf.get("expenses")))
+        self.have = list(self._get_data(self.conf.get("have")))
+        self.types = list(self._get_data(self.conf.get("types")))
 
-    def _get_data(self, models: tuple, method: str):
-        if not models:
+    def _get_data(self, sources: tuple):
+        if not sources:
             return
 
-        for model in models:
-            _method = getattr(model.objects, method, None)
-            if callable(_method):
-                if _qs := _method(user=self.user):
-                    yield from _qs
-
+        for source_callable in sources:
+            # Execute the lambda, passing the user.
+            if _qs := source_callable(self.user):
+                yield from _qs
 
 class SignalBase(ABC):
     signal_type = None

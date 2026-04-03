@@ -577,7 +577,7 @@ def test_savings_incomes(main_user, savings):
         saving_type=SavingTypeFactory(title="Saving2"),
     )
 
-    actual = Saving.objects.incomes(main_user)
+    actual = SavingModelService(main_user).incomes()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -601,7 +601,7 @@ def test_savings_incomes(main_user, savings):
 
 
 def test_savings_expenses(main_user, savings):
-    actual = Saving.objects.expenses(main_user)
+    actual = SavingModelService(main_user).expenses()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

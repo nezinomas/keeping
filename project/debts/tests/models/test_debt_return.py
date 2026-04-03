@@ -387,7 +387,7 @@ def test_debt_return_incomes(main_user):
 
     BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
 
-    actual = DebtReturn.objects.incomes(main_user)
+    actual = DebtReturnModelService(main_user, "lend").incomes()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -422,7 +422,7 @@ def test_debt_return_expenses(main_user):
 
     LendReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
 
-    actual = DebtReturn.objects.expenses(main_user)
+    actual = DebtReturnModelService(main_user, "borrow").expenses()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

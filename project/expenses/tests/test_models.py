@@ -668,7 +668,7 @@ def test_expense_sum_by_year_name_filtering(main_user):
 
 
 def test_expenses(main_user, expenses):
-    actual = Expense.objects.expenses(main_user)
+    actual = ExpenseModelService(main_user).expenses()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

@@ -399,7 +399,7 @@ def test_transaction_post_delete_with_update(main_user):
 
 
 def test_transaction_balance_incomes(main_user, transactions):
-    actual = Transaction.objects.incomes(main_user)
+    actual = TransactionModelService(main_user).incomes()
 
     # 1974
     assert actual[0]["year"] == 1970
@@ -421,7 +421,7 @@ def test_transaction_balance_incomes(main_user, transactions):
 
 
 def test_transaction_balance_expenses(main_user, transactions):
-    actual = Transaction.objects.expenses(main_user)
+    actual = TransactionModelService(main_user).expenses()
 
     # 1974
     assert actual[0]["year"] == 1970
@@ -793,7 +793,7 @@ def test_saving_close_post_delete_with_update(main_user):
 
 
 def test_saving_close_balance_incomes(main_user, savings_close):
-    actual = SavingClose.objects.incomes(main_user)
+    actual = SavingCloseModelService(main_user).incomes()
 
     # 1974
     assert actual[0]["year"] == 1970
@@ -811,7 +811,7 @@ def test_saving_close_balance_incomes(main_user, savings_close):
 
 
 def test_saving_close_balance_expenses(main_user, savings_close):
-    actual = SavingClose.objects.expenses(main_user)
+    actual = SavingCloseModelService(main_user).expenses()
 
     # 1974
     assert actual[0]["year"] == 1970

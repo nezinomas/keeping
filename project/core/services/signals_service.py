@@ -2,59 +2,73 @@ from typing import Optional
 
 from django.db import models
 
-from ...accounts import models as account
 from ...accounts.models import AccountBalance
-from ...bookkeeping import models as bookkeeping
-from ...debts import models as debt
-from ...expenses import models as expense
-from ...incomes import models as income
-from ...pensions import models as pension
+from ...accounts.services.model_services import AccountModelService
+from ...bookkeeping.services.model_services import (
+    AccountWorthModelService,
+    PensionWorthModelService,
+    SavingWorthModelService,
+)
+from ...debts.services.model_services import DebtModelService, DebtReturnModelService
+from ...expenses.services.model_services import ExpenseModelService
+from ...incomes.services.model_services import IncomeModelService
 from ...pensions.models import PensionBalance
-from ...savings import models as saving
+from ...pensions.services.model_services import (
+    PensionModelService,
+    PensionTypeModelService,
+)
 from ...savings.models import SavingBalance
-from ...transactions import models as transaction
+from ...savings.services.model_services import (
+    SavingModelService,
+    SavingTypeModelService,
+)
+from ...transactions.services.model_services import (
+    SavingChangeModelService,
+    SavingCloseModelService,
+    TransactionModelService,
+)
 from ...users.models import User
 from ..lib.db_sync import BalanceSynchronizer
 from ..lib.signals import Accounts, GetData, Savings
 
 ACCOUNTS_CONF = {
     "incomes": (
-        income.Income,
-        debt.Debt,
-        debt.DebtReturn,
-        transaction.Transaction,
-        transaction.SavingClose,
+        lambda user: IncomeModelService(user).incomes(),
+        lambda user: DebtModelService(user, "borrow").incomes(),
+        lambda user: DebtReturnModelService(user, "lend").incomes(),
+        lambda user: TransactionModelService(user).incomes(),
+        lambda user: SavingCloseModelService(user).incomes(),
     ),
     "expenses": (
-        expense.Expense,
-        debt.Debt,
-        debt.DebtReturn,
-        transaction.Transaction,
-        saving.Saving,
+        lambda user: ExpenseModelService(user).expenses(),
+        lambda user: DebtModelService(user, "lend").expenses(),
+        lambda user: DebtReturnModelService(user, "borrow").expenses(),
+        lambda user: TransactionModelService(user).expenses(),
+        lambda user: SavingModelService(user).expenses(),
     ),
-    "have": (bookkeeping.AccountWorth,),
-    "types": (account.Account,),
+    "have": (lambda user: AccountWorthModelService(user).have(),),
+    "types": (lambda user: AccountModelService(user).all(),),
 }
 
 
 SAVINGS_CONF = {
     "incomes": (
-        saving.Saving,
-        transaction.SavingChange,
+        lambda user: SavingModelService(user).incomes(),
+        lambda user: SavingChangeModelService(user).incomes(),
     ),
     "expenses": (
-        transaction.SavingClose,
-        transaction.SavingChange,
+        lambda user: SavingCloseModelService(user).expenses(),
+        lambda user: SavingChangeModelService(user).expenses(),
     ),
-    "have": (bookkeeping.SavingWorth,),
-    "types": (saving.SavingType,),
+    "have": (lambda user: SavingWorthModelService(user).have(),),
+    "types": (lambda user: SavingTypeModelService(user).all(),),
 }
 
 
 PENSIONS_CONF = {
-    "incomes": (pension.Pension,),
-    "have": (bookkeeping.PensionWorth,),
-    "types": (pension.PensionType,),
+    "incomes": (lambda user: PensionModelService(user).incomes(),),
+    "have": (lambda user: PensionWorthModelService(user).have(),),
+    "types": (lambda user: PensionTypeModelService(user).items(),),
 }
 
 
