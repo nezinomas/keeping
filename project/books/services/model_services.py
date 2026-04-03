@@ -1,15 +1,14 @@
-from typing import cast
-
 from django.db.models import Count, F, Q
 from django.db.models.functions import ExtractYear, TruncYear
 
+from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
-from .. import managers, models
+from .. import models
 
 
-class BookModelService(BaseModelService[managers.BooksQuerySet]):
+class BookModelService(SumMixin, BaseModelService):
     def get_queryset(self):
-        return cast(managers.BooksQuerySet, models.Book.objects).related(self.user)
+        return models.Book.objects.select_related("user").filter(user=self.user)
 
     def year(self, year):
         return self.objects.filter(Q(ended__year=year) | Q(ended__isnull=True)).filter(
@@ -23,9 +22,10 @@ class BookModelService(BaseModelService[managers.BooksQuerySet]):
         """
         Returns <QuerySet [{'year': int, 'cnt': int}]>
         """
+        qs = self.year_filter(self.objects, year=year, field="ended")
+
         return (
-            self.objects.exclude(ended__isnull=True)
-            .year_filter(year=year, field="ended")
+            qs.exclude(ended__isnull=True)
             .annotate(date=TruncYear("ended"))
             .values("date")
             .annotate(year=ExtractYear(F("date")))
@@ -45,11 +45,9 @@ class BookModelService(BaseModelService[managers.BooksQuerySet]):
         )
 
 
-class BookTargetModelService(BaseModelService[managers.BookTargetQuerySet]):
+class BookTargetModelService(BaseModelService):
     def get_queryset(self):
-        return cast(managers.BookTargetQuerySet, models.BookTarget.objects).related(
-            self.user
-        )
+        return models.BookTarget.objects.select_related("user").filter(user=self.user)
 
     def year(self, year):
         return self.objects.filter(year=year)

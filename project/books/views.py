@@ -15,7 +15,7 @@ from ..core.mixins.views import (
 )
 from ..users.models import User
 from . import forms, models, services
-from .services.model_services import BookModelService
+from .services.model_services import BookModelService, BookTargetModelService
 
 
 class Index(TemplateViewMixin):
@@ -59,7 +59,8 @@ class InfoRow(TemplateViewMixin):
 
 
 class Lists(ListViewMixin):
-    model = models.Book
+    template_name = "books/book_list.html"
+    service_class = BookModelService
     per_page = 50
 
     def get_queryset(self):
@@ -92,7 +93,7 @@ class Lists(ListViewMixin):
 
 
 class New(CreateViewMixin):
-    model = models.Book
+    service_class = BookModelService
     form_class = forms.BookForm
     hx_trigger_django = "reload"
     modal_form_title = _("New book")
@@ -100,7 +101,7 @@ class New(CreateViewMixin):
 
 
 class Update(UpdateViewMixin):
-    model = models.Book
+    service_class = BookModelService
     form_class = forms.BookForm
     hx_trigger_django = "reload"
     modal_form_title = _("Update book")
@@ -108,7 +109,7 @@ class Update(UpdateViewMixin):
 
 
 class Delete(DeleteViewMixin):
-    model = models.Book
+    service_class = BookModelService
     modal_form_title = _("Delete book")
     success_url = reverse_lazy("books:list")
 
@@ -124,7 +125,7 @@ class Search(SearchViewMixin):
 #                                                                          Target Views
 # --------------------------------------------------------------------------------------
 class TargetNew(CreateViewMixin):
-    model = models.BookTarget
+    service_class = BookTargetModelService
     hx_trigger_django = "afterTarget"
     form_class = forms.BookTargetForm
     url_name = "target_new"
@@ -132,7 +133,7 @@ class TargetNew(CreateViewMixin):
 
 
 class TargetUpdate(UpdateViewMixin):
-    model = models.BookTarget
+    service_class = BookTargetModelService
     hx_trigger_django = "afterTarget"
     form_class = forms.BookTargetForm
     url_name = "target_update"
