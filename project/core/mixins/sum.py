@@ -15,11 +15,15 @@ class SumMixin:
         qs = self.year_filter(qs, year)
         return (
             qs
-            .annotate(cnt=Count(groupby), y=TruncYear("date"))
-            .values("cnt", "y")
+            .annotate(cnt=Count(groupby))
+            .values(groupby)
+            .annotate(date=TruncYear("date"))
+            .values("date")
+            .annotate(c=Count("id"))
             .annotate(**{sum_annotation: Sum(sum_column)})
-            .order_by("y")
-            .values(sum_annotation, year=ExtractYear(F("y")))
+            .order_by("date")
+            .annotate(year=ExtractYear(F("date")))
+            .values("year", sum_annotation)
         )
 
     def month_sum(
