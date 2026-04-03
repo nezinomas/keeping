@@ -3,7 +3,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _l
 
 from ..users.models import User
-from . import managers
 from .lib.drinks_options import DrinksOptions
 
 
@@ -24,8 +23,6 @@ class Drink(models.Model):
     )
     converted_from_ml = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    objects = managers.DrinkQuerySet.as_manager()
 
     class Meta:
         get_latest_by = ["date"]
@@ -56,8 +53,6 @@ class DrinkTarget(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="drink_targets"
     )
-
-    objects = managers.DrinkTargetQuerySet.as_manager()
 
     def __str__(self):
         obj = DrinksOptions(self.user.drink_type)

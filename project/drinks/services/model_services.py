@@ -2,14 +2,19 @@ from typing import cast
 
 from django.db.models import F
 
+from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
-from .. import managers, models
+from .. import models
 from ..lib.drinks_options import DrinksOptions
 
 
-class DrinkModelService(BaseModelService[managers.DrinkQuerySet]):
+class DrinkModelService(SumMixin, BaseModelService):
     def get_queryset(self):
-        return cast(managers.DrinkQuerySet, models.Drink.objects).related(self.user)
+        return (
+            models.Drink.objects.select_related("user")
+            .filter(user=self.user)
+            .order_by("-date")
+        )
 
     def year(self, year):
         return self.objects.filter(date__year=year)
@@ -26,7 +31,9 @@ class DrinkModelService(BaseModelService[managers.DrinkQuerySet]):
         ratio = DrinksOptions(self.user.drink_type).ratio
 
         return (
-            self.objects.year_sum(year=year, sum_annotation="stdav", sum_column="stdav")
+            self.year_sum(
+                self.objects, year=year, sum_annotation="stdav", sum_column="stdav"
+            )
             .annotate(qty=F("stdav") * ratio)
             .order_by("date")
         )
@@ -40,8 +47,12 @@ class DrinkModelService(BaseModelService[managers.DrinkQuerySet]):
         ratio = DrinksOptions(self.user.drink_type).ratio
 
         return (
-            self.objects.month_sum(
-                year=year, month=month, sum_annotation="stdav", sum_column="stdav"
+            self.month_sum(
+                self.objects,
+                year=year,
+                month=month,
+                sum_annotation="stdav",
+                sum_column="stdav",
             )
             .annotate(qty=F("stdav") * ratio)
             .order_by("date")
@@ -56,19 +67,21 @@ class DrinkModelService(BaseModelService[managers.DrinkQuerySet]):
         ratio = DrinksOptions(self.user.drink_type).ratio
 
         return (
-            self.objects.day_sum(
-                year=year, month=month, sum_annotation="stdav", sum_column="stdav"
+            self.day_sum(
+                self.objects,
+                year=year,
+                month=month,
+                sum_annotation="stdav",
+                sum_column="stdav",
             )
             .annotate(qty=F("stdav") * ratio)
             .order_by("date")
         )
 
 
-class DrinkTargetModelService(BaseModelService[managers.DrinkTargetQuerySet]):
+class DrinkTargetModelService(BaseModelService):
     def get_queryset(self):
-        return cast(managers.DrinkTargetQuerySet, models.DrinkTarget.objects).related(
-            self.user
-        )
+        return models.DrinkTarget.objects.select_related("user").filter(user=self.user)
 
     def year(self, year):
         obj = DrinksOptions(self.user.drink_type)

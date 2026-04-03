@@ -28,7 +28,7 @@ def test_drink_related(main_user, second_user):
     DrinkFactory()
     DrinkFactory(user=second_user)
 
-    actual = Drink.objects.related(main_user)
+    actual = DrinkModelService(main_user).objects
 
     assert len(actual) == 1
     assert actual[0].user.username == "bob"
@@ -259,7 +259,7 @@ def test_drink_target_related(main_user):
     DrinkTargetFactory()
     DrinkTargetFactory(user=UserFactory(username="XXX", email="x@x.x"))
 
-    actual = DrinkTarget.objects.related(main_user)
+    actual = DrinkTargetModelService(main_user).objects
 
     assert len(actual) == 1
     assert actual[0].user.username == "bob"
