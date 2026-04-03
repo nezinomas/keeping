@@ -20,14 +20,17 @@ from django.db.models.functions import (
     TruncMonth,
 )
 
+from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
-from .. import managers, models
+from .. import models
 
 
-class ExpenseTypeModelService(BaseModelService[managers.ExpenseTypeQuerySet]):
+class ExpenseTypeModelService(BaseModelService):
     def get_queryset(self):
-        return cast(managers.ExpenseTypeQuerySet, models.ExpenseType.objects).related(
-            self.user
+        return (
+            models.ExpenseType.objects.select_related("journal")
+            .prefetch_related("expensename_set")
+            .filter(journal=self.user.journal)
         )
 
     def year(self, year: int):
@@ -39,10 +42,10 @@ class ExpenseTypeModelService(BaseModelService[managers.ExpenseTypeQuerySet]):
         return self.objects
 
 
-class ExpenseNameModelService(BaseModelService[managers.ExpenseNameQuerySet]):
+class ExpenseNameModelService(BaseModelService):
     def get_queryset(self):
-        return cast(managers.ExpenseNameQuerySet, models.ExpenseName.objects).related(
-            self.user
+        return models.ExpenseName.objects.select_related("parent").filter(
+            parent__journal=self.user.journal
         )
 
     def year(self, year: int):
@@ -55,9 +58,11 @@ class ExpenseNameModelService(BaseModelService[managers.ExpenseNameQuerySet]):
         return self.objects.none()
 
 
-class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
+class ExpenseModelService(SumMixin, BaseModelService):
     def get_queryset(self):
-        return cast(managers.ExpenseQuerySet, models.Expense.objects).related(self.user)
+        return models.Expense.objects.select_related(
+            "expense_type", "expense_name", "account"
+        ).filter(expense_type__journal=self.user.journal)
 
     def year(self, year: int):
         return self.objects.filter(date__year=year)
@@ -66,7 +71,7 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
         return self.objects.all()
 
     def sum_by_month(self, year: int):
-        return self.objects.month_sum(year).annotate(title=Value("expenses"))
+        return self.month_sum(self.objects, year).annotate(title=Value("expenses"))
 
     def sum_by_month_and_type(self, year: int):
         """
@@ -119,7 +124,7 @@ class ExpenseModelService(BaseModelService[managers.ExpenseQuerySet]):
         )
 
     def sum_by_year(self):
-        return self.objects.year_sum()
+        return self.year_sum(self.objects)
 
     def sum_by_year_type(self, expense_type: list | None = None):
         objects = (

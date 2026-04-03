@@ -38,7 +38,8 @@ class Index(GetMonthMixin, TemplateViewMixin):
 
 
 class Lists(GetMonthMixin, ListViewMixin):
-    model = models.Expense
+    template_name = "expenses/expense_list.html"
+    service_class = ExpenseModelService
 
     def get_queryset(self):
         month = self.get_month()
@@ -69,7 +70,7 @@ class Lists(GetMonthMixin, ListViewMixin):
 
 
 class New(CreateViewMixin):
-    model = models.Expense
+    service_class = ExpenseModelService
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_form = "reload"
@@ -78,7 +79,7 @@ class New(CreateViewMixin):
 
 
 class Update(ConvertPriceMixin, UpdateViewMixin):
-    model = models.Expense
+    service_class = ExpenseModelService
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_django = "reload"
@@ -87,7 +88,7 @@ class Update(ConvertPriceMixin, UpdateViewMixin):
 
 
 class Delete(DeleteViewMixin):
-    model = models.Expense
+    service_class = ExpenseModelService
     success_url = reverse_lazy("expenses:list")
     modal_form_title = _("Delete expense")
 
@@ -104,17 +105,11 @@ class LoadExpenseName(ListViewMixin):
     object_list = []
 
     def get(self, request, *args, **kwargs):
-        expense_type_pk = request.GET.get("expense_type")
-
-        try:
-            expense_type_pk = int(expense_type_pk)
-        except (ValueError, TypeError):
-            expense_type_pk = None
-
-        if expense_type_pk:
+        if expense_type_pk := request.GET.get("expense_type", None):
             self.object_list = (
                 ExpenseNameModelService(request.user)
                 .year(request.user.year)
                 .filter(parent=expense_type_pk)
             )
+
         return self.render_to_response({"object_list": self.object_list})
