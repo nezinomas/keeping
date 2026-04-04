@@ -1,3 +1,5 @@
+from functools import partial
+
 from django.core.exceptions import ImproperlyConfigured
 from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.utils.functional import cached_property
@@ -72,21 +74,23 @@ class FormsetMixin:
         return return_list
 
     def get_formset(self, post=None, **kwargs):
-        initial_data = self.formset_initial()
-
-        formset = modelformset_factory(
+        factory_blueprint = partial(
+            modelformset_factory,
             model=self.model_class,
             form=self.get_formset_class(),
             formset=BaseTypeFormSet,
-            extra=len(initial_data),
         )
 
-        return (
-            formset(post, **kwargs)
-            if post
-            else formset(
-                initial=initial_data, queryset=self.model_class.objects.none(), **kwargs
-            )
+        if post:
+            formset = factory_blueprint(extra=0)
+            return formset(post, **kwargs)
+
+        # GET: Extra forms match data length, pass initial data and empty queryset
+        initial_data = self.formset_initial()
+        formset = factory_blueprint(extra=len(initial_data))
+
+        return formset(
+            initial=initial_data, queryset=self.model_class.objects.none(), **kwargs
         )
 
     def post(self, request, *args, **kwargs):

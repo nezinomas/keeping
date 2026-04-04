@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 from django.core.exceptions import ImproperlyConfigured
-from mock import Mock
+from mock import ANY, Mock
 
 from ...mixins.formset import FormsetMixin
 from ..utils import setup_view
@@ -27,13 +27,12 @@ def test_model_type_without_foreignkey(fake_request):
 
     actual = view.formset_initial()
 
-    assert not actual 
+    assert not actual
 
 
 # ==========================================
 # 1. Dummy Framework Setup
 # ==========================================
-
 
 class DummyField:
     """Mocks Django's model field for the _meta introspection test."""
@@ -177,33 +176,46 @@ def test_formset_initial_populates_via_category_service_class(mocker):
 
 
 def test_get_formset_for_get_request(mocker):
-    """A GET request (post=None) should initialize the formset with formset_initial()."""
+    """A GET request (post=None) should initialize the formset with formset_initial() and extra=len."""
     view = TestView()
     mocker.patch.object(TestView, "model_class", create=True)
-    mocker.patch.object(TestView, "formset_initial", return_value=[{"initial": "data"}])
+    mocker.patch.object(
+        TestView, "formset_initial", return_value=[{"initial": "data"}]
+    )
 
-    # Mock the factory and the resulting formset class
     mock_formset_class = mocker.Mock()
+    # Save the factory mock to a variable so we can assert against it!
     mock_factory = mocker.patch(
         "project.core.mixins.formset.modelformset_factory",
         return_value=mock_formset_class,
     )
 
-    # Call it
     view.get_formset(post=None)
 
-    # Prove it injected the initial data
-    mock_formset_class.assert_called_once_with(initial=[{"initial": "data"}])
+    # 1. Prove the FACTORY was configured correctly (extra=1 because list length is 1)
+    mock_factory.assert_called_once_with(
+        model=view.model_class,
+        form=ANY,
+        formset=ANY,
+        extra=1,
+    )
+
+    # 2. Prove the initialized FORMSET received the right arguments
+    mock_formset_class.assert_called_once_with(
+        initial=[{"initial": "data"}],
+        queryset=view.model_class.objects.none(),
+    )
 
 
 def test_get_formset_for_post_request(mocker):
-    """A POST request should pass the POST data and IGNORE formset_initial()."""
+    """A POST request should pass the POST data, set extra=0, and IGNORE formset_initial()."""
     view = TestView()
     mocker.patch.object(TestView, "model_class", create=True)
     mock_formset_initial = mocker.patch.object(TestView, "formset_initial")
 
     mock_formset_class = mocker.Mock()
-    mocker.patch(
+    # Save the factory mock here as well
+    mock_factory = mocker.patch(
         "project.core.mixins.formset.modelformset_factory",
         return_value=mock_formset_class,
     )
@@ -211,7 +223,15 @@ def test_get_formset_for_post_request(mocker):
     post_data = {"form-TOTAL_FORMS": 2}
     view.get_formset(post=post_data)
 
-    # Prove it passed the POST data and did NOT call initial
+    # 1. Prove the FACTORY was configured to NOT render extra blank forms
+    mock_factory.assert_called_once_with(
+        model=view.model_class,
+        form=ANY,
+        formset=ANY,
+        extra=0,
+    )
+
+    # 2. Prove it passed the POST data and did NOT call initial
     mock_formset_class.assert_called_once_with(post_data)
     mock_formset_initial.assert_not_called()
 
