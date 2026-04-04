@@ -1,7 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 
+
 class GetQuerysetMixin:
-    object = None
     service_class = None
 
     def get_queryset(self):
