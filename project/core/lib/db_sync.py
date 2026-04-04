@@ -158,9 +158,9 @@ class BalanceSynchronizer:
             fields["id"] = row["id"]
 
         service = self.model_service_class(self.user)
-        DjangoModelClass = service.objects.model
+        model_class = service.objects.model
 
-        return DjangoModelClass(**fields)
+        return model_class(**fields)
 
     def sync(self) -> None:
         inserts, updates, deletes = self._identify_operations()

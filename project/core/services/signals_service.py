@@ -2,7 +2,6 @@ from typing import Optional
 
 from django.db import models
 
-from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import (
     AccountBalanceModelService,
     AccountModelService,
@@ -15,13 +14,11 @@ from ...bookkeeping.services.model_services import (
 from ...debts.services.model_services import DebtModelService, DebtReturnModelService
 from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
-from ...pensions.models import PensionBalance
 from ...pensions.services.model_services import (
     PensionBalanceModelService,
     PensionModelService,
     PensionTypeModelService,
 )
-from ...savings.models import SavingBalance
 from ...savings.services.model_services import (
     SavingBalanceModelService,
     SavingModelService,
