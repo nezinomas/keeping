@@ -54,7 +54,7 @@ def test_count_str():
 
 
 def test_count_related(main_user, different_users):
-    actual = Count.objects.related(main_user)
+    actual = CountModelService(main_user).objects
 
     assert len(actual) == 2
     assert actual[0].user.username == "bob"
@@ -189,7 +189,7 @@ def test_count_type_related(main_user, second_user):
     CountTypeFactory(title="X1")
     CountTypeFactory(title="X2", user=second_user)
 
-    actual = CountType.objects.related(main_user)
+    actual = CountTypeModelService(main_user).objects
 
     assert actual.count() == 1
     assert actual[0].title == "X1"
