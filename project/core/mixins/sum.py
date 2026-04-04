@@ -39,11 +39,14 @@ class SumMixin:
         qs = self.month_filter(qs, month)
         return (
             qs
-            .annotate(grouped_by=Count(groupby), month=TruncMonth("date"))
-            .values("grouped_by", "month")
+            .annotate(cnt=Count(groupby))
+            .values(groupby)
+            .annotate(date=TruncMonth("date"))
+            .values("date")
+            .annotate(c=Count("id"))
             .annotate(**{sum_annotation: Sum(sum_column)})
-            .order_by("month")
-            .values(sum_annotation, date=F("month"))
+            .order_by("date")
+            .values("date", sum_annotation)
         )
 
     def day_sum(
@@ -59,9 +62,10 @@ class SumMixin:
         qs = self.month_filter(qs, month)
         return (
             qs
-            .annotate(grouped_by=Count(groupby), day=TruncDay("date"))
-            .values("grouped_by", "day")
+            .annotate(c=Count(groupby))
+            .values("c")
+            .annotate(date=TruncDay("date"))
             .annotate(**{sum_annotation: Sum(sum_column)})
-            .order_by("day")
-            .values(sum_annotation, date=F("day"))
+            .order_by("date")
+            .values("date", sum_annotation)
         )
