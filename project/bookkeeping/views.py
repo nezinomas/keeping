@@ -4,6 +4,12 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
+from project.bookkeeping.services.model_services import (
+    AccountWorthModelService,
+    PensionWorthModelService,
+    SavingWorthModelService,
+)
+
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.date import monthnames_abbr
 from ..core.lib.utils import rendered_content
@@ -15,7 +21,7 @@ from ..core.mixins.views import (
 )
 from ..pensions.services.model_services import PensionTypeModelService
 from ..savings.services.model_services import SavingTypeModelService
-from . import forms, models, services
+from . import forms, services
 from .lib import no_incomes
 from .mixins.month import MonthMixin
 
@@ -69,8 +75,8 @@ class Accounts(TemplateViewMixin):
 
 
 class AccountsWorthNew(FormsetMixin, CreateViewMixin):
-    model = models.AccountWorth
-    model_service = AccountModelService
+    service_class = AccountWorthModelService
+    category_service_class = AccountModelService
     form_class = forms.AccountWorthForm
     modal_form_title = _("Worth of accounts")
     url = reverse_lazy("bookkeeping:accounts_worth_new")
@@ -87,8 +93,8 @@ class Savings(TemplateViewMixin):
 
 
 class SavingsWorthNew(FormsetMixin, CreateViewMixin):
-    model = models.SavingWorth
-    model_service = SavingTypeModelService
+    service_class = SavingWorthModelService
+    category_service_class = SavingTypeModelService
     form_class = forms.SavingWorthForm
     modal_form_title = _("Worth of savings")
     url = reverse_lazy("bookkeeping:savings_worth_new")
@@ -106,8 +112,8 @@ class Pensions(TemplateViewMixin):
 
 
 class PensionsWorthNew(FormsetMixin, CreateViewMixin):
-    model = models.PensionWorth
-    model_service = PensionTypeModelService
+    service_class = PensionWorthModelService
+    category_service_class = PensionTypeModelService
     form_class = forms.PensionWorthForm
     modal_form_title = _("Worth of pensions")
     url = reverse_lazy("bookkeeping:pensions_worth_new")
