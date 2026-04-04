@@ -1,6 +1,5 @@
 from django.core.exceptions import ImproperlyConfigured
-from django.forms.formsets import BaseFormSet
-from django.forms.models import modelformset_factory
+from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
 
@@ -15,7 +14,7 @@ SIGNALS = {
 }
 
 
-class BaseTypeFormSet(BaseFormSet):
+class BaseTypeFormSet(BaseModelFormSet):
     def clean(self):
         # if forms have errors, don't run formset clean
         if any(self.errors):
@@ -73,16 +72,21 @@ class FormsetMixin:
         return return_list
 
     def get_formset(self, post=None, **kwargs):
+        initial_data = self.formset_initial()
+
         formset = modelformset_factory(
             model=self.model_class,
             form=self.get_formset_class(),
             formset=BaseTypeFormSet,
-            extra=0,
+            extra=len(initial_data),
         )
+
         return (
             formset(post, **kwargs)
             if post
-            else formset(initial=self.formset_initial(), **kwargs)
+            else formset(
+                initial=initial_data, queryset=self.model_class.objects.none(), **kwargs
+            )
         )
 
     def post(self, request, *args, **kwargs):
