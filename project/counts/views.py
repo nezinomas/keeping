@@ -137,7 +137,7 @@ class TabHistory(TemplateViewMixin):
 
 
 class New(CountUrlMixin, CreateViewMixin):
-    model = Count
+    service_class = CountModelService
     form_class = CountForm
     modal_form_title = _("Counter")
 
@@ -164,14 +164,14 @@ class New(CountUrlMixin, CreateViewMixin):
 
 
 class Update(CountUrlMixin, UpdateViewMixin):
-    model = Count
+    service_class = CountModelService
     form_class = CountForm
     hx_trigger_django = "reloadData"
     modal_form_title = _("Counter")
 
 
 class Delete(CountUrlMixin, DeleteViewMixin):
-    model = Count
+    service_class = CountModelService
     hx_trigger_django = "reloadData"
     modal_form_title = _("Delete counter")
 
@@ -189,7 +189,7 @@ class TypeUrlMixin:
 
 
 class TypeNew(TypeUrlMixin, CreateViewMixin):
-    model = CountType
+    service_class = CountTypeModelService
     url_name = "type_new"
     form_class = CountTypeForm
     hx_trigger_django = "afterType"
@@ -197,7 +197,7 @@ class TypeNew(TypeUrlMixin, CreateViewMixin):
 
 
 class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
-    model = CountType
+    service_class = CountTypeModelService
     url_name = "type_update"
     form_class = CountTypeForm
     hx_trigger_django = "afterType"
@@ -205,7 +205,7 @@ class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
 
 
 class TypeDelete(TypeUrlMixin, DeleteViewMixin):
-    model = CountType
+    service_class = CountTypeModelService
     url_name = "type_delete"
     hx_trigger_django = "afterType"
     hx_redirect = reverse_lazy("counts:redirect")

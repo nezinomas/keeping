@@ -12,7 +12,7 @@ from ...core.lib.date import monthnames
 from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
 from ...plans.models import IncomePlan
-from ...plans.services.model_services import ModelService
+from ...plans.services.model_services import IncomePlanModelService
 from ...savings.services.model_services import SavingModelService
 from ...transactions.services.model_services import SavingCloseModelService
 from ...users.models import User
@@ -36,7 +36,7 @@ class Data:
             SavingCloseModelService(self.user).sum_by_month(self.year)
         )
         planned_incomes = self._make_planned_data(
-            ModelService(cast(models.Model, IncomePlan), self.user)
+            IncomePlanModelService(self.user)
             .year(self.year)
             .values(*monthnames())
         )

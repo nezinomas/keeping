@@ -1,44 +1,8 @@
-from types import SimpleNamespace
-
 import pytest
-from django.core.exceptions import ImproperlyConfigured
-from mock import Mock
 
 from ....expenses.models import Expense
 from ....expenses.tests.factories import ExpenseFactory
-from ...mixins import queryset, views
-
-
-@pytest.mark.xfail
-def test_queryset_fail():
-    class Dummy(queryset.GetQuerysetMixin):
-        model = SimpleNamespace(objects=SimpleNamespace())
-
-    Dummy().get_queryset()
-
-
-def test_queryset_retun_qs():
-    class Dummy(queryset.GetQuerysetMixin):
-        model = SimpleNamespace(
-            _meta=SimpleNamespace(verbose_name="ModelName"),
-            objects=SimpleNamespace(related=lambda user: "xxx"),
-        )
-        request = Mock()
-
-    actual = Dummy().get_queryset()
-
-    assert actual == "xxx"
-
-
-def test_queryset_raises_improperly_configured():
-    class Dummy(queryset.GetQuerysetMixin):
-        model = None
-        request = Mock()
-
-    with pytest.raises(ImproperlyConfigured) as exc:
-        Dummy().get_queryset()
-
-    assert "Dummy is missing a model definition. Define Dummy.model." in str(exc.value)
+from ...mixins import views
 
 
 def test_search_mixin_no_query():

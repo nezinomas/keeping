@@ -3,21 +3,18 @@ from django.db.models.functions import ExtractYear, TruncDay, TruncMonth, TruncY
 
 
 class SumMixin:
-    def year_filter(self, year, field="date"):
-        return self.filter(**{f"{field}__year": year}) if year else self
+    def year_filter(self, qs, year, field="date"):
+        return qs.filter(**{f"{field}__year": year}) if year else qs
 
-    year_filter.queryset_only = True
-
-    def month_filter(self, month, field="date"):
-        return self.filter(**{f"{field}__month": month}) if month else self
-
-    month_filter.queryset_only = True
+    def month_filter(self, qs, month, field="date"):
+        return qs.filter(**{f"{field}__month": month}) if month else qs
 
     def year_sum(
-        self, year=None, sum_annotation="sum", groupby="id", sum_column="price"
+        self, qs, year=None, sum_annotation="sum", groupby="id", sum_column="price"
     ):
+        qs = self.year_filter(qs, year)
         return (
-            self.year_filter(year)
+            qs
             .annotate(cnt=Count(groupby))
             .values(groupby)
             .annotate(date=TruncYear("date"))
@@ -29,14 +26,19 @@ class SumMixin:
             .values("year", sum_annotation)
         )
 
-    year_sum.queryset_only = True
-
     def month_sum(
-        self, year, month=None, sum_annotation="sum", sum_column="price", groupby="id"
+        self,
+        qs,
+        year,
+        month=None,
+        sum_annotation="sum",
+        sum_column="price",
+        groupby="id",
     ):
+        qs = self.year_filter(qs, year)
+        qs = self.month_filter(qs, month)
         return (
-            self.year_filter(year)
-            .month_filter(month)
+            qs
             .annotate(cnt=Count(groupby))
             .values(groupby)
             .annotate(date=TruncMonth("date"))
@@ -47,14 +49,19 @@ class SumMixin:
             .values("date", sum_annotation)
         )
 
-    month_sum.queryset_only = True
-
     def day_sum(
-        self, year, month=None, sum_annotation="sum", sum_column="price", groupby="id"
+        self,
+        qs,
+        year,
+        month=None,
+        sum_annotation="sum",
+        sum_column="price",
+        groupby="id",
     ):
+        qs = self.year_filter(qs, year)
+        qs = self.month_filter(qs, month)
         return (
-            self.year_filter(year)
-            .month_filter(month)
+            qs
             .annotate(c=Count(groupby))
             .values("c")
             .annotate(date=TruncDay("date"))
@@ -62,5 +69,3 @@ class SumMixin:
             .order_by("date")
             .values("date", sum_annotation)
         )
-
-    day_sum.queryset_only = True

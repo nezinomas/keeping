@@ -3,14 +3,15 @@ from django.utils.translation import gettext_lazy as _
 
 from ...core.mixins.views import CreateViewMixin, ListViewMixin, UpdateViewMixin
 from .. import forms, models
+from ..services.model_services import ExpenseTypeModelService
 
 
 class Lists(ListViewMixin):
-    model = models.ExpenseType
-
+    service_class = ExpenseTypeModelService
+    template_name = "expenses/expensetype_list.html"
 
 class New(CreateViewMixin):
-    model = models.ExpenseType
+    service_class = ExpenseTypeModelService
     form_class = forms.ExpenseTypeForm
     hx_trigger_django = "afterType"
     modal_form_title = _("Expense type")
@@ -19,7 +20,7 @@ class New(CreateViewMixin):
 
 
 class Update(UpdateViewMixin):
-    model = models.ExpenseType
+    service_class = ExpenseTypeModelService
     form_class = forms.ExpenseTypeForm
     hx_trigger_django = "afterType"
     modal_form_title = _("Expense type")

@@ -1,6 +1,8 @@
 from datetime import date as dt
 
+import factory
 import pytest
+from django.db.models.signals import post_save
 
 from ....accounts.models import AccountBalance
 from ....accounts.services.model_services import AccountBalanceModelService
@@ -38,6 +40,7 @@ def test_debt_return_fields():
     assert DebtReturn._meta.get_field("remark")
 
 
+@factory.django.mute_signals(post_save)
 def test_lend_return_related(main_user, second_user):
     b1 = LendFactory(name="B1", price=1)
     b2 = LendFactory(name="B2", price=2, journal=second_user.journal)
@@ -45,12 +48,13 @@ def test_lend_return_related(main_user, second_user):
     LendReturnFactory(debt=b1, price=1.1)
     LendReturnFactory(debt=b2, price=2.1)
 
-    actual = DebtReturn.objects.related(main_user, "lend")
+    actual = DebtReturnModelService(main_user, "lend").objects
 
     assert actual.count() == 1
     assert str(actual[0]) == "Grąžino 0.01"
 
 
+@factory.django.mute_signals(post_save)
 def test_borrow_return_related(main_user, second_user):
     b1 = BorrowFactory(name="B1", price=1)
     b2 = BorrowFactory(name="B2", price=2, journal=second_user.journal)
@@ -58,22 +62,24 @@ def test_borrow_return_related(main_user, second_user):
     BorrowReturnFactory(debt=b1, price=1.1)
     BorrowReturnFactory(debt=b2, price=2.1)
 
-    actual = DebtReturn.objects.related(main_user, "borrow")
+    actual = DebtReturnModelService(main_user, "borrow").objects
 
     assert actual.count() == 1
     assert str(actual[0]) == "Grąžinau 0.01"
 
 
+@factory.django.mute_signals(post_save)
 def test_lend_return_related_queries(main_user, django_assert_num_queries):
     LendReturnFactory()
     LendReturnFactory()
 
     with django_assert_num_queries(1):
         list(
-            x.account.title for x in list(DebtReturn.objects.related(main_user, "lend"))
+            x.account.title for x in list(DebtReturnModelService(main_user, "lend").objects)
         )
 
 
+@factory.django.mute_signals(post_save)
 def test_lend_return_items(main_user):
     LendReturnFactory()
     LendReturnFactory()
@@ -83,6 +89,7 @@ def test_lend_return_items(main_user):
     assert actual.count() == 2
 
 
+@factory.django.mute_signals(post_save)
 def test_lend_return_year(main_user):
     LendReturnFactory()
     LendReturnFactory(date=dt(1974, 1, 2))
@@ -92,6 +99,7 @@ def test_lend_return_year(main_user):
     assert actual.count() == 1
 
 
+@factory.django.mute_signals(post_save)
 def test_lend_return_sum_by_month(main_user):
     LendReturnFactory()
     LendReturnFactory(date=dt(1974, 3, 2), price=1)
@@ -102,7 +110,7 @@ def test_lend_return_sum_by_month(main_user):
 
     assert list(actual) == [{"date": dt(1974, 3, 1), "title": "lend_return", "sum": 6}]
 
-
+@factory.django.mute_signals(post_save)
 def test_borrow_return_sum_by_month(main_user):
     BorrowReturnFactory()
     BorrowReturnFactory(date=dt(1974, 3, 2), price=1)
@@ -371,6 +379,7 @@ def test_borrow_return_post_delete_with_updt():
     assert actual.balance == 99
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_return_incomes(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
@@ -387,7 +396,7 @@ def test_debt_return_incomes(main_user):
 
     BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
 
-    actual = DebtReturn.objects.incomes(main_user)
+    actual = DebtReturnModelService(main_user, "lend").incomes()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -406,6 +415,7 @@ def test_debt_return_incomes(main_user):
     assert actual[3]["incomes"] == 70
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_return_expenses(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
@@ -422,7 +432,7 @@ def test_debt_return_expenses(main_user):
 
     LendReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
 
-    actual = DebtReturn.objects.expenses(main_user)
+    actual = DebtReturnModelService(main_user, "borrow").expenses()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -441,6 +451,7 @@ def test_debt_return_expenses(main_user):
     assert actual[3]["expenses"] == 70
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_return_total_returned_for_debt(main_user):
     debt1 = LendFactory(name="A")
     debt2 = LendFactory(name="Z")

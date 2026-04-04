@@ -1,14 +1,16 @@
 from django.core.exceptions import ImproperlyConfigured
 
+
 class GetQuerysetMixin:
-    object = None
+    service_class = None
 
     def get_queryset(self):
-        # 1. Protect against developer error (forgetting to set the model)
-        if self.model is None:
+        if self.service_class is None:
             raise ImproperlyConfigured(
-                f"{self.__class__.__name__} is missing a model definition. "
-                f"Define {self.__class__.__name__}.model."
+                f"[{self.__class__.__module__}.{self.__class__.__name__}] is missing a data source. "
+                f"Please define the correct model service class in 'service_class' "
             )
 
-        return self.model.objects.related(self.request.user)
+        service = self.service_class(self.request.user)
+
+        return service.objects

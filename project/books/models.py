@@ -7,7 +7,6 @@ from django.db import models
 from django.urls import reverse_lazy
 
 from ..users.models import User
-from .managers import BooksQuerySet, BookTargetQuerySet
 
 
 class Book(models.Model):
@@ -17,8 +16,6 @@ class Book(models.Model):
     title = models.CharField(max_length=254, validators=[MinLengthValidator(2)])
     remark = models.TextField(max_length=200, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="books")
-
-    objects = BooksQuerySet.as_manager()
 
     class Meta:
         ordering = ["-started", "author"]
@@ -35,8 +32,6 @@ class BookTarget(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="book_targets"
     )
-
-    objects = BookTargetQuerySet.as_manager()
 
     class Meta:
         ordering = ["-year"]

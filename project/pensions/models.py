@@ -4,7 +4,6 @@ from django.urls import reverse_lazy
 
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
-from . import managers
 
 
 class PensionType(TitleAbstract):
@@ -16,8 +15,6 @@ class PensionType(TitleAbstract):
         blank=True,
         null=True,
     )
-    # Managers
-    objects = managers.PensionTypeQuerySet.as_manager()
 
     class Meta:
         unique_together = ["journal", "title"]
@@ -30,9 +27,6 @@ class Pension(models.Model):
     fee = models.PositiveIntegerField(null=True, blank=True)
     remark = models.TextField(max_length=1000, blank=True)
     pension_type = models.ForeignKey(PensionType, on_delete=models.CASCADE)
-
-    # managers
-    objects = managers.PensionQuerySet.as_manager()
 
     class Meta:
         ordering = ["-date", "price"]
@@ -60,9 +54,6 @@ class PensionBalance(models.Model):
     market_value = models.IntegerField(default=0)
     profit_sum = models.IntegerField(default=0)
     profit_proc = models.FloatField(default=0.0)
-
-    # Managers
-    objects = managers.PensionBalanceQuerySet.as_manager()
 
     class Meta:
         ordering = ["year", "pension_type__pk"]

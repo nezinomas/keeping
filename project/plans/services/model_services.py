@@ -1,22 +1,45 @@
-from typing import Any, cast
-
-from django.db.models import Model
-
 from ...core.services.model_services import BaseModelService
-from ...users.models import User
+from .. import models
 
 
-class ModelService(BaseModelService):
-    def __init__(self, model: Model, user: User):
-        self.model_cls = model
-
-        super().__init__(user)
-
-    def get_queryset(self):
-        return cast(Any, self.model_cls.objects).related(self.user)
-
+class CommonMethodsMixin:
     def year(self, year):
         return self.objects.filter(year=year)
 
     def items(self):
         return self.objects
+
+
+class IncomePlanModelService(CommonMethodsMixin, BaseModelService):
+    def get_queryset(self):
+        return models.IncomePlan.objects.select_related(
+            "journal", "income_type"
+        ).filter(journal=self.user.journal)
+
+
+class ExpensePlanModelService(CommonMethodsMixin, BaseModelService):
+    def get_queryset(self):
+        return models.ExpensePlan.objects.select_related(
+            "journal", "expense_type"
+        ).filter(journal=self.user.journal)
+
+
+class SavingPlanModelService(CommonMethodsMixin, BaseModelService):
+    def get_queryset(self):
+        return models.SavingPlan.objects.select_related(
+            "journal", "saving_type"
+        ).filter(journal=self.user.journal)
+
+
+class DayPlanModelService(CommonMethodsMixin, BaseModelService):
+    def get_queryset(self):
+        return models.DayPlan.objects.select_related("journal").filter(
+            journal=self.user.journal
+        )
+
+
+class NecessaryPlanModelService(CommonMethodsMixin, BaseModelService):
+    def get_queryset(self):
+        return models.NecessaryPlan.objects.select_related("journal").filter(
+            journal=self.user.journal
+        )

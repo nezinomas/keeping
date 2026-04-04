@@ -1,12 +1,15 @@
-from typing import cast
-
+from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
-from .. import managers, models
+from .. import models
 
 
-class CountModelService(BaseModelService[managers.CountQuerySet]):
+class CountModelService(SumMixin, BaseModelService):
     def get_queryset(self):
-        return cast(managers.CountQuerySet, models.Count.objects).related(self.user)
+        return (
+            models.Count.objects.select_related("user")
+            .filter(user=self.user)
+            .order_by("-date")
+        )
 
     def year(self, year, count_type=None):
         qs = self.objects
@@ -32,7 +35,7 @@ class CountModelService(BaseModelService[managers.CountQuerySet]):
         if count_type:
             qs = qs.filter(count_type__slug=count_type)
 
-        return qs.year_sum(
+        return self.year_sum(qs,
             year=year, sum_annotation="qty", sum_column="quantity"
         ).order_by("date")
 
@@ -44,16 +47,14 @@ class CountModelService(BaseModelService[managers.CountQuerySet]):
         if count_type:
             qs = qs.filter(count_type__slug=count_type)
 
-        return qs.day_sum(
+        return self.day_sum(qs,
             year=year, month=month, sum_annotation="qty", sum_column="quantity"
         ).order_by("date")
 
 
-class CountTypeModelService(BaseModelService[managers.CountTypeQuerySet]):
+class CountTypeModelService(BaseModelService):
     def get_queryset(self):
-        return cast(managers.CountTypeQuerySet, models.CountType.objects).related(
-            self.user
-        )
+        return models.CountType.objects.select_related("user").filter(user=self.user)
 
     def year(self, year):
         raise NotImplementedError(

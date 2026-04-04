@@ -73,7 +73,7 @@ def test_pension_related(main_user, second_user):
     PensionFactory(pension_type=t1)
     PensionFactory(pension_type=t2)
 
-    actual = Pension.objects.related(main_user)
+    actual = PensionModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].pension_type) == "T1"
@@ -286,7 +286,7 @@ def test_pension_balance_related_for_user(main_user, second_user):
     # Two records for second_user, and two for main_user
     assert PensionBalance.objects.count() == 4
 
-    actual = PensionBalance.objects.related(main_user)
+    actual = PensionBalanceModelService(main_user).objects
 
     assert len(actual) == 2
     assert str(actual[0].pension_type) == "P1"
@@ -338,7 +338,7 @@ def test_pension_balance_sorting(main_user):
     PensionBalanceFactory(year=2000, pension_type=p1)
     PensionBalanceFactory(year=1999, pension_type=p1)
 
-    actual = PensionBalance.objects.related(main_user)
+    actual = PensionBalanceModelService(main_user).objects
 
     assert actual[0].year == 1999
     assert actual[0].pension_type == p1

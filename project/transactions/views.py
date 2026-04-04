@@ -57,7 +57,8 @@ class LoadSavingType(ListViewMixin):
 
 
 class Lists(ListViewMixin):
-    model = models.Transaction
+    template_name = "transactions/transaction_list.html"
+    service_class = TransactionModelService
 
     def get_queryset(self):
         user = self.request.user
@@ -65,7 +66,7 @@ class Lists(ListViewMixin):
 
 
 class New(CreateViewMixin):
-    model = models.Transaction
+    service_class = TransactionModelService
     form_class = forms.TransactionForm
     hx_trigger_form = "afterTransaction"
     success_url = reverse_lazy("transactions:list")
@@ -73,7 +74,7 @@ class New(CreateViewMixin):
 
 
 class Update(ConvertPriceMixin, UpdateViewMixin):
-    model = models.Transaction
+    service_class = TransactionModelService
     form_class = forms.TransactionForm
     hx_trigger_django = "afterTransaction"
     success_url = reverse_lazy("transactions:list")
@@ -81,14 +82,15 @@ class Update(ConvertPriceMixin, UpdateViewMixin):
 
 
 class Delete(DeleteViewMixin):
-    model = models.Transaction
+    service_class = TransactionModelService
     hx_trigger_django = "afterTransaction"
     success_url = reverse_lazy("transactions:list")
     modal_form_title = _("Delete transaction")
 
 
 class SavingsCloseLists(ListViewMixin):
-    model = models.SavingClose
+    template_name = "transactions/savingclose_list.html"
+    service_class = SavingCloseModelService
 
     def get_queryset(self):
         user = self.request.user
@@ -96,7 +98,7 @@ class SavingsCloseLists(ListViewMixin):
 
 
 class SavingsCloseNew(CreateViewMixin):
-    model = models.SavingClose
+    service_class = SavingCloseModelService
     form_class = forms.SavingCloseForm
     hx_trigger_form = "afterClose"
     url_name = "savings_close_new"
@@ -106,7 +108,7 @@ class SavingsCloseNew(CreateViewMixin):
 
 
 class SavingsCloseUpdate(ConvertPriceMixin, UpdateViewMixin):
-    model = models.SavingClose
+    service_class = SavingCloseModelService
     form_class = forms.SavingCloseForm
     hx_trigger_django = "afterClose"
     url_name = "savings_close_update"
@@ -116,7 +118,7 @@ class SavingsCloseUpdate(ConvertPriceMixin, UpdateViewMixin):
 
 
 class SavingsCloseDelete(DeleteViewMixin):
-    model = models.SavingClose
+    service_class = SavingCloseModelService
     hx_trigger_django = "afterClose"
     url_name = "savings_close_delete"
 
@@ -125,7 +127,8 @@ class SavingsCloseDelete(DeleteViewMixin):
 
 
 class SavingsChangeLists(ListViewMixin):
-    model = models.SavingChange
+    template_name = "transactions/savingchange_list.html"
+    service_class = SavingChangeModelService
 
     def get_queryset(self):
         user = self.request.user
@@ -133,7 +136,7 @@ class SavingsChangeLists(ListViewMixin):
 
 
 class SavingsChangeNew(CreateViewMixin):
-    model = models.SavingChange
+    service_class = SavingChangeModelService
     form_class = forms.SavingChangeForm
     hx_trigger_form = "afterChange"
     url_name = "savings_change_new"
@@ -143,7 +146,7 @@ class SavingsChangeNew(CreateViewMixin):
 
 
 class SavingsChangeUpdate(ConvertPriceMixin, UpdateViewMixin):
-    model = models.SavingChange
+    service_class = SavingChangeModelService
     form_class = forms.SavingChangeForm
     hx_trigger_django = "afterChange"
     url_name = "savings_change_update"
@@ -153,7 +156,7 @@ class SavingsChangeUpdate(ConvertPriceMixin, UpdateViewMixin):
 
 
 class SavingsChangeDelete(DeleteViewMixin):
-    model = models.SavingChange
+    service_class = SavingChangeModelService
     hx_trigger_django = "afterChange"
     url_name = "savings_change_delete"
 

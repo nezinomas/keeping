@@ -50,7 +50,7 @@ class TabIndex(TemplateViewMixin):
 
 
 class TabData(ListViewMixin):
-    model = models.Drink
+    service_class = DrinkModelService
     template_name = "drinks/tab_data.html"
 
     def get_queryset(self):
@@ -122,7 +122,7 @@ class CompareTwo(FormViewMixin):
 
 
 class New(CreateViewMixin):
-    model = models.Drink
+    service_class = DrinkModelService
     form_class = forms.DrinkForm
     success_url = reverse_lazy("drinks:tab_data")
     modal_form_title = _("Drinks")
@@ -145,7 +145,7 @@ class New(CreateViewMixin):
 
 
 class Update(UpdateViewMixin):
-    model = models.Drink
+    service_class = DrinkModelService
     form_class = forms.DrinkForm
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
@@ -153,14 +153,15 @@ class Update(UpdateViewMixin):
 
 
 class Delete(DeleteViewMixin):
-    model = models.Drink
+    service_class = DrinkModelService
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
     modal_form_title = _("Delete drinks")
 
 
 class TargetLists(ListViewMixin):
-    model = models.DrinkTarget
+    template_name = "drinks/drinktarget_list.html"
+    service_class = DrinkTargetModelService
 
     def get_queryset(self):
         user = cast(User, self.request.user)
@@ -168,7 +169,7 @@ class TargetLists(ListViewMixin):
 
 
 class TargetNew(CreateViewMixin):
-    model = models.DrinkTarget
+    service_class = DrinkTargetModelService
     form_class = forms.DrinkTargetForm
     success_url = reverse_lazy("drinks:index")
     modal_form_title = _("New goal")
@@ -191,7 +192,7 @@ class TargetNew(CreateViewMixin):
 
 
 class TargetUpdate(UpdateViewMixin):
-    model = models.DrinkTarget
+    service_class = DrinkTargetModelService
     form_class = forms.DrinkTargetForm
     hx_trigger_django = "reloadIndex"
     url_name = "target_update"

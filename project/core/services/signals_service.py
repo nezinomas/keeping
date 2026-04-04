@@ -2,59 +2,75 @@ from typing import Optional
 
 from django.db import models
 
-from ...accounts import models as account
-from ...accounts.models import AccountBalance
-from ...bookkeeping import models as bookkeeping
-from ...debts import models as debt
-from ...expenses import models as expense
-from ...incomes import models as income
-from ...pensions import models as pension
-from ...pensions.models import PensionBalance
-from ...savings import models as saving
-from ...savings.models import SavingBalance
-from ...transactions import models as transaction
+from ...accounts.services.model_services import (
+    AccountBalanceModelService,
+    AccountModelService,
+)
+from ...bookkeeping.services.model_services import (
+    AccountWorthModelService,
+    PensionWorthModelService,
+    SavingWorthModelService,
+)
+from ...debts.services.model_services import DebtModelService, DebtReturnModelService
+from ...expenses.services.model_services import ExpenseModelService
+from ...incomes.services.model_services import IncomeModelService
+from ...pensions.services.model_services import (
+    PensionBalanceModelService,
+    PensionModelService,
+    PensionTypeModelService,
+)
+from ...savings.services.model_services import (
+    SavingBalanceModelService,
+    SavingModelService,
+    SavingTypeModelService,
+)
+from ...transactions.services.model_services import (
+    SavingChangeModelService,
+    SavingCloseModelService,
+    TransactionModelService,
+)
 from ...users.models import User
 from ..lib.db_sync import BalanceSynchronizer
 from ..lib.signals import Accounts, GetData, Savings
 
 ACCOUNTS_CONF = {
     "incomes": (
-        income.Income,
-        debt.Debt,
-        debt.DebtReturn,
-        transaction.Transaction,
-        transaction.SavingClose,
+        lambda user: IncomeModelService(user).incomes(),
+        lambda user: DebtModelService(user, "borrow").incomes(),
+        lambda user: DebtReturnModelService(user, "lend").incomes(),
+        lambda user: TransactionModelService(user).incomes(),
+        lambda user: SavingCloseModelService(user).incomes(),
     ),
     "expenses": (
-        expense.Expense,
-        debt.Debt,
-        debt.DebtReturn,
-        transaction.Transaction,
-        saving.Saving,
+        lambda user: ExpenseModelService(user).expenses(),
+        lambda user: DebtModelService(user, "lend").expenses(),
+        lambda user: DebtReturnModelService(user, "borrow").expenses(),
+        lambda user: TransactionModelService(user).expenses(),
+        lambda user: SavingModelService(user).expenses(),
     ),
-    "have": (bookkeeping.AccountWorth,),
-    "types": (account.Account,),
+    "have": (lambda user: AccountWorthModelService(user).have(),),
+    "types": (lambda user: AccountModelService(user).all(),),
 }
 
 
 SAVINGS_CONF = {
     "incomes": (
-        saving.Saving,
-        transaction.SavingChange,
+        lambda user: SavingModelService(user).incomes(),
+        lambda user: SavingChangeModelService(user).incomes(),
     ),
     "expenses": (
-        transaction.SavingClose,
-        transaction.SavingChange,
+        lambda user: SavingCloseModelService(user).expenses(),
+        lambda user: SavingChangeModelService(user).expenses(),
     ),
-    "have": (bookkeeping.SavingWorth,),
-    "types": (saving.SavingType,),
+    "have": (lambda user: SavingWorthModelService(user).have(),),
+    "types": (lambda user: SavingTypeModelService(user).all(),),
 }
 
 
 PENSIONS_CONF = {
-    "incomes": (pension.Pension,),
-    "have": (bookkeeping.PensionWorth,),
-    "types": (pension.PensionType,),
+    "incomes": (lambda user: PensionModelService(user).incomes(),),
+    "have": (lambda user: PensionWorthModelService(user).have(),),
+    "types": (lambda user: PensionTypeModelService(user).items(),),
 }
 
 
@@ -66,7 +82,7 @@ def sync_accounts(instance: models.Model, user: Optional[User] = None):
     get_data = GetData(user, ACCOUNTS_CONF)
     data = Accounts(get_data)
 
-    BalanceSynchronizer(AccountBalance, user, data.df)
+    BalanceSynchronizer(AccountBalanceModelService, user, data.df)
 
 
 def sync_savings(instance: models.Model, user: Optional[User] = None):
@@ -77,7 +93,7 @@ def sync_savings(instance: models.Model, user: Optional[User] = None):
     get_data = GetData(user, SAVINGS_CONF)
     data = Savings(get_data)
 
-    BalanceSynchronizer(SavingBalance, user, data.df)
+    BalanceSynchronizer(SavingBalanceModelService, user, data.df)
 
 
 def sync_pensions(instance: models.Model, user: Optional[User] = None):
@@ -89,7 +105,7 @@ def sync_pensions(instance: models.Model, user: Optional[User] = None):
     get_data = GetData(user, PENSIONS_CONF)
     data = Savings(get_data)
 
-    BalanceSynchronizer(PensionBalance, user, data.df)
+    BalanceSynchronizer(PensionBalanceModelService, user, data.df)
 
 
 def _get_user_from_instance(instance: models.Model) -> Optional[User]:

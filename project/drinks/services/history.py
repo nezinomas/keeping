@@ -1,12 +1,12 @@
 from datetime import datetime
 
 import polars as pl
+from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 
 from ...users.models import User
 from .. import models
 from ..lib.drinks_options import DrinksOptions
-from ..managers import DrinkQuerySet
 from ..services.model_services import DrinkModelService
 
 
@@ -16,7 +16,7 @@ class HistoryService:
         self.options: DrinksOptions = DrinksOptions(user.drink_type)
 
         if data:
-            if isinstance(data, DrinkQuerySet):
+            if isinstance(data, QuerySet):
                 data = list(data)
 
             self.df = self._create_df(data)

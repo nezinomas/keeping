@@ -1,6 +1,8 @@
 from datetime import date as dt
 
+import factory
 import pytest
+from django.db.models.signals import post_save
 
 from ....accounts.services.model_services import AccountBalanceModelService
 from ....accounts.tests.factories import AccountBalance, AccountFactory
@@ -35,40 +37,44 @@ def test_lend_related(main_user, second_user):
     o = LendFactory()
     LendFactory(journal=second_user.journal)
 
-    actual = Debt.objects.related(main_user, "lend")
+    actual = DebtModelService(main_user, "lend").objects
 
     assert len(actual) == 1
     assert str(actual[0]) == str(o)
 
 
+@factory.django.mute_signals(post_save)
 def test_borrow_related(main_user, second_user):
     o = BorrowFactory()
     BorrowFactory(journal=second_user.journal)
 
-    actual = Debt.objects.related(main_user, "borrow")
+    actual = DebtModelService(main_user, "borrow").objects
 
     assert len(actual) == 1
     assert str(actual[0]) == str(o)
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_related_queries(main_user, django_assert_num_queries):
     LendFactory()
     LendFactory()
 
     with django_assert_num_queries(1):
-        list(x.account.title for x in list(Debt.objects.related(main_user, "lend")))
+        list(x.account.title for x in list(DebtModelService(main_user, "lend").objects))
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_sort(main_user):
     o1 = LendFactory(date=dt(1999, 1, 2))
     o2 = LendFactory(date=dt(1999, 12, 13))
 
-    actual = Debt.objects.related(main_user, "lend")
+    actual = DebtModelService(main_user, "lend").objects
 
     assert actual[0].date == o2.date
     assert actual[1].date == o1.date
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_items(main_user, second_user):
     o1 = LendFactory()
     o2 = LendFactory(closed=True)
@@ -81,6 +87,7 @@ def test_debt_items(main_user, second_user):
     assert str(actual[1]) == str(o2)
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_open_items(main_user, second_user):
     o1 = LendFactory(closed=False)
     LendFactory(closed=True)
@@ -93,6 +100,7 @@ def test_debt_open_items(main_user, second_user):
     assert actual[0].pk == o1.pk
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_year(main_user):
     o = LendFactory(name="N1", date=dt(1999, 2, 3))
     LendFactory(name="N2", date=dt(2999, 2, 3), price=2)
@@ -106,6 +114,7 @@ def test_debt_year(main_user):
     assert actual[0].price == 100
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_year_and_not_closed(main_user):
     o1 = LendFactory(date=dt(1974, 1, 1), closed=False)
     LendFactory(date=dt(1974, 12, 1), closed=True)
@@ -428,6 +437,7 @@ def test_debt_unique_users(second_user):
     LendFactory(name="T1", journal=second_user.journal)
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_sum_all_months(main_user):
     LendFactory(date=dt(1999, 1, 1), price=1, returned=1)
     LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
@@ -446,6 +456,7 @@ def test_debt_sum_all_months(main_user):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_sum_all_months_with_closed(main_user):
     LendFactory(date=dt(1999, 1, 1), price=1, returned=1)
     LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
@@ -464,6 +475,7 @@ def test_debt_sum_all_months_with_closed(main_user):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_sum_all_months_ordering(main_user, second_user):
     LendFactory(date=dt(1999, 1, 1), price=1)
     LendFactory(date=dt(1999, 1, 2), price=2)
@@ -478,6 +490,7 @@ def test_debt_sum_all_months_ordering(main_user, second_user):
     assert actual[1]["date"] == dt(1999, 2, 1)
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_sum_all_not_closed(main_user):
     LendFactory(date=dt(1999, 1, 1), price=12, closed=True)
     LendFactory(date=dt(1999, 1, 1), price=2, returned=1)
@@ -491,6 +504,7 @@ def test_debt_sum_all_not_closed(main_user):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_incomes(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
@@ -507,7 +521,7 @@ def test_debt_incomes(main_user):
 
     LendFactory()
 
-    actual = Debt.objects.incomes(main_user)
+    actual = DebtModelService(main_user, "borrow").incomes()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -526,6 +540,7 @@ def test_debt_incomes(main_user):
     assert actual[3]["incomes"] == 70
 
 
+@factory.django.mute_signals(post_save)
 def test_debt_expenses(main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
@@ -542,7 +557,7 @@ def test_debt_expenses(main_user):
 
     BorrowFactory()
 
-    actual = Debt.objects.expenses(main_user)
+    actual = DebtModelService(main_user, "lend").expenses()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

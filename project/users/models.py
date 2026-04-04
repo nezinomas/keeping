@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from ..journals.models import Journal
-from . import managers
 
 
 class User(AbstractUser):
@@ -11,8 +10,6 @@ class User(AbstractUser):
     journal = models.ForeignKey(Journal, on_delete=models.CASCADE, related_name="users")
     drink_type = models.CharField(max_length=16, default="beer")
     email = models.EmailField(unique=True)
-
-    objects = managers.KeepingUserManager()
 
     def __str__(self):
         return str(self.username)

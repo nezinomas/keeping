@@ -1,6 +1,7 @@
 import pytest
 
 from ..models import User
+from ..services.model_services import UserModelService
 from .factories import UserFactory
 
 pytestmark = pytest.mark.django_db
@@ -21,4 +22,4 @@ def test_user_reversed():
 
 def test_user_related_queries(main_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
-        list(x.journal.title for x in User.objects.related(main_user))
+        list(x.journal.title for x in UserModelService(main_user).objects)

@@ -3,7 +3,6 @@ from django.db import models
 from ..accounts.models import Account
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
-from . import managers
 
 
 class SavingWorth(models.Model):
@@ -20,9 +19,6 @@ class SavingWorth(models.Model):
     def __str__(self):
         return f"{self.date:%Y-%m-%d %H:%M} - {self.saving_type}"
 
-    # Managers
-    objects = managers.SavingWorthQuerySet.as_manager()
-
 
 class AccountWorth(models.Model):
     date = models.DateTimeField()
@@ -38,9 +34,6 @@ class AccountWorth(models.Model):
     def __str__(self):
         return f"{self.date:%Y-%m-%d %H:%M} - {self.account}"
 
-    # Managers
-    objects = managers.AccountWorthQuerySet.as_manager()
-
 
 class PensionWorth(models.Model):
     date = models.DateTimeField()
@@ -55,6 +48,3 @@ class PensionWorth(models.Model):
 
     def __str__(self):
         return f"{self.date:%Y-%m-%d %H:%M} - {self.pension_type}"
-
-    # Managers
-    objects = managers.PensionWorthQuerySet.as_manager()

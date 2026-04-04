@@ -12,7 +12,7 @@ class QuerySetMixin:
 
 
 class New(QuerySetMixin, CreateViewMixin):
-    model = models.ExpenseName
+    service_class = ExpenseNameModelService
     form_class = forms.ExpenseNameForm
     hx_trigger_django = "afterName"
     modal_form_title = _("Expense name")
@@ -21,7 +21,7 @@ class New(QuerySetMixin, CreateViewMixin):
 
 
 class Update(QuerySetMixin, UpdateViewMixin):
-    model = models.ExpenseName
+    service_class = ExpenseNameModelService
     form_class = forms.ExpenseNameForm
     hx_trigger_django = "afterName"
     modal_form_title = _("Expense name")

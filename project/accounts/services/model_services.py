@@ -3,12 +3,14 @@ from typing import Optional, cast
 from django.db.models import Q
 
 from ...core.services.model_services import BaseModelService
-from .. import managers, models
+from .. import models
 
 
-class AccountModelService(BaseModelService[managers.AccountQuerySet]):
+class AccountModelService(BaseModelService):
     def get_queryset(self):
-        return cast(managers.AccountQuerySet, models.Account.objects).related(self.user)
+        return models.Account.objects.select_related("journal").filter(
+            journal=self.user.journal
+        )
 
     def year(self, year: int):
         raise NotImplementedError(
@@ -26,11 +28,11 @@ class AccountModelService(BaseModelService[managers.AccountQuerySet]):
         return self.objects.none()
 
 
-class AccountBalanceModelService(BaseModelService[managers.AccountBalanceQuerySet]):
+class AccountBalanceModelService(BaseModelService):
     def get_queryset(self):
-        return cast(
-            managers.AccountBalanceQuerySet, models.AccountBalance.objects
-        ).related(self.user)
+        return models.AccountBalance.objects.select_related("account").filter(
+            account__journal=self.user.journal
+        )
 
     def items(self):
         return self.objects.all()

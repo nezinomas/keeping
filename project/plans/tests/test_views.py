@@ -6,7 +6,9 @@ from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
 from ...savings.tests.factories import SavingTypeFactory
 from .. import models, views
-from ..services.model_services import ModelService
+from ..services.model_services import (
+    IncomePlanModelService,
+)
 from .factories import (
     DayPlan,
     DayPlanFactory,
@@ -1029,7 +1031,7 @@ def test_copy_success(main_user, client_logged):
     url = reverse("plans:copy")
     client_logged.post(url, data, follow=True)
 
-    actual = ModelService(models.IncomePlan, main_user).year(2000)
+    actual = IncomePlanModelService(main_user).year(2000)
 
     assert actual[0].year == 2000
 

@@ -11,7 +11,7 @@ from ..core.mixins.views import (
     UpdateViewMixin,
 )
 from ..pensions import views as pension_views
-from . import forms, models
+from . import forms
 from .services.model_services import SavingModelService, SavingTypeModelService
 
 
@@ -30,7 +30,8 @@ class Index(TemplateViewMixin):
 
 
 class Lists(ListViewMixin):
-    model = models.Saving
+    template_name = "savings/saving_list.html"
+    service_class = SavingModelService
 
     def get_queryset(self):
         user = self.request.user
@@ -38,7 +39,7 @@ class Lists(ListViewMixin):
 
 
 class New(CreateViewMixin):
-    model = models.Saving
+    service_class = SavingModelService
     form_class = forms.SavingForm
     hx_trigger_form = "reload"
     success_url = reverse_lazy("savings:list")
@@ -46,7 +47,7 @@ class New(CreateViewMixin):
 
 
 class Update(ConvertPriceMixin, UpdateViewMixin):
-    model = models.Saving
+    service_class = SavingModelService
     form_class = forms.SavingForm
     hx_trigger_django = "reload"
     success_url = reverse_lazy("savings:list")
@@ -54,13 +55,14 @@ class Update(ConvertPriceMixin, UpdateViewMixin):
 
 
 class Delete(DeleteViewMixin):
-    model = models.Saving
+    service_class = SavingModelService
     success_url = reverse_lazy("savings:list")
     modal_form_title = _("Delete saving")
 
 
 class TypeLists(ListViewMixin):
-    model = models.SavingType
+    template_name = "savings/savingtype_list.html"
+    service_class = SavingTypeModelService
 
     def get_queryset(self):
         return (
@@ -71,7 +73,7 @@ class TypeLists(ListViewMixin):
 
 
 class TypeNew(CreateViewMixin):
-    model = models.SavingType
+    service_class = SavingTypeModelService
     form_class = forms.SavingTypeForm
     url_name = "type_new"
     hx_trigger_django = "afterType"
@@ -80,7 +82,7 @@ class TypeNew(CreateViewMixin):
 
 
 class TypeUpdate(UpdateViewMixin):
-    model = models.SavingType
+    service_class = SavingTypeModelService
     form_class = forms.SavingTypeForm
     url_name = "type_update"
     hx_trigger_django = "afterType"
