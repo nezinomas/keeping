@@ -1,31 +1,25 @@
 from functools import reduce
 from operator import or_
-from typing import cast
 
-from django.db.models import Count, F, Max, Q, Sum, Value
-from django.db.models.functions import ExtractYear, TruncMonth
+from django.db.models import Count, F, Max, Q
+from django.db.models.functions import ExtractYear
 
 from ...core.services.model_services import BaseModelService
 from ...users.models import User
-from .. import managers, models
+from .. import models
 
 
 class QsMixin:
     def year(self, year: int):
-        raise NotImplementedError(
-            "Method year is not implemented."
-        )
+        raise NotImplementedError("Method year is not implemented.")
 
     def items(self):
-        raise NotImplementedError(
-            "Method items is not implemented."
-        )
+        raise NotImplementedError("Method items is not implemented.")
 
     def latest_have(self, field: str):
         qs = [
             *(
-                self.objects
-                .annotate(year=ExtractYear(F("date")))
+                self.objects.annotate(year=ExtractYear(F("date")))
                 .values("year", f"{field}_id")
                 .annotate(latest_date=Max("date"))
                 .order_by("year")
@@ -52,39 +46,39 @@ class QsMixin:
         )
 
 
-class AccountWorthModelService(QsMixin, BaseModelService[managers.AccountWorthQuerySet]):
+class AccountWorthModelService(QsMixin, BaseModelService):
     def __init__(self, user: User):
         super().__init__(user)
 
     def get_queryset(self):
-        return cast(managers.AccountWorthQuerySet, models.AccountWorth.objects).related(
-            self.user
+        return models.AccountWorth.objects.select_related("account").filter(
+            account__journal=self.user.journal
         )
 
     def have(self):
         return self.latest_have(field="account")
 
 
-class SavingWorthModelService(QsMixin, BaseModelService[managers.SavingWorthQuerySet]):
+class SavingWorthModelService(QsMixin, BaseModelService):
     def __init__(self, user: User):
         super().__init__(user)
 
     def get_queryset(self):
-        return cast(managers.SavingWorthQuerySet, models.SavingWorth.objects).related(
-            self.user
+        return models.SavingWorth.objects.select_related("saving_type").filter(
+            saving_type__journal=self.user.journal
         )
 
     def have(self):
         return self.latest_have(field="saving_type")
 
 
-class PensionWorthModelService(QsMixin, BaseModelService[managers.PensionWorthQuerySet]):
+class PensionWorthModelService(QsMixin, BaseModelService):
     def __init__(self, user: User):
         super().__init__(user)
 
     def get_queryset(self):
-        return cast(managers.PensionWorthQuerySet, models.PensionWorth.objects).related(
-            self.user
+        return models.PensionWorth.objects.select_related("pension_type").filter(
+            pension_type__journal=self.user.journal
         )
 
     def have(self):
