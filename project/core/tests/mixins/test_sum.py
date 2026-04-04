@@ -108,4 +108,4 @@ def test_invalid_sum_column_raises_field_error(service, base_qs, populate_data):
 @pytest.mark.django_db
 def test_invalid_filter_kwarg_raises_field_error(service, base_qs):
     with pytest.raises(FieldError):
-        list(service._year_filter(qs=base_qs, year=1999, field="fake_date_field"))
+        list(service.year_filter(qs=base_qs, year=1999, field="fake_date_field"))

@@ -1,5 +1,7 @@
+import factory
 import pytest
 import time_machine
+from django.db.models.signals import post_save
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -188,5 +190,6 @@ def test_load_service_template_variables_funds(load_data_funds):
         }
     )
 )
+@factory.django.mute_signals(post_save)
 def test_load_service_with_hypothesis(data):
     load_service(data)
