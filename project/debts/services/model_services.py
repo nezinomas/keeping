@@ -3,20 +3,21 @@ from typing import cast
 from django.db.models import F, Q, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth
 
+from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
 from ...users.models import User
-from .. import managers, models
+from .. import models
 
 
-class DebtModelService(BaseModelService[managers.DebtQuerySet]):
+class DebtModelService(BaseModelService):
     def __init__(self, user: User, debt_type: str):
         self.debt_type = debt_type
 
         super().__init__(user)
 
     def get_queryset(self):
-        return cast(managers.DebtQuerySet, models.Debt.objects).related(
-            self.user, self.debt_type
+        return models.Debt.objects.select_related("account", "journal").filter(
+            journal=self.user.journal, debt_type=self.debt_type
         )
 
     def items(self):
@@ -58,8 +59,7 @@ class DebtModelService(BaseModelService[managers.DebtQuerySet]):
         Calculates and returns the total price for each year
         """
         return (
-            self.objects
-            .annotate(year=ExtractYear(F("date")))
+            self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(incomes=Sum("price"))
             .values("year", "incomes", category_id=F("account__pk"))
@@ -72,8 +72,7 @@ class DebtModelService(BaseModelService[managers.DebtQuerySet]):
         Calculates and returns the total price for each year
         """
         return (
-            self.objects
-            .annotate(year=ExtractYear(F("date")))
+            self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))
             .values("year", "expenses", category_id=F("account__pk"))
@@ -81,15 +80,15 @@ class DebtModelService(BaseModelService[managers.DebtQuerySet]):
         )
 
 
-class DebtReturnModelService(BaseModelService[managers.DebtReturnQuerySet]):
+class DebtReturnModelService(SumMixin, BaseModelService):
     def __init__(self, user: User, debt_type: str):
         self.debt_type = debt_type
 
         super().__init__(user)
 
     def get_queryset(self):
-        return cast(managers.DebtReturnQuerySet, models.DebtReturn.objects).related(
-            self.user, self.debt_type
+        return models.DebtReturn.objects.select_related("account", "debt").filter(
+            debt__journal=self.user.journal, debt__debt_type=self.debt_type
         )
 
     def items(self):
@@ -124,8 +123,7 @@ class DebtReturnModelService(BaseModelService[managers.DebtReturnQuerySet]):
         Calculates and returns the total value of lend debts for each year
         """
         return (
-            self.objects
-            .annotate(year=ExtractYear(F("date")))
+            self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(incomes=Sum("price"))
             .values("year", "incomes", category_id=F("account__pk"))
@@ -138,8 +136,7 @@ class DebtReturnModelService(BaseModelService[managers.DebtReturnQuerySet]):
         Calculates and returns the total value of borrow debts for each year
         """
         return (
-            self.objects
-            .annotate(year=ExtractYear(F("date")))
+            self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
             .annotate(expenses=Sum("price"))
             .values("year", "expenses", category_id=F("account__pk"))

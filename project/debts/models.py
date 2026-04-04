@@ -5,7 +5,6 @@ from django.utils.translation import gettext_lazy as _
 from ..accounts.models import Account
 from ..core.templatetags.math import price as convert_price
 from ..journals.models import Journal
-from . import managers
 
 
 class Debt(models.Model):
@@ -32,8 +31,6 @@ class Debt(models.Model):
     )
     journal = models.ForeignKey(Journal, on_delete=models.CASCADE)
 
-    objects = managers.DebtQuerySet.as_manager()
-
     class Meta:
         ordering = ["-date"]
 
@@ -49,8 +46,6 @@ class DebtReturn(models.Model):
         Account, on_delete=models.PROTECT, related_name="debt_return_account"
     )
     debt = models.ForeignKey(Debt, on_delete=models.CASCADE)
-
-    objects = managers.DebtReturnQuerySet.as_manager()
 
     class Meta:
         ordering = ["-debt__date", "debt__name", "-date"]
