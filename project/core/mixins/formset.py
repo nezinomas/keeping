@@ -17,25 +17,40 @@ SIGNALS = {
 
 
 class BaseTypeFormSet(BaseModelFormSet):
+    def _get_relation_field_name(self) -> str:
+        """Extracts the relational field name to validate against."""
+        for field in self.model._meta.get_fields():
+            if field.many_to_one:
+                return field.name
+        raise ValueError(f"No many-to-one field found on {self.model.__name__}")
+
     def clean(self):
-        # if forms have errors, don't run formset clean
         if any(self.errors):
             return
 
-        dublicates = {}
-        account_name = [
-            f.name for f in self.model._meta.get_fields() if (f.many_to_one)
-        ][0]
+        relation_name = self._get_relation_field_name()
+        seen_items = {}  # Maps the account value directly to the form instance
+        duplicate_msg = _("The same accounts are selected.")
 
-        for i, form in enumerate(self.forms):
-            account = form.cleaned_data.get(account_name)
-            if account in dublicates:
-                msg = _("The same accounts are selected.")
-                if not self.forms[dublicates[account]].errors:
-                    self.forms[dublicates[account]].add_error(account_name, msg)
-                self.forms[i].add_error(account_name, msg)
+        for form in self.forms:
+            # Skip forms that are empty, marked for deletion, or have no dropdown value
+            if not form.cleaned_data or form.cleaned_data.get("DELETE"):
+                continue
 
-            dublicates[account] = i
+            item_value = form.cleaned_data.get(relation_name)
+            if not item_value:
+                continue
+
+            if item_value not in seen_items:
+                seen_items[item_value] = form
+                continue
+
+            previous_form = seen_items[item_value]
+
+            if relation_name not in previous_form.errors:
+                previous_form.add_error(relation_name, duplicate_msg)
+
+            form.add_error(relation_name, duplicate_msg)
 
 
 class FormsetMixin:
