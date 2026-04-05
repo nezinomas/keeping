@@ -26,12 +26,19 @@ def fixture_data():
 @pytest.mark.parametrize(
     "savings, unnecessary, months, expect",
     [
+        # Standard Data
         ({"sum": 2}, ["Z", "Taupymas"], 1, 9),
         ({"sum": 2}, ["Z", "Taupymas"], 6, 1.5),
         ({"sum": 2}, ["Taupymas"], 1, 9),
         ({"sum": 2}, ["Taupymas"], 6, 1.5),
         ({}, [], 1, 7),
         ({}, [], 6, 1.17),
+        # EDGE CASES: Database returning None
+        ({"sum": None}, [], 1, 7),  # Empty savings aggregate
+        (None, [], 1, 7),  # Complete absence of savings data
+        # EDGE CASES: Direct value inputs (checking fallback type support)
+        (5.5, [], 1, 12.5),  # Float provided instead of dict
+        (10, [], 1, 17),  # Int provided instead of dict
     ],
 )
 def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_incomes_data):
@@ -46,12 +53,17 @@ def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_income
 @pytest.mark.parametrize(
     "savings, unnecessary, months, expect",
     [
+        # Standard Data
         ({"sum": 2}, ["Z", "Taupymas"], 1, 6),
         ({"sum": 2}, ["Z", "Taupymas"], 6, 1),
         ({"sum": 2}, ["Taupymas"], 1, 2),
         ({"sum": 2}, ["Taupymas"], 6, 0.33),
         ({}, [], 1, 0),
         ({}, [], 6, 0),
+        # EDGE CASES: Database returning None & Mixed types
+        ({"sum": None}, ["Z"], 1, 4),  # Empty savings aggregate
+        (None, ["Z"], 1, 4),  # Complete absence of savings data
+        (5.5, ["Z"], 1, 9.5),  # Float provided instead of dict
     ],
 )
 def test_no_incomes_cut_sum(savings, unnecessary, months, expect, no_incomes_data):
@@ -72,19 +84,21 @@ def test_no_incomes_summary(no_incomes_data):
     assert actual[0]["title"] == "Pinigai, €"
     assert actual[0]["money_fund"] == 6
     assert actual[0]["money_fund_pension"] == 7
+    assert actual[0]["price"] is True  # Verifying the currency flag
 
     assert actual[1]["title"] == "Nekeičiant išlaidų, mėn"
     assert round(actual[1]["money_fund"], 2) == 4
     assert round(actual[1]["money_fund_pension"], 2) == 4.67
+    assert actual[1]["price"] is False
 
     assert actual[2]["title"] == "Sumažinus išlaidas, mėn"
     assert round(actual[2]["money_fund"], 2) == 12
     assert round(actual[2]["money_fund_pension"], 2) == 14
+    assert actual[2]["price"] is False
 
 
 @pytest.fixture
 def no_incomes_data_class():
-    # Create a sample NoIncomesData object for testing
     return SimpleNamespace(
         year=1999,
         months=12,
@@ -102,13 +116,9 @@ def no_incomes_data_class():
 
 
 def test_summary_property(no_incomes_data_class):
-    # Arrange
     no_incomes = NoIncomes(no_incomes_data_class)
-
-    # Act
     summary = no_incomes.summary
 
-    # Assert
     assert len(summary) == 3
     assert summary[0]["title"] == "Pinigai, €"
     assert summary[0]["money_fund"] == 1500
@@ -127,26 +137,39 @@ def test_summary_property(no_incomes_data_class):
     )
 
 
-def test_calc_method(no_incomes_data_class):
-    # Arrange
+def test_calc_method_handles_standard_data(no_incomes_data_class):
     no_incomes = NoIncomes(no_incomes_data_class)
 
-    # Act
-    no_incomes._calc()
-
-    # Assert
     assert no_incomes.avg_expenses == (100 + 200 + 300 + 500) / 12
     assert no_incomes.cut_sum == (200 + 500) / 12
 
 
-def test_div_method(no_incomes_data_class):
-    # Arrange
+def test_calc_method_handles_none_values_from_database(no_incomes_data_class):
+    # Simulate Django returning None for empty/null database aggregations
+    no_incomes_data_class.expenses = [
+        {"title": "Expense 1", "sum": 100},
+        {"title": "Null Expense", "sum": None},  # DB returned None
+        {"sum": 50},  # Missing title key entirely
+    ]
+    no_incomes_data_class.savings = {"sum": None}
+    no_incomes_data_class.unnecessary = ["Null Expense"]
+    no_incomes_data_class.months = 1
+
     no_incomes = NoIncomes(no_incomes_data_class)
 
-    # Act
-    result1 = no_incomes._div(10, 2)
-    result2 = no_incomes._div(10, 0)
+    # Expected: (100 + 0 + 50 + 0) / 1 = 150
+    assert no_incomes.avg_expenses == 150.0
+    # Expected: (0 + 0) / 1 = 0
+    assert no_incomes.cut_sum == 0.0
 
-    # Assert
-    assert result1 == 5
-    assert result2 == 0
+
+def test_div_method(no_incomes_data_class):
+    no_incomes = NoIncomes(no_incomes_data_class)
+
+    result_normal = no_incomes._div(10, 2)
+    result_zero_division = no_incomes._div(10, 0)
+    result_negative = no_incomes._div(10, -2)
+
+    assert result_normal == 5
+    assert result_zero_division == 0
+    assert result_negative == -5
