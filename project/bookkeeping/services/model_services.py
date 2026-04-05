@@ -9,7 +9,7 @@ from ...users.models import User
 from .. import models
 
 
-class QsMixin:
+class CommonMethodsMixin:
     def year(self, year: int):
         raise NotImplementedError("Method year is not implemented.")
 
@@ -46,7 +46,7 @@ class QsMixin:
         )
 
 
-class AccountWorthModelService(QsMixin, BaseModelService):
+class AccountWorthModelService(CommonMethodsMixin, BaseModelService):
     def __init__(self, user: User):
         super().__init__(user)
 
@@ -59,7 +59,7 @@ class AccountWorthModelService(QsMixin, BaseModelService):
         return self.latest_have(field="account")
 
 
-class SavingWorthModelService(QsMixin, BaseModelService):
+class SavingWorthModelService(CommonMethodsMixin, BaseModelService):
     def __init__(self, user: User):
         super().__init__(user)
 
@@ -72,7 +72,7 @@ class SavingWorthModelService(QsMixin, BaseModelService):
         return self.latest_have(field="saving_type")
 
 
-class PensionWorthModelService(QsMixin, BaseModelService):
+class PensionWorthModelService(CommonMethodsMixin, BaseModelService):
     def __init__(self, user: User):
         super().__init__(user)
 
