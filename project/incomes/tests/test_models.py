@@ -1,6 +1,8 @@
 from datetime import date
 
+import factory
 import pytest
+from django.db.models.signals import post_save
 
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import (
@@ -24,6 +26,7 @@ def test_income_type_str():
     assert str(i) == "Income Type"
 
 
+@factory.django.mute_signals(post_save)
 def test_income_type_items_journal(main_user, second_user):
     IncomeTypeFactory(title="T1")
     IncomeTypeFactory(title="T2", journal=second_user.journal)
@@ -60,6 +63,7 @@ def test_income_str():
     assert str(i) == "1999-01-01: Income Type"
 
 
+@factory.django.mute_signals(post_save)
 def test_sum_all_months(main_user, incomes):
     expect = [
         {"date": date(1999, 1, 1), "sum": 550, "title": "incomes"},
@@ -71,6 +75,7 @@ def test_sum_all_months(main_user, incomes):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save)
 def test_sum_all_months_ordering(main_user, incomes):
     actual = list(IncomeModelService(main_user).sum_by_month(1999))
 
@@ -78,6 +83,7 @@ def test_sum_all_months_ordering(main_user, incomes):
     assert actual[1]["date"] == date(1999, 2, 1)
 
 
+@factory.django.mute_signals(post_save)
 def test_sum_one_month(main_user, incomes):
     expect = [{"date": date(1999, 1, 1), "sum": 550, "title": "incomes"}]
 
@@ -87,6 +93,7 @@ def test_sum_one_month(main_user, incomes):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save)
 def test_incomes_items(main_user):
     IncomeFactory()
 
@@ -111,6 +118,7 @@ def test_incomes_income_sum_query_count(main_user, django_assert_max_num_queries
         list([x["date"] for x in qs])
 
 
+@factory.django.mute_signals(post_save)
 def test_balance(main_user, incomes):
     qs = IncomeModelService(main_user).incomes()
 
@@ -120,6 +128,7 @@ def test_balance(main_user, incomes):
     assert qs[3] == {"year": 1999, "incomes": 350, "category_id": 2}
 
 
+@factory.django.mute_signals(post_save)
 def test_income_month_type_sum(main_user):
     IncomeFactory(
         price=4, date=date(1999, 1, 2), income_type=IncomeTypeFactory(title="I-2")
@@ -146,6 +155,7 @@ def test_income_month_type_sum(main_user):
     assert expect == [*actual]
 
 
+@factory.django.mute_signals(post_save)
 def test_income_year_type_sum(main_user):
     IncomeFactory(
         price=1, date=date(1974, 1, 1), income_type=IncomeTypeFactory(title="I-1")
