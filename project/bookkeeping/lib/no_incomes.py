@@ -33,7 +33,7 @@ class NoIncomes:
         self.months = months
         self.avg_expenses = 0.0
         self.cut_sum = 0.0
-        self._calc()
+        self._calculate_monthly_metrics()
 
     @property
     def unnecessary(self) -> list:
@@ -72,20 +72,25 @@ class NoIncomes:
             for title, money_fund, money_fund_pension, is_currency in entries
         ]
 
-    def _calc(self):
-        expenses_sum = sum(r.get("sum", 0) for r in self.data.expenses)
-        cut_sum = sum(
-            r.get("sum")
-            for r in self.data.expenses
-            if r.get("title") in self.data.unnecessary
-        )
+    def _calculate_monthly_metrics(self):
+        expenses_sum = 0
+        cut_sum = 0
 
-        savings_val: int = self.data.savings.get("sum") if self.data.savings else 0
+        for expense in self.data.expenses:
+            val = expense.get("sum", 0)
+
+            expenses_sum += val
+
+            if expense.get("title") in self.data.unnecessary:
+                cut_sum += val
+
+        savings_val = self.data.savings.get("sum", 0) if self.data.savings else 0
+
         self.avg_expenses = (expenses_sum + savings_val) / self.months
         self.cut_sum = (cut_sum + savings_val) / self.months
 
     def _div(self, incomes: float, expenses: float) -> float:
-        return incomes / expenses if expenses else 0.0
+        return incomes / expenses if expenses else 0
 
 
 def load_service(user: User, year: int, months: int = 6) -> dict:
@@ -111,20 +116,23 @@ def load_service(user: User, year: int, months: int = 6) -> dict:
 
     # 3. Build Pure Data Object
     data_payload = Data(
-        account_sum=AccountBalanceModelService(user)
-        .year(year)
-        .aggregate(Sum("balance"))["balance__sum"]
-        or 0,
-        fund_sum=SavingBalanceModelService(user)
-        .items()
-        .filter(year=year, saving_type__type__in=["shares", "funds"])
-        .aggregate(Sum("market_value"))["market_value__sum"]
-        or 0,
-        pension_sum=SavingBalanceModelService(user)
-        .items()
-        .filter(year=year, saving_type__type="pensions")
-        .aggregate(Sum("market_value"))["market_value__sum"]
-        or 0,
+        account_sum=(
+            AccountBalanceModelService(user)
+            .year(year)
+            .aggregate(Sum("balance", default=0))["balance__sum"]
+        ),
+        fund_sum=(
+            SavingBalanceModelService(user)
+            .items()
+            .filter(year=year, saving_type__type__in=["shares", "funds"])
+            .aggregate(Sum("market_value", default=0))["market_value__sum"]
+        ),
+        pension_sum=(
+            SavingBalanceModelService(user)
+            .items()
+            .filter(year=year, saving_type__type="pensions")
+            .aggregate(Sum("market_value", default=0))["market_value__sum"]
+        ),
         expenses=list(ExpenseModelService(user).last_months(months=months)),
         savings=savings_data,
         unnecessary=unnecessary_titles,
