@@ -116,14 +116,18 @@ def load_service(user: User, year: int, months: int = 6) -> dict:
             .year(year)
             .aggregate(Sum("balance", default=0))["balance__sum"]
         ),
-        fund_sum=(SavingBalanceModelService(user)
-        .items()
-        .filter(year=year, saving_type__type__in=["shares", "funds"])
-        .aggregate(Sum("market_value", default=0))["market_value__sum"]),
-        pension_sum=(SavingBalanceModelService(user)
-        .items()
-        .filter(year=year, saving_type__type="pensions")
-        .aggregate(Sum("market_value", default=0))["market_value__sum"]),
+        fund_sum=(
+            SavingBalanceModelService(user)
+            .items()
+            .filter(year=year, saving_type__type__in=["shares", "funds"])
+            .aggregate(Sum("market_value", default=0))["market_value__sum"]
+        ),
+        pension_sum=(
+            SavingBalanceModelService(user)
+            .items()
+            .filter(year=year, saving_type__type="pensions")
+            .aggregate(Sum("market_value", default=0))["market_value__sum"]
+        ),
         expenses=list(ExpenseModelService(user).last_months(months=months)),
         savings=savings_data,
         unnecessary=unnecessary_titles,
