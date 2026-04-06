@@ -19,20 +19,18 @@ from ...users.models import User
 
 @dataclass(frozen=True)
 class Data:
-    user: User  # Kept to not break any potential downstream expectations
-    year: int
-    months: int
     account_sum: float
     fund_sum: float
     pension_sum: float
     expenses: list
-    savings: Union[dict, float, None]
+    savings: Union[dict, None]
     unnecessary: list
 
 
 class NoIncomes:
-    def __init__(self, data: Data):
+    def __init__(self, data: Data, months: int = 6):
         self.data = data
+        self.months = months
         self.avg_expenses = 0.0
         self.cut_sum = 0.0
         self._calc()
@@ -83,8 +81,8 @@ class NoIncomes:
         )
 
         savings_val: int = self.data.savings.get("sum") if self.data.savings else 0
-        self.avg_expenses = (expenses_sum + savings_val) / self.data.months
-        self.cut_sum = (cut_sum + savings_val) / self.data.months
+        self.avg_expenses = (expenses_sum + savings_val) / self.months
+        self.cut_sum = (cut_sum + savings_val) / self.months
 
     def _div(self, incomes: float, expenses: float) -> float:
         return incomes / expenses if expenses else 0.0
@@ -113,9 +111,6 @@ def load_service(user: User, year: int, months: int = 6) -> dict:
 
     # 3. Build Pure Data Object
     data_payload = Data(
-        user=user,
-        year=year,
-        months=months,
         account_sum=AccountBalanceModelService(user)
         .year(year)
         .aggregate(Sum("balance"))["balance__sum"]
@@ -135,7 +130,7 @@ def load_service(user: User, year: int, months: int = 6) -> dict:
         unnecessary=unnecessary_titles,
     )
 
-    obj = NoIncomes(data_payload)
+    obj = NoIncomes(data_payload, months=months)
 
     return {
         "no_incomes": obj.summary,

@@ -8,8 +8,6 @@ from ...lib.no_incomes import NoIncomes
 @pytest.fixture(name="no_incomes_data")
 def fixture_data():
     return SimpleNamespace(
-        year=1999,
-        months=6,
         account_sum=4,
         fund_sum=2,
         pension_sum=1,
@@ -38,8 +36,7 @@ def fixture_data():
 def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_incomes_data):
     no_incomes_data.savings = savings
     no_incomes_data.unnecessary = unnecessary
-    no_incomes_data.months = months
-    obj = NoIncomes(no_incomes_data)
+    obj = NoIncomes(no_incomes_data, months)
 
     assert round(obj.avg_expenses, 2) == expect
 
@@ -58,8 +55,7 @@ def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_income
 def test_no_incomes_cut_sum(savings, unnecessary, months, expect, no_incomes_data):
     no_incomes_data.savings = savings
     no_incomes_data.unnecessary = unnecessary
-    no_incomes_data.months = months
-    obj = NoIncomes(no_incomes_data)
+    obj = NoIncomes(no_incomes_data, months)
 
     assert round(obj.cut_sum, 2) == expect
 
@@ -68,7 +64,7 @@ def test_no_incomes_summary(no_incomes_data):
     no_incomes_data.savings = {"sum": 2}
     no_incomes_data.unnecessary = ["Z", "Taupymas"]
 
-    actual = NoIncomes(no_incomes_data).summary
+    actual = NoIncomes(no_incomes_data, 6).summary
 
     assert actual[0]["title"] == "Pinigai, €"
     assert actual[0]["money_fund"] == 6
@@ -89,8 +85,6 @@ def test_no_incomes_summary(no_incomes_data):
 @pytest.fixture
 def no_incomes_data_class():
     return SimpleNamespace(
-        year=1999,
-        months=12,
         account_sum=1000,
         fund_sum=500,
         pension_sum=200,
@@ -105,7 +99,7 @@ def no_incomes_data_class():
 
 
 def test_summary_property(no_incomes_data_class):
-    no_incomes = NoIncomes(no_incomes_data_class)
+    no_incomes = NoIncomes(no_incomes_data_class, months=12)
     summary = no_incomes.summary
 
     assert len(summary) == 3
@@ -127,7 +121,7 @@ def test_summary_property(no_incomes_data_class):
 
 
 def test_calc_method_handles_standard_data(no_incomes_data_class):
-    no_incomes = NoIncomes(no_incomes_data_class)
+    no_incomes = NoIncomes(no_incomes_data_class, months=12)
 
     assert no_incomes.avg_expenses == (100 + 200 + 300 + 500) / 12
     assert no_incomes.cut_sum == (200 + 500) / 12
@@ -142,14 +136,14 @@ def test_calc_method_handles_none_values_from_database(no_incomes_data_class):
     no_incomes_data_class.unnecessary = ["Null Expense"]
     no_incomes_data_class.months = 1
 
-    no_incomes = NoIncomes(no_incomes_data_class)
+    no_incomes = NoIncomes(no_incomes_data_class, months=1)
 
     assert no_incomes.avg_expenses == 100.0
     assert no_incomes.cut_sum == 0.0
 
 
 def test_div_method(no_incomes_data_class):
-    no_incomes = NoIncomes(no_incomes_data_class)
+    no_incomes = NoIncomes(no_incomes_data_class, months=12)
 
     result_normal = no_incomes._div(10, 2)
     result_zero_division = no_incomes._div(10, 0)
