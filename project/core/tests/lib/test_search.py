@@ -1,6 +1,9 @@
 from datetime import date
 
+import factory
+from numpy.random import f
 import pytest
+from django.db.models.signals import post_save
 
 from ....books.tests.factories import BookFactory
 from ....expenses.tests.factories import (
@@ -195,6 +198,7 @@ def test_filter_short_search_words(search_dict, expect):
 #                                                                               Expense
 # -------------------------------------------------------------------------------------
 @pytest.mark.django_db
+@factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
     "_search, expect",
     [
@@ -332,6 +336,7 @@ def test_expense_search(main_user, _search, expect):
 
 
 @pytest.mark.django_db
+@factory.django.mute_signals(post_save)
 def test_expense_search_ordering(main_user):
     ExpenseFactory(date=date(1000, 1, 1))
     ExpenseFactory()
@@ -346,6 +351,7 @@ def test_expense_search_ordering(main_user):
 #                                                                                Income
 # -------------------------------------------------------------------------------------
 @pytest.mark.django_db
+@factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
     "_search, cnt, income_type",
     [
@@ -382,6 +388,7 @@ def test_incomes_search(main_user, _search, cnt, income_type):
 
 
 @pytest.mark.django_db
+@factory.django.mute_signals(post_save)
 def test_incomes_search_ordering(main_user):
     IncomeFactory(date=date(1000, 1, 1))
     IncomeFactory()

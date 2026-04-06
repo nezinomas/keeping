@@ -1,4 +1,6 @@
+import factory
 import pytest
+from django.db.models.signals import post_save
 from django.urls import resolve, reverse
 
 from ....core.tests.utils import clean_content
@@ -30,6 +32,7 @@ def test_view_detailed_302(client):
     assert response.status_code == 302
 
 
+@factory.django.mute_signals(post_save)
 def test_view_detailed_rendered_expenses(client_logged, expenses):
     url = reverse("bookkeeping:detailed")
     response = client_logged.get(url)
@@ -66,6 +69,7 @@ def test_view_detailed_no_expenses_with_types(client_logged):
     assert "Išlaidos / Expense Type" not in content
 
 
+@factory.django.mute_signals(post_save)
 def test_view_detailed_with_incomes(client_logged):
     IncomeFactory()
 
@@ -103,6 +107,7 @@ def test_view_detailed_no_savings(client_logged):
     assert "<th>Taupymas</th>" not in content
 
 
+@factory.django.mute_signals(post_save)
 def test_view_detailed_with_savings(client_logged):
     SavingFactory()
 
@@ -123,6 +128,7 @@ def test_view_detailed_category_func():
     assert views.DetailedCategory == view.func.view_class
 
 
+@factory.django.mute_signals(post_save)
 def test_view_detailed_category_200(client_logged):
     obj = ExpenseFactory()
     url = reverse(
@@ -134,6 +140,7 @@ def test_view_detailed_category_200(client_logged):
     assert response.status_code == 200
 
 
+@factory.django.mute_signals(post_save)
 def test_view_detailed_category_no_data(client_logged):
     obj = ExpenseTypeFactory()
 
@@ -146,6 +153,7 @@ def test_view_detailed_category_no_data(client_logged):
     assert response.status_code == 200
 
 
+@factory.django.mute_signals(post_save)
 def test_view_detailed_category_302(client):
     obj = ExpenseFactory()
     url = reverse(

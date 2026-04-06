@@ -4,7 +4,7 @@ import pytest
 from django.core.exceptions import ImproperlyConfigured
 from mock import ANY, Mock
 
-from ...mixins.formset import FormsetMixin
+from ...mixins.formset import BaseTypeFormSet, FormsetMixin
 from ..utils import setup_view
 
 
@@ -33,6 +33,7 @@ def test_model_type_without_foreignkey(fake_request):
 # ==========================================
 # 1. Dummy Framework Setup
 # ==========================================
+
 
 class DummyField:
     """Mocks Django's model field for the _meta introspection test."""
@@ -179,9 +180,7 @@ def test_get_formset_for_get_request(mocker):
     """A GET request (post=None) should initialize the formset with formset_initial() and extra=len."""
     view = TestView()
     mocker.patch.object(TestView, "model_class", create=True)
-    mocker.patch.object(
-        TestView, "formset_initial", return_value=[{"initial": "data"}]
-    )
+    mocker.patch.object(TestView, "formset_initial", return_value=[{"initial": "data"}])
 
     mock_formset_class = mocker.Mock()
     # Save the factory mock to a variable so we can assert against it!
@@ -347,3 +346,142 @@ def test_get_context_data_injects_variables(mocker):
     assert actual["formset"] == "injected_formset"
     assert actual["modal_form_title"] == "My Custom Title"
     assert actual["modal_body_css_class"] == "worth-form"  # Default fallback
+
+
+# ==========================================
+#  BaseTypeFormSet CLEAN() TESTS (The Complex Validation Logic)
+# ==========================================
+
+
+@pytest.fixture
+def isolated_formset(mocker):
+    """
+    Bypasses Django's heavy __init__ (which looks for renderers and DBs)
+    so we can test our custom methods in pure, fast isolation.
+    """
+    mocker.patch.object(BaseTypeFormSet, "__init__", return_value=None)
+    formset = BaseTypeFormSet()
+
+    formset.model = mocker.Mock()
+    formset.model.__name__ = "MockModel"
+    return formset
+
+
+def test_get_relation_field_name_success(mocker, isolated_formset):
+    valid_field = mocker.Mock(many_to_one=True)
+    valid_field.name = "account"
+
+    invalid_field = mocker.Mock(many_to_one=False)
+    invalid_field.name = "price"
+
+    isolated_formset.model._meta.get_fields.return_value = [invalid_field, valid_field]
+
+    assert isolated_formset._get_relation_field_name() == "account"
+
+
+def test_get_relation_field_name_fails(mocker, isolated_formset):
+    invalid_field = mocker.Mock(many_to_one=False)
+    isolated_formset.model._meta.get_fields.return_value = [invalid_field]
+
+    with pytest.raises(ValueError, match="No many-to-one field found on MockModel"):
+        isolated_formset._get_relation_field_name()
+
+
+def test_clean_early_exit_on_existing_errors(mocker, isolated_formset):
+    mocker.patch.object(
+        BaseTypeFormSet,
+        "errors",
+        new_callable=mocker.PropertyMock,
+        return_value=["Some error"],
+    )
+    mock_get_relation = mocker.patch.object(
+        isolated_formset, "_get_relation_field_name"
+    )
+
+    isolated_formset.clean()
+
+    mock_get_relation.assert_not_called()
+
+
+def test_clean_skips_invalid_and_empty_forms(mocker, isolated_formset):
+    mocker.patch.object(
+        BaseTypeFormSet, "errors", new_callable=mocker.PropertyMock, return_value=[]
+    )
+    mocker.patch.object(
+        isolated_formset, "_get_relation_field_name", return_value="account"
+    )
+
+    # Form 1: Completely empty
+    form1 = mocker.Mock(cleaned_data={})
+    # Form 2: Marked for deletion
+    form2 = mocker.Mock(cleaned_data={"account": 1, "DELETE": True})
+    # Form 3: Dropdown left blank
+    form3 = mocker.Mock(cleaned_data={"account": None})
+
+    mocker.patch.object(
+        BaseTypeFormSet,
+        "forms",
+        new_callable=mocker.PropertyMock,
+        return_value=[form1, form2, form3],
+    )
+
+    isolated_formset.clean()
+
+    form1.add_error.assert_not_called()
+    form2.add_error.assert_not_called()
+    form3.add_error.assert_not_called()
+
+
+def test_clean_identifies_duplicates_and_tags_both(mocker, isolated_formset):
+    mocker.patch.object(
+        BaseTypeFormSet, "errors", new_callable=mocker.PropertyMock, return_value=[]
+    )
+    mocker.patch.object(
+        isolated_formset, "_get_relation_field_name", return_value="account"
+    )
+
+    form1 = mocker.Mock(cleaned_data={"account": 99}, errors={})
+    form2 = mocker.Mock(cleaned_data={"account": 99}, errors={})
+
+    mocker.patch.object(
+        BaseTypeFormSet,
+        "forms",
+        new_callable=mocker.PropertyMock,
+        return_value=[form1, form2],
+    )
+
+    isolated_formset.clean()
+
+    form1.add_error.assert_called_once_with("account", mocker.ANY)
+    form2.add_error.assert_called_once_with("account", mocker.ANY)
+
+
+def test_clean_multiple_duplicates_only_tags_first_form_once(mocker, isolated_formset):
+    mocker.patch.object(
+        BaseTypeFormSet, "errors", new_callable=mocker.PropertyMock, return_value=[]
+    )
+    mocker.patch.object(
+        isolated_formset, "_get_relation_field_name", return_value="account"
+    )
+
+    form1 = mocker.Mock(cleaned_data={"account": 99}, errors={})
+    form2 = mocker.Mock(cleaned_data={"account": 99}, errors={})
+    form3 = mocker.Mock(cleaned_data={"account": 99}, errors={})
+
+    def add_error_side_effect(field, msg):
+        form1.errors[field] = msg
+
+    form1.add_error.side_effect = add_error_side_effect
+
+    mocker.patch.object(
+        BaseTypeFormSet,
+        "forms",
+        new_callable=mocker.PropertyMock,
+        return_value=[form1, form2, form3],
+    )
+
+    isolated_formset.clean()
+
+    assert form1.add_error.call_count == 1
+    form2.add_error.assert_called_once()
+    form3.add_error.assert_called_once()

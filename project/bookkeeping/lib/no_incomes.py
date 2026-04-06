@@ -1,6 +1,6 @@
 import json
-from dataclasses import dataclass, field
-from typing import Dict, List
+from dataclasses import dataclass
+from typing import Dict, List, Union
 
 from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
@@ -17,144 +17,120 @@ from ...savings.services.model_services import (
 from ...users.models import User
 
 
-@dataclass
+@dataclass(frozen=True)
 class Data:
-    user: User
-    year: int
-    months: int = field(default=6)
-    unnecessary_expenses: list = field(default_factory=list)
-    unnecessary_savings: bool = field(default=False)
-
-    account_sum: float = field(init=False, default=0)
-    fund_sum: float = field(init=False, default=0)
-    pension_sum: float = field(init=False, default=0)
-
-    expenses: list = field(init=False, default_factory=list)
-    savings: dict = field(init=False, default_factory=dict)
-    unnecessary: list = field(init=False, default_factory=list)
-
-    def __post_init__(self):
-        self.expenses = ExpenseModelService(self.user).last_months(months=self.months)
-        self.account_sum = (
-            AccountBalanceModelService(self.user)
-            .year(self.year)
-            .aggregate(Sum("balance"))["balance__sum"]
-            or 0
-        )
-
-        self.fund_sum = (
-            SavingBalanceModelService(self.user)
-            .items()
-            .filter(year=self.year, saving_type__type__in=["shares", "funds"])
-            .aggregate(Sum("market_value"))["market_value__sum"]
-            or 0
-        )
-
-        self.pension_sum = (
-            SavingBalanceModelService(self.user)
-            .items()
-            .filter(year=self.year, saving_type__type="pensions")
-            .aggregate(Sum("market_value"))["market_value__sum"]
-            or 0
-        )
-
-        if self.unnecessary_expenses:
-            arr = json.loads(self.unnecessary_expenses)
-            self.unnecessary = list(
-                ExpenseTypeModelService(self.user)
-                .items()
-                .filter(pk__in=arr)
-                .values_list("title", flat=True)
-            )
-
-        if self.unnecessary_savings:
-            self.unnecessary.append(_("Savings"))
-            self.savings = SavingModelService(self.user).last_months(months=self.months)
+    account_sum: float
+    fund_sum: float
+    pension_sum: float
+    expenses: list
+    savings: Union[dict, None]
+    unnecessary: list
 
 
-@dataclass
 class NoIncomes:
-    data: Data
-    cut_sum: float = field(init=False, default=0)
-    avg_expenses: float = field(init=False, default=0)
-
-    def __post_init__(self):
+    def __init__(self, data: Data, months: int = 6):
+        self.data = data
+        self.months = months
+        self.avg_expenses = 0.0
+        self.cut_sum = 0.0
         self._calc()
 
     @property
-    def unnecessary(self):
+    def unnecessary(self) -> list:
         return self.data.unnecessary
 
     @property
-    def summary(self) -> List[Dict[str, float]]:
+    def summary(self) -> List[Dict]:
         money_fund = self.data.account_sum + self.data.fund_sum
         money_fund_pension = money_fund + self.data.pension_sum
-        cut_sum = self.avg_expenses - self.cut_sum
+        reduced_expenses = self.avg_expenses - self.cut_sum
 
         return self._generate_dict(
-            (
-                f"{_('Money')}, €",
-                money_fund,
-                money_fund_pension,
-                "price",
-            ),
+            (f"{_('Money')}, €", money_fund, money_fund_pension, True),
             (
                 _("No change in spending, month"),
                 self._div(money_fund, self.avg_expenses),
                 self._div(money_fund_pension, self.avg_expenses),
-                "month",
+                False,
             ),
             (
                 _("After spending cuts, month"),
-                self._div(money_fund, cut_sum),
-                self._div(money_fund_pension, cut_sum),
-                "month",
+                self._div(money_fund, reduced_expenses),
+                self._div(money_fund_pension, reduced_expenses),
+                False,
             ),
         )
 
-    def _generate_dict(self, *entries) -> list[dict]:
+    def _generate_dict(self, *entries) -> List[Dict]:
         return [
             {
                 "title": title,
                 "money_fund": money_fund,
                 "money_fund_pension": money_fund_pension,
-                "price": price == "price",
+                "price": is_currency,
             }
-            for title, money_fund, money_fund_pension, price in entries
+            for title, money_fund, money_fund_pension, is_currency in entries
         ]
 
     def _calc(self):
-        expenses_sum = 0
-        cut_sum = 0
-        for r in self.data.expenses:
-            _sum = float(r["sum"])
+        expenses_sum = sum(r.get("sum", 0) for r in self.data.expenses)
+        cut_sum = sum(
+            r.get("sum")
+            for r in self.data.expenses
+            if r.get("title") in self.data.unnecessary
+        )
 
-            expenses_sum += _sum
-
-            if r["title"] in self.data.unnecessary:
-                cut_sum += _sum
-
-        try:
-            savings_sum = self.data.savings.get("sum", 0)
-            savings_sum = float(savings_sum)
-        except (AttributeError, TypeError):
-            savings_sum = 0
-
-        self.avg_expenses = (expenses_sum + savings_sum) / self.data.months
-        self.cut_sum = (cut_sum + savings_sum) / self.data.months
+        savings_val: int = self.data.savings.get("sum") if self.data.savings else 0
+        self.avg_expenses = (expenses_sum + savings_val) / self.months
+        self.cut_sum = (cut_sum + savings_val) / self.months
 
     def _div(self, incomes: float, expenses: float) -> float:
-        return incomes / expenses if expenses else 0
+        return incomes / expenses if expenses else 0.0
 
 
-def load_service(user: User, year: int) -> dict:
-    data = Data(
-        user=user,
-        year=year,
-        unnecessary_expenses=user.journal.unnecessary_expenses,
-        unnecessary_savings=user.journal.unnecessary_savings,
+def load_service(user: User, year: int, months: int = 6) -> dict:
+
+    # 1. Fetch Unnecessary Titles
+    unnecessary_ids = (
+        json.loads(user.journal.unnecessary_expenses)
+        if user.journal.unnecessary_expenses
+        else []
     )
-    obj = NoIncomes(data)
+    unnecessary_titles = list(
+        ExpenseTypeModelService(user)
+        .items()
+        .filter(pk__in=unnecessary_ids)
+        .values_list("title", flat=True)
+    )
+
+    # 2. Fetch Savings
+    savings_data = {}
+    if user.journal.unnecessary_savings:
+        unnecessary_titles.append(str(_("Savings")))
+        savings_data = SavingModelService(user).last_months(months=months)
+
+    # 3. Build Pure Data Object
+    data_payload = Data(
+        account_sum=AccountBalanceModelService(user)
+        .year(year)
+        .aggregate(Sum("balance"))["balance__sum"]
+        or 0,
+        fund_sum=SavingBalanceModelService(user)
+        .items()
+        .filter(year=year, saving_type__type__in=["shares", "funds"])
+        .aggregate(Sum("market_value"))["market_value__sum"]
+        or 0,
+        pension_sum=SavingBalanceModelService(user)
+        .items()
+        .filter(year=year, saving_type__type="pensions")
+        .aggregate(Sum("market_value"))["market_value__sum"]
+        or 0,
+        expenses=list(ExpenseModelService(user).last_months(months=months)),
+        savings=savings_data,
+        unnecessary=unnecessary_titles,
+    )
+
+    obj = NoIncomes(data_payload, months=months)
 
     return {
         "no_incomes": obj.summary,

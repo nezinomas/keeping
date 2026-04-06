@@ -14,6 +14,7 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import (
+    Coalesce,
     Concat,
     ExtractYear,
     TruncDay,
@@ -161,8 +162,11 @@ class ExpenseModelService(SumMixin, BaseModelService):
         )
 
     def last_months(self, months: int = 6):
-        # previous month
-        # if today February, then start is 2020-01-31
+        """
+        Calculates the total sum of expenses for the last `months` months.
+        If today is 2020-02-15 and months=6, it will calculate the sum from 2019-08-01 to 2020-01-31.
+            - If there are no expenses in that period, it will return []
+        """
         one_day = timedelta(days=1)
         start = date.today().replace(day=1) - one_day
 
