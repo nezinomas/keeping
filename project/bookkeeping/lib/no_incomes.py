@@ -33,7 +33,7 @@ class NoIncomes:
         self.months = months
         self.avg_expenses = 0.0
         self.cut_sum = 0.0
-        self._calc()
+        self._calculate_monthly_metrics()
 
     @property
     def unnecessary(self) -> list:
@@ -72,7 +72,7 @@ class NoIncomes:
             for title, money_fund, money_fund_pension, is_currency in entries
         ]
 
-    def _calc(self):
+    def _calculate_monthly_metrics(self):
         expenses_sum = 0
         cut_sum = 0
 
