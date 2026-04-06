@@ -281,6 +281,15 @@ def test_saving_last_months(main_user):
 
 
 @time_machine.travel("1999-06-01")
+@factory.django.mute_signals(post_save)
+def test_saving_last_months_empty_savings(main_user):
+    SavingTypeFactory()
+
+    actual = SavingModelService(main_user).last_months(6)
+    assert actual["sum"] == 0
+
+
+@time_machine.travel("1999-06-01")
 def test_saving_last_months_qs_count(main_user, django_assert_max_num_queries):
     SavingFactory(date=date(1999, 1, 1), price=2)
 

@@ -3,7 +3,7 @@ from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import Count, F, Q, Sum, Value
-from django.db.models.functions import ExtractYear, TruncMonth
+from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 from django.utils.translation import gettext as _
 
 from ...core.mixins.sum import SumMixin
@@ -49,7 +49,9 @@ class SavingModelService(SumMixin, BaseModelService):
         return self.year_sum(self.objects)
 
     def sum_by_month(self, year: int, month: Optional[int] = None):
-        return self.month_sum(self.objects, year, month).annotate(title=Value("savings"))
+        return self.month_sum(self.objects, year, month).annotate(
+            title=Value("savings")
+        )
 
     def sum_by_month_and_type(self, year: int):
         return (
@@ -75,14 +77,19 @@ class SavingModelService(SumMixin, BaseModelService):
         )
 
     def last_months(self, months: int = 6):
-        # previous month
-        # if today February, then start is 2020-01-31
+        """
+        Calculates the total sum of savings for the last `months` months.
+        If today is 2020-02-15 and months=6, it will calculate the sum from 2019-08-01 to 2020-01-31.
+            - If there are no savings in that period, it will return 0.
+        """
         start = date.today().replace(day=1) - timedelta(days=1)
 
         # back months to past; if months=6 then end=2019-08-01
         end = (start + timedelta(days=1)) - relativedelta(months=months)
 
-        return self.objects.filter(date__range=(end, start)).aggregate(sum=Sum("price"))
+        return self.objects.filter(date__range=(end, start)).aggregate(
+            sum=Coalesce(Sum("price"), 0)
+        )
 
     def incomes(self):
         """
