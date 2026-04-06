@@ -73,19 +73,24 @@ class NoIncomes:
         ]
 
     def _calc(self):
-        expenses_sum = sum(r.get("sum", 0) for r in self.data.expenses)
-        cut_sum = sum(
-            r.get("sum")
-            for r in self.data.expenses
-            if r.get("title") in self.data.unnecessary
-        )
+        expenses_sum = 0
+        cut_sum = 0
 
-        savings_val: int = self.data.savings.get("sum") if self.data.savings else 0
+        for expense in self.data.expenses:
+            val = expense.get("sum", 0)
+
+            expenses_sum += val
+
+            if expense.get("title") in self.data.unnecessary:
+                cut_sum += val
+
+        savings_val = self.data.savings.get("sum", 0) if self.data.savings else 0
+
         self.avg_expenses = (expenses_sum + savings_val) / self.months
         self.cut_sum = (cut_sum + savings_val) / self.months
 
     def _div(self, incomes: float, expenses: float) -> float:
-        return incomes / expenses if expenses else 0.0
+        return incomes / expenses if expenses else 0
 
 
 def load_service(user: User, year: int, months: int = 6) -> dict:
