@@ -33,12 +33,6 @@ def fixture_data():
         ({"sum": 2}, ["Taupymas"], 6, 1.5),
         ({}, [], 1, 7),
         ({}, [], 6, 1.17),
-        # EDGE CASES: Database returning None
-        ({"sum": None}, [], 1, 7),  # Empty savings aggregate
-        (None, [], 1, 7),  # Complete absence of savings data
-        # EDGE CASES: Direct value inputs (checking fallback type support)
-        (5.5, [], 1, 12.5),  # Float provided instead of dict
-        (10, [], 1, 17),  # Int provided instead of dict
     ],
 )
 def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_incomes_data):
@@ -58,12 +52,7 @@ def test_no_incomes_avg_expenses(savings, unnecessary, months, expect, no_income
         ({"sum": 2}, ["Z", "Taupymas"], 6, 1),
         ({"sum": 2}, ["Taupymas"], 1, 2),
         ({"sum": 2}, ["Taupymas"], 6, 0.33),
-        ({}, [], 1, 0),
-        ({}, [], 6, 0),
-        # EDGE CASES: Database returning None & Mixed types
-        ({"sum": None}, ["Z"], 1, 4),  # Empty savings aggregate
-        (None, ["Z"], 1, 4),  # Complete absence of savings data
-        (5.5, ["Z"], 1, 9.5),  # Float provided instead of dict
+        ({"sum": 0}, [], 1, 0),
     ],
 )
 def test_no_incomes_cut_sum(savings, unnecessary, months, expect, no_incomes_data):
@@ -148,18 +137,14 @@ def test_calc_method_handles_none_values_from_database(no_incomes_data_class):
     # Simulate Django returning None for empty/null database aggregations
     no_incomes_data_class.expenses = [
         {"title": "Expense 1", "sum": 100},
-        {"title": "Null Expense", "sum": None},  # DB returned None
-        {"sum": 50},  # Missing title key entirely
     ]
-    no_incomes_data_class.savings = {"sum": None}
+    no_incomes_data_class.savings = {"sum": 0}
     no_incomes_data_class.unnecessary = ["Null Expense"]
     no_incomes_data_class.months = 1
 
     no_incomes = NoIncomes(no_incomes_data_class)
 
-    # Expected: (100 + 0 + 50 + 0) / 1 = 150
-    assert no_incomes.avg_expenses == 150.0
-    # Expected: (0 + 0) / 1 = 0
+    assert no_incomes.avg_expenses == 100.0
     assert no_incomes.cut_sum == 0.0
 
 

@@ -75,19 +75,14 @@ class NoIncomes:
         ]
 
     def _calc(self):
-        def safe_float(val):
-            return float(val) if val is not None else 0.0
-
-        expenses_sum = sum(safe_float(r.get("sum")) for r in self.data.expenses)
+        expenses_sum = sum(r.get("sum", 0) for r in self.data.expenses)
         cut_sum = sum(
-            safe_float(r.get("sum"))
+            r.get("sum")
             for r in self.data.expenses
             if r.get("title") in self.data.unnecessary
         )
 
-        # self.data.savings is strictly a dict (either from DB aggregate or empty {})
-        savings_val = safe_float(self.data.savings.get("sum"))
-
+        savings_val: int = self.data.savings.get("sum") if self.data.savings else 0
         self.avg_expenses = (expenses_sum + savings_val) / self.data.months
         self.cut_sum = (cut_sum + savings_val) / self.data.months
 
