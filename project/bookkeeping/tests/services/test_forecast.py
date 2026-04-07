@@ -3,8 +3,15 @@ from datetime import date
 import pytest
 import time_machine
 
-from ...services.forecast import Data, Forecast, get_month
+from ...services.forecast import (
+    Forecast,
+    ForecastDataDTO,
+    ForecastDataProvider,
+    MonthlyDataFormatter,
+    get_month,
+)
 
+MODULE_PATH = "project.bookkeeping.services.forecast"
 
 def test_get_data(main_user):
     main_user.year = 1000
@@ -14,7 +21,7 @@ def test_get_data(main_user):
         {"date": date(1000, 12, 1), "sum": 2, "title": "incomes"},
     ]
 
-    actual = Data(main_user)._make_data(data)
+    actual = MonthlyDataFormatter.from_monthly_sum(data)
     expect = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]
 
     assert actual == expect
@@ -38,7 +45,7 @@ def test_get_planned_data(main_user):
         }
     ]
     main_user.year = 1000
-    actual = Data(main_user)._make_planned_data(data)
+    actual = MonthlyDataFormatter.from_planned_data(data)
     expect = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]
 
     assert actual == expect
@@ -76,7 +83,7 @@ def test_get_planned_data_few_records(main_user):
         },
     ]
     main_user.year = 1000
-    actual = Data(main_user)._make_planned_data(data)
+    actual = MonthlyDataFormatter.from_planned_data(data)
     expect = [5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0]
 
     assert actual == expect
@@ -253,3 +260,100 @@ def test_forecast_current_month_savings_exceeds_average(data):
 )
 def test_get_month(year, expected):
     assert get_month(year) == expected
+
+
+def test_forecast_data_dto_to_dict():
+    dto = ForecastDataDTO(
+        incomes=[10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        expenses=[5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        savings=[2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        savings_close=[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        planned_incomes=[20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    )
+
+    actual = dto.to_dict()
+
+    assert isinstance(actual, dict)
+    assert actual["incomes"] == [10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    assert actual["planned_incomes"] == [20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+
+def test_monthly_data_formatter_from_planned_data():
+    months = [
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december",
+    ]
+    data = [
+        {"january": 1, "december": 2},
+        {
+            "january": 4,
+            "december": 6,
+            "invalid_key": 99,
+        },  # Invalid keys should be ignored
+    ]
+
+    actual = MonthlyDataFormatter.from_planned_data(data, months)
+    expect = [5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0]
+
+    assert actual == expect
+
+
+def test_forecast_data_provider_get_forecast_data(mocker, main_user):
+    main_user.year = 1000
+
+    # 1. Mock the services to return fake database QuerySets
+    mock_income = mocker.patch(f"{MODULE_PATH}.IncomeModelService")
+    mock_income.return_value.sum_by_month.return_value = [
+        {"date": date(1000, 1, 1), "sum": 100}
+    ]
+
+    mock_expense = mocker.patch(f"{MODULE_PATH}.ExpenseModelService")
+    mock_expense.return_value.sum_by_month.return_value = [
+        {"date": date(1000, 2, 1), "sum": 50}
+    ]
+
+    mock_saving = mocker.patch(f"{MODULE_PATH}.SavingModelService")
+    mock_saving.return_value.sum_by_month.return_value = []
+
+    mock_saving_close = mocker.patch(f"{MODULE_PATH}.SavingCloseModelService")
+    mock_saving_close.return_value.sum_by_month.return_value = []
+
+    mock_plan = mocker.patch(f"{MODULE_PATH}.IncomePlanModelService")
+    mock_plan.return_value.year.return_value.values.return_value = [{"january": 200}]
+
+    # 2. Execute the provider
+    provider = ForecastDataProvider(main_user)
+    result = provider.get_forecast_data()
+
+    # 3. Assert the DTO is structured correctly based on the mocked data
+    assert isinstance(result, ForecastDataDTO)
+    assert result.incomes[0] == 100.0  # January Income
+    assert result.expenses[1] == 50.0  # February Expense
+    assert result.savings[0] == 0.0  # Empty fallback
+    assert result.planned_incomes[0] == 200.0  # January Planned Income
+
+
+def test_forecast_data_provider_get_beginning_balance(mocker, main_user):
+    main_user.year = 1000
+
+    # Mock the chained database calls: objects.filter().aggregate()
+    mock_balance_service = mocker.patch(f"{MODULE_PATH}.AccountBalanceModelService")
+    mock_filter = mock_balance_service.return_value.objects.filter.return_value
+    mock_filter.aggregate.return_value = {"past__sum": 1500}
+
+    provider = ForecastDataProvider(main_user)
+    actual = provider.get_beginning_balance()
+
+    assert actual == 1500
+    mock_balance_service.return_value.objects.filter.assert_called_once_with(year=1000)
+    mock_filter.aggregate.assert_called_once()

@@ -1,5 +1,5 @@
 import itertools as it
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import cast
 
@@ -15,45 +15,29 @@ from ...savings.services.model_services import SavingModelService
 from ...transactions.services.model_services import SavingCloseModelService
 from ...users.models import User
 
+MONTH_NAMES = monthnames()
 
-@dataclass
-class Data:
-    user: User
-    year: int = field(init=False, default=1974)
+# 1. DTO (Data Transfer Object)
+@dataclass(frozen=True)
+class ForecastDataDTO:
+    """Carries strict, immutable data payload between the database layer and the Forecast logic."""
 
-    def __post_init__(self):
-        self.year = cast(int, self.user.year)
+    incomes: list[int]
+    expenses: list[int]
+    savings: list[int]
+    savings_close: list[int]
+    planned_incomes: list[int]
 
-    def data(self) -> dict[str, list[int]]:
-        incomes = self._make_data(IncomeModelService(self.user).sum_by_month(self.year))
-        expenses = self._make_data(
-            ExpenseModelService(self.user).sum_by_month(self.year)
-        )
-        savings = self._make_data(SavingModelService(self.user).sum_by_month(self.year))
-        savings_close = self._make_data(
-            SavingCloseModelService(self.user).sum_by_month(self.year)
-        )
-        planned_incomes = self._make_planned_data(
-            IncomePlanModelService(self.user)
-            .year(self.year)
-            .values(*monthnames())
-        )
-        return {
-            "incomes": incomes,
-            "expenses": expenses,
-            "savings": savings,
-            "savings_close": savings_close,
-            "planned_incomes": planned_incomes,
-        }
+    def to_dict(self) -> dict[str, list[int]]:
+        """Converts DTO to dict for polars DataFrame compatibility."""
+        return asdict(self)
 
-    def amount_at_beginning_of_year(self) -> int:
-        return (
-            AccountBalanceModelService(self.user)
-            .objects.filter(year=self.year)
-            .aggregate(Sum("past", default=0))["past__sum"]
-        )
 
-    def _make_data(self, data: QuerySet) -> list[int]:
+class MonthlyDataFormatter:
+    """Responsible ONLY for transforming database QuerySets into formatted lists."""
+
+    @staticmethod
+    def from_monthly_sum(data: QuerySet) -> list[int]:
         """
         Takes a QuerySet object and converts it into a list of integers.
 
@@ -65,13 +49,13 @@ class Data:
             from the QuerySet object.
             If month does not exist in the dataset, the price will be 0.
         """
-
         arr = [0] * 12
         for row in data:
             arr[row["date"].month - 1] = row["sum"]
         return arr
 
-    def _make_planned_data(self, data: QuerySet) -> list[int]:
+    @staticmethod
+    def from_planned_data(data: QuerySet, month_names: list | None = None) -> list[int]:
         """
         Calculates the total price for each month in a given dataset.
 
@@ -83,9 +67,10 @@ class Data:
             where the index represents the month (0-11).
             If the month does not exist in the dataset, the price will be 0.
         """
+        month_names = month_names or MONTH_NAMES
 
         monthly_totals = [0] * 12
-        month_map = {name: idx for idx, name in enumerate(monthnames())}
+        month_map = {name: idx for idx, name in enumerate(month_names)}
 
         for month, price in it.chain.from_iterable(row.items() for row in data):
             if not price or month not in month_map:
@@ -93,6 +78,39 @@ class Data:
             monthly_totals[month_map[month]] += price
 
         return monthly_totals
+
+
+class ForecastDataProvider:
+    """Coordinates the retrieval of data via services and maps them to a DTO."""
+
+    def __init__(self, user: User):
+        self.user = user
+        self.year = cast(int, user.year)
+
+    def get_forecast_data(self) -> ForecastDataDTO:
+        incomes_qs = IncomeModelService(self.user).sum_by_month(self.year)
+        expenses_qs = ExpenseModelService(self.user).sum_by_month(self.year)
+        savings_qs = SavingModelService(self.user).sum_by_month(self.year)
+        savings_close_qs = SavingCloseModelService(self.user).sum_by_month(self.year)
+
+        planned_qs = (
+            IncomePlanModelService(self.user).year(self.year).values(*MONTH_NAMES)
+        )
+
+        return ForecastDataDTO(
+            incomes=MonthlyDataFormatter.from_monthly_sum(incomes_qs),
+            expenses=MonthlyDataFormatter.from_monthly_sum(expenses_qs),
+            savings=MonthlyDataFormatter.from_monthly_sum(savings_qs),
+            savings_close=MonthlyDataFormatter.from_monthly_sum(savings_close_qs),
+            planned_incomes=MonthlyDataFormatter.from_planned_data(planned_qs),
+        )
+
+    def get_beginning_balance(self) -> int:
+        return (
+            AccountBalanceModelService(self.user)
+            .objects.filter(year=self.year)
+            .aggregate(Sum("past", default=0))["past__sum"]
+        )
 
 
 class Forecast:
@@ -223,11 +241,14 @@ def get_month(year: int) -> int:
 
 def load_service(user: User) -> dict:
     year = cast(int, user.year)
-    data = Data(user)
+    provider = ForecastDataProvider(user)
     month = get_month(year)
-    forecast = Forecast(month, data.data()).forecast()
 
-    beginning = data.amount_at_beginning_of_year()
+    # We pass the DTO as a dictionary since Forecast._create_df expects it
+    forecast_data = provider.get_forecast_data().to_dict()
+    forecast = Forecast(month, forecast_data).forecast()
+
+    beginning = provider.get_beginning_balance()
     end = beginning + forecast
 
     return {
