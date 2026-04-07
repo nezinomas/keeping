@@ -4,14 +4,12 @@ from datetime import datetime
 from typing import cast
 
 import polars as pl
-from django.db import models
 from django.db.models import QuerySet, Sum
 
 from ...accounts.services.model_services import AccountBalanceModelService
 from ...core.lib.date import monthnames
 from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
-from ...plans.models import IncomePlan
 from ...plans.services.model_services import IncomePlanModelService
 from ...savings.services.model_services import SavingModelService
 from ...transactions.services.model_services import SavingCloseModelService
