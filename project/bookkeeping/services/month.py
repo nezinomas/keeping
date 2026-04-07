@@ -1,4 +1,3 @@
-import contextlib
 import itertools as it
 from dataclasses import asdict, dataclass
 from operator import itemgetter
@@ -15,27 +14,97 @@ from ...expenses.services.model_services import (
 from ...incomes.services.model_services import IncomeModelService
 from ...plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 from ...savings.services.model_services import SavingModelService
+from ...users.models import User
 from ..lib.day_spending import DaySpending
 from ..lib.make_dataframe import MakeDataFrame
 
 
 @dataclass(frozen=True)
-class DataDto:
+class MonthDataDTO:
     incomes: int
     expenses: list[dict]
-    expense_types: list
-    necessary_expense_types: list
-    savings: list
+    expense_types: list[str]
+    necessary_expense_types: list[str]
+    savings: list[dict]
 
 
-class Charts:
+class MonthDataProvider:
+    def __init__(self, user: User):
+        self.user = user
+        self.year = user.year
+        self.month = user.month
+
+    def get_data(self) -> MonthDataDTO:
+        return MonthDataDTO(
+            incomes=self._get_incomes(),
+            expenses=list(
+                ExpenseModelService(self.user).sum_by_day_and_type(
+                    self.year, self.month
+                )
+            ),
+            expense_types=list(
+                ExpenseTypeModelService(self.user).objects.values_list(
+                    "title", flat=True
+                )
+            ),
+            necessary_expense_types=list(
+                ExpenseTypeModelService(self.user)
+                .objects.filter(necessary=True)
+                .values_list("title", flat=True)
+            ),
+            savings=list(
+                SavingModelService(self.user).sum_by_day(self.year, self.month)
+            ),
+        )
+
+    def _get_incomes(self) -> int:
+        return (
+            IncomeModelService(self.user)
+            .objects.filter(date__year=self.year, date__month=self.month)
+            .aggregate(Sum("price", default=0))["price__sum"]
+        )
+
+
+class MonthTableBuilder:
+    """Merges expenses and savings into a single Polars DataFrame representing the month."""
+
+    def __init__(self, expense_df: pl.DataFrame, saving_df: pl.DataFrame):
+        self.df = self._build_table(expense_df, saving_df)
+
+    def _build_table(
+        self, expense_df: pl.DataFrame, saving_df: pl.DataFrame
+    ) -> pl.DataFrame:
+        print(f'--------------------------->\n{expense_df=}\n')
+        # If exists at least two columns (date + at least one expense type), create total column
+        if expense_df.shape[1] > 1:
+            expense_df = expense_df.with_columns(
+                pl.sum_horizontal(pl.exclude("date")).alias(_("Total"))
+            )
+
+        return expense_df.join(
+            saving_df, on="date", how="full", coalesce=True, nulls_equal=True
+        )
+
+    @property
+    def table(self) -> list[dict]:
+        return [] if self.df.is_empty() else self.df.to_dicts()
+
+    @property
+    def total_row(self) -> dict:
+        if self.df.is_empty() or self.df.shape[1] == 1:
+            return {}
+        return self.df.select(pl.exclude("date")).sum().to_dicts()[0]
+
+
+class ChartBuilder:
+    """Formats financial data specifically for frontend charts."""
+
     def __init__(self, targets: dict, totals: dict):
-        self.totals = self._filter_totals(totals)
+        self.totals = {k: v for k, v in totals.items() if k != _("Total")}
         self.targets = targets
 
-    def chart_targets(self) -> dict:
-        data = self._make_chart_data(self.totals)
-
+    def build_targets(self) -> dict:
+        data = self._sort_chart_data(self.totals)
         categories, data_fact, data_target = [], [], []
 
         for entry in data:
@@ -57,19 +126,13 @@ class Charts:
             "category_len": len(categories),
         }
 
-    def chart_expenses(self) -> list[dict]:
-        data = self._make_chart_data(self.totals)
-
+    def build_expenses(self) -> list[dict]:
+        data = self._sort_chart_data(self.totals)
         for entry in data:
             entry["name"] = entry["name"].upper()
         return data
 
-    def _filter_totals(self, totals: dict) -> dict:
-        with contextlib.suppress(KeyError):
-            del totals[_("Total")]
-        return totals
-
-    def _make_chart_data(self, data: dict) -> list[dict]:
+    def _sort_chart_data(self, data: dict) -> list[dict]:
         return sorted(
             [{"name": key, "y": val} for key, val in data.items()],
             key=itemgetter("y"),
@@ -77,117 +140,77 @@ class Charts:
         )
 
 
-class MainTable:
-    def __init__(self, expense: MakeDataFrame, saving: MakeDataFrame):
-        self.df = self.make_table(expense, saving)
-
-    def make_table(self, expense, saving):
-        df_expense = expense.data
-
-        # if exists at least two columns (dates, expense_type) create total column
-        if df_expense.shape[1] > 1:
-            df_expense = df_expense.with_columns(
-                pl.sum_horizontal(pl.exclude("date")).alias(_("Total"))
-            )
-
-        return df_expense.join(
-            saving.data, on="date", how="full", coalesce=True, nulls_equal=True
-        )
-
-    @property
-    def table(self):
-        return [] if self.df.is_empty() else self.df.to_dicts()
-
-    @property
-    def total_row(self):
-        return (
-            {}
-            if self.df.is_empty() or self.df.shape[1] == 1
-            else self.df.select(pl.exclude("date")).sum().to_dicts()[0]
-        )
-
-
-@dataclass
-class Info:
+@dataclass(frozen=True)
+class InfoState:
     income: int
     saving: int
     expense: int
     per_day: int
     balance: int
 
-    def __sub__(self, other):
-        return __class__(
-            other.income - self.income,
-            self.saving - other.saving,
-            self.expense - other.expense,
-            self.per_day - other.per_day,
-            other.balance - self.balance,
+
+class InfoBuilder:
+    @staticmethod
+    def build(fact: InfoState, plan: InfoState) -> dict:
+        delta = InfoState(
+            income=fact.income - plan.income,
+            saving=plan.saving - fact.saving,
+            expense=plan.expense - fact.expense,
+            per_day=plan.per_day - fact.per_day,
+            balance=fact.balance - plan.balance,
         )
 
+        return {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)}
 
-class Objects:
-    def __init__(self, user, data: DataDto):
-        self.user = user
-        self.data: DataDto = data
 
-        # cash expenses calculation
-        self.expenses = MakeDataFrame(
-            year=self.user.year,
-            month=self.user.month,
-            data=self.data.expenses,
-            columns=self.data.expense_types,
+class MonthContextPresenter:
+    def __init__(self, user: User, dto: MonthDataDTO):
+        self.year = user.year
+        self.month = user.month
+        self.dto = dto
+
+        expense_maker = MakeDataFrame(
+            year=self.year,
+            month=self.month,
+            data=dto.expenses,
+            columns=dto.expense_types,
         )
 
-        self.plans: PlanCalculateDaySum = self._initialize_plans()
-        self.spending: DaySpending = self._initialize_spending()
-        self.main_table: MainTable = self._initialize_main_table()
-        self.charts: Charts = self._initialize_charts()
+        saving_maker = MakeDataFrame(year=self.year, month=self.month, data=dto.savings)
 
-    def _initialize_plans(self) -> PlanCalculateDaySum:
-        return PlanCalculateDaySum(
-            data=PlanCollectData(self.user), month=self.user.month
-        )
-
-    def _initialize_spending(self) -> DaySpending:
-        return DaySpending(
-            expense=self.expenses,
-            necessary=self.data.necessary_expense_types,
+        # 2. Initialize Core Services
+        self.plans = PlanCalculateDaySum(data=PlanCollectData(user), month=self.month)
+        self.spending = DaySpending(
+            expense=expense_maker,
+            necessary=dto.necessary_expense_types,
             per_day=self.plans.day_input,
             free=self.plans.expenses_free,
         )
-
-    def _initialize_main_table(self) -> MainTable:
-        saving = MakeDataFrame(
-            year=self.user.year,
-            month=self.user.month,
-            data=self.data.savings,
+        self.month_table = MonthTableBuilder(
+            expense_df=expense_maker.data, saving_df=saving_maker.data
         )
-        return MainTable(expense=self.expenses, saving=saving)
-
-    def _initialize_charts(self) -> Charts:
-        return Charts(
+        self.charts = ChartBuilder(
             targets=self.plans.monthly_plan_by_category,
-            totals=self.main_table.total_row,
+            totals=self.month_table.total_row,
         )
 
-    def info_table(self) -> dict:
-        income = self.data.incomes
-        expense = self.main_table.total_row.get(_("Total"), 0)
-        saving = self.main_table.total_row.get(_("Savings"), 0)
+    def _build_info_context(self) -> dict:
+        """Isolates the messy InfoState instantiation."""
+        total_exp = self.month_table.total_row.get(_("Total"), 0)
+        total_sav = self.month_table.total_row.get(_("Savings"), 0)
 
-        fact = Info(
-            income=income,
-            expense=expense,
-            saving=saving,
+        fact_state = InfoState(
+            income=self.dto.incomes,
+            expense=total_exp,
+            saving=total_sav,
             per_day=self.spending.avg_per_day,
-            balance=(income - expense - saving),
+            balance=(self.dto.incomes - total_exp - total_sav),
         )
 
-        plan = Info(
+        plan_state = InfoState(
             income=self.plans.incomes,
             expense=(
-                0
-                + self.plans.expenses_necessary
+                self.plans.expenses_necessary
                 + self.plans.expenses_free
                 - self.plans.savings
             ),
@@ -196,53 +219,26 @@ class Objects:
             balance=self.plans.remains,
         )
 
-        delta = plan - fact
+        return InfoBuilder.build(fact=fact_state, plan=plan_state)
 
-        return {"plan": asdict(plan), "fact": asdict(fact), "delta": asdict(delta)}
+    def to_dict(self) -> dict:
+        return {
+            "month_table": {
+                "day": current_day(self.year, self.month, False),
+                "expenses": it.zip_longest(
+                    self.month_table.table, self.spending.spending
+                ),
+                "expense_types": self.dto.expense_types,
+                "total_row": self.month_table.total_row,
+            },
+            "info": self._build_info_context(),
+            "chart_expenses": self.charts.build_expenses(),
+            "chart_targets": self.charts.build_targets(),
+        }
 
 
-def load_service(user) -> dict:
-    year = user.year
-    month = user.month
+def load_service(user: User) -> dict:
+    dto = MonthDataProvider(user).get_data()
+    presenter = MonthContextPresenter(user, dto)
 
-    data_payload = DataDto(
-        incomes = (
-                IncomeModelService(user)
-                .objects.filter(date__year=year, date__month=month)
-                .aggregate(Sum("price", default=0))["price__sum"]
-            ),
-        expenses = list(
-                list(
-                    ExpenseModelService(user).sum_by_day_and_type(
-                        year, month
-                    )
-                )
-            ),
-            expense_types = list(
-                ExpenseTypeModelService(user).objects.values_list("title", flat=True)
-            ),
-            necessary_expense_types = list(
-                ExpenseTypeModelService(user)
-                .objects.filter(necessary=True)
-                .values_list("title", flat=True)
-            ),
-            savings = list(
-                SavingModelService(user).sum_by_day(year, month)
-            )
-    )
-
-    obj = Objects(user, data_payload)
-    return {
-        "month_table": {
-            "day": current_day(user.year, user.month, False),
-            "expenses": it.zip_longest(
-                obj.main_table.table,
-                obj.spending.spending,
-            ),
-            "expense_types": data_payload.expense_types,
-            "total_row": obj.main_table.total_row,
-        },
-        "info": obj.info_table(),
-        "chart_expenses": obj.charts.chart_expenses(),
-        "chart_targets": obj.charts.chart_targets(),
-    }
+    return presenter.to_dict()

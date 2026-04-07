@@ -6,23 +6,36 @@ from mock import MagicMock, PropertyMock
 
 from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
-from ...services.month import Charts, Info, MainTable, Objects
+from ...services.month import (
+    ChartBuilder,
+    InfoBuilder,
+    InfoState,
+    MonthContextPresenter,
+    MonthTableBuilder,
+)
 
-MODULE_PATH = "project.bookkeeping.services.month.Objects"
+MODULE_PATH = "project.bookkeeping.services.month"
 
 
 @time_machine.travel("1999-1-1")
 def test_info_context(mocker, main_user):
-    mocker.patch(f"{MODULE_PATH}._initialize_plans")
-    mocker.patch(f"{MODULE_PATH}._initialize_spending")
-    mocker.patch(f"{MODULE_PATH}._initialize_main_table")
-    mocker.patch(f"{MODULE_PATH}._initialize_charts")
+    mock_collect_class = mocker.patch(f"{MODULE_PATH}.PlanCollectData")
+    mock_collect_instance = mock_collect_class.return_value
+
+    mock_calc_class = mocker.patch(f"{MODULE_PATH}.PlanCalculateDaySum")
+    mock_calc_instance = mock_calc_class.return_value
+
+    mock_table_builder_class = mocker.patch(f"{MODULE_PATH}.MonthTableBuilder")
+    mock_table_builder_instance = mock_table_builder_class.return_value
+
+    mock_data_frame = mocker.patch(f"{MODULE_PATH}.MakeDataFrame")
+    mock_data_frame_instance = mock_data_frame.return_value
 
     main_user.year = 1
     main_user.month = 1
 
-    obj = Objects(main_user, MagicMock())
-    obj.data = MagicMock(incomes=15)
+    obj = MonthContextPresenter(main_user, MagicMock())
+    obj.dto = MagicMock(incomes=15)
 
     obj.plans = MagicMock()
     type(obj.plans).incomes = PropertyMock(return_value=100)
@@ -32,10 +45,10 @@ def test_info_context(mocker, main_user):
     type(obj.plans).day_input = PropertyMock(return_value=3)
     type(obj.plans).remains = PropertyMock(return_value=-85)
 
-    obj.main_table = MagicMock(total_row={"Viso": 5, "Taupymas": 12})
+    obj.month_table = MagicMock(total_row={"Viso": 5, "Taupymas": 12})
     obj.spending = MagicMock(avg_per_day=2)
 
-    actual = obj.info_table()
+    actual = obj.to_dict()["info"]
     assert actual["plan"]["income"] == 100
     assert actual["plan"]["saving"] == 12
     assert actual["plan"]["expense"] == 81
@@ -58,9 +71,9 @@ def test_info_context(mocker, main_user):
 def test_chart_expenses_context():
     totals = {"xyz": 10, "Taupymas": 1}
     targets = {"xyz": 6, "Taupymas": 9}
-    obj = Charts(targets, totals)
+    obj = ChartBuilder(targets, totals)
 
-    actual = obj.chart_expenses()
+    actual = obj.build_expenses()
 
     assert len(actual) == 2
     assert actual[0]["name"] == "XYZ"
@@ -69,9 +82,9 @@ def test_chart_expenses_context():
 
 def test_chart_expenses():
     totals = {"T1": 25, "T2": 50}
-    obj = Charts(totals=totals, targets={})
+    obj = ChartBuilder(totals=totals, targets={})
 
-    actual = obj.chart_expenses()
+    actual = obj.build_expenses()
 
     expect = [
         {"name": "T2", "y": 50},
@@ -83,9 +96,9 @@ def test_chart_expenses():
 
 def test_chart_expenses_colors_shorter_then_data():
     totals = {"T1": 2, "T2": 5, "T3": 1}
-    obj = Charts(targets={}, totals=totals)
+    obj = ChartBuilder(targets={}, totals=totals)
 
-    actual = obj.chart_expenses()
+    actual = obj.build_expenses()
 
     expect = [
         {"name": "T2", "y": 5},
@@ -97,16 +110,16 @@ def test_chart_expenses_colors_shorter_then_data():
 
 
 def test_chart_expenses_no_expenes_data():
-    obj = Charts(targets={}, totals={})
+    obj = ChartBuilder(targets={}, totals={})
 
-    actual = obj.chart_expenses()
+    actual = obj.build_expenses()
 
     assert actual == []
 
 
-def test_chart_targets_context():
-    obj = Charts(targets={}, totals={})
-    actual = obj.chart_targets()
+def test_build_targets_context():
+    obj = ChartBuilder(targets={}, totals={})
+    actual = obj.build_targets()
 
     assert "categories" in actual
     assert "target" in actual
@@ -115,57 +128,57 @@ def test_chart_targets_context():
     assert "factTitle" in actual
 
 
-def test_chart_targets_context_with_savings():
+def test_build_targets_context_with_savings():
     totals = {"xxx": 6, "Taupymas": 99}
     targets = {"xxx": 6, "Taupymas": 9}
-    obj = Charts(targets, totals)
-    actual = obj.chart_targets()
+    obj = ChartBuilder(targets, totals)
+    actual = obj.build_targets()
 
     assert actual["categories"] == ["TAUPYMAS", "XXX"]
     assert actual["target"] == [9, 6]
     assert actual["fact"] == [{"y": 99, "target": 9}, {"y": 6, "target": 6}]
 
 
-def test_chart_targets_categories():
+def test_build_targets_categories():
     totals = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
 
-    obj = Charts(targets, totals)
+    obj = ChartBuilder(targets, totals)
 
-    actual = obj.chart_targets()
+    actual = obj.build_targets()
 
     expect = ["T2", "T1"]
 
     assert actual["categories"] == expect
 
 
-def test_chart_targets_data_target():
+def test_build_targets_data_target():
     totals = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
 
-    obj = Charts(targets, totals)
+    obj = ChartBuilder(targets, totals)
 
-    actual = obj.chart_targets()
+    actual = obj.build_targets()
 
     assert actual["target"] == [4, 3]
 
 
-def test_chart_targets_data_target_empty():
+def test_build_targets_data_target_empty():
     totals = {"T1": 2, "T2": 5}
     targets = {}
-    obj = Charts(targets, totals)
+    obj = ChartBuilder(targets, totals)
 
-    actual = obj.chart_targets()
+    actual = obj.build_targets()
 
     assert actual["target"] == [0, 0]
 
 
-def test_chart_targets_data_fact():
+def test_build_targets_data_fact():
     totals = {"T1": 2, "T2": 5}
     targets = {"T1": 3, "T2": 4}
-    obj = Charts(targets, totals)
+    obj = ChartBuilder(targets, totals)
 
-    actual = obj.chart_targets()
+    actual = obj.build_targets()
 
     expect = [
         {"y": 5, "target": 4},
@@ -175,12 +188,12 @@ def test_chart_targets_data_fact():
     assert actual["fact"] == expect
 
 
-def test_chart_targets_data_fact_no_target():
+def test_build_targets_data_fact_no_target():
     totals = {"T1": 2, "T2": 5}
     targets = {}
-    obj = Charts(targets, totals)
+    obj = ChartBuilder(targets, totals)
 
-    actual = obj.chart_targets()
+    actual = obj.build_targets()
 
     expect = [
         {"y": 5, "target": 0},
@@ -190,21 +203,6 @@ def test_chart_targets_data_fact_no_target():
     assert actual["fact"] == expect
 
 
-@pytest.mark.parametrize(
-    "data, expect",
-    [
-        ({}, []),
-        ({"x": 1}, [{"name": "x", "y": 1}]),
-        ({"a": 1, "x": 2}, [{"name": "x", "y": 2}, {"name": "a", "y": 1}]),
-    ],
-)
-def test_make_chart_data(data, expect):
-    obj = Charts(targets=MagicMock(), totals=MagicMock())
-    actual = obj._make_chart_data(data)
-
-    assert actual == expect
-
-
 @pytest.fixture(name="df_expense")
 def fixture_df_expense():
     year = 1999
@@ -212,7 +210,7 @@ def fixture_df_expense():
     data = [{"date": date(1999, 3, 2), "title": "A", "sum": 4, "exception_sum": 0}]
     columns = ["A", "B"]
 
-    return MakeDataFrame(year=year, month=month, data=data, columns=columns)
+    return MakeDataFrame(year=year, month=month, data=data, columns=columns).data
 
 
 @pytest.fixture(name="df_saving")
@@ -221,11 +219,11 @@ def fixture_df_saving():
     month = 3
     data = [{"date": date(1999, 3, 3), "sum": 2, "title": "Taupymas"}]
 
-    return MakeDataFrame(year=year, month=month, data=data)
+    return MakeDataFrame(year=year, month=month, data=data).data
 
 
 def test_main_table(df_expense, df_saving):
-    actual = MainTable(df_expense, df_saving).table
+    actual = MonthTableBuilder(df_expense, df_saving).table
 
     assert len(actual) == 31
     assert actual[0] == {
@@ -252,21 +250,35 @@ def test_main_table(df_expense, df_saving):
 
 
 def test_main_table_total_row(df_expense, df_saving):
-    actual = MainTable(df_expense, df_saving).total_row
+    actual = MonthTableBuilder(df_expense, df_saving).total_row
 
     assert actual == {"A": 4, "B": 0, "Viso": 4, "Taupymas": 2}
 
 
-def test_info_class_sub_method():
-    a = Info(income=9, saving=8, expense=7, per_day=6, balance=5)
-    b = Info(income=1, saving=2, expense=3, per_day=4, balance=4)
+def test_info_builder_delta():
+    fact = InfoState(income=9, saving=8, expense=7, per_day=6, balance=5)
+    plan = InfoState(income=1, saving=2, expense=3, per_day=4, balance=4)
 
-    actual = a - b
+    actual = InfoBuilder.build(fact, plan)
 
-    assert isinstance(actual, Info)
-
-    assert actual.income == -8
-    assert actual.saving == 6
-    assert actual.expense == 4
-    assert actual.per_day == 2
-    assert actual.balance == -1
+    assert actual["fact"] == {
+        "income": 9,
+        "saving": 8,
+        "expense": 7,
+        "per_day": 6,
+        "balance": 5,
+    }
+    assert actual["plan"] == {
+        "income": 1,
+        "saving": 2,
+        "expense": 3,
+        "per_day": 4,
+        "balance": 4,
+    }
+    assert actual["delta"] == {
+        "income": 8,
+        "saving": -6,
+        "expense": -4,
+        "per_day": -2,
+        "balance": 1,
+    }
