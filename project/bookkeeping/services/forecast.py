@@ -1,8 +1,7 @@
-import itertools as it
 import statistics
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TypedDict, cast
+from typing import cast
 
 from django.db.models import QuerySet, Sum
 
@@ -64,14 +63,12 @@ class MonthlyDataFormatter:
             If the month does not exist in the dataset, the price will be 0.
         """
         month_names = month_names or MONTH_NAMES
-
         monthly_totals = [0] * 12
-        month_map = {name: idx for idx, name in enumerate(month_names)}
 
-        for month, price in it.chain.from_iterable(row.items() for row in data):
-            if not price or month not in month_map:
-                continue
-            monthly_totals[month_map[month]] += price
+        for row in data:
+            for idx, month in enumerate(month_names):
+                if price := row.get(month):
+                    monthly_totals[idx] += price
 
         return monthly_totals
 
