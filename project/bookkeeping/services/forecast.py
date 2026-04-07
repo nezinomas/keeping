@@ -1,62 +1,34 @@
-import itertools as it
-from dataclasses import dataclass, field
+import statistics
+from dataclasses import dataclass
 from datetime import datetime
 from typing import cast
 
-import polars as pl
-from django.db import models
 from django.db.models import QuerySet, Sum
 
 from ...accounts.services.model_services import AccountBalanceModelService
 from ...core.lib.date import monthnames
 from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
-from ...plans.models import IncomePlan
 from ...plans.services.model_services import IncomePlanModelService
 from ...savings.services.model_services import SavingModelService
 from ...transactions.services.model_services import SavingCloseModelService
 from ...users.models import User
 
+MONTH_NAMES = monthnames()
 
-@dataclass
-class Data:
-    user: User
-    year: int = field(init=False, default=1974)
 
-    def __post_init__(self):
-        self.year = cast(int, self.user.year)
+@dataclass(frozen=True)
+class ForecastDataDTO:
+    incomes: list[int]
+    expenses: list[int]
+    savings: list[int]
+    savings_close: list[int]
+    planned_incomes: list[int]
 
-    def data(self) -> dict[str, list[int]]:
-        incomes = self._make_data(IncomeModelService(self.user).sum_by_month(self.year))
-        expenses = self._make_data(
-            ExpenseModelService(self.user).sum_by_month(self.year)
-        )
-        savings = self._make_data(SavingModelService(self.user).sum_by_month(self.year))
-        savings_close = self._make_data(
-            SavingCloseModelService(self.user).sum_by_month(self.year)
-        )
-        planned_incomes = self._make_planned_data(
-            IncomePlanModelService(self.user)
-            .year(self.year)
-            .values(*monthnames())
-        )
-        return {
-            "incomes": incomes,
-            "expenses": expenses,
-            "savings": savings,
-            "savings_close": savings_close,
-            "planned_incomes": planned_incomes,
-        }
 
-    def amount_at_beginning_of_year(self) -> int:
-        return (
-            AccountBalanceModelService(self.user)
-            .objects.filter(year=self.year)
-            .aggregate(Sum("past"))["past__sum"]
-            or 0
-        )
-
-    def _make_data(self, data: QuerySet) -> list[int]:
+class MonthlyDataFormatter:
+    @staticmethod
+    def from_monthly_sum(data: QuerySet) -> list[int]:
         """
         Takes a QuerySet object and converts it into a list of integers.
 
@@ -68,13 +40,13 @@ class Data:
             from the QuerySet object.
             If month does not exist in the dataset, the price will be 0.
         """
-
         arr = [0] * 12
         for row in data:
             arr[row["date"].month - 1] = row["sum"]
         return arr
 
-    def _make_planned_data(self, data: QuerySet) -> list[int]:
+    @staticmethod
+    def from_planned_data(data: QuerySet, month_names: list | None = None) -> list[int]:
         """
         Calculates the total price for each month in a given dataset.
 
@@ -86,132 +58,121 @@ class Data:
             where the index represents the month (0-11).
             If the month does not exist in the dataset, the price will be 0.
         """
-
+        month_names = month_names or MONTH_NAMES
         monthly_totals = [0] * 12
-        month_map = {name: idx for idx, name in enumerate(monthnames())}
 
-        for month, price in it.chain.from_iterable(row.items() for row in data):
-            if not price or month not in month_map:
-                continue
-            monthly_totals[month_map[month]] += price
+        for row in data:
+            for idx, month in enumerate(month_names):
+                if price := row.get(month):
+                    monthly_totals[idx] += price
 
         return monthly_totals
 
 
+class ForecastDataProvider:
+    def __init__(self, user: User):
+        self.user = user
+        self.year = cast(int, user.year)
+
+    def get_forecast_data(self) -> ForecastDataDTO:
+        incomes_qs = IncomeModelService(self.user).sum_by_month(self.year)
+        expenses_qs = ExpenseModelService(self.user).sum_by_month(self.year)
+        savings_qs = SavingModelService(self.user).sum_by_month(self.year)
+        savings_close_qs = SavingCloseModelService(self.user).sum_by_month(self.year)
+
+        planned_qs = (
+            IncomePlanModelService(self.user).year(self.year).values(*MONTH_NAMES)
+        )
+
+        return ForecastDataDTO(
+            incomes=MonthlyDataFormatter.from_monthly_sum(incomes_qs),
+            expenses=MonthlyDataFormatter.from_monthly_sum(expenses_qs),
+            savings=MonthlyDataFormatter.from_monthly_sum(savings_qs),
+            savings_close=MonthlyDataFormatter.from_monthly_sum(savings_close_qs),
+            planned_incomes=MonthlyDataFormatter.from_planned_data(planned_qs),
+        )
+
+    def get_beginning_balance(self) -> int:
+        return (
+            AccountBalanceModelService(self.user)
+            .objects.filter(year=self.year)
+            .aggregate(Sum("past", default=0))["past__sum"]
+        )
+
+
+@dataclass(frozen=True)
+class AveragesDTO:
+    expenses: float
+    savings: float
+
+
+@dataclass(frozen=True)
+class CurrentMonthDTO:
+    expenses: float
+    savings: float
+    incomes: float
+    planned_incomes: float
+
+
 class Forecast:
-    def __init__(self, month: int, data: dict[str, list[int]]):
+    def __init__(self, month: int, data: ForecastDataDTO):
         self._month = month
-        self._data = self._create_df(data)
+        self._data = data
 
-    def _create_df(self, data: dict[str, list[int]]) -> pl.DataFrame:
-        return pl.DataFrame(data | {"month": list(range(1, 13))})
+        # Python lists are 0-indexed, so month 4 (April) means
+        # slice up to index 3 for past data.
+        self._past_idx = self._month - 1
 
-    def balance(self) -> int:
-        """
-        Calculates balance from January to current month, excluding current month.
+    def balance(self) -> float:
+        """Calculates balance from January to current month (excluding current month)."""
+        incomes = sum(self._data.incomes[: self._past_idx])
+        savings_close = sum(self._data.savings_close[: self._past_idx])
+        expenses = sum(self._data.expenses[: self._past_idx])
+        savings = sum(self._data.savings[: self._past_idx])
 
-        Returns:
-            int: The balance for the current month.
+        return incomes + savings_close - expenses - savings
 
-            Formula: incomes + savings_close - expenses - savings
-        """
-        df = (
-            self._data.filter(pl.col("month") < self._month)
-            .sum()
-            .with_columns(
-                balance=(
-                    pl.col("incomes")
-                    + pl.col("savings_close")
-                    - pl.col("expenses")
-                    - pl.col("savings")
-                )
-            )
-        )
-        return df["balance"].to_list()[0]
+    def planned_incomes(self) -> float:
+        """Calculates planned incomes from the next month to December."""
+        # Slice from current month to the end
+        return sum(self._data.planned_incomes[self._month :])
 
-    def planned_incomes(self) -> int:
-        """
-        Calculate the total sum of planned incomes from current month to December.
-        Current month not included.
+    def medians(self) -> AveragesDTO:
+        """Calculates median expenses and savings for past months."""
+        past_expenses = self._data.expenses[: self._past_idx]
+        past_savings = self._data.savings[: self._past_idx]
 
-        Returns:
-            int: The total sum of planned incomes.
-        """
-
-        df = (
-            self._data.filter(pl.col("month") > self._month)
-            .select(pl.col("planned_incomes"))
-            .sum()
-        )
-        return df[0, 0]
-
-    def medians(self) -> dict:
-        """
-        Calculates median expenses and savings for the months
-        from January to the current month.
-        Current month not included.
-
-        Returns:
-            A dictionary containing median expenses and savings.
-
-            The keys are "expenses" and "savings".
-
-            {"expenses": int, "savings": int}
-        """
-        return (
-            self._data.filter(pl.col("month") < self._month)
-            .select([pl.col.expenses, pl.col.savings])
-            .median()
-            .fill_null(0)
-            .to_dicts()[0]
+        return AveragesDTO(
+            expenses=statistics.median(past_expenses) if past_expenses else 0.0,
+            savings=statistics.median(past_savings) if past_savings else 0.0,
         )
 
-    def current_month(self) -> dict:
-        """
-        Calculates expenses and savings for the current month.
-
-        Returns:
-            A dictionary containing sum of expenses and savings.
-
-            The keys are "expenses", "savings", "incomes", "planed_incomes".
-
-            {"expenses": int, "savings": int, "incomes": int, "planned_incomes": int}
-        """
-        return (
-            self._data.filter(pl.col("month") == self._month)
-            .select(
-                [
-                    pl.col.expenses,
-                    pl.col.savings,
-                    pl.col.incomes,
-                    pl.col.planned_incomes,
-                ]
-            )
-            .to_dicts()[0]
+    def current_month(self) -> CurrentMonthDTO:
+        """Retrieves expenses, savings, and incomes for the current month."""
+        idx = self._past_idx
+        return CurrentMonthDTO(
+            expenses=float(self._data.expenses[idx]),
+            savings=float(self._data.savings[idx]),
+            incomes=float(self._data.incomes[idx]),
+            planned_incomes=float(self._data.planned_incomes[idx]),
         )
 
-    def forecast(self) -> int:
-        """
-        Calculate the forecasted balance for the end of the year.
-
-        Returns:
-            int: The forecasted balance for the end of the year.
-        """
+    def forecast(self) -> float:
+        """Calculates the forecasted balance for the end of the year."""
         avg = self.medians()
         current = self.current_month()
-        month_left = 12 - self._month
+        months_left = 12 - self._month
 
-        expenses = max(current["expenses"], avg["expenses"])
-        savings = max(current["savings"], avg["savings"])
-        incomes = max(current["incomes"], current["planned_incomes"])
+        expenses = max(current.expenses, avg.expenses)
+        savings = max(current.savings, avg.savings)
+        incomes = max(current.incomes, current.planned_incomes)
 
         return (
-            0
-            + self.balance()
+            self.balance()
             + self.planned_incomes()
             + incomes
-            - (expenses + avg["expenses"] * month_left)
-            - (savings + avg["savings"] * month_left)
+            - (expenses + avg.expenses * months_left)
+            - (savings + avg.savings * months_left)
         )
 
 
@@ -226,11 +187,14 @@ def get_month(year: int) -> int:
 
 def load_service(user: User) -> dict:
     year = cast(int, user.year)
-    data = Data(user)
     month = get_month(year)
-    forecast = Forecast(month, data.data()).forecast()
 
-    beginning = data.amount_at_beginning_of_year()
+    provider = ForecastDataProvider(user)
+    forecast_data = provider.get_forecast_data()
+
+    forecast = Forecast(month, forecast_data).forecast()
+
+    beginning = provider.get_beginning_balance()
     end = beginning + forecast
 
     return {
