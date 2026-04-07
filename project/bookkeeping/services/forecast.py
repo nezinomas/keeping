@@ -50,8 +50,7 @@ class Data:
         return (
             AccountBalanceModelService(self.user)
             .objects.filter(year=self.year)
-            .aggregate(Sum("past"))["past__sum"]
-            or 0
+            .aggregate(Sum("past", default=0))["past__sum"]
         )
 
     def _make_data(self, data: QuerySet) -> list[int]:
