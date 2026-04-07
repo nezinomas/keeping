@@ -11,7 +11,6 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.date import MOTHS_WITH_DAYS_GENERIC, monthlen, monthname, monthnames
 from ...users.models import User
-from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 from ..services.model_services import (
     DayPlanModelService,
     ExpensePlanModelService,
