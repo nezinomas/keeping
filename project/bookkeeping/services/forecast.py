@@ -19,8 +19,6 @@ MONTH_NAMES = monthnames()
 
 @dataclass(frozen=True)
 class ForecastDataDTO:
-    """Carries strict, immutable data payload between the database layer and the Forecast logic."""
-
     incomes: list[int]
     expenses: list[int]
     savings: list[int]
@@ -29,8 +27,6 @@ class ForecastDataDTO:
 
 
 class MonthlyDataFormatter:
-    """Responsible ONLY for transforming database QuerySets into formatted lists."""
-
     @staticmethod
     def from_monthly_sum(data: QuerySet) -> list[int]:
         """
@@ -74,8 +70,6 @@ class MonthlyDataFormatter:
 
 
 class ForecastDataProvider:
-    """Coordinates the retrieval of data via services and maps them to a DTO."""
-
     def __init__(self, user: User):
         self.user = user
         self.year = cast(int, user.year)
