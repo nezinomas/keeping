@@ -57,18 +57,22 @@ class MakeDataFrame:
             keys = ["sum", "exception_sum"]
             cols = ["__tmp_to_drop__"]
 
-        # insert empty values for one month days
         if self.month:
-            days = calendar.monthrange(self.year, self.month)[1] + 1
-            for title, i in itertools.product(cols, range(1, days)):
-                dt = date(self.year, self.month, i)
-                data.append(self._insert_empty_dicts(dt, title, keys))
-        # insert empty values for 12 months
-        else:
-            for title, i in itertools.product(cols, range(1, 13)):
-                dt = date(self.year, i, 1)
-                data.append(self._insert_empty_dicts(dt, title, keys))
+            return self._transform_to_month_days(data, cols, keys)
 
+        return self._transform_to_moths_list(data, cols, keys)
+
+    def _transform_to_month_days(self, data, cols, keys):
+        days = calendar.monthrange(self.year, self.month)[1] + 1
+        for title, i in itertools.product(cols, range(1, days)):
+            dt = date(self.year, self.month, i)
+            data.append(self._insert_empty_dicts(dt, title, keys))
+        return data
+
+    def _transform_to_moths_list(self, data, cols, keys):
+        for title, i in itertools.product(cols, range(1, 13)):
+            dt = date(self.year, i, 1)
+            data.append(self._insert_empty_dicts(dt, title, keys))
         return data
 
     def _insert_empty_dicts(self, dt, title, keys):
