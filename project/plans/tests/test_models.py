@@ -71,7 +71,7 @@ def test_income_summed_by_month(main_user, second_user):
 
     actual = list(IncomePlanModelService(main_user).summed_by_month(1999))
 
-    assert actual == [{"month": 1, "price": 1}, {"month": 2, "price": 4}]
+    assert actual == [{"month": 1, "amount": 1}, {"month": 2, "amount": 4}]
 
 
 def test_income_items(main_user, second_user):
@@ -155,6 +155,20 @@ def test_expense_year(main_user, second_user):
     assert actual[1].journal.users.first().username == "bob"
     assert actual[1].month == 2
     assert actual[1].price == 2
+
+
+def test_expense_summed_by_month(main_user, second_user):
+    t1 = ExpenseTypeFactory(title="AAA")
+    t2 = ExpenseTypeFactory(title="ZZZ")
+
+    ExpensePlanFactory(year=1999, month=1, price=1, expense_type=t1)
+    ExpensePlanFactory(year=1999, month=2, price=2, expense_type=t1)
+    ExpensePlanFactory(year=1999, month=2, price=2, expense_type=t2)
+    ExpensePlanFactory(year=1974, journal=second_user.journal)
+
+    actual = list(ExpensePlanModelService(main_user).summed_by_month(1999))
+
+    assert actual == [{"month": 1, "amount": 1}, {"month": 2, "amount": 4}]
 
 
 def test_expense_items(main_user, second_user):
@@ -244,6 +258,20 @@ def test_saving_year(main_user, second_user):
     assert actual[1].price == 2
 
 
+def test_saving_summed_by_month(main_user, second_user):
+    t1 = SavingTypeFactory(title="AAA")
+    t2 = SavingTypeFactory(title="ZZZ")
+
+    SavingPlanFactory(year=1999, month=1, price=1, saving_type=t1)
+    SavingPlanFactory(year=1999, month=2, price=2, saving_type=t1)
+    SavingPlanFactory(year=1999, month=2, price=2, saving_type=t2)
+    SavingPlanFactory(year=1974, journal=second_user.journal)
+
+    actual = list(SavingPlanModelService(main_user).summed_by_month(1999))
+
+    assert actual == [{"month": 1, "amount": 1}, {"month": 2, "amount": 4}]
+
+
 def test_saving_items(main_user, second_user):
     t1 = SavingTypeFactory(title="T1")
     t2 = SavingTypeFactory(title="T2")
@@ -321,6 +349,14 @@ def test_day_year(main_user, second_user):
     assert actual[1].price == 2
 
 
+def test_day_summed_by_month(main_user):
+    DayPlanFactory(month=2, price=22)
+
+    actual = list(DayPlanModelService(main_user).summed_by_month(1999))
+
+    assert actual == [{"month": 2, "amount": 22}]
+
+
 def test_day_items(main_user, second_user):
     DayPlanFactory()
     DayPlanFactory(year=1974)
@@ -392,6 +428,23 @@ def test_necessary_year(main_user, second_user):
     assert actual[1].journal.users.first().username == "bob"
     assert actual[1].month == 2
     assert actual[1].price == 2
+
+
+def test_necessary_summed_by_month(main_user):
+    t1 = ExpenseTypeFactory(title="AAA")
+    t2 = ExpenseTypeFactory(title="XXX")
+    NecessaryPlanFactory(expense_type=t1, title="A", month=2, price=123)
+    NecessaryPlanFactory(expense_type=t2, title="A", month=2, price=321)
+
+    actual = list(NecessaryPlanModelService(main_user).summed_by_month(1999))
+
+    assert actual == [{"month": 2, "amount": 444}]
+
+
+def test_necessary_summed_by_month_no_data(main_user):
+    actual = list(NecessaryPlanModelService(main_user).summed_by_month(1999))
+
+    assert not actual
 
 
 def test_necessary_items(main_user, second_user):

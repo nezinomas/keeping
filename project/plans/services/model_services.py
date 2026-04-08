@@ -27,6 +27,15 @@ class CommonMethodsMixin:
 
         return dict(grouped)
 
+    def generic_summed_by_month(self, year, group_by):
+        return (
+            self.year(year)
+            .annotate(cnt=Count(group_by))
+            .values("cnt")
+            .annotate(amount=Sum("price", default=0))
+            .values("month", "amount")
+        )
+
 
 class IncomePlanModelService(CommonMethodsMixin, BaseModelService):
     def get_queryset(self):
@@ -36,7 +45,10 @@ class IncomePlanModelService(CommonMethodsMixin, BaseModelService):
 
     def pivot_table(self, year: int):
         return self.generic_pivot_table(year, lambda plan: plan.income_type)
-    
+
+    def summed_by_month(self, year):
+        return self.generic_summed_by_month(year, "income_type")
+
 
 class ExpensePlanModelService(CommonMethodsMixin, BaseModelService):
     def get_queryset(self):
@@ -47,6 +59,9 @@ class ExpensePlanModelService(CommonMethodsMixin, BaseModelService):
     def pivot_table(self, year: int):
         return self.generic_pivot_table(year, lambda plan: plan.expense_type)
 
+    def summed_by_month(self, year):
+        return self.generic_summed_by_month(year, "expense_type")
+
 
 class SavingPlanModelService(CommonMethodsMixin, BaseModelService):
     def get_queryset(self):
@@ -56,6 +71,9 @@ class SavingPlanModelService(CommonMethodsMixin, BaseModelService):
 
     def pivot_table(self, year: int):
         return self.generic_pivot_table(year, lambda plan: plan.saving_type)
+
+    def summed_by_month(self, year):
+        return self.generic_summed_by_month(year, "saving_type")
 
 
 class DayPlanModelService(CommonMethodsMixin, BaseModelService):
@@ -68,6 +86,8 @@ class DayPlanModelService(CommonMethodsMixin, BaseModelService):
         qs = self.generic_pivot_table(year, lambda plan: plan.year)
         return qs[year] if qs else {}
 
+    def summed_by_month(self, year):
+        return self.generic_summed_by_month(year, "id")
 
 class NecessaryPlanModelService(CommonMethodsMixin, BaseModelService):
     def get_queryset(self):
@@ -77,3 +97,6 @@ class NecessaryPlanModelService(CommonMethodsMixin, BaseModelService):
 
     def pivot_table(self, year: int):
         return self.generic_pivot_table(year, lambda plan: (plan.expense_type, plan.title))
+    
+    def summed_by_month(self, year):
+        return self.generic_summed_by_month(year, ["expense_type", "title"])
