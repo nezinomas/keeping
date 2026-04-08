@@ -60,6 +60,20 @@ def test_income_year(main_user, second_user):
     assert actual[1].price == 2
 
 
+def test_income_summed_by_month(main_user, second_user):
+    t1 = IncomeTypeFactory(title="AAA")
+    t2 = IncomeTypeFactory(title="ZZZ")
+
+    IncomePlanFactory(year=1999, month=1, price=1, income_type=t1)
+    IncomePlanFactory(year=1999, month=2, price=2, income_type=t1)
+    IncomePlanFactory(year=1999, month=2, price=2, income_type=t2)
+    IncomePlanFactory(year=1974, journal=second_user.journal)
+
+    actual = list(IncomePlanModelService(main_user).summed_by_month(1999))
+
+    assert actual == [{"month": 1, "price": 1}, {"month": 2, "price": 4}]
+
+
 def test_income_items(main_user, second_user):
     t1 = IncomeTypeFactory(title="T1")
     t2 = IncomeTypeFactory(title="T2")
@@ -77,6 +91,7 @@ def test_income_items(main_user, second_user):
     assert str(actual[1].income_type) == "T2"
     assert actual[1].journal.users.first().username == "bob"
 
+
 def test_income_pivot_table(main_user):
     salary = IncomeTypeFactory(title="Salary")
     bonus = IncomeTypeFactory(title="Bonus")
@@ -89,6 +104,12 @@ def test_income_pivot_table(main_user):
     actual = IncomePlanModelService(main_user).pivot_table(year=1999)
 
     assert actual == {bonus: {12: 5}, salary: {1: 1, 2: 2}}
+
+
+def test_income_pivot_table_no_data(main_user):
+    actual = IncomePlanModelService(main_user).pivot_table(year=1999)
+
+    assert actual == {}
 
 
 @pytest.mark.xfail
@@ -170,14 +191,9 @@ def test_expense_pivot_table(main_user):
     e1 = ExpenseTypeFactory(title="ZZZ")
     e2 = ExpenseTypeFactory(title="AAA")
 
-    # Setup: Salary has data in Jan and Feb
     ExpensePlanFactory(month=1, price=1, expense_type=e1)
     ExpensePlanFactory(month=2, price=2, expense_type=e1)
-
-    # Setup: Bonus only has data in Dec
     ExpensePlanFactory(month=12, price=5, expense_type=e2)
-
-    # Noise: Different year, should be ignored
     ExpensePlanFactory(year=2027, month=1, price=9, expense_type=e1)
 
     actual = ExpensePlanModelService(main_user).pivot_table(year=1999)
@@ -257,14 +273,9 @@ def test_saving_pivot_table(main_user):
     s1 = SavingTypeFactory(title="ZZZ")
     s2 = SavingTypeFactory(title="AAA")
 
-    # Setup: Salary has data in Jan and Feb
     SavingPlanFactory(month=1, price=1, saving_type=s1)
     SavingPlanFactory(month=2, price=2, saving_type=s1)
-
-    # Setup: Bonus only has data in Dec
     SavingPlanFactory(month=12, price=5, saving_type=s2)
-
-    # Noise: Different year, should be ignored
     SavingPlanFactory(year=2027, month=1, price=9, saving_type=s1)
 
     actual = SavingPlanModelService(main_user).pivot_table(year=1999)
@@ -323,15 +334,20 @@ def test_day_items(main_user, second_user):
     assert actual[1].journal.users.first().username == "bob"
     assert actual[1].year == 1999
 
+
 def test_day_pivot_table(main_user):
-    DayPlanFactory()
+    DayPlanFactory(month=2, price=22)
+    DayPlanFactory(month=12, price=222)
 
-    service = DayPlanModelService(main_user)
-    data = list(service.pivot_table(year=1999))
+    actual = DayPlanModelService(main_user).pivot_table(1999)
 
-    assert len(data) == 1
-    assert len(data[0]) == 13
-    assert data[0]["january"] == 1
+    assert actual == {2: 22, 12: 222}
+
+
+def test_day_pivot_table_no_data(main_user):
+    actual = DayPlanModelService(main_user).pivot_table(1999)
+
+    assert actual == {}
 
 
 @pytest.mark.xfail(raises=Exception)
@@ -423,13 +439,14 @@ def test_necessary_same_title(main_user):
 
 def test_necessary_pivot_table(main_user):
     car = ExpenseTypeFactory(title="Car")
-    NecessaryPlanFactory(expense_type=car, title="Insurance")
+    NecessaryPlanFactory(expense_type=car, title="Insurance", month=2, price=123)
 
-    service = NecessaryPlanModelService(main_user)
-    data = list(service.pivot_table(year=1999))
+    actual = NecessaryPlanModelService(main_user).pivot_table(1999)
 
-    assert len(data) == 1
-    assert len(data[0]) == 14
+    assert actual == {(car, "Insurance"): {2: 123}}
 
-    assert data[0]["title"] == "Insurance"
-    assert data[0]["january"] == 1
+
+def test_necessary_pivot_table_no_data(main_user):
+    actual = NecessaryPlanModelService(main_user).pivot_table(1999)
+
+    assert actual == {}

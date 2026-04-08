@@ -65,7 +65,8 @@ class DayPlanModelService(CommonMethodsMixin, BaseModelService):
         )
 
     def pivot_table(self, year: int):
-        return self.generic_pivot_table(year, ["year"])
+        qs = self.generic_pivot_table(year, lambda plan: plan.year)
+        return qs[year] if qs else {}
 
 
 class NecessaryPlanModelService(CommonMethodsMixin, BaseModelService):
@@ -75,4 +76,4 @@ class NecessaryPlanModelService(CommonMethodsMixin, BaseModelService):
         )
 
     def pivot_table(self, year: int):
-        return self.generic_pivot_table(year, ["expense_type__title", "title"])
+        return self.generic_pivot_table(year, lambda plan: (plan.expense_type, plan.title))
