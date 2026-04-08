@@ -42,14 +42,22 @@ def test_income_related(main_user, second_user):
 
 
 def test_income_year(main_user, second_user):
-    IncomePlanFactory()
+    IncomePlanFactory(year=1999, month=1, price=1)
+    IncomePlanFactory(year=1999, month=2, price=2)
     IncomePlanFactory(year=1974, journal=second_user.journal)
 
     actual = list(IncomePlanModelService(main_user).year(1999))
 
-    assert len(actual) == 1
+    assert len(actual) == 2
     assert actual[0].year == 1999
     assert actual[0].journal.users.first().username == "bob"
+    assert actual[0].month == 1
+    assert actual[0].price == 1
+
+    assert actual[1].year == 1999
+    assert actual[1].journal.users.first().username == "bob"
+    assert actual[1].month == 2
+    assert actual[1].price == 2
 
 
 def test_income_items(main_user, second_user):
@@ -73,8 +81,8 @@ def test_income_items(main_user, second_user):
 @pytest.mark.xfail
 def test_income_no_dublicates():
     type_ = IncomeTypeFactory(title="X")
-    IncomePlan(year=2000, income_type=type_).save()
-    IncomePlan(year=2000, income_type=type_).save()
+    IncomePlan(year=2000, month=1, income_type=type_).save()
+    IncomePlan(year=2000, month=1, income_type=type_).save()
 
 
 # ----------------------------------------------------------------------------
@@ -86,25 +94,33 @@ def test_expense_str():
     assert str(actual) == "2000/Expense Type"
 
 
-def test_expense_related(main_user, second_user):
+def test_expense_objects(main_user, second_user):
     ExpensePlanFactory()
     ExpensePlanFactory(journal=second_user.journal)
 
-    actual = ExpensePlanModelService(main_user).items()
+    actual = ExpensePlanModelService(main_user).objects
 
     assert len(actual) == 1
     assert actual[0].journal.users.first().username == "bob"
 
 
 def test_expense_year(main_user, second_user):
-    ExpensePlanFactory()
+    ExpensePlanFactory(year=1999, month=1, price=1)
+    ExpensePlanFactory(year=1999, month=2, price=2)
     ExpensePlanFactory(year=1974, journal=second_user.journal)
 
     actual = list(ExpensePlanModelService(main_user).year(1999))
 
-    assert len(actual) == 1
+    assert len(actual) == 2
     assert actual[0].year == 1999
     assert actual[0].journal.users.first().username == "bob"
+    assert actual[0].month == 1
+    assert actual[0].price == 1
+
+    assert actual[1].year == 1999
+    assert actual[1].journal.users.first().username == "bob"
+    assert actual[1].month == 2
+    assert actual[1].price == 2
 
 
 def test_expense_items(main_user, second_user):
@@ -128,8 +144,8 @@ def test_expense_items(main_user, second_user):
 @pytest.mark.xfail
 def test_expense_no_dublicates():
     type_ = ExpenseTypeFactory(title="X")
-    ExpensePlan(year=2000, expense_type=type_).save()
-    ExpensePlan(year=2000, expense_type=type_).save()
+    ExpensePlan(year=2000, month=1, expense_type=type_).save()
+    ExpensePlan(year=2000, month=1, expense_type=type_).save()
 
 
 def test_expense_year_query_count(main_user, django_assert_max_num_queries):
@@ -151,25 +167,33 @@ def test_saving_str():
     assert str(actual) == "2000/Savings"
 
 
-def test_saving_related(main_user, second_user):
+def test_saving_objects(main_user, second_user):
     SavingPlanFactory()
     SavingPlanFactory(journal=second_user.journal)
 
-    actual = SavingPlanModelService(main_user).items()
+    actual = SavingPlanModelService(main_user).objects
 
     assert len(actual) == 1
     assert actual[0].journal.users.first().username == "bob"
 
 
 def test_saving_year(main_user, second_user):
-    SavingPlanFactory()
+    SavingPlanFactory(year=1999, month=1, price=1)
+    SavingPlanFactory(year=1999, month=2, price=2)
     SavingPlanFactory(year=1974, journal=second_user.journal)
 
     actual = list(SavingPlanModelService(main_user).year(1999))
 
-    assert len(actual) == 1
+    assert len(actual) == 2
     assert actual[0].year == 1999
     assert actual[0].journal.users.first().username == "bob"
+    assert actual[0].month == 1
+    assert actual[0].price == 1
+
+    assert actual[1].year == 1999
+    assert actual[1].journal.users.first().username == "bob"
+    assert actual[1].month == 2
+    assert actual[1].price == 2
 
 
 def test_saving_items(main_user, second_user):
@@ -193,8 +217,8 @@ def test_saving_items(main_user, second_user):
 @pytest.mark.xfail
 def test_saving_no_dublicates():
     type_ = SavingTypeFactory(title="X")
-    SavingPlan(year=2000, saving_type=type_).save()
-    SavingPlan(year=2000, saving_type=type_).save()
+    SavingPlan(year=2000, month=1, saving_type=type_).save()
+    SavingPlan(year=2000, month=1, saving_type=type_).save()
 
 
 # ----------------------------------------------------------------------------
@@ -206,25 +230,33 @@ def test_day_str():
     assert str(actual) == "2000"
 
 
-def test_day_related(main_user, second_user):
+def test_day_objects(main_user, second_user):
     DayPlanFactory()
     DayPlanFactory(journal=second_user.journal)
 
-    actual = DayPlanModelService(main_user).items()
+    actual = DayPlanModelService(main_user).objects
 
     assert len(actual) == 1
     assert actual[0].journal.users.first().username == "bob"
 
 
 def test_day_year(main_user, second_user):
-    DayPlanFactory()
+    DayPlanFactory(year=1999, month=1, price=1)
+    DayPlanFactory(year=1999, month=2, price=2)
     DayPlanFactory(year=1974, journal=second_user.journal)
 
     actual = list(DayPlanModelService(main_user).year(1999))
 
-    assert len(actual) == 1
+    assert len(actual) == 2
     assert actual[0].year == 1999
     assert actual[0].journal.users.first().username == "bob"
+    assert actual[0].month == 1
+    assert actual[0].price == 1
+
+    assert actual[1].year == 1999
+    assert actual[1].journal.users.first().username == "bob"
+    assert actual[1].month == 2
+    assert actual[1].price == 2
 
 
 def test_day_items(main_user, second_user):
@@ -242,9 +274,9 @@ def test_day_items(main_user, second_user):
 
 
 @pytest.mark.xfail(raises=Exception)
-def test_day_no_dublicates():
-    DayPlanFactory(year=2000)
-    DayPlanFactory(year=2000)
+def test_day_no_dublicates(main_user):
+    DayPlanFactory(year=2000, month=1, journal=main_user.journal)
+    DayPlanFactory(year=2000, month=1, journal=main_user.journal)
 
 
 # ----------------------------------------------------------------------------
@@ -256,25 +288,33 @@ def test_necessary_str():
     assert str(actual) == "2000/N"
 
 
-def test_necessary_related(main_user, second_user):
+def test_necessary_objects(main_user, second_user):
     NecessaryPlanFactory()
     NecessaryPlanFactory(journal=second_user.journal)
 
-    actual = NecessaryPlanModelService(main_user).items()
+    actual = NecessaryPlanModelService(main_user).objects
 
     assert len(actual) == 1
     assert actual[0].journal.users.first().username == "bob"
 
 
 def test_necessary_year(main_user, second_user):
-    NecessaryPlanFactory()
+    NecessaryPlanFactory(year=1999, month=1, price=1)
+    NecessaryPlanFactory(year=1999, month=2, price=2)
     NecessaryPlanFactory(year=1974, journal=second_user.journal)
 
     actual = list(NecessaryPlanModelService(main_user).year(1999))
 
-    assert len(actual) == 1
+    assert len(actual) == 2
     assert actual[0].year == 1999
     assert actual[0].journal.users.first().username == "bob"
+    assert actual[0].month == 1
+    assert actual[0].price == 1
+
+    assert actual[1].year == 1999
+    assert actual[1].journal.users.first().username == "bob"
+    assert actual[1].month == 2
+    assert actual[1].price == 2
 
 
 def test_necessary_items(main_user, second_user):
@@ -296,9 +336,9 @@ def test_necessary_items(main_user, second_user):
 
 
 @pytest.mark.xfail(raises=Exception)
-def test_necessary_no_dublicates():
-    NecessaryPlanFactory(year=2000, title="N")
-    NecessaryPlanFactory(year=2000, title="N")
+def test_necessary_no_dublicates(main_user):
+    NecessaryPlanFactory(year=2000, month=1, title="N", journal=main_user.journal)
+    NecessaryPlanFactory(year=2000, month=1, title="N", journal=main_user.journal)
 
 
 def test_necessary_same_title(main_user):
