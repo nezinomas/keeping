@@ -1,17 +1,14 @@
-from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext as _
-from django.utils.translation import pgettext
 
-from ..core.models import MonthAbstract
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..journals.models import Journal
 from ..savings.models import SavingType
 
 
-class IncomePlan(MonthAbstract):
+class IncomePlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
@@ -30,7 +27,7 @@ class IncomePlan(MonthAbstract):
         unique_together = ("year", "month", "income_type", "journal")
 
 
-class ExpensePlan(MonthAbstract):
+class ExpensePlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
@@ -46,10 +43,10 @@ class ExpensePlan(MonthAbstract):
 
     class Meta:
         ordering = ["expense_type"]
-        unique_together = ("year", "expense_type", "journal")
+        unique_together = ("year", "month", "expense_type", "journal")
 
 
-class SavingPlan(MonthAbstract):
+class SavingPlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
@@ -68,7 +65,7 @@ class SavingPlan(MonthAbstract):
         unique_together = ("year", "month", "saving_type", "journal")
 
 
-class DayPlan(MonthAbstract):
+class DayPlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
@@ -86,7 +83,7 @@ class DayPlan(MonthAbstract):
         unique_together = ("year", "month", "journal")
 
 
-class NecessaryPlan(MonthAbstract):
+class NecessaryPlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
@@ -103,4 +100,4 @@ class NecessaryPlan(MonthAbstract):
 
     class Meta:
         ordering = ["year", "month", "expense_type", "title"]
-        unique_together = ("year", "title", "expense_type", "journal")
+        unique_together = ("year", "month", "title", "expense_type", "journal")
