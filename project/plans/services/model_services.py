@@ -1,4 +1,4 @@
-from django.db.models import Q, Sum, Count
+from django.db.models import Sum, Count
 from collections import defaultdict
 from ...core.services.model_services import BaseModelService
 from .. import models
