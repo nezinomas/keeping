@@ -77,6 +77,19 @@ def test_income_items(main_user, second_user):
     assert str(actual[1].income_type) == "T2"
     assert actual[1].journal.users.first().username == "bob"
 
+def test_income_pivot_table(main_user):
+    salary = IncomeTypeFactory(title="Salary")
+    bonus = IncomeTypeFactory(title="Bonus")
+
+    IncomePlanFactory(month=1, price=1, income_type=salary)
+    IncomePlanFactory(month=2, price=2, income_type=salary)
+    IncomePlanFactory(month=12, price=5, income_type=bonus)
+    IncomePlanFactory(year=2027, month=1, price=9, income_type=salary)
+
+    actual = IncomePlanModelService(main_user).pivot_table(year=1999)
+
+    assert actual == {bonus: {12: 5}, salary: {1: 1, 2: 2}}
+
 
 @pytest.mark.xfail
 def test_income_no_dublicates():
@@ -153,6 +166,25 @@ def test_expense_year_query_count(main_user, django_assert_max_num_queries):
         list(ExpensePlanModelService(main_user).year(1999))
 
 
+def test_expense_pivot_table(main_user):
+    e1 = ExpenseTypeFactory(title="ZZZ")
+    e2 = ExpenseTypeFactory(title="AAA")
+
+    # Setup: Salary has data in Jan and Feb
+    ExpensePlanFactory(month=1, price=1, expense_type=e1)
+    ExpensePlanFactory(month=2, price=2, expense_type=e1)
+
+    # Setup: Bonus only has data in Dec
+    ExpensePlanFactory(month=12, price=5, expense_type=e2)
+
+    # Noise: Different year, should be ignored
+    ExpensePlanFactory(year=2027, month=1, price=9, expense_type=e1)
+
+    actual = ExpensePlanModelService(main_user).pivot_table(year=1999)
+
+    assert actual == {e2: {12: 5}, e1: {1: 1, 2: 2}}
+
+
 def test_expense_items_query_count(main_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         list(ExpensePlanModelService(main_user).items())
@@ -221,6 +253,25 @@ def test_saving_no_dublicates():
     SavingPlan(year=2000, month=1, saving_type=type_).save()
 
 
+def test_saving_pivot_table(main_user):
+    s1 = SavingTypeFactory(title="ZZZ")
+    s2 = SavingTypeFactory(title="AAA")
+
+    # Setup: Salary has data in Jan and Feb
+    SavingPlanFactory(month=1, price=1, saving_type=s1)
+    SavingPlanFactory(month=2, price=2, saving_type=s1)
+
+    # Setup: Bonus only has data in Dec
+    SavingPlanFactory(month=12, price=5, saving_type=s2)
+
+    # Noise: Different year, should be ignored
+    SavingPlanFactory(year=2027, month=1, price=9, saving_type=s1)
+
+    actual = SavingPlanModelService(main_user).pivot_table(year=1999)
+
+    assert actual == {s2: {12: 5}, s1: {1: 1, 2: 2}}
+
+
 # ----------------------------------------------------------------------------
 #                                                                     Day Plan
 # ----------------------------------------------------------------------------
@@ -271,6 +322,16 @@ def test_day_items(main_user, second_user):
     assert actual[0].year == 1974
     assert actual[1].journal.users.first().username == "bob"
     assert actual[1].year == 1999
+
+def test_day_pivot_table(main_user):
+    DayPlanFactory()
+
+    service = DayPlanModelService(main_user)
+    data = list(service.pivot_table(year=1999))
+
+    assert len(data) == 1
+    assert len(data[0]) == 13
+    assert data[0]["january"] == 1
 
 
 @pytest.mark.xfail(raises=Exception)
@@ -358,3 +419,17 @@ def test_necessary_same_title(main_user):
 
     assert actual[1].title == "A"
     assert actual[1].expense_type.title == "Y"
+
+
+def test_necessary_pivot_table(main_user):
+    car = ExpenseTypeFactory(title="Car")
+    NecessaryPlanFactory(expense_type=car, title="Insurance")
+
+    service = NecessaryPlanModelService(main_user)
+    data = list(service.pivot_table(year=1999))
+
+    assert len(data) == 1
+    assert len(data[0]) == 14
+
+    assert data[0]["title"] == "Insurance"
+    assert data[0]["january"] == 1
