@@ -62,6 +62,10 @@ class ExpensesLists(ListViewMixin):
     template_name = "plans/expenseplan_list.html"
     service_class = ExpensePlanModelService
 
+    def get_queryset(self):
+        user = self.request.user
+        return ExpensePlanModelService(user).year(user.year)
+
 
 class ExpensesNew(CssClassMixin, CreateViewMixin):
     service_class = ExpensePlanModelService
@@ -95,6 +99,10 @@ class ExpensesDelete(DeleteViewMixin):
 class IncomesLists(ListViewMixin):
     template_name = "plans/incomeplan_list.html"
     service_class = IncomePlanModelService
+
+    def get_queryset(self):
+        user = self.request.user
+        return IncomePlanModelService(user).year(user.year)
 
 
 class IncomesNew(CssClassMixin, CreateViewMixin):
@@ -130,6 +138,10 @@ class SavingsLists(ListViewMixin):
     template_name = "plans/savingplan_list.html"
     service_class = SavingPlanModelService
 
+    def get_queryset(self):
+        user = self.request.user
+        return SavingPlanModelService(user).year(user.year)
+
 
 class SavingsNew(CssClassMixin, CreateViewMixin):
     service_class = SavingPlanModelService
@@ -164,6 +176,10 @@ class DayLists(ListViewMixin):
     template_name = "plans/dayplan_list.html"
     service_class = DayPlanModelService
 
+    def get_queryset(self):
+        user = self.request.user
+        return DayPlanModelService(user).year(user.year)
+
 
 class DayNew(CssClassMixin, CreateViewMixin):
     service_class = DayPlanModelService
@@ -197,6 +213,10 @@ class DayDelete(DeleteViewMixin):
 class NecessaryLists(ListViewMixin):
     template_name = "plans/necessaryplan_list.html"
     service_class = NecessaryPlanModelService
+
+    def get_queryset(self):
+        user = self.request.user
+        return NecessaryPlanModelService(user).year(user.year)
 
 
 class NecessaryNew(CssClassMixin, CreateViewMixin):
