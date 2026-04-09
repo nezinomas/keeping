@@ -459,7 +459,7 @@ def test_day_pivot_table(main_user):
 
     actual = DayPlanModelService(main_user).pivot_table(1999)
 
-    assert actual == {2: 22, 12: 222}
+    assert actual == {_("Daily"): {2: 22, 12: 222}}
 
 
 def test_day_pivot_table_no_data(main_user):

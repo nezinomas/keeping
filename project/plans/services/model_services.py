@@ -89,11 +89,10 @@ class DayPlanModelService(CommonMethodsMixin, BaseModelService):
         )
 
     def pivot_table(self, year: int):
-        qs = self.generic_pivot_table(year, lambda plan: plan.year)
-        return qs[year] if qs else {}
+        return self.generic_pivot_table(year, lambda x: _("Daily"))
 
     def summed_by_month(self, year):
-        return self.generic_summed_by_month(year, "id")
+        return self.generic_summed_by_month(year, "year")
 
 
 class NecessaryPlanModelService(CommonMethodsMixin, BaseModelService):
