@@ -298,75 +298,99 @@ def test_additional_necessary_with_month(month, expect, data):
     assert round(actual, 2) == expect
 
 
-def test_plans_stats_list(data):
-    actual = PlanCalculateDaySum(data).plans_stats
+def test_plans_stats_dictionary(data):
+    actual = PlanCalculateDaySum(data).plans_stats()
 
     assert len(actual) == 8
 
 
 def test_plans_stats_incomes_median(data):
-    actual = PlanCalculateDaySum(data).plans_stats
+    actual = PlanCalculateDaySum(data).plans_stats()
 
-    assert "1. Pajamos (mediana)" == actual[0]["type"]
-    assert round(actual[0]["1"], 2) == 450.0
-    assert round(actual[0]["2"], 2) == 450.0
+    key = "1. Pajamos (mediana)"
+    keys = actual.keys()
+
+    assert key in keys
+    assert round(actual[key]["1"], 2) == 450.0
+    assert round(actual[key]["2"], 2) == 450.0
 
 
 def test_plans_stats_expenses_necessary(data):
-    actual = PlanCalculateDaySum(data).plans_stats
+    actual = PlanCalculateDaySum(data).plans_stats()
 
-    assert actual[1]["type"] == "2. Būtinos išlaidos"
-    assert round(actual[1]["1"], 2) == 490
-    assert round(actual[1]["2"], 2) == 620
+    key = "2. Būtinos išlaidos"
+    keys = actual.keys()
+
+    assert key in keys
+    assert round(actual[key]["1"], 2) == 490
+    assert round(actual[key]["2"], 2) == 620
 
 
 def test_plans_stats_expenses_free(data):
-    actual = PlanCalculateDaySum(data).plans_stats
+    actual = PlanCalculateDaySum(data).plans_stats()
 
-    assert actual[2]["type"] == "3. Lieka kasdienybei (1 - 2)"
-    assert round(actual[2]["1"], 2) == -40.0
-    assert round(actual[2]["2"], 2) == -170.0
+    key = "3. Lieka kasdienybei (1 - 2)"
+    keys = actual.keys()
+
+    assert key in keys
+    assert round(actual[key]["1"], 2) == -40.0
+    assert round(actual[key]["2"], 2) == -170.0
 
 
 def test_plans_stats_expenses_free2(data):
-    actual = PlanCalculateDaySum(data).plans_stats
+    actual = PlanCalculateDaySum(data).plans_stats()
 
-    assert actual[3]["type"] == "4. Lieka kasdienybei (iš lentelių viršuje)"
-    assert round(actual[3]["1"], 2) == 260
-    assert round(actual[3]["2"], 2) == 280
+    key = "4. Lieka kasdienybei (iš lentelių viršuje)"
+    keys = actual.keys()
+
+    assert key in keys
+    assert round(actual[key]["1"], 2) == 260
+    assert round(actual[key]["2"], 2) == 280
 
 
 def test_plans_stats_expenses_full(data):
-    actual = PlanCalculateDaySum(data).plans_stats
+    actual = PlanCalculateDaySum(data).plans_stats()
 
-    assert actual[4]["type"] == "5. Visos išlaidos (1 + 4)"
-    assert round(actual[4]["1"], 2) == 750
-    assert round(actual[4]["2"], 2) == 900
+    key = "5. Visos išlaidos (1 + 4)"
+    keys = actual.keys()
+
+    assert key in keys
+    assert round(actual[key]["1"], 2) == 750
+    assert round(actual[key]["2"], 2) == 900
 
 
 def test_plans_stats_expenses_remains(data):
-    actual = PlanCalculateDaySum(data).plans_stats
+    actual = PlanCalculateDaySum(data).plans_stats()
 
-    assert actual[5]["type"] == "6. Pajamos - Visos išlaidos (1 - 5)"
-    assert round(actual[5]["1"], 2) == -300.0
-    assert round(actual[5]["2"], 2) == -450.0
-    assert round(actual[5]["3"], 2) == 450.0
+    key = "6. Pajamos - Visos išlaidos (1 - 5)"
+    keys = actual.keys()
+
+    assert key in keys
+    assert round(actual[key]["1"], 2) == -300.0
+    assert round(actual[key]["2"], 2) == -450.0
+    assert round(actual[key]["3"], 2) == 450.0
 
 
 def test_plans_stats_day_sum(data):
-    actual = PlanCalculateDaySum(data).plans_stats
+    actual = PlanCalculateDaySum(data).plans_stats()
 
-    assert actual[6]["type"] == "7. Suma dienai (3 / mėnesio dienų skaičius)"
-    assert round(actual[6]["1"], 2) == -1.29
-    assert round(actual[6]["2"], 2) == -5.86
+    key = "7. Suma dienai (3 / mėnesio dienų skaičius)"
+    keys = actual.keys()
+
+    assert key in keys
+    assert round(actual[key]["1"], 2) == -1.29
+    assert round(actual[key]["2"], 2) == -5.86
 
 
 def test_plans_stats_remains(data):
-    actual = PlanCalculateDaySum(data).plans_stats
+    actual = PlanCalculateDaySum(data).plans_stats()
 
-    assert actual[7]["type"] == "8. Likutis (3 - 7 * mėnesio dienų skaičius)"
-    assert round(actual[7]["1"], 2) == -815.0
-    assert round(actual[7]["2"], 2) == -924.0
+    key = "8. Likutis (3 - 7 * mėnesio dienų skaičius)"
+    keys = actual.keys()
+
+    assert key in keys
+    assert round(actual[key]["1"], 2) == -815.0
+    assert round(actual[key]["2"], 2) == -924.0
 
 
 def test_properties_incomes(data):

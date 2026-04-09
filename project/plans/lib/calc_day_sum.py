@@ -118,7 +118,7 @@ class PlanCalculateDaySum:
 
         raise AttributeError(f"{self.__class__.__name__} has no attribute '{name}'")
 
-    @property
+
     def plans_stats(self):
         # Define strings cleanly so xgettext never misses them
         _incomes = _("Incomes")
@@ -131,16 +131,16 @@ class PlanCalculateDaySum:
         _days_in_month = _("days in month")
         _residual = _("Residual")
 
-        return [
-            {"type": f"1. {_incomes} ({_median})", **self.incomes_avg},
-            {"type": f"2. {_necessary}", **self.expenses_necessary},
-            {"type": f"3. {_remains} (1 - 2)", **self.expenses_free},
-            {"type": f"4. {_remains} ({_from_tables})", **self.expenses_regular},
-            {"type": f"5. {_full} (1 + 4)", **self.expenses_full},
-            {"type": f"6. {_incomes} - {_full} (1 - 5)", **self.expenses_remains},
-            {"type": f"7. {_sum_per_day} (3 / {_days_in_month})", **self.day_calced},
-            {"type": f"8. {_residual} (3 - 7 * {_days_in_month})", **self.remains},
-        ]
+        return {
+            f"1. {_incomes} ({_median})": self.incomes_avg,
+            f"2. {_necessary}": self.expenses_necessary,
+            f"3. {_remains} (1 - 2)": self.expenses_free,
+            f"4. {_remains} ({_from_tables})": self.expenses_regular,
+            f"5. {_full} (1 + 4)": self.expenses_full,
+            f"6. {_incomes} - {_full} (1 - 5)": self.expenses_remains,
+            f"7. {_sum_per_day} (3 / {_days_in_month})": self.day_calced,
+            f"8. {_residual} (3 - 7 * {_days_in_month})": self.remains,
+        }
 
     def get_row(self, name: str) -> int | dict:
         if not self._calculated:
