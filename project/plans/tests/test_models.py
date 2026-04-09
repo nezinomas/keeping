@@ -1,4 +1,7 @@
+import factory
 import pytest
+from django.db.models.signals import post_save
+from django.utils.translation import gettext as _
 
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
@@ -20,6 +23,61 @@ from .factories import (
 )
 
 pytestmark = pytest.mark.django_db
+
+
+# ----------------------------------------------------------------------------
+#                                                                Common method
+# ----------------------------------------------------------------------------
+@factory.django.mute_signals(post_save)
+def test_targets_fills_zeros_for_empty_plans(main_user):
+    ExpenseTypeFactory(title="T1")
+    ExpenseTypeFactory(title="T2")
+
+    actual = IncomePlanModelService(main_user).get_monthly_plan_targets(1999, month=2)
+
+    expect = {"T1": 0, "T2": 0, _("Savings"): 0}
+
+    assert actual == expect
+
+
+@factory.django.mute_signals(post_save)
+def test_targets_sums_correctly_and_ignores_other_months(main_user):
+    # Setup: Create 3 distinct expense types
+    t1 = ExpenseTypeFactory(title="T1")
+    t2 = ExpenseTypeFactory(title="T2")
+    t3 = ExpenseTypeFactory(title="T3")
+
+    ExpensePlanFactory(month=2, expense_type=t1, price=100)
+    NecessaryPlanFactory(month=2, expense_type=t1, price=50)
+    NecessaryPlanFactory(month=2, expense_type=t2, price=200)
+    SavingPlanFactory(month=2, price=300)
+
+    ExpensePlanFactory(month=3, expense_type=t3, price=999)
+    SavingPlanFactory(month=3, price=999)
+
+    actual = IncomePlanModelService(main_user).get_monthly_plan_targets(1999, month=2)
+
+    expect = {"T1": 150, "T2": 200, "T3": 0, _("Savings"): 300}
+
+    assert actual == expect
+
+
+@factory.django.mute_signals(post_save)
+def test_targets_no_savings(main_user):
+    t1 = ExpenseTypeFactory(title="T1")
+    t2 = ExpenseTypeFactory(title="T2")
+    t3 = ExpenseTypeFactory(title="T3")
+
+    ExpensePlanFactory(month=2, expense_type=t1, price=100)
+    NecessaryPlanFactory(month=2, expense_type=t1, price=50)
+    NecessaryPlanFactory(month=2, expense_type=t2, price=200)
+    ExpensePlanFactory(month=3, expense_type=t3, price=999)
+
+    actual = IncomePlanModelService(main_user).get_monthly_plan_targets(1999, month=2)
+
+    expect = {"T1": 150, "T2": 200, "T3": 0, _("Savings"): 0}
+
+    assert actual == expect
 
 
 # ----------------------------------------------------------------------------
