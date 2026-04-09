@@ -1,12 +1,12 @@
+import calendar
+import contextlib
 import itertools as it
 from dataclasses import dataclass
 from enum import StrEnum
 
 import polars as pl
-from django.db.models import F
 from django.utils.translation import gettext as _
 
-from ...core.lib.date import MOTHS_WITH_DAYS_GENERIC, monthlen, monthname, monthnames
 from ...users.models import User
 from ..services.model_services import (
     DayPlanModelService,
@@ -16,7 +16,6 @@ from ..services.model_services import (
     SavingPlanModelService,
 )
 
-MONTH_NAMES = monthnames()
 MONTH_NUMS = [str(i) for i in range(1, 13)]
 
 
@@ -52,7 +51,7 @@ class DataDto:
     savings: list[dict]
     per_day: list[dict]
     necessary: list[dict]
-    month_len: dict
+    month_len: list[dict]
 
 
 class PlanCollectData:
@@ -64,9 +63,6 @@ class PlanCollectData:
     def __get_data(self):
         expenses_service = ExpensePlanModelService(self.user)
 
-        month_len = MOTHS_WITH_DAYS_GENERIC
-        month_len["february"] = monthlen(self.year, "february")
-
         return DataDto(
             incomes=IncomePlanModelService(self.user).summed_by_month(self.year),
             expenses_regular=expenses_service.summed_by_month(self.year),
@@ -76,13 +72,21 @@ class PlanCollectData:
             savings=SavingPlanModelService(self.user).summed_by_month(self.year),
             per_day=DayPlanModelService(self.user).summed_by_month(self.year),
             necessary=NecessaryPlanModelService(self.user).summed_by_month(self.year),
-            month_len=month_len,
+            month_len=self.__map_month_day_len(),
         )
+
+    def __map_month_day_len(self):
+        return [
+            {"month": month, "amount": calendar.monthrange(self.year, month)[1]}
+            for month in range(1, 13)
+        ]
 
 
 class PlanCalculateDaySum:
     def __init__(self, data: DataDto, month: int = 0):
         self._data: DataDto = data
+        self._calculated: bool = False
+
         self.month: int = month
 
         self.df: pl.DataFrame = pl.DataFrame()
@@ -104,12 +108,16 @@ class PlanCalculateDaySum:
         If the name does not match any ``Row`` member, a standard ``AttributeError``
         is raised so that typos are caught early and IDE tooling remains accurate.
         """
-        try:
+
+        with contextlib.suppress(ValueError):
+            CalcRow(name)
             return self.get_row(name)
-        except KeyError as exc:
-            raise AttributeError(
-                f"{self.__class__.__name__} has no attribute '{name}'"
-            ) from exc
+
+        with contextlib.suppress(ValueError):
+            InputRow(name)
+            return self.get_row(name)
+
+        raise AttributeError(f"{self.__class__.__name__} has no attribute '{name}'")
 
     @property
     def plans_stats(self):
@@ -135,29 +143,11 @@ class PlanCalculateDaySum:
             {"type": f"8. {_residual} (3 - 7 * {_days_in_month})", **self.remains},
         ]
 
-    @property
-    def monthly_plan_by_category(self) -> dict:
-        month = monthname(self.month)
-        data = [*self._data.expenses, *self._data.necessary, *self._data.savings]
-
-        if not self.month or not data:
-            return {}
-
-        df = (
-            pl.DataFrame(data)
-            .with_columns(pl.col("title").fill_null(_("Savings")))
-            .fill_null(0)
-            .select(["title", month])
-            .group_by("title")
-            .agg(pl.col(month).sum())
-            .sort("title")
-        )
-        return dict(zip(df["title"], df[month]))
-
     def get_row(self, name: str) -> int | dict:
-        if self.df.is_empty():
+        if not self._calculated:
             df = self._create_df()
             self.df = self._calculate_df(df)
+            self._calculated = True
 
         if self.df.is_empty() or name not in self.df["name"]:
             return {}
@@ -207,10 +197,6 @@ class PlanCalculateDaySum:
         )
 
     def _create_df(self) -> pl.DataFrame:
-        pl.Config(fmt_str_lengths=50)
-        pl.Config(tbl_cols=-1)
-        pl.Config(set_tbl_width_chars=250)
-        pl.Config.set_tbl_rows(100)
         data = self._create_data()
 
         df = pl.DataFrame(data)

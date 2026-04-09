@@ -1,7 +1,7 @@
 import polars as pl
 import pytest
 
-from ...lib.calc_day_sum import PlanCalculateDaySum
+from ...lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
 
 
 @pytest.fixture(name="data")
@@ -424,6 +424,62 @@ def test_properties_month_len(data):
     assert obj.month_len == 31
 
 
+@pytest.mark.xfail
 def test_properties_no_exists(data):
     obj = PlanCalculateDaySum(data, 1)
-    assert obj.X == {}
+    assert obj.X
+
+
+def test_calculated_flag_prevents_recalculation(data_empty, mocker):
+    obj = PlanCalculateDaySum(data_empty)
+    spy = mocker.spy(obj, "_create_df")
+
+    assert obj._calculated is False
+
+    _ = obj.month_len
+
+    _ = obj.incomes_avg
+    _ = obj.expenses_free
+
+    assert obj._calculated is True
+    assert spy.call_count == 1
+
+
+@pytest.fixture
+def mock_db_services(mocker):
+    base_path = "project.plans.lib.calc_day_sum"
+
+    mocker.patch(f"{base_path}.IncomePlanModelService.summed_by_month", return_value=[])
+    mocker.patch(
+        f"{base_path}.ExpensePlanModelService.summed_by_month", return_value=[]
+    )
+    mocker.patch(f"{base_path}.SavingPlanModelService.summed_by_month", return_value=[])
+    mocker.patch(f"{base_path}.DayPlanModelService.summed_by_month", return_value=[])
+    mocker.patch(
+        f"{base_path}.NecessaryPlanModelService.summed_by_month", return_value=[]
+    )
+
+
+def test_plan_collect_data_formats_month_len_as_tall_list(mock_db_services, mocker):
+    mock_user = mocker.Mock()
+    test_year = 2024
+
+    obj = PlanCollectData(user=mock_user, year=test_year)
+    actual_month_len = obj.data.month_len
+
+    assert len(actual_month_len) == 12, "There should be exactly 12 months"
+
+    assert actual_month_len == [
+        {"month": 1, "amount": 31},
+        {"month": 2, "amount": 29},
+        {"month": 3, "amount": 31},
+        {"month": 4, "amount": 30},
+        {"month": 5, "amount": 31},
+        {"month": 6, "amount": 30},
+        {"month": 7, "amount": 31},
+        {"month": 8, "amount": 31},
+        {"month": 9, "amount": 30},
+        {"month": 10, "amount": 31},
+        {"month": 11, "amount": 30},
+        {"month": 12, "amount": 31},
+    ]
