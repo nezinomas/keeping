@@ -1,7 +1,7 @@
-import factory
 import pytest
 from django.db.models.signals import post_save
 from django.utils.translation import gettext as _
+from factory.django import mute_signals
 
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
@@ -25,10 +25,14 @@ from .factories import (
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture(autouse=True)
+def mute_my_signals():
+    with mute_signals(post_save):
+        yield
+
 # ----------------------------------------------------------------------------
 #                                                                Common method
 # ----------------------------------------------------------------------------
-@factory.django.mute_signals(post_save)
 def test_targets_fills_zeros_for_empty_plans(main_user):
     ExpenseTypeFactory(title="T1")
     ExpenseTypeFactory(title="T2")
@@ -40,7 +44,6 @@ def test_targets_fills_zeros_for_empty_plans(main_user):
     assert actual == expect
 
 
-@factory.django.mute_signals(post_save)
 def test_targets_sums_correctly_and_ignores_other_months(main_user):
     # Setup: Create 3 distinct expense types
     t1 = ExpenseTypeFactory(title="T1")
@@ -62,7 +65,6 @@ def test_targets_sums_correctly_and_ignores_other_months(main_user):
     assert actual == expect
 
 
-@factory.django.mute_signals(post_save)
 def test_targets_no_savings(main_user):
     t1 = ExpenseTypeFactory(title="T1")
     t2 = ExpenseTypeFactory(title="T2")
