@@ -75,7 +75,6 @@ class MonthTableBuilder:
     def _build_table(
         self, expense_df: pl.DataFrame, saving_df: pl.DataFrame
     ) -> pl.DataFrame:
-        print(f"--------------------------->\n{expense_df=}\n")
         # If exists at least two columns (date + at least one expense type), create total column
         if expense_df.shape[1] > 1:
             expense_df = expense_df.with_columns(
@@ -180,7 +179,7 @@ class MonthContextPresenter:
         saving_maker = MakeDataFrame(year=self.year, month=self.month, data=dto.savings)
 
         # 2. Initialize Core Services
-        plans_data = PlanCollectData(user, self.month).get_data()
+        plans_data = PlanCollectData(user, self.year).get_data()
         self.plans = PlanCalculateDaySum(data=plans_data, month=self.month)
 
         self.spending = DaySpending(
