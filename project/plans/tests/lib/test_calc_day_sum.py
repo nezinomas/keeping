@@ -464,8 +464,8 @@ def test_plan_collect_data_formats_month_len_as_tall_list(mock_db_services, mock
     mock_user = mocker.Mock()
     test_year = 2024
 
-    obj = PlanCollectData(user=mock_user, year=test_year)
-    actual_month_len = obj.data.month_len
+    obj = PlanCollectData(user=mock_user, year=test_year).get_data()
+    actual_month_len = obj.month_len
 
     assert len(actual_month_len) == 12, "There should be exactly 12 months"
 

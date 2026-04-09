@@ -12,6 +12,7 @@ from ..services.model_services import (
     ExpensePlanModelService,
     IncomePlanModelService,
     NecessaryPlanModelService,
+    PlanAggregatorService,
     SavingPlanModelService,
 )
 from .factories import (
@@ -30,6 +31,7 @@ def mute_my_signals():
     with mute_signals(post_save):
         yield
 
+
 # ----------------------------------------------------------------------------
 #                                                                Common method
 # ----------------------------------------------------------------------------
@@ -37,7 +39,7 @@ def test_targets_fills_zeros_for_empty_plans(main_user):
     ExpenseTypeFactory(title="T1")
     ExpenseTypeFactory(title="T2")
 
-    actual = IncomePlanModelService(main_user).get_monthly_plan_targets(1999, month=2)
+    actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
 
     expect = {"T1": 0, "T2": 0, _("Savings"): 0}
 
@@ -58,7 +60,7 @@ def test_targets_sums_correctly_and_ignores_other_months(main_user):
     ExpensePlanFactory(month=3, expense_type=t3, price=999)
     SavingPlanFactory(month=3, price=999)
 
-    actual = IncomePlanModelService(main_user).get_monthly_plan_targets(1999, month=2)
+    actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
 
     expect = {"T1": 150, "T2": 200, "T3": 0, _("Savings"): 300}
 
@@ -75,7 +77,7 @@ def test_targets_no_savings(main_user):
     NecessaryPlanFactory(month=2, expense_type=t2, price=200)
     ExpensePlanFactory(month=3, expense_type=t3, price=999)
 
-    actual = IncomePlanModelService(main_user).get_monthly_plan_targets(1999, month=2)
+    actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
 
     expect = {"T1": 150, "T2": 200, "T3": 0, _("Savings"): 0}
 

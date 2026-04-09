@@ -1,11 +1,12 @@
 from collections import defaultdict
 
 from django.db.models import Count, F, Sum
+from django.utils.translation import gettext_lazy as _
 
 from ...core.services.model_services import BaseModelService
 from ...expenses.services.model_services import ExpenseTypeModelService
 from .. import models
-from django.utils.translation import gettext_lazy as _
+
 
 class CommonMethodsMixin:
     def year(self, year):
@@ -38,53 +39,6 @@ class CommonMethodsMixin:
             .annotate(amount=Sum("price", default=0))
             .values("month", "amount")
         )
-
-
-    def get_monthly_plan_targets(self, year: int, month: int) -> dict:
-        expense_types = (
-            ExpenseTypeModelService(self.user).items().values_list("title", flat=True)
-        )
-        targets = {title: 0 for title in expense_types}
-
-        # Pre-fill Savings
-        savings_title = _("Savings")
-        targets[savings_title] = 0
-
-        # 2. Get Expenses (Grouped & Summed)
-        expenses = (
-            ExpensePlanModelService(self.user)
-            .year(year)
-            .filter(month=month)
-            .values(type_title=F("expense_type__title"))
-            .annotate(total=Sum("price", default=0))
-        )
-        for row in expenses:
-            if row["type_title"] in targets:
-                targets[row["type_title"]] += row["total"]
-
-        # 3. Get Necessary (Grouped & Summed)
-        necessary = (
-            NecessaryPlanModelService(self.user)
-            .year(year)
-            .filter(month=month)
-            .values(type_title=F("expense_type__title"))
-            .annotate(total=Sum("price", default=0))
-        )
-        for row in necessary:
-            if row["type_title"] in targets:
-                targets[row["type_title"]] += row["total"]
-
-        # 4. Get Savings
-        savings = (
-            SavingPlanModelService(self.user)
-            .year(year)
-            .filter(month=month)
-            .aggregate(total=Sum("price", default=0))
-        )
-        if savings.get("total"):
-            targets[savings_title] += savings["total"]
-
-        return targets
 
 
 class IncomePlanModelService(CommonMethodsMixin, BaseModelService):
@@ -155,3 +109,54 @@ class NecessaryPlanModelService(CommonMethodsMixin, BaseModelService):
 
     def summed_by_month(self, year):
         return self.generic_summed_by_month(year, ["expense_type", "title"])
+
+
+class PlanAggregatorService:
+    def __init__(self, user):
+        self.user = user
+
+    def get_monthly_plan_targets(self, year: int, month: int) -> dict:
+        expense_types = (
+            ExpenseTypeModelService(self.user).items().values_list("title", flat=True)
+        )
+        targets = {title: 0 for title in expense_types}
+
+        # Pre-fill Savings
+        savings_title = _("Savings")
+        targets[savings_title] = 0
+
+        # 2. Get Expenses (Grouped & Summed)
+        expenses = (
+            ExpensePlanModelService(self.user)
+            .year(year)
+            .filter(month=month)
+            .values(type_title=F("expense_type__title"))
+            .annotate(total=Sum("price", default=0))
+        )
+        for row in expenses:
+            if row["type_title"] in targets:
+                targets[row["type_title"]] += row["total"]
+
+        # 3. Get Necessary (Grouped & Summed)
+        necessary = (
+            NecessaryPlanModelService(self.user)
+            .year(year)
+            .filter(month=month)
+            .values(type_title=F("expense_type__title"))
+            .annotate(total=Sum("price", default=0))
+        )
+        for row in necessary:
+            if row["type_title"] in targets:
+                targets[row["type_title"]] += row["total"]
+
+        # 4. Get Savings
+        savings = (
+            SavingPlanModelService(self.user)
+            .year(year)
+            .filter(month=month)
+            .aggregate(total=Sum("price", default=0))
+        )
+        if savings.get("total"):
+            targets[savings_title] += savings["total"]
+
+        return targets

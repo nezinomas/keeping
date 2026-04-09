@@ -58,9 +58,8 @@ class PlanCollectData:
     def __init__(self, user, year):
         self.user: User = user
         self.year: int = year
-        self.data: DataDto = self.__get_data()
 
-    def __get_data(self):
+    def get_data(self):
         expenses_service = ExpensePlanModelService(self.user)
 
         return DataDto(
