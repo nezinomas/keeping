@@ -30,12 +30,13 @@ class Stats(TemplateViewMixin):
     template_name = "plans/stats.html"
 
     def get_context_data(self, **kwargs):
-        data = PlanCollectData(self.request.user)
+        user = self.request.user
+
+        data = PlanCollectData(user, user.year).get_data()
         obj = PlanCalculateDaySum(data)
         context = {
-            "items": obj.plans_stats,
+            "object_list": obj.plans_stats(),
         }
-
         return super().get_context_data(**kwargs) | context
 
 
@@ -61,10 +62,11 @@ class Index(TemplateViewMixin):
 class ExpensesLists(ListViewMixin):
     template_name = "plans/expenseplan_list.html"
     service_class = ExpensePlanModelService
+    plan_type = "expense"
 
     def get_queryset(self):
         user = self.request.user
-        return ExpensePlanModelService(user).year(user.year)
+        return ExpensePlanModelService(user).pivot_table(user.year)
 
 
 class ExpensesNew(CssClassMixin, CreateViewMixin):
@@ -99,10 +101,11 @@ class ExpensesDelete(DeleteViewMixin):
 class IncomesLists(ListViewMixin):
     template_name = "plans/incomeplan_list.html"
     service_class = IncomePlanModelService
+    plan_type = "income"
 
     def get_queryset(self):
         user = self.request.user
-        return IncomePlanModelService(user).year(user.year)
+        return IncomePlanModelService(user).pivot_table(user.year)
 
 
 class IncomesNew(CssClassMixin, CreateViewMixin):
@@ -137,10 +140,11 @@ class IncomesDelete(DeleteViewMixin):
 class SavingsLists(ListViewMixin):
     template_name = "plans/savingplan_list.html"
     service_class = SavingPlanModelService
+    plan_type = "saving"
 
     def get_queryset(self):
         user = self.request.user
-        return SavingPlanModelService(user).year(user.year)
+        return SavingPlanModelService(user).pivot_table(user.year)
 
 
 class SavingsNew(CssClassMixin, CreateViewMixin):
@@ -175,10 +179,11 @@ class SavingsDelete(DeleteViewMixin):
 class DayLists(ListViewMixin):
     template_name = "plans/dayplan_list.html"
     service_class = DayPlanModelService
+    plan_type = "day"
 
     def get_queryset(self):
         user = self.request.user
-        return DayPlanModelService(user).year(user.year)
+        return DayPlanModelService(user).pivot_table(user.year)
 
 
 class DayNew(CssClassMixin, CreateViewMixin):
@@ -213,10 +218,11 @@ class DayDelete(DeleteViewMixin):
 class NecessaryLists(ListViewMixin):
     template_name = "plans/necessaryplan_list.html"
     service_class = NecessaryPlanModelService
+    plan_type = "necessary"
 
     def get_queryset(self):
         user = self.request.user
-        return NecessaryPlanModelService(user).year(user.year)
+        return NecessaryPlanModelService(user).pivot_table(user.year)
 
 
 class NecessaryNew(CssClassMixin, CreateViewMixin):
