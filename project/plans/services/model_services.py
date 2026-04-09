@@ -59,8 +59,10 @@ class ExpensePlanModelService(CommonMethodsMixin, BaseModelService):
     def pivot_table(self, year: int):
         return self.generic_pivot_table(year, lambda plan: plan.expense_type)
 
-    def summed_by_month(self, year):
-        return self.generic_summed_by_month(year, "expense_type")
+    def summed_by_month(self, year, necessary=False):
+        return self.generic_summed_by_month(year, "expense_type").filter(
+            expense_type__necessary=necessary
+        )
 
 
 class SavingPlanModelService(CommonMethodsMixin, BaseModelService):
@@ -89,6 +91,7 @@ class DayPlanModelService(CommonMethodsMixin, BaseModelService):
     def summed_by_month(self, year):
         return self.generic_summed_by_month(year, "id")
 
+
 class NecessaryPlanModelService(CommonMethodsMixin, BaseModelService):
     def get_queryset(self):
         return models.NecessaryPlan.objects.select_related("journal").filter(
@@ -96,7 +99,9 @@ class NecessaryPlanModelService(CommonMethodsMixin, BaseModelService):
         )
 
     def pivot_table(self, year: int):
-        return self.generic_pivot_table(year, lambda plan: (plan.expense_type, plan.title))
-    
+        return self.generic_pivot_table(
+            year, lambda plan: (plan.expense_type, plan.title)
+        )
+
     def summed_by_month(self, year):
         return self.generic_summed_by_month(year, ["expense_type", "title"])
