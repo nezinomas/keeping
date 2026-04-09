@@ -157,16 +157,36 @@ def test_expense_year(main_user, second_user):
     assert actual[1].price == 2
 
 
-def test_expense_summed_by_month(main_user, second_user):
+def test_expense_summed_by_month_expenses_regular(main_user, second_user):
     t1 = ExpenseTypeFactory(title="AAA")
     t2 = ExpenseTypeFactory(title="ZZZ")
+    t3 = ExpenseTypeFactory(title="XXX", necessary=True)
 
     ExpensePlanFactory(year=1999, month=1, price=1, expense_type=t1)
     ExpensePlanFactory(year=1999, month=2, price=2, expense_type=t1)
     ExpensePlanFactory(year=1999, month=2, price=2, expense_type=t2)
+    ExpensePlanFactory(year=1999, month=2, price=4, expense_type=t3)
     ExpensePlanFactory(year=1974, journal=second_user.journal)
 
     actual = list(ExpensePlanModelService(main_user).summed_by_month(1999))
+
+    assert actual == [{"month": 1, "amount": 1}, {"month": 2, "amount": 4}]
+
+
+def test_expense_summed_by_month_expenses_necessary(main_user, second_user):
+    t1 = ExpenseTypeFactory(title="AAA", necessary=True)
+    t2 = ExpenseTypeFactory(title="ZZZ", necessary=True)
+    t3 = ExpenseTypeFactory(title="XXX")
+
+    ExpensePlanFactory(year=1999, month=1, price=1, expense_type=t1)
+    ExpensePlanFactory(year=1999, month=2, price=2, expense_type=t1)
+    ExpensePlanFactory(year=1999, month=2, price=2, expense_type=t2)
+    ExpensePlanFactory(year=1999, month=2, price=4, expense_type=t3)
+    ExpensePlanFactory(year=1974, journal=second_user.journal)
+
+    actual = list(
+        ExpensePlanModelService(main_user).summed_by_month(1999, necessary=True)
+    )
 
     assert actual == [{"month": 1, "amount": 1}, {"month": 2, "amount": 4}]
 
