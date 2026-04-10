@@ -7,7 +7,7 @@ class CssClassMixin:
     modal_body_css_class = "plans-form"
 
 
-class TallRecordMixin:
+class PlanQuerySetMixin:
     def get_tall_queryset(self):
         qs = self.service_class(self.request.user).items()
 
@@ -17,7 +17,7 @@ class TallRecordMixin:
         return qs.filter(**self.kwargs)
 
 
-class TallUpdateMixin(TallRecordMixin):
+class PlanUpdateMixin(PlanQuerySetMixin):
     def get_object(self, queryset=None):
         if obj := self.get_tall_queryset().first():
             return obj
@@ -31,7 +31,7 @@ class TallUpdateMixin(TallRecordMixin):
         return reverse_lazy(f"plans:{self.url_name}", kwargs=self.kwargs)
 
 
-class TallDeleteMixin(TallRecordMixin):
+class PlanDeleteMixin(PlanQuerySetMixin):
     def get_object(self, queryset=None):
         if obj := self.get_tall_queryset().first():
             return obj

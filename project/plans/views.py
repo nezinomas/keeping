@@ -13,7 +13,7 @@ from ..core.mixins.views import (
 )
 from . import forms
 from .lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
-from .mixins.views import CssClassMixin, TallDeleteMixin, TallUpdateMixin
+from .mixins.views import CssClassMixin, PlanDeleteMixin, PlanUpdateMixin
 from .services.model_services import (
     DayPlanModelService,
     ExpensePlanModelService,
@@ -114,7 +114,7 @@ class IncomesNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Incomes plans")
 
 
-class IncomesUpdate(CssClassMixin, PlansConvertPriceMixin, TallUpdateMixin, UpdateViewMixin):
+class IncomesUpdate(CssClassMixin, PlansConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = IncomePlanModelService
     # lookup_field = "category_pk"
     form_class = forms.IncomePlanForm
@@ -124,7 +124,7 @@ class IncomesUpdate(CssClassMixin, PlansConvertPriceMixin, TallUpdateMixin, Upda
     success_url = reverse_lazy("plans:income_list")
 
 
-class IncomesDelete(TallDeleteMixin, DeleteViewMixin):
+class IncomesDelete(PlanDeleteMixin, DeleteViewMixin):
     service_class = IncomePlanModelService
     hx_trigger_django = "reloadIncomes"
     modal_form_title = _("Delete plan")
