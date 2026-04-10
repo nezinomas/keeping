@@ -28,6 +28,7 @@ class IncomePlanFactory(factory.django.DjangoModelFactory):
     month = 1
     price = 1
 
+
 class SavingPlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SavingPlan
@@ -38,6 +39,7 @@ class SavingPlanFactory(factory.django.DjangoModelFactory):
     month = 1
     price = 1
 
+
 class DayPlanFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = DayPlan
@@ -46,6 +48,7 @@ class DayPlanFactory(factory.django.DjangoModelFactory):
     year = 1999
     month = 1
     price = 1
+
 
 class NecessaryPlanFactory(factory.django.DjangoModelFactory):
     class Meta:

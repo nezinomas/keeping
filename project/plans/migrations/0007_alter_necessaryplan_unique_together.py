@@ -4,16 +4,15 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('expenses', '0003_alter_expense_price'),
-        ('journals', '0001_initial'),
-        ('plans', '0006_alter_necessaryplan_options_and_more'),
+        ("expenses", "0003_alter_expense_price"),
+        ("journals", "0001_initial"),
+        ("plans", "0006_alter_necessaryplan_options_and_more"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='necessaryplan',
-            unique_together={('year', 'month', 'title', 'expense_type', 'journal')},
+            name="necessaryplan",
+            unique_together={("year", "month", "title", "expense_type", "journal")},
         ),
     ]

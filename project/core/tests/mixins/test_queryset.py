@@ -33,7 +33,10 @@ def test_missing_service_class_raises_improperly_configured():
 
 
 def test_service_class_is_not_callable(mocker):
-    """If a developer accidentally sets service_class to a string or instance, it should fail."""
+    """
+    If a developer accidentally sets service_class to a string or instance,
+    it should fail.
+    """
     view = TestView()
     view.service_class = "IncomeModelService"
     view.request = mocker.Mock()
@@ -58,7 +61,10 @@ def test_missing_request_object_crashes_predictably():
 
 
 def test_missing_user_on_request_crashes_predictably(mocker):
-    """If the authentication middleware fails and request.user is missing, it must crash."""
+    """
+    If the authentication middleware fails and request.user is missing,
+    it must crash.
+    """
     view = TestView()
     view.service_class = DummyService
 
@@ -73,7 +79,9 @@ def test_missing_user_on_request_crashes_predictably(mocker):
 
 
 def test_get_queryset_returns_secure_service_objects(mocker):
-    """It must successfully instantiate the service and return the objects property."""
+    """
+    It must successfully instantiate the service and return the objects property.
+    """
     view = TestView()
     view.service_class = DummyService
 
@@ -93,8 +101,8 @@ def test_service_is_instantiated_with_exact_user(mocker):
     """
     view = TestView()
 
-    SpyServiceClass = mocker.Mock()
-    view.service_class = SpyServiceClass
+    spy_service_class = mocker.Mock()
+    view.service_class = spy_service_class
 
     mock_request = mocker.Mock()
     view.request = mock_request
@@ -103,4 +111,4 @@ def test_service_is_instantiated_with_exact_user(mocker):
 
     # Service MUST have been called exactly once,
     # and exactly with the request.user object.
-    SpyServiceClass.assert_called_once_with(mock_request.user)
+    spy_service_class.assert_called_once_with(mock_request.user)

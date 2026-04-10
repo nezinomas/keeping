@@ -10,6 +10,7 @@ class Lists(ListViewMixin):
     service_class = ExpenseTypeModelService
     template_name = "expenses/expensetype_list.html"
 
+
 class New(CreateViewMixin):
     service_class = ExpenseTypeModelService
     form_class = forms.ExpenseTypeForm

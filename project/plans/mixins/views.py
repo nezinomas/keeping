@@ -17,8 +17,8 @@ class PlanQuerySetMixin:
         qs = self.service_class(self.request.user).items()
 
         # Filter using exactly the kwargs provided in the URL
-        # If the URL is incomes/1999/5/, self.kwargs is {'year': 1999, 'income_type_id': 5}
-        # qs.filter(**self.kwargs) translates instantly to qs.filter(year=1999, income_type_id=5)
+        # If the URL is incomes/1999/5/, self.kwargs is {'year': 1999, 'income_type_id': 5}        # noqa: E501
+        # qs.filter(**self.kwargs) translates instantly to qs.filter(year=1999, income_type_id=5)  # noqa: E501
         return qs.filter(**self.kwargs)
 
 

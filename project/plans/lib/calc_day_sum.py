@@ -118,7 +118,6 @@ class PlanCalculateDaySum:
 
         raise AttributeError(f"{self.__class__.__name__} has no attribute '{name}'")
 
-
     def plans_stats(self):
         # Define strings cleanly so xgettext never misses them
         _incomes = _("Incomes")

@@ -1045,6 +1045,7 @@ def test_day_updates_and_deletes_rows(main_user):
 #                                                                       Copy Plans Form
 # -------------------------------------------------------------------------------------
 
+
 def test_copy_init(main_user):
     form = CopyPlanForm(user=main_user)
     assert form.fields["year_from"].initial == datetime.now().year

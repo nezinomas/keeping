@@ -67,7 +67,9 @@ class MonthDataProvider:
 
 
 class MonthTableBuilder:
-    """Merges expenses and savings into a single Polars DataFrame representing the month."""
+    """
+    Merges expenses and savings into a single Polars DataFrame representing the month
+    """
 
     def __init__(self, expense_df: pl.DataFrame, saving_df: pl.DataFrame):
         self.df = self._build_table(expense_df, saving_df)
@@ -75,7 +77,8 @@ class MonthTableBuilder:
     def _build_table(
         self, expense_df: pl.DataFrame, saving_df: pl.DataFrame
     ) -> pl.DataFrame:
-        # If exists at least two columns (date + at least one expense type), create total column
+        # If exists at least two columns (date + at least one expense type)
+        # create total column
         if expense_df.shape[1] > 1:
             expense_df = expense_df.with_columns(
                 pl.sum_horizontal(pl.exclude("date")).alias(_("Total"))

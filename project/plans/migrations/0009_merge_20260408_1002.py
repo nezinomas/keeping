@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plans', '0007_alter_necessaryplan_unique_together'),
-        ('plans', '0008_convert_wide_tables_into_tall'),
+        ("plans", "0007_alter_necessaryplan_unique_together"),
+        ("plans", "0008_convert_wide_tables_into_tall"),
     ]
 
-    operations = [
-    ]
+    operations = []

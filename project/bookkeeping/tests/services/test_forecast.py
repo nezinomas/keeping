@@ -1,8 +1,8 @@
 from datetime import date
+from types import SimpleNamespace
 
 import pytest
 import time_machine
-from types import SimpleNamespace
 
 from ...services.forecast import (
     Forecast,
@@ -13,6 +13,7 @@ from ...services.forecast import (
 )
 
 MODULE_PATH = "project.bookkeeping.services.forecast"
+
 
 def test_get_data(main_user):
     main_user.year = 1000

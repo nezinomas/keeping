@@ -75,7 +75,8 @@ def test_lend_return_related_queries(main_user, django_assert_num_queries):
 
     with django_assert_num_queries(1):
         list(
-            x.account.title for x in list(DebtReturnModelService(main_user, "lend").objects)
+            x.account.title
+            for x in list(DebtReturnModelService(main_user, "lend").objects)
         )
 
 
@@ -109,6 +110,7 @@ def test_lend_return_sum_by_month(main_user):
     actual = DebtReturnModelService(main_user, "lend").sum_by_month(1974)
 
     assert list(actual) == [{"date": dt(1974, 3, 1), "title": "lend_return", "sum": 6}]
+
 
 @factory.django.mute_signals(post_save)
 def test_borrow_return_sum_by_month(main_user):

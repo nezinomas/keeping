@@ -4,108 +4,107 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('expenses', '0003_alter_expense_price'),
-        ('incomes', '0003_alter_income_price'),
-        ('journals', '0001_initial'),
-        ('plans', '0005_alter_necessaryplan_options'),
-        ('savings', '0016_alter_savingbalance_options'),
+        ("expenses", "0003_alter_expense_price"),
+        ("incomes", "0003_alter_income_price"),
+        ("journals", "0001_initial"),
+        ("plans", "0005_alter_necessaryplan_options"),
+        ("savings", "0016_alter_savingbalance_options"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='necessaryplan',
-            options={'ordering': ['year', 'month', 'expense_type', 'title']},
+            name="necessaryplan",
+            options={"ordering": ["year", "month", "expense_type", "title"]},
         ),
         migrations.AlterUniqueTogether(
-            name='dayplan',
+            name="dayplan",
             unique_together=set(),
         ),
         migrations.AlterUniqueTogether(
-            name='expenseplan',
+            name="expenseplan",
             unique_together=set(),
         ),
         migrations.AlterUniqueTogether(
-            name='incomeplan',
+            name="incomeplan",
             unique_together=set(),
         ),
         migrations.AlterUniqueTogether(
-            name='necessaryplan',
+            name="necessaryplan",
             unique_together=set(),
         ),
         migrations.AlterUniqueTogether(
-            name='savingplan',
+            name="savingplan",
             unique_together=set(),
         ),
         migrations.AddField(
-            model_name='dayplan',
-            name='month',
+            model_name="dayplan",
+            name="month",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='dayplan',
-            name='price',
+            model_name="dayplan",
+            name="price",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='expenseplan',
-            name='month',
+            model_name="expenseplan",
+            name="month",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='expenseplan',
-            name='price',
+            model_name="expenseplan",
+            name="price",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='incomeplan',
-            name='month',
+            model_name="incomeplan",
+            name="month",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='incomeplan',
-            name='price',
+            model_name="incomeplan",
+            name="price",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='necessaryplan',
-            name='month',
+            model_name="necessaryplan",
+            name="month",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='necessaryplan',
-            name='price',
+            model_name="necessaryplan",
+            name="price",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='savingplan',
-            name='month',
+            model_name="savingplan",
+            name="month",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='savingplan',
-            name='price',
+            model_name="savingplan",
+            name="price",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AlterUniqueTogether(
-            name='dayplan',
-            unique_together={('year', 'month', 'journal')},
+            name="dayplan",
+            unique_together={("year", "month", "journal")},
         ),
         migrations.AlterUniqueTogether(
-            name='expenseplan',
-            unique_together={('year', 'month', 'expense_type', 'journal')},
+            name="expenseplan",
+            unique_together={("year", "month", "expense_type", "journal")},
         ),
         migrations.AlterUniqueTogether(
-            name='incomeplan',
-            unique_together={('year', 'month', 'income_type', 'journal')},
+            name="incomeplan",
+            unique_together={("year", "month", "income_type", "journal")},
         ),
         migrations.AlterUniqueTogether(
-            name='necessaryplan',
-            unique_together={('year', 'month', 'title', 'expense_type', 'journal')},
+            name="necessaryplan",
+            unique_together={("year", "month", "title", "expense_type", "journal")},
         ),
         migrations.AlterUniqueTogether(
-            name='savingplan',
-            unique_together={('year', 'month', 'saving_type', 'journal')},
+            name="savingplan",
+            unique_together={("year", "month", "saving_type", "journal")},
         ),
     ]

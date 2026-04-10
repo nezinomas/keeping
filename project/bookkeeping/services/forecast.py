@@ -124,7 +124,9 @@ class Forecast:
         self._past_idx = self._month - 1
 
     def balance(self) -> float:
-        """Calculates balance from January to current month (excluding current month)."""
+        """
+        Calculates balance from January to current month (excluding current month)
+        """
         incomes = sum(self._data.incomes[: self._past_idx])
         savings_close = sum(self._data.savings_close[: self._past_idx])
         expenses = sum(self._data.expenses[: self._past_idx])
