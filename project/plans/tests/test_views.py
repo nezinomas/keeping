@@ -287,7 +287,6 @@ def test_income_list_price_converted_in_template(client_logged):
 #                                                                     IncomePlan delete
 # -------------------------------------------------------------------------------------
 
-
 def test_incomes_delete_func():
     view = resolve("/plans/incomes/delete/1212/1/")
 
@@ -346,13 +345,9 @@ def test_incomes_delete_returns_htmx_response(client_logged):
 
     response = client_logged.post(url)
 
-    # 1. Assert the database was actually wiped
     assert models.IncomePlan.objects.count() == 0
-
-    # 2. Assert it did NOT do a standard Django redirect
     assert response.status_code in [200, 204]
 
-    # 3. THE FIX: Parse the JSON header and check for your trigger key!
     trigger_header = response.headers.get("HX-Trigger")
     assert trigger_header is not None, "HX-Trigger header is missing!"
 
