@@ -116,7 +116,7 @@ class ExpensesNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:expense_list")
 
 
-class ExpensesUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
+class ExpensesUpdate(CssClassMixin, PlansConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = ExpensePlanModelService
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reloadExpenses"
@@ -125,7 +125,7 @@ class ExpensesUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
     success_url = reverse_lazy("plans:expense_list")
 
 
-class ExpensesDelete(DeleteViewMixin):
+class ExpensesDelete(PlanDeleteMixin, DeleteViewMixin):
     service_class = ExpensePlanModelService
     hx_trigger_django = "reloadExpenses"
     modal_form_title = _("Delete plan")

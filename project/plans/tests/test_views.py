@@ -387,193 +387,324 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
     assert IncomePlan.objects.all().count() == 1
 
 
-# # -------------------------------------------------------------------------------------
-# #                                                            ExpensesPlan create/update
-# # -------------------------------------------------------------------------------------
-# def test_expense_new_func():
-#     view = resolve("/plans/expenses/new/")
+# -------------------------------------------------------------------------------------
+#                                                              ExpensePlan create/update
+# -------------------------------------------------------------------------------------
+def test_expense_new_func():
+    view = resolve("/plans/expenses/new/")
 
-#     assert views.ExpensesNew == view.func.view_class
+    assert views.ExpensesNew == view.func.view_class
 
 
-# def test_expense_update_func():
-#     view = resolve("/plans/expenses/update/1/")
+def test_expense_update_func():
+    view = resolve("/plans/expenses/update/1999/1/")
 
-#     assert views.ExpensesUpdate == view.func.view_class
+    assert views.ExpensesUpdate == view.func.view_class
 
 
-# @time_machine.travel("1999-1-1")
-# def test_expense_load_form(client_logged):
-#     url = reverse("plans:expense_new")
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+@time_machine.travel("1999-1-1")
+def test_expense_load_form(client_logged):
+    url = reverse("plans:expense_new")
+    response = client_logged.get(url)
+    actual = response.content.decode()
 
-#     assert f'hx-post="{url}"' in actual
-#     assert '<input type="text" name="year" value="1999"' in actual
+    assert response.status_code == 200
+    assert f'hx-post="{url}"' in actual
+    assert '<input type="text" name="year" value="1999"' in actual
 
 
-# def test_expense_new(client_logged):
-#     i = ExpenseTypeFactory()
-#     data = {"year": "1999", "expense_type": i.pk, "january": 0.01}
+def test_expense_new(client_logged, main_user):
+    i = ExpenseTypeFactory()
+    data = {"year": "1999", "expense_type": i.pk, "january": 0.01}
 
-#     url = reverse("plans:expense_new")
-#     client_logged.post(url, data, follow=True)
-#     client_logged.post(url, data, follow=True)
-#     actual = ExpensePlan.objects.first()
+    url = reverse("plans:expense_new")
+    client_logged.post(url, data, follow=True)
+    actual = ExpensePlan.objects.first()
 
-#     assert actual.january == 1
+    assert actual.journal == main_user.journal
+    assert actual.year == 1999
+    assert actual.month == 1
+    assert actual.price == 1
 
 
-# def test_expense_invalid_data(client_logged):
-#     data = {"year": "x", "expense_type": 0, "january": 999}
+def test_expense_new_invalid_data(client_logged):
+    data = {"year": "x", "expense_type": 0, "january": 999}
 
-#     url = reverse("plans:expense_new")
-#     response = client_logged.post(url, data)
-#     form = response.context["form"]
+    url = reverse("plans:expense_new")
+    response = client_logged.post(url, data)
+    form = response.context["form"]
 
-#     assert not form.is_valid()
+    assert not form.is_valid()
+    assert "year" in form.errors
+    assert "expense_type" in form.errors
 
 
-# def test_expense_load_update_load_form(client_logged):
-#     obj = ExpensePlanFactory()
+def test_expense_new_prevents_duplicate_category_in_same_year(client_logged, main_user):
+    expense_type = ExpenseTypeFactory(journal=main_user.journal)
+    # A plan for this year and type already exists
+    ExpensePlanFactory(
+        year=1999, month=1, expense_type=expense_type, journal=main_user.journal
+    )
 
-#     url = reverse("plans:expense_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
-#     actual = response.content.decode()
+    # Try to create ANOTHER plan for the same year and type
+    data = {"year": "1999", "expense_type": expense_type.pk, "january": 9.99}
+    url = reverse("plans:expense_new")
 
-#     assert f'hx-post="{url}"' in actual
+    response = client_logged.post(url, data)
+    form = response.context["form"]
 
+    assert not form.is_valid()
+    assert (
+        "__all__" in form.errors
+    )  # Assuming the error was raised as a non-field error
+    assert "1999 metai jau turi Expense Type planą." in form.errors["__all__"][0]
 
-# def test_expense_load_update_form_field_values(client_logged):
-#     obj = ExpensePlanFactory()
 
-#     url = reverse("plans:expense_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
-#     form = response.context["form"]
+def test_expense_new_returns_htmx_response(client_logged, main_user):
+    expense_type = ExpenseTypeFactory(journal=main_user.journal)
+    data = {"year": "1999", "expense_type": expense_type.pk, "january": 0.01}
 
-#     assert form.instance.year == 1999
-#     assert form.instance.january == 0.01
-#     assert form.instance.february == 0.01
-#     assert form.instance.march == 0.01
-#     assert form.instance.april == 0.01
-#     assert form.instance.may == 0.01
-#     assert form.instance.june == 0.01
-#     assert form.instance.july == 0.01
-#     assert form.instance.august == 0.01
-#     assert form.instance.september == 0.01
-#     assert form.instance.october == 0.01
-#     assert form.instance.november == 0.01
-#     assert form.instance.december == 0.01
-#     assert form.instance.expense_type.title == "Expense Type"
+    url = reverse("plans:expense_new")
 
+    response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
 
-# def test_expense_update(client_logged):
-#     obj = ExpensePlanFactory(year=1999)
+    assert response.status_code == 204
+    assert ExpensePlan.objects.filter(year=1999, expense_type=expense_type).count() == 1
 
-#     data = {"year": "1999", "expense_type": obj.expense_type.pk, "january": 0.01}
-#     url = reverse("plans:expense_update", kwargs={"year": 1999, "income_type_id": obj.pk})
+    trigger_header = response.headers.get("HX-Trigger")
+    assert trigger_header is not None, "HX-Trigger header is missing!"
 
-#     client_logged.post(url, data, follow=True)
-#     actual = ExpensePlan.objects.get(pk=obj.pk)
+    trigger_data = json.loads(trigger_header)
+    assert "reloadExpenses" in trigger_data
 
-#     assert actual.january == 1
 
+def test_expense_load_update_load_form(client_logged):
+    expense_type = ExpenseTypeFactory()
+    ExpensePlanFactory(expense_type=expense_type)
 
-# def test_expense_update_unique_together_user_change_year(client_logged):
-#     ExpensePlanFactory(year=2000)
-#     p = ExpensePlanFactory(year=1999)
+    url = reverse(
+        "plans:expense_update", kwargs={"year": 1999, "expense_type_id": expense_type.pk}
+    )
+    response = client_logged.get(url)
+    actual = response.content.decode()
 
-#     data = {"year": "2000", "expense_type": p.expense_type.pk, "january": 999}
+    assert f'hx-post="{url}"' in actual
 
-#     url = reverse("plans:expense_update", kwargs={"year": 1999, "income_type_id": p.pk})
-#     response = client_logged.post(url, data)
-#     form = response.context["form"]
 
-#     assert not form.is_valid()
+def test_expense_load_update_form_field_values(client_logged):
+    expense_type = ExpenseTypeFactory()
+    ExpensePlanFactory(expense_type=expense_type)
 
+    url = reverse(
+        "plans:expense_update", kwargs={"year": 1999, "expense_type_id": expense_type.pk}
+    )
+    response = client_logged.get(url)
+    form = response.context["form"]
 
-# def test_expense_update_not_load_other_journal(client_logged, second_user):
-#     j = second_user.journal
-#     t = ExpenseTypeFactory(title="yyy", journal=j)
-#     obj = ExpensePlanFactory(expense_type=t, journal=j, january=666)
+    assert form.instance.year == 1999
+    assert form.instance.expense_type.title == "Expense Type"
 
-#     url = reverse("plans:expense_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
+    assert form.initial.get("january") == 0.01
+    assert form.initial.get("february") is None
+    assert form.initial.get("march") is None
+    assert form.initial.get("april") is None
+    assert form.initial.get("may") is None
+    assert form.initial.get("june") is None
+    assert form.initial.get("july") is None
+    assert form.initial.get("august") is None
+    assert form.initial.get("september") is None
+    assert form.initial.get("october") is None
+    assert form.initial.get("november") is None
+    assert form.initial.get("december") is None
 
-#     assert response.status_code == 404
 
+def test_expense_update(client_logged):
+    obj = ExpensePlanFactory(year=1999)
 
-# def test_expense_list_price_converted_in_template(client_logged):
-#     ExpensePlanFactory()
+    data = {"year": "1999", "expense_type": obj.expense_type.pk, "january": 0.05}
+    url = reverse(
+        "plans:expense_update",
+        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk},
+    )
+    client_logged.post(url, data)
+    actual = ExpensePlan.objects.get(pk=obj.pk)
 
-#     url = reverse("plans:expense_list")
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+    assert actual.month == 1
+    assert actual.price == 5
 
-#     assert "0,01" in actual
-#     assert actual.count("0,01") == 12
 
+def test_expense_update_returns_htmx_response(client_logged, main_user):
+    expense_type = ExpenseTypeFactory(journal=main_user.journal)
 
-# # -------------------------------------------------------------------------------------
-# #                                                                   ExpensesPlan delete
-# # -------------------------------------------------------------------------------------
-# def test_expense_delete_func():
-#     view = resolve("/plans/expenses/delete/1/")
+    ExpensePlanFactory(
+        year=1999,
+        expense_type=expense_type,
+        month=1,
+        price=1000,
+        journal=main_user.journal,
+    )
 
-#     assert views.ExpensesDelete == view.func.view_class
+    data = {"year": "1999", "expense_type": expense_type.pk, "january": 9.99}
 
+    url = reverse(
+        "plans:expense_update", kwargs={"year": 1999, "expense_type_id": expense_type.pk}
+    )
 
-# def test_expense_delete_200(client_logged):
-#     p = ExpensePlanFactory()
+    response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
 
-#     url = reverse("plans:expense_delete", kwargs={"year": 1999, "income_type_id": p.pk})
+    assert response.status_code == 204
 
-#     response = client_logged.get(url)
+    actual = ExpensePlan.objects.get(year=1999, expense_type=expense_type, month=1)
+    assert actual.price == 999
 
-#     assert response.status_code == 200
+    trigger_header = response.headers.get("HX-Trigger")
+    assert trigger_header is not None, "HX-Trigger header is missing!"
 
+    trigger_data = json.loads(trigger_header)
+    assert "reloadExpenses" in trigger_data
 
-# def test_expense_delete_load_form(client_logged):
-#     p = ExpensePlanFactory(year=1999)
 
-#     url = reverse("plans:expense_delete", kwargs={"year": 1999, "income_type_id": p.pk})
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+def test_expense_update_not_load_other_journal(client_logged, second_user):
+    second_user_journal = second_user.journal
 
-#     assert f'hx-post="{url}"' in actual
-#     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
+    t = ExpenseTypeFactory(title="yyy", journal=second_user_journal)
+    obj = ExpensePlanFactory(
+        expense_type=t, journal=second_user_journal, month=1, price=666
+    )
 
+    url = reverse(
+        "plans:expense_update", kwargs={"year": 1999, "expense_type_id": obj.pk}
+    )
+    response = client_logged.get(url)
 
-# def test_expense_delete(client_logged):
-#     p = ExpensePlanFactory(year=1999)
+    assert response.status_code == 404
 
-#     assert models.ExpensePlan.objects.all().count() == 1
-#     url = reverse("plans:expense_delete", kwargs={"year": 1999, "income_type_id": p.pk})
-#     client_logged.post(url)
 
-#     assert models.ExpensePlan.objects.all().count() == 0
+def test_expense_list_price_converted_in_template(client_logged):
+    expense_type = ExpenseTypeFactory()
+    ExpensePlanFactory(expense_type=expense_type, month=1, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=2, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=3, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=4, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=5, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=6, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=7, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=8, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=9, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=10, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=11, price=2)
+    ExpensePlanFactory(expense_type=expense_type, month=12, price=2)
 
+    url = reverse("plans:expense_list")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
 
-# def test_expense_delete_other_journal_get_form(client_logged, second_user):
-#     j = second_user.journal
-#     t = ExpenseTypeFactory(title="yyy", journal=j)
-#     obj = ExpensePlanFactory(expense_type=t, journal=j, january=666)
+    assert "0,02" in actual
+    assert actual.count("0,02") == 12
 
-#     url = reverse("plans:expense_delete", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
 
-#     assert response.status_code == 404
+# -------------------------------------------------------------------------------------
+#                                                                     ExpensePlan delete
+# -------------------------------------------------------------------------------------
 
+def test_expenses_delete_func():
+    view = resolve("/plans/expenses/delete/1212/1/")
 
-# def test_expense_delete_other_journal_post_form(client_logged, second_user):
-#     j = second_user.journal
-#     t = ExpenseTypeFactory(title="yyy", journal=j)
-#     obj = ExpensePlanFactory(expense_type=t, journal=j, january=666)
+    assert views.ExpensesDelete == view.func.view_class
 
-#     url = reverse("plans:expense_delete", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     client_logged.post(url)
 
-#     assert ExpensePlan.objects.all().count() == 1
+def test_expenses_delete_200(client_logged):
+    obj = ExpensePlanFactory()
+
+    url = reverse(
+        "plans:expense_delete",
+        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk},
+    )
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_expenses_delete_load_form(client_logged):
+    obj = ExpensePlanFactory(year=1999)
+
+    url = reverse(
+        "plans:expense_delete",
+        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk},
+    )
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
+    assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
+
+
+def test_expenses_delete(client_logged):
+    expense_type = ExpenseTypeFactory()
+    ExpensePlanFactory(year=1999, expense_type=expense_type, month=1)
+    ExpensePlanFactory(year=1999, expense_type=expense_type, month=2)
+
+    assert models.ExpensePlan.objects.all().count() == 2
+
+    url = reverse(
+        "plans:expense_delete", kwargs={"year": 1999, "expense_type_id": expense_type.pk}
+    )
+
+    client_logged.post(url, follow=True)
+
+    assert models.ExpensePlan.objects.all().count() == 0
+
+
+def test_expenses_delete_returns_htmx_response(client_logged):
+    expense_type = ExpenseTypeFactory()
+    ExpensePlanFactory(year=1999, expense_type=expense_type, month=1)
+
+    url = reverse(
+        "plans:expense_delete", kwargs={"year": 1999, "expense_type_id": expense_type.pk}
+    )
+
+    response = client_logged.post(url)
+
+    assert models.ExpensePlan.objects.count() == 0
+    assert response.status_code in [200, 204]
+
+    trigger_header = response.headers.get("HX-Trigger")
+    assert trigger_header is not None, "HX-Trigger header is missing!"
+
+    trigger_data = json.loads(trigger_header)
+    assert "reloadExpenses" in trigger_data
+
+
+def test_expenses_delete_other_journal_get_form(client_logged, second_user):
+    second_user_journal = second_user.journal
+    expense_type = ExpenseTypeFactory(title="yyy", journal=second_user_journal)
+    obj = ExpensePlanFactory(
+        expense_type=expense_type, journal=second_user_journal, month=1, price=666
+    )
+
+    url = reverse(
+        "plans:expense_delete",
+        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk},
+    )
+    response = client_logged.get(url)
+
+    assert response.status_code == 404
+
+
+def test_expenses_delete_other_journal_post_form(client_logged, second_user):
+    second_user_journal = second_user.journal
+    expense_type = ExpenseTypeFactory(title="yyy", journal=second_user_journal)
+    obj = ExpensePlanFactory(
+        expense_type=expense_type, journal=second_user_journal, month=1, price=666
+    )
+
+    url = reverse(
+        "plans:expense_delete",
+        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk},
+    )
+    client_logged.post(url)
+
+    assert ExpensePlan.objects.all().count() == 1
 
 
 # # -------------------------------------------------------------------------------------

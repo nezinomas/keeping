@@ -14,12 +14,12 @@ urlpatterns = [
     path("expenses/", views.ExpensesLists.as_view(), name="expense_list"),
     path("expenses/new/", views.ExpensesNew.as_view(), name="expense_new"),
     path(
-        "expenses/update/<int:pk>/",
+        "expenses/update/<int:year>/<int:expense_type_id>/",
         views.ExpensesUpdate.as_view(),
         name="expense_update",
     ),
     path(
-        "expenses/delete/<int:pk>/",
+        "expenses/delete/<int:year>/<int:expense_type_id>/",
         views.ExpensesDelete.as_view(),
         name="expense_delete",
     ),
