@@ -250,3 +250,297 @@ def test_income_plan_form_prevents_cross_category_pollution(main_user):
 
     assert form.initial["january"] == 1000.0  # 100000 cents -> 1000.0 float
     assert form.initial.get("february") is None, "Cross-category pollution detected!"
+
+
+# -------------------------------------------------------------------------------------
+#                                                                     Expense Plan Form
+# -------------------------------------------------------------------------------------
+
+def test_expense_loads_initial_and_converts_from_cents(main_user):
+    expense_type = ExpenseTypeFactory()
+    plan_jan = ExpensePlanFactory(month=1, price=15_000, expense_type=expense_type)
+    ExpensePlanFactory(month=12, price=30_000, expense_type=expense_type)
+
+    form = ExpensePlanForm(instance=plan_jan, user=main_user)
+
+    assert form.initial["year"] == 1999
+    assert form.initial["expense_type"] == expense_type.pk
+
+    # 4. Assert conversion to standard floats for the frontend
+    assert float(form.initial["january"]) == 150.00
+    assert float(form.initial["december"]) == 300.00
+    assert form.initial.get("february") is None
+
+    # 5. Assert grouping fields are locked to prevent orphaned rows
+    assert form.fields["year"].disabled is True
+    assert form.fields["expense_type"].disabled is True
+
+
+def test_expense_updates_and_deletes_rows(main_user):
+    """Tests updates, deletions, and cents conversions handle correctly."""
+
+    expense_type = ExpenseTypeFactory()
+
+    plan_jan = ExpensePlan.objects.create(
+        year=2026,
+        month=1,
+        price=10000,
+        expense_type=expense_type,
+        journal=main_user.journal,
+    )
+    ExpensePlan.objects.create(
+        year=2026,
+        month=2,
+        price=20000,
+        expense_type=expense_type,
+        journal=main_user.journal,
+    )
+
+    updated_data = {
+        "year": 2026,
+        "expense_type": expense_type.pk,
+        "january": 150.00,  # Updated
+        "february": "",  # Cleared -> Should Delete
+        "march": 300.00,  # New -> Should Create
+    }
+
+    form = ExpensePlanForm(data=updated_data, instance=plan_jan, user=main_user)
+    assert form.is_valid()
+    form.save()
+
+    # 3. Assert correct DB state in CENTS
+    assert ExpensePlan.objects.count() == 2
+    assert ExpensePlan.objects.filter(month=2).exists() is False
+    assert ExpensePlan.objects.get(month=1).price == 15000  # Updated to 15000
+    assert ExpensePlan.objects.get(month=3).price == 30000  # Created as 30000
+
+
+def test_expense_plan_form_prevents_cross_category_pollution(main_user):
+    salary_type = ExpenseTypeFactory(title="Salary", journal=main_user.journal)
+    gift_type = ExpenseTypeFactory(title="Gift", journal=main_user.journal)
+
+    # Create a Salary plan for Jan (Target instance)
+    salary_instance = ExpensePlanFactory(
+        year=2026,
+        month=1,
+        price=100000,
+        expense_type=salary_type,
+        journal=main_user.journal,
+    )
+
+    # Create a Gift plan for Feb (Noise)
+    ExpensePlanFactory(
+        year=2026,
+        month=2,
+        price=50000,
+        expense_type=gift_type,
+        journal=main_user.journal,
+    )
+
+    form = ExpensePlanForm(user=main_user, instance=salary_instance)
+
+    assert form.initial["january"] == 1000.0  # 100000 cents -> 1000.0 float
+    assert form.initial.get("february") is None, "Cross-category pollution detected!"
+
+
+def test_expense_does_not_render_user_select(main_user):
+    form = ExpensePlanForm(user=main_user)
+    rendered_html = form.as_p()
+
+    assert '<select name="user"' not in rendered_html
+    assert 'name="user"' not in rendered_html
+
+
+@pytest.mark.parametrize("month", MONTHS)
+def test_expense_initialization(main_user, month):
+    form = ExpensePlanForm(user=main_user)
+
+    assert month in form.fields
+
+    assert isinstance(form.fields["journal"].widget, HiddenInput)
+    assert form.fields["journal"].initial == main_user.journal
+
+
+@time_machine.travel("1999-01-01")
+def test_expense_blank_data(main_user):
+    form = ExpensePlanForm(user=main_user, data={})
+
+    assert not form.is_valid()
+    assert len(form.errors) == 2
+    assert "year" in form.errors
+    assert "expense_type" in form.errors
+
+
+def test_expense_unique_together_validation(main_user):
+    existing_plan = ExpensePlanFactory(year=1999)
+
+    form = ExpensePlanForm(
+        user=main_user,
+        data={
+            "year": existing_plan.year,
+            "expense_type": existing_plan.expense_type.pk,
+            "january": 666.00,
+        },
+    )
+
+    assert not form.is_valid()
+
+    expected_msg = _("%(year)s year already has %(title)s plan.") % {
+        "year": existing_plan.year,
+        "title": existing_plan.expense_type.title,
+    }
+    assert form.errors == {"__all__": [expected_msg]}
+
+
+def test_expense_unique_together_validation_more_than_one(main_user):
+    """Tests that uniqueness doesn't block valid distinct inputs."""
+    ExpensePlanFactory(
+        year=1999,
+        expense_type=ExpenseTypeFactory(title="First"),
+        journal=main_user.journal,
+    )
+
+    new_type = ExpenseTypeFactory(title="Second")
+    form = ExpensePlanForm(
+        user=main_user,
+        data={
+            "year": 1999,
+            "expense_type": new_type.pk,
+            "january": 15.00,
+        },
+    )
+
+    assert form.is_valid()
+
+
+def test_expense_negative_number(main_user):
+    type_ = ExpenseTypeFactory()
+
+    data = {
+        "year": 1999,
+        "expense_type": type_.pk,
+    }
+
+    # Add a negative number to every single month
+    for key, _ in month_names().items():
+        data[key.lower()] = -1.00
+
+    form = ExpensePlanForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert len(form.errors) == 12
+
+
+def test_expense_save_converts_to_cents(main_user):
+    expense_type = ExpenseTypeFactory()
+
+    form_data = {
+        "year": 1999,
+        "expense_type": expense_type.pk,
+        "january": 0.01,
+        "march": 2.5,
+    }
+    form = ExpensePlanForm(data=form_data, user=main_user)
+
+    assert form.is_valid()
+    form.save()
+
+    assert ExpensePlan.objects.count() == 2
+
+    jan_plan = ExpensePlan.objects.get(month=1)
+    mar_plan = ExpensePlan.objects.get(month=3)
+
+    assert jan_plan.price == 1
+    assert jan_plan.year == 1999
+    assert jan_plan.expense_type == expense_type
+
+    assert mar_plan.price == 250
+    assert mar_plan.year == 1999
+    assert mar_plan.expense_type == expense_type
+
+
+def test_expense_loads_initial_and_converts_from_cents(main_user):
+    expense_type = ExpenseTypeFactory()
+    plan_jan = ExpensePlanFactory(month=1, price=15_000, expense_type=expense_type)
+    ExpensePlanFactory(month=12, price=30_000, expense_type=expense_type)
+
+    form = ExpensePlanForm(instance=plan_jan, user=main_user)
+
+    assert form.initial["year"] == 1999
+    assert form.initial["expense_type"] == expense_type.pk
+
+    # 4. Assert conversion to standard floats for the frontend
+    assert float(form.initial["january"]) == 150.00
+    assert float(form.initial["december"]) == 300.00
+    assert form.initial.get("february") is None
+
+    # 5. Assert grouping fields are locked to prevent orphaned rows
+    assert form.fields["year"].disabled is True
+    assert form.fields["expense_type"].disabled is True
+
+
+def test_expense_updates_and_deletes_rows(main_user):
+    """Tests updates, deletions, and cents conversions handle correctly."""
+
+    expense_type = ExpenseTypeFactory()
+
+    plan_jan = ExpensePlan.objects.create(
+        year=2026,
+        month=1,
+        price=10000,
+        expense_type=expense_type,
+        journal=main_user.journal,
+    )
+    ExpensePlan.objects.create(
+        year=2026,
+        month=2,
+        price=20000,
+        expense_type=expense_type,
+        journal=main_user.journal,
+    )
+
+    updated_data = {
+        "year": 2026,
+        "expense_type": expense_type.pk,
+        "january": 150.00,  # Updated
+        "february": "",  # Cleared -> Should Delete
+        "march": 300.00,  # New -> Should Create
+    }
+
+    form = ExpensePlanForm(data=updated_data, instance=plan_jan, user=main_user)
+    assert form.is_valid()
+    form.save()
+
+    # 3. Assert correct DB state in CENTS
+    assert ExpensePlan.objects.count() == 2
+    assert ExpensePlan.objects.filter(month=2).exists() is False
+    assert ExpensePlan.objects.get(month=1).price == 15000  # Updated to 15000
+    assert ExpensePlan.objects.get(month=3).price == 30000  # Created as 30000
+
+
+def test_expense_plan_form_prevents_cross_category_pollution(main_user):
+    salary_type = ExpenseTypeFactory(title="Salary", journal=main_user.journal)
+    gift_type = ExpenseTypeFactory(title="Gift", journal=main_user.journal)
+
+    # Create a Salary plan for Jan (Target instance)
+    salary_instance = ExpensePlanFactory(
+        year=2026,
+        month=1,
+        price=100000,
+        expense_type=salary_type,
+        journal=main_user.journal,
+    )
+
+    # Create a Gift plan for Feb (Noise)
+    ExpensePlanFactory(
+        year=2026,
+        month=2,
+        price=50000,
+        expense_type=gift_type,
+        journal=main_user.journal,
+    )
+
+    form = ExpensePlanForm(user=main_user, instance=salary_instance)
+
+    assert form.initial["january"] == 1000.0  # 100000 cents -> 1000.0 float
+    assert form.initial.get("february") is None, "Cross-category pollution detected!"

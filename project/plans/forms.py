@@ -192,7 +192,10 @@ class IncomePlanForm(YearFormMixin):
 class ExpensePlanForm(YearFormMixin):
     class Meta(YearFormMixin.Meta):
         model = ExpensePlan
+        service_class = ExpensePlanModelService
+
         fields = ["journal", "year", "expense_type"] + monthnames()
+        grouping_fields = ["expense_type"]
 
     field_order = ["year", "expense_type"] + monthnames()
 
