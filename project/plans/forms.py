@@ -251,7 +251,10 @@ class DayPlanForm(YearFormMixin):
 class NecessaryPlanForm(YearFormMixin):
     class Meta(YearFormMixin.Meta):
         model = NecessaryPlan
+        service_class = NecessaryPlanModelService
+
         fields = ["journal", "year", "expense_type", "title"] + monthnames()
+        grouping_fields = ["expense_type", "title"]
 
     field_order = ["year", "expense_type", "title"] + monthnames()
 

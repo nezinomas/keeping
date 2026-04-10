@@ -667,3 +667,228 @@ def test_saving_plan_form_prevents_cross_category_pollution(main_user):
 
     assert form.initial["january"] == 1000.0  # 100000 cents -> 1000.0 float
     assert form.initial.get("february") is None, "Cross-category pollution detected!"
+
+
+# -------------------------------------------------------------------------------------
+#                                                                   Necessary Plan Form
+# -------------------------------------------------------------------------------------
+
+
+def test_necessary_does_not_render_user_select(main_user):
+    form = NecessaryPlanForm(user=main_user)
+    rendered_html = form.as_p()
+
+    assert '<select name="user"' not in rendered_html
+    assert 'name="user"' not in rendered_html
+
+
+@pytest.mark.parametrize("month", MONTHS)
+def test_necessary_initialization(main_user, month):
+    form = NecessaryPlanForm(user=main_user)
+
+    assert month in form.fields
+
+    assert isinstance(form.fields["journal"].widget, HiddenInput)
+    assert form.fields["journal"].initial == main_user.journal
+
+
+@time_machine.travel("1999-01-01")
+def test_necessary_blank_data(main_user):
+    form = NecessaryPlanForm(user=main_user, data={})
+
+    assert not form.is_valid()
+    assert len(form.errors) == 3
+    assert "year" in form.errors
+    assert "expense_type" in form.errors
+    assert "title" in form.errors
+
+
+def test_necessary_unique_together_validation(main_user):
+    existing_plan = NecessaryPlanFactory()
+
+    form = NecessaryPlanForm(
+        user=main_user,
+        data={
+            "year": existing_plan.year,
+            "expense_type": existing_plan.expense_type.pk,
+            "title": existing_plan.title,
+            "january": 666.00,
+        },
+    )
+
+    assert not form.is_valid()
+
+    expected_msg = _("%(year)s year already has %(title)s plan.") % {
+        "year": existing_plan.year,
+        "title": existing_plan.expense_type.title,
+    }
+    assert form.errors == {"__all__": [expected_msg]}
+
+
+def test_necessary_unique_together_validation_more_than_one(main_user):
+    """Tests that uniqueness doesn't block valid distinct inputs."""
+    NecessaryPlanFactory(
+        year=1999,
+        expense_type=ExpenseTypeFactory(title="First"),
+        title="T1",
+        journal=main_user.journal,
+    )
+
+    new_type = ExpenseTypeFactory(title="Second")
+    form = NecessaryPlanForm(
+        user=main_user,
+        data={
+            "year": 1999,
+            "expense_type": new_type.pk,
+            "title": "T1",
+            "january": 15.00,
+        },
+    )
+
+    assert form.is_valid()
+
+
+def test_necessary_negative_number(main_user):
+    expense_type = ExpenseTypeFactory()
+
+    data = {
+        "year": 1999,
+        "expense_type": expense_type.pk,
+        "title": "X",
+    }
+
+    # Add a negative number to every single month
+    for key, _ in month_names().items():
+        data[key.lower()] = -1.00
+
+    form = NecessaryPlanForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert len(form.errors) == 12
+
+
+def test_necessary_save_converts_to_cents(main_user):
+    expense_type = ExpenseTypeFactory()
+
+    form_data = {
+        "year": 1999,
+        "expense_type": expense_type.pk,
+        "title": "XXX",
+        "january": 0.01,
+        "march": 2.5,
+    }
+    form = NecessaryPlanForm(data=form_data, user=main_user)
+
+    assert form.is_valid()
+    form.save()
+
+    assert NecessaryPlan.objects.count() == 2
+
+    jan_plan = NecessaryPlan.objects.get(month=1)
+    mar_plan = NecessaryPlan.objects.get(month=3)
+
+    assert jan_plan.price == 1
+    assert jan_plan.year == 1999
+    assert jan_plan.expense_type == expense_type
+    assert jan_plan.title == "XXX"
+
+    assert mar_plan.price == 250
+    assert mar_plan.year == 1999
+    assert mar_plan.expense_type == expense_type
+    assert mar_plan.title == "XXX"
+
+
+def test_necessary_loads_initial_and_converts_from_cents(main_user):
+    title = "X"
+    expense_type = ExpenseTypeFactory()
+    plan_jan = NecessaryPlanFactory(
+        month=1, price=15_000, expense_type=expense_type, title=title
+    )
+    NecessaryPlanFactory(month=12, price=30_000, expense_type=expense_type, title=title)
+
+    form = NecessaryPlanForm(instance=plan_jan, user=main_user)
+
+    assert form.initial["year"] == 1999
+    assert form.initial["expense_type"] == expense_type.pk
+    assert form.initial["title"] == title
+
+    # 4. Assert conversion to standard floats for the frontend
+    assert float(form.initial["january"]) == 150.00
+    assert float(form.initial["december"]) == 300.00
+    assert form.initial.get("february") is None
+
+    # 5. Assert grouping fields are locked to prevent orphaned rows
+    assert form.fields["year"].disabled is True
+    assert form.fields["expense_type"].disabled is True
+    assert form.fields["title"].disabled is True
+
+
+def test_necessary_updates_and_deletes_rows(main_user):
+    """Tests updates, deletions, and cents conversions handle correctly."""
+
+    title = "X"
+    expense_type = ExpenseTypeFactory()
+
+    plan_jan = NecessaryPlan.objects.create(
+        year=2026,
+        month=1,
+        price=10000,
+        expense_type=expense_type,
+        title=title,
+        journal=main_user.journal,
+    )
+    NecessaryPlan.objects.create(
+        year=2026,
+        month=2,
+        price=20000,
+        expense_type=expense_type,
+        title=title,
+        journal=main_user.journal,
+    )
+
+    updated_data = {
+        "year": 2026,
+        "expense_type": expense_type.pk,
+        "title": title,
+        "january": 150.00,  # Updated
+        "february": "",  # Cleared -> Should Delete
+        "march": 300.00,  # New -> Should Create
+    }
+
+    form = NecessaryPlanForm(data=updated_data, instance=plan_jan, user=main_user)
+    assert form.is_valid()
+    form.save()
+
+    # 3. Assert correct DB state in CENTS
+    assert NecessaryPlan.objects.count() == 2
+    assert NecessaryPlan.objects.filter(month=2).exists() is False
+    assert NecessaryPlan.objects.get(month=1).price == 15000  # Updated to 15000
+    assert NecessaryPlan.objects.get(month=3).price == 30000  # Created as 30000
+
+
+def test_necessary_plan_form_prevents_cross_category_pollution(main_user):
+    e1 = ExpenseTypeFactory(title="E1", journal=main_user.journal)
+    e2 = ExpenseTypeFactory(title="E2", journal=main_user.journal)
+
+    e1_instance = NecessaryPlanFactory(
+        year=2026,
+        month=1,
+        price=100000,
+        expense_type=e1,
+        title="X",
+        journal=main_user.journal,
+    )
+
+    NecessaryPlanFactory(
+        year=2026,
+        month=2,
+        price=50000,
+        expense_type=e2,
+        title="X",
+        journal=main_user.journal,
+    )
+
+    form = NecessaryPlanForm(user=main_user, instance=e1_instance)
+
+    assert form.initial["january"] == 1000.0  # 100000 cents -> 1000.0 float
+    assert form.initial.get("february") is None, "Cross-category pollution detected!"
