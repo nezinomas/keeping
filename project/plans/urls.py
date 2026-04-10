@@ -66,12 +66,12 @@ urlpatterns = [
     path("necessary/", views.NecessaryLists.as_view(), name="necessary_list"),
     path("necessary/new/", views.NecessaryNew.as_view(), name="necessary_new"),
     path(
-        "necessary/update/<int:pk>/",
+        "necessary/update/<int:year>/<int:expense_type_id>/<path:title>/",
         views.NecessaryUpdate.as_view(),
         name="necessary_update",
     ),
     path(
-        "necessary/delete/<int:pk>/",
+        "necessary/delete/<int:year>/<int:expense_type_id>/<path:title>/",
         views.NecessaryDelete.as_view(),
         name="necessary_delete",
     ),

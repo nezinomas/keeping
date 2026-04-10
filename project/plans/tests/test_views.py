@@ -1242,196 +1242,278 @@ def test_day_delete_other_journal_post_form(client_logged, second_user):
     assert DayPlan.objects.all().count() == 1
 
 
-# # -------------------------------------------------------------------------------------
-# #                                                           NecessaryPlan create/update
-# # -------------------------------------------------------------------------------------
-# def test_necessary_new_func():
-#     view = resolve("/plans/necessary/new/")
+# -------------------------------------------------------------------------------------
+#                                                           NecessaryPlan create/update
+# -------------------------------------------------------------------------------------
+def test_necessary_new_func():
+    view = resolve("/plans/necessary/new/")
 
-#     assert views.NecessaryNew == view.func.view_class
+    assert views.NecessaryNew == view.func.view_class
 
 
-# def test_necessary_update_func():
-#     view = resolve("/plans/necessary/update/1/")
+def test_necessary_update_func():
+    view = resolve("/plans/necessary/update/1111/66/title/")
 
-#     assert views.NecessaryUpdate == view.func.view_class
+    assert views.NecessaryUpdate == view.func.view_class
 
 
-# @time_machine.travel("1999-1-1")
-# def test_necessary_load_form(client_logged):
-#     url = reverse("plans:necessary_new")
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+@time_machine.travel("1999-1-1")
+def test_necessary_load_form(client_logged):
+    url = reverse("plans:necessary_new")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
 
-#     assert f'hx-post="{url}"' in actual
-#     assert '<input type="text" name="year" value="1999"' in actual
+    assert f'hx-post="{url}"' in actual
+    assert '<input type="text" name="year" value="1999"' in actual
 
 
-# def test_necessary_new(client_logged):
-#     e = ExpenseTypeFactory()
-#     data = {"year": "1999", "title": "X", "january": 0.01, "expense_type": e.pk}
+def test_necessary_new(client_logged, main_user):
+    e = ExpenseTypeFactory()
+    data = {"year": "1999", "title": "X", "january": 0.66, "expense_type": e.pk}
 
-#     url = reverse("plans:necessary_new")
-#     client_logged.post(url, data, follow=True)
-#     actual = NecessaryPlan.objects.first()
+    url = reverse("plans:necessary_new")
+    client_logged.post(url, data, follow=True)
+    actual = NecessaryPlan.objects.first()
 
-#     assert actual.january == 1
+    assert actual.journal == main_user.journal
+    assert actual.title == "X"
+    assert actual.year == 1999
+    assert actual.month == 1
+    assert actual.price == 66
 
 
-# def test_necessary_new_not_load_other_journal(client_logged, second_user):
-#     this = ExpenseTypeFactory(title="AAA")
-#     other = ExpenseTypeFactory(journal=second_user.journal, title="XXX")
+def test_necessary_new_dublicates_not_allowed(client_logged, main_user):
+    e = ExpenseTypeFactory()
+    NecessaryPlanFactory(year=1999, title="XXX", expense_type=e)
+    data = {"year": "1999", "title": "XXX", "january": 0.66, "expense_type": e.pk}
 
-#     url = reverse("plans:necessary_new")
-#     content = client_logged.get(url).content.decode("utf-8")
+    url = reverse("plans:necessary_new")
+    response = client_logged.post(url, data)
+    form = response.context["form"]
 
-#     assert this.title in content
-#     assert other.title not in content
+    assert not form.is_valid()
 
 
-# def test_necessary_invalid_data(client_logged):
-#     data = {"year": "x", "title": "", "january": 999}
+def test_necessary_new_not_load_other_journal(client_logged, second_user):
+    this = ExpenseTypeFactory(title="AAA")
+    other = ExpenseTypeFactory(journal=second_user.journal, title="XXX")
 
-#     url = reverse("plans:necessary_new")
-#     response = client_logged.post(url, data)
-#     form = response.context["form"]
+    url = reverse("plans:necessary_new")
+    content = client_logged.get(url).content.decode("utf-8")
 
-#     assert not form.is_valid()
+    assert this.title in content
+    assert other.title not in content
 
 
-# def test_necessary_load_update_load_form(client_logged):
-#     obj = NecessaryPlanFactory()
+def test_necessary_invalid_data(client_logged):
+    data = {"year": "x", "title": "", "january": 999}
+
+    url = reverse("plans:necessary_new")
+    response = client_logged.post(url, data)
+    form = response.context["form"]
+
+    assert not form.is_valid()
 
-#     url = reverse("plans:necessary_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
-#     actual = response.content.decode()
 
-#     assert f'hx-post="{url}"' in actual
+def test_necessary_load_update_load_form(client_logged):
+    obj = NecessaryPlanFactory(title="ABCD")
 
+    url = reverse(
+        "plans:necessary_update",
+        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk, "title": "ABCD"},
+    )
+    response = client_logged.get(url)
+    actual = response.content.decode()
 
-# def test_necessary_load_update_form_field_values(client_logged):
-#     obj = NecessaryPlanFactory()
+    assert f'hx-post="{url}"' in actual
 
-#     url = reverse("plans:necessary_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
-#     form = response.context["form"]
 
-#     assert form.instance.year == 1999
-#     assert form.instance.january == 0.01
-#     assert form.instance.february == 0.01
-#     assert form.instance.march == 0.01
-#     assert form.instance.april == 0.01
-#     assert form.instance.may == 0.01
-#     assert form.instance.june == 0.01
-#     assert form.instance.july == 0.01
-#     assert form.instance.august == 0.01
-#     assert form.instance.september == 0.01
-#     assert form.instance.october == 0.01
-#     assert form.instance.november == 0.01
-#     assert form.instance.december == 0.01
+def test_necessary_load_update_form_field_values(client_logged):
+    obj = NecessaryPlanFactory(title="ABCD", month=11, price=1001)
 
+    url = reverse(
+        "plans:necessary_update",
+        kwargs={
+            "year": 1999,
+            "expense_type_id": obj.expense_type.pk,
+            "title": obj.title,
+        },
+    )
+    response = client_logged.get(url)
+    form = response.context["form"]
 
-# def test_necessary_update(client_logged):
-#     obj = NecessaryPlanFactory(year=1999)
-
-#     data = {"year": "1999", "title": "X", "january": 0.01}
-#     url = reverse("plans:necessary_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     client_logged.post(url, data, follow=True)
-#     actual = NecessaryPlan.objects.get(pk=obj.pk)
-
-#     assert actual.january == 1
-
-
-# def test_necessary_update_unique_together_user_change_year(client_logged):
-#     NecessaryPlanFactory(year=2000, title="XXX")
-#     p = NecessaryPlanFactory(year=1999, title="XXX")
-
-#     data = {"year": "2000", "title": "XXX", "january": 999}
-#     url = reverse("plans:necessary_update", kwargs={"year": 1999, "income_type_id": p.pk})
-#     response = client_logged.post(url, data)
-#     form = response.context["form"]
-
-#     assert not form.is_valid()
-
-
-# def test_necessary_update_not_load_other_journal(client_logged, second_user):
-#     j = second_user.journal
-#     obj = NecessaryPlanFactory(journal=j, january=666)
-
-#     url = reverse("plans:necessary_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
-
-#     assert response.status_code == 404
-
-
-# def test_necessary_list_price_converted_in_template(client_logged):
-#     NecessaryPlanFactory()
-
-#     url = reverse("plans:necessary_list")
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
-
-#     assert "0,01" in actual
-#     assert actual.count("0,01") == 12
-
-
-# # -------------------------------------------------------------------------------------
-# #                                                                  NecessaryPlan delete
-# # -------------------------------------------------------------------------------------
-# def test_necessary_delete_func():
-#     view = resolve("/plans/necessary/delete/1/")
-
-#     assert views.NecessaryDelete == view.func.view_class
-
-
-# def test_necessary_delete_200(client_logged):
-#     p = NecessaryPlanFactory()
-
-#     url = reverse("plans:necessary_delete", kwargs={"year": 1999, "income_type_id": p.pk})
-#     response = client_logged.get(url)
-
-#     assert response.status_code == 200
-
-
-# def test_necessary_delete_load_form(client_logged):
-#     p = NecessaryPlanFactory(year=1999)
-
-#     url = reverse("plans:necessary_delete", kwargs={"year": 1999, "income_type_id": p.pk})
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
-
-#     assert f'hx-post="{url}"' in actual
-#     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
-
-
-# def test_necessary_delete(client_logged):
-#     p = NecessaryPlanFactory(year=1999)
-#     assert models.NecessaryPlan.objects.all().count() == 1
-
-#     url = reverse("plans:necessary_delete", kwargs={"year": 1999, "income_type_id": p.pk})
-#     client_logged.post(url)
-
-#     assert models.NecessaryPlan.objects.all().count() == 0
-
-
-# def test_necessary_delete_other_journal_get_form(client_logged, second_user):
-#     j = second_user.journal
-#     obj = ExpensePlanFactory(journal=j, january=666)
-
-#     url = reverse("plans:necessary_delete", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
-
-#     assert response.status_code == 404
-
-
-# def test_necessary_delete_other_journal_post_form(client_logged, second_user):
-#     j = second_user.journal
-#     obj = NecessaryPlanFactory(journal=j, january=666)
-
-#     url = reverse("plans:necessary_delete", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     client_logged.post(url)
-
-#     assert NecessaryPlan.objects.all().count() == 1
+    assert form.instance.year == 1999
+    assert form.initial.get("january") is None
+    assert form.initial.get("february") is None
+    assert form.initial.get("march") is None
+    assert form.initial.get("april") is None
+    assert form.initial.get("may") is None
+    assert form.initial.get("june") is None
+    assert form.initial.get("july") is None
+    assert form.initial.get("august") is None
+    assert form.initial.get("september") is None
+    assert form.initial.get("october") is None
+    assert form.initial.get("november") == 10.01
+    assert form.initial.get("december") is None
+
+
+def test_necessary_update(client_logged):
+    obj = NecessaryPlanFactory(year=1999, title="ABCD", month=1, price=666)
+
+    data = {"year": "1999", "title": "X", "january": 0.01}
+    url = reverse(
+        "plans:necessary_update",
+        kwargs={
+            "year": 1999,
+            "expense_type_id": obj.expense_type.pk,
+            "title": obj.title,
+        },
+    )
+    client_logged.post(url, data, follow=True)
+    actual = NecessaryPlan.objects.get(pk=obj.pk)
+
+    assert actual.month == 1
+    assert actual.price == 1
+
+
+def test_necessary_update_not_load_other_journal(client_logged, second_user):
+    second_journal = second_user.journal
+    obj = NecessaryPlanFactory(journal=second_journal, month=1, price=666)
+
+    url = reverse(
+        "plans:necessary_update",
+        kwargs={
+            "year": 1999,
+            "expense_type_id": obj.expense_type.pk,
+            "title": obj.title,
+        },
+    )
+    response = client_logged.get(url)
+
+    assert response.status_code == 404
+
+
+def test_necessary_list_price_converted_in_template(client_logged):
+    expense_type = ExpenseTypeFactory()
+    NecessaryPlanFactory(month=1, price=5)
+    NecessaryPlanFactory(month=2, price=5)
+    NecessaryPlanFactory(month=3, price=5)
+    NecessaryPlanFactory(month=4, price=5)
+    NecessaryPlanFactory(month=5, price=5)
+    NecessaryPlanFactory(month=6, price=5)
+    NecessaryPlanFactory(month=7, price=5)
+    NecessaryPlanFactory(month=8, price=5)
+    NecessaryPlanFactory(month=9, price=5)
+    NecessaryPlanFactory(month=10, price=5)
+    NecessaryPlanFactory(month=11, price=5)
+    NecessaryPlanFactory(month=12, price=5)
+
+    url = reverse("plans:necessary_list")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert "0,05" in actual
+    assert actual.count("0,05") == 12
+
+
+# -------------------------------------------------------------------------------------
+#                                                                  NecessaryPlan delete
+# -------------------------------------------------------------------------------------
+def test_necessary_delete_func():
+    view = resolve("/plans/necessary/delete/1234/13/title/")
+
+    assert views.NecessaryDelete == view.func.view_class
+
+
+def test_necessary_delete_200(client_logged):
+    obj = NecessaryPlanFactory()
+
+    url = reverse(
+        "plans:necessary_delete",
+        kwargs={
+            "year": 1999,
+            "expense_type_id": obj.expense_type.pk,
+            "title": obj.title,
+        },
+    )
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_necessary_delete_load_form(client_logged):
+    obj = NecessaryPlanFactory(year=1999)
+
+    url = reverse(
+        "plans:necessary_delete",
+        kwargs={
+            "year": 1999,
+            "expense_type_id": obj.expense_type.pk,
+            "title": obj.title,
+        },
+    )
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
+    assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
+
+
+def test_necessary_delete(client_logged):
+    obj = NecessaryPlanFactory(year=1999, month=1, price=1)
+    NecessaryPlanFactory(year=1999, month=2, price=1)
+    NecessaryPlanFactory(year=2026, month=2, price=1)
+
+    assert models.NecessaryPlan.objects.all().count() == 3
+
+    url = reverse(
+        "plans:necessary_delete",
+        kwargs={
+            "year": 1999,
+            "expense_type_id": obj.expense_type.pk,
+            "title": obj.title,
+        },
+    )
+    client_logged.post(url)
+
+    assert models.NecessaryPlan.objects.all().count() == 1
+
+    actual = models.NecessaryPlan.objects.first()
+    assert actual.year == 2026
+
+
+def test_necessary_delete_other_journal_get_form(client_logged, second_user):
+    second_user_journal = second_user.journal
+    obj = NecessaryPlanFactory(journal=second_user_journal, month=1, price=666)
+
+    url = reverse(
+        "plans:necessary_delete",
+        kwargs={
+            "year": 1999,
+            "expense_type_id": obj.expense_type.pk,
+            "title": obj.title,
+        },
+    )
+    response = client_logged.get(url)
+
+    assert response.status_code == 404
+
+
+def test_necessary_delete_other_journal_post_form(client_logged, second_user):
+    second_user_journal = second_user.journal
+    obj = NecessaryPlanFactory(journal=second_user_journal, month=1, price=666)
+
+    url = reverse(
+        "plans:necessary_delete",
+        kwargs={
+            "year": 1999,
+            "expense_type_id": obj.expense_type.pk,
+            "title": obj.title,
+        },
+    )
+    client_logged.post(url)
+
+    assert NecessaryPlan.objects.all().count() == 1
 
 
 # # -------------------------------------------------------------------------------------

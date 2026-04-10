@@ -116,7 +116,9 @@ class ExpensesNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:expense_list")
 
 
-class ExpensesUpdate(CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
+class ExpensesUpdate(
+    CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin
+):
     service_class = ExpensePlanModelService
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reloadExpenses"
@@ -155,7 +157,9 @@ class SavingsNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Savings plans")
 
 
-class SavingsUpdate(CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
+class SavingsUpdate(
+    CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin
+):
     service_class = SavingPlanModelService
     form_class = forms.SavingPlanForm
     hx_trigger_django = "reloadSavings"
@@ -233,7 +237,9 @@ class NecessaryNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:necessary_list")
 
 
-class NecessaryUpdate(CssClassMixin, PlanConvertPriceMixin, UpdateViewMixin):
+class NecessaryUpdate(
+    CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin
+):
     service_class = NecessaryPlanModelService
     form_class = forms.NecessaryPlanForm
     hx_trigger_django = "reloadNecessary"
@@ -242,7 +248,7 @@ class NecessaryUpdate(CssClassMixin, PlanConvertPriceMixin, UpdateViewMixin):
     success_url = reverse_lazy("plans:necessary_list")
 
 
-class NecessaryDelete(DeleteViewMixin):
+class NecessaryDelete(PlanDeleteMixin, DeleteViewMixin):
     service_class = NecessaryPlanModelService
     hx_trigger_django = "reloadNecessary"
     modal_form_title = _("Delete plan")
