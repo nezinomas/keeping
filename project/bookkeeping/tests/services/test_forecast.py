@@ -31,62 +31,12 @@ def test_get_data(main_user):
 
 def test_get_planned_data(main_user):
     data = [
-        {
-            "january": 1,
-            "february": None,
-            "march": None,
-            "april": None,
-            "may": None,
-            "june": None,
-            "july": None,
-            "august": None,
-            "september": None,
-            "october": None,
-            "november": None,
-            "december": 2,
-        }
+        {"month": 1, "price": 1},
+        {"month": 12, "price": 2},
     ]
     main_user.year = 1000
     actual = MonthlyDataFormatter.from_planned_data(data)
     expect = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]
-
-    assert actual == expect
-
-
-def test_get_planned_data_few_records(main_user):
-    data = [
-        {
-            "january": 1,
-            "february": None,
-            "march": None,
-            "april": None,
-            "may": None,
-            "june": None,
-            "july": None,
-            "august": None,
-            "september": None,
-            "october": None,
-            "november": None,
-            "december": 2,
-        },
-        {
-            "january": 4,
-            "february": None,
-            "march": None,
-            "april": None,
-            "may": None,
-            "june": None,
-            "july": None,
-            "august": None,
-            "september": None,
-            "october": None,
-            "november": None,
-            "december": 6,
-        },
-    ]
-    main_user.year = 1000
-    actual = MonthlyDataFormatter.from_planned_data(data)
-    expect = [5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0]
 
     assert actual == expect
 
@@ -287,12 +237,8 @@ def test_monthly_data_formatter_from_planned_data():
         "december",
     ]
     data = [
-        {"january": 1, "december": 2},
-        {
-            "january": 4,
-            "december": 6,
-            "invalid_key": 99,
-        },  # Invalid keys should be ignored
+        {"month": 1, "price": 5},
+        {"month": 12, "price": 8},
     ]
 
     actual = MonthlyDataFormatter.from_planned_data(data, months)
@@ -322,7 +268,9 @@ def test_forecast_data_provider_get_forecast_data(mocker, main_user):
     mock_saving_close.return_value.sum_by_month.return_value = []
 
     mock_plan = mocker.patch(f"{MODULE_PATH}.IncomePlanModelService")
-    mock_plan.return_value.year.return_value.values.return_value = [{"january": 200}]
+    mock_plan.return_value.year.return_value.values.return_value = [
+        {"month": 1, "price": 200}
+    ]
 
     # 2. Execute the provider
     provider = ForecastDataProvider(main_user)
