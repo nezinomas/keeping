@@ -37,7 +37,7 @@ COPY_PLAN_MAP = {
 }
 
 
-class YearFormMixin(PlanConvertPriceMixin, forms.ModelForm):
+class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
     january = forms.FloatField(**MONTH_FIELD_KWARGS)
     february = forms.FloatField(**MONTH_FIELD_KWARGS)
     march = forms.FloatField(**MONTH_FIELD_KWARGS)
@@ -167,8 +167,8 @@ class YearFormMixin(PlanConvertPriceMixin, forms.ModelForm):
 # ----------------------------------------------------------------------------
 #                                                             Income Plan Form
 # ----------------------------------------------------------------------------
-class IncomePlanForm(YearFormMixin):
-    class Meta(YearFormMixin.Meta):
+class IncomePlanForm(CommonPlanFormMixin):
+    class Meta(CommonPlanFormMixin.Meta):
         model = IncomePlan
         service_class = IncomePlanModelService
 
@@ -190,8 +190,8 @@ class IncomePlanForm(YearFormMixin):
 # ----------------------------------------------------------------------------
 #                                                            Expense Plan Form
 # ----------------------------------------------------------------------------
-class ExpensePlanForm(YearFormMixin):
-    class Meta(YearFormMixin.Meta):
+class ExpensePlanForm(CommonPlanFormMixin):
+    class Meta(CommonPlanFormMixin.Meta):
         model = ExpensePlan
         service_class = ExpensePlanModelService
 
@@ -215,8 +215,8 @@ class ExpensePlanForm(YearFormMixin):
 # ----------------------------------------------------------------------------
 #                                                              Saving Plan Form
 # ----------------------------------------------------------------------------
-class SavingPlanForm(YearFormMixin):
-    class Meta(YearFormMixin.Meta):
+class SavingPlanForm(CommonPlanFormMixin):
+    class Meta(CommonPlanFormMixin.Meta):
         model = SavingPlan
         service_class = SavingPlanModelService
 
@@ -238,8 +238,8 @@ class SavingPlanForm(YearFormMixin):
 # ----------------------------------------------------------------------------
 #                                                                Day Plan Form
 # ----------------------------------------------------------------------------
-class DayPlanForm(YearFormMixin):
-    class Meta(YearFormMixin.Meta):
+class DayPlanForm(CommonPlanFormMixin):
+    class Meta(CommonPlanFormMixin.Meta):
         model = DayPlan
         service_class = DayPlanModelService
 
@@ -252,8 +252,8 @@ class DayPlanForm(YearFormMixin):
 # ----------------------------------------------------------------------------
 #                                                          Necessary Plan Form
 # ----------------------------------------------------------------------------
-class NecessaryPlanForm(YearFormMixin):
-    class Meta(YearFormMixin.Meta):
+class NecessaryPlanForm(CommonPlanFormMixin):
+    class Meta(CommonPlanFormMixin.Meta):
         model = NecessaryPlan
         service_class = NecessaryPlanModelService
 
