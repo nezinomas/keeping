@@ -54,45 +54,6 @@ class Index(TemplateViewMixin):
 
 
 # -------------------------------------------------------------------------------------
-#                                                                         Expense Plans
-# -------------------------------------------------------------------------------------
-class ExpensesLists(ListViewMixin):
-    template_name = "plans/expenseplan_list.html"
-    service_class = ExpensePlanModelService
-    plan_type = "expense"
-
-    def get_queryset(self):
-        user = self.request.user
-        return ExpensePlanModelService(user).pivot_table(user.year)
-
-
-class ExpensesNew(CssClassMixin, CreateViewMixin):
-    service_class = ExpensePlanModelService
-    form_class = forms.ExpensePlanForm
-    hx_trigger_django = "reloadExpenses"
-    modal_form_title = _("Expenses plans")
-    url_name = "expense_new"
-    success_url = reverse_lazy("plans:expense_list")
-
-
-class ExpensesUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
-    service_class = ExpensePlanModelService
-    form_class = forms.ExpensePlanForm
-    hx_trigger_django = "reloadExpenses"
-    modal_form_title = _("Expenses plans")
-    url_name = "expense_update"
-    success_url = reverse_lazy("plans:expense_list")
-
-
-class ExpensesDelete(DeleteViewMixin):
-    service_class = ExpensePlanModelService
-    hx_trigger_django = "reloadExpenses"
-    modal_form_title = _("Delete plan")
-    url_name = "expense_delete"
-    success_url = reverse_lazy("plans:expense_list")
-
-
-# -------------------------------------------------------------------------------------
 #                                                                          Income Plans
 # -------------------------------------------------------------------------------------
 class IncomesLists(ListViewMixin):
@@ -130,6 +91,45 @@ class IncomesDelete(PlanDeleteMixin, DeleteViewMixin):
     modal_form_title = _("Delete plan")
     url_name = "income_delete"
     success_url = reverse_lazy("plans:income_list")
+
+
+# -------------------------------------------------------------------------------------
+#                                                                         Expense Plans
+# -------------------------------------------------------------------------------------
+class ExpensesLists(ListViewMixin):
+    template_name = "plans/expenseplan_list.html"
+    service_class = ExpensePlanModelService
+    plan_type = "expense"
+
+    def get_queryset(self):
+        user = self.request.user
+        return ExpensePlanModelService(user).pivot_table(user.year)
+
+
+class ExpensesNew(CssClassMixin, CreateViewMixin):
+    service_class = ExpensePlanModelService
+    form_class = forms.ExpensePlanForm
+    hx_trigger_django = "reloadExpenses"
+    modal_form_title = _("Expenses plans")
+    url_name = "expense_new"
+    success_url = reverse_lazy("plans:expense_list")
+
+
+class ExpensesUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
+    service_class = ExpensePlanModelService
+    form_class = forms.ExpensePlanForm
+    hx_trigger_django = "reloadExpenses"
+    modal_form_title = _("Expenses plans")
+    url_name = "expense_update"
+    success_url = reverse_lazy("plans:expense_list")
+
+
+class ExpensesDelete(DeleteViewMixin):
+    service_class = ExpensePlanModelService
+    hx_trigger_django = "reloadExpenses"
+    modal_form_title = _("Delete plan")
+    url_name = "expense_delete"
+    success_url = reverse_lazy("plans:expense_list")
 
 
 # -------------------------------------------------------------------------------------
