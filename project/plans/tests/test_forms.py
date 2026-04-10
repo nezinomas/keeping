@@ -49,6 +49,7 @@ MONTHS = [
 #                                                                      Income Plan Form
 # -------------------------------------------------------------------------------------
 
+
 def test_income_does_not_render_user_select(main_user):
     form = IncomePlanForm(user=main_user)
     rendered_html = form.as_p()
@@ -256,6 +257,7 @@ def test_income_plan_form_prevents_cross_category_pollution(main_user):
 #                                                                      Expense Plan Form
 # -------------------------------------------------------------------------------------
 
+
 def test_expense_does_not_render_user_select(main_user):
     form = ExpensePlanForm(user=main_user)
     rendered_html = form.as_p()
@@ -462,6 +464,7 @@ def test_expense_plan_form_prevents_cross_category_pollution(main_user):
 # -------------------------------------------------------------------------------------
 #                                                                      Saving Plan Form
 # -------------------------------------------------------------------------------------
+
 
 def test_saving_does_not_render_user_select(main_user):
     form = SavingPlanForm(user=main_user)
