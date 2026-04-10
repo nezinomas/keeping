@@ -240,7 +240,10 @@ class SavingPlanForm(YearFormMixin):
 class DayPlanForm(YearFormMixin):
     class Meta(YearFormMixin.Meta):
         model = DayPlan
+        service_class = DayPlanModelService
+
         fields = ["journal", "year"] + monthnames()
+        grouping_fields = []
 
     field_order = ["year"] + monthnames()
 

@@ -892,3 +892,146 @@ def test_necessary_plan_form_prevents_cross_category_pollution(main_user):
 
     assert form.initial["january"] == 1000.0  # 100000 cents -> 1000.0 float
     assert form.initial.get("february") is None, "Cross-category pollution detected!"
+
+
+# -------------------------------------------------------------------------------------
+#                                                                         Day Plan Form
+# -------------------------------------------------------------------------------------
+
+
+def test_day_does_not_render_user_select(main_user):
+    form = DayPlanForm(user=main_user)
+    rendered_html = form.as_p()
+
+    assert '<select name="user"' not in rendered_html
+    assert 'name="user"' not in rendered_html
+
+
+@pytest.mark.parametrize("month", MONTHS)
+def test_day_initialization(main_user, month):
+    form = DayPlanForm(user=main_user)
+
+    assert month in form.fields
+
+    assert isinstance(form.fields["journal"].widget, HiddenInput)
+    assert form.fields["journal"].initial == main_user.journal
+
+
+@time_machine.travel("1999-01-01")
+def test_day_blank_data(main_user):
+    form = DayPlanForm(user=main_user, data={})
+
+    assert not form.is_valid()
+    assert len(form.errors) == 1
+    assert "year" in form.errors
+
+
+def test_day_unique_together_validation_more_than_one(main_user):
+    """Tests that uniqueness doesn't block valid distinct inputs."""
+    existing_plan = DayPlanFactory(
+        year=1999,
+        journal=main_user.journal,
+    )
+
+    form = DayPlanForm(
+        user=main_user,
+        data={
+            "year": 1999,
+            "january": 15.00,
+        },
+    )
+
+    assert not form.is_valid()
+    expected_msg = _("Plan for %(year)s already exists.") % {
+        "year": existing_plan.year,
+    }
+    assert form.errors == {"__all__": [expected_msg]}
+
+
+def test_day_negative_number(main_user):
+    data = {
+        "year": 1999,
+    }
+
+    # Add a negative number to every single month
+    for key, _ in month_names().items():
+        data[key.lower()] = -1.00
+
+    form = DayPlanForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert len(form.errors) == 12
+
+
+def test_day_save_converts_to_cents(main_user):
+    form_data = {
+        "year": 1999,
+        "january": 0.01,
+        "march": 2.5,
+    }
+    form = DayPlanForm(data=form_data, user=main_user)
+
+    assert form.is_valid()
+    form.save()
+
+    assert DayPlan.objects.count() == 2
+
+    jan_plan = DayPlan.objects.get(month=1)
+    mar_plan = DayPlan.objects.get(month=3)
+
+    assert jan_plan.price == 1
+    assert jan_plan.year == 1999
+
+    assert mar_plan.price == 250
+    assert mar_plan.year == 1999
+
+
+def test_day_loads_initial_and_converts_from_cents(main_user):
+    plan_jan = DayPlanFactory(month=1, price=15_000)
+    DayPlanFactory(month=12, price=30_000)
+
+    form = DayPlanForm(instance=plan_jan, user=main_user)
+
+    assert form.initial["year"] == 1999
+
+    # 4. Assert conversion to standard floats for the frontend
+    assert float(form.initial["january"]) == 150.00
+    assert float(form.initial["december"]) == 300.00
+    assert form.initial.get("february") is None
+
+    # 5. Assert grouping fields are locked to prevent orphaned rows
+    assert form.fields["year"].disabled is True
+
+
+def test_day_updates_and_deletes_rows(main_user):
+    """Tests updates, deletions, and cents conversions handle correctly."""
+
+    plan_jan = DayPlan.objects.create(
+        year=2026,
+        month=1,
+        price=10000,
+        journal=main_user.journal,
+    )
+    DayPlan.objects.create(
+        year=2026,
+        month=2,
+        price=20000,
+        journal=main_user.journal,
+    )
+
+    updated_data = {
+        "year": 2026,
+        "january": 150.00,  # Updated
+        "february": "",  # Cleared -> Should Delete
+        "march": 300.00,  # New -> Should Create
+    }
+
+    form = DayPlanForm(data=updated_data, instance=plan_jan, user=main_user)
+    assert form.is_valid()
+    form.save()
+
+    # 3. Assert correct DB state in CENTS
+    assert DayPlan.objects.count() == 2
+    assert DayPlan.objects.filter(month=2).exists() is False
+    assert DayPlan.objects.get(month=1).price == 15000  # Updated to 15000
+    assert DayPlan.objects.get(month=3).price == 30000  # Created as 30000
