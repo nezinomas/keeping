@@ -155,7 +155,7 @@ class SavingsNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Savings plans")
 
 
-class SavingsUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
+class SavingsUpdate(CssClassMixin, PlansConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = SavingPlanModelService
     form_class = forms.SavingPlanForm
     hx_trigger_django = "reloadSavings"
@@ -164,7 +164,7 @@ class SavingsUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
     success_url = reverse_lazy("plans:saving_list")
 
 
-class SavingsDelete(DeleteViewMixin):
+class SavingsDelete(PlanDeleteMixin, DeleteViewMixin):
     service_class = SavingPlanModelService
     hx_trigger_django = "reloadSavings"
     modal_form_title = _("Delete plan")

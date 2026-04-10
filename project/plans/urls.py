@@ -44,10 +44,14 @@ urlpatterns = [
     path("savings/", views.SavingsLists.as_view(), name="saving_list"),
     path("savings/new/", views.SavingsNew.as_view(), name="saving_new"),
     path(
-        "savings/update/<int:pk>/", views.SavingsUpdate.as_view(), name="saving_update"
+        "savings/update/<int:year>/<int:saving_type_id>/",
+        views.SavingsUpdate.as_view(),
+        name="saving_update",
     ),
     path(
-        "savings/delete/<int:pk>/", views.SavingsDelete.as_view(), name="saving_delete"
+        "savings/delete/<int:year>/<int:saving_type_id>/",
+        views.SavingsDelete.as_view(),
+        name="saving_delete",
     ),
     # ----------------------------------------------------------------------------------
     #                                                                           day plan

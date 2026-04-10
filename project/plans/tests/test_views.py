@@ -707,191 +707,324 @@ def test_expenses_delete_other_journal_post_form(client_logged, second_user):
     assert ExpensePlan.objects.all().count() == 1
 
 
-# # -------------------------------------------------------------------------------------
-# #                                                              SavingPlan create/update
-# # -------------------------------------------------------------------------------------
-# def test_saving_new_func():
-#     view = resolve("/plans/savings/new/")
+# -------------------------------------------------------------------------------------
+#                                                              SavingPlan create/update
+# -------------------------------------------------------------------------------------
+def test_saving_new_func():
+    view = resolve("/plans/savings/new/")
 
-#     assert views.SavingsNew == view.func.view_class
+    assert views.SavingsNew == view.func.view_class
 
 
-# def test_saving_update_func():
-#     view = resolve("/plans/savings/update/1/")
+def test_saving_update_func():
+    view = resolve("/plans/savings/update/1999/1/")
 
-#     assert views.SavingsUpdate == view.func.view_class
+    assert views.SavingsUpdate == view.func.view_class
 
 
-# @time_machine.travel("1999-1-1")
-# def test_saving_year_input(client_logged):
-#     url = reverse("plans:saving_new")
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+@time_machine.travel("1999-1-1")
+def test_saving_load_form(client_logged):
+    url = reverse("plans:saving_new")
+    response = client_logged.get(url)
+    actual = response.content.decode()
 
-#     assert f'hx-post="{url}"' in actual
-#     assert '<input type="text" name="year" value="1999"' in actual
+    assert response.status_code == 200
+    assert f'hx-post="{url}"' in actual
+    assert '<input type="text" name="year" value="1999"' in actual
 
 
-# def test_saving_new(client_logged):
-#     i = SavingTypeFactory()
-#     data = {"year": "1999", "saving_type": i.pk, "january": 0.01}
+def test_saving_new(client_logged, main_user):
+    i = SavingTypeFactory()
+    data = {"year": "1999", "saving_type": i.pk, "january": 0.01}
 
-#     url = reverse("plans:saving_new")
-#     response = client_logged.post(url, data, follow=True)
-#     actual = SavingPlan.objects.first()
+    url = reverse("plans:saving_new")
+    client_logged.post(url, data, follow=True)
+    actual = SavingPlan.objects.first()
 
-#     assert actual.january == 1
+    assert actual.journal == main_user.journal
+    assert actual.year == 1999
+    assert actual.month == 1
+    assert actual.price == 1
 
 
-# def test_saving_invalid_data(client_logged):
-#     data = {"year": "x", "saving_type": 0, "january": 999}
+def test_saving_new_invalid_data(client_logged):
+    data = {"year": "x", "saving_type": 0, "january": 999}
 
-#     url = reverse("plans:saving_new")
-#     response = client_logged.post(url, data)
-#     form = response.context["form"]
+    url = reverse("plans:saving_new")
+    response = client_logged.post(url, data)
+    form = response.context["form"]
 
-#     assert not form.is_valid()
+    assert not form.is_valid()
+    assert "year" in form.errors
+    assert "saving_type" in form.errors
 
 
-# def test_saving_load_update_load_form(client_logged):
-#     obj = SavingPlanFactory()
+def test_saving_new_prevents_duplicate_category_in_same_year(client_logged, main_user):
+    saving_type = SavingTypeFactory(journal=main_user.journal, title="Saving Type")
+    # A plan for this year and type already exists
+    SavingPlanFactory(
+        year=1999, month=1, saving_type=saving_type, journal=main_user.journal
+    )
 
-#     url = reverse("plans:saving_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
-#     actual = response.content.decode()
+    # Try to create ANOTHER plan for the same year and type
+    data = {"year": "1999", "saving_type": saving_type.pk, "january": 9.99}
+    url = reverse("plans:saving_new")
 
-#     assert f'hx-post="{url}"' in actual
+    response = client_logged.post(url, data)
+    form = response.context["form"]
 
+    assert not form.is_valid()
+    assert (
+        "__all__" in form.errors
+    )  # Assuming the error was raised as a non-field error
+    assert "1999 metai jau turi Saving Type planą." in form.errors["__all__"][0]
 
-# def test_saving_load_update_form_field_values(client_logged):
-#     obj = SavingPlanFactory()
 
-#     url = reverse("plans:saving_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
-#     form = response.context["form"]
+def test_saving_new_returns_htmx_response(client_logged, main_user):
+    saving_type = SavingTypeFactory(journal=main_user.journal)
+    data = {"year": "1999", "saving_type": saving_type.pk, "january": 0.01}
 
-#     assert form.instance.year == 1999
-#     assert form.instance.january == 0.01
-#     assert form.instance.february == 0.01
-#     assert form.instance.march == 0.01
-#     assert form.instance.april == 0.01
-#     assert form.instance.may == 0.01
-#     assert form.instance.june == 0.01
-#     assert form.instance.july == 0.01
-#     assert form.instance.august == 0.01
-#     assert form.instance.september == 0.01
-#     assert form.instance.october == 0.01
-#     assert form.instance.november == 0.01
-#     assert form.instance.december == 0.01
-#     assert form.instance.saving_type.title == "Savings"
+    url = reverse("plans:saving_new")
 
+    response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
 
-# def test_saving_update(client_logged):
-#     obj = SavingPlanFactory(year=1999)
+    assert response.status_code == 204
+    assert SavingPlan.objects.filter(year=1999, saving_type=saving_type).count() == 1
 
-#     data = {"year": "1999", "saving_type": obj.saving_type.pk, "january": 0.01}
-#     url = reverse("plans:saving_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     client_logged.post(url, data, follow=True)
-#     actual = SavingPlan.objects.get(pk=obj.pk)
+    trigger_header = response.headers.get("HX-Trigger")
+    assert trigger_header is not None, "HX-Trigger header is missing!"
 
-#     assert actual.january == 1
+    trigger_data = json.loads(trigger_header)
+    assert "reloadSavings" in trigger_data
 
 
-# def test_saving_update_unique_together_user_change_year(client_logged):
-#     SavingPlanFactory(year=2000)
-#     p = SavingPlanFactory(year=1999)
+def test_saving_load_update_load_form(client_logged):
+    saving_type = SavingTypeFactory()
+    SavingPlanFactory(saving_type=saving_type)
 
-#     data = {"year": "2000", "saving_type": p.saving_type.pk, "january": 999}
-#     url = reverse("plans:saving_update", kwargs={"year": 1999, "income_type_id": p.pk})
+    url = reverse(
+        "plans:saving_update", kwargs={"year": 1999, "saving_type_id": saving_type.pk}
+    )
+    response = client_logged.get(url)
+    actual = response.content.decode()
 
-#     response = client_logged.post(url, data)
-#     form = response.context["form"]
+    assert f'hx-post="{url}"' in actual
 
-#     assert not form.is_valid()
 
+def test_saving_load_update_form_field_values(client_logged):
+    saving_type = SavingTypeFactory(title="Saving Type")
+    SavingPlanFactory(saving_type=saving_type)
 
-# def test_saving_update_not_load_other_journal(client_logged, second_user):
-#     j = second_user.journal
-#     t = SavingTypeFactory(title="yyy", journal=j)
-#     obj = SavingPlanFactory(saving_type=t, journal=j, january=666)
+    url = reverse(
+        "plans:saving_update", kwargs={"year": 1999, "saving_type_id": saving_type.pk}
+    )
+    response = client_logged.get(url)
+    form = response.context["form"]
 
-#     url = reverse("plans:saving_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
+    assert form.instance.year == 1999
+    assert form.instance.saving_type.title == "Saving Type"
 
-#     assert response.status_code == 404
+    assert form.initial.get("january") == 0.01
+    assert form.initial.get("february") is None
+    assert form.initial.get("march") is None
+    assert form.initial.get("april") is None
+    assert form.initial.get("may") is None
+    assert form.initial.get("june") is None
+    assert form.initial.get("july") is None
+    assert form.initial.get("august") is None
+    assert form.initial.get("september") is None
+    assert form.initial.get("october") is None
+    assert form.initial.get("november") is None
+    assert form.initial.get("december") is None
 
 
-# def test_saving_list_price_converted_in_template(client_logged):
-#     SavingPlanFactory()
+def test_saving_update(client_logged):
+    obj = SavingPlanFactory(year=1999)
 
-#     url = reverse("plans:saving_list")
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+    data = {"year": "1999", "saving_type": obj.saving_type.pk, "january": 0.05}
+    url = reverse(
+        "plans:saving_update",
+        kwargs={"year": 1999, "saving_type_id": obj.saving_type.pk},
+    )
+    client_logged.post(url, data)
+    actual = SavingPlan.objects.get(pk=obj.pk)
 
-#     assert "0,01" in actual
-#     assert actual.count("0,01") == 12
+    assert actual.month == 1
+    assert actual.price == 5
 
 
-# # -------------------------------------------------------------------------------------
-# #                                                                     SavingPlan delete
-# # -------------------------------------------------------------------------------------
-# def test_saving_delete_func():
-#     view = resolve("/plans/savings/delete/1/")
+def test_saving_update_returns_htmx_response(client_logged, main_user):
+    saving_type = SavingTypeFactory(journal=main_user.journal)
 
-#     assert views.SavingsDelete == view.func.view_class
+    SavingPlanFactory(
+        year=1999,
+        saving_type=saving_type,
+        month=1,
+        price=1000,
+        journal=main_user.journal,
+    )
 
+    data = {"year": "1999", "saving_type": saving_type.pk, "january": 9.99}
 
-# def test_saving_delete_200(client_logged):
-#     p = SavingPlanFactory()
+    url = reverse(
+        "plans:saving_update", kwargs={"year": 1999, "saving_type_id": saving_type.pk}
+    )
 
-#     url = reverse("plans:saving_delete", kwargs={"year": 1999, "income_type_id": p.pk})
-#     response = client_logged.get(url)
+    response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
 
-#     assert response.status_code == 200
+    assert response.status_code == 204
 
+    actual = SavingPlan.objects.get(year=1999, saving_type=saving_type, month=1)
+    assert actual.price == 999
 
-# def test_saving_delete_load_form(client_logged):
-#     p = SavingPlanFactory(year=1999)
+    trigger_header = response.headers.get("HX-Trigger")
+    assert trigger_header is not None, "HX-Trigger header is missing!"
 
-#     url = reverse("plans:saving_delete", kwargs={"year": 1999, "income_type_id": p.pk})
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+    trigger_data = json.loads(trigger_header)
+    assert "reloadSavings" in trigger_data
 
-#     assert f'hx-post="{url}"' in actual
-#     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
+def test_saving_update_not_load_other_journal(client_logged, second_user):
+    second_user_journal = second_user.journal
 
-# def test_saving_delete(client_logged):
-#     p = SavingPlanFactory(year=1999)
+    t = SavingTypeFactory(title="yyy", journal=second_user_journal)
+    obj = SavingPlanFactory(
+        saving_type=t, journal=second_user_journal, month=1, price=666
+    )
 
-#     assert models.SavingPlan.objects.all().count() == 1
-#     url = reverse("plans:saving_delete", kwargs={"year": 1999, "income_type_id": p.pk})
+    url = reverse(
+        "plans:saving_update", kwargs={"year": 1999, "saving_type_id": obj.pk}
+    )
+    response = client_logged.get(url)
 
-#     client_logged.post(url)
+    assert response.status_code == 404
 
-#     assert models.SavingPlan.objects.all().count() == 0
 
+def test_saving_list_price_converted_in_template(client_logged):
+    saving_type = SavingTypeFactory()
+    SavingPlanFactory(saving_type=saving_type, month=1, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=2, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=3, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=4, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=5, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=6, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=7, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=8, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=9, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=10, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=11, price=2)
+    SavingPlanFactory(saving_type=saving_type, month=12, price=2)
 
-# def test_saving_delete_other_journal_get_form(client_logged, second_user):
-#     j = second_user.journal
-#     t = SavingTypeFactory(title="yyy", journal=j)
-#     obj = SavingPlanFactory(saving_type=t, journal=j, january=666)
+    url = reverse("plans:saving_list")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
 
-#     url = reverse("plans:saving_delete", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
+    assert "0,02" in actual
+    assert actual.count("0,02") == 12
 
-#     assert response.status_code == 404
 
+# -------------------------------------------------------------------------------------
+#                                                                     SavingPlan delete
+# -------------------------------------------------------------------------------------
 
-# def test_saving_delete_other_journal_post_form(client_logged, second_user):
-#     j = second_user.journal
-#     t = SavingTypeFactory(title="yyy", journal=j)
-#     obj = SavingPlanFactory(saving_type=t, journal=j, january=666)
+def test_saving_delete_func():
+    view = resolve("/plans/savings/delete/1212/1/")
 
-#     url = reverse("plans:saving_delete", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     client_logged.post(url)
+    assert views.SavingsDelete == view.func.view_class
 
-#     assert SavingPlan.objects.all().count() == 1
+
+def test_saving_delete_200(client_logged):
+    obj = SavingPlanFactory()
+
+    url = reverse(
+        "plans:saving_delete",
+        kwargs={"year": 1999, "saving_type_id": obj.saving_type.pk},
+    )
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_saving_delete_load_form(client_logged):
+    obj = SavingPlanFactory(year=1999)
+
+    url = reverse(
+        "plans:saving_delete",
+        kwargs={"year": 1999, "saving_type_id": obj.saving_type.pk},
+    )
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
+    assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
+
+
+def test_saving_delete(client_logged):
+    saving_type = SavingTypeFactory()
+    SavingPlanFactory(year=1999, saving_type=saving_type, month=1)
+    SavingPlanFactory(year=1999, saving_type=saving_type, month=2)
+
+    assert models.SavingPlan.objects.all().count() == 2
+
+    url = reverse(
+        "plans:saving_delete", kwargs={"year": 1999, "saving_type_id": saving_type.pk}
+    )
+
+    client_logged.post(url, follow=True)
+
+    assert models.SavingPlan.objects.all().count() == 0
+
+
+def test_saving_delete_returns_htmx_response(client_logged):
+    saving_type = SavingTypeFactory()
+    SavingPlanFactory(year=1999, saving_type=saving_type, month=1)
+
+    url = reverse(
+        "plans:saving_delete", kwargs={"year": 1999, "saving_type_id": saving_type.pk}
+    )
+
+    response = client_logged.post(url)
+
+    assert models.SavingPlan.objects.count() == 0
+    assert response.status_code in [200, 204]
+
+    trigger_header = response.headers.get("HX-Trigger")
+    assert trigger_header is not None, "HX-Trigger header is missing!"
+
+    trigger_data = json.loads(trigger_header)
+    assert "reloadSavings" in trigger_data
+
+
+def test_saving_delete_other_journal_get_form(client_logged, second_user):
+    second_user_journal = second_user.journal
+    saving_type = SavingTypeFactory(title="yyy", journal=second_user_journal)
+    obj = SavingPlanFactory(
+        saving_type=saving_type, journal=second_user_journal, month=1, price=666
+    )
+
+    url = reverse(
+        "plans:saving_delete",
+        kwargs={"year": 1999, "saving_type_id": obj.saving_type.pk},
+    )
+    response = client_logged.get(url)
+
+    assert response.status_code == 404
+
+
+def test_saving_delete_other_journal_post_form(client_logged, second_user):
+    second_user_journal = second_user.journal
+    saving_type = SavingTypeFactory(title="yyy", journal=second_user_journal)
+    obj = SavingPlanFactory(
+        saving_type=saving_type, journal=second_user_journal, month=1, price=666
+    )
+
+    url = reverse(
+        "plans:saving_delete",
+        kwargs={"year": 1999, "saving_type_id": obj.saving_type.pk},
+    )
+    client_logged.post(url)
+
+    assert SavingPlan.objects.all().count() == 1
 
 
 # # -------------------------------------------------------------------------------------
