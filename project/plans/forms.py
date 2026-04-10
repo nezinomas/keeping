@@ -217,7 +217,10 @@ class ExpensePlanForm(YearFormMixin):
 class SavingPlanForm(YearFormMixin):
     class Meta(YearFormMixin.Meta):
         model = SavingPlan
+        service_class = SavingPlanModelService
+
         fields = ["journal", "year", "saving_type"] + monthnames()
+        grouping_fields = ["saving_type"]
 
     field_order = ["year", "saving_type"] + monthnames()
 
