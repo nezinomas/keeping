@@ -19,17 +19,26 @@ MODULE_PATH = "project.bookkeeping.services.month"
 
 @time_machine.travel("1999-1-1")
 def test_info_context(mocker, main_user):
-    mock_collect_class = mocker.patch(f"{MODULE_PATH}.PlanCollectData")
-    mock_collect_instance = mock_collect_class.return_value
+    mock_collect = mocker.patch(f"{MODULE_PATH}.PlanCollectData")
+    _ = mock_collect.return_value
 
-    mock_calc_class = mocker.patch(f"{MODULE_PATH}.PlanCalculateDaySum")
-    mock_calc_instance = mock_calc_class.return_value
+    mock_calc = mocker.patch(f"{MODULE_PATH}.PlanCalculateDaySum")
+    _ = mock_calc.return_value
 
-    mock_table_builder_class = mocker.patch(f"{MODULE_PATH}.MonthTableBuilder")
-    mock_table_builder_instance = mock_table_builder_class.return_value
+    mock_day_spending = mocker.patch(f"{MODULE_PATH}.DaySpending")
+    _ = mock_day_spending.return_value
+
+    mock_table_builder = mocker.patch(f"{MODULE_PATH}.MonthTableBuilder")
+    _ = mock_table_builder.return_value
 
     mock_data_frame = mocker.patch(f"{MODULE_PATH}.MakeDataFrame")
-    mock_data_frame_instance = mock_data_frame.return_value
+    _ = mock_data_frame.return_value
+
+    mock_chart_builder = mocker.patch(f"{MODULE_PATH}.ChartBuilder")
+    _ = mock_chart_builder.return_value
+
+    mock_plan_aggregator = mocker.patch(f"{MODULE_PATH}.PlanAggregatorService")
+    _ = mock_plan_aggregator.return_value
 
     main_user.year = 1
     main_user.month = 1
