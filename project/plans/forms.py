@@ -4,7 +4,7 @@ from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
 
-from ..core.lib.convert_price import PlansConvertPriceMixin
+from ..core.lib.convert_price import PlansConvertPriceMixin, int_cents_to_float
 from ..core.lib.date import monthnames, set_date_with_user_year
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
@@ -58,11 +58,15 @@ class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
+
         super().__init__(*args, **kwargs)
 
         self._set_journal_field()
         self._set_year_field_initial_value()
         self._common_field_transalion()
+
+        self._map_month_price_values()
+        self._disable_fields()
 
     def _common_field_transalion(self):
         self.fields["year"].label = _("Years")
@@ -71,13 +75,92 @@ class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
             self.fields[key.lower()].label = val
 
     def _set_journal_field(self):
-        # journal input
         self.fields["journal"].initial = self.user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
 
     def _set_year_field_initial_value(self):
         self.fields["year"].initial = set_date_with_user_year(self.user).year
+
+    def _map_month_price_values(self):
+        """Loads tall DB rows into the wide UI inputs."""
+        if not self.instance.pk:
+            return
+
+        filter_kwargs = {"year": self.instance.year, "journal": self.user.journal}
+        for field_name in self.Meta.grouping_fields:
+            filter_kwargs[field_name] = getattr(self.instance, field_name)
+
+        service = self.Meta.service_class(self.user)
+        rows = service.objects.filter(**filter_kwargs)
+
+        months = monthnames()
+        for row in rows:
+            month_name = months[row.month - 1]
+
+            self.initial[month_name] = int_cents_to_float(row.price)
+
+    def _disable_fields(self):
+        if not self.instance.pk:
+            return
+
+        self.fields["year"].disabled = True
+        for field_name in self.Meta.grouping_fields:
+            if field_name in self.fields:
+                self.fields[field_name].disabled = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if self.errors or self.instance.pk:
+            return cleaned_data
+
+        year = cleaned_data.get("year")
+        grouping_data = {f: cleaned_data[f] for f in self.Meta.grouping_fields}
+
+        lookup = {"year": year, "journal": self.user.journal, **grouping_data}
+        service = self.Meta.service_class(self.user)
+
+        if not service.objects.filter(**lookup).exists():
+            return cleaned_data
+
+        if grouping_data:
+            title = str(list(grouping_data.values())[0])
+            error_msg = _("%(year)s year already has %(title)s plan.") % {
+                "year": year,
+                "title": title,
+            }
+        else:
+            error_msg = _("Plan for %(year)s already exists.") % {
+                "year": year,
+            }
+
+        raise forms.ValidationError(error_msg)
+
+    def save(self):
+        year = self.cleaned_data["year"]
+        journal = self.user.journal
+
+        # Extract the values of the unique grouping fields
+        grouping_data = {f: self.cleaned_data[f] for f in self.Meta.grouping_fields}
+        for month_idx, month_name in enumerate(monthnames(), start=1):
+            price = self.cleaned_data.get(month_name)
+
+            # Lookup criteria for this specific month row
+            lookup = {
+                "year": year,
+                "month": month_idx,
+                "journal": journal,
+                **grouping_data,
+            }
+
+            service = self.Meta.service_class(self.user)
+            if price is not None:
+                service.objects.update_or_create(**lookup, defaults={"price": price})
+            else:
+                service.objects.filter(**lookup).delete()
+
+        return self.instance
 
 
 # ----------------------------------------------------------------------------
@@ -86,7 +169,10 @@ class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
 class IncomePlanForm(YearFormMixin):
     class Meta(YearFormMixin.Meta):
         model = IncomePlan
+        service_class = IncomePlanModelService
+
         fields = ["journal", "year", "income_type"] + monthnames()
+        grouping_fields = ["income_type"]
 
     field_order = ["year", "income_type"] + monthnames()
 
