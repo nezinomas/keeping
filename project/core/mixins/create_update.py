@@ -1,5 +1,6 @@
 from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
+
 class CreateUpdateMixin:
     hx_trigger_django = None
     hx_trigger_form = None

@@ -14,12 +14,12 @@ urlpatterns = [
     path("expenses/", views.ExpensesLists.as_view(), name="expense_list"),
     path("expenses/new/", views.ExpensesNew.as_view(), name="expense_new"),
     path(
-        "expenses/update/<int:pk>/",
+        "expenses/update/<int:year>/<int:expense_type_id>/",
         views.ExpensesUpdate.as_view(),
         name="expense_update",
     ),
     path(
-        "expenses/delete/<int:pk>/",
+        "expenses/delete/<int:year>/<int:expense_type_id>/",
         views.ExpensesDelete.as_view(),
         name="expense_delete",
     ),
@@ -29,10 +29,14 @@ urlpatterns = [
     path("incomes/", views.IncomesLists.as_view(), name="income_list"),
     path("incomes/new/", views.IncomesNew.as_view(), name="income_new"),
     path(
-        "incomes/update/<int:pk>/", views.IncomesUpdate.as_view(), name="income_update"
+        "incomes/update/<int:year>/<int:income_type_id>/",
+        views.IncomesUpdate.as_view(),
+        name="income_update",
     ),
     path(
-        "incomes/delete/<int:pk>/", views.IncomesDelete.as_view(), name="income_delete"
+        "incomes/delete/<int:year>/<int:income_type_id>/",
+        views.IncomesDelete.as_view(),
+        name="income_delete",
     ),
     # ----------------------------------------------------------------------------------
     #                                                                        saving plan
@@ -40,30 +44,34 @@ urlpatterns = [
     path("savings/", views.SavingsLists.as_view(), name="saving_list"),
     path("savings/new/", views.SavingsNew.as_view(), name="saving_new"),
     path(
-        "savings/update/<int:pk>/", views.SavingsUpdate.as_view(), name="saving_update"
+        "savings/update/<int:year>/<int:saving_type_id>/",
+        views.SavingsUpdate.as_view(),
+        name="saving_update",
     ),
     path(
-        "savings/delete/<int:pk>/", views.SavingsDelete.as_view(), name="saving_delete"
+        "savings/delete/<int:year>/<int:saving_type_id>/",
+        views.SavingsDelete.as_view(),
+        name="saving_delete",
     ),
     # ----------------------------------------------------------------------------------
     #                                                                           day plan
     # ----------------------------------------------------------------------------------
     path("day/", views.DayLists.as_view(), name="day_list"),
     path("day/new/", views.DayNew.as_view(), name="day_new"),
-    path("day/update/<int:pk>/", views.DayUpdate.as_view(), name="day_update"),
-    path("day/delete/<int:pk>/", views.DayDelete.as_view(), name="day_delete"),
+    path("day/update/<int:year>/", views.DayUpdate.as_view(), name="day_update"),
+    path("day/delete/<int:year>/", views.DayDelete.as_view(), name="day_delete"),
     # ----------------------------------------------------------------------------------
     #                                                                     necessary plan
     # ----------------------------------------------------------------------------------
     path("necessary/", views.NecessaryLists.as_view(), name="necessary_list"),
     path("necessary/new/", views.NecessaryNew.as_view(), name="necessary_new"),
     path(
-        "necessary/update/<int:pk>/",
+        "necessary/update/<int:year>/<int:expense_type_id>/<path:title>/",
         views.NecessaryUpdate.as_view(),
         name="necessary_update",
     ),
     path(
-        "necessary/delete/<int:pk>/",
+        "necessary/delete/<int:year>/<int:expense_type_id>/<path:title>/",
         views.NecessaryDelete.as_view(),
         name="necessary_delete",
     ),

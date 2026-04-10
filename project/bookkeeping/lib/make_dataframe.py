@@ -58,7 +58,8 @@ class TimeSeriesPivotBuilder:
 
         df = pl.DataFrame(raw_data)
 
-        # If the requested value column (like 'exception_sum') doesn't exist, return empty schema
+        # If the requested value column (like 'exception_sum') doesn't exist
+        # return empty schema
         if value_column not in df.columns:
             return self.formatter.format(expected_dates_df)
 
@@ -97,36 +98,17 @@ class MakeDataFrame:
 
         self._builder = TimeSeriesPivotBuilder(year, month, columns)
 
-    def _debug_print_caller(self, property_name: str):
-        import inspect
-        """Temporary helper to trace the caller."""
-        stack = inspect.stack()
-        
-        # Loop through the stack to find the first file that ISN'T this one 
-        # or a Python/Django internal property wrapper.
-        for frame_info in stack:
-            filename = frame_info.filename
-            if "make_dataframe.py" not in filename and "functools.py" not in filename and "functional.py" not in filename:
-                print(f"👉 [MakeDataFrame.{property_name}] called by '{frame_info.function}' in {filename} (Line {frame_info.lineno})")
-                break
-
     @property
     def data(self) -> pl.DataFrame:
-        self._debug_print_caller("data")
-        r = self._builder.build(self._data, value_column="sum")
-        print(f'--------------------------->\n{r}\n')
-        return r
+        return self._builder.build(self._data, value_column="sum")
 
     @property
     def exceptions(self) -> pl.DataFrame:
-        self._debug_print_caller("exceptions")
         df = self._builder.build(self._data, value_column="exception_sum")
 
         if len(df.columns) <= 1:
             return df.with_columns(sum=pl.lit(0).cast(pl.Int32))
 
-        r = df.select(
+        return df.select(
             [pl.col("date"), pl.sum_horizontal(pl.exclude("date")).alias("sum")]
         )
-        print(f'--------------------------->\n{r=}\n')
-        return r

@@ -142,7 +142,9 @@ class BalanceSynchronizer:
         if objects := [
             self._create_object(row, update=True) for row in updates_with_id
         ]:
-            self.model_service_class(self.user).objects.bulk_update(objects, self.fields)
+            self.model_service_class(self.user).objects.bulk_update(
+                objects, self.fields
+            )
 
     def _create_object(self, row: dict, update: bool = False):
         """Create an self.model_service_class object from a row."""

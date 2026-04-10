@@ -79,8 +79,9 @@ class SavingModelService(SumMixin, BaseModelService):
     def last_months(self, months: int = 6):
         """
         Calculates the total sum of savings for the last `months` months.
-        If today is 2020-02-15 and months=6, it will calculate the sum from 2019-08-01 to 2020-01-31.
-            - If there are no savings in that period, it will return 0.
+        If today is 2020-02-15 and months=6, it will calculate
+        the sum from 2019-08-01 to 2020-01-31.
+        - If there are no savings in that period, it will return 0.
         """
         start = date.today().replace(day=1) - timedelta(days=1)
 

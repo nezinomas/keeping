@@ -13,6 +13,7 @@ from ...expenses.services.model_services import (
 )
 from ...incomes.services.model_services import IncomeModelService
 from ...plans.lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
+from ...plans.services.model_services import PlanAggregatorService
 from ...savings.services.model_services import SavingModelService
 from ...users.models import User
 from ..lib.day_spending import DaySpending
@@ -66,7 +67,9 @@ class MonthDataProvider:
 
 
 class MonthTableBuilder:
-    """Merges expenses and savings into a single Polars DataFrame representing the month."""
+    """
+    Merges expenses and savings into a single Polars DataFrame representing the month
+    """
 
     def __init__(self, expense_df: pl.DataFrame, saving_df: pl.DataFrame):
         self.df = self._build_table(expense_df, saving_df)
@@ -74,8 +77,8 @@ class MonthTableBuilder:
     def _build_table(
         self, expense_df: pl.DataFrame, saving_df: pl.DataFrame
     ) -> pl.DataFrame:
-        print(f'--------------------------->\n{expense_df=}\n')
-        # If exists at least two columns (date + at least one expense type), create total column
+        # If exists at least two columns (date + at least one expense type)
+        # create total column
         if expense_df.shape[1] > 1:
             expense_df = expense_df.with_columns(
                 pl.sum_horizontal(pl.exclude("date")).alias(_("Total"))
@@ -179,7 +182,9 @@ class MonthContextPresenter:
         saving_maker = MakeDataFrame(year=self.year, month=self.month, data=dto.savings)
 
         # 2. Initialize Core Services
-        self.plans = PlanCalculateDaySum(data=PlanCollectData(user), month=self.month)
+        plans_data = PlanCollectData(user, self.year).get_data()
+        self.plans = PlanCalculateDaySum(data=plans_data, month=self.month)
+
         self.spending = DaySpending(
             expense=expense_maker,
             necessary=dto.necessary_expense_types,
@@ -189,8 +194,11 @@ class MonthContextPresenter:
         self.month_table = MonthTableBuilder(
             expense_df=expense_maker.data, saving_df=saving_maker.data
         )
+
         self.charts = ChartBuilder(
-            targets=self.plans.monthly_plan_by_category,
+            targets=PlanAggregatorService(user).get_monthly_plan_targets(
+                self.year, self.month
+            ),
             totals=self.month_table.total_row,
         )
 
