@@ -1516,53 +1516,53 @@ def test_necessary_delete_other_journal_post_form(client_logged, second_user):
     assert NecessaryPlan.objects.all().count() == 1
 
 
-# # -------------------------------------------------------------------------------------
-# #                                                                            Copy Plans
-# # -------------------------------------------------------------------------------------
-# def test_copy_func():
-#     view = resolve("/plans/copy/")
+# -------------------------------------------------------------------------------------
+#                                                                            Copy Plans
+# -------------------------------------------------------------------------------------
+def test_copy_func():
+    view = resolve("/plans/copy/")
 
-#     assert views.CopyPlans is view.func.view_class
-
-
-# def test_copy_200(client_logged):
-#     response = client_logged.get("/plans/copy/")
-
-#     assert response.status_code == 200
+    assert views.CopyPlans is view.func.view_class
 
 
-# def test_copy_success(main_user, client_logged):
-#     IncomePlanFactory(year=1999)
-#     data = {"year_from": "1999", "year_to": "2000", "income": True}
+def test_copy_200(client_logged):
+    response = client_logged.get("/plans/copy/")
 
-#     url = reverse("plans:copy")
-#     client_logged.post(url, data, follow=True)
-
-#     actual = IncomePlanModelService(main_user).year(2000)
-
-#     assert actual[0].year == 2000
+    assert response.status_code == 200
 
 
-# def test_copy_fails(client_logged):
-#     data = {"year_from": "1999", "year_to": "2000", "income": True}
+def test_copy_success(main_user, client_logged):
+    IncomePlanFactory(year=1999)
+    data = {"year_from": "1999", "year_to": "2000", "income": True}
 
-#     url = reverse("plans:copy")
-#     response = client_logged.post(url, data)
-#     form = response.context["form"]
+    url = reverse("plans:copy")
+    client_logged.post(url, data, follow=True)
 
-#     assert not form.is_valid()
+    actual = IncomePlanModelService(main_user).year(2000)
+
+    assert actual[0].year == 2000
 
 
-# def test_copy_year_to_same_as_user_year(main_user, client_logged):
-#     IncomePlanFactory(year=1999)
+def test_copy_fails(client_logged):
+    data = {"year_from": "1999", "year_to": "2000", "income": True}
 
-#     main_user.year = 2000
-#     main_user.save()
+    url = reverse("plans:copy")
+    response = client_logged.post(url, data)
+    form = response.context["form"]
 
-#     data = {"year_from": "1999", "year_to": "2000", "income": True}
+    assert not form.is_valid()
 
-#     url = reverse("plans:copy")
-#     response = client_logged.post(url, data)
 
-#     assert response.headers["HX-Trigger"]
-#     assert "afterCopy" in response.headers["HX-Trigger"]
+def test_copy_year_to_same_as_user_year(main_user, client_logged):
+    IncomePlanFactory(year=1999)
+
+    main_user.year = 2000
+    main_user.save()
+
+    data = {"year_from": "1999", "year_to": "2000", "income": True}
+
+    url = reverse("plans:copy")
+    response = client_logged.post(url, data)
+
+    assert response.headers["HX-Trigger"]
+    assert "afterCopy" in response.headers["HX-Trigger"]
