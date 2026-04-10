@@ -295,6 +295,27 @@ class CopyPlanForm(forms.Form):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
+        self._set_initial()
+        self._translations()
+
+    def _set_initial(self):
+        current_year = datetime.now().year
+
+        self.fields["year_from"].initial = current_year
+        self.fields["year_to"].initial = current_year + 1
+
+        for field in ["income", "expense", "saving", "day", "necessary"]:
+            self.fields[field].initial = True
+
+    def _translations(self):
+        self.fields["year_from"].label = _("Copy from")
+        self.fields["year_to"].label = _("Copy to")
+        self.fields["income"].label = _("Incomes plans")
+        self.fields["expense"].label = _("Expenses plans")
+        self.fields["saving"].label = _("Savings plans")
+        self.fields["day"].label = _("Day plans")
+        self.fields["necessary"].label = _("Plans for additional necessary expenses")
+
     def _get_cleaned_checkboxes(self, cleaned_data):
         return {
             "income": cleaned_data.get("income"),
@@ -313,37 +334,39 @@ class CopyPlanForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        dict_ = self._get_cleaned_checkboxes(cleaned_data)
 
         year_from = cleaned_data.get("year_from")
         year_to = cleaned_data.get("year_to")
 
-        if not year_to or not year_from:
+        # 1. Guard Clause: Bail out if native validation failed or years are missing
+        if self.errors or not year_from or not year_to:
             return cleaned_data
 
-        # at least one checkbox must be selected
-        chk = [v for k, v in dict_.items() if v]
+        dict_ = self._get_cleaned_checkboxes(cleaned_data)
 
-        if not chk:
+        # 2. Guard Clause: At least one checkbox must be selected
+        if not any(dict_.values()):
             raise forms.ValidationError(_("At least one plan needs to be selected."))
 
-        # copy from table must contain data
+        # 3. Database Checks
         errors = {}
-        msg = _("There is nothing to copy.")
-        for k, v in dict_.items():
-            if v:
-                qs = COPY_PLAN_MAP.get(k)(self.user).year(year_from)
-                if not qs.exists():
-                    self._append_error_message(msg, errors, k)
-
-        # copy to table must be empty
-        msg = _("%(year)s year already has plans.") % ({"year": year_to})
+        msg_empty = _("There is nothing to copy.")
+        msg_exists = _("%(year)s year already has plans.") % {"year": year_to}
 
         for k, v in dict_.items():
-            if v:
-                qs = COPY_PLAN_MAP.get(k)(self.user).year(year_to)
-                if qs.exists():
-                    self._append_error_message(msg, errors, k)
+            # If the checkbox wasn't selected, skip to the next one
+            if not v:
+                continue
+
+            service = COPY_PLAN_MAP.get(k)(self.user)
+
+            # Check if "from" table is empty
+            if not service.year(year_from).exists():
+                self._append_error_message(msg_empty, errors, k)
+
+            # Check if "to" table already has data
+            if service.year(year_to).exists():
+                self._append_error_message(msg_exists, errors, k)
 
         if errors:
             raise forms.ValidationError(errors)
@@ -356,33 +379,15 @@ class CopyPlanForm(forms.Form):
         year_to = self.cleaned_data.get("year_to")
 
         for k, v in dict_.items():
-            if v:
-                qs = (
-                    COPY_PLAN_MAP.get(k)(self.user)
-                    .year(year_from)
-                    .values_list("pk", flat=True)
-                )
+            # Skip unselected checkboxes immediately
+            if not v:
+                continue
 
-                for i in qs:
-                    obj = COPY_PLAN_MAP.get(k)(self.user).objects.get(pk=i)
-                    obj.pk = None
-                    obj.year = year_to
-                    obj.save()
+            service = COPY_PLAN_MAP.get(k)(self.user)
+            source_rows = list(service.year(year_from))
 
-        # initail values
-        self.fields["year_from"].initial = datetime.now().year
-        self.fields["year_to"].initial = datetime.now().year + 1
-        self.fields["income"].initial = True
-        self.fields["expense"].initial = True
-        self.fields["saving"].initial = True
-        self.fields["day"].initial = True
-        self.fields["necessary"].initial = True
-
-        # labels
-        self.fields["year_from"].label = _("Copy from")
-        self.fields["year_to"].label = _("Copy to")
-        self.fields["income"].label = _("Incomes plans")
-        self.fields["expense"].label = _("Expenses plans")
-        self.fields["saving"].label = _("Savings plans")
-        self.fields["day"].label = _("Day plans")
-        self.fields["necessary"].label = _("Plans for additional necessary expenses")
+            # Iterate and copy
+            for obj in source_rows:
+                obj.pk = None
+                obj.year = year_to
+                obj.save()

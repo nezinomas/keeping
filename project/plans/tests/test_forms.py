@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 import time_machine
 from django.forms import HiddenInput
@@ -5,12 +7,14 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.translation import month_names
 from ..forms import (
+    CopyPlanForm,
     DayPlanForm,
     ExpensePlanForm,
     IncomePlanForm,
     NecessaryPlanForm,
     SavingPlanForm,
 )
+from ..services.model_services import IncomePlanModelService
 from ..tests.factories import (
     DayPlan,
     DayPlanFactory,
@@ -1035,3 +1039,117 @@ def test_day_updates_and_deletes_rows(main_user):
     assert DayPlan.objects.filter(month=2).exists() is False
     assert DayPlan.objects.get(month=1).price == 15000  # Updated to 15000
     assert DayPlan.objects.get(month=3).price == 30000  # Created as 30000
+
+
+# -------------------------------------------------------------------------------------
+#                                                                       Copy Plans Form
+# -------------------------------------------------------------------------------------
+
+def test_copy_init(main_user):
+    form = CopyPlanForm(user=main_user)
+    assert form.fields["year_from"].initial == datetime.now().year
+    assert form.fields["income"].initial is True
+
+
+def test_copy_have_fields(main_user):
+    form = CopyPlanForm(user=main_user).as_p()
+
+    assert '<input type="text" name="year_from"' in form
+    assert '<input type="text" name="year_to"' in form
+    assert '<input type="checkbox" name="income"' in form
+    assert '<input type="checkbox" name="expense"' in form
+    assert '<input type="checkbox" name="saving"' in form
+    assert '<input type="checkbox" name="day"' in form
+    assert '<input type="checkbox" name="necessary"' in form
+
+
+def test_copy_blank_data(main_user):
+    form = CopyPlanForm(user=main_user, data={})
+
+    assert not form.is_valid()
+    assert form.errors == {
+        "year_from": ["Šis laukas yra privalomas."],
+        "year_to": ["Šis laukas yra privalomas."],
+    }
+
+
+def test_copy_all_checkboxes_unselected(main_user):
+    form = CopyPlanForm(
+        user=main_user,
+        data={
+            "year_from": 1999,
+            "year_to": 2000,
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.errors == {"__all__": ["Reikia pažymėti nors vieną planą."]}
+
+
+def test_copy_empty_from_tables(main_user):
+    form = CopyPlanForm(
+        user=main_user, data={"year_from": 1999, "year_to": 2000, "income": True}
+    )
+
+    assert not form.is_valid()
+    assert form.errors == {"income": ["Nėra ką kopijuoti."]}
+
+
+def test_copy_to_table_have_records(main_user):
+    # Setup
+    IncomePlanFactory(year=1999, journal=main_user.journal)
+    IncomePlanFactory(year=2000, journal=main_user.journal)
+
+    form = CopyPlanForm(
+        user=main_user, data={"year_from": 1999, "year_to": 2000, "income": True}
+    )
+
+    assert not form.is_valid()
+    assert form.errors == {"income": ["2000 metai jau turi planus."]}
+
+
+def test_copy_to_table_have_records_from_empty(main_user):
+    IncomePlanFactory(year=2000, journal=main_user.journal)
+
+    form = CopyPlanForm(
+        user=main_user, data={"year_from": 1999, "year_to": 2000, "income": True}
+    )
+
+    assert not form.is_valid()
+    assert form.errors == {
+        "income": ["Nėra ką kopijuoti.", "2000 metai jau turi planus."]
+    }
+
+
+def test_copy_data(main_user):
+    income_type = IncomeTypeFactory(journal=main_user.journal)
+
+    # User has plans for Jan and March in 1999
+    IncomePlanFactory(
+        year=1999,
+        month=1,
+        price=100,
+        income_type=income_type,
+        journal=main_user.journal,
+    )
+    IncomePlanFactory(
+        year=1999,
+        month=3,
+        price=300,
+        income_type=income_type,
+        journal=main_user.journal,
+    )
+
+    form = CopyPlanForm(
+        user=main_user, data={"year_from": 1999, "year_to": 2000, "income": True}
+    )
+
+    assert form.is_valid()
+    form.save()
+
+    # Verify 2000 has exactly two tall rows
+    copied_data = IncomePlanModelService(main_user).year(2000)
+
+    assert copied_data.count() == 2
+    assert copied_data.get(month=1).price == 100
+    assert copied_data.get(month=3).price == 300
