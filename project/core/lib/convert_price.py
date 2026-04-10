@@ -49,6 +49,6 @@ class ConvertPriceMixin:
         return cleaned_data
 
 
-class PlansConvertPriceMixin(ConvertPriceMixin):
+class PlanConvertPriceMixin(ConvertPriceMixin):
     def get_all_price_fields(self):
         return [month.lower() for month in calendar.month_name[1:]]

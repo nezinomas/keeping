@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.convert_price import PlansConvertPriceMixin
+from ..core.lib.convert_price import PlanConvertPriceMixin
 from ..core.lib.utils import http_htmx_response, rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -76,7 +76,7 @@ class IncomesNew(CssClassMixin, CreateViewMixin):
 
 
 class IncomesUpdate(
-    CssClassMixin, PlansConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin
+    CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin
 ):
     service_class = IncomePlanModelService
     form_class = forms.IncomePlanForm
@@ -116,7 +116,7 @@ class ExpensesNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:expense_list")
 
 
-class ExpensesUpdate(CssClassMixin, PlansConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
+class ExpensesUpdate(CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = ExpensePlanModelService
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reloadExpenses"
@@ -155,7 +155,7 @@ class SavingsNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Savings plans")
 
 
-class SavingsUpdate(CssClassMixin, PlansConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
+class SavingsUpdate(CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = SavingPlanModelService
     form_class = forms.SavingPlanForm
     hx_trigger_django = "reloadSavings"
@@ -194,7 +194,7 @@ class DayNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Day plans")
 
 
-class DayUpdate(CssClassMixin, PlansConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
+class DayUpdate(CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = DayPlanModelService
     form_class = forms.DayPlanForm
     hx_trigger_django = "reloadDay"
@@ -233,7 +233,7 @@ class NecessaryNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:necessary_list")
 
 
-class NecessaryUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
+class NecessaryUpdate(CssClassMixin, PlanConvertPriceMixin, UpdateViewMixin):
     service_class = NecessaryPlanModelService
     form_class = forms.NecessaryPlanForm
     hx_trigger_django = "reloadNecessary"

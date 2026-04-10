@@ -4,7 +4,7 @@ from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
 
-from ..core.lib.convert_price import PlansConvertPriceMixin, int_cents_to_float
+from ..core.lib.convert_price import PlanConvertPriceMixin, int_cents_to_float
 from ..core.lib.date import monthnames, set_date_with_user_year
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
@@ -37,7 +37,7 @@ COPY_PLAN_MAP = {
 }
 
 
-class YearFormMixin(PlansConvertPriceMixin, forms.ModelForm):
+class YearFormMixin(PlanConvertPriceMixin, forms.ModelForm):
     january = forms.FloatField(**MONTH_FIELD_KWARGS)
     february = forms.FloatField(**MONTH_FIELD_KWARGS)
     march = forms.FloatField(**MONTH_FIELD_KWARGS)
