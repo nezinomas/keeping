@@ -36,8 +36,12 @@
             <td class="text-left">
                 {% if view.plan_type == "necessary" %}
                     {{ object.1 }} ({{ object.0.title}})
+                        {% if update %}{% url update view.year object.0.id object.1 as url_update %}{% endif %}
+                        {% if delete %}{% url delete view.year object.0.id object.1 as url_delete %}{% endif %}
                 {% else %}
                     {{ object }}
+                    {% if update %}{% url update view.year object.id as url_update %}{% endif %}
+                    {% if delete %}{% url delete view.year object.id as url_delete %}{% endif %}
                 {% endif %}
                 {% if object.necessary or view.plan_type == "necessary" or view.plan_type == "saving" %} <i class="bi bi-star plans-star"></i>{% endif %}
             </td>

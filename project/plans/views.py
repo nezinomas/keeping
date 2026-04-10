@@ -13,7 +13,7 @@ from ..core.mixins.views import (
 )
 from . import forms
 from .lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
-from .mixins.views import CssClassMixin, PlanDeleteMixin, PlanUpdateMixin
+from .mixins.views import CssClassMixin, PlanDeleteMixin, PlanUpdateMixin, PlanYearMixin
 from .services.model_services import (
     DayPlanModelService,
     ExpensePlanModelService,
@@ -56,7 +56,7 @@ class Index(TemplateViewMixin):
 # -------------------------------------------------------------------------------------
 #                                                                          Income Plans
 # -------------------------------------------------------------------------------------
-class IncomesLists(ListViewMixin):
+class IncomesLists(PlanYearMixin, ListViewMixin):
     template_name = "plans/incomeplan_list.html"
     service_class = IncomePlanModelService
     plan_type = "income"
@@ -97,7 +97,7 @@ class IncomesDelete(PlanDeleteMixin, DeleteViewMixin):
 # -------------------------------------------------------------------------------------
 #                                                                         Expense Plans
 # -------------------------------------------------------------------------------------
-class ExpensesLists(ListViewMixin):
+class ExpensesLists(PlanYearMixin, ListViewMixin):
     template_name = "plans/expenseplan_list.html"
     service_class = ExpensePlanModelService
     plan_type = "expense"
@@ -138,7 +138,7 @@ class ExpensesDelete(PlanDeleteMixin, DeleteViewMixin):
 # -------------------------------------------------------------------------------------
 #                                                                          Saving Plans
 # -------------------------------------------------------------------------------------
-class SavingsLists(ListViewMixin):
+class SavingsLists(PlanYearMixin, ListViewMixin):
     template_name = "plans/savingplan_list.html"
     service_class = SavingPlanModelService
     plan_type = "saving"
@@ -179,7 +179,7 @@ class SavingsDelete(PlanDeleteMixin, DeleteViewMixin):
 # -------------------------------------------------------------------------------------
 #                                                                             Day Plans
 # -------------------------------------------------------------------------------------
-class DayLists(ListViewMixin):
+class DayLists(PlanYearMixin, ListViewMixin):
     template_name = "plans/dayplan_list.html"
     service_class = DayPlanModelService
     plan_type = "day"
@@ -218,7 +218,7 @@ class DayDelete(PlanDeleteMixin, DeleteViewMixin):
 # -------------------------------------------------------------------------------------
 #                                                                       Necessary Plans
 # -------------------------------------------------------------------------------------
-class NecessaryLists(ListViewMixin):
+class NecessaryLists(PlanYearMixin, ListViewMixin):
     template_name = "plans/necessaryplan_list.html"
     service_class = NecessaryPlanModelService
     plan_type = "necessary"
