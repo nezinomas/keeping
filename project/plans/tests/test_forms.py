@@ -45,6 +45,10 @@ MONTHS = [
 ]
 
 
+# -------------------------------------------------------------------------------------
+#                                                                      Income Plan Form
+# -------------------------------------------------------------------------------------
+
 def test_income_does_not_render_user_select(main_user):
     form = IncomePlanForm(user=main_user)
     rendered_html = form.as_p()
