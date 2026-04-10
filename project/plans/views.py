@@ -75,7 +75,9 @@ class IncomesNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Incomes plans")
 
 
-class IncomesUpdate(CssClassMixin, PlansConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
+class IncomesUpdate(
+    CssClassMixin, PlansConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin
+):
     service_class = IncomePlanModelService
     # lookup_field = "category_pk"
     form_class = forms.IncomePlanForm
