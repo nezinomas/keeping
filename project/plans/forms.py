@@ -108,6 +108,7 @@ class YearFormMixin(PlanConvertPriceMixin, forms.ModelForm):
         for field_name in self.Meta.grouping_fields:
             if field_name in self.fields:
                 self.fields[field_name].disabled = True
+                self.fields[field_name].widget.attrs["readonly"] = True
 
     def clean(self):
         cleaned_data = super().clean()
