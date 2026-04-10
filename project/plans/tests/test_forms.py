@@ -11,12 +11,19 @@ from ..forms import (
     NecessaryPlanForm,
     SavingPlanForm,
 )
-from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 from ..tests.factories import (
+    DayPlan,
+    DayPlanFactory,
+    ExpensePlan,
+    ExpensePlanFactory,
     ExpenseTypeFactory,
+    IncomePlan,
     IncomePlanFactory,
     IncomeTypeFactory,
+    NecessaryPlan,
     NecessaryPlanFactory,
+    SavingPlan,
+    SavingPlanFactory,
     SavingTypeFactory,
 )
 
