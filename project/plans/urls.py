@@ -29,10 +29,14 @@ urlpatterns = [
     path("incomes/", views.IncomesLists.as_view(), name="income_list"),
     path("incomes/new/", views.IncomesNew.as_view(), name="income_new"),
     path(
-        "incomes/update/<int:pk>/", views.IncomesUpdate.as_view(), name="income_update"
+        "incomes/update/<int:year>/<int:income_type_id>/",
+        views.IncomesUpdate.as_view(),
+        name="income_update",
     ),
     path(
-        "incomes/delete/<int:pk>/", views.IncomesDelete.as_view(), name="income_delete"
+        "incomes/delete/<int:year>/<int:income_type_id>/",
+        views.IncomesDelete.as_view(),
+        name="income_delete",
     ),
     # ----------------------------------------------------------------------------------
     #                                                                        saving plan
