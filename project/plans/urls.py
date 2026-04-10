@@ -58,8 +58,8 @@ urlpatterns = [
     # ----------------------------------------------------------------------------------
     path("day/", views.DayLists.as_view(), name="day_list"),
     path("day/new/", views.DayNew.as_view(), name="day_new"),
-    path("day/update/<int:pk>/", views.DayUpdate.as_view(), name="day_update"),
-    path("day/delete/<int:pk>/", views.DayDelete.as_view(), name="day_delete"),
+    path("day/update/<int:year>/", views.DayUpdate.as_view(), name="day_update"),
+    path("day/delete/<int:year>/", views.DayDelete.as_view(), name="day_delete"),
     # ----------------------------------------------------------------------------------
     #                                                                     necessary plan
     # ----------------------------------------------------------------------------------

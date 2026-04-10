@@ -287,6 +287,7 @@ def test_income_list_price_converted_in_template(client_logged):
 #                                                                     IncomePlan delete
 # -------------------------------------------------------------------------------------
 
+
 def test_incomes_delete_func():
     view = resolve("/plans/incomes/delete/1212/1/")
 
@@ -483,7 +484,8 @@ def test_expense_load_update_load_form(client_logged):
     ExpensePlanFactory(expense_type=expense_type)
 
     url = reverse(
-        "plans:expense_update", kwargs={"year": 1999, "expense_type_id": expense_type.pk}
+        "plans:expense_update",
+        kwargs={"year": 1999, "expense_type_id": expense_type.pk},
     )
     response = client_logged.get(url)
     actual = response.content.decode()
@@ -496,7 +498,8 @@ def test_expense_load_update_form_field_values(client_logged):
     ExpensePlanFactory(expense_type=expense_type)
 
     url = reverse(
-        "plans:expense_update", kwargs={"year": 1999, "expense_type_id": expense_type.pk}
+        "plans:expense_update",
+        kwargs={"year": 1999, "expense_type_id": expense_type.pk},
     )
     response = client_logged.get(url)
     form = response.context["form"]
@@ -547,7 +550,8 @@ def test_expense_update_returns_htmx_response(client_logged, main_user):
     data = {"year": "1999", "expense_type": expense_type.pk, "january": 9.99}
 
     url = reverse(
-        "plans:expense_update", kwargs={"year": 1999, "expense_type_id": expense_type.pk}
+        "plans:expense_update",
+        kwargs={"year": 1999, "expense_type_id": expense_type.pk},
     )
 
     response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
@@ -607,6 +611,7 @@ def test_expense_list_price_converted_in_template(client_logged):
 #                                                                     ExpensePlan delete
 # -------------------------------------------------------------------------------------
 
+
 def test_expenses_delete_func():
     view = resolve("/plans/expenses/delete/1212/1/")
 
@@ -647,7 +652,8 @@ def test_expenses_delete(client_logged):
     assert models.ExpensePlan.objects.all().count() == 2
 
     url = reverse(
-        "plans:expense_delete", kwargs={"year": 1999, "expense_type_id": expense_type.pk}
+        "plans:expense_delete",
+        kwargs={"year": 1999, "expense_type_id": expense_type.pk},
     )
 
     client_logged.post(url, follow=True)
@@ -660,7 +666,8 @@ def test_expenses_delete_returns_htmx_response(client_logged):
     ExpensePlanFactory(year=1999, expense_type=expense_type, month=1)
 
     url = reverse(
-        "plans:expense_delete", kwargs={"year": 1999, "expense_type_id": expense_type.pk}
+        "plans:expense_delete",
+        kwargs={"year": 1999, "expense_type_id": expense_type.pk},
     )
 
     response = client_logged.post(url)
@@ -927,6 +934,7 @@ def test_saving_list_price_converted_in_template(client_logged):
 #                                                                     SavingPlan delete
 # -------------------------------------------------------------------------------------
 
+
 def test_saving_delete_func():
     view = resolve("/plans/savings/delete/1212/1/")
 
@@ -1027,193 +1035,211 @@ def test_saving_delete_other_journal_post_form(client_logged, second_user):
     assert SavingPlan.objects.all().count() == 1
 
 
-# # -------------------------------------------------------------------------------------
-# #                                                                 DayPlan create/update
-# # -------------------------------------------------------------------------------------
-# def test_day_new_func():
-#     view = resolve("/plans/day/new/")
+# -------------------------------------------------------------------------------------
+#                                                                 DayPlan create/update
+# -------------------------------------------------------------------------------------
+def test_day_new_func():
+    view = resolve("/plans/day/new/")
 
-#     assert views.DayNew == view.func.view_class
+    assert views.DayNew == view.func.view_class
 
 
-# def test_day_update_func():
-#     view = resolve("/plans/day/update/1/")
+def test_day_update_func():
+    view = resolve("/plans/day/update/1/")
 
-#     assert views.DayUpdate == view.func.view_class
+    assert views.DayUpdate == view.func.view_class
 
 
-# @time_machine.travel("1999-1-1")
-# def test_day(client_logged):
-#     url = reverse("plans:day_new")
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+@time_machine.travel("1999-1-1")
+def test_day(client_logged):
+    url = reverse("plans:day_new")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
 
-#     assert '<input type="text" name="year" value="1999"' in actual
+    assert '<input type="text" name="year" value="1999"' in actual
 
 
-# def test_day_load_form(client_logged):
-#     url = reverse("plans:day_new")
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+def test_day_load_form(client_logged):
+    url = reverse("plans:day_new")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
 
-#     assert f'hx-post="{url}"' in actual
+    assert f'hx-post="{url}"' in actual
 
 
-# def test_day_new(client_logged):
-#     data = {"year": "1999", "january": 0.01}
+def test_day_new(client_logged, main_user):
+    data = {"year": "1999", "january": 0.05}
 
-#     url = reverse("plans:day_new")
-#     client_logged.post(url, data, follow=True)
-#     actual = DayPlan.objects.first()
+    url = reverse("plans:day_new")
+    client_logged.post(url, data, follow=True)
+    actual = DayPlan.objects.first()
 
-#     assert actual.january == 1
+    assert actual.journal == main_user.journal
+    assert actual.year == 1999
+    assert actual.month == 1
+    assert actual.price == 5
 
 
-# def test_day_invalid_data(client_logged):
-#     data = {"year": "x", "january": 999}
+def test_day_new_dublicates_not_allowed(client_logged, main_user):
+    DayPlanFactory(year=1999, month=12, price=100)
 
-#     url = reverse("plans:day_new")
-#     response = client_logged.post(url, data)
-#     form = response.context["form"]
+    data = {"year": "1999", "january": 0.05}
 
-#     assert not form.is_valid()
+    url = reverse("plans:day_new")
+    response = client_logged.post(url, data)
+    form = response.context["form"]
 
+    assert not form.is_valid()
 
-# def test_day_load_update_form_field_values(client_logged):
-#     obj = DayPlanFactory()
 
-#     url = reverse("plans:day_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
-#     form = response.context["form"]
+def test_day_invalid_data(client_logged):
+    data = {"year": "x", "january": 999}
 
-#     assert form.instance.year == 1999
-#     assert form.instance.january == 0.01
-#     assert form.instance.february == 0.01
-#     assert form.instance.march == 0.01
-#     assert form.instance.april == 0.01
-#     assert form.instance.may == 0.01
-#     assert form.instance.june == 0.01
-#     assert form.instance.july == 0.01
-#     assert form.instance.august == 0.01
-#     assert form.instance.september == 0.01
-#     assert form.instance.october == 0.01
-#     assert form.instance.november == 0.01
-#     assert form.instance.december == 0.01
+    url = reverse("plans:day_new")
+    response = client_logged.post(url, data)
+    form = response.context["form"]
 
+    assert not form.is_valid()
 
-# def test_day_load_update_load_form(client_logged):
-#     obj = DayPlanFactory()
 
-#     url = reverse("plans:day_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
-#     actual = response.content.decode()
+def test_day_load_update_form_field_values(client_logged):
+    obj = DayPlanFactory(year=1999, month=1, price=5)
 
-#     assert f'hx-post="{url}"' in actual
+    url = reverse(
+        "plans:day_update",
+        kwargs={"year": 1999},
+    )
+    response = client_logged.get(url)
+    form = response.context["form"]
 
+    assert form.instance.year == 1999
+    assert form.initial.get("january") == 0.05
+    assert form.initial.get("february") is None
+    assert form.initial.get("march") is None
+    assert form.initial.get("april") is None
+    assert form.initial.get("may") is None
+    assert form.initial.get("june") is None
+    assert form.initial.get("july") is None
+    assert form.initial.get("august") is None
+    assert form.initial.get("september") is None
+    assert form.initial.get("october") is None
+    assert form.initial.get("november") is None
+    assert form.initial.get("december") is None
 
-# def test_day_update(client_logged):
-#     obj = DayPlanFactory(year=1999)
 
-#     data = {"year": "1999", "january": 0.01}
-#     url = reverse("plans:day_update", kwargs={"year": 1999, "income_type_id": obj.pk})
+def test_day_load_update_load_form(client_logged):
+    obj = DayPlanFactory()
 
-#     client_logged.post(url, data, follow=True)
-#     actual = DayPlan.objects.get(pk=obj.pk)
+    url = reverse("plans:day_update", kwargs={"year": 1999})
+    response = client_logged.get(url)
+    actual = response.content.decode()
 
-#     assert actual.january == 1
+    assert f'hx-post="{url}"' in actual
 
 
-# def test_day_update_unique_together_user_change_year(client_logged):
-#     DayPlanFactory(year=2000)
-#     p = DayPlanFactory(year=1999)
+def test_day_update(client_logged):
+    obj = DayPlanFactory(year=1999, month=1, price=5)
 
-#     data = {"year": "2000", "january": 999}
-#     url = reverse("plans:day_update", kwargs={"year": 1999, "income_type_id": p.pk})
-#     response = client_logged.post(url, data)
-#     form = response.context["form"]
+    data = {"year": "1999", "january": 0.01}
+    url = reverse("plans:day_update", kwargs={"year": 1999})
 
-#     assert not form.is_valid()
+    client_logged.post(url, data, follow=True)
+    actual = DayPlan.objects.get(pk=obj.pk)
 
+    assert actual.month == 1
 
-# def test_day_update_not_load_other_journal(client_logged, second_user):
-#     j = second_user.journal
-#     obj = DayPlanFactory(journal=j, january=666)
 
-#     url = reverse("plans:day_update", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
+def test_day_update_not_load_other_journal(client_logged, second_user):
+    second_user_journal = second_user.journal
+    obj = DayPlanFactory(journal=second_user_journal, month=1, price=666)
 
-#     assert response.status_code == 404
+    url = reverse("plans:day_update", kwargs={"year": 1999})
+    response = client_logged.get(url)
 
+    assert response.status_code == 404
 
-# def test_day_list_price_converted_in_template(client_logged):
-#     DayPlanFactory()
 
-#     url = reverse("plans:day_list")
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+def test_day_list_price_converted_in_template(client_logged):
+    DayPlanFactory(month=1, price=5)
+    DayPlanFactory(month=2, price=5)
+    DayPlanFactory(month=3, price=5)
+    DayPlanFactory(month=4, price=5)
+    DayPlanFactory(month=5, price=5)
+    DayPlanFactory(month=6, price=5)
+    DayPlanFactory(month=7, price=5)
+    DayPlanFactory(month=8, price=5)
+    DayPlanFactory(month=9, price=5)
+    DayPlanFactory(month=10, price=5)
+    DayPlanFactory(month=11, price=5)
+    DayPlanFactory(month=12, price=5)
 
-#     assert "0,01" in actual
-#     assert actual.count("0,01") == 12
+    url = reverse("plans:day_list")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
 
+    assert "0,05" in actual
+    assert actual.count("0,05") == 12
 
-# # -------------------------------------------------------------------------------------
-# #                                                                        DayPlan delete
-# # -------------------------------------------------------------------------------------
-# def test_day_delete_func():
-#     view = resolve("/plans/day/delete/1/")
 
-#     assert views.DayDelete == view.func.view_class
+# -------------------------------------------------------------------------------------
+#                                                                        DayPlan delete
+# -------------------------------------------------------------------------------------
+def test_day_delete_func():
+    view = resolve("/plans/day/delete/1/")
 
+    assert views.DayDelete == view.func.view_class
 
-# def test_day_delete_200(client_logged):
-#     p = DayPlanFactory()
 
-#     url = reverse("plans:day_delete", kwargs={"year": 1999, "income_type_id": p.pk})
-#     response = client_logged.get(url)
+def test_day_delete_200(client_logged):
+    p = DayPlanFactory()
 
-#     assert response.status_code == 200
+    url = reverse("plans:day_delete", kwargs={"year": 1999})
+    response = client_logged.get(url)
 
+    assert response.status_code == 200
 
-# def test_day_delete_load_form(client_logged):
-#     p = DayPlanFactory(year=1999)
 
-#     url = reverse("plans:day_delete", kwargs={"year": 1999, "income_type_id": p.pk})
-#     response = client_logged.get(url)
-#     actual = response.content.decode("utf-8")
+def test_day_delete_load_form(client_logged):
+    p = DayPlanFactory(year=1999)
 
-#     assert f'hx-post="{url}"' in actual
-#     assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
+    url = reverse("plans:day_delete", kwargs={"year": 1999})
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
 
+    assert f'hx-post="{url}"' in actual
+    assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
 
-# def test_day_delete(client_logged):
-#     p = DayPlanFactory(year=1999)
 
-#     assert models.DayPlan.objects.all().count() == 1
-#     url = reverse("plans:day_delete", kwargs={"year": 1999, "income_type_id": p.pk})
+def test_day_delete(client_logged):
+    DayPlanFactory(year=1999, month=1, price=2)
+    DayPlanFactory(year=1999, month=2, price=3)
 
-#     client_logged.post(url)
+    assert models.DayPlan.objects.all().count() == 2
+    url = reverse("plans:day_delete", kwargs={"year": 1999})
 
-#     assert models.DayPlan.objects.all().count() == 0
+    client_logged.post(url)
 
+    assert models.DayPlan.objects.all().count() == 0
 
-# def test_day_delete_other_journal_get_form(client_logged, second_user):
-#     j = second_user.journal
-#     obj = DayPlanFactory(journal=j, january=666)
 
-#     url = reverse("plans:day_delete", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     response = client_logged.get(url)
+def test_day_delete_other_journal_get_form(client_logged, second_user):
+    second_user_journal = second_user.journal
+    DayPlanFactory(journal=second_user_journal, month=1, price=666)
 
-#     assert response.status_code == 404
+    url = reverse("plans:day_delete", kwargs={"year": 1999})
+    response = client_logged.get(url)
 
+    assert response.status_code == 404
 
-# def test_day_delete_other_journal_post_form(client_logged, second_user):
-#     j = second_user.journal
-#     obj = DayPlanFactory(journal=j, january=666)
 
-#     url = reverse("plans:day_delete", kwargs={"year": 1999, "income_type_id": obj.pk})
-#     client_logged.post(url)
+def test_day_delete_other_journal_post_form(client_logged, second_user):
+    second_user_journal = second_user.journal
+    DayPlanFactory(journal=second_user_journal, month=1, price=666)
 
-#     assert DayPlan.objects.all().count() == 1
+    url = reverse("plans:day_delete", kwargs={"year": 1999})
+    client_logged.post(url)
+
+    assert DayPlan.objects.all().count() == 1
 
 
 # # -------------------------------------------------------------------------------------

@@ -194,7 +194,7 @@ class DayNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Day plans")
 
 
-class DayUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
+class DayUpdate(CssClassMixin, PlansConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = DayPlanModelService
     form_class = forms.DayPlanForm
     hx_trigger_django = "reloadDay"
@@ -203,7 +203,7 @@ class DayUpdate(CssClassMixin, PlansConvertPriceMixin, UpdateViewMixin):
     success_url = reverse_lazy("plans:day_list")
 
 
-class DayDelete(DeleteViewMixin):
+class DayDelete(PlanDeleteMixin, DeleteViewMixin):
     service_class = DayPlanModelService
     hx_trigger_django = "reloadDay"
     modal_form_title = _("Delete plan")
