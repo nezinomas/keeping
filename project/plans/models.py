@@ -1,4 +1,9 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinLengthValidator,
+    MinValueValidator,
+    RegexValidator,
+)
 from django.db import models
 from django.utils.translation import gettext as _
 
@@ -89,7 +94,16 @@ class NecessaryPlan(models.Model):
     )
     month = models.PositiveIntegerField(null=True, blank=True)
     price = models.PositiveIntegerField(null=True, blank=True)
-    title = models.CharField(max_length=100)
+    title = models.CharField(
+        max_length=100,
+        validators=[
+            MinLengthValidator(3),
+            RegexValidator(
+                regex=r'^[\w\s\-]+$',
+                message=_("Title can only contain letters, numbers, spaces, hyphens, and underscores.")
+            )
+        ]
+    )
     expense_type = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="necessary_plans"
