@@ -68,6 +68,48 @@ def test_stats_200(client_logged):
 
 
 # -------------------------------------------------------------------------------------
+#                                                                        IncomePlan Lis
+# -------------------------------------------------------------------------------------
+def test_income_list_func():
+    view = resolve("/plans/incomes/")
+
+    assert views.IncomesLists == view.func.view_class
+
+
+def test_income_list_200(client_logged):
+    url = reverse("plans:income_list")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_income_list_302(client):
+    url = reverse("plans:income_list")
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_income_list_edit_delete_urls(client_logged, main_user):
+    obj = IncomePlanFactory()
+
+    url = reverse("plans:income_list")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    update = reverse(
+        "plans:income_update",
+        kwargs={"year": main_user.year, "income_type_id": obj.income_type.id},
+    )
+    delete = reverse(
+        "plans:income_delete",
+        kwargs={"year": main_user.year, "income_type_id": obj.income_type.id},
+    )
+    assert update in actual
+    assert delete in actual
+
+
+# -------------------------------------------------------------------------------------
 #                                                              IncomePlan create/update
 # -------------------------------------------------------------------------------------
 def test_income_new_func():
@@ -386,6 +428,48 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
     client_logged.post(url)
 
     assert IncomePlan.objects.all().count() == 1
+
+
+# -------------------------------------------------------------------------------------
+#                                                                        ExpensePlan Lis
+# -------------------------------------------------------------------------------------
+def test_expense_list_func():
+    view = resolve("/plans/expenses/")
+
+    assert views.ExpensesLists == view.func.view_class
+
+
+def test_expense_list_200(client_logged):
+    url = reverse("plans:expense_list")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_expense_list_302(client):
+    url = reverse("plans:expense_list")
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_expense_list_edit_delete_urls(client_logged, main_user):
+    obj = ExpensePlanFactory()
+
+    url = reverse("plans:expense_list")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    update = reverse(
+        "plans:expense_update",
+        kwargs={"year": main_user.year, "expense_type_id": obj.expense_type.id},
+    )
+    delete = reverse(
+        "plans:expense_delete",
+        kwargs={"year": main_user.year, "expense_type_id": obj.expense_type.id},
+    )
+    assert update in actual
+    assert delete in actual
 
 
 # -------------------------------------------------------------------------------------
@@ -715,6 +799,48 @@ def test_expenses_delete_other_journal_post_form(client_logged, second_user):
 
 
 # -------------------------------------------------------------------------------------
+#                                                                        SavingPlan Lis
+# -------------------------------------------------------------------------------------
+def test_saving_list_func():
+    view = resolve("/plans/savings/")
+
+    assert views.SavingsLists == view.func.view_class
+
+
+def test_saving_list_200(client_logged):
+    url = reverse("plans:saving_list")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_saving_list_302(client):
+    url = reverse("plans:saving_list")
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_saving_list_edit_delete_urls(client_logged, main_user):
+    obj = SavingPlanFactory()
+
+    url = reverse("plans:saving_list")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    update = reverse(
+        "plans:saving_update",
+        kwargs={"year": main_user.year, "saving_type_id": obj.saving_type.id},
+    )
+    delete = reverse(
+        "plans:saving_delete",
+        kwargs={"year": main_user.year, "saving_type_id": obj.saving_type.id},
+    )
+    assert update in actual
+    assert delete in actual
+
+
+# -------------------------------------------------------------------------------------
 #                                                              SavingPlan create/update
 # -------------------------------------------------------------------------------------
 def test_saving_new_func():
@@ -1036,6 +1162,48 @@ def test_saving_delete_other_journal_post_form(client_logged, second_user):
 
 
 # -------------------------------------------------------------------------------------
+#                                                                          DayPlan List
+# -------------------------------------------------------------------------------------
+def test_day_list_func():
+    view = resolve("/plans/day/")
+
+    assert views.DayLists == view.func.view_class
+
+
+def test_day_list_200(client_logged):
+    url = reverse("plans:day_list")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_day_list_302(client):
+    url = reverse("plans:day_list")
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_day_list_edit_delete_urls(client_logged, main_user):
+    DayPlanFactory()
+
+    url = reverse("plans:day_list")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    update = reverse(
+        "plans:day_update",
+        kwargs={"year": main_user.year},
+    )
+    delete = reverse(
+        "plans:day_delete",
+        kwargs={"year": main_user.year},
+    )
+    assert update in actual
+    assert delete in actual
+
+
+# -------------------------------------------------------------------------------------
 #                                                                 DayPlan create/update
 # -------------------------------------------------------------------------------------
 def test_day_new_func():
@@ -1240,6 +1408,56 @@ def test_day_delete_other_journal_post_form(client_logged, second_user):
     client_logged.post(url)
 
     assert DayPlan.objects.all().count() == 1
+
+
+# -------------------------------------------------------------------------------------
+#                                                                    NecessaryPlan List
+# -------------------------------------------------------------------------------------
+def test_necessary_list_func():
+    view = resolve("/plans/necessary/")
+
+    assert views.NecessaryLists == view.func.view_class
+
+
+def test_necessary_list_200(client_logged):
+    url = reverse("plans:necessary_list")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_necessary_list_302(client):
+    url = reverse("plans:necessary_list")
+    response = client.get(url)
+
+    assert response.status_code == 302
+
+
+def test_necessary_list_edit_delete_urls(client_logged, main_user):
+    obj = NecessaryPlanFactory()
+
+    url = reverse("plans:necessary_list")
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    update = reverse(
+        "plans:necessary_update",
+        kwargs={
+            "year": main_user.year,
+            "expense_type_id": obj.expense_type.id,
+            "title": obj.title,
+        },
+    )
+    delete = reverse(
+        "plans:necessary_delete",
+        kwargs={
+            "year": main_user.year,
+            "expense_type_id": obj.expense_type.id,
+            "title": obj.title,
+        },
+    )
+    assert update in actual
+    assert delete in actual
 
 
 # -------------------------------------------------------------------------------------

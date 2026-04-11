@@ -27,22 +27,34 @@
     <tbody>
         {% for object, months in object_list.items %}
 
-        {% if update %}{% url update item.id as url_update %}{% endif %}
-        {% if delete %}{% url delete item.id as url_delete %}{% endif %}
-
         {% with _('Residual') as residual %}
         <tr {% if url_update %}hx-get="{{url_update}}" hx-target="#mainModal" hx-trigger="dblclick"{% endif %} {% if residual|safe in name %}class="plans-residual-row"{% endif %}>
         {% endwith%}
             <td class="text-left">
+
                 {% if view.plan_type == "necessary" %}
+
                     {{ object.1 }} ({{ object.0.title}})
-                        {% if update %}{% url update view.year object.0.id object.1 as url_update %}{% endif %}
-                        {% if delete %}{% url delete view.year object.0.id object.1 as url_delete %}{% endif %}
-                {% else %}
+
+                    {% if update %}{% url update year object.0.id object.1 as url_update %}{% endif %}
+                    {% if delete %}{% url delete year object.0.id object.1 as url_delete %}{% endif %}
+
+                {% elif view.plan_type == "day" %}
+
                     {{ object }}
-                    {% if update %}{% url update view.year object.id as url_update %}{% endif %}
-                    {% if delete %}{% url delete view.year object.id as url_delete %}{% endif %}
+
+                    {% if update %}{% url update year as url_update %}{% endif %}
+                    {% if delete %}{% url delete year as url_delete %}{% endif %}
+
+                {% else %}
+
+                    {{ object }}
+
+                    {% if update %}{% url update year object.id as url_update %}{% endif %}
+                    {% if delete %}{% url delete year object.id as url_delete %}{% endif %}
+
                 {% endif %}
+
                 {% if object.necessary or view.plan_type == "necessary" or view.plan_type == "saving" %} <i class="bi bi-star plans-star"></i>{% endif %}
             </td>
             <td class="{{months.1|css_class_if_none}}">{{months.1|price|cellformat:"0,00"}}</td>

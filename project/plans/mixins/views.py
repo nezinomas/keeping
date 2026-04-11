@@ -7,11 +7,6 @@ class CssClassMixin:
     modal_body_css_class = "plans-form"
 
 
-class PlanYearMixin:
-    def year(self):
-        return self.request.user.year
-
-
 class PlanQuerySetMixin:
     def get_tall_queryset(self):
         qs = self.service_class(self.request.user).items()
