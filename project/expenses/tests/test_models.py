@@ -345,10 +345,11 @@ def test_expense_last_months_empty_expenses(main_user):
     actual = ExpenseModelService(main_user).last_months(6)
     assert not actual
 
+
 @time_machine.travel("1999-06-01")
 @factory.django.mute_signals(post_save)
 def test_expense_last_months_one_of_expenses_empty(main_user):
-    t1  = ExpenseTypeFactory(title="T1")
+    t1 = ExpenseTypeFactory(title="T1")
     t2 = ExpenseTypeFactory(title="T2")
 
     ExpenseFactory(date=date(1999, 1, 1), price=3, expense_type=t1)

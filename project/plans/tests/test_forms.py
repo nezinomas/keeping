@@ -1,11 +1,11 @@
+from datetime import datetime
+
 import pytest
 import time_machine
+from django.forms import HiddenInput
+from django.utils.translation import gettext as _
 
 from ...core.lib.translation import month_names
-from ...expenses.tests.factories import ExpenseTypeFactory
-from ...incomes.tests.factories import IncomeTypeFactory
-from ...savings.tests.factories import SavingTypeFactory
-from ...users.tests.factories import UserFactory
 from ..forms import (
     CopyPlanForm,
     DayPlanForm,
@@ -14,115 +14,62 @@ from ..forms import (
     NecessaryPlanForm,
     SavingPlanForm,
 )
-from ..services.model_services import (
-    IncomePlanModelService,
-)
-from .factories import (
+from ..services.model_services import IncomePlanModelService
+from ..tests.factories import (
+    DayPlan,
     DayPlanFactory,
+    ExpensePlan,
     ExpensePlanFactory,
+    ExpenseTypeFactory,
+    IncomePlan,
     IncomePlanFactory,
+    IncomeTypeFactory,
+    NecessaryPlan,
     NecessaryPlanFactory,
+    SavingPlan,
     SavingPlanFactory,
+    SavingTypeFactory,
 )
 
 pytestmark = pytest.mark.django_db
 
-
-# ----------------------------------------------------------------------------
-#                                                                  Income Form
-# ----------------------------------------------------------------------------
-def test_income_init(main_user):
-    IncomePlanForm(user=main_user)
-
-
-def test_income_init_fields(main_user):
-    form = IncomePlanForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year"' in form
-    assert '<select name="income_type"' in form
-
-    assert '<input type="number" name="january"' in form
-    assert '<input type="number" name="february"' in form
-    assert '<input type="number" name="march"' in form
-    assert '<input type="number" name="april"' in form
-    assert '<input type="number" name="may"' in form
-    assert '<input type="number" name="june"' in form
-    assert '<input type="number" name="july"' in form
-    assert '<input type="number" name="august"' in form
-    assert '<input type="number" name="september"' in form
-    assert '<input type="number" name="october"' in form
-    assert '<input type="number" name="november"' in form
-    assert '<input type="number" name="december"' in form
-
-    assert '<select name="user"' not in form
+MONTHS = [
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+]
 
 
-@time_machine.travel("1974-01-01")
-def test_income_year_initial_value(main_user):
-    UserFactory()
-
-    form = IncomePlanForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year" value="1999"' in form
+# -------------------------------------------------------------------------------------
+#                                                                      Income Plan Form
+# -------------------------------------------------------------------------------------
 
 
-def test_income_current_user_types(main_user, second_user):
-    IncomeTypeFactory(title="T1")  # user bob, current user
-    IncomeTypeFactory(title="T2", journal=second_user.journal)  # user X
+def test_income_does_not_render_user_select(main_user):
+    form = IncomePlanForm(user=main_user)
+    rendered_html = form.as_p()
 
-    form = IncomePlanForm(user=main_user).as_p()
-
-    assert "T1" in form
-    assert "T2" not in form
+    assert '<select name="user"' not in rendered_html
+    assert 'name="user"' not in rendered_html
 
 
-@pytest.mark.parametrize(
-    "year",
-    [
-        ("1999"),
-        (1999),
-    ],
-)
-def test_income_valid_data(year, main_user):
-    type_ = IncomeTypeFactory()
-    form = IncomePlanForm(
-        user=main_user,
-        data={
-            "year": year,
-            "income_type": type_.pk,
-            "january": 0.01,
-            "february": 0.01,
-            "march": 0.01,
-            "april": 0.01,
-            "may": 0.01,
-            "june": 0.01,
-            "july": 0.01,
-            "august": 0.01,
-            "september": 0.01,
-            "october": 0.01,
-            "november": 0.01,
-            "december": 0.01,
-        },
-    )
-    assert form.is_valid()
+@pytest.mark.parametrize("month", MONTHS)
+def test_income_initialization(main_user, month):
+    form = IncomePlanForm(user=main_user)
 
-    data = form.save()
+    assert month in form.fields
 
-    assert data.year == 1999
-    assert data.january == 1
-    assert data.february == 1
-    assert data.march == 1
-    assert data.april == 1
-    assert data.may == 1
-    assert data.june == 1
-    assert data.july == 1
-    assert data.august == 1
-    assert data.september == 1
-    assert data.october == 1
-    assert data.november == 1
-    assert data.december == 1
-    assert str(data.income_type) == "Income Type"
-    assert data.journal.users.first().username == "bob"
+    assert isinstance(form.fields["journal"].widget, HiddenInput)
+    assert form.fields["journal"].initial == main_user.journal
 
 
 @time_machine.travel("1999-01-01")
@@ -130,39 +77,47 @@ def test_income_blank_data(main_user):
     form = IncomePlanForm(user=main_user, data={})
 
     assert not form.is_valid()
-
     assert len(form.errors) == 2
     assert "year" in form.errors
     assert "income_type" in form.errors
 
 
 def test_income_unique_together_validation(main_user):
-    i = IncomePlanFactory()
+    existing_plan = IncomePlanFactory(year=1999)
 
     form = IncomePlanForm(
         user=main_user,
         data={
-            "year": i.year,
-            "income_type": i.income_type.pk,
-            "january": 666,
+            "year": existing_plan.year,
+            "income_type": existing_plan.income_type.pk,
+            "january": 666.00,
         },
     )
 
     assert not form.is_valid()
 
-    assert form.errors == {"__all__": ["1999 metai jau turi Income Type planą."]}
+    expected_msg = _("%(year)s year already has %(title)s plan.") % {
+        "year": existing_plan.year,
+        "title": existing_plan.income_type.title,
+    }
+    assert form.errors == {"__all__": [expected_msg]}
 
 
 def test_income_unique_together_validation_more_than_one(main_user):
-    IncomePlanFactory(income_type=IncomeTypeFactory(title="First"))
+    """Tests that uniqueness doesn't block valid distinct inputs."""
+    IncomePlanFactory(
+        year=1999,
+        income_type=IncomeTypeFactory(title="First"),
+        journal=main_user.journal,
+    )
 
-    type_ = IncomeTypeFactory()
+    new_type = IncomeTypeFactory(title="Second")
     form = IncomePlanForm(
         user=main_user,
         data={
             "year": 1999,
-            "income_type": type_.pk,
-            "january": 15,
+            "income_type": new_type.pk,
+            "january": 15.00,
         },
     )
 
@@ -170,8 +125,6 @@ def test_income_unique_together_validation_more_than_one(main_user):
 
 
 def test_income_negative_number(main_user):
-    IncomePlanFactory(income_type=IncomeTypeFactory(title="First"))
-
     type_ = IncomeTypeFactory()
 
     data = {
@@ -179,9 +132,9 @@ def test_income_negative_number(main_user):
         "income_type": type_.pk,
     }
 
-    # add negative numbet to earch month
+    # Add a negative number to every single month
     for key, _ in month_names().items():
-        data[key.lower()] = -1
+        data[key.lower()] = -1.00
 
     form = IncomePlanForm(user=main_user, data=data)
 
@@ -189,121 +142,142 @@ def test_income_negative_number(main_user):
     assert len(form.errors) == 12
 
 
-def test_income_inputs_as_string(main_user):
-    IncomePlanFactory(income_type=IncomeTypeFactory(title="First"))
+def test_income_save_converts_to_cents(main_user):
+    income_type = IncomeTypeFactory()
 
-    type_ = IncomeTypeFactory()
-
-    data = {
+    form_data = {
         "year": 1999,
-        "income_type": type_.pk,
+        "income_type": income_type.pk,
+        "january": 0.01,
+        "march": 2.5,
     }
+    form = IncomePlanForm(data=form_data, user=main_user)
 
-    # add negative numbet to earch month
-    for key, _ in month_names().items():
-        data[key.lower()] = "a"
-
-    form = IncomePlanForm(user=main_user, data=data)
-
-    assert not form.is_valid()
-    assert len(form.errors) == 12
-
-
-# ----------------------------------------------------------------------------
-#                                                                 Expense Form
-# ----------------------------------------------------------------------------
-def test_expense_init(main_user):
-    ExpensePlanForm(user=main_user)
-
-
-def test_expense_init_fields(main_user):
-    form = ExpensePlanForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year"' in form
-    assert '<select name="expense_type"' in form
-
-    assert '<input type="number" name="january"' in form
-    assert '<input type="number" name="february"' in form
-    assert '<input type="number" name="march"' in form
-    assert '<input type="number" name="april"' in form
-    assert '<input type="number" name="may"' in form
-    assert '<input type="number" name="june"' in form
-    assert '<input type="number" name="july"' in form
-    assert '<input type="number" name="august"' in form
-    assert '<input type="number" name="september"' in form
-    assert '<input type="number" name="october"' in form
-    assert '<input type="number" name="november"' in form
-    assert '<input type="number" name="december"' in form
-
-    assert '<select name="user"' not in form
-
-
-@time_machine.travel("1974-01-01")
-def test_expense_year_initial_value(main_user):
-    UserFactory()
-
-    form = ExpensePlanForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year" value="1999"' in form
-
-
-def test_expense_current_user_types(main_user, second_user):
-    ExpenseTypeFactory(title="T1")  # user bob, current user
-    ExpenseTypeFactory(title="T2", journal=second_user.journal)  # user X
-
-    form = ExpensePlanForm(user=main_user).as_p()
-
-    assert "T1" in form
-    assert "T2" not in form
-
-
-@pytest.mark.parametrize(
-    "year",
-    [
-        ("1999"),
-        (1999),
-    ],
-)
-def test_expense_valid_data(year, main_user):
-    type_ = ExpenseTypeFactory()
-    form = ExpensePlanForm(
-        user=main_user,
-        data={
-            "year": year,
-            "expense_type": type_.pk,
-            "january": 0.01,
-            "february": 0.01,
-            "march": 0.01,
-            "april": 0.01,
-            "may": 0.01,
-            "june": 0.01,
-            "july": 0.01,
-            "august": 0.01,
-            "september": 0.01,
-            "october": 0.01,
-            "november": 0.01,
-            "december": 0.01,
-        },
-    )
     assert form.is_valid()
+    form.save()
 
-    data = form.save()
+    assert IncomePlan.objects.count() == 2
 
-    assert data.year == 1999
-    assert data.january == 1
-    assert data.february == 1
-    assert data.march == 1
-    assert data.april == 1
-    assert data.may == 1
-    assert data.june == 1
-    assert data.july == 1
-    assert data.august == 1
-    assert data.september == 1
-    assert data.october == 1
-    assert data.november == 1
-    assert data.december == 1
-    assert str(data.expense_type) == "Expense Type"
-    assert data.journal.users.first().username == "bob"
+    jan_plan = IncomePlan.objects.get(month=1)
+    mar_plan = IncomePlan.objects.get(month=3)
+
+    assert jan_plan.price == 1
+    assert jan_plan.year == 1999
+    assert jan_plan.income_type == income_type
+
+    assert mar_plan.price == 250
+    assert mar_plan.year == 1999
+    assert mar_plan.income_type == income_type
+
+
+def test_income_loads_initial_and_converts_from_cents(main_user):
+    income_type = IncomeTypeFactory()
+    plan_jan = IncomePlanFactory(month=1, price=15_000, income_type=income_type)
+    IncomePlanFactory(month=12, price=30_000, income_type=income_type)
+
+    form = IncomePlanForm(instance=plan_jan, user=main_user)
+
+    assert form.initial["year"] == 1999
+    assert form.initial["income_type"] == income_type.pk
+
+    # 4. Assert conversion to standard floats for the frontend
+    assert float(form.initial["january"]) == 150.00
+    assert float(form.initial["december"]) == 300.00
+    assert form.initial.get("february") is None
+
+    # 5. Assert grouping fields are locked to prevent orphaned rows
+    assert form.fields["year"].disabled is True
+    assert form.fields["income_type"].disabled is True
+
+
+def test_income_updates_and_deletes_rows(main_user):
+    """Tests updates, deletions, and cents conversions handle correctly."""
+
+    income_type = IncomeTypeFactory()
+
+    plan_jan = IncomePlan.objects.create(
+        year=2026,
+        month=1,
+        price=10000,
+        income_type=income_type,
+        journal=main_user.journal,
+    )
+    IncomePlan.objects.create(
+        year=2026,
+        month=2,
+        price=20000,
+        income_type=income_type,
+        journal=main_user.journal,
+    )
+
+    updated_data = {
+        "year": 2026,
+        "income_type": income_type.pk,
+        "january": 150.00,  # Updated
+        "february": "",  # Cleared -> Should Delete
+        "march": 300.00,  # New -> Should Create
+    }
+
+    form = IncomePlanForm(data=updated_data, instance=plan_jan, user=main_user)
+    assert form.is_valid()
+    form.save()
+
+    # 3. Assert correct DB state in CENTS
+    assert IncomePlan.objects.count() == 2
+    assert IncomePlan.objects.filter(month=2).exists() is False
+    assert IncomePlan.objects.get(month=1).price == 15000  # Updated to 15000
+    assert IncomePlan.objects.get(month=3).price == 30000  # Created as 30000
+
+
+def test_income_plan_form_prevents_cross_category_pollution(main_user):
+    salary_type = IncomeTypeFactory(title="Salary", journal=main_user.journal)
+    gift_type = IncomeTypeFactory(title="Gift", journal=main_user.journal)
+
+    # Create a Salary plan for Jan (Target instance)
+    salary_instance = IncomePlanFactory(
+        year=2026,
+        month=1,
+        price=100000,
+        income_type=salary_type,
+        journal=main_user.journal,
+    )
+
+    # Create a Gift plan for Feb (Noise)
+    IncomePlanFactory(
+        year=2026,
+        month=2,
+        price=50000,
+        income_type=gift_type,
+        journal=main_user.journal,
+    )
+
+    form = IncomePlanForm(user=main_user, instance=salary_instance)
+
+    assert form.initial["january"] == 1000.0  # 100000 cents -> 1000.0 float
+    assert form.initial.get("february") is None, "Cross-category pollution detected!"
+
+
+# -------------------------------------------------------------------------------------
+#                                                                      Expense Plan Form
+# -------------------------------------------------------------------------------------
+
+
+def test_expense_does_not_render_user_select(main_user):
+    form = ExpensePlanForm(user=main_user)
+    rendered_html = form.as_p()
+
+    assert '<select name="user"' not in rendered_html
+    assert 'name="user"' not in rendered_html
+
+
+@pytest.mark.parametrize("month", MONTHS)
+def test_expense_initialization(main_user, month):
+    form = ExpensePlanForm(user=main_user)
+
+    assert month in form.fields
+
+    assert isinstance(form.fields["journal"].widget, HiddenInput)
+    assert form.fields["journal"].initial == main_user.journal
 
 
 @time_machine.travel("1999-01-01")
@@ -311,139 +285,207 @@ def test_expense_blank_data(main_user):
     form = ExpensePlanForm(user=main_user, data={})
 
     assert not form.is_valid()
-
     assert len(form.errors) == 2
     assert "year" in form.errors
     assert "expense_type" in form.errors
 
 
 def test_expense_unique_together_validation(main_user):
-    i = ExpensePlanFactory()
+    existing_plan = ExpensePlanFactory(year=1999)
 
     form = ExpensePlanForm(
         user=main_user,
         data={
-            "year": i.year,
-            "expense_type": i.expense_type.pk,
-            "january": 666,
+            "year": existing_plan.year,
+            "expense_type": existing_plan.expense_type.pk,
+            "january": 666.00,
         },
     )
 
     assert not form.is_valid()
 
-    assert form.errors == {"__all__": ["1999 metai jau turi Expense Type planą."]}
+    expected_msg = _("%(year)s year already has %(title)s plan.") % {
+        "year": existing_plan.year,
+        "title": existing_plan.expense_type.title,
+    }
+    assert form.errors == {"__all__": [expected_msg]}
 
 
 def test_expense_unique_together_validation_more_than_one(main_user):
-    ExpensePlanFactory(expense_type=ExpenseTypeFactory(title="First"))
-    t = ExpenseTypeFactory()
+    """Tests that uniqueness doesn't block valid distinct inputs."""
+    ExpensePlanFactory(
+        year=1999,
+        expense_type=ExpenseTypeFactory(title="First"),
+        journal=main_user.journal,
+    )
+
+    new_type = ExpenseTypeFactory(title="Second")
     form = ExpensePlanForm(
         user=main_user,
         data={
             "year": 1999,
-            "expense_type": t.pk,
-            "january": 15,
+            "expense_type": new_type.pk,
+            "january": 15.00,
         },
     )
 
     assert form.is_valid()
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Saving Form
-# ----------------------------------------------------------------------------
-def test_saving_init(main_user):
-    SavingPlanForm(user=main_user)
+def test_expense_negative_number(main_user):
+    type_ = ExpenseTypeFactory()
+
+    data = {
+        "year": 1999,
+        "expense_type": type_.pk,
+    }
+
+    # Add a negative number to every single month
+    for key, _ in month_names().items():
+        data[key.lower()] = -1.00
+
+    form = ExpensePlanForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert len(form.errors) == 12
 
 
-def test_saving_init_fields(main_user):
-    form = SavingPlanForm(user=main_user).as_p()
+def test_expense_save_converts_to_cents(main_user):
+    expense_type = ExpenseTypeFactory()
 
-    assert '<input type="text" name="year"' in form
-    assert '<select name="saving_type"' in form
+    form_data = {
+        "year": 1999,
+        "expense_type": expense_type.pk,
+        "january": 0.01,
+        "march": 2.5,
+    }
+    form = ExpensePlanForm(data=form_data, user=main_user)
 
-    assert '<input type="number" name="january"' in form
-    assert '<input type="number" name="february"' in form
-    assert '<input type="number" name="march"' in form
-    assert '<input type="number" name="april"' in form
-    assert '<input type="number" name="may"' in form
-    assert '<input type="number" name="june"' in form
-    assert '<input type="number" name="july"' in form
-    assert '<input type="number" name="august"' in form
-    assert '<input type="number" name="september"' in form
-    assert '<input type="number" name="october"' in form
-    assert '<input type="number" name="november"' in form
-    assert '<input type="number" name="december"' in form
-
-    assert '<select name="user"' not in form
-
-
-@time_machine.travel("1974-01-01")
-def test_saving_year_initial_value(main_user):
-    UserFactory()
-
-    form = SavingPlanForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year" value="1999"' in form
-
-
-def test_saving_current_user_types(main_user, second_user):
-    SavingTypeFactory(title="T1")  # user bob, current user
-    SavingTypeFactory(title="T2", journal=second_user.journal)  # user X
-
-    form = SavingPlanForm(user=main_user).as_p()
-
-    assert "T1" in form
-    assert "T2" not in form
-
-
-@pytest.mark.parametrize(
-    "year",
-    [
-        ("1999"),
-        (1999),
-    ],
-)
-def test_saving_valid_data(year, main_user):
-    type_ = SavingTypeFactory()
-    form = SavingPlanForm(
-        user=main_user,
-        data={
-            "year": year,
-            "saving_type": type_.pk,
-            "january": 0.01,
-            "february": 0.01,
-            "march": 0.01,
-            "april": 0.01,
-            "may": 0.01,
-            "june": 0.01,
-            "july": 0.01,
-            "august": 0.01,
-            "september": 0.01,
-            "october": 0.01,
-            "november": 0.01,
-            "december": 0.01,
-        },
-    )
     assert form.is_valid()
+    form.save()
 
-    data = form.save()
+    assert ExpensePlan.objects.count() == 2
 
-    assert data.year == 1999
-    assert data.january == 1
-    assert data.february == 1
-    assert data.march == 1
-    assert data.april == 1
-    assert data.may == 1
-    assert data.june == 1
-    assert data.july == 1
-    assert data.august == 1
-    assert data.september == 1
-    assert data.october == 1
-    assert data.november == 1
-    assert data.december == 1
-    assert str(data.saving_type) == "Savings"
-    assert data.journal.users.first().username == "bob"
+    jan_plan = ExpensePlan.objects.get(month=1)
+    mar_plan = ExpensePlan.objects.get(month=3)
+
+    assert jan_plan.price == 1
+    assert jan_plan.year == 1999
+    assert jan_plan.expense_type == expense_type
+
+    assert mar_plan.price == 250
+    assert mar_plan.year == 1999
+    assert mar_plan.expense_type == expense_type
+
+
+def test_expense_loads_initial_and_converts_from_cents(main_user):
+    expense_type = ExpenseTypeFactory()
+    plan_jan = ExpensePlanFactory(month=1, price=15_000, expense_type=expense_type)
+    ExpensePlanFactory(month=12, price=30_000, expense_type=expense_type)
+
+    form = ExpensePlanForm(instance=plan_jan, user=main_user)
+
+    assert form.initial["year"] == 1999
+    assert form.initial["expense_type"] == expense_type.pk
+
+    # 4. Assert conversion to standard floats for the frontend
+    assert float(form.initial["january"]) == 150.00
+    assert float(form.initial["december"]) == 300.00
+    assert form.initial.get("february") is None
+
+    # 5. Assert grouping fields are locked to prevent orphaned rows
+    assert form.fields["year"].disabled is True
+    assert form.fields["expense_type"].disabled is True
+
+
+def test_expense_updates_and_deletes_rows(main_user):
+    """Tests updates, deletions, and cents conversions handle correctly."""
+
+    expense_type = ExpenseTypeFactory()
+
+    plan_jan = ExpensePlan.objects.create(
+        year=2026,
+        month=1,
+        price=10000,
+        expense_type=expense_type,
+        journal=main_user.journal,
+    )
+    ExpensePlan.objects.create(
+        year=2026,
+        month=2,
+        price=20000,
+        expense_type=expense_type,
+        journal=main_user.journal,
+    )
+
+    updated_data = {
+        "year": 2026,
+        "expense_type": expense_type.pk,
+        "january": 150.00,  # Updated
+        "february": "",  # Cleared -> Should Delete
+        "march": 300.00,  # New -> Should Create
+    }
+
+    form = ExpensePlanForm(data=updated_data, instance=plan_jan, user=main_user)
+    assert form.is_valid()
+    form.save()
+
+    # 3. Assert correct DB state in CENTS
+    assert ExpensePlan.objects.count() == 2
+    assert ExpensePlan.objects.filter(month=2).exists() is False
+    assert ExpensePlan.objects.get(month=1).price == 15000  # Updated to 15000
+    assert ExpensePlan.objects.get(month=3).price == 30000  # Created as 30000
+
+
+def test_expense_plan_form_prevents_cross_category_pollution(main_user):
+    salary_type = ExpenseTypeFactory(title="Salary", journal=main_user.journal)
+    gift_type = ExpenseTypeFactory(title="Gift", journal=main_user.journal)
+
+    # Create a Salary plan for Jan (Target instance)
+    salary_instance = ExpensePlanFactory(
+        year=2026,
+        month=1,
+        price=100000,
+        expense_type=salary_type,
+        journal=main_user.journal,
+    )
+
+    # Create a Gift plan for Feb (Noise)
+    ExpensePlanFactory(
+        year=2026,
+        month=2,
+        price=50000,
+        expense_type=gift_type,
+        journal=main_user.journal,
+    )
+
+    form = ExpensePlanForm(user=main_user, instance=salary_instance)
+
+    assert form.initial["january"] == 1000.0  # 100000 cents -> 1000.0 float
+    assert form.initial.get("february") is None, "Cross-category pollution detected!"
+
+
+# -------------------------------------------------------------------------------------
+#                                                                      Saving Plan Form
+# -------------------------------------------------------------------------------------
+
+
+def test_saving_does_not_render_user_select(main_user):
+    form = SavingPlanForm(user=main_user)
+    rendered_html = form.as_p()
+
+    assert '<select name="user"' not in rendered_html
+    assert 'name="user"' not in rendered_html
+
+
+@pytest.mark.parametrize("month", MONTHS)
+def test_saving_initialization(main_user, month):
+    form = SavingPlanForm(user=main_user)
+
+    assert month in form.fields
+
+    assert isinstance(form.fields["journal"].widget, HiddenInput)
+    assert form.fields["journal"].initial == main_user.journal
 
 
 @time_machine.travel("1999-01-01")
@@ -451,277 +493,207 @@ def test_saving_blank_data(main_user):
     form = SavingPlanForm(user=main_user, data={})
 
     assert not form.is_valid()
-
     assert len(form.errors) == 2
     assert "year" in form.errors
     assert "saving_type" in form.errors
 
 
 def test_saving_unique_together_validation(main_user):
-    i = SavingPlanFactory()
+    existing_plan = SavingPlanFactory(year=1999)
 
     form = SavingPlanForm(
         user=main_user,
         data={
-            "year": i.year,
-            "saving_type": i.saving_type.pk,
-            "january": 666,
+            "year": existing_plan.year,
+            "saving_type": existing_plan.saving_type.pk,
+            "january": 666.00,
         },
     )
 
     assert not form.is_valid()
 
-    assert form.errors == {"__all__": ["1999 metai jau turi Savings planą."]}
+    expected_msg = _("%(year)s year already has %(title)s plan.") % {
+        "year": existing_plan.year,
+        "title": existing_plan.saving_type.title,
+    }
+    assert form.errors == {"__all__": [expected_msg]}
 
 
-def test_saving_unique_together_validation_more_than_on(main_user):
-    SavingPlanFactory(saving_type=SavingTypeFactory(title="First"))
+def test_saving_unique_together_validation_more_than_one(main_user):
+    """Tests that uniqueness doesn't block valid distinct inputs."""
+    SavingPlanFactory(
+        year=1999,
+        saving_type=SavingTypeFactory(title="First"),
+        journal=main_user.journal,
+    )
 
-    t = SavingTypeFactory()
+    new_type = SavingTypeFactory(title="Second")
     form = SavingPlanForm(
         user=main_user,
         data={
             "year": 1999,
-            "saving_type": t.pk,
-            "january": 15,
+            "saving_type": new_type.pk,
+            "january": 15.00,
         },
     )
 
     assert form.is_valid()
 
 
-def test_saving_form_type_closed_in_past(main_user):
-    main_user.year = 3000
+def test_saving_negative_number(main_user):
+    type_ = SavingTypeFactory()
 
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
+    data = {
+        "year": 1999,
+        "saving_type": type_.pk,
+    }
 
-    form = SavingPlanForm(user=main_user)
+    # Add a negative number to every single month
+    for key, _ in month_names().items():
+        data[key.lower()] = -1.00
 
-    assert "S1" in str(form["saving_type"])
-    assert "S2" not in str(form["saving_type"])
-
-
-def test_saving_form_type_closed_in_future(main_user):
-    main_user.year = 1000
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingPlanForm(user=main_user)
-
-    assert "S1" in str(form["saving_type"])
-    assert "S2" in str(form["saving_type"])
-
-
-def test_saving_form_type_closed_in_current_year(main_user):
-    main_user.year = 2000
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingPlanForm(user=main_user)
-
-    assert "S1" in str(form["saving_type"])
-    assert "S2" in str(form["saving_type"])
-
-
-# ----------------------------------------------------------------------------
-#                                                                     Day Form
-# ----------------------------------------------------------------------------
-def test_day_init(main_user):
-    DayPlanForm(user=main_user)
-
-
-def test_day_init_fields(main_user):
-    form = DayPlanForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year"' in form
-
-    assert '<input type="number" name="january"' in form
-    assert '<input type="number" name="february"' in form
-    assert '<input type="number" name="march"' in form
-    assert '<input type="number" name="april"' in form
-    assert '<input type="number" name="may"' in form
-    assert '<input type="number" name="june"' in form
-    assert '<input type="number" name="july"' in form
-    assert '<input type="number" name="august"' in form
-    assert '<input type="number" name="september"' in form
-    assert '<input type="number" name="october"' in form
-    assert '<input type="number" name="november"' in form
-    assert '<input type="number" name="december"' in form
-
-    assert '<select name="user"' not in form
-
-
-@time_machine.travel("1974-01-01")
-def test_day_year_initial_value(main_user):
-    UserFactory()
-
-    form = DayPlanForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year" value="1999"' in form
-
-
-@pytest.mark.parametrize(
-    "year",
-    [
-        ("1999"),
-        (1999),
-    ],
-)
-def test_day_valid_data(year, main_user):
-    form = DayPlanForm(
-        user=main_user,
-        data={
-            "year": year,
-            "january": 0.01,
-            "february": 0.01,
-            "march": 0.01,
-            "april": 0.01,
-            "may": 0.01,
-            "june": 0.01,
-            "july": 0.01,
-            "august": 0.01,
-            "september": 0.01,
-            "october": 0.01,
-            "november": 0.01,
-            "december": 0.01,
-        },
-    )
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.year == 1999
-    assert data.january == 1
-    assert data.february == 1
-    assert data.march == 1
-    assert data.april == 1
-    assert data.may == 1
-    assert data.june == 1
-    assert data.july == 1
-    assert data.august == 1
-    assert data.september == 1
-    assert data.october == 1
-    assert data.november == 1
-    assert data.december == 1
-    assert data.journal.users.first().username == "bob"
-
-
-@time_machine.travel("1999-01-01")
-def test_day_blank_data(main_user):
-    form = DayPlanForm(user=main_user, data={})
+    form = SavingPlanForm(user=main_user, data=data)
 
     assert not form.is_valid()
-
-    assert len(form.errors) == 1
-    assert "year" in form.errors
+    assert len(form.errors) == 12
 
 
-def test_day_unique_together_validation(main_user):
-    i = DayPlanFactory()
+def test_saving_save_converts_to_cents(main_user):
+    saving_type = SavingTypeFactory()
 
-    form = DayPlanForm(
-        user=main_user,
-        data={
-            "year": i.year,
-            "january": 666,
-        },
-    )
+    form_data = {
+        "year": 1999,
+        "saving_type": saving_type.pk,
+        "january": 0.01,
+        "march": 2.5,
+    }
+    form = SavingPlanForm(data=form_data, user=main_user)
 
-    assert not form.is_valid()
-
-    assert form.errors == {"__all__": ["1999 metai jau turi Dienos planą."]}
-
-
-# ----------------------------------------------------------------------------
-#                                                               Necessary Form
-# ----------------------------------------------------------------------------
-def test_necessary_init(main_user):
-    NecessaryPlanForm(user=main_user)
-
-
-def test_necessary_init_fields(main_user):
-    form = NecessaryPlanForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year"' in form
-    assert '<select name="expense_type"' in form
-    assert '<input type="text" name="title"' in form
-
-    assert '<input type="number" name="january"' in form
-    assert '<input type="number" name="february"' in form
-    assert '<input type="number" name="march"' in form
-    assert '<input type="number" name="april"' in form
-    assert '<input type="number" name="may"' in form
-    assert '<input type="number" name="june"' in form
-    assert '<input type="number" name="july"' in form
-    assert '<input type="number" name="august"' in form
-    assert '<input type="number" name="september"' in form
-    assert '<input type="number" name="october"' in form
-    assert '<input type="number" name="november"' in form
-    assert '<input type="number" name="december"' in form
-
-    assert '<select name="user"' not in form
-
-
-@time_machine.travel("1974-01-01")
-def test_income_year_initial_value1(main_user):
-    UserFactory()
-
-    form = NecessaryPlanForm(user=main_user).as_p()
-
-    assert '<input type="text" name="year" value="1999"' in form
-
-
-@pytest.mark.parametrize(
-    "year",
-    [
-        ("1999"),
-        (1999),
-    ],
-)
-def test_necessary_valid_data(year, main_user):
-    expense = ExpenseTypeFactory()
-    form = NecessaryPlanForm(
-        user=main_user,
-        data={
-            "year": year,
-            "title": "XXX",
-            "expense_type": expense.pk,
-            "january": 0.01,
-            "february": 0.01,
-            "march": 0.01,
-            "april": 0.01,
-            "may": 0.01,
-            "june": 0.01,
-            "july": 0.01,
-            "august": 0.01,
-            "september": 0.01,
-            "october": 0.01,
-            "november": 0.01,
-            "december": 0.01,
-        },
-    )
     assert form.is_valid()
+    form.save()
 
-    data = form.save()
+    assert SavingPlan.objects.count() == 2
 
-    assert data.year == 1999
-    assert data.january == 1
-    assert data.february == 1
-    assert data.march == 1
-    assert data.april == 1
-    assert data.may == 1
-    assert data.june == 1
-    assert data.july == 1
-    assert data.august == 1
-    assert data.september == 1
-    assert data.october == 1
-    assert data.november == 1
-    assert data.december == 1
-    assert data.title == "XXX"
-    assert data.journal.users.first().username == "bob"
+    jan_plan = SavingPlan.objects.get(month=1)
+    mar_plan = SavingPlan.objects.get(month=3)
+
+    assert jan_plan.price == 1
+    assert jan_plan.year == 1999
+    assert jan_plan.saving_type == saving_type
+
+    assert mar_plan.price == 250
+    assert mar_plan.year == 1999
+    assert mar_plan.saving_type == saving_type
+
+
+def test_saving_loads_initial_and_converts_from_cents(main_user):
+    saving_type = SavingTypeFactory()
+    plan_jan = SavingPlanFactory(month=1, price=15_000, saving_type=saving_type)
+    SavingPlanFactory(month=12, price=30_000, saving_type=saving_type)
+
+    form = SavingPlanForm(instance=plan_jan, user=main_user)
+
+    assert form.initial["year"] == 1999
+    assert form.initial["saving_type"] == saving_type.pk
+
+    # 4. Assert conversion to standard floats for the frontend
+    assert float(form.initial["january"]) == 150.00
+    assert float(form.initial["december"]) == 300.00
+    assert form.initial.get("february") is None
+
+    # 5. Assert grouping fields are locked to prevent orphaned rows
+    assert form.fields["year"].disabled is True
+    assert form.fields["saving_type"].disabled is True
+
+
+def test_saving_updates_and_deletes_rows(main_user):
+    """Tests updates, deletions, and cents conversions handle correctly."""
+
+    saving_type = SavingTypeFactory()
+
+    plan_jan = SavingPlan.objects.create(
+        year=2026,
+        month=1,
+        price=10000,
+        saving_type=saving_type,
+        journal=main_user.journal,
+    )
+    SavingPlan.objects.create(
+        year=2026,
+        month=2,
+        price=20000,
+        saving_type=saving_type,
+        journal=main_user.journal,
+    )
+
+    updated_data = {
+        "year": 2026,
+        "saving_type": saving_type.pk,
+        "january": 150.00,  # Updated
+        "february": "",  # Cleared -> Should Delete
+        "march": 300.00,  # New -> Should Create
+    }
+
+    form = SavingPlanForm(data=updated_data, instance=plan_jan, user=main_user)
+    assert form.is_valid()
+    form.save()
+
+    # 3. Assert correct DB state in CENTS
+    assert SavingPlan.objects.count() == 2
+    assert SavingPlan.objects.filter(month=2).exists() is False
+    assert SavingPlan.objects.get(month=1).price == 15000  # Updated to 15000
+    assert SavingPlan.objects.get(month=3).price == 30000  # Created as 30000
+
+
+def test_saving_plan_form_prevents_cross_category_pollution(main_user):
+    salary_type = SavingTypeFactory(title="Salary", journal=main_user.journal)
+    gift_type = SavingTypeFactory(title="Gift", journal=main_user.journal)
+
+    # Create a Salary plan for Jan (Target instance)
+    salary_instance = SavingPlanFactory(
+        year=2026,
+        month=1,
+        price=100000,
+        saving_type=salary_type,
+        journal=main_user.journal,
+    )
+
+    # Create a Gift plan for Feb (Noise)
+    SavingPlanFactory(
+        year=2026,
+        month=2,
+        price=50000,
+        saving_type=gift_type,
+        journal=main_user.journal,
+    )
+
+    form = SavingPlanForm(user=main_user, instance=salary_instance)
+
+    assert form.initial["january"] == 1000.0  # 100000 cents -> 1000.0 float
+    assert form.initial.get("february") is None, "Cross-category pollution detected!"
+
+
+# -------------------------------------------------------------------------------------
+#                                                                   Necessary Plan Form
+# -------------------------------------------------------------------------------------
+
+
+def test_necessary_does_not_render_user_select(main_user):
+    form = NecessaryPlanForm(user=main_user)
+    rendered_html = form.as_p()
+
+    assert '<select name="user"' not in rendered_html
+    assert 'name="user"' not in rendered_html
+
+
+@pytest.mark.parametrize("month", MONTHS)
+def test_necessary_initialization(main_user, month):
+    form = NecessaryPlanForm(user=main_user)
+
+    assert month in form.fields
+
+    assert isinstance(form.fields["journal"].widget, HiddenInput)
+    assert form.fields["journal"].initial == main_user.journal
 
 
 @time_machine.travel("1999-01-01")
@@ -729,73 +701,437 @@ def test_necessary_blank_data(main_user):
     form = NecessaryPlanForm(user=main_user, data={})
 
     assert not form.is_valid()
-
     assert len(form.errors) == 3
     assert "year" in form.errors
-    assert "title" in form.errors
     assert "expense_type" in form.errors
+    assert "title" in form.errors
+
+
+def test_necessary_form_title_valid(
+    main_user,
+):
+    expense_type = ExpenseTypeFactory()
+
+    data = {
+        "title": "Car Insurance-2026_A",
+        "expense_type": expense_type.pk,
+        "january": 100.50,
+        "year": 1999,
+    }
+
+    form = NecessaryPlanForm(data=data, user=main_user)
+
+    assert form.is_valid(), f"Form should be valid, but got errors: {form.errors}"
+
+
+def test_necessary_form_title_too_short(main_user):
+    expense_type = ExpenseTypeFactory()
+
+    data = {
+        "title": "ab",  # Only 2 characters
+        "expense_type": expense_type.pk,
+        "year": 1999,
+        "january": 100.50,
+    }
+
+    form = NecessaryPlanForm(data=data, user=main_user)
+
+    assert not form.is_valid()
+    assert "title" in form.errors
+
+    assert "Įsitikinkite, kad reikšmė sudaryta iš nemažiau kaip 3 ženklų (dabartinis ilgis 2)." in form.errors["title"][0]
+
+
+def test_necessary_form_title_too_long(main_user):
+    expense_type = ExpenseTypeFactory()
+
+    data = {
+        "title": "a" * 101,  # 101 characters
+        "expense_type": expense_type.pk,
+        "year": 1999,
+        "january": 100.50,
+    }
+
+    form = NecessaryPlanForm(data=data, user=main_user)
+
+    assert not form.is_valid()
+    assert "title" in form.errors
+    assert "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 100 ženklų (dabartinis ilgis 101)." in form.errors["title"][0]
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Drop * table",
+        "My@Plan",
+        "<script>alert('x')</script>",
+        "Insurance/Home",
+    ],
+)
+def test_necessary_form_title_invalid_characters(main_user, title):
+    expense_type = ExpenseTypeFactory()
+
+    data = {
+        "title": title,
+        "expense_type": expense_type.pk,
+        "year": 1999,
+        "january": 100.50,
+    }
+
+    form = NecessaryPlanForm(data=data, user=main_user)
+
+    assert not form.is_valid()
+    assert "title" in form.errors
+
+    assert (
+        "Title can only contain letters, numbers, spaces, hyphens, and underscores."
+        in form.errors["title"][0]
+    )
 
 
 def test_necessary_unique_together_validation(main_user):
-    i = NecessaryPlanFactory(title="XXX")
+    existing_plan = NecessaryPlanFactory()
 
     form = NecessaryPlanForm(
         user=main_user,
         data={
-            "year": i.year,
-            "expense_type": i.expense_type.pk,
-            "title": i.title,
-            "january": 666,
+            "year": existing_plan.year,
+            "expense_type": existing_plan.expense_type.pk,
+            "title": existing_plan.title,
+            "january": 666.00,
         },
     )
 
     assert not form.is_valid()
 
-    assert form.errors == {
-        "__all__": ["1999 metai ir Expense Type jau turi XXX planą."]
+    expected_msg = _("%(year)s year already has %(title)s plan.") % {
+        "year": existing_plan.year,
+        "title": existing_plan.expense_type.title,
     }
-
-
-def test_necessary_unique_titles_but_different_expense_type(main_user):
-    e1 = ExpenseTypeFactory(title="E1")
-    e2 = ExpenseTypeFactory(title="E2")
-
-    i = NecessaryPlanFactory(title="XXX", expense_type=e1)
-
-    form = NecessaryPlanForm(
-        user=main_user,
-        data={
-            "year": i.year,
-            "title": i.title,
-            "expense_type": e2.pk,
-            "january": 666,
-        },
-    )
-
-    assert form.is_valid()
+    assert form.errors == {"__all__": [expected_msg]}
 
 
 def test_necessary_unique_together_validation_more_than_one(main_user):
-    i = NecessaryPlanFactory(title="First")
+    """Tests that uniqueness doesn't block valid distinct inputs."""
+    NecessaryPlanFactory(
+        year=1999,
+        expense_type=ExpenseTypeFactory(title="First"),
+        title="ABCD",
+        journal=main_user.journal,
+    )
 
+    new_type = ExpenseTypeFactory(title="Second")
     form = NecessaryPlanForm(
         user=main_user,
         data={
             "year": 1999,
-            "expense_type": i.expense_type.pk,
-            "title": "XXX",
-            "january": 15,
+            "expense_type": new_type.pk,
+            "title": "ABCD",
+            "january": 15.00,
         },
     )
 
     assert form.is_valid()
 
 
-# ----------------------------------------------------------------------------
-#                                                                    Copy Form
-# ----------------------------------------------------------------------------
+def test_necessary_negative_number(main_user):
+    expense_type = ExpenseTypeFactory()
+
+    data = {
+        "year": 1999,
+        "expense_type": expense_type.pk,
+        "title": "ABCD",
+    }
+
+    # Add a negative number to every single month
+    for key, _ in month_names().items():
+        data[key.lower()] = -1.00
+
+    form = NecessaryPlanForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert len(form.errors) == 12
+
+
+def test_necessary_save_converts_to_cents(main_user):
+    expense_type = ExpenseTypeFactory()
+
+    form_data = {
+        "year": 1999,
+        "expense_type": expense_type.pk,
+        "title": "XXX",
+        "january": 0.01,
+        "march": 2.5,
+    }
+    form = NecessaryPlanForm(data=form_data, user=main_user)
+
+    assert form.is_valid()
+    form.save()
+
+    assert NecessaryPlan.objects.count() == 2
+
+    jan_plan = NecessaryPlan.objects.get(month=1)
+    mar_plan = NecessaryPlan.objects.get(month=3)
+
+    assert jan_plan.price == 1
+    assert jan_plan.year == 1999
+    assert jan_plan.expense_type == expense_type
+    assert jan_plan.title == "XXX"
+
+    assert mar_plan.price == 250
+    assert mar_plan.year == 1999
+    assert mar_plan.expense_type == expense_type
+    assert mar_plan.title == "XXX"
+
+
+def test_necessary_loads_initial_and_converts_from_cents(main_user):
+    title = "X"
+    expense_type = ExpenseTypeFactory()
+    plan_jan = NecessaryPlanFactory(
+        month=1, price=15_000, expense_type=expense_type, title=title
+    )
+    NecessaryPlanFactory(month=12, price=30_000, expense_type=expense_type, title=title)
+
+    form = NecessaryPlanForm(instance=plan_jan, user=main_user)
+
+    assert form.initial["year"] == 1999
+    assert form.initial["expense_type"] == expense_type.pk
+    assert form.initial["title"] == title
+
+    # 4. Assert conversion to standard floats for the frontend
+    assert float(form.initial["january"]) == 150.00
+    assert float(form.initial["december"]) == 300.00
+    assert form.initial.get("february") is None
+
+    # 5. Assert grouping fields are locked to prevent orphaned rows
+    assert form.fields["year"].disabled is True
+    assert form.fields["expense_type"].disabled is True
+    assert form.fields["title"].disabled is True
+
+
+def test_necessary_updates_and_deletes_rows(main_user):
+    """Tests updates, deletions, and cents conversions handle correctly."""
+
+    title = "Xxx"
+    expense_type = ExpenseTypeFactory()
+
+    plan_jan = NecessaryPlan.objects.create(
+        year=2026,
+        month=1,
+        price=10000,
+        expense_type=expense_type,
+        title=title,
+        journal=main_user.journal,
+    )
+    NecessaryPlan.objects.create(
+        year=2026,
+        month=2,
+        price=20000,
+        expense_type=expense_type,
+        title=title,
+        journal=main_user.journal,
+    )
+
+    updated_data = {
+        "year": 2026,
+        "expense_type": expense_type.pk,
+        "title": title,
+        "january": 150.00,  # Updated
+        "february": "",  # Cleared -> Should Delete
+        "march": 300.00,  # New -> Should Create
+    }
+
+    form = NecessaryPlanForm(data=updated_data, instance=plan_jan, user=main_user)
+    assert form.is_valid()
+    form.save()
+
+    # 3. Assert correct DB state in CENTS
+    assert NecessaryPlan.objects.count() == 2
+    assert NecessaryPlan.objects.filter(month=2).exists() is False
+    assert NecessaryPlan.objects.get(month=1).price == 15000  # Updated to 15000
+    assert NecessaryPlan.objects.get(month=3).price == 30000  # Created as 30000
+
+
+def test_necessary_plan_form_prevents_cross_category_pollution(main_user):
+    e1 = ExpenseTypeFactory(title="E1", journal=main_user.journal)
+    e2 = ExpenseTypeFactory(title="E2", journal=main_user.journal)
+
+    e1_instance = NecessaryPlanFactory(
+        year=2026,
+        month=1,
+        price=100000,
+        expense_type=e1,
+        title="X",
+        journal=main_user.journal,
+    )
+
+    NecessaryPlanFactory(
+        year=2026,
+        month=2,
+        price=50000,
+        expense_type=e2,
+        title="X",
+        journal=main_user.journal,
+    )
+
+    form = NecessaryPlanForm(user=main_user, instance=e1_instance)
+
+    assert form.initial["january"] == 1000.0  # 100000 cents -> 1000.0 float
+    assert form.initial.get("february") is None, "Cross-category pollution detected!"
+
+
+# -------------------------------------------------------------------------------------
+#                                                                         Day Plan Form
+# -------------------------------------------------------------------------------------
+
+
+def test_day_does_not_render_user_select(main_user):
+    form = DayPlanForm(user=main_user)
+    rendered_html = form.as_p()
+
+    assert '<select name="user"' not in rendered_html
+    assert 'name="user"' not in rendered_html
+
+
+@pytest.mark.parametrize("month", MONTHS)
+def test_day_initialization(main_user, month):
+    form = DayPlanForm(user=main_user)
+
+    assert month in form.fields
+
+    assert isinstance(form.fields["journal"].widget, HiddenInput)
+    assert form.fields["journal"].initial == main_user.journal
+
+
+@time_machine.travel("1999-01-01")
+def test_day_blank_data(main_user):
+    form = DayPlanForm(user=main_user, data={})
+
+    assert not form.is_valid()
+    assert len(form.errors) == 1
+    assert "year" in form.errors
+
+
+def test_day_unique_together_validation_more_than_one(main_user):
+    """Tests that uniqueness doesn't block valid distinct inputs."""
+    existing_plan = DayPlanFactory(
+        year=1999,
+        journal=main_user.journal,
+    )
+
+    form = DayPlanForm(
+        user=main_user,
+        data={
+            "year": 1999,
+            "january": 15.00,
+        },
+    )
+
+    assert not form.is_valid()
+    expected_msg = _("Plan for %(year)s already exists.") % {
+        "year": existing_plan.year,
+    }
+    assert form.errors == {"__all__": [expected_msg]}
+
+
+def test_day_negative_number(main_user):
+    data = {
+        "year": 1999,
+    }
+
+    # Add a negative number to every single month
+    for key, _ in month_names().items():
+        data[key.lower()] = -1.00
+
+    form = DayPlanForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert len(form.errors) == 12
+
+
+def test_day_save_converts_to_cents(main_user):
+    form_data = {
+        "year": 1999,
+        "january": 0.01,
+        "march": 2.5,
+    }
+    form = DayPlanForm(data=form_data, user=main_user)
+
+    assert form.is_valid()
+    form.save()
+
+    assert DayPlan.objects.count() == 2
+
+    jan_plan = DayPlan.objects.get(month=1)
+    mar_plan = DayPlan.objects.get(month=3)
+
+    assert jan_plan.price == 1
+    assert jan_plan.year == 1999
+
+    assert mar_plan.price == 250
+    assert mar_plan.year == 1999
+
+
+def test_day_loads_initial_and_converts_from_cents(main_user):
+    plan_jan = DayPlanFactory(month=1, price=15_000)
+    DayPlanFactory(month=12, price=30_000)
+
+    form = DayPlanForm(instance=plan_jan, user=main_user)
+
+    assert form.initial["year"] == 1999
+
+    # 4. Assert conversion to standard floats for the frontend
+    assert float(form.initial["january"]) == 150.00
+    assert float(form.initial["december"]) == 300.00
+    assert form.initial.get("february") is None
+
+    # 5. Assert grouping fields are locked to prevent orphaned rows
+    assert form.fields["year"].disabled is True
+
+
+def test_day_updates_and_deletes_rows(main_user):
+    """Tests updates, deletions, and cents conversions handle correctly."""
+
+    plan_jan = DayPlan.objects.create(
+        year=2026,
+        month=1,
+        price=10000,
+        journal=main_user.journal,
+    )
+    DayPlan.objects.create(
+        year=2026,
+        month=2,
+        price=20000,
+        journal=main_user.journal,
+    )
+
+    updated_data = {
+        "year": 2026,
+        "january": 150.00,  # Updated
+        "february": "",  # Cleared -> Should Delete
+        "march": 300.00,  # New -> Should Create
+    }
+
+    form = DayPlanForm(data=updated_data, instance=plan_jan, user=main_user)
+    assert form.is_valid()
+    form.save()
+
+    # 3. Assert correct DB state in CENTS
+    assert DayPlan.objects.count() == 2
+    assert DayPlan.objects.filter(month=2).exists() is False
+    assert DayPlan.objects.get(month=1).price == 15000  # Updated to 15000
+    assert DayPlan.objects.get(month=3).price == 30000  # Created as 30000
+
+
+# -------------------------------------------------------------------------------------
+#                                                                       Copy Plans Form
+# -------------------------------------------------------------------------------------
+
+
 def test_copy_init(main_user):
-    CopyPlanForm(user=main_user)
+    form = CopyPlanForm(user=main_user)
+    assert form.fields["year_from"].initial == datetime.now().year
+    assert form.fields["income"].initial is True
 
 
 def test_copy_have_fields(main_user):
@@ -814,7 +1150,6 @@ def test_copy_blank_data(main_user):
     form = CopyPlanForm(user=main_user, data={})
 
     assert not form.is_valid()
-
     assert form.errors == {
         "year_from": ["Šis laukas yra privalomas."],
         "year_to": ["Šis laukas yra privalomas."],
@@ -831,7 +1166,6 @@ def test_copy_all_checkboxes_unselected(main_user):
     )
 
     assert not form.is_valid()
-
     assert form.errors == {"__all__": ["Reikia pažymėti nors vieną planą."]}
 
 
@@ -841,49 +1175,64 @@ def test_copy_empty_from_tables(main_user):
     )
 
     assert not form.is_valid()
-
     assert form.errors == {"income": ["Nėra ką kopijuoti."]}
 
 
 def test_copy_to_table_have_records(main_user):
-    IncomePlanFactory(year=1999)
-    IncomePlanFactory(year=2000)
+    # Setup
+    IncomePlanFactory(year=1999, journal=main_user.journal)
+    IncomePlanFactory(year=2000, journal=main_user.journal)
 
     form = CopyPlanForm(
         user=main_user, data={"year_from": 1999, "year_to": 2000, "income": True}
     )
 
     assert not form.is_valid()
-
     assert form.errors == {"income": ["2000 metai jau turi planus."]}
 
 
 def test_copy_to_table_have_records_from_empty(main_user):
-    IncomePlanFactory(year=2000)
+    IncomePlanFactory(year=2000, journal=main_user.journal)
 
     form = CopyPlanForm(
         user=main_user, data={"year_from": 1999, "year_to": 2000, "income": True}
     )
 
     assert not form.is_valid()
-
     assert form.errors == {
         "income": ["Nėra ką kopijuoti.", "2000 metai jau turi planus."]
     }
 
 
 def test_copy_data(main_user):
-    IncomePlanFactory(year=1999)
+    income_type = IncomeTypeFactory(journal=main_user.journal)
+
+    # User has plans for Jan and March in 1999
+    IncomePlanFactory(
+        year=1999,
+        month=1,
+        price=100,
+        income_type=income_type,
+        journal=main_user.journal,
+    )
+    IncomePlanFactory(
+        year=1999,
+        month=3,
+        price=300,
+        income_type=income_type,
+        journal=main_user.journal,
+    )
 
     form = CopyPlanForm(
         user=main_user, data={"year_from": 1999, "year_to": 2000, "income": True}
     )
 
     assert form.is_valid()
-
     form.save()
 
-    data = IncomePlanModelService(main_user).year(2000)
+    # Verify 2000 has exactly two tall rows
+    copied_data = IncomePlanModelService(main_user).year(2000)
 
-    assert data.exists()
-    assert data[0].year == 2000
+    assert copied_data.count() == 2
+    assert copied_data.get(month=1).price == 100
+    assert copied_data.get(month=3).price == 300

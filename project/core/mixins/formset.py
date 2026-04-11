@@ -61,9 +61,9 @@ class FormsetMixin:
     @cached_property
     def service_instance(self):
         if self.service_class is None:
+            txt = f"{self.__class__.__module__}.{self.__class__.__name__}"
             raise ImproperlyConfigured(
-                f"[{self.__class__.__module__}.{self.__class__.__name__}] is missing a data source. "
-                f"Please define 'service_class'."
+                f"[{txt}] is missing a data source. Please define 'service_class'."
             )
 
         return self.service_class(self.request.user)

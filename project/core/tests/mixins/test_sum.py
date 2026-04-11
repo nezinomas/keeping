@@ -1,12 +1,11 @@
 from datetime import date
+
 import pytest
 from django.core.exceptions import FieldError
 
-from ...mixins.sum import SumMixin
 from ....incomes.models import Income
-
-
 from ....incomes.tests.factories import IncomeFactory
+from ...mixins.sum import SumMixin
 
 
 class DummySumService(SumMixin):

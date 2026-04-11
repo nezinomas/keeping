@@ -14,8 +14,6 @@ from ...savings.services.model_services import SavingModelService
 from ...transactions.services.model_services import SavingCloseModelService
 from ...users.models import User
 
-MONTH_NAMES = monthnames()
-
 
 @dataclass(frozen=True)
 class ForecastDataDTO:
@@ -42,7 +40,8 @@ class MonthlyDataFormatter:
         """
         arr = [0] * 12
         for row in data:
-            arr[row["date"].month - 1] = row["sum"]
+            if date := row.get("date"):
+                arr[date.month - 1] = row.get("sum")
         return arr
 
     @staticmethod
@@ -58,15 +57,11 @@ class MonthlyDataFormatter:
             where the index represents the month (0-11).
             If the month does not exist in the dataset, the price will be 0.
         """
-        month_names = month_names or MONTH_NAMES
-        monthly_totals = [0] * 12
-
+        arr = [0] * 12
         for row in data:
-            for idx, month in enumerate(month_names):
-                if price := row.get(month):
-                    monthly_totals[idx] += price
-
-        return monthly_totals
+            if month := row.get("month"):
+                arr[month - 1] = row.get("price")
+        return arr
 
 
 class ForecastDataProvider:
@@ -81,7 +76,7 @@ class ForecastDataProvider:
         savings_close_qs = SavingCloseModelService(self.user).sum_by_month(self.year)
 
         planned_qs = (
-            IncomePlanModelService(self.user).year(self.year).values(*MONTH_NAMES)
+            IncomePlanModelService(self.user).year(self.year).values('month', "price")
         )
 
         return ForecastDataDTO(
@@ -124,7 +119,9 @@ class Forecast:
         self._past_idx = self._month - 1
 
     def balance(self) -> float:
-        """Calculates balance from January to current month (excluding current month)."""
+        """
+        Calculates balance from January to current month (excluding current month)
+        """
         incomes = sum(self._data.incomes[: self._past_idx])
         savings_close = sum(self._data.savings_close[: self._past_idx])
         expenses = sum(self._data.expenses[: self._past_idx])

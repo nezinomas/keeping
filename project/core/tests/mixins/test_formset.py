@@ -120,17 +120,17 @@ def test_missing_service_class_raises_error(mocker):
 
 
 def test_lazy_properties_instantiate_correctly(mocker):
-    """Proves the service is instantiated exactly once, with the correct user."""
+    """
+    Proves the service is instantiated exactly once, with the correct user
+    """
     view = TestView()
     view.service_class = mocker.Mock(return_value=DummyService(user="test_user"))
     view.request = mocker.Mock()
     view.request.user = "test_user"
 
-    # Trigger the property
     instance = view.service_instance
     model = view.model_class
 
-    # Assertions
     view.service_class.assert_called_once_with("test_user")
     assert model == DummyModel
 
@@ -141,7 +141,9 @@ def test_lazy_properties_instantiate_correctly(mocker):
 
 
 def test_formset_initial_returns_empty_if_no_foreign_key(mocker):
-    """If the target model has no foreign keys, it should safely return an empty list."""
+    """
+    If target model has no foreign keys, it should safely return an empty list
+    """
     view = TestView()
     view.category_service_class = DummyTypesService
 
@@ -154,7 +156,10 @@ def test_formset_initial_returns_empty_if_no_foreign_key(mocker):
 
 
 def test_formset_initial_populates_via_category_service_class(mocker):
-    """If foreign keys exist, it should ask category_service_class for items and build the list."""
+    """
+    If foreign keys exist, it should ask category_service_class
+    for items and build the list
+    """
     view = TestView()
     view.category_service_class = DummyTypesService
     view.request = mocker.Mock()
@@ -177,13 +182,15 @@ def test_formset_initial_populates_via_category_service_class(mocker):
 
 
 def test_get_formset_for_get_request(mocker):
-    """A GET request (post=None) should initialize the formset with formset_initial() and extra=len."""
+    """
+    A GET request (post=None) should initialize the formset
+    with formset_initial() and extra=len
+    """
     view = TestView()
     mocker.patch.object(TestView, "model_class", create=True)
     mocker.patch.object(TestView, "formset_initial", return_value=[{"initial": "data"}])
 
     mock_formset_class = mocker.Mock()
-    # Save the factory mock to a variable so we can assert against it!
     mock_factory = mocker.patch(
         "project.core.mixins.formset.modelformset_factory",
         return_value=mock_formset_class,
@@ -191,7 +198,6 @@ def test_get_formset_for_get_request(mocker):
 
     view.get_formset(post=None)
 
-    # 1. Prove the FACTORY was configured correctly (extra=1 because list length is 1)
     mock_factory.assert_called_once_with(
         model=view.model_class,
         form=ANY,
@@ -199,7 +205,6 @@ def test_get_formset_for_get_request(mocker):
         extra=1,
     )
 
-    # 2. Prove the initialized FORMSET received the right arguments
     mock_formset_class.assert_called_once_with(
         initial=[{"initial": "data"}],
         queryset=view.model_class.objects.none(),
@@ -207,7 +212,9 @@ def test_get_formset_for_get_request(mocker):
 
 
 def test_get_formset_for_post_request(mocker):
-    """A POST request should pass the POST data, set extra=0, and IGNORE formset_initial()."""
+    """
+    POST request should pass the POST data, set extra=0, and IGNORE formset_initial()
+    """
     view = TestView()
     mocker.patch.object(TestView, "model_class", create=True)
     mock_formset_initial = mocker.patch.object(TestView, "formset_initial")
@@ -256,7 +263,9 @@ def test_post_with_invalid_formset(mocker):
 
 
 def test_post_skips_empty_prices_and_does_not_save(mocker):
-    """If the user submits valid forms but leaves all prices empty, it shouldn't hit the DB."""
+    """
+    If the user submits valid forms but leaves all prices empty, it shouldn't hit the DB
+    """
     view = TestView()
 
     mock_form1 = mocker.Mock(cleaned_data={"price": None})
@@ -283,7 +292,9 @@ def test_post_skips_empty_prices_and_does_not_save(mocker):
 
 
 def test_post_saves_valid_prices_and_triggers_signals(mocker):
-    """If prices exist, it must instantiate objects, bulk create them, and fire signals."""
+    """
+    If prices exist, it must instantiate objects, bulk create them, and fire signals.
+    """
     view = TestView()
     mock_request = mocker.Mock()
     view.request = mock_request

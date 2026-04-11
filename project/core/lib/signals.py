@@ -32,6 +32,7 @@ class GetData:
             if _qs := source_callable(self.user):
                 yield from _qs
 
+
 class SignalBase(ABC):
     signal_type = None
 

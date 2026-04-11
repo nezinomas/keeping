@@ -1,124 +1,114 @@
 import calendar
-import itertools
 from datetime import date
+from functools import cached_property
 
 import polars as pl
 
 
+class DateRangeProvider:
+    @staticmethod
+    def get_dates(year: int, month: int | None = None) -> pl.DataFrame:
+        if month:
+            days = calendar.monthrange(year, month)[1]
+            dates = [date(year, month, d) for d in range(1, days + 1)]
+        else:
+            dates = [date(year, m, 1) for m in range(1, 13)]
+
+        return pl.DataFrame({"date": dates}).with_columns(pl.col("date").cast(pl.Date))
+
+
+class DataFrameSchemaFormatter:
+    """Handles enforcing required columns and sorting them alphabetically."""
+
+    def __init__(self, required_columns: list[str] | None = None):
+        self.required_columns = required_columns or []
+
+    def format(self, df: pl.DataFrame) -> pl.DataFrame:
+        # 1. Add any missing columns as 0
+        missing_cols = [
+            pl.lit(0).cast(pl.Int32).alias(col)
+            for col in self.required_columns
+            if col not in df.columns
+        ]
+
+        if missing_cols:
+            df = df.with_columns(missing_cols)
+
+        # 2. Sort columns alphabetically, keeping 'date' first
+        data_cols = sorted([col for col in df.columns if col != "date"])
+        return df.select(["date", *data_cols])
+
+
+class TimeSeriesPivotBuilder:
+    """Transforms raw dictionary data into a padded, clean Polars pivot table."""
+
+    def __init__(
+        self, year: int, month: int | None = None, columns: list[str] | None = None
+    ):
+        self.year = year
+        self.month = month
+        self.date_provider = DateRangeProvider()
+        self.formatter = DataFrameSchemaFormatter(columns)
+
+    def build(self, raw_data: list[dict], value_column: str) -> pl.DataFrame:
+        expected_dates_df = self.date_provider.get_dates(self.year, self.month)
+
+        if not raw_data:
+            return self.formatter.format(expected_dates_df)
+
+        df = pl.DataFrame(raw_data)
+
+        # If the requested value column (like 'exception_sum') doesn't exist
+        # return empty schema
+        if value_column not in df.columns:
+            return self.formatter.format(expected_dates_df)
+
+        # Aggregate and Pivot directly
+        pivoted_df = (
+            df.group_by(["date", "title"])
+            .agg(pl.col(value_column).sum().cast(pl.Int32))
+            .pivot(
+                index="date",
+                on="title",
+                values=value_column,
+                aggregate_function="first",
+            )
+        )
+
+        # "Pad" the missing dates via a LEFT JOIN
+        padded_df = expected_dates_df.join(pivoted_df, on="date", how="left").fill_null(
+            0
+        )
+
+        return self.formatter.format(padded_df)
+
+
 class MakeDataFrame:
     def __init__(
-        self, year: int, data: list[dict], columns: list = None, month: int = None
+        self,
+        year: int,
+        data: list[dict],
+        columns: list[str] | None = None,
+        month: int | None = None,
     ):
-        """Create polars DataFrame from list of dictionaries
-
-        Parameters
-        ---------
-        year: int
-
-        data: list[dict]
-            [{date, sum, exception_sum, title},]
-
-        columns: list|tuple
-            Optional.
-            For insertation of additional columns
-
-        month: int
-            Optional.
-            If value: DataFrame rows will be days of that month
-            If no value: DataFrame rows will be 12 months
-        """
         self.year = year
         self.month = month
         self._columns = columns
         self._data = data
 
-    @property
-    def data(self):
-        return self.create_data(sum_col_name="sum")
+        self._builder = TimeSeriesPivotBuilder(year, month, columns)
 
     @property
-    def exceptions(self):
-        df = self.create_data(sum_col_name="exception_sum")
+    def data(self) -> pl.DataFrame:
+        return self._builder.build(self._data, value_column="sum")
 
-        if df.shape[1] <= 1:
-            return df.with_columns(sum=pl.lit(0))
+    @property
+    def exceptions(self) -> pl.DataFrame:
+        df = self._builder.build(self._data, value_column="exception_sum")
+
+        if len(df.columns) <= 1:
+            return df.with_columns(sum=pl.lit(0).cast(pl.Int32))
 
         return df.select(
             [pl.col("date"), pl.sum_horizontal(pl.exclude("date")).alias("sum")]
         )
-
-    def _modify_data(self):
-        data = self._data or []
-
-        if data:
-            keys = [x for x in self._data[0].keys() if x not in ["date", "title"]]
-            cols = sorted({a["title"] for a in self._data})
-        else:
-            keys = ["sum", "exception_sum"]
-            cols = ["__tmp_to_drop__"]
-
-        # insert empty values for one month days
-        if self.month:
-            days = calendar.monthrange(self.year, self.month)[1] + 1
-            for title, i in itertools.product(cols, range(1, days)):
-                dt = date(self.year, self.month, i)
-                data.append(self._insert_empty_dicts(dt, title, keys))
-        # insert empty values for 12 months
-        else:
-            for title, i in itertools.product(cols, range(1, 13)):
-                dt = date(self.year, i, 1)
-                data.append(self._insert_empty_dicts(dt, title, keys))
-
-        return data
-
-    def _insert_empty_dicts(self, dt, title, keys):
-        return {"date": dt, "title": title, **{x: 0 for x in keys}}
-
-    def create_data(self, sum_col_name: str = "sum") -> pl.DataFrame:
-        data = self._modify_data()
-
-        return (
-            pl.DataFrame(data)
-            .pipe(self._group_and_sum)
-            .sort([pl.col.title, pl.col.date])
-            .select(["date", "title", sum_col_name])
-            .sort(["title", "date"])
-            .with_columns(pl.col(sum_col_name).cast(pl.Int32))
-            .pivot(
-                values=sum_col_name,
-                index="date",
-                on="title",
-                aggregate_function="first",
-            )
-            .pipe(self._insert_missing_columns)
-            .pipe(self._drop_columns)
-            .pipe(self._sort_columns)
-            .fill_null(0)
-            .sort("date")
-        )
-
-    def _group_and_sum(self, df):
-        cols = df.columns
-        return df.group_by([pl.col.date, pl.col.title]).agg(
-            [pl.col(i).sum() for i in cols if i not in ["date", "title"]]
-        )
-
-    def _drop_columns(self, df: pl.DataFrame) -> pl.Expr:
-        col_to_drop = [
-            "__tmp_to_drop__",
-        ]
-        return df.drop([name for name in col_to_drop if name in df.columns])
-
-    def _insert_missing_columns(self, df: pl.DataFrame) -> pl.Expr:
-        """Insert missing columns"""
-        if not self._columns:
-            return df
-
-        cols_diff = set(self._columns) - set(df.columns)
-        cols = [pl.lit(0).alias(col_name) for col_name in cols_diff]
-
-        return df.select([pl.all(), *cols])
-
-    def _sort_columns(self, df: pl.DataFrame) -> pl.Expr:
-        cols = [pl.col(x) for x in sorted(df.columns[1:])]
-        return df.select([pl.col("date"), *cols])

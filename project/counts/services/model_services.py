@@ -35,8 +35,8 @@ class CountModelService(SumMixin, BaseModelService):
         if count_type:
             qs = qs.filter(count_type__slug=count_type)
 
-        return self.year_sum(qs,
-            year=year, sum_annotation="qty", sum_column="quantity"
+        return self.year_sum(
+            qs, year=year, sum_annotation="qty", sum_column="quantity"
         ).order_by("date")
 
     def sum_by_day(self, year, count_type=None, month=None) -> list:
@@ -47,8 +47,8 @@ class CountModelService(SumMixin, BaseModelService):
         if count_type:
             qs = qs.filter(count_type__slug=count_type)
 
-        return self.day_sum(qs,
-            year=year, month=month, sum_annotation="qty", sum_column="quantity"
+        return self.day_sum(
+            qs, year=year, month=month, sum_annotation="qty", sum_column="quantity"
         ).order_by("date")
 
 
