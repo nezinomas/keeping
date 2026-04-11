@@ -1,4 +1,5 @@
 import pytest
+from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
 from django.utils.translation import gettext as _
 from factory.django import mute_signals
@@ -481,6 +482,59 @@ def test_necessary_str():
     actual = NecessaryPlanFactory.build(year=2000, title="N")
 
     assert str(actual) == "2000/N"
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Car Insurance",
+        "Plan-A",
+        "Test_123",
+        "Lietuviškas įrašas",
+    ],
+)
+def test_necessary_plan_title_valid(title):
+    obj = NecessaryPlanFactory(title=title)
+    obj.full_clean()
+
+
+def test_necessary_plan_title_too_short():
+    obj = NecessaryPlanFactory(title="ab")
+
+    with pytest.raises(ValidationError) as exc:
+        obj.full_clean()
+
+    assert "title" in exc.value.message_dict
+
+
+def test_necessary_plan_title_too_long():
+    # 101 characters is over the max_length=100 limit
+    expense_type = ExpenseTypeFactory()
+    obj = NecessaryPlanFactory(title="a" * 101)
+
+    with pytest.raises(ValidationError) as exc:
+        obj.full_clean()
+
+    assert "title" in exc.value.message_dict
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Drop * table",
+        "My@Plan",
+        "<script>alert('x')</script>",
+        "Hello!",
+    ],
+)
+def test_necessary_plan_title_invalid_characters(title):
+    expense_type = ExpenseTypeFactory()
+    obj = NecessaryPlanFactory(title=title)
+
+    with pytest.raises(ValidationError) as exc:
+        obj.full_clean()
+
+    assert "title" in exc.value.message_dict
 
 
 def test_necessary_objects(main_user, second_user):

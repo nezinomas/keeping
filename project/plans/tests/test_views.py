@@ -1487,14 +1487,14 @@ def test_necessary_load_form(client_logged):
 
 def test_necessary_new(client_logged, main_user):
     e = ExpenseTypeFactory()
-    data = {"year": "1999", "title": "X", "january": 0.66, "expense_type": e.pk}
+    data = {"year": "1999", "title": "ABCD", "january": 0.66, "expense_type": e.pk}
 
     url = reverse("plans:necessary_new")
     client_logged.post(url, data, follow=True)
     actual = NecessaryPlan.objects.first()
 
     assert actual.journal == main_user.journal
-    assert actual.title == "X"
+    assert actual.title == "ABCD"
     assert actual.year == 1999
     assert actual.month == 1
     assert actual.price == 66

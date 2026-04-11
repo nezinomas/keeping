@@ -707,6 +707,88 @@ def test_necessary_blank_data(main_user):
     assert "title" in form.errors
 
 
+def test_necessary_form_title_valid(
+    main_user,
+):
+    expense_type = ExpenseTypeFactory()
+
+    data = {
+        "title": "Car Insurance-2026_A",
+        "expense_type": expense_type.pk,
+        "january": 100.50,
+        "year": 1999,
+    }
+
+    form = NecessaryPlanForm(data=data, user=main_user)
+
+    assert form.is_valid(), f"Form should be valid, but got errors: {form.errors}"
+
+
+def test_necessary_form_title_too_short(main_user):
+    expense_type = ExpenseTypeFactory()
+
+    data = {
+        "title": "ab",  # Only 2 characters
+        "expense_type": expense_type.pk,
+        "year": 1999,
+        "january": 100.50,
+    }
+
+    form = NecessaryPlanForm(data=data, user=main_user)
+
+    assert not form.is_valid()
+    assert "title" in form.errors
+
+    assert "Įsitikinkite, kad reikšmė sudaryta iš nemažiau kaip 3 ženklų (dabartinis ilgis 2)." in form.errors["title"][0]
+
+
+def test_necessary_form_title_too_long(main_user):
+    expense_type = ExpenseTypeFactory()
+
+    data = {
+        "title": "a" * 101,  # 101 characters
+        "expense_type": expense_type.pk,
+        "year": 1999,
+        "january": 100.50,
+    }
+
+    form = NecessaryPlanForm(data=data, user=main_user)
+
+    assert not form.is_valid()
+    assert "title" in form.errors
+    assert "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 100 ženklų (dabartinis ilgis 101)." in form.errors["title"][0]
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Drop * table",
+        "My@Plan",
+        "<script>alert('x')</script>",
+        "Insurance/Home",
+    ],
+)
+def test_necessary_form_title_invalid_characters(main_user, title):
+    expense_type = ExpenseTypeFactory()
+
+    data = {
+        "title": title,
+        "expense_type": expense_type.pk,
+        "year": 1999,
+        "january": 100.50,
+    }
+
+    form = NecessaryPlanForm(data=data, user=main_user)
+
+    assert not form.is_valid()
+    assert "title" in form.errors
+
+    assert (
+        "Title can only contain letters, numbers, spaces, hyphens, and underscores."
+        in form.errors["title"][0]
+    )
+
+
 def test_necessary_unique_together_validation(main_user):
     existing_plan = NecessaryPlanFactory()
 
@@ -734,7 +816,7 @@ def test_necessary_unique_together_validation_more_than_one(main_user):
     NecessaryPlanFactory(
         year=1999,
         expense_type=ExpenseTypeFactory(title="First"),
-        title="T1",
+        title="ABCD",
         journal=main_user.journal,
     )
 
@@ -744,7 +826,7 @@ def test_necessary_unique_together_validation_more_than_one(main_user):
         data={
             "year": 1999,
             "expense_type": new_type.pk,
-            "title": "T1",
+            "title": "ABCD",
             "january": 15.00,
         },
     )
@@ -758,7 +840,7 @@ def test_necessary_negative_number(main_user):
     data = {
         "year": 1999,
         "expense_type": expense_type.pk,
-        "title": "X",
+        "title": "ABCD",
     }
 
     # Add a negative number to every single month
@@ -830,7 +912,7 @@ def test_necessary_loads_initial_and_converts_from_cents(main_user):
 def test_necessary_updates_and_deletes_rows(main_user):
     """Tests updates, deletions, and cents conversions handle correctly."""
 
-    title = "X"
+    title = "Xxx"
     expense_type = ExpenseTypeFactory()
 
     plan_jan = NecessaryPlan.objects.create(
