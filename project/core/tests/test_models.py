@@ -16,6 +16,7 @@ pytestmark = pytest.mark.django_db
         "Lietuviškas įrašas",  # Unicode/Lithuanian characters
         "Plan-A",  # Hyphens allowed
         "Test_123",  # Underscores and numbers allowed
+        "Test.Other",  # Dot allowed
     ],
 )
 def test_title_abstract_valid(title):
@@ -60,7 +61,6 @@ def test_title_abstract_too_long():
         "My@Plan",
         "<script>alert('x')</script>",
         "Insurance/Home",
-        "No.Dots",
         "Newline\nBreak",
     ],
 )
