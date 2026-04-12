@@ -11,7 +11,7 @@ class TitleAbstract(models.Model):
         abstract = True
 
     title = models.CharField(
-        max_length=100, # Safely expanded!
+        max_length=100,
         blank=False,
         validators=[
             MinLengthValidator(3),
