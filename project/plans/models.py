@@ -7,6 +7,7 @@ from django.core.validators import (
 from django.db import models
 from django.utils.translation import gettext as _
 
+from ..core.validators import validate_title_characters
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..journals.models import Journal
@@ -98,10 +99,7 @@ class NecessaryPlan(models.Model):
         max_length=100,
         validators=[
             MinLengthValidator(3),
-            RegexValidator(
-                regex=r'^[\w\s\-]+$',
-                message=_("Title can only contain letters, numbers, spaces, hyphens, and underscores.")
-            )
+            validate_title_characters
         ]
     )
     expense_type = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
