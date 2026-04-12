@@ -3,6 +3,8 @@ from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
+from .validators import validate_title_characters
+
 
 class TitleAbstract(models.Model):
     class Meta:
@@ -10,13 +12,10 @@ class TitleAbstract(models.Model):
 
     title = models.CharField(
         max_length=100, # Safely expanded!
-        blank=False, 
+        blank=False,
         validators=[
             MinLengthValidator(3),
-            RegexValidator(
-                regex=r'^[\w \-]+$',
-                message=_("Title can only contain letters, numbers, spaces, hyphens, and underscores.")
-            )
+            validate_title_characters
         ]
     )
     slug = models.SlugField(
