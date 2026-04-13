@@ -51,10 +51,11 @@ def test_plan_queryset_mixin(mocker):
 #                                                    PlanUpdateMixin & PlanDeleteMixin
 # -------------------------------------------------------------------------------------
 
-@pytest.mark.parametrize("Mixin", [PlanUpdateMixin, PlanDeleteMixin])
+
+@pytest.mark.parametrize("mixin", [PlanUpdateMixin, PlanDeleteMixin])
 class TestObjectAndUrlMixins:
-    def test_get_object_found(self, mocker, Mixin):
-        class DummyView(Mixin):
+    def test_get_object_found(self, mocker, mixin):
+        class DummyView(mixin):
             pass
 
         view = DummyView()
@@ -65,8 +66,8 @@ class TestObjectAndUrlMixins:
 
         assert view.get_object() == "my_dummy_plan"
 
-    def test_get_object_not_found(self, mocker, Mixin):
-        class DummyView(Mixin):
+    def test_get_object_not_found(self, mocker, mixin):
+        class DummyView(mixin):
             pass
 
         view = DummyView()
@@ -77,28 +78,29 @@ class TestObjectAndUrlMixins:
         with pytest.raises(Http404, match=_("No plans found.")):
             view.get_object()
 
-    def test_url_without_object(self, Mixin):
-        class DummyView(Mixin):
+    def test_url_without_object(self, mixin):
+        class DummyView(mixin):
             object = None
 
         view = DummyView()
 
         assert view.url() is None
 
-    def test_url_with_object(self, Mixin): # <-- removed mocker
-            class DummyView(Mixin):
-                object = "exists"
-                url_name = "income_update"
-                kwargs = {"year": 2026, "income_type_id": 5}
+    def test_url_with_object(self, mixin):
+        class DummyView(mixin):
+            object = "exists"
+            url_name = "income_update"
+            kwargs = {"year": 2026, "income_type_id": 5}
 
-            view = DummyView()
+        view = DummyView()
 
-            assert str(view.url()) == "/plans/incomes/update/2026/5/"
+        assert str(view.url()) == "/plans/incomes/update/2026/5/"
 
 
 # -------------------------------------------------------------------------------------
 #                                                                      PlanDeleteMixin
 # -------------------------------------------------------------------------------------
+
 
 def test_plan_delete_mixin_post(mocker):
     mock_super_post_response = mocker.Mock()

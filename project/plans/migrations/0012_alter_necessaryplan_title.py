@@ -5,15 +5,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plans', '0011_alter_necessaryplan_title'),
+        ("plans", "0011_alter_necessaryplan_title"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='necessaryplan',
-            name='title',
-            field=models.CharField(max_length=100, validators=[django.core.validators.MinLengthValidator(3), django.core.validators.RegexValidator(message='Title can only contain letters, numbers, spaces, hyphens, and underscores.', regex='^[ \\w\\-\\.]+$')]),
+            model_name="necessaryplan",
+            name="title",
+            field=models.CharField(
+                max_length=100,
+                validators=[
+                    django.core.validators.MinLengthValidator(3),
+                    django.core.validators.RegexValidator(
+                        message="Title can only contain letters, numbers, spaces, hyphens, and underscores.",
+                        regex="^[ \\w\\-\\.]+$",
+                    ),
+                ],
+            ),
         ),
     ]

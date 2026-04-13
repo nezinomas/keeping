@@ -96,11 +96,7 @@ class NecessaryPlan(models.Model):
     month = models.PositiveIntegerField(null=True, blank=True)
     price = models.PositiveIntegerField(null=True, blank=True)
     title = models.CharField(
-        max_length=100,
-        validators=[
-            MinLengthValidator(3),
-            validate_title_characters
-        ]
+        max_length=100, validators=[MinLengthValidator(3), validate_title_characters]
     )
     expense_type = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
     journal = models.ForeignKey(
