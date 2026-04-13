@@ -7,7 +7,7 @@ textarea {
     }
 
     &[readonly] {
-        background-color: #90c6fc !important;
+        background-color: $disabled !important;
         color: #9ca3af;
         cursor: not-allowed;
 
