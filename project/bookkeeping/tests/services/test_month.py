@@ -28,7 +28,9 @@ def dummy_dto():
         expense_types=["Food"],
         necessary_expense_types=["Food"],
         savings=[{"date": "2026-04-01", "savings": 50}],
+        plans_data={"dummy_plan_key": "dummy_plan_value"}
     )
+
 
 
 def test_chart_expenses_context():
@@ -277,16 +279,17 @@ def test_month_table_property(mocker, main_user, dummy_dto):
 
 
 def test_plans_property(mocker, main_user, dummy_dto):
-    """Proves PlanCollectData and PlanCalculateDaySum are chained correctly."""
-    mock_collect = mocker.patch(f"{MONTH_SERVICE_PATH}.PlanCollectData")
+    """Proves PlanCalculateDaySum is initialized directly with DTO data."""
+    # We no longer need to mock PlanCollectData!
     mock_calc = mocker.patch(f"{MONTH_SERVICE_PATH}.PlanCalculateDaySum")
 
     presenter = MonthContextPresenter(main_user, 2026, 4, dummy_dto)
-    result = presenter.plans
+    result = presenter.plans 
 
-    mock_collect.assert_called_once_with(main_user, 2026)
+    # Verify the calculator receives the exact data stored in the DTO
     mock_calc.assert_called_once_with(
-        data=mock_collect.return_value.get_data.return_value, month=4
+        data={"dummy_plan_key": "dummy_plan_value"}, 
+        month=4
     )
     assert result == mock_calc.return_value
 

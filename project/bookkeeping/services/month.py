@@ -28,6 +28,7 @@ class MonthDataDTO:
     expense_types: list[str]
     necessary_expense_types: list[str]
     savings: list[dict]
+    plans_data: dict
 
 
 class MonthDataProvider:
@@ -57,6 +58,7 @@ class MonthDataProvider:
             savings=list(
                 SavingModelService(self.user).sum_by_day(self.year, self.month)
             ),
+            plans_data=PlanCollectData(self.user, self.year).get_data(),
         )
 
     def _get_incomes(self) -> int:
@@ -189,8 +191,7 @@ class MonthContextPresenter:
 
     @cached_property
     def plans(self) -> PlanCalculateDaySum:
-        plans_data = PlanCollectData(self.user, self.year).get_data()
-        return PlanCalculateDaySum(data=plans_data, month=self.month)
+        return PlanCalculateDaySum(data=self.dto.plans_data, month=self.month)
 
     @cached_property
     def spending(self) -> DaySpending:
