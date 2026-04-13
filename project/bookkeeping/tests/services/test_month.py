@@ -257,21 +257,20 @@ def test_info_builder_delta():
 
 def test_presenter_init(main_user, dummy_dto):
     """Proves the constructor only assigns state and does not trigger heavy logic."""
-    presenter = MonthContextPresenter(main_user, 2026, 4, dummy_dto)
+    presenter = MonthContextPresenter(2026, 4, dummy_dto)
 
-    assert presenter.user == main_user
     assert presenter.year == 2026
     assert presenter.month == 4
     assert presenter.dto == dummy_dto
 
 
-def test_month_table_property(mocker, main_user, dummy_dto):
+def test_month_table_property(mocker, dummy_dto):
     """Proves MakeDataFrame and MonthTableBuilder are initialized correctly."""
     # Mock the external dependencies
     mock_make_df = mocker.patch(f"{MONTH_SERVICE_PATH}.MakeDataFrame")
     mock_table_builder = mocker.patch(f"{MONTH_SERVICE_PATH}.MonthTableBuilder")
 
-    presenter = MonthContextPresenter(main_user, 2026, 4, dummy_dto)
+    presenter = MonthContextPresenter(2026, 4, dummy_dto)
     _ = presenter.month_table  # Trigger the cached property
 
     # Ensure DataFrames were generated for both expenses and savings
@@ -279,12 +278,12 @@ def test_month_table_property(mocker, main_user, dummy_dto):
     mock_table_builder.assert_called_once()
 
 
-def test_plans_property(mocker, main_user, dummy_dto):
+def test_plans_property(mocker, dummy_dto):
     """Proves PlanCalculateDaySum is initialized directly with DTO data."""
     # We no longer need to mock PlanCollectData!
     mock_calc = mocker.patch(f"{MONTH_SERVICE_PATH}.PlanCalculateDaySum")
 
-    presenter = MonthContextPresenter(main_user, 2026, 4, dummy_dto)
+    presenter = MonthContextPresenter(2026, 4, dummy_dto)
     result = presenter.plans 
 
     # Verify the calculator receives the exact data stored in the DTO
@@ -295,7 +294,7 @@ def test_plans_property(mocker, main_user, dummy_dto):
     assert result == mock_calc.return_value
 
 
-def test_spending_property(mocker, main_user, dummy_dto):
+def test_spending_property(mocker, dummy_dto):
     """Proves DaySpending is initialized with the correct plan parameters."""
     mock_make_df = mocker.patch(f"{MONTH_SERVICE_PATH}.MakeDataFrame")
     mock_day_spending = mocker.patch(f"{MONTH_SERVICE_PATH}.DaySpending")
@@ -309,7 +308,7 @@ def test_spending_property(mocker, main_user, dummy_dto):
         return_value=mock_plans,
     )
 
-    presenter = MonthContextPresenter(main_user, 2026, 4, dummy_dto)
+    presenter = MonthContextPresenter(2026, 4, dummy_dto)
     result = presenter.spending
 
     mock_day_spending.assert_called_once_with(
@@ -321,9 +320,9 @@ def test_spending_property(mocker, main_user, dummy_dto):
     assert result == mock_day_spending.return_value
 
 
-def test_totals_property(mocker, main_user, dummy_dto):
+def test_totals_property(mocker, dummy_dto):
     """Proves dictionary keys are accessed safely and mapped correctly."""
-    presenter = MonthContextPresenter(main_user, 2026, 4, dummy_dto)
+    presenter = MonthContextPresenter(2026, 4, dummy_dto)
 
     # Mock the 'month_table' and 'spending' properties
     mock_month_table = mocker.Mock()
@@ -354,9 +353,9 @@ def test_totals_property(mocker, main_user, dummy_dto):
     }
 
 
-def test_tables_property(mocker, main_user, dummy_dto):
+def test_tables_property(mocker, dummy_dto):
     """Proves the tables dictionary is built from the nested properties."""
-    presenter = MonthContextPresenter(main_user, 2026, 4, dummy_dto)
+    presenter = MonthContextPresenter(2026, 4, dummy_dto)
 
     mock_month_table = mocker.Mock(table=["main_data"], total_row={"total": 10})
     mock_spending = mocker.Mock(spending=["spending_data"])
@@ -381,12 +380,12 @@ def test_tables_property(mocker, main_user, dummy_dto):
     }
 
 
-def test_charts_property(main_user, mocker, dummy_dto):
+def test_charts_property(mocker, dummy_dto):
     """Proves the ChartBuilder receives targets directly from the DTO."""
     mock_chart_builder = mocker.patch(f"{MONTH_SERVICE_PATH}.ChartBuilder")
 
     # Presenter initialized without a user!
-    presenter = MonthContextPresenter(main_user, 2026, 4, dummy_dto)
+    presenter = MonthContextPresenter(2026, 4, dummy_dto)
 
     mock_month_table = mocker.Mock(total_row={"total": 10})
     mocker.patch.object(

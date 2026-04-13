@@ -174,8 +174,7 @@ class InfoBuilder:
 
 
 class MonthContextPresenter:
-    def __init__(self, user, year, month, dto: MonthDataDTO):
-        self.user = user
+    def __init__(self, year, month, dto: MonthDataDTO):
         self.year = year
         self.month = month
         self.dto = dto
@@ -269,7 +268,7 @@ def load_service(user: User) -> dict:
 
     dto = MonthDataProvider(user).get_data()
 
-    presenter = MonthContextPresenter(user, year, month, dto)
+    presenter = MonthContextPresenter(year, month, dto)
 
     return {
         "month_table": {
