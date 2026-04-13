@@ -20,7 +20,11 @@ class MonthDataProvider:
 
     def get_data(self) -> MonthDataDTO:
         return MonthDataDTO(
-            incomes=self._get_incomes(),
+            incomes=(
+                IncomeModelService(self.user)
+                .objects.filter(date__year=self.year, date__month=self.month)
+                .aggregate(Sum("price", default=0))["price__sum"]
+            ),
             expenses=list(
                 ExpenseModelService(self.user).sum_by_day_and_type(
                     self.year, self.month
@@ -43,11 +47,4 @@ class MonthDataProvider:
             targets=PlanAggregatorService(self.user).get_monthly_plan_targets(
                 self.year, self.month
             ),
-        )
-
-    def _get_incomes(self) -> int:
-        return (
-            IncomeModelService(self.user)
-            .objects.filter(date__year=self.year, date__month=self.month)
-            .aggregate(Sum("price", default=0))["price__sum"]
         )
