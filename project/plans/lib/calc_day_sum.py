@@ -201,8 +201,9 @@ class PlanCalculateDaySum:
         df = df.pivot(values="amount", index="month", on="name").fill_null(0)
 
         for col in list(InputRow):
-            if col not in df.columns:
-                df = df.with_columns(pl.lit(0).alias(col))
+            if col in df.columns:
+                continue
+            df = df.with_columns(pl.lit(0).alias(col))
         return df
 
     def _calculate_df(self, df):
