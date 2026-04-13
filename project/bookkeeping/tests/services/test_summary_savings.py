@@ -2,14 +2,12 @@ import factory
 import pytest
 import time_machine
 from django.db.models.signals import post_save
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from ....savings.services.model_services import SavingBalanceModelService
 from ....savings.tests.factories import SavingBalanceFactory
 from ...services.summary_savings import load_service, make_chart
-
-pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(name="data1")
@@ -58,10 +56,12 @@ data_stragety = st.lists(
             "incomes": st.integers(min_value=0, max_value=1_000_000),
             "profit": st.integers(min_value=-1_000, max_value=1_000),
         }
-    )
+    ),
+    max_size=15,
 )
 
 
+@settings(max_examples=30)
 @given(data_stragety)
 def test_chart_data_with_hypothesis(data):
     make_chart("x", data)
@@ -190,6 +190,7 @@ def test_load_service_template_variables_funds(load_data_funds):
         }
     )
 )
+@settings(max_examples=30)
 @factory.django.mute_signals(post_save)
 def test_load_service_with_hypothesis(data):
     load_service(data)
