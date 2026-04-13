@@ -29,6 +29,7 @@ class MonthDataDTO:
     necessary_expense_types: list[str]
     savings: list[dict]
     plans_data: dict
+    targets: dict
 
 
 class MonthDataProvider:
@@ -59,6 +60,9 @@ class MonthDataProvider:
                 SavingModelService(self.user).sum_by_day(self.year, self.month)
             ),
             plans_data=PlanCollectData(self.user, self.year).get_data(),
+            targets=PlanAggregatorService(self.user).get_monthly_plan_targets(
+                self.year, self.month
+            ),
         )
 
     def _get_incomes(self) -> int:
@@ -256,10 +260,7 @@ class MonthContextPresenter:
 
     @cached_property
     def charts(self) -> ChartBuilder:
-        targets = PlanAggregatorService(self.user).get_monthly_plan_targets(
-            self.year, self.month
-        )
-        return ChartBuilder(targets=targets, totals=self.month_table.total_row)
+        return ChartBuilder(targets=self.dto.targets, totals=self.month_table.total_row)
 
 
 def load_service(user: User) -> dict:

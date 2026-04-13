@@ -28,7 +28,8 @@ def dummy_dto():
         expense_types=["Food"],
         necessary_expense_types=["Food"],
         savings=[{"date": "2026-04-01", "savings": 50}],
-        plans_data={"dummy_plan_key": "dummy_plan_value"}
+        plans_data={"dummy_plan_key": "dummy_plan_value"},
+        targets={"Food": 100},
     )
 
 
@@ -380,31 +381,23 @@ def test_tables_property(mocker, main_user, dummy_dto):
     }
 
 
-def test_charts_property(mocker, main_user, dummy_dto):
-    """Proves the ChartBuilder receives targets and total rows."""
-    mock_agg_service = mocker.patch(f"{MONTH_SERVICE_PATH}.PlanAggregatorService")
+def test_charts_property(main_user, mocker, dummy_dto):
+    """Proves the ChartBuilder receives targets directly from the DTO."""
     mock_chart_builder = mocker.patch(f"{MONTH_SERVICE_PATH}.ChartBuilder")
 
+    # Presenter initialized without a user!
     presenter = MonthContextPresenter(main_user, 2026, 4, dummy_dto)
 
     mock_month_table = mocker.Mock(total_row={"total": 10})
     mocker.patch.object(
-        MonthContextPresenter,
-        "month_table",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_month_table,
+        MonthContextPresenter, "month_table", new_callable=mocker.PropertyMock, return_value=mock_month_table
     )
 
     result = presenter.charts
 
-    # Ensure the user is correctly passed to the aggregator service
-    mock_agg_service.assert_called_once_with(main_user)
-    mock_agg_service.return_value.get_monthly_plan_targets.assert_called_once_with(
-        2026, 4
-    )
-
+    # We no longer need to mock PlanAggregatorService because it is handled by the DTO
     mock_chart_builder.assert_called_once_with(
-        targets=mock_agg_service.return_value.get_monthly_plan_targets.return_value,
-        totals={"total": 10},
+        targets={"Food": 100}, # Pulls directly from dummy_dto.targets
+        totals={"total": 10}
     )
     assert result == mock_chart_builder.return_value
