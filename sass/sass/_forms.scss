@@ -5,6 +5,17 @@ textarea {
         background-color: $disabled !important;
         opacity: 1;
     }
+
+    &[readonly] {
+        background-color: $disabled !important;
+        color: #9ca3af;
+        cursor: not-allowed;
+
+        &:focus {
+            outline: none;
+            box-shadow: none;
+        }
+    }
 }
 
 fieldset {
