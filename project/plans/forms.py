@@ -100,15 +100,19 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
 
             self.initial[month_name] = int_cents_to_float(row.price)
 
+    def _disable_field(self, field_name):
+        self.fields[field_name].disabled = True
+        self.fields[field_name].widget.attrs["readonly"] = True
+
     def _disable_fields(self):
         if not self.instance.pk:
             return
 
-        self.fields["year"].disabled = True
+        self._disable_field("year")
+
         for field_name in self.Meta.grouping_fields:
             if field_name in self.fields:
-                self.fields[field_name].disabled = True
-                self.fields[field_name].widget.attrs["readonly"] = True
+                self._disable_field(field_name)
 
     def clean(self):
         cleaned_data = super().clean()
