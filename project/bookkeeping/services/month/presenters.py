@@ -1,5 +1,7 @@
 from functools import cached_property
 
+from django.utils.translation import gettext_lazy as _
+
 from ....plans.lib.calc_day_sum import PlanCalculateDaySum
 from ...lib.day_spending import DaySpending
 from ...lib.make_dataframe import MakeDataFrame
@@ -47,8 +49,8 @@ class MonthContextPresenter:
 
     @cached_property
     def totals(self) -> dict:
-        _exp = self.month_table.total_row.get("total", 0)
-        _sav = self.month_table.total_row.get("savings", 0)
+        _exp = self.month_table.total_row.get(_("Total"), 0)
+        _sav = self.month_table.total_row.get(_("Savings"), 0)
 
         return {
             "income": self.dto.incomes,
