@@ -109,16 +109,16 @@ class ChartBuilder:
 
     def build_targets(self) -> dict:
         data = self._sort_chart_data(self.totals)
-        categories, data_fact, data_target = [], [], []
+
+        categories, data_target, data_fact = [], [], []
 
         for entry in data:
-            category = entry["name"]
-            target = self.targets.get(category, 0)
-            fact = entry["y"]
+            name = entry["name"]
+            target = self.targets.get(name, 0)
 
-            categories.append(category.upper())
+            categories.append(name.upper())
             data_target.append(target)
-            data_fact.append({"y": fact, "target": target})
+            data_fact.append({"y": entry["y"], "target": target})
 
         return {
             "categories": categories,
@@ -126,7 +126,7 @@ class ChartBuilder:
             "targetTitle": _("Plan"),
             "fact": data_fact,
             "factTitle": _("Fact"),
-            "max_category_len": len(max(categories, key=len)) if categories else 0,
+            "max_category_len": max((len(c) for c in categories), default=0),
             "category_len": len(categories),
         }
 
