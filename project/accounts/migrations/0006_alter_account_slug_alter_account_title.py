@@ -5,20 +5,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0005_alter_accountbalance_options'),
+        ("accounts", "0005_alter_accountbalance_options"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='account',
-            name='slug',
+            model_name="account",
+            name="slug",
             field=models.SlugField(editable=False, max_length=100),
         ),
         migrations.AlterField(
-            model_name='account',
-            name='title',
-            field=models.CharField(max_length=100, validators=[django.core.validators.MinLengthValidator(3), django.core.validators.RegexValidator(message='Title can only contain letters, numbers, spaces, hyphens, and underscores.', regex='^[ \\w\\-\\.]+$')]),
+            model_name="account",
+            name="title",
+            field=models.CharField(
+                max_length=100,
+                validators=[
+                    django.core.validators.MinLengthValidator(3),
+                    django.core.validators.RegexValidator(
+                        message="Title can only contain letters, numbers, spaces, hyphens, and underscores.",
+                        regex="^[ \\w\\-\\.]+$",
+                    ),
+                ],
+            ),
         ),
     ]

@@ -5,20 +5,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('incomes', '0003_alter_income_price'),
+        ("incomes", "0003_alter_income_price"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='incometype',
-            name='slug',
+            model_name="incometype",
+            name="slug",
             field=models.SlugField(editable=False, max_length=100),
         ),
         migrations.AlterField(
-            model_name='incometype',
-            name='title',
-            field=models.CharField(max_length=100, validators=[django.core.validators.MinLengthValidator(3), django.core.validators.RegexValidator(message='Title can only contain letters, numbers, spaces, hyphens, and underscores.', regex='^[ \\w\\-\\.]+$')]),
+            model_name="incometype",
+            name="title",
+            field=models.CharField(
+                max_length=100,
+                validators=[
+                    django.core.validators.MinLengthValidator(3),
+                    django.core.validators.RegexValidator(
+                        message="Title can only contain letters, numbers, spaces, hyphens, and underscores.",
+                        regex="^[ \\w\\-\\.]+$",
+                    ),
+                ],
+            ),
         ),
     ]

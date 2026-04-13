@@ -67,3 +67,11 @@ select = [
     "R",
     "I",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore E501 (Line too long) in migrations
+"**/migrations/*" = ["E501"]
+
+# Ignore E501 in any file inside a 'tests' folder, or any file starting with 'test_'
+"**/tests/*" = ["E501"]
+"test_*.py" = ["E501"]

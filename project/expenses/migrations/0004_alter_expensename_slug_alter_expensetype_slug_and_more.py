@@ -5,25 +5,33 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('expenses', '0003_alter_expense_price'),
+        ("expenses", "0003_alter_expense_price"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='expensename',
-            name='slug',
+            model_name="expensename",
+            name="slug",
             field=models.SlugField(editable=False, max_length=100),
         ),
         migrations.AlterField(
-            model_name='expensetype',
-            name='slug',
+            model_name="expensetype",
+            name="slug",
             field=models.SlugField(editable=False, max_length=100),
         ),
         migrations.AlterField(
-            model_name='expensetype',
-            name='title',
-            field=models.CharField(max_length=100, validators=[django.core.validators.MinLengthValidator(3), django.core.validators.RegexValidator(message='Title can only contain letters, numbers, spaces, hyphens, and underscores.', regex='^[ \\w\\-\\.]+$')]),
+            model_name="expensetype",
+            name="title",
+            field=models.CharField(
+                max_length=100,
+                validators=[
+                    django.core.validators.MinLengthValidator(3),
+                    django.core.validators.RegexValidator(
+                        message="Title can only contain letters, numbers, spaces, hyphens, and underscores.",
+                        regex="^[ \\w\\-\\.]+$",
+                    ),
+                ],
+            ),
         ),
     ]

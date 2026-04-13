@@ -739,7 +739,10 @@ def test_necessary_form_title_too_short(main_user):
     assert not form.is_valid()
     assert "title" in form.errors
 
-    assert "Įsitikinkite, kad reikšmė sudaryta iš nemažiau kaip 3 ženklų (dabartinis ilgis 2)." in form.errors["title"][0]
+    assert (
+        "Įsitikinkite, kad reikšmė sudaryta iš nemažiau kaip 3 ženklų (dabartinis ilgis 2)."
+        in form.errors["title"][0]
+    )
 
 
 def test_necessary_form_title_too_long(main_user):
@@ -756,7 +759,10 @@ def test_necessary_form_title_too_long(main_user):
 
     assert not form.is_valid()
     assert "title" in form.errors
-    assert "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 100 ženklų (dabartinis ilgis 101)." in form.errors["title"][0]
+    assert (
+        "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 100 ženklų (dabartinis ilgis 101)."
+        in form.errors["title"][0]
+    )
 
 
 @pytest.mark.parametrize(
@@ -784,7 +790,7 @@ def test_necessary_form_title_invalid_characters(main_user, title):
     assert "title" in form.errors
 
     assert (
-        "Title can only contain letters, numbers, spaces, hyphens, and underscores."
+        _("Title can only contain letters, numbers, spaces, hyphens, and underscores.")
         in form.errors["title"][0]
     )
 

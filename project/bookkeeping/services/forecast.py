@@ -76,7 +76,7 @@ class ForecastDataProvider:
         savings_close_qs = SavingCloseModelService(self.user).sum_by_month(self.year)
 
         planned_qs = (
-            IncomePlanModelService(self.user).year(self.year).values('month', "price")
+            IncomePlanModelService(self.user).year(self.year).values("month", "price")
         )
 
         return ForecastDataDTO(

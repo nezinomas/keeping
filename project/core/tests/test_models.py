@@ -46,7 +46,7 @@ def test_title_abstract_too_short(title):
 
 def test_title_abstract_too_long():
     """Proves max_length=100 blocks excessively long strings."""
-    dummy = TitleDummyFactory(title="a" * 101) 
+    dummy = TitleDummyFactory(title="a" * 101)
 
     with pytest.raises(ValidationError) as exc:
         dummy.full_clean()

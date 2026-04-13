@@ -5,20 +5,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('pensions', '0014_alter_pensionbalance_options_pensiontype_closed'),
+        ("pensions", "0014_alter_pensionbalance_options_pensiontype_closed"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='pensiontype',
-            name='slug',
+            model_name="pensiontype",
+            name="slug",
             field=models.SlugField(editable=False, max_length=100),
         ),
         migrations.AlterField(
-            model_name='pensiontype',
-            name='title',
-            field=models.CharField(max_length=100, validators=[django.core.validators.MinLengthValidator(3), django.core.validators.RegexValidator(message='Title can only contain letters, numbers, spaces, hyphens, and underscores.', regex='^[ \\w\\-\\.]+$')]),
+            model_name="pensiontype",
+            name="title",
+            field=models.CharField(
+                max_length=100,
+                validators=[
+                    django.core.validators.MinLengthValidator(3),
+                    django.core.validators.RegexValidator(
+                        message="Title can only contain letters, numbers, spaces, hyphens, and underscores.",
+                        regex="^[ \\w\\-\\.]+$",
+                    ),
+                ],
+            ),
         ),
     ]
