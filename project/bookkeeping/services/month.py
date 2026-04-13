@@ -89,11 +89,11 @@ class MonthTableBuilder:
             saving_df, on="date", how="full", coalesce=True, nulls_equal=True
         )
 
-    @property
+    @cached_property
     def table(self) -> list[dict]:
         return [] if self.df.is_empty() else self.df.to_dicts()
 
-    @property
+    @cached_property
     def total_row(self) -> dict:
         if self.df.is_empty() or self.df.shape[1] == 1:
             return {}
