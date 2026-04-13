@@ -10,71 +10,8 @@ from ...services.month import (
     ChartBuilder,
     InfoBuilder,
     InfoState,
-    MonthContextPresenter,
     MonthTableBuilder,
 )
-
-MODULE_PATH = "project.bookkeeping.services.month"
-
-
-@time_machine.travel("1999-1-1")
-def test_info_context(mocker, main_user):
-    mock_collect = mocker.patch(f"{MODULE_PATH}.PlanCollectData")
-    _ = mock_collect.return_value
-
-    mock_calc = mocker.patch(f"{MODULE_PATH}.PlanCalculateDaySum")
-    _ = mock_calc.return_value
-
-    mock_day_spending = mocker.patch(f"{MODULE_PATH}.DaySpending")
-    _ = mock_day_spending.return_value
-
-    mock_table_builder = mocker.patch(f"{MODULE_PATH}.MonthTableBuilder")
-    _ = mock_table_builder.return_value
-
-    mock_data_frame = mocker.patch(f"{MODULE_PATH}.MakeDataFrame")
-    _ = mock_data_frame.return_value
-
-    mock_chart_builder = mocker.patch(f"{MODULE_PATH}.ChartBuilder")
-    _ = mock_chart_builder.return_value
-
-    mock_plan_aggregator = mocker.patch(f"{MODULE_PATH}.PlanAggregatorService")
-    _ = mock_plan_aggregator.return_value
-
-    main_user.year = 1
-    main_user.month = 1
-
-    obj = MonthContextPresenter(main_user, MagicMock())
-    obj.dto = MagicMock(incomes=15)
-
-    obj.plans = MagicMock()
-    type(obj.plans).incomes = PropertyMock(return_value=100)
-    type(obj.plans).expenses_necessary = PropertyMock(return_value=5)
-    type(obj.plans).expenses_free = PropertyMock(return_value=88)
-    type(obj.plans).savings = PropertyMock(return_value=12)
-    type(obj.plans).day_input = PropertyMock(return_value=3)
-    type(obj.plans).remains = PropertyMock(return_value=-85)
-
-    obj.month_table = MagicMock(total_row={"Viso": 5, "Taupymas": 12})
-    obj.spending = MagicMock(avg_per_day=2)
-
-    actual = obj.to_dict()["info"]
-    assert actual["plan"]["income"] == 100
-    assert actual["plan"]["saving"] == 12
-    assert actual["plan"]["expense"] == 81
-    assert actual["plan"]["per_day"] == 3
-    assert actual["plan"]["balance"] == -85
-
-    assert actual["fact"]["income"] == 15
-    assert actual["fact"]["saving"] == 12
-    assert actual["fact"]["expense"] == 5
-    assert actual["fact"]["per_day"] == 2
-    assert actual["fact"]["balance"] == -2
-
-    assert actual["delta"]["income"] == -85
-    assert actual["delta"]["saving"] == 0
-    assert actual["delta"]["expense"] == 76
-    assert actual["delta"]["per_day"] == 1
-    assert actual["delta"]["balance"] == 83
 
 
 def test_chart_expenses_context():

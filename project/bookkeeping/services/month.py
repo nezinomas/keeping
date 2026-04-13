@@ -167,86 +167,96 @@ class InfoBuilder:
 
 
 class MonthContextPresenter:
-    def __init__(self, user: User, dto: MonthDataDTO):
-        self.year = user.year
-        self.month = user.month
-        self.dto = dto
-
-        expense_maker = MakeDataFrame(
-            year=self.year,
-            month=self.month,
+    def __init__(self, user, year, month, dto: MonthDataDTO):
+        _expense_df_object = MakeDataFrame(
+            year=year,
+            month=month,
             data=dto.expenses,
             columns=dto.expense_types,
         )
+        _saving_df_object = MakeDataFrame(year=year, month=month, data=dto.savings)
 
-        saving_maker = MakeDataFrame(year=self.year, month=self.month, data=dto.savings)
+        _month_table = MonthTableBuilder(
+            expense_df=_expense_df_object.data, saving_df=_saving_df_object.data
+        )
 
-        # 2. Initialize Core Services
-        plans_data = PlanCollectData(user, self.year).get_data()
-        self.plans = PlanCalculateDaySum(data=plans_data, month=self.month)
-
-        self.spending = DaySpending(
-            expense=expense_maker,
+        _plans = self._plans_object(user, year, month)
+        _spending = DaySpending(
+            expense=_expense_df_object,
             necessary=dto.necessary_expense_types,
-            per_day=self.plans.day_input,
-            free=self.plans.expenses_free,
+            per_day=_plans.day_input,
+            free=_plans.expenses_free,
         )
-        self.month_table = MonthTableBuilder(
-            expense_df=expense_maker.data, saving_df=saving_maker.data
-        )
+        _totals = self._totals(_month_table, dto.incomes, _spending.avg_per_day)
 
+        self.tables = {
+            "main_table": _month_table.table,
+            "spending_table": _spending.spending,
+            "total_row": _month_table.total_row,
+        }
+        self.info_context = self._build_info_context(_plans, _totals)
         self.charts = ChartBuilder(
-            targets=PlanAggregatorService(user).get_monthly_plan_targets(
-                self.year, self.month
-            ),
-            totals=self.month_table.total_row,
+            targets=PlanAggregatorService(user).get_monthly_plan_targets(year, month),
+            totals=_month_table.total_row,
         )
 
-    def _build_info_context(self) -> dict:
-        """Isolates the messy InfoState instantiation."""
-        total_exp = self.month_table.total_row.get(_("Total"), 0)
-        total_sav = self.month_table.total_row.get(_("Savings"), 0)
+    def _plans_object(self, user, year, month):
+        plans_data = PlanCollectData(user, year).get_data()
+        return PlanCalculateDaySum(data=plans_data, month=month)
+
+    def _totals(self, month_table, total_income, avg_per_day) -> dict:
+        _exp = month_table.total_row.get(_("Total"), 0)
+        _sav = month_table.total_row.get(_("Savings"), 0)
+
+        return {
+            "income": total_income,
+            "expense": _exp,
+            "saving": _sav,
+            "avg_per_day": avg_per_day,
+        }
+
+    def _build_info_context(self, plans, totals) -> dict:
+        _exp = totals["expense"]
+        _sav = totals["saving"]
+        _avg = totals["avg_per_day"]
+        _inc = totals["income"]
 
         fact_state = InfoState(
-            income=self.dto.incomes,
-            expense=total_exp,
-            saving=total_sav,
-            per_day=self.spending.avg_per_day,
-            balance=(self.dto.incomes - total_exp - total_sav),
+            income=_inc,
+            expense=_exp,
+            saving=_sav,
+            per_day=_avg,
+            balance=(_inc - _exp - _sav),
         )
 
         plan_state = InfoState(
-            income=self.plans.incomes,
-            expense=(
-                self.plans.expenses_necessary
-                + self.plans.expenses_free
-                - self.plans.savings
-            ),
-            saving=self.plans.savings,
-            per_day=self.plans.day_input,
-            balance=self.plans.remains,
+            income=plans.incomes,
+            expense=(plans.expenses_necessary + plans.expenses_free - plans.savings),
+            saving=plans.savings,
+            per_day=plans.day_input,
+            balance=plans.remains,
         )
 
         return InfoBuilder.build(fact=fact_state, plan=plan_state)
 
-    def to_dict(self) -> dict:
-        return {
-            "month_table": {
-                "day": current_day(self.year, self.month, False),
-                "expenses": it.zip_longest(
-                    self.month_table.table, self.spending.spending
-                ),
-                "expense_types": self.dto.expense_types,
-                "total_row": self.month_table.total_row,
-            },
-            "info": self._build_info_context(),
-            "chart_expenses": self.charts.build_expenses(),
-            "chart_targets": self.charts.build_targets(),
-        }
-
 
 def load_service(user: User) -> dict:
-    dto = MonthDataProvider(user).get_data()
-    presenter = MonthContextPresenter(user, dto)
+    year = user.year
+    month = user.month
 
-    return presenter.to_dict()
+    dto = MonthDataProvider(user).get_data()
+
+    presenter = MonthContextPresenter(user, year, month, dto)
+    tables = presenter.tables
+
+    return {
+        "month_table": {
+            "day": current_day(year, month, False),
+            "expenses": it.zip_longest(tables["main_table"], tables["spending_table"]),
+            "expense_types": dto.expense_types,
+            "total_row": tables["total_row"],
+        },
+        "info": presenter.info_context,
+        "chart_expenses": presenter.charts.build_expenses(),
+        "chart_targets": presenter.charts.build_targets(),
+    }
