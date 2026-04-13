@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 14:14+0300\n"
-"PO-Revision-Date: 2026-04-01 14:16+0300\n"
+"POT-Creation-Date: 2026-04-13 08:52+0300\n"
+"PO-Revision-Date: 2026-04-13 08:55+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lt\n"
@@ -41,7 +41,7 @@ msgid "Accounts"
 msgstr "Sąskaitos"
 
 #: .\project\accounts\views.py:25 .\project\accounts\views.py:33
-#: .\project\debts\forms.py:59 .\project\debts\forms.py:142
+#: .\project\debts\forms.py:68 .\project\debts\forms.py:151
 #: .\project\debts\templates\debts\debt_list.html:21
 #: .\project\debts\templates\debts\debtreturn_list.html:19
 #: .\project\expenses\forms.py:127
@@ -60,35 +60,39 @@ msgstr "Sąskaita uždaryta %(year)s."
 msgid "At least one category has to be selected."
 msgstr "Reikia pasirinkti bent vieną kategoriją."
 
-#: .\project\bookkeeping\lib\no_incomes.py:71
+#: .\project\bookkeeping\lib\no_incomes.py:51
+msgid "No change in spending, month"
+msgstr "Nekeičiant išlaidų, mėn"
+
+#: .\project\bookkeeping\lib\no_incomes.py:57
+msgid "After spending cuts, month"
+msgstr "Sumažinus išlaidas, mėn"
+
+#: .\project\bookkeeping\lib\no_incomes.py:114
 #: .\project\bookkeeping\services\detailed.py:53
 #: .\project\bookkeeping\services\detailed_one_category.py:44
 #: .\project\bookkeeping\services\detailed_one_category.py:45
 #: .\project\bookkeeping\services\detailed_one_category.py:110
 #: .\project\bookkeeping\services\detailed_one_category.py:136
-#: .\project\bookkeeping\services\month.py:222
+#: .\project\bookkeeping\services\month.py:208
 #: .\project\bookkeeping\services\summary_savings_and_incomes.py:59
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:14
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:48
 #: .\project\bookkeeping\templates\bookkeeping\includes\month_table.html:71
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:31
 #: .\project\bookkeeping\templates\cotton\year_balance.html:10
-#: .\project\journals\forms.py:32 .\project\plans\lib\calc_day_sum.py:181
+#: .\project\journals\forms.py:32
+#: .\project\plans\services\model_services.py:124
 #: .\project\plans\templates\plans\index.html:37
-#: .\project\savings\services\model_services.py:71
-#: .\project\savings\views.py:45 .\project\savings\views.py:53
+#: .\project\plans\tests\test_models.py:45
+#: .\project\plans\tests\test_models.py:66
+#: .\project\plans\tests\test_models.py:83
+#: .\project\savings\services\model_services.py:76
+#: .\project\savings\views.py:46 .\project\savings\views.py:54
 #: .\project\templates\base.html:79 .\project\templates\base.html:128
 #: .\project\templates\base.html:129
 msgid "Savings"
 msgstr "Taupymas"
-
-#: .\project\bookkeeping\lib\no_incomes.py:102
-msgid "No change in spending, month"
-msgstr "Nekeičiant išlaidų, mėn"
-
-#: .\project\bookkeeping\lib\no_incomes.py:108
-msgid "After spending cuts, month"
-msgstr "Sumažinus išlaidas, mėn"
 
 #: .\project\bookkeeping\services\chart_summary.py:50
 msgid "Incomes and Expenses"
@@ -102,13 +106,13 @@ msgstr "Pajamos ir išlaidos"
 #: .\project\bookkeeping\services\detailed_one_category.py:48
 #: .\project\bookkeeping\services\detailed_one_category.py:110
 #: .\project\bookkeeping\services\detailed_one_category.py:134
-#: .\project\bookkeeping\services\index.py:115
+#: .\project\bookkeeping\services\index.py:118
 #: .\project\bookkeeping\services\summary_savings_and_incomes.py:58
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:10
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:17
 #: .\project\bookkeeping\templates\cotton\year_balance.html:18
-#: .\project\incomes\views.py:34 .\project\incomes\views.py:42
-#: .\project\plans\lib\calc_day_sum.py:126
+#: .\project\incomes\views.py:35 .\project\incomes\views.py:43
+#: .\project\plans\lib\calc_day_sum.py:123
 #: .\project\plans\templates\plans\index.html:13
 #: .\project\templates\base.html:69 .\project\templates\base.html:127
 #: .\project\templates\base.html:128
@@ -116,12 +120,12 @@ msgid "Incomes"
 msgstr "Pajamos"
 
 #: .\project\bookkeeping\services\chart_summary.py:55
-#: .\project\bookkeeping\services\index.py:117
+#: .\project\bookkeeping\services\index.py:120
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:11
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:24
 #: .\project\bookkeeping\templates\cotton\year_balance.html:19
-#: .\project\expenses\views\expenses.py:73
-#: .\project\expenses\views\expenses.py:82
+#: .\project\expenses\views\expenses.py:77
+#: .\project\expenses\views\expenses.py:86
 #: .\project\plans\templates\plans\index.html:23
 #: .\project\templates\base.html:53 .\project\templates\base.html:127
 #: .\project\templates\base.html:130
@@ -129,7 +133,7 @@ msgid "Expenses"
 msgstr "Išlaidos"
 
 #: .\project\bookkeeping\services\chart_summary.py:74
-#: .\project\bookkeeping\services\index.py:122
+#: .\project\bookkeeping\services\index.py:125
 msgid "Average incomes"
 msgstr "Vidutinės pajamos"
 
@@ -138,11 +142,11 @@ msgid "Average salary"
 msgstr "Vidutinis atlyginimas"
 
 #: .\project\bookkeeping\services\chart_summary_expenses.py:118
-#: .\project\core\mixins\views.py:220
+#: .\project\core\mixins\search.py:83
 msgid "No data found"
 msgstr "Nieko nerasta"
 
-#: .\project\bookkeeping\services\expand_day.py:31
+#: .\project\bookkeeping\services\expand_day.py:34
 #, python-format
 msgid "No records on day %(day)s"
 msgstr "%(day)s dieną įrašų nėra"
@@ -151,19 +155,19 @@ msgstr "%(day)s dieną įrašų nėra"
 msgid "No expenses"
 msgstr "Išlaidų nėra"
 
-#: .\project\bookkeeping\services\index.py:103
+#: .\project\bookkeeping\services\index.py:106
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:9
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:11
 #, python-format
 msgid "Start of %(year)s"
 msgstr "%(year)s pradžioje"
 
-#: .\project\bookkeeping\services\index.py:104
+#: .\project\bookkeeping\services\index.py:107
 #, python-format
 msgid "End of %(year)s"
 msgstr "%(year)s pabaigoje"
 
-#: .\project\bookkeeping\services\index.py:105
+#: .\project\bookkeeping\services\index.py:108
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:12
 #: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:45
 #: .\project\bookkeeping\templates\cotton\year_balance.html:9
@@ -171,23 +175,13 @@ msgstr "%(year)s pabaigoje"
 msgid "Balance"
 msgstr "Balansas"
 
-#: .\project\bookkeeping\services\index.py:122
+#: .\project\bookkeeping\services\index.py:125
 msgid "Average expenses"
 msgstr "Vidutinės išlaidos"
 
-#: .\project\bookkeeping\services\month.py:96
-#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:10
-msgid "Plan"
-msgstr "Planas"
-
-#: .\project\bookkeeping\services\month.py:98
-#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:11
-msgid "Fact"
-msgstr "Faktas"
-
-#: .\project\bookkeeping\services\month.py:112
-#: .\project\bookkeeping\services\month.py:133
-#: .\project\bookkeeping\services\month.py:221
+#: .\project\bookkeeping\services\month.py:84
+#: .\project\bookkeeping\services\month.py:106
+#: .\project\bookkeeping\services\month.py:207
 #: .\project\bookkeeping\services\summary_savings.py:30
 #: .\project\bookkeeping\templates\bookkeeping\includes\account_worth_list.html:35
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:13
@@ -209,15 +203,25 @@ msgstr "Faktas"
 msgid "Total"
 msgstr "Viso"
 
+#: .\project\bookkeeping\services\month.py:125
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:10
+msgid "Plan"
+msgstr "Planas"
+
+#: .\project\bookkeeping\services\month.py:127
+#: .\project\bookkeeping\templates\bookkeeping\includes\spending_info.html:11
+msgid "Fact"
+msgstr "Faktas"
+
 #: .\project\bookkeeping\services\pensions.py:35
 #: .\project\pensions\templates\pensions\pensiontype_list.html:3
-#: .\project\savings\models.py:19
+#: .\project\savings\models.py:17
 msgid "Pensions"
 msgstr "Pensijos"
 
 #: .\project\bookkeeping\services\savings.py:55
 #: .\project\bookkeeping\services\summary_savings.py:83
-#: .\project\savings\models.py:18
+#: .\project\savings\models.py:16
 #: .\project\savings\templates\savings\index.html:19
 #: .\project\savings\templates\savings\savingtype_list.html:3
 msgid "Funds"
@@ -234,7 +238,7 @@ msgid "Invested"
 msgstr "Investuota"
 
 #: .\project\bookkeeping\services\summary_savings.py:84
-#: .\project\savings\models.py:17
+#: .\project\savings\models.py:15
 msgid "Shares"
 msgstr "Akcijos"
 
@@ -260,10 +264,10 @@ msgstr "Turtas"
 #: .\project\debts\templates\debts\debt_list.html:54
 #: .\project\debts\templates\debts\debtreturn_list.html:53
 #: .\project\expenses\templates\expenses\expense_list.html:92
-#: .\project\expenses\views\expenses.py:60
+#: .\project\expenses\views\expenses.py:64
 #: .\project\incomes\templates\incomes\income_list.html:52
 #: .\project\pensions\templates\pensions\pension_list.html:40
-#: .\project\plans\templates\cotton\plans_table.html:64
+#: .\project\plans\templates\cotton\plans_table.html:76
 #: .\project\savings\templates\savings\saving_list.html:45
 #: .\project\transactions\templates\cotton\transactions_table.html:44
 #, python-format
@@ -311,7 +315,7 @@ msgstr "Parduota"
 #: .\project\pensions\templates\pensions\pension_list.html:10
 #: .\project\savings\forms.py:29 .\project\savings\forms.py:70
 #: .\project\savings\templates\savings\saving_list.html:12
-#: .\project\savings\views.py:78 .\project\savings\views.py:87
+#: .\project\savings\views.py:80 .\project\savings\views.py:89
 msgid "Fund"
 msgstr "Fondas"
 
@@ -321,7 +325,7 @@ msgstr "Fondas"
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:30
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:33
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:34
-#: .\project\debts\forms.py:60 .\project\debts\forms.py:144
+#: .\project\debts\forms.py:69 .\project\debts\forms.py:153
 #: .\project\debts\templates\debts\debt_list.html:19
 #: .\project\debts\templates\debts\debtreturn_list.html:18
 #: .\project\pensions\forms.py:41
@@ -346,7 +350,7 @@ msgstr "Mokesčiai"
 #: .\project\bookkeeping\templates\bookkeeping\includes\funds_table.html:32
 #: .\project\counts\forms.py:50
 #: .\project\counts\templates\counts\tab_data.html:11
-#: .\project\debts\forms.py:57 .\project\debts\forms.py:141
+#: .\project\debts\forms.py:66 .\project\debts\forms.py:150
 #: .\project\debts\templates\debts\debt_list.html:14
 #: .\project\debts\templates\debts\debtreturn_list.html:13
 #: .\project\drinks\forms.py:49 .\project\expenses\forms.py:120
@@ -459,7 +463,7 @@ msgid "Percentage of income saved"
 msgstr "Pajamų dalis pervedama taupymui"
 
 #: .\project\bookkeeping\templates\bookkeeping\summary_savings_and_incomes.html:23
-#: .\project\books\forms.py:98 .\project\drinks\forms.py:128
+#: .\project\books\forms.py:98 .\project\drinks\forms.py:127
 msgid "Year"
 msgstr "Metai"
 
@@ -482,7 +486,7 @@ msgid "Show debts"
 msgstr "Rodyti skolas"
 
 #: .\project\bookkeeping\templates\cotton\year_balance.html:23
-#: .\project\debts\models.py:14 .\project\debts\templates\debts\index.html:15
+#: .\project\debts\models.py:13 .\project\debts\templates\debts\index.html:15
 msgid "Borrow"
 msgstr "Pasiskolinta"
 
@@ -492,7 +496,7 @@ msgid "Borrow return"
 msgstr "Grąžinau"
 
 #: .\project\bookkeeping\templates\cotton\year_balance.html:25
-#: .\project\debts\models.py:13 .\project\debts\templates\debts\index.html:25
+#: .\project\debts\models.py:12 .\project\debts\templates\debts\index.html:25
 msgid "Lend"
 msgstr "Paskolinta"
 
@@ -513,15 +517,15 @@ msgstr "Metų pabaigoje"
 msgid "Expenses statistic"
 msgstr "Išlaidų statistika"
 
-#: .\project\bookkeeping\views.py:75
+#: .\project\bookkeeping\views.py:81
 msgid "Worth of accounts"
 msgstr "Sąskaitų vertė"
 
-#: .\project\bookkeeping\views.py:93
+#: .\project\bookkeeping\views.py:99
 msgid "Worth of savings"
 msgstr "Fondų vertė"
 
-#: .\project\bookkeeping\views.py:112
+#: .\project\bookkeeping\views.py:118
 msgid "Worth of pensions"
 msgstr "Pensijų vertė"
 
@@ -538,7 +542,7 @@ msgstr "Baigta skaityti"
 #: .\project\books\forms.py:37
 #: .\project\books\templates\books\book_list.html:12
 #: .\project\counts\forms.py:69 .\project\expenses\forms.py:206
-#: .\project\plans\templates\cotton\plans_table.html:10
+#: .\project\plans\templates\cotton\plans_table.html:8
 msgid "Title"
 msgstr "Pavadinimas"
 
@@ -549,7 +553,7 @@ msgstr "Autorius"
 
 #: .\project\books\forms.py:39
 #: .\project\books\templates\books\book_list.html:13
-#: .\project\debts\forms.py:61 .\project\debts\forms.py:145
+#: .\project\debts\forms.py:70 .\project\debts\forms.py:154
 #: .\project\debts\templates\debts\debt_list.html:22
 #: .\project\debts\templates\debts\debtreturn_list.html:20
 #: .\project\expenses\forms.py:125
@@ -611,23 +615,23 @@ msgstr "Skaitomos"
 msgid "Goal"
 msgstr "Tikslas"
 
-#: .\project\books\views.py:98
+#: .\project\books\views.py:99
 msgid "New book"
 msgstr "Nauja knyga"
 
-#: .\project\books\views.py:106
+#: .\project\books\views.py:107
 msgid "Update book"
 msgstr "Atnaujinti knygą"
 
-#: .\project\books\views.py:112
+#: .\project\books\views.py:113
 msgid "Delete book"
 msgstr "Trinti knygą"
 
-#: .\project\books\views.py:131 .\project\drinks\views.py:174
+#: .\project\books\views.py:132 .\project\drinks\views.py:175
 msgid "New goal"
 msgstr "Naujas tikslas"
 
-#: .\project\books\views.py:139 .\project\drinks\views.py:199
+#: .\project\books\views.py:140 .\project\drinks\views.py:200
 msgid "Update goal"
 msgstr "Atnaujinti tikslą"
 
@@ -714,62 +718,62 @@ msgid "Page number is less than 1"
 msgstr "Puslapio numeris yra mažesnis nei 1"
 
 #: .\project\core\lib\translation.py:6
-#: .\project\plans\templates\cotton\plans_table.html:11
+#: .\project\plans\templates\cotton\plans_table.html:9
 msgid "January"
 msgstr "Sausis"
 
 #: .\project\core\lib\translation.py:7
-#: .\project\plans\templates\cotton\plans_table.html:12
+#: .\project\plans\templates\cotton\plans_table.html:10
 msgid "February"
 msgstr "Vasaris"
 
 #: .\project\core\lib\translation.py:8
-#: .\project\plans\templates\cotton\plans_table.html:13
+#: .\project\plans\templates\cotton\plans_table.html:11
 msgid "March"
 msgstr "Kovas"
 
 #: .\project\core\lib\translation.py:9
-#: .\project\plans\templates\cotton\plans_table.html:14
+#: .\project\plans\templates\cotton\plans_table.html:12
 msgid "April"
 msgstr "Balandis"
 
 #: .\project\core\lib\translation.py:10
-#: .\project\plans\templates\cotton\plans_table.html:15
+#: .\project\plans\templates\cotton\plans_table.html:13
 msgid "May"
 msgstr "Gegužė"
 
 #: .\project\core\lib\translation.py:11
-#: .\project\plans\templates\cotton\plans_table.html:16
+#: .\project\plans\templates\cotton\plans_table.html:14
 msgid "June"
 msgstr "Birželis"
 
 #: .\project\core\lib\translation.py:12
-#: .\project\plans\templates\cotton\plans_table.html:17
+#: .\project\plans\templates\cotton\plans_table.html:15
 msgid "July"
 msgstr "Liepa"
 
 #: .\project\core\lib\translation.py:13
-#: .\project\plans\templates\cotton\plans_table.html:18
+#: .\project\plans\templates\cotton\plans_table.html:16
 msgid "August"
 msgstr "Rugpjūtis"
 
 #: .\project\core\lib\translation.py:14
-#: .\project\plans\templates\cotton\plans_table.html:19
+#: .\project\plans\templates\cotton\plans_table.html:17
 msgid "September"
 msgstr "Rugsėjis"
 
 #: .\project\core\lib\translation.py:15
-#: .\project\plans\templates\cotton\plans_table.html:20
+#: .\project\plans\templates\cotton\plans_table.html:18
 msgid "October"
 msgstr "Spalis"
 
 #: .\project\core\lib\translation.py:16
-#: .\project\plans\templates\cotton\plans_table.html:21
+#: .\project\plans\templates\cotton\plans_table.html:19
 msgid "November"
 msgstr "Lapkritis"
 
 #: .\project\core\lib\translation.py:17
-#: .\project\plans\templates\cotton\plans_table.html:22
+#: .\project\plans\templates\cotton\plans_table.html:20
 msgid "December"
 msgstr "Gruodis"
 
@@ -801,14 +805,9 @@ msgstr "Šeštadienis"
 msgid "Sunday"
 msgstr "Sekmadienis"
 
-#: .\project\core\mixins\formset.py:30
+#: .\project\core\mixins\formset.py:33
 msgid "The same accounts are selected."
 msgstr "Pasirinktos vienodos sąskaitos."
-
-#: .\project\core\mixins\views.py:77
-#, python-format
-msgid "No %(verbose_name)s found matching the query"
-msgstr "%(verbose_name)s užklausos nėra"
 
 #: .\project\core\templates\core\generic_delete_form.html:7
 #: .\project\core\templates\core\generic_delete_form.html:16
@@ -881,10 +880,17 @@ msgstr "Išvalyti"
 msgid "Edit"
 msgstr "Redaguoti"
 
+#: .\project\core\validators.py:7
+msgid ""
+"Title can only contain letters, numbers, spaces, hyphens, and underscores."
+msgstr ""
+"Pavadinimas gali turėti tik raides, skaičius, tarpus, brūkšnelius ir "
+"pabraukimo simbolius."
+
 #: .\project\counts\forms.py:51 .\project\counts\services\index.py:65
 #: .\project\counts\templates\counts\info_row.html:37
 #: .\project\counts\templates\counts\tab_data.html:12
-#: .\project\drinks\forms.py:51 .\project\drinks\forms.py:129
+#: .\project\drinks\forms.py:51 .\project\drinks\forms.py:128
 #: .\project\drinks\services\calendar_chart.py:36
 #: .\project\drinks\services\index.py:67
 #: .\project\drinks\templates\drinks\tab_data.html:13
@@ -983,40 +989,40 @@ msgstr "Trinti skaitiklį"
 msgid "Delete count type"
 msgstr "Trinti skaitiklį"
 
-#: .\project\debts\forms.py:49 .\project\debts\forms.py:133
+#: .\project\debts\forms.py:59 .\project\debts\forms.py:142
 msgid "Debtor"
 msgstr "Skolininkas"
 
-#: .\project\debts\forms.py:52 .\project\debts\forms.py:136
+#: .\project\debts\forms.py:62 .\project\debts\forms.py:145
 #: .\project\debts\templates\debts\debt_list.html:16
 #: .\project\debts\templates\debts\debtreturn_list.html:15
 msgid "Borrower"
 msgstr "Paskolos gavėjas"
 
-#: .\project\debts\forms.py:55 .\project\debts\forms.py:139
+#: .\project\debts\forms.py:64 .\project\debts\forms.py:148
 #: .\project\debts\templates\debts\debt_list.html:17
 #: .\project\debts\templates\debts\debtreturn_list.html:16
 msgid "Lender"
 msgstr "Paskolos davėjas"
 
-#: .\project\debts\forms.py:62
+#: .\project\debts\forms.py:71
 #: .\project\debts\templates\debts\debt_list.html:20
 msgid "Returned"
 msgstr "Gražinta"
 
-#: .\project\debts\forms.py:82
+#: .\project\debts\forms.py:84
 msgid "The name of the lender must be unique."
 msgstr "Skolintojo vardas turi būti unikalus."
 
-#: .\project\debts\forms.py:85
+#: .\project\debts\forms.py:87
 msgid "You can't close a debt that hasn't been returned."
 msgstr "Negalite uždaryti dar negražintos skolos."
 
-#: .\project\debts\forms.py:96 .\project\debts\forms.py:164
+#: .\project\debts\forms.py:98 .\project\debts\forms.py:174
 msgid "The amount due exceeds the debt."
 msgstr "Mokėtina suma viršija skolą."
 
-#: .\project\debts\forms.py:175
+#: .\project\debts\forms.py:185
 msgid "The date preceding the debt's date."
 msgstr "Data yra ankstesnė nei skolos data."
 
@@ -1040,28 +1046,28 @@ msgstr "Skola"
 msgid "Delete debt"
 msgstr "Trinti skolą"
 
-#: .\project\debts\views.py:133 .\project\debts\views.py:145
+#: .\project\debts\views.py:134 .\project\debts\views.py:146
 msgid "Debt repayment"
 msgstr "Skolos gražinimas"
 
-#: .\project\debts\views.py:165
+#: .\project\debts\views.py:166
 msgid "Delete debt repayment"
 msgstr "Trinti skolos gražinimą"
 
-#: .\project\drinks\forms.py:50 .\project\drinks\forms.py:130
+#: .\project\drinks\forms.py:50 .\project\drinks\forms.py:129
 msgid "Drink type"
 msgstr "Gėrimo tipas"
 
-#: .\project\drinks\forms.py:146
+#: .\project\drinks\forms.py:145
 #, python-format
 msgid "%(year)s already has a goal."
 msgstr "%(year)s metai jau turi tikslą."
 
-#: .\project\drinks\forms.py:191
+#: .\project\drinks\forms.py:190
 msgid "No records this year"
 msgstr "Šiais metais įrašų nėra"
 
-#: .\project\drinks\forms.py:198
+#: .\project\drinks\forms.py:197
 msgid "Years must be different"
 msgstr "Metai turi būti skirtingi"
 
@@ -1225,9 +1231,9 @@ msgstr "Visa kaina"
 
 #: .\project\expenses\forms.py:123 .\project\expenses\forms.py:229
 #: .\project\expenses\templates\expenses\expense_list.html:29
-#: .\project\expenses\views\expenses_type.py:16
-#: .\project\expenses\views\expenses_type.py:25 .\project\plans\forms.py:109
-#: .\project\plans\forms.py:162
+#: .\project\expenses\views\expenses_type.py:18
+#: .\project\expenses\views\expenses_type.py:27 .\project\plans\forms.py:212
+#: .\project\plans\forms.py:274
 msgid "Expense type"
 msgstr "Išlaidų rūšis"
 
@@ -1313,12 +1319,12 @@ msgctxt "expenses type button"
 msgid "Expenses type"
 msgstr "Išlaidų rūšį"
 
-#: .\project\expenses\views\expenses.py:56
+#: .\project\expenses\views\expenses.py:60
 #, python-format
 msgid "There are no records for month <b>%(month)s</b>."
 msgstr "<b>%(month)s</b> mėnesį įrašų nėra."
 
-#: .\project\expenses\views\expenses.py:89
+#: .\project\expenses\views\expenses.py:93
 msgid "Delete expense"
 msgstr "Trinti išlaidas"
 
@@ -1333,7 +1339,7 @@ msgstr "Suma"
 #: .\project\incomes\forms.py:47 .\project\incomes\forms.py:81
 #: .\project\incomes\templates\incomes\income_list.html:12
 #: .\project\incomes\templates\incomes\incometype_list.html:3
-#: .\project\incomes\views.py:59 .\project\incomes\views.py:68
+#: .\project\incomes\views.py:61 .\project\incomes\views.py:70
 msgid "Incomes type"
 msgstr "Pajamų rūšis"
 
@@ -1346,15 +1352,15 @@ msgstr "Metai negali būti didesni nei %(year)s"
 msgid "Type"
 msgstr "Tipas"
 
-#: .\project\incomes\models.py:13
+#: .\project\incomes\models.py:11
 msgid "Salary"
 msgstr "Atlyginimas"
 
-#: .\project\incomes\models.py:14
+#: .\project\incomes\models.py:12
 msgid "Dividents"
 msgstr "Dividendai"
 
-#: .\project\incomes\models.py:15
+#: .\project\incomes\models.py:13
 msgid "Other"
 msgstr "Kita"
 
@@ -1364,7 +1370,7 @@ msgctxt "income type button"
 msgid "Incomes type"
 msgstr "Pajamų rūšį"
 
-#: .\project\incomes\views.py:48
+#: .\project\incomes\views.py:49
 msgid "Delete income"
 msgstr "Trinti pajamas"
 
@@ -1388,133 +1394,136 @@ msgstr "Laukeliai `Suma` ir `Mokestis` abu negali būti tušti."
 msgid "Fund title"
 msgstr "Fondo pavadinimas"
 
-#: .\project\pensions\views.py:28 .\project\pensions\views.py:36
-#: .\project\pensions\views.py:54 .\project\pensions\views.py:63
+#: .\project\pensions\views.py:29 .\project\pensions\views.py:37
+#: .\project\pensions\views.py:56 .\project\pensions\views.py:65
 #: .\project\savings\templates\savings\index.html:26
 msgid "Pension"
 msgstr "Pensija"
 
-#: .\project\pensions\views.py:43
+#: .\project\pensions\views.py:44
 msgid "Delete pension"
 msgstr "Trinti pensijas"
 
-#: .\project\plans\forms.py:55
+#: .\project\plans\forms.py:72
 msgid "Years"
 msgstr "Metai"
 
-#: .\project\plans\forms.py:87
-msgid "Income type"
-msgstr "Pajamų rūšis"
-
-#: .\project\plans\forms.py:129
-msgid "Saving type"
-msgstr "Taupymas"
-
-#: .\project\plans\forms.py:220
-msgid "At least one plan needs to be selected."
-msgstr "Reikia pažymėti nors vieną planą."
-
-#: .\project\plans\forms.py:224
-msgid "There is nothing to copy."
-msgstr "Nėra ką kopijuoti."
-
-#: .\project\plans\forms.py:233
-#, python-format
-msgid "%(year)s year already has plans."
-msgstr "%(year)s metai jau turi planus."
-
-#: .\project\plans\forms.py:277
-msgid "Copy from"
-msgstr "Kopijuoti iš"
-
-#: .\project\plans\forms.py:278
-msgid "Copy to"
-msgstr "Kopijuoti į"
-
-#: .\project\plans\forms.py:279 .\project\plans\views.py:107
-#: .\project\plans\views.py:114
-msgid "Incomes plans"
-msgstr "Pajamų planai"
-
-#: .\project\plans\forms.py:280 .\project\plans\views.py:68
-#: .\project\plans\views.py:77
-msgid "Expenses plans"
-msgstr "Išlaidų planai"
-
-#: .\project\plans\forms.py:281 .\project\plans\views.py:144
-#: .\project\plans\views.py:151
-msgid "Savings plans"
-msgstr "Taupymo planai"
-
-#: .\project\plans\forms.py:282 .\project\plans\views.py:181
-#: .\project\plans\views.py:188
-msgid "Day plans"
-msgstr "Dienos planai"
-
-#: .\project\plans\forms.py:283
-msgid "Plans for additional necessary expenses"
-msgstr "Papildomų būtinų išlaidų planus"
-
-#: .\project\plans\lib\calc_day_sum.py:127
-msgid "median"
-msgstr "mediana"
-
-#: .\project\plans\lib\calc_day_sum.py:128
-msgid "Necessary expenses"
-msgstr "Būtinos išlaidos"
-
-#: .\project\plans\lib\calc_day_sum.py:129
-msgid "Remains for everyday"
-msgstr "Lieka kasdienybei"
-
-#: .\project\plans\lib\calc_day_sum.py:130
-msgid "from tables above"
-msgstr "iš lentelių viršuje"
-
-#: .\project\plans\lib\calc_day_sum.py:131
-msgid "Full expenses"
-msgstr "Visos išlaidos"
-
-#: .\project\plans\lib\calc_day_sum.py:132
-#: .\project\plans\templates\plans\index.html:44
-msgid "Sum per day"
-msgstr "Suma dienai"
-
-#: .\project\plans\lib\calc_day_sum.py:133
-msgid "days in month"
-msgstr "mėnesio dienų skaičius"
-
-#: .\project\plans\lib\calc_day_sum.py:134
-#: .\project\plans\templates\cotton\plans_table.html:38
-msgid "Residual"
-msgstr "Likutis"
-
-#: .\project\plans\models.py:38 .\project\plans\models.py:66
-#: .\project\plans\models.py:94 .\project\plans\models.py:122
+#: .\project\plans\forms.py:130 .\project\plans\tests\test_forms.py:99
+#: .\project\plans\tests\test_forms.py:307
+#: .\project\plans\tests\test_forms.py:515
+#: .\project\plans\tests\test_forms.py:807
 #, python-format
 msgid "%(year)s year already has %(title)s plan."
 msgstr "%(year)s metai jau turi %(title)s planą."
 
-#: .\project\plans\models.py:120
-msgctxt "plans day error"
-msgid "Day"
-msgstr "Dienos"
-
-#: .\project\plans\models.py:151
+#: .\project\plans\forms.py:135 .\project\plans\tests\test_forms.py:1031
 #, python-format
-msgid "%(year)s year and %(type)s already has %(title)s plan."
-msgstr "%(year)s metai ir %(type)s jau turi %(title)s planą."
+msgid "Plan for %(year)s already exists."
+msgstr "%(year)s metai jau turi tikslą."
 
+#: .\project\plans\forms.py:187
+msgid "Income type"
+msgstr "Pajamų rūšis"
+
+#: .\project\plans\forms.py:235
+msgid "Saving type"
+msgstr "Taupymas"
+
+#: .\project\plans\forms.py:312
+msgid "Copy from"
+msgstr "Kopijuoti iš"
+
+#: .\project\plans\forms.py:313
+msgid "Copy to"
+msgstr "Kopijuoti į"
+
+#: .\project\plans\forms.py:314 .\project\plans\views.py:75
+#: .\project\plans\views.py:84
+msgid "Incomes plans"
+msgstr "Pajamų planai"
+
+#: .\project\plans\forms.py:315 .\project\plans\views.py:114
+#: .\project\plans\views.py:125
+msgid "Expenses plans"
+msgstr "Išlaidų planai"
+
+#: .\project\plans\forms.py:316 .\project\plans\views.py:157
+#: .\project\plans\views.py:166
+msgid "Savings plans"
+msgstr "Taupymo planai"
+
+#: .\project\plans\forms.py:317 .\project\plans\views.py:198
+#: .\project\plans\views.py:205
+msgid "Day plans"
+msgstr "Dienos planai"
+
+#: .\project\plans\forms.py:318
+msgid "Plans for additional necessary expenses"
+msgstr "Papildomų būtinų išlaidų planus"
+
+#: .\project\plans\forms.py:350
+msgid "At least one plan needs to be selected."
+msgstr "Reikia pažymėti nors vieną planą."
+
+#: .\project\plans\forms.py:354
+msgid "There is nothing to copy."
+msgstr "Nėra ką kopijuoti."
+
+#: .\project\plans\forms.py:355
+#, python-format
+msgid "%(year)s year already has plans."
+msgstr "%(year)s metai jau turi planus."
+
+#: .\project\plans\lib\calc_day_sum.py:124
+msgid "median"
+msgstr "mediana"
+
+#: .\project\plans\lib\calc_day_sum.py:125
+msgid "Necessary expenses"
+msgstr "Būtinos išlaidos"
+
+#: .\project\plans\lib\calc_day_sum.py:126
+msgid "Remains for everyday"
+msgstr "Lieka kasdienybei"
+
+#: .\project\plans\lib\calc_day_sum.py:127
+msgid "from tables above"
+msgstr "iš lentelių viršuje"
+
+#: .\project\plans\lib\calc_day_sum.py:128
+msgid "Full expenses"
+msgstr "Visos išlaidos"
+
+#: .\project\plans\lib\calc_day_sum.py:129
+#: .\project\plans\templates\plans\index.html:44
+msgid "Sum per day"
+msgstr "Suma dienai"
+
+#: .\project\plans\lib\calc_day_sum.py:130
+msgid "days in month"
+msgstr "mėnesio dienų skaičius"
+
+#: .\project\plans\lib\calc_day_sum.py:131
+#: .\project\plans\templates\cotton\plans_table.html:28
+msgid "Residual"
+msgstr "Likutis"
+
+#: .\project\plans\mixins\views.py:25 .\project\plans\mixins\views.py:39
+msgid "No plans found."
+msgstr "Nieko nerasta."
+
+#: .\project\plans\services\model_services.py:92
 #: .\project\plans\templates\plans\dayplan_list.html:3
+#: .\project\plans\tests\test_models.py:463
 msgid "Daily"
 msgstr "Dienai"
 
-#: .\project\plans\templates\plans\index.html:16 .\project\plans\views.py:245
+#: .\project\plans\templates\plans\index.html:16 .\project\plans\views.py:266
 msgid "Copy plans"
 msgstr "Kopijuoti planus"
 
-#: .\project\plans\templates\plans\index.html:30 .\project\plans\views.py:217
-#: .\project\plans\views.py:225
+#: .\project\plans\templates\plans\index.html:30 .\project\plans\views.py:236
+#: .\project\plans\views.py:246
 msgid "Additional necessary expenses"
 msgstr "Papildomos būtinos išlaidos"
 
@@ -1522,9 +1531,9 @@ msgstr "Papildomos būtinos išlaidos"
 msgid "Calculations"
 msgstr "Skaičiavimai"
 
-#: .\project\plans\views.py:85 .\project\plans\views.py:122
-#: .\project\plans\views.py:159 .\project\plans\views.py:196
-#: .\project\plans\views.py:233
+#: .\project\plans\views.py:92 .\project\plans\views.py:133
+#: .\project\plans\views.py:174 .\project\plans\views.py:213
+#: .\project\plans\views.py:254
 msgid "Delete plan"
 msgstr "Trinti planus"
 
@@ -1551,7 +1560,7 @@ msgctxt "pension button"
 msgid "Pension"
 msgstr "Pensiją"
 
-#: .\project\savings\views.py:59
+#: .\project\savings\views.py:60
 msgid "Delete saving"
 msgstr "Trinti fondus"
 
@@ -1608,7 +1617,7 @@ msgstr "Išsiregistruoti"
 
 #: .\project\templates\base.html:165
 #: .\project\users\templates\users\password_reset_confirm.html:14
-#: .\project\users\views.py:154
+#: .\project\users\views.py:155
 msgid "Change password"
 msgstr "Keisti slaptažodį"
 
@@ -1631,21 +1640,21 @@ msgid "Account &hArr; Account"
 msgstr "Sąskaita &rArr; Sąskaita"
 
 #: .\project\transactions\templates\transactions\index.html:27
-#: .\project\transactions\views.py:105 .\project\transactions\views.py:115
+#: .\project\transactions\views.py:107 .\project\transactions\views.py:117
 msgid "Fund &rArr; Account"
 msgstr "Fondas &rArr; Sąskaita"
 
 #: .\project\transactions\templates\transactions\index.html:34
-#: .\project\transactions\views.py:142 .\project\transactions\views.py:152
+#: .\project\transactions\views.py:145 .\project\transactions\views.py:155
 msgid "Fund &hArr; Fund"
 msgstr "Fondas &hArr; Fondas"
 
-#: .\project\transactions\views.py:72 .\project\transactions\views.py:80
+#: .\project\transactions\views.py:73 .\project\transactions\views.py:81
 msgid "Transaction"
 msgstr "Pinigų pervedimas"
 
-#: .\project\transactions\views.py:87 .\project\transactions\views.py:124
-#: .\project\transactions\views.py:161
+#: .\project\transactions\views.py:88 .\project\transactions\views.py:126
+#: .\project\transactions\views.py:164
 msgid "Delete transaction"
 msgstr "Trint pervedimą"
 
@@ -1698,8 +1707,8 @@ msgstr "Pamiršai slaptažodį?"
 msgid "New to this site?"
 msgstr "Pirmą kartą šioje svetainėje?"
 
-#: .\project\users\templates\users\login.html:33 .\project\users\views.py:96
-#: .\project\users\views.py:235
+#: .\project\users\templates\users\login.html:33 .\project\users\views.py:97
+#: .\project\users\views.py:236
 msgid "Sign up"
 msgstr "Užsiregistruoti"
 
@@ -1707,7 +1716,7 @@ msgstr "Užsiregistruoti"
 msgid "Already have an account?"
 msgstr "Jau turite paskyrą?"
 
-#: .\project\users\templates\users\login.html:38 .\project\users\views.py:51
+#: .\project\users\templates\users\login.html:38 .\project\users\views.py:52
 msgid "Log in"
 msgstr "Prisijungti"
 
@@ -1779,11 +1788,11 @@ msgstr "Siųsti pakvietimo nuorodą"
 msgid "Unneccessary expenses"
 msgstr "Nebūtinos išlaidos"
 
-#: .\project\users\views.py:120
+#: .\project\users\views.py:121
 msgid "Send password reset email"
 msgstr "Siųsti slaptažodžio atstatymo nuorodą"
 
-#: .\project\users\views.py:122
+#: .\project\users\views.py:123
 msgid ""
 "Enter your email address and system will send you a link to reset your "
 "pasword."
@@ -1791,7 +1800,7 @@ msgstr ""
 "Įveskite savo el. pašto adresą ir sistema atsiųs nuorodą, kad atstatytumėte "
 "slaptažodį."
 
-#: .\project\users\views.py:138
+#: .\project\users\views.py:139
 msgid ""
 "Check your email for a link to reset your password. If it doesn't appear "
 "within a few minutes, check your spam folder."
@@ -1800,6 +1809,18 @@ msgstr ""
 "atstatymo nuoroda. Jei laiško negausite per kelias minutes, patikrinkite "
 "šlamšto aplanką."
 
-#: .\project\users\views.py:302
+#: .\project\users\views.py:303
 msgid "Delete user"
 msgstr "Trinti vartotoją"
+
+#, python-format
+#~ msgid "No %(verbose_name)s found matching the query"
+#~ msgstr "%(verbose_name)s užklausos nėra"
+
+#~ msgctxt "plans day error"
+#~ msgid "Day"
+#~ msgstr "Dienos"
+
+#, python-format
+#~ msgid "%(year)s year and %(type)s already has %(title)s plan."
+#~ msgstr "%(year)s metai ir %(type)s jau turi %(title)s planą."
