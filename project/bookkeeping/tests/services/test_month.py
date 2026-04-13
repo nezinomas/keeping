@@ -4,14 +4,9 @@ import pytest
 
 from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
-from ...services.month import (
-    ChartBuilder,
-    InfoBuilder,
-    InfoState,
-    MonthContextPresenter,
-    MonthDataDTO,
-    MonthTableBuilder,
-)
+from ...services.month.builders import ChartBuilder, InfoBuilder, MonthTableBuilder
+from ...services.month.dtos import InfoState, MonthDataDTO
+from ...services.month.presenters import MonthContextPresenter
 
 MONTH_SERVICE_PATH = "project.bookkeeping.services.month"
 
@@ -267,8 +262,8 @@ def test_presenter_init(main_user, dummy_dto):
 def test_month_table_property(mocker, dummy_dto):
     """Proves MakeDataFrame and MonthTableBuilder are initialized correctly."""
     # Mock the external dependencies
-    mock_make_df = mocker.patch(f"{MONTH_SERVICE_PATH}.MakeDataFrame")
-    mock_table_builder = mocker.patch(f"{MONTH_SERVICE_PATH}.MonthTableBuilder")
+    mock_make_df = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.MakeDataFrame")
+    mock_table_builder = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.MonthTableBuilder")
 
     presenter = MonthContextPresenter(2026, 4, dummy_dto)
     _ = presenter.month_table  # Trigger the cached property
@@ -281,7 +276,7 @@ def test_month_table_property(mocker, dummy_dto):
 def test_plans_property(mocker, dummy_dto):
     """Proves PlanCalculateDaySum is initialized directly with DTO data."""
     # We no longer need to mock PlanCollectData!
-    mock_calc = mocker.patch(f"{MONTH_SERVICE_PATH}.PlanCalculateDaySum")
+    mock_calc = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.PlanCalculateDaySum")
 
     presenter = MonthContextPresenter(2026, 4, dummy_dto)
     result = presenter.plans 
@@ -296,8 +291,8 @@ def test_plans_property(mocker, dummy_dto):
 
 def test_spending_property(mocker, dummy_dto):
     """Proves DaySpending is initialized with the correct plan parameters."""
-    mock_make_df = mocker.patch(f"{MONTH_SERVICE_PATH}.MakeDataFrame")
-    mock_day_spending = mocker.patch(f"{MONTH_SERVICE_PATH}.DaySpending")
+    mock_make_df = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.MakeDataFrame")
+    mock_day_spending = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.DaySpending")
 
     # Mock the 'plans' cached property so we don't trigger its real logic
     mock_plans = mocker.Mock(day_input=15, expenses_free=200)
@@ -382,7 +377,7 @@ def test_tables_property(mocker, dummy_dto):
 
 def test_charts_property(mocker, dummy_dto):
     """Proves the ChartBuilder receives targets directly from the DTO."""
-    mock_chart_builder = mocker.patch(f"{MONTH_SERVICE_PATH}.ChartBuilder")
+    mock_chart_builder = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.ChartBuilder")
 
     # Presenter initialized without a user!
     presenter = MonthContextPresenter(2026, 4, dummy_dto)
