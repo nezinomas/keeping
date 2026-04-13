@@ -784,7 +784,7 @@ def test_necessary_form_title_invalid_characters(main_user, title):
     assert "title" in form.errors
 
     assert (
-        "Title can only contain letters, numbers, spaces, hyphens, and underscores."
+        _("Title can only contain letters, numbers, spaces, hyphens, and underscores.")
         in form.errors["title"][0]
     )
 
