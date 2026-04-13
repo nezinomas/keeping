@@ -230,8 +230,10 @@ fieldset {
         align-items: center;
         display: grid;
 
-        span.invalid-feedback {
-            grid-column-start: 2;
+        .invalid-feedback {
+            padding: .75rem 0;
+            grid-column: 1 / span 2;
+            text-align: right;
         }
     }
 
