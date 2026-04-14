@@ -1,6 +1,7 @@
-import itertools as it
-from dataclasses import dataclass, field
+from collections import defaultdict
+from dataclasses import dataclass
 from datetime import date
+from functools import cached_property
 
 import polars as pl
 from django.utils.text import slugify
@@ -8,148 +9,131 @@ from django.utils.translation import gettext as _
 
 from ...expenses.services.model_services import (
     ExpenseModelService,
-    ExpenseTypeModelService,
 )
-from ...incomes.services.model_services import IncomeModelService
+from ...incomes.services.model_services import (
+    IncomeModelService,
+)
 from ...savings.services.model_services import SavingModelService
 from ...users.models import User
 
 
-@dataclass
-class Data:
-    user: User
-    year: int = field(init=False, default=1974)
-    incomes: list[dict] = field(init=False, default_factory=list)
-    expenses: list[dict] = field(init=False, default_factory=list)
-    savings: list[dict] = field(init=False, default_factory=list)
-    expenses_types: list = field(init=False, default_factory=list)
+@dataclass(frozen=True)
+class DetailedDto:
+    data: list[dict]
 
-    def __post_init__(self):
-        self.year = self.user.year
 
-        self.incomes = IncomeModelService(self.user).sum_by_month_and_type(self.year)
-        self.savings = SavingModelService(self.user).sum_by_month_and_type(self.year)
-        self.expenses = ExpenseModelService(self.user).sum_by_month_and_name(self.year)
-        self.expenses_types = (
-            ExpenseTypeModelService(self.user).items().values_list("title", flat=True)
+class DetailedDataProvider:
+    def __init__(self, user: User):
+        self.user = user
+        self.year = user.year
+
+    def get_incomes(self) -> DetailedDto:
+        return DetailedDto(
+            data=list(IncomeModelService(self.user).sum_by_month_and_type(self.year))
         )
 
+    def get_savings(self) -> DetailedDto:
+        return DetailedDto(
+            data=list(SavingModelService(self.user).sum_by_month_and_type(self.year))
+        )
 
-class Service:
-    def __init__(self, data: Data):
-        self._year = data.year
-        self._incomes = list(data.incomes)
-        self._expenses = list(data.expenses)
-        self._savings = list(data.savings)
-        self._expenses_types = sorted(data.expenses_types)
+    def get_expenses(self) -> dict[str, DetailedDto]:
+        """Returns a dictionary mapping expense categories to their respective DTOs."""
+        qs = ExpenseModelService(self.user).sum_by_month_and_name(self.year)
 
-    def incomes_context(self) -> list[dict]:
-        name = _("Incomes")
-        data = __class__.insert_type(name, self._incomes)
-        data = __class__.modify_data(self._year, data)
-        return self._create_context(data, [name])
+        grouped_data = defaultdict(list)
+        for record in qs:
+            group_key = record.pop("type_title")
+            grouped_data[group_key].append(record)
 
-    def savings_context(self) -> list[dict]:
-        name = _("Savings")
-        data = __class__.insert_type(name, self._savings)
-        data = __class__.modify_data(self._year, data)
-        return self._create_context(data, [name])
+        return {title: DetailedDto(data=data) for title, data in grouped_data.items()}
 
-    def expenses_context(self) -> list[dict]:
-        data = __class__.modify_data(self._year, self._expenses)
-        name = f"{_('Expenses')} / "
-        return self._create_context(data, self._expenses_types, name)
+
+class DetailedTableBuilder:
+    def __init__(self, dto: DetailedDto, year: int):
+        self.dto = dto
+        self.year = year
+
+    @cached_property
+    def df(self) -> pl.DataFrame:
+        if not self.dto.data:
+            return pl.DataFrame()
+
+        # Copy data to avoid mutating the frozen DTO
+        data = list(self.dto.data)
+        unique_titles = {item["title"] for item in data}
+
+        # Empty sums for December. This is a hack for polars upsample method
+        for title in unique_titles:
+            data.append({"date": date(self.year, 12, 1), "sum": 0, "title": title})
+
+        return (
+            pl.DataFrame(data)
+            .upsample(
+                time_column="date", group_by="title", every="1mo", maintain_order=True
+            )
+            .with_columns(pl.col("sum").fill_null(0))
+            .group_by("title", "date")
+            .agg(pl.col("sum").sum())
+            .sort(["title", "date"])
+            .with_columns(date=(pl.col("date").dt.month()))
+            .pivot(index="title", on="date", values="sum", aggregate_function="sum")
+            .fill_null(0)
+            .with_columns(total_col=pl.sum_horizontal(pl.exclude("title")))
+        )
+
+    @property
+    def table(self) -> list[dict]:
+        return [] if self.df.is_empty() else self.df.to_dicts()
+
+    @property
+    def total_row(self) -> dict:
+        if self.df.is_empty():
+            return {}
+        return self.df.select(pl.all().exclude("title").sum()).to_dicts()[0]
+
+
+class DetailedContextPresenter:
+    """Formats a TableBuilder into the exact dictionary structure required by the UI."""
 
     @staticmethod
-    def insert_type(name, data):
-        return [x | {"type_title": name} for x in data]
-
-    @staticmethod
-    def modify_data(year, data):
-        maps = set()
-        arr = []
-        for i in data:
-            title_map = (i["type_title"], i["title"])
-            if title_map in maps:
-                continue
-
-            maps.add(title_map)
-
-            arr += [
-                {
-                    "date": date(year, month, 1),
-                    "title": i["title"],
-                    "type_title": i["type_title"],
-                    "sum": 0,
-                }
-                for month in range(1, 13)
-            ]
-
-        data.extend(arr)
-        return data
-
-    def _create_context(self, data, categories, name=""):
-        context = []
-        if not data:
-            return context
-
-        df = self._create_df(data)
-        for category in categories:
-            if context_item := self._create_context_item(df, category, name):
-                context.append(context_item)
-        return context
-
-    def _create_context_item(self, df, category, name):
-        context_item = {
-            "name": name + category,
-            "category": slugify(category),
-            "items": [],
-            "total": 0,
-            "total_col": [],
-            "total_row": [],
+    def build(title: str, url_title: str, dto: DetailedDto, year: int) -> dict:
+        builder = DetailedTableBuilder(dto, year)
+        return {
+            "title": title,
+            "url_title": url_title,
+            "data": builder.table,
+            "total": builder.total_row,
         }
-
-        df_category = df.filter(pl.col.type_title == category)
-        if df_category.is_empty():
-            return None
-
-        for df_part in df_category.partition_by("title"):
-            total_col = df_part["total_col"].sum()
-            context_item["total"] += total_col
-            context_item["total_col"] += [total_col]
-            context_item["total_row"] = df_part["total_row"].to_list()
-            context_item["items"] += [
-                {"title": df_part["title"][0], "data": df_part["sum"].to_list()}
-            ]
-        return context_item
-
-    def _create_df(self, arr):
-        df = (
-            pl.DataFrame(arr)
-            .lazy()
-            .group_by([pl.col.date, pl.col.type_title, pl.col.title])
-            .agg(pl.col.sum.sum())
-            .with_columns(
-                pl.col.sum.sum()
-                .over([pl.col.date, pl.col.type_title])
-                .alias("total_row")
-            )
-            .with_columns(
-                pl.col.sum.sum()
-                .over([pl.col.date, pl.col.type_title, pl.col.title])
-                .alias("total_col")
-            )
-            .sort([pl.col.type_title, pl.col.title, pl.col.date])
-        )
-        return df.collect()
 
 
 def load_service(user: User) -> dict:
-    data = Data(user)
-    obj = Service(data)
+    year = user.year
+    provider = DetailedDataProvider(user)
+
+    # Build Expense contexts dynamically
+    expense_contexts = [
+        DetailedContextPresenter.build(
+            title=f"{_('Expenses')} / {expense_type_title}",
+            url_title=slugify(expense_type_title),
+            dto=dto,
+            year=year,
+        )
+        for expense_type_title, dto in provider.get_expenses().items()
+    ]
 
     return {
-        "object_list": it.chain(
-            obj.incomes_context(), obj.savings_context(), obj.expenses_context()
+        "income": DetailedContextPresenter.build(
+            title=_("Incomes"),
+            url_title="income",
+            dto=provider.get_incomes(),
+            year=year,
         ),
+        "saving": DetailedContextPresenter.build(
+            title=_("Savings"),
+            url_title="saving",
+            dto=provider.get_savings(),
+            year=year,
+        ),
+        "expense": expense_contexts,
     }
