@@ -178,7 +178,7 @@ def fixture_df_expense():
 def fixture_df_saving():
     year = 1999
     month = 3
-    data = [{"date": date(1999, 3, 3), "sum": 2, "title": "Taupymas"}]
+    data = [{"date": date(1999, 3, 3), "sum": 2, "title": "savings"}]
 
     return MakeDataFrame(year=year, month=month, data=data).data
 
@@ -191,29 +191,31 @@ def test_main_table(df_expense, df_saving):
         "date": date(1999, 3, 1),
         "A": 0,
         "B": 0,
-        "Viso": 0,
-        "Taupymas": 0,
+        "total": 0,
+        "savings": 0,
     }
     assert actual[1] == {
         "date": date(1999, 3, 2),
         "A": 4,
         "B": 0,
-        "Viso": 4,
-        "Taupymas": 0,
+        "total": 4,
+        "savings": 0,
     }
     assert actual[2] == {
         "date": date(1999, 3, 3),
         "A": 0,
         "B": 0,
-        "Viso": 0,
-        "Taupymas": 2,
+        "total": 0,
+        "savings": 2,
     }
 
 
 def test_main_table_total_row(df_expense, df_saving):
-    actual = MonthTableBuilder(df_expense, df_saving).total_row
+    obj = MonthTableBuilder(df_expense, df_saving)
+    print(f'--------------------------->\n{obj.df}\n')
+    actual = obj.total_row
 
-    assert actual == {"A": 4, "B": 0, "Viso": 4, "Taupymas": 2}
+    assert actual == {"A": 4, "B": 0, "total": 4, "savings": 2}
 
 
 def test_info_builder_delta():
@@ -250,7 +252,7 @@ def test_info_builder_delta():
 # -------------------------------------------------------------------------------------
 
 
-def test_presenter_init(main_user, dummy_dto):
+def test_presenter_init(dummy_dto):
     """Proves the constructor only assigns state and does not trigger heavy logic."""
     presenter = MonthContextPresenter(2026, 4, dummy_dto)
 

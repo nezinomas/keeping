@@ -221,7 +221,7 @@ def test_saving_type_day_sum(main_user, savings):
 @factory.django.mute_signals(post_save)
 def test_saving_day_sum(main_user, savings_extra):
     expect = [
-        {"date": date(1999, 1, 1), "sum": 2, "title": "Taupymas"},
+        {"date": date(1999, 1, 1), "sum": 2, "title": "savings"},
     ]
 
     actual = list(SavingModelService(main_user).sum_by_day(1999, 1))

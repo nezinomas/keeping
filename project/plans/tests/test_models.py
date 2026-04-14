@@ -42,7 +42,7 @@ def test_targets_fills_zeros_for_empty_plans(main_user):
 
     actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
 
-    expect = {"T1": 0, "T2": 0, _("Savings"): 0}
+    expect = {"T1": 0, "T2": 0, "savings": 0}
 
     assert actual == expect
 
@@ -63,7 +63,7 @@ def test_targets_sums_correctly_and_ignores_other_months(main_user):
 
     actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
 
-    expect = {"T1": 150, "T2": 200, "T3": 0, _("Savings"): 300}
+    expect = {"T1": 150, "T2": 200, "T3": 0, "savings": 300}
 
     assert actual == expect
 
@@ -80,7 +80,7 @@ def test_targets_no_savings(main_user):
 
     actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
 
-    expect = {"T1": 150, "T2": 200, "T3": 0, _("Savings"): 0}
+    expect = {"T1": 150, "T2": 200, "T3": 0, "savings": 0}
 
     assert actual == expect
 

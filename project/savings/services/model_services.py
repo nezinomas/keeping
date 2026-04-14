@@ -73,7 +73,7 @@ class SavingModelService(SumMixin, BaseModelService):
 
     def sum_by_day(self, year: int, month: int):
         return self.day_sum(self.objects, year=year, month=month).annotate(
-            title=Value(_("Savings"))
+            title=Value("savings")
         )
 
     def last_months(self, months: int = 6):
