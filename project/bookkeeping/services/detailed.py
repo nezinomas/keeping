@@ -50,9 +50,12 @@ class DetailedDataProvider:
 
 
 class DetailedTableBuilder:
-    def __init__(self, dto: DetailedDto, year: int):
+    """Takes a DTO and constructs the Polars pivot table with dynamic sorting."""
+
+    def __init__(self, dto: DetailedDto, year: int, order: str = ""):
         self.dto = dto
         self.year = year
+        self.order = order
 
     @cached_property
     def df(self) -> pl.DataFrame:
@@ -67,7 +70,7 @@ class DetailedTableBuilder:
         for title in unique_titles:
             data.append({"date": date(self.year, 12, 1), "sum": 0, "title": title})
 
-        return (
+        df = (
             pl.DataFrame(data)
             .upsample(
                 time_column="date", group_by="title", every="1mo", maintain_order=True
@@ -81,6 +84,22 @@ class DetailedTableBuilder:
             .fill_null(0)
             .with_columns(total_col=pl.sum_horizontal(pl.exclude("title")))
         )
+
+        return self._apply_sorting(df)
+
+    def _apply_sorting(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Applies dynamic sorting based on the instance's order parameter."""
+        if not self.order:
+            return df
+
+        descending = self.order.startswith("-")
+        sort_col = self.order.lstrip("-")
+
+        # Prevent crashes if the requested sort column doesn't exist
+        if sort_col in df.columns:
+            return df.sort(sort_col, descending=descending)
+
+        return df
 
     @property
     def table(self) -> list[dict]:
