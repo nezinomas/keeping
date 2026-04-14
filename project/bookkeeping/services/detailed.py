@@ -62,13 +62,7 @@ class DetailedTableBuilder:
         if not self.dto.data:
             return pl.DataFrame()
 
-        # Copy data to avoid mutating the frozen DTO
-        data = list(self.dto.data)
-        unique_titles = {item["title"] for item in data}
-
-        # Empty sums for December. This is a hack for polars upsample method
-        for title in unique_titles:
-            data.append({"date": date(self.year, 12, 1), "sum": 0, "title": title})
+        data = self._pad_data_for_upsampling(list(self.dto.data))
 
         df = (
             pl.DataFrame(data)
@@ -86,6 +80,15 @@ class DetailedTableBuilder:
         )
 
         return self._apply_sorting(df)
+
+    def _pad_data_for_upsampling(self, data: list[dict]) -> list[dict]:
+        """Adds empty December records to ensure Polars upsamples the entire year."""
+        unique_titles = {item["title"] for item in data}
+
+        for title in unique_titles:
+            data.append({"date": date(self.year, 12, 1), "sum": 0, "title": title})
+
+        return data
 
     def _apply_sorting(self, df: pl.DataFrame) -> pl.DataFrame:
         """Applies dynamic sorting based on the instance's order parameter."""
