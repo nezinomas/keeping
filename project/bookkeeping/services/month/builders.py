@@ -51,7 +51,7 @@ class ChartBuilder:
     def build_targets(self) -> dict:
         data = self._sort_chart_data(self.totals)
 
-        categories, data_target, data_fact = [], [], []
+        categories, data_target, data_fact, category_len = [], [], [], []
 
         for entry in data:
             name = entry["name"]
@@ -60,6 +60,8 @@ class ChartBuilder:
             categories.append(name.upper())
             data_target.append(target)
             data_fact.append({"y": entry["y"], "target": target})
+
+            category_len.append(len(name))
 
         return {
             "categories": categories,
