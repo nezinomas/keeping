@@ -14,7 +14,11 @@ class DetailedContextPresenter:
     def build(
         title: str, url_title: str, dto: DetailedDto, year: int, order: str
     ) -> dict:
+        if not dto.data:
+            return {}
+
         builder = DetailedTableBuilder(dto, year, order)
+
         return {
             "title": title,
             "url_title": url_title,
@@ -28,34 +32,43 @@ def load_full_service(user: User) -> list:
     year = user.year
     provider = DetailedDataProvider(user)
 
+    contexts = []
+
+    if income_ctx := DetailedContextPresenter.build(
+        title=_("Incomes"),
+        url_title="income",
+        dto=provider.get_incomes(),
+        year=year,
+        order="",
+    ):
+        contexts.append(income_ctx)
+
+    if saving_ctx := DetailedContextPresenter.build(
+        title=_("Savings"),
+        url_title="saving",
+        dto=provider.get_savings(),
+        year=year,
+        order="",
+    ):
+        contexts.append(saving_ctx)
+
     expense_contexts = [
-        DetailedContextPresenter.build(
-            title=f"{_('Expenses')} / {expense_type_title}",
-            url_title=slugify(expense_type_title),
-            dto=dto,
-            year=year,
-            order="",
-        )
+        context
         for expense_type_title, dto in provider.get_expenses().items()
+        if (
+            context := DetailedContextPresenter.build(
+                title=f"{_('Expenses')} / {expense_type_title}",
+                url_title=slugify(expense_type_title),
+                dto=dto,
+                year=year,
+                order="",
+            )
+        )
     ]
 
-    return [
-        DetailedContextPresenter.build(
-            title=_("Incomes"),
-            url_title="income",
-            dto=provider.get_incomes(),
-            year=year,
-            order="",
-        ),
-        DetailedContextPresenter.build(
-            title=_("Savings"),
-            url_title="saving",
-            dto=provider.get_savings(),
-            year=year,
-            order="",
-        ),
-        *expense_contexts,
-    ]
+    contexts.extend(expense_contexts)
+
+    return contexts
 
 
 def load_partial_service(user: User, category: str, order: str) -> dict:
