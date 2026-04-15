@@ -167,7 +167,7 @@ class Detailed(TemplateViewMixin):
     template_name = "bookkeeping/detailed.html"
 
     def get_context_data(self, **kwargs):
-        context = services.detailed.load_service(self.request.user)
+        context = services.detailed.load_full_service(self.request.user)
         context["months"] = monthnames_abbr()
 
         return super().get_context_data(**kwargs) | context
@@ -178,11 +178,11 @@ class DetailedCategory(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        context = services.detailed_one_category.load_service(
-            user, self.kwargs["order"], self.kwargs["category"]
+        context = services.detailed.load_partial_service(
+            user=user, order=self.kwargs["order"], category=self.kwargs["category"]
         )
         context["order"] = self.kwargs["order"]
-        context["months"] = monthnames_abbr()
+        # context["months"] = monthnames_abbr()
 
         return super().get_context_data(**kwargs) | context
 
