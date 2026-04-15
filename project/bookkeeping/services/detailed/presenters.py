@@ -28,45 +28,42 @@ class DetailedContextPresenter:
 
 
 def load_full_service(user: User) -> list:
-    """Returns all incomes, savings, and expenses for the initial page load."""
     year = user.year
     provider = DetailedDataProvider(user)
 
-    contexts = []
+    # Define the static categories
+    base_categories = [
+        (_("Incomes"), "income", provider.get_incomes()),
+        (_("Savings"), "saving", provider.get_savings()),
+    ]
 
-    if income_ctx := DetailedContextPresenter.build(
-        title=_("Incomes"),
-        url_title="income",
-        dto=provider.get_incomes(),
-        year=year,
-        order="",
-    ):
-        contexts.append(income_ctx)
-
-    if saving_ctx := DetailedContextPresenter.build(
-        title=_("Savings"),
-        url_title="saving",
-        dto=provider.get_savings(),
-        year=year,
-        order="",
-    ):
-        contexts.append(saving_ctx)
-
-    expense_contexts = [
+    # Build and filter static categories
+    contexts = [
         context
-        for expense_type_title, dto in provider.get_expenses().items()
+        for title, url_title, dto in base_categories
         if (
             context := DetailedContextPresenter.build(
-                title=f"{_('Expenses')} / {expense_type_title}",
-                url_title=slugify(expense_type_title),
-                dto=dto,
-                year=year,
-                order="",
+                title=title, url_title=url_title, dto=dto, year=year, order=""
             )
         )
     ]
 
-    contexts.extend(expense_contexts)
+    # Build, filter, and append dynamic expenses
+    contexts.extend(
+        [
+            context
+            for expense_type_title, dto in provider.get_expenses().items()
+            if (
+                context := DetailedContextPresenter.build(
+                    title=f"{_('Expenses')} / {expense_type_title}",
+                    url_title=slugify(expense_type_title),
+                    dto=dto,
+                    year=year,
+                    order="",
+                )
+            )
+        ]
+    )
 
     return contexts
 
