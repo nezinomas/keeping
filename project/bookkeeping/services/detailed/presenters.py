@@ -9,8 +9,11 @@ from .providers import DetailedDataProvider
 
 class DetailedContextPresenter:
     """Formats a TableBuilder into the exact dictionary structure required by the UI."""
+
     @staticmethod
-    def build(title: str, url_title: str, dto: DetailedDto, year: int, order: str) -> dict:
+    def build(
+        title: str, url_title: str, dto: DetailedDto, year: int, order: str
+    ) -> dict:
         builder = DetailedTableBuilder(dto, year, order)
         return {
             "title": title,
@@ -31,17 +34,25 @@ def load_full_service(user: User) -> dict:
             url_title=slugify(expense_type_title),
             dto=dto,
             year=year,
-            order=""
+            order="",
         )
         for expense_type_title, dto in provider.get_expenses().items()
     ]
 
     return {
         "income": DetailedContextPresenter.build(
-            title=_("Incomes"), url_title="income", dto=provider.get_incomes(), year=year, order=""
+            title=_("Incomes"),
+            url_title="income",
+            dto=provider.get_incomes(),
+            year=year,
+            order="",
         ),
         "saving": DetailedContextPresenter.build(
-            title=_("Savings"), url_title="saving", dto=provider.get_savings(), year=year, order=""
+            title=_("Savings"),
+            url_title="saving",
+            dto=provider.get_savings(),
+            year=year,
+            order="",
         ),
         "expense": expense_contexts,
     }
@@ -63,9 +74,5 @@ def load_partial_service(user: User, category: str, order: str) -> dict:
         dto = provider.get_expense(category_slug=category)
 
     return DetailedContextPresenter.build(
-        title=title,
-        url_title=category,
-        dto=dto,
-        year=year,
-        order=order
+        title=title, url_title=category, dto=dto, year=year, order=order
     )
