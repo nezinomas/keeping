@@ -1,29 +1,28 @@
 {% load i18n %}
-{% load math%}
+{% load math %}
 {% load cache %}
 {% load get_item %}
 {% load cell_format %}
 
-    <table class="main striped hover" id="tbl-{{url_title}}">
-        <thead class="sortable-header-row">
-            <tr>
-                <th class="text-left title-col">
-                    {% if not order or order == "title" %}
-                        <span>{{title}}</span>
-                    {% else %}
-                        <a role="button"
-                            hx-get="{% url 'bookkeeping:detailed_category' url_title 'title' %}"
-                            hx-target="#tbl-{{url_title}}"
-                            hx-indicator="#indicator">
-                            {{ title }}
-                        </a>
-                    {% endif %}
-                </th>
+<table class="main striped hover" id="tbl-{{url_title}}">
+    <thead class="sortable-header-row">
+        <tr>
+            <th class="text-left title-col">
+                {% if not order or order == "title" %}
+                    <span>{{title}}</span>
+                {% else %}
+                    <a role="button"
+                        hx-get="{% url 'bookkeeping:detailed_category' url_title 'title' %}"
+                        hx-target="#tbl-{{url_title}}"
+                        hx-indicator="#indicator">
+                        {{ title }}
+                    </a>
+                {% endif %}
+            </th>
 
-                {% for num, month_name in months.items %}
+            {% for num, month_name in months.items %}
                 {% with "-"|add:num as ordering %}
-                    <th>
-
+                <th>
                     {% if order == ordering %}
                         <span>{{month_name}}</span>
                     {% else %}
@@ -34,63 +33,58 @@
                             {{month_name}}
                         </a>
                     {% endif %}
-                    </th>
+                </th>
                 {% endwith %}
-                {% endfor%}
+            {% endfor %}
 
-                <th class=" left-thick-border">
-                    {% if order == "-total_col" %}
-                        <span>{% translate 'Total' %}</span>
-                    {% else %}
+            <th class="left-thick-border">
+                {% if order == "-total_col" %}
+                    <span>{% translate 'Total' %}</span>
+                {% else %}
                     <a role="button"
                         hx-get="{% url 'bookkeeping:detailed_category' url_title '-total_col' %}"
                         hx-target="#tbl-{{url_title}}"
                         hx-indicator="#indicator">
                         {% translate 'Total' %}
                     </a>
-                    {% endif %}
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in data %}
-            <tr>
-                <td class="text-left">{{ row.title|safe }}</td>
-                <td class="{{row.1|css_class_if_none}}">{{row.1|price|cellformat:"0,00"}}</td>
-                <td class="{{row.2|css_class_if_none}}">{{row.2|price|cellformat:"0,00"}}</td>
-                <td class="{{row.3|css_class_if_none}}">{{row.3|price|cellformat:"0,00"}}</td>
-                <td class="{{row.4|css_class_if_none}}">{{row.4|price|cellformat:"0,00"}}</td>
-                <td class="{{row.5|css_class_if_none}}">{{row.5|price|cellformat:"0,00"}}</td>
-                <td class="{{row.6|css_class_if_none}}">{{row.6|price|cellformat:"0,00"}}</td>
-                <td class="{{row.7|css_class_if_none}}">{{row.7|price|cellformat:"0,00"}}</td>
-                <td class="{{row.8|css_class_if_none}}">{{row.8|price|cellformat:"0,00"}}</td>
-                <td class="{{row.9|css_class_if_none}}">{{row.9|price|cellformat:"0,00"}}</td>
-                <td class="{{row.10|css_class_if_none}}">{{row.10|price|cellformat:"0,00"}}</td>
-                <td class="{{row.11|css_class_if_none}}">{{row.11|price|cellformat:"0,00"}}</td>
-                <td class="{{row.12|css_class_if_none}}">{{row.12|price|cellformat:"0,00"}}</td>
-                <td class="left-thick-border">
-                    <b>{{row.total_col|price|cellformat:"0,00"}}</b>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        <tfoot>
-            <tr>
-                <th class="text-left">{% translate 'Total' %}</th>
-                <th class="{{total.1|css_class_if_none}}">{{total.1|price|cellformat:"0,00"}}</th>
-                <th class="{{total.2|css_class_if_none}}">{{total.2|price|cellformat:"0,00"}}</th>
-                <th class="{{total.3|css_class_if_none}}">{{total.3|price|cellformat:"0,00"}}</th>
-                <th class="{{total.4|css_class_if_none}}">{{total.4|price|cellformat:"0,00"}}</th>
-                <th class="{{total.5|css_class_if_none}}">{{total.5|price|cellformat:"0,00"}}</th>
-                <th class="{{total.6|css_class_if_none}}">{{total.6|price|cellformat:"0,00"}}</th>
-                <th class="{{total.7|css_class_if_none}}">{{total.7|price|cellformat:"0,00"}}</th>
-                <th class="{{total.8|css_class_if_none}}">{{total.8|price|cellformat:"0,00"}}</th>
-                <th class="{{total.9|css_class_if_none}}">{{total.9|price|cellformat:"0,00"}}</th>
-                <th class="{{total.10|css_class_if_none}}">{{total.10|price|cellformat:"0,00"}}</th>
-                <th class="{{total.11|css_class_if_none}}">{{total.11|price|cellformat:"0,00"}}</th>
-                <th class="{{total.12|css_class_if_none}}">{{total.12|price|cellformat:"0,00"}}</th>
-                <th class="left-thick-border">{{total.total_col|price|cellformat:"0,00"}}</th>
-            </tr>
-        </tfoot>
-    </table>
+                {% endif %}
+            </th>
+        </tr>
+    </thead>
 
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td class="text-left">{{ row.title|safe }}</td>
+
+            {% for num, month_name in months.items %}
+                {% with cell_value=row|get_item:num %}
+                    <td class="{{ cell_value|css_class_if_none }}">
+                        {{ cell_value|price|cellformat:"0,00" }}
+                    </td>
+                {% endwith %}
+            {% endfor %}
+
+            <td class="left-thick-border">
+                <b>{{ row.total_col|price|cellformat:"0,00" }}</b>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+    <tfoot>
+        <tr>
+            <th class="text-left">{% translate 'Total' %}</th>
+
+            {% for num, month_name in months.items %}
+                {% with cell_value=total|get_item:num %}
+                    <th class="{{ cell_value|css_class_if_none }}">
+                        {{ cell_value|price|cellformat:"0,00" }}
+                    </th>
+                {% endwith %}
+            {% endfor %}
+
+            <th class="left-thick-border">{{ total.total_col|price|cellformat:"0,00" }}</th>
+        </tr>
+    </tfoot>
+</table>
