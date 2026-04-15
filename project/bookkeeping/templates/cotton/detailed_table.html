@@ -24,13 +24,13 @@
                 {% with "-"|add:num as ordering %}
                 <th>
                     {% if order == ordering %}
-                        <span>{{month_name}}</span>
+                        <span>{% translate month_name %}</span>
                     {% else %}
                         <a role="button"
                             hx-get="{% url 'bookkeeping:detailed_category' url_title ordering %}"
                             hx-target="#tbl-{{url_title}}"
                             hx-indicator="#indicator">
-                            {{month_name}}
+                            {% translate month_name %}
                         </a>
                     {% endif %}
                 </th>
