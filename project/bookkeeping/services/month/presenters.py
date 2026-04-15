@@ -1,12 +1,14 @@
+import itertools as it
 from functools import cached_property
 
-from django.utils.translation import gettext_lazy as _
-
+from ....core.lib.date import current_day
 from ....plans.lib.calc_day_sum import PlanCalculateDaySum
+from ....users.models import User
 from ...lib.day_spending import DaySpending
 from ...lib.make_dataframe import MakeDataFrame
 from .builders import ChartBuilder, InfoBuilder, MonthTableBuilder
 from .dtos import InfoState, MonthDataDTO
+from .providers import MonthDataProvider
 
 
 class MonthContextPresenter:
@@ -96,3 +98,27 @@ class MonthContextPresenter:
     @cached_property
     def charts(self) -> ChartBuilder:
         return ChartBuilder(targets=self.dto.targets, totals=self.month_table.total_row)
+
+
+def load_service(user: User) -> dict:
+    year = user.year
+    month = user.month
+
+    dto = MonthDataProvider(user).get_data()
+
+    presenter = MonthContextPresenter(year, month, dto)
+
+    return {
+        "month_table": {
+            "day": current_day(year, month, False),
+            "expenses": it.zip_longest(
+                presenter.tables["main_table"], presenter.tables["spending_table"]
+            ),
+            "expense_types": dto.expense_types,
+            "total_row": presenter.tables["total_row"],
+        },
+        "info": presenter.info_context,
+        "chart_expenses": presenter.charts.build_expenses(),
+        "chart_targets": presenter.charts.build_targets(),
+    }
+
