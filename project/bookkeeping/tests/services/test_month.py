@@ -28,7 +28,6 @@ def dummy_dto():
     )
 
 
-
 def test_chart_expenses_context():
     totals = {"xyz": 10, "Taupymas": 1}
     targets = {"xyz": 6, "Taupymas": 9}
@@ -212,7 +211,7 @@ def test_main_table(df_expense, df_saving):
 
 def test_main_table_total_row(df_expense, df_saving):
     obj = MonthTableBuilder(df_expense, df_saving)
-    print(f'--------------------------->\n{obj.df}\n')
+    print(f"--------------------------->\n{obj.df}\n")
     actual = obj.total_row
 
     assert actual == {"A": 4, "B": 0, "total": 4, "savings": 2}
@@ -265,7 +264,9 @@ def test_month_table_property(mocker, dummy_dto):
     """Proves MakeDataFrame and MonthTableBuilder are initialized correctly."""
     # Mock the external dependencies
     mock_make_df = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.MakeDataFrame")
-    mock_table_builder = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.MonthTableBuilder")
+    mock_table_builder = mocker.patch(
+        f"{MONTH_SERVICE_PATH}.presenters.MonthTableBuilder"
+    )
 
     presenter = MonthContextPresenter(2026, 4, dummy_dto)
     _ = presenter.month_table  # Trigger the cached property
@@ -281,12 +282,11 @@ def test_plans_property(mocker, dummy_dto):
     mock_calc = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.PlanCalculateDaySum")
 
     presenter = MonthContextPresenter(2026, 4, dummy_dto)
-    result = presenter.plans 
+    result = presenter.plans
 
     # Verify the calculator receives the exact data stored in the DTO
     mock_calc.assert_called_once_with(
-        data={"dummy_plan_key": "dummy_plan_value"}, 
-        month=4
+        data={"dummy_plan_key": "dummy_plan_value"}, month=4
     )
     assert result == mock_calc.return_value
 
@@ -386,14 +386,17 @@ def test_charts_property(mocker, dummy_dto):
 
     mock_month_table = mocker.Mock(total_row={"total": 10})
     mocker.patch.object(
-        MonthContextPresenter, "month_table", new_callable=mocker.PropertyMock, return_value=mock_month_table
+        MonthContextPresenter,
+        "month_table",
+        new_callable=mocker.PropertyMock,
+        return_value=mock_month_table,
     )
 
     result = presenter.charts
 
     # We no longer need to mock PlanAggregatorService because it is handled by the DTO
     mock_chart_builder.assert_called_once_with(
-        targets={"Food": 100}, # Pulls directly from dummy_dto.targets
-        totals={"total": 10}
+        targets={"Food": 100},  # Pulls directly from dummy_dto.targets
+        totals={"total": 10},
     )
     assert result == mock_chart_builder.return_value

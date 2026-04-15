@@ -93,6 +93,7 @@ def dummy_sort_dto():
 #                                                                        Sorting Tests
 # -------------------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize(
     "order_param, expected_first, expected_last",
     [
