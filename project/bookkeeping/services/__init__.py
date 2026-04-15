@@ -3,7 +3,6 @@ from . import (
     chart_summary,
     chart_summary_expenses,
     detailed,
-    detailed_one_category,
     expand_day,
     expenses,
     forecast,

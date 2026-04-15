@@ -23,7 +23,7 @@ class MonthTableBuilder:
         # create total column
         if expense_df.shape[1] > 1:
             expense_df = expense_df.with_columns(
-                pl.sum_horizontal(pl.exclude("date")).alias(_("Total"))
+                pl.sum_horizontal(pl.exclude("date")).alias("total")
             )
 
         return expense_df.join(
@@ -45,21 +45,25 @@ class ChartBuilder:
     """Formats financial data specifically for frontend charts."""
 
     def __init__(self, targets: dict, totals: dict):
-        self.totals = {k: v for k, v in totals.items() if k != _("Total")}
+        self.totals = {k: v for k, v in totals.items() if k != "total"}
         self.targets = targets
 
     def build_targets(self) -> dict:
         data = self._sort_chart_data(self.totals)
 
-        categories, data_target, data_fact = [], [], []
+        categories, data_target, data_fact, category_len = [], [], [], []
 
         for entry in data:
             name = entry["name"]
             target = self.targets.get(name, 0)
 
+            name = self._translate_saving_title(name)
+
             categories.append(name.upper())
             data_target.append(target)
             data_fact.append({"y": entry["y"], "target": target})
+
+            category_len.append(len(name))
 
         return {
             "categories": categories,
@@ -67,14 +71,18 @@ class ChartBuilder:
             "targetTitle": _("Plan"),
             "fact": data_fact,
             "factTitle": _("Fact"),
-            "max_category_len": max((len(c) for c in categories), default=0),
+            "max_category_len": max(category_len, default=0),
             "category_len": len(categories),
         }
+
+    def _translate_saving_title(self, name):
+        return _("Savings") if name == "savings" else name
 
     def build_expenses(self) -> list[dict]:
         data = self._sort_chart_data(self.totals)
         for entry in data:
-            entry["name"] = entry["name"].upper()
+            name = self._translate_saving_title(entry["name"])
+            entry["name"] = name.upper()
         return data
 
     def _sort_chart_data(self, data: dict) -> list[dict]:

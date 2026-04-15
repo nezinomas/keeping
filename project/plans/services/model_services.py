@@ -121,8 +121,7 @@ class PlanAggregatorService:
         targets = {title: 0 for title in expense_types}
 
         # Pre-fill Savings
-        savings_title = _("Savings")
-        targets[savings_title] = 0
+        targets["savings"] = 0
 
         # 2. Get Expenses (Grouped & Summed)
         expenses = (
@@ -156,6 +155,6 @@ class PlanAggregatorService:
             .aggregate(total=Sum("price", default=0))
         )
         if savings.get("total"):
-            targets[savings_title] += savings["total"]
+            targets["savings"] += savings["total"]
 
         return targets

@@ -11,7 +11,7 @@ from project.bookkeeping.services.model_services import (
 )
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.date import monthnames_abbr
+from ..core.lib.date import monthnames_num
 from ..core.lib.utils import rendered_content
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (
@@ -167,24 +167,27 @@ class Detailed(TemplateViewMixin):
     template_name = "bookkeeping/detailed.html"
 
     def get_context_data(self, **kwargs):
-        context = services.detailed.load_service(self.request.user)
-        context["months"] = monthnames_abbr()
+        context = super().get_context_data(**kwargs)
+        context["object_list"] = services.detailed.load_full_service(self.request.user)
+        context["months"] = {**monthnames_num()}
 
-        return super().get_context_data(**kwargs) | context
+        return context
 
 
 class DetailedCategory(TemplateViewMixin):
     template_name = "cotton/detailed_table.html"
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
-        context = services.detailed_one_category.load_service(
-            user, self.kwargs["order"], self.kwargs["category"]
-        )
-        context["order"] = self.kwargs["order"]
-        context["months"] = monthnames_abbr()
+        context = super().get_context_data(**kwargs)
 
-        return super().get_context_data(**kwargs) | context
+        user = self.request.user
+        context = context | {**services.detailed.load_partial_service(
+            user=user, order=self.kwargs["order"], category=self.kwargs["category"]
+        )}
+        context["order"] = self.kwargs["order"]
+        context["months"] = monthnames_num()
+
+        return context
 
 
 class Summary(TemplateViewMixin):

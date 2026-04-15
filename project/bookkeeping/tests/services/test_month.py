@@ -28,7 +28,6 @@ def dummy_dto():
     )
 
 
-
 def test_chart_expenses_context():
     totals = {"xyz": 10, "Taupymas": 1}
     targets = {"xyz": 6, "Taupymas": 9}
@@ -178,7 +177,7 @@ def fixture_df_expense():
 def fixture_df_saving():
     year = 1999
     month = 3
-    data = [{"date": date(1999, 3, 3), "sum": 2, "title": "Taupymas"}]
+    data = [{"date": date(1999, 3, 3), "sum": 2, "title": "savings"}]
 
     return MakeDataFrame(year=year, month=month, data=data).data
 
@@ -191,29 +190,31 @@ def test_main_table(df_expense, df_saving):
         "date": date(1999, 3, 1),
         "A": 0,
         "B": 0,
-        "Viso": 0,
-        "Taupymas": 0,
+        "total": 0,
+        "savings": 0,
     }
     assert actual[1] == {
         "date": date(1999, 3, 2),
         "A": 4,
         "B": 0,
-        "Viso": 4,
-        "Taupymas": 0,
+        "total": 4,
+        "savings": 0,
     }
     assert actual[2] == {
         "date": date(1999, 3, 3),
         "A": 0,
         "B": 0,
-        "Viso": 0,
-        "Taupymas": 2,
+        "total": 0,
+        "savings": 2,
     }
 
 
 def test_main_table_total_row(df_expense, df_saving):
-    actual = MonthTableBuilder(df_expense, df_saving).total_row
+    obj = MonthTableBuilder(df_expense, df_saving)
+    print(f"--------------------------->\n{obj.df}\n")
+    actual = obj.total_row
 
-    assert actual == {"A": 4, "B": 0, "Viso": 4, "Taupymas": 2}
+    assert actual == {"A": 4, "B": 0, "total": 4, "savings": 2}
 
 
 def test_info_builder_delta():
@@ -250,7 +251,7 @@ def test_info_builder_delta():
 # -------------------------------------------------------------------------------------
 
 
-def test_presenter_init(main_user, dummy_dto):
+def test_presenter_init(dummy_dto):
     """Proves the constructor only assigns state and does not trigger heavy logic."""
     presenter = MonthContextPresenter(2026, 4, dummy_dto)
 
@@ -263,7 +264,9 @@ def test_month_table_property(mocker, dummy_dto):
     """Proves MakeDataFrame and MonthTableBuilder are initialized correctly."""
     # Mock the external dependencies
     mock_make_df = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.MakeDataFrame")
-    mock_table_builder = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.MonthTableBuilder")
+    mock_table_builder = mocker.patch(
+        f"{MONTH_SERVICE_PATH}.presenters.MonthTableBuilder"
+    )
 
     presenter = MonthContextPresenter(2026, 4, dummy_dto)
     _ = presenter.month_table  # Trigger the cached property
@@ -279,12 +282,11 @@ def test_plans_property(mocker, dummy_dto):
     mock_calc = mocker.patch(f"{MONTH_SERVICE_PATH}.presenters.PlanCalculateDaySum")
 
     presenter = MonthContextPresenter(2026, 4, dummy_dto)
-    result = presenter.plans 
+    result = presenter.plans
 
     # Verify the calculator receives the exact data stored in the DTO
     mock_calc.assert_called_once_with(
-        data={"dummy_plan_key": "dummy_plan_value"}, 
-        month=4
+        data={"dummy_plan_key": "dummy_plan_value"}, month=4
     )
     assert result == mock_calc.return_value
 
@@ -384,14 +386,17 @@ def test_charts_property(mocker, dummy_dto):
 
     mock_month_table = mocker.Mock(total_row={"total": 10})
     mocker.patch.object(
-        MonthContextPresenter, "month_table", new_callable=mocker.PropertyMock, return_value=mock_month_table
+        MonthContextPresenter,
+        "month_table",
+        new_callable=mocker.PropertyMock,
+        return_value=mock_month_table,
     )
 
     result = presenter.charts
 
     # We no longer need to mock PlanAggregatorService because it is handled by the DTO
     mock_chart_builder.assert_called_once_with(
-        targets={"Food": 100}, # Pulls directly from dummy_dto.targets
-        totals={"total": 10}
+        targets={"Food": 100},  # Pulls directly from dummy_dto.targets
+        totals={"total": 10},
     )
     assert result == mock_chart_builder.return_value

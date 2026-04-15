@@ -4,37 +4,38 @@
 {% load get_item %}
 {% load cell_format %}
 
-{% if category %}
-    <table class="main striped hover" id="tbl-{{category}}">
+    <table class="main striped hover" id="tbl-{{url_title}}">
         <thead>
             <tr>
                 <th class="text-left title-col">
                     <a role="button"
                     class="{% if not order or order == 'title' %}detailed-table-sorting{% endif %}"
-                    hx-get="{% url 'bookkeeping:detailed_category' category 'title' %}"
-                    hx-target="#tbl-{{category}}"
+                    hx-get="{% url 'bookkeeping:detailed_category' url_title 'title' %}"
+                    hx-target="#tbl-{{url_title}}"
                     hx-indicator="#indicator">
-                    {{ name }}
+                    {{ title }}
                     </a>
                 </th>
 
-                {% for month_short, month_name in months.items %}
+                {% for num, month_name in months.items %}
+                {% with "-"|add:num as ordering %}
                     <th>
                         <a role="button"
-                        {% if order == month_short %}class="detailed-table-sorting"{% endif %}
-                        hx-get="{% url 'bookkeeping:detailed_category' category month_short %}"
-                        hx-target="#tbl-{{category}}"
+                        {% if order == ordering %}class="detailed-table-sorting"{% endif %}
+                        hx-get="{% url 'bookkeeping:detailed_category' url_title ordering %}"
+                        hx-target="#tbl-{{url_title}}"
                         hx-indicator="#indicator">
                         {{month_name}}
                         </a>
                     </th>
+                {% endwith %}
                 {% endfor%}
 
                 <th class=" left-thick-border">
                     <a role="button"
-                    {% if order == 'total' %}class="detailed-table-sorting"{% endif %}
-                    hx-get="{% url 'bookkeeping:detailed_category' category 'total' %}"
-                    hx-target="#tbl-{{category}}"
+                    {% if order == '-total_col' %}class="detailed-table-sorting"{% endif %}
+                    hx-get="{% url 'bookkeeping:detailed_category' url_title '-total_col' %}"
+                    hx-target="#tbl-{{url_title}}"
                     hx-indicator="#indicator">
                     {% translate 'Total' %}
                     </a>
@@ -42,14 +43,23 @@
             </tr>
         </thead>
         <tbody>
-            {% for item in items %}
+            {% for row in data %}
             <tr>
-                <td class="text-left">{{ item.title|safe }}</td>
-                {% for i in item.data %}
-                    <td class="{{i|css_class_if_none}}">{{i|price|cellformat:"0,00"}}</td>
-                {% endfor %}
+                <td class="text-left">{{ row.title|safe }}</td>
+                <td class="{{row.1|css_class_if_none}}">{{row.1|price|cellformat:"0,00"}}</td>
+                <td class="{{row.2|css_class_if_none}}">{{row.2|price|cellformat:"0,00"}}</td>
+                <td class="{{row.3|css_class_if_none}}">{{row.3|price|cellformat:"0,00"}}</td>
+                <td class="{{row.4|css_class_if_none}}">{{row.4|price|cellformat:"0,00"}}</td>
+                <td class="{{row.5|css_class_if_none}}">{{row.5|price|cellformat:"0,00"}}</td>
+                <td class="{{row.6|css_class_if_none}}">{{row.6|price|cellformat:"0,00"}}</td>
+                <td class="{{row.7|css_class_if_none}}">{{row.7|price|cellformat:"0,00"}}</td>
+                <td class="{{row.8|css_class_if_none}}">{{row.8|price|cellformat:"0,00"}}</td>
+                <td class="{{row.9|css_class_if_none}}">{{row.9|price|cellformat:"0,00"}}</td>
+                <td class="{{row.10|css_class_if_none}}">{{row.10|price|cellformat:"0,00"}}</td>
+                <td class="{{row.11|css_class_if_none}}">{{row.11|price|cellformat:"0,00"}}</td>
+                <td class="{{row.12|css_class_if_none}}">{{row.12|price|cellformat:"0,00"}}</td>
                 <td class="left-thick-border">
-                    <b>{{total_col|get_list_val:forloop.counter0|price|cellformat:"0,00"}}</b>
+                    <b>{{row.total_col|price|cellformat:"0,00"}}</b>
                 </td>
             </tr>
             {% endfor %}
@@ -57,11 +67,20 @@
         <tfoot>
             <tr>
                 <th class="text-left">{% translate 'Total' %}</th>
-                {% for i in total_row %}
-                <th class="{{i|css_class_if_none}}">{{i|price|cellformat:"0,00"}}</th>
-                {% endfor %}
-                <th class="left-thick-border">{{total|price|cellformat:"0,00"}}</th>
+                <th class="{{total.1|css_class_if_none}}">{{total.1|price|cellformat:"0,00"}}</th>
+                <th class="{{total.2|css_class_if_none}}">{{total.2|price|cellformat:"0,00"}}</th>
+                <th class="{{total.3|css_class_if_none}}">{{total.3|price|cellformat:"0,00"}}</th>
+                <th class="{{total.4|css_class_if_none}}">{{total.4|price|cellformat:"0,00"}}</th>
+                <th class="{{total.5|css_class_if_none}}">{{total.5|price|cellformat:"0,00"}}</th>
+                <th class="{{total.6|css_class_if_none}}">{{total.6|price|cellformat:"0,00"}}</th>
+                <th class="{{total.7|css_class_if_none}}">{{total.7|price|cellformat:"0,00"}}</th>
+                <th class="{{total.8|css_class_if_none}}">{{total.8|price|cellformat:"0,00"}}</th>
+                <th class="{{total.9|css_class_if_none}}">{{total.9|price|cellformat:"0,00"}}</th>
+                <th class="{{total.10|css_class_if_none}}">{{total.10|price|cellformat:"0,00"}}</th>
+                <th class="{{total.11|css_class_if_none}}">{{total.11|price|cellformat:"0,00"}}</th>
+                <th class="{{total.12|css_class_if_none}}">{{total.12|price|cellformat:"0,00"}}</th>
+                <th class="left-thick-border">{{total.total_col|price|cellformat:"0,00"}}</th>
             </tr>
         </tfoot>
     </table>
-{% endif %}
+

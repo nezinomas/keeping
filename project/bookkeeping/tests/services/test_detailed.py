@@ -3,168 +3,127 @@ from types import SimpleNamespace
 
 import pytest
 
-from ...services.detailed import Service
+from ...services.detailed.builders import DetailedTableBuilder
+from ...services.detailed.dtos import DetailedDto
 
 
 @pytest.fixture(name="data")
 def fixture_data():
-    return [
-        {"date": date(1999, 1, 1), "sum": 4, "title": "Y"},
-        {"date": date(1999, 2, 1), "sum": 8, "title": "Y"},
-        {"date": date(1999, 1, 1), "sum": 1, "title": "X"},
-        {"date": date(1999, 2, 1), "sum": 2, "title": "X"},
-    ]
-
-
-@pytest.fixture(name="expenses_data")
-def fixture_expenses_data():
-    return [
-        {"date": date(1999, 2, 1), "sum": 1, "title": "X", "type_title": "T"},
-        {"date": date(1999, 5, 1), "sum": 2, "title": "X", "type_title": "T"},
-    ]
-
-
-def test_incomes_context_name(data):
-    d = SimpleNamespace(
-        year=1999, incomes=data, expenses=[], savings=[], expenses_types=[]
+    return SimpleNamespace(
+        data=[
+            {"date": date(1999, 1, 1), "sum": 4, "title": "Y"},
+            {"date": date(1999, 2, 1), "sum": 8, "title": "Y"},
+            {"date": date(1999, 1, 1), "sum": 1, "title": "X"},
+            {"date": date(1999, 2, 1), "sum": 2, "title": "X"},
+        ]
     )
-    actual = Service(data=d).incomes_context()
-
-    assert actual[0]["name"] == "Pajamos"
 
 
-def test_incomes_context_data(data):
-    d = SimpleNamespace(
-        year=1999, incomes=data, expenses=[], savings=[], expenses_types=[]
-    )
-    actual = Service(data=d).incomes_context()
+def test_table_property(data):
+    actual = DetailedTableBuilder(data, 1999).table
 
-    assert actual[0]["items"][0]["title"] == "X"
-    assert actual[0]["items"][0]["data"] == [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    assert actual[0]["items"][1]["title"] == "Y"
-    assert actual[0]["items"][1]["data"] == [4, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    assert len(actual[0]) == 14
+    assert len(actual[1]) == 14
 
-    assert actual[0]["total_row"] == [5, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    assert actual[0]["total_col"] == [3, 12]
-    assert actual[0]["total"] == 15
+    assert actual[0]["title"] == "X"
+    assert actual[0]["1"] == 1
+    assert actual[0]["2"] == 2
+    assert actual[0]["3"] == 0
+    assert actual[0]["12"] == 0
+    assert actual[0]["total_col"] == 3
 
-
-def test_incomes_context_data_empty_month():
-    data = [
-        {"date": date(1999, 1, 1), "sum": 4, "title": "X"},
-        {"date": date(1999, 12, 1), "sum": 8, "title": "X"},
-    ]
-    d = SimpleNamespace(
-        year=1999, incomes=data, expenses=[], savings=[], expenses_types=[]
-    )
-    actual = Service(data=d).incomes_context()
-
-    assert actual[0]["items"][0]["data"] == [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8]
+    assert actual[1]["title"] == "Y"
+    assert actual[1]["1"] == 4
+    assert actual[1]["2"] == 8
+    assert actual[1]["3"] == 0
+    assert actual[1]["12"] == 0
+    assert actual[1]["total_col"] == 12
 
 
-def test_savings_context_name(data):
-    d = SimpleNamespace(
-        year=1999, incomes=[], expenses=[], savings=data, expenses_types=[]
-    )
-    actual = Service(data=d).savings_context()
-
-    assert actual[0]["name"] == "Taupymas"
-
-
-def test_expenses_context_data():
-    expenses_data = [
-        {"date": date(1999, 2, 1), "sum": 1, "title": "X", "type_title": "A"},
-        {"date": date(1999, 6, 1), "sum": 2, "title": "X", "type_title": "A"},
-        {"date": date(1999, 2, 1), "sum": 3, "title": "X", "type_title": "T"},
-        {"date": date(1999, 6, 1), "sum": 4, "title": "X", "type_title": "T"},
-        {"date": date(1999, 1, 1), "sum": 5, "title": "Y", "type_title": "T"},
-        {"date": date(1999, 5, 1), "sum": 6, "title": "Y", "type_title": "T"},
-    ]
-
-    d = SimpleNamespace(
-        year=1999,
-        incomes=[],
-        expenses=expenses_data,
-        savings=[],
-        expenses_types=["T", "A"],
-    )
-    actual = Service(data=d).expenses_context()
-
-    assert actual[0]["name"] == "Išlaidos / A"
-
-    assert actual[0]["items"][0]["title"] == "X"
-    assert actual[0]["items"][0]["data"] == [0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0]
-
-    assert actual[0]["total_row"] == [0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0]
-    assert actual[0]["total_col"] == [3]
-    assert actual[0]["total"] == 3
-
-    assert actual[1]["name"] == "Išlaidos / T"
-
-    assert actual[1]["items"][0]["title"] == "X"
-    assert actual[1]["items"][0]["data"] == [0, 3, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0]
-
-    assert actual[1]["items"][1]["title"] == "Y"
-    assert actual[1]["items"][1]["data"] == [5, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0]
-
-    assert actual[1]["total_row"] == [5, 3, 0, 0, 6, 4, 0, 0, 0, 0, 0, 0]
-    assert actual[1]["total_col"] == [7, 11]
-    assert actual[1]["total"] == 18
-
-
-def test_expenses_context_data_empty():
-    d = SimpleNamespace(
-        year=1999,
-        incomes=[],
-        expenses=[
-            {"date": date(1999, 2, 1), "sum": 1, "title": "X", "type_title": "T"}
-        ],
-        savings=[],
-        expenses_types=["A"],
-    )
-    actual = Service(data=d).expenses_context()
+def test_table_property_no_data():
+    data = SimpleNamespace(data=[])
+    actual = DetailedTableBuilder(data, 1999).table
 
     assert actual == []
 
 
-def test_insert_type(data):
-    actual = Service.insert_type("T", data)
+def test_total_row_property(data):
 
-    for r in actual:
-        assert r["type_title"] == "T"
+    actual = DetailedTableBuilder(data, 1999).total_row
+
+    assert actual["1"] == 5
+    assert actual["2"] == 10
+    assert actual["3"] == 0
+    assert actual["12"] == 0
+    assert actual["total_col"] == 15
 
 
-def test_modify_data():
-    data = [
-        {"date": date(1999, 2, 1), "sum": 8, "title": "Y", "type_title": "A"},
-        {"date": date(1999, 3, 1), "sum": 8, "title": "X", "type_title": "A"},
-    ]
+def test_total_row_property_no_data():
+    data = SimpleNamespace(data=[])
+    actual = DetailedTableBuilder(data, 1999).total_row
 
-    actual = Service.modify_data(1999, data)
+    assert actual == {}
 
-    assert len(actual) == 26
 
-    assert {
-        "date": date(1999, 1, 1),
-        "sum": 0,
-        "title": "Y",
-        "type_title": "A",
-    } in actual
-    assert {
-        "date": date(1999, 12, 1),
-        "sum": 0,
-        "title": "Y",
-        "type_title": "A",
-    } in actual
-    assert {
-        "date": date(1999, 1, 1),
-        "sum": 0,
-        "title": "X",
-        "type_title": "A",
-    } in actual
-    assert {
-        "date": date(1999, 12, 1),
-        "sum": 0,
-        "title": "X",
-        "type_title": "A",
-    } in actual
+# -------------------------------------------------------------------------------------
+#                                                                             Fixtures
+# -------------------------------------------------------------------------------------
+
+
+@pytest.fixture
+def dummy_sort_dto():
+    """
+    Creates a specific dataset to test sorting logic.
+    Alpha:   Month 1 = 10,  Month 2 = 50.  Total = 60
+    Bravo:   Month 1 = 100, Month 2 = 0.   Total = 100
+    Charlie: Month 1 = 30,  Month 2 = 40.  Total = 70
+    """
+    return DetailedDto(
+        data=[
+            {"title": "Alpha", "date": date(2026, 1, 15), "sum": 10},
+            {"title": "Alpha", "date": date(2026, 2, 15), "sum": 50},
+            {"title": "Bravo", "date": date(2026, 1, 15), "sum": 100},
+            {"title": "Bravo", "date": date(2026, 2, 15), "sum": 0},
+            {"title": "Charlie", "date": date(2026, 1, 15), "sum": 30},
+            {"title": "Charlie", "date": date(2026, 2, 15), "sum": 40},
+        ]
+    )
+
+
+# -------------------------------------------------------------------------------------
+#                                                                        Sorting Tests
+# -------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "order_param, expected_first, expected_last",
+    [
+        # 1. Sort by Title
+        ("title", "Alpha", "Charlie"),  # A, B, C
+        ("-title", "Charlie", "Alpha"),  # C, B, A
+        # 2. Sort by Total Column
+        ("total_col", "Alpha", "Bravo"),  # 60, 70, 100
+        ("-total_col", "Bravo", "Alpha"),  # 100, 70, 60
+        # 3. Sort by Month 1 (January)
+        ("1", "Alpha", "Bravo"),  # 10, 30, 100
+        ("-1", "Bravo", "Alpha"),  # 100, 30, 10
+        # 4. Sort by Month 2 (February)
+        ("2", "Bravo", "Alpha"),  # 0, 40, 50
+        ("-2", "Alpha", "Bravo"),  # 50, 40, 0
+        # 5. Invalid sort column (should silently ignore and preserve default order)
+        ("invalid_column", "Alpha", "Charlie"),
+        ("-invalid_col", "Alpha", "Charlie"),
+        ("", "Alpha", "Charlie"),  # Empty string
+    ],
+)
+def test_detailed_table_builder_sorting(
+    dummy_sort_dto, order_param, expected_first, expected_last
+):
+    """Proves the Polars DataFrame sorts dynamically based on the order string."""
+    builder = DetailedTableBuilder(dto=dummy_sort_dto, year=2026, order=order_param)
+
+    table = builder.table
+
+    # We only need to check the first and last elements to prove the sort worked
+    assert table[0]["title"] == expected_first
+    assert table[-1]["title"] == expected_last

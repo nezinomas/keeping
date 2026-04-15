@@ -8,25 +8,24 @@
 
 {% block content %}
     <main class="grid-one-col">
+
     {% if object_list %}
         {% for row in object_list %}
         <div>
             <c-detailed-table
-                :name=row.name
-                :items=row.items
+                :title=row.title
+                :url_title=row.url_title
+                :data=row.data
                 :total=row.total
-                :total_col=row.total_col
-                :total_row=row.total_row
-                :category=row.category
-                :order=row.order
-                :months=months
             />
         </div>
         {% endfor %}
+
     {% else %}
         <div class="alert alert-warning">
             {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
         </div>
     {% endif %}
+
     </main>
 {% endblock content %}
