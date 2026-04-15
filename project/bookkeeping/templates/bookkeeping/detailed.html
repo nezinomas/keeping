@@ -9,34 +9,23 @@
 {% block content %}
     <main class="grid-one-col">
 
+    {% if object_list %}
+        {% for row in object_list %}
         <div>
             <c-detailed-table
-                :title=income.title
-                :url_title=income.url_title
-                :data=income.data
-                :total=income.total
-            />
-        </div>
-
-        <div>
-            <c-detailed-table
-                :title=saving.title
-                :url_title=saving.url_title
-                :data=saving.data
-                :total=saving.total
-            />
-        </div>
-
-        {% for expense_row in expense %}
-        <div>
-            <c-detailed-table
-                :title=expense_row.title
-                :url_title=expense_row.url_title
-                :data=expense_row.data
-                :total=expense_row.total
+                :title=row.title
+                :url_title=row.url_title
+                :data=row.data
+                :total=row.total
             />
         </div>
         {% endfor %}
+
+    {% else %}
+        <div class="alert alert-warning">
+            {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+        </div>
+    {% endif %}
 
     </main>
 {% endblock content %}

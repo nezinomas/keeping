@@ -3,7 +3,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from ...services.detailed import DetailedDto, DetailedTableBuilder
+from ...services.detailed.builders import DetailedTableBuilder
+from ...services.detailed.dtos import DetailedDto
 
 
 @pytest.fixture(name="data")

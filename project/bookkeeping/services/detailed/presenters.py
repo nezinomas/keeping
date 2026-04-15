@@ -23,7 +23,7 @@ class DetailedContextPresenter:
         }
 
 
-def load_full_service(user: User) -> dict:
+def load_full_service(user: User) -> list:
     """Returns all incomes, savings, and expenses for the initial page load."""
     year = user.year
     provider = DetailedDataProvider(user)
@@ -39,23 +39,23 @@ def load_full_service(user: User) -> dict:
         for expense_type_title, dto in provider.get_expenses().items()
     ]
 
-    return {
-        "income": DetailedContextPresenter.build(
+    return [
+        DetailedContextPresenter.build(
             title=_("Incomes"),
             url_title="income",
             dto=provider.get_incomes(),
             year=year,
             order="",
         ),
-        "saving": DetailedContextPresenter.build(
+        DetailedContextPresenter.build(
             title=_("Savings"),
             url_title="saving",
             dto=provider.get_savings(),
             year=year,
             order="",
         ),
-        "expense": expense_contexts,
-    }
+        *expense_contexts,
+    ]
 
 
 def load_partial_service(user: User, category: str, order: str) -> dict:
@@ -63,10 +63,10 @@ def load_partial_service(user: User, category: str, order: str) -> dict:
     year = user.year
     provider = DetailedDataProvider(user)
 
-    if category == "incomes":
+    if category == "income":
         title = _("Incomes")
         dto = provider.get_incomes()
-    elif category == "savings":
+    elif category == "saving":
         title = _("Savings")
         dto = provider.get_savings()
     else:
