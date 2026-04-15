@@ -8,37 +8,47 @@
         <thead>
             <tr>
                 <th class="text-left title-col">
-                    <a role="button"
-                    class="{% if not order or order == 'title' %}detailed-table-sorting{% endif %}"
-                    hx-get="{% url 'bookkeeping:detailed_category' url_title 'title' %}"
-                    hx-target="#tbl-{{url_title}}"
-                    hx-indicator="#indicator">
-                    {{ title }}
-                    </a>
+                    {% if not order or order == "title" %}
+                        <span class="detailed-table-sorting">{{title}}</span>
+                    {% else %}
+                        <a role="button"
+                            hx-get="{% url 'bookkeeping:detailed_category' url_title 'title' %}"
+                            hx-target="#tbl-{{url_title}}"
+                            hx-indicator="#indicator">
+                            {{ title }}
+                        </a>
+                    {% endif %}
                 </th>
 
                 {% for num, month_name in months.items %}
                 {% with "-"|add:num as ordering %}
                     <th>
+
+                    {% if order == ordering %}
+                        <span class="detailed-table-sorting">{{month_name}}</span>
+                    {% else %}
                         <a role="button"
-                        {% if order == ordering %}class="detailed-table-sorting"{% endif %}
-                        hx-get="{% url 'bookkeeping:detailed_category' url_title ordering %}"
-                        hx-target="#tbl-{{url_title}}"
-                        hx-indicator="#indicator">
-                        {{month_name}}
+                            hx-get="{% url 'bookkeeping:detailed_category' url_title ordering %}"
+                            hx-target="#tbl-{{url_title}}"
+                            hx-indicator="#indicator">
+                            {{month_name}}
                         </a>
+                    {% endif %}
                     </th>
                 {% endwith %}
                 {% endfor%}
 
                 <th class=" left-thick-border">
+                    {% if order == "-total_col" %}
+                        <span class="detailed-table-sorting">{% translate 'Total' %}</span>
+                    {% else %}
                     <a role="button"
-                    {% if order == '-total_col' %}class="detailed-table-sorting"{% endif %}
-                    hx-get="{% url 'bookkeeping:detailed_category' url_title '-total_col' %}"
-                    hx-target="#tbl-{{url_title}}"
-                    hx-indicator="#indicator">
-                    {% translate 'Total' %}
+                        hx-get="{% url 'bookkeeping:detailed_category' url_title '-total_col' %}"
+                        hx-target="#tbl-{{url_title}}"
+                        hx-indicator="#indicator">
+                        {% translate 'Total' %}
                     </a>
+                    {% endif %}
                 </th>
             </tr>
         </thead>
