@@ -5,11 +5,11 @@
 {% load cell_format %}
 
     <table class="main striped hover" id="tbl-{{url_title}}">
-        <thead>
+        <thead class="sortable-header-row">
             <tr>
                 <th class="text-left title-col">
                     {% if not order or order == "title" %}
-                        <span class="detailed-table-sorting">{{title}}</span>
+                        <span>{{title}}</span>
                     {% else %}
                         <a role="button"
                             hx-get="{% url 'bookkeeping:detailed_category' url_title 'title' %}"
@@ -25,7 +25,7 @@
                     <th>
 
                     {% if order == ordering %}
-                        <span class="detailed-table-sorting">{{month_name}}</span>
+                        <span>{{month_name}}</span>
                     {% else %}
                         <a role="button"
                             hx-get="{% url 'bookkeeping:detailed_category' url_title ordering %}"
@@ -40,7 +40,7 @@
 
                 <th class=" left-thick-border">
                     {% if order == "-total_col" %}
-                        <span class="detailed-table-sorting">{% translate 'Total' %}</span>
+                        <span>{% translate 'Total' %}</span>
                     {% else %}
                     <a role="button"
                         hx-get="{% url 'bookkeeping:detailed_category' url_title '-total_col' %}"

@@ -98,12 +98,37 @@ h6 {
     }
 }
 
-.detailed-table-sorting {
-    &::before {
-        font-family: 'Glyphicons Halflings';
-        content: " \e113";
-        padding-right: .25rem;
-        font-size: 8px;
-        color: primary;
+.sortable-header-row {
+    th {
+        > span, > a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+
+            &::before {
+                font-family: 'Glyphicons Halflings';
+                content: "\e113";
+                font-size: 8px;
+                transition: color 0.2s ease-in-out;
+            }
+        }
+
+        > a {
+            &::before {
+                color: #adb5bd;
+            }
+
+            &:hover {
+                &::before {
+                    color: #6c757d;
+                }
+            }
+        }
+
+        > span {
+            &::before {
+                color: $primary;
+            }
+        }
     }
 }
