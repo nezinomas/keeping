@@ -211,7 +211,6 @@ def test_main_table(df_expense, df_saving):
 
 def test_main_table_total_row(df_expense, df_saving):
     obj = MonthTableBuilder(df_expense, df_saving)
-    print(f"--------------------------->\n{obj.df}\n")
     actual = obj.total_row
 
     assert actual == {"A": 4, "B": 0, "total": 4, "savings": 2}
