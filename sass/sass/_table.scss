@@ -60,7 +60,7 @@ $title-col-width: 17rem;
     td, th {
         overflow: hidden;
         text-overflow: ellipsis;
-        border: 0.5px solid #cacac9;
+        border: 1px solid #cacac9;
         padding: 0.15rem 0.25rem;
         text-align: right;
         vertical-align: middle;
@@ -186,15 +186,19 @@ $title-col-width: 17rem;
     }
 
     // Hover styles
-    &.hover {
-        tbody tr:hover {
-            > td {
-                background-color: $table-hover-bg !important;
-                border-bottom: darken($table-hover-bg, 20) 1px double !important;
-                border-top: darken($table-hover-bg, 20) 1px double !important;
-            }
+&.hover {
+    tbody {
+        tr:has(+ tr:hover) > td {
+            border-bottom: darken($table-hover-bg, 20) 1px solid !important;
+        }
+
+        tr:hover > td {
+            background-color: $table-hover-bg !important;
+            border-bottom: darken($table-hover-bg, 20) 1px solid !important;
+            border-top: darken($table-hover-bg, 20) 1px solid !important;
         }
     }
+}
 
     // Striped styles
     &.striped {
