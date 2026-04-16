@@ -121,4 +121,3 @@ def load_service(user: User) -> dict:
         "chart_expenses": presenter.charts.build_expenses(),
         "chart_targets": presenter.charts.build_targets(),
     }
-

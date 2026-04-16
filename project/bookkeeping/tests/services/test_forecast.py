@@ -285,7 +285,9 @@ def test_forecast_data_provider_get_beginning_balance(mocker, main_user):
     main_user.year = 1000
 
     # Mock the chained database calls: objects.filter().aggregate()
-    mock_balance_service = mocker.patch(f"{MODULE_PATH}.providers.AccountBalanceModelService")
+    mock_balance_service = mocker.patch(
+        f"{MODULE_PATH}.providers.AccountBalanceModelService"
+    )
     mock_filter = mock_balance_service.return_value.objects.filter.return_value
     mock_filter.aggregate.return_value = {"past__sum": 1500}
 
