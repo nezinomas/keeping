@@ -4,6 +4,7 @@
 {% load get_item %}
 {% load cell_format %}
 
+{% if data %}
 <table class="main striped hover" id="tbl-{{url_title}}">
     <thead class="sortable-header-row">
         <tr>
@@ -88,3 +89,4 @@
         </tr>
     </tfoot>
 </table>
+{% endif %}

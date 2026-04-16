@@ -123,7 +123,7 @@ def test_view_detailed_with_savings(client_logged):
 
 
 def test_view_detailed_category_func():
-    view = resolve("/detailed/category/jan/")
+    view = resolve("/detailed/category/-1/")
 
     assert views.DetailedCategory == view.func.view_class
 
@@ -133,7 +133,7 @@ def test_view_detailed_category_200(client_logged):
     obj = ExpenseFactory()
     url = reverse(
         "bookkeeping:detailed_category",
-        kwargs={"category": obj.expense_type.slug, "order": "jan"},
+        kwargs={"category": obj.expense_type.slug, "order": "-1"},
     )
     response = client_logged.get(url)
 
@@ -146,7 +146,7 @@ def test_view_detailed_category_no_data(client_logged):
 
     url = reverse(
         "bookkeeping:detailed_category",
-        kwargs={"category": obj.slug, "order": "jan"},
+        kwargs={"category": obj.slug, "order": "-1"},
     )
     response = client_logged.get(url)
 
@@ -158,7 +158,7 @@ def test_view_detailed_category_302(client):
     obj = ExpenseFactory()
     url = reverse(
         "bookkeeping:detailed_category",
-        kwargs={"category": obj.expense_type.slug, "order": "jan"},
+        kwargs={"category": obj.expense_type.slug, "order": "-1"},
     )
     response = client.get(url)
 
