@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from typing import cast
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import (
@@ -14,7 +13,6 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import (
-    Coalesce,
     Concat,
     ExtractYear,
     TruncDay,
