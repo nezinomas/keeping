@@ -38,7 +38,7 @@ input[type=submit],
 input[type=button]
 {
     color: inherit;
-    font: inherit !important;
+    font: inherit;
     letter-spacing: inherit;
     border: 1px solid $black;
     border-radius: 0;
@@ -56,10 +56,10 @@ input,
 textarea,
 select{
     color: inherit;
-    font: inherit !important;
+    font: inherit;
     letter-spacing: inherit;
     border: 1px solid #dee2e6;
-    background-color: transparent !important;
+    background-color: transparent;
 }
 
 css button * {   pointer-events: none; }
@@ -74,5 +74,5 @@ video {
 }
 
 [hidden] {
-    display: none !important;
+    display: none;
 }

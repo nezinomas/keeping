@@ -129,7 +129,7 @@ fieldset {
     }
 
     &:checked {
-        background-color: $secondary !important;
+        background-color: $secondary;
         border-color: $secondary;
 
         &[type="checkbox"] {
@@ -147,7 +147,7 @@ fieldset {
 
     &.is-invalid {
         border-color: $negative;
-        background-color: $negative!important;
+        background-color: $negative;
     }
 }
 
