@@ -1,12 +1,12 @@
-$day-col-width: 2.5rem;
-$qty-col-width: 3rem;
-$price-col-width: 5rem;
-$date-col-width: 8rem;
-$account-col-width: 10rem;
-$title-col-width: 17rem;
-
-
 .main {
+    // .main scoped variables
+    --day-col-width: 2.5rem;
+    --qty-col-width: 3rem;
+    --price-col-width: 5rem;
+    --date-col-width: 8rem;
+    --account-col-width: 17rem;
+    --title-col-width: 17rem;
+
     table-layout: fixed;
     border-collapse: collapse;
     min-width: 100%;
@@ -60,7 +60,6 @@ $title-col-width: 17rem;
     td, th {
         overflow: hidden;
         text-overflow: ellipsis;
-        border: 1px solid #cacac9;
         padding: 0.15rem 0.25rem;
         text-align: right;
         vertical-align: middle;
@@ -70,12 +69,19 @@ $title-col-width: 17rem;
         }
     }
 
-    td:first-child, th:first-child {
-        border-left: 0 !important;
+    td, th {
+        border-left: 1px solid #cacac9;
+        border-top: 1px solid #cacac9;
     }
 
-    td:last-child, th:last-child {
-        border-right: 0 !important;
+    & td:first-child,
+    & th:first-child {
+        border-left: 0;
+    }
+
+    // hack hover issue then table has no footer
+    & tr:last-child > td {
+        border-bottom: 1px solid transparent;
     }
 
     // Custom backgrounds
@@ -126,39 +132,39 @@ $title-col-width: 17rem;
 
     // Columns widths
     .short-title-col {
-        width: calc($title-col-width / 2);
+        width: calc(var(--title-col-width) / 2);
     }
 
     .date-col {
-        width: $date-col-width;
+        width: var(--date-col-width);
     }
 
     .account-col {
-        width: $account-col-width;
+        width: var(--account-col-width);
     }
 
     .title-col {
-        width: $title-col-width;
+        width: var(--title-col-width);
     }
 
     .day-col {
-        width: $day-col-width;
+        width: var(--day-col-width);
     }
 
     .qty-col {
-        width: $qty-col-width;
+        width: var(--qty-col-width);
     }
 
     .price-col {
-        width: $price-col-width;
+        width: var(--price-col-width);
     }
 
     .double-price-col {
-        width: calc($price-col-width * 2);
+        width: calc(var(--price-col-width) * 2);
     }
 
     .long-price-col {
-        width: calc($price-col-width + 2rem);
+        width: calc(var(--price-col-width) + 2rem);
     }
 
     .edit-col {
@@ -186,19 +192,13 @@ $title-col-width: 17rem;
     }
 
     // Hover styles
-&.hover {
-    tbody {
-        tr:has(+ tr:hover) > td {
-            border-bottom: darken($table-hover-bg, 20) 1px solid !important;
-        }
-
+    &.hover {
         tr:hover > td {
             background-color: $table-hover-bg !important;
             border-bottom: darken($table-hover-bg, 20) 1px solid !important;
             border-top: darken($table-hover-bg, 20) 1px solid !important;
         }
     }
-}
 
     // Striped styles
     &.striped {
@@ -255,13 +255,9 @@ $title-col-width: 17rem;
 
     .current-day {
         font-weight: 600;
-        border-top:
-            $table-current-day-border-color 1px double !important;
-        border-bottom:
-            $table-current-day-border-color 1px double !important;
 
         & :not([class*="day"]) {
-            background-color: $table-current-day !important;
+            background-color: $table-current-day;
         }
 
         & :not(:first-child):not(.table-danger):not(.empty-column) {
@@ -269,7 +265,14 @@ $title-col-width: 17rem;
         }
 
         &:hover .button-expand {
-            background-color: transparent !important;
+            background-color: transparent;
+        }
+
+        > td {
+            border-top:
+                $table-current-day-border-color 1px solid !important;
+            border-bottom:
+                $table-current-day-border-color 1px double;
         }
     }
 
