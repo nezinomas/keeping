@@ -195,7 +195,7 @@
     &.hover {
         tr:hover > td {
             background-color: $table-hover-bg !important;
-            border-bottom: darken($table-hover-bg, 20) 1px solid !important;
+            border-bottom: darken($table-hover-bg, 20) 1px solid;
             border-top: darken($table-hover-bg, 20) 1px solid !important;
         }
     }
@@ -270,7 +270,7 @@
 
         > td {
             border-top:
-                $table-current-day-border-color 1px solid !important;
+                $table-current-day-border-color 1px double;
             border-bottom:
                 $table-current-day-border-color 1px double;
         }

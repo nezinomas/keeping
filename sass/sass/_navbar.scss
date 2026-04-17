@@ -45,6 +45,7 @@
     > *:hover {
         background-color: lighten($primary, 30%);
         color: $nav-hover-text-color !important;
+        transition: $transition;
     }
 
     > *.dropdown-divider {
