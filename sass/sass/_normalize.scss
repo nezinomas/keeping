@@ -35,8 +35,7 @@ ul {
 
 button,
 input[type=submit],
-input[type=button]
-{
+input[type=button] {
     color: inherit;
     font: inherit;
     letter-spacing: inherit;
@@ -62,7 +61,9 @@ select{
     background-color: transparent;
 }
 
-css button * {   pointer-events: none; }
+css button * {
+    pointer-events: none;
+}
 
 embed,
 iframe,
