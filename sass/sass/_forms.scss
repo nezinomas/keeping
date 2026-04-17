@@ -1,6 +1,7 @@
 input,
 select,
 textarea {
+    &:disabled,
     &.disabled {
         background-color: $disabled !important;
         opacity: 1;
@@ -49,7 +50,7 @@ fieldset {
     color: #212529;
     border: 1px solid #dee2e6;
     border-radius: 0;
-    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 
     &:focus {
         border-color: $secondary;
@@ -60,9 +61,9 @@ fieldset {
     }
 
     &.is-invalid {
-        border-color: #dc3545 !important;
-        padding-right: calc(1.5em + .75rem) !important;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        border-color: $negative;
+        padding-right: calc(1.5em + .75rem)  !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23db606d'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23db606d' stroke='none'/%3e%3c/svg%3e");
         background-repeat: no-repeat;
         background-size: calc(.75em + .375rem) calc(.75em + .375rem);
 
@@ -75,7 +76,7 @@ fieldset {
     }
 
     &[type="file"] {
-        overflow: hidden; // prevent pseudo element button overlap
+        overflow: hidden; 
         background-color: white !important;
         border: solid 1px #dee2e6;
         padding: 0;
@@ -128,8 +129,8 @@ fieldset {
     }
 
     &:checked {
-        background-color: #0d6efd !important;
-        border-color: #0d6efd;
+        background-color: $secondary !important;
+        border-color: $secondary;
 
         &[type="checkbox"] {
             background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='rgb(255, 255, 255)' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/></svg>");
@@ -166,7 +167,7 @@ fieldset {
 
 
 // File input has file
-.input-group:has([class="input-group-text"]) {
+.input-group:has(.input-group-text) {
     display: flex;
     margin-bottom: $gap;
 
@@ -237,7 +238,7 @@ fieldset {
 
 .plans-form {
     > div {
-        grid-template-columns: 16% 1fr;
+        grid-template-columns: minmax(100px, 16%) 1fr; 
         align-items: center;
         display: grid;
 
@@ -278,16 +279,15 @@ fieldset {
 .litepicker {
     [class^="container__"] {
         * {
-            font-size: .75rem!important;
+            font-size: .75rem!important; // Necessary evil for 3rd party overrides
         }
     }
 }
 
 
 input.date-picker,
-input.year-picker
-{
-    padding-right: 30px; /* Space for the icon */
+input.year-picker {
+    padding-right: 30px;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill=' %23555' class='bi bi-calendar-date' viewBox='0 0 16 16'%3E%3Cpath d='M6.445 11.688V6.354h-.633A13 13 0 0 0 4.5 7.16v.695c.375-.257.969-.62 1.258-.777h.012v4.61zm1.188-1.305c.047.64.594 1.406 1.703 1.406 1.258 0 2-1.066 2-2.871 0-1.934-.781-2.668-1.953-2.668-.926 0-1.797.672-1.797 1.809 0 1.16.824 1.77 1.676 1.77.746 0 1.23-.376 1.383-.79h.027c-.004 1.316-.461 2.164-1.305 2.164-.664 0-1.008-.45-1.05-.82zm2.953-2.317c0 .696-.559 1.18-1.184 1.18-.601 0-1.144-.383-1.144-1.2 0-.823.582-1.21 1.168-1.21.633 0 1.16.398 1.16 1.23'/%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
