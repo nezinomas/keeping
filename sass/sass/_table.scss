@@ -270,7 +270,7 @@
 
         > td {
             border-top:
-                $table-current-day-border-color 1px solid !important;
+                $table-current-day-border-color 1px double;
             border-bottom:
                 $table-current-day-border-color 1px double;
         }
