@@ -28,6 +28,8 @@ fieldset {
 .invalid-feedback {
     font-size: .875em;
     color: $negative;
+    width: 100%;
+    margin-top: 0.25rem;
 }
 
 .form-select {
@@ -115,6 +117,8 @@ fieldset {
 .form-check {
     display: flex;
     gap: calc($gap / 2);
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .form-check-input {
