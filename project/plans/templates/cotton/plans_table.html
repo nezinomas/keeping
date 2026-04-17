@@ -23,10 +23,12 @@
         </tr>
     </thead>
     <tbody>
+        {% translate "Residual" as translated_residual %}
+
         {% for object, months in object_list.items %}
 
         {% with _('Residual') as residual %}
-        <tr {% if url_update %}hx-get="{{url_update}}" hx-target="#mainModal" hx-trigger="dblclick"{% endif %} {% if residual|safe in name %}class="plans-residual-row"{% endif %}>
+        <tr {% if url_update %}hx-get="{{url_update}}" hx-target="#mainModal" hx-trigger="dblclick"{% endif %} {% if translated_residual in object.title %}class="plans-residual-row"{% endif %}>
         {% endwith%}
             <td class="text-left">
 
