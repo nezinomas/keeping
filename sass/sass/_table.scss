@@ -6,6 +6,7 @@
     --date-col-width: 8rem;
     --account-col-width: 17rem;
     --title-col-width: 17rem;
+    --default-table-border: #cacac9;
 
     table-layout: fixed;
     border-collapse: collapse;
@@ -70,8 +71,8 @@
     }
 
     td, th {
-        border-left: 1px solid #cacac9;
-        border-top: 1px solid #cacac9;
+        border-left: 1px solid var(--default-table-border);
+        border-top: 1px solid var(--default-table-border);
     }
 
     & td:first-child,
@@ -81,7 +82,7 @@
 
     // hack hover issue then table has no footer
     & tr:last-child > td {
-        border-bottom: 1px solid transparent;
+        border-bottom: 1px solid var(--default-table-border);
     }
 
     // Custom backgrounds
