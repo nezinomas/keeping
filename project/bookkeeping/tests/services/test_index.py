@@ -1,9 +1,9 @@
-from dataclasses import asdict
-
 import pytest
 from mock import MagicMock
 
-from ...services.index import IndexContextBuilder, IndexDataDTO, IndexDataProvider
+from ...services.index.dtos import IndexDataDTO
+from ...services.index.presenters import IndexContextBuilder
+from ...services.index.providers import IndexDataProvider
 
 MODULE_PATH = "project.bookkeeping.services.index"
 
@@ -126,7 +126,7 @@ def test_index_data_provider_get_amount_start(mocker, main_user):
     main_user.year = 2026
 
     # Mock the database service
-    mock_balance_service = mocker.patch(f"{MODULE_PATH}.AccountBalanceModelService")
+    mock_balance_service = mocker.patch(f"{MODULE_PATH}.providers.AccountBalanceModelService")
     mock_year = mock_balance_service.return_value.year.return_value
     mock_year.aggregate.return_value = {"past__sum": 5000}
 
@@ -139,7 +139,7 @@ def test_index_data_provider_get_amount_start(mocker, main_user):
 
 def test_index_data_provider_get_amount_start_returns_zero_if_none(mocker, main_user):
     main_user.year = 2026
-    mock_balance_service = mocker.patch(f"{MODULE_PATH}.AccountBalanceModelService")
+    mock_balance_service = mocker.patch(f"{MODULE_PATH}.providers.AccountBalanceModelService")
     mock_year = mock_balance_service.return_value.year.return_value
     mock_year.aggregate.return_value = {"past__sum": None}
 
@@ -150,7 +150,7 @@ def test_index_data_provider_get_amount_start_returns_zero_if_none(mocker, main_
 
 
 def test_index_data_provider_get_debts(mocker, main_user):
-    mock_debt_service = mocker.patch(f"{MODULE_PATH}.DebtModelService")
+    mock_debt_service = mocker.patch(f"{MODULE_PATH}.providers.DebtModelService")
 
     # Mocking the responses for "lend" and "borrow" calls
     mock_debt_service.return_value.sum_all.side_effect = [
