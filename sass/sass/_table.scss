@@ -26,36 +26,38 @@
     thead  {
         border-bottom: $primary solid 3px;
         color: $table-thead-text;
+
+        th {
+                padding: 0.35rem 0.25rem;
+                font-weight: bold;
+            }
+
+        tr:not(:last-child) th {
+                background-color: #f9f9f9;
+                min-height: 36px;
+            }
+
+        tr:last-child th {
+                background-color: $table-thead;
+            }
     }
 
-    thead th {
-        padding: 0.35rem 0.25rem;
-        font-weight: bold;
-    }
+    tfoot {
+        tr > th {
+                background-color: rgba(0, 0, 0, 0.02);
+        }
 
-    thead tr:not(:last-child) th {
-        background-color: #f9f9f9;
-        min-height: 36px;
-    }
+        tr:last-child th {
+            border-bottom: 0;
+        }
 
-    thead tr:last-child th {
-        background-color: $table-thead;
-    }
+        tr:first-child th {
+            border-top: double $black;
+        }
 
-    tfoot tr:last-child th {
-        border-bottom: 0;
-    }
-
-    tfoot tr th {
-        background-color: rgba(0, 0, 0, 0.02);
-    }
-
-    tfoot tr:first-child th {
-        border-top: double $black;
-    }
-
-    tfoot tr:not(:last-child) th {
-        font-weight: normal;
+        tr:not(:last-child) th {
+            font-weight: normal;
+        }
     }
 
     td, th {
@@ -64,15 +66,12 @@
         padding: 0.15rem 0.25rem;
         text-align: right;
         vertical-align: middle;
+        border-left: 1px solid var(--default-table-border-color);
+        border-top: 1px solid var(--default-table-border-color);
 
         &:has(.tip) {
             overflow: visible;
         }
-    }
-
-    td, th {
-        border-left: 1px solid var(--default-table-border-color);
-        border-top: 1px solid var(--default-table-border-color);
 
         /* Left border is 1px. To hide the current cell’s right border, target the next sibling. */
         &.no-right-border {
