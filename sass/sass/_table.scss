@@ -74,6 +74,7 @@
         border-left: 1px solid var(--default-table-border-color);
         border-top: 1px solid var(--default-table-border-color);
 
+        /* Left border is 1px. To hide the current cell’s right border, target the next sibling. */
         &.no-right-border {
             +td,
             +th {
