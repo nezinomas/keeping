@@ -197,7 +197,7 @@
         tr:hover > td {
             background-color: $table-hover-bg !important;
             border-bottom: darken($table-hover-bg, 20) 1px solid;
-            border-top: darken($table-hover-bg, 20) 1px solid !important;
+            border-top: darken($table-hover-bg, 20) 1px solid;
         }
     }
 
@@ -286,7 +286,7 @@
         }
 
         tr.expand-expenses > td {
-            background-color: white !important;
+            background-color: white;
 
             &:has([class*="alert"]) {
                 padding-top: $gap;
@@ -354,7 +354,6 @@
         min-width: 40rem;
         width: 40rem;
     }
-
 }
 
 
