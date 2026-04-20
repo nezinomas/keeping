@@ -203,7 +203,7 @@
 
     // Striped styles
     &.striped {
-        tbody tr:nth-child(even) {
+        tr:nth-child(even) {
             > td {
                 background-color: rgba(0, 0, 0, 0.03);
             }
@@ -249,31 +249,29 @@
         width: 5.5rem;
     }
 
-    .weekend-col {
-        background-color: $table-weekend !important;
-        color: $table-weekend-color;
+    > tbody > tr.weekend-col {
+        > td:not([class*="day"]) {
+            background-color: $table-weekend;
+            color: $table-weekend-color;
+        }
     }
 
-    .current-day {
+    > tbody > tr.current-day {
         font-weight: 600;
-
-        & :not([class*="day"]) {
-            background-color: $table-current-day;
-        }
-
-        & :not(:first-child):not(.table-danger):not(.empty-column) {
-            color: $table-current-day-font-color;
-        }
-
-        &:hover .button-expand {
-            background-color: transparent;
-        }
 
         > td {
             border-top:
                 $table-current-day-border-color 1px double;
             border-bottom:
                 $table-current-day-border-color 1px double;
+
+            &:not([class*="day"]) {
+                background-color: $table-current-day;
+            }
+        }
+
+        &:hover .button-expand {
+            background-color: transparent;
         }
     }
 
@@ -317,18 +315,6 @@
             font-weight: 650;
         }
     }
-
-    &.striped {
-        tbody tr:nth-child(even) {
-            > td.table-danger.day-negative {
-                background-color: $negative-bg;
-            }
-
-            > td.table-danger.day-warning {
-                background-color: $warning-bg;
-            }
-        }
-    }
 }
 
 
@@ -340,7 +326,7 @@
 
     td.exception {
         padding-left: 5px;
-        border-left: 5px solid $exception !important;
+        border-left: 5px solid $exception;
     }
 
     .file-col {
@@ -352,6 +338,14 @@
 
 // Book table
 .book-table {
+    tr.currently-reading-book {
+        background-color: $table-currently-reading;
+        border-top:
+            $table-current-day-border-color 1px double;
+        border-bottom:
+            $table-current-day-border-color 1px double;
+    }
+
     .author-col {
         min-width: 20rem;
         width: 20rem;
@@ -361,6 +355,7 @@
         min-width: 40rem;
         width: 40rem;
     }
+
 }
 
 
@@ -389,11 +384,10 @@
 }
 
 
-.currently-reading-book,
-.std-av-border {
-    background-color: $table-currently-reading;
+.main tr.std-av-border > td {
+    background-color: $table-currently-reading!important;
     border-top:
-        $table-current-day-border-color 1px double !important;
+        $table-current-day-border-color 1px double;
     border-bottom:
-        $table-current-day-border-color 1px double !important;
+        $table-current-day-border-color 1px double;
 }
