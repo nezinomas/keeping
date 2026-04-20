@@ -122,14 +122,6 @@
         border-left: 2px solid $black;
     }
 
-    .right-double-border {
-        border-right: double $black;
-    }
-
-    .left-double-border {
-        border-left: double $black;
-    }
-
     // Columns widths
     .short-title-col {
         width: calc(var(--title-col-width) / 2);
@@ -275,6 +267,11 @@
 
     .empty-column {
         border-left: #fff solid .5rem;
+    }
+
+    .total-col {
+        border-left: double $black;
+        border-right: double $black;
     }
 
     // Expand month table row to see expenses

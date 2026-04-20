@@ -10,7 +10,7 @@
         <tr>
             <th class="expand-column-width"></th>
             {% for cat in ctx.expense_types %}<th><span class="tip bottom" data-tip="{{cat}}">{{cat|truncatechars:8}}</span></th>{% endfor %}
-            <th class="left-double-border right-double-border">{% translate 'Total' %}</th>
+            <th class="total-col">{% translate 'Total' %}</th>
             <th class="savings-col">{% translate 'Savings' %}</th>
             <th class="empty-column weekday-col"></th>
             <th>{% translate 'Day' %}</th>
@@ -42,7 +42,7 @@
             {% endfor %}
 
             <!-- total expenses -->
-            {% with table|get_item:"total" as val%}<td class="left-double-border right-double-border {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
+            {% with table|get_item:"total" as val%}<td class="total-col {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- savings -->
             {% with table|get_item:"savings" as val%}<td class="{{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
@@ -64,7 +64,7 @@
             {% endfor %}
 
             <!-- total expenses -->
-            {% with ctx.total_row|get_item:"total" as val%}<th class="{{val|css_class_if_none}} left-double-border right-double-border">{{val|price|cellformat}}</th>{% endwith %}
+            {% with ctx.total_row|get_item:"total" as val%}<th class="{{val|css_class_if_none}} total-col">{{val|price|cellformat}}</th>{% endwith %}
 
 
             <!-- savings -->
