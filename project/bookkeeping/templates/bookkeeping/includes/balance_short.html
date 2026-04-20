@@ -22,7 +22,7 @@
                 </a></span>
             </th>
             {% for title in data.title %}
-            <th class="text-nowrap no-left-border long-price-col">
+            <th class="text-nowrap long-price-col">
                {{ title }}
             </th>{% endfor %}
         </tr>
@@ -31,7 +31,7 @@
         <tr>
             <td class="no-right-border"></td>
             {% for d in data.data %}
-            <td class="no-left-border {% if data.highlight|get_list_val:forloop.counter0 %}{{d|positive_negative}}{% endif%}">{{d|price|cellformat}}</td>
+            <td class="{% if data.highlight|get_list_val:forloop.counter0 %}{{d|positive_negative}}{% endif%}">{{d|price|cellformat}}</td>
             {% endfor %}
         </tr>
     </tbody>

@@ -73,6 +73,13 @@
     td, th {
         border-left: 1px solid var(--default-table-border-color);
         border-top: 1px solid var(--default-table-border-color);
+
+        &.no-right-border {
+            +td,
+            +th {
+                border-left: 0;
+            }
+        }
     }
 
     & td:first-child,
@@ -105,14 +112,6 @@
 
     .left-thick-border {
         border-left: 3px solid $black;
-    }
-
-    .no-left-border {
-        border-left: 0 !important;
-    }
-
-    .no-right-border {
-        border-right: 0 !important;
     }
 
     .right-thin-border {
