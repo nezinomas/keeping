@@ -183,15 +183,6 @@
         white-space: pre-wrap;
     }
 
-    // Hover styles
-    &.hover {
-        tr:hover > td {
-            background-color: $table-hover-bg !important;
-            border-bottom: darken($table-hover-bg, 20) 1px solid;
-            border-top: darken($table-hover-bg, 20) 1px solid;
-        }
-    }
-
     // Striped styles
     &.striped {
         tr:nth-child(even) {
@@ -214,6 +205,15 @@
             > td.table-danger.day-warning {
                 background-color: $warning-bg;
             }
+        }
+    }
+
+    // Hover styles
+    &.hover {
+        tr:hover > td {
+            background-color: $table-hover-bg !important;
+            border-bottom: darken($table-hover-bg, 20) 1px solid;
+            border-top: darken($table-hover-bg, 20) 1px solid;
         }
     }
 }
@@ -293,7 +293,7 @@
             }
 
             &:hover {
-                background-color: unset !important;
+                background-color: unset;
             }
         }
     }
