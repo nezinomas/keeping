@@ -87,7 +87,7 @@
 
     // Custom backgrounds
     .dash {
-        color: #d1d1d1 !important;
+        color: #d1d1d1;
     }
 
     .table-success {
@@ -252,7 +252,6 @@
     > tbody > tr.weekend-col {
         > td:not([class*="day"]) {
             background-color: $table-weekend;
-            color: $table-weekend-color;
         }
     }
 
