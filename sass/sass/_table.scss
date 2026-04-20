@@ -24,38 +24,40 @@
     }
 
     thead  {
-        border-bottom: $primary solid 3px;
         color: $table-thead-text;
+        border-bottom: $primary solid 3px;
+
+        th {
+            padding: 0.35rem 0.25rem;
+            font-weight: bold;
+        }
+
+        tr:not(:last-child) th {
+            background-color: #f9f9f9;
+            min-height: 36px;
+        }
+
+        tr:last-child th {
+            background-color: $table-thead;
+        }
     }
 
-    thead th {
-        padding: 0.35rem 0.25rem;
-        font-weight: bold;
-    }
+    tfoot {
+        th {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
 
-    thead tr:not(:last-child) th {
-        background-color: #f9f9f9;
-        min-height: 36px;
-    }
+        tr:last-child th {
+            border-bottom: 0;
+        }
 
-    thead tr:last-child th {
-        background-color: $table-thead;
-    }
+        tr:first-child th {
+            border-top: double $black;
+        }
 
-    tfoot tr:last-child th {
-        border-bottom: 0;
-    }
-
-    tfoot tr th {
-        background-color: rgba(0, 0, 0, 0.02);
-    }
-
-    tfoot tr:first-child th {
-        border-top: double $black;
-    }
-
-    tfoot tr:not(:last-child) th {
-        font-weight: normal;
+        tr:not(:last-child) th {
+            font-weight: normal;
+        }
     }
 
     td, th {
@@ -64,15 +66,20 @@
         padding: 0.15rem 0.25rem;
         text-align: right;
         vertical-align: middle;
+        border-left: 1px solid var(--default-table-border-color);
+        border-top: 1px solid var(--default-table-border-color);
 
         &:has(.tip) {
             overflow: visible;
         }
-    }
 
-    td, th {
-        border-left: 1px solid var(--default-table-border-color);
-        border-top: 1px solid var(--default-table-border-color);
+        /* Left border is 1px. To hide the current cell’s right border, target the next sibling. */
+        &.no-right-border {
+            +td,
+            +th {
+                border-left: 0;
+            }
+        }
     }
 
     & td:first-child,
@@ -87,7 +94,7 @@
 
     // Custom backgrounds
     .dash {
-        color: #d1d1d1 !important;
+        color: #d1d1d1;
     }
 
     .table-success {
@@ -107,28 +114,12 @@
         border-left: 3px solid $black;
     }
 
-    .no-left-border {
-        border-left: 0 !important;
-    }
-
-    .no-right-border {
-        border-right: 0 !important;
-    }
-
     .right-thin-border {
         border-right: 2px solid $black;
     }
 
     .left-thin-border {
         border-left: 2px solid $black;
-    }
-
-    .right-double-border {
-        border-right: double $black;
-    }
-
-    .left-double-border {
-        border-left: double $black;
     }
 
     // Columns widths
@@ -192,18 +183,9 @@
         white-space: pre-wrap;
     }
 
-    // Hover styles
-    &.hover {
-        tr:hover > td {
-            background-color: $table-hover-bg !important;
-            border-bottom: darken($table-hover-bg, 20) 1px solid;
-            border-top: darken($table-hover-bg, 20) 1px solid !important;
-        }
-    }
-
     // Striped styles
     &.striped {
-        tbody tr:nth-child(even) {
+        tr:nth-child(even) {
             > td {
                 background-color: rgba(0, 0, 0, 0.03);
             }
@@ -223,6 +205,15 @@
             > td.table-danger.day-warning {
                 background-color: $warning-bg;
             }
+        }
+    }
+
+    // Hover styles
+    &.hover {
+        tr:hover > td {
+            background-color: $table-hover-bg !important;
+            border-bottom: darken($table-hover-bg, 20) 1px solid;
+            border-top: darken($table-hover-bg, 20) 1px solid;
         }
     }
 }
@@ -249,36 +240,38 @@
         width: 5.5rem;
     }
 
-    .weekend-col {
-        background-color: $table-weekend !important;
-        color: $table-weekend-color;
+    .empty-col {
+        border-left: #fff solid .5rem;
     }
 
-    .current-day {
+    .total-col {
+        border-left: double $black;
+        border-right: double $black;
+    }
+
+    > tbody > tr.weekend-col {
+        > td:not([class*="day"]) {
+            background-color: $table-weekend;
+        }
+    }
+
+    > tbody > tr.current-day {
         font-weight: 600;
-
-        & :not([class*="day"]) {
-            background-color: $table-current-day;
-        }
-
-        & :not(:first-child):not(.table-danger):not(.empty-column) {
-            color: $table-current-day-font-color;
-        }
-
-        &:hover .button-expand {
-            background-color: transparent;
-        }
 
         > td {
             border-top:
                 $table-current-day-border-color 1px double;
             border-bottom:
                 $table-current-day-border-color 1px double;
-        }
-    }
 
-    .empty-column {
-        border-left: #fff solid .5rem;
+            &:not([class*="day"]) {
+                background-color: $table-current-day;
+            }
+        }
+
+        &:hover .button-expand {
+            background-color: transparent;
+        }
     }
 
     // Expand month table row to see expenses
@@ -289,7 +282,7 @@
         }
 
         tr.expand-expenses > td {
-            background-color: white !important;
+            background-color: white;
 
             &:has([class*="alert"]) {
                 padding-top: $gap;
@@ -300,7 +293,7 @@
             }
 
             &:hover {
-                background-color: unset !important;
+                background-color: unset;
             }
         }
     }
@@ -317,18 +310,6 @@
             font-weight: 650;
         }
     }
-
-    &.striped {
-        tbody tr:nth-child(even) {
-            > td.table-danger.day-negative {
-                background-color: $negative-bg;
-            }
-
-            > td.table-danger.day-warning {
-                background-color: $warning-bg;
-            }
-        }
-    }
 }
 
 
@@ -340,7 +321,7 @@
 
     td.exception {
         padding-left: 5px;
-        border-left: 5px solid $exception !important;
+        border-left: 5px solid $exception;
     }
 
     .file-col {
@@ -352,6 +333,14 @@
 
 // Book table
 .book-table {
+    tr.currently-reading-book {
+        background-color: $table-currently-reading;
+        border-top:
+            $table-current-day-border-color 1px double;
+        border-bottom:
+            $table-current-day-border-color 1px double;
+    }
+
     .author-col {
         min-width: 20rem;
         width: 20rem;
@@ -389,11 +378,10 @@
 }
 
 
-.currently-reading-book,
-.std-av-border {
-    background-color: $table-currently-reading;
+.main tr.std-av-border > td {
+    background-color: $table-currently-reading !important;
     border-top:
-        $table-current-day-border-color 1px double !important;
+        $table-current-day-border-color 1px double;
     border-bottom:
-        $table-current-day-border-color 1px double !important;
+        $table-current-day-border-color 1px double;
 }

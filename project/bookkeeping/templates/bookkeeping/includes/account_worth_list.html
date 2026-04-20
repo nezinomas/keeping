@@ -17,7 +17,7 @@
     <tbody>
         {% for item in items %}
         <tr>
-            <td class="text-left no-right-border">
+            <td class="text-left">
                 <span class="tip right w100" data-tip="{{ item.latest_check|default_if_none:_('No record of account amount') }}">{{ item.account.title }}</span>
             </td>
             <td class="{{item.past|css_class_if_none}}">{{item.past|price|cellformat}}</td>
