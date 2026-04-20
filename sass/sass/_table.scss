@@ -24,27 +24,27 @@
     }
 
     thead  {
-        border-bottom: $primary solid 3px;
         color: $table-thead-text;
+        border-bottom: $primary solid 3px;
 
         th {
-                padding: 0.35rem 0.25rem;
-                font-weight: bold;
-            }
+            padding: 0.35rem 0.25rem;
+            font-weight: bold;
+        }
 
         tr:not(:last-child) th {
-                background-color: #f9f9f9;
-                min-height: 36px;
-            }
+            background-color: #f9f9f9;
+            min-height: 36px;
+        }
 
         tr:last-child th {
-                background-color: $table-thead;
-            }
+            background-color: $table-thead;
+        }
     }
 
     tfoot {
-        tr > th {
-                background-color: rgba(0, 0, 0, 0.02);
+        th {
+            background-color: rgba(0, 0, 0, 0.02);
         }
 
         tr:last-child th {
@@ -240,6 +240,15 @@
         width: 5.5rem;
     }
 
+    .empty-col {
+        border-left: #fff solid .5rem;
+    }
+
+    .total-col {
+        border-left: double $black;
+        border-right: double $black;
+    }
+
     > tbody > tr.weekend-col {
         > td:not([class*="day"]) {
             background-color: $table-weekend;
@@ -263,15 +272,6 @@
         &:hover .button-expand {
             background-color: transparent;
         }
-    }
-
-    .empty-column {
-        border-left: #fff solid .5rem;
-    }
-
-    .total-col {
-        border-left: double $black;
-        border-right: double $black;
     }
 
     // Expand month table row to see expenses
