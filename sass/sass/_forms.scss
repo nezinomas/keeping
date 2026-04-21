@@ -120,7 +120,7 @@ div:has(> .form-select) {
     &:has(> label) {
         &::after {
             bottom: 0;
-            padding-bottom: .25rem;
+            padding-bottom: .35rem;
         }
 
         // Shift up ONLY if anchored to the bottom to clear error text
