@@ -1,6 +1,8 @@
 input,
 select,
 textarea {
+    appearance: none;
+
     &:disabled,
     &.disabled {
         background-color: $disabled;
@@ -32,20 +34,13 @@ fieldset {
     margin-top: 0.25rem;
 }
 
-.form-select {
-    padding: .35rem 2.25rem .35rem .75rem;
-}
-
-.form-control {
-    padding: .35rem .25rem .35rem .75rem;
-}
-
 .form-text {
     margin-top: $gap;
 }
 
 .form-control,
 .form-select {
+    padding: .35rem .25rem .35rem .75rem;
     display: block;
     width: 100%;
     color: #212529;
@@ -63,10 +58,6 @@ fieldset {
 
     &.is-invalid {
         border-color: $negative;
-        padding-right: calc(1.5em + .75rem);
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23db606d'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23db606d' stroke='none'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-size: calc(.75em + .375rem) calc(.75em + .375rem);
 
         &:focus {
             outline: 0;
@@ -101,32 +92,53 @@ fieldset {
 }
 
 .form-select {
-    appearance: none;
-
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-
-    background-position: right .75rem center;
-    background-size: 16px 12px;
+    width: 100%;
+    cursor: pointer;
+    padding: .35rem 2.25rem .35rem .75rem;
 }
 
-.is-invalid {
-    &.form-control {
-        background-position: right .5rem center;
+// 2. The Base Wrapper & Arrow
+div:has(> .form-select) {
+    position: relative;
+
+    &::after {
+        font-family: 'Glyphicons Halflings';
+        content: "\e114";
+        font-size: 12px;
+        color: #343a40;
+        position: absolute;
+        right: 0.75rem;
+        pointer-events: none;
     }
 
-    &.form-select {
-        background-image:
-            url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23db606d' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"),
-            url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23db606d'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23db606d' stroke='none'/%3e%3c/svg%3e");
+    // Global Invalid Color (Turns red regardless of layout)
+    &:has(> .form-select.is-invalid)::after {
+        color: $negative;
+    }
 
-        background-position:
-            right .75rem center,
-            right 2.25rem center;
+    // 3. Layout: Bottom-Anchored (Default when a label is inside)
+    &:has(> label) {
+        &::after {
+            bottom: 0;
+            padding-bottom: .35rem;
+        }
 
-        background-size:
-            16px 12px,
-            calc(.75em + .375rem) calc(.75em + .375rem);
+        // Shift up ONLY if anchored to the bottom to clear error text
+        &:has(> .form-select.is-invalid)::after {
+            padding-bottom: 1.35rem;
+        }
+    }
+}
+
+// 4. Layout: Top-Anchored Contexts (Grouped together!)
+// This targets BOTH "No Label" divs AND any div inside ".plans-form"
+div:not(:has(> label)):has(> .form-select),
+.plans-form div:has(> .form-select) {
+    &::after {
+        bottom: auto;
+        top: 0;
+        padding-top: .45rem;
+        padding-bottom: 0;
     }
 }
 
@@ -278,6 +290,12 @@ fieldset {
     display: grid;
     grid-template-columns: 2fr 2fr 1fr;
     gap: $gap;
+
+    .worth-form-row {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: 1 / -1;
+    }
 }
 
 .item-price {
