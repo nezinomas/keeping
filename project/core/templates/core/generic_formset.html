@@ -7,7 +7,9 @@
     <c-form-errors :errors=formset.non_form_errors />
 
     {% for form in formset.forms %}
-        <c-form-body :form=form />
+        <div class="worth-form-row">
+            <c-form-body :form=form />
+        </div>
     {% endfor %}
 
 {% endblock form %}
