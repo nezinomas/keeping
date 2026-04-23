@@ -1,9 +1,8 @@
 {% load i18n %}
-{% load crispy_forms_tags %}
 
 <form novalidate method="post" id="expenses-summary-form">
     {% csrf_token %}
-    {{ form.types|as_crispy_field }}
+    {{ form.types }}
     <button type="submit" name="search" class="button-secondary">{% translate 'Filter' %}</button>
 </form>
 
