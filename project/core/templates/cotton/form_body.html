@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load widget_tweaks %}
 {% load form_tags %}
 
 {% for field in form %}
@@ -7,52 +6,22 @@
         {{ field }}
     {% else %}
 
-        {# --- SPECIAL CASE: Total Sum Field (using Django Cotton) --- #}
+        {# --- SPECIAL CASE --- #}
         {% if field.html_name == 'total_sum' %}
-            <c-total-sum :field="field" />
+            <c-input-sum-price :field="field" />
+
+        {% elif field|is_checkbox %}
+            <c-input-checkbox :field="field" />
+
+        {% elif field|is_file %}
+            <c-input-file :field="field" />
+
+        {% elif field|is_select %}
+            <c-input-select :field="field" />
+
         {% else %}
-            {# --- STANDARD FIELDS --- #}
-
-            <div> {# Checkbox/Radio Layout #}
-                {% if field|is_checkbox %}
-                    <div class="form-check">
-                        {{ field|add_class:"form-check-input"|add_error_class:"is-invalid" }}
-
-                        {% if field.label %}
-                            <label class="form-label" for="{{ field.id_for_label }}">
-                                {{ field.label }}{% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
-                            </label>
-                        {% endif %}
-                    </div>
-
-                {# Select & Standard Text Layout #}
-                {% else %}
-
-                    {% if field.label %}
-                        <label class="form-label" for="{{ field.id_for_label }}">
-                            {{ field.label }}{% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
-                        </label>
-                    {% endif %}
-
-                    {% if field|is_select %}
-                        <div class="select-wrapper">
-                            {{ field|add_class:"form-select"|add_error_class:"is-invalid" }}
-                        </div>
-                    {% else %}
-                            {{ field|add_class:"form-control"|add_error_class:"is-invalid" }}
-                        {% endif %}
-                {% endif %}
-
-                {% for error in field.errors %}
-                    <div class="invalid-feedback"><strong>{{ error }}</strong></div>
-                {% endfor %}
-
-                {# Help Text & Validation Errors #}
-                {% if field.help_text %}
-                    <div class="form-text">{{ field.help_text|safe }}</div>
-                {% endif %}
-
-            </div>
+            <c-input-text :field="field" />
         {% endif %}
+
     {% endif %}
 {% endfor %}

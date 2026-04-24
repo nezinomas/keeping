@@ -1,0 +1,8 @@
+<c-vars field />
+{% load widget_tweaks %}
+
+<c-field-wrapper :field="field">
+    <div class="select-wrapper">
+        {{ field|add_class:"form-select"|add_error_class:"is-invalid" }}
+    </div>
+</c-field-wrapper>

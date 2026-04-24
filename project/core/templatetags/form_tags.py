@@ -1,5 +1,5 @@
 from django import template
-from django.forms import CheckboxInput, Select, SelectMultiple
+from django.forms import CheckboxInput, Select, SelectMultiple, FileInput, ClearableFileInput
 
 register = template.Library()
 
@@ -12,3 +12,9 @@ def is_select(field):
 @register.filter(name='is_checkbox')
 def is_checkbox(field):
     return isinstance(field.field.widget, CheckboxInput)
+
+
+@register.filter(name='is_file')
+def is_file(field):
+    # Checks for standard file inputs and Django's default clearable inputs
+    return isinstance(field.field.widget, (FileInput, ClearableFileInput))
