@@ -688,7 +688,7 @@ def test_count_type_new_form_fields(client_logged):
     response = client_logged.get(url)
     actual = response.content.decode()
 
-    assert actual.count("<input") == 2
+    assert actual.count("<input") == 3
     assert actual.count("<button") == 4
     assert 'type="hidden" name="csrfmiddlewaretoken"' in actual
     assert '<input type="text" name="title"' in actual

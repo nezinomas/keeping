@@ -196,12 +196,20 @@ class Expenses(Browser):
         # click 'Save And Close' button
         self.browser.find_element(By.ID, "_close").click()
         sleep(0.5)
-        e1 = self.browser.find_element(By.ID, "error_1_id_expense_type")
-        e2 = self.browser.find_element(By.ID, "error_1_id_expense_name")
-        e3 = self.browser.find_element(By.ID, "error_1_id_price")
 
-        assert e1.text == e2.text == "This field is required."
-        assert e3.text == "Ensure this value is greater than or equal to 0.01."
+        def get_error(field_id):
+            xpath = f"//*[@id='{field_id}']/ancestor::div[div[contains(@class, 'invalid-feedback')]][1]//div[contains(@class, 'invalid-feedback')]"
+            return self.browser.find_element(By.XPATH, xpath)
+
+        # Grab the errors
+        e1 = get_error("id_expense_type")
+        e2 = get_error("id_expense_name")
+        e3 = get_error("id_price")
+
+        # Assertions (using 'in' is safer than '==' to avoid trailing whitespace issues)
+        assert "This field is required." in e1.text
+        assert "This field is required." in e2.text
+        assert "Ensure this value is greater than or equal to 0.01." in e3.text
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_search(self):
