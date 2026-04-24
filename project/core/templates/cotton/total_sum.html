@@ -4,7 +4,10 @@
 
 <!-- add price field -->
 <div class="item-price">
-    {{ field|add_class:"form-control" }}
+    <div>
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field|add_class:"form-control" }}
+    </div>
     <div id="div_sum_prices">
         <button type="button" id="add_price" class="button-secondary">{% translate 'Add' %}</button>
     </div>
