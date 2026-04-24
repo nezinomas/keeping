@@ -1,20 +1,26 @@
 {% load i18n %}
-{% load crispy_forms_tags %}
-
+{% load form_tags %}
 
 {% for field in form %}
-    {% if not field.is_hidden %}
+    {% if field.is_hidden %}
+        {{ field }}
+    {% else %}
 
+        {# --- SPECIAL CASE --- #}
         {% if field.html_name == 'total_sum' %}
-            <!-- add price field -->
-            <div class="item-price">
-                {{ field|as_crispy_field }}
-                <div id="div_sum_prices">
-                    <button type="button" id="add_price" class="button-secondary">{% translate 'Add' %}</button>
-                </div>
-            </div>
+            <c-input-sum-price :field="field" />
+
+        {% elif field|is_checkbox %}
+            <c-input-checkbox :field="field" />
+
+        {% elif field|is_file %}
+            <c-input-file :field="field" />
+
+        {% elif field|is_select %}
+            <c-input-select :field="field" />
+
         {% else %}
-            {{ field|as_crispy_field }}
+            <c-input-text :field="field" />
         {% endif %}
 
     {% endif %}

@@ -1,6 +1,5 @@
 import re
 
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.core.validators import (
     MaxLengthValidator,
@@ -24,6 +23,3 @@ class SearchForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         self.fields["search"].label = None
-
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False

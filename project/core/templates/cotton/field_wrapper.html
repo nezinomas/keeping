@@ -1,0 +1,32 @@
+<c-vars field="" layout="standard" />
+
+<div>
+    {# --- CHECKBOX LAYOUT (Input first, then Label) --- #}
+    {% if layout == 'checkbox' %}
+        <div class="form-check">
+            {{ slot }} {% if field.label %}
+                <label class="form-label" for="{{ field.id_for_label }}">
+                    {{ field.label }}{% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
+                </label>
+            {% endif %}
+        </div>
+
+    {# --- STANDARD LAYOUT (Label first, then Input) --- #}
+    {% else %}
+        {% if field.label %}
+            <label class="form-label" for="{{ field.id_for_label }}">
+                {{ field.label }}{% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
+            </label>
+        {% endif %}
+
+        {{ slot }} {% endif %}
+
+    {# --- COMMON ELEMENTS (Errors & Help Text) --- #}
+    {% for error in field.errors %}
+        <div class="invalid-feedback d-block"><strong>{{ error }}</strong></div>
+    {% endfor %}
+
+    {% if field.help_text %}
+        <div class="form-text">{{ field.help_text|safe }}</div>
+    {% endif %}
+</div>

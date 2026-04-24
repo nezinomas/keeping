@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from typing import Callable
 
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -65,8 +64,8 @@ class SavingWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
         # overwrite FK
         self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
 
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False
+        self.fields["price"].label = ""
+
 
     def clean(self):
         cleaned = super().clean()
@@ -80,6 +79,12 @@ class AccountWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
         model = AccountWorth
         fields = ["date", "account", "price"]
 
+        labels = {
+            "date": "",
+            "account": "",
+            "price": "",
+        }
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
@@ -90,8 +95,7 @@ class AccountWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
         # overwrite FK
         self.fields["account"].queryset = AccountModelService(self.user).items()
 
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False
+        self.fields["price"].label = ""
 
     def clean(self):
         cleaned = super().clean()
@@ -117,9 +121,6 @@ class PensionWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
             self.user
         ).objects
 
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False
-
 
 class SummaryExpensesForm(forms.Form):
     types = forms.MultipleChoiceField(required=False)
@@ -139,9 +140,6 @@ class SummaryExpensesForm(forms.Form):
 
         self.fields["types"].choices = choices
         self.fields["types"].label = None
-
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()

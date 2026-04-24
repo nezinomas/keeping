@@ -1,6 +1,5 @@
 from functools import cached_property
 
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.template.loader import render_to_string
@@ -162,17 +161,11 @@ class DrinkCompareForm(forms.Form):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        self.fields["year1"].label = None
-        self.fields["year2"].label = None
+        self.fields["year1"].label = ""
+        self.fields["year2"].label = ""
 
         # inital values
         self.fields["year2"].initial = timezone.now().year
-
-    @cached_property
-    def helper(self):
-        helper = FormHelper()
-        helper.form_show_labels = False
-        return helper
 
     def clean(self):
         cleaned = super().clean()
