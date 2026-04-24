@@ -195,6 +195,7 @@ fieldset {
     // file name and checkbox
     > div {
         display: flex;
+        align-items: center;
 
         > *:last-child {
             flex-shrink: 0;
