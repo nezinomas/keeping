@@ -97,8 +97,7 @@ fieldset {
     padding: .35rem 2.25rem .35rem .75rem;
 }
 
-// 2. The Base Wrapper & Arrow
-div:has(> .form-select) {
+.select-wrapper {
     position: relative;
 
     &::after {
@@ -108,37 +107,12 @@ div:has(> .form-select) {
         color: #343a40;
         position: absolute;
         right: 0.75rem;
+        top: calc(50% - 6px);
         pointer-events: none;
     }
 
-    // Global Invalid Color (Turns red regardless of layout)
-    &:has(> .form-select.is-invalid)::after {
+    &:has(.is-invalid)::after {
         color: $negative;
-    }
-
-    // 3. Layout: Bottom-Anchored (Default when a label is inside)
-    &:has(> label) {
-        &::after {
-            bottom: 0;
-            padding-bottom: .35rem;
-        }
-
-        // Shift up ONLY if anchored to the bottom to clear error text
-        &:has(> .form-select.is-invalid)::after {
-            padding-bottom: 1.35rem;
-        }
-    }
-}
-
-// 4. Layout: Top-Anchored Contexts (Grouped together!)
-// This targets BOTH "No Label" divs AND any div inside ".plans-form"
-div:not(:has(> label)):has(> .form-select),
-.plans-form div:has(> .form-select) {
-    &::after {
-        bottom: auto;
-        top: 0;
-        padding-top: .45rem;
-        padding-bottom: 0;
     }
 }
 
