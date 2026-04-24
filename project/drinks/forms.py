@@ -161,8 +161,8 @@ class DrinkCompareForm(forms.Form):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        self.fields["year1"].label = None
-        self.fields["year2"].label = None
+        self.fields["year1"].label = ""
+        self.fields["year2"].label = ""
 
         # inital values
         self.fields["year2"].initial = timezone.now().year
