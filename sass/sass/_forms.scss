@@ -29,9 +29,14 @@ fieldset {
 
 .invalid-feedback {
     font-size: .875em;
+    font-weight: 700;
     color: $negative;
     width: 100%;
     margin-top: 0.25rem;
+
+    &:empty {
+        display: none !important;
+    }
 }
 
 .form-text {
@@ -250,9 +255,9 @@ fieldset {
         display: grid;
 
         .invalid-feedback {
-            padding: .75rem 0;
-            grid-column: 1 / span 2;
-            text-align: right;
+            padding: .35rem 0;
+            grid-column-start: 2;
+            text-align: left;
         }
     }
 
