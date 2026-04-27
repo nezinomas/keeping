@@ -179,7 +179,7 @@ def test_income_new_prevents_duplicate_category_in_same_year(client_logged, main
     assert (
         "__all__" in form.errors
     )  # Assuming the error was raised as a non-field error
-    assert "1999 metai jau turi Income Type planą." in form.errors["__all__"][0]
+    assert "1999 metai su 'Income Type'  jau turi tikslą." in form.errors["__all__"][0]
 
 
 def test_income_new_returns_htmx_response(client_logged, main_user):
@@ -542,7 +542,7 @@ def test_expense_new_prevents_duplicate_category_in_same_year(client_logged, mai
     assert (
         "__all__" in form.errors
     )  # Assuming the error was raised as a non-field error
-    assert "1999 metai jau turi Expense Type planą." in form.errors["__all__"][0]
+    assert "1999 metai su 'Expense Type'  jau turi tikslą." in form.errors["__all__"][0]
 
 
 def test_expense_new_returns_htmx_response(client_logged, main_user):
@@ -910,7 +910,7 @@ def test_saving_new_prevents_duplicate_category_in_same_year(client_logged, main
     assert (
         "__all__" in form.errors
     )  # Assuming the error was raised as a non-field error
-    assert "1999 metai jau turi Saving Type planą." in form.errors["__all__"][0]
+    assert "1999 metai su 'Saving Type'  jau turi tikslą." in form.errors["__all__"][0]
 
 
 def test_saving_new_returns_htmx_response(client_logged, main_user):
