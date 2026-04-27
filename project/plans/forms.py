@@ -123,7 +123,11 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
             return cleaned_data
 
         year = cleaned_data.get("year")
-        grouping_data = {f: cleaned_data[f] for f in self.Meta.grouping_fields}
+        grouping_data = {
+            f: cleaned_data.get(f)
+            for f in self.Meta.grouping_fields
+            if f in cleaned_data
+        }
 
         lookup = {"year": year, "journal": self.user.journal, **grouping_data}
         service = self.Meta.service_class(self.user)
@@ -131,18 +135,33 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
         if not service.objects.filter(**lookup).exists():
             return cleaned_data
 
-        if grouping_data:
-            title = str(list(grouping_data.values())[0])
-            error_msg = _("%(year)s year already has %(title)s plan.") % {
-                "year": year,
-                "title": title,
-            }
-        else:
+        if not self.Meta.grouping_fields:
             error_msg = _("Plan for %(year)s already exists.") % {
                 "year": year,
             }
+            raise forms.ValidationError({"__all__": error_msg, "year": ""})
 
-        raise forms.ValidationError(error_msg)
+        values_list = [str(v) for v in grouping_data.values() if v]
+        values_str = (
+            _(" and ").join(values_list)
+            if len(values_list) <= 2
+            else ", ".join(values_list)
+        )
+
+        error_msg = _("A plan for %(year)s with %(values)s already exists.") % {
+            "year": year,
+            "values": f"'{values_str}'" if values_str else _("these details"),
+        }
+
+        # descriptive text to __all__ (form.non_field_errors)
+        errors_dict = {"__all__": error_msg}
+
+        # assign an empty string to the specific fields to trigger their CSS error state
+        for field in self.Meta.grouping_fields:
+            errors_dict[field] = ""
+        errors_dict["year"] = ""
+
+        raise forms.ValidationError(errors_dict)
 
     def save(self):
         year = self.cleaned_data["year"]
