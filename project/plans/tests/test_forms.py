@@ -96,11 +96,11 @@ def test_income_unique_together_validation(main_user):
 
     assert not form.is_valid()
 
-    expected_msg = _("%(year)s year already has %(title)s plan.") % {
+    expected_msg = _("A plan for %(year)s with %(values)s already exists.") % {
         "year": existing_plan.year,
-        "title": existing_plan.income_type.title,
+        "values": f"'{existing_plan.income_type.title}'",
     }
-    assert form.errors == {"__all__": [expected_msg]}
+    assert form.errors["__all__"] == [expected_msg]
 
 
 def test_income_unique_together_validation_more_than_one(main_user):
@@ -304,11 +304,12 @@ def test_expense_unique_together_validation(main_user):
 
     assert not form.is_valid()
 
-    expected_msg = _("%(year)s year already has %(title)s plan.") % {
+    expected_msg = _("A plan for %(year)s with %(values)s already exists.") % {
         "year": existing_plan.year,
-        "title": existing_plan.expense_type.title,
+        "values": f"'{existing_plan.expense_type.title}'",
     }
-    assert form.errors == {"__all__": [expected_msg]}
+
+    assert form.errors["__all__"] == [expected_msg]
 
 
 def test_expense_unique_together_validation_more_than_one(main_user):
@@ -512,11 +513,11 @@ def test_saving_unique_together_validation(main_user):
 
     assert not form.is_valid()
 
-    expected_msg = _("%(year)s year already has %(title)s plan.") % {
+    expected_msg = _("A plan for %(year)s with %(values)s already exists.") % {
         "year": existing_plan.year,
-        "title": existing_plan.saving_type.title,
+        "values": f"'{existing_plan.saving_type.title}'",
     }
-    assert form.errors == {"__all__": [expected_msg]}
+    assert form.errors["__all__"] == [expected_msg]
 
 
 def test_saving_unique_together_validation_more_than_one(main_user):
@@ -810,11 +811,11 @@ def test_necessary_unique_together_validation(main_user):
 
     assert not form.is_valid()
 
-    expected_msg = _("%(year)s year already has %(title)s plan.") % {
+    expected_msg = _("A plan for %(year)s with %(values)s already exists.") % {
         "year": existing_plan.year,
-        "title": existing_plan.expense_type.title,
+        "values": f"'{existing_plan.expense_type.title}{_(" and ")}{existing_plan.title}'",
     }
-    assert form.errors == {"__all__": [expected_msg]}
+    assert form.errors["__all__"] == [expected_msg]
 
 
 def test_necessary_unique_together_validation_more_than_one(main_user):
@@ -1037,7 +1038,7 @@ def test_day_unique_together_validation_more_than_one(main_user):
     expected_msg = _("Plan for %(year)s already exists.") % {
         "year": existing_plan.year,
     }
-    assert form.errors == {"__all__": [expected_msg]}
+    assert form.errors["__all__"] == [expected_msg]
 
 
 def test_day_negative_number(main_user):
