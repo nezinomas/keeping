@@ -54,6 +54,12 @@ class SavingWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
         model = SavingWorth
         fields = ["date", "saving_type", "price"]
 
+        labels = {
+            "date": "",
+            "saving_type": "",
+            "price": "",
+        }
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
@@ -109,6 +115,12 @@ class PensionWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
         model = PensionWorth
         fields = ["date", "pension_type", "price"]
 
+        labels = {
+            "date": "",
+            "pension_type": "",
+            "price": "",
+        }
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
@@ -120,6 +132,8 @@ class PensionWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
         self.fields["pension_type"].queryset = PensionTypeModelService(
             self.user
         ).objects
+
+        self.fields["price"].label = ""
 
 
 class SummaryExpensesForm(forms.Form):
