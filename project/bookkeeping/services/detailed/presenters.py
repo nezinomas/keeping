@@ -68,7 +68,11 @@ def load_service(user: User, category: str = "all_data", order: str = "") -> lis
             continue
 
         if context := DetailedContextPresenter.build(
-            title=title, url_title=url_title, dto=dto, year=year, order=order
+            title=title,
+            url_title=url_title,
+            dto=dto,
+            year=user.year,
+            order=order,
         ):
             contexts.append(context)
 
