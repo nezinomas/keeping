@@ -167,10 +167,10 @@ class Detailed(TemplateViewMixin):
     def get_template_names(self):
         if "category" in self.kwargs:
             return ["cotton/detailed_table.html"]
+
         return ["bookkeeping/detailed.html"]
 
     def get_context_data(self, **kwargs):
-
         category = self.kwargs.get("category", "all_data")
         order = self.kwargs.get("order", "")
 
