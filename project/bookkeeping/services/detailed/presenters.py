@@ -39,6 +39,8 @@ def load_full_service(user: User) -> list:
     ]
 
     for title, dto in provider.get_expenses().items():
+        if not dto.data:
+            continue
         categories.append((f"{_('Expenses')} / {title}", slugify(title), dto))
 
     # Build contexts
