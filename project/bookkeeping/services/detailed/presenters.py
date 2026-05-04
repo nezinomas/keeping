@@ -32,26 +32,19 @@ def load_full_service(user: User) -> list:
     provider = DetailedDataProvider(user)
     contexts = []
 
-    # Static categories
-    base_categories = [
+    # Assemble all categories
+    categories = [
         (_("Incomes"), "income", provider.get_incomes()),
         (_("Savings"), "saving", provider.get_savings()),
     ]
 
-    for title, url_title, dto in base_categories:
+    for title, dto in provider.get_expenses().items():
+        categories.append((f"{_('Expenses')} / {title}", slugify(title), dto))
+
+    # Build contexts
+    for title, url_title, dto in categories:
         if context := DetailedContextPresenter.build(
             title=title, url_title=url_title, dto=dto, year=year, order=""
-        ):
-            contexts.append(context)
-
-    # Dynamic expenses
-    for expense_type_title, dto in provider.get_expenses().items():
-        if context := DetailedContextPresenter.build(
-            title=f"{_('Expenses')} / {expense_type_title}",
-            url_title=slugify(expense_type_title),
-            dto=dto,
-            year=year,
-            order="",
         ):
             contexts.append(context)
 
