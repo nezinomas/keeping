@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import date
 from functools import cached_property
 
@@ -21,8 +22,9 @@ class DetailedTableBuilder:
 
         padded_data = self._pad_data_for_upsampling(list(self.dto.data))
 
-        base_df = (
+        df = (
             pl.DataFrame(padded_data)
+            .sort(["title", "date"])
             .upsample(
                 time_column="date", group_by="title", every="1mo", maintain_order=True
             )
@@ -36,14 +38,24 @@ class DetailedTableBuilder:
             .with_columns(total_col=pl.sum_horizontal(pl.exclude("title")))
         )
 
-        return self._apply_sorting(base_df)
+        return self._apply_sorting(df)
 
     def _pad_data_for_upsampling(self, data: list[dict]) -> list[dict]:
-        """Adds empty December records to ensure Polars upsamples the entire year."""
-        unique_titles = {item["title"] for item in data}
+        if not data:
+            return data
 
-        for title in unique_titles:
-            data.append({"date": date(self.year, 12, 1), "sum": 0, "title": title})
+        # Map every title to a set of its existing months
+        existing_months_map = defaultdict(set)
+        for item in data:
+            existing_months_map[item["title"]].add(item["date"].month)
+
+        # Pad missing boundaries using map
+        for title, months in existing_months_map.items():
+            if 1 not in months:
+                data.append({"date": date(self.year, 1, 1), "sum": 0, "title": title})
+
+            if 12 not in months:
+                data.append({"date": date(self.year, 12, 1), "sum": 0, "title": title})
 
         return data
 

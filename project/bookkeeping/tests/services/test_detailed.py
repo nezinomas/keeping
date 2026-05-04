@@ -40,6 +40,24 @@ def test_table_property(data):
     assert actual[1]["total_col"] == 12
 
 
+def test_table_property_with_february_only(data):
+    data = SimpleNamespace(
+        data=[
+            {"date": date(1999, 2, 1), "sum": 2, "title": "X"},
+        ]
+    )
+    actual = DetailedTableBuilder(data, 1999).table
+
+    assert len(actual[0]) == 14
+
+    assert actual[0]["title"] == "X"
+    assert actual[0]["1"] == 0
+    assert actual[0]["2"] == 2
+    assert actual[0]["3"] == 0
+    assert actual[0]["12"] == 0
+    assert actual[0]["total_col"] == 2
+
+
 def test_table_property_no_data():
     data = SimpleNamespace(data=[])
     actual = DetailedTableBuilder(data, 1999).table
