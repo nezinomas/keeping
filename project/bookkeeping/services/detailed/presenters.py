@@ -53,14 +53,14 @@ def load_service(user: User, category: str = "all_data", order: str = "") -> lis
             categories = [(_("Savings"), "saving", provider.get_savings())]
 
         case _:
-            category_ = (
+            expense_type = (
                 ExpenseTypeModelService(user).objects.filter(slug=category).first()
             )
-            if not category_:
+            if not expense_type:
                 return []
 
-            title = f"{_('Expenses')} / {category_.title}"
-            categories = [(title, category, provider.get_expense(category_.slug))]
+            title = f"{_('Expenses')} / {expense_type.title}"
+            categories = [(title, category, provider.get_expense(expense_type.slug))]
 
     # 2. Build contexts
     for title, url_title, dto in categories:
