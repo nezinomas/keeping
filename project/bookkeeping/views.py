@@ -164,30 +164,33 @@ class MonthChart(TemplateViewMixin):
 
 
 class Detailed(TemplateViewMixin):
-    template_name = "bookkeeping/detailed.html"
+    def get_template_names(self):
+        if "category" in self.kwargs:
+            return ["cotton/detailed_table.html"]
+        return ["bookkeeping/detailed.html"]
 
     def get_context_data(self, **kwargs):
+
+        category = self.kwargs.get("category", "all_data")
+        order = self.kwargs.get("order", "")
+
+        service_data = services.detailed.load_service(
+            user=self.request.user, category=category, order=order
+        )
+
         context = super().get_context_data(**kwargs)
-        context["object_list"] = services.detailed.load_service(self.request.user)
-        context["months"] = {**monthnames_num()}
+        context |= {
+            "order": order,
+            "months": monthnames_num(),
+        }
 
-        return context
+        if not service_data:
+            return context
 
-
-class DetailedCategory(TemplateViewMixin):
-    template_name = "cotton/detailed_table.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        user = self.request.user
-        if service_data := services.detailed.load_service(
-            user=user, order=self.kwargs["order"], category=self.kwargs["category"]
-        ):
-            context = context | {**service_data[0]}
-
-        context["order"] = self.kwargs["order"]
-        context["months"] = monthnames_num()
+        if category == "all_data":
+            context["object_list"] = service_data
+        else:
+            context |= service_data[0]
 
         return context
 

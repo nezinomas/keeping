@@ -35,7 +35,7 @@ urlpatterns = [
     path("detailed/", views.Detailed.as_view(), name="detailed"),
     path(
         "detailed/<slug:category>/<slug:order>/",
-        views.DetailedCategory.as_view(),
+        views.Detailed.as_view(),
         name="detailed_category",
     ),
     path("summary/", views.Summary.as_view(), name="summary"),
