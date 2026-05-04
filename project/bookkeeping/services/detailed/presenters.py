@@ -73,15 +73,16 @@ def load_partial_service(user: User, category: str, order: str) -> dict:
     year = user.year
     provider = DetailedDataProvider(user)
 
-    if category == "income":
-        title = _("Incomes")
-        dto = provider.get_incomes()
-    elif category == "saving":
-        title = _("Savings")
-        dto = provider.get_savings()
-    else:
-        title = f"{_('Expenses')} / {category.replace('-', ' ').title()}"
-        dto = provider.get_expense(category_slug=category)
+    match category:
+        case "income":
+            title = _("Incomes")
+            dto = provider.get_incomes()
+        case "saving":
+            title = _("Savings")
+            dto = provider.get_savings()
+        case _:
+            title = f"{_('Expenses')} / {category.replace('-', ' ').title()}"
+            dto = provider.get_expense(category_slug=category)
 
     return DetailedContextPresenter.build(
         title=title, url_title=category, dto=dto, year=year, order=order
