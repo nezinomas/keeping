@@ -125,7 +125,7 @@ def test_view_detailed_with_savings(client_logged):
 def test_view_detailed_category_func():
     view = resolve("/detailed/category/-1/")
 
-    assert views.DetailedCategory == view.func.view_class
+    assert views.Detailed == view.func.view_class
 
 
 @factory.django.mute_signals(post_save)
