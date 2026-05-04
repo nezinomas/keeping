@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import date
 from functools import cached_property
 
@@ -40,20 +41,20 @@ class DetailedTableBuilder:
         return self._apply_sorting(df)
 
     def _pad_data_for_upsampling(self, data: list[dict]) -> list[dict]:
-        unique_titles = {item["title"] for item in data}
+        if not data:
+            return data
 
-        for title in unique_titles:
-            # Find all months that already have data for this specific title
-            existing_months = {
-                item["date"].month
-                for item in data
-                if item["title"] == title
-            }
+        # Map every title to a set of its existing months
+        existing_months_map = defaultdict(set)
+        for item in data:
+            existing_months_map[item["title"]].add(item["date"].month)
 
-            if 1 not in existing_months:
+        # Pad missing boundaries using map
+        for title, months in existing_months_map.items():
+            if 1 not in months:
                 data.append({"date": date(self.year, 1, 1), "sum": 0, "title": title})
 
-            if 12 not in existing_months:
+            if 12 not in months:
                 data.append({"date": date(self.year, 12, 1), "sum": 0, "title": title})
 
         return data
