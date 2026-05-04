@@ -29,7 +29,6 @@ class DetailedContextPresenter:
 
 
 def load_service(user: User, category: str = "all_data", order: str = "") -> list[dict]:
-    year = user.year
     provider = DetailedDataProvider(user)
     contexts = []
 
