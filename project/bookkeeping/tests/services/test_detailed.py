@@ -47,7 +47,7 @@ def test_table_property_with_february_only(data):
         ]
     )
     actual = DetailedTableBuilder(data, 1999).table
-    print(f'--------------------------->\n{actual=}\n')
+
     assert len(actual[0]) == 14
 
     assert actual[0]["title"] == "X"
