@@ -813,7 +813,7 @@ def test_necessary_unique_together_validation(main_user):
 
     expected_msg = _("A plan for %(year)s with %(values)s already exists.") % {
         "year": existing_plan.year,
-        "values": f"'{existing_plan.expense_type.title}{_(" and ")}{existing_plan.title}'",
+        "values": f"'{existing_plan.expense_type.title}{_(' and ')}{existing_plan.title}'",
     }
     assert form.errors["__all__"] == [expected_msg]
 

@@ -126,7 +126,9 @@ def test_index_data_provider_get_amount_start(mocker, main_user):
     main_user.year = 2026
 
     # Mock the database service
-    mock_balance_service = mocker.patch(f"{MODULE_PATH}.providers.AccountBalanceModelService")
+    mock_balance_service = mocker.patch(
+        f"{MODULE_PATH}.providers.AccountBalanceModelService"
+    )
     mock_year = mock_balance_service.return_value.year.return_value
     mock_year.aggregate.return_value = {"past__sum": 5000}
 
@@ -139,7 +141,9 @@ def test_index_data_provider_get_amount_start(mocker, main_user):
 
 def test_index_data_provider_get_amount_start_returns_zero_if_none(mocker, main_user):
     main_user.year = 2026
-    mock_balance_service = mocker.patch(f"{MODULE_PATH}.providers.AccountBalanceModelService")
+    mock_balance_service = mocker.patch(
+        f"{MODULE_PATH}.providers.AccountBalanceModelService"
+    )
     mock_year = mock_balance_service.return_value.year.return_value
     mock_year.aggregate.return_value = {"past__sum": None}
 

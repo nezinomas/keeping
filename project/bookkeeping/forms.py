@@ -72,7 +72,6 @@ class SavingWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
 
         self.fields["price"].label = ""
 
-
     def clean(self):
         cleaned = super().clean()
         return clean_date_and_closed("saving_type", cleaned, self.add_error)
