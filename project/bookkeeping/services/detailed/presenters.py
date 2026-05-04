@@ -30,40 +30,30 @@ class DetailedContextPresenter:
 def load_full_service(user: User) -> list:
     year = user.year
     provider = DetailedDataProvider(user)
+    contexts = []
 
-    # Define the static categories
+    # Static categories
     base_categories = [
         (_("Incomes"), "income", provider.get_incomes()),
         (_("Savings"), "saving", provider.get_savings()),
     ]
 
-    # Build and filter static categories
-    contexts = [
-        context
-        for title, url_title, dto in base_categories
-        if (
-            context := DetailedContextPresenter.build(
-                title=title, url_title=url_title, dto=dto, year=year, order=""
-            )
-        )
-    ]
+    for title, url_title, dto in base_categories:
+        if context := DetailedContextPresenter.build(
+            title=title, url_title=url_title, dto=dto, year=year, order=""
+        ):
+            contexts.append(context)
 
-    # Build, filter, and append dynamic expenses
-    contexts.extend(
-        [
-            context
-            for expense_type_title, dto in provider.get_expenses().items()
-            if (
-                context := DetailedContextPresenter.build(
-                    title=f"{_('Expenses')} / {expense_type_title}",
-                    url_title=slugify(expense_type_title),
-                    dto=dto,
-                    year=year,
-                    order="",
-                )
-            )
-        ]
-    )
+    # Dynamic expenses
+    for expense_type_title, dto in provider.get_expenses().items():
+        if context := DetailedContextPresenter.build(
+            title=f"{_('Expenses')} / {expense_type_title}",
+            url_title=slugify(expense_type_title),
+            dto=dto,
+            year=year,
+            order="",
+        ):
+            contexts.append(context)
 
     return contexts
 
