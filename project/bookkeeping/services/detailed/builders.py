@@ -21,8 +21,9 @@ class DetailedTableBuilder:
 
         padded_data = self._pad_data_for_upsampling(list(self.dto.data))
 
-        base_df = (
+        df = (
             pl.DataFrame(padded_data)
+            .sort(["title", "date"])
             .upsample(
                 time_column="date", group_by="title", every="1mo", maintain_order=True
             )
@@ -36,14 +37,24 @@ class DetailedTableBuilder:
             .with_columns(total_col=pl.sum_horizontal(pl.exclude("title")))
         )
 
-        return self._apply_sorting(base_df)
+        return self._apply_sorting(df)
 
     def _pad_data_for_upsampling(self, data: list[dict]) -> list[dict]:
-        """Adds empty December records to ensure Polars upsamples the entire year."""
         unique_titles = {item["title"] for item in data}
 
         for title in unique_titles:
-            data.append({"date": date(self.year, 12, 1), "sum": 0, "title": title})
+            # Find all months that already have data for this specific title
+            existing_months = {
+                item["date"].month
+                for item in data
+                if item["title"] == title
+            }
+
+            if 1 not in existing_months:
+                data.append({"date": date(self.year, 1, 1), "sum": 0, "title": title})
+
+            if 12 not in existing_months:
+                data.append({"date": date(self.year, 12, 1), "sum": 0, "title": title})
 
         return data
 
