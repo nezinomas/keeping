@@ -168,7 +168,7 @@ class Detailed(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["object_list"] = services.detailed.load_full_service(self.request.user)
+        context["object_list"] = services.detailed.load_service(self.request.user)
         context["months"] = {**monthnames_num()}
 
         return context
@@ -181,11 +181,11 @@ class DetailedCategory(TemplateViewMixin):
         context = super().get_context_data(**kwargs)
 
         user = self.request.user
-        context = context | {
-            **services.detailed.load_partial_service(
-                user=user, order=self.kwargs["order"], category=self.kwargs["category"]
-            )
-        }
+        if service_data := services.detailed.load_service(
+            user=user, order=self.kwargs["order"], category=self.kwargs["category"]
+        ):
+            context = context | {**service_data[0]}
+
         context["order"] = self.kwargs["order"]
         context["months"] = monthnames_num()
 
