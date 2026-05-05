@@ -51,11 +51,13 @@ class DetailedTableBuilder:
 
         # Pad missing boundaries using map
         for title, months in existing_months_map.items():
+            item = {"sum": 0, "title": title}
+
             if 1 not in months:
-                data.append({"date": date(self.year, 1, 1), "sum": 0, "title": title})
+                data.append(item | {"date": date(self.year, 1, 1)})
 
             if 12 not in months:
-                data.append({"date": date(self.year, 12, 1), "sum": 0, "title": title})
+                data.append(item | {"date": date(self.year, 12, 1)})
 
         return data
 
