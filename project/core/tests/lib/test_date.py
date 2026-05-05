@@ -138,7 +138,6 @@ def test_ydays(year, expect):
 
 
 def test_monthnames_abbr():
-    """Covers Line 62: Ensures abbreviated month names are generated correctly."""
     actual = lib_date.monthnames_abbr()
 
     assert isinstance(actual, dict)
