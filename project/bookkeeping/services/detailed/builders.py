@@ -41,9 +41,6 @@ class DetailedTableBuilder:
         return self._apply_sorting(df)
 
     def _pad_data_for_upsampling(self, data: list[dict]) -> list[dict]:
-        if not data:
-            return data
-
         # Map every title to a set of its existing months
         existing_months_map = defaultdict(set)
         for item in data:

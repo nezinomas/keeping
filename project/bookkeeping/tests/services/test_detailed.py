@@ -2,9 +2,11 @@ from datetime import date
 from types import SimpleNamespace
 
 import pytest
+from mock import MagicMock
 
 from ...services.detailed.builders import DetailedTableBuilder
 from ...services.detailed.dtos import DetailedDto
+from ...services.detailed.presenters import DetailedContextPresenter, load_service
 
 
 @pytest.fixture(name="data")
@@ -145,3 +147,78 @@ def test_detailed_table_builder_sorting(
     # We only need to check the first and last elements to prove the sort worked
     assert table[0]["title"] == expected_first
     assert table[-1]["title"] == expected_last
+
+
+# -------------------------------------------------------------------------------------
+#                                                     DetailedContextPresenter Tests
+# -------------------------------------------------------------------------------------
+def test_detailed_context_presenter_build_empty_data():
+    mock_dto = MagicMock(data=[])
+
+    result = DetailedContextPresenter.build(
+        title="Test Title", url_title="test-title", dto=mock_dto, year=2026, order=""
+    )
+
+    assert result == {}
+
+
+# -------------------------------------------------------------------------------------
+#                                                                 load_service Tests
+# -------------------------------------------------------------------------------------
+def test_load_service_income_category(mocker):
+    user = MagicMock(year=2026)
+
+    mock_dto = MagicMock(data=[{"sum": 100}])
+    mock_provider = mocker.patch(
+        "project.bookkeeping.services.detailed.presenters.DetailedDataProvider"
+    )
+    mock_provider.return_value.get_incomes.return_value = mock_dto
+
+    mock_build = mocker.patch(
+        "project.bookkeeping.services.detailed.presenters.DetailedContextPresenter.build"
+    )
+    mock_build.return_value = {"mock": "context"}
+
+    result = load_service(user, category="income")
+
+    assert result == [{"mock": "context"}]
+    mock_provider.return_value.get_incomes.assert_called_once()
+
+
+def test_load_service_saving_category(mocker):
+    user = MagicMock(year=2026)
+
+    mock_dto = MagicMock(data=[{"sum": 500}])
+    mock_provider = mocker.patch(
+        "project.bookkeeping.services.detailed.presenters.DetailedDataProvider"
+    )
+    mock_provider.return_value.get_savings.return_value = mock_dto
+
+    mock_build = mocker.patch(
+        "project.bookkeeping.services.detailed.presenters.DetailedContextPresenter.build"
+    )
+    mock_build.return_value = {"mock": "context"}
+
+    result = load_service(user, category="saving")
+
+    assert result == [{"mock": "context"}]
+    mock_provider.return_value.get_savings.assert_called_once()
+
+
+def test_load_service_unknown_category_not_found(mocker):
+    user = MagicMock(year=2026)
+
+    mocker.patch(
+        "project.bookkeeping.services.detailed.presenters.DetailedDataProvider"
+    )
+
+    mock_expense_service = mocker.patch(
+        "project.bookkeeping.services.detailed.presenters.ExpenseTypeModelService"
+    )
+    mock_qs = MagicMock()
+    mock_qs.filter.return_value.first.return_value = None
+    mock_expense_service.return_value.objects = mock_qs
+
+    result = load_service(user, category="non_existent_slug")
+
+    assert result == []

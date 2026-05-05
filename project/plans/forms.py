@@ -111,9 +111,6 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
         self._disable_field("year")
 
         for field_name in self.Meta.grouping_fields:
-            if field_name not in self.fields:
-                continue
-
             self._disable_field(field_name)
 
     def clean(self):
