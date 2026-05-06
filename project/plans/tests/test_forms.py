@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import pytest
 import time_machine
 from django.forms import HiddenInput
@@ -1019,8 +1017,7 @@ def test_day_blank_data(main_user):
     assert "year" in form.errors
 
 
-def test_day_unique_together_validation_more_than_one(main_user):
-    """Tests that uniqueness doesn't block valid distinct inputs."""
+def test_day_unique_validation(main_user):
     existing_plan = DayPlanFactory(
         year=1999,
         journal=main_user.journal,
@@ -1135,10 +1132,16 @@ def test_day_updates_and_deletes_rows(main_user):
 # -------------------------------------------------------------------------------------
 
 
+@time_machine.travel("1999-06-01")
 def test_copy_init(main_user):
     form = CopyPlanForm(user=main_user)
-    assert form.fields["year_from"].initial == datetime.now().year
+    assert form.fields["year_from"].initial == 1999
+    assert form.fields["year_to"].initial == 2000
     assert form.fields["income"].initial is True
+    assert form.fields["expense"].initial is True
+    assert form.fields["saving"].initial is True
+    assert form.fields["day"].initial is True
+    assert form.fields["necessary"].initial is True
 
 
 def test_copy_have_fields(main_user):
