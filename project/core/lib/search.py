@@ -101,14 +101,28 @@ def generic_search(query, search_str, category_list, date_field="date"):
     if all(value is None for value in search_dict.values()):
         return query.none()
 
-    # Date filters
+    query = _apply_date_filters(query, search_dict, date_field)
+    
+    combined_filters = _build_category_filters(search_dict, category_list)
+    combined_filters += _build_remark_filters(search_dict)
+    
+    if combined_filters:
+        operator_ = and_ if search_type == "with_args" else or_
+        query = query.filter(reduce(operator_, combined_filters))
+
+    return query.order_by(f"-{date_field}")
+
+
+def _apply_date_filters(query, search_dict, date_field):
     for key in ["year", "month"]:
         if not search_dict.get(key):
             continue
         query = query.filter(**{f"{date_field}__{key}": search_dict[key]})
+    return query
 
-    # Category filters
-    category_filters = [
+
+def _build_category_filters(search_dict, category_list):
+    return [
         reduce(
             or_,
             (
@@ -119,18 +133,12 @@ def generic_search(query, search_str, category_list, date_field="date"):
         for search_word in _get(search_dict, "category", [])
     ]
 
-    # Remark filters
-    remark_filters = [
+
+def _build_remark_filters(search_dict):
+    return [
         Q(remark__icontains=search_word)
         for search_word in _get(search_dict, "remark", [])
     ]
-
-    # Combine Category and Remark filters
-    if combined_filters := category_filters + remark_filters:
-        operator_ = and_ if search_type == "with_args" else or_
-        query = query.filter(reduce(operator_, combined_filters))
-
-    return query.order_by(f"-{date_field}")
 
 
 def search_expenses(user, search_str):
