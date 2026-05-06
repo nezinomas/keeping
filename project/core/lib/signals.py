@@ -34,7 +34,14 @@ class GetData:
 
 
 class SignalBase(ABC):
-    signal_type = None
+    @property
+    def schema(self) -> dict:
+        return {
+            "category_id": pl.UInt16,
+            "year": pl.UInt16,
+            "incomes": pl.Int32,
+            "expenses": pl.Int32,
+        }
 
     @property
     def df(self) -> pl.LazyFrame:
@@ -44,21 +51,11 @@ class SignalBase(ABC):
     def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame: ...
 
     def _make_df(self, arr: list[dict]) -> pl.LazyFrame:
-        schema = {
-            "category_id": pl.UInt16,
-            "year": pl.UInt16,
-            "incomes": pl.Int32,
-            "expenses": pl.Int32,
-        }
-
-        if self.signal_type == "savings":
-            schema |= {"fee": pl.Int32}
-
         if not arr:
-            return pl.LazyFrame(arr, schema=schema)
+            return pl.LazyFrame(arr, schema=self.schema)
 
         return (
-            pl.from_dicts(arr, schema=schema)
+            pl.from_dicts(arr, schema=self.schema)
             .lazy()
             .with_columns(
                 [pl.col("incomes").fill_null(0), pl.col("expenses").fill_null(0)]
@@ -106,7 +103,6 @@ class SignalBase(ABC):
 
 
 class Accounts(SignalBase):
-    signal_type = "accounts"
 
     def __init__(self, data: GetData):
         _df = self._make_df(it.chain(data.incomes, data.expenses))
@@ -184,7 +180,9 @@ class Accounts(SignalBase):
 
 
 class Savings(SignalBase):
-    signal_type = "savings"
+    @property
+    def schema(self) -> dict:
+        return super().schema | {"fee": pl.Int32}
 
     def __init__(self, data: GetData):
         _in = self._make_df(data.incomes)
