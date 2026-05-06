@@ -1,38 +1,31 @@
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
-from ....expenses.services.model_services import ExpenseTypeModelService
 from ....users.models import User
 from .builders import DetailedTableBuilder
 from .dtos import DetailedDto
 from .providers import DetailedDataProvider
 
 
-class DetailedContextPresenter:
-    """Formats a TableBuilder into the exact dictionary structure required by the UI."""
+def build_context(
+    title: str, url_title: str, dto: DetailedDto, year: int, order: str
+) -> dict:
+    if not dto.data:
+        return {}
 
-    @staticmethod
-    def build(
-        title: str, url_title: str, dto: DetailedDto, year: int, order: str
-    ) -> dict:
-        if not dto.data:
-            return {}
+    builder = DetailedTableBuilder(dto, year, order)
 
-        builder = DetailedTableBuilder(dto, year, order)
-
-        return {
-            "title": title,
-            "url_title": url_title,
-            "data": builder.table,
-            "total": builder.total_row,
-        }
+    return {
+        "title": title,
+        "url_title": url_title,
+        "data": builder.table,
+        "total": builder.total_row,
+    }
 
 
-def load_service(user: User, category: str = "all_data", order: str = "") -> list[dict]:
-    provider = DetailedDataProvider(user)
-    contexts = []
-
-    # 1. Assemble categories
+def _get_categories(
+    user: User, category: str, provider: DetailedDataProvider
+) -> list[tuple[str, str, DetailedDto]]:
     match category:
         case "all_data":
             categories = [
@@ -44,29 +37,31 @@ def load_service(user: User, category: str = "all_data", order: str = "") -> lis
                 for title, dto in provider.get_expenses().items()
                 if dto.data
             )
+            return categories
 
         case "income":
-            categories = [(_("Incomes"), "income", provider.get_incomes())]
+            return [(_("Incomes"), "income", provider.get_incomes())]
 
         case "saving":
-            categories = [(_("Savings"), "saving", provider.get_savings())]
+            return [(_("Savings"), "saving", provider.get_savings())]
 
         case _:
-            expense_type = (
-                ExpenseTypeModelService(user).objects.filter(slug=category).first()
-            )
+            expense_type = provider.get_expense_type(category)
             if not expense_type:
                 return []
 
             title = f"{_('Expenses')} / {expense_type.title}"
-            categories = [(title, category, provider.get_expense(expense_type.slug))]
+            return [(title, category, provider.get_expense(expense_type.slug))]
 
-    # 2. Build contexts
+
+def load_service(user: User, category: str = "all_data", order: str = "") -> list[dict]:
+    provider = DetailedDataProvider(user)
+    contexts = []
+
+    categories = _get_categories(user, category, provider)
+
     for title, url_title, dto in categories:
-        if not all((title, url_title, dto.data)):
-            continue
-
-        if context := DetailedContextPresenter.build(
+        if context := build_context(
             title=title,
             url_title=url_title,
             dto=dto,
