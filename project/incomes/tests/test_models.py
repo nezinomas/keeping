@@ -2,6 +2,7 @@ from datetime import date
 
 import factory
 import pytest
+from django.db import IntegrityError
 from django.db.models.signals import post_save
 
 from ...accounts.models import AccountBalance
@@ -43,10 +44,10 @@ def test_income_type_items_journal_queries(main_user, django_assert_max_num_quer
         IncomeTypeModelService(main_user).items().values()
 
 
-@pytest.mark.xfail
-def test_income_type_unique_for_journal():
-    IncomeType.objects.create(title="T")
-    IncomeType.objects.create(title="T")
+def test_income_type_unique_for_journal(main_user):
+    IncomeType.objects.create(title="T", journal=main_user.journal)
+    with pytest.raises(IntegrityError):
+        IncomeType.objects.create(title="T", journal=main_user.journal)
 
 
 def test_income_type_unique_for_journals(main_user, second_user):

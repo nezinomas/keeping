@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 
 from django import forms
 from django.utils.translation import gettext as _
@@ -51,14 +51,14 @@ class IncomeForm(ConvertPriceMixin, forms.ModelForm):
 
         year_user = self.user.year
         year_instance = dt.year
-        year_now = datetime.now().year
+        year_now = timezone.now().year
 
         diff = 1
         if (year_instance - year_now) > diff:
             year_msg = year_user + diff
             self.add_error(
                 "date",
-                _("Year cannot be greater than %(year)s") % ({"year": year_msg}),
+                _("Year cannot be greater than %(year)s") % {"year": year_msg},
             )
 
         return dt
