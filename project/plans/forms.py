@@ -67,6 +67,45 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
         self._map_month_price_values()
         self._disable_fields()
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if self.errors or self.instance.pk:
+            return cleaned_data
+
+        year = cleaned_data.get("year")
+        grouping_data = self._get_grouping_data(cleaned_data)
+
+        if self._plan_exists(year, grouping_data):
+            self._raise_validation_error(year, grouping_data)
+
+        return cleaned_data
+
+    def save(self):
+        year = self.cleaned_data["year"]
+        journal = self.user.journal
+
+        # Extract the values of the unique grouping fields
+        grouping_data = {f: self.cleaned_data[f] for f in self.Meta.grouping_fields}
+        for month_idx, month_name in enumerate(monthnames(), start=1):
+            price = self.cleaned_data.get(month_name)
+
+            # Lookup criteria for this specific month row
+            lookup = {
+                "year": year,
+                "month": month_idx,
+                "journal": journal,
+                **grouping_data,
+            }
+
+            service = self.Meta.service_class(self.user)
+            if price is not None:
+                service.objects.update_or_create(**lookup, defaults={"price": price})
+            else:
+                service.objects.filter(**lookup).delete()
+
+        return self.instance
+
     def _common_field_transalion(self):
         self.fields["year"].label = _("Years")
 
@@ -112,20 +151,6 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
         for field_name in self.Meta.grouping_fields:
             self._disable_field(field_name)
 
-    def clean(self):
-        cleaned_data = super().clean()
-
-        if self.errors or self.instance.pk:
-            return cleaned_data
-
-        year = cleaned_data.get("year")
-        grouping_data = self._get_grouping_data(cleaned_data)
-
-        if self._plan_exists(year, grouping_data):
-            self._raise_validation_error(year, grouping_data)
-
-        return cleaned_data
-
     def _get_grouping_data(self, cleaned_data):
         return {
             f: cleaned_data.get(f)
@@ -158,31 +183,6 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
             errors_dict[field] = ""
 
         raise forms.ValidationError(errors_dict)
-
-    def save(self):
-        year = self.cleaned_data["year"]
-        journal = self.user.journal
-
-        # Extract the values of the unique grouping fields
-        grouping_data = {f: self.cleaned_data[f] for f in self.Meta.grouping_fields}
-        for month_idx, month_name in enumerate(monthnames(), start=1):
-            price = self.cleaned_data.get(month_name)
-
-            # Lookup criteria for this specific month row
-            lookup = {
-                "year": year,
-                "month": month_idx,
-                "journal": journal,
-                **grouping_data,
-            }
-
-            service = self.Meta.service_class(self.user)
-            if price is not None:
-                service.objects.update_or_create(**lookup, defaults={"price": price})
-            else:
-                service.objects.filter(**lookup).delete()
-
-        return self.instance
 
 
 # ----------------------------------------------------------------------------
@@ -320,6 +320,41 @@ class CopyPlanForm(forms.Form):
         self._set_initial()
         self._translations()
 
+    def clean(self):
+        cleaned_data = super().clean()
+        year_from = cleaned_data.get("year_from")
+        year_to = cleaned_data.get("year_to")
+
+        if self.errors or not year_from or not year_to:
+            return cleaned_data
+
+        checkboxes = self._get_cleaned_checkboxes(cleaned_data)
+        if not any(checkboxes.values()):
+            raise forms.ValidationError(_("At least one plan needs to be selected."))
+
+        self._validate_copy_data(checkboxes, year_from, year_to)
+
+        return cleaned_data
+
+    def save(self):
+        dict_ = self._get_cleaned_checkboxes(self.cleaned_data)
+        year_from = self.cleaned_data.get("year_from")
+        year_to = self.cleaned_data.get("year_to")
+
+        for k, v in dict_.items():
+            # Skip unselected checkboxes immediately
+            if not v:
+                continue
+
+            service = COPY_PLAN_MAP.get(k)(self.user)
+            source_rows = list(service.year(year_from))
+
+            # Iterate and copy
+            for obj in source_rows:
+                obj.pk = None
+                obj.year = year_to
+                obj.save()
+
     def _set_initial(self):
         current_year = timezone.now().year
 
@@ -354,22 +389,6 @@ class CopyPlanForm(forms.Form):
         else:
             errors[key] = [msg]
 
-    def clean(self):
-        cleaned_data = super().clean()
-        year_from = cleaned_data.get("year_from")
-        year_to = cleaned_data.get("year_to")
-
-        if self.errors or not year_from or not year_to:
-            return cleaned_data
-
-        checkboxes = self._get_cleaned_checkboxes(cleaned_data)
-        if not any(checkboxes.values()):
-            raise forms.ValidationError(_("At least one plan needs to be selected."))
-
-        self._validate_copy_data(checkboxes, year_from, year_to)
-
-        return cleaned_data
-
     def _validate_copy_data(self, checkboxes, year_from, year_to):
         errors = {}
         msg_empty = _("There is nothing to copy.")
@@ -389,22 +408,3 @@ class CopyPlanForm(forms.Form):
 
         if errors:
             raise forms.ValidationError(errors)
-
-    def save(self):
-        dict_ = self._get_cleaned_checkboxes(self.cleaned_data)
-        year_from = self.cleaned_data.get("year_from")
-        year_to = self.cleaned_data.get("year_to")
-
-        for k, v in dict_.items():
-            # Skip unselected checkboxes immediately
-            if not v:
-                continue
-
-            service = COPY_PLAN_MAP.get(k)(self.user)
-            source_rows = list(service.year(year_from))
-
-            # Iterate and copy
-            for obj in source_rows:
-                obj.pk = None
-                obj.year = year_to
-                obj.save()
