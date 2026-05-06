@@ -1,5 +1,6 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..core.lib.convert_price import PlanConvertPriceMixin, int_cents_to_float
@@ -118,43 +119,43 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
             return cleaned_data
 
         year = cleaned_data.get("year")
-        grouping_data = {
+        grouping_data = self._get_grouping_data(cleaned_data)
+
+        if self._plan_exists(year, grouping_data):
+            self._raise_validation_error(year, grouping_data)
+
+        return cleaned_data
+
+    def _get_grouping_data(self, cleaned_data):
+        return {
             f: cleaned_data.get(f)
             for f in self.Meta.grouping_fields
             if f in cleaned_data
         }
 
+    def _plan_exists(self, year, grouping_data):
         lookup = {"year": year, "journal": self.user.journal, **grouping_data}
         service = self.Meta.service_class(self.user)
+        return service.objects.filter(**lookup).exists()
 
-        if not service.objects.filter(**lookup).exists():
-            return cleaned_data
-
+    def _raise_validation_error(self, year, grouping_data):
         if not self.Meta.grouping_fields:
-            error_msg = _("Plan for %(year)s already exists.") % {
+            error_msg = _("Plan for %(year)s already exists.") % {"year": year}
+        else:
+            values_list = [str(v) for v in grouping_data.values() if v]
+            values_str = (
+                _(" and ").join(values_list)
+                if len(values_list) <= 2
+                else ", ".join(values_list)
+            )
+            error_msg = _("A plan for %(year)s with %(values)s already exists.") % {
                 "year": year,
+                "values": f"'{values_str}'" if values_str else _("these details"),
             }
-            raise forms.ValidationError({"__all__": error_msg, "year": ""})
 
-        values_list = [str(v) for v in grouping_data.values() if v]
-        values_str = (
-            _(" and ").join(values_list)
-            if len(values_list) <= 2
-            else ", ".join(values_list)
-        )
-
-        error_msg = _("A plan for %(year)s with %(values)s already exists.") % {
-            "year": year,
-            "values": f"'{values_str}'" if values_str else _("these details"),
-        }
-
-        # descriptive text to __all__ (form.non_field_errors)
-        errors_dict = {"__all__": error_msg}
-
-        # assign an empty string to the specific fields to trigger their CSS error state
+        errors_dict = {"__all__": error_msg, "year": ""}
         for field in self.Meta.grouping_fields:
             errors_dict[field] = ""
-        errors_dict["year"] = ""
 
         raise forms.ValidationError(errors_dict)
 
@@ -320,7 +321,7 @@ class CopyPlanForm(forms.Form):
         self._translations()
 
     def _set_initial(self):
-        current_year = datetime.now().year
+        current_year = timezone.now().year
 
         self.fields["year_from"].initial = current_year
         self.fields["year_to"].initial = current_year + 1
@@ -355,44 +356,39 @@ class CopyPlanForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-
         year_from = cleaned_data.get("year_from")
         year_to = cleaned_data.get("year_to")
 
-        # 1. Guard Clause: Bail out if native validation failed or years are missing
         if self.errors or not year_from or not year_to:
             return cleaned_data
 
-        dict_ = self._get_cleaned_checkboxes(cleaned_data)
-
-        # 2. Guard Clause: At least one checkbox must be selected
-        if not any(dict_.values()):
+        checkboxes = self._get_cleaned_checkboxes(cleaned_data)
+        if not any(checkboxes.values()):
             raise forms.ValidationError(_("At least one plan needs to be selected."))
 
-        # 3. Database Checks
+        self._validate_copy_data(checkboxes, year_from, year_to)
+
+        return cleaned_data
+
+    def _validate_copy_data(self, checkboxes, year_from, year_to):
         errors = {}
         msg_empty = _("There is nothing to copy.")
         msg_exists = _("%(year)s year already has plans.") % {"year": year_to}
 
-        for k, v in dict_.items():
-            # If the checkbox wasn't selected, skip to the next one
+        for k, v in checkboxes.items():
             if not v:
                 continue
 
             service = COPY_PLAN_MAP.get(k)(self.user)
 
-            # Check if "from" table is empty
             if not service.year(year_from).exists():
                 self._append_error_message(msg_empty, errors, k)
 
-            # Check if "to" table already has data
             if service.year(year_to).exists():
                 self._append_error_message(msg_exists, errors, k)
 
         if errors:
             raise forms.ValidationError(errors)
-
-        return cleaned_data
 
     def save(self):
         dict_ = self._get_cleaned_checkboxes(self.cleaned_data)
