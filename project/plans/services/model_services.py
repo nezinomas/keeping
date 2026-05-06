@@ -115,15 +115,23 @@ class PlanAggregatorService:
         self.user = user
 
     def get_monthly_plan_targets(self, year: int, month: int) -> dict:
+        targets = self._initialize_targets()
+
+        self._add_expense_plans(targets, year, month)
+        self._add_necessary_plans(targets, year, month)
+        self._add_saving_plans(targets, year, month)
+
+        return targets
+
+    def _initialize_targets(self) -> dict:
         expense_types = (
             ExpenseTypeModelService(self.user).items().values_list("title", flat=True)
         )
         targets = {title: 0 for title in expense_types}
-
-        # Pre-fill Savings
         targets["savings"] = 0
+        return targets
 
-        # 2. Get Expenses (Grouped & Summed)
+    def _add_expense_plans(self, targets: dict, year: int, month: int):
         expenses = (
             ExpensePlanModelService(self.user)
             .year(year)
@@ -132,10 +140,11 @@ class PlanAggregatorService:
             .annotate(total=Sum("price", default=0))
         )
         for row in expenses:
-            if row["type_title"] in targets:
-                targets[row["type_title"]] += row["total"]
+            if row["type_title"] not in targets:
+                continue
+            targets[row["type_title"]] += row["total"]
 
-        # 3. Get Necessary (Grouped & Summed)
+    def _add_necessary_plans(self, targets: dict, year: int, month: int):
         necessary = (
             NecessaryPlanModelService(self.user)
             .year(year)
@@ -144,17 +153,17 @@ class PlanAggregatorService:
             .annotate(total=Sum("price", default=0))
         )
         for row in necessary:
-            if row["type_title"] in targets:
-                targets[row["type_title"]] += row["total"]
+            if row["type_title"] not in targets:
+                continue
+            targets[row["type_title"]] += row["total"]
 
-        # 4. Get Savings
+    def _add_saving_plans(self, targets: dict, year: int, month: int):
         savings = (
             SavingPlanModelService(self.user)
             .year(year)
             .filter(month=month)
             .aggregate(total=Sum("price", default=0))
         )
-        if savings.get("total"):
-            targets["savings"] += savings["total"]
-
-        return targets
+        if not savings.get("total"):
+            return
+        targets["savings"] += savings["total"]
