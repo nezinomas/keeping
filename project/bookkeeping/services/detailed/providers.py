@@ -1,6 +1,9 @@
 from collections import defaultdict
 
-from ....expenses.services.model_services import ExpenseModelService
+from ....expenses.services.model_services import (
+    ExpenseModelService,
+    ExpenseTypeModelService,
+)
 from ....incomes.services.model_services import IncomeModelService
 from ....savings.services.model_services import SavingModelService
 from ....users.models import User
@@ -43,3 +46,10 @@ class DetailedDataProvider:
             .filter(expense_type__slug=category_slug)
         )
         return DetailedDto(data=list(qs))
+
+    def get_expense_type(self, category_slug: str):
+        return (
+            ExpenseTypeModelService(self.user)
+            .objects.filter(slug=category_slug)
+            .first()
+        )

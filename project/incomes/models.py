@@ -42,4 +42,4 @@ class Income(models.Model):
         ]
 
     def __str__(self):
-        return f"{(self.date)}: {self.income_type}"
+        return f"{self.date}: {self.income_type}"

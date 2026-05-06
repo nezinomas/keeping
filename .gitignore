@@ -10,6 +10,8 @@ project.pyproj*
 *.p
 
 # Distribution / packaging
+.agent/
+.cache/
 .Python
 env/
 build/

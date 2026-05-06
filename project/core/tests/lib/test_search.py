@@ -17,14 +17,14 @@ from ...lib import search
 
 def test_sanitize_search_str():
     _search = "~!@#$%^&*()_+-=[]{}|;:,./<>?\\ x1"
-    actual = search.sanitize_search_str(_search)
+    actual = search._sanitize_search_str(_search)
 
     assert actual == "_-. x1"
 
 
 def test_sanitize_search_str_empty():
     _search = None
-    actual = search.sanitize_search_str(_search)
+    actual = search._sanitize_search_str(_search)
 
     assert not actual
 
@@ -37,7 +37,7 @@ def test_sanitize_search_str_empty():
     ],
 )
 def test_get_from_dictionary(dictionary, key, default_value, expect):
-    assert search._get(dictionary, key, default_value) == expect
+    assert search._get_value(dictionary, key, default_value) == expect
 
 
 @pytest.mark.parametrize(
@@ -83,7 +83,7 @@ def test_get_from_dictionary(dictionary, key, default_value, expect):
     ],
 )
 def test_parse_search_with_args(_search, expect):
-    assert expect == search.parse_search_with_args(_search)
+    assert expect == search._parse_search_with_args(_search)
 
 
 @pytest.mark.parametrize(
@@ -151,7 +151,7 @@ def test_parse_search_with_args(_search, expect):
     ],
 )
 def test_parse_search_no_args(_search, expect):
-    assert expect == search.parse_search_no_args(_search)
+    assert expect == search._parse_search_no_args(_search)
 
 
 @pytest.mark.parametrize(
@@ -191,7 +191,7 @@ def test_parse_search_no_args(_search, expect):
     ],
 )
 def test_filter_short_search_words(search_dict, expect):
-    assert expect == search.filter_short_search_words(search_dict)
+    assert expect == search._filter_short_search_words(search_dict)
 
 
 # -------------------------------------------------------------------------------------

@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..core.lib.convert_price import PlanConvertPriceMixin, int_cents_to_float
@@ -61,57 +60,12 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        self._set_journal_field()
-        self._set_year_field_initial_value()
-        self._common_field_transalion()
+        self._setup_journal_field()
+        self._setup_year_field()
+        self._translate_common_fields()
 
-        self._map_month_price_values()
-        self._disable_fields()
-
-    def _common_field_transalion(self):
-        self.fields["year"].label = _("Years")
-
-        for key, val in month_names().items():
-            self.fields[key.lower()].label = val
-
-    def _set_journal_field(self):
-        self.fields["journal"].initial = self.user.journal
-        self.fields["journal"].disabled = True
-        self.fields["journal"].widget = forms.HiddenInput()
-
-    def _set_year_field_initial_value(self):
-        self.fields["year"].initial = set_date_with_user_year(self.user).year
-
-    def _map_month_price_values(self):
-        """Loads tall DB rows into the wide UI inputs."""
-        if not self.instance.pk:
-            return
-
-        filter_kwargs = {"year": self.instance.year, "journal": self.user.journal}
-        for field_name in self.Meta.grouping_fields:
-            filter_kwargs[field_name] = getattr(self.instance, field_name)
-
-        service = self.Meta.service_class(self.user)
-        rows = service.objects.filter(**filter_kwargs)
-
-        months = monthnames()
-        for row in rows:
-            month_name = months[row.month - 1]
-
-            self.initial[month_name] = int_cents_to_float(row.price)
-
-    def _disable_field(self, field_name):
-        self.fields[field_name].disabled = True
-        self.fields[field_name].widget.attrs["readonly"] = True
-
-    def _disable_fields(self):
-        if not self.instance.pk:
-            return
-
-        self._disable_field("year")
-
-        for field_name in self.Meta.grouping_fields:
-            self._disable_field(field_name)
+        self._load_month_prices()
+        self._set_grouping_fields_readonly()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -120,45 +74,12 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
             return cleaned_data
 
         year = cleaned_data.get("year")
-        grouping_data = {
-            f: cleaned_data.get(f)
-            for f in self.Meta.grouping_fields
-            if f in cleaned_data
-        }
+        grouping_data = self._extract_grouping_data(cleaned_data)
 
-        lookup = {"year": year, "journal": self.user.journal, **grouping_data}
-        service = self.Meta.service_class(self.user)
+        if self._does_plan_exist(year, grouping_data):
+            self._raise_duplicate_plan_error(year, grouping_data)
 
-        if not service.objects.filter(**lookup).exists():
-            return cleaned_data
-
-        if not self.Meta.grouping_fields:
-            error_msg = _("Plan for %(year)s already exists.") % {
-                "year": year,
-            }
-            raise forms.ValidationError({"__all__": error_msg, "year": ""})
-
-        values_list = [str(v) for v in grouping_data.values() if v]
-        values_str = (
-            _(" and ").join(values_list)
-            if len(values_list) <= 2
-            else ", ".join(values_list)
-        )
-
-        error_msg = _("A plan for %(year)s with %(values)s already exists.") % {
-            "year": year,
-            "values": f"'{values_str}'" if values_str else _("these details"),
-        }
-
-        # descriptive text to __all__ (form.non_field_errors)
-        errors_dict = {"__all__": error_msg}
-
-        # assign an empty string to the specific fields to trigger their CSS error state
-        for field in self.Meta.grouping_fields:
-            errors_dict[field] = ""
-        errors_dict["year"] = ""
-
-        raise forms.ValidationError(errors_dict)
+        return cleaned_data
 
     def save(self):
         year = self.cleaned_data["year"]
@@ -184,6 +105,84 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
                 service.objects.filter(**lookup).delete()
 
         return self.instance
+
+    def _translate_common_fields(self):
+        self.fields["year"].label = _("Years")
+
+        for key, val in month_names().items():
+            self.fields[key.lower()].label = val
+
+    def _setup_journal_field(self):
+        self.fields["journal"].initial = self.user.journal
+        self.fields["journal"].disabled = True
+        self.fields["journal"].widget = forms.HiddenInput()
+
+    def _setup_year_field(self):
+        self.fields["year"].initial = set_date_with_user_year(self.user).year
+
+    def _load_month_prices(self):
+        """Loads tall DB rows into the wide UI inputs."""
+        if not self.instance.pk:
+            return
+
+        filter_kwargs = {"year": self.instance.year, "journal": self.user.journal}
+        for field_name in self.Meta.grouping_fields:
+            filter_kwargs[field_name] = getattr(self.instance, field_name)
+
+        service = self.Meta.service_class(self.user)
+        rows = service.objects.filter(**filter_kwargs)
+
+        months = monthnames()
+        for row in rows:
+            month_name = months[row.month - 1]
+
+            self.initial[month_name] = int_cents_to_float(row.price)
+
+    def _set_field_readonly(self, field_name):
+        self.fields[field_name].disabled = True
+        self.fields[field_name].widget.attrs["readonly"] = True
+
+    def _set_grouping_fields_readonly(self):
+        if not self.instance.pk:
+            return
+
+        self._set_field_readonly("year")
+
+        for field_name in self.Meta.grouping_fields:
+            self._set_field_readonly(field_name)
+
+    def _extract_grouping_data(self, cleaned_data):
+        return {
+            f: cleaned_data.get(f)
+            for f in self.Meta.grouping_fields
+            if f in cleaned_data
+        }
+
+    def _does_plan_exist(self, year, grouping_data):
+        lookup = {"year": year, "journal": self.user.journal, **grouping_data}
+        service = self.Meta.service_class(self.user)
+        return service.objects.filter(**lookup).exists()
+
+    def _raise_duplicate_plan_error(self, year, grouping_data):
+        if not self.Meta.grouping_fields:
+            error_msg = _("Plan for %(year)s already exists.") % {"year": year}
+        else:
+            values_list = [str(v) for v in grouping_data.values() if v]
+            values_str = (
+                _(" and ").join(values_list)
+                if len(values_list) <= 2
+                else ", ".join(values_list)
+            )
+            error_msg = _("A plan for %(year)s with %(values)s already exists.") % {
+                "year": year,
+                "values": f"'{values_str}'" if values_str else _("these details"),
+            }
+
+        errors_dict = {"__all__": error_msg, "year": ""}
+        for field in self.Meta.grouping_fields:
+            errors_dict[field] = ""
+
+        raise forms.ValidationError(errors_dict)
 
 
 # ----------------------------------------------------------------------------
@@ -318,86 +317,27 @@ class CopyPlanForm(forms.Form):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        self._set_initial()
-        self._translations()
-
-    def _set_initial(self):
-        current_year = datetime.now().year
-
-        self.fields["year_from"].initial = current_year
-        self.fields["year_to"].initial = current_year + 1
-
-        for field in ["income", "expense", "saving", "day", "necessary"]:
-            self.fields[field].initial = True
-
-    def _translations(self):
-        self.fields["year_from"].label = _("Copy from")
-        self.fields["year_to"].label = _("Copy to")
-        self.fields["income"].label = _("Incomes plans")
-        self.fields["expense"].label = _("Expenses plans")
-        self.fields["saving"].label = _("Savings plans")
-        self.fields["day"].label = _("Day plans")
-        self.fields["necessary"].label = _("Plans for additional necessary expenses")
-
-    def _get_cleaned_checkboxes(self, cleaned_data):
-        return {
-            "income": cleaned_data.get("income"),
-            "expense": cleaned_data.get("expense"),
-            "saving": cleaned_data.get("saving"),
-            "day": cleaned_data.get("day"),
-            "necessary": cleaned_data.get("necessary"),
-        }
-
-    def _append_error_message(self, msg, errors, key):
-        if err := errors.get(key):
-            err.append(msg)
-            errors[key] = err
-        else:
-            errors[key] = [msg]
+        self._setup_initial_values()
+        self._translate_fields()
 
     def clean(self):
         cleaned_data = super().clean()
-
         year_from = cleaned_data.get("year_from")
         year_to = cleaned_data.get("year_to")
 
-        # 1. Guard Clause: Bail out if native validation failed or years are missing
         if self.errors or not year_from or not year_to:
             return cleaned_data
 
-        dict_ = self._get_cleaned_checkboxes(cleaned_data)
-
-        # 2. Guard Clause: At least one checkbox must be selected
-        if not any(dict_.values()):
+        checkboxes = self._extract_selected_checkboxes(cleaned_data)
+        if not any(checkboxes.values()):
             raise forms.ValidationError(_("At least one plan needs to be selected."))
 
-        # 3. Database Checks
-        errors = {}
-        msg_empty = _("There is nothing to copy.")
-        msg_exists = _("%(year)s year already has plans.") % {"year": year_to}
-
-        for k, v in dict_.items():
-            # If the checkbox wasn't selected, skip to the next one
-            if not v:
-                continue
-
-            service = COPY_PLAN_MAP.get(k)(self.user)
-
-            # Check if "from" table is empty
-            if not service.year(year_from).exists():
-                self._append_error_message(msg_empty, errors, k)
-
-            # Check if "to" table already has data
-            if service.year(year_to).exists():
-                self._append_error_message(msg_exists, errors, k)
-
-        if errors:
-            raise forms.ValidationError(errors)
+        self._validate_copy_operation(checkboxes, year_from, year_to)
 
         return cleaned_data
 
     def save(self):
-        dict_ = self._get_cleaned_checkboxes(self.cleaned_data)
+        dict_ = self._extract_selected_checkboxes(self.cleaned_data)
         year_from = self.cleaned_data.get("year_from")
         year_to = self.cleaned_data.get("year_to")
 
@@ -414,3 +354,57 @@ class CopyPlanForm(forms.Form):
                 obj.pk = None
                 obj.year = year_to
                 obj.save()
+
+    def _setup_initial_values(self):
+        current_year = timezone.now().year
+
+        self.fields["year_from"].initial = current_year
+        self.fields["year_to"].initial = current_year + 1
+
+        for field in ["income", "expense", "saving", "day", "necessary"]:
+            self.fields[field].initial = True
+
+    def _translate_fields(self):
+        self.fields["year_from"].label = _("Copy from")
+        self.fields["year_to"].label = _("Copy to")
+        self.fields["income"].label = _("Incomes plans")
+        self.fields["expense"].label = _("Expenses plans")
+        self.fields["saving"].label = _("Savings plans")
+        self.fields["day"].label = _("Day plans")
+        self.fields["necessary"].label = _("Plans for additional necessary expenses")
+
+    def _extract_selected_checkboxes(self, cleaned_data):
+        return {
+            "income": cleaned_data.get("income"),
+            "expense": cleaned_data.get("expense"),
+            "saving": cleaned_data.get("saving"),
+            "day": cleaned_data.get("day"),
+            "necessary": cleaned_data.get("necessary"),
+        }
+
+    def _add_error_message(self, msg, errors, key):
+        if err := errors.get(key):
+            err.append(msg)
+            errors[key] = err
+        else:
+            errors[key] = [msg]
+
+    def _validate_copy_operation(self, checkboxes, year_from, year_to):
+        errors = {}
+        msg_empty = _("There is nothing to copy.")
+        msg_exists = _("%(year)s year already has plans.") % {"year": year_to}
+
+        for k, v in checkboxes.items():
+            if not v:
+                continue
+
+            service = COPY_PLAN_MAP.get(k)(self.user)
+
+            if not service.year(year_from).exists():
+                self._add_error_message(msg_empty, errors, k)
+
+            if service.year(year_to).exists():
+                self._add_error_message(msg_exists, errors, k)
+
+        if errors:
+            raise forms.ValidationError(errors)

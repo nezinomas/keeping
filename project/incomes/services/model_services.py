@@ -44,7 +44,6 @@ class IncomeModelService(SumMixin, BaseModelService):
         return self.year_sum(qs)
 
     def sum_by_month(self, year: int, month: Optional[int] = None):
-
         return self.month_sum(self.objects, year, month).annotate(
             title=Value("incomes")
         )

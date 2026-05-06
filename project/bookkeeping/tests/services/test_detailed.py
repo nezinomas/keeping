@@ -6,7 +6,7 @@ from mock import MagicMock
 
 from ...services.detailed.builders import DetailedTableBuilder
 from ...services.detailed.dtos import DetailedDto
-from ...services.detailed.presenters import DetailedContextPresenter, load_service
+from ...services.detailed.presenters import build_context, load_service
 
 
 @pytest.fixture(name="data")
@@ -150,12 +150,12 @@ def test_detailed_table_builder_sorting(
 
 
 # -------------------------------------------------------------------------------------
-#                                                     DetailedContextPresenter Tests
+#                                                     build_context Tests
 # -------------------------------------------------------------------------------------
-def test_detailed_context_presenter_build_empty_data():
+def test_build_context_empty_data():
     mock_dto = MagicMock(data=[])
 
-    result = DetailedContextPresenter.build(
+    result = build_context(
         title="Test Title", url_title="test-title", dto=mock_dto, year=2026, order=""
     )
 
@@ -175,7 +175,7 @@ def test_load_service_income_category(mocker):
     mock_provider.return_value.get_incomes.return_value = mock_dto
 
     mock_build = mocker.patch(
-        "project.bookkeeping.services.detailed.presenters.DetailedContextPresenter.build"
+        "project.bookkeeping.services.detailed.presenters.build_context"
     )
     mock_build.return_value = {"mock": "context"}
 
@@ -195,7 +195,7 @@ def test_load_service_saving_category(mocker):
     mock_provider.return_value.get_savings.return_value = mock_dto
 
     mock_build = mocker.patch(
-        "project.bookkeeping.services.detailed.presenters.DetailedContextPresenter.build"
+        "project.bookkeeping.services.detailed.presenters.build_context"
     )
     mock_build.return_value = {"mock": "context"}
 
@@ -208,16 +208,10 @@ def test_load_service_saving_category(mocker):
 def test_load_service_unknown_category_not_found(mocker):
     user = MagicMock(year=2026)
 
-    mocker.patch(
+    mock_provider = mocker.patch(
         "project.bookkeeping.services.detailed.presenters.DetailedDataProvider"
     )
-
-    mock_expense_service = mocker.patch(
-        "project.bookkeeping.services.detailed.presenters.ExpenseTypeModelService"
-    )
-    mock_qs = MagicMock()
-    mock_qs.filter.return_value.first.return_value = None
-    mock_expense_service.return_value.objects = mock_qs
+    mock_provider.return_value.get_expense_type.return_value = None
 
     result = load_service(user, category="non_existent_slug")
 

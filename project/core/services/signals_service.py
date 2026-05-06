@@ -75,37 +75,30 @@ PENSIONS_CONF = {
 
 
 def sync_accounts(instance: models.Model, user: Optional[User] = None):
-    user = user or _get_user_from_instance(instance)
-    if not user:
-        return
-
-    get_data = GetData(user, ACCOUNTS_CONF)
-    data = Accounts(get_data)
-
-    BalanceSynchronizer(AccountBalanceModelService, user, data.df)
+    _sync_data(instance, user, ACCOUNTS_CONF, Accounts, AccountBalanceModelService)
 
 
 def sync_savings(instance: models.Model, user: Optional[User] = None):
-    user = user or _get_user_from_instance(instance)
-    if not user:
-        return
-
-    get_data = GetData(user, SAVINGS_CONF)
-    data = Savings(get_data)
-
-    BalanceSynchronizer(SavingBalanceModelService, user, data.df)
+    _sync_data(instance, user, SAVINGS_CONF, Savings, SavingBalanceModelService)
 
 
 def sync_pensions(instance: models.Model, user: Optional[User] = None):
-    user = user or _get_user_from_instance(instance)
+    _sync_data(instance, user, PENSIONS_CONF, Savings, PensionBalanceModelService)
 
+
+def _sync_data(
+    instance: models.Model,
+    user: Optional[User],
+    conf: dict,
+    signal_cls,
+    sync_model_service,
+):
+    user = user or _get_user_from_instance(instance)
     if not user:
         return
 
-    get_data = GetData(user, PENSIONS_CONF)
-    data = Savings(get_data)
-
-    BalanceSynchronizer(PensionBalanceModelService, user, data.df)
+    data = signal_cls(GetData(user, conf))
+    BalanceSynchronizer(sync_model_service, user, data.df)
 
 
 def _get_user_from_instance(instance: models.Model) -> Optional[User]:
