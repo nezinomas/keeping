@@ -74,6 +74,18 @@ PENSIONS_CONF = {
 }
 
 
+def sync_accounts(instance: models.Model, user: Optional[User] = None):
+    _sync_data(instance, user, ACCOUNTS_CONF, Accounts, AccountBalanceModelService)
+
+
+def sync_savings(instance: models.Model, user: Optional[User] = None):
+    _sync_data(instance, user, SAVINGS_CONF, Savings, SavingBalanceModelService)
+
+
+def sync_pensions(instance: models.Model, user: Optional[User] = None):
+    _sync_data(instance, user, PENSIONS_CONF, Savings, PensionBalanceModelService)
+
+
 def _sync_data(
     instance: models.Model,
     user: Optional[User],
@@ -87,18 +99,6 @@ def _sync_data(
 
     data = signal_cls(GetData(user, conf))
     BalanceSynchronizer(sync_model_service, user, data.df)
-
-
-def sync_accounts(instance: models.Model, user: Optional[User] = None):
-    _sync_data(instance, user, ACCOUNTS_CONF, Accounts, AccountBalanceModelService)
-
-
-def sync_savings(instance: models.Model, user: Optional[User] = None):
-    _sync_data(instance, user, SAVINGS_CONF, Savings, SavingBalanceModelService)
-
-
-def sync_pensions(instance: models.Model, user: Optional[User] = None):
-    _sync_data(instance, user, PENSIONS_CONF, Savings, PensionBalanceModelService)
 
 
 def _get_user_from_instance(instance: models.Model) -> Optional[User]:
