@@ -103,7 +103,6 @@ class SignalBase(ABC):
 
 
 class Accounts(SignalBase):
-
     def __init__(self, data: GetData):
         _df = self._make_df(it.chain(data.incomes, data.expenses))
         _hv = self._make_have(data.have)
