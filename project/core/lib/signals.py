@@ -1,35 +1,26 @@
 import itertools as it
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
 
 import polars as pl
 
 from ...users.models import User
 
 
-@dataclass
 class GetData:
-    user: User
-    conf: dict = field(default_factory=dict)
-    incomes: list[dict] = field(init=False, default_factory=list)
-    expenses: list[dict] = field(init=False, default_factory=list)
-    have: list[dict] = field(init=False, default_factory=list)
-    types: list[dict] = field(init=False, default_factory=list)
+    def __init__(self, user: User, conf: dict):
+        self.incomes = list(self._get_data(user, conf.get("incomes")))
+        self.expenses = list(self._get_data(user, conf.get("expenses")))
+        self.have = list(self._get_data(user, conf.get("have")))
+        self.types = list(self._get_data(user, conf.get("types")))
 
-    def __post_init__(self):
-        # Pass the tuple directly. No string method names needed!
-        self.incomes = list(self._get_data(self.conf.get("incomes")))
-        self.expenses = list(self._get_data(self.conf.get("expenses")))
-        self.have = list(self._get_data(self.conf.get("have")))
-        self.types = list(self._get_data(self.conf.get("types")))
-
-    def _get_data(self, sources: tuple):
+    @staticmethod
+    def _get_data(user: User, sources: tuple):
         if not sources:
             return
 
         for source_callable in sources:
             # Execute the lambda, passing the user.
-            if _qs := source_callable(self.user):
+            if _qs := source_callable(user):
                 yield from _qs
 
 
