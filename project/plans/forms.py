@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext as _
