@@ -1,5 +1,3 @@
-from typing import cast
-
 from django.db.models import F
 
 from ...core.mixins.sum import SumMixin

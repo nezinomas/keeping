@@ -28,14 +28,12 @@ class Drink(models.Model):
         get_latest_by = ["date"]
 
     def __str__(self):
-        options = DrinksOptions(self.user.drink_type)
-
         msg = f"{self.date}, {self.option}, "
         if self.option == "stdav":
             stdav = str(self.stdav)
         else:
-            _ = options.stdav_to_ml(stdav=self.stdav, drink_type=self.option)
-            stdav = f"{int(_)}ml"
+            ml = DrinksOptions(self.option).stdav_to_ml(self.stdav)
+            stdav = f"{int(ml)}ml"
 
         return msg + stdav
 
@@ -55,8 +53,7 @@ class DrinkTarget(models.Model):
     )
 
     def __str__(self):
-        obj = DrinksOptions(self.user.drink_type)
-        ml = obj.stdav_to_ml(drink_type=self.drink_type, stdav=self.quantity)
+        ml = DrinksOptions(self.drink_type).stdav_to_ml(self.quantity)
 
         return f"{self.year}: {ml}"
 
@@ -66,9 +63,8 @@ class DrinkTarget(models.Model):
 
     def save(self, *args, **kwargs):
         if self.drink_type != "stdav":
-            obj = DrinksOptions(self.user.drink_type)
-            self.quantity = obj.ml_to_stdav(
-                drink_type=self.drink_type, ml=self.quantity
+            self.quantity = DrinksOptions(self.drink_type).ml_to_stdav(
+                self.quantity
             )
 
         super().save(*args, **kwargs)

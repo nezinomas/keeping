@@ -1,5 +1,6 @@
 from .. import models
-from ..lib.drinks_stats import DrinksOptions, DrinkStats
+from ..lib.drinks_options import DrinksOptions
+from ..lib.drinks_stats import DrinkStats
 from ..services.model_services import DrinkModelService
 
 

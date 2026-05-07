@@ -206,10 +206,8 @@ class TargetUpdate(UpdateViewMixin):
             if obj.drink_type == "stdav":
                 return obj
 
-            # Todo: revisit this drink type from reqeust and from object
-            drink_type = self.request.user.drink_type
-            obj.quantity = DrinksOptions(drink_type).stdav_to_ml(
-                drink_type=obj.drink_type, stdav=obj.quantity
+            obj.quantity = DrinksOptions(obj.drink_type).stdav_to_ml(
+                obj.quantity
             )
 
         return obj

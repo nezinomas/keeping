@@ -1,52 +1,54 @@
+from dataclasses import dataclass
+
 from ...core.lib.date import ydays
 
 MAX_BOTTLES = 20
 
 
-class DrinksOptions:
-    ratios = {
-        "beer": {"stdav": 2.5, "ml": 500},  # 500ml -> 2.5 std_av
-        "wine": {"stdav": 8, "ml": 750},  # 750ml -> 8 std_av
-        "vodka": {"stdav": 40, "ml": 1000},  # 1000ml -> 40 std_av
-        "stdav": {"stdav": 1, "ml": 10},  # 10ml -> 1 std_av
-    }
+@dataclass(frozen=True)
+class DrinkRatio:
+    stdav: float
+    ml: float
 
+
+_DEFAULT_RATIO = DrinkRatio(stdav=1, ml=1)
+
+_RATIOS: dict[str, DrinkRatio] = {
+    "beer": DrinkRatio(stdav=2.5, ml=500),  # 500ml -> 2.5 std_av
+    "wine": DrinkRatio(stdav=8, ml=750),  # 750ml -> 8 std_av
+    "vodka": DrinkRatio(stdav=40, ml=1000),  # 1000ml -> 40 std_av
+    "stdav": DrinkRatio(stdav=1, ml=10),  # 10ml -> 1 std_av
+}
+
+
+class DrinksOptions:
     def __init__(self, drink_type: str):
         self.drink_type = drink_type
+        self._ratio = _RATIOS.get(drink_type, _DEFAULT_RATIO)
 
     @property
     def ratio(self) -> float:
-        node = self.get_node()
-        return 1 / node.get("stdav", 1)
+        return 1 / self._ratio.stdav
 
     @property
     def stdav(self) -> float:
-        return self.get_node().get("stdav", 1)
+        return self._ratio.stdav
 
     def convert(self, qty: float, drink_type: str) -> float:
-        stdav = qty * self.stdav
-        node = self.get_node(drink_type)
-        return stdav / node.get("stdav", 1)
+        target = _RATIOS.get(drink_type, _DEFAULT_RATIO)
+        return (qty * self._ratio.stdav) / target.stdav
 
-    def ml_to_stdav(self, ml: int | float, drink_type: str | None = None) -> float:
-        node = self.get_node(drink_type)
-        return (ml * node["stdav"]) / node["ml"] if node else ml
+    def ml_to_stdav(self, ml: int | float) -> float:
+        return (ml * self._ratio.stdav) / self._ratio.ml
 
-    def stdav_to_ml(self, stdav: float, drink_type: str | None = None) -> float:
-        node = self.get_node(drink_type)
-        return (stdav * node["ml"]) / node["stdav"] if node else stdav
+    def stdav_to_ml(self, stdav: float) -> float:
+        return (stdav * self._ratio.ml) / self._ratio.stdav
 
-    def stdav_to_alcohol(self, stdav: float) -> float:
+    @staticmethod
+    def stdav_to_alcohol(stdav: float) -> float:
         # one stdav = 10g pure alkohol (100%)
         return stdav * 0.01
 
     def stdav_to_bottles(self, year: int, max_stdav: float) -> float:
         days = ydays(year)
-        node = self.ratios.get(self.drink_type, {})
-        return (max_stdav * days) / node["stdav"] if node else max_stdav * days
-
-    def get_node(self, drink_type: str | None = None):
-        if not drink_type:
-            drink_type = self.drink_type
-
-        return self.ratios.get(drink_type, {})
+        return (max_stdav * days) / self._ratio.stdav
