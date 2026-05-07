@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 from datetime import date, datetime
+from typing import TYPE_CHECKING
 
 from django.utils.translation import gettext as _
 
 from ....core.lib.date import ydays
 from ....core.lib.translation import month_names
-from ...lib.drinks_options import DrinksOptions
 from ...lib.drinks_stats import DrinkStats
+
+if TYPE_CHECKING:
+    from ...lib.drinks_options import DrinksOptions
 
 
 class IndexBuilder:
@@ -67,16 +72,16 @@ class IndexBuilder:
     def tbl_alcohol(self) -> dict:
         stdav = self._quantity_of_year / self._options.ratio
 
-        return {"liters": DrinksOptions.stdav_to_alcohol(stdav)}
+        return {"liters": self._options.stdav_to_alcohol(stdav)}
 
     def tbl_std_av(self) -> dict:
-        return {"items": self._std_av(self._drink_stats.year, self._quantity_of_year)}
+        return {"items": self._build_conversion_rows(self._drink_stats.year, self._quantity_of_year)}
 
-    def _std_av(self, year: int, qty: float) -> list[dict]:
+    def _build_conversion_rows(self, year: int, qty: float) -> list[dict]:
         if not qty:
             return {}
 
-        (day, week, month) = self._dates(year)
+        (day, week, month) = self._get_period_counts(year)
 
         a = {
             "total": qty,
@@ -101,7 +106,7 @@ class IndexBuilder:
             {"title": "Std Av", **{k: v * self._options.stdav for k, v in a.items()}},
         ]
 
-    def _dates(self, year: int) -> tuple[int, int, int]:
+    def _get_period_counts(self, year: int) -> tuple[int, int, int]:
         now = datetime.now().date()
         year = year or now.year
 

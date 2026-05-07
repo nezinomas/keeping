@@ -53,7 +53,7 @@ def test_dry_days_no_records(main_user, drinks_options):
 def test_std_av(main_user, drinks_options):
     actual = IndexBuilder(
         options=drinks_options, drink_stats=DrinkStats(drinks_options)
-    )._std_av(2019, 273.5)
+    )._build_conversion_rows(2019, 273.5)
 
     expect = [
         {
@@ -100,7 +100,7 @@ def test_std_av(main_user, drinks_options):
 def test_std_av_past_recods(main_user, drinks_options):
     actual = IndexBuilder(
         options=drinks_options, drink_stats=DrinkStats(drinks_options)
-    )._std_av(1999, 273.5)
+    )._build_conversion_rows(1999, 273.5)
 
     expect = [
         {
