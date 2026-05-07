@@ -98,7 +98,7 @@ class IndexService:
     def tbl_alcohol(self) -> str:
         stdav = self._quantity_of_year / self._options.ratio
 
-        return {"liters": self._options.stdav_to_alcohol(stdav)}
+        return {"liters": DrinksOptions.stdav_to_alcohol(stdav)}
 
     def tbl_std_av(self) -> str:
         return {"items": self._std_av(self._drink_stats.year, self._quantity_of_year)}

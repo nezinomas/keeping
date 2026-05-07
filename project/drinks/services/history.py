@@ -47,14 +47,12 @@ class HistoryService:
         return df.group_by("year").agg(pl.col.qty.sum(), pl.col.stdav.sum())
 
     def _calc_stats(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        drink_type = self.options.drink_type
-
         return (
             df
             # calculate alcohol and ml
             .with_columns(
-                alcohol=self.options.stdav_to_alcohol(pl.col.stdav),
-                ml=self.options.stdav_to_ml(pl.col.stdav, drink_type),
+                alcohol=DrinksOptions.stdav_to_alcohol(pl.col.stdav),
+                ml=self.options.stdav_to_ml(pl.col.stdav),
             )
             # calculate per_day
             .with_columns(per_day=pl.col.ml / pl.col.days_in_year)

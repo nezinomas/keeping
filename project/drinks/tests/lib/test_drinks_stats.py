@@ -15,10 +15,9 @@ def fixture_drinks_options():
 
 
 @pytest.fixture(name="set_drink_type")
-def fixture_set_drink_type(drinks_options):
+def fixture_set_drink_type():
     def _set(drink_type):
-        drinks_options.drink_type = drink_type
-        return drinks_options
+        return DrinksOptions(drink_type)
 
     return _set
 
