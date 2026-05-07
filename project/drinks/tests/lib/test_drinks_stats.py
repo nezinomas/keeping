@@ -14,14 +14,6 @@ def fixture_drinks_options():
     return DrinksOptions("beer")
 
 
-@pytest.fixture(name="set_drink_type")
-def fixture_set_drink_type():
-    def _set(drink_type):
-        return DrinksOptions(drink_type)
-
-    return _set
-
-
 @pytest.mark.parametrize(
     "drink_type, stdav, qty, expect",
     [
@@ -32,39 +24,24 @@ def fixture_set_drink_type():
     ],
 )
 @time_machine.travel("1999-12-01")
-def test_qty_of_month(drink_type, stdav, qty, expect, set_drink_type):
+def test_qty_of_month(drink_type, stdav, qty, expect):
     data = [
         {"date": date(1999, 1, 1), "qty": qty, "stdav": stdav},
         {"date": date(1999, 2, 1), "qty": qty * 2, "stdav": stdav * 2},
     ]
 
-    options = set_drink_type(drink_type)
+    options = DrinksOptions(drink_type)
     obj = DrinkStats(options, data)
-    actual = obj.qty_of_month
 
-    assert actual == expect
+    assert obj.qty_of_month == expect
     assert obj.options.drink_type == drink_type
 
 
-@pytest.mark.parametrize(
-    "drink_type, expect",
-    [
-        ("beer", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ("wine", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ("vodka", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ("stdav", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-    ],
-)
 @time_machine.travel("1999-12-01")
-def test_qty_of_month_no_data(drink_type, expect, set_drink_type):
-    data = []
+def test_qty_of_month_no_data(drinks_options):
+    obj = DrinkStats(drinks_options, [])
 
-    options = set_drink_type(drink_type)
-    obj = DrinkStats(options, data)
-    actual = obj.qty_of_month
-
-    assert actual == expect
-    assert obj.options.drink_type == drink_type
+    assert obj.qty_of_month == [0.0] * 12
 
 
 @pytest.mark.parametrize(
@@ -92,35 +69,22 @@ def test_qty_of_month_no_data(drink_type, expect, set_drink_type):
     ],
 )
 @time_machine.travel("1999-12-01")
-def test_per_day_of_month(drink_type, qty, stdav, expect, set_drink_type):
+def test_per_day_of_month(drink_type, qty, stdav, expect):
     data = [
         {"date": date(1999, 1, 1), "qty": qty, "stdav": stdav},
         {"date": date(1999, 2, 1), "qty": qty * 2, "stdav": stdav * 2},
     ]
 
-    options = set_drink_type(drink_type)
-    actual = DrinkStats(options, data).per_day_of_month
+    actual = DrinkStats(DrinksOptions(drink_type), data).per_day_of_month
 
     assert pytest.approx(actual, 0.01) == expect
 
 
-@pytest.mark.parametrize(
-    "drink_type, expect",
-    [
-        ("beer", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ("wine", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ("vodka", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ("stdav", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-    ],
-)
 @time_machine.travel("1999-12-01")
-def test_per_day_of_month_no_data(drink_type, expect, set_drink_type):
-    data = []
+def test_per_day_of_month_no_data(drinks_options):
+    actual = DrinkStats(drinks_options, []).per_day_of_month
 
-    options = set_drink_type(drink_type)
-    actual = DrinkStats(options, data).per_day_of_month
-
-    assert actual == expect
+    assert actual == [0.0] * 12
 
 
 @time_machine.travel("1999-1-1")

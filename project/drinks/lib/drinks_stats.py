@@ -1,7 +1,6 @@
 import calendar
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Optional
 
 from ...core.lib.date import ydays
 from ..lib.drinks_options import DrinksOptions
@@ -13,13 +12,9 @@ class DataRow:
     qty: float
     stdav: float
 
-    def ml(self, options: DrinksOptions) -> float:
-        """Convert stdav to ml using options."""
-        return options.stdav_to_ml(self.stdav)
-
 
 class DrinkStats:
-    def __init__(self, options: DrinksOptions, data: Optional[list] = None):
+    def __init__(self, options: DrinksOptions, data: list | None = None):
         self.options = options
 
         self.year = None
@@ -33,14 +28,14 @@ class DrinkStats:
             return
 
         self.year = data[0]["date"].year
-        self.data = self.rows = [DataRow(**row) for row in data]
+        self.data = [DataRow(**row) for row in data]
         self._calc_month()
         self._calc_year()
 
     def _calc_month(self) -> None:
         for row in self.data:
             month_idx = row.date.month - 1
-            ml = row.ml(self.options)
+            ml = self.options.stdav_to_ml(row.stdav)
             month_len = calendar.monthrange(row.date.year, row.date.month)[1]
 
             self.per_month[month_idx] = ml
