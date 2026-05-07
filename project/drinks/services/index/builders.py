@@ -1,16 +1,11 @@
-from __future__ import annotations
-
 from datetime import date, datetime
-from typing import TYPE_CHECKING
 
 from django.utils.translation import gettext as _
 
 from ....core.lib.date import ydays
 from ....core.lib.translation import month_names
+from ...lib.drinks_options import DrinksOptions
 from ...lib.drinks_stats import DrinkStats
-
-if TYPE_CHECKING:
-    from ...lib.drinks_options import DrinksOptions
 
 
 class IndexBuilder:
