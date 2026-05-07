@@ -7,7 +7,7 @@ import time_machine
 from project.drinks.lib.drinks_stats import DrinkStats
 
 from ...lib.drinks_options import DrinksOptions
-from ...services import index as service
+from ...services.index.builders import IndexBuilder
 from ..factories import DrinkFactory
 
 pytestmark = pytest.mark.django_db
@@ -31,8 +31,8 @@ def fixture_drinks_options():
 def test_dry_days(past, current, expect, main_user, drinks_options):
     DrinkFactory()
 
-    actual = service.IndexService(
-        user=main_user,
+    actual = IndexBuilder(
+        options=drinks_options,
         drink_stats=DrinkStats(drinks_options),
         latest_past_date=past,
         latest_current_date=current,
@@ -42,8 +42,8 @@ def test_dry_days(past, current, expect, main_user, drinks_options):
 
 
 def test_dry_days_no_records(main_user, drinks_options):
-    actual = service.IndexService(
-        user=main_user, drink_stats=DrinkStats(drinks_options)
+    actual = IndexBuilder(
+        options=drinks_options, drink_stats=DrinkStats(drinks_options)
     ).tbl_dry_days()
 
     assert not actual
@@ -51,8 +51,8 @@ def test_dry_days_no_records(main_user, drinks_options):
 
 @time_machine.travel("2019-10-10")
 def test_std_av(main_user, drinks_options):
-    actual = service.IndexService(
-        user=main_user, drink_stats=DrinkStats(drinks_options)
+    actual = IndexBuilder(
+        options=drinks_options, drink_stats=DrinkStats(drinks_options)
     )._std_av(2019, 273.5)
 
     expect = [
@@ -98,8 +98,8 @@ def test_std_av(main_user, drinks_options):
 
 @time_machine.travel("2019-10-10")
 def test_std_av_past_recods(main_user, drinks_options):
-    actual = service.IndexService(
-        user=main_user, drink_stats=DrinkStats(drinks_options)
+    actual = IndexBuilder(
+        options=drinks_options, drink_stats=DrinkStats(drinks_options)
     )._std_av(1999, 273.5)
 
     expect = [
@@ -161,6 +161,8 @@ def test_tbl_alcohol(drink_type, qty, expect, main_user, drinks_options):
         per_day_of_year=0.0,
     )
 
-    actual = service.IndexService(user=main_user, drink_stats=stats).tbl_alcohol()
+    actual = IndexBuilder(
+        options=DrinksOptions(drink_type), drink_stats=stats
+    ).tbl_alcohol()
 
     assert actual["liters"] == expect
