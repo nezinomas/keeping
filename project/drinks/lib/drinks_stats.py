@@ -16,15 +16,15 @@ class DataRow:
 
 @dataclass(frozen=True)
 class MonthlyStatsDTO:
-    per_month: list[float]
-    per_day_of_month: list[float]
-    qty_of_month: list[float]
+    total_volume_ml: list[float]
+    avg_daily_volume_ml: list[float]
+    total_quantity: list[float]
 
 
 @dataclass(frozen=True)
 class YearlyStatsDTO:
-    per_day_of_year: float
-    qty_of_year: float
+    avg_daily_volume_ml: float
+    total_quantity: float
 
 
 class DrinkStats:
@@ -59,15 +59,15 @@ class DrinkStats:
                 per_day_of_month[i] = per_month[i] / month_len
 
         return MonthlyStatsDTO(
-            per_month=per_month,
-            per_day_of_month=per_day_of_month,
-            qty_of_month=qty_of_month,
+            total_volume_ml=per_month,
+            avg_daily_volume_ml=per_day_of_month,
+            total_quantity=qty_of_month,
         )
 
     @cached_property
     def yearly(self) -> YearlyStatsDTO:
         if not self.year or not self.data:
-            return YearlyStatsDTO(per_day_of_year=0.0, qty_of_year=0.0)
+            return YearlyStatsDTO(avg_daily_volume_ml=0.0, total_quantity=0.0)
 
         if self.year == self.today.year:
             day_of_year = self.today.timetuple().tm_yday
@@ -76,9 +76,9 @@ class DrinkStats:
             day_of_year = ydays(self.year)
             month_limit = 12
 
-        total_ml = sum(self.monthly.per_month[:month_limit])
+        total_ml = sum(self.monthly.total_volume_ml[:month_limit])
 
         return YearlyStatsDTO(
-            per_day_of_year=total_ml / day_of_year if day_of_year else 0.0,
-            qty_of_year=sum(self.monthly.qty_of_month),
+            avg_daily_volume_ml=total_ml / day_of_year if day_of_year else 0.0,
+            total_quantity=sum(self.monthly.total_quantity),
         )

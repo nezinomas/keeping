@@ -21,7 +21,7 @@ def several_years_consumption(user, years):
             continue
 
         converter = DrinkConverter(user.drink_type)
-        data = DrinkStats(converter, qs_drinks).monthly.per_day_of_month
+        data = DrinkStats(converter, qs_drinks).monthly.avg_daily_volume_ml
 
         serries.append({"name": y, "data": data})
 

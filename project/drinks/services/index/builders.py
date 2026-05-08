@@ -29,16 +29,16 @@ class IndexBuilder:
     def chart_quantity(self) -> dict:
         return {
             "categories": list(month_names().values()),
-            "data": self._drink_stats.monthly.qty_of_month,
+            "data": self._drink_stats.monthly.total_quantity,
             "text": {"quantity": _("Quantity")},
         }
 
     def chart_consumption(self) -> dict:
         return {
             "categories": list(month_names().values()),
-            "data": self._drink_stats.monthly.per_day_of_month,
+            "data": self._drink_stats.monthly.avg_daily_volume_ml,
             "target": self._target,
-            "avg": self._drink_stats.yearly.per_day_of_year,
+            "avg": self._drink_stats.yearly.avg_daily_volume_ml,
             "text": {
                 "limit": _("Limit"),
                 "alcohol": _("Alcohol consumption per day, milliliters"),
@@ -56,20 +56,20 @@ class IndexBuilder:
 
     def tbl_consumption(self) -> dict:
         return {
-            "qty": self._drink_stats.yearly.qty_of_year,
-            "avg": self._drink_stats.yearly.per_day_of_year,
+            "qty": self._drink_stats.yearly.total_quantity,
+            "avg": self._drink_stats.yearly.avg_daily_volume_ml,
             "target": self._target,
         }
 
     def tbl_alcohol(self) -> dict:
-        stdav = self._drink_stats.yearly.qty_of_year / self._converter.ratio
+        stdav = self._drink_stats.yearly.total_quantity / self._converter.ratio
 
         return {"liters": self._converter.stdav_to_alcohol(stdav)}
 
     def tbl_std_av(self) -> dict:
         return {
             "items": self._build_conversion_rows(
-                self._drink_stats.year, self._drink_stats.yearly.qty_of_year
+                self._drink_stats.year, self._drink_stats.yearly.total_quantity
             )
         }
 
