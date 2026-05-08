@@ -6,14 +6,14 @@ from django.utils.translation import gettext as _
 
 from ...users.models import User
 from .. import models
-from ..lib.drinks_options import DrinksOptions
+from ..lib.drinks_options import DrinkConverter
 from ..services.model_services import DrinkModelService
 
 
 class HistoryService:
     def __init__(self, user: User, data: list[dict]):
         self.df: pl.DataFrame = pl.DataFrame()
-        self.options: DrinksOptions = DrinksOptions(user.drink_type)
+        self.converter: DrinkConverter = DrinkConverter(user.drink_type)
 
         if data:
             if isinstance(data, QuerySet):
@@ -51,8 +51,8 @@ class HistoryService:
             df
             # calculate alcohol and ml
             .with_columns(
-                alcohol=DrinksOptions.stdav_to_alcohol(pl.col.stdav),
-                ml=self.options.stdav_to_ml(pl.col.stdav),
+                alcohol=DrinkConverter.stdav_to_alcohol(pl.col.stdav),
+                ml=self.converter.stdav_to_ml(pl.col.stdav),
             )
             # calculate per_day
             .with_columns(per_day=pl.col.ml / pl.col.days_in_year)

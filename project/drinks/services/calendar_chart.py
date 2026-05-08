@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.translation import weekday_names
 from ...counts.lib.stats import Stats as CountStats
-from ..lib.drinks_options import DrinksOptions
+from ..lib.drinks_options import DrinkConverter
 from ..services.model_services import DrinkModelService
 
 
@@ -30,7 +30,7 @@ class CalendarChart:
         return {
             "data": data,
             "categories": [x[0] for x in list(weekday_names().values())],
-            "ratio": DrinksOptions(self.drink_type).stdav,
+            "ratio": DrinkConverter(self.drink_type).stdav_per_unit,
             "text": {
                 "gap": _("Gap"),
                 "quantity": _("Quantity"),

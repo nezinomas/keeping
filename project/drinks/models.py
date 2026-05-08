@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _l
 
 from ..users.models import User
-from .lib.drinks_options import DrinksOptions
+from .lib.drinks_options import DrinkConverter
 
 
 class DrinkType(models.TextChoices):
@@ -32,7 +32,7 @@ class Drink(models.Model):
         if self.option == "stdav":
             stdav = str(self.stdav)
         else:
-            ml = DrinksOptions(self.option).stdav_to_ml(self.stdav)
+            ml = DrinkConverter(self.option).stdav_to_ml(self.stdav)
             stdav = f"{int(ml)}ml"
 
         return msg + stdav
@@ -53,7 +53,7 @@ class DrinkTarget(models.Model):
     )
 
     def __str__(self):
-        ml = DrinksOptions(self.drink_type).stdav_to_ml(self.quantity)
+        ml = DrinkConverter(self.drink_type).stdav_to_ml(self.quantity)
 
         return f"{self.year}: {ml}"
 
@@ -63,7 +63,7 @@ class DrinkTarget(models.Model):
 
     def save(self, *args, **kwargs):
         if self.drink_type != "stdav":
-            self.quantity = DrinksOptions(self.drink_type).ml_to_stdav(
+            self.quantity = DrinkConverter(self.drink_type).ml_to_stdav(
                 self.quantity
             )
 

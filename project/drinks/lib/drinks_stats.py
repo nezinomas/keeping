@@ -1,57 +1,87 @@
 import calendar
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
+from functools import cached_property
 
 from ...core.lib.date import ydays
-from ..lib.drinks_options import DrinksOptions
+from ..lib.drinks_options import DrinkConverter
 
 
-@dataclass
+@dataclass(frozen=True)
 class DataRow:
     date: date
     qty: float
     stdav: float
 
 
+@dataclass(frozen=True)
+class MonthlyStatsDTO:
+    total_volume_ml: list[float]
+    avg_daily_volume_ml: list[float]
+    total_quantity: list[float]
+
+
+@dataclass(frozen=True)
+class YearlyStatsDTO:
+    avg_daily_volume_ml: float
+    total_quantity: float
+
+
 class DrinkStats:
-    def __init__(self, options: DrinksOptions, data: list | None = None):
-        self.options = options
+    def __init__(
+        self,
+        converter: DrinkConverter,
+        data: list[dict] | None = None,
+        today: date | None = None,
+    ):
+        self.converter = converter
+        self.data = [DataRow(**row) for row in data] if data else []
+        self.year = self.data[0].date.year if self.data else 1974
 
-        self.year = None
-        self.per_month = [0.0] * 12
-        self.per_day_of_month = [0.0] * 12
-        self.per_day_of_year = 0.0
-        self.qty_of_month = [0.0] * 12
-        self.qty_of_year = 0.0
+        self.today = today or date.today()
 
-        if not data:
-            return
+    @cached_property
+    def monthly(self) -> MonthlyStatsDTO:
+        total_volume_ml = [0.0] * 12
+        total_quantity = [0.0] * 12
 
-        self.year = data[0]["date"].year
-        self.data = [DataRow(**row) for row in data]
-        self._calc_month()
-        self._calc_year()
-
-    def _calc_month(self) -> None:
+        # Aggregate totals
         for row in self.data:
             month_idx = row.date.month - 1
-            ml = self.options.stdav_to_ml(row.stdav)
-            month_len = calendar.monthrange(row.date.year, row.date.month)[1]
+            total_volume_ml[month_idx] += self.converter.stdav_to_ml(row.stdav)
+            total_quantity[month_idx] += row.qty
 
-            self.per_month[month_idx] = ml
-            self.per_day_of_month[month_idx] = ml / month_len
-            self.qty_of_month[month_idx] = row.qty
+        # Calculate daily averages
+        avg_daily_volume_ml = [
+            vol / calendar.monthrange(self.year, month_num)[1]
+            for month_num, vol in enumerate(total_volume_ml, start=1)
+        ]
 
-    def _calc_year(self) -> None:
-        today = datetime.now().date()
+        return MonthlyStatsDTO(
+            total_volume_ml=total_volume_ml,
+            avg_daily_volume_ml=avg_daily_volume_ml,
+            total_quantity=total_quantity,
+        )
 
-        if self.year == today.year:
-            day_of_year = today.timetuple().tm_yday
-            month_limit = today.month
+    @cached_property
+    def yearly(self) -> YearlyStatsDTO:
+        if not self.year or not self.data:
+            return YearlyStatsDTO(avg_daily_volume_ml=0.0, total_quantity=0.0)
+
+        # Determine the time boundaries (Current year vs Past year)
+        if self.year == self.today.year:
+            days_passed = self.today.timetuple().tm_yday
+            month_limit = self.today.month
         else:
-            day_of_year = ydays(self.year)
+            days_passed = ydays(self.year)
             month_limit = 12
 
-        total_ml = sum(self.per_month[:month_limit])
-        self.per_day_of_year = total_ml / day_of_year if day_of_year else 0.0
-        self.qty_of_year = sum(self.qty_of_month)
+        # Calculate totals and averages
+        total_volume_ml = sum(self.monthly.total_volume_ml[:month_limit])
+        total_quantity = sum(self.monthly.total_quantity)
+        avg_daily_volume_ml = total_volume_ml / days_passed if days_passed else 0.0
+
+        return YearlyStatsDTO(
+            avg_daily_volume_ml=avg_daily_volume_ml,
+            total_quantity=total_quantity,
+        )

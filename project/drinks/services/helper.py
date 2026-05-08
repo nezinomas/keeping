@@ -1,5 +1,5 @@
 from .. import models
-from ..lib.drinks_options import DrinksOptions
+from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DrinkStats
 from ..services.model_services import DrinkModelService
 
@@ -20,8 +20,8 @@ def several_years_consumption(user, years):
         if not qs_drinks.exists():
             continue
 
-        options = DrinksOptions(user.drink_type)
-        data = DrinkStats(options, qs_drinks).per_day_of_month
+        converter = DrinkConverter(user.drink_type)
+        data = DrinkStats(converter, qs_drinks).monthly.avg_daily_volume_ml
 
         serries.append({"name": y, "data": data})
 

@@ -6,36 +6,36 @@ MAX_BOTTLES = 20
 
 
 @dataclass(frozen=True)
-class DrinkRatio:
+class _DrinkRatio:
     stdav: float
     ml: float
 
 
-_DEFAULT_RATIO = DrinkRatio(stdav=1, ml=1)
-
-_RATIOS: dict[str, DrinkRatio] = {
-    "beer": DrinkRatio(stdav=2.5, ml=500),  # 500ml -> 2.5 std_av
-    "wine": DrinkRatio(stdav=8, ml=750),  # 750ml -> 8 std_av
-    "vodka": DrinkRatio(stdav=40, ml=1000),  # 1000ml -> 40 std_av
-    "stdav": DrinkRatio(stdav=1, ml=10),  # 10ml -> 1 std_av
+_DRINK_RATIOS: dict[str, _DrinkRatio] = {
+    "beer":  _DrinkRatio(stdav=2.5, ml=500),   # 500ml  -> 2.5 std_av
+    "wine":  _DrinkRatio(stdav=8,   ml=750),   # 750ml  -> 8   std_av
+    "vodka": _DrinkRatio(stdav=40,  ml=1000),  # 1000ml -> 40  std_av
+    "stdav": _DrinkRatio(stdav=1,   ml=10),    # 10ml   -> 1   std_av
 }
 
+_DEFAULT_RATIO = _DRINK_RATIOS["stdav"]
 
-class DrinksOptions:
+
+class DrinkConverter:
     def __init__(self, drink_type: str):
         self.drink_type = drink_type
-        self._ratio = _RATIOS.get(drink_type, _DEFAULT_RATIO)
+        self._ratio = _DRINK_RATIOS.get(drink_type, _DEFAULT_RATIO)
 
     @property
     def ratio(self) -> float:
         return 1 / self._ratio.stdav
 
     @property
-    def stdav(self) -> float:
+    def stdav_per_unit(self) -> float:
         return self._ratio.stdav
 
-    def convert(self, qty: float, drink_type: str) -> float:
-        target = _RATIOS.get(drink_type, _DEFAULT_RATIO)
+    def convert_qty(self, qty: float, to_type: str) -> float:
+        target = _DRINK_RATIOS.get(to_type, _DEFAULT_RATIO)
         return (qty * self._ratio.stdav) / target.stdav
 
     def ml_to_stdav(self, ml: int | float) -> float:
@@ -46,9 +46,9 @@ class DrinksOptions:
 
     @staticmethod
     def stdav_to_alcohol(stdav: float) -> float:
-        # one stdav = 10g pure alkohol (100%)
+        # one stdav = 10g pure alcohol (100%)
         return stdav * 0.01
 
-    def stdav_to_bottles(self, year: int, max_stdav: float) -> float:
+    def max_bottles_per_year(self, year: int, max_stdav: float) -> float:
         days = ydays(year)
         return (max_stdav * days) / self._ratio.stdav

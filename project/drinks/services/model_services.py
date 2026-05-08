@@ -3,7 +3,7 @@ from django.db.models import F
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
 from .. import models
-from ..lib.drinks_options import DrinksOptions
+from ..lib.drinks_options import DrinkConverter
 
 
 class DrinkModelService(SumMixin, BaseModelService):
@@ -26,7 +26,7 @@ class DrinkModelService(SumMixin, BaseModelService):
         DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
         """
 
-        ratio = DrinksOptions(self.user.drink_type).ratio
+        ratio = DrinkConverter(self.user.drink_type).ratio
 
         return (
             self.year_sum(
@@ -42,7 +42,7 @@ class DrinkModelService(SumMixin, BaseModelService):
         DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
         """
 
-        ratio = DrinksOptions(self.user.drink_type).ratio
+        ratio = DrinkConverter(self.user.drink_type).ratio
 
         return (
             self.month_sum(
@@ -62,7 +62,7 @@ class DrinkModelService(SumMixin, BaseModelService):
         DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
         """
 
-        ratio = DrinksOptions(self.user.drink_type).ratio
+        ratio = DrinkConverter(self.user.drink_type).ratio
 
         return (
             self.day_sum(
@@ -82,12 +82,12 @@ class DrinkTargetModelService(BaseModelService):
         return models.DrinkTarget.objects.select_related("user").filter(user=self.user)
 
     def year(self, year):
-        obj = DrinksOptions(self.user.drink_type)
+        obj = DrinkConverter(self.user.drink_type)
         return (
             self.objects.filter(year=year)
             .annotate(stdav=F("quantity"))
             .annotate(qty=obj.stdav_to_ml(stdav=F("stdav")))
-            .annotate(max_bottles=obj.stdav_to_bottles(year, F("stdav")))
+            .annotate(max_bottles=obj.max_bottles_per_year(year, F("stdav")))
         )
 
     def items(self):

@@ -189,7 +189,7 @@ def test_tab_index_drinked_date(client_logged):
     url = reverse("drinks:tab_index")
     response = client_logged.get(url)
 
-    assert date(1998, 1, 2) == response.context["tbl_dray_days"]["date"]
+    assert date(1998, 1, 2) == response.context["tbl_dray_days"].date
 
 
 @pytest.mark.parametrize(
@@ -212,7 +212,7 @@ def test_tab_index_chart_consumption_avg(
     response = client_logged.get(url)
     actual = response.context["chart_consumption"]
 
-    assert expect == round(actual["avg"])
+    assert expect == round(actual.avg)
 
 
 @pytest.mark.parametrize(
@@ -233,7 +233,7 @@ def test_tab_index_chart_consumption_limit(
 
     url = reverse("drinks:tab_index")
     response = client_logged.get(url)
-    actual = response.context["chart_consumption"]["target"]
+    actual = response.context["chart_consumption"].target
 
     assert expect == round(actual, 0)
 
