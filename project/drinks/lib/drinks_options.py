@@ -6,25 +6,25 @@ MAX_BOTTLES = 20
 
 
 @dataclass(frozen=True)
-class _Ratio:
+class _DrinkRatio:
     stdav: float
     ml: float
 
 
-_RATIOS: dict[str, _Ratio] = {
-    "beer":  _Ratio(stdav=2.5, ml=500),   # 500ml  -> 2.5 std_av
-    "wine":  _Ratio(stdav=8,   ml=750),   # 750ml  -> 8   std_av
-    "vodka": _Ratio(stdav=40,  ml=1000),  # 1000ml -> 40  std_av
-    "stdav": _Ratio(stdav=1,   ml=10),    # 10ml   -> 1   std_av
+_DRINK_RATIOS: dict[str, _DrinkRatio] = {
+    "beer":  _DrinkRatio(stdav=2.5, ml=500),   # 500ml  -> 2.5 std_av
+    "wine":  _DrinkRatio(stdav=8,   ml=750),   # 750ml  -> 8   std_av
+    "vodka": _DrinkRatio(stdav=40,  ml=1000),  # 1000ml -> 40  std_av
+    "stdav": _DrinkRatio(stdav=1,   ml=10),    # 10ml   -> 1   std_av
 }
 
-_DEFAULT = _RATIOS["stdav"]
+_DEFAULT_RATIO = _DRINK_RATIOS["stdav"]
 
 
 class DrinksOptions:
     def __init__(self, drink_type: str):
         self.drink_type = drink_type
-        self._ratio = _RATIOS.get(drink_type, _DEFAULT)
+        self._ratio = _DRINK_RATIOS.get(drink_type, _DEFAULT_RATIO)
 
     @property
     def ratio(self) -> float:
@@ -35,7 +35,7 @@ class DrinksOptions:
         return self._ratio.stdav
 
     def convert(self, qty: float, drink_type: str) -> float:
-        target = _RATIOS.get(drink_type, _DEFAULT)
+        target = _DRINK_RATIOS.get(drink_type, _DEFAULT_RATIO)
         return (qty * self._ratio.stdav) / target.stdav
 
     def ml_to_stdav(self, ml: int | float) -> float:
