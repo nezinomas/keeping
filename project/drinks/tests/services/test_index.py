@@ -7,7 +7,11 @@ import time_machine
 from project.drinks.lib.drinks_stats import DrinkStats
 
 from ...lib.drinks_options import DrinkConverter
-from ...services.index.builders import IndexBuilder
+from ...services.index.builders import (
+    ConversionRowViewModel,
+    DryDaysViewModel,
+    IndexBuilder,
+)
 from ..factories import DrinkFactory
 
 pytestmark = pytest.mark.django_db
@@ -21,10 +25,10 @@ def fixture_drink_converter():
 @pytest.mark.parametrize(
     "past, current, expect",
     [
-        (date(1998, 1, 1), None, {"date": date(1998, 1, 1), "delta": 367}),
-        (None, date(1999, 1, 1), {"date": date(1999, 1, 1), "delta": 2}),
-        (date(1998, 1, 1), date(1999, 1, 1), {"date": date(1999, 1, 1), "delta": 2}),
-        (None, None, {}),
+        (date(1998, 1, 1), None, DryDaysViewModel(date(1998, 1, 1), 367)),
+        (None, date(1999, 1, 1), DryDaysViewModel(date(1999, 1, 1), 2)),
+        (date(1998, 1, 1), date(1999, 1, 1), DryDaysViewModel(date(1999, 1, 1), 2)),
+        (None, None, DryDaysViewModel(None, 0)),
     ],
 )
 @time_machine.travel("1999-01-03")
@@ -46,7 +50,7 @@ def test_dry_days_no_records(main_user, drink_converter):
         converter=drink_converter, drink_stats=DrinkStats(drink_converter)
     ).tbl_dry_days()
 
-    assert not actual
+    assert actual == DryDaysViewModel(date=None, delta=0)
 
 
 @time_machine.travel("2019-10-10")
@@ -55,45 +59,31 @@ def test_std_av(main_user, drink_converter):
         converter=drink_converter, drink_stats=DrinkStats(drink_converter)
     )._build_conversion_rows(2019, 273.5)
 
-    expect = [
-        {
-            "title": "Alus, 0.5L",
-            "total": 273.5,
-            "per_day": 0.97,
-            "per_week": 6.67,
-            "per_month": 27.35,
-        },
-        {
-            "title": "Vynas, 0.75L",
-            "total": 85.47,
-            "per_day": 0.3,
-            "per_week": 2.08,
-            "per_month": 8.55,
-        },
-        {
-            "title": "Degtinė, 1L",
-            "total": 17.09,
-            "per_day": 0.06,
-            "per_week": 0.42,
-            "per_month": 1.71,
-        },
-        {
-            "title": "Std Av",
-            "total": 683.75,
-            "per_day": 2.42,
-            "per_week": 16.68,
-            "per_month": 68.38,
-        },
-    ]
-
     assert len(actual) == 4
 
-    for i, row in enumerate(actual):
-        for k, v in row.items():
-            if k == "title":
-                assert expect[i][k] == v
-            else:
-                assert expect[i][k] == round(v, 2)
+    assert actual[0].title == "Alus, 0.5L"
+    assert round(actual[0].total, 2) == 273.5
+    assert round(actual[0].per_day, 2) == 0.97
+    assert round(actual[0].per_week, 2) == 6.67
+    assert round(actual[0].per_month, 2) == 27.35
+
+    assert actual[1].title == "Vynas, 0.75L"
+    assert round(actual[1].total, 2) == 85.47
+    assert round(actual[1].per_day, 2) == 0.3
+    assert round(actual[1].per_week, 2) == 2.08
+    assert round(actual[1].per_month, 2) == 8.55
+
+    assert actual[2].title == "Degtinė, 1L"
+    assert round(actual[2].total, 2) == 17.09
+    assert round(actual[2].per_day, 2) == 0.06
+    assert round(actual[2].per_week, 2) == 0.42
+    assert round(actual[2].per_month, 2) == 1.71
+
+    assert actual[3].title == "Std Av"
+    assert round(actual[3].total, 2) == 683.75
+    assert round(actual[3].per_day, 2) == 2.42
+    assert round(actual[3].per_week, 2) == 16.68
+    assert round(actual[3].per_month, 2) == 68.38
 
 
 @time_machine.travel("2019-10-10")
@@ -102,45 +92,31 @@ def test_std_av_past_recods(main_user, drink_converter):
         converter=drink_converter, drink_stats=DrinkStats(drink_converter)
     )._build_conversion_rows(1999, 273.5)
 
-    expect = [
-        {
-            "title": "Alus, 0.5L",
-            "total": 273.5,
-            "per_day": 0.75,
-            "per_week": 5.26,
-            "per_month": 22.79,
-        },
-        {
-            "title": "Vynas, 0.75L",
-            "total": 85.47,
-            "per_day": 0.23,
-            "per_week": 1.64,
-            "per_month": 7.12,
-        },
-        {
-            "title": "Degtinė, 1L",
-            "total": 17.09,
-            "per_day": 0.05,
-            "per_week": 0.33,
-            "per_month": 1.42,
-        },
-        {
-            "title": "Std Av",
-            "total": 683.75,
-            "per_day": 1.87,
-            "per_week": 13.15,
-            "per_month": 56.98,
-        },
-    ]
-
     assert len(actual) == 4
 
-    for i, row in enumerate(actual):
-        for k, v in row.items():
-            if k == "title":
-                assert expect[i][k] == v
-            else:
-                assert expect[i][k] == round(v, 2)
+    assert actual[0].title == "Alus, 0.5L"
+    assert round(actual[0].total, 2) == 273.5
+    assert round(actual[0].per_day, 2) == 0.75
+    assert round(actual[0].per_week, 2) == 5.26
+    assert round(actual[0].per_month, 2) == 22.79
+
+    assert actual[1].title == "Vynas, 0.75L"
+    assert round(actual[1].total, 2) == 85.47
+    assert round(actual[1].per_day, 2) == 0.23
+    assert round(actual[1].per_week, 2) == 1.64
+    assert round(actual[1].per_month, 2) == 7.12
+
+    assert actual[2].title == "Degtinė, 1L"
+    assert round(actual[2].total, 2) == 17.09
+    assert round(actual[2].per_day, 2) == 0.05
+    assert round(actual[2].per_week, 2) == 0.33
+    assert round(actual[2].per_month, 2) == 1.42
+
+    assert actual[3].title == "Std Av"
+    assert round(actual[3].total, 2) == 683.75
+    assert round(actual[3].per_day, 2) == 1.87
+    assert round(actual[3].per_week, 2) == 13.15
+    assert round(actual[3].per_month, 2) == 56.98
 
 
 @pytest.mark.parametrize(
@@ -159,7 +135,8 @@ def test_tbl_alcohol(drink_type, qty, expect, main_user, drink_converter):
         year=1999,
         yearly=SimpleNamespace(
             total_quantity=qty,
-            avg_daily_volume_ml=0.0,
+            avg_daily_volume_ml
+            =0.0,
         ),
     )
 
@@ -167,4 +144,4 @@ def test_tbl_alcohol(drink_type, qty, expect, main_user, drink_converter):
         converter=DrinkConverter(drink_type), drink_stats=stats
     ).tbl_alcohol()
 
-    assert actual["liters"] == expect
+    assert actual.liters == expect
