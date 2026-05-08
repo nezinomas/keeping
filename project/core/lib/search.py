@@ -152,10 +152,10 @@ def _generic_search(query, search_str, category_list, date_field="date"):
         return query.none()
 
     query = _apply_date_filters(query, search_dict, date_field)
-    
+
     combined_filters = _build_category_filters(search_dict, category_list)
     combined_filters += _build_remark_filters(search_dict)
-    
+
     if combined_filters:
         operator_ = and_ if search_type == "with_args" else or_
         query = query.filter(reduce(operator_, combined_filters))

@@ -90,9 +90,11 @@ def test_targets_ignore_unknown_expense_types(main_user, mocker):
     ExpensePlanFactory(month=2, expense_type=t1, price=100)
     NecessaryPlanFactory(month=2, expense_type=t1, price=50)
 
-    mock_items = mocker.patch("project.plans.services.model_services.ExpenseTypeModelService.items")
+    mock_items = mocker.patch(
+        "project.plans.services.model_services.ExpenseTypeModelService.items"
+    )
     mock_items.return_value.values_list.return_value = []
-    
+
     actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
 
     expect = {"savings": 0}

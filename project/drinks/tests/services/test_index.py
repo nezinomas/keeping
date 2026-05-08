@@ -135,8 +135,7 @@ def test_tbl_alcohol(drink_type, qty, expect, main_user, drink_converter):
         year=1999,
         yearly=SimpleNamespace(
             total_quantity=qty,
-            avg_daily_volume_ml
-            =0.0,
+            avg_daily_volume_ml=0.0,
         ),
     )
 

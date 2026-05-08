@@ -12,10 +12,10 @@ class _DrinkRatio:
 
 
 _DRINK_RATIOS: dict[str, _DrinkRatio] = {
-    "beer":  _DrinkRatio(stdav=2.5, ml=500),   # 500ml  -> 2.5 std_av
-    "wine":  _DrinkRatio(stdav=8,   ml=750),   # 750ml  -> 8   std_av
-    "vodka": _DrinkRatio(stdav=40,  ml=1000),  # 1000ml -> 40  std_av
-    "stdav": _DrinkRatio(stdav=1,   ml=10),    # 10ml   -> 1   std_av
+    "beer": _DrinkRatio(stdav=2.5, ml=500),  # 500ml  -> 2.5 std_av
+    "wine": _DrinkRatio(stdav=8, ml=750),  # 750ml  -> 8   std_av
+    "vodka": _DrinkRatio(stdav=40, ml=1000),  # 1000ml -> 40  std_av
+    "stdav": _DrinkRatio(stdav=1, ml=10),  # 10ml   -> 1   std_av
 }
 
 _DEFAULT_RATIO = _DRINK_RATIOS["stdav"]

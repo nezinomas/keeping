@@ -63,8 +63,6 @@ class DrinkTarget(models.Model):
 
     def save(self, *args, **kwargs):
         if self.drink_type != "stdav":
-            self.quantity = DrinkConverter(self.drink_type).ml_to_stdav(
-                self.quantity
-            )
+            self.quantity = DrinkConverter(self.drink_type).ml_to_stdav(self.quantity)
 
         super().save(*args, **kwargs)

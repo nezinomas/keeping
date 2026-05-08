@@ -206,9 +206,7 @@ class TargetUpdate(UpdateViewMixin):
             if obj.drink_type == "stdav":
                 return obj
 
-            obj.quantity = DrinkConverter(obj.drink_type).stdav_to_ml(
-                obj.quantity
-            )
+            obj.quantity = DrinkConverter(obj.drink_type).stdav_to_ml(obj.quantity)
 
         return obj
 

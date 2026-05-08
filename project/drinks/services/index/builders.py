@@ -181,7 +181,7 @@ class IndexBuilder:
         per_month: float,
         drink_type: str,
     ) -> ConversionRowViewModel:
-        """Helper factory method to keep standard conversions clean and avoid **kwargs."""
+        """Helper factory method to keep standard conversions clean"""
         return ConversionRowViewModel(
             title=title,
             total=self._converter.convert_qty(total, drink_type),
