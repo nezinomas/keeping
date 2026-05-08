@@ -13,8 +13,8 @@ from ..factories import DrinkFactory
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture(name="drinks_options")
-def fixture_drinks_options():
+@pytest.fixture(name="drink_converter")
+def fixture_drink_converter():
     return DrinkConverter("beer")
 
 
@@ -28,12 +28,12 @@ def fixture_drinks_options():
     ],
 )
 @time_machine.travel("1999-01-03")
-def test_dry_days(past, current, expect, main_user, drinks_options):
+def test_dry_days(past, current, expect, main_user, drink_converter):
     DrinkFactory()
 
     actual = IndexBuilder(
-        options=drinks_options,
-        drink_stats=DrinkStats(drinks_options),
+        converter=drink_converter,
+        drink_stats=DrinkStats(drink_converter),
         latest_past_date=past,
         latest_current_date=current,
     ).tbl_dry_days()
@@ -41,18 +41,18 @@ def test_dry_days(past, current, expect, main_user, drinks_options):
     assert actual == expect
 
 
-def test_dry_days_no_records(main_user, drinks_options):
+def test_dry_days_no_records(main_user, drink_converter):
     actual = IndexBuilder(
-        options=drinks_options, drink_stats=DrinkStats(drinks_options)
+        converter=drink_converter, drink_stats=DrinkStats(drink_converter)
     ).tbl_dry_days()
 
     assert not actual
 
 
 @time_machine.travel("2019-10-10")
-def test_std_av(main_user, drinks_options):
+def test_std_av(main_user, drink_converter):
     actual = IndexBuilder(
-        options=drinks_options, drink_stats=DrinkStats(drinks_options)
+        converter=drink_converter, drink_stats=DrinkStats(drink_converter)
     )._build_conversion_rows(2019, 273.5)
 
     expect = [
@@ -97,9 +97,9 @@ def test_std_av(main_user, drinks_options):
 
 
 @time_machine.travel("2019-10-10")
-def test_std_av_past_recods(main_user, drinks_options):
+def test_std_av_past_recods(main_user, drink_converter):
     actual = IndexBuilder(
-        options=drinks_options, drink_stats=DrinkStats(drinks_options)
+        converter=drink_converter, drink_stats=DrinkStats(drink_converter)
     )._build_conversion_rows(1999, 273.5)
 
     expect = [
@@ -152,7 +152,7 @@ def test_std_av_past_recods(main_user, drinks_options):
         ("stdav", 10, 0.1),
     ],
 )
-def test_tbl_alcohol(drink_type, qty, expect, main_user, drinks_options):
+def test_tbl_alcohol(drink_type, qty, expect, main_user, drink_converter):
     main_user.drink_type = drink_type
 
     stats = SimpleNamespace(
@@ -162,7 +162,7 @@ def test_tbl_alcohol(drink_type, qty, expect, main_user, drinks_options):
     )
 
     actual = IndexBuilder(
-        options=DrinkConverter(drink_type), drink_stats=stats
+        converter=DrinkConverter(drink_type), drink_stats=stats
     ).tbl_alcohol()
 
     assert actual["liters"] == expect

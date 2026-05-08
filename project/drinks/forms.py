@@ -57,22 +57,22 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         if not self.instance.pk or self.instance.option == "stdav":
             return
 
-        options = DrinkConverter(self.instance.option)
+        converter = DrinkConverter(self.instance.option)
         if self.instance.converted_from_ml:
-            val = options.stdav_to_ml(self.instance.stdav)
+            val = converter.stdav_to_ml(self.instance.stdav)
         else:
-            val = self.instance.stdav * options.ratio
+            val = self.instance.stdav * converter.ratio
 
         self.initial["stdav"] = val
 
     def calculate_stdav_conversion(self, drink_type_input, stdav_input):
-        options = DrinkConverter(drink_type_input)
+        converter = DrinkConverter(drink_type_input)
 
         if stdav_input > MAX_BOTTLES:
-            stdav = options.ml_to_stdav(stdav_input)
+            stdav = converter.ml_to_stdav(stdav_input)
             converted = True
         else:
-            stdav = stdav_input / options.ratio
+            stdav = stdav_input / converter.ratio
             converted = False
 
         return stdav, converted

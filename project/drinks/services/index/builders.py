@@ -13,7 +13,7 @@ class IndexBuilder:
 
     def __init__(
         self,
-        options: DrinkConverter,
+        converter: DrinkConverter,
         drink_stats: DrinkStats,
         target: float = 0.0,
         latest_past_date: date | None = None,
@@ -27,7 +27,7 @@ class IndexBuilder:
         self._per_day_of_year = drink_stats.per_day_of_year
         self._quantity_of_year = drink_stats.qty_of_year
 
-        self._options = options
+        self._converter = converter
 
     def chart_quantity(self) -> dict:
         return {
@@ -65,9 +65,9 @@ class IndexBuilder:
         }
 
     def tbl_alcohol(self) -> dict:
-        stdav = self._quantity_of_year / self._options.ratio
+        stdav = self._quantity_of_year / self._converter.ratio
 
-        return {"liters": self._options.stdav_to_alcohol(stdav)}
+        return {"liters": self._converter.stdav_to_alcohol(stdav)}
 
     def tbl_std_av(self) -> dict:
         return {"items": self._build_conversion_rows(self._drink_stats.year, self._quantity_of_year)}
@@ -88,17 +88,17 @@ class IndexBuilder:
         return [
             {
                 "title": _("Beer") + ", 0.5L",
-                **{k: self._options.convert_qty(v, "beer") for k, v in a.items()},
+                **{k: self._converter.convert_qty(v, "beer") for k, v in a.items()},
             },
             {
                 "title": _("Wine") + ", 0.75L",
-                **{k: self._options.convert_qty(v, "wine") for k, v in a.items()},
+                **{k: self._converter.convert_qty(v, "wine") for k, v in a.items()},
             },
             {
                 "title": _("Vodka") + ", 1L",
-                **{k: self._options.convert_qty(v, "vodka") for k, v in a.items()},
+                **{k: self._converter.convert_qty(v, "vodka") for k, v in a.items()},
             },
-            {"title": "Std Av", **{k: v * self._options.stdav_per_unit for k, v in a.items()}},
+            {"title": "Std Av", **{k: v * self._converter.stdav_per_unit for k, v in a.items()}},
         ]
 
     def _get_period_counts(self, year: int) -> tuple[int, int, int]:

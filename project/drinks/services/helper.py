@@ -20,8 +20,8 @@ def several_years_consumption(user, years):
         if not qs_drinks.exists():
             continue
 
-        options = DrinkConverter(user.drink_type)
-        data = DrinkStats(options, qs_drinks).per_day_of_month
+        converter = DrinkConverter(user.drink_type)
+        data = DrinkStats(converter, qs_drinks).per_day_of_month
 
         serries.append({"name": y, "data": data})
 

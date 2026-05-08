@@ -8,11 +8,11 @@ from .providers import IndexDataProvider
 
 def load_service(user, year: int) -> dict:
     data = IndexDataProvider(user, year).get_data()
-    options = DrinkConverter(user.drink_type)
-    stats = DrinkStats(options, data.sum_by_month)
+    converter = DrinkConverter(user.drink_type)
+    stats = DrinkStats(converter, data.sum_by_month)
 
     builder = IndexBuilder(
-        options=options,
+        converter=converter,
         drink_stats=stats,
         target=data.target,
         latest_past_date=data.latest_past_date,

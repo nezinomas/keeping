@@ -14,8 +14,8 @@ class DataRow:
 
 
 class DrinkStats:
-    def __init__(self, options: DrinkConverter, data: list | None = None):
-        self.options = options
+    def __init__(self, converter: DrinkConverter, data: list | None = None):
+        self.converter = converter
 
         self.year = None
         self.per_month = [0.0] * 12
@@ -35,7 +35,7 @@ class DrinkStats:
     def _calc_month(self) -> None:
         for row in self.data:
             month_idx = row.date.month - 1
-            ml = self.options.stdav_to_ml(row.stdav)
+            ml = self.converter.stdav_to_ml(row.stdav)
             month_len = calendar.monthrange(row.date.year, row.date.month)[1]
 
             self.per_month[month_idx] = ml

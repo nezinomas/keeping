@@ -9,8 +9,8 @@ from ...lib.drinks_stats import DrinkStats
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture(name="drinks_options")
-def fixture_drinks_options():
+@pytest.fixture(name="drink_converter")
+def fixture_drink_converter():
     return DrinkConverter("beer")
 
 
@@ -30,16 +30,16 @@ def test_qty_of_month(drink_type, stdav, qty, expect):
         {"date": date(1999, 2, 1), "qty": qty * 2, "stdav": stdav * 2},
     ]
 
-    options = DrinkConverter(drink_type)
-    obj = DrinkStats(options, data)
+    converter = DrinkConverter(drink_type)
+    obj = DrinkStats(converter, data)
 
     assert obj.qty_of_month == expect
-    assert obj.options.drink_type == drink_type
+    assert obj.converter.drink_type == drink_type
 
 
 @time_machine.travel("1999-12-01")
-def test_qty_of_month_no_data(drinks_options):
-    obj = DrinkStats(drinks_options, [])
+def test_qty_of_month_no_data(drink_converter):
+    obj = DrinkStats(drink_converter, [])
 
     assert obj.qty_of_month == [0.0] * 12
 
@@ -81,32 +81,32 @@ def test_per_day_of_month(drink_type, qty, stdav, expect):
 
 
 @time_machine.travel("1999-12-01")
-def test_per_day_of_month_no_data(drinks_options):
-    actual = DrinkStats(drinks_options, []).per_day_of_month
+def test_per_day_of_month_no_data(drink_converter):
+    actual = DrinkStats(drink_converter, []).per_day_of_month
 
     assert actual == [0.0] * 12
 
 
 @time_machine.travel("1999-1-1")
-def test_qty_of_year(drinks_options):
+def test_qty_of_year(drink_converter):
     data = [
         {"date": date(1999, 1, 1), "qty": 1, "stdav": 2.5},
         {"date": date(1999, 2, 1), "qty": 1, "stdav": 2.5},
     ]
 
-    actual = DrinkStats(drinks_options, data).qty_of_year
+    actual = DrinkStats(drink_converter, data).qty_of_year
 
     assert actual == 2.0
 
 
 @time_machine.travel("1999-1-1")
-def test_per_month(drinks_options):
+def test_per_month(drink_converter):
     data = [
         {"date": date(1999, 1, 1), "qty": 1, "stdav": 2.5},
         {"date": date(1999, 2, 1), "qty": 2, "stdav": 5.0},
     ]
 
-    actual = DrinkStats(drinks_options, data).per_month
+    actual = DrinkStats(drink_converter, data).per_month
 
     assert actual == [500.0, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
@@ -121,13 +121,13 @@ def test_per_month(drinks_options):
         ("2000-1-1", 2.74),
     ],
 )
-def test_per_day_of_year(dt, expect, drinks_options):
+def test_per_day_of_year(dt, expect, drink_converter):
     with time_machine.travel(dt):
         data = [
             {"date": date(1999, 1, 1), "qty": 1, "stdav": 2.5},
             {"date": date(1999, 2, 1), "qty": 1, "stdav": 2.5},
         ]
 
-        actual = DrinkStats(drinks_options, data).per_day_of_year
+        actual = DrinkStats(drink_converter, data).per_day_of_year
 
         assert round(actual, 2) == expect
