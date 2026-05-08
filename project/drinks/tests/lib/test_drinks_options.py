@@ -98,7 +98,7 @@ def test_convert_qty(qty, from_, to, expect):
         ("stdav", 1, 0.01),
     ],
 )
-def test_stdav_to_alkohol(drink_type, stdav, expect):
+def test_stdav_to_alcohol(drink_type, stdav, expect):
     actual = DrinkConverter(drink_type).stdav_to_alcohol(stdav)
 
     assert actual == expect

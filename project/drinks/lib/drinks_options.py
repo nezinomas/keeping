@@ -46,7 +46,7 @@ class DrinkConverter:
 
     @staticmethod
     def stdav_to_alcohol(stdav: float) -> float:
-        # one stdav = 10g pure alkohol (100%)
+        # one stdav = 10g pure alcohol (100%)
         return stdav * 0.01
 
     def max_bottles_per_year(self, year: int, max_stdav: float) -> float:
