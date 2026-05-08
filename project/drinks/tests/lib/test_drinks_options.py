@@ -26,7 +26,7 @@ def test_ratio(drink_type, expect):
         ("wine", 750, 8),
         ("vodka", 1000, 40),
         ("stdav", 10, 1),
-        ("xxx", 500, 500),
+        ("xxx", 500, 50.0),
     ],
 )
 def test_ml_to_stdav(drink_type, ml, expect):
