@@ -42,26 +42,32 @@ class DrinkStats:
 
     @cached_property
     def monthly(self) -> MonthlyStatsDTO:
-        per_month = [0.0] * 12
-        per_day_of_month = [0.0] * 12
-        qty_of_month = [0.0] * 12
+        total_volume_ml = [0.0] * 12
+        avg_daily_volume_ml = [0.0] * 12
+        total_quantity = [0.0] * 12
 
+        if not self.year:
+            return MonthlyStatsDTO(
+                total_volume_ml=total_volume_ml,
+                avg_daily_volume_ml=avg_daily_volume_ml,
+                total_quantity=total_quantity,
+            )
+
+        # Aggregate totals
         for row in self.data:
             month_idx = row.date.month - 1
-            ml = self.converter.stdav_to_ml(row.stdav)
+            total_volume_ml[month_idx] += self.converter.stdav_to_ml(row.stdav)
+            total_quantity[month_idx] += row.qty
 
-            per_month[month_idx] += ml
-            qty_of_month[month_idx] += row.qty
-
-        if self.year:
-            for i in range(12):
-                month_len = calendar.monthrange(self.year, i + 1)[1]
-                per_day_of_month[i] = per_month[i] / month_len
+        # Calculate daily averages
+        for i in range(12):
+            month_len = calendar.monthrange(self.year, i + 1)[1]
+            avg_daily_volume_ml[i] = total_volume_ml[i] / month_len
 
         return MonthlyStatsDTO(
-            total_volume_ml=per_month,
-            avg_daily_volume_ml=per_day_of_month,
-            total_quantity=qty_of_month,
+            total_volume_ml=total_volume_ml,
+            avg_daily_volume_ml=avg_daily_volume_ml,
+            total_quantity=total_quantity,
         )
 
     @cached_property
@@ -69,16 +75,21 @@ class DrinkStats:
         if not self.year or not self.data:
             return YearlyStatsDTO(avg_daily_volume_ml=0.0, total_quantity=0.0)
 
+        # Determine the time boundaries (Current year vs Past year)
         if self.year == self.today.year:
-            day_of_year = self.today.timetuple().tm_yday
+            days_passed = self.today.timetuple().tm_yday
             month_limit = self.today.month
         else:
-            day_of_year = ydays(self.year)
+            days_passed = ydays(self.year)
             month_limit = 12
 
-        total_ml = sum(self.monthly.total_volume_ml[:month_limit])
+        # Calculate the explicitly named totals
+        total_volume_ml = sum(self.monthly.total_volume_ml[:month_limit])
+
+        avg_daily_volume_ml = total_volume_ml / days_passed if days_passed else 0.0
+        total_quantity = sum(self.monthly.total_quantity)
 
         return YearlyStatsDTO(
-            avg_daily_volume_ml=total_ml / day_of_year if day_of_year else 0.0,
-            total_quantity=sum(self.monthly.total_quantity),
+            avg_daily_volume_ml=avg_daily_volume_ml,
+            total_quantity=total_quantity,
         )
