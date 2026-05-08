@@ -36,19 +36,12 @@ class DrinkStats:
     ):
         self.converter = converter
         self.data = [DataRow(**row) for row in data] if data else []
-        self.year = self.data[0].date.year if self.data else None
+        self.year = self.data[0].date.year if self.data else 1974
 
         self.today = today or date.today()
 
     @cached_property
     def monthly(self) -> MonthlyStatsDTO:
-        if not self.year:
-            return MonthlyStatsDTO(
-                total_volume_ml=[0.0] * 12,
-                avg_daily_volume_ml=[0.0] * 12,
-                total_quantity=[0.0] * 12,
-            )
-
         total_volume_ml = [0.0] * 12
         total_quantity = [0.0] * 12
 

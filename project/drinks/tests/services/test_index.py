@@ -145,3 +145,11 @@ def test_tbl_alcohol(drink_type, qty, expect, main_user, drink_converter):
     ).tbl_alcohol()
 
     assert actual.liters == expect
+
+
+def test_dry_days_view_model_has_data():
+    model_with_data = DryDaysViewModel(date=date(2026, 5, 8), delta=10)
+    assert model_with_data.has_data is True
+
+    empty_model = DryDaysViewModel()
+    assert empty_model.has_data is False
