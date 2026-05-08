@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 import time_machine
 
-from ...lib.drinks_options import DrinksOptions
+from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DrinkStats
 
 pytestmark = pytest.mark.django_db
@@ -11,7 +11,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(name="drinks_options")
 def fixture_drinks_options():
-    return DrinksOptions("beer")
+    return DrinkConverter("beer")
 
 
 @pytest.mark.parametrize(
@@ -30,7 +30,7 @@ def test_qty_of_month(drink_type, stdav, qty, expect):
         {"date": date(1999, 2, 1), "qty": qty * 2, "stdav": stdav * 2},
     ]
 
-    options = DrinksOptions(drink_type)
+    options = DrinkConverter(drink_type)
     obj = DrinkStats(options, data)
 
     assert obj.qty_of_month == expect
@@ -75,7 +75,7 @@ def test_per_day_of_month(drink_type, qty, stdav, expect):
         {"date": date(1999, 2, 1), "qty": qty * 2, "stdav": stdav * 2},
     ]
 
-    actual = DrinkStats(DrinksOptions(drink_type), data).per_day_of_month
+    actual = DrinkStats(DrinkConverter(drink_type), data).per_day_of_month
 
     assert pytest.approx(actual, 0.01) == expect
 

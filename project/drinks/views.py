@@ -17,7 +17,7 @@ from ..core.mixins.views import (
 )
 from ..users.models import User
 from . import forms, models, services
-from .lib.drinks_options import DrinksOptions
+from .lib.drinks_options import DrinkConverter
 from .services.model_services import DrinkModelService, DrinkTargetModelService
 
 
@@ -206,7 +206,7 @@ class TargetUpdate(UpdateViewMixin):
             if obj.drink_type == "stdav":
                 return obj
 
-            obj.quantity = DrinksOptions(obj.drink_type).stdav_to_ml(
+            obj.quantity = DrinkConverter(obj.drink_type).stdav_to_ml(
                 obj.quantity
             )
 

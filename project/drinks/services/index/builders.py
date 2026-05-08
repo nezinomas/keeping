@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 
 from ....core.lib.date import ydays
 from ....core.lib.translation import month_names
-from ...lib.drinks_options import DrinksOptions
+from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DrinkStats
 
 
@@ -13,7 +13,7 @@ class IndexBuilder:
 
     def __init__(
         self,
-        options: DrinksOptions,
+        options: DrinkConverter,
         drink_stats: DrinkStats,
         target: float = 0.0,
         latest_past_date: date | None = None,
@@ -88,17 +88,17 @@ class IndexBuilder:
         return [
             {
                 "title": _("Beer") + ", 0.5L",
-                **{k: self._options.convert(v, "beer") for k, v in a.items()},
+                **{k: self._options.convert_qty(v, "beer") for k, v in a.items()},
             },
             {
                 "title": _("Wine") + ", 0.75L",
-                **{k: self._options.convert(v, "wine") for k, v in a.items()},
+                **{k: self._options.convert_qty(v, "wine") for k, v in a.items()},
             },
             {
                 "title": _("Vodka") + ", 1L",
-                **{k: self._options.convert(v, "vodka") for k, v in a.items()},
+                **{k: self._options.convert_qty(v, "vodka") for k, v in a.items()},
             },
-            {"title": "Std Av", **{k: v * self._options.stdav for k, v in a.items()}},
+            {"title": "Std Av", **{k: v * self._options.stdav_per_unit for k, v in a.items()}},
         ]
 
     def _get_period_counts(self, year: int) -> tuple[int, int, int]:

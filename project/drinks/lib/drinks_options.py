@@ -21,7 +21,7 @@ _DRINK_RATIOS: dict[str, _DrinkRatio] = {
 _DEFAULT_RATIO = _DRINK_RATIOS["stdav"]
 
 
-class DrinksOptions:
+class DrinkConverter:
     def __init__(self, drink_type: str):
         self.drink_type = drink_type
         self._ratio = _DRINK_RATIOS.get(drink_type, _DEFAULT_RATIO)
@@ -31,11 +31,11 @@ class DrinksOptions:
         return 1 / self._ratio.stdav
 
     @property
-    def stdav(self) -> float:
+    def stdav_per_unit(self) -> float:
         return self._ratio.stdav
 
-    def convert(self, qty: float, drink_type: str) -> float:
-        target = _DRINK_RATIOS.get(drink_type, _DEFAULT_RATIO)
+    def convert_qty(self, qty: float, to_type: str) -> float:
+        target = _DRINK_RATIOS.get(to_type, _DEFAULT_RATIO)
         return (qty * self._ratio.stdav) / target.stdav
 
     def ml_to_stdav(self, ml: int | float) -> float:
@@ -49,6 +49,6 @@ class DrinksOptions:
         # one stdav = 10g pure alkohol (100%)
         return stdav * 0.01
 
-    def stdav_to_bottles(self, year: int, max_stdav: float) -> float:
+    def max_bottles_per_year(self, year: int, max_stdav: float) -> float:
         days = ydays(year)
         return (max_stdav * days) / self._ratio.stdav

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 from ...core.lib.date import ydays
-from ..lib.drinks_options import DrinksOptions
+from ..lib.drinks_options import DrinkConverter
 
 
 @dataclass
@@ -14,7 +14,7 @@ class DataRow:
 
 
 class DrinkStats:
-    def __init__(self, options: DrinksOptions, data: list | None = None):
+    def __init__(self, options: DrinkConverter, data: list | None = None):
         self.options = options
 
         self.year = None

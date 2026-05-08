@@ -10,7 +10,7 @@ from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
-from .lib.drinks_options import MAX_BOTTLES, DrinksOptions
+from .lib.drinks_options import MAX_BOTTLES, DrinkConverter
 from .models import Drink, DrinkTarget
 from .services.model_services import DrinkModelService, DrinkTargetModelService
 
@@ -57,7 +57,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         if not self.instance.pk or self.instance.option == "stdav":
             return
 
-        options = DrinksOptions(self.instance.option)
+        options = DrinkConverter(self.instance.option)
         if self.instance.converted_from_ml:
             val = options.stdav_to_ml(self.instance.stdav)
         else:
@@ -66,7 +66,7 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.initial["stdav"] = val
 
     def calculate_stdav_conversion(self, drink_type_input, stdav_input):
-        options = DrinksOptions(drink_type_input)
+        options = DrinkConverter(drink_type_input)
 
         if stdav_input > MAX_BOTTLES:
             stdav = options.ml_to_stdav(stdav_input)

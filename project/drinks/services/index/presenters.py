@@ -1,5 +1,5 @@
 from ....core.lib.date import years
-from ...lib.drinks_options import DrinksOptions
+from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DrinkStats
 from ..calendar_chart import CalendarChart
 from .builders import IndexBuilder
@@ -8,7 +8,7 @@ from .providers import IndexDataProvider
 
 def load_service(user, year: int) -> dict:
     data = IndexDataProvider(user, year).get_data()
-    options = DrinksOptions(user.drink_type)
+    options = DrinkConverter(user.drink_type)
     stats = DrinkStats(options, data.sum_by_month)
 
     builder = IndexBuilder(

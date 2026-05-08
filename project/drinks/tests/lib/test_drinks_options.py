@@ -1,6 +1,6 @@
 import pytest
 
-from ...lib.drinks_options import DrinksOptions
+from ...lib.drinks_options import DrinkConverter
 
 
 @pytest.mark.parametrize(
@@ -14,7 +14,7 @@ from ...lib.drinks_options import DrinksOptions
     ],
 )
 def test_ratio(drink_type, expect):
-    actual = DrinksOptions(drink_type).ratio
+    actual = DrinkConverter(drink_type).ratio
 
     assert actual == expect
 
@@ -30,7 +30,7 @@ def test_ratio(drink_type, expect):
     ],
 )
 def test_ml_to_stdav(drink_type, ml, expect):
-    actual = DrinksOptions(drink_type).ml_to_stdav(ml)
+    actual = DrinkConverter(drink_type).ml_to_stdav(ml)
 
     assert actual == expect
 
@@ -45,7 +45,7 @@ def test_ml_to_stdav(drink_type, ml, expect):
     ],
 )
 def test_stdav_to_ml(drink_type, stdav, expect):
-    actual = DrinksOptions(drink_type).stdav_to_ml(stdav)
+    actual = DrinkConverter(drink_type).stdav_to_ml(stdav)
 
     assert actual == expect
 
@@ -60,8 +60,8 @@ def test_stdav_to_ml(drink_type, stdav, expect):
         ("xxx", 1),
     ],
 )
-def test_stdav(drink_type, expect):
-    actual = DrinksOptions(drink_type).stdav
+def test_stdav_per_unit(drink_type, expect):
+    actual = DrinkConverter(drink_type).stdav_per_unit
 
     assert actual == expect
 
@@ -83,8 +83,8 @@ def test_stdav(drink_type, expect):
         (1, "vodka", "stdav", 40),
     ],
 )
-def test_convert(qty, from_, to, expect):
-    actual = DrinksOptions(from_).convert(qty, to)
+def test_convert_qty(qty, from_, to, expect):
+    actual = DrinkConverter(from_).convert_qty(qty, to)
 
     assert round(actual, 2) == expect
 
@@ -99,7 +99,7 @@ def test_convert(qty, from_, to, expect):
     ],
 )
 def test_stdav_to_alkohol(drink_type, stdav, expect):
-    actual = DrinksOptions(drink_type).stdav_to_alcohol(stdav)
+    actual = DrinkConverter(drink_type).stdav_to_alcohol(stdav)
 
     assert actual == expect
 
@@ -113,7 +113,7 @@ def test_stdav_to_alkohol(drink_type, stdav, expect):
         ("stdav", 1999, 1, 365),
     ],
 )
-def test_stdav_to_bottles(drink_type, year, stdav, expect):
-    actual = DrinksOptions(drink_type).stdav_to_bottles(year=year, max_stdav=stdav)
+def test_max_bottles_per_year(drink_type, year, stdav, expect):
+    actual = DrinkConverter(drink_type).max_bottles_per_year(year=year, max_stdav=stdav)
 
     assert actual == expect

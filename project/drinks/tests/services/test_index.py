@@ -6,7 +6,7 @@ import time_machine
 
 from project.drinks.lib.drinks_stats import DrinkStats
 
-from ...lib.drinks_options import DrinksOptions
+from ...lib.drinks_options import DrinkConverter
 from ...services.index.builders import IndexBuilder
 from ..factories import DrinkFactory
 
@@ -15,7 +15,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(name="drinks_options")
 def fixture_drinks_options():
-    return DrinksOptions("beer")
+    return DrinkConverter("beer")
 
 
 @pytest.mark.parametrize(
@@ -162,7 +162,7 @@ def test_tbl_alcohol(drink_type, qty, expect, main_user, drinks_options):
     )
 
     actual = IndexBuilder(
-        options=DrinksOptions(drink_type), drink_stats=stats
+        options=DrinkConverter(drink_type), drink_stats=stats
     ).tbl_alcohol()
 
     assert actual["liters"] == expect
