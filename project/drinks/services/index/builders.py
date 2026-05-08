@@ -24,24 +24,21 @@ class IndexBuilder:
         self._latest_current_date = latest_current_date
 
         self._drink_stats = drink_stats
-        self._per_day_of_year = drink_stats.per_day_of_year
-        self._quantity_of_year = drink_stats.qty_of_year
-
         self._converter = converter
 
     def chart_quantity(self) -> dict:
         return {
             "categories": list(month_names().values()),
-            "data": self._drink_stats.qty_of_month,
+            "data": self._drink_stats.monthly.qty_of_month,
             "text": {"quantity": _("Quantity")},
         }
 
     def chart_consumption(self) -> dict:
         return {
             "categories": list(month_names().values()),
-            "data": self._drink_stats.per_day_of_month,
+            "data": self._drink_stats.monthly.per_day_of_month,
             "target": self._target,
-            "avg": self._per_day_of_year,
+            "avg": self._drink_stats.yearly.per_day_of_year,
             "text": {
                 "limit": _("Limit"),
                 "alcohol": _("Alcohol consumption per day, milliliters"),
@@ -59,18 +56,22 @@ class IndexBuilder:
 
     def tbl_consumption(self) -> dict:
         return {
-            "qty": self._quantity_of_year,
-            "avg": self._per_day_of_year,
+            "qty": self._drink_stats.yearly.qty_of_year,
+            "avg": self._drink_stats.yearly.per_day_of_year,
             "target": self._target,
         }
 
     def tbl_alcohol(self) -> dict:
-        stdav = self._quantity_of_year / self._converter.ratio
+        stdav = self._drink_stats.yearly.qty_of_year / self._converter.ratio
 
         return {"liters": self._converter.stdav_to_alcohol(stdav)}
 
     def tbl_std_av(self) -> dict:
-        return {"items": self._build_conversion_rows(self._drink_stats.year, self._quantity_of_year)}
+        return {
+            "items": self._build_conversion_rows(
+                self._drink_stats.year, self._drink_stats.yearly.qty_of_year
+            )
+        }
 
     def _build_conversion_rows(self, year: int, qty: float) -> list[dict]:
         if not qty:
@@ -98,7 +99,10 @@ class IndexBuilder:
                 "title": _("Vodka") + ", 1L",
                 **{k: self._converter.convert_qty(v, "vodka") for k, v in a.items()},
             },
-            {"title": "Std Av", **{k: v * self._converter.stdav_per_unit for k, v in a.items()}},
+            {
+                "title": "Std Av",
+                **{k: v * self._converter.stdav_per_unit for k, v in a.items()},
+            },
         ]
 
     def _get_period_counts(self, year: int) -> tuple[int, int, int]:

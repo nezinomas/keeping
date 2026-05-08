@@ -157,8 +157,10 @@ def test_tbl_alcohol(drink_type, qty, expect, main_user, drink_converter):
 
     stats = SimpleNamespace(
         year=1999,
-        qty_of_year=qty,
-        per_day_of_year=0.0,
+        yearly=SimpleNamespace(
+            qty_of_year=qty,
+            per_day_of_year=0.0,
+        ),
     )
 
     actual = IndexBuilder(
