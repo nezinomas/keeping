@@ -35,10 +35,12 @@ class DrinkStats:
         today: date | None = None,
     ):
         self.converter = converter
-        self.data = [DataRow(**row) for row in data] if data else []
-        self.year = self.data[0].date.year if self.data else 1974
-
         self.today = today or date.today()
+
+        rows = [DataRow(**row) for row in data] if data else []
+
+        self.data = [row for row in rows if row.date <= self.today]
+        self.year = self.data[0].date.year if self.data else 1974
 
     @cached_property
     def monthly(self) -> MonthlyStatsDTO:

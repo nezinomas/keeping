@@ -6,11 +6,11 @@ from ...lib.drinks_options import DrinkConverter
 @pytest.mark.parametrize(
     "drink_type, expect",
     [
-        ("beer", 1 / 2.5),
-        ("wine", 1 / 8),
-        ("vodka", 1 / 40),
-        ("stdav", 1),
-        ("xxx", 1),
+        ("beer", 0.4),
+        ("wine", 0.125),
+        ("vodka", 0.025),
+        ("stdav", 1.0),
+        ("unknown", 1.0),
     ],
 )
 def test_ratio(drink_type, expect):
@@ -23,10 +23,10 @@ def test_ratio(drink_type, expect):
     "drink_type, ml, expect",
     [
         ("beer", 500, 2.5),
-        ("wine", 750, 8),
-        ("vodka", 1000, 40),
-        ("stdav", 10, 1),
-        ("xxx", 500, 50.0),
+        ("wine", 750, 8.0),
+        ("vodka", 1000, 40.0),
+        ("stdav", 10, 1.0),
+        ("unknown", 500, 50.0),
     ],
 )
 def test_ml_to_stdav(drink_type, ml, expect):
@@ -38,10 +38,10 @@ def test_ml_to_stdav(drink_type, ml, expect):
 @pytest.mark.parametrize(
     "drink_type, stdav, expect",
     [
-        ("beer", 2.5, 500),
-        ("wine", 8, 750),
-        ("vodka", 40, 1000),
-        ("stdav", 1, 10),
+        ("beer", 2.5, 500.0),
+        ("wine", 8.0, 750.0),
+        ("vodka", 40.0, 1000.0),
+        ("stdav", 1.0, 10.0),
     ],
 )
 def test_stdav_to_ml(drink_type, stdav, expect):
@@ -54,10 +54,10 @@ def test_stdav_to_ml(drink_type, stdav, expect):
     "drink_type, expect",
     [
         ("beer", 2.5),
-        ("wine", 8),
-        ("vodka", 40),
-        ("stdav", 1),
-        ("xxx", 1),
+        ("wine", 8.0),
+        ("vodka", 40.0),
+        ("stdav", 1.0),
+        ("unknown", 1.0),
     ],
 )
 def test_stdav_per_unit(drink_type, expect):
