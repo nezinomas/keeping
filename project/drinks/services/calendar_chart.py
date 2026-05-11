@@ -4,7 +4,8 @@ from datetime import date
 from django.utils.translation import gettext as _
 
 from ...core.lib.translation import weekday_names
-from ...counts.lib.stats import Calendar, Stats as CountStats
+from ...counts.lib.stats import Calendar
+from ...counts.lib.stats import Stats as CountStats
 from ..lib.drinks_options import DrinkConverter
 from ..services.model_services import DrinkModelService
 
