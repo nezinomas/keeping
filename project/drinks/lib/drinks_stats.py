@@ -77,6 +77,7 @@ class DrinkStats:
             total_quantity=total_quantity,
         )
 
+
     def _avg(self, total: float, days: int) -> float:
         return total / days if days else 0.0
 

@@ -68,12 +68,12 @@ class DrinkTargetModelService(BaseModelService):
         return models.DrinkTarget.objects.select_related("user").filter(user=self.user)
 
     def year(self, year):
-        obj = DrinkConverter(self.user.drink_type)
+        converter = DrinkConverter(self.user.drink_type)
         return (
             self.objects.filter(year=year)
             .annotate(stdav=F("quantity"))
-            .annotate(qty=obj.stdav_to_ml(stdav=F("stdav")))
-            .annotate(max_bottles=obj.max_bottles_per_year(year, F("stdav")))
+            .annotate(qty=converter.stdav_to_ml(stdav=F("stdav")))
+            .annotate(max_bottles=converter.max_bottles_per_year(year, F("stdav")))
         )
 
     def items(self):

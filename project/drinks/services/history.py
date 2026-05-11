@@ -20,6 +20,22 @@ class HistoryService:
 
             self.history_df = self._prepare_data_frame(data)
 
+    @property
+    def years(self) -> list[int]:
+        return self._data_frame_column("year")
+
+    @property
+    def alcohol(self) -> list[float]:
+        return self._data_frame_column("alcohol")
+
+    @property
+    def per_day(self) -> list[float]:
+        return self._data_frame_column("per_day")
+
+    @property
+    def quantity(self) -> list[int]:
+        return self._data_frame_column("qty")
+
 
     def _prepare_data_frame(self, data) -> pl.DataFrame:
         history_df = pl.DataFrame(data).lazy()
@@ -65,21 +81,6 @@ class HistoryService:
     def _data_frame_column(self, column_name: str) -> list:
         return self.history_df[column_name].to_list() if not self.history_df.is_empty() else []
 
-    @property
-    def years(self) -> list[int]:
-        return self._data_frame_column("year")
-
-    @property
-    def alcohol(self) -> list[float]:
-        return self._data_frame_column("alcohol")
-
-    @property
-    def per_day(self) -> list[float]:
-        return self._data_frame_column("per_day")
-
-    @property
-    def quantity(self) -> list[int]:
-        return self._data_frame_column("qty")
 
 
 def load_service(user) -> dict:
