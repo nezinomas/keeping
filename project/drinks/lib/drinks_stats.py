@@ -42,25 +42,25 @@ class DrinkStats:
 
     @cached_property
     def monthly(self) -> MonthlyStatsDTO:
-        total_volume_ml = [0.0] * 12
-        total_quantity = [0.0] * 12
+        vols = [0.0] * 12
+        qtys = [0.0] * 12
 
-        # Aggregate totals
         for row in self.data:
-            month_idx = row.date.month - 1
-            total_volume_ml[month_idx] += self.converter.stdav_to_ml(row.stdav)
-            total_quantity[month_idx] += row.qty
+            month = row.date.month - 1
+            vols[month] += row.stdav
+            qtys[month] += row.qty
 
-        # Calculate daily averages
+        # Convert stdav to ml and calculate daily averages
+        total_volume_ml = [self.converter.stdav_to_ml(v) for v in vols]
         avg_daily_volume_ml = [
-            vol / calendar.monthrange(self.year, month_num)[1]
-            for month_num, vol in enumerate(total_volume_ml, start=1)
+            vol / calendar.monthrange(self.year, i)[1]
+            for i, vol in enumerate(total_volume_ml, 1)
         ]
 
         return MonthlyStatsDTO(
             total_volume_ml=total_volume_ml,
             avg_daily_volume_ml=avg_daily_volume_ml,
-            total_quantity=total_quantity,
+            total_quantity=qtys,
         )
 
     @cached_property
