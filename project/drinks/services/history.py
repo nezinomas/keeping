@@ -5,7 +5,6 @@ from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 
 from ...users.models import User
-from .. import models
 from ..lib.drinks_options import DrinkConverter
 from ..services.model_services import DrinkModelService
 
