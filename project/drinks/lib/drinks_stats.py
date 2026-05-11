@@ -42,15 +42,16 @@ class DrinkStats:
 
     @cached_property
     def monthly(self) -> MonthlyStatsDTO:
-        vols, qtys = [0.0] * 12, [0.0] * 12
+        monthly_stdav = [0.0] * 12
+        monthly_qty = [0.0] * 12
 
         for row in self.data:
             m = row.date.month - 1
-            vols[m] += row.stdav
-            qtys[m] += row.qty
+            monthly_stdav[m] += row.stdav
+            monthly_qty[m] += row.qty
 
         # Convert stdav to ml and calculate daily averages
-        total_volume_ml = [self.converter.stdav_to_ml(v) for v in vols]
+        total_volume_ml = [self.converter.stdav_to_ml(v) for v in monthly_stdav]
         avg_daily_volume_ml = [
             self._avg(v, calendar.monthrange(self.year, i)[1])
             for i, v in enumerate(total_volume_ml, 1)
@@ -59,7 +60,7 @@ class DrinkStats:
         return MonthlyStatsDTO(
             total_volume_ml=total_volume_ml,
             avg_daily_volume_ml=avg_daily_volume_ml,
-            total_quantity=qtys,
+            total_quantity=monthly_qty,
         )
 
     @cached_property
@@ -67,13 +68,13 @@ class DrinkStats:
         if not self.data:
             return YearlyStatsDTO(avg_daily_volume_ml=0.0, total_quantity=0.0)
 
-        days, limit = self._get_year_boundaries()
-        vol = sum(self.monthly.total_volume_ml[:limit])
-        qty = sum(self.monthly.total_quantity[:limit])
+        days_passed, month_limit = self._get_year_boundaries()
+        total_volume = sum(self.monthly.total_volume_ml[:month_limit])
+        total_quantity = sum(self.monthly.total_quantity[:month_limit])
 
         return YearlyStatsDTO(
-            avg_daily_volume_ml=self._avg(vol, days),
-            total_quantity=qty,
+            avg_daily_volume_ml=self._avg(total_volume, days_passed),
+            total_quantity=total_quantity,
         )
 
     def _avg(self, total: float, days: int) -> float:

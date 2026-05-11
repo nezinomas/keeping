@@ -22,7 +22,7 @@ def load_service(user, year: int) -> dict:
     calendar_service = CalendarChart(
         year=year,
         drink_type=user.drink_type,
-        data=data.sum_by_day,
+        daily_data=data.sum_by_day,
         latest_past_date=data.latest_past_date,
     )
 
