@@ -22,7 +22,9 @@ def several_years_consumption(user, years):
         if not consumption_data.exists():
             continue
 
-        monthly_averages = DrinkStats(converter, consumption_data).monthly.avg_daily_volume_ml
+        monthly_averages = DrinkStats(
+            converter, consumption_data
+        ).monthly.avg_daily_volume_ml
         series.append({"name": year, "data": monthly_averages})
 
     return series
