@@ -11,6 +11,7 @@ project.pyproj*
 
 # Distribution / packaging
 .agent/
+.agents/
 .cache/
 .Python
 env/
