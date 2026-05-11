@@ -37,11 +37,7 @@ class DrinkStats:
         self.converter = converter
         self.today = today or date.today()
 
-        self.data = [
-            DataRow(**row)
-            for row in (data or [])
-            if (dt := row.get("date")) and dt <= self.today
-        ]
+        self.data = [DataRow(**row) for row in (data or [])]
         self.year = self.data[0].date.year if self.data else 1974
 
     @cached_property
@@ -69,20 +65,15 @@ class DrinkStats:
 
     @cached_property
     def yearly(self) -> YearlyStatsDTO:
-        if not self.year or not self.data:
+        if not self.data:
             return YearlyStatsDTO(avg_daily_volume_ml=0.0, total_quantity=0.0)
 
-        # Determine the time boundaries (Current year vs Past year)
-        if self.year == self.today.year:
-            days_passed = self.today.timetuple().tm_yday
-            month_limit = self.today.month
-        else:
-            days_passed = ydays(self.year)
-            month_limit = 12
+        is_current = (self.year == self.today.year)
+        days_passed = self.today.timetuple().tm_yday if is_current else ydays(self.year)
+        limit = self.today.month if is_current else 12
 
-        # Calculate totals and averages
-        total_volume_ml = sum(self.monthly.total_volume_ml[:month_limit])
-        total_quantity = sum(self.monthly.total_quantity)
+        total_volume_ml = sum(self.monthly.total_volume_ml[:limit])
+        total_quantity = sum(self.monthly.total_quantity[:limit])
         avg_daily_volume_ml = total_volume_ml / days_passed if days_passed else 0.0
 
         return YearlyStatsDTO(
