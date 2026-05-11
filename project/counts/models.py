@@ -1,6 +1,5 @@
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.urls import reverse_lazy
 
 from project.core.models import TitleAbstract
 
