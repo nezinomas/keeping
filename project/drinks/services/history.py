@@ -45,7 +45,7 @@ class HistoryService:
     def _calc_stats(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return (
             df.with_columns(
-                alcohol=DrinkConverter.stdav_to_alcohol(pl.col.stdav),
+                alcohol=self.converter.stdav_to_alcohol(pl.col.stdav),
                 ml=self.converter.stdav_to_ml(pl.col.stdav),
             ).with_columns(per_day=pl.col.ml / pl.col.days_in_year)
         )
