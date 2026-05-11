@@ -20,61 +20,46 @@ class HistoryService:
 
             self.df = self._create_df(data)
 
-    @staticmethod
-    def insert_empty_values(data: list[dict]) -> list[dict]:
-        first_year = data[0]["year"]
-        last_year = datetime.now().year + 1
-
-        for year in range(first_year, last_year):
-            data.append({"year": year, "qty": 0, "stdav": 0.0})
-
-        return data
 
     def _create_df(self, data) -> pl.DataFrame:
-        data = self.insert_empty_values(data)
-
         df = pl.DataFrame(data).lazy()
-        df = self._agg_df(df)
-        df = df.with_columns(date=pl.date("year", 1, 1))
-        df = self._days_in_year(df)
-        df = self._calc_stats(df)
-        df = df.sort(pl.col.year)
 
-        return df.collect()
+        if not df.collect().is_empty():
+            first_year = df.select(pl.col.year.min()).collect().item()
+            last_year = datetime.now().year
+            years_df = pl.DataFrame({"year": range(first_year, last_year + 1)}).lazy()
+            df = years_df.join(df, on="year", how="left").fill_null(0)
+
+        return (
+            self._agg_df(df)
+            .with_columns(date=pl.date("year", 1, 1))
+            .pipe(self._days_in_year)
+            .pipe(self._calc_stats)
+            .sort(pl.col.year)
+            .collect()
+        )
 
     def _agg_df(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return df.group_by("year").agg(pl.col.qty.sum(), pl.col.stdav.sum())
 
     def _calc_stats(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return (
-            df
-            # calculate alcohol and ml
-            .with_columns(
+            df.with_columns(
                 alcohol=DrinkConverter.stdav_to_alcohol(pl.col.stdav),
                 ml=self.converter.stdav_to_ml(pl.col.stdav),
-            )
-            # calculate per_day
-            .with_columns(per_day=pl.col.ml / pl.col.days_in_year)
+            ).with_columns(per_day=pl.col.ml / pl.col.days_in_year)
         )
 
     def _days_in_year(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        year = datetime.now().year
-        days = datetime.now().timetuple().tm_yday
-
-        return (
-            df
-            # calculate days_in_year for each year
-            .with_columns(
-                days_in_year=pl.when(pl.col.date.dt.is_leap_year())
-                .then(pl.lit(366))
-                .otherwise(pl.lit(365))
-            )
-            # for current year update days_in_year to actual number of days
-            .with_columns(
-                days_in_year=pl.when(pl.col.year == year)
-                .then(pl.lit(days))
-                .otherwise(pl.col.days_in_year)
-            )
+        now = datetime.now()
+        return df.with_columns(
+            days_in_year=pl.when(pl.col.date.dt.is_leap_year())
+            .then(pl.lit(366))
+            .otherwise(pl.lit(365))
+        ).with_columns(
+            days_in_year=pl.when(pl.col.year == now.year)
+            .then(pl.lit(now.timetuple().tm_yday))
+            .otherwise(pl.col.days_in_year)
         )
 
     def _data_frame_col(self, col: str) -> list:
