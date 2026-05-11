@@ -4,7 +4,7 @@ from datetime import date
 from django.utils.translation import gettext as _
 
 from ...core.lib.translation import weekday_names
-from ...counts.lib.stats import Stats as CountStats
+from ...counts.lib.stats import Calendar, Stats as CountStats
 from ..lib.drinks_options import DrinkConverter
 from ..services.model_services import DrinkModelService
 
@@ -16,7 +16,7 @@ class CalendarChart:
     daily_data: DrinkModelService.sum_by_day
     latest_past_date: date = None
 
-    chart_data: CountStats.chart_calendar = field(init=False, default_factory=list)
+    chart_data: list[dict] = field(init=False, default_factory=list)
 
     def __post_init__(self):
         self.converter = DrinkConverter(self.drink_type)
@@ -24,9 +24,10 @@ class CalendarChart:
         if not self.daily_data:
             return
 
-        self.chart_data = CountStats(
+        stats = CountStats(
             year=self.year, data=self.daily_data, past_latest=self.latest_past_date
-        ).chart_calendar()
+        )
+        self.chart_data = Calendar(stats).chart_data()
 
     def full_calendar(self, data: list[dict]) -> dict:
         return {

@@ -8,7 +8,7 @@ import time_machine
 from django.test import override_settings
 
 from ....core.exceptions import MethodInvalidError
-from ...lib.stats import Stats
+from ...lib.stats import Calendar, Stats
 from ...services.model_services import CountModelService
 from ..factories import CountFactory
 
@@ -380,11 +380,12 @@ def fixture_chart_calendar_expect_january_with_data(
 
 @pytest.mark.xfail(raises=MethodInvalidError)
 def test_chart_calendar_no_year_provided():
-    Stats(data=[]).chart_calendar()
+    Calendar(Stats(data=[])).chart_data()
 
 
 def test_chart_calendar(data, chart_calendar_expect_january_with_data):
-    actual = Stats(year=1999, data=data).chart_calendar()
+    stats = Stats(year=1999, data=data)
+    actual = Calendar(stats).chart_data()
 
     assert actual[0] == chart_calendar_expect_january_with_data
 
@@ -393,19 +394,22 @@ def test_chart_calendar(data, chart_calendar_expect_january_with_data):
 def test_chart_calendar_db(chart_calendar_expect_january_with_data, data_db, main_user):
     year = 1999
     qs = CountModelService(main_user).sum_by_day(year=year, count_type="count-type")
-    actual = Stats(year=year, data=qs).chart_calendar()
+    stats = Stats(year=year, data=qs)
+    actual = Calendar(stats).chart_data()
 
     assert actual[0] == chart_calendar_expect_january_with_data
 
 
 def test_chart_calendar_nodata(chart_calendar_expect_january_nodata):
-    actual = Stats(year=1999, data=[]).chart_calendar()
+    stats = Stats(year=1999, data=[])
+    actual = Calendar(stats).chart_data()
 
     assert actual[0] == chart_calendar_expect_january_nodata
 
 
 def test_chart_calendar_nodata_february(chart_calendar_expect_february_nodata):
-    actual = Stats(year=1999, data=[]).chart_calendar()
+    stats = Stats(year=1999, data=[])
+    actual = Calendar(stats).chart_data()
 
     assert actual[1] == chart_calendar_expect_february_nodata
 
@@ -414,7 +418,8 @@ def test_chart_calendar_nodata_february(chart_calendar_expect_february_nodata):
 def test_chart_calendar_current_day_nodata(chart_calendar_expect_january_nodata):
     chart_calendar_expect_january_nodata["data"][5][2] = 0.0005
 
-    actual = Stats(year=1999, data=[]).chart_calendar()
+    stats = Stats(year=1999, data=[])
+    actual = Calendar(stats).chart_data()
 
     assert actual[0] == chart_calendar_expect_january_nodata
 
@@ -430,6 +435,7 @@ def test_chart_calendar_first_day_of_year_with_record(
     chart_calendar_expect_january_nodata["data"][4].append(0)  # 1999-01-08 gap
     chart_calendar_expect_january_nodata["data"][4][2] = 1.0
 
-    actual = Stats(year=1999, data=data).chart_calendar()
+    stats = Stats(year=1999, data=data)
+    actual = Calendar(stats).chart_data()
 
     assert actual[0] == chart_calendar_expect_january_nodata
