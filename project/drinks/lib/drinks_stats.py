@@ -37,9 +37,11 @@ class DrinkStats:
         self.converter = converter
         self.today = today or date.today()
 
-        rows = [DataRow(**row) for row in data] if data else []
-
-        self.data = [row for row in rows if row.date <= self.today]
+        self.data = [
+            DataRow(**row)
+            for row in (data or [])
+            if (dt := row.get("date")) and dt <= self.today
+        ]
         self.year = self.data[0].date.year if self.data else 1974
 
     @cached_property
