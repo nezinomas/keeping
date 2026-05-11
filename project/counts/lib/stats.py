@@ -114,7 +114,9 @@ class Stats:
         first_date = date(self._df[0, "date"].year, 1, 1)
         last_date = date(self._df[-1, "date"].year, 12, 31)
 
-        date_range = pl.date_range(first_date, last_date, "1d", eager=True).alias("date")
+        date_range = pl.date_range(first_date, last_date, "1d", eager=True).alias(
+            "date"
+        )
         empty_df = pl.DataFrame({"date": date_range})
 
         return empty_df.join(self._df, on="date", how="left").fill_null(0)
@@ -145,7 +147,9 @@ class Stats:
 
         return (
             self._df.lazy()
-            .with_columns(duration=pl.col("date").diff().dt.total_days().fill_null(first_gap_days))
+            .with_columns(
+                duration=pl.col("date").diff().dt.total_days().fill_null(first_gap_days)
+            )
             .sort("date")
             .collect()
         )
@@ -157,7 +161,9 @@ class Calendar:
 
     def chart_data(self) -> list[dict]:
         if not self.stats._year:
-            raise MethodInvalidError("Stats object must have a year for Calendar chart.")
+            raise MethodInvalidError(
+                "Stats object must have a year for Calendar chart."
+            )
 
         def month_generator(month: int):
             return it.product(

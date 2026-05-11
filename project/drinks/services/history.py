@@ -36,7 +36,6 @@ class HistoryService:
     def quantity(self) -> list[int]:
         return self._data_frame_column("qty")
 
-
     def _prepare_data_frame(self, data) -> pl.DataFrame:
         history_df = pl.DataFrame(data).lazy()
 
@@ -59,12 +58,10 @@ class HistoryService:
         return df.group_by("year").agg(pl.col.qty.sum(), pl.col.stdav.sum())
 
     def _calculate_consumption_stats(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        return (
-            df.with_columns(
-                alcohol=self.converter.stdav_to_alcohol(pl.col.stdav),
-                ml=self.converter.stdav_to_ml(pl.col.stdav),
-            ).with_columns(per_day=pl.col.ml / pl.col.days_in_year)
-        )
+        return df.with_columns(
+            alcohol=self.converter.stdav_to_alcohol(pl.col.stdav),
+            ml=self.converter.stdav_to_ml(pl.col.stdav),
+        ).with_columns(per_day=pl.col.ml / pl.col.days_in_year)
 
     def _calculate_days_in_year(self, df: pl.LazyFrame) -> pl.LazyFrame:
         now = datetime.now()
@@ -79,8 +76,11 @@ class HistoryService:
         )
 
     def _data_frame_column(self, column_name: str) -> list:
-        return self.history_df[column_name].to_list() if not self.history_df.is_empty() else []
-
+        return (
+            self.history_df[column_name].to_list()
+            if not self.history_df.is_empty()
+            else []
+        )
 
 
 def load_service(user) -> dict:

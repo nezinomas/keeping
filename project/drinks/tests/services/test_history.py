@@ -6,7 +6,6 @@ from ...services import history
 pytestmark = pytest.mark.django_db
 
 
-
 @time_machine.travel("2000-01-01")
 def test_years(main_user):
     qs = [{"year": 1998, "qty": 1, "stdav": 2.5}]
