@@ -18,11 +18,11 @@ def several_years_consumption(user, years):
     converter = DrinkConverter(user.drink_type)
 
     for year in years:
-        drinks_data = DrinkModelService(user).sum_by_month(int(year))
-        if not drinks_data.exists():
+        consumption_data = DrinkModelService(user).sum_by_month(int(year))
+        if not consumption_data.exists():
             continue
 
-        monthly_averages = DrinkStats(converter, drinks_data).monthly.avg_daily_volume_ml
+        monthly_averages = DrinkStats(converter, consumption_data).monthly.avg_daily_volume_ml
         series.append({"name": year, "data": monthly_averages})
 
     return series

@@ -40,7 +40,7 @@ class CalendarChart:
         }
 
     def first_half_of_year(self):
-        return self.full_calendar(self.chart_data[:6])
+        return self.full_calendar(data=self.chart_data[:6])
 
     def second_half_of_year(self):
-        return self.full_calendar(self.chart_data[6:])
+        return self.full_calendar(data=self.chart_data[6:])
