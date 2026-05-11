@@ -1,7 +1,7 @@
 import calendar
-import functools
 import itertools as it
 from datetime import date, datetime
+from functools import cached_property, partial
 
 import polars as pl
 from polars.exceptions import ColumnNotFoundError
@@ -14,13 +14,12 @@ class Stats:
     def __init__(
         self,
         year: int = None,
-        data: list[dict[date, float]] = None,
-        past_latest: date = None,
+        data: list[dict[date, float]] | None = None,
+        past_latest: date | None = None,
     ):
         self._year = year
         self._past_latest = past_latest
-        self._df = self._make_dataframe(data)
-
+        self._data = data
         self._now_date = datetime.now().date()
 
     @staticmethod
@@ -37,6 +36,10 @@ class Stats:
             return self._df.select(pl.col("qty").sum())[0, 0]
         except ColumnNotFoundError:
             return self._df.shape[0]
+
+    @cached_property
+    def _df(self) -> pl.DataFrame:
+        return self._make_dataframe(self._data)
 
     def weekdays_stats(self) -> list[dict[int, float]]:
         """Returns [{'weekday': int, 'count': float}]"""
@@ -84,7 +87,7 @@ class Stats:
 
         # make calendar_df with calculated gaps and pass it to _day_info method
         calendar_df = self._calc_gaps()
-        day_info = functools.partial(self._day_info, calendar_df=calendar_df)
+        day_info = partial(self._day_info, calendar_df=calendar_df)
 
         arr = map(func, range(1, 13))
         data = map(day_info, it.chain(*arr), it.count(0))
