@@ -14,36 +14,30 @@ class DrinkModelService(SumMixin, BaseModelService):
             .order_by("-date")
         )
 
+    @property
+    def ratio(self) -> float:
+        return DrinkConverter(self.user.drink_type).ratio
+
     def year(self, year):
         return self.objects.filter(date__year=year)
 
     def items(self):
         return self.objects
 
-    def sum_by_year(self, year=None) -> list[dict]:
+    def sum_by_year(self, year: int | None = None) -> list[dict]:
         """
-        Returns
-        DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
+        Returns list of dicts: [{'year': int, 'stdav': float, 'qty': float}]
         """
-
-        ratio = DrinkConverter(self.user.drink_type).ratio
-
         return (
             self.year_sum(
                 self.objects, year=year, sum_annotation="stdav", sum_column="stdav"
-            )
-            .annotate(qty=F("stdav") * ratio)
-            .order_by("date")
+            ).annotate(qty=F("stdav") * self.ratio)
         )
 
     def sum_by_month(self, year: int, month: int | None = None) -> list[dict]:
         """
-        Returns
-        DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
+        Returns list of dicts: [{'date': datetime.date, 'stdav': float, 'qty': float}]
         """
-
-        ratio = DrinkConverter(self.user.drink_type).ratio
-
         return (
             self.month_sum(
                 self.objects,
@@ -51,19 +45,13 @@ class DrinkModelService(SumMixin, BaseModelService):
                 month=month,
                 sum_annotation="stdav",
                 sum_column="stdav",
-            )
-            .annotate(qty=F("stdav") * ratio)
-            .order_by("date")
+            ).annotate(qty=F("stdav") * self.ratio)
         )
 
     def sum_by_day(self, year: int, month: int | None = None) -> list[dict]:
         """
-        Returns
-        DrinkQuerySet [{'date': datetime.date, 'stdav': float, 'qty': float}]
+        Returns list of dicts: [{'date': datetime.date, 'stdav': float, 'qty': float}]
         """
-
-        ratio = DrinkConverter(self.user.drink_type).ratio
-
         return (
             self.day_sum(
                 self.objects,
@@ -71,9 +59,7 @@ class DrinkModelService(SumMixin, BaseModelService):
                 month=month,
                 sum_annotation="stdav",
                 sum_column="stdav",
-            )
-            .annotate(qty=F("stdav") * ratio)
-            .order_by("date")
+            ).annotate(qty=F("stdav") * self.ratio)
         )
 
 
