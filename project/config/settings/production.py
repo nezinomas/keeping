@@ -1,3 +1,5 @@
+from django.utils.csp import CSP
+
 from .base import *
 
 DEBUG = False
@@ -22,16 +24,39 @@ TEMPLATES[0]["OPTIONS"]["loaders"] = [
 ]
 
 
+MIDDLEWARE += [
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
+]
+
+
+SECURE_CSP = {
+    "default-src": [CSP.SELF],
+    "script-src": [CSP.SELF, CSP.NONCE, CSP.UNSAFE_EVAL, CSP.UNSAFE_INLINE],
+    "style-src": [CSP.SELF, CSP.UNSAFE_INLINE, "https://fonts.googleapis.com"],
+    "img-src": [CSP.SELF, "https:"],
+    "font-src": [CSP.SELF, "https://fonts.gstatic.com"],
+    "base-uri": [CSP.SELF],
+    "form-action": [CSP.SELF],
+    "frame-ancestors": [CSP.NONE],
+}
+
+
 SECURE_HSTS_PRELOAD = True
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_BROWSER_XSS_FILTER = True
 SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_REFERRER_POLICY = "same-origin"
+
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Strict"
+
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = "Strict"
+
 X_FRAME_OPTIONS = "DENY"
 
 
@@ -42,8 +67,6 @@ EMAIL_HOST_USER = ""
 EMAIL_HOST_PASSWORD = ""
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = "Invite <invite@bookkeeping.com>"
-
-SESSION_COOKIE_HTTPONLY = True
 
 
 LOGGING = {

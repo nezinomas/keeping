@@ -69,7 +69,7 @@
 {{chart_calendar_1H|json_script:"chart-calendar-1H-data"}}
 {{chart_calendar_2H|json_script:"chart-calendar-2H-data"}}
 
-<script>
+<script nonce="{{ csp_nonce }}">
     chartConsumption('chart-consumption-data', 'chart-consumption-container');
     chartQuantity('chart-quantity-data', 'chart-quantity-container');
 

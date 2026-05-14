@@ -44,18 +44,18 @@
 {% block from_scripts %}
     {% if 'date' in form.fields or 'started' in form.fields or 'ended' in form.fields %}
         {% get_current_language as LANG %}
-        <script src="{% static 'litepicker/litepicker.js' %}"></script>
-        <script defef src="{% static 'litepicker/translations/'|add:LANG|add:'.js' %}"></script>
-        <script defer src="{% static 'js/date-picker.js' %}"></script>
+        <script nonce="{{ csp_nonce }}" src="{% static 'litepicker/litepicker.js' %}"></script>
+        <script nonce="{{ csp_nonce }}" defef src="{% static 'litepicker/translations/'|add:LANG|add:'.js' %}"></script>
+        <script nonce="{{ csp_nonce }}" defer src="{% static 'js/date-picker.js' %}"></script>
     {% endif %}
 
     {% if 'year' in form.fields or 'closed' in form.fields or 'valid_for' in form.fields or 'year_from' in form.fields or 'year_to' in form.fields %}
-        <script src="{% static 'yearpicker/year_picker.min.js' %}"></script>
-        <script src="{% static 'js/year-picker.js' %}"></script>
+        <script nonce="{{ csp_nonce }}" src="{% static 'yearpicker/year_picker.min.js' %}"></script>
+        <script nonce="{{ csp_nonce }}" src="{% static 'js/year-picker.js' %}"></script>
     {% endif %}
 
     {% if 'price' in form.fields or 'fee' in form.fields %}
-        <script src="{% static 'js/alter_price.js' %}"></script>
+        <script nonce="{{ csp_nonce }}" src="{% static 'js/alter_price.js' %}"></script>
     {% endif %}
 
 {% endblock from_scripts %}

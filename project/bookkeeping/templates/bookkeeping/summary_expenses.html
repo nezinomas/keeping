@@ -15,7 +15,7 @@
     {% include 'bookkeeping/includes/summary_expenses_form.html' %}
 </main>
 
-<script>
+<script nonce="{{ csp_nonce }}">
     function options_class() {
         const options = document.querySelectorAll('#id_types option');
         options.forEach(option => {

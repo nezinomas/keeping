@@ -14,7 +14,7 @@
 
     {% if chart_balance.records > 1 %}
     <div id="chart-balance-container">
-        <script src="/static/js/chart_summary_balance.js" defer></script>
+        <script nonce="{{ csp_nonce }}" src="/static/js/chart_summary_balance.js" defer></script>
         {{ chart_balance|json_script:"chart-balance-data" }}
     </div>
     {% else %}
@@ -24,7 +24,7 @@
 
     {% if chart_incomes.records > 1 %}
     <div id="chart-incomes-container">
-        <script src="/static/js/chart_summary_incomes.js" defer></script>
+        <script nonce="{{ csp_nonce }}" src="/static/js/chart_summary_incomes.js" defer></script>
         {{ chart_incomes|json_script:"chart-incomes-data" }}
     </div>
     {% else %}
@@ -33,7 +33,7 @@
 
 
     <div id="chart-incomes-types-container">
-        <script src="/static/js/chart_summary_incomes_types.js" defer></script>
+        <script nonce="{{ csp_nonce }}" src="/static/js/chart_summary_incomes_types.js" defer></script>
         {{ chart_incomes_types|json_script:"chart-incomes-types-data" }}
     </div>
 

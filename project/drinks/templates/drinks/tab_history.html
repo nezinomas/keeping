@@ -5,7 +5,7 @@
     <div id="chart-summary-container"></div>
     {{chart|json_script:"chart-summary-data"}}
 
-    <script>chart_drinks_summary("chart-summary-data", "chart-summary-container");</script>
+    <script nonce="{{ csp_nonce }}">chart_drinks_summary("chart-summary-data", "chart-summary-container");</script>
 
 {% else %}
 

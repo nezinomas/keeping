@@ -95,6 +95,7 @@ TEMPLATES = [
                 "project.core.context.yday",
                 "project.core.context.context_months",
                 "project.core.context.context_counts_menu",
+                "project.core.context.csp_nonce",
             ],
         },
     },

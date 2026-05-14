@@ -5,7 +5,7 @@
 
 {% block head %}
     {% include 'highcharts.html' with annotations="True" %}
-    <script src="{% static 'js/chart_summary_savings.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_summary_savings.js' %}"></script>
 {% endblock head %}
 
 
@@ -35,7 +35,7 @@
     {{charts|get_list_val:chart|json_script:data_id}}
 {% endfor %}
 
-<script>
+<script nonce="{{ csp_nonce }}">
     document.addEventListener('DOMContentLoaded', () => {
         {{pointers|safe}}.forEach(element => {
             chartSavings(String(element));

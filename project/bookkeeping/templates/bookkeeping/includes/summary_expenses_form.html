@@ -13,8 +13,8 @@
 
         <div id="chart-container">
             {{chart|json_script:"chart-data"}}
-            <script src="/static/js/chart_summary_expenses.js"></script>
-            <script>
+            <script nonce="{{ csp_nonce }}" src="/static/js/chart_summary_expenses.js"></script>
+            <script nonce="{{ csp_nonce }}">
                 chartExpenses('chart-data', 'chart-container');
             </script>
         </div>

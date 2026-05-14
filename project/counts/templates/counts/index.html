@@ -6,9 +6,9 @@
 
 {% block head %}
     {% include 'highcharts.html' with heatmap="True" %}
-    <script src="{% static 'js/chart_calendar.js' %}"></script>
-    <script src="{% static 'js/chart_counts_periodicity.js' %}"></script>
-    <script src="{% static 'js/sticky-table-headers.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_calendar.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_counts_periodicity.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
 {% endblock head %}
 
 

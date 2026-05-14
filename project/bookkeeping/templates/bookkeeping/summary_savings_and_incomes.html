@@ -48,7 +48,7 @@
     </div>
 </main>
 
-<script src="{% static 'js/chart_summary_savings_and_incomes.js' %}" defer></script>
+<script nonce="{{ csp_nonce }}" src="{% static 'js/chart_summary_savings_and_incomes.js' %}" defer></script>
 {{ chart_data|json_script:"chart-data" }}
 
 {% endblock content %}
