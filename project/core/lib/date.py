@@ -62,6 +62,10 @@ def monthnames_abbr():
     return {key.lower()[:3]: val for key, val in month_names().items()}
 
 
+def monthnames_num():
+    return {str(key): val for key, val in enumerate(month_names(), start=1)}
+
+
 def monthlen(year: int, month_name: str) -> int:
     if month_name not in monthnames():
         return 31

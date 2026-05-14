@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from django.db.models import Sum
 from django.utils.translation import gettext as _
@@ -12,32 +13,42 @@ from ...savings.services.model_services import (
 
 
 @dataclass
-class Data:
-    savings: list
-    savings_total: int
-    incomes_total: int
+class SavingsDto:
+    savings: list[Any]
+    savings_total: float
+    incomes_total: float
 
 
-def get_data(user, year: int) -> Data:
-    incomes_total = (
-        IncomeModelService(user)
-        .year(year)
-        .aggregate(Sum("price", default=0))["price__sum"]
-    )
-    savings_total = (
-        SavingModelService(user)
-        .year(year)
-        .aggregate(Sum("price", default=0))["price__sum"]
-    )
-    savings = (
-        SavingBalanceModelService(user).year(year).exclude(saving_type__type="pensions")
-    )
-    return Data(savings, savings_total, incomes_total)
+class SavingsService:
+    def __init__(self, user, year: int):
+        self._user = user
+        self._year = year
+
+    def get_data(self) -> SavingsDto:
+        incomes_total = (
+            IncomeModelService(self._user)
+            .year(self._year)
+            .aggregate(Sum("price", default=0))["price__sum"]
+        )
+        savings_total = (
+            SavingModelService(self._user)
+            .year(self._year)
+            .aggregate(Sum("price", default=0))["price__sum"]
+        )
+        savings = list(
+            SavingBalanceModelService(self._user)
+            .year(self._year)
+            .exclude(saving_type__type="pensions")
+        )
+        return SavingsDto(
+            savings=savings,
+            savings_total=savings_total,
+            incomes_total=incomes_total,
+        )
 
 
-def load_service(user, year: int) -> dict:
-    data = get_data(user, year)
-    fields = [
+class SavingsPresenter:
+    _FIELDS = [
         "past_amount",
         "past_fee",
         "per_year_incomes",
@@ -51,11 +62,24 @@ def load_service(user, year: int) -> dict:
         "profit_proc",
     ]
 
-    return {
-        "title": _("Funds"),
-        "type": "savings",
-        "object_list": data.savings,
-        "incomes_total": data.incomes_total,
-        "savings_total": data.savings_total,
-        "total_row": utils.total_row(data.savings, fields),
-    }
+    def __init__(self, dto: SavingsDto):
+        self._dto = dto
+
+    def as_dict(self) -> dict:
+        return {
+            "title": _("Funds"),
+            "type": "savings",
+            "object_list": self._dto.savings,
+            "incomes_total": self._dto.incomes_total,
+            "savings_total": self._dto.savings_total,
+            "total_row": utils.total_row(self._dto.savings, self._FIELDS),
+        }
+
+
+def get_data(user, year: int) -> SavingsDto:
+    return SavingsService(user, year).get_data()
+
+
+def load_service(user, year: int) -> dict:
+    dto = get_data(user, year)
+    return SavingsPresenter(dto).as_dict()

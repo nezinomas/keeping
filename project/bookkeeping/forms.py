@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from typing import Callable
 
-from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -9,13 +8,10 @@ from ..accounts.services.model_services import (
     AccountModelService,
 )
 from ..core.lib import date as core_date
-from ..core.lib.convert_price import ConvertToPrice
+from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.lib.form_widgets import DatePickerWidget
-from ..expenses.models import ExpenseType
 from ..expenses.services.model_services import ExpenseTypeModelService
-from ..pensions.models import PensionType
 from ..pensions.services.model_services import PensionTypeModelService
-from ..savings.models import SavingType
 from ..savings.services.model_services import SavingTypeModelService
 from .models import AccountWorth, PensionWorth, SavingWorth
 
@@ -51,12 +47,18 @@ class DateFieldMixin:
         )
 
 
-class SavingWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
+class SavingWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0, required=False)
 
     class Meta:
         model = SavingWorth
         fields = ["date", "saving_type", "price"]
+
+        labels = {
+            "date": "",
+            "saving_type": "",
+            "price": "",
+        }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
@@ -68,20 +70,25 @@ class SavingWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         # overwrite FK
         self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
 
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False
+        self.fields["price"].label = ""
 
     def clean(self):
         cleaned = super().clean()
         return clean_date_and_closed("saving_type", cleaned, self.add_error)
 
 
-class AccountWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
+class AccountWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0, required=False)
 
     class Meta:
         model = AccountWorth
         fields = ["date", "account", "price"]
+
+        labels = {
+            "date": "",
+            "account": "",
+            "price": "",
+        }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
@@ -93,20 +100,25 @@ class AccountWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
         # overwrite FK
         self.fields["account"].queryset = AccountModelService(self.user).items()
 
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False
+        self.fields["price"].label = ""
 
     def clean(self):
         cleaned = super().clean()
         return clean_date_and_closed("account", cleaned, self.add_error)
 
 
-class PensionWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
+class PensionWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0, required=False)
 
     class Meta:
         model = PensionWorth
         fields = ["date", "pension_type", "price"]
+
+        labels = {
+            "date": "",
+            "pension_type": "",
+            "price": "",
+        }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
@@ -120,8 +132,7 @@ class PensionWorthForm(ConvertToPrice, DateFieldMixin, forms.ModelForm):
             self.user
         ).objects
 
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False
+        self.fields["price"].label = ""
 
 
 class SummaryExpensesForm(forms.Form):
@@ -142,9 +153,6 @@ class SummaryExpensesForm(forms.Form):
 
         self.fields["types"].choices = choices
         self.fields["types"].label = None
-
-        self.helper = FormHelper()
-        self.helper.form_show_labels = False
 
     def clean(self):
         cleaned_data = super().clean()

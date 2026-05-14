@@ -1,16 +1,16 @@
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.convert_price import ConvertToCents
+from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
     ListViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
-from . import forms, models
+from . import forms
 from .services.model_services import DebtModelService, DebtReturnModelService
 
 
@@ -65,7 +65,7 @@ class Index(TemplateViewMixin):
 
 
 class DebtLists(ListViewMixin):
-    model = models.Debt
+    template_name = "debts/debt_list.html"
 
     def get_queryset(self):
         user = self.request.user
@@ -73,7 +73,7 @@ class DebtLists(ListViewMixin):
 
 
 class DebtNew(AddDebtTypeMixin, DebtMixin, CreateViewMixin):
-    model = models.Debt
+    service_class = DebtModelService
     form_class = forms.DebtForm
     modal_form_title = _("Debt")
 
@@ -82,8 +82,8 @@ class DebtNew(AddDebtTypeMixin, DebtMixin, CreateViewMixin):
         return reverse_lazy("debts:new", kwargs={"debt_type": debt_type})
 
 
-class DebtUpdate(ConvertToCents, AddDebtTypeMixin, DebtMixin, UpdateViewMixin):
-    model = models.Debt
+class DebtUpdate(ConvertPriceMixin, AddDebtTypeMixin, DebtMixin, UpdateViewMixin):
+    service_class = DebtModelService
     form_class = forms.DebtForm
     modal_form_title = _("Debt")
 
@@ -102,7 +102,7 @@ class DebtUpdate(ConvertToCents, AddDebtTypeMixin, DebtMixin, UpdateViewMixin):
 
 
 class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
-    model = models.Debt
+    service_class = DebtModelService
     modal_form_title = _("Delete debt")
 
     def get_queryset(self):
@@ -120,7 +120,8 @@ class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
 
 
 class DebtReturnLists(ListViewMixin):
-    model = models.DebtReturn
+    template_name = "debts/debtreturn_list.html"
+    service_class = DebtReturnModelService
 
     def get_queryset(self):
         user = self.request.user
@@ -128,7 +129,7 @@ class DebtReturnLists(ListViewMixin):
 
 
 class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
-    model = models.DebtReturn
+    service_class = DebtReturnModelService
     form_class = forms.DebtReturnForm
     modal_form_title = _("Debt repayment")
 
@@ -138,9 +139,9 @@ class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
 
 
 class DebtReturnUpdate(
-    ConvertToCents, AddDebtTypeMixin, DebtReturnMixin, UpdateViewMixin
+    ConvertPriceMixin, AddDebtTypeMixin, DebtReturnMixin, UpdateViewMixin
 ):
-    model = models.DebtReturn
+    service_class = DebtReturnModelService
     form_class = forms.DebtReturnForm
     modal_form_title = _("Debt repayment")
 
@@ -161,7 +162,7 @@ class DebtReturnUpdate(
 
 
 class DebtReturnDelete(AddDebtTypeMixin, DebtReturnMixin, DeleteViewMixin):
-    model = models.DebtReturn
+    service_class = DebtReturnModelService
     modal_form_title = _("Delete debt repayment")
 
     def get_queryset(self):

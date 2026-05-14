@@ -1,11 +1,9 @@
 from django.db import models
-from django.urls import reverse_lazy
 
 from ..accounts.models import Account
 from ..core.templatetags.cell_format import cellformat
 from ..core.templatetags.math import price
 from ..savings.models import SavingType
-from . import managers
 
 
 class Transaction(models.Model):
@@ -17,8 +15,6 @@ class Transaction(models.Model):
         Account, on_delete=models.CASCADE, related_name="transactions_to"
     )
     price = models.PositiveIntegerField()
-
-    objects = managers.TransactionQuerySet.as_manager()
 
     class Meta:
         ordering = ["-date", "price", "from_account"]
@@ -47,8 +43,6 @@ class SavingClose(models.Model):
     )
     price = models.PositiveIntegerField()
 
-    objects = managers.SavingCloseQuerySet.as_manager()
-
     class Meta:
         ordering = ["-date", "price", "from_account"]
         indexes = [
@@ -75,8 +69,6 @@ class SavingChange(models.Model):
         blank=True,
     )
     price = models.PositiveIntegerField()
-
-    objects = managers.SavingChangeQuerySet.as_manager()
 
     class Meta:
         ordering = ["-date", "price", "from_account"]

@@ -1,17 +1,19 @@
 from datetime import date
 
+import factory
 import pytest
-from django.urls import reverse
+from django.db import IntegrityError
+from django.db.models.signals import post_save
 
-from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import (
     AccountBalanceModelService,
 )
+from ...accounts.tests.factories import AccountFactory
 from ...journals.models import Journal
-from ..factories import IncomeFactory, IncomeTypeFactory
 from ..models import Income, IncomeType
 from ..services.model_services import IncomeModelService, IncomeTypeModelService
+from .factories import IncomeFactory, IncomeTypeFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -25,6 +27,7 @@ def test_income_type_str():
     assert str(i) == "Income Type"
 
 
+@factory.django.mute_signals(post_save)
 def test_income_type_items_journal(main_user, second_user):
     IncomeTypeFactory(title="T1")
     IncomeTypeFactory(title="T2", journal=second_user.journal)
@@ -41,10 +44,10 @@ def test_income_type_items_journal_queries(main_user, django_assert_max_num_quer
         IncomeTypeModelService(main_user).items().values()
 
 
-@pytest.mark.xfail
-def test_income_type_unique_for_journal():
-    IncomeType.objects.create(title="T")
-    IncomeType.objects.create(title="T")
+def test_income_type_unique_for_journal(main_user):
+    IncomeType.objects.create(title="T", journal=main_user.journal)
+    with pytest.raises(IntegrityError):
+        IncomeType.objects.create(title="T", journal=main_user.journal)
 
 
 def test_income_type_unique_for_journals(main_user, second_user):
@@ -61,19 +64,7 @@ def test_income_str():
     assert str(i) == "1999-01-01: Income Type"
 
 
-def test_income_related(main_user, second_user):
-    t1 = IncomeTypeFactory(title="T1")
-    t2 = IncomeTypeFactory(title="T2", journal=second_user.journal)
-
-    IncomeFactory(income_type=t1)
-    IncomeFactory(income_type=t2)
-
-    actual = Income.objects.related(main_user)
-
-    assert len(actual) == 1
-    assert str(actual[0].income_type) == "T1"
-
-
+@factory.django.mute_signals(post_save)
 def test_sum_all_months(main_user, incomes):
     expect = [
         {"date": date(1999, 1, 1), "sum": 550, "title": "incomes"},
@@ -85,6 +76,7 @@ def test_sum_all_months(main_user, incomes):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save)
 def test_sum_all_months_ordering(main_user, incomes):
     actual = list(IncomeModelService(main_user).sum_by_month(1999))
 
@@ -92,6 +84,7 @@ def test_sum_all_months_ordering(main_user, incomes):
     assert actual[1]["date"] == date(1999, 2, 1)
 
 
+@factory.django.mute_signals(post_save)
 def test_sum_one_month(main_user, incomes):
     expect = [{"date": date(1999, 1, 1), "sum": 550, "title": "incomes"}]
 
@@ -101,6 +94,7 @@ def test_sum_one_month(main_user, incomes):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save)
 def test_incomes_items(main_user):
     IncomeFactory()
 
@@ -125,8 +119,9 @@ def test_incomes_income_sum_query_count(main_user, django_assert_max_num_queries
         list([x["date"] for x in qs])
 
 
+@factory.django.mute_signals(post_save)
 def test_balance(main_user, incomes):
-    qs = Income.objects.incomes(main_user)
+    qs = IncomeModelService(main_user).incomes()
 
     assert qs[0] == {"year": 1970, "incomes": 525, "category_id": 1}
     assert qs[1] == {"year": 1970, "incomes": 450, "category_id": 2}
@@ -134,6 +129,7 @@ def test_balance(main_user, incomes):
     assert qs[3] == {"year": 1999, "incomes": 350, "category_id": 2}
 
 
+@factory.django.mute_signals(post_save)
 def test_income_month_type_sum(main_user):
     IncomeFactory(
         price=4, date=date(1999, 1, 2), income_type=IncomeTypeFactory(title="I-2")
@@ -160,6 +156,7 @@ def test_income_month_type_sum(main_user):
     assert expect == [*actual]
 
 
+@factory.django.mute_signals(post_save)
 def test_income_year_type_sum(main_user):
     IncomeFactory(
         price=1, date=date(1974, 1, 1), income_type=IncomeTypeFactory(title="I-1")

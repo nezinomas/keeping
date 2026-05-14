@@ -6,7 +6,7 @@ from django.urls import resolve, reverse
 
 from ...core.tests.utils import clean_content
 from .. import models, views
-from ..factories import Pension, PensionFactory, PensionTypeFactory
+from .factories import Pension, PensionFactory, PensionTypeFactory
 
 pytestmark = pytest.mark.django_db
 

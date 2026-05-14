@@ -1,17 +1,16 @@
-from datetime import date, datetime
+from datetime import date
 
 import pytest
 import time_machine
 from django.urls import resolve, reverse
-from mock import patch
 
-from ...accounts.factories import AccountBalance
-from ...expenses.factories import ExpenseFactory
-from ...incomes.factories import IncomeFactory
-from ...journals.factories import JournalFactory
-from ...pensions.factories import PensionBalance, PensionFactory
-from ...savings.factories import SavingBalance, SavingFactory
-from ...users.factories import UserFactory
+from ...accounts.tests.factories import AccountBalance
+from ...expenses.tests.factories import ExpenseFactory
+from ...incomes.tests.factories import IncomeFactory
+from ...journals.tests.factories import JournalFactory
+from ...pensions.tests.factories import PensionBalance, PensionFactory
+from ...savings.tests.factories import SavingBalance, SavingFactory
+from ...users.tests.factories import UserFactory
 from .. import views
 from .utils import setup_view
 
@@ -26,10 +25,8 @@ pytestmark = pytest.mark.django_db
         (3000, 1999),
     ],
 )
-@patch("project.bookkeeping.lib.year_balance.datetime")
-def test_set_year(dt_mock, year, expect, main_user, client_logged):
-    dt_mock.now.return_value = datetime(2020, 1, 1)
-
+@time_machine.travel("2020-01-01")
+def test_set_year(year, expect, main_user, client_logged):
     main_user.journal.first_record = date(1974, 1, 1)
     url = reverse("core:set_year", kwargs={"year": year})
     response = client_logged.get(url, follow=True)

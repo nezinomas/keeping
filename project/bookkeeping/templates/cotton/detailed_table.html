@@ -1,67 +1,92 @@
 {% load i18n %}
-{% load math%}
+{% load math %}
 {% load cache %}
 {% load get_item %}
 {% load cell_format %}
 
-{% if category %}
-    <table class="main striped hover" id="tbl-{{category}}">
-        <thead>
-            <tr>
-                <th class="text-left title-col">
+{% if data %}
+<table class="main striped hover" id="tbl-{{url_title}}">
+    <thead class="sortable-header-row">
+        <tr>
+            <th class="text-left title-col">
+                {% if not order or order == "title" %}
+                    <span>{{title}}</span>
+                {% else %}
                     <a role="button"
-                    class="{% if not order or order == 'title' %}detailed-table-sorting{% endif %}"
-                    hx-get="{% url 'bookkeeping:detailed_category' category 'title' %}"
-                    hx-target="#tbl-{{category}}"
-                    hx-indicator="#indicator">
-                    {{ name }}
-                    </a>
-                </th>
-
-                {% for month_short, month_name in months.items %}
-                    <th>
-                        <a role="button"
-                        {% if order == month_short %}class="detailed-table-sorting"{% endif %}
-                        hx-get="{% url 'bookkeeping:detailed_category' category month_short %}"
-                        hx-target="#tbl-{{category}}"
+                        hx-get="{% url 'bookkeeping:detailed_category' url_title 'title' %}"
+                        hx-target="#tbl-{{url_title}}"
                         hx-indicator="#indicator">
-                        {{month_name}}
-                        </a>
-                    </th>
-                {% endfor%}
-
-                <th class=" left-thick-border">
-                    <a role="button"
-                    {% if order == 'total' %}class="detailed-table-sorting"{% endif %}
-                    hx-get="{% url 'bookkeeping:detailed_category' category 'total' %}"
-                    hx-target="#tbl-{{category}}"
-                    hx-indicator="#indicator">
-                    {% translate 'Total' %}
+                        {{ title }}
                     </a>
+                {% endif %}
+            </th>
+
+            {% for num, month_name in months.items %}
+                {% with "-"|add:num as ordering %}
+                <th>
+                    {% if order == ordering %}
+                        <span>{% translate month_name %}</span>
+                    {% else %}
+                        <a role="button"
+                            hx-get="{% url 'bookkeeping:detailed_category' url_title ordering %}"
+                            hx-target="#tbl-{{url_title}}"
+                            hx-indicator="#indicator">
+                            {% translate month_name %}
+                        </a>
+                    {% endif %}
                 </th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td class="text-left">{{ item.title|safe }}</td>
-                {% for i in item.data %}
-                    <td class="{{i|css_class_if_none}}">{{i|price|cellformat:"0,00"}}</td>
-                {% endfor %}
-                <td class="left-thick-border">
-                    <b>{{total_col|get_list_val:forloop.counter0|price|cellformat:"0,00"}}</b>
-                </td>
-            </tr>
+                {% endwith %}
             {% endfor %}
-        </tbody>
-        <tfoot>
-            <tr>
-                <th class="text-left">{% translate 'Total' %}</th>
-                {% for i in total_row %}
-                <th class="{{i|css_class_if_none}}">{{i|price|cellformat:"0,00"}}</th>
-                {% endfor %}
-                <th class="left-thick-border">{{total|price|cellformat:"0,00"}}</th>
-            </tr>
-        </tfoot>
-    </table>
+
+            <th class="left-thick-border">
+                {% if order == "-total_col" %}
+                    <span>{% translate 'Total' %}</span>
+                {% else %}
+                    <a role="button"
+                        hx-get="{% url 'bookkeeping:detailed_category' url_title '-total_col' %}"
+                        hx-target="#tbl-{{url_title}}"
+                        hx-indicator="#indicator">
+                        {% translate 'Total' %}
+                    </a>
+                {% endif %}
+            </th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td class="text-left">{{ row.title|safe }}</td>
+
+            {% for num, month_name in months.items %}
+                {% with cell_value=row|get_item:num %}
+                    <td class="{{ cell_value|css_class_if_none }}">
+                        {{ cell_value|price|cellformat:"0,00" }}
+                    </td>
+                {% endwith %}
+            {% endfor %}
+
+            <td class="left-thick-border">
+                <b>{{ row.total_col|price|cellformat:"0,00" }}</b>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+    <tfoot>
+        <tr>
+            <th class="text-left">{% translate 'Total' %}</th>
+
+            {% for num, month_name in months.items %}
+                {% with cell_value=total|get_item:num %}
+                    <th class="{{ cell_value|css_class_if_none }}">
+                        {{ cell_value|price|cellformat:"0,00" }}
+                    </th>
+                {% endwith %}
+            {% endfor %}
+
+            <th class="left-thick-border">{{ total.total_col|price|cellformat:"0,00" }}</th>
+        </tr>
+    </tfoot>
+</table>
 {% endif %}

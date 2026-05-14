@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.translation import month_names
+from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -13,11 +14,10 @@ from ..core.mixins.views import (
     RedirectViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
 from ..users.models import User
 from . import forms, models, services
-from .lib.drinks_options import DrinksOptions
+from .lib.drinks_options import DrinkConverter
 from .services.model_services import DrinkModelService, DrinkTargetModelService
 
 
@@ -50,7 +50,7 @@ class TabIndex(TemplateViewMixin):
 
 
 class TabData(ListViewMixin):
-    model = models.Drink
+    service_class = DrinkModelService
     template_name = "drinks/tab_data.html"
 
     def get_queryset(self):
@@ -122,7 +122,7 @@ class CompareTwo(FormViewMixin):
 
 
 class New(CreateViewMixin):
-    model = models.Drink
+    service_class = DrinkModelService
     form_class = forms.DrinkForm
     success_url = reverse_lazy("drinks:tab_data")
     modal_form_title = _("Drinks")
@@ -145,31 +145,23 @@ class New(CreateViewMixin):
 
 
 class Update(UpdateViewMixin):
-    model = models.Drink
+    service_class = DrinkModelService
     form_class = forms.DrinkForm
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
     modal_form_title = _("Drinks")
 
-    def get_object(self):
-        obj = super().get_object()
-
-        if obj:
-            options = DrinksOptions(self.request.user.drink_type)
-            obj.quantity = obj.quantity * options.ratio
-
-        return obj
-
 
 class Delete(DeleteViewMixin):
-    model = models.Drink
+    service_class = DrinkModelService
     hx_trigger_django = "reloadData"
     success_url = reverse_lazy("drinks:tab_data")
     modal_form_title = _("Delete drinks")
 
 
 class TargetLists(ListViewMixin):
-    model = models.DrinkTarget
+    template_name = "drinks/drinktarget_list.html"
+    service_class = DrinkTargetModelService
 
     def get_queryset(self):
         user = cast(User, self.request.user)
@@ -177,7 +169,7 @@ class TargetLists(ListViewMixin):
 
 
 class TargetNew(CreateViewMixin):
-    model = models.DrinkTarget
+    service_class = DrinkTargetModelService
     form_class = forms.DrinkTargetForm
     success_url = reverse_lazy("drinks:index")
     modal_form_title = _("New goal")
@@ -200,7 +192,7 @@ class TargetNew(CreateViewMixin):
 
 
 class TargetUpdate(UpdateViewMixin):
-    model = models.DrinkTarget
+    service_class = DrinkTargetModelService
     form_class = forms.DrinkTargetForm
     hx_trigger_django = "reloadIndex"
     url_name = "target_update"
@@ -214,11 +206,7 @@ class TargetUpdate(UpdateViewMixin):
             if obj.drink_type == "stdav":
                 return obj
 
-            # Todo: revisit this drink type from reqeust and from object
-            drink_type = self.request.user.drink_type
-            obj.quantity = DrinksOptions(drink_type).stdav_to_ml(
-                drink_type=obj.drink_type, stdav=obj.quantity
-            )
+            obj.quantity = DrinkConverter(obj.drink_type).stdav_to_ml(obj.quantity)
 
         return obj
 

@@ -3,10 +3,10 @@ from datetime import date
 import pytest
 from django.core.validators import ValidationError
 
-from ...users.factories import UserFactory
-from ..factories import BookFactory, BookTargetFactory
-from ..models import Book, BookTarget
+from ...users.tests.factories import UserFactory
+from ..models import BookTarget
 from ..services.model_services import BookModelService, BookTargetModelService
+from .factories import BookFactory, BookTargetFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -21,7 +21,7 @@ def test_book_related(main_user):
     BookFactory()
     BookFactory(title="B1", user=UserFactory(username="XXX", email="x@x.x"))
 
-    actual = Book.objects.related(main_user)
+    actual = BookModelService(main_user).objects
 
     assert len(actual) == 1
     assert actual[0].title == "Book Title"
@@ -123,7 +123,7 @@ def test_book_target_related(main_user):
     BookTargetFactory()
     BookTargetFactory(user=UserFactory(username="XXX", email="x@x.x"))
 
-    actual = BookTarget.objects.related(main_user)
+    actual = BookTargetModelService(main_user).objects
 
     assert len(actual) == 1
     assert actual[0].user.username == "bob"

@@ -1,15 +1,20 @@
 from datetime import date
 
+import factory
 import pytest
 import time_machine
-from django.urls import reverse
+from django.db.models.signals import post_delete, post_save
 
-from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
-from ...incomes.factories import IncomeFactory
-from ...savings.factories import SavingBalanceFactory, SavingFactory, SavingTypeFactory
+from ...accounts.tests.factories import AccountFactory
+from ...incomes.tests.factories import IncomeFactory
 from ...savings.models import SavingBalance
+from ...savings.tests.factories import (
+    SavingBalanceFactory,
+    SavingFactory,
+    SavingTypeFactory,
+)
 from ..models import Saving, SavingBalance, SavingType
 from ..services.model_services import (
     SavingBalanceModelService,
@@ -47,6 +52,7 @@ def test_saving_type_str():
     assert str(i) == "1999-01-01: Savings"
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_type_items_user(main_user, second_user):
     SavingTypeFactory(title="T1")
     SavingTypeFactory(title="T2", journal=second_user.journal)
@@ -57,6 +63,7 @@ def test_saving_type_items_user(main_user, second_user):
     assert actual[0].title == "T1"
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_type_items_filter_closed_in_future(main_user):
     SavingTypeFactory(title="T1", closed=1998)
     SavingTypeFactory(title="T2", closed=2000)
@@ -67,6 +74,7 @@ def test_saving_type_items_filter_closed_in_future(main_user):
     assert actual[0].title == "T2"
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_type_items_filter_closed_in_future_year_from_get_user(main_user):
     SavingTypeFactory(title="T1", closed=1998)
     SavingTypeFactory(title="T2", closed=2000)
@@ -77,6 +85,7 @@ def test_saving_type_items_filter_closed_in_future_year_from_get_user(main_user)
     assert actual[0].title == "T2"
 
 
+@factory.django.mute_signals(post_save, post_delete)
 def test_saving_type_day_sum_empty_month(main_user, savings):
     expect = []
 
@@ -85,6 +94,7 @@ def test_saving_type_day_sum_empty_month(main_user, savings):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_type_items_closed_in_past(main_user):
     main_user.year = 3000
     SavingTypeFactory(title="S1")
@@ -95,6 +105,7 @@ def test_saving_type_items_closed_in_past(main_user):
     assert actual.count() == 1
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_type_items_closed_in_future(main_user):
     main_user.year = 1000
     SavingTypeFactory(title="S1")
@@ -105,6 +116,7 @@ def test_saving_type_items_closed_in_future(main_user):
     assert actual.count() == 2
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_type_items_closed_in_current_year(main_user):
     main_user.year = 2000
     SavingTypeFactory(title="S1")
@@ -135,6 +147,7 @@ def test_saving_str():
     assert str(actual) == "Savings"
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_related(main_user, second_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2", journal=second_user.journal)
@@ -144,18 +157,20 @@ def test_saving_related(main_user, second_user):
     SavingFactory(saving_type=t1, account=a1)
     SavingFactory(saving_type=t2, account=a2)
 
-    actual = Saving.objects.related(main_user)
+    actual = SavingModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].saving_type) == "T1"
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_items(main_user):
     SavingFactory()
 
     assert len(SavingModelService(main_user).items()) == 1
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_years_sum(main_user):
     SavingFactory(date=date(1998, 1, 1), price=4.0)
     SavingFactory(date=date(1998, 1, 1), price=4.0)
@@ -179,6 +194,7 @@ def test_saving_year_sum_count_qs(main_user, django_assert_max_num_queries):
         assert len(list(actual)) == 1
 
 
+@factory.django.mute_signals(post_save, post_delete)
 def test_saving_month_sum(main_user, savings):
     expect = [
         {"date": date(1999, 1, 1), "sum": 350, "title": "Saving1"},
@@ -190,6 +206,7 @@ def test_saving_month_sum(main_user, savings):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save, post_delete)
 def test_saving_type_day_sum(main_user, savings):
     expect = [
         {"date": date(1999, 1, 1), "sum": 350, "title": "Saving1"},
@@ -201,9 +218,10 @@ def test_saving_type_day_sum(main_user, savings):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_day_sum(main_user, savings_extra):
     expect = [
-        {"date": date(1999, 1, 1), "sum": 2, "title": "Taupymas"},
+        {"date": date(1999, 1, 1), "sum": 2, "title": "savings"},
     ]
 
     actual = list(SavingModelService(main_user).sum_by_day(1999, 1))
@@ -211,6 +229,7 @@ def test_saving_day_sum(main_user, savings_extra):
     assert expect == actual
 
 
+@factory.django.mute_signals(post_save)
 def test_saving_months_sum(main_user, savings):
     expect = [{"date": date(1999, 1, 1), "sum": 575, "title": "savings"}]
 
@@ -250,6 +269,7 @@ def test_saving_day_saving_query_count(main_user, django_assert_max_num_queries)
 
 
 @time_machine.travel("1999-06-01")
+@factory.django.mute_signals(post_save)
 def test_saving_last_months(main_user):
     SavingFactory(date=date(1998, 11, 30), price=3)
     SavingFactory(date=date(1998, 12, 31), price=4)
@@ -258,6 +278,15 @@ def test_saving_last_months(main_user):
     actual = SavingModelService(main_user).last_months(6)
 
     assert actual["sum"] == 11
+
+
+@time_machine.travel("1999-06-01")
+@factory.django.mute_signals(post_save)
+def test_saving_last_months_empty_savings(main_user):
+    SavingTypeFactory()
+
+    actual = SavingModelService(main_user).last_months(6)
+    assert actual["sum"] == 0
 
 
 @time_machine.travel("1999-06-01")
@@ -565,6 +594,7 @@ def test_saving_post_delete_with_update(main_user):
     assert Saving.objects.all().count() == 1
 
 
+@factory.django.mute_signals(post_save, post_delete)
 def test_savings_incomes(main_user, savings):
     SavingFactory(
         date=date(1999, 1, 1),
@@ -574,7 +604,7 @@ def test_savings_incomes(main_user, savings):
         saving_type=SavingTypeFactory(title="Saving2"),
     )
 
-    actual = Saving.objects.incomes(main_user)
+    actual = SavingModelService(main_user).incomes()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -597,8 +627,9 @@ def test_savings_incomes(main_user, savings):
     assert actual[3]["fee"] == 50
 
 
+@factory.django.mute_signals(post_save)
 def test_savings_expenses(main_user, savings):
-    actual = Saving.objects.expenses(main_user)
+    actual = SavingModelService(main_user).expenses()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -649,7 +680,7 @@ def test_saving_balance_related_for_user(main_user, second_user):
     SavingFactory(saving_type=s1, account=a1)
     SavingFactory(saving_type=s2, account=a2)
 
-    actual = SavingBalance.objects.related(main_user)
+    actual = SavingBalanceModelService(main_user).objects
 
     assert len(actual) == 2
     assert str(actual[0].saving_type) == "S1"
@@ -811,7 +842,7 @@ def test_saving_balance_sorting(main_user):
     SavingBalanceFactory(year=2000, saving_type=s1)
     SavingBalanceFactory(year=1999, saving_type=s1)
 
-    actual = SavingBalance.objects.related(main_user)
+    actual = SavingBalanceModelService(main_user).objects
 
     assert actual[0].year == 1999
     assert actual[0].saving_type == s1

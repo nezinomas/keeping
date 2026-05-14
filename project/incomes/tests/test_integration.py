@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from ...core.tests.test_integration_browser import Browser
-from ..factories import IncomeFactory
+from .factories import IncomeFactory
 
 pytestmark = pytest.mark.django_db
 

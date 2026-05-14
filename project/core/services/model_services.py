@@ -1,0 +1,31 @@
+from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
+
+from ...users.models import User
+
+_QS = TypeVar("_QS")
+
+
+class BaseModelService(ABC, Generic[_QS]):
+    def __init__(self, user: User):
+        if not user:
+            raise ValueError("User required")
+
+        if not user.is_authenticated:
+            raise ValueError("Authenticated user required")
+
+        self.user = user
+
+    @property
+    def objects(self) -> _QS:
+        """Returns a freshly constructed base queryset on every access."""
+        return self.get_queryset()
+
+    @abstractmethod
+    def get_queryset(self) -> _QS: ...
+
+    @abstractmethod
+    def year(self, year: int) -> _QS: ...
+
+    @abstractmethod
+    def items(self) -> _QS: ...

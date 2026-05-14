@@ -1,12 +1,13 @@
-$day-col-width: 2.5rem;
-$qty-col-width: 3rem;
-$price-col-width: 5rem;
-$date-col-width: 8rem;
-$account-col-width: 10rem;
-$title-col-width: 17rem;
-
-
 .main {
+    // .main scoped variables
+    --day-col-width: 2.5rem;
+    --qty-col-width: 3rem;
+    --price-col-width: 5rem;
+    --date-col-width: 8rem;
+    --account-col-width: 17rem;
+    --title-col-width: 17rem;
+    --default-table-border-color: #cacac9;
+
     table-layout: fixed;
     border-collapse: collapse;
     min-width: 100%;
@@ -23,64 +24,77 @@ $title-col-width: 17rem;
     }
 
     thead  {
-        border-bottom: $primary solid 3px;
         color: $table-thead-text;
+        border-bottom: $primary solid 3px;
+
+        th {
+            padding: 0.35rem 0.25rem;
+            font-weight: bold;
+        }
+
+        tr:not(:last-child) th {
+            background-color: #f9f9f9;
+            min-height: 36px;
+        }
+
+        tr:last-child th {
+            background-color: $table-thead;
+        }
     }
 
-    thead th {
-        padding: 0.35rem 0.25rem;
-        font-weight: bold;
-    }
+    tfoot {
+        th {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
 
-    thead tr:not(:last-child) th {
-        background-color: #f9f9f9;
-        min-height: 36px;
-    }
+        tr:last-child th {
+            border-bottom: 0;
+        }
 
-    thead tr:last-child th {
-        background-color: $table-thead;
-    }
+        tr:first-child th {
+            border-top: double $black;
+        }
 
-    tfoot tr:last-child th {
-        border-bottom: 0;
-    }
-
-    tfoot tr th {
-        background-color: rgba(0, 0, 0, 0.02);
-    }
-
-    tfoot tr:first-child th {
-        border-top: double $black;
-    }
-
-    tfoot tr:not(:last-child) th {
-        font-weight: normal;
+        tr:not(:last-child) th {
+            font-weight: normal;
+        }
     }
 
     td, th {
         overflow: hidden;
         text-overflow: ellipsis;
-        border: 0.5px solid #cacac9;
         padding: 0.15rem 0.25rem;
         text-align: right;
         vertical-align: middle;
+        border-left: 1px solid var(--default-table-border-color);
+        border-top: 1px solid var(--default-table-border-color);
 
         &:has(.tip) {
             overflow: visible;
         }
+
+        /* Left border is 1px. To hide the current cell’s right border, target the next sibling. */
+        &.no-right-border {
+            +td,
+            +th {
+                border-left: 0;
+            }
+        }
     }
 
-    td:first-child, th:first-child {
-        border-left: 0 !important;
+    & td:first-child,
+    & th:first-child {
+        border-left: 0;
     }
 
-    td:last-child, th:last-child {
-        border-right: 0 !important;
+    // hack hover issue then table has no footer
+    & tr:last-child > td {
+        border-bottom: 1px solid var(--default-table-border-color);
     }
 
     // Custom backgrounds
     .dash {
-        color: #d1d1d1 !important;
+        color: #d1d1d1;
     }
 
     .table-success {
@@ -100,14 +114,6 @@ $title-col-width: 17rem;
         border-left: 3px solid $black;
     }
 
-    .no-left-border {
-        border-left: 0 !important;
-    }
-
-    .no-right-border {
-        border-right: 0 !important;
-    }
-
     .right-thin-border {
         border-right: 2px solid $black;
     }
@@ -116,49 +122,41 @@ $title-col-width: 17rem;
         border-left: 2px solid $black;
     }
 
-    .right-double-border {
-        border-right: double $black;
-    }
-
-    .left-double-border {
-        border-left: double $black;
-    }
-
     // Columns widths
     .short-title-col {
-        width: calc($title-col-width / 2);
+        width: calc(var(--title-col-width) / 2);
     }
 
     .date-col {
-        width: $date-col-width;
+        width: var(--date-col-width);
     }
 
     .account-col {
-        width: $account-col-width;
+        width: var(--account-col-width);
     }
 
     .title-col {
-        width: $title-col-width;
+        width: var(--title-col-width);
     }
 
     .day-col {
-        width: $day-col-width;
+        width: var(--day-col-width);
     }
 
     .qty-col {
-        width: $qty-col-width;
+        width: var(--qty-col-width);
     }
 
     .price-col {
-        width: $price-col-width;
+        width: var(--price-col-width);
     }
 
     .double-price-col {
-        width: calc($price-col-width * 2);
+        width: calc(var(--price-col-width) * 2);
     }
 
     .long-price-col {
-        width: calc($price-col-width + 2rem);
+        width: calc(var(--price-col-width) + 2rem);
     }
 
     .edit-col {
@@ -185,20 +183,9 @@ $title-col-width: 17rem;
         white-space: pre-wrap;
     }
 
-    // Hover styles
-    &.hover {
-        tbody tr:hover {
-            > td {
-                background-color: $table-hover-bg !important;
-                border-bottom: darken($table-hover-bg, 20) 1px double !important;
-                border-top: darken($table-hover-bg, 20) 1px double !important;
-            }
-        }
-    }
-
     // Striped styles
     &.striped {
-        tbody tr:nth-child(even) {
+        tr:nth-child(even) {
             > td {
                 background-color: rgba(0, 0, 0, 0.03);
             }
@@ -218,6 +205,15 @@ $title-col-width: 17rem;
             > td.table-danger.day-warning {
                 background-color: $warning-bg;
             }
+        }
+    }
+
+    // Hover styles
+    &.hover {
+        tr:hover > td {
+            background-color: $table-hover-bg !important;
+            border-bottom: darken($table-hover-bg, 20) 1px solid;
+            border-top: darken($table-hover-bg, 20) 1px solid;
         }
     }
 }
@@ -244,33 +240,38 @@ $title-col-width: 17rem;
         width: 5.5rem;
     }
 
-    .weekend-col {
-        background-color: $table-weekend !important;
-        color: $table-weekend-color;
+    .empty-col {
+        border-left: #fff solid .5rem;
     }
 
-    .current-day {
-        font-weight: 600;
-        border-top:
-            $table-current-day-border-color 1px double !important;
-        border-bottom:
-            $table-current-day-border-color 1px double !important;
+    .total-col {
+        border-left: double $black;
+        border-right: double $black;
+    }
 
-        & :not([class*="day"]) {
-            background-color: $table-current-day !important;
+    > tbody > tr.weekend-col {
+        > td:not([class*="day"]) {
+            background-color: $table-weekend;
         }
+    }
 
-        & :not(:first-child):not(.table-danger):not(.empty-column) {
-            color: $table-current-day-font-color;
+    > tbody > tr.current-day {
+        font-weight: 600;
+
+        > td {
+            border-top:
+                $table-current-day-border-color 1px double;
+            border-bottom:
+                $table-current-day-border-color 1px double;
+
+            &:not([class*="day"]) {
+                background-color: $table-current-day;
+            }
         }
 
         &:hover .button-expand {
-            background-color: transparent !important;
+            background-color: transparent;
         }
-    }
-
-    .empty-column {
-        border-left: #fff solid .5rem;
     }
 
     // Expand month table row to see expenses
@@ -281,7 +282,7 @@ $title-col-width: 17rem;
         }
 
         tr.expand-expenses > td {
-            background-color: white !important;
+            background-color: white;
 
             &:has([class*="alert"]) {
                 padding-top: $gap;
@@ -292,7 +293,7 @@ $title-col-width: 17rem;
             }
 
             &:hover {
-                background-color: unset !important;
+                background-color: unset;
             }
         }
     }
@@ -309,18 +310,6 @@ $title-col-width: 17rem;
             font-weight: 650;
         }
     }
-
-    &.striped {
-        tbody tr:nth-child(even) {
-            > td.table-danger.day-negative {
-                background-color: $negative-bg;
-            }
-
-            > td.table-danger.day-warning {
-                background-color: $warning-bg;
-            }
-        }
-    }
 }
 
 
@@ -332,7 +321,7 @@ $title-col-width: 17rem;
 
     td.exception {
         padding-left: 5px;
-        border-left: 5px solid $exception !important;
+        border-left: 5px solid $exception;
     }
 
     .file-col {
@@ -344,6 +333,14 @@ $title-col-width: 17rem;
 
 // Book table
 .book-table {
+    tr.currently-reading-book {
+        background-color: $table-currently-reading;
+        border-top:
+            $table-current-day-border-color 1px double;
+        border-bottom:
+            $table-current-day-border-color 1px double;
+    }
+
     .author-col {
         min-width: 20rem;
         width: 20rem;
@@ -381,11 +378,10 @@ $title-col-width: 17rem;
 }
 
 
-.currently-reading-book,
-.std-av-border {
-    background-color: $table-currently-reading;
+.main tr.std-av-border > td {
+    background-color: $table-currently-reading !important;
     border-top:
-        $table-current-day-border-color 1px double !important;
+        $table-current-day-border-color 1px double;
     border-bottom:
-        $table-current-day-border-color 1px double !important;
+        $table-current-day-border-color 1px double;
 }

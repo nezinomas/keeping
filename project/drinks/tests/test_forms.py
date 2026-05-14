@@ -2,11 +2,11 @@ from datetime import date
 
 import pytest
 import time_machine
-from mock import patch
 
-from ...users.factories import UserFactory
-from ..factories import DrinkFactory, DrinkTargetFactory
+from ...users.tests.factories import UserFactory
 from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
+from ..models import Drink
+from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -22,7 +22,7 @@ def test_drink_init_fields(main_user):
     form = DrinkForm(user=main_user).as_p()
 
     assert '<input type="text" name="date"' in form
-    assert '<input type="number" name="quantity"' in form
+    assert '<input type="number" name="stdav"' in form
     assert '<select name="option"' in form
     assert '<select name="user"' not in form
     assert '<input type="text" name="counter_type"' not in form
@@ -54,13 +54,14 @@ def test_drink_option_initial_value(main_user):
     assert '<option value="beer" selected>Alus</option>' in form
 
 
-@patch("project.drinks.forms.App_name", "Counter Type")
-def test_drink_valid_data(main_user):
+def test_drink_valid_data(mocker, main_user):
+    mocker.patch("project.drinks.forms.App_name", "Counter Type")
+
     form = DrinkForm(
         user=main_user,
         data={
             "date": "1999-01-01",
-            "quantity": 1.0,
+            "stdav": 1.0,
             "option": "beer",
         },
     )
@@ -70,20 +71,63 @@ def test_drink_valid_data(main_user):
     data = form.save()
 
     assert data.date == date(1999, 1, 1)
-    assert data.quantity == 2.5
+    assert data.stdav == 2.5
     assert data.user.username == "bob"
     assert data.counter_type == "Counter Type"
 
 
-@patch("project.drinks.forms.App_name", "Counter Type")
+@pytest.mark.parametrize(
+    "ml, drink_type, expect_stdav, expect_converted_from_ml",
+    [
+        (1, "beer", 2.5, False),
+        (21, "beer", 0.1, True),
+        (500, "beer", 2.5, True),
+        (1, "wine", 8, False),
+        (20, "wine", 160, False),
+        (21, "wine", 0.22, True),
+        (750, "wine", 8, True),
+        (1, "vodka", 40, False),
+        (20, "vodka", 800, False),
+        (21, "vodka", 0.84, True),
+        (1000, "vodka", 40, True),
+        (1, "stdav", 1, False),
+        (20, "stdav", 20, False),
+        (21, "stdav", 21, False),
+    ],
+)
+def test_drink_recalculate_ml_on_save(
+    mocker, main_user, ml, drink_type, expect_stdav, expect_converted_from_ml
+):
+    mocker.patch("project.drinks.forms.App_name", "Counter Type")
+
+    form = DrinkForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "stdav": ml,
+            "option": drink_type,
+        },
+    )
+
+    form.save()
+
+    actual = Drink.objects.last()
+
+    assert actual.option == drink_type
+    assert round(actual.stdav, 2) == expect_stdav
+    assert actual.converted_from_ml == expect_converted_from_ml
+
+
 @time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
-def test_drink_invalid_date(main_user, year):
+def test_drink_invalid_date(mocker, main_user, year):
+    mocker.patch("project.drinks.forms.App_name", "Counter Type")
+
     form = DrinkForm(
         user=main_user,
         data={
             "date": f"{year}-01-01",
-            "quantity": 1.0,
+            "stdav": 1.0,
             "option": "beer",
         },
     )
@@ -100,7 +144,7 @@ def test_drink_blank_data(main_user):
 
     assert len(form.errors) == 3
     assert "date" in form.errors
-    assert "quantity" in form.errors
+    assert "stdav" in form.errors
     assert "option" in form.errors
 
 
@@ -205,7 +249,7 @@ def test_drink_filter_init_fields():
     assert '<input type="number" name="year2"' in form
 
 
-@time_machine.travel("1999-01-01")
+@time_machine.travel("1999-01-01 12:05:04")
 def test_drink_filter_initial_values():
     form = DrinkCompareForm().as_p()
 

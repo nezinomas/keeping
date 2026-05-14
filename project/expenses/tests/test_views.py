@@ -4,11 +4,11 @@ import pytest
 import time_machine
 from django.urls import resolve, reverse
 
-from ...accounts.factories import AccountFactory
+from ...accounts.tests.factories import AccountFactory
 from ...core.tests.utils import change_profile_year, clean_content
 from .. import models
-from ..factories import Expense, ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 from ..views import expenses, expenses_name, expenses_type
+from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -595,7 +595,7 @@ def test_expenses_delete_other_journal_post_form(client_logged, second_user):
     url = reverse("expenses:delete", kwargs={"pk": i2.pk})
     client_logged.post(url)
 
-    assert Expense.objects.all().count() == 1
+    assert models.Expense.objects.all().count() == 1
 
 
 # -------------------------------------------------------------------------------------
@@ -831,7 +831,7 @@ def test_search_pagination_first_page(client_logged):
     t = ExpenseTypeFactory()
     n = ExpenseNameFactory()
     i = ExpenseFactory.build_batch(51, account=a, expense_type=t, expense_name=n)
-    Expense.objects.bulk_create(i)
+    models.Expense.objects.bulk_create(i)
 
     url = reverse("expenses:search")
     response = client_logged.get(url, {"search": "type"})
@@ -845,7 +845,7 @@ def test_search_pagination_second_page(client_logged):
     t = ExpenseTypeFactory()
     n = ExpenseNameFactory()
     i = ExpenseFactory.build_batch(51, account=a, expense_type=t, expense_name=n)
-    Expense.objects.bulk_create(i)
+    models.Expense.objects.bulk_create(i)
 
     url = reverse("expenses:search")
     response = client_logged.get(url, {"page": 2, "search": "type"})

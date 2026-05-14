@@ -4,11 +4,10 @@ from datetime import date
 import pytest
 import time_machine
 from django.test import override_settings
-from mock import patch
 
-from ...users.factories import UserFactory
-from ..factories import CountTypeFactory
+from ...users.tests.factories import UserFactory
 from ..forms import CountForm, CountTypeForm
+from .factories import CountTypeFactory
 
 pytestmark = pytest.mark.django_db
 

@@ -1,54 +1,42 @@
 from datetime import date, timedelta
-from typing import Optional, cast
+from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import Count, F, Q, Sum, Value
-from django.db.models.functions import TruncMonth
-from django.utils.translation import gettext as _
+from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
-from ...users.models import User
-from ..managers import SavingBalanceQuerySet, SavingQuerySet, SavingTypeQuerySet
-from ..models import Saving, SavingBalance, SavingType
+from ...core.mixins.sum import SumMixin
+from ...core.services.model_services import BaseModelService
+from .. import models
 
 
-class SavingTypeModelService:
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
+class SavingTypeModelService(BaseModelService):
+    def get_queryset(self):
+        return models.SavingType.objects.select_related("journal").filter(
+            journal=self.user.journal
+        )
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
+    def year(self, year):
+        raise NotImplementedError(
+            "SavingTypeModelService.year is not implemented. Use items() instead."
+        )
 
-        self.user = user
-        self.objects = cast(SavingTypeQuerySet, SavingType.objects).related(self.user)
+    def all(self):
+        return self.objects.all()
 
     def none(self):
-        return SavingType.objects.none()
+        return self.objects.none()
 
     def items(self, year=None):
         year = year or self.user.year
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
-    def all(self):
-        return self.objects
 
-
-class SavingModelService:
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.user = user
-        self.objects = cast(SavingQuerySet, Saving.objects).related(self.user)
+class SavingModelService(SumMixin, BaseModelService):
+    def get_queryset(self):
+        return models.Saving.objects.select_related("account", "saving_type").filter(
+            saving_type__journal=self.user.journal
+        )
 
     def year(self, year):
         return self.objects.filter(date__year=year)
@@ -57,10 +45,12 @@ class SavingModelService:
         return self.objects
 
     def sum_by_year(self):
-        return self.objects.year_sum()
+        return self.year_sum(self.objects)
 
     def sum_by_month(self, year: int, month: Optional[int] = None):
-        return self.objects.month_sum(year, month).annotate(title=Value("savings"))
+        return self.month_sum(self.objects, year, month).annotate(
+            title=Value("savings")
+        )
 
     def sum_by_month_and_type(self, year: int):
         return (
@@ -76,37 +66,62 @@ class SavingModelService:
         )
 
     def sum_by_day_and_type(self, year: int, month: int):
-        return self.objects.day_sum(year=year, month=month).values(
+        return self.day_sum(self.objects, year=year, month=month).values(
             "date", "sum", title=F("saving_type__title")
         )
 
     def sum_by_day(self, year: int, month: int):
-        return self.objects.day_sum(year=year, month=month).annotate(
-            title=Value(_("Savings"))
+        return self.day_sum(self.objects, year=year, month=month).annotate(
+            title=Value("savings")
         )
 
-    def last_months(self, months: int = 6) -> float:
-        # previous month
-        # if today February, then start is 2020-01-31
+    def last_months(self, months: int = 6):
+        """
+        Calculates the total sum of savings for the last `months` months.
+        If today is 2020-02-15 and months=6, it will calculate
+        the sum from 2019-08-01 to 2020-01-31.
+        - If there are no savings in that period, it will return 0.
+        """
         start = date.today().replace(day=1) - timedelta(days=1)
 
         # back months to past; if months=6 then end=2019-08-01
         end = (start + timedelta(days=1)) - relativedelta(months=months)
 
-        return self.objects.filter(date__range=(end, start)).aggregate(sum=Sum("price"))
+        return self.objects.filter(date__range=(end, start)).aggregate(
+            sum=Coalesce(Sum("price"), 0)
+        )
+
+    def incomes(self):
+        """
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
+        """
+        return (
+            self.objects.annotate(year=ExtractYear(F("date")))
+            .values("year", "saving_type__title")
+            .annotate(incomes=Sum("price"), fee=Sum("fee"))
+            .values("year", "incomes", "fee", category_id=F("saving_type__pk"))
+            .order_by("year", "category_id")
+        )
+
+    def expenses(self):
+        """
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
+        """
+        return (
+            self.objects.annotate(year=ExtractYear(F("date")))
+            .values("year", "account__title")
+            .annotate(expenses=Sum("price"))
+            .values("year", "expenses", category_id=F("account__pk"))
+            .order_by("year", "category_id")
+        )
 
 
-class SavingBalanceModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.user = user
-        self.objects = cast(SavingBalanceQuerySet, SavingBalance.objects).related(
-            self.user
+class SavingBalanceModelService(BaseModelService):
+    def get_queryset(self):
+        return models.SavingBalance.objects.select_related("saving_type").filter(
+            saving_type__journal=self.user.journal
         )
 
     def items(self):

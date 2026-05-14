@@ -1,4 +1,3 @@
-import os
 import tomllib as toml
 from pathlib import Path
 
@@ -126,10 +125,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
-    "crispy_forms",
-    "crispy_bootstrap5",
     "django_htmx",
     "django_cotton",
+    "widget_tweaks",
 ]
 INSTALLED_APPS.extend(f"project.{app}" for app in PROJECT_APPS)
 
@@ -154,7 +152,3 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
-
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = "bootstrap5"

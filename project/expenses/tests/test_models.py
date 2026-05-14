@@ -1,28 +1,30 @@
 from datetime import date
 
+import factory
 import mock
 import pytest
 import time_machine
+from django.conf import settings
 from django.core.files import File
 from django.db import models
-from django.urls import reverse
+from django.db.models.signals import post_save
 from override_storage import override_storage
 
-from ...accounts.factories import AccountFactory
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
-from ...expenses.factories import ExpenseFactory
+from ...accounts.tests.factories import AccountFactory
 from ...journals.models import Journal
-from ...users.factories import UserFactory
-from ..factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
+from ...users.tests.factories import UserFactory
 from ..models import Expense, ExpenseName, ExpenseType
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
     ExpenseTypeModelService,
 )
+from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
+is_sqlite = "sqlite3" in settings.DATABASES["default"]["ENGINE"]
 
 
 @pytest.fixture()
@@ -44,6 +46,7 @@ def test_expense_type_str():
     assert str(e) == "Expense Type"
 
 
+@factory.django.mute_signals(post_save)
 def test_month_expense_type(main_user, expenses):
     expect = [
         {"date": date(1999, 1, 1), "sum": 50, "title": "Expense Type"},
@@ -71,7 +74,7 @@ def test_day_expense_type(main_user, expenses_january):
         },
     ]
 
-    actual = [*ExpenseModelService(main_user).sum_by_day_ant_type(1999, 1)]
+    actual = [*ExpenseModelService(main_user).sum_by_day_and_type(1999, 1)]
 
     assert actual == expect
 
@@ -126,7 +129,7 @@ def test_expense_type_unique_users(main_user, second_user):
 # ----------------------------------------------------------------------------
 #                                                                 Expense Name
 # ----------------------------------------------------------------------------
-def test_expnese_name_str():
+def test_expenese_name_str():
     e = ExpenseNameFactory.build()
 
     assert str(e) == "Expense Name"
@@ -148,7 +151,7 @@ def test_expense_name_related_different_users(main_user, second_user):
     ExpenseNameFactory(title="N1", parent=t1)
     ExpenseNameFactory(title="N2", parent=t2)
 
-    actual = ExpenseName.objects.related(main_user)
+    actual = ExpenseNameModelService(main_user).items()
 
     # expense names for user bob
     assert len(actual) == 1
@@ -160,7 +163,7 @@ def test_expense_name_related_qs_count(main_user, django_assert_max_num_queries)
     ExpenseNameFactory(title="T2")
 
     with django_assert_max_num_queries(1):
-        list(q.parent.title for q in ExpenseName.objects.related(main_user))
+        list(q.parent.title for q in ExpenseNameModelService(main_user).items())
 
 
 def test_expense_name_year(main_user):
@@ -184,7 +187,6 @@ def test_expense_name_year_02(main_user):
     assert actual[1].title == "N1"
 
 
-@pytest.mark.django_db
 @pytest.mark.xfail(raises=Exception)
 def test_expense_name_no_dublicates():
     p1 = ExpenseTypeFactory(title="P1")
@@ -226,6 +228,7 @@ def test_expense_attachment_field(main_user):
     assert str(e.attachment) == f"{pk}/expense-type/1974.01_test1.jpg"
 
 
+@factory.django.mute_signals(post_save)
 def test_expense_related(main_user, second_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2", journal=second_user.journal)
@@ -235,12 +238,13 @@ def test_expense_related(main_user, second_user):
     ExpenseFactory(expense_type=t1, account=a1)
     ExpenseFactory(expense_type=t2, account=a2)
     # must by selected bob expenses
-    actual = Expense.objects.related(main_user)
+    actual = ExpenseModelService(main_user).items()
 
     assert len(actual) == 1
     assert str(actual[0].expense_type) == "T1"
 
 
+@factory.django.mute_signals(post_save)
 def test_expense_year(main_user):
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(2000, 1, 1))
@@ -258,6 +262,7 @@ def test_expense_year_query_count(main_user, django_assert_max_num_queries):
         [q.expense_type for q in ExpenseModelService(main_user).year(2000)]
 
 
+@factory.django.mute_signals(post_save)
 def test_expense_items(main_user):
     ExpenseFactory(date=date(1999, 1, 1))
     ExpenseFactory(date=date(2000, 1, 1))
@@ -275,6 +280,7 @@ def test_expense_items_query_count(main_user, django_assert_max_num_queries):
         [q.expense_type.title for q in ExpenseModelService(main_user).items()]
 
 
+@factory.django.mute_signals(post_save)
 def test_month_name_sum(main_user):
     ExpenseFactory(
         date=date(1974, 1, 1),
@@ -318,8 +324,9 @@ def test_month_name_sum(main_user):
     assert [*actual] == expect
 
 
+@factory.django.mute_signals(post_save)
 @time_machine.travel("1999-06-01")
-def test_expense_avg_last_months(main_user):
+def test_expense_last_months(main_user):
     ExpenseFactory(date=date(1998, 11, 30), price=3)
     ExpenseFactory(date=date(1998, 12, 31), price=4)
     ExpenseFactory(date=date(1999, 1, 1), price=7)
@@ -331,13 +338,39 @@ def test_expense_avg_last_months(main_user):
 
 
 @time_machine.travel("1999-06-01")
-def test_expense_avg_last_months_qs_count(main_user, django_assert_max_num_queries):
+@factory.django.mute_signals(post_save)
+def test_expense_last_months_empty_expenses(main_user):
+    ExpenseTypeFactory()
+
+    actual = ExpenseModelService(main_user).last_months(6)
+    assert not actual
+
+
+@time_machine.travel("1999-06-01")
+@factory.django.mute_signals(post_save)
+def test_expense_last_months_one_of_expenses_empty(main_user):
+    t1 = ExpenseTypeFactory(title="T1")
+    t2 = ExpenseTypeFactory(title="T2")
+
+    ExpenseFactory(date=date(1999, 1, 1), price=3, expense_type=t1)
+
+    actual = ExpenseModelService(main_user).last_months(6)
+
+    assert len(actual) == 1
+    assert actual[0]["sum"] == 3
+    assert actual[0]["title"] == "T1"
+
+
+@factory.django.mute_signals(post_save)
+@time_machine.travel("1999-06-01")
+def test_expense_last_months_qs_count(main_user, django_assert_max_num_queries):
     ExpenseFactory(date=date(1999, 1, 1), price=2)
 
     with django_assert_max_num_queries(1):
         list(ExpenseModelService(main_user).last_months())
 
 
+@factory.django.mute_signals(post_save)
 def test_expense_years_sum(main_user):
     ExpenseFactory(date=date(1998, 1, 1), price=4.0)
     ExpenseFactory(date=date(1998, 1, 1), price=4.0)
@@ -353,6 +386,7 @@ def test_expense_years_sum(main_user):
     assert actual[1]["sum"] == 10.0
 
 
+@factory.django.mute_signals(post_save)
 def test_expense_sum_by_month(main_user):
     ExpenseFactory(date=date(1999, 2, 3), price=2.0)
     ExpenseFactory(date=date(1999, 2, 12), price=4.0)
@@ -585,6 +619,7 @@ def test_expense_post_delete_empty_account_balance_table():
     assert actual[0].delta == 5
 
 
+@factory.django.mute_signals(post_save)
 def test_expense_sum_by_year_type(main_user):
     ExpenseFactory(date=date(1111, 1, 1), price=1)
     ExpenseFactory(date=date(1999, 1, 1), price=2)
@@ -601,6 +636,7 @@ def test_expense_sum_by_year_type(main_user):
     assert actual[1]["sum"] == 12
 
 
+@factory.django.mute_signals(post_save)
 def test_expense_sum_by_year_type_filtering(main_user):
     t1 = ExpenseTypeFactory(title="X")
     t2 = ExpenseTypeFactory(title="Y")
@@ -625,6 +661,7 @@ def test_expense_sum_by_year_type_filtering(main_user):
     assert actual[1]["sum"] == 12
 
 
+@factory.django.mute_signals(post_save)
 def test_expense_sum_by_year_name(main_user):
     ExpenseFactory(date=date(1111, 1, 1), price=1)
     ExpenseFactory(date=date(1999, 1, 1), price=2)
@@ -642,6 +679,7 @@ def test_expense_sum_by_year_name(main_user):
     assert actual[1]["sum"] == 12
 
 
+@factory.django.mute_signals(post_save)
 def test_expense_sum_by_year_name_filtering(main_user):
     t1 = ExpenseNameFactory(title="X")
     t2 = ExpenseNameFactory(title="Y")
@@ -667,8 +705,9 @@ def test_expense_sum_by_year_name_filtering(main_user):
     assert actual[1]["sum"] == 12
 
 
+@factory.django.mute_signals(post_save)
 def test_expenses(main_user, expenses):
-    actual = Expense.objects.expenses(main_user)
+    actual = ExpenseModelService(main_user).expenses()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -685,3 +724,118 @@ def test_expenses(main_user, expenses):
     assert actual[3]["year"] == 1999
     assert actual[3]["category_id"] == 2
     assert actual[3]["expenses"] == 125
+
+
+@factory.django.mute_signals(post_save)
+def test_sum_by_day_and_type_basic_grouping(main_user):
+    t1 = ExpenseTypeFactory(title="T1")
+    t2 = ExpenseTypeFactory(title="T2")
+
+    # Same day, same type -> should sum together
+    ExpenseFactory(date=date(1999, 1, 1), price=10, expense_type=t1)
+    ExpenseFactory(date=date(1999, 1, 1), price=20, expense_type=t1)
+
+    # Same day, different type -> should be a separate group
+    ExpenseFactory(date=date(1999, 1, 1), price=50, expense_type=t2)
+
+    # Different day, same type -> should be a separate group
+    ExpenseFactory(date=date(1999, 1, 2), price=100, expense_type=t1)
+
+    actual = list(ExpenseModelService(main_user).sum_by_day_and_type(1999, 1))
+
+    assert len(actual) == 3
+
+    # Group 1: Jan 1st, Type T1 (10 + 20)
+    assert actual[0]["date"] == date(1999, 1, 1)
+    assert actual[0]["title"] == "T1"
+    assert actual[0]["sum"] == 30
+    assert actual[0]["exception_sum"] == 0
+
+    # Group 2: Jan 1st, Type T2
+    assert actual[1]["date"] == date(1999, 1, 1)
+    assert actual[1]["title"] == "T2"
+    assert actual[1]["sum"] == 50
+    assert actual[1]["exception_sum"] == 0
+
+    # Group 3: Jan 2nd, Type T1
+    assert actual[2]["date"] == date(1999, 1, 2)
+    assert actual[2]["title"] == "T1"
+    assert actual[2]["sum"] == 100
+    assert actual[2]["exception_sum"] == 0
+
+
+@factory.django.mute_signals(post_save)
+def test_sum_by_day_and_type_calculates_exceptions(main_user):
+    t1 = ExpenseTypeFactory(title="T1")
+
+    # Exception flag True
+    ExpenseFactory(date=date(1999, 1, 1), price=15, expense_type=t1, exception=1)
+
+    # Exception flag False
+    ExpenseFactory(date=date(1999, 1, 1), price=25, expense_type=t1, exception=0)
+
+    actual = list(ExpenseModelService(main_user).sum_by_day_and_type(1999, 1))
+
+    assert len(actual) == 1
+
+    # Total sum should be 40, but exception_sum should only be 15
+    assert actual[0]["sum"] == 40
+    assert actual[0]["exception_sum"] == 15
+
+
+@factory.django.mute_signals(post_save)
+def test_sum_by_day_and_type_ignores_other_dates(main_user):
+    t1 = ExpenseTypeFactory(title="T1")
+
+    # Correct Target (Jan 1999)
+    ExpenseFactory(date=date(1999, 1, 15), price=10, expense_type=t1)
+
+    # Wrong Month (Feb 1999)
+    ExpenseFactory(date=date(1999, 2, 15), price=20, expense_type=t1)
+
+    # Wrong Year (Jan 1998)
+    ExpenseFactory(date=date(1998, 1, 15), price=30, expense_type=t1)
+
+    actual = list(ExpenseModelService(main_user).sum_by_day_and_type(1999, 1))
+
+    # Should strictly return the single expense from Jan 1999
+    assert len(actual) == 1
+    assert actual[0]["date"] == date(1999, 1, 15)
+    assert actual[0]["sum"] == 10
+
+
+@pytest.mark.skipif(
+    is_sqlite, reason="SQLite does not support MariaDB's FORMAT() function."
+)
+def test_expenses_list_dynamic_locale_lt(main_user):
+    # 1. Ensure user is set to Lithuanian
+    main_user.journal.lang = "lt"
+    main_user.journal.save()
+
+    # 2. Create an expense for 12.50 (assuming stored as cents: 1250)
+    ExpenseFactory(price=1250)
+
+    qs = ExpenseModelService(main_user).items()
+    actual = list(ExpenseModelService(main_user).expenses_list(qs))
+
+    assert len(actual) == 1
+    # MariaDB 'lt_LT' uses a comma for decimals
+    assert actual[0]["price_str"] == "12,50"
+
+
+@pytest.mark.skipif(
+    is_sqlite, reason="SQLite does not support MariaDB's FORMAT() function."
+)
+def test_expenses_list_dynamic_locale_en(main_user):
+    # 1. Switch user to English
+    main_user.journal.lang = "en"
+    main_user.journal.save()
+
+    ExpenseFactory(price=1250)
+
+    qs = ExpenseModelService(main_user).items()
+    actual = list(ExpenseModelService(main_user).expenses_list(qs))
+
+    assert len(actual) == 1
+    # MariaDB 'en_US' uses a period for decimals
+    assert actual[0]["price_str"] == "12.50"

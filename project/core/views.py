@@ -1,13 +1,10 @@
-from urllib.parse import urlparse
-
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
-from django.urls import resolve
 
 from .lib.date import years
-from .mixins.views import TemplateViewMixin, http_htmx_response
+from .lib.utils import get_safe_redirect, http_htmx_response
+from .mixins.views import TemplateViewMixin
 from .services import signals_service
-from .tests.utils import timer
 
 
 @login_required()
@@ -17,9 +14,7 @@ def set_year(request, year):
         user.year = year
         user.save()
 
-    parsed = urlparse(request.META.get("HTTP_REFERER"))
-
-    return redirect(parsed.path) if resolve(parsed.path) else redirect("/")
+    return redirect(get_safe_redirect(request, request.META.get("HTTP_REFERER")))
 
 
 class RegenerateBalances(TemplateViewMixin):

@@ -1,10 +1,10 @@
 import pytest
 from django.urls import reverse
 
-from ...journals.factories import JournalFactory
-from ..factories import AccountBalanceFactory, AccountFactory
-from ..models import Account, AccountBalance
+from ...journals.tests.factories import JournalFactory
+from ..models import Account
 from ..services.model_services import AccountBalanceModelService, AccountModelService
+from .factories import AccountBalanceFactory, AccountFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -169,7 +169,7 @@ def test_account_balance_sorting(main_user):
     AccountBalanceFactory(year=2000, account=a1)
     AccountBalanceFactory(year=1999, account=a1)
 
-    actual = AccountBalance.objects.related(main_user)
+    actual = AccountBalanceModelService(main_user).objects
 
     assert actual[0].year == 1999
     assert actual[0].account == a1

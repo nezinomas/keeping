@@ -12,14 +12,64 @@ from ...incomes.services.model_services import IncomeModelService
 SEARCH_DICT = {"category": None, "year": None, "month": None, "remark": None}
 
 
-def sanitize_search_str(search_str):
+# -------------------------------------------------------------------------------------
+#                                                                        Public Methods
+# -------------------------------------------------------------------------------------
+def search_expenses(user, search_str):
+    category_list = ["expense_type__title", "expense_name__title"]
+
+    service = ExpenseModelService(user)
+    qs = service.items()
+    qs = _generic_search(qs, search_str, category_list)
+
+    return service.expenses_list(qs)
+
+
+def search_incomes(user, search_str):
+    category_list = ["income_type__title"]
+
+    service = IncomeModelService(user)
+    qs = service.items()
+    qs = _generic_search(qs, search_str, category_list)
+
+    return qs.values(
+        "id",
+        "date",
+        "income_type__title",
+        "account__title",
+        "price",
+        "remark",
+    )
+
+
+def search_books(user, search_str):
+    category_list = ["author", "title"]
+
+    service = BookModelService(user)
+    qs = service.items()
+    qs = _generic_search(qs, search_str, category_list, "started")
+
+    return qs.values(
+        "id",
+        "author",
+        "title",
+        "remark",
+        "started",
+        "ended",
+    )
+
+
+# -------------------------------------------------------------------------------------
+#                                                                       Private Methods
+# -------------------------------------------------------------------------------------
+def _sanitize_search_str(search_str):
     if search_str:
         search_str = re.sub(r"[^\w\d\.\- ]", "", search_str)
 
     return search_str
 
 
-def parse_search_no_args(search_str):
+def _parse_search_no_args(search_str):
     rtn = SEARCH_DICT.copy()
 
     if not search_str:
@@ -43,7 +93,7 @@ def parse_search_no_args(search_str):
     return rtn
 
 
-def parse_search_with_args(search_str):
+def _parse_search_with_args(search_str):
     parser = argparse.ArgumentParser()
     parser.add_argument("-category", "-c", type=str, nargs="+")
     parser.add_argument("-year", "-y", type=int)
@@ -56,7 +106,7 @@ def parse_search_with_args(search_str):
     return {key: args.get(key, SEARCH_DICT[key]) for key in SEARCH_DICT}
 
 
-def filter_short_search_words(search_dict):
+def _filter_short_search_words(search_dict):
     def filter_words(words):
         return [word for word in words if len(word) > 2]
 
@@ -69,22 +119,22 @@ def filter_short_search_words(search_dict):
     return search_dict
 
 
-def make_search_dict(search_str):
-    _str = sanitize_search_str(search_str)
+def _make_search_dict(search_str):
+    _str = _sanitize_search_str(search_str)
 
     try:
-        search_dict = parse_search_with_args(_str)
+        search_dict = _parse_search_with_args(_str)
         search_type = "with_args"
     except (AttributeError, SystemExit):
-        search_dict = parse_search_no_args(_str)
+        search_dict = _parse_search_no_args(_str)
         search_type = "no_args"
 
-    search_dict = filter_short_search_words(search_dict)
+    search_dict = _filter_short_search_words(search_dict)
 
     return search_dict, search_type
 
 
-def _get(search_dict, key, default_value):
+def _get_value(search_dict, key, default_value):
     try:
         value = search_dict[key]
     except KeyError:
@@ -93,20 +143,34 @@ def _get(search_dict, key, default_value):
     return value or default_value
 
 
-def generic_search(query, search_str, category_list, date_field="date"):
-    search_dict, search_type = make_search_dict(search_str)
+def _generic_search(query, search_str, category_list, date_field="date"):
+    search_dict, search_type = _make_search_dict(search_str)
 
     if all(value is None for value in search_dict.values()):
         return query.none()
 
-    # Date filters
+    query = _apply_date_filters(query, search_dict, date_field)
+
+    combined_filters = _build_category_filters(search_dict, category_list)
+    combined_filters += _build_remark_filters(search_dict)
+
+    if combined_filters:
+        operator_ = and_ if search_type == "with_args" else or_
+        query = query.filter(reduce(operator_, combined_filters))
+
+    return query.order_by(f"-{date_field}")
+
+
+def _apply_date_filters(query, search_dict, date_field):
     for key in ["year", "month"]:
         if not search_dict.get(key):
             continue
         query = query.filter(**{f"{date_field}__{key}": search_dict[key]})
+    return query
 
-    # Category filters
-    category_filters = [
+
+def _build_category_filters(search_dict, category_list):
+    return [
         reduce(
             or_,
             (
@@ -114,62 +178,12 @@ def generic_search(query, search_str, category_list, date_field="date"):
                 for category in category_list
             ),
         )
-        for search_word in _get(search_dict, "category", [])
+        for search_word in _get_value(search_dict, "category", [])
     ]
 
-    # Remark filters
-    remark_filters = [
+
+def _build_remark_filters(search_dict):
+    return [
         Q(remark__icontains=search_word)
-        for search_word in _get(search_dict, "remark", [])
+        for search_word in _get_value(search_dict, "remark", [])
     ]
-
-    # Combine Category and Remark filters
-    if combined_filters := category_filters + remark_filters:
-        operator_ = and_ if search_type == "with_args" else or_
-        query = query.filter(reduce(operator_, combined_filters))
-
-    return query.order_by(f"-{date_field}")
-
-
-def search_expenses(user, search_str):
-    category_list = ["expense_type__title", "expense_name__title"]
-
-    service = ExpenseModelService(user)
-    qs = service.items()
-    qs = generic_search(qs, search_str, category_list)
-
-    return service.expenses_list(qs)
-
-
-def search_incomes(user, search_str):
-    category_list = ["income_type__title"]
-
-    service = IncomeModelService(user)
-    qs = service.items()
-    qs = generic_search(qs, search_str, category_list)
-
-    return qs.values(
-        "id",
-        "date",
-        "income_type__title",
-        "account__title",
-        "price",
-        "remark",
-    )
-
-
-def search_books(user, search_str):
-    category_list = ["author", "title"]
-
-    service = BookModelService(user)
-    qs = service.items()
-    qs = generic_search(qs, search_str, category_list, "started")
-
-    return qs.values(
-        "id",
-        "author",
-        "title",
-        "remark",
-        "started",
-        "ended",
-    )

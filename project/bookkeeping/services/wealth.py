@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 
-from django.db.models import Model, Sum
+from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ...accounts.services.model_services import AccountBalanceModelService
+from ...core.services.model_services import BaseModelService
 from ...pensions.services.model_services import PensionBalanceModelService
 from ...savings.services.model_services import SavingBalanceModelService
 from ...users.models import User
@@ -19,20 +20,23 @@ class Data:
     pension_balance: float = field(init=False, default=0)
 
     def __post_init__(self):
-        self.account_balance = self.get_balance("balance", AccountBalanceModelService)
+        self.account_balance = self.get_balance(
+            "balance", AccountBalanceModelService(self.user)
+        )
         self.saving_balance = self.get_balance(
-            "market_value", SavingBalanceModelService
+            "market_value", SavingBalanceModelService(self.user)
         )
         self.pension_balance = self.get_balance(
-            "market_value", PensionBalanceModelService
+            "market_value", PensionBalanceModelService(self.user)
         )
 
-    def get_balance(self, field_name: str, model: Model) -> int:
+    def get_balance(
+        self,
+        field_name: str,
+        service: BaseModelService,
+    ) -> int:
         return (
-            model(self.user)
-            .year(self.year)
-            .filter(year=self.year)
-            .aggregate(Sum(field_name))[f"{field_name}__sum"]
+            service.year(self.year).aggregate(Sum(field_name))[f"{field_name}__sum"]
             or 0
         )
 

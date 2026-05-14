@@ -1,10 +1,13 @@
-from django.forms.formsets import BaseFormSet
-from django.forms.models import modelformset_factory
+from functools import partial
+
+from django.core.exceptions import ImproperlyConfigured
+from django.forms.models import BaseModelFormSet, modelformset_factory
+from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
 
 from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...core import signals
-from ...core.mixins.views import http_htmx_response
+from ...core.lib.utils import http_htmx_response
 
 SIGNALS = {
     AccountWorth: signals.accounts_signal,
@@ -13,79 +16,114 @@ SIGNALS = {
 }
 
 
-class BaseTypeFormSet(BaseFormSet):
+class BaseTypeFormSet(BaseModelFormSet):
+    def _get_relation_field_name(self) -> str:
+        """Extracts the relational field name to validate against."""
+        for field in self.model._meta.get_fields():
+            if field.many_to_one:
+                return field.name
+        raise ValueError(f"No many-to-one field found on {self.model.__name__}")
+
     def clean(self):
-        # if forms have errors, don't run formset clean
         if any(self.errors):
             return
 
-        dublicates = {}
-        account_name = [
-            f.name for f in self.model._meta.get_fields() if (f.many_to_one)
-        ][0]
+        relation_name = self._get_relation_field_name()
+        seen_items = {}  # Maps the account value directly to the form instance
+        duplicate_msg = _("The same accounts are selected.")
 
-        for i, form in enumerate(self.forms):
-            account = form.cleaned_data.get(account_name)
-            if account in dublicates:
-                msg = _("The same accounts are selected.")
-                if not self.forms[dublicates[account]].errors:
-                    self.forms[dublicates[account]].add_error(account_name, msg)
-                self.forms[i].add_error(account_name, msg)
+        for form in self.forms:
+            # Skip forms that are empty, marked for deletion, or have no dropdown value
+            if not form.cleaned_data or form.cleaned_data.get("DELETE"):
+                continue
 
-            dublicates[account] = i
+            item_value = form.cleaned_data.get(relation_name)
+            if not item_value:
+                continue
+
+            if item_value not in seen_items:
+                seen_items[item_value] = form
+                continue
+
+            previous_form = seen_items[item_value]
+
+            if relation_name not in previous_form.errors:
+                previous_form.add_error(relation_name, duplicate_msg)
+
+            form.add_error(relation_name, duplicate_msg)
 
 
 class FormsetMixin:
     template_name = "core/generic_formset.html"
+    service_class = None
+    category_service_class = None
+
+    @cached_property
+    def service_instance(self):
+        if self.service_class is None:
+            txt = f"{self.__class__.__module__}.{self.__class__.__name__}"
+            raise ImproperlyConfigured(
+                f"[{txt}] is missing a data source. Please define 'service_class'."
+            )
+
+        return self.service_class(self.request.user)
+
+    @cached_property
+    def model_class(self):
+        # Dynamically grabs the model right when self.model_class is requested
+        return self.service_instance.objects.model
 
     def formset_initial(self):
         return_list = []
 
-        # get self.model ForeignKey field name
-        foreign_key = [f.name for f in self.model._meta.get_fields() if (f.many_to_one)]
+        foreign_key = [
+            f.name for f in self.model_class._meta.get_fields() if f.many_to_one
+        ]
 
         if not foreign_key:
             return return_list
 
-        items = self.model_service(self.request.user).items()
+        items = self.category_service_class(self.request.user).items()
 
         return_list.extend({"price": None, foreign_key[0]: item} for item in items)
-
         return return_list
 
     def get_formset(self, post=None, **kwargs):
-        formset = modelformset_factory(
-            model=self.model,
+        factory_blueprint = partial(
+            modelformset_factory,
+            model=self.model_class,
             form=self.get_formset_class(),
             formset=BaseTypeFormSet,
-            extra=0,
         )
-        return (
-            formset(post, **kwargs)
-            if post
-            else formset(initial=self.formset_initial(), **kwargs)
+
+        if post:
+            formset = factory_blueprint(extra=0)
+            return formset(post, **kwargs)
+
+        # GET: Extra forms match data length, pass initial data and empty queryset
+        initial_data = self.formset_initial()
+        formset = factory_blueprint(extra=len(initial_data))
+
+        return formset(
+            initial=initial_data, queryset=self.model_class.objects.none(), **kwargs
         )
 
     def post(self, request, *args, **kwargs):
         formset = self.get_formset(request.POST or None)
-        if formset.is_valid():
-            objects = []
-            for form in formset:
-                if form.cleaned_data.get("price") is None:
-                    continue
+        if not formset.is_valid():
+            return super().form_invalid(formset)
 
-                model = form.instance._meta.model  # get worth model
-                form.cleaned_data["price"] *= 100  # convert price to cents
-                objects.append(model(**form.cleaned_data))  # create worth object
+        if objects := [
+            self.model_class(**form.cleaned_data)
+            for form in formset
+            if form.cleaned_data.get("price") is not None
+        ]:
+            self.service_instance.objects.bulk_create(objects)
 
-            # if any objects, bulk_create and call signal method
-            if objects:
-                model.objects.bulk_create(objects)
-                SIGNALS.get(model)(sender=model, instance=next(iter(objects)))
+            if signal := SIGNALS.get(self.model_class):
+                signal(sender=self.model_class, instance=next(iter(objects)))
 
-            return http_htmx_response(self.get_hx_trigger_django())
-
-        return super().form_invalid(formset)
+        return http_htmx_response(self.get_hx_trigger_django())
 
     def get_context_data(self, **kwargs):
         context = {

@@ -6,10 +6,10 @@ import time_machine
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 
-from ...accounts.factories import AccountFactory
-from ...users.factories import UserFactory
-from ..factories import ExpenseNameFactory, ExpenseTypeFactory
+from ...accounts.tests.factories import AccountFactory
+from ...users.tests.factories import UserFactory
 from ..forms import ExpenseForm, ExpenseNameForm, ExpenseTypeForm
+from .factories import ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 

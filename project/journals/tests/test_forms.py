@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from ...expenses.factories import ExpenseTypeFactory
+from ...expenses.tests.factories import ExpenseTypeFactory
 from ...journals.models import Journal
 from ..forms import SettingsForm, UnnecessaryForm
 

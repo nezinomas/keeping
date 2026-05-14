@@ -1,37 +1,31 @@
-from typing import cast
 
 from django.db.models import F, Sum
+from django.db.models.functions import ExtractYear
 
-from ...users.models import User
-from .. import managers, models
+from ...core.mixins.sum import SumMixin
+from ...core.services.model_services import BaseModelService
+from .. import models
 
 
-class PensionTypeModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
+class PensionTypeModelService(BaseModelService):
+    def get_queryset(self):
+        return models.PensionType.objects.select_related("journal").filter(
+            journal=self.user.journal
+        )
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.PensionTypeQuerySet, models.PensionType.objects
-        ).related(user)
+    def year(self, year: int):
+        raise NotImplementedError(
+            "PensionTypeModelService.year is not implemented. Use items() instead."
+        )
 
     def items(self):
         return self.objects.all()
 
 
-class PensionModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(managers.PensionQuerySet, models.Pension.objects).related(
-            user
+class PensionModelService(SumMixin, BaseModelService):
+    def get_queryset(self):
+        return models.Pension.objects.select_related("pension_type").filter(
+            pension_type__journal=self.user.journal
         )
 
     def year(self, year: int):
@@ -40,18 +34,25 @@ class PensionModelService:
     def items(self):
         return self.objects.all()
 
+    def incomes(self):
+        """
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
+        """
+        return (
+            self.objects.annotate(year=ExtractYear(F("date")))
+            .values("year", "pension_type__title")
+            .annotate(incomes=Sum("price"), fee=Sum("fee"))
+            .values("year", "incomes", "fee", category_id=F("pension_type__pk"))
+            .order_by("year", "id")
+        )
 
-class PensionBalanceModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.PensionBalanceQuerySet, models.PensionBalance.objects
-        ).related(user)
+class PensionBalanceModelService(BaseModelService):
+    def get_queryset(self):
+        return models.PensionBalance.objects.select_related("pension_type").filter(
+            pension_type__journal=self.user.journal
+        )
 
     def year(self, year: int):
         return self.objects.filter(year=year)

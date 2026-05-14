@@ -1,18 +1,15 @@
-from typing import cast
+from ...core.mixins.sum import SumMixin
+from ...core.services.model_services import BaseModelService
+from .. import models
 
-from ...users.models import User
-from .. import managers, models
 
-
-class CountModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(managers.CountQuerySet, models.Count.objects).related(user)
+class CountModelService(SumMixin, BaseModelService):
+    def get_queryset(self):
+        return (
+            models.Count.objects.select_related("user")
+            .filter(user=self.user)
+            .order_by("-date")
+        )
 
     def year(self, year, count_type=None):
         qs = self.objects
@@ -38,8 +35,8 @@ class CountModelService:
         if count_type:
             qs = qs.filter(count_type__slug=count_type)
 
-        return qs.year_sum(
-            year=year, sum_annotation="qty", sum_column="quantity"
+        return self.year_sum(
+            qs, year=year, sum_annotation="qty", sum_column="quantity"
         ).order_by("date")
 
     def sum_by_day(self, year, count_type=None, month=None) -> list:
@@ -50,22 +47,19 @@ class CountModelService:
         if count_type:
             qs = qs.filter(count_type__slug=count_type)
 
-        return qs.day_sum(
-            year=year, month=month, sum_annotation="qty", sum_column="quantity"
+        return self.day_sum(
+            qs, year=year, month=month, sum_annotation="qty", sum_column="quantity"
         ).order_by("date")
 
 
-class CountTypeModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
+class CountTypeModelService(BaseModelService):
+    def get_queryset(self):
+        return models.CountType.objects.select_related("user").filter(user=self.user)
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.CountTypeQuerySet, models.CountType.objects
-        ).related(user)
+    def year(self, year):
+        raise NotImplementedError(
+            "CountTypeModelService.year is not implemented. Use items() instead."
+        )
 
     def items(self):
         return self.objects

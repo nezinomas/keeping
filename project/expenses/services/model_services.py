@@ -1,12 +1,10 @@
 from datetime import date, timedelta
-from typing import cast
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import (
     BooleanField,
     Case,
     CharField,
-    Count,
     F,
     Func,
     Q,
@@ -15,52 +13,39 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import (
-    Cast,
     Concat,
     ExtractYear,
     TruncDay,
     TruncMonth,
-    TruncYear,
 )
-from django.urls import reverse
 
-from ...users.models import User
-from .. import managers, models
+from ...core.mixins.sum import SumMixin
+from ...core.services.model_services import BaseModelService
+from .. import models
 
 
-class ExpenseTypeModelService:
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
+class ExpenseTypeModelService(BaseModelService):
+    def get_queryset(self):
+        return (
+            models.ExpenseType.objects.select_related("journal")
+            .prefetch_related("expensename_set")
+            .filter(journal=self.user.journal)
+        )
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.ExpenseTypeQuerySet, models.ExpenseType.objects
-        ).related(user)
+    def year(self, year: int):
+        raise NotImplementedError(
+            "ExpenseTypeModelService.year is not implemented. Use items() instead."
+        )
 
     def items(self):
-        return self.objects.all()
+        return self.objects
 
 
-class ExpenseNameModelService:
-    def __init__(
-        self,
-        user: User,
-    ):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.ExpenseNameQuerySet, models.ExpenseName.objects
-        ).related(user)
+class ExpenseNameModelService(BaseModelService):
+    def get_queryset(self):
+        return models.ExpenseName.objects.select_related("parent").filter(
+            parent__journal=self.user.journal
+        )
 
     def year(self, year: int):
         return self.objects.filter(Q(valid_for__isnull=True) | Q(valid_for=year))
@@ -69,20 +54,14 @@ class ExpenseNameModelService:
         return self.objects
 
     def none(self):
-        return models.ExpenseName.objects.none()
+        return self.objects.none()
 
 
-class ExpenseModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(managers.ExpenseQuerySet, models.Expense.objects).related(
-            user
-        )
+class ExpenseModelService(SumMixin, BaseModelService):
+    def get_queryset(self):
+        return models.Expense.objects.select_related(
+            "expense_type", "expense_name", "account"
+        ).filter(expense_type__journal=self.user.journal)
 
     def year(self, year: int):
         return self.objects.filter(date__year=year)
@@ -91,98 +70,102 @@ class ExpenseModelService:
         return self.objects.all()
 
     def sum_by_month(self, year: int):
-        return self.objects.month_sum(year).annotate(title=Value("expenses"))
+        return self.month_sum(self.objects, year).annotate(title=Value("expenses"))
 
     def sum_by_month_and_type(self, year: int):
         """
         Sums expense_types by month
 
         return:
-        list of dictionaries: {'date': date.datete, 'sum': int, 'title': str}
+        list of dictionaries: {'date': datetime.date, 'sum': float, 'title': str}
         """
-
         return (
             self.objects.filter(date__year=year)
-            .annotate(cnt=Count("expense_type"))
-            .values("expense_type")
-            .annotate(date=TruncMonth("date"))
-            .values("date")
-            .annotate(c=Count("id"), sum=Sum("price"))
-            .order_by("date")
-            .values("date", "sum", title=F("expense_type__title"))
+            .annotate(month=TruncMonth("date"))
+            .values("month", "expense_type")
+            .annotate(
+                sum=Sum("price"),
+                title=F("expense_type__title"),
+                date=F("month"),
+            )
+            .order_by("month")
+            .values("date", "sum", "title")
         )
 
     def sum_by_month_and_name(self, year: int):
         return (
             self.objects.filter(date__year=year)
-            .annotate(cnt=Count("expense_type"))
-            .values("expense_type")
-            .annotate(cnt=Count("expense_name"))
-            .values("expense_name")
-            .annotate(date=TruncMonth("date"))
-            .values("date")
-            .annotate(c=Count("id"), sum=Sum("price"))
-            .order_by("expense_name__title", "date")
-            .values(
-                "date",
-                "sum",
+            .annotate(month=TruncMonth("date"))
+            .values("month", "expense_type", "expense_name")
+            .annotate(
+                sum=Sum("price"),
                 title=F("expense_name__title"),
                 type_title=F("expense_type__title"),
+                date=F("month"),
             )
+            .order_by("expense_name__title", "month")
+            .values("date", "sum", "title", "type_title")
         )
 
-    def sum_by_day_ant_type(self, year: int, month: int):
-        # Todo: refactore mistyped method name
+    def sum_by_day_and_type(self, year: int, month: int):
         return (
             self.objects.filter(date__year=year, date__month=month)
-            .annotate(cnt_id=Count("id"))
-            .values("cnt_id")
-            .annotate(date=TruncDay("date"))
-            .values("date")
+            .annotate(day=TruncDay("date"))
+            .values("day", "expense_type")
             .annotate(
                 sum=Sum("price"),
                 exception_sum=Sum(Case(When(exception=1, then="price"), default=0)),
+                title=F("expense_type__title"),
+                date=F("day"),
             )
-            .order_by("date")
-            .values("date", "sum", "exception_sum", title=F("expense_type__title"))
+            .order_by("day")
+            .values("date", "sum", "exception_sum", "title")
         )
 
     def sum_by_year(self):
-        return self.objects.year_sum()
+        return self.year_sum(self.objects)
 
     def sum_by_year_type(self, expense_type: list | None = None):
+        objects = (
+            self.objects.filter(expense_type__in=expense_type)
+            if expense_type
+            else self.objects
+        )
+
         return (
-            self.objects.filter_types(expense_type)
-            .annotate(cnt=Count("expense_type"))
-            .values("expense_type")
-            .annotate(
-                date=TruncYear("date"), year=ExtractYear(F("date")), sum=Sum("price")
-            )
+            objects.annotate(year=ExtractYear("date"))
+            .values("year", "expense_type")
+            .annotate(sum=Sum("price"), title=F("expense_type__title"))
             .order_by("year")
-            .values("year", "sum", title=F("expense_type__title"))
+            .values("year", "sum", "title")
         )
 
     def sum_by_year_name(self, expense_name: list | None = None):
+        objects = (
+            self.objects.filter(expense_name__in=expense_name)
+            if expense_name
+            else self.objects
+        )
+
         return (
-            self.objects.filter_names(expense_name)
-            .annotate(cnt=Count("expense_name"))
-            .values("expense_name")
+            objects.annotate(year=ExtractYear("date"))
+            .values("year", "expense_name")
             .annotate(
-                date=TruncYear("date"), year=ExtractYear(F("date")), sum=Sum("price")
-            )
-            .order_by("year")
-            .values(
-                "year",
-                "sum",
+                sum=Sum("price"),
                 title=Concat(
                     "expense_name__parent__title", Value(" / "), "expense_name__title"
                 ),
             )
+            .values("year", "sum", "title")
         )
 
     def last_months(self, months: int = 6):
-        # previous month
-        # if today February, then start is 2020-01-31
+        """
+        Calculates the total sum of expenses for the last `months` months.
+        If today is 2020-02-15 and months=6,
+        it will calculate the sum from 2019-08-01 to 2020-01-31.
+        - If there are no expenses in that period, it will return []
+        """
         one_day = timedelta(days=1)
         start = date.today().replace(day=1) - one_day
 
@@ -202,23 +185,20 @@ class ExpenseModelService:
         and applies the high-performance formatting, annotations, and .values().
         """
 
-        # 1. Calculate URL patterns (Dynamic Annotation Strategy)
-        dummy_id = 0
-        update_pattern = reverse("expenses:update", args=[dummy_id])
-        delete_pattern = reverse("expenses:delete", args=[dummy_id])
+        # Map user's 2-letter lang code to MariaDB's required locale format
+        locale_map = {
+            "lt": "lt_LT",
+            "en": "en_US",
+        }
+        db_locale = locale_map.get(self.user.journal.lang, "lt_LT")
 
-        # Split patterns to get prefix/suffix
-        u_prefix, u_suffix = update_pattern.split(str(dummy_id))
-        d_prefix, d_suffix = delete_pattern.split(str(dummy_id))
-
-        # 2. Apply all Annotations & Optimizations to the incoming QS
         return (
             qs.annotate(
                 # Database-level Price Formatting (MariaDB/MySQL)
                 price_str=Func(
                     F("price") / Value(100.0),
                     Value(2),
-                    Value("lt_LT"),
+                    Value(db_locale),
                     function="FORMAT",
                     output_field=CharField(),
                 ),
@@ -230,19 +210,6 @@ class ExpenseModelService:
                 ),
                 # Grouping for "If Month Changed" logic
                 month_group=TruncMonth("date"),
-                # Fast URL Construction
-                url_update=Concat(
-                    Value(u_prefix),
-                    Cast("id", output_field=CharField()),
-                    Value(u_suffix),
-                    output_field=CharField(),
-                ),
-                url_delete=Concat(
-                    Value(d_prefix),
-                    Cast("id", output_field=CharField()),
-                    Value(d_suffix),
-                    output_field=CharField(),
-                ),
             )
             .order_by("-date", "expense_type__title", F("expense_name__title").asc())
             .values(
@@ -259,7 +226,18 @@ class ExpenseModelService:
                 "price_str",
                 "is_pdf",
                 "month_group",
-                "url_update",
-                "url_delete",
             )
+        )
+
+    def expenses(self):
+        """
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
+        """
+        return (
+            self.objects.annotate(year=ExtractYear(F("date")))
+            .values("year", "account__title")
+            .annotate(expenses=Sum("price"))
+            .values("year", "expenses", category_id=F("account__pk"))
+            .order_by("year", "category_id")
         )

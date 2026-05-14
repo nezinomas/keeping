@@ -5,8 +5,6 @@ import django.db.models.deletion
 import django.utils.timezone
 from django.db import migrations, models
 
-import project.users.managers
-
 
 class Migration(migrations.Migration):
     initial = True
@@ -133,8 +131,5 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "users",
                 "abstract": False,
             },
-            managers=[
-                ("objects", project.users.managers.KeepingUserManager()),
-            ],
         ),
     ]

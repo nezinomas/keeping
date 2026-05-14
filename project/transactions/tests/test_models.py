@@ -1,24 +1,23 @@
 from datetime import date
 
 import pytest
-from django.urls import reverse
 
-from ...accounts.factories import AccountBalance, AccountFactory
 from ...accounts.services.model_services import (
     AccountBalanceModelService,
 )
-from ...expenses.factories import ExpenseFactory
-from ...incomes.factories import IncomeFactory
-from ...savings.factories import SavingFactory, SavingTypeFactory
+from ...accounts.tests.factories import AccountBalance, AccountFactory
+from ...expenses.tests.factories import ExpenseFactory
+from ...incomes.tests.factories import IncomeFactory
 from ...savings.models import SavingBalance
 from ...savings.services.model_services import SavingBalanceModelService
-from ..factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
+from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..models import SavingChange, SavingClose, Transaction
 from ..services.model_services import (
     SavingChangeModelService,
     SavingCloseModelService,
     TransactionModelService,
 )
+from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -42,7 +41,7 @@ def test_transaction_related(main_user, second_user):
     TransactionFactory(to_account=t1, from_account=f1)
     TransactionFactory(to_account=t2, from_account=f2)
 
-    actual = Transaction.objects.related(main_user)
+    actual = TransactionModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].from_account) == "F1"
@@ -59,7 +58,7 @@ def test_transaction_items(main_user, second_user):
     TransactionFactory(to_account=t1, from_account=f1)
     TransactionFactory(to_account=t2, from_account=f2)
 
-    actual = Transaction.objects.related(main_user)
+    actual = TransactionModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].from_account) == "F1"
@@ -400,7 +399,7 @@ def test_transaction_post_delete_with_update(main_user):
 
 
 def test_transaction_balance_incomes(main_user, transactions):
-    actual = Transaction.objects.incomes(main_user)
+    actual = TransactionModelService(main_user).incomes()
 
     # 1974
     assert actual[0]["year"] == 1970
@@ -422,7 +421,7 @@ def test_transaction_balance_incomes(main_user, transactions):
 
 
 def test_transaction_balance_expenses(main_user, transactions):
-    actual = Transaction.objects.expenses(main_user)
+    actual = TransactionModelService(main_user).expenses()
 
     # 1974
     assert actual[0]["year"] == 1970
@@ -462,7 +461,7 @@ def test_saving_close_related(main_user, second_user):
     SavingCloseFactory(to_account=a1, from_account=s1)
     SavingCloseFactory(to_account=a2, from_account=s2)
 
-    actual = SavingClose.objects.related(main_user)
+    actual = SavingCloseModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].from_account) == "S1"
@@ -794,7 +793,7 @@ def test_saving_close_post_delete_with_update(main_user):
 
 
 def test_saving_close_balance_incomes(main_user, savings_close):
-    actual = SavingClose.objects.incomes(main_user)
+    actual = SavingCloseModelService(main_user).incomes()
 
     # 1974
     assert actual[0]["year"] == 1970
@@ -812,7 +811,7 @@ def test_saving_close_balance_incomes(main_user, savings_close):
 
 
 def test_saving_close_balance_expenses(main_user, savings_close):
-    actual = SavingClose.objects.expenses(main_user)
+    actual = SavingCloseModelService(main_user).expenses()
 
     # 1974
     assert actual[0]["year"] == 1970
@@ -846,7 +845,7 @@ def test_saving_change_related(main_user, second_user):
     SavingChangeFactory(from_account=f1, to_account=t1)
     SavingChangeFactory(from_account=f2, to_account=t2)
 
-    actual = SavingChange.objects.related(main_user)
+    actual = SavingChangeModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].from_account) == "F1"

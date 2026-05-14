@@ -1,19 +1,14 @@
-import calendar
-from datetime import datetime
-
 from django import forms
-from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from ..core.lib.convert_price import PlanConvertPriceMixin, int_cents_to_float
 from ..core.lib.date import monthnames, set_date_with_user_year
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
-from ..expenses.models import ExpenseType
 from ..expenses.services.model_services import ExpenseTypeModelService
-from ..incomes.models import IncomeType
 from ..incomes.services.model_services import IncomeTypeModelService
-from ..savings.models import SavingType
 from ..savings.services.model_services import SavingTypeModelService
 from .models import (
     DayPlan,
@@ -21,205 +16,283 @@ from .models import (
     IncomePlan,
     NecessaryPlan,
     SavingPlan,
-    SavingType,
 )
-from .services.model_services import ModelService
+from .services.model_services import (
+    DayPlanModelService,
+    ExpensePlanModelService,
+    IncomePlanModelService,
+    NecessaryPlanModelService,
+    SavingPlanModelService,
+)
+
+MONTH_FIELD_KWARGS = {"min_value": 0.01, "required": False}
+
+COPY_PLAN_MAP = {
+    "income": lambda user: IncomePlanModelService(user),
+    "expense": lambda user: ExpensePlanModelService(user),
+    "saving": lambda user: SavingPlanModelService(user),
+    "day": lambda user: DayPlanModelService(user),
+    "necessary": lambda user: NecessaryPlanModelService(user),
+}
 
 
-def common_field_transalion(self):
-    self.fields["year"].label = _("Years")
+class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
+    january = forms.FloatField(**MONTH_FIELD_KWARGS)
+    february = forms.FloatField(**MONTH_FIELD_KWARGS)
+    march = forms.FloatField(**MONTH_FIELD_KWARGS)
+    april = forms.FloatField(**MONTH_FIELD_KWARGS)
+    may = forms.FloatField(**MONTH_FIELD_KWARGS)
+    june = forms.FloatField(**MONTH_FIELD_KWARGS)
+    july = forms.FloatField(**MONTH_FIELD_KWARGS)
+    august = forms.FloatField(**MONTH_FIELD_KWARGS)
+    september = forms.FloatField(**MONTH_FIELD_KWARGS)
+    october = forms.FloatField(**MONTH_FIELD_KWARGS)
+    november = forms.FloatField(**MONTH_FIELD_KWARGS)
+    december = forms.FloatField(**MONTH_FIELD_KWARGS)
 
-    for key, val in month_names().items():
-        self.fields[key.lower()].label = val
+    class Meta:
+        widgets = {
+            "year": YearPickerWidget(),
+        }
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
 
-def set_journal_field(user, fields):
-    # journal input
-    fields["journal"].initial = user.journal
-    fields["journal"].disabled = True
-    fields["journal"].widget = forms.HiddenInput()
+        super().__init__(*args, **kwargs)
 
+        self._setup_journal_field()
+        self._setup_year_field()
+        self._translate_common_fields()
 
-class YearFormMixin(forms.ModelForm):
-    january = forms.FloatField(min_value=0.01, required=False)
-    february = forms.FloatField(min_value=0.01, required=False)
-    march = forms.FloatField(min_value=0.01, required=False)
-    april = forms.FloatField(min_value=0.01, required=False)
-    may = forms.FloatField(min_value=0.01, required=False)
-    june = forms.FloatField(min_value=0.01, required=False)
-    july = forms.FloatField(min_value=0.01, required=False)
-    august = forms.FloatField(min_value=0.01, required=False)
-    september = forms.FloatField(min_value=0.01, required=False)
-    october = forms.FloatField(min_value=0.01, required=False)
-    november = forms.FloatField(min_value=0.01, required=False)
-    december = forms.FloatField(min_value=0.01, required=False)
+        self._load_month_prices()
+        self._set_grouping_fields_readonly()
 
-    def save(self, *args, **kwargs):
-        instance = super().save(commit=False)
+    def clean(self):
+        cleaned_data = super().clean()
 
-        months = list(calendar.month_name[1:])
-        for month in months:
-            if value := self.cleaned_data.get(month.lower()):
-                setattr(instance, month.lower(), int(value * 100))
+        if self.errors or self.instance.pk:
+            return cleaned_data
 
-        instance.save()
-        return instance
+        year = cleaned_data.get("year")
+        grouping_data = self._extract_grouping_data(cleaned_data)
+
+        if self._does_plan_exist(year, grouping_data):
+            self._raise_duplicate_plan_error(year, grouping_data)
+
+        return cleaned_data
+
+    def save(self):
+        year = self.cleaned_data["year"]
+        journal = self.user.journal
+
+        # Extract the values of the unique grouping fields
+        grouping_data = {f: self.cleaned_data[f] for f in self.Meta.grouping_fields}
+        for month_idx, month_name in enumerate(monthnames(), start=1):
+            price = self.cleaned_data.get(month_name)
+
+            # Lookup criteria for this specific month row
+            lookup = {
+                "year": year,
+                "month": month_idx,
+                "journal": journal,
+                **grouping_data,
+            }
+
+            service = self.Meta.service_class(self.user)
+            if price is not None:
+                service.objects.update_or_create(**lookup, defaults={"price": price})
+            else:
+                service.objects.filter(**lookup).delete()
+
+        return self.instance
+
+    def _translate_common_fields(self):
+        self.fields["year"].label = _("Years")
+
+        for key, val in month_names().items():
+            self.fields[key.lower()].label = val
+
+    def _setup_journal_field(self):
+        self.fields["journal"].initial = self.user.journal
+        self.fields["journal"].disabled = True
+        self.fields["journal"].widget = forms.HiddenInput()
+
+    def _setup_year_field(self):
+        self.fields["year"].initial = set_date_with_user_year(self.user).year
+
+    def _load_month_prices(self):
+        """Loads tall DB rows into the wide UI inputs."""
+        if not self.instance.pk:
+            return
+
+        filter_kwargs = {"year": self.instance.year, "journal": self.user.journal}
+        for field_name in self.Meta.grouping_fields:
+            filter_kwargs[field_name] = getattr(self.instance, field_name)
+
+        service = self.Meta.service_class(self.user)
+        rows = service.objects.filter(**filter_kwargs)
+
+        months = monthnames()
+        for row in rows:
+            month_name = months[row.month - 1]
+
+            self.initial[month_name] = int_cents_to_float(row.price)
+
+    def _set_field_readonly(self, field_name):
+        self.fields[field_name].disabled = True
+        self.fields[field_name].widget.attrs["readonly"] = True
+
+    def _set_grouping_fields_readonly(self):
+        if not self.instance.pk:
+            return
+
+        self._set_field_readonly("year")
+
+        for field_name in self.Meta.grouping_fields:
+            self._set_field_readonly(field_name)
+
+    def _extract_grouping_data(self, cleaned_data):
+        return {
+            f: cleaned_data.get(f)
+            for f in self.Meta.grouping_fields
+            if f in cleaned_data
+        }
+
+    def _does_plan_exist(self, year, grouping_data):
+        lookup = {"year": year, "journal": self.user.journal, **grouping_data}
+        service = self.Meta.service_class(self.user)
+        return service.objects.filter(**lookup).exists()
+
+    def _raise_duplicate_plan_error(self, year, grouping_data):
+        if not self.Meta.grouping_fields:
+            error_msg = _("Plan for %(year)s already exists.") % {"year": year}
+        else:
+            values_list = [str(v) for v in grouping_data.values() if v]
+            values_str = (
+                _(" and ").join(values_list)
+                if len(values_list) <= 2
+                else ", ".join(values_list)
+            )
+            error_msg = _("A plan for %(year)s with %(values)s already exists.") % {
+                "year": year,
+                "values": f"'{values_str}'" if values_str else _("these details"),
+            }
+
+        errors_dict = {"__all__": error_msg, "year": ""}
+        for field in self.Meta.grouping_fields:
+            errors_dict[field] = ""
+
+        raise forms.ValidationError(errors_dict)
 
 
 # ----------------------------------------------------------------------------
 #                                                             Income Plan Form
 # ----------------------------------------------------------------------------
-class IncomePlanForm(YearFormMixin):
-    class Meta:
+class IncomePlanForm(CommonPlanFormMixin):
+    class Meta(CommonPlanFormMixin.Meta):
         model = IncomePlan
-        fields = ["journal", "year", "income_type"] + monthnames()
+        service_class = IncomePlanModelService
 
-        widgets = {
-            "year": YearPickerWidget(),
-        }
+        fields = ["journal", "year", "income_type"] + monthnames()
+        grouping_fields = ["income_type"]
 
     field_order = ["year", "income_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # journal input
-        set_journal_field(user, self.fields)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
-
         # overwrite ForeignKey expense_type queryset
-        self.fields["income_type"].queryset = IncomeTypeModelService(user).items()
+        self.fields["income_type"].queryset = IncomeTypeModelService(self.user).items()
 
         # field translation
         self.fields["income_type"].label = _("Income type")
-        common_field_transalion(self)
 
 
 # ----------------------------------------------------------------------------
 #                                                            Expense Plan Form
 # ----------------------------------------------------------------------------
-class ExpensePlanForm(YearFormMixin):
-    class Meta:
+class ExpensePlanForm(CommonPlanFormMixin):
+    class Meta(CommonPlanFormMixin.Meta):
         model = ExpensePlan
-        fields = ["journal", "year", "expense_type"] + monthnames()
+        service_class = ExpensePlanModelService
 
-        widgets = {
-            "year": YearPickerWidget(),
-        }
+        fields = ["journal", "year", "expense_type"] + monthnames()
+        grouping_fields = ["expense_type"]
 
     field_order = ["year", "expense_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # journal input
-        set_journal_field(user, self.fields)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
-
         # overwrite ForeignKey expense_type queryset
-        self.fields["expense_type"].queryset = ExpenseTypeModelService(user).items()
+        self.fields["expense_type"].queryset = ExpenseTypeModelService(
+            self.user
+        ).items()
 
         # field translation
         self.fields["expense_type"].label = _("Expense type")
-        common_field_transalion(self)
 
 
 # ----------------------------------------------------------------------------
 #                                                              Saving Plan Form
 # ----------------------------------------------------------------------------
-class SavingPlanForm(YearFormMixin):
-    class Meta:
+class SavingPlanForm(CommonPlanFormMixin):
+    class Meta(CommonPlanFormMixin.Meta):
         model = SavingPlan
-        fields = ["journal", "year", "saving_type"] + monthnames()
+        service_class = SavingPlanModelService
 
-        widgets = {
-            "year": YearPickerWidget(),
-        }
+        fields = ["journal", "year", "saving_type"] + monthnames()
+        grouping_fields = ["saving_type"]
 
     field_order = ["year", "saving_type"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # journal input
-        set_journal_field(user, self.fields)
-
         # overwrite ForeignKey expense_type queryset
-        self.fields["saving_type"].queryset = SavingTypeModelService(user).items()
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
+        self.fields["saving_type"].queryset = SavingTypeModelService(self.user).items()
 
         # field translation
         self.fields["saving_type"].label = _("Saving type")
-        common_field_transalion(self)
 
 
 # ----------------------------------------------------------------------------
 #                                                                Day Plan Form
 # ----------------------------------------------------------------------------
-class DayPlanForm(YearFormMixin):
-    class Meta:
+class DayPlanForm(CommonPlanFormMixin):
+    class Meta(CommonPlanFormMixin.Meta):
         model = DayPlan
-        fields = ["journal", "year"] + monthnames()
+        service_class = DayPlanModelService
 
-        widgets = {
-            "year": YearPickerWidget(),
-        }
+        fields = ["journal", "year"] + monthnames()
+        grouping_fields = []
 
     field_order = ["year"] + monthnames()
-
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
-        super().__init__(*args, **kwargs)
-
-        # journal input
-        set_journal_field(user, self.fields)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
-
-        # field translation
-        common_field_transalion(self)
 
 
 # ----------------------------------------------------------------------------
 #                                                          Necessary Plan Form
 # ----------------------------------------------------------------------------
-class NecessaryPlanForm(YearFormMixin):
-    class Meta:
+class NecessaryPlanForm(CommonPlanFormMixin):
+    class Meta(CommonPlanFormMixin.Meta):
         model = NecessaryPlan
-        fields = ["journal", "year", "expense_type", "title"] + monthnames()
+        service_class = NecessaryPlanModelService
 
-        widgets = {
-            "year": YearPickerWidget(),
-        }
+        fields = ["journal", "year", "expense_type", "title"] + monthnames()
+        grouping_fields = ["expense_type", "title"]
 
     field_order = ["year", "expense_type", "title"] + monthnames()
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # journal input
-        set_journal_field(user, self.fields)
-
-        # inital values
-        self.fields["year"].initial = set_date_with_user_year(user).year
-
         # overwrite ForeignKey expense_type queryset
-        self.fields["expense_type"].queryset = ExpenseTypeModelService(user).items()
+        self.fields["expense_type"].queryset = ExpenseTypeModelService(
+            self.user
+        ).items()
 
         # field translation
         self.fields["expense_type"].label = _("Expense type")
-        common_field_transalion(self)
 
 
 # ----------------------------------------------------------------------------
@@ -244,7 +317,63 @@ class CopyPlanForm(forms.Form):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-    def _get_cleaned_checkboxes(self, cleaned_data):
+        self._setup_initial_values()
+        self._translate_fields()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        year_from = cleaned_data.get("year_from")
+        year_to = cleaned_data.get("year_to")
+
+        if self.errors or not year_from or not year_to:
+            return cleaned_data
+
+        checkboxes = self._extract_selected_checkboxes(cleaned_data)
+        if not any(checkboxes.values()):
+            raise forms.ValidationError(_("At least one plan needs to be selected."))
+
+        self._validate_copy_operation(checkboxes, year_from, year_to)
+
+        return cleaned_data
+
+    def save(self):
+        dict_ = self._extract_selected_checkboxes(self.cleaned_data)
+        year_from = self.cleaned_data.get("year_from")
+        year_to = self.cleaned_data.get("year_to")
+
+        for k, v in dict_.items():
+            # Skip unselected checkboxes immediately
+            if not v:
+                continue
+
+            service = COPY_PLAN_MAP.get(k)(self.user)
+            source_rows = list(service.year(year_from))
+
+            # Iterate and copy
+            for obj in source_rows:
+                obj.pk = None
+                obj.year = year_to
+                obj.save()
+
+    def _setup_initial_values(self):
+        current_year = timezone.now().year
+
+        self.fields["year_from"].initial = current_year
+        self.fields["year_to"].initial = current_year + 1
+
+        for field in ["income", "expense", "saving", "day", "necessary"]:
+            self.fields[field].initial = True
+
+    def _translate_fields(self):
+        self.fields["year_from"].label = _("Copy from")
+        self.fields["year_to"].label = _("Copy to")
+        self.fields["income"].label = _("Incomes plans")
+        self.fields["expense"].label = _("Expenses plans")
+        self.fields["saving"].label = _("Savings plans")
+        self.fields["day"].label = _("Day plans")
+        self.fields["necessary"].label = _("Plans for additional necessary expenses")
+
+    def _extract_selected_checkboxes(self, cleaned_data):
         return {
             "income": cleaned_data.get("income"),
             "expense": cleaned_data.get("expense"),
@@ -253,91 +382,29 @@ class CopyPlanForm(forms.Form):
             "necessary": cleaned_data.get("necessary"),
         }
 
-    def _get_model(self, name):
-        return apps.get_model(f"plans.{name.title()}Plan")
-
-    def _append_error_message(self, msg, errors, key):
+    def _add_error_message(self, msg, errors, key):
         if err := errors.get(key):
             err.append(msg)
             errors[key] = err
         else:
             errors[key] = [msg]
 
-    def clean(self):
-        cleaned_data = super().clean()
-        dict_ = self._get_cleaned_checkboxes(cleaned_data)
-
-        year_from = cleaned_data.get("year_from")
-        year_to = cleaned_data.get("year_to")
-
-        if not year_to or not year_from:
-            return cleaned_data
-
-        # at least one checkbox must be selected
-        chk = [v for k, v in dict_.items() if v]
-
-        if not chk:
-            raise forms.ValidationError(_("At least one plan needs to be selected."))
-
-        # copy from table must contain data
+    def _validate_copy_operation(self, checkboxes, year_from, year_to):
         errors = {}
-        msg = _("There is nothing to copy.")
-        for k, v in dict_.items():
-            if v:
-                model = self._get_model(k)
-                qs = ModelService(model, self.user).year(year_from)
-                if not qs.exists():
-                    self._append_error_message(msg, errors, k)
+        msg_empty = _("There is nothing to copy.")
+        msg_exists = _("%(year)s year already has plans.") % {"year": year_to}
 
-        # copy to table must be empty
-        msg = _("%(year)s year already has plans.") % ({"year": year_to})
+        for k, v in checkboxes.items():
+            if not v:
+                continue
 
-        for k, v in dict_.items():
-            if v:
-                model = self._get_model(k)
-                qs = ModelService(model, self.user).year(year_to)
-                if qs.exists():
-                    self._append_error_message(msg, errors, k)
+            service = COPY_PLAN_MAP.get(k)(self.user)
+
+            if not service.year(year_from).exists():
+                self._add_error_message(msg_empty, errors, k)
+
+            if service.year(year_to).exists():
+                self._add_error_message(msg_exists, errors, k)
 
         if errors:
             raise forms.ValidationError(errors)
-
-        return cleaned_data
-
-    def save(self):
-        dict_ = self._get_cleaned_checkboxes(self.cleaned_data)
-        year_from = self.cleaned_data.get("year_from")
-        year_to = self.cleaned_data.get("year_to")
-
-        for k, v in dict_.items():
-            if v:
-                model = self._get_model(k)
-                qs = (
-                    ModelService(model, self.user)
-                    .year(year_from)
-                    .values_list("pk", flat=True)
-                )
-
-                for i in qs:
-                    obj = model.objects.get(pk=i)
-                    obj.pk = None
-                    obj.year = year_to
-                    obj.save()
-
-        # initail values
-        self.fields["year_from"].initial = datetime.now().year
-        self.fields["year_to"].initial = datetime.now().year + 1
-        self.fields["income"].initial = True
-        self.fields["expense"].initial = True
-        self.fields["saving"].initial = True
-        self.fields["day"].initial = True
-        self.fields["necessary"].initial = True
-
-        # labels
-        self.fields["year_from"].label = _("Copy from")
-        self.fields["year_to"].label = _("Copy to")
-        self.fields["income"].label = _("Incomes plans")
-        self.fields["expense"].label = _("Expenses plans")
-        self.fields["saving"].label = _("Savings plans")
-        self.fields["day"].label = _("Day plans")
-        self.fields["necessary"].label = _("Plans for additional necessary expenses")

@@ -3,15 +3,19 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from ...accounts.factories import AccountBalanceFactory, AccountFactory
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
-from ...pensions.factories import PensionBalanceFactory, PensionTypeFactory
+from ...accounts.tests.factories import AccountBalanceFactory, AccountFactory
 from ...pensions.models import PensionBalance
-from ...savings.factories import SavingFactory, SavingTypeFactory
+from ...pensions.tests.factories import PensionBalanceFactory, PensionTypeFactory
 from ...savings.models import SavingBalance
-from ..factories import AccountWorthFactory, PensionWorthFactory, SavingWorthFactory
-from ..models import AccountWorth, PensionWorth, SavingWorth
+from ...savings.tests.factories import SavingFactory, SavingTypeFactory
+from ..services.model_services import (
+    AccountWorthModelService,
+    PensionWorthModelService,
+    SavingWorthModelService,
+)
+from .factories import AccountWorthFactory, PensionWorthFactory, SavingWorthFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -32,7 +36,7 @@ def test_account_worth_related(main_user, second_user):
     AccountWorthFactory(account=a1)
     AccountWorthFactory(account=a2)
 
-    actual = AccountWorth.objects.related(main_user)
+    actual = AccountWorthModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].account) == "A1"
@@ -70,7 +74,7 @@ def test_account_worth_have(main_user):
     AccountWorthFactory(date=dt(2000, 12, 31, 1, 1, 1, tzinfo=ZoneInfo("UTC")), price=3)
     AccountWorthFactory(date=dt(2000, 12, 31, 3, 2, 1, tzinfo=ZoneInfo("UTC")), price=4)
 
-    actual = AccountWorth.objects.have(main_user)
+    actual = AccountWorthModelService(main_user).have()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -97,7 +101,7 @@ def test_saving_worth_related(main_user, second_user):
     SavingWorthFactory(saving_type=s1)
     SavingWorthFactory(saving_type=s2)
 
-    actual = SavingWorth.objects.related(main_user)
+    actual = SavingWorthModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].saving_type) == "S1"
@@ -144,7 +148,7 @@ def test_saving_worth_have(main_user):
     SavingWorthFactory(date=dt(2000, 1, 1, tzinfo=ZoneInfo("UTC")), price=3)
     SavingWorthFactory(date=dt(2000, 12, 31, tzinfo=ZoneInfo("UTC")), price=4)
 
-    actual = SavingWorth.objects.have(main_user)
+    actual = SavingWorthModelService(main_user).have()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1
@@ -171,7 +175,7 @@ def test_pension_worth_related(main_user, second_user):
     PensionWorthFactory(pension_type=p1)
     PensionWorthFactory(pension_type=p2)
 
-    actual = PensionWorth.objects.related(main_user)
+    actual = PensionWorthModelService(main_user).objects
 
     assert len(actual) == 1
     assert str(actual[0].pension_type) == "P1"
@@ -214,7 +218,7 @@ def test_pension_worth_have(main_user):
     PensionWorthFactory(date=dt(2000, 1, 1, tzinfo=ZoneInfo("UTC")), price=3)
     PensionWorthFactory(date=dt(2000, 12, 31, tzinfo=ZoneInfo("UTC")), price=4)
 
-    actual = PensionWorth.objects.have(main_user)
+    actual = PensionWorthModelService(main_user).have()
 
     assert actual[0]["year"] == 1970
     assert actual[0]["category_id"] == 1

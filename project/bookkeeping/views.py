@@ -4,18 +4,24 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
+from project.bookkeeping.services.model_services import (
+    AccountWorthModelService,
+    PensionWorthModelService,
+    SavingWorthModelService,
+)
+
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.date import monthnames_abbr
+from ..core.lib.date import monthnames_num
+from ..core.lib.utils import rendered_content
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     FormViewMixin,
     TemplateViewMixin,
-    rendered_content,
 )
 from ..pensions.services.model_services import PensionTypeModelService
 from ..savings.services.model_services import SavingTypeModelService
-from . import forms, models, services
+from . import forms, services
 from .lib import no_incomes
 from .mixins.month import MonthMixin
 
@@ -69,8 +75,8 @@ class Accounts(TemplateViewMixin):
 
 
 class AccountsWorthNew(FormsetMixin, CreateViewMixin):
-    model = models.AccountWorth
-    model_service = AccountModelService
+    service_class = AccountWorthModelService
+    category_service_class = AccountModelService
     form_class = forms.AccountWorthForm
     modal_form_title = _("Worth of accounts")
     url = reverse_lazy("bookkeeping:accounts_worth_new")
@@ -87,8 +93,8 @@ class Savings(TemplateViewMixin):
 
 
 class SavingsWorthNew(FormsetMixin, CreateViewMixin):
-    model = models.SavingWorth
-    model_service = SavingTypeModelService
+    service_class = SavingWorthModelService
+    category_service_class = SavingTypeModelService
     form_class = forms.SavingWorthForm
     modal_form_title = _("Worth of savings")
     url = reverse_lazy("bookkeeping:savings_worth_new")
@@ -106,8 +112,8 @@ class Pensions(TemplateViewMixin):
 
 
 class PensionsWorthNew(FormsetMixin, CreateViewMixin):
-    model = models.PensionWorth
-    model_service = PensionTypeModelService
+    service_class = PensionWorthModelService
+    category_service_class = PensionTypeModelService
     form_class = forms.PensionWorthForm
     modal_form_title = _("Worth of pensions")
     url = reverse_lazy("bookkeeping:pensions_worth_new")
@@ -158,27 +164,35 @@ class MonthChart(TemplateViewMixin):
 
 
 class Detailed(TemplateViewMixin):
-    template_name = "bookkeeping/detailed.html"
+    def get_template_names(self):
+        if "category" in self.kwargs:
+            return ["cotton/detailed_table.html"]
+
+        return ["bookkeeping/detailed.html"]
 
     def get_context_data(self, **kwargs):
-        context = services.detailed.load_service(self.request.user)
-        context["months"] = monthnames_abbr()
+        category = self.kwargs.get("category", "all_data")
+        order = self.kwargs.get("order", "")
 
-        return super().get_context_data(**kwargs) | context
-
-
-class DetailedCategory(TemplateViewMixin):
-    template_name = "cotton/detailed_table.html"
-
-    def get_context_data(self, **kwargs):
-        user = self.request.user
-        context = services.detailed_one_category.load_service(
-            user, self.kwargs["order"], self.kwargs["category"]
+        service_data = services.detailed.load_service(
+            user=self.request.user, category=category, order=order
         )
-        context["order"] = self.kwargs["order"]
-        context["months"] = monthnames_abbr()
 
-        return super().get_context_data(**kwargs) | context
+        context = super().get_context_data(**kwargs)
+        context |= {
+            "order": order,
+            "months": monthnames_num(),
+        }
+
+        if not service_data:
+            return context
+
+        if category == "all_data":
+            context["object_list"] = service_data
+        else:
+            context |= service_data[0]
+
+        return context
 
 
 class Summary(TemplateViewMixin):

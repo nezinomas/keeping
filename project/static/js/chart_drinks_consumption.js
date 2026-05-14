@@ -1,7 +1,8 @@
 function chartConsumption(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
-    const avg_line_color = (chartData.avg > chartData.target) ? "var(--chart-negative)" : "var(--chart-warning-super-dark)";
+    const avg_line_color = (chartData.avg > chartData.target) ? "var(--chart-negative-dark)" : "var(--chart-positive-dark)";
+    const avg_text_color = (chartData.avg > chartData.target) ? "var(--chart-negative-super-dark)" : "var(--chart-positive-super-dark)";
 
     const avg_label_y = (chartData.target - 50 <= chartData.avg && chartData.avg <= chartData.target) ? 15 : -5
     const target_label_y = (chartData.avg - 50 <= chartData.target && chartData.target <= chartData.avg) ? 15 : -5;
@@ -31,7 +32,8 @@ function chartConsumption(idData, idContainer) {
                 text: ""
             },
             min: 0,
-            plotLines: [{
+            plotLines: [
+            {
                 color: "#333",
                 width: 2,
                 value: chartData.target,
@@ -46,18 +48,19 @@ function chartConsumption(idData, idContainer) {
                         fontWeight: "bold"
                     }
                 }
-            }, {
+            },
+            {
                 color: avg_line_color,
                 width: 2,
                 value: chartData.avg,
-                zIndex: -10,
+                zIndex: 11,
                 label: {
                     text: `Avg: ${chartData.avg.toFixed()}`,
                     align: "right",
                     x: -5,
                     y: avg_label_y,
                     style: {
-                        color: avg_line_color,
+                        color: avg_text_color,
                         fontWeight: "bold"
                     }
                 }

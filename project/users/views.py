@@ -17,16 +17,17 @@ from django.views.generic import CreateView
 
 from project.users import models
 
+from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     DeleteViewMixin,
     FormViewMixin,
     ListViewMixin,
     TemplateViewMixin,
-    rendered_content,
 )
 from ..journals.forms import SettingsForm, UnnecessaryForm
 from ..users.models import User
 from . import forms
+from .services.model_services import UserModelService
 
 
 def _user_settings(user):
@@ -287,7 +288,7 @@ class SettingsQueryMixin:
     def get_queryset(self):
         user = self.request.user
 
-        return models.User.objects.related(user).exclude(pk=user.pk)
+        return UserModelService(user).objects.exclude(pk=user.pk)
 
 
 class SettingsUsers(SettingsQueryMixin, ListViewMixin):

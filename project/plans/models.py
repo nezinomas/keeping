@@ -1,160 +1,109 @@
-from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinLengthValidator,
+    MinValueValidator,
+)
 from django.db import models
-from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
-from django.utils.translation import pgettext
 
-from ..core.models import MonthAbstract
+from ..core.validators import validate_title_characters
 from ..expenses.models import ExpenseType
 from ..incomes.models import IncomeType
 from ..journals.models import Journal
 from ..savings.models import SavingType
-from . import managers
 
 
-class IncomePlan(MonthAbstract):
+class IncomePlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
+    month = models.PositiveIntegerField(null=True, blank=True)
+    price = models.PositiveIntegerField(null=True, blank=True)
     income_type = models.ForeignKey(IncomeType, on_delete=models.CASCADE)
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="income_plans"
     )
-
-    objects = managers.YearManager("income_type")
 
     def __str__(self):
         return f"{self.year}/{self.income_type.title}"
 
     class Meta:
         ordering = ["income_type"]
-        unique_together = ("year", "income_type", "journal")
-
-    def validate_unique(self, exclude=None):
-        try:
-            super().validate_unique()
-        except ValidationError as e:
-            raise ValidationError(
-                _("%(year)s year already has %(title)s plan.")
-                % ({"year": self.year, "title": self.income_type.title})
-            ) from e
+        unique_together = ("year", "month", "income_type", "journal")
 
 
-class ExpensePlan(MonthAbstract):
+class ExpensePlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
+    month = models.PositiveIntegerField(null=True, blank=True)
+    price = models.PositiveIntegerField(null=True, blank=True)
     expense_type = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="expense_plans"
     )
-
-    objects = managers.YearManager("expense_type")
 
     def __str__(self):
         return f"{self.year}/{self.expense_type.title}"
 
     class Meta:
         ordering = ["expense_type"]
-        unique_together = ("year", "expense_type", "journal")
-
-    def validate_unique(self, exclude=None):
-        try:
-            super().validate_unique()
-        except ValidationError as e:
-            raise ValidationError(
-                _("%(year)s year already has %(title)s plan.")
-                % ({"year": self.year, "title": self.expense_type.title})
-            ) from e
+        unique_together = ("year", "month", "expense_type", "journal")
 
 
-class SavingPlan(MonthAbstract):
+class SavingPlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
+    month = models.PositiveIntegerField(null=True, blank=True)
+    price = models.PositiveIntegerField(null=True, blank=True)
     saving_type = models.ForeignKey(SavingType, on_delete=models.CASCADE)
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="saving_plans"
     )
-
-    objects = managers.YearManager("saving_type")
 
     def __str__(self):
         return f"{self.year}/{self.saving_type.title}"
 
     class Meta:
         ordering = ["saving_type"]
-        unique_together = ("year", "saving_type", "journal")
-
-    def validate_unique(self, exclude=None):
-        try:
-            super().validate_unique()
-        except ValidationError as e:
-            raise ValidationError(
-                _("%(year)s year already has %(title)s plan.")
-                % ({"year": self.year, "title": self.saving_type.title})
-            ) from e
+        unique_together = ("year", "month", "saving_type", "journal")
 
 
-class DayPlan(MonthAbstract):
+class DayPlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
+    month = models.PositiveIntegerField(null=True, blank=True)
+    price = models.PositiveIntegerField(null=True, blank=True)
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="day_plans"
     )
-
-    objects = managers.YearManager()
 
     def __str__(self):
         return f"{self.year}"
 
     class Meta:
         ordering = ["year"]
-        unique_together = ("year", "journal")
-
-    def validate_unique(self, exclude=None):
-        try:
-            super().validate_unique()
-        except ValidationError as e:
-            title = pgettext("plans day error", "Day")
-            raise ValidationError(
-                _("%(year)s year already has %(title)s plan.")
-                % ({"year": self.year, "title": title})
-            ) from e
+        unique_together = ("year", "month", "journal")
 
 
-class NecessaryPlan(MonthAbstract):
+class NecessaryPlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
-    title = models.CharField(max_length=100)
+    month = models.PositiveIntegerField(null=True, blank=True)
+    price = models.PositiveIntegerField(null=True, blank=True)
+    title = models.CharField(
+        max_length=100, validators=[MinLengthValidator(3), validate_title_characters]
+    )
     expense_type = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="necessary_plans"
     )
 
-    objects = managers.YearManager()
-
     def __str__(self):
         return f"{self.year}/{self.title}"
 
     class Meta:
-        ordering = ["year", "expense_type", "title"]
-        unique_together = ("year", "title", "expense_type", "journal")
-
-    def validate_unique(self, exclude=None):
-        try:
-            super().validate_unique()
-        except ValidationError as e:
-            raise ValidationError(
-                _("%(year)s year and %(type)s already has %(title)s plan.")
-                % (
-                    {
-                        "year": self.year,
-                        "title": self.title,
-                        "type": self.expense_type.title,
-                    }
-                )
-            ) from e
+        ordering = ["year", "month", "expense_type", "title"]
+        unique_together = ("year", "month", "title", "expense_type", "journal")

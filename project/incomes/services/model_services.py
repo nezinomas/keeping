@@ -1,38 +1,32 @@
-from typing import Optional, cast
+from typing import Optional
 
 from django.db.models import Count, F, Sum, Value
-from django.db.models.functions import TruncMonth, TruncYear
+from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
-from ...users.models import User
-from .. import managers, models
+from ...core.mixins.sum import SumMixin
+from ...core.services.model_services import BaseModelService
+from .. import models
 
 
-class IncomeTypeModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
+class IncomeTypeModelService(BaseModelService):
+    def get_queryset(self):
+        return models.IncomeType.objects.select_related("journal").filter(
+            journal=self.user.journal
+        )
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.IncomeTypeQuerySet, models.IncomeType.objects
-        ).related(user)
+    def year(self, year: int):
+        raise NotImplementedError(
+            "IncomeTypeModelService.year is not implemented. Use items() instead."
+        )
 
     def items(self):
         return self.objects.all()
 
 
-class IncomeModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(managers.IncomeQuerySet, models.Income.objects).related(
-            user
+class IncomeModelService(SumMixin, BaseModelService):
+    def get_queryset(self):
+        return models.Income.objects.select_related("account", "income_type").filter(
+            income_type__journal=self.user.journal
         )
 
     def year(self, year: int):
@@ -47,32 +41,50 @@ class IncomeModelService:
         if income_type:
             qs = qs.filter(income_type__type__in=income_type)
 
-        return qs.year_sum()
+        return self.year_sum(qs)
 
     def sum_by_month(self, year: int, month: Optional[int] = None):
-        return self.objects.month_sum(year, month).annotate(title=Value("incomes"))
+        return self.month_sum(self.objects, year, month).annotate(
+            title=Value("incomes")
+        )
 
     def sum_by_month_and_type(self, year: int):
         return (
             self.objects.filter(date__year=year)
-            .annotate(cnt=Count("income_type"))
-            .values("income_type")
-            .annotate(date=TruncMonth("date"))
-            .values("date")
-            .annotate(c=Count("id"))
-            .annotate(sum=Sum("price"))
+            .annotate(month=TruncMonth("date"))
+            .values("month", "income_type")
+            .annotate(
+                sum=Sum("price"),
+                title=F("income_type__title"),
+                date=F("month"),
+            )
             .order_by("income_type__title", "date")
-            .values("date", "sum", title=F("income_type__title"))
+            .values("date", "sum", "title")
         )
 
     def sum_by_year_and_type(self):
         return (
             self.objects.annotate(cnt=Count("income_type"))
-            .values("income_type")
-            .annotate(date=TruncYear("date"))
-            .values("date")
-            .annotate(c=Count("id"))
-            .annotate(sum=Sum("price"))
+            .annotate(year=TruncYear("date"))
+            .values("year", "income_type")
+            .annotate(
+                sum=Sum("price"),
+                title=F("income_type__title"),
+                date=F("year"),
+            )
             .order_by("income_type__title", "date")
-            .values("date", "sum", title=F("income_type__title"))
+            .values("date", "sum", "title")
+        )
+
+    def incomes(self):
+        """
+        Used only in the post_save signal.
+        Calculates and returns the total price for each year
+        """
+        return (
+            self.objects.annotate(year=ExtractYear(F("date")))
+            .values("year", "account__title")
+            .annotate(incomes=Sum("price"))
+            .values("year", "incomes", category_id=F("account__pk"))
+            .order_by("year", "account")
         )

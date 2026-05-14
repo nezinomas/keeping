@@ -3,6 +3,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.date import weeknumber
+from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -10,7 +11,6 @@ from ..core.mixins.views import (
     RedirectViewMixin,
     TemplateViewMixin,
     UpdateViewMixin,
-    rendered_content,
 )
 from . import services
 from .forms import CountForm, CountTypeForm
@@ -19,7 +19,7 @@ from .lib.views_helper import (
     CountUrlMixin,
     InfoRowData,
 )
-from .models import Count, CountType
+from .models import Count
 from .services.model_services import CountModelService, CountTypeModelService
 
 
@@ -137,7 +137,7 @@ class TabHistory(TemplateViewMixin):
 
 
 class New(CountUrlMixin, CreateViewMixin):
-    model = Count
+    service_class = CountModelService
     form_class = CountForm
     modal_form_title = _("Counter")
 
@@ -164,14 +164,14 @@ class New(CountUrlMixin, CreateViewMixin):
 
 
 class Update(CountUrlMixin, UpdateViewMixin):
-    model = Count
+    service_class = CountModelService
     form_class = CountForm
     hx_trigger_django = "reloadData"
     modal_form_title = _("Counter")
 
 
 class Delete(CountUrlMixin, DeleteViewMixin):
-    model = Count
+    service_class = CountModelService
     hx_trigger_django = "reloadData"
     modal_form_title = _("Delete counter")
 
@@ -189,23 +189,23 @@ class TypeUrlMixin:
 
 
 class TypeNew(TypeUrlMixin, CreateViewMixin):
-    model = CountType
-    url_name = "type_new"
+    service_class = CountTypeModelService
     form_class = CountTypeForm
+    url_name = "type_new"
     hx_trigger_django = "afterType"
     modal_form_title = _("Count type")
 
 
 class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
-    model = CountType
-    url_name = "type_update"
+    service_class = CountTypeModelService
     form_class = CountTypeForm
+    url_name = "type_update"
     hx_trigger_django = "afterType"
     modal_form_title = _("Count type")
 
 
 class TypeDelete(TypeUrlMixin, DeleteViewMixin):
-    model = CountType
+    service_class = CountTypeModelService
     url_name = "type_delete"
     hx_trigger_django = "afterType"
     hx_redirect = reverse_lazy("counts:redirect")

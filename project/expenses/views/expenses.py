@@ -4,8 +4,8 @@ from typing import Any, cast
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ...core.lib.convert_price import ConvertToCents
-from ...core.lib.utils import get_action_buttons_html
+from ...core.lib.convert_price import ConvertPriceMixin
+from ...core.lib.utils import add_fast_urls, get_action_buttons_html
 from ...core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -15,7 +15,8 @@ from ...core.mixins.views import (
     UpdateViewMixin,
 )
 from ...users.models import User
-from .. import forms, models
+from .. import forms
+from ..apps import App_name
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
@@ -37,7 +38,8 @@ class Index(GetMonthMixin, TemplateViewMixin):
 
 
 class Lists(GetMonthMixin, ListViewMixin):
-    model = models.Expense
+    template_name = "expenses/expense_list.html"
+    service_class = ExpenseModelService
 
     def get_queryset(self):
         month = self.get_month()
@@ -48,7 +50,9 @@ class Lists(GetMonthMixin, ListViewMixin):
         if month in range(1, 13):
             qs = qs.filter(date__month=month)
 
-        return service.expenses_list(qs)
+        data = service.expenses_list(qs)
+
+        return add_fast_urls(data=data, app_name=App_name)
 
     def get_context_data(self, **kwargs):
         month = self.get_month()
@@ -66,7 +70,7 @@ class Lists(GetMonthMixin, ListViewMixin):
 
 
 class New(CreateViewMixin):
-    model = models.Expense
+    service_class = ExpenseModelService
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_form = "reload"
@@ -74,8 +78,8 @@ class New(CreateViewMixin):
     template_name = "expenses/expense_form.html"
 
 
-class Update(ConvertToCents, UpdateViewMixin):
-    model = models.Expense
+class Update(ConvertPriceMixin, UpdateViewMixin):
+    service_class = ExpenseModelService
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
     hx_trigger_django = "reload"
@@ -84,7 +88,7 @@ class Update(ConvertToCents, UpdateViewMixin):
 
 
 class Delete(DeleteViewMixin):
-    model = models.Expense
+    service_class = ExpenseModelService
     success_url = reverse_lazy("expenses:list")
     modal_form_title = _("Delete expense")
 
@@ -93,6 +97,7 @@ class Search(SearchViewMixin):
     template_name = "expenses/expense_list.html"
     search_method = "search_expenses"
     per_page = 50
+    use_fast_urls = True
 
 
 class LoadExpenseName(ListViewMixin):
@@ -100,17 +105,11 @@ class LoadExpenseName(ListViewMixin):
     object_list = []
 
     def get(self, request, *args, **kwargs):
-        expense_type_pk = request.GET.get("expense_type")
-
-        try:
-            expense_type_pk = int(expense_type_pk)
-        except (ValueError, TypeError):
-            expense_type_pk = None
-
-        if expense_type_pk:
+        if expense_type_pk := request.GET.get("expense_type", None):
             self.object_list = (
                 ExpenseNameModelService(request.user)
                 .year(request.user.year)
                 .filter(parent=expense_type_pk)
             )
+
         return self.render_to_response({"object_list": self.object_list})

@@ -5,7 +5,7 @@ from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Count, CountType
-from .services.model_services import CountModelService, CountTypeModelService
+from .services.model_services import CountTypeModelService
 
 
 class CountForm(YearBetweenMixin, forms.ModelForm):

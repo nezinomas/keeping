@@ -1,62 +1,86 @@
 import calendar
 from dataclasses import dataclass
-from datetime import date, datetime
-from typing import Optional
+from datetime import date
+from functools import cached_property
 
 from ...core.lib.date import ydays
-from ..lib.drinks_options import DrinksOptions
+from ..lib.drinks_options import DrinkConverter
 
 
-@dataclass
+@dataclass(frozen=True)
 class DataRow:
     date: date
     qty: float
     stdav: float
 
-    def ml(self, options: DrinksOptions) -> float:
-        """Convert stdav to ml using options."""
-        return options.stdav_to_ml(self.stdav)
+
+@dataclass(frozen=True)
+class MonthlyStatsDTO:
+    total_volume_ml: list[float]
+    avg_daily_volume_ml: list[float]
+    total_quantity: list[float]
+
+
+@dataclass(frozen=True)
+class YearlyStatsDTO:
+    avg_daily_volume_ml: float
+    total_quantity: float
 
 
 class DrinkStats:
-    def __init__(self, options: DrinksOptions, data: Optional[list] = None):
-        self.options = options
+    def __init__(
+        self,
+        converter: DrinkConverter,
+        data: list[dict] | None = None,
+        today: date | None = None,
+    ):
+        self.converter = converter
+        self.today = today or date.today()
 
-        self.year = None
-        self.per_month = [0.0] * 12
-        self.per_day_of_month = [0.0] * 12
-        self.per_day_of_year = 0.0
-        self.qty_of_month = [0.0] * 12
-        self.qty_of_year = 0.0
+        self.data = [DataRow(**row) for row in (data or [])]
+        self.year = self.data[0].date.year if self.data else self.today.year
 
-        if not data:
-            return
+    @cached_property
+    def monthly(self) -> MonthlyStatsDTO:
+        monthly_stdav = [0.0] * 12
+        monthly_qty = [0.0] * 12
 
-        self.year = data[0]["date"].year
-        self.data = self.rows = [DataRow(**row) for row in data]
-        self._calc_month()
-        self._calc_year()
-
-    def _calc_month(self) -> None:
         for row in self.data:
-            month_idx = row.date.month - 1
-            ml = row.ml(self.options)
-            month_len = calendar.monthrange(row.date.year, row.date.month)[1]
+            m = row.date.month - 1
+            monthly_stdav[m] += row.stdav
+            monthly_qty[m] += row.qty
 
-            self.per_month[month_idx] = ml
-            self.per_day_of_month[month_idx] = ml / month_len
-            self.qty_of_month[month_idx] = row.qty
+        # Convert stdav to ml and calculate daily averages
+        total_volume_ml = [self.converter.stdav_to_ml(v) for v in monthly_stdav]
+        avg_daily_volume_ml = [
+            self._avg(v, calendar.monthrange(self.year, i)[1])
+            for i, v in enumerate(total_volume_ml, 1)
+        ]
 
-    def _calc_year(self) -> None:
-        today = datetime.now().date()
+        return MonthlyStatsDTO(
+            total_volume_ml=total_volume_ml,
+            avg_daily_volume_ml=avg_daily_volume_ml,
+            total_quantity=monthly_qty,
+        )
 
-        if self.year == today.year:
-            day_of_year = today.timetuple().tm_yday
-            month_limit = today.month
-        else:
-            day_of_year = ydays(self.year)
-            month_limit = 12
+    @cached_property
+    def yearly(self) -> YearlyStatsDTO:
+        if not self.data:
+            return YearlyStatsDTO(avg_daily_volume_ml=0.0, total_quantity=0.0)
 
-        total_ml = sum(self.per_month[:month_limit])
-        self.per_day_of_year = total_ml / day_of_year if day_of_year else 0.0
-        self.qty_of_year = sum(self.qty_of_month)
+        days_passed, month_limit = self._get_year_boundaries()
+        total_volume = sum(self.monthly.total_volume_ml[:month_limit])
+        total_quantity = sum(self.monthly.total_quantity[:month_limit])
+
+        return YearlyStatsDTO(
+            avg_daily_volume_ml=self._avg(total_volume, days_passed),
+            total_quantity=total_quantity,
+        )
+
+    def _avg(self, total: float, days: int) -> float:
+        return total / days if days else 0.0
+
+    def _get_year_boundaries(self) -> tuple[int, int]:
+        if self.year == self.today.year:
+            return self.today.timetuple().tm_yday, self.today.month
+        return ydays(self.year), 12

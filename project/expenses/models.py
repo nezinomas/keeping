@@ -1,13 +1,11 @@
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import F
-from django.urls import reverse_lazy
 
 from ..accounts.models import Account
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
-from .managers import ExpenseNameQuerySet, ExpenseQuerySet, ExpenseTypeQuerySet
 
 
 class ExpenseType(TitleAbstract):
@@ -15,9 +13,6 @@ class ExpenseType(TitleAbstract):
         Journal, on_delete=models.CASCADE, related_name="expense_types"
     )
     necessary = models.BooleanField(default=False)
-
-    # Managers
-    objects = ExpenseTypeQuerySet.as_manager()
 
     class Meta:
         unique_together = ["journal", "title"]
@@ -37,9 +32,6 @@ class ExpenseName(TitleAbstract):
     class Meta:
         unique_together = ("title", "parent")
         ordering = [F("valid_for").desc(nulls_first=True), "title"]
-
-    # Managers
-    objects = ExpenseNameQuerySet.as_manager()
 
 
 class Expense(models.Model):
@@ -66,9 +58,6 @@ class Expense(models.Model):
             models.Index(fields=["expense_type"]),
             models.Index(fields=["expense_name"]),
         ]
-
-    # Managers
-    objects = ExpenseQuerySet.as_manager()
 
     def __str__(self):
         return f"{(self.date)}/{self.expense_type}/{self.expense_name}"

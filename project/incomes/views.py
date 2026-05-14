@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.convert_price import ConvertToCents
+from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -10,8 +10,8 @@ from ..core.mixins.views import (
     TemplateViewMixin,
     UpdateViewMixin,
 )
-from . import forms, models
-from .services.model_services import IncomeModelService
+from . import forms
+from .services.model_services import IncomeModelService, IncomeTypeModelService
 
 
 class Index(TemplateViewMixin):
@@ -19,7 +19,8 @@ class Index(TemplateViewMixin):
 
 
 class Lists(ListViewMixin):
-    model = models.Income
+    template_name = "incomes/income_list.html"
+    service_class = IncomeModelService
 
     def get_queryset(self):
         user = self.request.user
@@ -27,15 +28,15 @@ class Lists(ListViewMixin):
 
 
 class New(CreateViewMixin):
-    model = models.Income
+    service_class = IncomeModelService
     form_class = forms.IncomeForm
     success_url = reverse_lazy("incomes:list")
     hx_trigger_form = "reload"
     modal_form_title = _("Incomes")
 
 
-class Update(ConvertToCents, UpdateViewMixin):
-    model = models.Income
+class Update(ConvertPriceMixin, UpdateViewMixin):
+    service_class = IncomeModelService
     form_class = forms.IncomeForm
     success_url = reverse_lazy("incomes:list")
     hx_trigger_django = "reload"
@@ -43,17 +44,18 @@ class Update(ConvertToCents, UpdateViewMixin):
 
 
 class Delete(DeleteViewMixin):
-    model = models.Income
+    service_class = IncomeModelService
     success_url = reverse_lazy("incomes:list")
     modal_form_title = _("Delete income")
 
 
 class TypeLists(ListViewMixin):
-    model = models.IncomeType
+    template_name = "incomes/incometype_list.html"
+    service_class = IncomeTypeModelService
 
 
 class TypeNew(CreateViewMixin):
-    model = models.IncomeType
+    service_class = IncomeTypeModelService
     form_class = forms.IncomeTypeForm
     hx_trigger_django = "afterType"
     modal_form_title = _("Incomes type")
@@ -62,7 +64,7 @@ class TypeNew(CreateViewMixin):
 
 
 class TypeUpdate(UpdateViewMixin):
-    model = models.IncomeType
+    service_class = IncomeTypeModelService
     form_class = forms.IncomeTypeForm
     hx_trigger_django = "afterType"
     modal_form_title = _("Incomes type")

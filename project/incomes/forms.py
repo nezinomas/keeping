@@ -1,17 +1,16 @@
-from datetime import datetime
-
 from django import forms
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertToPrice
+from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget
 from ..incomes.services.model_services import IncomeTypeModelService
 from .models import Income, IncomeType
 
 
-class IncomeForm(ConvertToPrice, forms.ModelForm):
+class IncomeForm(ConvertPriceMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
 
     class Meta:
@@ -51,14 +50,14 @@ class IncomeForm(ConvertToPrice, forms.ModelForm):
 
         year_user = self.user.year
         year_instance = dt.year
-        year_now = datetime.now().year
+        year_now = timezone.now().year
 
         diff = 1
         if (year_instance - year_now) > diff:
             year_msg = year_user + diff
             self.add_error(
                 "date",
-                _("Year cannot be greater than %(year)s") % ({"year": year_msg}),
+                _("Year cannot be greater than %(year)s") % {"year": year_msg},
             )
 
         return dt

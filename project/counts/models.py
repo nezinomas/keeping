@@ -1,17 +1,13 @@
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.urls import reverse_lazy
 
 from project.core.models import TitleAbstract
 
 from ..users.models import User
-from .managers import CountQuerySet, CountTypeQuerySet
 
 
 class CountType(TitleAbstract):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    objects = CountTypeQuerySet.as_manager()
 
     class Meta:
         unique_together = ["user", "title"]
@@ -28,8 +24,6 @@ class Count(models.Model):
         CountType, on_delete=models.CASCADE, related_name="counts"
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    objects = CountQuerySet.as_manager()
 
     def __str__(self):
         return f"{self.date}: {self.quantity}"

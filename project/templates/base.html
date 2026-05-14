@@ -106,7 +106,9 @@
           <div class="dropdown">
               <button class="dropdown__btn"></button>
               <div class="dropdown__menu">
-                {% if counts_menu %}{{ counts_menu }}{% endif %}
+                {% for count_type in counts_menu %}
+                <a href="{% url 'counts:index' count_type.slug %}">{{ count_type.title }}</a>
+                {% endfor %}
                 <span class="dropdown-divider"></span>
                 <a role="button" href="#" hx-get="{% url 'counts:type_new' %}" hx-target="#mainModal">{% translate 'Add count type' %}</a>
               </div>

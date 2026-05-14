@@ -1,21 +1,14 @@
-from typing import cast
-
 from django.db.models import Count, F, Q
 from django.db.models.functions import ExtractYear, TruncYear
 
-from ...users.models import User
-from .. import managers, models
+from ...core.mixins.sum import SumMixin
+from ...core.services.model_services import BaseModelService
+from .. import models
 
 
-class BookModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(managers.BooksQuerySet, models.Book.objects).related(user)
+class BookModelService(SumMixin, BaseModelService):
+    def get_queryset(self):
+        return models.Book.objects.select_related("user").filter(user=self.user)
 
     def year(self, year):
         return self.objects.filter(Q(ended__year=year) | Q(ended__isnull=True)).filter(
@@ -29,9 +22,10 @@ class BookModelService:
         """
         Returns <QuerySet [{'year': int, 'cnt': int}]>
         """
+        qs = self.year_filter(self.objects, year=year, field="ended")
+
         return (
-            self.objects.exclude(ended__isnull=True)
-            .year_filter(year=year, field="ended")
+            qs.exclude(ended__isnull=True)
             .annotate(date=TruncYear("ended"))
             .values("date")
             .annotate(year=ExtractYear(F("date")))
@@ -51,17 +45,9 @@ class BookModelService:
         )
 
 
-class BookTargetModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.BookTargetQuerySet, models.BookTarget.objects
-        ).related(user)
+class BookTargetModelService(BaseModelService):
+    def get_queryset(self):
+        return models.BookTarget.objects.select_related("user").filter(user=self.user)
 
     def year(self, year):
         return self.objects.filter(year=year)

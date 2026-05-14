@@ -3,10 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _l
 
 from ..users.models import User
-from . import managers
-from .lib.drinks_options import DrinksOptions
-
-MAX_BOTTLES = 20
+from .lib.drinks_options import DrinkConverter
 
 
 class DrinkType(models.TextChoices):
@@ -18,34 +15,27 @@ class DrinkType(models.TextChoices):
 
 class Drink(models.Model):
     date = models.DateField()
-    quantity = models.FloatField(validators=[MinValueValidator(0.1)])
+    stdav = models.FloatField(validators=[MinValueValidator(0.1)])
     option = models.CharField(
         max_length=7,
         choices=DrinkType.choices,
         default=DrinkType.BEER,
     )
+    converted_from_ml = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    objects = managers.DrinkQuerySet.as_manager()
 
     class Meta:
         get_latest_by = ["date"]
 
     def __str__(self):
-        qty = DrinksOptions(self.user.drink_type).ratio
-        return f"{self.date}: {round(self.quantity * qty, 2)}"
-
-    def save(self, *args, **kwargs):
-        obj = DrinksOptions(drink_type=self.option)
-
-        if self.quantity > MAX_BOTTLES:
-            q = obj.ml_to_stdav(drink_type=self.option, ml=self.quantity)
+        msg = f"{self.date}, {self.option}, "
+        if self.option == "stdav":
+            stdav = str(self.stdav)
         else:
-            q = self.quantity / obj.ratio
+            ml = DrinkConverter(self.option).stdav_to_ml(self.stdav)
+            stdav = f"{int(ml)}ml"
 
-        self.quantity = q
-
-        super().save(*args, **kwargs)
+        return msg + stdav
 
 
 class DrinkTarget(models.Model):
@@ -62,11 +52,8 @@ class DrinkTarget(models.Model):
         User, on_delete=models.CASCADE, related_name="drink_targets"
     )
 
-    objects = managers.DrinkTargetQuerySet.as_manager()
-
     def __str__(self):
-        obj = DrinksOptions(self.user.drink_type)
-        ml = obj.stdav_to_ml(drink_type=self.drink_type, stdav=self.quantity)
+        ml = DrinkConverter(self.drink_type).stdav_to_ml(self.quantity)
 
         return f"{self.year}: {ml}"
 
@@ -76,9 +63,6 @@ class DrinkTarget(models.Model):
 
     def save(self, *args, **kwargs):
         if self.drink_type != "stdav":
-            obj = DrinksOptions(self.user.drink_type)
-            self.quantity = obj.ml_to_stdav(
-                drink_type=self.drink_type, ml=self.quantity
-            )
+            self.quantity = DrinkConverter(self.drink_type).ml_to_stdav(self.quantity)
 
         super().save(*args, **kwargs)

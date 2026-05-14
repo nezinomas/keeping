@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
-from ...expenses.models import Expense
 from ...expenses.services.model_services import ExpenseModelService
 from ...users.models import User
 

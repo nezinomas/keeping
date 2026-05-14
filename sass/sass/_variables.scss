@@ -31,10 +31,9 @@ $table-thead: lighten($primary, 72%);
 $table-thead-text: $black-muted;
 
 $table-current-day: lighten($secondary, 43%);
-$table-current-day-font-color: $black;
 $table-current-day-border-color: $secondary;
 
-$table-currently-reading: $table-current-day;
+$table-currently-reading: lighten($primary, 71%);
 
 
 $table-weekend: lighten($primary, 71%);

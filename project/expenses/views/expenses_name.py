@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ...core.mixins.views import CreateViewMixin, UpdateViewMixin
-from .. import forms, models
+from .. import forms
 from ..services.model_services import ExpenseNameModelService
 
 
@@ -12,7 +12,7 @@ class QuerySetMixin:
 
 
 class New(QuerySetMixin, CreateViewMixin):
-    model = models.ExpenseName
+    service_class = ExpenseNameModelService
     form_class = forms.ExpenseNameForm
     hx_trigger_django = "afterName"
     modal_form_title = _("Expense name")
@@ -21,7 +21,7 @@ class New(QuerySetMixin, CreateViewMixin):
 
 
 class Update(QuerySetMixin, UpdateViewMixin):
-    model = models.ExpenseName
+    service_class = ExpenseNameModelService
     form_class = forms.ExpenseNameForm
     hx_trigger_django = "afterName"
     modal_form_title = _("Expense name")

@@ -10,7 +10,7 @@ ALLOWED_HOSTS = ENV["ALLOWED_HOSTS"]
 INSTALLED_APPS += [
     "debug_toolbar",
     "django_extensions",
-    "silk",
+    # "silk",
 ]
 
 
@@ -25,7 +25,7 @@ SHELL_PLUS_PRINT_SQL = True
 
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
-    "silk.middleware.SilkyMiddleware",
+    # "silk.middleware.SilkyMiddleware",
     # 'pyinstrument.middleware.ProfilerMiddleware',
 ] + MIDDLEWARE
 
@@ -80,4 +80,4 @@ CACHES = {
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
-SILKY_PYTHON_PROFILER = True
+# SILKY_PYTHON_PROFILER = True

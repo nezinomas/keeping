@@ -1,22 +1,20 @@
-from typing import Optional, cast
+from typing import Optional
 
 from django.db.models import Q
 
-from ...users.models import User
-from .. import managers, models
+from ...core.services.model_services import BaseModelService
+from .. import models
 
 
-class AccountModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
+class AccountModelService(BaseModelService):
+    def get_queryset(self):
+        return models.Account.objects.select_related("journal").filter(
+            journal=self.user.journal
+        )
 
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.user = user
-        self.objects = cast(managers.AccountQuerySet, models.Account.objects).related(
-            self.user
+    def year(self, year: int):
+        raise NotImplementedError(
+            "AccountModelService.year is not implemented. Use items() instead."
         )
 
     def items(self, year: Optional[int] = None):
@@ -27,20 +25,14 @@ class AccountModelService:
         return self.objects.all()
 
     def none(self):
-        return models.Account.objects.none()
+        return self.objects.none()
 
 
-class AccountBalanceModelService:
-    def __init__(self, user: User):
-        if not user:
-            raise ValueError("User required")
-
-        if not user.is_authenticated:
-            raise ValueError("Authenticated user required")
-
-        self.objects = cast(
-            managers.AccountBalanceQuerySet, models.AccountBalance.objects
-        ).related(user)
+class AccountBalanceModelService(BaseModelService):
+    def get_queryset(self):
+        return models.AccountBalance.objects.select_related("account").filter(
+            account__journal=self.user.journal
+        )
 
     def items(self):
         return self.objects.all()

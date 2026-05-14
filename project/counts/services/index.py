@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from ...core.lib.translation import weekday_names
 from ...users.models import User
-from ..lib.stats import Stats
+from ..lib.stats import Calendar, Stats
 from ..models import Count
 from ..services.model_services import CountModelService
 
@@ -23,7 +23,7 @@ class IndexService:
 
     @property
     def calendar_data(self):
-        return self._stats.chart_calendar()
+        return Calendar(self._stats).chart_data()
 
     def chart_weekdays(self, title: str = None) -> str:
         if not title:

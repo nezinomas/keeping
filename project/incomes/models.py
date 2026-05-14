@@ -1,11 +1,9 @@
 from django.db import models
-from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
-from .managers import IncomeQuerySet, IncomeTypeQuerySet
 
 
 class IncomeType(TitleAbstract):
@@ -23,9 +21,6 @@ class IncomeType(TitleAbstract):
         default=Types.SALARY,
     )
 
-    # Managers
-    objects = IncomeTypeQuerySet.as_manager()
-
     class Meta:
         unique_together = ["journal", "title"]
         ordering = ["title"]
@@ -40,9 +35,6 @@ class Income(models.Model):
     )
     income_type = models.ForeignKey(IncomeType, on_delete=models.CASCADE)
 
-    # managers
-    objects = IncomeQuerySet.as_manager()
-
     class Meta:
         indexes = [
             models.Index(fields=["account", "income_type"]),
@@ -50,4 +42,4 @@ class Income(models.Model):
         ]
 
     def __str__(self):
-        return f"{(self.date)}: {self.income_type}"
+        return f"{self.date}: {self.income_type}"

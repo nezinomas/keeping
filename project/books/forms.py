@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from ..core.lib.date import set_date_with_user_year, years
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from .models import Book, BookTarget
-from .services.model_services import BookModelService, BookTargetModelService
+from .services.model_services import BookTargetModelService
 
 
 class BookForm(forms.ModelForm):
