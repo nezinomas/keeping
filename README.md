@@ -37,28 +37,40 @@ password: 9J4wj#^zD0eFwS
 | Private personal trackers | Books, drinks, counters are per-user |
 | Accounts & transactions | Multiple accounts, transfers, automatic balance updates |
 | Savings & plans | Track goals, budgets, and long-term finances |
-| Extensible | Add new trackers or apps easily |
+| High Performance | Data processing powered by **Polars** |
 | Tested | 100% pytest coverage |
 
+
+---
+
+## **3️⃣ Project Structure**
+
+Keeping follows a clean, modular Django architecture:
+- **`bookkeeping`**: The core statistics engine. Aggregates data from all other apps.
+- **`accounts`**, **`incomes`**, **`expenses`**, **`savings`**, **`pensions`**, **`transactions`**: Financial management apps.
+- **`books`**, **`drinks`**, **`counts`**: Personal life tracking metrics.
+- **`plans`**: Budgeting and financial goal setting.
+- **`core`**: Shared utilities, base classes, and layout components.
 
 ---
 
 ## **4️⃣ Technical Stack**
 
 - **Backend:** Python 3.13, Django 6.0
+- **Data Processing:** Polars (high-performance DataFrames)
+- **Frontend:** HTMX, AlpineJS, SASS (Vanilla CSS/SASS workflow)
 - **Database:** MySQL
-- **Testing:** Pytest, 100% coverage
-- **Deployment:** Standard Django stack
-- **Configuration:** `.conf` for environment, media, logs
+- **Testing:** Pytest (100% coverage), Selenium (integration tests)
+- **Configuration:** `.conf` for environment-specific settings
 
 ---
 
 ## **5️⃣ Why Keeping is Special**
 
-1. **Engineer-focused:** modular, reliable, test-covered architecture.
-2. **Household collaboration:** all users manage financial data together.
-3. **Private personal metrics:** users maintain their own habits without exposing them to others.
-4. **Portfolio-ready:** clear structure, dashboards, and modular extensibility.
+1. **Engineer-focused:** Modular, reliable, test-covered architecture.
+2. **Household collaboration:** All users manage financial data together in a shared journal.
+3. **Private personal metrics:** Users maintain their own habits without exposing them to others.
+4. **Modern Frontend:** Uses a "No-Build" or "Light-Build" approach with HTMX and AlpineJS for a SPA-like feel without JS complexity.
 
 ---
 
