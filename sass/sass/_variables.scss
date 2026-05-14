@@ -1,17 +1,17 @@
+// --- 1. Typography ---
 $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
 $font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !default;
-
-
 $font-size: 0.7rem;
-$gap: 0.75rem;
 
+
+// --- 2. Layout & Transitions ---
+$gap: 0.75rem;
+$modal-border-radius: 0.25rem;
 $transition: 280ms all 50ms ease-out;
 $accordion-transition: all 0.25s ease-in-out;
 
-$modal-border-radius: 0.25rem;
 
-
-// Main color schema
+// --- 3. Core Palette ---
 $primary: hsl(206, 100%, 26%);
 $secondary: #0691ff;
 
@@ -22,16 +22,53 @@ $disabled: #E9ECEF;
 $border-color-light: #dee2e6;
 
 
-// Navigation
+// --- 4. State Colors ---
+// Negative
+$negative: #db606d;
+$negative-bg: #ffcdd2;
+$negative-text: #c62828;
+$negative-border: #ef9a9a;
+
+// Warning
+$warning-text: #c18b03;
+$warning-bg: #fff3cd;
+$warning-border: #ffe69c;
+
+// Positive
+$positive: #3b873e;
+$positive-bg: #c8e6c9;
+$positive-text: #2e7532;
+$positive-border: #a5d6a7;
+
+// Active
+$active: #fff;
+$active-bg: #8a949d;
+$active-border: #545a60;
+
+
+// --- 5. Navigation ---
 $nav-bg: lighten($primary, 73.5%);
 $nav-hover-text-color: #fff;
 
 
-// Tables (adapted for earth tones)
+// --- 6. Tables ---
 $table-border-color: #cacac9;
 $table-header-bg: #f9f9f9;
 $table-dash-color: #d1d1d1;
 $table-group-divider-color: #a2a2a2;
+
+$table-thead: lighten($primary, 72%);
+$table-thead-text: $black-muted;
+
+$table-current-day: lighten($secondary, 43%);
+$table-current-day-border-color: $secondary;
+
+$table-currently-reading: lighten($primary, 71%);
+
+$table-weekend: lighten($primary, 71%);
+$table-weekend-color: $black-muted;
+
+$table-hover-bg: lighten($secondary, 40%);
 
 $column-widths: (
     "day": 2.5rem,
@@ -42,50 +79,13 @@ $column-widths: (
     "title": 17rem
 );
 
-$table-thead: lighten($primary, 72%);
-$table-thead-text: $black-muted;
 
-$table-current-day: lighten($secondary, 43%);
-$table-current-day-border-color: $secondary;
-
-$table-currently-reading: lighten($primary, 71%);
-
-
-$table-weekend: lighten($primary, 71%);
-$table-weekend-color: $black-muted;
-
-$table-hover-bg: lighten($secondary, 40%);
-
-
-// Menus
+// --- 7. Menus ---
 $arrow: darken($secondary, 10%);
 $exception: $secondary;
 
 
-// Negative colors
-$negative: #db606d;;
-$negative-bg: #ffcdd2;
-$negative-text: #c62828;
-$negative-border: #ef9a9a;
-
-// Warning colors
-$warning-text: #c18b03;
-$warning-bg: #fff3cd;
-$warning-border: #ffe69c;
-
-
-// Positive colors
-$positive: #3b873e;
-$positive-bg: #c8e6c9;
-$positive-text: #2e7532;
-$positive-border: #a5d6a7;
-
-$active: #fff;
-$active-bg: #8a949d;
-$active-border: #545a60;
-
-
-// Chart colors
+// --- 8. Charts ---
 $chart-positive: darken($positive-bg, 5%);
 $chart-negative: darken($negative-bg, 5%);
 $chart-warning: darken($warning-bg, 5%);
