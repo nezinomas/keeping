@@ -7,6 +7,10 @@ $font-size: 0.7rem;
 // --- 2. Layout & Transitions ---
 $gap: 0.75rem;
 $modal-border-radius: 0.25rem;
+$modal-header-bg: rgba(0, 0, 0, 0.02);
+$modal-border-color: rgba(0, 0, 0, 0.175);
+$modal-backdrop-bg: rgba(232, 234, 237, 0.75);
+$modal-text-color: #373c44;
 $transition: 280ms all 50ms ease-out;
 $accordion-transition: all 0.25s ease-in-out;
 
