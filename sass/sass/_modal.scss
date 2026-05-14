@@ -30,6 +30,10 @@
     &#imgModal {
         max-width: 800px;
 
+        .modal-footer {
+            justify-content: flex-start;
+        }
+
         img {
             max-width: 765px;
             height: auto;
