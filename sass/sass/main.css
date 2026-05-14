@@ -124,7 +124,6 @@
   flex-grow: 1;
 }
 .button-row > button {
-  max-width: -moz-max-content;
   max-width: max-content;
 }
 .button-row.equal-width > button {
@@ -242,8 +241,7 @@ video {
 .bookkeeping-grid {
   display: grid;
   grid-auto-columns: 1fr;
-  -moz-column-gap: 0.75rem;
-       column-gap: 0.75rem;
+  column-gap: 0.75rem;
   row-gap: 1.5rem;
   grid-template-areas: "table-balance" "table-expenses" "chart-expenses" "chart-balance" "buttons" "accounts-info" "savings" "pensions";
 }
@@ -296,8 +294,7 @@ video {
 .drinks-grid {
   display: grid;
   grid-auto-columns: 1fr;
-  -moz-column-gap: 0.75rem;
-       column-gap: 0.75rem;
+  column-gap: 0.75rem;
   row-gap: 1.5rem;
   grid-template-areas: "chart-consumption-container" "chart-quality-container" "stats-tables" "tbl-stdav" "info-img" "chart-calendar-1H-container" "chart-calendar-2H-container" "historical-data" "compare-form-and-chart";
 }
@@ -333,8 +330,7 @@ video {
 .drinks-grid > #compare-form-and-chart {
   display: grid;
   grid-auto-columns: 1fr;
-  -moz-column-gap: 0;
-       column-gap: 0;
+  column-gap: 0;
   row-gap: 0;
 }
 .drinks-grid > #historical-data > .row,
@@ -369,8 +365,7 @@ video {
 .debts-grid {
   display: grid;
   grid-auto-columns: 1fr;
-  -moz-column-gap: 0.75rem;
-       column-gap: 0.75rem;
+  column-gap: 0.75rem;
   row-gap: 1.5rem;
   grid-template-areas: "lend-container" "lend-return-container" "borrow-container" "borrow-return-container";
 }
@@ -477,8 +472,7 @@ video {
 .month-grid {
   display: grid;
   grid-auto-columns: 1fr;
-  -moz-column-gap: 0.75rem;
-       column-gap: 0.75rem;
+  column-gap: 0.75rem;
   row-gap: 1.5rem;
   grid-template-areas: "month-content" "month-buttons" "month-chart-and-info-table" "month-add-buttons";
 }
@@ -503,32 +497,28 @@ video {
 .grid-one-col {
   display: grid;
   grid-auto-columns: 1fr;
-  -moz-column-gap: 0.75rem;
-       column-gap: 0.75rem;
+  column-gap: 0.75rem;
   row-gap: 1.5rem;
 }
 
 .grid-two-col {
   display: grid;
   grid-auto-columns: 1fr;
-  -moz-column-gap: 0.75rem;
-       column-gap: 0.75rem;
+  column-gap: 0.75rem;
   row-gap: 1.5rem;
 }
 
 .grid-three-col {
   display: grid;
   grid-auto-columns: 1fr;
-  -moz-column-gap: 0.75rem;
-       column-gap: 0.75rem;
+  column-gap: 0.75rem;
   row-gap: 1.5rem;
 }
 
 .grid-70-30 {
   display: grid;
   grid-auto-columns: 1fr;
-  -moz-column-gap: 0.75rem;
-       column-gap: 0.75rem;
+  column-gap: 0.75rem;
   row-gap: 1.5rem;
 }
 
@@ -871,7 +861,6 @@ video {
   left: 0;
   padding: 0.25rem 0;
   margin: 0;
-  min-width: -moz-max-content;
   min-width: max-content;
   text-align: left;
   background-color: white;
@@ -1310,9 +1299,7 @@ ul.accordion > li > input[type=checkbox]:checked ~ i:after {
 input,
 select,
 textarea {
-  -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
+  appearance: none;
 }
 input:disabled, input.disabled,
 select:disabled,
@@ -1334,6 +1321,13 @@ select[readonly]:focus,
 textarea[readonly]:focus {
   outline: none;
   box-shadow: none;
+}
+
+#id_price:disabled,
+#id_price.disabled,
+#id_price[readonly] {
+  font-weight: bold !important;
+  color: #6c757d !important;
 }
 
 fieldset {
@@ -1441,9 +1435,7 @@ fieldset {
   height: 1em;
   vertical-align: top;
   border: 1px solid #dee2e6;
-  -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
+  appearance: none;
 }
 .form-check-input[type=checkbox] {
   border-radius: 0.25em;
@@ -1530,7 +1522,6 @@ fieldset {
 }
 .settings-form > button,
 .login-form > button {
-  max-width: -moz-max-content;
   max-width: max-content;
 }
 
@@ -1587,8 +1578,7 @@ input.year-picker {
   display: flex;
   justify-content: center;
   margin: 0.75rem 0;
-  -moz-column-gap: 0.75rem;
-       column-gap: 0.75rem;
+  column-gap: 0.75rem;
 }
 .pagination a,
 .pagination li:not(:has(a)) {
@@ -1643,6 +1633,9 @@ input.year-picker {
 }
 .modal-dialog#imgModal {
   max-width: 800px;
+}
+.modal-dialog#imgModal .modal-footer {
+  justify-content: flex-start;
 }
 .modal-dialog#imgModal img {
   max-width: 765px;
@@ -1739,7 +1732,6 @@ input.year-picker {
   font-weight: 300;
   font-size: small;
   white-space: pre-wrap;
-  min-width: -moz-max-content;
   min-width: max-content;
   box-sizing: border-box;
   border-radius: 3px;
@@ -2000,4 +1992,6 @@ h6 {
 }
 .sortable-header-row th > span::before {
   color: hsl(206, 100%, 26%);
-}/*# sourceMappingURL=main.css.map */
+}
+
+/*# sourceMappingURL=main.css.map */
