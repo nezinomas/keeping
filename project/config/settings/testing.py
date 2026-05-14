@@ -1,3 +1,5 @@
+import logging
+
 from .base import *
 
 DEBUG = False
@@ -46,9 +48,13 @@ MIGRATION_MODULES = {
     "bookkeeping": None,
     "books": None,
     "core": None,
+    "counts": None,
+    "debts": None,
     "drinks": None,
     "expenses": None,
     "incomes": None,
+    "journals": None,
+    "pensions": None,
     "savings": None,
     "plans": None,
     "transactions": None,
@@ -59,3 +65,5 @@ MIGRATION_MODULES = {
 PASSWORD_HASHERS = ("django.contrib.auth.hashers.MD5PasswordHasher",)
 
 STORAGE = "inmemorystorage.InMemoryStorage"
+
+logging.disable(logging.CRITICAL)
