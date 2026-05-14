@@ -238,54 +238,69 @@ video {
   display: none;
 }
 
-.bookkeeping-grid {
-  display: grid;
-  grid-auto-columns: 1fr;
-  column-gap: 0.75rem;
-  row-gap: 1.5rem;
-  grid-template-areas: "table-balance" "table-expenses" "chart-expenses" "chart-balance" "buttons" "accounts-info" "savings" "pensions";
+.bookkeeping-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
-.bookkeeping-grid > #accounts-info {
-  grid-area: accounts-info;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
+.bookkeeping-tabs .tabs-nav {
+  display: flex;
   gap: 0.75rem;
-  align-items: start;
-  align-content: start;
-  grid-template-areas: "accounts                       accounts" "balance-short-and-no-incomes   wealth-avg-debts";
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 0.75rem;
 }
-.bookkeeping-grid #table-balance {
-  grid-area: table-balance;
+.bookkeeping-tabs .tabs-nav .button.active {
+  font-weight: bold;
+  border-bottom: 2px solid var(--text-color, #000);
 }
-.bookkeeping-grid #table-expenses {
-  grid-area: table-expenses;
+.bookkeeping-tabs .tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
-.bookkeeping-grid #chart-expenses-container {
-  grid-area: chart-expenses;
+.bookkeeping-tabs .kpi-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
-.bookkeeping-grid #chart-balance-container {
-  grid-area: chart-balance;
+.bookkeeping-tabs .kpi-row .kpi-card {
+  flex: 1;
+  min-width: 200px;
+  --border-radius: 0.25rem;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1.125rem;
+  border-radius: 0.25rem;
+  background-color: var(--bg-color, #fff);
+  text-align: center;
 }
-.bookkeeping-grid #buttons {
-  grid-area: buttons;
+.bookkeeping-tabs .kpi-row .kpi-card .kpi-title {
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
 }
-.bookkeeping-grid #accounts {
-  grid-area: accounts;
+.bookkeeping-tabs .kpi-row .kpi-card .kpi-value {
+  font-size: 1.5rem;
+  font-weight: bold;
 }
-.bookkeeping-grid #balance-short-and-no-incomes {
-  grid-area: balance-short-and-no-incomes;
+.bookkeeping-tabs .charts-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
 }
-.bookkeeping-grid #wealth-avg-debts {
-  grid-area: wealth-avg-debts;
+.bookkeeping-tabs .funds-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
 }
-.bookkeeping-grid #savings {
-  grid-area: savings;
+.bookkeeping-tabs .funds-grid #accounts-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
-.bookkeeping-grid #pensions {
-  grid-area: pensions;
-}
-.bookkeeping-grid #balance-short-and-no-incomes,
-.bookkeeping-grid #wealth-avg-debts {
+.bookkeeping-tabs .funds-grid .funds-tables {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -523,13 +538,25 @@ video {
 }
 
 @media only screen and (min-width: 992px) {
-  .bookkeeping-grid {
-    grid-template-columns: 42% 1fr;
-    grid-template-areas: "table-balance   table-expenses" "chart-expenses  chart-balance" "buttons         buttons" "accounts-info   accounts-info" "savings         savings" "pensions        pensions";
+  .bookkeeping-tabs .charts-row {
+    grid-template-columns: 1fr 1fr;
   }
-  .bookkeeping-grid > #accounts-info {
-    grid-template-columns: 4fr 2fr 1fr;
-    grid-template-areas: "accounts   balance-short-and-no-incomes   wealth-avg-debts";
+  .bookkeeping-tabs .tab-detailed {
+    display: grid;
+    grid-template-columns: 42% 1fr;
+    gap: 1.5rem;
+  }
+  .bookkeeping-tabs .funds-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .bookkeeping-tabs .funds-grid #accounts-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    align-content: start;
+  }
+  .bookkeeping-tabs .funds-grid #accounts-info > #accounts {
+    grid-column: 1/-1;
   }
   .month-grid {
     grid-template-columns: 2fr 33%;

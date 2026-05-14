@@ -6,78 +6,84 @@
 }
 
 
-// Main grid
-.bookkeeping-grid {
-    @include grid-template;
+// Main grid (Tabs Layout)
+.bookkeeping-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: calc($gap * 2);
 
-    grid-template-areas:
-        "table-balance"
-        "table-expenses"
-        "chart-expenses"
-        "chart-balance"
-        "buttons"
-        "accounts-info"
-        "savings"
-        "pensions";
-
-    > #accounts-info {
-        grid-area: accounts-info;
-        display: grid;
-        grid-template-columns: 2fr 1fr;
+    .tabs-nav {
+        display: flex;
         gap: $gap;
-        align-items: start;
-        align-content: start;
-        grid-template-areas:
-            "accounts                       accounts"
-            "balance-short-and-no-incomes   wealth-avg-debts"
-        ;
+        margin-bottom: $gap;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding-bottom: $gap;
+
+        .button.active {
+            font-weight: bold;
+            border-bottom: 2px solid var(--text-color, #000);
+        }
     }
 
-    #table-balance {
-        grid-area: table-balance;
-    }
-
-    #table-expenses {
-        grid-area: table-expenses;
-    }
-
-    #chart-expenses-container {
-        grid-area: chart-expenses;
-    }
-
-    #chart-balance-container {
-        grid-area: chart-balance;
-    }
-
-    #buttons {
-        grid-area: buttons;
-    }
-
-    #accounts {
-        grid-area: accounts;
-    }
-
-    #balance-short-and-no-incomes {
-        grid-area: balance-short-and-no-incomes;
-    }
-
-    #wealth-avg-debts {
-        grid-area: wealth-avg-debts;
-    }
-
-    #savings {
-        grid-area: savings;
-    }
-
-    #pensions {
-        grid-area: pensions;
-    }
-
-    #balance-short-and-no-incomes,
-    #wealth-avg-debts {
+    .tab-content {
         display: flex;
         flex-direction: column;
+        gap: calc($gap * 2);
+    }
+
+    // KPI Row
+    .kpi-row {
+        display: flex;
         gap: $gap;
+        flex-wrap: wrap;
+
+        .kpi-card {
+            flex: 1;
+            min-width: 200px;
+            @include shadow;
+            padding: $gap calc($gap * 1.5);
+            border-radius: 0.25rem;
+            background-color: var(--bg-color, #fff);
+            text-align: center;
+
+            .kpi-title {
+                font-size: 0.9rem;
+                color: #666;
+                text-transform: uppercase;
+                margin-bottom: 0.5rem;
+            }
+
+            .kpi-value {
+                font-size: 1.5rem;
+                font-weight: bold;
+            }
+        }
+    }
+
+    // Charts Row
+    .charts-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: calc($gap * 2);
+    }
+
+    // Wealth & Funds Grid
+    .funds-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: calc($gap * 2);
+
+        #accounts-info {
+            display: flex;
+            flex-direction: column;
+            gap: $gap;
+        }
+
+        .funds-tables {
+            display: flex;
+            flex-direction: column;
+            gap: $gap;
+        }
     }
 }
 
@@ -370,22 +376,30 @@
 
 // Media queries for screens larger than 992px
 @media only screen and (min-width: 992px) {
-    .bookkeeping-grid {
-        grid-template-columns: 42% 1fr;
-        grid-template-areas:
-            "table-balance   table-expenses"
-            "chart-expenses  chart-balance"
-            "buttons         buttons"
-            "accounts-info   accounts-info"
-            "savings         savings"
-            "pensions        pensions"
-        ;
+    .bookkeeping-tabs {
+        .charts-row {
+            grid-template-columns: 1fr 1fr;
+        }
 
-        > #accounts-info {
-            grid-template-columns: 4fr 2fr 1fr;
-            grid-template-areas:
-                "accounts   balance-short-and-no-incomes   wealth-avg-debts"
-            ;
+        .tab-detailed {
+            display: grid;
+            grid-template-columns: 42% 1fr;
+            gap: calc($gap * 2);
+        }
+
+        .funds-grid {
+            grid-template-columns: 1fr 1fr;
+
+            #accounts-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                align-items: start;
+                align-content: start;
+
+                > #accounts {
+                    grid-column: 1 / -1;
+                }
+            }
         }
     }
 
