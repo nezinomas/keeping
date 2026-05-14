@@ -56,7 +56,7 @@
 
 </main>
 
-<script>
+<script nonce="{{ csp_nonce }}">
     function compareValues() {
         const elements = document.querySelectorAll('.check');
         elements.forEach(element => element.classList.remove('check-accounts-balance'));

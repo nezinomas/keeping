@@ -6,6 +6,6 @@
 
 {{ block.super }}
 
-<script src="{% static 'js/expense_form.js' %}"></script>
+<script nonce="{{ csp_nonce }}" src="{% static 'js/expense_form.js' %}"></script>
 
 {% endblock from_scripts %}

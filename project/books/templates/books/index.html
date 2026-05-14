@@ -5,8 +5,8 @@
 
 {% block head %}
     {% include 'highcharts.html' with bullet="True" %}
-    <script src="{% static 'js/chart_books_readed.js' %}"></script>
-    <script src="{% static 'js/sticky-table-headers.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_books_readed.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
 {% endblock head %}
 
 

@@ -31,10 +31,13 @@ MIDDLEWARE += [
 
 SECURE_CSP = {
     "default-src": [CSP.SELF],
-    "script-src": [CSP.SELF, CSP.UNSAFE_INLINE, CSP.UNSAFE_EVAL],
+    "script-src": [CSP.SELF, CSP.NONCE, CSP.UNSAFE_EVAL, CSP.UNSAFE_INLINE],
     "style-src": [CSP.SELF, CSP.UNSAFE_INLINE, "https://fonts.googleapis.com"],
     "img-src": [CSP.SELF, "https:"],
     "font-src": [CSP.SELF, "https://fonts.gstatic.com"],
+    "base-uri": [CSP.SELF],
+    "form-action": [CSP.SELF],
+    "frame-ancestors": [CSP.NONE],
 }
 
 

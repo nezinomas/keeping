@@ -33,3 +33,7 @@ def context_counts_menu(context):
         qs = CountTypeModelService(context.user).objects
 
     return {"counts_menu": qs}
+
+
+def csp_nonce(request):
+    return {"csp_nonce": getattr(request, "_csp_nonce", "")}

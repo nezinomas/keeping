@@ -10,7 +10,7 @@
         {{chart_weekdays|json_script:"chart-weekdays-data"}}
         {{chart_months|json_script:"chart-months-data"}}
         {{chart_histogram|json_script:"chart-histogram-data"}}
-        <script>
+        <script nonce="{{ csp_nonce }}">
             chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
             chartPeriodicity('chart-months-data', 'chart-months-container');
             chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
@@ -23,7 +23,7 @@
     <div id="chart-calendar-2H-container">
         {{chart_calendar_1H|json_script:"chart-calendar-1H-data"}}
         {{chart_calendar_2H|json_script:"chart-calendar-2H-data"}}
-        <script>
+        <script nonce="{{ csp_nonce }}">
             chartCalender('chart-calendar-1H-data', 'chart-calendar-1H-container');
             chartCalender('chart-calendar-2H-data', 'chart-calendar-2H-container');
         </script>

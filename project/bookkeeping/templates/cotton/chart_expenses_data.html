@@ -1,4 +1,4 @@
 {% load static %}
 
-<script src="{% static 'js/chart_index_expenses.js' %}" defer></script>
+<script nonce="{{ csp_nonce }}" src="{% static 'js/chart_index_expenses.js' %}" defer></script>
 {{ data|json_script:"chart-expenses-data" }}
