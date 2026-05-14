@@ -1,11 +1,6 @@
-import shutil
-import tempfile
 from datetime import date
-from pathlib import Path
 
 import pytest
-from django.conf import settings
-from django.test import override_settings
 
 from ..models import Count, CountType
 from ..services.model_services import CountModelService, CountTypeModelService
@@ -18,7 +13,6 @@ pytestmark = pytest.mark.django_db
 #                                                                                 Count
 # --------------------------------------------------------------------------------------
 @pytest.fixture(name="counters")
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def fixture_counters(second_user):
     CountFactory(date=date(1999, 1, 1), quantity=1.0)
     CountFactory(date=date(1999, 1, 1), quantity=1.5)
@@ -40,7 +34,6 @@ def fixture_counters(second_user):
 
 
 @pytest.fixture(name="different_users")
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def fixture_different_users(second_user):
     CountFactory()
     CountFactory(count_type=CountTypeFactory(title="X"))
@@ -90,7 +83,6 @@ def test_count_year_with_count_type(main_user, different_users):
     assert actual[0].user.username == "bob"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_quantity_float():
     p = CountFactory(quantity=0.5)
 
@@ -99,7 +91,6 @@ def test_count_quantity_float():
     assert str(p) == "1999-01-01: 0.5"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_quantity_int():
     p = CountFactory(quantity=5)
 
@@ -108,7 +99,6 @@ def test_count_quantity_int():
     assert str(p) == "1999-01-01: 5.0"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_order(main_user):
     CountFactory(date=date(1999, 1, 1))
     CountFactory(date=date(1999, 12, 1))
@@ -128,7 +118,6 @@ def test_count_quantity_for_one_year(main_user, counters):
     assert actual[0]["qty"] == 5.5
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_quantity_for_all_years(main_user, counters):
     CountFactory(date=date(2020, 1, 1), quantity=10)
     CountFactory(date=date(2020, 12, 1), quantity=5)
@@ -164,27 +153,23 @@ def test_count_days_quantity_sum_for_january(main_user, counters):
 # -------------------------------------------------------------------------------------
 #                                                                            Count Type
 # -------------------------------------------------------------------------------------
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_str():
     obj = CountTypeFactory.build()
 
     assert str(obj) == "Count Type"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @pytest.mark.xfail
 def test_count_type_unique_for_user():
     CountType.objects.create(title="T")
     CountType.objects.create(title="T")
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_unique_for_users(main_user, second_user):
     CountType.objects.create(title="T", user=main_user)
     CountType.objects.create(title="T", user=second_user)
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_related(main_user, second_user):
     CountTypeFactory(title="X1")
     CountTypeFactory(title="X2", user=second_user)
@@ -195,7 +180,6 @@ def test_count_type_related(main_user, second_user):
     assert actual[0].title == "X1"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_items(main_user, second_user):
     CountTypeFactory(title="X1")
     CountTypeFactory(title="X2", user=second_user)
@@ -206,7 +190,6 @@ def test_count_type_items(main_user, second_user):
     assert actual[0].title == "X1"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_not_update_other_user_count(second_user):
     u1 = CountTypeFactory(title="X1")
     u2 = CountTypeFactory(title="X1", user=second_user)
@@ -221,7 +204,6 @@ def test_count_type_not_update_other_user_count(second_user):
     assert Count.objects.get(pk=obj2.pk).count_type.slug == "x1"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_not_delete_other_user_count(second_user):
     u1 = CountTypeFactory(title="X1")
     u2 = CountTypeFactory(title="X1", user=second_user)
@@ -236,7 +218,6 @@ def test_count_type_not_delete_other_user_count(second_user):
     assert Count.objects.first().user == second_user
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_update():
     obj = CountTypeFactory(title="XXX")
     CountFactory(count_type=obj)

@@ -1,10 +1,8 @@
 import re
-import tempfile
 from datetime import date, datetime
 
 import pytest
 import time_machine
-from django.test import override_settings
 from django.urls import resolve, reverse
 
 from ...users.views import Login
@@ -39,7 +37,6 @@ def test_view_update_func():
         ("xxx", "index"),
     ],
 )
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_new_url(client_logged, tab_actual, tab_expected):
     x = CountTypeFactory()
 
@@ -60,7 +57,6 @@ def test_view_new_url(client_logged, tab_actual, tab_expected):
         ("xxx", "reloadData"),
     ],
 )
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_new_get_hx_trigger_django(client_logged, tab, expected):
     x = CountTypeFactory()
 
@@ -70,7 +66,6 @@ def test_view_new_get_hx_trigger_django(client_logged, tab, expected):
     assert response.context["view"].get_hx_trigger_django() == expected
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_update_get_hx_trigger_django(client_logged):
     x = CountFactory()
 
@@ -89,7 +84,6 @@ def test_view_update_get_hx_trigger_django(client_logged):
         ("xxx", "index"),
     ],
 )
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @time_machine.travel(datetime(2000, 1, 1))
 def test_view_new_form_initial(client_logged, tab_sent, tab_actual):
     x = CountTypeFactory()
@@ -107,7 +101,6 @@ def test_view_new_form_initial(client_logged, tab_sent, tab_actual):
     assert '<input type="number" name="quantity" value="1"' in actual
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_new(client_logged):
     obj = CountTypeFactory()
 
@@ -125,7 +118,6 @@ def test_view_new(client_logged):
     assert '<a role="button" hx-get="/counts/delete/1/"' in actual
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_new_load_form(client_logged):
     o1 = CountTypeFactory(title="XXX")
     o2 = CountTypeFactory(title="ZZZ")
@@ -150,7 +142,6 @@ def test_view_new_invalid_data(client_logged):
     assert not form.is_valid()
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_update_load_form(client_logged):
     count_type_1 = CountTypeFactory(title="ZZZ")
     count_type_2 = CountTypeFactory(title="AAA")
@@ -169,7 +160,6 @@ def test_view_update_load_form(client_logged):
     assert f'<option value="{count_type_2.pk}">{count_type_2.title}</option>' in actual
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_update(client_logged):
     t = CountTypeFactory()
     p = CountFactory()
@@ -190,7 +180,6 @@ def test_view_update(client_logged):
     assert f'<a role="button" hx-get="/counts/delete/{p.pk}/"' in actual
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_update_not_load_other_user(client_logged, second_user):
     CountFactory()
     obj = CountFactory(date=date(1998, 12, 12), quantity=666, user=second_user)
@@ -212,7 +201,6 @@ def test_view_delete_func():
     assert views.Delete is view.func.view_class
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_delete_200(client_logged):
     p = CountFactory()
 
@@ -222,7 +210,6 @@ def test_view_delete_200(client_logged):
     assert response.status_code == 200
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @time_machine.travel(datetime(2000, 1, 1))
 def test_view_delete_get_hx_trigger_django(client_logged):
     x = CountFactory()
@@ -233,7 +220,6 @@ def test_view_delete_get_hx_trigger_django(client_logged):
     assert response.context["view"].get_hx_trigger_django() == "reloadData"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_delete_load_form(client_logged):
     p = CountFactory()
 
@@ -246,7 +232,6 @@ def test_view_delete_load_form(client_logged):
     assert "Ar tikrai norite ištrinti: <strong>1999-01-01: 1.0</strong>?" in actual
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_delete(client_logged):
     p = CountFactory()
     assert Count.objects.all().count() == 1
@@ -258,7 +243,6 @@ def test_view_delete(client_logged):
     assert Count.objects.all().count() == 0
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_delete_other_user_get_form(client_logged, second_user):
     obj = CountFactory(user=second_user)
 
@@ -268,7 +252,6 @@ def test_view_delete_other_user_get_form(client_logged, second_user):
     assert response.status_code == 404
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_view_delete_other_user_post_form(client_logged, second_user):
     obj = CountFactory(user=second_user)
 
@@ -287,7 +270,6 @@ def test_redirect_func():
     assert views.Redirect is view.func.view_class
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_redirect_redirect_to_index(client_logged):
     CountTypeFactory()
 
@@ -298,7 +280,6 @@ def test_redirect_redirect_to_index(client_logged):
     assert views.Index == response.resolver_match.func.view_class
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_redirect_redirect_to_empty(client_logged):
     url = reverse("counts:redirect")
     response = client_logged.get(url, follow=True)
@@ -322,7 +303,6 @@ def test_redirect_no_counts(client_logged):
     assert response.resolver_match.func.view_class is views.Empty
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_redirect_count_first(client_logged):
     CountTypeFactory(title="XXX")
     CountTypeFactory(title="AAA")
@@ -343,7 +323,6 @@ def test_index_func():
     assert views.Index == view.func.view_class
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_index_200(client_logged):
     obj = CountTypeFactory()
 
@@ -353,7 +332,6 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_index_not_logged(client):
     obj = CountTypeFactory()
 
@@ -370,7 +348,6 @@ def test_index_redirect_no_count_type(client_logged):
     assert views.Empty is response.resolver_match.func.view_class
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_index_redirect(client_logged):
     obj = CountTypeFactory()
 
@@ -382,7 +359,6 @@ def test_index_redirect(client_logged):
     assert response.resolver_match.kwargs["slug"] == obj.slug
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_index_add_button(client_logged):
     CountTypeFactory()
 
@@ -402,7 +378,6 @@ def test_index_add_button(client_logged):
     assert res[0][1] == "Įrašą"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_index_links(client_logged):
     CountTypeFactory(title="Xxx")
 
@@ -432,7 +407,6 @@ def test_index_links(client_logged):
     assert res[2][2] == "Istorija"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_index_context(client_logged):
     CountTypeFactory(title="Xxx")
 
@@ -453,7 +427,6 @@ def test_tab_index_func():
     assert views.TabIndex == view.func.view_class
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_tab_index_chart_weekdays(client_logged):
     CountFactory()
 
@@ -464,7 +437,6 @@ def test_tab_index_chart_weekdays(client_logged):
     assert '<div id="chart-weekdays-container"></div>' in content
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_tab_index_chart_months(client_logged):
     CountFactory()
 
@@ -475,7 +447,6 @@ def test_tab_index_chart_months(client_logged):
     assert '<div id="chart-months-container"></div>' in content
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_tab_index_chart_histogram(client_logged):
     CountFactory()
 
@@ -487,7 +458,6 @@ def test_tab_index_chart_histogram(client_logged):
     assert '<div id="chart-histogram-container">' in content
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @time_machine.travel(datetime(1999, 7, 18))
 def test_index_info_row(client_logged):
     obj = CountFactory(quantity=3)
@@ -504,7 +474,6 @@ def test_index_info_row(client_logged):
         assert m.group(3) == "0,1"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @time_machine.travel(datetime(1999, 1, 1))
 def test_index_chart_calendar_gap_from_previous_year(client_logged):
     CountFactory(date=date(1998, 1, 1))
@@ -528,7 +497,6 @@ def test_data_func():
     assert views.TabData is view.func.view_class
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_data_200(client_logged):
     obj = CountTypeFactory()
     url = reverse("counts:tab_data", kwargs={"slug": obj.slug})
@@ -538,7 +506,6 @@ def test_data_200(client_logged):
     assert response.resolver_match.func.view_class is views.TabData
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_data_context(client_logged):
     CountFactory()
 
@@ -550,7 +517,6 @@ def test_data_context(client_logged):
     assert response.context["slug"] == "count-type"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_data(client_logged):
     p = CountFactory(quantity=66)
     url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
@@ -563,7 +529,6 @@ def test_data(client_logged):
     assert f'<a role="button" hx-get="/counts/delete/{p.pk}/"' in actual
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_data_no_records(client_logged):
     CountTypeFactory()
 
@@ -583,7 +548,6 @@ def test_history_func():
     assert views.TabHistory == view.func.view_class
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_history_200(client_logged):
     obj = CountTypeFactory()
     url = reverse("counts:tab_history", kwargs={"slug": obj.slug})
@@ -592,7 +556,6 @@ def test_history_200(client_logged):
     assert response.status_code == 200
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_history_context(client_logged):
     obj = CountTypeFactory()
 
@@ -606,7 +569,6 @@ def test_history_context(client_logged):
     assert response.context["slug"] == obj.slug
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_history_chart_weekdays(client_logged):
     obj = CountTypeFactory()
     CountFactory()
@@ -618,7 +580,6 @@ def test_history_chart_weekdays(client_logged):
     assert '<div id="chart-weekdays-container"></div>' in content
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_history_chart_years(client_logged):
     obj = CountTypeFactory()
     CountFactory()
@@ -653,7 +614,6 @@ def test_count_type_new_200(client_logged):
     assert response.status_code == 200
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_new_load_form(client_logged):
     url = reverse("counts:type_new")
     response = client_logged.get(url)
@@ -662,7 +622,6 @@ def test_count_type_new_load_form(client_logged):
     assert f'hx-post="{url}"' in content
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_update_load_form(client_logged):
     obj = CountTypeFactory()
 
@@ -694,7 +653,6 @@ def test_count_type_new_form_fields(client_logged):
     assert '<input type="text" name="title"' in actual
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_new_valid_data(client_logged):
     data = {"title": "XXX"}
     url = reverse("counts:type_new")
@@ -704,7 +662,6 @@ def test_count_type_new_valid_data(client_logged):
     assert actual.title == "XXX"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_htmx_status_code(client_logged):
     data = {"title": "XXX"}
     url = reverse("counts:type_new")
@@ -713,7 +670,6 @@ def test_count_type_htmx_status_code(client_logged):
     assert response.status_code == 200
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_htmx_redirect_header(client_logged):
     data = {"title": "XXX"}
     url = reverse("counts:type_new")
@@ -724,7 +680,6 @@ def test_count_type_htmx_redirect_header(client_logged):
     )
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_new_invalid_data(client_logged):
     data = {"title": "X"}
     url = reverse("counts:type_new")
@@ -734,7 +689,6 @@ def test_count_type_new_invalid_data(client_logged):
     assert not form.is_valid()
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_update(client_logged):
     obj = CountFactory()
 
@@ -746,7 +700,6 @@ def test_count_type_update(client_logged):
     assert CountType.objects.first().title == "YYY"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_update_htmx_redirect_header(client_logged):
     obj = CountFactory()
 
@@ -759,7 +712,6 @@ def test_count_type_update_htmx_redirect_header(client_logged):
     )
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_update_not_load_other_user(client_logged, second_user):
     obj = CountTypeFactory(title="xxx", user=second_user)
 
@@ -778,7 +730,6 @@ def test_count_types_delete_func():
     assert views.TypeDelete is view.func.view_class
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_delete_200(client_logged):
     obj = CountTypeFactory()
 
@@ -789,7 +740,6 @@ def test_count_type_delete_200(client_logged):
     assert response.status_code == 200
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_delete_load_form(client_logged):
     obj = CountTypeFactory()
 
@@ -802,7 +752,6 @@ def test_count_type_delete_load_form(client_logged):
     assert "Ar tikrai norite ištrinti: <strong>Count Type</strong>?" in actual
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_delete(client_logged):
     _type = CountTypeFactory()
     CountFactory(count_type=_type)
@@ -815,7 +764,6 @@ def test_count_type_delete(client_logged):
     assert Count.objects.count() == 0
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_delete_htmx_redirect_header(client_logged):
     _type = CountTypeFactory()
 
@@ -827,7 +775,6 @@ def test_count_type_delete_htmx_redirect_header(client_logged):
     )
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_delete_other_user_get_form(client_logged, second_user):
     obj = CountTypeFactory(user=second_user)
 
@@ -837,7 +784,6 @@ def test_count_type_delete_other_user_get_form(client_logged, second_user):
     assert response.status_code == 404
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_delete_other_user_post_form(client_logged, second_user):
     obj = CountTypeFactory(user=second_user)
 
@@ -883,7 +829,6 @@ def test_info_row_func():
     assert views.InfoRow is view.func.view_class
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @time_machine.travel(datetime(1999, 7, 12))
 def test_info_row(client_logged):
     CountFactory(date=date(1999, 7, 8), quantity=1)
@@ -901,7 +846,6 @@ def test_info_row(client_logged):
     assert context["current_gap"] == 4
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @time_machine.travel(datetime(2000, 7, 12))
 def test_info_row_gap_in_past_view(client_logged, main_user):
     main_user.year = 1999
