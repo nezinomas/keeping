@@ -5,15 +5,15 @@ description = "Home Bookkeeping"
 readme = "README.md"
 requires-python = ">=3.13.5"
 dependencies = [
-    "django>=6.0.3",
+    "django>=6.0.5",
     "django-extensions>=4.1",
     "django-htmx>=1.27.0",
     "django-vanilla-views>=3.0.0",
     "django-widget-tweaks>=1.5.1",
     "mysqlclient>=2.2.8",
-    "pillow>=12.1.1",
-    "polars>=1.39.3",
-    "pyarrow>=23.0.1",
+    "pillow>=12.2.0",
+    "polars>=1.40.1",
+    "pyarrow>=24.0.0",
     "python-dateutil>=2.9.0.post0",
     "django-cotton>=2.6.2",
     "numpy>=2.4.4",
@@ -67,9 +67,12 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Ignore E501 (Line too long) in migrations
-"**/migrations/*" = ["E501"]
-
-# Ignore E501 in any file inside a 'tests' folder, or any file starting with 'test_'
-"**/tests/*" = ["E501"]
-"test_*.py" = ["E501"]
+"**/migrations/*" = [
+    "E501",
+]
+"**/tests/*" = [
+    "E501",
+]
+"test_*.py" = [
+    "E501",
+]
