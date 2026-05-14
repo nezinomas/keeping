@@ -1,4 +1,5 @@
 import pytest
+from django.utils.translation import override
 
 from ....accounts.tests.factories import AccountBalanceFactory
 from ....pensions.tests.factories import PensionBalanceFactory
@@ -58,8 +59,6 @@ def test_presenter_wealth():
 
     assert actual == 7
 
-
-from django.utils.translation import override
 
 def test_build_context():
     with override("en"):
