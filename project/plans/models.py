@@ -2,10 +2,8 @@ from django.core.validators import (
     MaxValueValidator,
     MinLengthValidator,
     MinValueValidator,
-    RegexValidator,
 )
 from django.db import models
-from django.utils.translation import gettext as _
 
 from ..core.validators import validate_title_characters
 from ..expenses.models import ExpenseType

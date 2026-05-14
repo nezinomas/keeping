@@ -8,7 +8,6 @@ from project.drinks.lib.drinks_stats import DrinkStats
 
 from ...lib.drinks_options import DrinkConverter
 from ...services.index.builders import (
-    ConversionRowViewModel,
     DryDaysViewModel,
     IndexBuilder,
 )

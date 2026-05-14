@@ -1,4 +1,3 @@
-import polars as pl
 import pytest
 
 from ...lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData

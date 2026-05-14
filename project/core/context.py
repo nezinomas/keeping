@@ -1,8 +1,6 @@
 import contextlib
 from datetime import datetime
 
-from django.conf import settings
-
 from .lib import date as lib_date
 
 

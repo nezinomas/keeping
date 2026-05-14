@@ -6,7 +6,7 @@ import time_machine
 
 from ...services.forecast.calculators import ForecastCalculator
 from ...services.forecast.dtos import ForecastDataDTO
-from ...services.forecast.presenters import get_month, load_service
+from ...services.forecast.presenters import get_month
 from ...services.forecast.providers import ForecastDataProvider, MonthlyDataFormatter
 
 MODULE_PATH = "project.bookkeeping.services.forecast"

@@ -6,9 +6,7 @@ from typing import NamedTuple
 import polars as pl
 from django.utils.translation import gettext as _
 
-from ...pensions.models import PensionBalance
 from ...pensions.services.model_services import PensionBalanceModelService
-from ...savings.models import SavingBalance
 from ...savings.services.model_services import SavingBalanceModelService
 
 

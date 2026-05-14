@@ -8,7 +8,7 @@ from ..core.mixins.views import (
     ListViewMixin,
     UpdateViewMixin,
 )
-from . import forms, models
+from . import forms
 from .services.model_services import PensionModelService, PensionTypeModelService
 
 

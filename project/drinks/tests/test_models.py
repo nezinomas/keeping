@@ -4,7 +4,7 @@ import pytest
 from django.core.validators import ValidationError
 
 from ...users.tests.factories import UserFactory
-from ..models import Drink, DrinkTarget
+from ..models import DrinkTarget
 from ..services.model_services import DrinkModelService, DrinkTargetModelService
 from .factories import DrinkFactory, DrinkTargetFactory
 

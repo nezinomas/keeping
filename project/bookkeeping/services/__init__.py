@@ -1,16 +1,14 @@
-from . import (
-    accounts,
-    chart_summary,
-    chart_summary_expenses,
-    detailed,
-    expand_day,
-    expenses,
-    forecast,
-    index,
-    month,
-    pensions,
-    savings,
-    summary_savings,
-    summary_savings_and_incomes,
-    wealth,
-)
+from . import accounts as accounts
+from . import chart_summary as chart_summary
+from . import chart_summary_expenses as chart_summary_expenses
+from . import detailed as detailed
+from . import expand_day as expand_day
+from . import expenses as expenses
+from . import forecast as forecast
+from . import index as index
+from . import month as month
+from . import pensions as pensions
+from . import savings as savings
+from . import summary_savings as summary_savings
+from . import summary_savings_and_incomes as summary_savings_and_incomes
+from . import wealth as wealth

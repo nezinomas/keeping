@@ -3,7 +3,6 @@ from datetime import date
 import factory
 import pytest
 from django.db.models.signals import post_save
-from numpy.random import f
 
 from ....books.tests.factories import BookFactory
 from ....expenses.tests.factories import (

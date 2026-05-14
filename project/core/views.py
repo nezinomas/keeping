@@ -5,7 +5,6 @@ from .lib.date import years
 from .lib.utils import get_safe_redirect, http_htmx_response
 from .mixins.views import TemplateViewMixin
 from .services import signals_service
-from .tests.utils import timer
 
 
 @login_required()

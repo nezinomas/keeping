@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ...core.mixins.views import CreateViewMixin, ListViewMixin, UpdateViewMixin
-from .. import forms, models
+from .. import forms
 from ..services.model_services import ExpenseTypeModelService
 
 

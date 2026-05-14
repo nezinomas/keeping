@@ -4,7 +4,7 @@ import pytest
 from django.core.validators import ValidationError
 
 from ...users.tests.factories import UserFactory
-from ..models import Book, BookTarget
+from ..models import BookTarget
 from ..services.model_services import BookModelService, BookTargetModelService
 from .factories import BookFactory, BookTargetFactory
 

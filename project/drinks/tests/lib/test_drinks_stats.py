@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-import time_machine
 
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DrinkStats

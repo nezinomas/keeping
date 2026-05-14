@@ -14,7 +14,7 @@ from ..core.mixins.views import (
     UpdateViewMixin,
 )
 from ..users.models import User
-from . import forms, models, services
+from . import forms, services
 from .services.model_services import BookModelService, BookTargetModelService
 
 

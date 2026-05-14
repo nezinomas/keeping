@@ -2,7 +2,6 @@ from datetime import date
 
 import pytest
 import time_machine
-from django.urls import reverse
 
 from ..models import Pension, PensionBalance, PensionType
 from ..services.model_services import (

@@ -4,7 +4,6 @@ from typing import Optional
 from dateutil.relativedelta import relativedelta
 from django.db.models import Count, F, Q, Sum, Value
 from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
-from django.utils.translation import gettext as _
 
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService

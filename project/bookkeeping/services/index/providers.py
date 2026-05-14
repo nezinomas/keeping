@@ -1,7 +1,6 @@
 import itertools as it
 
 from django.db.models import F, QuerySet, Sum
-from django.utils.translation import gettext as _
 
 from ....accounts.services.model_services import AccountBalanceModelService
 from ....debts.services.model_services import DebtModelService, DebtReturnModelService

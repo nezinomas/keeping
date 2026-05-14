@@ -12,7 +12,7 @@ from ..core.mixins.views import (
     UpdateViewMixin,
 )
 from ..savings.services.model_services import SavingTypeModelService
-from . import forms, models
+from . import forms
 from .services.model_services import (
     SavingChangeModelService,
     SavingCloseModelService,

@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 
 from ...journals.tests.factories import JournalFactory
-from ..models import Account, AccountBalance
+from ..models import Account
 from ..services.model_services import AccountBalanceModelService, AccountModelService
 from .factories import AccountBalanceFactory, AccountFactory
 

@@ -1,6 +1,5 @@
 import calendar
 from datetime import date
-from functools import cached_property
 
 import polars as pl
 
