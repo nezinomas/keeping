@@ -28,3 +28,11 @@ def build_context(dto: WealthDto) -> dict:
             "data": [presenter.money, presenter.wealth],
         }
     }
+
+
+def load_service(user, year: int) -> dict:
+    from .providers import WealthDataProvider
+
+    provider = WealthDataProvider(user, year)
+    dto = provider.get_wealth_data()
+    return build_context(dto)
