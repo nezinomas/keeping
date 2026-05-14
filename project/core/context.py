@@ -1,9 +1,7 @@
 import contextlib
 from datetime import datetime
-from pathlib import Path
 
 from django.conf import settings
-from django.utils.safestring import mark_safe
 
 from .lib import date as lib_date
 
@@ -30,12 +28,10 @@ def context_months(context):
 
 
 def context_counts_menu(context):
-    file = None
+    qs = []
 
-    with contextlib.suppress(AttributeError):
-        journal_pk = context.user.journal.pk
-        file = Path(settings.MEDIA_ROOT, str(journal_pk), "menu.html")
+    with contextlib.suppress(AttributeError, ValueError):
+        from ..counts.services.model_services import CountTypeModelService
+        qs = CountTypeModelService(context.user).objects
 
-    menu = file.read_text(encoding="utf-8") if file and file.exists() else ""
-
-    return {"counts_menu": mark_safe(menu)}
+    return {"counts_menu": qs}

@@ -254,27 +254,3 @@ def test_count_type_update():
     assert Count.objects.first().count_type.title == "YYY"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         generate menu
-# -------------------------------------------------------------------------------------
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
-def test_menu_create_journal_id_folder(mocker, main_user):
-    render_mock = mocker.patch("project.counts.signals.render_to_string")
-    open_mock = mocker.patch("builtins.open")
-
-    journal_pk = main_user.journal.pk
-    folder = Path(settings.MEDIA_ROOT) / str(journal_pk)
-
-    # delete journal_pk folder
-    if folder.is_dir():
-        shutil.rmtree(folder)
-
-    assert not folder.is_dir()
-
-    CountTypeFactory()
-
-    assert folder.is_dir()
-    assert render_mock.call_count == 1
-    assert open_mock.call_count == 1
-
-    shutil.rmtree(folder)

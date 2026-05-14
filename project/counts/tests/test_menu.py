@@ -9,7 +9,6 @@ from .factories import CountTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_menu_count_type_add(client_logged):
     obj = CountTypeFactory()
 
@@ -22,7 +21,6 @@ def test_menu_count_type_add(client_logged):
     assert f'href="{url}">{obj.title}</a>' in content
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_menu_count_type_add_two(client_logged):
     obj1 = CountTypeFactory(title="XXX")
     obj2 = CountTypeFactory(title="YYY")
@@ -39,7 +37,6 @@ def test_menu_count_type_add_two(client_logged):
     assert f'href="{url2}">{obj2.title}</a>' in content
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_menu_count_type_delete(client_logged):
     obj1 = CountTypeFactory(title="XXX")
     obj2 = CountTypeFactory(title="YYY")
