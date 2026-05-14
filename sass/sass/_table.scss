@@ -1,12 +1,11 @@
 .main {
+
     // .main scoped variables
-    --day-col-width: 2.5rem;
-    --qty-col-width: 3rem;
-    --price-col-width: 5rem;
-    --date-col-width: 8rem;
-    --account-col-width: 17rem;
-    --title-col-width: 17rem;
-    --default-table-border-color: #cacac9;
+    @each $name, $width in $column-widths {
+        --#{$name}-col-width: #{$width};
+    }
+
+    --default-table-border-color: #{$table-border-color};
 
     table-layout: fixed;
     border-collapse: collapse;
@@ -23,7 +22,7 @@
         min-height: 2rem;
     }
 
-    thead  {
+    thead {
         color: $table-thead-text;
         border-bottom: $primary solid 3px;
 
@@ -33,7 +32,7 @@
         }
 
         tr:not(:last-child) th {
-            background-color: #f9f9f9;
+            background-color: $table-header-bg;
             min-height: 36px;
         }
 
@@ -60,7 +59,8 @@
         }
     }
 
-    td, th {
+    td,
+    th {
         overflow: hidden;
         text-overflow: ellipsis;
         padding: 0.15rem 0.25rem;
@@ -75,6 +75,7 @@
 
         /* Left border is 1px. To hide the current cell’s right border, target the next sibling. */
         &.no-right-border {
+
             +td,
             +th {
                 border-left: 0;
@@ -88,13 +89,13 @@
     }
 
     // hack hover issue then table has no footer
-    & tr:last-child > td {
+    & tr:last-child>td {
         border-bottom: 1px solid var(--default-table-border-color);
     }
 
     // Custom backgrounds
     .dash {
-        color: #d1d1d1;
+        color: $table-dash-color;
     }
 
     .table-success {
@@ -106,49 +107,23 @@
     }
 
     // Border styles
-    .right-thick-border {
-        border-right: 3px solid $black;
-    }
-
-    .left-thick-border {
-        border-left: 3px solid $black;
-    }
-
-    .right-thin-border {
-        border-right: 2px solid $black;
-    }
-
-    .left-thin-border {
-        border-left: 2px solid $black;
+    @each $side in (left, right) {
+        @each $weight, $size in (thick: 3px, thin: 2px) {
+            .#{$side}-#{$weight}-border {
+                border-#{$side}: #{$size} solid $black;
+            }
+        }
     }
 
     // Columns widths
+    @each $name, $width in $column-widths {
+        .#{$name}-col {
+            width: var(--#{$name}-col-width);
+        }
+    }
+
     .short-title-col {
         width: calc(var(--title-col-width) / 2);
-    }
-
-    .date-col {
-        width: var(--date-col-width);
-    }
-
-    .account-col {
-        width: var(--account-col-width);
-    }
-
-    .title-col {
-        width: var(--title-col-width);
-    }
-
-    .day-col {
-        width: var(--day-col-width);
-    }
-
-    .qty-col {
-        width: var(--qty-col-width);
-    }
-
-    .price-col {
-        width: var(--price-col-width);
     }
 
     .double-price-col {
@@ -158,6 +133,7 @@
     .long-price-col {
         width: calc(var(--price-col-width) + 2rem);
     }
+
 
     .edit-col {
         min-width: 35px;
@@ -185,47 +161,44 @@
 
     // Striped styles
     &.striped {
-        tr:nth-child(even) {
-            > td {
-                background-color: rgba(0, 0, 0, 0.03);
+        tr:nth-child(even)>td {
+            background-color: rgba(0, 0, 0, 0.03);
+
+            &.table-success {
+                background-color: darken($positive-bg, 2%);
             }
 
-            > td.table-success {
-                background-color: darken($positive-bg, 2);
-            }
+            &.table-danger {
+                background-color: darken($negative-bg, 2%);
 
-            > td.table-danger {
-                background-color: darken($negative-bg, 2)
-            }
+                &.day-negative {
+                    background-color: $negative-bg;
+                }
 
-            > td.table-danger.day-negative {
-                background-color: $negative-bg;
-            }
-
-            > td.table-danger.day-warning {
-                background-color: $warning-bg;
+                &.day-warning {
+                    background-color: $warning-bg;
+                }
             }
         }
     }
 
     // Hover styles
     &.hover {
-        tr:hover > td {
+        tr:hover>td {
             background-color: $table-hover-bg !important;
-            border-bottom: darken($table-hover-bg, 20) 1px solid;
-            border-top: darken($table-hover-bg, 20) 1px solid;
+            border-bottom: 1px solid darken($table-hover-bg, 20%);
+            border-top: 1px solid darken($table-hover-bg, 20%);
         }
     }
 }
 
 
 // Month table
-.month-table  {
+.month-table {
     table-layout: auto;
 
     .expand-column-width {
-        --column-width: 2.5rem;
-
+        --column-width: #{map-get($column-widths, "day")};
         min-width: var(--column-width);
         width: var(--column-width);
     }
@@ -249,20 +222,18 @@
         border-right: double $black;
     }
 
-    > tbody > tr.weekend-col {
-        > td:not([class*="day"]) {
+    >tbody>tr.weekend-col {
+        >td:not([class*="day"]) {
             background-color: $table-weekend;
         }
     }
 
-    > tbody > tr.current-day {
+    >tbody>tr.current-day {
         font-weight: 600;
 
-        > td {
-            border-top:
-                $table-current-day-border-color 1px double;
-            border-bottom:
-                $table-current-day-border-color 1px double;
+        >td {
+            border-top: $table-current-day-border-color 1px double;
+            border-bottom: $table-current-day-border-color 1px double;
 
             &:not([class*="day"]) {
                 background-color: $table-current-day;
@@ -276,12 +247,13 @@
 
     // Expand month table row to see expenses
     &:has(.expand-expenses) {
-        // override expenses table layout, wich is fixed
+
+        // override expenses table layout, which is fixed
         .expenses-table {
             table-layout: auto;
         }
 
-        tr.expand-expenses > td {
+        tr.expand-expenses>td {
             background-color: white;
 
             &:has([class*="alert"]) {
@@ -312,15 +284,14 @@
     }
 }
 
-
 // Expenses table
 .expenses-table {
     td:first-child {
-        padding-left: 8px;
+        padding-left: 0.5rem;
     }
 
     td.exception {
-        padding-left: 5px;
+        padding-left: 0.35rem;
         border-left: 5px solid $exception;
     }
 
@@ -335,10 +306,8 @@
 .book-table {
     tr.currently-reading-book {
         background-color: $table-currently-reading;
-        border-top:
-            $table-current-day-border-color 1px double;
-        border-bottom:
-            $table-current-day-border-color 1px double;
+        border-top: $table-current-day-border-color 1px double;
+        border-bottom: $table-current-day-border-color 1px double;
     }
 
     .author-col {
@@ -366,22 +335,18 @@
     }
 
     &.active .button-expand:before {
-        -webkit-transform: rotate(180deg);
-        -moz-transform: rotate(180deg);
         transform: rotate(180deg);
     }
 }
 
 
 .table-group-divider {
-    border-top: 3px solid #a2a2a2;
+    border-top: 3px solid $table-group-divider-color;
 }
 
 
-.main tr.std-av-border > td {
+.main tr.std-av-border>td {
     background-color: $table-currently-reading !important;
-    border-top:
-        $table-current-day-border-color 1px double;
-    border-bottom:
-        $table-current-day-border-color 1px double;
+    border-top: $table-current-day-border-color 1px double;
+    border-bottom: $table-current-day-border-color 1px double;
 }
