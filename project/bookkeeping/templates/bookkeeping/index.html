@@ -12,13 +12,13 @@
 
 <main class="bookkeeping-tabs" x-data="{ tab: 'overview' }">
 
-    <!-- Tab Navigation -->
+    <!-- Tab Navigation & Actions -->
     <div class="tabs-nav">
-        <button class="button" :class="tab === 'overview' ? 'active' : 'button-secondary'" @click="tab = 'overview'">{% translate 'Overview' %}</button>
-        <button class="button" :class="tab === 'detailed' ? 'active' : 'button-secondary'" @click="tab = 'detailed'">{% translate 'Detailed Data' %}</button>
-        <button class="button" :class="tab === 'funds' ? 'active' : 'button-secondary'" @click="tab = 'funds'">{% translate 'Wealth & Funds' %}</button>
+        <button class="button" :class="tab === 'overview' ? 'active' : ''" @click="tab = 'overview'">{% translate 'Overview' %}</button>
+        <button class="button" :class="tab === 'detailed' ? 'active' : ''" @click="tab = 'detailed'">{% translate 'Detailed Data' %}</button>
+        <button class="button" :class="tab === 'funds' ? 'active' : ''" @click="tab = 'funds'">{% translate 'Wealth & Funds' %}</button>
 
-        <button class="button-secondary button-refresh" style="margin-left: auto;" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator">
+        <button class="button button-refresh" style="margin-left: auto;" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator">
             <span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span>
         </button>
     </div>

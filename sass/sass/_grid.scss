@@ -14,14 +14,49 @@
 
     .tabs-nav {
         display: flex;
-        gap: $gap;
-        margin-bottom: $gap;
+        background-color: transparent;
+        padding: 0 0.5rem;
+        margin-bottom: calc($gap * 1.5);
+        gap: 1.5rem;
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        padding-bottom: $gap;
 
-        .button.active {
-            font-weight: bold;
-            border-bottom: 2px solid var(--text-color, #000);
+        .button {
+            border: none;
+            background: transparent;
+            color: $text-muted;
+            padding: 0.75rem 0;
+            font-size: $font-size;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            transition: all 0.2s ease;
+            margin-bottom: -1px; // Align with container border
+
+            &:hover {
+                color: $black;
+            }
+
+            &.active {
+                color: $primary;
+                border-bottom-color: $primary;
+            }
+        }
+
+        .button-refresh {
+            color: $text-muted;
+            font-size: 0.85em;
+            text-transform: none;
+            letter-spacing: normal;
+            border-bottom: none;
+            padding: 0;
+            
+            &:hover {
+                color: $primary;
+                border-bottom: none;
+            }
         }
     }
 
