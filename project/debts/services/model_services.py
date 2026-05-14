@@ -1,4 +1,3 @@
-
 from django.db.models import F, Q, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth
 

@@ -233,5 +233,3 @@ def test_count_type_update():
 
     assert Count.objects.count() == 1
     assert Count.objects.first().count_type.title == "YYY"
-
-

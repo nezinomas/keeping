@@ -1,4 +1,3 @@
-
 from django.db.models import F, Sum
 from django.db.models.functions import ExtractYear
 

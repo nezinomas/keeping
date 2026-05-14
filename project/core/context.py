@@ -30,6 +30,7 @@ def context_counts_menu(context):
 
     with contextlib.suppress(AttributeError, ValueError):
         from ..counts.services.model_services import CountTypeModelService
+
         qs = CountTypeModelService(context.user).objects
 
     return {"counts_menu": qs}

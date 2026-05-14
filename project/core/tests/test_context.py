@@ -68,8 +68,9 @@ def test_context_months(rf):
 
 def test_context_counts_menu(main_user, rf):
     from ...counts.tests.factories import CountTypeFactory
+
     CountTypeFactory(title="XXX", user=main_user)
-    
+
     rf.user = main_user
     actual = context_counts_menu(rf)
 
