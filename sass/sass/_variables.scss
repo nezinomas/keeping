@@ -28,6 +28,20 @@ $nav-hover-text-color: #fff;
 
 
 // Tables (adapted for earth tones)
+$table-border-color: #cacac9;
+$table-header-bg: #f9f9f9;
+$table-dash-color: #d1d1d1;
+$table-group-divider-color: #a2a2a2;
+
+$column-widths: (
+    "day": 2.5rem,
+    "qty": 3rem,
+    "price": 5rem,
+    "date": 8rem,
+    "account": 17rem,
+    "title": 17rem
+);
+
 $table-thead: lighten($primary, 72%);
 $table-thead-text: $black-muted;
 
