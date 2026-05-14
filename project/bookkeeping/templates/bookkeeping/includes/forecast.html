@@ -1,13 +1,4 @@
-{% load get_item %}
-{% load math %}
-{% load i18n %}
 {% load cell_format %}
+{% load math %}
 
-<tfoot x-show="open">
-    <tr>
-        <th class="no-right-border"></th>
-        {% for row in data %}
-        <th class="{% if highlight|get_list_val:forloop.counter0 %}{{row|positive_negative}}{% endif %}">{{row|price|cellformat}}</th>
-        {% endfor %}
-    </tr>
-</tfoot>
+<span class="{{ data.2|positive_negative }}">{{ data.2|price|cellformat }}</span>

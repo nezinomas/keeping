@@ -1,39 +1,30 @@
-{% load get_item %}
+{% load cell_format %}
 {% load math %}
 {% load i18n %}
-{% load cell_format %}
 
 {% if data.title and data.data %}
-<table class="main" x-data="{ open:false }">
-    <thead>
-        <tr>
-            <th class="no-right-border panel-heading text-left" :class="open ? 'active' : ''">
-                <span class="tip right" data-tip="{% translate 'Forecast' %}">
-                <a
-                    role="button"
-                    class="button-expand"
-                    @click="open = ! open"
-                    hx-get="{% url 'bookkeeping:forecast' %}"
-                    hx-target="#last"
-                    hx-swap="afterend"
-                    hx-trigger="click once"
-                    hx-indicator="#indicator"
-                    >
-                </a></span>
-            </th>
-            {% for title in data.title %}
-            <th class="text-nowrap long-price-col">
-               {{ title }}
-            </th>{% endfor %}
-        </tr>
-    </thead>
-    <tbody id="last">
-        <tr>
-            <td class="no-right-border"></td>
-            {% for d in data.data %}
-            <td class="{% if data.highlight|get_list_val:forloop.counter0 %}{{d|positive_negative}}{% endif%}">{{d|price|cellformat}}</td>
-            {% endfor %}
-        </tr>
-    </tbody>
-</table>
+<div class="kpi-card">
+    <div class="kpi-title">{{ data.title.0 }}</div>
+    <div class="kpi-value {{ data.data.0|positive_negative }}">{{ data.data.0|price|cellformat }}</div>
+</div>
+
+<div class="kpi-card">
+    <div class="kpi-title">{{ data.title.1 }}</div>
+    <div class="kpi-value {{ data.data.1|positive_negative }}">{{ data.data.1|price|cellformat }}</div>
+</div>
+
+<div class="kpi-card" x-data="{ open: false }">
+    <div class="kpi-title">{% translate 'Forecast' %}</div>
+    <div class="kpi-value" id="forecast-value">
+        <button x-show="!open"
+                class="button button-secondary button-sm"
+                @click="open = true"
+                hx-get="{% url 'bookkeeping:forecast' %}"
+                hx-target="#forecast-value"
+                hx-swap="innerHTML"
+                hx-indicator="#indicator">
+            {% translate 'Calculate' %}
+        </button>
+    </div>
+</div>
 {% endif %}
