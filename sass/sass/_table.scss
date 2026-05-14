@@ -23,7 +23,7 @@
         min-height: 2rem;
     }
 
-    thead  {
+    thead {
         color: $table-thead-text;
         border-bottom: $primary solid 3px;
 
@@ -60,7 +60,8 @@
         }
     }
 
-    td, th {
+    td,
+    th {
         overflow: hidden;
         text-overflow: ellipsis;
         padding: 0.15rem 0.25rem;
@@ -75,6 +76,7 @@
 
         /* Left border is 1px. To hide the current cell’s right border, target the next sibling. */
         &.no-right-border {
+
             +td,
             +th {
                 border-left: 0;
@@ -88,7 +90,7 @@
     }
 
     // hack hover issue then table has no footer
-    & tr:last-child > td {
+    & tr:last-child>td {
         border-bottom: 1px solid var(--default-table-border-color);
     }
 
@@ -186,23 +188,23 @@
     // Striped styles
     &.striped {
         tr:nth-child(even) {
-            > td {
+            >td {
                 background-color: rgba(0, 0, 0, 0.03);
             }
 
-            > td.table-success {
+            >td.table-success {
                 background-color: darken($positive-bg, 2);
             }
 
-            > td.table-danger {
+            >td.table-danger {
                 background-color: darken($negative-bg, 2)
             }
 
-            > td.table-danger.day-negative {
+            >td.table-danger.day-negative {
                 background-color: $negative-bg;
             }
 
-            > td.table-danger.day-warning {
+            >td.table-danger.day-warning {
                 background-color: $warning-bg;
             }
         }
@@ -210,7 +212,7 @@
 
     // Hover styles
     &.hover {
-        tr:hover > td {
+        tr:hover>td {
             background-color: $table-hover-bg !important;
             border-bottom: darken($table-hover-bg, 20) 1px solid;
             border-top: darken($table-hover-bg, 20) 1px solid;
@@ -220,7 +222,7 @@
 
 
 // Month table
-.month-table  {
+.month-table {
     table-layout: auto;
 
     .expand-column-width {
@@ -249,16 +251,16 @@
         border-right: double $black;
     }
 
-    > tbody > tr.weekend-col {
-        > td:not([class*="day"]) {
+    >tbody>tr.weekend-col {
+        >td:not([class*="day"]) {
             background-color: $table-weekend;
         }
     }
 
-    > tbody > tr.current-day {
+    >tbody>tr.current-day {
         font-weight: 600;
 
-        > td {
+        >td {
             border-top:
                 $table-current-day-border-color 1px double;
             border-bottom:
@@ -276,12 +278,13 @@
 
     // Expand month table row to see expenses
     &:has(.expand-expenses) {
+
         // override expenses table layout, wich is fixed
         .expenses-table {
             table-layout: auto;
         }
 
-        tr.expand-expenses > td {
+        tr.expand-expenses>td {
             background-color: white;
 
             &:has([class*="alert"]) {
@@ -378,7 +381,7 @@
 }
 
 
-.main tr.std-av-border > td {
+.main tr.std-av-border>td {
     background-color: $table-currently-reading !important;
     border-top:
         $table-current-day-border-color 1px double;
