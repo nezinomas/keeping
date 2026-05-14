@@ -33,35 +33,42 @@ ul {
     list-style: none;
 }
 
+/* Buttons and clickable elements */
 button,
-input[type=submit],
-input[type=button] {
+input[type="submit"],
+input[type="button"],
+a[role="button"] {
+    cursor: pointer;
+}
+
+/* Form element inheritance */
+button,
+input,
+textarea,
+select {
     color: inherit;
     font: inherit;
     letter-spacing: inherit;
+}
+
+/* Specific button styles */
+button,
+input[type="submit"],
+input[type="button"] {
     border: 1px solid $black;
     border-radius: 0;
     padding: 0.15rem;
 }
 
-button,
-input[type=submit],
-input[type=button],
-a[role=button] {
-    cursor: pointer;
-}
-
+/* Specific input styles (non-button types) */
 input,
 textarea,
-select{
-    color: inherit;
-    font: inherit;
-    letter-spacing: inherit;
-    border: 1px solid #dee2e6;
+select {
+    border: 1px solid $border-color-light;
     background-color: transparent;
 }
 
-css button * {
+button * {
     pointer-events: none;
 }
 
