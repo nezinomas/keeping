@@ -98,6 +98,10 @@ class Expenses(Browser):
             self.browser.find_element(By.ID, "id_price").get_attribute("value") == "0.0"
         )
         assert (
+            self.browser.find_element(By.ID, "id_price").value_of_css_property("font-weight") == "700"
+            or self.browser.find_element(By.ID, "id_price").value_of_css_property("font-weight") == "bold"
+        )
+        assert (
             self.browser.find_element(By.ID, "id_quantity").get_attribute("value")
             == "1"
         )

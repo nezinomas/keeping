@@ -21,6 +21,14 @@ textarea {
     }
 }
 
+// Forced bold for price field when inactive
+#id_price:disabled,
+#id_price.disabled,
+#id_price[readonly] {
+    font-weight: bold !important;
+    color: $text-muted !important;
+}
+
 fieldset {
     border: 0;
     padding: 0;
