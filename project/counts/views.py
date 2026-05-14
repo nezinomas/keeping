@@ -19,7 +19,7 @@ from .lib.views_helper import (
     CountUrlMixin,
     InfoRowData,
 )
-from .models import Count, CountType
+from .models import Count
 from .services.model_services import CountModelService, CountTypeModelService
 
 
@@ -190,16 +190,16 @@ class TypeUrlMixin:
 
 class TypeNew(TypeUrlMixin, CreateViewMixin):
     service_class = CountTypeModelService
-    url_name = "type_new"
     form_class = CountTypeForm
+    url_name = "type_new"
     hx_trigger_django = "afterType"
     modal_form_title = _("Count type")
 
 
 class TypeUpdate(TypeUrlMixin, UpdateViewMixin):
     service_class = CountTypeModelService
-    url_name = "type_update"
     form_class = CountTypeForm
+    url_name = "type_update"
     hx_trigger_django = "afterType"
     modal_form_title = _("Count type")
 
