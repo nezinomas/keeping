@@ -112,22 +112,29 @@
 
 
 nav#main-nav {
-    @include shadow;
-
     --border-radius: 0;
 
-    background-color: $nav-bg;
+    background-color: transparent;
     margin-bottom: $gap;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 
     flex-wrap: wrap;
 
     > * {
-        border-bottom: 3px solid transparent;
+        border-bottom: 2px solid transparent;
+        color: $text-muted;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.65rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin-bottom: -1px;
 
         &:hover,
         &:focus {
             transition: $transition;
             border-bottom-color: $primary;
+            color: $black;
         }
     }
 
@@ -141,7 +148,12 @@ nav#main-nav {
     }
 
     > .active {
-        border-bottom: 3px solid $primary;
+        border-bottom: 2px solid $primary;
+        color: $primary;
+        
+        a {
+            color: $primary !important;
+        }
     }
 }
 
