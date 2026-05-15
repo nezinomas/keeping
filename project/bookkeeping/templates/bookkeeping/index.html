@@ -19,12 +19,6 @@
             <button class="button" :class="tab === 'detailed' ? 'active' : ''" @click="tab = 'detailed'">{% translate 'Detailed Data' %}</button>
             <button class="button" :class="tab === 'funds' ? 'active' : ''" @click="tab = 'funds'">{% translate 'Wealth & Funds' %}</button>
         </div>
-
-        <div class="tabs-actions">
-            <button class="button button-refresh" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator">
-                <span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span>
-            </button>
-        </div>
     </div>
 
     <!-- Tab 1: Overview -->
@@ -59,6 +53,10 @@
             <c-new-button url="{% url 'bookkeeping:accounts_worth_new' %}" title="{% translate 'Accounts fact' %}" />
             <c-new-button url="{% url 'bookkeeping:savings_worth_new' %}" title="{% translate 'Funds fact' %}" />
             <c-new-button url="{% url 'bookkeeping:pensions_worth_new' %}" title="{% translate 'Pensions fact' %}" />
+            
+            <button class="button-secondary button-refresh" style="margin-left: auto;" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator">
+                <span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span>
+            </button>
         </div>
 
         <div class="funds-grid">

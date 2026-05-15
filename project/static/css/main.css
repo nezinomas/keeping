@@ -244,8 +244,8 @@ video {
   gap: 1.5rem;
 }
 .bookkeeping-tabs .tabs-nav {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  justify-content: center;
   align-items: center;
   background-color: transparent;
   padding: 0 0.5rem;
@@ -253,13 +253,8 @@ video {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 .bookkeeping-tabs .tabs-nav .tabs-list {
-  grid-column: 2;
   display: flex;
   gap: 1rem;
-}
-.bookkeeping-tabs .tabs-nav .tabs-actions {
-  grid-column: 3;
-  justify-self: end;
 }
 .bookkeeping-tabs .tabs-nav .button {
   border: none;
