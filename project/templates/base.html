@@ -154,8 +154,6 @@
           </div>
         </div>
 
-        <!-- Day of year -->
-        <div class="day-of-year"><span>{{ yday }} / <b>{{ ydays }}</b></span></div>
 
         <!-- User settings -->
         <div {% if 'settings' in request.path %}class="active"{% endif %}>
@@ -190,5 +188,7 @@
 
       <script nonce="{{ csp_nonce }}" src="{% static 'js/modal.js' %}"></script>
     </footer>
+    <!-- Day of year floating -->
+    <div class="day-of-year"><span>{{ yday }} / <b>{{ ydays }}</b></span></div>
   </body>
 </html>

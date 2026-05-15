@@ -140,15 +140,6 @@ nav#main-nav {
         }
     }
 
-    .day-of-year {
-        padding: 0 0.5rem;
-        border-bottom: none !important;
-        font-size: 0.6rem;
-        
-        &:hover {
-            color: $black;
-        }
-    }
 
     > :last-child {
         margin-left: 0;
@@ -199,5 +190,23 @@ nav#drinks-nav {
         transform: rotateX(0) translateX(0);
         visibility: visible;
         pointer-events: auto;
+    }
+}
+
+.day-of-year {
+    margin-top: auto;
+    text-align: right;
+    padding: 2rem;
+    font-size: 0.55rem;
+    color: $text-muted;
+    opacity: 0.5;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 500;
+    display: block;
+
+    b {
+        color: $black;
+        font-weight: 600;
     }
 }
