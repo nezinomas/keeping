@@ -18,8 +18,7 @@
         align-items: center;
         background-color: transparent;
         padding: 0 0.5rem;
-        margin-bottom: calc($gap * 1.5);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: calc($gap * 2);
 
         .tabs-list {
             display: flex;
@@ -75,28 +74,55 @@
     // KPI Row
     .kpi-row {
         display: flex;
-        gap: $gap;
+        gap: calc($gap * 4); // Increased gap for centered breathing room
+        justify-content: center;
         flex-wrap: wrap;
+        margin-bottom: calc($gap * 2);
 
         .kpi-card {
-            flex: 1;
-            min-width: 200px;
-            @include shadow;
-            padding: $gap calc($gap * 1.5);
-            border-radius: 0.25rem;
-            background-color: var(--bg-color, #fff);
-            text-align: center;
+            min-width: 150px;
+            padding: 0.25rem 1rem;
+            text-align: left;
+            background-color: transparent;
+            border: none;
+            border-left: 2px solid rgba(0, 0, 0, 0.1); // Default neutral stripe
+            border-radius: 0;
+            box-shadow: none;
 
             .kpi-title {
-                font-size: 0.9rem;
-                color: #666;
+                font-size: 0.65rem;
+                color: $text-muted;
                 text-transform: uppercase;
-                margin-bottom: 0.5rem;
+                letter-spacing: 0.05em;
+                margin-bottom: 0.25rem;
+                font-weight: 500;
             }
 
             .kpi-value {
                 font-size: 1.5rem;
-                font-weight: bold;
+                font-weight: 500;
+                color: $black;
+
+                &.table-success {
+                    background-color: transparent;
+                    color: $positive-text;
+                }
+
+                &.table-danger {
+                    background-color: transparent;
+                    color: $negative-text;
+                }
+            }
+
+            // Status Colors for the Vertical Stripe
+            &:has(.table-success) {
+                border-left-color: $positive;
+            }
+            &:has(.table-danger) {
+                border-left-color: $negative;
+            }
+            &:first-child {
+                border-left-color: $primary;
             }
         }
     }
