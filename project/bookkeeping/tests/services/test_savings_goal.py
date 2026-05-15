@@ -26,13 +26,15 @@ def test_savings_goal_context_calculation():
     assert actual["target"] == 500.0
     assert actual["percent"] == 50.0
 
-def test_savings_goal_context_zero_target():
+def test_savings_goal_context_no_target():
     mock_balance = MagicMock()
     mock_balance.total_row = {"savings": 250.0}
     
     builder = IndexContextBuilder(balance=mock_balance, savings_goal=0)
     actual = builder.savings_goal_context()
     
+    assert actual["actual"] == 250.0
+    assert actual["target"] == 0
     assert actual["percent"] == 0
 
 @pytest.mark.django_db
