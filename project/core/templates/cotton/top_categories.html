@@ -1,0 +1,19 @@
+{% load math l10n i18n %}
+<div class="top-categories-container">
+    <div class="top-categories-header">
+        {% translate "Top 5 Annual Expenses" %}
+    </div>
+    <div class="top-categories-list">
+        {% for cat in items %}
+        <div class="top-category-item">
+            <div class="top-category-main">
+                <span class="top-category-title">{{ cat.title }}</span>
+                <div class="top-category-bar-track">
+                    <div class="top-category-bar-fill" style="width: {{ cat.sum|percent:max_sum|unlocalize }}%;"></div>
+                </div>
+            </div>
+            <span class="top-category-sum">{{ cat.sum|price|floatformat:0 }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>

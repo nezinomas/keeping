@@ -112,6 +112,7 @@ def test_lend_context():
 
 def test_index_data_dto():
     dto = IndexDataDTO(
+        year=2026,
         amount_start=1000,
         monthly_data=[{"month": 1, "sum": 500}],
         debts={"lend": {"debt": 100, "debt_return": 50}},

@@ -7,6 +7,7 @@ from project.bookkeeping.services.index.providers import IndexDataProvider
 def test_savings_goal_in_dto():
     # This should fail if savings_goal is not in DTO
     dto = IndexDataDTO(
+        year=2026,
         amount_start=100,
         monthly_data=[],
         debts={},

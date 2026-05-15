@@ -72,6 +72,15 @@ class ExpenseModelService(SumMixin, BaseModelService):
     def sum_by_month(self, year: int):
         return self.month_sum(self.objects, year).annotate(title=Value("expenses"))
 
+    def sum_by_category(self, year: int):
+        return (
+            self.objects.filter(date__year=year)
+            .values("expense_type__title")
+            .annotate(sum=Sum("price"))
+            .values("sum", title=F("expense_type__title"))
+            .order_by("-sum")
+        )
+
     def sum_by_month_and_type(self, year: int):
         """
         Sums expense_types by month

@@ -22,11 +22,16 @@ INDEX_COLUMNS = (
 
 class IndexContextBuilder:
     def __init__(
-        self, balance: YearBalance, debts: dict | None = None, savings_goal: float = 0
+        self,
+        balance: YearBalance,
+        debts: dict | None = None,
+        savings_goal: float = 0,
+        top_categories: list[dict] | None = None,
     ):
         self._balance = balance
         self._debts = debts or {}
         self._savings_goal = savings_goal
+        self._top_categories = top_categories or []
 
     def balance_context(self) -> dict:
         return {
@@ -94,6 +99,12 @@ class IndexContextBuilder:
             "percent": percent,
         }
 
+    def top_categories_context(self) -> dict:
+        max_sum = (
+            max([c["sum"] for c in self._top_categories]) if self._top_categories else 1
+        )
+        return {"items": self._top_categories, "max_sum": max_sum}
+
 
 def load_service(user: User) -> IndexContextBuilder:
     year = user.year
@@ -104,5 +115,8 @@ def load_service(user: User) -> IndexContextBuilder:
     balance = YearBalance(data=df, amount_start=dto.amount_start)
 
     return IndexContextBuilder(
-        balance=balance, debts=dto.debts, savings_goal=dto.savings_goal
+        balance=balance,
+        debts=dto.debts,
+        savings_goal=dto.savings_goal,
+        top_categories=dto.top_categories,
     )
