@@ -16,3 +16,15 @@
 <div hx-swap-oob="innerHTML:#chart-expenses-data">
     <c-chart-expenses-data :data=chart_expenses />
 </div>
+
+
+<div hx-swap-oob="innerHTML:#savings-goal">
+    {% if savings_goal.target or savings_goal.actual %}
+    <c-progress-bar 
+        label="{% translate 'Annual Savings Goal' %}" 
+        :percent=savings_goal.percent 
+        :actual=savings_goal.actual
+        :target=savings_goal.target
+    />
+    {% endif %}
+</div>

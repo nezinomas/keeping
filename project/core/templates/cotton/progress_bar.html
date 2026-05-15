@@ -1,0 +1,20 @@
+{% load math l10n %}
+<div class="progress-wrapper">
+    <div class="progress-floating-label" 
+         style="left: {{ percent|unlocalize }}%; {% if percent < 5 %}transform: translateX(0);{% elif percent > 95 %}transform: translateX(-100%);{% endif %}">
+        {{ percent|floatformat:0 }}%
+    </div>
+    <div class="spark-container">
+        <div class="spark-fill" style="width: {{ percent|unlocalize }}%;"></div>
+        <div class="spark-label">
+            <span class="spark-title">{{ label }}</span>
+            <span class="spark-data">
+                {% if target %}
+                    {{ actual|price|floatformat:0 }} / {{ target|price|floatformat:0 }}
+                {% else %}
+                    {{ actual|price|floatformat:0 }}
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>

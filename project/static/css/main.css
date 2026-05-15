@@ -151,6 +151,68 @@
   content: "!  ";
 }
 
+.progress-wrapper {
+  position: relative;
+  width: 100%;
+  margin: 3.5rem auto 2.5rem auto;
+  max-width: 850px;
+}
+
+.progress-floating-label {
+  position: absolute;
+  top: -1.5rem;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #000;
+  white-space: nowrap;
+  transition: left 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.spark-container {
+  width: 100%;
+  height: 2.5rem;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.02);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.spark-container .spark-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: rgba(0, 75.14, 132.6, 0.15);
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 2px solid rgba(0, 75.14, 132.6, 0.3);
+}
+.spark-container .spark-label {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: #000;
+  font-weight: 500;
+}
+.spark-container .spark-title {
+  text-transform: uppercase;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: #6c757d;
+}
+.spark-container .spark-data {
+  font-variant-numeric: tabular-nums;
+  color: #6c757d;
+}
+
 html {
   box-sizing: border-box;
 }

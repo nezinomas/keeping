@@ -42,6 +42,7 @@ class ReloadIndexContextDataMixin:
             "chart_balance": ind.chart_balance_context(),
             "chart_expenses": exp.chart_context(),
             "expenses": exp.table_context(),
+            "savings_goal": ind.savings_goal_context(),
         }
         return super().get_context_data(**kwargs) | context
 

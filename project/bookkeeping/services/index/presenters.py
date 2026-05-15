@@ -21,9 +21,12 @@ INDEX_COLUMNS = (
 
 
 class IndexContextBuilder:
-    def __init__(self, balance: YearBalance, debts: dict | None = None):
+    def __init__(
+        self, balance: YearBalance, debts: dict | None = None, savings_goal: float = 0
+    ):
         self._balance = balance
         self._debts = debts or {}
+        self._savings_goal = savings_goal
 
     def balance_context(self) -> dict:
         return {
@@ -80,6 +83,17 @@ class IndexContextBuilder:
             "data": [debt["debt"], debt["debt_return"]],
         }
 
+    def savings_goal_context(self) -> dict:
+        actual = self._balance.total_row.get("savings", 0)
+        target = self._savings_goal
+        percent = (actual / target * 100) if target else 0
+
+        return {
+            "actual": actual,
+            "target": target,
+            "percent": percent,
+        }
+
 
 def load_service(user: User) -> IndexContextBuilder:
     year = user.year
@@ -89,4 +103,6 @@ def load_service(user: User) -> IndexContextBuilder:
     df = MakeDataFrame(year, dto.monthly_data, INDEX_COLUMNS)
     balance = YearBalance(data=df, amount_start=dto.amount_start)
 
-    return IndexContextBuilder(balance=balance, debts=dto.debts)
+    return IndexContextBuilder(
+        balance=balance, debts=dto.debts, savings_goal=dto.savings_goal
+    )

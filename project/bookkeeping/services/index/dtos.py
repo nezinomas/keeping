@@ -6,3 +6,4 @@ class IndexDataDTO:
     amount_start: int
     monthly_data: list[dict]
     debts: dict[str, dict]
+    savings_goal: float = 0.0

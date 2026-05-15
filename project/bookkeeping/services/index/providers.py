@@ -6,6 +6,7 @@ from ....accounts.services.model_services import AccountBalanceModelService
 from ....debts.services.model_services import DebtModelService, DebtReturnModelService
 from ....expenses.services.model_services import ExpenseModelService
 from ....incomes.services.model_services import IncomeModelService
+from ....plans.services.model_services import SavingPlanModelService
 from ....savings.services.model_services import SavingModelService
 from ....transactions.services.model_services import SavingCloseModelService
 from ....users.models import User
@@ -22,6 +23,7 @@ class IndexDataProvider:
             amount_start=self._get_amount_start(),
             monthly_data=self._get_monthly_data(),
             debts=self._get_debts(),
+            savings_goal=self._get_savings_goal(),
         )
 
     def _get_amount_start(self) -> int:
@@ -58,3 +60,11 @@ class IndexDataProvider:
             "lend": DebtModelService(self.user, "lend").sum_all(),
             "borrow": DebtModelService(self.user, "borrow").sum_all(),
         }
+
+    def _get_savings_goal(self) -> float:
+        return (
+            SavingPlanModelService(self.user)
+            .year(self.year)
+            .aggregate(Sum("price"))["price__sum"]
+            or 0
+        )
