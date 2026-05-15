@@ -28,6 +28,13 @@
             {% include "bookkeeping/includes/balance_short.html" with data=balance_short %}
         </div>
 
+        <!-- Annual Savings Goal -->
+        <div id="savings-goal">
+            {% if savings_goal.target %}
+            <c-progress-bar label="{% translate 'Annual Savings Goal' %}" :percent=savings_goal.percent />
+            {% endif %}
+        </div>
+
         <!-- Charts -->
         <div class="charts-row">
             <div id="chart-expenses-container"></div>

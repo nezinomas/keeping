@@ -1,0 +1,9 @@
+<div class="progress-container">
+    <div class="progress-bar-label">
+        <span>{{ label }}</span>
+        <span>{{ percent|floatformat:0 }}%</span>
+    </div>
+    <div class="progress-bar-track">
+        <div class="progress-bar-fill" style="width: {{ percent }}%;"></div>
+    </div>
+</div>
