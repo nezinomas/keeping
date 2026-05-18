@@ -7,8 +7,8 @@
         {% for cat in items %}
         <div class="kpi-card top-category-kpi-card">
             <div class="kpi-title">{{ cat.title }}</div>
-            <div class="kpi-value">{{ cat.sum|price|floatformat:0 }}</div>
-            <div class="kpi-percent">{{ total|percent:cat.sum|floatformat:0 }}% of total</div>
+            <div class="kpi-value">{{ cat.sum|price|floatformat:0 }}<span class="kpi-currency">€</span></div>
+            <div class="kpi-percent">{{ total|percent:cat.sum|floatformat:0 }}%</div>
         </div>
         {% endfor %}
     </div>

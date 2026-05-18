@@ -5,12 +5,12 @@
 {% if data.title and data.data %}
 <div class="kpi-card">
     <div class="kpi-title">{{ data.title.0 }}</div>
-    <div class="kpi-value {{ data.data.0|positive_negative }}">{{ data.data.0|price|cellformat }}</div>
+    <div class="kpi-value {{ data.data.0|positive_negative }}">{{ data.data.0|price|cellformat }}<span class="kpi-currency">€</span></div>
 </div>
 
 <div class="kpi-card">
     <div class="kpi-title">{{ data.title.1 }}</div>
-    <div class="kpi-value {{ data.data.1|positive_negative }}">{{ data.data.1|price|cellformat }}</div>
+    <div class="kpi-value {{ data.data.1|positive_negative }}">{{ data.data.1|price|cellformat }}<span class="kpi-currency">€</span></div>
 </div>
 
 <div class="kpi-card" x-data="{ open: false }">

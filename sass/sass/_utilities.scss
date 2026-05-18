@@ -184,6 +184,7 @@
     min-width: 0 !important;
     flex: 1;
     padding: 0.25rem 0.75rem !important;
+    text-align: center !important;
 
     &:nth-child(1) { border-left-color: rgba($primary, 0.4) !important; }
     &:nth-child(2) { border-left-color: rgba(adjust-hue($primary, -15deg), 0.4) !important; }
