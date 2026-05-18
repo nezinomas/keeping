@@ -159,14 +159,14 @@
     #accounts-info {
         display: flex;
         flex-direction: column;
-        gap: $gap;
+        gap: calc($gap * 3);
         width: 100%;
     }
 
     .funds-tables {
         display: flex;
         flex-direction: column;
-        gap: $gap;
+        gap: calc($gap * 3);
         width: 100%;
     }
 }
@@ -466,20 +466,14 @@
         #accounts-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: calc($gap * 2);
+            row-gap: calc($gap * 3);
+            column-gap: calc($gap * 2);
             align-items: start;
             align-content: start;
 
             > #accounts {
                 grid-column: 1 / -1;
             }
-        }
-
-        .funds-tables {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: calc($gap * 2);
-            align-items: start;
         }
     }
 
