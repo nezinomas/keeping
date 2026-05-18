@@ -5,13 +5,13 @@
         --#{$name}-col-width: #{$width};
     }
 
-    --default-table-border-color: #{$table-border-color};
+    --default-table-border-color: #f1f5f9;
 
     table-layout: fixed;
     border-collapse: collapse;
     min-width: 100%;
     width: 100%;
-    font-size: .65rem;
+    font-size: .72rem;
     white-space: nowrap;
 
     caption {
@@ -23,27 +23,31 @@
     }
 
     thead {
-        color: $table-thead-text;
-        border-bottom: $primary solid 3px;
+        color: #475569;
+        border-bottom: $primary solid 2px;
 
         th {
-            padding: 0.35rem 0.25rem;
-            font-weight: bold;
+            padding: 0.5rem 0.35rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-size: 0.65rem;
         }
 
         tr:not(:last-child) th {
-            background-color: $table-header-bg;
+            background-color: rgba(6, 145, 255, 0.04);
             min-height: 36px;
         }
 
         tr:last-child th {
-            background-color: $table-thead;
+            background-color: rgba(6, 145, 255, 0.07);
         }
     }
 
     tfoot {
         th {
-            background-color: rgba(0, 0, 0, 0.02);
+            background-color: rgba(6, 145, 255, 0.02);
+            padding: 0.45rem 0.35rem;
         }
 
         tr:last-child th {
@@ -51,7 +55,7 @@
         }
 
         tr:first-child th {
-            border-top: double $black;
+            border-top: 2px solid $primary;
         }
 
         tr:not(:last-child) th {
@@ -63,10 +67,10 @@
     th {
         overflow: hidden;
         text-overflow: ellipsis;
-        padding: 0.15rem 0.25rem;
+        padding: 0.45rem 0.35rem;
         text-align: right;
         vertical-align: middle;
-        border-left: 1px solid var(--default-table-border-color);
+        border-left: 0;
         border-top: 1px solid var(--default-table-border-color);
 
         &:has(.tip) {
@@ -108,9 +112,9 @@
 
     // Border styles
     @each $side in (left, right) {
-        @each $weight, $size in (thick: 3px, thin: 2px) {
+        @each $weight, $size in (thick: 2px, thin: 1px) {
             .#{$side}-#{$weight}-border {
-                border-#{$side}: #{$size} solid $black;
+                border-#{$side}: #{$size} solid #cbd5e1;
             }
         }
     }
@@ -185,9 +189,9 @@
     // Hover styles
     &.hover {
         tr:hover>td {
-            background-color: $table-hover-bg !important;
-            border-bottom: 1px solid darken($table-hover-bg, 20%);
-            border-top: 1px solid darken($table-hover-bg, 20%);
+            background-color: rgba(6, 145, 255, 0.05) !important;
+            border-bottom: 1px solid rgba(6, 145, 255, 0.12);
+            border-top: 1px solid rgba(6, 145, 255, 0.12);
         }
     }
 }
