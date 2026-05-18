@@ -50,6 +50,11 @@
             padding: 0.45rem 0.35rem;
         }
 
+        .table-success,
+        .table-danger {
+            background-color: rgba(6, 145, 255, 0.02) !important;
+        }
+
         tr:last-child th {
             border-bottom: 0;
         }
@@ -90,6 +95,7 @@
     & td:first-child,
     & th:first-child {
         border-left: 0;
+        text-align: left;
     }
 
     // hack hover issue then table has no footer
@@ -103,11 +109,15 @@
     }
 
     .table-success {
-        background-color: $positive-bg;
+        background-color: transparent !important;
+        color: $positive !important;
+        font-weight: 600;
     }
 
     .table-danger {
-        background-color: $negative-bg;
+        background-color: transparent !important;
+        color: #db606d !important;
+        font-weight: 600;
     }
 
     // Border styles
@@ -166,23 +176,7 @@
     // Striped styles
     &.striped {
         tr:nth-child(even)>td {
-            background-color: rgba(0, 0, 0, 0.03);
-
-            &.table-success {
-                background-color: darken($positive-bg, 2%);
-            }
-
-            &.table-danger {
-                background-color: darken($negative-bg, 2%);
-
-                &.day-negative {
-                    background-color: $negative-bg;
-                }
-
-                &.day-warning {
-                    background-color: $warning-bg;
-                }
-            }
+            background-color: rgba(0, 0, 0, 0.015);
         }
     }
 
