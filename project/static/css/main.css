@@ -213,6 +213,59 @@
   color: #6c757d;
 }
 
+.top-categories-container {
+  width: 100%;
+  margin: 4rem auto 2.5rem auto;
+  max-width: 850px;
+}
+
+.top-categories-header {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.top-categories-kpi-row {
+  gap: 1.125rem !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+}
+
+.top-category-kpi-card {
+  min-width: 0 !important;
+  flex: 1;
+  padding: 0.25rem 0.75rem !important;
+  text-align: center !important;
+}
+.top-category-kpi-card:nth-child(1) {
+  border-left-color: rgba(0, 75.14, 132.6, 0.4) !important;
+}
+.top-category-kpi-card:nth-child(2) {
+  border-left-color: rgba(0, 108.29, 132.6, 0.4) !important;
+}
+.top-category-kpi-card:nth-child(3) {
+  border-left-color: rgba(0, 132.6, 123.76, 0.4) !important;
+}
+.top-category-kpi-card:nth-child(4) {
+  border-left-color: rgba(0, 132.6, 90.61, 0.4) !important;
+}
+.top-category-kpi-card:nth-child(5) {
+  border-left-color: rgba(0, 132.6, 57.46, 0.4) !important;
+}
+
+.kpi-percent {
+  font-size: 0.55rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.15rem;
+  font-weight: 500;
+}
+
 html {
   box-sizing: border-box;
 }
@@ -366,7 +419,7 @@ video {
 .bookkeeping-tabs .kpi-row .kpi-card {
   min-width: 150px;
   padding: 0.25rem 1rem;
-  text-align: left;
+  text-align: center;
   background-color: transparent;
   border: none;
   border-left: 2px solid rgba(0, 0, 0, 0.1);
@@ -385,6 +438,15 @@ video {
   font-size: 1.5rem;
   font-weight: 500;
   color: #000;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+.bookkeeping-tabs .kpi-row .kpi-card .kpi-value .kpi-currency {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-left: 0.15rem;
+  font-weight: 500;
 }
 .bookkeeping-tabs .kpi-row .kpi-card .kpi-value.table-success {
   background-color: transparent;

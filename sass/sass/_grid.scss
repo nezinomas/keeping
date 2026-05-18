@@ -82,7 +82,7 @@
         .kpi-card {
             min-width: 150px;
             padding: 0.25rem 1rem;
-            text-align: left;
+            text-align: center;
             background-color: transparent;
             border: none;
             border-left: 2px solid rgba(0, 0, 0, 0.1); // Default neutral stripe
@@ -102,6 +102,16 @@
                 font-size: 1.5rem;
                 font-weight: 500;
                 color: $black;
+                display: flex;
+                align-items: baseline;
+                justify-content: center;
+
+                .kpi-currency {
+                    font-size: 0.75rem;
+                    color: $text-muted;
+                    margin-left: 0.15rem;
+                    font-weight: 500;
+                }
 
                 &.table-success {
                     background-color: transparent;

@@ -1,0 +1,15 @@
+{% load math l10n i18n %}
+<div class="top-categories-container">
+    <div class="top-categories-header">
+        {% translate "Top 5 Annual Expenses" %}
+    </div>
+    <div class="kpi-row top-categories-kpi-row">
+        {% for cat in items %}
+        <div class="kpi-card top-category-kpi-card">
+            <div class="kpi-title">{{ cat.title }}</div>
+            <div class="kpi-value">{{ cat.sum|price|floatformat:0 }}<span class="kpi-currency">€</span></div>
+            <div class="kpi-percent">{{ total|percent:cat.sum|floatformat:0 }}%</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

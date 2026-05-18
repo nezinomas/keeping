@@ -20,10 +20,12 @@ class IndexDataProvider:
 
     def get_data(self) -> IndexDataDTO:
         return IndexDataDTO(
+            year=self.year,
             amount_start=self._get_amount_start(),
             monthly_data=self._get_monthly_data(),
             debts=self._get_debts(),
             savings_goal=self._get_savings_goal(),
+            top_categories=self._get_top_categories(),
         )
 
     def _get_amount_start(self) -> int:
@@ -68,3 +70,6 @@ class IndexDataProvider:
             .aggregate(Sum("price"))["price__sum"]
             or 0
         )
+
+    def _get_top_categories(self) -> list[dict]:
+        return list(ExpenseModelService(self.user).sum_by_category(self.year)[:5])
