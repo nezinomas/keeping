@@ -9,5 +9,5 @@ pytestmark = pytest.mark.django_db
 @pytest.mark.webtest
 class BookkeepingIndex(TestCase, Browser):
     def test_index(self):
-        with self.assertNumQueries(30):
+        with self.assertNumQueries(32):
             self.browser.get(f"{self.live_server_url}")

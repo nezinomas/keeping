@@ -469,6 +469,9 @@ video {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
 }
 .bookkeeping-tabs .funds-grid {
   display: grid;
@@ -718,9 +721,6 @@ video {
 }
 
 @media only screen and (min-width: 992px) {
-  .bookkeeping-tabs .charts-row {
-    grid-template-columns: 1fr 1fr;
-  }
   .bookkeeping-tabs .tab-detailed {
     display: grid;
     grid-template-columns: 42% 1fr;
