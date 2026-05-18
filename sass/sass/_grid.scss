@@ -71,7 +71,9 @@
         gap: calc($gap * 2);
     }
 
-    .tab-detailed {
+    .tab-detailed,
+    .tab-accounts,
+    .tab-funds {
         max-width: 1150px;
         margin: 0 auto;
         width: 100%;
@@ -153,23 +155,19 @@
         margin: 0 auto;
     }
 
-    // Wealth & Funds Grid
-    .funds-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: calc($gap * 2);
+    // Accounts & Funds layouts
+    #accounts-info {
+        display: flex;
+        flex-direction: column;
+        gap: $gap;
+        width: 100%;
+    }
 
-        #accounts-info {
-            display: flex;
-            flex-direction: column;
-            gap: $gap;
-        }
-
-        .funds-tables {
-            display: flex;
-            flex-direction: column;
-            gap: $gap;
-        }
+    .funds-tables {
+        display: flex;
+        flex-direction: column;
+        gap: $gap;
+        width: 100%;
     }
 }
 
@@ -465,19 +463,23 @@
     .bookkeeping-tabs {
 
 
-        .funds-grid {
+        #accounts-info {
+            display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: calc($gap * 2);
+            align-items: start;
+            align-content: start;
 
-            #accounts-info {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                align-items: start;
-                align-content: start;
-
-                > #accounts {
-                    grid-column: 1 / -1;
-                }
+            > #accounts {
+                grid-column: 1 / -1;
             }
+        }
+
+        .funds-tables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: calc($gap * 2);
+            align-items: start;
         }
     }
 
