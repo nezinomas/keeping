@@ -409,7 +409,9 @@ video {
   flex-direction: column;
   gap: 1.5rem;
 }
-.bookkeeping-tabs .tab-detailed {
+.bookkeeping-tabs .tab-detailed,
+.bookkeeping-tabs .tab-accounts,
+.bookkeeping-tabs .tab-funds {
   max-width: 1150px;
   margin: 0 auto;
   width: 100%;
@@ -478,20 +480,17 @@ video {
   max-width: 850px;
   margin: 0 auto;
 }
-.bookkeeping-tabs .funds-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-}
-.bookkeeping-tabs .funds-grid #accounts-info {
+.bookkeeping-tabs #accounts-info {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 2.25rem;
+  width: 100%;
 }
-.bookkeeping-tabs .funds-grid .funds-tables {
+.bookkeeping-tabs .funds-tables {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 2.25rem;
+  width: 100%;
 }
 
 .drinks-grid {
@@ -725,16 +724,15 @@ video {
   row-gap: 1.5rem;
 }
 @media only screen and (min-width: 992px) {
-  .bookkeeping-tabs .funds-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .bookkeeping-tabs .funds-grid #accounts-info {
+  .bookkeeping-tabs #accounts-info {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    row-gap: 2.25rem;
+    column-gap: 1.5rem;
     align-items: start;
     align-content: start;
   }
-  .bookkeeping-tabs .funds-grid #accounts-info > #accounts {
+  .bookkeeping-tabs #accounts-info > #accounts {
     grid-column: 1/-1;
   }
   .month-grid {

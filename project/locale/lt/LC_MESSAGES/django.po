@@ -830,11 +830,11 @@ msgstr "uždaryta"
 
 #: .\project\core\templates\cotton\input_file.html:7
 msgid "Currently"
-msgstr ""
+msgstr "Esamas"
 
 #: .\project\core\templates\cotton\input_file.html:15
 msgid "Clear"
-msgstr ""
+msgstr "Išvalyti"
 
 #: .\project\core\templates\cotton\input_sum_price.html:12
 #: .\project\templates\base.html:137
@@ -1815,6 +1815,18 @@ msgstr ""
 #: .\project\users\views.py:303
 msgid "Delete user"
 msgstr "Trinti vartotoją"
+
+#: .\project\bookkeeping\templates\bookkeeping\index.html:18
+msgid "Overview"
+msgstr "Apžvalga"
+
+#: .\project\bookkeeping\templates\bookkeeping\index.html:36
+msgid "Annual Savings Goal"
+msgstr "Metinis taupymo tikslas"
+
+#: .\project\core\templates\cotton\top_categories.html:4
+msgid "Top 5 Annual Expenses"
+msgstr "Metinių išlaidų Top 5"
 
 #, python-format
 #~ msgid "No %(verbose_name)s found matching the query"
