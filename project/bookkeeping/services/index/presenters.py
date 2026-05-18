@@ -100,10 +100,9 @@ class IndexContextBuilder:
         }
 
     def top_categories_context(self) -> dict:
-        max_sum = (
-            max([c["sum"] for c in self._top_categories]) if self._top_categories else 1
-        )
-        return {"items": self._top_categories, "max_sum": max_sum}
+        total = self._balance.total_row.get("expenses", 0)
+        total = total if total else 1  # prevent division by zero
+        return {"items": self._top_categories, "total": total}
 
 
 def load_service(user: User) -> IndexContextBuilder:

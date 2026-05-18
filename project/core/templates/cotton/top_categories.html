@@ -3,16 +3,12 @@
     <div class="top-categories-header">
         {% translate "Top 5 Annual Expenses" %}
     </div>
-    <div class="top-categories-list">
+    <div class="kpi-row top-categories-kpi-row">
         {% for cat in items %}
-        <div class="top-category-item">
-            <div class="top-category-main">
-                <span class="top-category-title">{{ cat.title }}</span>
-                <div class="top-category-bar-track">
-                    <div class="top-category-bar-fill" style="width: {{ cat.sum|percent:max_sum|unlocalize }}%;"></div>
-                </div>
-            </div>
-            <span class="top-category-sum">{{ cat.sum|price|floatformat:0 }}</span>
+        <div class="kpi-card top-category-kpi-card">
+            <div class="kpi-title">{{ cat.title }}</div>
+            <div class="kpi-value">{{ cat.sum|price|floatformat:0 }}</div>
+            <div class="kpi-percent">{{ total|percent:cat.sum|floatformat:0 }}% of total</div>
         </div>
         {% endfor %}
     </div>
