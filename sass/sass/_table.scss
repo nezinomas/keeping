@@ -72,9 +72,9 @@
     th {
         overflow: hidden;
         text-overflow: ellipsis;
-        padding: 0.45rem 0.35rem;
         text-align: right;
         vertical-align: middle;
+        padding: 0.45rem 0.35rem;
         border-left: 0;
         border-top: 1px solid var(--default-table-border-color);
 
@@ -95,7 +95,6 @@
     & td:first-child,
     & th:first-child {
         border-left: 0;
-        text-align: left;
     }
 
     // hack hover issue then table has no footer
@@ -194,6 +193,12 @@
 // Month table
 .month-table {
     table-layout: auto;
+    --td-vertical-padding: 0.3rem;
+
+    td {
+        padding-top: var(--td-vertical-padding);
+        padding-bottom: var(--td-vertical-padding);
+    }
 
     .expand-column-width {
         --column-width: #{map-get($column-widths, "day")};
