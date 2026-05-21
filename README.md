@@ -1,4 +1,4 @@
-# Keeping – Personal Finance & Life Tracker
+# Keeping — Collaborative Personal Finance & Life Tracker
 
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
@@ -6,111 +6,157 @@
 ![Django](https://img.shields.io/badge/django-6.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-**Author:** Audrius Nznm
-**GitHub:** [github.com/nezinomas](https://github.com/nezinomas)
-**Demo:** [https://stats.unknownbug.net](https://stats.unknownbug.net)
-```
-username: demo
-password: 9J4wj#^zD0eFwS
-```
+**Author:** Audrius Nznm  
+**GitHub:** [github.com/nezinomas](https://github.com/nezinomas)  
+**Demo:** [stats.unknownbug.net](https://stats.unknownbug.net)  
+
+> [!NOTE]  
+> **Demo Credentials:**  
+> **Username:** `demo`  
+> **Password:** `9J4wj#^zD0eFwS`  
 
 ---
 
-## **1️⃣ Project Overview**
-
-**Keeping** is a self-hosted web platform for **personal and household finance management** combined with **life tracking**.
-
-- Track **expenses, incomes, transfers, debts, savings, pensions, and plans** collaboratively.
-- **Central statistics (`bookkeeping`)** aggregates financial data for reports and dashboards.
-- Track **personal metrics** privately (**books, drinks, counters**) per user.
-- Designed for **shared household finances**: superuser + other users can manage financial apps together.
-- Fully tested backend (**pytest 100% coverage**) and modular Django architecture.
+## Table of Contents
+1. [Project Overview](#project-overview)
+2. [Key Architecture & Tech Stack](#key-architecture--tech-stack)
+3. [Key Modules Breakdown](#key-modules-breakdown)
+4. [Getting Started & Installation](#getting-started--installation)
+5. [Testing & Performance Tuning](#testing--performance-tuning)
+6. [License](#license)
 
 ---
 
-## **2️⃣ Key Features**
+## Project Overview
 
-| Feature | Description |
-|---------|-------------|
-| Collaborative finance | Superuser + other users manage all financial apps |
-| Statistics & dashboards | `bookkeeping` aggregates data across financial apps |
-| Private personal trackers | Books, drinks, counters are per-user |
-| Accounts & transactions | Multiple accounts, transfers, automatic balance updates |
-| Savings & plans | Track goals, budgets, and long-term finances |
-| High Performance | Data processing powered by **Polars** |
-| Tested | 100% pytest coverage |
+**Keeping** is a self-hosted, modular web application that combines **collaborative household finance management** with **private personal metrics tracking**. 
 
+Unlike conventional financial trackers, Keeping operates on a dual-privacy model:
+*   **Shared Household Finance:** Financial tracking (incomes, expenses, savings, pensions, transactions, plans, and debts) is associated with a shared **Journal**. Multiple users can log into the same journal to cooperatively manage household statistics and plans.
+*   **Private Personal Trackers:** Habit and life-tracking metrics (books read, drinks consumed, custom counters) are scoped **per user** and remain private to the individual account, even when sharing a household journal.
 
 ---
 
-## **3️⃣ Project Structure**
+## Key Architecture & Tech Stack
 
-Keeping follows a clean, modular Django architecture:
-- **`bookkeeping`**: The core statistics engine. Aggregates data from all other apps.
-- **`accounts`**, **`incomes`**, **`expenses`**, **`savings`**, **`pensions`**, **`transactions`**: Financial management apps.
-- **`books`**, **`drinks`**, **`counts`**: Personal life tracking metrics.
-- **`plans`**: Budgeting and financial goal setting.
-- **`core`**: Shared utilities, base classes, and layout components.
+### Statistics Compiling with Polars
+Central reports and charts are powered by **Polars** (high-performance DataFrame library). It handles:
+*   Fast time-series padding (filling missing dates with zero values).
+*   Dynamic pivot table construction for monthly expense breakdowns.
+*   High-performance statistics compilation for graphs and annual summaries.
 
----
+### Component-Driven Modern Frontend
+Keeping provides a Single-Page Application (SPA) feel without the weight of modern JavaScript build chains:
+*   **Django Cotton:** Used to build reusable components (e.g., custom form inputs, paginators, progress bars, and modals) directly in Django templates.
+*   **HTMX:** Handles seamless, asynchronous HTML swapping for tables, search queries, and form actions.
+*   **AlpineJS & Alpine Morph:** Orchestrates micro-interactions and smooth UI state transitions (like inline modal updates).
+*   **Custom SASS Design System:** Styled using a custom SASS grid and components (compiled directly to `project/static/css/main.css`).
 
-## **4️⃣ Technical Stack**
-
-- **Backend:** Python 3.13, Django 6.0
-- **Data Processing:** Polars (high-performance DataFrames)
-- **Frontend:** HTMX, AlpineJS, SASS (Vanilla CSS/SASS workflow)
-- **Database:** MySQL
-- **Testing:** Pytest (100% coverage), Selenium (integration tests)
-- **Configuration:** `.conf` for environment-specific settings
-
----
-
-## **5️⃣ Why Keeping is Special**
-
-1. **Engineer-focused:** Modular, reliable, test-covered architecture.
-2. **Household collaboration:** All users manage financial data together in a shared journal.
-3. **Private personal metrics:** Users maintain their own habits without exposing them to others.
-4. **Modern Frontend:** Uses a "No-Build" or "Light-Build" approach with HTMX and AlpineJS for a SPA-like feel without JS complexity.
+### Backend & Database
+*   **Backend:** Python 3.13, Django 6.0.
+*   **Database:** MySQL/MariaDB (production), SQLite in-memory (testing).
 
 ---
 
-## **6️⃣ Getting Started (Optional)**
+## Key Modules Breakdown
 
-1. Clone the repo:
+| Module | Description | Key Models |
+|:---|:---|:---|
+| **`bookkeeping`** | The central statistics engine. Compiles data from incomes, expenses, savings, and pensions into annual/monthly reports. | `SavingWorth`, `AccountWorth`, `PensionWorth` |
+| **`accounts`** | Represents financial accounts (e.g., bank accounts, cash, credit cards) and tracks their current balances. | `Account` |
+| **`incomes`** | Track income sources and details. Supports different categories. | `IncomeType`, `Income` |
+| **`expenses`** | Log expenses grouped by category types and names. Supports tagging special expenses. | `ExpenseType`, `ExpenseName`, `Expense` |
+| **`savings`** | Tracks savings goals, funds, and shares. | `SavingType`, `Saving`, `SavingBalance` |
+| **`pensions`** | Track pension funds, contributions, fees, and market value. | `PensionType`, `Pension`, `PensionBalance` |
+| **`transactions`** | Manages internal transfers between accounts, saving changes, and saving closures. | `Transaction`, `SavingClose`, `SavingChange` |
+| **`debts`** | Logs money borrowed from or lent to other people, including returns. | `Debt`, `DebtReturn` |
+| **`plans`** | Set plans and limits for incomes, expenses, savings, and day-to-day budgets. | `IncomePlan`, `ExpensePlan`, `SavingPlan`, `DayPlan` |
+| **`books`** | *Private Tracker*: Log books read, reading targets, and personal bookmarks. | `Book`, `BookTarget` |
+| **`drinks`** | *Private Tracker*: Track alcohol intake in Standard Average Drinks (Std Av) with daily targets. | `Drink`, `DrinkTarget` |
+| **`counts`** | *Private Tracker*: Custom numeric trackers (e.g., pushups, coffee count, custom habits). | `CountType`, `Count` |
+
+---
+
+## Getting Started & Installation
+
+### Prerequisite
+*   **Python:** `>= 3.13`
+*   **Package Manager:** [uv](https://github.com/astral-sh/uv) (recommended)
+*   **Node.js:** (Optional, only needed if you want to compile SASS files)
+
+### 1. Clone the repository
 ```bash
 git clone https://github.com/nezinomas/keeping.git
+cd keeping
 ```
 
-2. Create `.conf` from template:
+### 2. Configure Environment variables
+Create a `.conf` configuration file from the template:
 ```bash
 cp .conf___TEMPLATE .conf
 ```
+Open `.conf` and update the parameters under `[django]` and `[database]`.
 
-3. Set environment variables in `.conf` ([django] and [database] sections).
-
-4. Install requirements:
+### 3. Install Dependencies
+Using `uv`:
 ```bash
 uv sync --all-extras
 ```
 
-5. Migrate the database:
+### 4. Database Setup & Migrations
+Ensure your database (configured in `.conf`) is running, then run migrations:
 ```bash
 python manage.py migrate
 ```
 
-6. Create media folder:
+### 5. Media Folders
+Create the media upload directory:
 ```bash
-mkdir media; chmod -R 755 media
+mkdir media
 ```
 
-7. Run tests:
+### 6. Stylesheet Compilation (SASS)
+If you want to edit stylesheets, navigate to the `sass/` directory, install packages, and start the compiler:
 ```bash
-fast: uv run pytest -n auto -k "not webtest"
-slow: uv run pytest
+cd sass
+npm install
+npx sass sass/main.scss ../project/static/css/main.css --watch
 ```
+
+### 7. Run the Development Server
+```bash
+python manage.py runserver
+```
+Visit the local server at `http://127.0.0.1:8000`.
 
 ---
 
-**License:** MIT
-**Author:** Audrius Nznm
-[GitHub](https://github.com/nezinomas)
+## Testing & Performance Tuning
+
+Keeping maintains a robust test suite with **100% test coverage** for backend logic.
+
+### Why is the test suite so fast?
+The testing configuration in [testing.py](project/config/settings/testing.py) is highly optimized:
+1.  **In-Memory DB:** Uses SQLite `:memory:` database instead of MySQL.
+2.  **No Migrations:** Instructs pytest to skip migration runs via `--nomigrations`.
+3.  **Fast Hasher:** Uses `MD5PasswordHasher` instead of Argon2/BCrypt to speed up user creations in tests.
+4.  **Parallel Execution:** Leverages `pytest-xdist` to run tests across all CPU cores.
+
+### Running Tests
+To run tests locally:
+
+*   **Fast Run** (excludes integration/web tests):
+    ```bash
+    uv run pytest -n auto -k "not webtest"
+    ```
+*   **Full Run** (includes web/integration tests):
+    ```bash
+    uv run pytest
+    ```
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).  
+Author: **Audrius Nznm**
