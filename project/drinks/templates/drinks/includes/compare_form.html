@@ -16,5 +16,4 @@
 
 {% if chart.serries  %}
     {{chart|json_script:"chart-compare-two-data"}}
-    <script nonce="{{ csp_nonce }}">chartCompare('chart-compare-two-data', 'chart-compare-two-container')</script>
 {% endif %}

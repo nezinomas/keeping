@@ -189,6 +189,14 @@
       </div>
 
       <script nonce="{{ csp_nonce }}" src="{% static 'js/modal.js' %}"></script>
+      <script nonce="{{ csp_nonce }}">
+        document.addEventListener('htmx:afterSwap', function () {
+            if (typeof stickyThead !== 'undefined') {
+                const tables = document.querySelectorAll('.sticky-table');
+                if (tables.length) stickyThead.apply(tables);
+            }
+        });
+      </script>
     </footer>
   </body>
 </html>
