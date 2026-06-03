@@ -12,11 +12,11 @@ dependencies = [
     "django-widget-tweaks>=1.5.1",
     "mysqlclient>=2.2.8",
     "pillow>=12.2.0",
-    "polars>=1.40.1",
+    "polars>=1.41.2",
     "pyarrow>=24.0.0",
     "python-dateutil>=2.9.0.post0",
-    "django-cotton>=2.6.2",
-    "numpy>=2.4.4",
+    "django-cotton>=2.7.2",
+    "numpy>=2.4.6",
 ]
 
 [project.optional-dependencies]
