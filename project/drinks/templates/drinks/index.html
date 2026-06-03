@@ -27,4 +27,43 @@
     {{content}}
 </div>
 
+<script nonce="{{ csp_nonce }}">
+    function initDrinksCharts() {
+        if (document.getElementById('chart-consumption-data')) {
+            chartConsumption('chart-consumption-data', 'chart-consumption-container');
+            chartQuantity('chart-quantity-data', 'chart-quantity-container');
+            chartCalender('chart-calendar-1H-data', 'chart-calendar-1H-container');
+            chartCalender('chart-calendar-2H-data', 'chart-calendar-2H-container');
+        }
+        if (document.getElementById('chart-summary-data')) {
+            chart_drinks_summary("chart-summary-data", "chart-summary-container");
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initDrinksCharts);
+
+    htmx.on('htmx:afterSwap', function (event) {
+        const targetId = event.detail.target.id;
+        if (targetId === 'tab_content') {
+            initDrinksCharts();
+        }
+        if (targetId === 'chart-history-container' && document.getElementById('chart-history-data')) {
+            chartCompare('chart-history-data', 'chart-history-container');
+        }
+        if (targetId === 'compare-form-and-chart' && document.getElementById('chart-compare-two-data')) {
+            chartCompare('chart-compare-two-data', 'chart-compare-two-container');
+        }
+        if (targetId === 'mainModal') {
+            const input = document.getElementById('id_quantity');
+            if (input) {
+                input.type = 'text';
+                input.addEventListener('keyup', function (e) {
+                    e.preventDefault();
+                    input.value = input.value.replace(/,/g, '.');
+                });
+            }
+        }
+    });
+</script>
+
 {% endblock content %}

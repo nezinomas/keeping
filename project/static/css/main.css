@@ -926,10 +926,22 @@ video {
 .main.striped tr:nth-child(even) > td {
   background-color: rgba(0, 0, 0, 0.015);
 }
-.main.hover tr:hover > td {
-  background-color: rgba(6, 145, 255, 0.05) !important;
-  border-bottom: 1px solid rgba(6, 145, 255, 0.12);
-  border-top: 1px solid rgba(6, 145, 255, 0.12);
+.main.striped tr:nth-child(even) > td.table-success {
+  background-color: rgb(192.9875, 226.8125, 194.115);
+}
+.main.striped tr:nth-child(even) > td.table-danger {
+  background-color: rgb(255, 194.8, 200.82);
+}
+.main.striped tr:nth-child(even) > td.table-danger.day-negative {
+  background-color: #ffcdd2;
+}
+.main.striped tr:nth-child(even) > td.table-danger.day-warning {
+  background-color: #fff3cd;
+}
+.main.hover tr:not(.expand-expenses):hover > td {
+  background-color: rgb(210, 235.1204819277, 255) !important;
+  border-bottom: 1px solid rgb(108, 190.0602409639, 255);
+  border-top: 1px solid rgb(108, 190.0602409639, 255);
 }
 
 .month-table {

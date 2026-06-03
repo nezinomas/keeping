@@ -12,7 +12,7 @@
     <script nonce="{{ csp_nonce }}" src="{% static 'litepicker/litepicker.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'yearpicker/year_picker.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'yearpicker/year_picker.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/css-loader.css' %}">
 
     {% block head %}{% endblock head %}
@@ -187,6 +187,14 @@
       </div>
 
       <script nonce="{{ csp_nonce }}" src="{% static 'js/modal.js' %}"></script>
+      <script nonce="{{ csp_nonce }}">
+        document.addEventListener('htmx:afterSwap', function () {
+            if (typeof stickyThead !== 'undefined') {
+                const tables = document.querySelectorAll('.sticky-table');
+                if (tables.length) stickyThead.apply(tables);
+            }
+        });
+      </script>
     </footer>
     <!-- Day of year floating -->
     <div class="day-of-year"><span>{{ yday }} / <b>{{ ydays }}</b></span></div>
