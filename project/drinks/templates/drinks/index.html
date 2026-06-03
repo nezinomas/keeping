@@ -27,4 +27,18 @@
     {{content}}
 </div>
 
+<script nonce="{{ csp_nonce }}">
+    function initDrinksCharts() {
+        if (document.getElementById('chart-consumption-container')) {
+            chartConsumption('chart-consumption-data', 'chart-consumption-container');
+            chartQuantity('chart-quantity-data', 'chart-quantity-container');
+            chartCalender('chart-calendar-1H-data', 'chart-calendar-1H-container');
+            chartCalender('chart-calendar-2H-data', 'chart-calendar-2H-container');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initDrinksCharts);
+    htmx.on('htmx:afterSwap', initDrinksCharts);
+</script>
+
 {% endblock content %}
