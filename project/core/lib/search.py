@@ -93,8 +93,12 @@ def _parse_search_no_args(search_str):
     return rtn
 
 
+class SilentArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise SystemExit(message)
+
 def _parse_search_with_args(search_str):
-    parser = argparse.ArgumentParser()
+    parser = SilentArgumentParser()
     parser.add_argument("-category", "-c", type=str, nargs="+")
     parser.add_argument("-year", "-y", type=int)
     parser.add_argument("-month", "-m", type=int)

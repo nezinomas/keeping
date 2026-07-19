@@ -77,7 +77,7 @@ def test_get_from_dictionary(dictionary, key, default_value, expect):
         pytest.param(
             "xxx 1111",
             {"category": None, "year": None, "month": None, "remark": None},
-            marks=pytest.mark.xfail(reason="argparse.ArgumentError"),
+            marks=pytest.mark.xfail(raises=SystemExit),
         ),
     ],
 )
