@@ -1,13 +1,1 @@
 {% include 'core/generic_form.html' %}
-
-<script nonce="{{ csp_nonce }}">
-    document.addEventListener('DOMContentLoaded', () => {
-        const input = document.getElementById('id_quantity');
-        input.type = 'text';
-
-        input.addEventListener('keyup', (event) => {
-            event.preventDefault();
-            input.value = input.value.replace(/,/g, '.');
-        });
-  });
-</script>

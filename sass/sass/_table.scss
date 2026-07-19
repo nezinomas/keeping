@@ -184,7 +184,7 @@
 
     // Hover styles
     &.hover {
-        tr:hover>td {
+        tr:not(.expand-expenses):hover>td {
             background-color: $table-hover-bg !important;
             border-bottom: 1px solid darken($table-hover-bg, 20%);
             border-top: 1px solid darken($table-hover-bg, 20%);

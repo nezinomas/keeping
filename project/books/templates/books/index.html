@@ -29,6 +29,14 @@
     <div id="chart-readed-container"></div>
 </main>
 
-<div hx-get="{% url 'books:chart_readed' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
+<div id="chart-readed-loader" hx-get="{% url 'books:chart_readed' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
+
+<script nonce="{{ csp_nonce }}">
+    htmx.on('htmx:afterSwap', function (event) {
+        if (event.detail.target.id === 'chart-readed-loader' && document.getElementById('chart-readed-data')) {
+            chartReaded('chart-readed-data', 'chart-readed-container');
+        }
+    });
+</script>
 
 {% endblock content %}

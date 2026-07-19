@@ -24,4 +24,27 @@
 <div hx-get="{% url 'counts:tab_index' object.slug %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
 <div hx-get="{% url 'counts:tab_history' object.slug %}" hx-target="#tab_content" hx-trigger="reloadHistory from:body"></div>
 
+
+<script nonce="{{ csp_nonce }}">
+    function initCountsCharts() {
+        if (document.getElementById('chart-months-container')) {
+            chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
+            chartPeriodicity('chart-months-data', 'chart-months-container');
+            chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
+            chartCalender('chart-calendar-1H-data', 'chart-calendar-1H-container');
+            chartCalender('chart-calendar-2H-data', 'chart-calendar-2H-container');
+        }
+        if (document.getElementById('chart-years-container')) {
+            chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
+            chartPeriodicity('chart-years-data', 'chart-years-container');
+            chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initCountsCharts);
+    htmx.on('htmx:afterSwap', function (event) {
+        if (event.detail.target.id === 'tab_content') initCountsCharts();
+    });
+</script>
+
 {% endblock content %}
