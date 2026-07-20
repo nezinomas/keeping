@@ -19,6 +19,12 @@ class TrendChartViewModel:
         return asdict(self)
 
 
+@dataclass(frozen=True)
+class TrendItemViewModel:
+    title: str
+    slope: SlopeStats
+
+
 class TrendsBuilder:
     def __init__(self, drink_stats: TrendStats, target: float = 0.0):
         self._stats = drink_stats
@@ -37,8 +43,12 @@ class TrendsBuilder:
             },
         )
 
-    def trend_slope(self) -> SlopeStats:
-        return self._stats.slope()
+    def trend_items(self) -> list[TrendItemViewModel]:
+        return [
+            TrendItemViewModel(_("Trend (2 weeks)"), self._stats.slope(14)),
+            TrendItemViewModel(_("Trend (month)"), self._stats.slope(30)),
+            TrendItemViewModel(_("Trend (90 days)"), self._stats.slope(90)),
+        ]
 
     def trend_ytd(self) -> YtdStats:
         return self._stats.ytd()

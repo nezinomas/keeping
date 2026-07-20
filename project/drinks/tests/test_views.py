@@ -282,7 +282,7 @@ def test_tab_trends_context(client_logged):
     response = client_logged.get(url)
 
     assert "chart_trend" in response.context
-    assert "trend_slope" in response.context
+    assert "trend_items" in response.context
     assert "trend_ytd" in response.context
     assert "trend_projection" in response.context
 

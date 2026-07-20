@@ -92,8 +92,8 @@ class TrendStats:
             for i in range(len(values))
         ]
 
-    def slope(self) -> SlopeStats:
-        window = self.daily_ml[-self.SLOPE_WINDOW :]
+    def slope(self, window: int = SLOPE_WINDOW) -> SlopeStats:
+        window = self.daily_ml[-window:]
         n = len(window)
 
         if n < 2:

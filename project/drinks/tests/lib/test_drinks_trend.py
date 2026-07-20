@@ -78,6 +78,22 @@ def test_slope_worsening_when_consumption_rises(converter):
     assert slope.improving is False
 
 
+@time_machine.travel("2026-01-05")
+def test_slope_window_uses_only_recent_days(converter):
+    # a big spike on day 1, then a small rising tail on days 4-5
+    rows = [
+        _row(date(2026, 1, 1), 100),
+        _row(date(2026, 1, 4), 1),
+        _row(date(2026, 1, 5), 2),
+    ]
+    stats = TrendStats(converter, current_daily=rows)
+
+    # a 2-day window sees only the rising tail
+    assert stats.slope(2).direction == "up"
+    # the full window is dominated by the day-1 spike -> downward
+    assert stats.slope(90).direction == "down"
+
+
 @time_machine.travel("2026-01-01")
 def test_slope_has_no_data_with_single_day(converter):
     stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 3)])

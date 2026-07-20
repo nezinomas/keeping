@@ -18,7 +18,7 @@ def load_service(user, year: int) -> dict:
 
     return {
         "chart_trend": builder.chart_trend(),
-        "trend_slope": builder.trend_slope(),
+        "trend_items": builder.trend_items(),
         "trend_ytd": builder.trend_ytd(),
         "trend_projection": builder.trend_projection(),
     }
