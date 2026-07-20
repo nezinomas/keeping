@@ -34,7 +34,6 @@ class TrendsBuilder:
                 "r7": _("7-day average"),
                 "r30": _("30-day average"),
                 "limit": _("Limit"),
-                "ml": _("Daily consumption, milliliters"),
             },
         )
 

@@ -33,10 +33,10 @@
 <div class="trend-card">
     <div class="trend-card__label">{% translate 'Year-end forecast' %}</div>
     {% if trend_projection.has_target %}
-    <div class="trend-card__value {% if trend_projection.over %}negative{% else %}positive{% endif %}">{{ trend_projection.projected|floatformat:'0g' }} ml</div>
-    <div class="trend-card__note">{% translate 'Limit' %}: {{ trend_projection.target|floatformat:'0g' }} ml &middot; {{ trend_projection.pct|floatformat:1 }}%</div>
+    <div class="trend-card__value {% if trend_projection.over %}negative{% else %}positive{% endif %}">{{ trend_projection.projected_l|floatformat:1 }} L</div>
+    <div class="trend-card__note">{% translate 'Limit' %}: {{ trend_projection.target_l|floatformat:1 }} L &middot; {{ trend_projection.pct|floatformat:1 }}%</div>
     {% else %}
-    <div class="trend-card__value">{{ trend_projection.projected|floatformat:'0g' }} ml</div>
+    <div class="trend-card__value">{{ trend_projection.projected_l|floatformat:1 }} L</div>
     <div class="trend-card__note">{% translate 'No limit set' %}</div>
     {% endif %}
 </div>

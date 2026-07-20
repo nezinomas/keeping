@@ -1867,3 +1867,11 @@ msgstr "Metų prognozė"
 #: .\project\drinks\templates\drinks\includes\trend_summary.html:41
 msgid "No limit set"
 msgstr "Nenustatyta riba"
+
+#: .\project\drinks\services\trends\builders.py:30
+msgid "7-day average"
+msgstr "7 dienų vidurkis"
+
+#: .\project\drinks\services\trends\builders.py:31
+msgid "30-day average"
+msgstr "30 dienų vidurkis"

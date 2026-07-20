@@ -132,8 +132,8 @@ def test_projection_over_target(converter):
 
     projection = stats.projection()
 
-    assert projection.projected == 73000  # 200 ml/day * 365
-    assert projection.target == 36500  # 100 ml/day * 365
+    assert projection.projected_l == 73.0  # 200 ml/day * 365 / 1000
+    assert projection.target_l == 36.5  # 100 ml/day * 365 / 1000
     assert projection.pct == 100.0
     assert projection.over is True
     assert projection.has_target is True

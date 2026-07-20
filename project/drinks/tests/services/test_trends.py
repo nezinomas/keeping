@@ -38,7 +38,7 @@ def test_chart_trend_view_model(converter):
     assert len(actual.rolling_30) == 5
     assert actual.rolling_7[0] == 1000
     assert actual.target == 250
-    assert set(actual.text) == {"r7", "r30", "limit", "ml"}
+    assert set(actual.text) == {"r7", "r30", "limit"}
 
 
 @time_machine.travel("2026-01-05")

@@ -26,8 +26,8 @@ class YtdStats:
 
 @dataclass(frozen=True)
 class ProjectionStats:
-    projected: float  # projected volume by year-end at the current pace, ml
-    target: float  # allowed volume for the whole year, ml
+    projected_l: float  # projected volume by year-end at the current pace, litres
+    target_l: float  # allowed volume for the whole year, litres
     pct: float | None  # % over (+) or under (-) the yearly target
     over: bool
     has_target: bool
@@ -123,17 +123,26 @@ class TrendStats:
 
     def projection(self) -> ProjectionStats:
         days_passed = len(self.daily_ml)
-        pace = sum(self.daily_ml) / days_passed if days_passed else 0.0
-        projected = round(pace * ydays(self.year))
+        pace = sum(self.daily_ml) / days_passed if days_passed else 0.0  # ml/day
+        projected_ml = pace * ydays(self.year)
+        projected_l = round(projected_ml / 1000, 1)
 
         if not self._target:
-            return ProjectionStats(projected, 0.0, None, over=False, has_target=False)
+            return ProjectionStats(projected_l, 0.0, None, over=False, has_target=False)
 
-        target = round(self._target * ydays(self.year))
-        pct = round((projected - target) / target * 100, 1) if target else None
+        target_ml = self._target * ydays(self.year)
+        pct = (
+            round((projected_ml - target_ml) / target_ml * 100, 1)
+            if target_ml
+            else None
+        )
 
         return ProjectionStats(
-            projected, target, pct, over=projected > target, has_target=True
+            projected_l,
+            round(target_ml / 1000, 1),
+            pct,
+            over=projected_ml > target_ml,
+            has_target=True,
         )
 
     @staticmethod
