@@ -56,15 +56,18 @@ def test_index_links(client_logged):
     )
     res = re.findall(pattern, content)
 
-    assert len(res) == 3
+    assert len(res) == 4
     assert res[0][1] == reverse("drinks:tab_index")
     assert res[0][2] == "Grafikai"
 
-    assert res[1][1] == reverse("drinks:tab_data")
-    assert res[1][2] == "Duomenys"
+    assert res[1][1] == reverse("drinks:tab_trends")
+    assert res[1][2] == "Tendencijos"
 
-    assert res[2][1] == reverse("drinks:tab_history")
-    assert res[2][2] == "Istorija"
+    assert res[2][1] == reverse("drinks:tab_data")
+    assert res[2][2] == "Duomenys"
+
+    assert res[3][1] == reverse("drinks:tab_history")
+    assert res[3][2] == "Istorija"
 
 
 def test_index_context(client_logged):
@@ -105,20 +108,21 @@ def test_index_select_drink_drop_down_link_list(client_logged):
 
     content = response.content.decode()
 
+    # the dropdown reloads the current tab (here: index) via htmx
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}">Alus</a>'  # noqa: E501
+        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}?tab=index"'  # noqa: E501
         in content
     )
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}">Vynas</a>'  # noqa: E501
+        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}?tab=index"'  # noqa: E501
         in content
     )
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}">Degtinė</a>'  # noqa: E501
+        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}?tab=index"'  # noqa: E501
         in content
     )
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>'  # noqa: E501
+        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}?tab=index"'  # noqa: E501
         in content
     )
 
@@ -249,6 +253,62 @@ def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
 
     assert context[4] == [0, 4, 0.0005, 53, "1999-01-01"]
     assert context[5] == [0, 5, 1.0, 53, "1999-01-02", 1.0, 366.0]
+
+
+# -------------------------------------------------------------------------------------
+#                                                                        TabTrends View
+# -------------------------------------------------------------------------------------
+def test_tab_trends_func():
+    view = resolve("/drinks/trends/")
+
+    assert views.TabTrends == view.func.view_class
+
+
+def test_tab_trends_200(client_logged):
+    url = reverse("drinks:tab_trends")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_tab_trends_context_tab_value(client_logged):
+    url = reverse("drinks:tab_trends")
+    response = client_logged.get(url)
+
+    assert response.context["tab"] == "trends"
+
+
+def test_tab_trends_context(client_logged):
+    url = reverse("drinks:tab_trends")
+    response = client_logged.get(url)
+
+    assert "chart_trend" in response.context
+    assert "trend_items" in response.context
+    assert "trend_ytd" in response.context
+    assert "trend_projection" in response.context
+
+
+def test_tab_trends_renders_chart_data(client_logged):
+    url = reverse("drinks:tab_trends")
+    response = client_logged.get(url)
+
+    assert 'id="chart-trend-data"' in response.content.decode()
+
+
+@time_machine.travel("1999-06-01")
+def test_tab_trends_renders_summary_with_data(client_logged):
+    DrinkFactory(date=date(1999, 1, 10), stdav=5)
+    DrinkFactory(date=date(1999, 2, 10), stdav=3)
+    DrinkFactory(date=date(1998, 1, 10), stdav=2)
+    DrinkTargetFactory(year=1999, quantity=100)
+
+    url = reverse("drinks:tab_trends")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    assert 'class="trend-card"' in content
+    assert "positive" in content or "negative" in content
 
 
 # -------------------------------------------------------------------------------------
@@ -973,3 +1033,20 @@ def test_select_drinks_set_default_drink_type(main_user, client_logged):
     actual = User.objects.first()
 
     assert actual.drink_type == "beer"
+
+
+def test_select_drink_htmx_stays_on_current_tab(client_logged):
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"}) + "?tab=trends"
+    response = client_logged.get(url, HTTP_HX_REQUEST="true")
+
+    assert response.status_code == 204
+    assert "reloadTrends" in response.headers.get("HX-Trigger", "")
+    assert User.objects.first().drink_type == "wine"
+
+
+def test_select_drink_htmx_unknown_tab_falls_back_to_index(client_logged):
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"}) + "?tab=xxx"
+    response = client_logged.get(url, HTTP_HX_REQUEST="true")
+
+    assert response.status_code == 204
+    assert "reloadIndex" in response.headers.get("HX-Trigger", "")

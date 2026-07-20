@@ -1,0 +1,14 @@
+{% load i18n %}
+{% load static %}
+
+{% include 'drinks/includes/navbar.html' %}
+
+<main class="trends-grid">
+    <div id="trend-summary">
+        {% include 'drinks/includes/trend_summary.html' %}
+    </div>
+
+    <div id="chart-trend-container"></div>
+</main>
+
+{{chart_trend.as_dict|json_script:"chart-trend-data"}}

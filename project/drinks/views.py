@@ -1,8 +1,10 @@
 from typing import cast
 
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django_htmx.http import trigger_client_event
 
 from ..core.lib.translation import month_names
 from ..core.lib.utils import rendered_content
@@ -46,6 +48,21 @@ class TabIndex(TemplateViewMixin):
             },
             **services.helper.drink_type_dropdown(self.request),
             **services.index.load_service(user, year),
+        }
+
+
+class TabTrends(TemplateViewMixin):
+    template_name = "drinks/tab_trends.html"
+
+    def get_context_data(self, **kwargs):
+        user = cast(User, self.request.user)
+        year = cast(int, user.year)
+
+        return {
+            **super().get_context_data(**kwargs),
+            **{"tab": "trends"},
+            **services.helper.drink_type_dropdown(self.request),
+            **services.trends.load_service(user, year),
         }
 
 
@@ -130,7 +147,7 @@ class New(CreateViewMixin):
     def get_hx_trigger_django(self):
         tab = self.kwargs.get("tab")
 
-        if tab in ["index", "data", "history"]:
+        if tab in ["index", "data", "history", "trends"]:
             return f"reload{tab.title()}"
 
         return "reloadData"
@@ -138,7 +155,7 @@ class New(CreateViewMixin):
     def url(self):
         tab = self.kwargs.get("tab")
 
-        if tab not in ["index", "data", "history"]:
+        if tab not in ["index", "data", "history", "trends"]:
             tab = "index"
 
         return reverse_lazy("drinks:new", kwargs={"tab": tab})
@@ -177,7 +194,7 @@ class TargetNew(CreateViewMixin):
     def get_hx_trigger_django(self):
         tab = self.kwargs.get("tab")
 
-        if tab in ["index", "data", "history"]:
+        if tab in ["index", "data", "history", "trends"]:
             return f"reload{tab.title()}"
 
         return "reloadIndex"
@@ -185,7 +202,7 @@ class TargetNew(CreateViewMixin):
     def url(self):
         tab = self.kwargs.get("tab")
 
-        if tab not in ["index", "data", "history"]:
+        if tab not in ["index", "data", "history", "trends"]:
             tab = "index"
 
         return reverse_lazy("drinks:target_new", kwargs={"tab": tab})
@@ -212,14 +229,28 @@ class TargetUpdate(UpdateViewMixin):
 
 
 class SelectDrink(RedirectViewMixin):
-    def get_redirect_url(self, *args, **kwargs):
+    tabs = ["index", "trends", "data", "history"]
+
+    def get(self, request, *args, **kwargs):
         drink_type = kwargs.get("drink_type")
 
         if drink_type not in models.DrinkType.values:
             drink_type = models.DrinkType.BEER.value
 
-        user = cast(User, self.request.user)
+        user = cast(User, request.user)
         user.drink_type = cast(str, drink_type)
         user.save()
 
+        if not request.htmx:
+            return super().get(request, *args, **kwargs)
+
+        # stay on the tab the change was fired from
+        tab = request.GET.get("tab")
+        trigger = f"reload{tab.title()}" if tab in self.tabs else "reloadIndex"
+
+        response = HttpResponse(status=204)
+        trigger_client_event(response=response, name=trigger, params={})
+        return response
+
+    def get_redirect_url(self, *args, **kwargs):
         return reverse_lazy("drinks:index")

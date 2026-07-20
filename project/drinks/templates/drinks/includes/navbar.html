@@ -9,6 +9,13 @@
     </button>
 
     <button
+        class="{% if tab == 'trends' %}button-active{% else %}button-secondary{% endif %}"
+        hx-get="{% url 'drinks:tab_trends' %}"
+        hx-target="#tab_content">
+        {% translate 'Trends' %}
+    </button>
+
+    <button
         class="{% if tab == 'data' %}button-active{% else %}button-secondary{% endif %}"
         hx-get="{% url 'drinks:tab_data' %}"
         hx-target="#tab_content">
@@ -27,7 +34,7 @@
             <button class="dropdown__btn">{{current_drink_type}}</button>
             <div class="dropdown__menu">
                 {% for type in select_drink_type %}
-                <a class="dropdown-item button-sm" href="{% url 'drinks:set_drink_type' type.1 %}">{{type.0}}</a>
+                <a class="dropdown-item button-sm" href="{% url 'drinks:set_drink_type' type.1 %}?tab={{ tab }}" hx-get="{% url 'drinks:set_drink_type' type.1 %}?tab={{ tab }}" hx-swap="none">{{type.0}}</a>
                 {% endfor %}
             </div>
         </div>
