@@ -294,6 +294,21 @@ def test_tab_trends_renders_chart_data(client_logged):
     assert 'id="chart-trend-data"' in response.content.decode()
 
 
+@time_machine.travel("1999-06-01")
+def test_tab_trends_renders_summary_with_data(client_logged):
+    DrinkFactory(date=date(1999, 1, 10), stdav=5)
+    DrinkFactory(date=date(1999, 2, 10), stdav=3)
+    DrinkFactory(date=date(1998, 1, 10), stdav=2)
+    DrinkTargetFactory(year=1999, quantity=100)
+
+    url = reverse("drinks:tab_trends")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    assert "table-danger" in content or "table-success" in content
+
+
 # -------------------------------------------------------------------------------------
 #                                                                          TabData View
 # -------------------------------------------------------------------------------------
