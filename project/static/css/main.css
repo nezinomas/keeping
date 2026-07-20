@@ -362,6 +362,25 @@ video {
   margin-top: 0.15rem;
 }
 
+.trends-grid {
+  display: grid;
+  grid-auto-columns: 1fr;
+  column-gap: 0.75rem;
+  row-gap: 1.5rem;
+  grid-template-areas: "trend-summary" "chart-trend-container";
+}
+.trends-grid > #trend-summary {
+  grid-area: trend-summary;
+  display: flex;
+  gap: 0.75rem;
+}
+.trends-grid > #trend-summary > * {
+  flex: 1;
+}
+.trends-grid > #chart-trend-container {
+  grid-area: chart-trend-container;
+}
+
 .debts-grid {
   display: grid;
   grid-auto-columns: 1fr;

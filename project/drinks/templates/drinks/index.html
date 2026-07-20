@@ -8,6 +8,7 @@
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_calendar.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_quantity.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_consumption.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_trend.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_compare.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_summary.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
@@ -19,6 +20,7 @@
 
 <!-- htmx tab data load -->
 <div hx-get="{% url 'drinks:tab_index' %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
+<div hx-get="{% url 'drinks:tab_trends' %}" hx-target="#tab_content" hx-trigger="reloadTrends from:body"></div>
 <div hx-get="{% url 'drinks:tab_data' %}" hx-target="#tab_content" hx-trigger="reloadData from:body"></div>
 <div hx-get="{% url 'drinks:tab_history' %}" hx-target="#tab_content" hx-trigger="reloadHistory from:body"></div>
 
@@ -37,6 +39,9 @@
         }
         if (document.getElementById('chart-summary-data')) {
             chart_drinks_summary("chart-summary-data", "chart-summary-container");
+        }
+        if (document.getElementById('chart-trend-data')) {
+            chartTrend('chart-trend-data', 'chart-trend-container');
         }
     }
 

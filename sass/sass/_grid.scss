@@ -178,6 +178,31 @@
 }
 
 
+// Trends grid
+.trends-grid {
+    @include grid-template;
+
+    grid-template-areas:
+        "trend-summary"
+        "chart-trend-container"
+    ;
+
+    > #trend-summary {
+        grid-area: trend-summary;
+        display: flex;
+        gap: $gap;
+
+        > * {
+            flex: 1;
+        }
+    }
+
+    > #chart-trend-container {
+        grid-area: chart-trend-container;
+    }
+}
+
+
 // Debts grid
 .debts-grid {
     @include grid-template;

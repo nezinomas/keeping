@@ -9,6 +9,13 @@
     </button>
 
     <button
+        class="{% if tab == 'trends' %}button-active{% else %}button-secondary{% endif %}"
+        hx-get="{% url 'drinks:tab_trends' %}"
+        hx-target="#tab_content">
+        {% translate 'Trends' %}
+    </button>
+
+    <button
         class="{% if tab == 'data' %}button-active{% else %}button-secondary{% endif %}"
         hx-get="{% url 'drinks:tab_data' %}"
         hx-target="#tab_content">

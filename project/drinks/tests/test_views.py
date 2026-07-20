@@ -56,15 +56,18 @@ def test_index_links(client_logged):
     )
     res = re.findall(pattern, content)
 
-    assert len(res) == 3
+    assert len(res) == 4
     assert res[0][1] == reverse("drinks:tab_index")
     assert res[0][2] == "Grafikai"
 
-    assert res[1][1] == reverse("drinks:tab_data")
-    assert res[1][2] == "Duomenys"
+    assert res[1][1] == reverse("drinks:tab_trends")
+    assert res[1][2] == "Trends"
 
-    assert res[2][1] == reverse("drinks:tab_history")
-    assert res[2][2] == "Istorija"
+    assert res[2][1] == reverse("drinks:tab_data")
+    assert res[2][2] == "Duomenys"
+
+    assert res[3][1] == reverse("drinks:tab_history")
+    assert res[3][2] == "Istorija"
 
 
 def test_index_context(client_logged):
@@ -249,6 +252,46 @@ def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
 
     assert context[4] == [0, 4, 0.0005, 53, "1999-01-01"]
     assert context[5] == [0, 5, 1.0, 53, "1999-01-02", 1.0, 366.0]
+
+
+# -------------------------------------------------------------------------------------
+#                                                                        TabTrends View
+# -------------------------------------------------------------------------------------
+def test_tab_trends_func():
+    view = resolve("/drinks/trends/")
+
+    assert views.TabTrends == view.func.view_class
+
+
+def test_tab_trends_200(client_logged):
+    url = reverse("drinks:tab_trends")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_tab_trends_context_tab_value(client_logged):
+    url = reverse("drinks:tab_trends")
+    response = client_logged.get(url)
+
+    assert response.context["tab"] == "trends"
+
+
+def test_tab_trends_context(client_logged):
+    url = reverse("drinks:tab_trends")
+    response = client_logged.get(url)
+
+    assert "chart_trend" in response.context
+    assert "trend_slope" in response.context
+    assert "trend_ytd" in response.context
+    assert "trend_projection" in response.context
+
+
+def test_tab_trends_renders_chart_data(client_logged):
+    url = reverse("drinks:tab_trends")
+    response = client_logged.get(url)
+
+    assert 'id="chart-trend-data"' in response.content.decode()
 
 
 # -------------------------------------------------------------------------------------
