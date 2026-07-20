@@ -83,11 +83,24 @@ class TrendStats:
         return out
 
     def rolling(self, window: int) -> list[float]:
-        values = self.daily_ml
+        """Trailing mean in ml/day, aligned to ``categories``.
+
+        The window is seeded with the ``window - 1`` days before Jan 1 (pulled
+        from the previous year) and always divided by the full window, so the
+        line doesn't spike at the year start when only a day or two would
+        otherwise be available to average.
+        """
+        lookup = self._combined_stdav
+
+        series = []
+        day = date(self.year, 1, 1) - timedelta(days=window - 1)
+        while day <= self._end_date:
+            series.append(self._converter.stdav_to_ml(lookup.get(day, 0.0)))
+            day += timedelta(days=1)
+
         return [
-            sum(values[max(0, i - window + 1) : i + 1])
-            / len(values[max(0, i - window + 1) : i + 1])
-            for i in range(len(values))
+            sum(series[i - window + 1 : i + 1]) / window
+            for i in range(window - 1, len(series))
         ]
 
     def period(self, days: int) -> PeriodStats:

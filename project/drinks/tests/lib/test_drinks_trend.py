@@ -42,13 +42,26 @@ def test_past_year_spans_full_year(converter):
 #                                                                       rolling average
 # -------------------------------------------------------------------------------------
 @time_machine.travel("2026-01-05")
-def test_rolling_average_in_ml(converter):
+def test_rolling_average_divides_by_full_window(converter):
     # beer: 1 stdav -> 200 ml, so 5 stdav -> 1000 ml on the first day only
     stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 5)])
 
-    assert stats.rolling(7) == pytest.approx([1000, 500, 1000 / 3, 250, 200])
-    # window wider than the data -> same partial means
-    assert stats.rolling(30) == pytest.approx([1000, 500, 1000 / 3, 250, 200])
+    # every point divides by the FULL window (no start-of-year spike from a
+    # short denominator); the 1000 ml day stays inside both windows for Jan 1-5
+    assert stats.rolling(7) == pytest.approx([1000 / 7] * 5)
+    assert stats.rolling(30) == pytest.approx([1000 / 30] * 5)
+
+
+@time_machine.travel("2026-01-02")
+def test_rolling_average_seeds_from_previous_december(converter):
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 1), 5)],  # 1000 ml
+        past_daily=[_row(date(2025, 12, 31), 5)],  # 1000 ml, inside the window
+    )
+
+    # Jan 1's 7-day mean pulls in Dec 31 -> (1000 + 1000) / 7
+    assert stats.rolling(7)[0] == pytest.approx(2000 / 7)
 
 
 # -------------------------------------------------------------------------------------
