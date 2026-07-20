@@ -22,6 +22,8 @@ from . import forms, models, services
 from .lib.drinks_options import DrinkConverter
 from .services.model_services import DrinkModelService, DrinkTargetModelService
 
+TABS = ["index", "data", "history", "trends"]
+
 
 class Index(TemplateViewMixin):
     template_name = "drinks/index.html"
@@ -147,7 +149,7 @@ class New(CreateViewMixin):
     def get_hx_trigger_django(self):
         tab = self.kwargs.get("tab")
 
-        if tab in ["index", "data", "history", "trends"]:
+        if tab in TABS:
             return f"reload{tab.title()}"
 
         return "reloadData"
@@ -155,7 +157,7 @@ class New(CreateViewMixin):
     def url(self):
         tab = self.kwargs.get("tab")
 
-        if tab not in ["index", "data", "history", "trends"]:
+        if tab not in TABS:
             tab = "index"
 
         return reverse_lazy("drinks:new", kwargs={"tab": tab})
@@ -194,7 +196,7 @@ class TargetNew(CreateViewMixin):
     def get_hx_trigger_django(self):
         tab = self.kwargs.get("tab")
 
-        if tab in ["index", "data", "history", "trends"]:
+        if tab in TABS:
             return f"reload{tab.title()}"
 
         return "reloadIndex"
@@ -202,7 +204,7 @@ class TargetNew(CreateViewMixin):
     def url(self):
         tab = self.kwargs.get("tab")
 
-        if tab not in ["index", "data", "history", "trends"]:
+        if tab not in TABS:
             tab = "index"
 
         return reverse_lazy("drinks:target_new", kwargs={"tab": tab})
@@ -229,7 +231,7 @@ class TargetUpdate(UpdateViewMixin):
 
 
 class SelectDrink(RedirectViewMixin):
-    tabs = ["index", "trends", "data", "history"]
+    tabs = TABS
 
     def get(self, request, *args, **kwargs):
         drink_type = kwargs.get("drink_type")
