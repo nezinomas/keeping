@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 
 from django.utils.translation import gettext as _
 
-from ...lib.drinks_trend import ProjectionStats, SlopeStats, TrendStats, YtdStats
+from ...lib.drinks_trend import PeriodStats, ProjectionStats, TrendStats, YtdStats
 
 
 @dataclass(frozen=True)
@@ -22,7 +22,7 @@ class TrendChartViewModel:
 @dataclass(frozen=True)
 class TrendItemViewModel:
     title: str
-    slope: SlopeStats
+    stats: PeriodStats
 
 
 class TrendsBuilder:
@@ -45,9 +45,9 @@ class TrendsBuilder:
 
     def trend_items(self) -> list[TrendItemViewModel]:
         return [
-            TrendItemViewModel(_("Trend (2 weeks)"), self._stats.slope(14)),
-            TrendItemViewModel(_("Trend (month)"), self._stats.slope(30)),
-            TrendItemViewModel(_("Trend (90 days)"), self._stats.slope(90)),
+            TrendItemViewModel(_("Trend (2 weeks)"), self._stats.period(14)),
+            TrendItemViewModel(_("Trend (month)"), self._stats.period(30)),
+            TrendItemViewModel(_("Trend (90 days)"), self._stats.period(90)),
         ]
 
     def trend_ytd(self) -> YtdStats:

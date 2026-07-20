@@ -8,9 +8,10 @@ from .drinks_stats import DataRow
 
 
 @dataclass(frozen=True)
-class SlopeStats:
-    direction: str  # "down" | "up" | "flat"
-    pct: float  # magnitude of the fitted change over the window, always >= 0
+class PeriodStats:
+    current: float  # std av in the most recent window
+    past: float  # std av in the equal-length window right before it
+    pct: float | None  # magnitude of the change, None when there is no prior baseline
     improving: bool
     has_data: bool
 
@@ -35,9 +36,6 @@ class ProjectionStats:
 
 class TrendStats:
     """Behaviour-change metrics derived from the daily (date, stdav) series."""
-
-    SLOPE_WINDOW = 90
-    FLAT = "flat"
 
     def __init__(
         self,
@@ -92,22 +90,28 @@ class TrendStats:
             for i in range(len(values))
         ]
 
-    def slope(self, window: int = SLOPE_WINDOW) -> SlopeStats:
-        window = self.daily_ml[-window:]
-        n = len(window)
+    def period(self, days: int) -> PeriodStats:
+        """Most recent ``days`` vs the equal-length window right before it."""
+        end = self._end_date
+        current_start = end - timedelta(days=days)
+        previous_start = end - timedelta(days=2 * days)
+        lookup = self._combined_stdav
 
-        if n < 2:
-            return SlopeStats(self.FLAT, 0.0, improving=False, has_data=False)
+        current = sum(v for d, v in lookup.items() if current_start < d <= end)
+        past = sum(v for d, v in lookup.items() if previous_start < d <= current_start)
 
-        slope, mean_y = self._linear_slope(window)
-        change = abs(slope * (n - 1))
-        pct = round(change / mean_y * 100, 1) if mean_y else 0.0
+        if not current and not past:
+            return PeriodStats(0.0, 0.0, None, improving=False, has_data=False)
 
-        if slope < 0:
-            return SlopeStats("down", pct, improving=True, has_data=True)
-        if slope > 0:
-            return SlopeStats("up", pct, improving=False, has_data=True)
-        return SlopeStats(self.FLAT, 0.0, improving=False, has_data=True)
+        pct = round(abs(current - past) / past * 100, 1) if past else None
+
+        return PeriodStats(
+            round(current, 1),
+            round(past, 1),
+            pct,
+            improving=current < past,
+            has_data=True,
+        )
 
     def ytd(self) -> YtdStats:
         day_of_year = self._end_date.timetuple().tm_yday
@@ -146,19 +150,13 @@ class TrendStats:
             has_target=True,
         )
 
-    @staticmethod
-    def _linear_slope(values: list[float]) -> tuple[float, float]:
-        n = len(values)
-        xs = range(n)
-        mean_x = sum(xs) / n
-        mean_y = sum(values) / n
-
-        denom = sum((x - mean_x) ** 2 for x in xs)
-        if not denom:
-            return 0.0, mean_y
-
-        numer = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, values))
-        return numer / denom, mean_y
+    @cached_property
+    def _combined_stdav(self) -> dict:
+        """Date -> std av across the current and previous year (for windows
+        that straddle the year boundary)."""
+        lookup = {row.date: row.stdav for row in self._past}
+        lookup.update({row.date: row.stdav for row in self._current})
+        return lookup
 
     @staticmethod
     def _sum_stdav(rows: list[DataRow], day_of_year: int) -> float:

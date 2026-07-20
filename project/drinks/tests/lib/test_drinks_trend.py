@@ -52,56 +52,69 @@ def test_rolling_average_in_ml(converter):
 
 
 # -------------------------------------------------------------------------------------
-#                                                                                 slope
+#                                                             period vs previous period
 # -------------------------------------------------------------------------------------
-@time_machine.travel("2026-01-10")
-def test_slope_improving_when_consumption_falls(converter):
-    rows = [_row(date(2026, 1, day), 11 - day) for day in range(1, 11)]
+@time_machine.travel("2026-02-01")
+def test_period_improving_when_recent_is_lower(converter):
+    # last 14 days (Jan 18 - Feb 1): 3; prior 14 days (Jan 4 - Jan 18): 9
+    rows = [_row(date(2026, 1, 25), 3), _row(date(2026, 1, 10), 9)]
     stats = TrendStats(converter, current_daily=rows)
 
-    slope = stats.slope()
+    p = stats.period(14)
 
-    assert slope.direction == "down"
-    assert slope.improving is True
-    assert slope.pct == 163.6
-    assert slope.has_data is True
+    assert p.current == 3
+    assert p.past == 9
+    assert p.pct == 66.7  # abs(3 - 9) / 9 * 100
+    assert p.improving is True
+    assert p.has_data is True
 
 
-@time_machine.travel("2026-01-10")
-def test_slope_worsening_when_consumption_rises(converter):
-    rows = [_row(date(2026, 1, day), day) for day in range(1, 11)]
+@time_machine.travel("2026-02-01")
+def test_period_worsening_when_recent_is_higher(converter):
+    rows = [_row(date(2026, 1, 25), 10), _row(date(2026, 1, 10), 2)]
     stats = TrendStats(converter, current_daily=rows)
 
-    slope = stats.slope()
+    p = stats.period(14)
 
-    assert slope.direction == "up"
-    assert slope.improving is False
-
-
-@time_machine.travel("2026-01-05")
-def test_slope_window_uses_only_recent_days(converter):
-    # a big spike on day 1, then a small rising tail on days 4-5
-    rows = [
-        _row(date(2026, 1, 1), 100),
-        _row(date(2026, 1, 4), 1),
-        _row(date(2026, 1, 5), 2),
-    ]
-    stats = TrendStats(converter, current_daily=rows)
-
-    # a 2-day window sees only the rising tail
-    assert stats.slope(2).direction == "up"
-    # the full window is dominated by the day-1 spike -> downward
-    assert stats.slope(90).direction == "down"
+    assert p.current == 10
+    assert p.past == 2
+    assert p.improving is False
 
 
-@time_machine.travel("2026-01-01")
-def test_slope_has_no_data_with_single_day(converter):
-    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 3)])
+@time_machine.travel("2026-01-20")
+def test_period_without_prior_baseline(converter):
+    # only recent drinking, nothing in the previous window -> no percentage
+    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 15), 4)])
 
-    slope = stats.slope()
+    p = stats.period(14)
 
-    assert slope.has_data is False
-    assert slope.direction == "flat"
+    assert p.current == 4
+    assert p.past == 0.0
+    assert p.pct is None
+    assert p.has_data is True
+
+
+@time_machine.travel("2026-06-01")
+def test_period_no_data(converter):
+    stats = TrendStats(converter, current_daily=[])
+
+    assert stats.period(14).has_data is False
+
+
+@time_machine.travel("2026-01-20")
+def test_period_straddles_year_boundary(converter):
+    # prior window reaches into last December -> must use previous-year data
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 10), 2)],
+        past_daily=[_row(date(2025, 12, 30), 8)],
+    )
+
+    p = stats.period(14)
+
+    assert p.current == 2
+    assert p.past == 8
+    assert p.improving is True
 
 
 # -------------------------------------------------------------------------------------

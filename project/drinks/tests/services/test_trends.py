@@ -4,7 +4,7 @@ import pytest
 import time_machine
 
 from ...lib.drinks_options import DrinkConverter
-from ...lib.drinks_trend import ProjectionStats, SlopeStats, TrendStats, YtdStats
+from ...lib.drinks_trend import PeriodStats, ProjectionStats, TrendStats, YtdStats
 from ...services.trends.builders import (
     TrendChartViewModel,
     TrendItemViewModel,
@@ -87,7 +87,7 @@ def test_trend_items_cover_three_windows(converter):
 
     assert len(items) == 3
     assert all(isinstance(i, TrendItemViewModel) for i in items)
-    assert all(isinstance(i.slope, SlopeStats) for i in items)
+    assert all(isinstance(i.stats, PeriodStats) for i in items)
     assert [i.title for i in items] == [
         "Tendencija (2 savaitės)",
         "Tendencija (mėnuo)",

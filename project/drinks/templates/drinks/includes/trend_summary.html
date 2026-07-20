@@ -3,21 +3,19 @@
 {% for item in trend_items %}
 <div class="trend-card">
     <div class="trend-card__label">{{ item.title }}</div>
-    {% if item.slope.has_data %}
-    {% if item.slope.direction == 'down' %}
-    <div class="trend-card__value positive">&darr; {{ item.slope.pct|floatformat:1 }}%</div>
-    <div class="trend-card__note">{% translate 'Improving' %}</div>
-    {% elif item.slope.direction == 'up' %}
-    <div class="trend-card__value negative">&uarr; {{ item.slope.pct|floatformat:1 }}%</div>
-    <div class="trend-card__note">{% translate 'Worsening' %}</div>
+    {% with s=item.stats %}
+    {% if s.has_data %}
+    {% if s.improving %}
+    <div class="trend-card__value positive">&darr;{% if s.past %} {{ s.pct|floatformat:1 }}%{% else %} {{ s.current|floatformat:1 }}{% endif %}</div>
     {% else %}
-    <div class="trend-card__value">&rarr; {{ item.slope.pct|floatformat:1 }}%</div>
-    <div class="trend-card__note">{% translate 'Flat' %}</div>
+    <div class="trend-card__value negative">&uarr;{% if s.past %} {{ s.pct|floatformat:1 }}%{% else %} {{ s.current|floatformat:1 }}{% endif %}</div>
     {% endif %}
+    <div class="trend-card__note">{{ s.current|floatformat:1 }} / {{ s.past|floatformat:1 }} Std Av</div>
     {% else %}
     <div class="trend-card__value">&mdash;</div>
-    <div class="trend-card__note">{% translate 'Not enough data' %}</div>
+    <div class="trend-card__note">{% translate 'No data' %}</div>
     {% endif %}
+    {% endwith %}
 </div>
 {% endfor %}
 
