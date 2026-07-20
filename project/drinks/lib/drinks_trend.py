@@ -117,7 +117,8 @@ class TrendStats:
             return YtdStats(current, 0.0, None, improving=False, has_past=False)
 
         past = self._sum_stdav(self._past, day_of_year)
-        pct = round((current - past) / past * 100, 1) if past else None
+        # magnitude only; direction is carried by `improving` (like SlopeStats)
+        pct = round(abs(current - past) / past * 100, 1) if past else None
 
         return YtdStats(current, past, pct, improving=current < past, has_past=True)
 

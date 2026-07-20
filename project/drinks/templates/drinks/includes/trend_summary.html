@@ -22,7 +22,11 @@
 <div class="trend-card">
     <div class="trend-card__label">{% translate 'This year vs last (to date)' %}</div>
     {% if trend_ytd.has_past %}
-    <div class="trend-card__value {% if trend_ytd.improving %}positive{% else %}negative{% endif %}">{{ trend_ytd.pct|floatformat:1 }}%</div>
+    {% if trend_ytd.improving %}
+    <div class="trend-card__value positive">&darr; {{ trend_ytd.pct|floatformat:1 }}%</div>
+    {% else %}
+    <div class="trend-card__value negative">&uarr; {{ trend_ytd.pct|floatformat:1 }}%</div>
+    {% endif %}
     <div class="trend-card__note">{{ trend_ytd.current|floatformat:1 }} / {{ trend_ytd.past|floatformat:1 }} Std Av</div>
     {% else %}
     <div class="trend-card__value">{{ trend_ytd.current|floatformat:1 }}</div>

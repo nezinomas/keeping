@@ -104,7 +104,7 @@ def test_ytd_vs_last_year(converter):
 
     assert ytd.current == 15
     assert ytd.past == 20
-    assert ytd.pct == -25.0
+    assert ytd.pct == 25.0  # magnitude; direction is carried by `improving`
     assert ytd.improving is True
     assert ytd.has_past is True
 
