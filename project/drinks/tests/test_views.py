@@ -61,7 +61,7 @@ def test_index_links(client_logged):
     assert res[0][2] == "Grafikai"
 
     assert res[1][1] == reverse("drinks:tab_trends")
-    assert res[1][2] == "Trends"
+    assert res[1][2] == "Tendencijos"
 
     assert res[2][1] == reverse("drinks:tab_data")
     assert res[2][2] == "Duomenys"
@@ -306,7 +306,8 @@ def test_tab_trends_renders_summary_with_data(client_logged):
     content = response.content.decode()
 
     assert response.status_code == 200
-    assert "table-danger" in content or "table-success" in content
+    assert 'class="trend-card"' in content
+    assert "positive" in content or "negative" in content
 
 
 # -------------------------------------------------------------------------------------

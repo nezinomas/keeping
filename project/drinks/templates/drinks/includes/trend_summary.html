@@ -1,71 +1,42 @@
 {% load i18n %}
 
-<table class="main">
-    <caption>{% translate 'Trend' %}, 90 {% translate 'days' %}</caption>
-    <thead>
-        <tr>
-            <th class="text-left">{% translate 'Direction' %}</th>
-            <th>{% translate 'Change' %}</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            {% if trend_slope.has_data %}
-            {% if trend_slope.direction == 'down' %}
-            <td class="text-left table-success">&darr; {% translate 'Improving' %}</td>
-            <td class="table-success">{{ trend_slope.pct|floatformat:'1g' }}%</td>
-            {% elif trend_slope.direction == 'up' %}
-            <td class="text-left table-danger">&uarr; {% translate 'Worsening' %}</td>
-            <td class="table-danger">{{ trend_slope.pct|floatformat:'1g' }}%</td>
-            {% else %}
-            <td class="text-left">&rarr; {% translate 'Flat' %}</td>
-            <td>{{ trend_slope.pct|floatformat:'1g' }}%</td>
-            {% endif %}
-            {% else %}
-            <td colspan="2">{% translate 'No data' %}</td>
-            {% endif %}
-        </tr>
-    </tbody>
-</table>
+<div class="trend-card">
+    <div class="trend-card__label">{% translate 'Trend (90 days)' %}</div>
+    {% if trend_slope.has_data %}
+    {% if trend_slope.direction == 'down' %}
+    <div class="trend-card__value positive">&darr; {{ trend_slope.pct|floatformat:1 }}%</div>
+    <div class="trend-card__note">{% translate 'Improving' %}</div>
+    {% elif trend_slope.direction == 'up' %}
+    <div class="trend-card__value negative">&uarr; {{ trend_slope.pct|floatformat:1 }}%</div>
+    <div class="trend-card__note">{% translate 'Worsening' %}</div>
+    {% else %}
+    <div class="trend-card__value">&rarr; {{ trend_slope.pct|floatformat:1 }}%</div>
+    <div class="trend-card__note">{% translate 'Flat' %}</div>
+    {% endif %}
+    {% else %}
+    <div class="trend-card__value">&mdash;</div>
+    <div class="trend-card__note">{% translate 'Not enough data' %}</div>
+    {% endif %}
+</div>
 
-<table class="main">
-    <caption>{% translate 'This year vs last' %}, Std Av</caption>
-    <thead>
-        <tr>
-            <th class="text-left">{% translate 'Now' %} / {% translate 'Then' %}</th>
-            <th>{% translate 'Change' %}</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            {% if trend_ytd.has_past %}
-            <td class="text-left">{{ trend_ytd.current|floatformat:'1g' }} / {{ trend_ytd.past|floatformat:'1g' }}</td>
-            <td class="{% if trend_ytd.improving %}table-success{% else %}table-danger{% endif %}">{{ trend_ytd.pct|floatformat:'1g' }}%</td>
-            {% else %}
-            <td class="text-left">{{ trend_ytd.current|floatformat:'1g' }}</td>
-            <td>&mdash;</td>
-            {% endif %}
-        </tr>
-    </tbody>
-</table>
+<div class="trend-card">
+    <div class="trend-card__label">{% translate 'This year vs last (to date)' %}</div>
+    {% if trend_ytd.has_past %}
+    <div class="trend-card__value {% if trend_ytd.improving %}positive{% else %}negative{% endif %}">{{ trend_ytd.pct|floatformat:1 }}%</div>
+    <div class="trend-card__note">{{ trend_ytd.current|floatformat:1 }} / {{ trend_ytd.past|floatformat:1 }} Std Av</div>
+    {% else %}
+    <div class="trend-card__value">{{ trend_ytd.current|floatformat:1 }}</div>
+    <div class="trend-card__note">Std Av &middot; {% translate 'No prior year' %}</div>
+    {% endif %}
+</div>
 
-<table class="main">
-    <caption>{% translate 'Year-end forecast' %}, ml</caption>
-    <thead>
-        <tr>
-            <th class="text-left">{% translate 'Forecast' %} / {% translate 'Limit' %}</th>
-            <th>{% translate 'vs limit' %}</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            {% if trend_projection.has_target %}
-            <td class="text-left">{{ trend_projection.projected|floatformat:'0g' }} / {{ trend_projection.target|floatformat:'0g' }}</td>
-            <td class="{% if trend_projection.over %}table-danger{% else %}table-success{% endif %}">{{ trend_projection.pct|floatformat:'1g' }}%</td>
-            {% else %}
-            <td class="text-left">{{ trend_projection.projected|floatformat:'0g' }}</td>
-            <td>&mdash;</td>
-            {% endif %}
-        </tr>
-    </tbody>
-</table>
+<div class="trend-card">
+    <div class="trend-card__label">{% translate 'Year-end forecast' %}</div>
+    {% if trend_projection.has_target %}
+    <div class="trend-card__value {% if trend_projection.over %}negative{% else %}positive{% endif %}">{{ trend_projection.projected|floatformat:'0g' }} ml</div>
+    <div class="trend-card__note">{% translate 'Limit' %}: {{ trend_projection.target|floatformat:'0g' }} ml &middot; {{ trend_projection.pct|floatformat:1 }}%</div>
+    {% else %}
+    <div class="trend-card__value">{{ trend_projection.projected|floatformat:'0g' }} ml</div>
+    <div class="trend-card__note">{% translate 'No limit set' %}</div>
+    {% endif %}
+</div>

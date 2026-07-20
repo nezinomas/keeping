@@ -203,6 +203,43 @@
 }
 
 
+// Trend summary cards
+.trend-card {
+    display: flex;
+    flex-direction: column;
+    gap: calc($gap / 4);
+    padding: $gap;
+    border: 1px solid $border-color-light;
+    border-radius: $modal-border-radius;
+    background: $table-header-bg;
+    text-align: center;
+
+    &__label {
+        font-size: 0.9em;
+        color: $text-muted;
+    }
+
+    &__value {
+        font-size: 2em;
+        font-weight: 600;
+        color: $black-muted;
+
+        &.positive {
+            color: $positive-text;
+        }
+
+        &.negative {
+            color: $negative-text;
+        }
+    }
+
+    &__note {
+        font-size: 0.9em;
+        color: $text-muted;
+    }
+}
+
+
 // Debts grid
 .debts-grid {
     @include grid-template;

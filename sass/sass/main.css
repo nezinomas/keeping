@@ -381,6 +381,36 @@ video {
   grid-area: chart-trend-container;
 }
 
+.trend-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+  padding: 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  background: #f9f9f9;
+  text-align: center;
+}
+.trend-card__label {
+  font-size: 0.9em;
+  color: #6c757d;
+}
+.trend-card__value {
+  font-size: 2em;
+  font-weight: 600;
+  color: #333;
+}
+.trend-card__value.positive {
+  color: #2e7532;
+}
+.trend-card__value.negative {
+  color: #c62828;
+}
+.trend-card__note {
+  font-size: 0.9em;
+  color: #6c757d;
+}
+
 .debts-grid {
   display: grid;
   grid-auto-columns: 1fr;

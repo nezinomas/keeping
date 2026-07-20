@@ -1827,3 +1827,43 @@ msgstr "Trinti vartotoją"
 #, python-format
 #~ msgid "%(year)s year and %(type)s already has %(title)s plan."
 #~ msgstr "%(year)s metai ir %(type)s jau turi %(title)s planą."
+
+#: .\project\drinks\templates\drinks\includes\navbar.html:15
+msgid "Trends"
+msgstr "Tendencijos"
+
+#: .\project\drinks\templates\drinks\includes\trend_summary.html:4
+msgid "Trend (90 days)"
+msgstr "Tendencija (90 dienų)"
+
+#: .\project\drinks\templates\drinks\includes\trend_summary.html:8
+msgid "Improving"
+msgstr "Gerėja"
+
+#: .\project\drinks\templates\drinks\includes\trend_summary.html:11
+msgid "Worsening"
+msgstr "Blogėja"
+
+#: .\project\drinks\templates\drinks\includes\trend_summary.html:14
+msgid "Flat"
+msgstr "Be pokyčių"
+
+#: .\project\drinks\templates\drinks\includes\trend_summary.html:18
+msgid "Not enough data"
+msgstr "Nepakanka duomenų"
+
+#: .\project\drinks\templates\drinks\includes\trend_summary.html:24
+msgid "This year vs last (to date)"
+msgstr "Šiemet vs pernai (iki šiandien)"
+
+#: .\project\drinks\templates\drinks\includes\trend_summary.html:30
+msgid "No prior year"
+msgstr "Nėra praėjusių metų"
+
+#: .\project\drinks\templates\drinks\includes\trend_summary.html:35
+msgid "Year-end forecast"
+msgstr "Metų prognozė"
+
+#: .\project\drinks\templates\drinks\includes\trend_summary.html:41
+msgid "No limit set"
+msgstr "Nenustatyta riba"
