@@ -108,20 +108,21 @@ def test_index_select_drink_drop_down_link_list(client_logged):
 
     content = response.content.decode()
 
+    # the dropdown reloads the current tab (here: index) via htmx
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}">Alus</a>'  # noqa: E501
+        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}?tab=index"'  # noqa: E501
         in content
     )
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}">Vynas</a>'  # noqa: E501
+        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}?tab=index"'  # noqa: E501
         in content
     )
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}">Degtinė</a>'  # noqa: E501
+        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}?tab=index"'  # noqa: E501
         in content
     )
     assert (
-        f'href="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}">Std Av</a>'  # noqa: E501
+        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}?tab=index"'  # noqa: E501
         in content
     )
 
@@ -1032,3 +1033,20 @@ def test_select_drinks_set_default_drink_type(main_user, client_logged):
     actual = User.objects.first()
 
     assert actual.drink_type == "beer"
+
+
+def test_select_drink_htmx_stays_on_current_tab(client_logged):
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"}) + "?tab=trends"
+    response = client_logged.get(url, HTTP_HX_REQUEST="true")
+
+    assert response.status_code == 204
+    assert "reloadTrends" in response.headers.get("HX-Trigger", "")
+    assert User.objects.first().drink_type == "wine"
+
+
+def test_select_drink_htmx_unknown_tab_falls_back_to_index(client_logged):
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"}) + "?tab=xxx"
+    response = client_logged.get(url, HTTP_HX_REQUEST="true")
+
+    assert response.status_code == 204
+    assert "reloadIndex" in response.headers.get("HX-Trigger", "")
