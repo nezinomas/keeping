@@ -7,9 +7,9 @@ from ...lib.drinks_risk import (
     HEAVY_DAY_STDAV,
     WEEKLY_HIGH_RISK_STDAV,
     WEEKLY_LOW_RISK_STDAV,
-    CountComparison,
-    EmptyCountComparison,
+    EmptyYearOverYearCount,
     RiskStats,
+    YearOverYearCount,
 )
 
 
@@ -24,7 +24,7 @@ class RiskCardViewModel:
 
 
 @dataclass(frozen=True)
-class RiskWeeklyChartViewModel:
+class WeeklyRiskChartViewModel:
     categories: list[str]
     week_ends: list[str]
     data: list[float]
@@ -39,7 +39,7 @@ class RiskWeeklyChartViewModel:
 
 
 @dataclass(frozen=True)
-class RiskHeavyChartViewModel:
+class MonthlyHeavyDaysChartViewModel:
     categories: list[str]
     data: list[int]
     heavy_threshold: float
@@ -50,13 +50,13 @@ class RiskHeavyChartViewModel:
         return asdict(self)
 
 
-class RiskBuilder:
+class RiskViewModelBuilder:
     def __init__(self, drink_stats: RiskStats):
         self._stats = drink_stats
 
-    def chart_weekly(self) -> RiskWeeklyChartViewModel:
+    def chart_weekly(self) -> WeeklyRiskChartViewModel:
         series = self._stats.weekly_series()
-        return RiskWeeklyChartViewModel(
+        return WeeklyRiskChartViewModel(
             categories=[week.label for week in series],
             week_ends=[week.end for week in series],
             data=[week.stdav for week in series],
@@ -70,8 +70,8 @@ class RiskBuilder:
             },
         )
 
-    def chart_heavy_days(self) -> RiskHeavyChartViewModel:
-        return RiskHeavyChartViewModel(
+    def chart_heavy_days(self) -> MonthlyHeavyDaysChartViewModel:
+        return MonthlyHeavyDaysChartViewModel(
             categories=list(month_names().values()),
             data=self._stats.monthly_heavy_days(),
             heavy_threshold=HEAVY_DAY_STDAV,
@@ -85,13 +85,13 @@ class RiskBuilder:
 
     def get_cards(self) -> list[RiskCardViewModel]:
         return [
-            self._current_week_card(),
-            self._worst_week_card(),
-            self._weeks_over_card(),
-            self._heavy_days_card(),
+            self._build_current_week_card(),
+            self._build_worst_week_card(),
+            self._build_weeks_over_guideline_card(),
+            self._build_heavy_days_card(),
         ]
 
-    def _current_week_card(self) -> RiskCardViewModel:
+    def _build_current_week_card(self) -> RiskCardViewModel:
         week = self._stats.current_week()
         return RiskCardViewModel(
             title=_("This week"),
@@ -101,7 +101,7 @@ class RiskBuilder:
             note=f"{_('Low-risk guideline')}: {WEEKLY_LOW_RISK_STDAV:.1f} Std Av",
         )
 
-    def _worst_week_card(self) -> RiskCardViewModel:
+    def _build_worst_week_card(self) -> RiskCardViewModel:
         week = self._stats.worst_week()
         title = _("Worst week")
 
@@ -116,24 +116,26 @@ class RiskBuilder:
             note=f"{week.label} – {week.end}",
         )
 
-    def _weeks_over_card(self) -> RiskCardViewModel:
+    def _build_weeks_over_guideline_card(self) -> RiskCardViewModel:
         definition = _(
             "Weeks whose total exceeds the low-risk guideline of %(threshold)s Std Av."
         ) % {"threshold": f"{WEEKLY_LOW_RISK_STDAV:.1f}"}
-        return self._count_card(
+        return self._build_comparison_card(
             _("Weeks over guideline"), self._stats.weeks_over_guideline(), definition
         )
 
-    def _heavy_days_card(self) -> RiskCardViewModel:
+    def _build_heavy_days_card(self) -> RiskCardViewModel:
         definition = _("Days with more than %(threshold)s Std Av in a single day.") % {
             "threshold": f"{HEAVY_DAY_STDAV:.0f}"
         }
-        return self._count_card(_("Heavy days"), self._stats.heavy_days(), definition)
+        return self._build_comparison_card(
+            _("Heavy days"), self._stats.heavy_days(), definition
+        )
 
-    def _count_card(
+    def _build_comparison_card(
         self,
         title: str,
-        stats: CountComparison | EmptyCountComparison,
+        stats: YearOverYearCount | EmptyYearOverYearCount,
         definition: str,
     ) -> RiskCardViewModel:
         if not stats.has_past:

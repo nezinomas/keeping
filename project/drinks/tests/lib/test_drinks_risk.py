@@ -43,11 +43,11 @@ def test_current_year_taken_from_records():
 
 
 @time_machine.travel("2026-06-15")
-def test_clipped_past_is_cached():
+def test_past_clipped_records_is_cached():
     current = [_row(date(2026, 1, 1), 7)]
     past = [_row(date(2025, 1, 1), 7)]
     stats = RiskStats(current_daily=current, past_daily=past)
-    assert stats._clipped_past is stats._clipped_past
+    assert stats._past_clipped_records is stats._past_clipped_records
 
 
 # -------------------------------------------------------------------------------------

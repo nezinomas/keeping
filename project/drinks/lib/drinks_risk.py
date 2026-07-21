@@ -18,14 +18,14 @@ HEAVY_DAY_STDAV = 6.0
 
 
 @dataclass(frozen=True)
-class WeekPoint:
+class WeeklySeriesPoint:
     label: str  # ISO date of the week-start (Monday)
     end: str  # ISO date of the week-end (Sunday)
     stdav: float
 
 
 @dataclass(frozen=True)
-class WeekZone:
+class WeeklyRiskZone:
     stdav: float
     state: str  # "low" | "medium" | "high"
     label: str  # ISO date of the week-start (Monday)
@@ -34,7 +34,7 @@ class WeekZone:
 
 
 @dataclass(frozen=True)
-class EmptyWeekZone:
+class EmptyWeeklyRiskZone:
     stdav: float = 0.0
     state: str = "empty"
     label: str = ""
@@ -43,7 +43,7 @@ class EmptyWeekZone:
 
 
 @dataclass(frozen=True)
-class CountComparison:
+class YearOverYearCount:
     current: int
     previous: int
     improving: bool
@@ -51,7 +51,7 @@ class CountComparison:
 
 
 @dataclass(frozen=True)
-class EmptyCountComparison:
+class EmptyYearOverYearCount:
     current: int
     previous: int = 0
     improving: bool = False
@@ -71,11 +71,13 @@ class RiskStats:
         past_daily: Sequence[DataRow] = (),
         today: date | None = None,
     ):
-        self._current = current_daily
-        self._past = past_daily
+        self._current_daily_records = current_daily
+        self._past_daily_records = past_daily
         self._today = today or date.today()
         self.current_year = (
-            self._current[0].date.year if self._current else self._today.year
+            self._current_daily_records[0].date.year
+            if self._current_daily_records
+            else self._today.year
         )
 
     @cached_property
@@ -93,15 +95,15 @@ class RiskStats:
         return monday + timedelta(days=6)
 
     @staticmethod
-    def _buckets(records: Iterable[DataRow]) -> dict[date, float]:
-        acc: dict[date, float] = {}
+    def _aggregate_weekly_units(records: Iterable[DataRow]) -> dict[date, float]:
+        weekly_units: dict[date, float] = {}
         for row in records:
             monday = RiskStats._week_start(row.date)
-            acc[monday] = acc.get(monday, 0.0) + row.stdav
-        return acc
+            weekly_units[monday] = weekly_units.get(monday, 0.0) + row.stdav
+        return weekly_units
 
     @staticmethod
-    def _zone(weekly_stdav: float) -> str:
+    def _classify_risk_band(weekly_stdav: float) -> str:
         """Classify an already-rounded (1 dp) weekly total into a risk band."""
         if weekly_stdav > WEEKLY_HIGH_RISK_STDAV:
             return "high"
@@ -110,94 +112,102 @@ class RiskStats:
         return "low"
 
     @cached_property
-    def _current_buckets(self) -> dict[date, float]:
-        return self._buckets(self._current)
+    def _current_weekly_units(self) -> dict[date, float]:
+        return self._aggregate_weekly_units(self._current_daily_records)
 
     @cached_property
-    def _clipped_past(self) -> list[DataRow]:
+    def _past_clipped_records(self) -> list[DataRow]:
         """Previous-year rows up to the same month/day as today, for a fair
         comparison. Matching on (month, day) rather than the ordinal
         day-of-year avoids misaligning the cutoff when the current and
         previous years have different lengths (a leap year on either side)."""
         cutoff = (self._year_end_date.month, self._year_end_date.day)
-        return [row for row in self._past if (row.date.month, row.date.day) <= cutoff]
+        return [
+            row
+            for row in self._past_daily_records
+            if (row.date.month, row.date.day) <= cutoff
+        ]
 
     @cached_property
-    def _clipped_past_buckets(self) -> dict[date, float]:
-        return self._buckets(self._clipped_past)
+    def _past_clipped_weekly_units(self) -> dict[date, float]:
+        return self._aggregate_weekly_units(self._past_clipped_records)
 
-    def weekly_series(self) -> list[WeekPoint]:
+    def weekly_series(self) -> list[WeeklySeriesPoint]:
         """Dense weekly totals from the first week of the year to the current week."""
         monday = self._week_start(date(self.current_year, 1, 1))
         last_monday = self._week_start(self._year_end_date)
-        buckets = self._current_buckets
+        units_by_week = self._current_weekly_units
 
         series = []
         while monday <= last_monday:
             series.append(
-                WeekPoint(
+                WeeklySeriesPoint(
                     label=monday.isoformat(),
                     end=self._week_end(monday).isoformat(),
-                    stdav=round(buckets.get(monday, 0.0), 1),
+                    stdav=round(units_by_week.get(monday, 0.0), 1),
                 )
             )
             monday += timedelta(days=7)
         return series
 
-    def current_week(self) -> WeekZone:
+    def current_week(self) -> WeeklyRiskZone:
         monday = self._week_start(self._year_end_date)
-        stdav = round(self._current_buckets.get(monday, 0.0), 1)
-        return WeekZone(
+        stdav = round(self._current_weekly_units.get(monday, 0.0), 1)
+        return WeeklyRiskZone(
             stdav=stdav,
-            state=self._zone(stdav),
+            state=self._classify_risk_band(stdav),
             label=monday.isoformat(),
             end=self._week_end(monday).isoformat(),
         )
 
-    def worst_week(self) -> WeekZone | EmptyWeekZone:
-        buckets = self._current_buckets
-        if not buckets:
-            return EmptyWeekZone()
+    def worst_week(self) -> WeeklyRiskZone | EmptyWeeklyRiskZone:
+        weekly_units = self._current_weekly_units
+        if not weekly_units:
+            return EmptyWeeklyRiskZone()
 
-        monday, raw_stdav = max(buckets.items(), key=lambda item: item[1])
+        monday, raw_stdav = max(weekly_units.items(), key=lambda item: item[1])
         stdav = round(raw_stdav, 1)
-        return WeekZone(
+        return WeeklyRiskZone(
             stdav=stdav,
-            state=self._zone(stdav),
+            state=self._classify_risk_band(stdav),
             label=monday.isoformat(),
             end=self._week_end(monday).isoformat(),
         )
 
-    def _compare_counts(
+    def _compare_year_over_year(
         self, current: int, previous: int
-    ) -> CountComparison | EmptyCountComparison:
-        if not self._past:
-            return EmptyCountComparison(current=current)
-        return CountComparison(current, previous, improving=current < previous)
+    ) -> YearOverYearCount | EmptyYearOverYearCount:
+        if not self._past_daily_records:
+            return EmptyYearOverYearCount(current=current)
+        return YearOverYearCount(current, previous, improving=current < previous)
 
-    def heavy_days(self) -> CountComparison | EmptyCountComparison:
-        current = self._count_heavy(self._current)
-        previous = self._count_heavy(self._clipped_past)
-        return self._compare_counts(current, previous)
+    def heavy_days(self) -> YearOverYearCount | EmptyYearOverYearCount:
+        current = self._count_heavy_days(self._current_daily_records)
+        previous = self._count_heavy_days(self._past_clipped_records)
+        return self._compare_year_over_year(current, previous)
 
-    def weeks_over_guideline(self) -> CountComparison | EmptyCountComparison:
-        current = self._count_weeks_over(self._current_buckets)
-        previous = self._count_weeks_over(self._clipped_past_buckets)
-        return self._compare_counts(current, previous)
+    def weeks_over_guideline(self) -> YearOverYearCount | EmptyYearOverYearCount:
+        current = self._count_weeks_exceeding_guideline(self._current_weekly_units)
+        previous = self._count_weeks_exceeding_guideline(
+            self._past_clipped_weekly_units
+        )
+        return self._compare_year_over_year(current, previous)
 
     def monthly_heavy_days(self) -> list[int]:
         counts = [0] * 12
-        for row in self._current:
+        for row in self._current_daily_records:
             if row.stdav > HEAVY_DAY_STDAV:
                 counts[row.date.month - 1] += 1
         return counts
 
     @staticmethod
-    def _count_heavy(records: Iterable[DataRow]) -> int:
+    def _count_heavy_days(records: Iterable[DataRow]) -> int:
         return sum(1 for row in records if row.stdav > HEAVY_DAY_STDAV)
 
     @staticmethod
-    def _count_weeks_over(buckets: dict[date, float]) -> int:
+    def _count_weeks_exceeding_guideline(weekly_units: dict[date, float]) -> int:
         return sum(
-            1 for total in buckets.values() if round(total, 1) > WEEKLY_LOW_RISK_STDAV
+            1
+            for total in weekly_units.values()
+            if round(total, 1) > WEEKLY_LOW_RISK_STDAV
         )

@@ -9,10 +9,10 @@ from ...lib.drinks_risk import RiskStats
 from ...lib.drinks_stats import DataRow
 from ...services import risk
 from ...services.risk.builders import (
-    RiskBuilder,
+    MonthlyHeavyDaysChartViewModel,
     RiskCardViewModel,
-    RiskHeavyChartViewModel,
-    RiskWeeklyChartViewModel,
+    RiskViewModelBuilder,
+    WeeklyRiskChartViewModel,
 )
 from ...services.risk.providers import RiskDataProvider
 from ..factories import DrinkFactory
@@ -36,9 +36,9 @@ def test_chart_weekly_view_model():
     # 2026-01-05 is a Monday, so it is its own week's label
     stats = RiskStats(current_daily=[_row(date(2026, 1, 5), 7)])
 
-    vm = RiskBuilder(stats).chart_weekly()
+    vm = RiskViewModelBuilder(stats).chart_weekly()
 
-    assert isinstance(vm, RiskWeeklyChartViewModel)
+    assert isinstance(vm, WeeklyRiskChartViewModel)
     assert vm.low_risk == 11.2
     assert vm.high_risk == 28.0
     index = vm.categories.index("2026-01-05")
@@ -52,7 +52,7 @@ def test_chart_weekly_view_model():
 def test_chart_weekly_as_dict_is_json_serializable():
     stats = RiskStats(current_daily=[_row(date(2026, 1, 5), 7)])
 
-    actual = RiskBuilder(stats).chart_weekly().as_dict
+    actual = RiskViewModelBuilder(stats).chart_weekly().as_dict
     serialized = json.loads(json.dumps(actual))
 
     assert serialized["low_risk"] == 11.2
@@ -67,9 +67,9 @@ def test_chart_weekly_as_dict_is_json_serializable():
 def test_chart_heavy_days_view_model():
     stats = RiskStats(current_daily=[_row(date(2026, 1, 1), 7)])
 
-    vm = RiskBuilder(stats).chart_heavy_days()
+    vm = RiskViewModelBuilder(stats).chart_heavy_days()
 
-    assert isinstance(vm, RiskHeavyChartViewModel)
+    assert isinstance(vm, MonthlyHeavyDaysChartViewModel)
     assert len(vm.categories) == 12
     assert len(vm.data) == 12
     assert vm.data[0] == 1
@@ -81,7 +81,7 @@ def test_chart_heavy_days_view_model():
 def test_chart_heavy_days_as_dict_is_json_serializable():
     stats = RiskStats(current_daily=[_row(date(2026, 1, 1), 7)])
 
-    actual = RiskBuilder(stats).chart_heavy_days().as_dict
+    actual = RiskViewModelBuilder(stats).chart_heavy_days().as_dict
     serialized = json.loads(json.dumps(actual))
 
     assert serialized["data"][0] == 1
@@ -96,7 +96,7 @@ def test_chart_heavy_days_as_dict_is_json_serializable():
 def test_get_cards_returns_four_view_models():
     stats = RiskStats(current_daily=[_row(date(2026, 1, 5), 7)])
 
-    cards = RiskBuilder(stats).get_cards()
+    cards = RiskViewModelBuilder(stats).get_cards()
 
     assert len(cards) == 4
     assert all(isinstance(c, RiskCardViewModel) for c in cards)
@@ -112,7 +112,7 @@ def test_get_cards_returns_four_view_models():
 def test_this_week_card_low():
     stats = RiskStats(current_daily=[_row(date(2026, 2, 9), 3)])
 
-    card = _card(RiskBuilder(stats).get_cards(), _("This week"))
+    card = _card(RiskViewModelBuilder(stats).get_cards(), _("This week"))
 
     assert card.state == "low"
     assert card.value == "3.0"
@@ -123,14 +123,16 @@ def test_this_week_card_low():
 def test_this_week_card_high():
     stats = RiskStats(current_daily=[_row(date(2026, 2, 9), 30)])
 
-    card = _card(RiskBuilder(stats).get_cards(), _("This week"))
+    card = _card(RiskViewModelBuilder(stats).get_cards(), _("This week"))
 
     assert card.state == "high"
 
 
 @time_machine.travel("2026-03-01")
 def test_worst_week_card_empty_without_data():
-    card = _card(RiskBuilder(RiskStats(current_daily=[])).get_cards(), _("Worst week"))
+    card = _card(
+        RiskViewModelBuilder(RiskStats(current_daily=[])).get_cards(), _("Worst week")
+    )
 
     assert card.state == "empty"
     assert card.value == ""
@@ -140,7 +142,7 @@ def test_worst_week_card_empty_without_data():
 def test_worst_week_card_high():
     stats = RiskStats(current_daily=[_row(date(2026, 2, 9), 30)])
 
-    card = _card(RiskBuilder(stats).get_cards(), _("Worst week"))
+    card = _card(RiskViewModelBuilder(stats).get_cards(), _("Worst week"))
 
     assert card.state == "high"
     assert card.value == "30.0"
@@ -155,7 +157,9 @@ def test_count_card_improving():
     past = [_row(date(2025, 1, 6), 15), _row(date(2025, 2, 3), 20)]
 
     card = _card(
-        RiskBuilder(RiskStats(current_daily=current, past_daily=past)).get_cards(),
+        RiskViewModelBuilder(
+            RiskStats(current_daily=current, past_daily=past)
+        ).get_cards(),
         _("Weeks over guideline"),
     )
 
@@ -171,7 +175,9 @@ def test_count_card_worsening():
     past = [_row(date(2025, 1, 6), 15)]
 
     card = _card(
-        RiskBuilder(RiskStats(current_daily=current, past_daily=past)).get_cards(),
+        RiskViewModelBuilder(
+            RiskStats(current_daily=current, past_daily=past)
+        ).get_cards(),
         _("Weeks over guideline"),
     )
 
@@ -182,7 +188,7 @@ def test_count_card_worsening():
 def test_count_card_neutral_without_past():
     stats = RiskStats(current_daily=[_row(date(2026, 1, 5), 15)])
 
-    card = _card(RiskBuilder(stats).get_cards(), _("Weeks over guideline"))
+    card = _card(RiskViewModelBuilder(stats).get_cards(), _("Weeks over guideline"))
 
     assert card.state == "neutral"
     assert card.show_icon is False
@@ -198,7 +204,9 @@ def test_heavy_days_explanation_holds_threshold_and_comparison():
     past = [_row(date(2025, 1, 1), 7), _row(date(2025, 2, 1), 8)]
 
     card = _card(
-        RiskBuilder(RiskStats(current_daily=current, past_daily=past)).get_cards(),
+        RiskViewModelBuilder(
+            RiskStats(current_daily=current, past_daily=past)
+        ).get_cards(),
         _("Heavy days"),
     )
 
@@ -219,7 +227,7 @@ def test_heavy_days_explanation_holds_threshold_and_comparison():
 def test_weeks_over_explanation_holds_guideline():
     stats = RiskStats(current_daily=[_row(date(2026, 1, 5), 15)])
 
-    card = _card(RiskBuilder(stats).get_cards(), _("Weeks over guideline"))
+    card = _card(RiskViewModelBuilder(stats).get_cards(), _("Weeks over guideline"))
 
     # no prior year -> explanation is the definition only (no comparison sentence)
     assert card.note == _("No prior year")
@@ -232,7 +240,7 @@ def test_weeks_over_explanation_holds_guideline():
 @time_machine.travel("2026-06-01")
 def test_zone_cards_have_no_explanation():
     # This week / Worst week are levels, not comparisons -> no collapsible
-    cards = RiskBuilder(
+    cards = RiskViewModelBuilder(
         RiskStats(current_daily=[_row(date(2026, 1, 5), 5)])
     ).get_cards()
 
@@ -266,7 +274,7 @@ def test_load_service_returns_cards_and_charts(main_user):
 
     assert set(result) == {"cards", "chart_weekly", "chart_heavy"}
     assert len(result["cards"]) == 4
-    assert isinstance(result["chart_weekly"], RiskWeeklyChartViewModel)
+    assert isinstance(result["chart_weekly"], WeeklyRiskChartViewModel)
 
 
 @time_machine.travel("2026-03-01")
