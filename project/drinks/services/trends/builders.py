@@ -32,9 +32,9 @@ class TrendsBuilder:
 
     def chart_trend(self) -> TrendChartViewModel:
         return TrendChartViewModel(
-            categories=self._stats.categories,
-            rolling_7=[round(v) for v in self._stats.rolling(7)],
-            rolling_30=[round(v) for v in self._stats.rolling(30)],
+            categories=self._stats.date_labels,
+            rolling_7=[round(v) for v in self._stats.calculate_rolling_average(7)],
+            rolling_30=[round(v) for v in self._stats.calculate_rolling_average(30)],
             target=self._target or None,
             text={
                 "r7": _("7-day average"),
@@ -45,13 +45,19 @@ class TrendsBuilder:
 
     def trend_items(self) -> list[TrendItemViewModel]:
         return [
-            TrendItemViewModel(_("Trend (2 weeks)"), self._stats.period(14)),
-            TrendItemViewModel(_("Trend (month)"), self._stats.period(30)),
-            TrendItemViewModel(_("Trend (90 days)"), self._stats.period(90)),
+            TrendItemViewModel(
+                _("Trend (2 weeks)"), self._stats.compare_recent_period(14)
+            ),
+            TrendItemViewModel(
+                _("Trend (month)"), self._stats.compare_recent_period(30)
+            ),
+            TrendItemViewModel(
+                _("Trend (90 days)"), self._stats.compare_recent_period(90)
+            ),
         ]
 
     def trend_ytd(self) -> YtdStats:
-        return self._stats.ytd()
+        return self._stats.compare_year_to_date()
 
     def trend_projection(self) -> ProjectionStats:
-        return self._stats.projection()
+        return self._stats.calculate_projection()
