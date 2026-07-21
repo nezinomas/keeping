@@ -85,6 +85,14 @@ def test_weekly_series_for_past_year_spans_to_dec_31():
     assert series[-1].label == "2025-12-29"
 
 
+def test_week_mondays_generator():
+    start = date(2026, 1, 5)
+    end = date(2026, 1, 19)
+    mondays = list(RiskStats._week_mondays(start, end))
+
+    assert mondays == [date(2026, 1, 5), date(2026, 1, 12), date(2026, 1, 19)]
+
+
 # -------------------------------------------------------------------------------------
 #                                                                       current_week
 # -------------------------------------------------------------------------------------

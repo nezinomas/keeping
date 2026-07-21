@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -96,11 +97,11 @@ class RiskStats:
 
     @staticmethod
     def _aggregate_weekly_units(records: Iterable[DataRow]) -> dict[date, float]:
-        weekly_units: dict[date, float] = {}
+        weekly_units: dict[date, float] = defaultdict(float)
         for row in records:
             monday = RiskStats._week_start(row.date)
-            weekly_units[monday] = weekly_units.get(monday, 0.0) + row.stdav
-        return weekly_units
+            weekly_units[monday] += row.stdav
+        return dict(weekly_units)
 
     @staticmethod
     def _classify_risk_band(weekly_stdav: float) -> str:
@@ -132,32 +133,41 @@ class RiskStats:
     def _past_clipped_weekly_units(self) -> dict[date, float]:
         return self._aggregate_weekly_units(self._past_clipped_records)
 
+    @staticmethod
+    def _week_mondays(start_monday: date, end_monday: date):
+        current = start_monday
+        while current <= end_monday:
+            yield current
+            current += timedelta(days=7)
+
     def weekly_series(self) -> list[WeeklySeriesPoint]:
         """Dense weekly totals from the first week of the year to the current week."""
-        monday = self._week_start(date(self.current_year, 1, 1))
+        first_monday = self._week_start(date(self.current_year, 1, 1))
         last_monday = self._week_start(self._year_end_date)
         units_by_week = self._current_weekly_units
 
-        series = []
-        while monday <= last_monday:
-            series.append(
-                WeeklySeriesPoint(
-                    label=monday.isoformat(),
-                    end=self._week_end(monday).isoformat(),
-                    stdav=round(units_by_week.get(monday, 0.0), 1),
-                )
+        return [
+            WeeklySeriesPoint(
+                label=monday.isoformat(),
+                end=self._week_end(monday).isoformat(),
+                stdav=round(units_by_week.get(monday, 0.0), 1),
             )
-            monday += timedelta(days=7)
-        return series
+            for monday in self._week_mondays(first_monday, last_monday)
+        ]
 
-    def current_week(self) -> WeeklyRiskZone:
-        monday = self._week_start(self._year_end_date)
-        stdav = round(self._current_weekly_units.get(monday, 0.0), 1)
+    def _make_weekly_risk_zone(self, monday: date, raw_stdav: float) -> WeeklyRiskZone:
+        stdav = round(raw_stdav, 1)
         return WeeklyRiskZone(
             stdav=stdav,
             state=self._classify_risk_band(stdav),
             label=monday.isoformat(),
             end=self._week_end(monday).isoformat(),
+        )
+
+    def current_week(self) -> WeeklyRiskZone:
+        monday = self._week_start(self._year_end_date)
+        return self._make_weekly_risk_zone(
+            monday, self._current_weekly_units.get(monday, 0.0)
         )
 
     def worst_week(self) -> WeeklyRiskZone | EmptyWeeklyRiskZone:
@@ -166,13 +176,7 @@ class RiskStats:
             return EmptyWeeklyRiskZone()
 
         monday, raw_stdav = max(weekly_units.items(), key=lambda item: item[1])
-        stdav = round(raw_stdav, 1)
-        return WeeklyRiskZone(
-            stdav=stdav,
-            state=self._classify_risk_band(stdav),
-            label=monday.isoformat(),
-            end=self._week_end(monday).isoformat(),
-        )
+        return self._make_weekly_risk_zone(monday, raw_stdav)
 
     def _compare_year_over_year(
         self, current: int, previous: int
