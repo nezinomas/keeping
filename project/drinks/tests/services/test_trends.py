@@ -2,24 +2,18 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.utils.translation import gettext as _
 
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DataRow
 from ...lib.drinks_trend import (
-    EmptyRecentPeriodComparison,
-    EmptyYearEndProjection,
-    EmptyYearToDateComparison,
-    RecentPeriodComparison,
     TrendStats,
-    YearEndProjection,
-    YearToDateComparison,
 )
 from ...services.trends.builders import (
     TrendCardViewModel,
     TrendChartViewModel,
     TrendsBuilder,
 )
-from django.utils.translation import gettext as _
 from ...services.trends.providers import TrendsDataProvider
 from ..factories import DrinkFactory, DrinkTargetFactory
 

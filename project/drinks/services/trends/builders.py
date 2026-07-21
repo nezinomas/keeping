@@ -4,12 +4,8 @@ from django.utils.translation import gettext as _
 
 from ...lib.drinks_trend import (
     EmptyRecentPeriodComparison,
-    EmptyYearEndProjection,
-    EmptyYearToDateComparison,
     RecentPeriodComparison,
     TrendStats,
-    YearEndProjection,
-    YearToDateComparison,
 )
 
 
@@ -89,7 +85,10 @@ class TrendsBuilder:
             else f"{stats.current_period_average:.1f}"
         )
 
-        note = f"{stats.current_period_average:.1f} / {stats.previous_period_average:.1f} Std Av"
+        note = (
+            f"{stats.current_period_average:.1f} / "
+            f"{stats.previous_period_average:.1f} Std Av"
+        )
 
         return TrendCardViewModel(
             title=title,
@@ -119,7 +118,10 @@ class TrendsBuilder:
             state=state,
             show_icon=True,
             value=f"{stats.percentage_change:.1f}%",
-            note=f"{stats.current_year_average:.1f} / {stats.previous_year_average:.1f} Std Av",
+            note=(
+                f"{stats.current_year_average:.1f} / "
+                f"{stats.previous_year_average:.1f} Std Av"
+            ),
         )
 
     def _build_projection_card(self) -> TrendCardViewModel:
@@ -142,5 +144,8 @@ class TrendsBuilder:
             state=state,
             show_icon=False,
             value=f"{stats.projected_volume_liters:.1f} L",
-            note=f"{_('Limit')}: {stats.target_volume_liters:.1f} L &middot; {stats.percentage_difference:.1f}%",
+            note=(
+                f"{_('Limit')}: {stats.target_volume_liters:.1f} L &middot; "
+                f"{stats.percentage_difference:.1f}%"
+            ),
         )
