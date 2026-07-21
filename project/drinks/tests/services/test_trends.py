@@ -64,8 +64,9 @@ def test_chart_cumulative_view_model(converter):
         converter,
         current_daily=[_row(date(2026, 1, 1), 5)],
         past_daily=[_row(date(2025, 1, 1), 2)],
+        target=1000,
     )
-    builder = TrendsBuilder(stats, target=365)
+    builder = TrendsBuilder(stats, target=1000)
 
     actual = builder.chart_cumulative()
 
@@ -74,10 +75,10 @@ def test_chart_cumulative_view_model(converter):
     assert len(actual.this_year) == 5
     assert len(actual.last_year) == 365
     assert len(actual.target) == 365
-    assert (
-        actual.this_year[0] == 1000
-    )  # 5 std av * 200 ml (assuming beer is 200ml/stdav wait, beer is 500ml 5% = 25ml ethanol. 1 std av = 10ml ethanol, so 200ml beer. 5 * 200 = 1000)
-    assert actual.last_year[0] == 400
+    # series are cumulative litres (ml / 1000), scaled by the selected drink type
+    assert actual.this_year[0] == 1.0  # 5 std av * 200 ml beer = 1000 ml = 1.0 L
+    assert actual.last_year[0] == 0.4  # 2 std av * 200 ml beer = 400 ml = 0.4 L
+    assert actual.target[0] == 1.0  # 1000 ml/day target = 1.0 L cumulative on day 1
     assert set(actual.text) == {"this_year", "last_year", "target"}
 
 

@@ -64,11 +64,15 @@ class TrendsBuilder:
         )
 
     def chart_cumulative(self) -> TrendCumulativeViewModel:
+        # cumulative ml over a year balloons into the hundreds of thousands, so
+        # present the running total in litres (matching the year-end forecast card)
         return TrendCumulativeViewModel(
             categories=self._stats.cumulative_categories,
-            this_year=[round(v) for v in self._stats.cumulative_current_year_ml],
-            last_year=[round(v) for v in self._stats.cumulative_past_year_ml],
-            target=[round(v) for v in self._stats.cumulative_target_ml],
+            this_year=[
+                round(v / 1000, 1) for v in self._stats.cumulative_current_year_ml
+            ],
+            last_year=[round(v / 1000, 1) for v in self._stats.cumulative_past_year_ml],
+            target=[round(v / 1000, 1) for v in self._stats.cumulative_target_ml],
             text={
                 "this_year": _("This year"),
                 "last_year": _("Last year"),

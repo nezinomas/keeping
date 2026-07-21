@@ -27,7 +27,7 @@ function chartDrinksCumulative(idData, idContainer) {
         },
         tooltip: {
             shared: true,
-            pointFormat: "{series.name}: <b>{point.y:,.0f} ml</b><br>"
+            pointFormat: "{series.name}: <b>{point.y:,.1f} L</b><br>"
         },
         series: [{
             type: "spline",
