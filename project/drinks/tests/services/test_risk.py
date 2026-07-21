@@ -70,7 +70,8 @@ def test_chart_heavy_days_view_model():
     assert len(vm.categories) == 12
     assert len(vm.data) == 12
     assert vm.data[0] == 1
-    assert set(vm.text) == {"title", "unit", "heavy"}
+    assert vm.heavy_threshold == 6.0
+    assert set(vm.text) == {"title", "unit", "heavy", "threshold_label"}
 
 
 @time_machine.travel("2026-12-31")
@@ -82,6 +83,7 @@ def test_chart_heavy_days_as_dict_is_json_serializable():
 
     assert serialized["data"][0] == 1
     assert len(serialized["categories"]) == 12
+    assert serialized["heavy_threshold"] == 6.0
 
 
 # -------------------------------------------------------------------------------------
@@ -143,12 +145,13 @@ def test_worst_week_card_high():
 
 @time_machine.travel("2026-06-01")
 def test_count_card_improving():
-    current = [_row(date(2026, 1, 1), 7)]
-    past = [_row(date(2025, 1, 1), 7), _row(date(2025, 2, 1), 8)]
+    # weeks over the 11.2 std av guideline: 1 this year vs 2 last year
+    current = [_row(date(2026, 1, 5), 15)]
+    past = [_row(date(2025, 1, 6), 15), _row(date(2025, 2, 3), 20)]
 
     card = _card(
         RiskBuilder(RiskStats(current_daily=current, past_daily=past)).get_cards(),
-        _("Heavy days"),
+        _("Weeks over guideline"),
     )
 
     assert card.state == "improving"
@@ -159,12 +162,12 @@ def test_count_card_improving():
 
 @time_machine.travel("2026-06-01")
 def test_count_card_worsening():
-    current = [_row(date(2026, 1, 1), 7), _row(date(2026, 2, 1), 8)]
-    past = [_row(date(2025, 1, 1), 7)]
+    current = [_row(date(2026, 1, 5), 15), _row(date(2026, 2, 2), 20)]
+    past = [_row(date(2025, 1, 6), 15)]
 
     card = _card(
         RiskBuilder(RiskStats(current_daily=current, past_daily=past)).get_cards(),
-        _("Heavy days"),
+        _("Weeks over guideline"),
     )
 
     assert card.state == "worsening"
@@ -172,13 +175,64 @@ def test_count_card_worsening():
 
 @time_machine.travel("2026-06-01")
 def test_count_card_neutral_without_past():
-    stats = RiskStats(current_daily=[_row(date(2026, 1, 1), 7)])
+    stats = RiskStats(current_daily=[_row(date(2026, 1, 5), 15)])
 
-    card = _card(RiskBuilder(stats).get_cards(), _("Heavy days"))
+    card = _card(RiskBuilder(stats).get_cards(), _("Weeks over guideline"))
 
     assert card.state == "neutral"
     assert card.show_icon is False
     assert card.value == "1"
+
+
+# -------------------------------------------------------------------------------------
+#                                                        count card explanation text
+# -------------------------------------------------------------------------------------
+@time_machine.travel("2026-06-01")
+def test_heavy_days_explanation_holds_threshold_and_comparison():
+    current = [_row(date(2026, 1, 1), 7)]
+    past = [_row(date(2025, 1, 1), 7), _row(date(2025, 2, 1), 8)]
+
+    card = _card(
+        RiskBuilder(RiskStats(current_daily=current, past_daily=past)).get_cards(),
+        _("Heavy days"),
+    )
+
+    # the descriptive text lives in the collapsible explanation, not the note
+    assert card.note == "1 / 2"
+    assert "6" in card.explanation
+    assert "Std Av" in card.explanation
+    expected = (
+        _("Days with more than %(threshold)s Std Av in a single day.")
+        % {"threshold": "6"}
+        + " "
+        + _("The two numbers are this year and last year, up to the same date.")
+    )
+    assert card.explanation == expected
+
+
+@time_machine.travel("2026-06-01")
+def test_weeks_over_explanation_holds_guideline():
+    stats = RiskStats(current_daily=[_row(date(2026, 1, 5), 15)])
+
+    card = _card(RiskBuilder(stats).get_cards(), _("Weeks over guideline"))
+
+    # no prior year -> explanation is the definition only (no comparison sentence)
+    assert card.note == _("No prior year")
+    assert "11.2" in card.explanation
+    assert card.explanation == _(
+        "Weeks whose total exceeds the low-risk guideline of %(threshold)s Std Av."
+    ) % {"threshold": "11.2"}
+
+
+@time_machine.travel("2026-06-01")
+def test_zone_cards_have_no_explanation():
+    # This week / Worst week are levels, not comparisons -> no collapsible
+    cards = RiskBuilder(
+        RiskStats(current_daily=[_row(date(2026, 1, 5), 5)])
+    ).get_cards()
+
+    assert _card(cards, _("This week")).explanation == ""
+    assert _card(cards, _("Worst week")).explanation == ""
 
 
 # -------------------------------------------------------------------------------------

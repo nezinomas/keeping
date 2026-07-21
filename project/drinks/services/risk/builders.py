@@ -4,6 +4,7 @@ from django.utils.translation import gettext as _
 
 from ....core.lib.translation import month_names
 from ...lib.drinks_risk import (
+    HEAVY_DAY_STDAV,
     WEEKLY_HIGH_RISK_STDAV,
     WEEKLY_LOW_RISK_STDAV,
     CountComparison,
@@ -19,6 +20,7 @@ class RiskCardViewModel:
     show_icon: bool
     value: str
     note: str
+    explanation: str = ""
 
 
 @dataclass(frozen=True)
@@ -39,6 +41,7 @@ class RiskWeeklyChartViewModel:
 class RiskHeavyChartViewModel:
     categories: list[str]
     data: list[int]
+    heavy_threshold: float
     text: dict[str, str]
 
     @property
@@ -69,10 +72,12 @@ class RiskBuilder:
         return RiskHeavyChartViewModel(
             categories=list(month_names().values()),
             data=self._stats.monthly_heavy_days(),
+            heavy_threshold=HEAVY_DAY_STDAV,
             text={
                 "title": _("Heavy days per month"),
                 "unit": _("Days"),
                 "heavy": _("Heavy days"),
+                "threshold_label": _("Heavy day"),
             },
         )
 
@@ -110,15 +115,24 @@ class RiskBuilder:
         )
 
     def _weeks_over_card(self) -> RiskCardViewModel:
+        definition = _(
+            "Weeks whose total exceeds the low-risk guideline of %(threshold)s Std Av."
+        ) % {"threshold": f"{WEEKLY_LOW_RISK_STDAV:.1f}"}
         return self._count_card(
-            _("Weeks over guideline"), self._stats.weeks_over_guideline()
+            _("Weeks over guideline"), self._stats.weeks_over_guideline(), definition
         )
 
     def _heavy_days_card(self) -> RiskCardViewModel:
-        return self._count_card(_("Heavy days"), self._stats.heavy_days())
+        definition = _("Days with more than %(threshold)s Std Av in a single day.") % {
+            "threshold": f"{HEAVY_DAY_STDAV:.0f}"
+        }
+        return self._count_card(_("Heavy days"), self._stats.heavy_days(), definition)
 
     def _count_card(
-        self, title: str, stats: CountComparison | EmptyCountComparison
+        self,
+        title: str,
+        stats: CountComparison | EmptyCountComparison,
+        definition: str,
     ) -> RiskCardViewModel:
         if not stats.has_past:
             return RiskCardViewModel(
@@ -127,9 +141,13 @@ class RiskBuilder:
                 show_icon=False,
                 value=str(stats.current),
                 note=_("No prior year"),
+                explanation=definition,
             )
 
         state = "improving" if stats.improving else "worsening"
+        comparison = _(
+            "The two numbers are this year and last year, up to the same date."
+        )
 
         return RiskCardViewModel(
             title=title,
@@ -137,4 +155,5 @@ class RiskBuilder:
             show_icon=True,
             value=str(stats.current),
             note=f"{stats.current} / {stats.previous}",
+            explanation=f"{definition} {comparison}",
         )
