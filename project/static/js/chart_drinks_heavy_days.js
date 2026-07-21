@@ -27,7 +27,7 @@ function chartDrinksHeavyDays(idData, idContainer) {
             allowDecimals: false,
         },
         tooltip: {
-            pointFormat: "<p>{series.name}: <b>{point.y}</b></p>"
+            pointFormat: "<span>{series.name}: <b>{point.y}</b></span><br/>"
         },
         series: [{
             name: chartData.text.heavy,

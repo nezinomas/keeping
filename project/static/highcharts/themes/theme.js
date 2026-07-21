@@ -87,7 +87,7 @@ Highcharts.theme = {
         style: {
             fontSize: "12px",
         },
-        headerFormat: '<p><span style="font-size: 12px; font-weight: bold;">{point.key}</span></p>',
+        headerFormat: '<span class="tooltip-header">{point.key}</span><br/>',
     },
     plotOptions:{
         candlestick: {
