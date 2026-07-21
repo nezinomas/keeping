@@ -119,6 +119,53 @@ class TrendStats:
         start = date(self.current_year, 1, 1)
         return [day.isoformat() for day in self._date_range(start, self._year_end_date)]
 
+    @cached_property
+    def cumulative_categories(self) -> list[str]:
+        start = date(self.current_year, 1, 1)
+        end = date(self.current_year, 12, 31)
+        return [day.strftime("%m-%d") for day in self._date_range(start, end)]
+
+    @cached_property
+    def cumulative_current_year_ml(self) -> list[float]:
+        by_yday = {
+            row.date.timetuple().tm_yday: row.stdav
+            for row in self._current_year_records
+        }
+        days_passed = self._year_end_date.timetuple().tm_yday
+        cum = 0.0
+        series = []
+        for i in range(1, days_passed + 1):
+            cum += self._converter.stdav_to_ml(by_yday.get(i, 0.0))
+            series.append(cum)
+        return series
+
+    @cached_property
+    def cumulative_past_year_ml(self) -> list[float]:
+        from ...core.lib.date import ydays
+
+        by_yday = {
+            row.date.timetuple().tm_yday: row.stdav for row in self._past_year_records
+        }
+        days = ydays(self.current_year)
+        cum = 0.0
+        series = []
+        for i in range(1, days + 1):
+            cum += self._converter.stdav_to_ml(by_yday.get(i, 0.0))
+            series.append(cum)
+        return series
+
+    @cached_property
+    def cumulative_target_ml(self) -> list[float]:
+        from ...core.lib.date import ydays
+
+        days = ydays(self.current_year)
+        if not self._target:
+            return [0.0] * days
+
+        target_ml = self._target * days
+        daily_pace = target_ml / days
+        return [daily_pace * i for i in range(1, days + 1)]
+
     def calculate_rolling_average(self, window: int) -> list[float]:
         """Trailing mean in ml/day, aligned to ``date_labels``.
 

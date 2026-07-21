@@ -59,6 +59,29 @@ def test_chart_trend_target_is_zero(converter):
 
 
 @time_machine.travel("2026-01-05")
+def test_chart_cumulative_view_model(converter):
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 1), 5)],
+        past_daily=[_row(date(2025, 1, 1), 2)],
+    )
+    builder = TrendsBuilder(stats, target=365)
+
+    actual = builder.chart_cumulative()
+
+    assert actual.categories[0] == "01-01"
+    assert len(actual.categories) == 365
+    assert len(actual.this_year) == 5
+    assert len(actual.last_year) == 365
+    assert len(actual.target) == 365
+    assert (
+        actual.this_year[0] == 1000
+    )  # 5 std av * 200 ml (assuming beer is 200ml/stdav wait, beer is 500ml 5% = 25ml ethanol. 1 std av = 10ml ethanol, so 200ml beer. 5 * 200 = 1000)
+    assert actual.last_year[0] == 400
+    assert set(actual.text) == {"this_year", "last_year", "target"}
+
+
+@time_machine.travel("2026-01-05")
 def test_chart_trend_as_dict_is_json_serializable(converter):
     stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 5)])
 

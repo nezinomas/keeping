@@ -25,5 +25,6 @@ def load_service(user, year: int) -> dict:
 
     return {
         "chart_trend": builder.chart_trend(),
+        "chart_cumulative": builder.chart_cumulative(),
         "cards": builder.get_cards(),
     }
