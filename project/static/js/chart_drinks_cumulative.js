@@ -60,9 +60,8 @@ function chartDrinksCumulative(idData, idContainer) {
             type: "spline",
             name: chartData.text.target,
             data: chartData.target,
-            color: "#333",
+            color: "#000",
             lineWidth: 2,
-            dashStyle: 'Dash',
             marker: {
                 enabled: false
             }
