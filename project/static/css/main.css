@@ -408,6 +408,7 @@ video {
 }
 
 .trend-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.1875rem;
@@ -440,14 +441,19 @@ video {
   color: #6c757d;
 }
 .trend-card__info {
-  margin-top: 0.1875rem;
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
   padding: 0;
   border: none;
   background: none;
-  font-size: 0.8em;
-  color: hsl(206, 100%, 26%);
-  text-decoration: underline;
+  font-size: 1rem;
+  line-height: 1;
+  color: #6c757d;
   cursor: pointer;
+}
+.trend-card__info:hover {
+  color: hsl(206, 100%, 26%);
 }
 .trend-card__explanation {
   margin-top: 0.1875rem;
@@ -1993,6 +1999,10 @@ input.year-picker {
 
 .bi-record-circle::before {
   content: "\f518";
+}
+
+.bi-info-circle::before {
+  content: "\f431";
 }
 
 @font-face {

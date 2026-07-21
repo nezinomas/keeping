@@ -66,11 +66,11 @@ def test_index_links(client_logged):
     assert res[2][1] == reverse("drinks:tab_risk")
     assert res[2][2] == "Rizikos"
 
-    assert res[3][1] == reverse("drinks:tab_data")
-    assert res[3][2] == "Duomenys"
+    assert res[3][1] == reverse("drinks:tab_history")
+    assert res[3][2] == "Istorija"
 
-    assert res[4][1] == reverse("drinks:tab_history")
-    assert res[4][2] == "Istorija"
+    assert res[4][1] == reverse("drinks:tab_data")
+    assert res[4][2] == "Duomenys"
 
 
 def test_index_context(client_logged):
@@ -379,8 +379,9 @@ def test_tab_risk_renders_collapsible_explanation(client_logged):
     content = response.content.decode()
 
     assert response.status_code == 200
-    # the explanation is an Alpine open/close disclosure, hidden by default
-    assert 'class="trend-card__info"' in content
+    # the toggle is an info icon; the explanation is an Alpine open/close
+    # disclosure, hidden by default
+    assert "trend-card__info bi bi-info-circle" in content
     assert 'class="trend-card__explanation" x-show="open"' in content
 
 

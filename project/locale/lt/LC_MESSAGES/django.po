@@ -1952,10 +1952,6 @@ msgstr "Du skaičiai – šie ir praėję metai iki tos pačios dienos."
 msgid "What does this mean?"
 msgstr "Ką tai reiškia?"
 
-#: .\project\drinks\templates\drinks\includes\risk_summary.html
-msgid "Hide"
-msgstr "Slėpti"
-
 #: .\project\drinks\services\risk\builders.py
 msgid "This week"
 msgstr "Ši savaitė"

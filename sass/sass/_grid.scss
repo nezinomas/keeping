@@ -235,6 +235,7 @@
 
 // Trend summary cards
 .trend-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: calc($gap / 4);
@@ -273,14 +274,20 @@
     }
 
     &__info {
-        margin-top: calc($gap / 4);
+        position: absolute;
+        top: calc($gap / 2);
+        right: calc($gap / 2);
         padding: 0;
         border: none;
         background: none;
-        font-size: 0.8em;
-        color: $primary;
-        text-decoration: underline;
+        font-size: 1rem;
+        line-height: 1;
+        color: $text-muted;
         cursor: pointer;
+
+        &:hover {
+            color: $primary;
+        }
     }
 
     &__explanation {
