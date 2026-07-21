@@ -1903,3 +1903,47 @@ msgstr "Tendencija (2 savaitės)"
 #: .\project\drinks\services\trends\builders.py:48
 msgid "Trend (month)"
 msgstr "Tendencija (mėnuo)"
+
+#: .\project\drinks\templates\drinks\includes\navbar.html:22
+msgid "Risk"
+msgstr "Rizika"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Weekly units with risk bands"
+msgstr "Savaitiniai vienetai su rizikos zonomis"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Weekly units"
+msgstr "Savaitiniai vienetai"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Low-risk guideline"
+msgstr "Mažos rizikos riba"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Heavy days per month"
+msgstr "Sunkios dienos per mėnesį"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Days"
+msgstr "Dienos"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Heavy days"
+msgstr "Sunkios dienos"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "This week"
+msgstr "Ši savaitė"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Worst week"
+msgstr "Blogiausia savaitė"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Week of"
+msgstr "Savaitė nuo"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Weeks over guideline"
+msgstr "Savaitės virš ribos"
