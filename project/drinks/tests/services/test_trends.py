@@ -6,6 +6,9 @@ import time_machine
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DataRow
 from ...lib.drinks_trend import (
+    EmptyRecentPeriodComparison,
+    EmptyYearEndProjection,
+    EmptyYearToDateComparison,
     RecentPeriodComparison,
     TrendStats,
     YearEndProjection,
@@ -81,8 +84,12 @@ def test_builder_passes_through_stats(converter):
     )
     builder = TrendsBuilder(stats, target=100)
 
-    assert isinstance(builder.trend_ytd(), YearToDateComparison)
-    assert isinstance(builder.trend_projection(), YearEndProjection)
+    assert isinstance(
+        builder.trend_ytd(), (YearToDateComparison, EmptyYearToDateComparison)
+    )
+    assert isinstance(
+        builder.trend_projection(), (YearEndProjection, EmptyYearEndProjection)
+    )
 
 
 @time_machine.travel("2026-03-01")
@@ -93,7 +100,10 @@ def test_trend_items_cover_three_windows(converter):
 
     assert len(items) == 3
     assert all(isinstance(i, TrendItemViewModel) for i in items)
-    assert all(isinstance(i.stats, RecentPeriodComparison) for i in items)
+    assert all(
+        isinstance(i.stats, (RecentPeriodComparison, EmptyRecentPeriodComparison))
+        for i in items
+    )
     assert [i.title for i in items] == [
         "Tendencija (2 savaitės)",
         "Tendencija (mėnuo)",

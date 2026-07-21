@@ -14,7 +14,16 @@ class RecentPeriodComparison:
     # magnitude of the change, 0.0 when there is no prior baseline
     percentage_change: float
     improving: bool
-    has_data: bool
+    has_data: bool = True
+
+
+@dataclass(frozen=True)
+class EmptyRecentPeriodComparison:
+    current_period_average: float = 0.0
+    previous_period_average: float = 0.0
+    percentage_change: float = 0.0
+    improving: bool = False
+    has_data: bool = False
 
 
 @dataclass(frozen=True)
@@ -23,7 +32,16 @@ class YearToDateComparison:
     previous_year_average: float  # std av consumed to the same day-of-year last period
     percentage_change: float
     improving: bool
-    has_past: bool
+    has_past: bool = True
+
+
+@dataclass(frozen=True)
+class EmptyYearToDateComparison:
+    current_year_average: float
+    previous_year_average: float = 0.0
+    percentage_change: float = 0.0
+    improving: bool = False
+    has_past: bool = False
 
 
 @dataclass(frozen=True)
@@ -34,7 +52,16 @@ class YearEndProjection:
     target_volume_liters: float
     percentage_difference: float  # % over (+) or under (-) the yearly target
     over: bool
-    has_target: bool
+    has_target: bool = True
+
+
+@dataclass(frozen=True)
+class EmptyYearEndProjection:
+    projected_volume_liters: float
+    target_volume_liters: float = 0.0
+    percentage_difference: float = 0.0
+    over: bool = False
+    has_target: bool = False
 
 
 class TrendStats:
@@ -113,7 +140,9 @@ class TrendStats:
             for i in range(window - 1, len(series))
         ]
 
-    def compare_recent_period(self, days: int) -> RecentPeriodComparison:
+    def compare_recent_period(
+        self, days: int
+    ) -> RecentPeriodComparison | EmptyRecentPeriodComparison:
         """Most recent ``days`` vs the equal-length window right before it."""
         end = self._year_end_date
         current_start = end - timedelta(days=days)
@@ -126,26 +155,21 @@ class TrendStats:
         )
 
         if not recent_avg and not previous_avg:
-            return RecentPeriodComparison(
-                0.0, 0.0, 0.0, improving=False, has_data=False
-            )
+            return EmptyRecentPeriodComparison()
 
         return RecentPeriodComparison(
             round(recent_avg, 1),
             round(previous_avg, 1),
             self._calculate_pct(recent_avg, previous_avg),
             improving=recent_avg < previous_avg,
-            has_data=True,
         )
 
-    def compare_year_to_date(self) -> YearToDateComparison:
+    def compare_year_to_date(self) -> YearToDateComparison | EmptyYearToDateComparison:
         day_of_year = self._year_end_date.timetuple().tm_yday
         current = self._sum_stdav(self._current_year_records, day_of_year)
 
         if not self._past_year_records:
-            return YearToDateComparison(
-                current, 0.0, 0.0, improving=False, has_past=False
-            )
+            return EmptyYearToDateComparison(current)
 
         past = self._sum_stdav(self._past_year_records, day_of_year)
 
@@ -154,24 +178,20 @@ class TrendStats:
             past,
             self._calculate_pct(current, past),
             improving=current < past,
-            has_past=True,
         )
 
-    def calculate_projection(self) -> YearEndProjection:
+    def calculate_projection(self) -> YearEndProjection | EmptyYearEndProjection:
         days_passed = len(self.daily_volume_ml)
         pace = sum(self.daily_volume_ml) / days_passed if days_passed else 0.0  # ml/day
         projected_ml = pace * ydays(self.current_year)
         projected_l = round(projected_ml / 1000, 1)
 
         if not self._target:
-            return YearEndProjection(
-                projected_l, 0.0, 0.0, over=False, has_target=False
-            )
+            return EmptyYearEndProjection(projected_l)
 
         target_ml = self._target * ydays(self.current_year)
-        if not target_ml:
-            pct = 0.0
-        else:
+        pct = 0.0
+        if target_ml:
             pct = round((projected_ml - target_ml) / target_ml * 100, 1)
 
         return YearEndProjection(
@@ -179,7 +199,6 @@ class TrendStats:
             round(target_ml / 1000, 1),
             pct,
             over=projected_ml > target_ml,
-            has_target=True,
         )
 
     @cached_property

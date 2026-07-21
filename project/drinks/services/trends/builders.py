@@ -3,6 +3,9 @@ from dataclasses import asdict, dataclass
 from django.utils.translation import gettext as _
 
 from ...lib.drinks_trend import (
+    EmptyRecentPeriodComparison,
+    EmptyYearEndProjection,
+    EmptyYearToDateComparison,
     RecentPeriodComparison,
     TrendStats,
     YearEndProjection,
@@ -27,7 +30,7 @@ class TrendChartViewModel:
 @dataclass(frozen=True)
 class TrendItemViewModel:
     title: str
-    stats: RecentPeriodComparison
+    stats: RecentPeriodComparison | EmptyRecentPeriodComparison
 
 
 class TrendsBuilder:
@@ -61,8 +64,8 @@ class TrendsBuilder:
             ),
         ]
 
-    def trend_ytd(self) -> YearToDateComparison:
+    def trend_ytd(self) -> YearToDateComparison | EmptyYearToDateComparison:
         return self._stats.compare_year_to_date()
 
-    def trend_projection(self) -> YearEndProjection:
+    def trend_projection(self) -> YearEndProjection | EmptyYearEndProjection:
         return self._stats.calculate_projection()
