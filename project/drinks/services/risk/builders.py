@@ -1,0 +1,140 @@
+from dataclasses import asdict, dataclass
+
+from django.utils.translation import gettext as _
+
+from ....core.lib.translation import month_names
+from ...lib.drinks_risk import (
+    WEEKLY_HIGH_RISK_STDAV,
+    WEEKLY_LOW_RISK_STDAV,
+    CountComparison,
+    EmptyCountComparison,
+    RiskStats,
+)
+
+
+@dataclass(frozen=True)
+class RiskCardViewModel:
+    title: str
+    state: str  # "empty", "neutral", "low", "high", "improving", "worsening"
+    show_icon: bool
+    value: str
+    note: str
+
+
+@dataclass(frozen=True)
+class RiskWeeklyChartViewModel:
+    categories: list[str]
+    data: list[float]
+    low_risk: float
+    high_risk: float
+    text: dict[str, str]
+
+    @property
+    def as_dict(self) -> dict:
+        """Bridges the gap between strict DTOs and Django's json_script"""
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class RiskHeavyChartViewModel:
+    categories: list[str]
+    data: list[int]
+    text: dict[str, str]
+
+    @property
+    def as_dict(self) -> dict:
+        return asdict(self)
+
+
+class RiskBuilder:
+    def __init__(self, drink_stats: RiskStats):
+        self._stats = drink_stats
+
+    def chart_weekly(self) -> RiskWeeklyChartViewModel:
+        series = self._stats.weekly_series()
+        return RiskWeeklyChartViewModel(
+            categories=[week.label for week in series],
+            data=[week.stdav for week in series],
+            low_risk=WEEKLY_LOW_RISK_STDAV,
+            high_risk=WEEKLY_HIGH_RISK_STDAV,
+            text={
+                "title": _("Weekly units with risk bands"),
+                "unit": "Std Av",
+                "weekly": _("Weekly units"),
+                "guideline": _("Low-risk guideline"),
+            },
+        )
+
+    def chart_heavy_days(self) -> RiskHeavyChartViewModel:
+        return RiskHeavyChartViewModel(
+            categories=list(month_names().values()),
+            data=self._stats.monthly_heavy_days(),
+            text={
+                "title": _("Heavy days per month"),
+                "unit": _("Days"),
+                "heavy": _("Heavy days"),
+            },
+        )
+
+    def get_cards(self) -> list[RiskCardViewModel]:
+        return [
+            self._current_week_card(),
+            self._worst_week_card(),
+            self._weeks_over_card(),
+            self._heavy_days_card(),
+        ]
+
+    def _current_week_card(self) -> RiskCardViewModel:
+        week = self._stats.current_week()
+        return RiskCardViewModel(
+            title=_("This week"),
+            state=week.state,
+            show_icon=False,
+            value=f"{week.stdav:.1f}",
+            note=f"{_('Low-risk guideline')}: {WEEKLY_LOW_RISK_STDAV:.1f} Std Av",
+        )
+
+    def _worst_week_card(self) -> RiskCardViewModel:
+        week = self._stats.worst_week()
+        title = _("Worst week")
+
+        if not week.has_data:
+            return RiskCardViewModel(title, "empty", False, "", _("No data"))
+
+        return RiskCardViewModel(
+            title=title,
+            state=week.state,
+            show_icon=False,
+            value=f"{week.stdav:.1f}",
+            note=f"{_('Week of')} {week.label}",
+        )
+
+    def _weeks_over_card(self) -> RiskCardViewModel:
+        return self._count_card(
+            _("Weeks over guideline"), self._stats.weeks_over_guideline()
+        )
+
+    def _heavy_days_card(self) -> RiskCardViewModel:
+        return self._count_card(_("Heavy days"), self._stats.heavy_days())
+
+    def _count_card(
+        self, title: str, stats: CountComparison | EmptyCountComparison
+    ) -> RiskCardViewModel:
+        if not stats.has_past:
+            return RiskCardViewModel(
+                title=title,
+                state="neutral",
+                show_icon=False,
+                value=str(stats.current),
+                note=_("No prior year"),
+            )
+
+        state = "improving" if stats.improving else "worsening"
+
+        return RiskCardViewModel(
+            title=title,
+            state=state,
+            show_icon=True,
+            value=str(stats.current),
+            note=f"{stats.current} / {stats.previous}",
+        )
