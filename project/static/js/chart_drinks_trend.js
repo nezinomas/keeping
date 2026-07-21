@@ -45,6 +45,7 @@ function chartTrend(idData, idContainer) {
         },
         tooltip: {
             shared: true,
+            borderColor: '#ccc',
             pointFormat: "<span style='color: {series.color}'>{series.name}: <b>{point.y:,.0f} ml</b></span><br>"
         },
         series: [{
