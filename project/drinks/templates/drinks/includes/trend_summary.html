@@ -1,46 +1,22 @@
 {% load i18n %}
 
-{% for item in trend_items %}
+{% for card in cards %}
 <div class="trend-card">
-    <div class="trend-card__label">{{ item.title }}</div>
-    {% with s=item.stats %}
-    {% if s.has_data %}
-    {% if s.improving %}
-    <div class="trend-card__value positive">&darr;{% if s.previous_period_average %} {{ s.percentage_change|floatformat:1 }}%{% else %} {{ s.current_period_average|floatformat:1 }}{% endif %}</div>
-    {% else %}
-    <div class="trend-card__value negative">&uarr;{% if s.previous_period_average %} {{ s.percentage_change|floatformat:1 }}%{% else %} {{ s.current_period_average|floatformat:1 }}{% endif %}</div>
-    {% endif %}
-    <div class="trend-card__note">{{ s.current_period_average|floatformat:1 }} / {{ s.previous_period_average|floatformat:1 }} Std Av</div>
-    {% else %}
+    <div class="trend-card__label">{{ card.title }}</div>
+    
+    {% if card.state == 'empty' %}
     <div class="trend-card__value">&mdash;</div>
-    <div class="trend-card__note">{% translate 'No data' %}</div>
+    {% else %}
+    <div class="trend-card__value {% if card.state == 'improving' %}positive{% elif card.state == 'worsening' %}negative{% endif %}">
+        {% if card.show_icon %}
+            {% if card.state == 'improving' %}&darr;{% else %}&uarr;{% endif %}
+        {% endif %}
+        {{ card.value }}
+    </div>
     {% endif %}
-    {% endwith %}
+
+    <div class="trend-card__note">{{ card.note|safe }}</div>
 </div>
 {% endfor %}
 
-<div class="trend-card">
-    <div class="trend-card__label">{% translate 'This year vs last (to date)' %}</div>
-    {% if trend_ytd.has_past %}
-    {% if trend_ytd.improving %}
-    <div class="trend-card__value positive">&darr; {{ trend_ytd.percentage_change|floatformat:1 }}%</div>
-    {% else %}
-    <div class="trend-card__value negative">&uarr; {{ trend_ytd.percentage_change|floatformat:1 }}%</div>
-    {% endif %}
-    <div class="trend-card__note">{{ trend_ytd.current_year_average|floatformat:1 }} / {{ trend_ytd.previous_year_average|floatformat:1 }} Std Av</div>
-    {% else %}
-    <div class="trend-card__value">{{ trend_ytd.current_year_average|floatformat:1 }}</div>
-    <div class="trend-card__note">Std Av &middot; {% translate 'No prior year' %}</div>
-    {% endif %}
-</div>
 
-<div class="trend-card">
-    <div class="trend-card__label">{% translate 'Year-end forecast' %}</div>
-    {% if trend_projection.has_target %}
-    <div class="trend-card__value {% if trend_projection.over %}negative{% else %}positive{% endif %}">{{ trend_projection.projected_volume_liters|floatformat:1 }} L</div>
-    <div class="trend-card__note">{% translate 'Limit' %}: {{ trend_projection.target_volume_liters|floatformat:1 }} L &middot; {{ trend_projection.percentage_difference|floatformat:1 }}%</div>
-    {% else %}
-    <div class="trend-card__value">{{ trend_projection.projected_volume_liters|floatformat:1 }} L</div>
-    <div class="trend-card__note">{% translate 'No limit set' %}</div>
-    {% endif %}
-</div>

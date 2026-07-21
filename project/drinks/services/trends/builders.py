@@ -28,9 +28,12 @@ class TrendChartViewModel:
 
 
 @dataclass(frozen=True)
-class TrendItemViewModel:
+class TrendCardViewModel:
     title: str
-    stats: RecentPeriodComparison | EmptyRecentPeriodComparison
+    state: str  # "empty", "neutral", "improving", "worsening"
+    show_icon: bool
+    value: str
+    note: str
 
 
 class TrendsBuilder:
@@ -51,21 +54,93 @@ class TrendsBuilder:
             },
         )
 
-    def trend_items(self) -> list[TrendItemViewModel]:
+    def get_cards(self) -> list[TrendCardViewModel]:
         return [
-            TrendItemViewModel(
+            self._build_period_card(
                 _("Trend (2 weeks)"), self._stats.compare_recent_period(14)
             ),
-            TrendItemViewModel(
+            self._build_period_card(
                 _("Trend (month)"), self._stats.compare_recent_period(30)
             ),
-            TrendItemViewModel(
+            self._build_period_card(
                 _("Trend (90 days)"), self._stats.compare_recent_period(90)
             ),
+            self._build_ytd_card(),
+            self._build_projection_card(),
         ]
 
-    def trend_ytd(self) -> YearToDateComparison | EmptyYearToDateComparison:
-        return self._stats.compare_year_to_date()
+    def _build_period_card(
+        self, title: str, stats: RecentPeriodComparison | EmptyRecentPeriodComparison
+    ) -> TrendCardViewModel:
+        if not stats.has_data:
+            return TrendCardViewModel(
+                title=title,
+                state="empty",
+                show_icon=False,
+                value="",
+                note=_("No data"),
+            )
 
-    def trend_projection(self) -> YearEndProjection | EmptyYearEndProjection:
-        return self._stats.calculate_projection()
+        state = "improving" if stats.improving else "worsening"
+
+        value = (
+            f"{stats.percentage_change:.1f}%"
+            if stats.previous_period_average
+            else f"{stats.current_period_average:.1f}"
+        )
+
+        note = f"{stats.current_period_average:.1f} / {stats.previous_period_average:.1f} Std Av"
+
+        return TrendCardViewModel(
+            title=title,
+            state=state,
+            show_icon=True,
+            value=value,
+            note=note,
+        )
+
+    def _build_ytd_card(self) -> TrendCardViewModel:
+        stats = self._stats.compare_year_to_date()
+        title = _("This year vs last (to date)")
+
+        if not stats.has_past:
+            return TrendCardViewModel(
+                title=title,
+                state="neutral",
+                show_icon=False,
+                value=f"{stats.current_year_average:.1f}",
+                note=f"Std Av &middot; {_('No prior year')}",
+            )
+
+        state = "improving" if stats.improving else "worsening"
+
+        return TrendCardViewModel(
+            title=title,
+            state=state,
+            show_icon=True,
+            value=f"{stats.percentage_change:.1f}%",
+            note=f"{stats.current_year_average:.1f} / {stats.previous_year_average:.1f} Std Av",
+        )
+
+    def _build_projection_card(self) -> TrendCardViewModel:
+        stats = self._stats.calculate_projection()
+        title = _("Year-end forecast")
+
+        if not stats.has_target:
+            return TrendCardViewModel(
+                title=title,
+                state="neutral",
+                show_icon=False,
+                value=f"{stats.projected_volume_liters:.1f} L",
+                note=_("No limit set"),
+            )
+
+        state = "worsening" if stats.over else "improving"
+
+        return TrendCardViewModel(
+            title=title,
+            state=state,
+            show_icon=False,
+            value=f"{stats.projected_volume_liters:.1f} L",
+            note=f"{_('Limit')}: {stats.target_volume_liters:.1f} L &middot; {stats.percentage_difference:.1f}%",
+        )

@@ -15,10 +15,11 @@ from ...lib.drinks_trend import (
     YearToDateComparison,
 )
 from ...services.trends.builders import (
+    TrendCardViewModel,
     TrendChartViewModel,
-    TrendItemViewModel,
     TrendsBuilder,
 )
+from django.utils.translation import gettext as _
 from ...services.trends.providers import TrendsDataProvider
 from ..factories import DrinkFactory, DrinkTargetFactory
 
@@ -75,39 +76,18 @@ def test_chart_trend_as_dict_is_json_serializable(converter):
 
 
 @time_machine.travel("2026-03-01")
-def test_builder_passes_through_stats(converter):
-    stats = TrendStats(
-        converter,
-        current_daily=[_row(date(2026, 1, 1), 10)],
-        past_daily=[_row(date(2025, 1, 1), 20)],
-        target=100,
-    )
-    builder = TrendsBuilder(stats, target=100)
-
-    assert isinstance(
-        builder.trend_ytd(), (YearToDateComparison, EmptyYearToDateComparison)
-    )
-    assert isinstance(
-        builder.trend_projection(), (YearEndProjection, EmptyYearEndProjection)
-    )
-
-
-@time_machine.travel("2026-03-01")
-def test_trend_items_cover_three_windows(converter):
+def test_builder_get_cards(converter):
     stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 10)])
+    cards = TrendsBuilder(stats).get_cards()
 
-    items = TrendsBuilder(stats).trend_items()
-
-    assert len(items) == 3
-    assert all(isinstance(i, TrendItemViewModel) for i in items)
-    assert all(
-        isinstance(i.stats, (RecentPeriodComparison, EmptyRecentPeriodComparison))
-        for i in items
-    )
-    assert [i.title for i in items] == [
-        "Tendencija (2 savaitės)",
-        "Tendencija (mėnuo)",
-        "Tendencija (90 dienų)",
+    assert len(cards) == 5
+    assert all(isinstance(c, TrendCardViewModel) for c in cards)
+    assert [c.title for c in cards] == [
+        _("Trend (2 weeks)"),
+        _("Trend (month)"),
+        _("Trend (90 days)"),
+        _("This year vs last (to date)"),
+        _("Year-end forecast"),
     ]
 
 
