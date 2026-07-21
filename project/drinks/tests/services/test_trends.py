@@ -47,12 +47,12 @@ def test_chart_trend_view_model(converter):
 
 
 @time_machine.travel("2026-01-05")
-def test_chart_trend_target_is_none_when_zero(converter):
+def test_chart_trend_target_is_zero(converter):
     stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 5)])
 
-    actual = TrendsBuilder(stats, target=0).chart_trend()
+    actual = TrendsBuilder(stats, target=0.0).chart_trend()
 
-    assert actual.target is None
+    assert actual.target == 0.0
 
 
 @time_machine.travel("2026-01-05")

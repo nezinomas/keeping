@@ -10,7 +10,7 @@ class TrendChartViewModel:
     categories: list[str]
     rolling_7: list[float]
     rolling_30: list[float]
-    target: float | None
+    target: float
     text: dict[str, str]
 
     @property
@@ -35,7 +35,7 @@ class TrendsBuilder:
             categories=self._stats.date_labels,
             rolling_7=[round(v) for v in self._stats.calculate_rolling_average(7)],
             rolling_30=[round(v) for v in self._stats.calculate_rolling_average(30)],
-            target=self._target or None,
+            target=self._target,
             text={
                 "r7": _("7-day average"),
                 "r30": _("30-day average"),

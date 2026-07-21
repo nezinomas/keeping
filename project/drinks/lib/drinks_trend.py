@@ -11,8 +11,8 @@ from .drinks_stats import DataRow
 class PeriodStats:
     recent_avg: float  # std av in the most recent window
     previous_avg: float  # std av in the equal-length window right before it
-    # magnitude of the change, None when there is no prior baseline
-    percentage_change: float | None
+    # magnitude of the change, 0.0 when there is no prior baseline
+    percentage_change: float
     improving: bool
     has_data: bool
 
@@ -21,7 +21,7 @@ class PeriodStats:
 class YtdStats:
     current_ytd_avg: float  # std av consumed year-to-date
     past_ytd_avg: float  # std av consumed to the same day-of-year last period
-    percentage_change: float | None
+    percentage_change: float
     improving: bool
     has_past: bool
 
@@ -30,7 +30,7 @@ class YtdStats:
 class ProjectionStats:
     projected_l: float  # projected volume by year-end at the current pace, litres
     target_l: float  # allowed volume for the whole year, litres
-    percentage_difference: float | None  # % over (+) or under (-) the yearly target
+    percentage_difference: float  # % over (+) or under (-) the yearly target
     over: bool
     has_target: bool
 
@@ -69,8 +69,10 @@ class TrendStats:
         return [start + timedelta(days=i) for i in range((end - start).days + 1)]
 
     @staticmethod
-    def _calculate_pct(current: float, past: float) -> float | None:
-        return round(abs(current - past) / past * 100, 1) if past else None
+    def _calculate_pct(current: float, past: float) -> float:
+        if not past:
+            return 0.0
+        return round(abs(current - past) / past * 100, 1)
 
     @cached_property
     def daily_volume_ml(self) -> list[float]:
@@ -122,7 +124,7 @@ class TrendStats:
         )
 
         if not recent_avg and not previous_avg:
-            return PeriodStats(0.0, 0.0, None, improving=False, has_data=False)
+            return PeriodStats(0.0, 0.0, 0.0, improving=False, has_data=False)
 
         return PeriodStats(
             round(recent_avg, 1),
@@ -137,7 +139,7 @@ class TrendStats:
         current = self._sum_stdav(self._current_year_records, day_of_year)
 
         if not self._past_year_records:
-            return YtdStats(current, 0.0, None, improving=False, has_past=False)
+            return YtdStats(current, 0.0, 0.0, improving=False, has_past=False)
 
         past = self._sum_stdav(self._past_year_records, day_of_year)
 
@@ -156,14 +158,13 @@ class TrendStats:
         projected_l = round(projected_ml / 1000, 1)
 
         if not self._target:
-            return ProjectionStats(projected_l, 0.0, None, over=False, has_target=False)
+            return ProjectionStats(projected_l, 0.0, 0.0, over=False, has_target=False)
 
         target_ml = self._target * ydays(self.current_year)
-        pct = (
-            round((projected_ml - target_ml) / target_ml * 100, 1)
-            if target_ml
-            else None
-        )
+        if not target_ml:
+            pct = 0.0
+        else:
+            pct = round((projected_ml - target_ml) / target_ml * 100, 1)
 
         return ProjectionStats(
             projected_l,

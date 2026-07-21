@@ -104,7 +104,7 @@ def test_period_without_prior_baseline(converter):
 
     assert p.recent_avg == 4
     assert p.previous_avg == 0.0
-    assert p.percentage_change is None
+    assert p.percentage_change == 0.0
     assert p.has_data is True
 
 
@@ -162,7 +162,7 @@ def test_ytd_without_past_data(converter):
 
     assert ytd.current_ytd_avg == 10
     assert ytd.has_past is False
-    assert ytd.percentage_change is None
+    assert ytd.percentage_change == 0.0
 
 
 # -------------------------------------------------------------------------------------
@@ -191,4 +191,4 @@ def test_projection_without_target(converter):
     projection = stats.calculate_projection()
 
     assert projection.has_target is False
-    assert projection.percentage_difference is None
+    assert projection.percentage_difference == 0.0
