@@ -7,10 +7,8 @@ from .providers import RiskDataProvider
 def load_service(user, year: int) -> dict:
     data = RiskDataProvider(user, year).get_data()
 
-    current_daily = (
-        [DataRow(**row) for row in data.current_daily] if data.current_daily else []
-    )
-    past_daily = [DataRow(**row) for row in data.past_daily] if data.past_daily else []
+    current_daily = [DataRow(**row) for row in data.current_daily]
+    past_daily = [DataRow(**row) for row in data.past_daily]
 
     stats = RiskStats(current_daily=current_daily, past_daily=past_daily)
     builder = RiskBuilder(drink_stats=stats)

@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
 from functools import cached_property
@@ -67,12 +67,12 @@ class RiskStats:
 
     def __init__(
         self,
-        current_daily: list[DataRow] | None = None,
-        past_daily: list[DataRow] | None = None,
+        current_daily: Sequence[DataRow] = (),
+        past_daily: Sequence[DataRow] = (),
         today: date | None = None,
     ):
-        self._current = current_daily or []
-        self._past = past_daily or []
+        self._current = current_daily
+        self._past = past_daily
         self._today = today or date.today()
         self.current_year = (
             self._current[0].date.year if self._current else self._today.year
@@ -103,16 +103,28 @@ class RiskStats:
     @staticmethod
     def _zone(weekly_stdav: float) -> str:
         """Classify an already-rounded (1 dp) weekly total into a risk band."""
-        state = "low"
-        if weekly_stdav > WEEKLY_LOW_RISK_STDAV:
-            state = "medium"
         if weekly_stdav > WEEKLY_HIGH_RISK_STDAV:
-            state = "high"
-        return state
+            return "high"
+        if weekly_stdav > WEEKLY_LOW_RISK_STDAV:
+            return "medium"
+        return "low"
 
     @cached_property
     def _current_buckets(self) -> dict[date, float]:
         return self._buckets(self._current)
+
+    @cached_property
+    def _clipped_past(self) -> list[DataRow]:
+        """Previous-year rows up to the same month/day as today, for a fair
+        comparison. Matching on (month, day) rather than the ordinal
+        day-of-year avoids misaligning the cutoff when the current and
+        previous years have different lengths (a leap year on either side)."""
+        cutoff = (self._year_end_date.month, self._year_end_date.day)
+        return [row for row in self._past if (row.date.month, row.date.day) <= cutoff]
+
+    @cached_property
+    def _clipped_past_buckets(self) -> dict[date, float]:
+        return self._buckets(self._clipped_past)
 
     def weekly_series(self) -> list[WeekPoint]:
         """Dense weekly totals from the first week of the year to the current week."""
@@ -156,21 +168,22 @@ class RiskStats:
             end=self._week_end(monday).isoformat(),
         )
 
-    def heavy_days(self) -> CountComparison | EmptyCountComparison:
-        current = self._count_heavy(self._current)
+    def _compare_counts(
+        self, current: int, previous: int
+    ) -> CountComparison | EmptyCountComparison:
         if not self._past:
             return EmptyCountComparison(current=current)
-
-        previous = self._count_heavy(self._clipped_past())
         return CountComparison(current, previous, improving=current < previous)
+
+    def heavy_days(self) -> CountComparison | EmptyCountComparison:
+        current = self._count_heavy(self._current)
+        previous = self._count_heavy(self._clipped_past)
+        return self._compare_counts(current, previous)
 
     def weeks_over_guideline(self) -> CountComparison | EmptyCountComparison:
         current = self._count_weeks_over(self._current_buckets)
-        if not self._past:
-            return EmptyCountComparison(current=current)
-
-        previous = self._count_weeks_over(self._buckets(self._clipped_past()))
-        return CountComparison(current, previous, improving=current < previous)
+        previous = self._count_weeks_over(self._clipped_past_buckets)
+        return self._compare_counts(current, previous)
 
     def monthly_heavy_days(self) -> list[int]:
         counts = [0] * 12
@@ -178,14 +191,6 @@ class RiskStats:
             if row.stdav > HEAVY_DAY_STDAV:
                 counts[row.date.month - 1] += 1
         return counts
-
-    def _clipped_past(self) -> list[DataRow]:
-        """Previous-year rows up to the same month/day as today, for a fair
-        comparison. Matching on (month, day) rather than the ordinal
-        day-of-year avoids misaligning the cutoff when the current and
-        previous years have different lengths (a leap year on either side)."""
-        cutoff = (self._year_end_date.month, self._year_end_date.day)
-        return [row for row in self._past if (row.date.month, row.date.day) <= cutoff]
 
     @staticmethod
     def _count_heavy(records: Iterable[DataRow]) -> int:
