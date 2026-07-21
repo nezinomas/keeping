@@ -17,6 +17,10 @@ function chartDrinksCumulative(idData, idContainer) {
             tickInterval: Math.ceil(chartData.categories.length / 12),
             labels: {
                 rotation: -45,
+                formatter: function () {
+                    // categories are full ISO dates; show only MM-DD on the axis
+                    return this.value.slice(5);
+                }
             }
         },
         yAxis: {
@@ -27,7 +31,10 @@ function chartDrinksCumulative(idData, idContainer) {
         },
         tooltip: {
             shared: true,
-            pointFormat: "{series.name}: <b>{point.y:,.1f} L</b><br>"
+            shadow: false,
+            borderColor: '#ccc',
+            headerFormat: '<span style="font-size: 12px; font-weight: bold;">{point.key}</span><br/>',
+            pointFormat: "<span style='color: {series.color}'>{series.name}: <b>{point.y:,.1f} L</b></span><br>"
         },
         series: [{
             type: "spline",

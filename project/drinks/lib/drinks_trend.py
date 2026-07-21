@@ -117,16 +117,13 @@ class TrendStats:
     @cached_property
     def date_labels(self) -> list[str]:
         start = date(self.current_year, 1, 1)
-        return [
-            day.strftime("%m-%d")
-            for day in self._date_range(start, self._year_end_date)
-        ]
+        return [day.isoformat() for day in self._date_range(start, self._year_end_date)]
 
     @cached_property
     def cumulative_categories(self) -> list[str]:
         start = date(self.current_year, 1, 1)
         end = date(self.current_year, 12, 31)
-        return [day.strftime("%m-%d") for day in self._date_range(start, end)]
+        return [day.isoformat() for day in self._date_range(start, end)]
 
     @cached_property
     def cumulative_current_year_ml(self) -> list[float]:
