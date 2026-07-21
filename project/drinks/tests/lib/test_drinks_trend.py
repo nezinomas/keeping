@@ -76,8 +76,8 @@ def test_period_improving_when_recent_is_lower(converter):
 
     p = stats.compare_recent_period(14)
 
-    assert p.recent_avg == 3
-    assert p.previous_avg == 9
+    assert p.current_period_average == 3
+    assert p.previous_period_average == 9
     assert p.percentage_change == 66.7  # abs(3 - 9) / 9 * 100
     assert p.improving is True
     assert p.has_data is True
@@ -90,8 +90,8 @@ def test_period_worsening_when_recent_is_higher(converter):
 
     p = stats.compare_recent_period(14)
 
-    assert p.recent_avg == 10
-    assert p.previous_avg == 2
+    assert p.current_period_average == 10
+    assert p.previous_period_average == 2
     assert p.improving is False
 
 
@@ -102,8 +102,8 @@ def test_period_without_prior_baseline(converter):
 
     p = stats.compare_recent_period(14)
 
-    assert p.recent_avg == 4
-    assert p.previous_avg == 0.0
+    assert p.current_period_average == 4
+    assert p.previous_period_average == 0.0
     assert p.percentage_change == 0.0
     assert p.has_data is True
 
@@ -126,8 +126,8 @@ def test_period_straddles_year_boundary(converter):
 
     p = stats.compare_recent_period(14)
 
-    assert p.recent_avg == 2
-    assert p.previous_avg == 8
+    assert p.current_period_average == 2
+    assert p.previous_period_average == 8
     assert p.improving is True
 
 
@@ -145,8 +145,8 @@ def test_ytd_vs_last_year(converter):
 
     ytd = stats.compare_year_to_date()
 
-    assert ytd.current_ytd_avg == 15
-    assert ytd.past_ytd_avg == 20
+    assert ytd.current_year_average == 15
+    assert ytd.previous_year_average == 20
     assert (
         ytd.percentage_change == 25.0
     )  # magnitude; direction is carried by `improving`
@@ -160,7 +160,7 @@ def test_ytd_without_past_data(converter):
 
     ytd = stats.compare_year_to_date()
 
-    assert ytd.current_ytd_avg == 10
+    assert ytd.current_year_average == 10
     assert ytd.has_past is False
     assert ytd.percentage_change == 0.0
 
@@ -177,8 +177,8 @@ def test_projection_over_target(converter):
 
     projection = stats.calculate_projection()
 
-    assert projection.projected_l == 73.0  # 200 ml/day * 365 / 1000
-    assert projection.target_l == 36.5  # 100 ml/day * 365 / 1000
+    assert projection.projected_volume_liters == 73.0  # 200 ml/day * 365 / 1000
+    assert projection.target_volume_liters == 36.5  # 100 ml/day * 365 / 1000
     assert projection.percentage_difference == 100.0
     assert projection.over is True
     assert projection.has_target is True

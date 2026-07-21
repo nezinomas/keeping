@@ -8,9 +8,9 @@ from .drinks_stats import DataRow
 
 
 @dataclass(frozen=True)
-class PeriodStats:
-    recent_avg: float  # std av in the most recent window
-    previous_avg: float  # std av in the equal-length window right before it
+class RecentPeriodComparison:
+    current_period_average: float  # std av in the most recent window
+    previous_period_average: float  # std av in the equal-length window right before it
     # magnitude of the change, 0.0 when there is no prior baseline
     percentage_change: float
     improving: bool
@@ -18,18 +18,20 @@ class PeriodStats:
 
 
 @dataclass(frozen=True)
-class YtdStats:
-    current_ytd_avg: float  # std av consumed year-to-date
-    past_ytd_avg: float  # std av consumed to the same day-of-year last period
+class YearToDateComparison:
+    current_year_average: float  # std av consumed year-to-date
+    previous_year_average: float  # std av consumed to the same day-of-year last period
     percentage_change: float
     improving: bool
     has_past: bool
 
 
 @dataclass(frozen=True)
-class ProjectionStats:
-    projected_l: float  # projected volume by year-end at the current pace, litres
-    target_l: float  # allowed volume for the whole year, litres
+class YearEndProjection:
+    # projected volume by year-end at the current pace, litres
+    projected_volume_liters: float
+    # allowed volume for the whole year, litres
+    target_volume_liters: float
     percentage_difference: float  # % over (+) or under (-) the yearly target
     over: bool
     has_target: bool
@@ -111,7 +113,7 @@ class TrendStats:
             for i in range(window - 1, len(series))
         ]
 
-    def compare_recent_period(self, days: int) -> PeriodStats:
+    def compare_recent_period(self, days: int) -> RecentPeriodComparison:
         """Most recent ``days`` vs the equal-length window right before it."""
         end = self._year_end_date
         current_start = end - timedelta(days=days)
@@ -124,9 +126,11 @@ class TrendStats:
         )
 
         if not recent_avg and not previous_avg:
-            return PeriodStats(0.0, 0.0, 0.0, improving=False, has_data=False)
+            return RecentPeriodComparison(
+                0.0, 0.0, 0.0, improving=False, has_data=False
+            )
 
-        return PeriodStats(
+        return RecentPeriodComparison(
             round(recent_avg, 1),
             round(previous_avg, 1),
             self._calculate_pct(recent_avg, previous_avg),
@@ -134,16 +138,18 @@ class TrendStats:
             has_data=True,
         )
 
-    def compare_year_to_date(self) -> YtdStats:
+    def compare_year_to_date(self) -> YearToDateComparison:
         day_of_year = self._year_end_date.timetuple().tm_yday
         current = self._sum_stdav(self._current_year_records, day_of_year)
 
         if not self._past_year_records:
-            return YtdStats(current, 0.0, 0.0, improving=False, has_past=False)
+            return YearToDateComparison(
+                current, 0.0, 0.0, improving=False, has_past=False
+            )
 
         past = self._sum_stdav(self._past_year_records, day_of_year)
 
-        return YtdStats(
+        return YearToDateComparison(
             current,
             past,
             self._calculate_pct(current, past),
@@ -151,14 +157,16 @@ class TrendStats:
             has_past=True,
         )
 
-    def calculate_projection(self) -> ProjectionStats:
+    def calculate_projection(self) -> YearEndProjection:
         days_passed = len(self.daily_volume_ml)
         pace = sum(self.daily_volume_ml) / days_passed if days_passed else 0.0  # ml/day
         projected_ml = pace * ydays(self.current_year)
         projected_l = round(projected_ml / 1000, 1)
 
         if not self._target:
-            return ProjectionStats(projected_l, 0.0, 0.0, over=False, has_target=False)
+            return YearEndProjection(
+                projected_l, 0.0, 0.0, over=False, has_target=False
+            )
 
         target_ml = self._target * ydays(self.current_year)
         if not target_ml:
@@ -166,7 +174,7 @@ class TrendStats:
         else:
             pct = round((projected_ml - target_ml) / target_ml * 100, 1)
 
-        return ProjectionStats(
+        return YearEndProjection(
             projected_l,
             round(target_ml / 1000, 1),
             pct,
