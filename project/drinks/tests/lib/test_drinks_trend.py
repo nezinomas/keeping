@@ -26,8 +26,8 @@ def test_categories_span_from_jan_first_to_today(converter):
 
     # 2026 is not a leap year: 31 (Jan) + 28 (Feb) + 1 = 60
     assert len(stats.date_labels) == 60
-    assert stats.date_labels[0] == "2026-01-01"
-    assert stats.date_labels[-1] == "2026-03-01"
+    assert stats.date_labels[0] == "01-01"
+    assert stats.date_labels[-1] == "03-01"
 
 
 @time_machine.travel("2026-06-15")
@@ -35,8 +35,8 @@ def test_past_year_spans_full_year(converter):
     stats = TrendStats(converter, current_daily=[_row(date(2025, 5, 5), 1)])
 
     assert len(stats.date_labels) == 365
-    assert stats.date_labels[0] == "2025-01-01"
-    assert stats.date_labels[-1] == "2025-12-31"
+    assert stats.date_labels[0] == "01-01"
+    assert stats.date_labels[-1] == "12-31"
 
 
 # -------------------------------------------------------------------------------------

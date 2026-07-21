@@ -40,7 +40,7 @@ def test_chart_trend_view_model(converter):
     actual = builder.chart_trend()
 
     assert isinstance(actual, TrendChartViewModel)
-    assert actual.categories[0] == "2026-01-01"
+    assert actual.categories[0] == "01-01"
     assert len(actual.categories) == 5
     assert len(actual.rolling_7) == 5
     assert len(actual.rolling_30) == 5
@@ -88,7 +88,7 @@ def test_chart_trend_as_dict_is_json_serializable(converter):
 
     actual = TrendsBuilder(stats, target=250).chart_trend().as_dict
 
-    assert actual["categories"][0] == "2026-01-01"
+    assert actual["categories"][0] == "01-01"
     assert actual["rolling_30"][0] == round(1000 / 30)
     assert actual["target"] == 250
 
