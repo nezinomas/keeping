@@ -4,6 +4,7 @@ import pytest
 import time_machine
 
 from ...lib.drinks_options import DrinkConverter
+from ...lib.drinks_stats import DataRow
 from ...lib.drinks_trend import PeriodStats, ProjectionStats, TrendStats, YtdStats
 from ...services.trends.builders import (
     TrendChartViewModel,
@@ -21,8 +22,8 @@ def fixture_converter():
     return DrinkConverter("beer")
 
 
-def _row(dt: date, stdav: float) -> dict:
-    return {"date": dt, "stdav": stdav, "qty": 0.0}
+def _row(dt: date, stdav: float) -> DataRow:
+    return DataRow(date=dt, stdav=stdav, qty=0.0)
 
 
 # -------------------------------------------------------------------------------------

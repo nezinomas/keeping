@@ -40,8 +40,8 @@ class TrendStats:
     def __init__(
         self,
         converter: DrinkConverter,
-        current_daily: list[dict] | None = None,
-        past_daily: list[dict] | None = None,
+        current_daily: list[DataRow] | None = None,
+        past_daily: list[DataRow] | None = None,
         target: float = 0.0,
         today: date | None = None,
     ):
@@ -49,8 +49,8 @@ class TrendStats:
         self._target = target
         self._today = today or date.today()
 
-        self._current = [DataRow(**row) for row in (current_daily or [])]
-        self._past = [DataRow(**row) for row in (past_daily or [])]
+        self._current = current_daily or []
+        self._past = past_daily or []
         self.year = self._current[0].date.year if self._current else self._today.year
 
     @cached_property
@@ -59,6 +59,14 @@ class TrendStats:
             return self._today
         return date(self.year, 12, 31)
 
+    @staticmethod
+    def _date_range(start: date, end: date) -> list[date]:
+        return [start + timedelta(days=i) for i in range((end - start).days + 1)]
+
+    @staticmethod
+    def _calculate_pct(current: float, past: float) -> float | None:
+        return round(abs(current - past) / past * 100, 1) if past else None
+
     @cached_property
     def daily_ml(self) -> list[float]:
         """Dense day-by-day volume in ml (0 on days without records)."""
@@ -66,17 +74,14 @@ class TrendStats:
         start = date(self.year, 1, 1)
 
         return [
-            self._converter.stdav_to_ml(by_date.get(start + timedelta(days=i), 0.0))
-            for i in range((self._end_date - start).days + 1)
+            self._converter.stdav_to_ml(by_date.get(day, 0.0))
+            for day in self._date_range(start, self._end_date)
         ]
 
     @cached_property
     def categories(self) -> list[str]:
         start = date(self.year, 1, 1)
-        return [
-            (start + timedelta(days=i)).isoformat()
-            for i in range((self._end_date - start).days + 1)
-        ]
+        return [day.isoformat() for day in self._date_range(start, self._end_date)]
 
     def rolling(self, window: int) -> list[float]:
         """Trailing mean in ml/day, aligned to ``categories``.
@@ -90,8 +95,8 @@ class TrendStats:
         start = date(self.year, 1, 1) - timedelta(days=window - 1)
 
         series = [
-            self._converter.stdav_to_ml(lookup.get(start + timedelta(days=i), 0.0))
-            for i in range((self._end_date - start).days + 1)
+            self._converter.stdav_to_ml(lookup.get(day, 0.0))
+            for day in self._date_range(start, self._end_date)
         ]
 
         return [
@@ -112,12 +117,10 @@ class TrendStats:
         if not current and not past:
             return PeriodStats(0.0, 0.0, None, improving=False, has_data=False)
 
-        pct = round(abs(current - past) / past * 100, 1) if past else None
-
         return PeriodStats(
             round(current, 1),
             round(past, 1),
-            pct,
+            self._calculate_pct(current, past),
             improving=current < past,
             has_data=True,
         )
@@ -130,10 +133,14 @@ class TrendStats:
             return YtdStats(current, 0.0, None, improving=False, has_past=False)
 
         past = self._sum_stdav(self._past, day_of_year)
-        # magnitude only; direction is carried by `improving` (like SlopeStats)
-        pct = round(abs(current - past) / past * 100, 1) if past else None
 
-        return YtdStats(current, past, pct, improving=current < past, has_past=True)
+        return YtdStats(
+            current,
+            past,
+            self._calculate_pct(current, past),
+            improving=current < past,
+            has_past=True,
+        )
 
     def projection(self) -> ProjectionStats:
         days_passed = len(self.daily_ml)

@@ -1036,7 +1036,9 @@ def test_select_drinks_set_default_drink_type(main_user, client_logged):
 
 
 def test_select_drink_htmx_stays_on_current_tab(client_logged):
-    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"}) + "?tab=trends"
+    url = (
+        reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"}) + "?tab=trends"
+    )
     response = client_logged.get(url, HTTP_HX_REQUEST="true")
 
     assert response.status_code == 204
