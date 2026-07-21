@@ -1,0 +1,20 @@
+{% load i18n %}
+
+{% for card in cards %}
+<div class="trend-card">
+    <div class="trend-card__label">{{ card.title }}</div>
+
+    {% if card.state == 'empty' %}
+    <div class="trend-card__value">&mdash;</div>
+    {% else %}
+    <div class="trend-card__value {% if card.state == 'improving' or card.state == 'low' %}positive{% elif card.state == 'worsening' or card.state == 'high' %}negative{% elif card.state == 'medium' %}warning{% endif %}">
+        {% if card.show_icon %}
+            {% if card.state == 'improving' %}&darr;{% else %}&uarr;{% endif %}
+        {% endif %}
+        {{ card.value }}
+    </div>
+    {% endif %}
+
+    <div class="trend-card__note">{{ card.note|safe }}</div>
+</div>
+{% endfor %}

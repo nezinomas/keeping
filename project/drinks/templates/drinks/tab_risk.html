@@ -1,0 +1,16 @@
+{% load i18n %}
+{% load static %}
+
+{% include 'drinks/includes/navbar.html' %}
+
+<main class="risk-grid">
+    <div id="risk-summary">
+        {% include 'drinks/includes/risk_summary.html' %}
+    </div>
+
+    <div id="chart-weekly-container"></div>
+    <div id="chart-heavy-container"></div>
+</main>
+
+{{chart_weekly.as_dict|json_script:"chart-weekly-data"}}
+{{chart_heavy.as_dict|json_script:"chart-heavy-data"}}

@@ -22,7 +22,7 @@ from . import forms, models, services
 from .lib.drinks_options import DrinkConverter
 from .services.model_services import DrinkModelService, DrinkTargetModelService
 
-TABS = ["index", "data", "history", "trends"]
+TABS = ["index", "data", "history", "trends", "risk"]
 
 
 class Index(TemplateViewMixin):
@@ -65,6 +65,21 @@ class TabTrends(TemplateViewMixin):
             **{"tab": "trends"},
             **services.helper.drink_type_dropdown(self.request),
             **services.trends.load_service(user, year),
+        }
+
+
+class TabRisk(TemplateViewMixin):
+    template_name = "drinks/tab_risk.html"
+
+    def get_context_data(self, **kwargs):
+        user = cast(User, self.request.user)
+        year = cast(int, user.year)
+
+        return {
+            **super().get_context_data(**kwargs),
+            **{"tab": "risk"},
+            **services.helper.drink_type_dropdown(self.request),
+            **services.risk.load_service(user, year),
         }
 
 
