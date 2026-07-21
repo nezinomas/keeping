@@ -271,6 +271,25 @@
         font-size: 0.9em;
         color: $text-muted;
     }
+
+    &__info {
+        margin-top: calc($gap / 4);
+        padding: 0;
+        border: none;
+        background: none;
+        font-size: 0.8em;
+        color: $primary;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    &__explanation {
+        margin-top: calc($gap / 4);
+        font-size: 0.85em;
+        line-height: 1.35;
+        color: $text-muted;
+        text-align: left;
+    }
 }
 
 

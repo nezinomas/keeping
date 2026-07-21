@@ -66,6 +66,10 @@
   --chart-alpha-80: rgba(6, 145, 255, 0.8);
 }
 
+[x-cloak] {
+  display: none !important;
+}
+
 .text-center {
   text-align: center !important;
 }
@@ -434,6 +438,23 @@ video {
 .trend-card__note {
   font-size: 0.9em;
   color: #6c757d;
+}
+.trend-card__info {
+  margin-top: 0.1875rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.8em;
+  color: hsl(206, 100%, 26%);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.trend-card__explanation {
+  margin-top: 0.1875rem;
+  font-size: 0.85em;
+  line-height: 1.35;
+  color: #6c757d;
+  text-align: left;
 }
 
 .debts-grid {

@@ -1,7 +1,7 @@
 {% load i18n %}
 
 {% for card in cards %}
-<div class="trend-card">
+<div class="trend-card"{% if card.explanation %} x-data="{ open: false }"{% endif %}>
     <div class="trend-card__label">{{ card.title }}</div>
 
     {% if card.state == 'empty' %}
@@ -15,6 +15,12 @@
     </div>
     {% endif %}
 
-    <div class="trend-card__note">{{ card.note|safe }}</div>
+    <div class="trend-card__note">{{ card.note }}</div>
+
+    {% if card.explanation %}
+    <button type="button" class="trend-card__info" @click="open = !open"
+        x-text="open ? '{% translate 'Hide' %}' : '{% translate 'What does this mean?' %}'">{% translate 'What does this mean?' %}</button>
+    <div class="trend-card__explanation" x-show="open" x-cloak>{{ card.explanation }}</div>
+    {% endif %}
 </div>
 {% endfor %}
