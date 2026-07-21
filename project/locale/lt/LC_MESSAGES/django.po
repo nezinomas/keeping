@@ -1876,6 +1876,18 @@ msgstr "7 dienų vidurkis"
 msgid "30-day average"
 msgstr "30 dienų vidurkis"
 
+#: .\project\drinks\services\trends\builders.py:77
+msgid "This year"
+msgstr "Šiemet"
+
+#: .\project\drinks\services\trends\builders.py:78
+msgid "Last year"
+msgstr "Pernai"
+
+#: .\project\drinks\services\trends\builders.py:79
+msgid "Target pace"
+msgstr "Tikslo tempas"
+
 #: .\project\drinks\services\trends\builders.py:47
 msgid "Trend (2 weeks)"
 msgstr "Tendencija (2 savaitės)"
