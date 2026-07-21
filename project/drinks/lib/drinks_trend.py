@@ -96,7 +96,7 @@ class TrendStats:
         line doesn't spike at the year start when only a day or two would
         otherwise be available to average.
         """
-        lookup = self._combined_daily_stdav
+        lookup = self._stdav_by_date
         start = date(self.current_year, 1, 1) - timedelta(days=window - 1)
 
         series = [
@@ -114,7 +114,7 @@ class TrendStats:
         end = self._year_end_date
         current_start = end - timedelta(days=days)
         previous_start = end - timedelta(days=2 * days)
-        lookup = self._combined_daily_stdav
+        lookup = self._stdav_by_date
 
         recent_avg = sum(v for d, v in lookup.items() if current_start < d <= end)
         previous_avg = sum(
@@ -174,7 +174,7 @@ class TrendStats:
         )
 
     @cached_property
-    def _combined_daily_stdav(self) -> dict:
+    def _stdav_by_date(self) -> dict:
         """Date -> std av across the current and previous year (for windows
         that straddle the year boundary)."""
         lookup = {row.date: row.stdav for row in self._past_year_records}
