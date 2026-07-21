@@ -1906,15 +1906,15 @@ msgstr "Tendencija (mėnuo)"
 
 #: .\project\drinks\templates\drinks\includes\navbar.html:22
 msgid "Risk"
-msgstr "Rizika"
+msgstr "Rizikos"
 
 #: .\project\drinks\services\risk\builders.py
 msgid "Weekly units with risk bands"
-msgstr "Savaitiniai vienetai su rizikos zonomis"
+msgstr "Savaitės vartojimas ir rizikos zonos"
 
 #: .\project\drinks\services\risk\builders.py
 msgid "Weekly units"
-msgstr "Savaitiniai vienetai"
+msgstr "Savaitės vartojimas"
 
 #: .\project\drinks\services\risk\builders.py
 msgid "Low-risk guideline"
@@ -1922,7 +1922,7 @@ msgstr "Mažos rizikos riba"
 
 #: .\project\drinks\services\risk\builders.py
 msgid "Heavy days per month"
-msgstr "Sunkios dienos per mėnesį"
+msgstr "Rizikingo vartojimo dienos per mėnesį"
 
 #: .\project\drinks\services\risk\builders.py
 msgid "Days"
@@ -1930,7 +1930,31 @@ msgstr "Dienos"
 
 #: .\project\drinks\services\risk\builders.py
 msgid "Heavy days"
-msgstr "Sunkios dienos"
+msgstr "Rizikingo vartojimo dienos"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Heavy day"
+msgstr "Rizikingo vartojimo diena"
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Days with more than %(threshold)s Std Av in a single day."
+msgstr "Dienos, kai per parą suvartota daugiau nei %(threshold)s Std Av."
+
+#: .\project\drinks\services\risk\builders.py
+msgid "Weeks whose total exceeds the low-risk guideline of %(threshold)s Std Av."
+msgstr "Savaitės, kurių suma viršija mažos rizikos ribą (%(threshold)s Std Av)."
+
+#: .\project\drinks\services\risk\builders.py
+msgid "The two numbers are this year and last year, up to the same date."
+msgstr "Du skaičiai – šie ir praėję metai iki tos pačios dienos."
+
+#: .\project\drinks\templates\drinks\includes\risk_summary.html
+msgid "What does this mean?"
+msgstr "Ką tai reiškia?"
+
+#: .\project\drinks\templates\drinks\includes\risk_summary.html
+msgid "Hide"
+msgstr "Slėpti"
 
 #: .\project\drinks\services\risk\builders.py
 msgid "This week"

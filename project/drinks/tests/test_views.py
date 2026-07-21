@@ -64,7 +64,7 @@ def test_index_links(client_logged):
     assert res[1][2] == "Tendencijos"
 
     assert res[2][1] == reverse("drinks:tab_risk")
-    assert res[2][2] == "Rizika"
+    assert res[2][2] == "Rizikos"
 
     assert res[3][1] == reverse("drinks:tab_data")
     assert res[3][2] == "Duomenys"
@@ -368,6 +368,20 @@ def test_tab_risk_renders_cards_with_data(client_logged):
     assert 'class="trend-card"' in content
     # both years have exactly one heavy day (> 6 std av) -> "1 / 1"
     assert "1 / 1" in content
+
+
+@time_machine.travel("1999-06-01")
+def test_tab_risk_renders_collapsible_explanation(client_logged):
+    DrinkFactory(date=date(1999, 1, 10), stdav=7)
+
+    url = reverse("drinks:tab_risk")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    # the explanation is an Alpine open/close disclosure, hidden by default
+    assert 'class="trend-card__info"' in content
+    assert 'class="trend-card__explanation" x-show="open"' in content
 
 
 @time_machine.travel("1999-06-01")
