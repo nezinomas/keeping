@@ -23,7 +23,7 @@ function chartTrend(idData, idContainer) {
             height: "350px",
         },
         title: {
-            text: ""
+            text: chartData.text.title
         },
         legend: {
             enabled: true,
@@ -42,7 +42,7 @@ function chartTrend(idData, idContainer) {
         },
         yAxis: {
             title: {
-                text: ""
+                text: chartData.text.unit
             },
             min: 0,
             plotLines: plotLines,
