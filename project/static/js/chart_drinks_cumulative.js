@@ -6,7 +6,7 @@ function chartDrinksCumulative(idData, idContainer) {
             height: "350px",
         },
         title: {
-            text: ""
+            text: chartData.text.title
         },
         legend: {
             enabled: true,
@@ -25,7 +25,7 @@ function chartDrinksCumulative(idData, idContainer) {
         },
         yAxis: {
             title: {
-                text: ""
+                text: chartData.text.unit
             },
             min: 0,
         },

@@ -57,6 +57,8 @@ class TrendsBuilder:
             rolling_30=[round(v) for v in self._stats.calculate_rolling_average(30)],
             target=self._target,
             text={
+                "title": _("Rolling average"),
+                "unit": "ml",
                 "r7": _("7-day average"),
                 "r30": _("30-day average"),
                 "limit": _("Limit"),
@@ -74,6 +76,8 @@ class TrendsBuilder:
             last_year=[round(v / 1000, 1) for v in self._stats.cumulative_past_year_ml],
             target=[round(v / 1000, 1) for v in self._stats.cumulative_target_ml],
             text={
+                "title": _("Cumulative (year over year)"),
+                "unit": "L",
                 "this_year": _("This year"),
                 "last_year": _("Last year"),
                 "target": _("Target pace"),

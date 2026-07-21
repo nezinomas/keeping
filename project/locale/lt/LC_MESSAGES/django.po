@@ -1869,6 +1869,14 @@ msgid "No limit set"
 msgstr "Nenustatyta riba"
 
 #: .\project\drinks\services\trends\builders.py:30
+msgid "Rolling average"
+msgstr "Slenkantis vidurkis"
+
+#: .\project\drinks\services\trends\builders.py:30
+msgid "Cumulative (year over year)"
+msgstr "Kaupiamasis (metų palyginimas)"
+
+#: .\project\drinks\services\trends\builders.py:30
 msgid "7-day average"
 msgstr "7 dienų vidurkis"
 

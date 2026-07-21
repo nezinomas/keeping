@@ -46,7 +46,8 @@ def test_chart_trend_view_model(converter):
     assert len(actual.rolling_30) == 5
     assert actual.rolling_7[0] == round(1000 / 7)  # full-window mean, rounded
     assert actual.target == 250
-    assert set(actual.text) == {"r7", "r30", "limit"}
+    assert set(actual.text) == {"r7", "r30", "limit", "title", "unit"}
+    assert actual.text["unit"] == "ml"
 
 
 @time_machine.travel("2026-01-05")
@@ -80,7 +81,8 @@ def test_chart_cumulative_view_model(converter):
     assert actual.this_year[0] == 1.0  # 5 std av * 200 ml beer = 1000 ml = 1.0 L
     assert actual.last_year[0] == 0.4  # 2 std av * 200 ml beer = 400 ml = 0.4 L
     assert actual.target[0] == 1.0  # 1000 ml/day target = 1.0 L cumulative on day 1
-    assert set(actual.text) == {"this_year", "last_year", "target"}
+    assert set(actual.text) == {"this_year", "last_year", "target", "title", "unit"}
+    assert actual.text["unit"] == "L"
 
 
 @time_machine.travel("2026-01-05")
