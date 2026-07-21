@@ -45,7 +45,7 @@ function chartTrend(idData, idContainer) {
         },
         tooltip: {
             shared: true,
-            pointFormat: "{series.name}: <b>{point.y:,.0f} ml</b><br>"
+            pointFormat: "<span style='color: {series.color}'>{series.name}: <b>{point.y:,.0f} ml</b></span><br>"
         },
         series: [{
             type: "spline",
@@ -61,7 +61,8 @@ function chartTrend(idData, idContainer) {
             type: "spline",
             name: chartData.text.r7,
             data: chartData.rolling_7,
-            color: "var(--chart-alpha-25)",
+            color: "#0691ff",
+            opacity: 0.5,
             lineWidth: 1,
             marker: {
                 enabled: false
