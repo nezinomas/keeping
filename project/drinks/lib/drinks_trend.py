@@ -63,24 +63,20 @@ class TrendStats:
     def daily_ml(self) -> list[float]:
         """Dense day-by-day volume in ml (0 on days without records)."""
         by_date = {row.date: row.stdav for row in self._current}
+        start = date(self.year, 1, 1)
 
-        out = []
-        day = date(self.year, 1, 1)
-        while day <= self._end_date:
-            out.append(self._converter.stdav_to_ml(by_date.get(day, 0.0)))
-            day += timedelta(days=1)
-
-        return out
+        return [
+            self._converter.stdav_to_ml(by_date.get(start + timedelta(days=i), 0.0))
+            for i in range((self._end_date - start).days + 1)
+        ]
 
     @cached_property
     def categories(self) -> list[str]:
-        out = []
-        day = date(self.year, 1, 1)
-        while day <= self._end_date:
-            out.append(day.isoformat())
-            day += timedelta(days=1)
-
-        return out
+        start = date(self.year, 1, 1)
+        return [
+            (start + timedelta(days=i)).isoformat()
+            for i in range((self._end_date - start).days + 1)
+        ]
 
     def rolling(self, window: int) -> list[float]:
         """Trailing mean in ml/day, aligned to ``categories``.
@@ -91,12 +87,12 @@ class TrendStats:
         otherwise be available to average.
         """
         lookup = self._combined_stdav
+        start = date(self.year, 1, 1) - timedelta(days=window - 1)
 
-        series = []
-        day = date(self.year, 1, 1) - timedelta(days=window - 1)
-        while day <= self._end_date:
-            series.append(self._converter.stdav_to_ml(lookup.get(day, 0.0)))
-            day += timedelta(days=1)
+        series = [
+            self._converter.stdav_to_ml(lookup.get(start + timedelta(days=i), 0.0))
+            for i in range((self._end_date - start).days + 1)
+        ]
 
         return [
             sum(series[i - window + 1 : i + 1]) / window
