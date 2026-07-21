@@ -9,6 +9,8 @@
     </div>
 
     <div id="chart-trend-container"></div>
+    <div id="chart-cumulative-container"></div>
 </main>
 
 {{chart_trend.as_dict|json_script:"chart-trend-data"}}
+{{chart_cumulative.as_dict|json_script:"chart-cumulative-data"}}

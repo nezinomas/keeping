@@ -24,6 +24,19 @@ class TrendChartViewModel:
 
 
 @dataclass(frozen=True)
+class TrendCumulativeViewModel:
+    categories: list[str]
+    this_year: list[float]
+    last_year: list[float]
+    target: list[float]
+    text: dict[str, str]
+
+    @property
+    def as_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class TrendCardViewModel:
     title: str
     state: str  # "empty", "neutral", "improving", "worsening"
@@ -47,6 +60,23 @@ class TrendsBuilder:
                 "r7": _("7-day average"),
                 "r30": _("30-day average"),
                 "limit": _("Limit"),
+            },
+        )
+
+    def chart_cumulative(self) -> TrendCumulativeViewModel:
+        # cumulative ml over a year balloons into the hundreds of thousands, so
+        # present the running total in litres (matching the year-end forecast card)
+        return TrendCumulativeViewModel(
+            categories=self._stats.cumulative_categories,
+            this_year=[
+                round(v / 1000, 1) for v in self._stats.cumulative_current_year_ml
+            ],
+            last_year=[round(v / 1000, 1) for v in self._stats.cumulative_past_year_ml],
+            target=[round(v / 1000, 1) for v in self._stats.cumulative_target_ml],
+            text={
+                "this_year": _("This year"),
+                "last_year": _("Last year"),
+                "target": _("Target pace"),
             },
         )
 
