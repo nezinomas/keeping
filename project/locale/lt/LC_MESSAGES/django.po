@@ -1965,9 +1965,5 @@ msgid "Worst week"
 msgstr "Blogiausia savaitė"
 
 #: .\project\drinks\services\risk\builders.py
-msgid "Week of"
-msgstr "Savaitė nuo"
-
-#: .\project\drinks\services\risk\builders.py
 msgid "Weeks over guideline"
 msgstr "Savaitės virš ribos"

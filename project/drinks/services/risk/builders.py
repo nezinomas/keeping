@@ -26,6 +26,7 @@ class RiskCardViewModel:
 @dataclass(frozen=True)
 class RiskWeeklyChartViewModel:
     categories: list[str]
+    week_ends: list[str]
     data: list[float]
     low_risk: float
     high_risk: float
@@ -57,6 +58,7 @@ class RiskBuilder:
         series = self._stats.weekly_series()
         return RiskWeeklyChartViewModel(
             categories=[week.label for week in series],
+            week_ends=[week.end for week in series],
             data=[week.stdav for week in series],
             low_risk=WEEKLY_LOW_RISK_STDAV,
             high_risk=WEEKLY_HIGH_RISK_STDAV,
@@ -111,7 +113,7 @@ class RiskBuilder:
             state=week.state,
             show_icon=False,
             value=f"{week.stdav:.1f}",
-            note=f"{_('Week of')} {week.label}",
+            note=f"{week.label} – {week.end}",
         )
 
     def _weeks_over_card(self) -> RiskCardViewModel:

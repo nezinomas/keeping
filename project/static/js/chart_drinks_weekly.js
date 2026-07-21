@@ -51,7 +51,12 @@ function chartDrinksWeekly(idData, idContainer) {
             }]
         },
         tooltip: {
-            pointFormat: "<p>{series.name}: <b>{point.y:,.1f} Std Av</b></p>"
+            useHTML: true,
+            formatter: function () {
+                const end = chartData.week_ends[this.point.index];
+                return `<span style="font-size: 12px; font-weight: bold;">${this.point.category} &ndash; ${end}</span><br/>`
+                    + `${this.series.name}: <b>${Highcharts.numberFormat(this.y, 1)} Std Av</b>`;
+            }
         },
         series: [{
             name: chartData.text.weekly,

@@ -41,8 +41,10 @@ def test_chart_weekly_view_model():
     assert isinstance(vm, RiskWeeklyChartViewModel)
     assert vm.low_risk == 11.2
     assert vm.high_risk == 28.0
-    assert vm.data[vm.categories.index("2026-01-05")] == 7.0
-    assert len(vm.categories) == len(vm.data)
+    index = vm.categories.index("2026-01-05")
+    assert vm.data[index] == 7.0
+    assert vm.week_ends[index] == "2026-01-11"  # Sunday of that week
+    assert len(vm.categories) == len(vm.data) == len(vm.week_ends)
     assert set(vm.text) == {"title", "unit", "weekly", "guideline"}
 
 
@@ -55,6 +57,7 @@ def test_chart_weekly_as_dict_is_json_serializable():
 
     assert serialized["low_risk"] == 11.2
     assert serialized["categories"][0] == "2025-12-29"
+    assert serialized["week_ends"][0] == "2026-01-04"
 
 
 # -------------------------------------------------------------------------------------
@@ -141,6 +144,8 @@ def test_worst_week_card_high():
 
     assert card.state == "high"
     assert card.value == "30.0"
+    # note shows the full week range: Monday – Sunday
+    assert card.note == "2026-02-09 – 2026-02-15"
 
 
 @time_machine.travel("2026-06-01")

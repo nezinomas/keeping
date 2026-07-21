@@ -48,7 +48,9 @@ def test_weekly_series_dense_from_first_week_to_current():
 
     assert [w.stdav for w in series] == [0.0, 0.0, 0.0]
     assert series[0].label == "2025-12-29"
+    assert series[0].end == "2026-01-04"  # Sunday of the first week
     assert series[-1].label == "2026-01-12"
+    assert series[-1].end == "2026-01-18"
 
 
 @time_machine.travel("2026-01-15")
@@ -81,6 +83,7 @@ def test_current_week_low():
     assert week.stdav == 5.0
     assert week.state == "low"
     assert week.label == "2026-01-12"
+    assert week.end == "2026-01-18"
     assert week.has_data is True
 
 
@@ -155,6 +158,7 @@ def test_worst_week_picks_highest_week():
     assert week.stdav == 30.0
     assert week.state == "high"
     assert week.label == "2026-02-09"
+    assert week.end == "2026-02-15"  # Sunday of that week
 
 
 # -------------------------------------------------------------------------------------

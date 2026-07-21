@@ -19,7 +19,8 @@ HEAVY_DAY_STDAV = 6.0
 
 @dataclass(frozen=True)
 class WeekPoint:
-    label: str
+    label: str  # ISO date of the week-start (Monday)
+    end: str  # ISO date of the week-end (Sunday)
     stdav: float
 
 
@@ -27,7 +28,8 @@ class WeekPoint:
 class WeekZone:
     stdav: float
     state: str  # "low" | "medium" | "high"
-    label: str
+    label: str  # ISO date of the week-start (Monday)
+    end: str  # ISO date of the week-end (Sunday)
     has_data: bool = True
 
 
@@ -36,6 +38,7 @@ class EmptyWeekZone:
     stdav: float = 0.0
     state: str = "empty"
     label: str = ""
+    end: str = ""
     has_data: bool = False
 
 
@@ -86,6 +89,10 @@ class RiskStats:
         return day - timedelta(days=day.weekday())
 
     @staticmethod
+    def _week_end(monday: date) -> date:
+        return monday + timedelta(days=6)
+
+    @staticmethod
     def _buckets(records: Iterable[DataRow]) -> dict[date, float]:
         acc: dict[date, float] = {}
         for row in records:
@@ -117,7 +124,9 @@ class RiskStats:
         while monday <= last_monday:
             series.append(
                 WeekPoint(
-                    label=monday.isoformat(), stdav=round(buckets.get(monday, 0.0), 1)
+                    label=monday.isoformat(),
+                    end=self._week_end(monday).isoformat(),
+                    stdav=round(buckets.get(monday, 0.0), 1),
                 )
             )
             monday += timedelta(days=7)
@@ -126,7 +135,12 @@ class RiskStats:
     def current_week(self) -> WeekZone:
         monday = self._week_start(self._year_end_date)
         stdav = round(self._current_buckets.get(monday, 0.0), 1)
-        return WeekZone(stdav=stdav, state=self._zone(stdav), label=monday.isoformat())
+        return WeekZone(
+            stdav=stdav,
+            state=self._zone(stdav),
+            label=monday.isoformat(),
+            end=self._week_end(monday).isoformat(),
+        )
 
     def worst_week(self) -> WeekZone | EmptyWeekZone:
         buckets = self._current_buckets
@@ -135,7 +149,12 @@ class RiskStats:
 
         monday, raw_stdav = max(buckets.items(), key=lambda item: item[1])
         stdav = round(raw_stdav, 1)
-        return WeekZone(stdav=stdav, state=self._zone(stdav), label=monday.isoformat())
+        return WeekZone(
+            stdav=stdav,
+            state=self._zone(stdav),
+            label=monday.isoformat(),
+            end=self._week_end(monday).isoformat(),
+        )
 
     def heavy_days(self) -> CountComparison | EmptyCountComparison:
         current = self._count_heavy(self._current)
