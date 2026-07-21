@@ -381,6 +381,28 @@ video {
   grid-area: chart-trend-container;
 }
 
+.risk-grid {
+  display: grid;
+  grid-auto-columns: 1fr;
+  column-gap: 0.75rem;
+  row-gap: 1.5rem;
+  grid-template-areas: "risk-summary" "chart-weekly-container" "chart-heavy-container";
+}
+.risk-grid > #risk-summary {
+  grid-area: risk-summary;
+  display: flex;
+  gap: 0.75rem;
+}
+.risk-grid > #risk-summary > * {
+  flex: 1;
+}
+.risk-grid > #chart-weekly-container {
+  grid-area: chart-weekly-container;
+}
+.risk-grid > #chart-heavy-container {
+  grid-area: chart-heavy-container;
+}
+
 .trend-card {
   display: flex;
   flex-direction: column;
@@ -405,6 +427,9 @@ video {
 }
 .trend-card__value.negative {
   color: #c62828;
+}
+.trend-card__value.warning {
+  color: #c18b03;
 }
 .trend-card__note {
   font-size: 0.9em;

@@ -203,6 +203,36 @@
 }
 
 
+// Risk grid
+.risk-grid {
+    @include grid-template;
+
+    grid-template-areas:
+        "risk-summary"
+        "chart-weekly-container"
+        "chart-heavy-container"
+    ;
+
+    > #risk-summary {
+        grid-area: risk-summary;
+        display: flex;
+        gap: $gap;
+
+        > * {
+            flex: 1;
+        }
+    }
+
+    > #chart-weekly-container {
+        grid-area: chart-weekly-container;
+    }
+
+    > #chart-heavy-container {
+        grid-area: chart-heavy-container;
+    }
+}
+
+
 // Trend summary cards
 .trend-card {
     display: flex;
@@ -230,6 +260,10 @@
 
         &.negative {
             color: $negative-text;
+        }
+
+        &.warning {
+            color: $warning-text;
         }
     }
 
