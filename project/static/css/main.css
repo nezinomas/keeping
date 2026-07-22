@@ -2128,16 +2128,14 @@ body:has(.quick-add) {
   gap: 0.5rem;
   align-items: center;
 }
-.quick-add__sheet .quick-add__qty,
-.quick-add__sheet .quick-add__type {
+.quick-add__sheet .quick-add__qty {
   border: 1px solid #dee2e6;
   border-radius: 0.1rem;
   background: #fff;
   padding: 0.4rem 0.5rem;
   font-size: 0.7rem;
 }
-.quick-add__sheet .quick-add__qty:focus,
-.quick-add__sheet .quick-add__type:focus {
+.quick-add__sheet .quick-add__qty:focus {
   outline: 0;
   border-color: hsl(206, 100%, 26%);
 }
