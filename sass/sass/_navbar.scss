@@ -6,6 +6,7 @@
             opacity: 1;
             transform: rotateX(0) translateX(0);
             visibility: visible;
+            pointer-events: auto;
         }
     }
 
@@ -33,6 +34,8 @@
     z-index: 999;
 
     opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     transform: rotateX(-90deg) translateX(0);
     transform-origin: top center;
     transition: $transition;
