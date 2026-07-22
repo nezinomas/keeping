@@ -74,7 +74,9 @@ def test_chart_heavy_days_view_model():
     assert len(vm.data) == 12
     assert vm.data[0] == 1
     assert vm.heavy_threshold == 6.0
-    assert set(vm.text) == {"title", "unit", "heavy", "threshold_label"}
+    assert vm.low_risk == 3.0
+    assert vm.high_risk == 6.0
+    assert set(vm.text) == {"title", "unit", "heavy", "threshold_label", "guideline"}
 
 
 @time_machine.travel("2026-12-31")
@@ -87,6 +89,8 @@ def test_chart_heavy_days_as_dict_is_json_serializable():
     assert serialized["data"][0] == 1
     assert len(serialized["categories"]) == 12
     assert serialized["heavy_threshold"] == 6.0
+    assert serialized["low_risk"] == 3.0
+    assert serialized["high_risk"] == 6.0
 
 
 # -------------------------------------------------------------------------------------

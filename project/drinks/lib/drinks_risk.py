@@ -16,6 +16,8 @@ WEEKLY_HIGH_RISK_STDAV = 28.0
 # A heavy drinking day: ~60 g alcohol in a single day. This is a daily total,
 # not a single-occasion "binge" (which guidance defines per drinking session).
 HEAVY_DAY_STDAV = 6.0
+MONTHLY_HEAVY_LOW_RISK = 3.0
+MONTHLY_HEAVY_HIGH_RISK = 6.0
 
 
 @dataclass(frozen=True)

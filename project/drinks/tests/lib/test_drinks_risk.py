@@ -4,6 +4,8 @@ import time_machine
 
 from ...lib.drinks_risk import (
     HEAVY_DAY_STDAV,
+    MONTHLY_HEAVY_HIGH_RISK,
+    MONTHLY_HEAVY_LOW_RISK,
     WEEKLY_HIGH_RISK_STDAV,
     WEEKLY_LOW_RISK_STDAV,
     RiskStats,
@@ -20,6 +22,7 @@ def _row(dt: date, stdav: float) -> DataRow:
 # -------------------------------------------------------------------------------------
 def test_thresholds_are_ordered():
     assert 0 < WEEKLY_LOW_RISK_STDAV < WEEKLY_HIGH_RISK_STDAV
+    assert 0 < MONTHLY_HEAVY_LOW_RISK < MONTHLY_HEAVY_HIGH_RISK
     assert HEAVY_DAY_STDAV > 0
 
 
