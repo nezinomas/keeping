@@ -47,26 +47,26 @@ def test_index_links(client_logged):
     # content = content.replace('\n', '')
 
     pattern = re.compile(
-        r'<button\s+class="button-(active|secondary)"\s+hx-get="(.*?)"\s+hx-target="#tab_content">\s+(\w+)\s+<\/button',
+        r'<button\s+class="tab(?:\s+active)?"\s+hx-get="(.*?)"\s+hx-target="#tab_content">\s+(\w+)\s+<\/button',
         re.MULTILINE,
     )
     res = re.findall(pattern, content)
 
     assert len(res) == 5
-    assert res[0][1] == reverse("drinks:tab_index")
-    assert res[0][2] == "Grafikai"
+    assert res[0][0] == reverse("drinks:tab_index")
+    assert res[0][1] == "Grafikai"
 
-    assert res[1][1] == reverse("drinks:tab_trends")
-    assert res[1][2] == "Tendencijos"
+    assert res[1][0] == reverse("drinks:tab_trends")
+    assert res[1][1] == "Tendencijos"
 
-    assert res[2][1] == reverse("drinks:tab_risk")
-    assert res[2][2] == "Rizikos"
+    assert res[2][0] == reverse("drinks:tab_risk")
+    assert res[2][1] == "Rizikos"
 
-    assert res[3][1] == reverse("drinks:tab_history")
-    assert res[3][2] == "Istorija"
+    assert res[3][0] == reverse("drinks:tab_history")
+    assert res[3][1] == "Istorija"
 
-    assert res[4][1] == reverse("drinks:tab_data")
-    assert res[4][2] == "Duomenys"
+    assert res[4][0] == reverse("drinks:tab_data")
+    assert res[4][1] == "Duomenys"
 
 
 def test_index_context(client_logged):

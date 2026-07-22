@@ -148,26 +148,43 @@ nav#main-nav {
 
 nav#drinks-nav {
     margin-bottom: $gap;
-    gap: calc($gap / 3);
-    flex-wrap: nowrap;
+    gap: 0 1.25rem;
+    flex-wrap: wrap;
 
-    > * {
+    // underline tabs (mirrors #main-nav; minimal, not buttons)
+    .tab {
+        border: 0;
+        border-bottom: 3px solid transparent;
+        background: transparent;
+        color: $black;
         white-space: nowrap;
-        align-items: center;
+        cursor: pointer;
+        padding: .35rem .15rem;
+        touch-action: manipulation;
+        transition: $transition;
+
+        &:hover,
+        &:focus {
+            color: $primary;
+            border-bottom-color: lighten($primary, 40%);
+        }
+
+        &.active {
+            color: $primary;
+            font-weight: 500;
+            border-bottom-color: $primary;
+        }
     }
 
+    // drink-type filter: pushed to the right of the tab strip
     > div {
-        flex-basis: 100%;
-        justify-content: center;
-    }
-
-    > :not(div) {
-        flex-grow: 0;
+        margin-left: auto;
     }
 
     .dropdown__menu {
-        left: 50%;
-        transform: translate(-50%, 0);
+        left: auto;
+        right: 0;
+        transform: none;
     }
 }
 
