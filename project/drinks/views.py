@@ -4,8 +4,10 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django.views.generic import View
 from django_htmx.http import trigger_client_event
 
+from ..core.lib.date import set_date_with_user_year
 from ..core.lib.translation import month_names
 from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
@@ -31,6 +33,7 @@ class Index(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
+            **services.helper.drink_type_dropdown(self.request),
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
@@ -271,3 +274,32 @@ class SelectDrink(RedirectViewMixin):
 
     def get_redirect_url(self, *args, **kwargs):
         return reverse_lazy("drinks:index")
+
+
+class QuickAdd(View):
+    def post(self, request, *args, **kwargs):
+        user = cast(User, request.user)
+        option = request.POST.get("option") or user.drink_type
+        date = request.POST.get("date") or set_date_with_user_year(user)
+
+        form = forms.DrinkForm(
+            data={
+                "user": user.pk,
+                "date": date,
+                "option": option,
+                "stdav": request.POST.get("quantity"),
+            },
+            user=user,
+        )
+
+        if not form.is_valid():
+            return HttpResponse(status=422)
+
+        form.save()
+
+        tab = request.POST.get("tab")
+        trigger = f"reload{tab.title()}" if tab in TABS else "reloadIndex"
+
+        response = HttpResponse(status=204)
+        trigger_client_event(response=response, name=trigger, params={})
+        return response
