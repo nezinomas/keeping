@@ -17,22 +17,28 @@ body:has(.quick-add) { padding-bottom: 6rem; }
     > * { pointer-events: auto; }
 }
 
+// resting trigger: quiet tinted pill (no icon)
 .quick-add__pill {
     margin-bottom: 0.75rem;
-    padding: 0.6rem 1.4rem;
-    border: none;
+    padding: 0.45rem 1.25rem;
+    border: 1px solid $border-color-light;
     border-radius: 999px;
-    background: $primary;
-    color: #fff;
-    font-size: 1rem;
+    background: $nav-bg;
+    color: $primary;
+    font-size: $font-size;
     font-weight: 500;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
     transition: $transition;
 
-    &:hover { filter: brightness(1.05); }
+    &:hover,
+    &:focus {
+        background: #fff;
+        border-color: lighten($primary, 50%);
+    }
 }
 
+// floating quick-add card
 .quick-add__sheet {
     width: 100%;
     max-width: 640px;
@@ -40,9 +46,9 @@ body:has(.quick-add) { padding-bottom: 6rem; }
     margin-bottom: 0.5rem;
     padding: 1rem;
     background: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: 12px 12px 0 0;
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+    border: 1px solid $border-color-light;
+    border-radius: 0.5rem;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 
     form {
         display: flex;
@@ -51,22 +57,67 @@ body:has(.quick-add) { padding-bottom: 6rem; }
         align-items: center;
     }
 
+    .quick-add__qty,
+    .quick-add__type {
+        border: 1px solid $border-color-light;
+        border-radius: 0.1rem;
+        background: #fff;
+        padding: 0.4rem 0.5rem;
+        font-size: $font-size;
+
+        &:focus {
+            outline: 0;
+            border-color: $primary;
+        }
+    }
+
     .quick-add__qty {
         flex: 1 1 6rem;
         min-width: 0;
-        padding: 0.5rem;
     }
 
     .quick-add__type {
         flex: 1 1 8rem;
-        padding: 0.5rem;
     }
 
-    .quick-add__add { flex: 0 0 auto; }
+    // primary CTA (filled, no icon)
+    .quick-add__add {
+        @include button();
+        flex: 0 0 auto;
+        color: #fff;
+        background-color: $primary;
+        border: 1px solid $primary;
+        cursor: pointer;
+        font-size: $font-size;
 
+        &:hover {
+            background-color: darken($primary, 6%);
+            border-color: darken($primary, 6%);
+        }
+
+        &:focus,
+        &:active {
+            outline: 0;
+            box-shadow: 0 0 0 0.15rem rgba($primary, 0.2);
+        }
+    }
+
+    // quiet ghost link
     .quick-add__extra {
         margin-top: 0.5rem;
         text-align: right;
-        font-size: 0.9rem;
+        font-size: $font-size;
+
+        a {
+            color: $text-muted;
+            text-decoration: none;
+            cursor: pointer;
+            transition: $transition;
+
+            &:hover,
+            &:focus {
+                color: $primary;
+            }
+        }
     }
 }

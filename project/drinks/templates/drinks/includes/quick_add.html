@@ -21,7 +21,7 @@
                 {% endfor %}
             </select>
 
-            <button type="submit" class="button-outline-success quick-add__add">&#10003; {% translate 'Add' %}</button>
+            <button type="submit" class="quick-add__add">{% translate 'Add' %}</button>
         </form>
 
         <div class="quick-add__extra">
@@ -33,6 +33,6 @@
     </div>
 
     <button type="button" class="quick-add__pill" @click="open = !open">
-        + {% translate 'Log a drink' %}
+        {% translate 'Log a drink' %}
     </button>
 </div>
