@@ -56,18 +56,21 @@ def test_index_links(client_logged):
     )
     res = re.findall(pattern, content)
 
-    assert len(res) == 4
+    assert len(res) == 5
     assert res[0][1] == reverse("drinks:tab_index")
     assert res[0][2] == "Grafikai"
 
     assert res[1][1] == reverse("drinks:tab_trends")
     assert res[1][2] == "Tendencijos"
 
-    assert res[2][1] == reverse("drinks:tab_data")
-    assert res[2][2] == "Duomenys"
+    assert res[2][1] == reverse("drinks:tab_risk")
+    assert res[2][2] == "Rizikos"
 
     assert res[3][1] == reverse("drinks:tab_history")
     assert res[3][2] == "Istorija"
+
+    assert res[4][1] == reverse("drinks:tab_data")
+    assert res[4][2] == "Duomenys"
 
 
 def test_index_context(client_logged):
@@ -307,6 +310,95 @@ def test_tab_trends_renders_summary_with_data(client_logged):
     assert response.status_code == 200
     assert 'class="trend-card"' in content
     assert "positive" in content or "negative" in content
+
+
+# -------------------------------------------------------------------------------------
+#                                                                         TabRisk View
+# -------------------------------------------------------------------------------------
+def test_tab_risk_func():
+    view = resolve("/drinks/risk/")
+
+    assert views.TabRisk == view.func.view_class
+
+
+def test_tab_risk_200(client_logged):
+    url = reverse("drinks:tab_risk")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_tab_risk_context_tab_value(client_logged):
+    url = reverse("drinks:tab_risk")
+    response = client_logged.get(url)
+
+    assert response.context["tab"] == "risk"
+
+
+def test_tab_risk_context(client_logged):
+    url = reverse("drinks:tab_risk")
+    response = client_logged.get(url)
+
+    assert "chart_weekly" in response.context
+    assert "chart_heavy" in response.context
+    assert "cards" in response.context
+
+
+def test_tab_risk_renders_chart_data(client_logged):
+    url = reverse("drinks:tab_risk")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert 'id="chart-weekly-data"' in content
+    assert 'id="chart-heavy-data"' in content
+
+
+@time_machine.travel("1999-06-01")
+def test_tab_risk_renders_cards_with_data(client_logged):
+    # matches the default test user's profile year (1999), like the sibling
+    # test_tab_trends_renders_summary_with_data
+    DrinkFactory(date=date(1999, 1, 10), stdav=7)
+    DrinkFactory(date=date(1998, 1, 10), stdav=8)
+
+    url = reverse("drinks:tab_risk")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    assert 'class="trend-card"' in content
+    # both years have exactly one heavy day (> 6 std av) -> "1 / 1"
+    assert "1 / 1" in content
+
+
+@time_machine.travel("1999-06-01")
+def test_tab_risk_renders_hover_explanation(client_logged):
+    DrinkFactory(date=date(1999, 1, 10), stdav=7)
+
+    url = reverse("drinks:tab_risk")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    # the info icon sits next to the value and reveals the explanation on hover;
+    # there is no click-to-open Alpine disclosure anymore
+    assert 'class="trend-card__info"' in content
+    assert "bi bi-info-circle" in content
+    assert 'class="trend-card__explanation"' in content
+    assert 'x-show="open"' not in content
+
+
+@time_machine.travel("1999-06-01")
+def test_tab_risk_renders_warning_for_medium_week(client_logged):
+    # week of 1999-05-31 (Monday) contains "today"; 15 std av sits between the
+    # low (11.2) and high (28.0) guidelines -> the amber "medium" band
+    DrinkFactory(date=date(1999, 5, 31), stdav=15)
+
+    url = reverse("drinks:tab_risk")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    assert "warning" in content
 
 
 # -------------------------------------------------------------------------------------

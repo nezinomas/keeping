@@ -49,10 +49,8 @@ function chartTrend(idData, idContainer) {
         },
         tooltip: {
             shared: true,
-            shadow: false,
             borderColor: '#ccc',
-            headerFormat: '<span style="font-size: 12px; font-weight: bold;">{point.key}</span><br/>',
-            pointFormat: "<span style='color: {series.color}'>{series.name}: <b>{point.y:,.0f} ml</b></span><br>"
+            pointFormat: "<span style='color: {series.color}'>{series.name}: <b>{point.y:,.0f} ml</b></span><br/>"
         },
         series: [{
             type: "spline",

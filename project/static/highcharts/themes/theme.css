@@ -1,2 +1,8 @@
 /* Global font */
 @import url("https://fonts.googleapis.com/css?family=Dosis:400,600");
+
+
+.tooltip-header {
+    font-size: 13px;
+    font-weight: bold;
+}

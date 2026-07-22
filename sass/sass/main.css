@@ -66,6 +66,10 @@
   --chart-alpha-80: rgba(6, 145, 255, 0.8);
 }
 
+[x-cloak] {
+  display: none !important;
+}
+
 .text-center {
   text-align: center !important;
 }
@@ -381,7 +385,30 @@ video {
   grid-area: chart-trend-container;
 }
 
+.risk-grid {
+  display: grid;
+  grid-auto-columns: 1fr;
+  column-gap: 0.75rem;
+  row-gap: 1.5rem;
+  grid-template-areas: "risk-summary" "chart-weekly-container" "chart-heavy-container";
+}
+.risk-grid > #risk-summary {
+  grid-area: risk-summary;
+  display: flex;
+  gap: 0.75rem;
+}
+.risk-grid > #risk-summary > * {
+  flex: 1;
+}
+.risk-grid > #chart-weekly-container {
+  grid-area: chart-weekly-container;
+}
+.risk-grid > #chart-heavy-container {
+  grid-area: chart-heavy-container;
+}
+
 .trend-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.1875rem;
@@ -406,9 +433,54 @@ video {
 .trend-card__value.negative {
   color: #c62828;
 }
+.trend-card__value.warning {
+  color: #c18b03;
+}
 .trend-card__note {
   font-size: 0.9em;
   color: #6c757d;
+}
+.trend-card__info {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.25em;
+  font-size: 0.5em;
+  line-height: 1;
+  color: #6c757d;
+  cursor: help;
+  vertical-align: middle;
+}
+.trend-card__info:hover, .trend-card__info:focus-visible {
+  color: hsl(206, 100%, 26%);
+  outline: none;
+}
+.trend-card__info:hover .trend-card__explanation, .trend-card__info:focus-visible .trend-card__explanation {
+  visibility: visible;
+  opacity: 1;
+}
+.trend-card__explanation {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 20;
+  width: max-content;
+  max-width: 220px;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.25rem;
+  background: rgba(10, 20, 30, 0.9);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: left;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: translateX(-50%);
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  pointer-events: none;
 }
 
 .debts-grid {
@@ -1947,6 +2019,10 @@ input.year-picker {
 
 .bi-record-circle::before {
   content: "\f518";
+}
+
+.bi-info-circle::before {
+  content: "\f431";
 }
 
 @font-face {

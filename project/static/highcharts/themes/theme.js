@@ -79,7 +79,7 @@ Highcharts.theme = {
         enabled: false,
     },
     tooltip: {
-        shadow: true,
+        shadow: false,
         useHTML: true,
         backgroundColor: "#FFF",
         borderWidth: 1,
@@ -87,6 +87,7 @@ Highcharts.theme = {
         style: {
             fontSize: "12px",
         },
+        headerFormat: '<span class="tooltip-header">{point.key}</span><br/>',
     },
     plotOptions:{
         candlestick: {

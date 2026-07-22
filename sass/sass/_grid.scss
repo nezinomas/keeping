@@ -203,8 +203,39 @@
 }
 
 
+// Risk grid
+.risk-grid {
+    @include grid-template;
+
+    grid-template-areas:
+        "risk-summary"
+        "chart-weekly-container"
+        "chart-heavy-container"
+    ;
+
+    > #risk-summary {
+        grid-area: risk-summary;
+        display: flex;
+        gap: $gap;
+
+        > * {
+            flex: 1;
+        }
+    }
+
+    > #chart-weekly-container {
+        grid-area: chart-weekly-container;
+    }
+
+    > #chart-heavy-container {
+        grid-area: chart-heavy-container;
+    }
+}
+
+
 // Trend summary cards
 .trend-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: calc($gap / 4);
@@ -231,11 +262,62 @@
         &.negative {
             color: $negative-text;
         }
+
+        &.warning {
+            color: $warning-text;
+        }
     }
 
     &__note {
         font-size: 0.9em;
         color: $text-muted;
+    }
+
+    &__info {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        margin-left: 0.25em;
+        font-size: 0.5em;
+        line-height: 1;
+        color: $text-muted;
+        cursor: help;
+        vertical-align: middle;
+
+        &:hover,
+        &:focus-visible {
+            color: $primary;
+            outline: none;
+
+            .trend-card__explanation {
+                visibility: visible;
+                opacity: 1;
+            }
+        }
+    }
+
+    &__explanation {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 50%;
+        z-index: 20;
+        width: max-content;
+        max-width: 220px;
+        padding: 0.5rem 0.7rem;
+        border-radius: $modal-border-radius;
+        background: rgba(10, 20, 30, 0.9);
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 400;
+        line-height: 1.35;
+        text-align: left;
+        white-space: normal;
+        opacity: 0;
+        visibility: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        transform: translateX(-50%);
+        transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+        pointer-events: none;
     }
 }
 

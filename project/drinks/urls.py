@@ -9,6 +9,7 @@ urlpatterns = [
     path("", views.Index.as_view(), name="index"),
     path("index/", views.TabIndex.as_view(), name="tab_index"),
     path("trends/", views.TabTrends.as_view(), name="tab_trends"),
+    path("risk/", views.TabRisk.as_view(), name="tab_risk"),
     path("data/", views.TabData.as_view(), name="tab_data"),
     path("history/", views.TabHistory.as_view(), name="tab_history"),
     path("<slug:tab>/new/", views.New.as_view(), name="new"),
