@@ -1,7 +1,7 @@
 {% load i18n %}
 
 {% for card in cards %}
-<div class="trend-card"{% if card.explanation %} x-data="{ open: false }"{% endif %}>
+<div class="trend-card">
     <div class="trend-card__label">{{ card.title }}</div>
 
     {% if card.state == 'empty' %}
@@ -12,17 +12,15 @@
             {% if card.state == 'improving' %}&darr;{% else %}&uarr;{% endif %}
         {% endif %}
         {{ card.value }}
+        {% if card.explanation %}
+        <span class="trend-card__info" tabindex="0" role="note" aria-label="{{ card.explanation }}">
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            <span class="trend-card__explanation" role="tooltip">{{ card.explanation }}</span>
+        </span>
+        {% endif %}
     </div>
     {% endif %}
 
     <div class="trend-card__note">{{ card.note }}</div>
-
-    {% if card.explanation %}
-    <button type="button" class="trend-card__info bi bi-info-circle"
-        @click="open = !open" :aria-expanded="open"
-        title="{% translate 'What does this mean?' %}"
-        aria-label="{% translate 'What does this mean?' %}"></button>
-    <div class="trend-card__explanation" x-show="open" x-cloak>{{ card.explanation }}</div>
-    {% endif %}
 </div>
 {% endfor %}

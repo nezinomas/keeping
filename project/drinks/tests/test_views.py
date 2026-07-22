@@ -371,7 +371,7 @@ def test_tab_risk_renders_cards_with_data(client_logged):
 
 
 @time_machine.travel("1999-06-01")
-def test_tab_risk_renders_collapsible_explanation(client_logged):
+def test_tab_risk_renders_hover_explanation(client_logged):
     DrinkFactory(date=date(1999, 1, 10), stdav=7)
 
     url = reverse("drinks:tab_risk")
@@ -379,10 +379,12 @@ def test_tab_risk_renders_collapsible_explanation(client_logged):
     content = response.content.decode()
 
     assert response.status_code == 200
-    # the toggle is an info icon; the explanation is an Alpine open/close
-    # disclosure, hidden by default
-    assert "trend-card__info bi bi-info-circle" in content
-    assert 'class="trend-card__explanation" x-show="open"' in content
+    # the info icon sits next to the value and reveals the explanation on hover;
+    # there is no click-to-open Alpine disclosure anymore
+    assert 'class="trend-card__info"' in content
+    assert "bi bi-info-circle" in content
+    assert 'class="trend-card__explanation"' in content
+    assert 'x-show="open"' not in content
 
 
 @time_machine.travel("1999-06-01")

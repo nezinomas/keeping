@@ -441,26 +441,46 @@ video {
   color: #6c757d;
 }
 .trend-card__info {
-  position: absolute;
-  top: 0.375rem;
-  right: 0.375rem;
-  padding: 0;
-  border: none;
-  background: none;
-  font-size: 1rem;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.25em;
+  font-size: 0.5em;
   line-height: 1;
   color: #6c757d;
-  cursor: pointer;
+  cursor: help;
+  vertical-align: middle;
 }
-.trend-card__info:hover {
+.trend-card__info:hover, .trend-card__info:focus-visible {
   color: hsl(206, 100%, 26%);
+  outline: none;
+}
+.trend-card__info:hover .trend-card__explanation, .trend-card__info:focus-visible .trend-card__explanation {
+  visibility: visible;
+  opacity: 1;
 }
 .trend-card__explanation {
-  margin-top: 0.1875rem;
-  font-size: 0.85em;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 20;
+  width: max-content;
+  max-width: 220px;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.25rem;
+  background: rgba(10, 20, 30, 0.9);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 400;
   line-height: 1.35;
-  color: #6c757d;
   text-align: left;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: translateX(-50%);
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  pointer-events: none;
 }
 
 .debts-grid {
