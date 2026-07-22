@@ -38,6 +38,12 @@ def test_index_quick_add(client_logged):
     assert f'hx-post="{reverse("drinks:quick_add")}"' in content
     assert 'name="quantity"' in content
     assert 'class="quick-add__pill"' in content
+    assert '<button type="submit" class="button-secondary">' in content
+    assert 'class="button-secondary"' in content
+    assert (
+        "htmx.ajax('GET', '/drinks/' + document.getElementById('quick-add-tab').value + '/new/', '#mainModal')"
+        in content
+    )
 
 
 def test_index_quick_add_prefilled_and_esc_close(client_logged, main_user):
