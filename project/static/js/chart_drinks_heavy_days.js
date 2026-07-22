@@ -53,6 +53,7 @@ function chartDrinksHeavyDays(idData, idContainer) {
             name: chartData.text.heavy,
             data: chartData.data,
             color: "var(--chart-negative-dark)",
+            borderWidth: 0,
         }]
     });
 };
