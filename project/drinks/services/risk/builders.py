@@ -71,6 +71,7 @@ class RiskViewModelBuilder:
                 "unit": "Std Av",
                 "weekly": _("Weekly units"),
                 "guideline": _("Low-risk guideline"),
+                "high_risk_guideline": _("High-risk threshold"),
             },
         )
 
@@ -87,6 +88,7 @@ class RiskViewModelBuilder:
                 "heavy": _("Heavy days"),
                 "threshold_label": _("Heavy day"),
                 "guideline": _("Low-risk guideline"),
+                "high_risk_guideline": _("High-risk threshold"),
             },
         )
 

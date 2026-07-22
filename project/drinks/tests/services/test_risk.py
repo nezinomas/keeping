@@ -45,7 +45,13 @@ def test_chart_weekly_view_model():
     assert vm.data[index] == 7.0
     assert vm.week_ends[index] == "2026-01-11"  # Sunday of that week
     assert len(vm.categories) == len(vm.data) == len(vm.week_ends)
-    assert set(vm.text) == {"title", "unit", "weekly", "guideline"}
+    assert set(vm.text) == {
+        "title",
+        "unit",
+        "weekly",
+        "guideline",
+        "high_risk_guideline",
+    }
 
 
 @time_machine.travel("2026-03-01")
@@ -76,7 +82,14 @@ def test_chart_heavy_days_view_model():
     assert vm.heavy_threshold == 6.0
     assert vm.low_risk == 3.0
     assert vm.high_risk == 6.0
-    assert set(vm.text) == {"title", "unit", "heavy", "threshold_label", "guideline"}
+    assert set(vm.text) == {
+        "title",
+        "unit",
+        "heavy",
+        "threshold_label",
+        "guideline",
+        "high_risk_guideline",
+    }
 
 
 @time_machine.travel("2026-12-31")
