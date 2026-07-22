@@ -44,6 +44,8 @@ def test_index_quick_add(client_logged):
         "htmx.ajax('GET', '/drinks/' + document.getElementById('quick-add-tab').value + '/new/', '#mainModal')"
         in content
     )
+    assert 'class="select-wrapper quick-add__type"' in content
+    assert '<select name="option" class="form-select"' in content
 
 
 def test_index_quick_add_prefilled_and_esc_close(client_logged, main_user):

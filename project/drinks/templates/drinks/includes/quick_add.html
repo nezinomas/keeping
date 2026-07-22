@@ -29,13 +29,15 @@
                    x-model="quantity"
                    x-on:input="quantity = $event.target.value.replace(',', '.')">
 
-            <select name="option" class="quick-add__type"
-                    x-model="option"
-                    @change="updateQuantity()">
-                {% for type in select_drink_type %}
-                <option value="{{ type.1 }}" {% if type.1 == user.drink_type %}selected{% endif %}>{{ type.0 }}</option>
-                {% endfor %}
-            </select>
+            <div class="select-wrapper quick-add__type">
+                <select name="option" class="form-select"
+                        x-model="option"
+                        @change="updateQuantity()">
+                    {% for type in select_drink_type %}
+                    <option value="{{ type.1 }}" {% if type.1 == user.drink_type %}selected{% endif %}>{{ type.0 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
             <button type="submit" class="button-secondary">{% translate 'Add' %}</button>
             <button type="button" class="button-secondary"
