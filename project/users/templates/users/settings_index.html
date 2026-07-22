@@ -31,6 +31,14 @@
         </div>
         <div>{{settings_unnecessary|safe}}</div>
     </div>
+
+    <div>
+        <div class="users-title">
+            <p>{% translate 'Drinks goals' %}</p>
+            <button class="button-active" hx-get="{% url 'drinks:target_new' 'index' %}" hx-target="#mainModal">{% translate 'Goal for the year' %}</button>
+        </div>
+        <div hx-get="{% url 'drinks:target_list' %}" hx-trigger="load, reloadIndex from:body"></div>
+    </div>
 </main>
 
 {% endblock content %}
