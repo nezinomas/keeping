@@ -55,6 +55,7 @@ def test_index_quick_add_prefilled_and_esc_close(client_logged, main_user):
     assert "wine: '150'" in content
     assert "vodka: '40'" in content
     assert "stdav: '1'" in content
+    assert "event.detail.xhr" in content
 
 
 def test_index_links(client_logged):
