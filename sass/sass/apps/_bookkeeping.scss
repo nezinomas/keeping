@@ -1,0 +1,112 @@
+// Bookkeeping App - Search statistics
+.search-statistic {
+    display: flex;
+    margin: 1rem 0;
+    gap: 2rem;
+
+    > *:nth-child(1) {
+        flex-grow: 1;
+        text-align: right;
+    }
+
+    > *:nth-child(2) {
+        flex-grow: 0;
+        text-align: center;
+    }
+
+    > *:nth-child(3) {
+        flex-grow: 1;
+        text-align: left;
+    }
+}
+
+// Bookkeeping App - Month table
+.month-table {
+    table-layout: auto;
+
+    .expand-column-width {
+        --column-width: #{map-get($column-widths, "day")};
+        min-width: var(--column-width);
+        width: var(--column-width);
+    }
+
+    .savings-col {
+        min-width: 4.5rem;
+        width: 4.5rem;
+    }
+
+    .weekday-col {
+        min-width: 5.5rem;
+        width: 5.5rem;
+    }
+
+    .empty-col {
+        border-left: #fff solid .5rem;
+    }
+
+    .total-col {
+        border-left: double $black;
+        border-right: double $black;
+    }
+
+    >tbody>tr.weekend-col {
+        >td:not([class*="day"]) {
+            background-color: $table-weekend;
+        }
+    }
+
+    >tbody>tr.current-day {
+        font-weight: 600;
+
+        >td {
+            border-top: $table-current-day-border-color 1px double;
+            border-bottom: $table-current-day-border-color 1px double;
+
+            &:not([class*="day"]) {
+                background-color: $table-current-day;
+            }
+        }
+
+        &:hover .button-expand {
+            background-color: transparent;
+        }
+    }
+
+    // Expand month table row to see expenses
+    &:has(.expand-expenses) {
+
+        // override expenses table layout, which is fixed
+        .expenses-table {
+            table-layout: auto;
+        }
+
+        tr.expand-expenses>td {
+            background-color: white;
+
+            &:has([class*="alert"]) {
+                padding-top: $gap;
+            }
+
+            &:has(table) {
+                padding: $gap 0;
+            }
+
+            &:hover {
+                background-color: unset;
+            }
+        }
+    }
+
+    .table-danger {
+        &.day-warning {
+            background-color: $warning-bg;
+            color: $warning-text;
+            font-weight: 650;
+        }
+
+        &.day-negative {
+            color: $negative-text;
+            font-weight: 650;
+        }
+    }
+}

@@ -193,131 +193,38 @@
 }
 
 
-// Month table
-.month-table {
-    table-layout: auto;
+.sortable-header-row {
+    th {
+        > span, > a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
 
-    .expand-column-width {
-        --column-width: #{map-get($column-widths, "day")};
-        min-width: var(--column-width);
-        width: var(--column-width);
-    }
-
-    .savings-col {
-        min-width: 4.5rem;
-        width: 4.5rem;
-    }
-
-    .weekday-col {
-        min-width: 5.5rem;
-        width: 5.5rem;
-    }
-
-    .empty-col {
-        border-left: #fff solid .5rem;
-    }
-
-    .total-col {
-        border-left: double $black;
-        border-right: double $black;
-    }
-
-    >tbody>tr.weekend-col {
-        >td:not([class*="day"]) {
-            background-color: $table-weekend;
-        }
-    }
-
-    >tbody>tr.current-day {
-        font-weight: 600;
-
-        >td {
-            border-top: $table-current-day-border-color 1px double;
-            border-bottom: $table-current-day-border-color 1px double;
-
-            &:not([class*="day"]) {
-                background-color: $table-current-day;
+            &::before {
+                font-family: 'Glyphicons Halflings';
+                content: "\e113";
+                font-size: 8px;
+                transition: color 0.2s ease-in-out;
             }
         }
 
-        &:hover .button-expand {
-            background-color: transparent;
-        }
-    }
-
-    // Expand month table row to see expenses
-    &:has(.expand-expenses) {
-
-        // override expenses table layout, which is fixed
-        .expenses-table {
-            table-layout: auto;
-        }
-
-        tr.expand-expenses>td {
-            background-color: white;
-
-            &:has([class*="alert"]) {
-                padding-top: $gap;
-            }
-
-            &:has(table) {
-                padding: $gap 0;
+        > a {
+            &::before {
+                color: #c6cbd0;
             }
 
             &:hover {
-                background-color: unset;
+                &::before {
+                    color: #6c757d;
+                }
             }
         }
-    }
 
-    .table-danger {
-        &.day-warning {
-            background-color: $warning-bg;
-            color: $warning-text;
-            font-weight: 650;
+        > span {
+            &::before {
+                color: $primary;
+            }
         }
-
-        &.day-negative {
-            color: $negative-text;
-            font-weight: 650;
-        }
-    }
-}
-
-// Expenses table
-.expenses-table {
-    td:first-child {
-        padding-left: 0.5rem;
-    }
-
-    td.exception {
-        padding-left: 0.35rem;
-        border-left: 5px solid $exception;
-    }
-
-    .file-col {
-        min-width: 5rem;
-        width: 5rem;
-    }
-}
-
-
-// Book table
-.book-table {
-    tr.currently-reading-book {
-        background-color: $table-currently-reading;
-        border-top: $table-current-day-border-color 1px double;
-        border-bottom: $table-current-day-border-color 1px double;
-    }
-
-    .author-col {
-        min-width: 20rem;
-        width: 20rem;
-    }
-
-    .book-title-col {
-        min-width: 40rem;
-        width: 40rem;
     }
 }
 
@@ -342,73 +249,4 @@
 
 .table-group-divider {
     border-top: 3px solid $table-group-divider-color;
-}
-
-
-// Compact, minimal table — the drinks Overview breakdown and the Data tab
-.stdav-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-variant-numeric: tabular-nums;
-
-    caption {
-        padding: 0.5rem $gap;
-        text-align: left;
-        font-weight: 600;
-        color: $black-muted;
-        background: $table-header-bg;
-        border-bottom: 1px solid $border-color-light;
-    }
-
-    th,
-    td {
-        padding: 0.35rem $gap;
-        text-align: right;
-        vertical-align: middle;
-    }
-
-    th:first-child,
-    td:first-child {
-        text-align: left;
-    }
-
-    thead th {
-        font-weight: 600;
-        color: $text-muted;
-        background: $table-header-bg;
-        border-bottom: 1px solid $border-color-light;
-    }
-
-    tbody tr:nth-child(even) > td {
-        background: #fbfbfc;
-    }
-
-    // emphasised summary row (e.g. the "Std Av" total)
-    tbody tr.stdav-table__total td {
-        border-top: 2px solid $table-border-color;
-        font-weight: 600;
-        color: $black-muted;
-    }
-
-    // action columns (shared <c-td-edit> / <c-td-delete> markup)
-    .edit-col,
-    .delete-col {
-        width: 2.25rem;
-        padding-left: 0;
-        padding-right: 0;
-        text-align: center;
-    }
-
-    .edit-col a {
-        color: $black;
-    }
-
-    .delete-col a {
-        color: $negative;
-    }
-
-    // opt-in row hover for clickable rows (Data tab)
-    &.hover tbody tr:hover > td {
-        background-color: $table-hover-bg !important;
-    }
 }
