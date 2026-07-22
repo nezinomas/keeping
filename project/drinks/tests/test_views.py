@@ -40,6 +40,23 @@ def test_index_quick_add(client_logged):
     assert 'class="quick-add__pill"' in content
 
 
+def test_index_quick_add_prefilled_and_esc_close(client_logged, main_user):
+    main_user.drink_type = "wine"
+    main_user.save()
+
+    url = reverse("drinks:index")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert '@keydown.window.escape="open = false"' in content
+    assert 'x-model="quantity"' in content
+    assert 'x-model="option"' in content
+    assert "beer: '1'" in content
+    assert "wine: '150'" in content
+    assert "vodka: '40'" in content
+    assert "stdav: '1'" in content
+
+
 def test_index_links(client_logged):
     url = reverse("drinks:index")
     response = client_logged.get(url)

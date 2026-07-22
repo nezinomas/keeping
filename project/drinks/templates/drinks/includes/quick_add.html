@@ -1,21 +1,37 @@
 {% load i18n %}
 
-<div id="quick-add" class="quick-add" x-data="{ open: false }">
+<div id="quick-add" class="quick-add"
+     x-data="{
+         open: false,
+         option: '{{ user.drink_type|default:'beer' }}',
+         quantity: '',
+         defaults: { beer: '1', wine: '150', vodka: '40', stdav: '1' },
+         init() {
+             this.updateQuantity();
+         },
+         updateQuantity() {
+             this.quantity = this.defaults[this.option] || '1';
+         }
+     }"
+     @keydown.window.escape="open = false">
 
     <div class="quick-add__sheet" x-show="open" x-cloak x-transition
          @click.outside="open = false">
         <form hx-post="{% url 'drinks:quick_add' %}"
               hx-swap="none"
-              hx-on::after-request="if (event.detail.successful) { const q = this.querySelector('[name=quantity]'); q.value = ''; q.focus(); }">
+              hx-on::after-request="if (event.detail.successful) { Alpine.$data(this).updateQuantity(); this.querySelector('[name=quantity]').focus(); }">
             {% csrf_token %}
             <input type="hidden" name="tab" id="quick-add-tab" value="index">
 
             <input type="text" name="quantity" class="quick-add__qty"
                    inputmode="decimal" autocomplete="off" required
                    placeholder="{% translate 'Quantity' %}"
-                   x-on:input="$event.target.value = $event.target.value.replace(',', '.')">
+                   x-model="quantity"
+                   x-on:input="quantity = $event.target.value.replace(',', '.')">
 
-            <select name="option" class="quick-add__type">
+            <select name="option" class="quick-add__type"
+                    x-model="option"
+                    @change="updateQuantity()">
                 {% for type in select_drink_type %}
                 <option value="{{ type.1 }}" {% if type.1 == user.drink_type %}selected{% endif %}>{{ type.0 }}</option>
                 {% endfor %}
