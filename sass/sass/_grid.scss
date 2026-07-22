@@ -478,50 +478,6 @@ button.trend-card__value {
 }
 
 
-// Std-AV breakdown table (compact card table)
-.stdav-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-variant-numeric: tabular-nums;
-
-    caption {
-        padding: 0.5rem $gap;
-        text-align: left;
-        font-weight: 600;
-        color: $black-muted;
-        background: $table-header-bg;
-        border-bottom: 1px solid $border-color-light;
-    }
-
-    th,
-    td {
-        padding: 0.35rem $gap;
-        text-align: right;
-    }
-
-    th:first-child,
-    td:first-child {
-        text-align: left;
-    }
-
-    thead th {
-        font-weight: 600;
-        color: $text-muted;
-        border-bottom: 1px solid $border-color-light;
-    }
-
-    tbody tr:nth-child(even) {
-        background: #fbfbfc;
-    }
-
-    tbody tr.stdav-table__total td {
-        border-top: 2px solid $table-border-color;
-        font-weight: 600;
-        color: $black-muted;
-    }
-}
-
-
 // "What is a standard unit?" disclosure (sits flush at the bottom of the card)
 .stdav-info {
     border-top: 1px solid $border-color-light;

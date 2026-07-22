@@ -638,42 +638,6 @@ button.trend-card__value:focus-visible {
     font-size: 0.6rem;
   }
 }
-.stdav-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
-}
-.stdav-table caption {
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-  font-weight: 600;
-  color: #333;
-  background: #f9f9f9;
-  border-bottom: 1px solid #dee2e6;
-}
-.stdav-table th,
-.stdav-table td {
-  padding: 0.35rem 0.75rem;
-  text-align: right;
-}
-.stdav-table th:first-child,
-.stdav-table td:first-child {
-  text-align: left;
-}
-.stdav-table thead th {
-  font-weight: 600;
-  color: #6c757d;
-  border-bottom: 1px solid #dee2e6;
-}
-.stdav-table tbody tr:nth-child(even) {
-  background: #fbfbfc;
-}
-.stdav-table tbody tr.stdav-table__total td {
-  border-top: 2px solid #cacac9;
-  font-weight: 600;
-  color: #333;
-}
-
 .stdav-info {
   border-top: 1px solid #dee2e6;
 }
@@ -1182,10 +1146,58 @@ button.trend-card__value:focus-visible {
   border-top: 3px solid #a2a2a2;
 }
 
-.main tr.std-av-border > td {
-  background-color: hsl(206, 100%, 97%) !important;
-  border-top: #0691ff 1px double;
-  border-bottom: #0691ff 1px double;
+.stdav-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.stdav-table caption {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  background: #f9f9f9;
+  border-bottom: 1px solid #dee2e6;
+}
+.stdav-table th,
+.stdav-table td {
+  padding: 0.35rem 0.75rem;
+  text-align: right;
+  vertical-align: middle;
+}
+.stdav-table th:first-child,
+.stdav-table td:first-child {
+  text-align: left;
+}
+.stdav-table thead th {
+  font-weight: 600;
+  color: #6c757d;
+  background: #f9f9f9;
+  border-bottom: 1px solid #dee2e6;
+}
+.stdav-table tbody tr:nth-child(even) > td {
+  background: #fbfbfc;
+}
+.stdav-table tbody tr.stdav-table__total td {
+  border-top: 2px solid #cacac9;
+  font-weight: 600;
+  color: #333;
+}
+.stdav-table .edit-col,
+.stdav-table .delete-col {
+  width: 2.25rem;
+  padding-left: 0;
+  padding-right: 0;
+  text-align: center;
+}
+.stdav-table .edit-col a {
+  color: #000;
+}
+.stdav-table .delete-col a {
+  color: #db606d;
+}
+.stdav-table.hover tbody tr:hover > td {
+  background-color: rgb(210, 235.1204819277, 255) !important;
 }
 
 .dropdown:active .dropdown__menu, .dropdown:focus .dropdown__menu, .dropdown:focus-within .dropdown__menu {
