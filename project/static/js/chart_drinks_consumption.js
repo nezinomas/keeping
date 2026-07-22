@@ -36,6 +36,7 @@ function chartConsumption(idData, idContainer) {
             {
                 color: "#333",
                 width: 2,
+                dashStyle: "Dash",
                 value: chartData.target,
                 zIndex: 10,
                 label: {
@@ -72,7 +73,7 @@ function chartConsumption(idData, idContainer) {
         },
         plotOptions: {
             area: {
-                fillOpacity: 0.6
+                fillOpacity: 0.85
             },
         },
         series: [{
@@ -80,14 +81,24 @@ function chartConsumption(idData, idContainer) {
             name: chartData.text.alcohol,
             showInLegend: false,
             data: chartData.data,
-            threshold: chartData.target,
-            color: "var(--chart-negative-dark)",
-            negativeColor: 'var(--chart-positive-dark)',
-            dataLabels: {
+            // fill down to the baseline, split-coloured at the limit:
+            // green below the limit, red above it
+            zoneAxis: "y",
+            zones: [
+                {
+                    value: chartData.target,
+                    color: "var(--chart-positive-dark)",
+                    fillColor: "var(--chart-positive)"
+                },
+                {
+                    color: "var(--chart-negative-dark)",
+                    fillColor: "var(--chart-negative)"
+                }
+            ],
+            marker: {
                 enabled: true,
-                color: "#000",
-                align: "left",
-                format: "{point.y:.0f}",
+                radius: 2.5,
+                symbol: "circle"
             }
         }]
     });
