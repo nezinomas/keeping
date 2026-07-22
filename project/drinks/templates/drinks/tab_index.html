@@ -18,6 +18,15 @@
         <div id="tbl_alcohol">
             {% include 'drinks/includes/tbl_alcohol.html' with ctx=tbl_alcohol %}
         </div>
+        <div id="target_list">
+            {{ target }}
+            <button
+                class="button-secondary"
+                hx-get="{% url 'drinks:target_new' 'index' %}"
+                hx-target="#mainModal">
+                {% translate 'Goal for the year' %}
+            </button>
+        </div>
     </div>
 
     <!-- Std AV table -->

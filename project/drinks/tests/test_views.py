@@ -158,6 +158,20 @@ def test_tab_index_context(client_logged):
     assert "tbl_std_av" in response.context
 
 
+def test_tab_index_has_target_table_and_add_button(client_logged):
+    url = reverse("drinks:tab_index")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    # the drinks-target table is shown on the charts tab
+    assert 'id="target_list"' in content
+
+    # and an add-target button opens the modal
+    add_url = reverse("drinks:target_new", kwargs={"tab": "index"})
+    assert f'hx-get="{add_url}"' in content
+    assert 'hx-target="#mainModal"' in content
+
+
 @time_machine.travel("1999-1-1")
 def test_tab_index_chart_consumption(client_logged):
     DrinkFactory()
