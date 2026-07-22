@@ -1,0 +1,29 @@
+{% load i18n %}
+
+{% for card in cards %}
+<div class="trend-card">
+    <div class="trend-card__label">{{ card.title }}</div>
+
+    {% if card.state == 'empty' %}
+    <div class="trend-card__value">&mdash;</div>
+    {% else %}
+    <div class="trend-card__value {% if card.state == 'positive' %}positive{% elif card.state == 'negative' %}negative{% endif %}">
+        {{ card.value }}
+    </div>
+    {% endif %}
+
+    <div class="trend-card__note">{{ card.note }}</div>
+</div>
+{% endfor %}
+
+<div class="trend-card trend-card--limit">
+    {% if limit.target_id %}{% url 'drinks:target_update' limit.target_id as limit_url %}{% else %}{% url 'drinks:target_new' 'index' as limit_url %}{% endif %}
+    <div class="trend-card__label">{% translate 'Daily limit' %}</div>
+    {% if limit.has_data %}
+    <button type="button" class="trend-card__value" hx-get="{{ limit_url }}" hx-target="#mainModal" title="{% translate 'Goal for the year' %}">{{ limit.ml|floatformat:'0g' }} {% translate 'ml' %}</button>
+    <div class="trend-card__note">{{ limit.pcs|floatformat:'1g' }} {% translate 'pcs' %} / {% translate 'day' %}</div>
+    {% else %}
+    <button type="button" class="trend-card__value" hx-get="{{ limit_url }}" hx-target="#mainModal" title="{% translate 'Goal for the year' %}" aria-label="{% translate 'Goal for the year' %}">+</button>
+    <div class="trend-card__note">{% translate 'No limit set' %}</div>
+    {% endif %}
+</div>

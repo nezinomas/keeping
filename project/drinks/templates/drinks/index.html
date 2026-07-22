@@ -4,8 +4,7 @@
 
 
 {% block head %}
-    {% include 'highcharts.html' with heatmap="True" %}
-    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_calendar.js' %}"></script>
+    {% include 'highcharts.html' %}
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_quantity.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_consumption.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_trend.js' %}"></script>
@@ -40,8 +39,6 @@
         if (document.getElementById('chart-consumption-data')) {
             chartConsumption('chart-consumption-data', 'chart-consumption-container');
             chartQuantity('chart-quantity-data', 'chart-quantity-container');
-            chartCalender('chart-calendar-1H-data', 'chart-calendar-1H-container');
-            chartCalender('chart-calendar-2H-data', 'chart-calendar-2H-container');
         }
         if (document.getElementById('chart-summary-data')) {
             chart_drinks_summary("chart-summary-data", "chart-summary-container");

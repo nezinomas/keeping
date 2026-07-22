@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load cell_format %}
 
-<table class="main striped">
+<table class="stdav-table">
     <caption>{% translate 'Drunk' %}, {% translate 'pcs' %}</caption>
     <thead>
         <tr>
@@ -14,8 +14,8 @@
     </thead>
     <tbody>
         {% for item in ctx.items %}
-        <tr {% if 'Av' in item.title %}class="std-av-border"{% endif %}>
-            <td class="text-left"><span>{{ item.title }}</span></td>
+        <tr {% if 'Av' in item.title %}class="stdav-table__total"{% endif %}>
+            <td class="text-left">{{ item.title }}</td>
             <td>{{item.total|cellformat}}</td>
             <td>{{item.per_day|cellformat}}</td>
             <td>{{item.per_week|cellformat}}</td>

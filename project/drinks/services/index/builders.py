@@ -36,15 +36,24 @@ class DryDaysViewModel:
 
 
 @dataclass(frozen=True)
-class ConsumptionViewModel:
-    qty: float
-    avg: float
-    target: float
+class AlcoholViewModel:
+    liters: float
 
 
 @dataclass(frozen=True)
-class AlcoholViewModel:
-    liters: float
+class IndexCardViewModel:
+    title: str
+    value: str
+    note: str
+    state: str = "neutral"  # "neutral" | "positive" | "negative" | "empty"
+
+
+@dataclass(frozen=True)
+class LimitCardViewModel:
+    has_data: bool = False
+    ml: float = 0.0
+    pcs: float = 0.0
+    target_id: int = 0
 
 
 @dataclass(frozen=True)
@@ -106,16 +115,95 @@ class IndexBuilder:
 
         return DryDaysViewModel()
 
-    def tbl_consumption(self) -> ConsumptionViewModel:
-        return ConsumptionViewModel(
-            qty=self._drink_stats.yearly.total_quantity,
-            avg=self._drink_stats.yearly.avg_daily_volume_ml,
-            target=self._target,
-        )
-
     def tbl_alcohol(self) -> AlcoholViewModel:
         stdav = self._drink_stats.yearly.total_quantity / self._converter.ratio
         return AlcoholViewModel(liters=self._converter.stdav_to_alcohol(stdav))
+
+    def get_cards(self) -> list[IndexCardViewModel]:
+        return [
+            self._card_dry_days(),
+            self._card_std_drinks(),
+            self._card_avg_per_day(),
+            self._card_pure_alcohol(),
+        ]
+
+    def _card_dry_days(self) -> IndexCardViewModel:
+        title = _("Days dry")
+        dry = self.tbl_dry_days()
+
+        if not dry.has_data:
+            return IndexCardViewModel(
+                title=title, value="", note=_("No data"), state="empty"
+            )
+
+        return IndexCardViewModel(
+            title=title,
+            value=str(dry.delta),
+            note=dry.date.strftime("%Y-%m-%d"),
+            state="neutral",
+        )
+
+    def _card_std_drinks(self) -> IndexCardViewModel:
+        title = _("Std drinks")
+        total_quantity = self._drink_stats.yearly.total_quantity
+
+        if not total_quantity:
+            return IndexCardViewModel(
+                title=title, value="", note=_("No data"), state="empty"
+            )
+
+        stdav = total_quantity * self._converter.stdav_per_unit
+
+        return IndexCardViewModel(
+            title=title,
+            value=f"{stdav:.0f}",
+            note=_("Std Av this year"),
+            state="neutral",
+        )
+
+    def _card_avg_per_day(self) -> IndexCardViewModel:
+        title = _("Avg per day")
+
+        if not self._drink_stats.yearly.total_quantity:
+            return IndexCardViewModel(
+                title=title, value="", note=_("No data"), state="empty"
+            )
+
+        avg = self._drink_stats.yearly.avg_daily_volume_ml
+        value = f"{avg:.0f} ml"
+
+        if not self._target:
+            return IndexCardViewModel(
+                title=title, value=value, note=_("No limit set"), state="neutral"
+            )
+
+        under_limit = avg <= self._target
+        diff = abs(self._target - avg)
+        note = f"{diff:.0f} ml " + (
+            _("under the limit") if under_limit else _("over the limit")
+        )
+
+        return IndexCardViewModel(
+            title=title,
+            value=value,
+            note=note,
+            state="positive" if under_limit else "negative",
+        )
+
+    def _card_pure_alcohol(self) -> IndexCardViewModel:
+        title = _("Pure alcohol")
+
+        if not self._drink_stats.yearly.total_quantity:
+            return IndexCardViewModel(
+                title=title, value="", note=_("No data"), state="empty"
+            )
+
+        return IndexCardViewModel(
+            title=title,
+            value=f"{self.tbl_alcohol().liters:.1f} L",
+            note=_("this year"),
+            state="neutral",
+        )
 
     def tbl_std_av(self) -> StdAvViewModel:
         return StdAvViewModel(

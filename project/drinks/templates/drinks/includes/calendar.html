@@ -1,0 +1,32 @@
+{% load i18n %}
+
+<div class="heat-card">
+    <div class="heat-scroll">
+        <div class="heat-body">
+            <div class="heat-daycol">
+                <span>{% translate 'Mon' %}</span><span></span><span>{% translate 'Wed' %}</span><span></span><span>{% translate 'Fri' %}</span><span></span><span>{% translate 'Sun' %}</span>
+            </div>
+            {% for month in calendar.months %}
+            <div class="heat-month">
+                <div class="mini">
+                    {% for day in month.days %}<i class="l{{ day.level }}{% if day.is_today %} today{% elif day.is_future %} future{% endif %}"{% if forloop.first %} style="--start:{{ month.leading_blanks|add:1 }}"{% endif %}{% if day.label %} title="{{ day.label }}"{% endif %}></i>{% endfor %}
+                </div>
+                <div class="mlabel">{{ month.name }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="heat-legend">
+        <span>{% translate 'No drink' %}</span>
+        <span class="swatches">
+            <i class="l0"></i>
+            <i class="l1"></i>
+            <i class="l2"></i>
+            <i class="l3"></i>
+            <i class="l4"></i>
+        </span>
+        <span>{% translate 'heavier day' %}</span>
+        <span class="heat-legend__spacer"></span>
+        <span><i class="today"></i> {% translate 'today' %}</span>
+    </div>
+</div>

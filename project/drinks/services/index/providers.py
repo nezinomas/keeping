@@ -1,6 +1,6 @@
 import contextlib
 
-from ...models import Drink, DrinkTarget
+from ...models import Drink
 from ...services.model_services import DrinkModelService, DrinkTargetModelService
 from .dtos import IndexDto
 
@@ -17,6 +17,8 @@ class IndexDataProvider:
         sum_by_day = DrinkModelService(self.user).sum_by_day(self.year)
 
         target = 0.0
+        target_pcs = 0.0
+        target_id = 0
         latest_past_date = None
         latest_current_date = None
 
@@ -34,18 +36,17 @@ class IndexDataProvider:
                 DrinkModelService(self.user).year(self.year).latest().date
             )
 
-        with contextlib.suppress(DrinkTarget.DoesNotExist):
-            target = (
-                DrinkTargetModelService(self.user)
-                .year(self.year)
-                .get(year=self.year)
-                .qty
-            )
+        if row := DrinkTargetModelService(self.user).year(self.year).first():
+            target = row.qty
+            target_pcs = row.max_bottles
+            target_id = row.id
 
         return IndexDto(
             sum_by_month=sum_by_month,
             sum_by_day=sum_by_day,
             target=target,
+            target_pcs=target_pcs,
+            target_id=target_id,
             latest_past_date=latest_past_date,
             latest_current_date=latest_current_date,
         )

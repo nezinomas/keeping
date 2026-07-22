@@ -47,10 +47,7 @@ class TabIndex(TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **{
-                "tab": "index",
-                "target": rendered_content(self.request, TargetLists, **kwargs),
-            },
+            **{"tab": "index"},
             **services.helper.drink_type_dropdown(self.request),
             **services.index.load_service(user, year),
         }

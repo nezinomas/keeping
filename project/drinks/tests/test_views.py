@@ -81,7 +81,7 @@ def test_index_links(client_logged):
 
     assert len(res) == 5
     assert res[0][0] == reverse("drinks:tab_index")
-    assert res[0][1] == "Grafikai"
+    assert res[0][1] == "Apžvalga"
 
     assert res[1][0] == reverse("drinks:tab_trends")
     assert res[1][1] == "Tendencijos"
@@ -177,26 +177,66 @@ def test_tab_index_context(client_logged):
     assert "all_years" in response.context
     assert "chart_quantity" in response.context
     assert "chart_consumption" in response.context
-    assert "chart_calendar_1H" in response.context
-    assert "chart_calendar_2H" in response.context
-    assert "tbl_consumption" in response.context
-    assert "tbl_dray_days" in response.context
-    assert "tbl_alcohol" in response.context
     assert "tbl_std_av" in response.context
+    assert "cards" in response.context
+    assert "limit" in response.context
+    assert "calendar" in response.context
 
 
-def test_tab_index_has_target_table_and_add_button(client_logged):
+def test_tab_index_has_daily_limit_card(client_logged):
     url = reverse("drinks:tab_index")
     response = client_logged.get(url)
     content = response.content.decode()
 
-    # the drinks-target table is shown on the charts tab
-    assert 'id="target_list"' in content
+    # the daily-limit card replaces the old target table
+    assert 'class="trend-card trend-card--limit"' in content
+    # there is no separate edit button; the value itself is the trigger
+    assert "trend-card__edit" not in content
 
-    # and an add-target button opens the modal
+    # with no target set the value is a "+" that opens the goal modal (target_new)
     add_url = reverse("drinks:target_new", kwargs={"tab": "index"})
-    assert f'hx-get="{add_url}"' in content
+    assert (
+        f'<button type="button" class="trend-card__value" hx-get="{add_url}"' in content
+    )
     assert 'hx-target="#mainModal"' in content
+    assert ">+</button>" in content
+
+
+def test_tab_index_daily_limit_value_click_uses_target_update(client_logged):
+    target = DrinkTargetFactory()
+
+    url = reverse("drinks:tab_index")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    # with a saved target the value (as a button) points at target_update
+    edit_url = reverse("drinks:target_update", kwargs={"pk": target.pk})
+    assert (
+        f'<button type="button" class="trend-card__value" hx-get="{edit_url}"'
+        in content
+    )
+
+
+def test_tab_index_renders_overview_sections(client_logged):
+    DrinkFactory()
+
+    url = reverse("drinks:tab_index")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    # KPI cards
+    assert 'class="trend-card"' in content
+    # server-rendered heatmap calendar
+    assert 'class="heat-card"' in content
+    assert 'class="heat-month"' in content
+    assert '<div class="mini">' in content
+    # Std-AV table + "what is a standard unit?" disclosure
+    assert 'id="breakdown"' in content
+    assert 'class="stdav-info"' in content
+
+    # historical/compare blocks now live on the History tab only
+    assert 'id="historical-data"' not in content
+    assert 'id="compare-form-and-chart"' not in content
 
 
 @time_machine.travel("1999-1-1")
@@ -233,7 +273,8 @@ def test_tab_index_drinked_date(client_logged):
     url = reverse("drinks:tab_index")
     response = client_logged.get(url)
 
-    assert date(1998, 1, 2) == response.context["tbl_dray_days"].date
+    # the "days dry" card is the first card; its note carries the latest ISO date
+    assert response.context["cards"][0].note == "1998-01-02"
 
 
 @pytest.mark.parametrize(
@@ -280,19 +321,6 @@ def test_tab_index_chart_consumption_limit(
     actual = response.context["chart_consumption"].target
 
     assert expect == round(actual, 0)
-
-
-@time_machine.travel("1999-1-1")
-def test_tab_index_first_record_with_gap_from_previous_year(client_logged):
-    DrinkFactory(date=date(1999, 1, 2), stdav=2.5)
-    DrinkFactory(date=date(1998, 1, 1), stdav=2.5)
-
-    url = reverse("drinks:tab_index")
-    response = client_logged.get(url)
-    context = response.context["chart_calendar_1H"]["data"][0]["data"]
-
-    assert context[4] == [0, 4, 0.0005, 53, "1999-01-01"]
-    assert context[5] == [0, 5, 1.0, 53, "1999-01-02", 1.0, 366.0]
 
 
 # -------------------------------------------------------------------------------------
@@ -546,6 +574,39 @@ def test_tab_history_chart_consumption(client_logged):
     content = response.content.decode("utf-8")
 
     assert '<div id="chart-summary-container"></div>' in content
+
+
+@time_machine.travel("1999-1-1")
+def test_tab_history_has_historical_and_compare_blocks(client_logged):
+    DrinkFactory()
+    DrinkFactory(date=date(1988, 1, 1))
+
+    url = reverse("drinks:tab_history")
+    response = client_logged.get(url)
+    content = response.content.decode("utf-8")
+
+    # the historical-data + year-comparison blocks now live on the History tab
+    assert 'id="historical-data"' in content
+    assert 'id="chart-history-container"' in content
+    assert 'id="compare-form-and-chart"' in content
+
+    # comparison buttons target the history chart, including an all_years button
+    assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 2})}"' in content
+    all_years = response.context["all_years"]
+    assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": all_years})}"' in content
+
+    # the lazy-loaded compare form
+    assert f'hx-get="{reverse("drinks:compare_two")}"' in content
+
+
+def test_tab_history_hides_historical_blocks_without_records(client_logged):
+    url = reverse("drinks:tab_history")
+    response = client_logged.get(url)
+    content = response.content.decode("utf-8")
+
+    # with no records the historical/compare blocks are not rendered
+    assert 'id="historical-data"' not in content
+    assert 'id="compare-form-and-chart"' not in content
 
 
 @time_machine.travel("1999-12-31")

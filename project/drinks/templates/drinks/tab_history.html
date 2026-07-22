@@ -1,10 +1,34 @@
+{% load i18n %}
+
 {% include 'drinks/includes/navbar.html' %}
 
 {% if records %}
 
+<main class="history-grid">
     <div id="chart-summary-container"></div>
-    {{chart|json_script:"chart-summary-data"}}
 
+    <!-- Historical data -->
+    <div id="historical-data">
+        <div class="row">
+            <div>
+                <b>{% translate 'Historical data' %}</b>
+            </div>
+            <div class="flex">
+                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 2 %}" hx-target="#chart-history-container">{% translate '2 years' %}</button>
+                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 3 %}" hx-target="#chart-history-container">{% translate '3 years' %}</button>
+                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 7 %}" hx-target="#chart-history-container">{% translate '7 years' %}</button>
+                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' all_years %}" hx-target="#chart-history-container">{% translate 'All years' %}</button>
+            </div>
+        </div>
+
+        <div id="chart-history-container"></div>
+    </div>
+
+    <!-- Compare form and chart -->
+    <div id="compare-form-and-chart" hx-get="{% url 'drinks:compare_two' %}" hx-trigger="load"></div>
+</main>
+
+{{chart|json_script:"chart-summary-data"}}
 
 {% else %}
 
