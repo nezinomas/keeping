@@ -33,6 +33,8 @@
     {{content}}
 </div>
 
+{% include 'drinks/includes/quick_add.html' %}
+
 <script nonce="{{ csp_nonce }}">
     function initDrinksCharts() {
         if (document.getElementById('chart-consumption-data')) {
@@ -64,6 +66,9 @@
         const targetId = event.detail.target.id;
         if (targetId === 'tab_content') {
             initDrinksCharts();
+            const nav = document.querySelector('#drinks-nav');
+            const tabInput = document.getElementById('quick-add-tab');
+            if (nav && tabInput) { tabInput.value = nav.dataset.tab || 'index'; }
         }
         if (targetId === 'chart-history-container' && document.getElementById('chart-history-data')) {
             chartCompare('chart-history-data', 'chart-history-container');

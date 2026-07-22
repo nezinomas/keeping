@@ -28,20 +28,16 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
-def test_index_add_button(client_logged):
+def test_index_quick_add(client_logged):
+    # adding a drink now happens via the persistent quick-add widget
+    # (bottom pill -> sheet) instead of a button in the nav
     url = reverse("drinks:index")
     response = client_logged.get(url)
     content = response.content.decode()
 
-    pattern = re.compile(
-        r'<button type="button" class="button-outline-success" hx-get="(.*?)" hx-target="#mainModal">(\w+)<\/button>',  # noqa: E501
-        re.MULTILINE,
-    )
-    res = re.findall(pattern, content)
-
-    assert len(res[0]) == 2
-    assert res[0][0] == reverse("drinks:new", kwargs={"tab": "index"})
-    assert res[0][1] == "Gertynės"
+    assert f'hx-post="{reverse("drinks:quick_add")}"' in content
+    assert 'name="quantity"' in content
+    assert 'class="quick-add__pill"' in content
 
 
 def test_index_links(client_logged):

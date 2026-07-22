@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<nav id="drinks-nav">
+<nav id="drinks-nav" data-tab="{{ tab }}">
     <button
         class="{% if tab == 'index' %}button-active{% else %}button-secondary{% endif %}"
         hx-get="{% url 'drinks:tab_index' %}"
@@ -46,7 +46,4 @@
             </div>
         </div>
     </div>
-
-    <c-new-button url="{% url 'drinks:new' tab %}" title="{% translate 'Drinks' context 'drinks button' %}" />
-    <c-new-button url="{% url 'drinks:target_new' tab %}" title="{% translate 'Goal for the year' %}" />
 </nav>

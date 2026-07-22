@@ -1,0 +1,38 @@
+{% load i18n %}
+
+<div id="quick-add" class="quick-add" x-data="{ open: false }">
+
+    <div class="quick-add__sheet" x-show="open" x-cloak x-transition
+         @click.outside="open = false">
+        <form hx-post="{% url 'drinks:quick_add' %}"
+              hx-swap="none"
+              hx-on::after-request="if (event.detail.successful) { const q = this.querySelector('[name=quantity]'); q.value = ''; q.focus(); }">
+            {% csrf_token %}
+            <input type="hidden" name="tab" id="quick-add-tab" value="index">
+
+            <input type="text" name="quantity" class="quick-add__qty"
+                   inputmode="decimal" autocomplete="off" required
+                   placeholder="{% translate 'Quantity' %}"
+                   x-on:input="$event.target.value = $event.target.value.replace(',', '.')">
+
+            <select name="option" class="quick-add__type">
+                {% for type in select_drink_type %}
+                <option value="{{ type.1 }}" {% if type.1 == user.drink_type %}selected{% endif %}>{{ type.0 }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="button-outline-success quick-add__add">&#10003; {% translate 'Add' %}</button>
+        </form>
+
+        <div class="quick-add__extra">
+            <a href="#" role="button"
+               @click.prevent="htmx.ajax('GET', '/drinks/' + document.getElementById('quick-add-tab').value + '/new/', '#mainModal')">
+                {% translate 'More' %}
+            </a>
+        </div>
+    </div>
+
+    <button type="button" class="quick-add__pill" @click="open = !open">
+        + {% translate 'Log a drink' %}
+    </button>
+</div>
