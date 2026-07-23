@@ -593,10 +593,12 @@ def test_tab_history_has_unified_compare_panel(client_logged):
     assert 'id="historical-data"' in content
     assert 'id="chart-history-container"' in content
 
-    # preset buttons target the single history chart, including an all_years button
+    # preset buttons target the single history chart
     assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 2})}"' in content
-    all_years = response.context["all_years"]
-    assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": all_years})}"' in content
+    assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 3})}"' in content
+    assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 7})}"' in content
+    assert "Visi metai" not in content
+    assert "All years" not in content
 
     # the year-comparison form is embedded (not lazy-loaded) and posts to the
     # same shared chart
