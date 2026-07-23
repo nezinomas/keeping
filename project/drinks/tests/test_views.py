@@ -7,7 +7,7 @@ from django.urls import resolve, reverse, reverse_lazy
 
 from ...core.tests.utils import change_profile_year, setup_view
 from ...users.tests.factories import User
-from .. import models, views
+from .. import forms, models, views
 from .factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
@@ -593,10 +593,12 @@ def test_tab_history_has_unified_compare_panel(client_logged):
     assert 'id="historical-data"' in content
     assert 'id="chart-history-container"' in content
 
-    # preset buttons target the single history chart, including an all_years button
+    # preset buttons target the single history chart
     assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 2})}"' in content
-    all_years = response.context["all_years"]
-    assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": all_years})}"' in content
+    assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 3})}"' in content
+    assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 7})}"' in content
+    assert "Visi metai" not in content
+    assert "All years" not in content
 
     # the year-comparison form is embedded (not lazy-loaded) and posts to the
     # same shared chart
@@ -819,6 +821,19 @@ def test_comparetwo_chart_data(client_logged):
     assert round(actual["serries"][1]["data"][0], 2) == 161.29
 
 
+def test_compare_data_includes_form_and_oob_swap(client_logged):
+    DrinkFactory()
+
+    url = reverse("drinks:compare", kwargs={"qty": 2})
+    response = client_logged.get(url)
+    content = response.content.decode("utf-8")
+
+    assert "form" in response.context
+    assert isinstance(response.context["form"], forms.DrinkCompareForm)
+    assert 'id="compare-form"' in content
+    assert 'hx-swap-oob="true"' in content
+
+
 def test_comparetwo_valid_feeds_unified_chart(client_logged):
     DrinkFactory(date=date(1999, 1, 1))
     DrinkFactory(date=date(2000, 1, 1))
@@ -827,9 +842,11 @@ def test_comparetwo_valid_feeds_unified_chart(client_logged):
     response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
     content = response.content.decode("utf-8")
 
-    # a valid submit feeds the single shared history chart
+    # a valid submit feeds the single shared history chart and clears errors by OOB swapping form
     assert 'id="chart-history-data"' in content
     assert "chart-compare-two-data" not in content
+    assert 'id="compare-form"' in content
+    assert 'hx-swap-oob="true"' in content
 
 
 def test_comparetwo_invalid_retargets_form(client_logged):
