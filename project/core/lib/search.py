@@ -151,7 +151,7 @@ def _get_value(search_dict, key, default_value):
 def _generic_search(query, search_str, category_list, date_field="date"):
     search_dict, search_type = _make_search_dict(search_str)
 
-    if all(value is None for value in search_dict.values()):
+    if not any(search_dict.values()):
         return query.none()
 
     query = _apply_date_filters(query, search_dict, date_field)
