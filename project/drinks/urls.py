@@ -20,6 +20,7 @@ urlpatterns = [
     path("target/update/<int:pk>/", views.TargetUpdate.as_view(), name="target_update"),
     path("compare/<int:qty>/", views.Compare.as_view(), name="compare"),
     path("compare/", views.CompareTwo.as_view(), name="compare_two"),
+    path("quick_add/", views.QuickAdd.as_view(), name="quick_add"),
     path(
         "drink_type/<str:drink_type>/",
         views.SelectDrink.as_view(),

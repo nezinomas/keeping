@@ -1,36 +1,36 @@
 {% load i18n %}
 
-<nav id="drinks-nav">
+<nav id="drinks-nav" data-tab="{{ tab }}">
     <button
-        class="{% if tab == 'index' %}button-active{% else %}button-secondary{% endif %}"
+        class="tab{% if tab == 'index' %} active{% endif %}"
         hx-get="{% url 'drinks:tab_index' %}"
         hx-target="#tab_content">
-    {% translate 'Charts' %}
+        {% translate 'Overview' %}
     </button>
 
     <button
-        class="{% if tab == 'trends' %}button-active{% else %}button-secondary{% endif %}"
+        class="tab{% if tab == 'trends' %} active{% endif %}"
         hx-get="{% url 'drinks:tab_trends' %}"
         hx-target="#tab_content">
         {% translate 'Trends' %}
     </button>
 
     <button
-        class="{% if tab == 'risk' %}button-active{% else %}button-secondary{% endif %}"
+        class="tab{% if tab == 'risk' %} active{% endif %}"
         hx-get="{% url 'drinks:tab_risk' %}"
         hx-target="#tab_content">
         {% translate 'Risk' %}
     </button>
 
     <button
-        class="{% if tab == 'history' %}button-active{% else %}button-secondary{% endif %}"
+        class="tab{% if tab == 'history' %} active{% endif %}"
         hx-get="{% url 'drinks:tab_history' %}"
         hx-target="#tab_content">
         {% translate 'History' %}
     </button>
 
     <button
-        class="{% if tab == 'data' %}button-active{% else %}button-secondary{% endif %}"
+        class="tab{% if tab == 'data' %} active{% endif %}"
         hx-get="{% url 'drinks:tab_data' %}"
         hx-target="#tab_content">
         {% translate 'Data' %}
@@ -46,7 +46,4 @@
             </div>
         </div>
     </div>
-
-    <c-new-button url="{% url 'drinks:new' tab %}" title="{% translate 'Drinks' context 'drinks button' %}" />
-    <c-new-button url="{% url 'drinks:target_new' tab %}" title="{% translate 'Goal for the year' %}" />
 </nav>

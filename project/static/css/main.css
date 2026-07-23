@@ -965,6 +965,7 @@ video {
   opacity: 1;
   transform: rotateX(0) translateX(0);
   visibility: visible;
+  pointer-events: auto;
 }
 .dropdown.left .dropdown__menu {
   right: 0;
@@ -987,6 +988,8 @@ video {
   background-color: white;
   z-index: 999;
   opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transform: rotateX(-90deg) translateX(0);
   transform-origin: top center;
   transition: 280ms all 50ms ease-out;
@@ -1080,23 +1083,36 @@ nav#main-nav > .active {
 
 nav#drinks-nav {
   margin-bottom: 0.75rem;
-  gap: 0.25rem;
-  flex-wrap: nowrap;
+  gap: 0 1.25rem;
+  flex-wrap: wrap;
 }
-nav#drinks-nav > * {
+nav#drinks-nav .tab {
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: #000;
   white-space: nowrap;
-  align-items: center;
+  cursor: pointer;
+  padding: 0.35rem 0.15rem;
+  touch-action: manipulation;
+  transition: 280ms all 50ms ease-out;
+}
+nav#drinks-nav .tab:hover, nav#drinks-nav .tab:focus {
+  color: hsl(206, 100%, 26%);
+  border-bottom-color: hsl(206, 100%, 66%);
+}
+nav#drinks-nav .tab.active {
+  color: hsl(206, 100%, 26%);
+  font-weight: 500;
+  border-bottom-color: hsl(206, 100%, 26%);
 }
 nav#drinks-nav > div {
-  flex-basis: 100%;
-  justify-content: center;
-}
-nav#drinks-nav > :not(div) {
-  flex-grow: 0;
+  margin-left: auto;
 }
 nav#drinks-nav .dropdown__menu {
-  left: 50%;
-  transform: translate(-50%, 0);
+  left: auto;
+  right: 0;
+  transform: none;
 }
 
 @media (pointer: coarse) {
@@ -1827,6 +1843,130 @@ input.year-picker {
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
   opacity: 1;
+}
+
+[x-cloak] {
+  display: none !important;
+}
+
+body:has(.quick-add) {
+  padding-bottom: 6rem;
+}
+
+.quick-add {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.quick-add > * {
+  pointer-events: auto;
+}
+
+.quick-add__pill {
+  margin-bottom: 0.75rem;
+  padding: 0.45rem 1.25rem;
+  border: 1px solid #dee2e6;
+  border-radius: 999px;
+  background: hsl(206, 100%, 99.5%);
+  color: hsl(206, 100%, 26%);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  transition: 280ms all 50ms ease-out;
+}
+.quick-add__pill:hover, .quick-add__pill:focus {
+  background: #fff;
+  border-color: hsl(206, 100%, 76%);
+}
+
+.quick-add__sheet {
+  width: 100%;
+  max-width: 640px;
+  box-sizing: border-box;
+  margin-bottom: 0.5rem;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}
+.quick-add__sheet form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.quick-add__sheet .quick-add__qty,
+.quick-add__sheet .quick-add__type {
+  border: 1px solid #dee2e6;
+  border-radius: 0.1rem;
+  background: #fff;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.7rem;
+}
+.quick-add__sheet .quick-add__qty:focus,
+.quick-add__sheet .quick-add__type:focus {
+  outline: 0;
+  border-color: hsl(206, 100%, 26%);
+}
+.quick-add__sheet .quick-add__qty {
+  flex: 1 1 6rem;
+  min-width: 0;
+}
+.quick-add__sheet .quick-add__type {
+  flex: 1 1 8rem;
+}
+.quick-add__sheet .quick-add__add {
+  --button-border-radius: 0.1rem;
+  transition: 250ms all 50ms ease-out;
+  border-radius: var(--button-border-radius);
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.15rem;
+  padding-bottom: 0.2rem;
+}
+.quick-add__sheet .quick-add__add::before {
+  vertical-align: middle;
+  padding-bottom: 0.25rem;
+  padding-right: 0.25rem;
+}
+.quick-add__sheet .quick-add__add {
+  flex: 0 0 auto;
+  color: #fff;
+  background-color: hsl(206, 100%, 26%);
+  border: 1px solid hsl(206, 100%, 26%);
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+.quick-add__sheet .quick-add__add:hover {
+  background-color: hsl(206, 100%, 20%);
+  border-color: hsl(206, 100%, 20%);
+}
+.quick-add__sheet .quick-add__add:focus, .quick-add__sheet .quick-add__add:active {
+  outline: 0;
+  box-shadow: 0 0 0 0.15rem rgba(0, 75.14, 132.6, 0.2);
+}
+.quick-add__sheet .quick-add__extra {
+  margin-top: 0.5rem;
+  text-align: right;
+  font-size: 0.7rem;
+}
+.quick-add__sheet .quick-add__extra a {
+  color: #6c757d;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 280ms all 50ms ease-out;
+}
+.quick-add__sheet .quick-add__extra a:hover, .quick-add__sheet .quick-add__extra a:focus {
+  color: hsl(206, 100%, 26%);
 }
 
 .tip {

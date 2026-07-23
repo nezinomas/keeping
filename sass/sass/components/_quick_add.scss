@@ -1,0 +1,122 @@
+[x-cloak] { display: none !important; }
+
+body:has(.quick-add) { padding-bottom: 6rem; }
+
+.quick-add {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+
+    > * { pointer-events: auto; }
+}
+
+// resting trigger: quiet tinted pill (no icon)
+.quick-add__pill {
+    margin-bottom: 0.75rem;
+    padding: 0.45rem 1.25rem;
+    border: 1px solid $border-color-light;
+    border-radius: 999px;
+    background: $nav-bg;
+    color: $primary;
+    font-size: $font-size;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    transition: $transition;
+
+    &:hover,
+    &:focus {
+        background: #fff;
+        border-color: lighten($primary, 50%);
+    }
+}
+
+// floating quick-add card
+.quick-add__sheet {
+    width: 100%;
+    max-width: 640px;
+    box-sizing: border-box;
+    margin-bottom: 0.5rem;
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid $border-color-light;
+    border-radius: 0.5rem;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+
+    form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .quick-add__qty {
+        border: 1px solid $border-color-light;
+        border-radius: 0.1rem;
+        background: #fff;
+        padding: 0.4rem 0.5rem;
+        font-size: $font-size;
+
+        &:focus {
+            outline: 0;
+            border-color: $primary;
+        }
+    }
+
+    .quick-add__qty {
+        flex: 1 1 6rem;
+        min-width: 0;
+    }
+
+    .quick-add__type {
+        flex: 1 1 8rem;
+    }
+
+    // primary CTA (filled, no icon)
+    .quick-add__add {
+        @include button();
+        flex: 0 0 auto;
+        color: #fff;
+        background-color: $primary;
+        border: 1px solid $primary;
+        cursor: pointer;
+        font-size: $font-size;
+
+        &:hover {
+            background-color: darken($primary, 6%);
+            border-color: darken($primary, 6%);
+        }
+
+        &:focus,
+        &:active {
+            outline: 0;
+            box-shadow: 0 0 0 0.15rem rgba($primary, 0.2);
+        }
+    }
+
+    // quiet ghost link
+    .quick-add__extra {
+        margin-top: 0.5rem;
+        text-align: right;
+        font-size: $font-size;
+
+        a {
+            color: $text-muted;
+            text-decoration: none;
+            cursor: pointer;
+            transition: $transition;
+
+            &:hover,
+            &:focus {
+                color: $primary;
+            }
+        }
+    }
+}

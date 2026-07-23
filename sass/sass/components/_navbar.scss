@@ -6,6 +6,7 @@
             opacity: 1;
             transform: rotateX(0) translateX(0);
             visibility: visible;
+            pointer-events: auto;
         }
     }
 
@@ -33,6 +34,8 @@
     z-index: 999;
 
     opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     transform: rotateX(-90deg) translateX(0);
     transform-origin: top center;
     transition: $transition;
@@ -142,32 +145,6 @@ nav#main-nav {
 
     > .active {
         border-bottom: 3px solid $primary;
-    }
-}
-
-
-nav#drinks-nav {
-    margin-bottom: $gap;
-    gap: calc($gap / 3);
-    flex-wrap: nowrap;
-
-    > * {
-        white-space: nowrap;
-        align-items: center;
-    }
-
-    > div {
-        flex-basis: 100%;
-        justify-content: center;
-    }
-
-    > :not(div) {
-        flex-grow: 0;
-    }
-
-    .dropdown__menu {
-        left: 50%;
-        transform: translate(-50%, 0);
     }
 }
 

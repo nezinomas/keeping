@@ -4,6 +4,7 @@ import polars as pl
 from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 
+from ...core.lib.date import years
 from ...users.models import User
 from ..lib.drinks_options import DrinkConverter
 from ..services.model_services import DrinkModelService
@@ -88,6 +89,7 @@ def load_service(user) -> dict:
     service = HistoryService(user, data)
 
     return {
+        "all_years": len(years()),
         "records": len(service.years) if len(service.years) > 1 else 0,
         "chart": {
             "categories": service.years,

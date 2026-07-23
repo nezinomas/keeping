@@ -3,9 +3,12 @@ from typing import cast
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from django.views.generic import View
 from django_htmx.http import trigger_client_event
 
+from ..core.lib.date import set_date_with_user_year
 from ..core.lib.translation import month_names
 from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
@@ -31,6 +34,7 @@ class Index(TemplateViewMixin):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
+            **services.helper.drink_type_dropdown(self.request),
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
@@ -44,10 +48,7 @@ class TabIndex(TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **{
-                "tab": "index",
-                "target": rendered_content(self.request, TargetLists, **kwargs),
-            },
+            **{"tab": "index"},
             **services.helper.drink_type_dropdown(self.request),
             **services.index.load_service(user, year),
         }
@@ -106,6 +107,7 @@ class TabHistory(TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"tab": "history"},
+            **{"form": forms.DrinkCompareForm(user=self.request.user)},
             **services.helper.drink_type_dropdown(self.request),
             **services.history.load_service(self.request.user),
         }
@@ -125,6 +127,7 @@ class Compare(TemplateViewMixin):
         )
         return {
             "chart": {
+                "title": gettext("Year comparison"),
                 "categories": list(month_names().values()),
                 "serries": chart_serries,
             },
@@ -137,7 +140,9 @@ class CompareTwo(FormViewMixin):
     success_url = reverse_lazy("drinks:compare_two")
 
     def form_valid(self, form, **kwargs):
-        context = {}
+        # a valid submit only updates the shared history chart; the form stays
+        # put in the header, so render just the chart data into its container
+        context = {"form": form}
         year1 = form.cleaned_data["year1"]
         year2 = form.cleaned_data["year2"]
         chart_serries = services.helper.several_years_consumption(
@@ -145,14 +150,19 @@ class CompareTwo(FormViewMixin):
         )
 
         if len(chart_serries) == 2:
-            context |= {
-                "form": form,
-                "chart": {
-                    "categories": list(month_names().values()),
-                    "serries": chart_serries,
-                },
+            context["chart"] = {
+                "title": gettext("Year comparison"),
+                "categories": list(month_names().values()),
+                "serries": chart_serries,
             }
-        return render(self.request, self.template_name, context)
+        return render(self.request, "drinks/includes/history.html", context)
+
+    def form_invalid(self, form):
+        # re-render the form (with errors) in place, leaving the chart untouched
+        response = super().form_invalid(form)
+        response["HX-Retarget"] = "#compare-form"
+        response["HX-Reswap"] = "outerHTML"
+        return response
 
 
 class New(CreateViewMixin):
@@ -271,3 +281,32 @@ class SelectDrink(RedirectViewMixin):
 
     def get_redirect_url(self, *args, **kwargs):
         return reverse_lazy("drinks:index")
+
+
+class QuickAdd(View):
+    def post(self, request, *args, **kwargs):
+        user = cast(User, request.user)
+        option = request.POST.get("option") or user.drink_type
+        date = request.POST.get("date") or set_date_with_user_year(user)
+
+        form = forms.DrinkForm(
+            data={
+                "user": user.pk,
+                "date": date,
+                "option": option,
+                "stdav": request.POST.get("quantity"),
+            },
+            user=user,
+        )
+
+        if not form.is_valid():
+            return HttpResponse(status=422)
+
+        form.save()
+
+        tab = request.POST.get("tab")
+        trigger = f"reload{tab.title()}" if tab in TABS else "reloadIndex"
+
+        response = HttpResponse(status=204)
+        trigger_client_event(response=response, name=trigger, params={})
+        return response
