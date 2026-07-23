@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+function alterPriceFields() {
     const fields = ["id_price", "id_fee"];
 
     fields.forEach(field => {
@@ -13,4 +13,10 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     });
-});
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", alterPriceFields);
+} else {
+    alterPriceFields();
+}

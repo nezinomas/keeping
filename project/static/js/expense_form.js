@@ -41,6 +41,12 @@ function resetFormFields(event) {
     const submitterId = event.detail.requestConfig?.triggeringEvent?.submitter?.id;
 
     if (submitterId === "_new") {
+        // Exit if the active form is not an expense form
+        const isExpenseForm = document.getElementById("id_total_sum") || document.getElementById("id_expense_type");
+        if (!isExpenseForm) {
+            return;
+        }
+
         // Define default field values
         const defaultValues = {
             quantity: "1",
