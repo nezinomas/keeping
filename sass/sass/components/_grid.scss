@@ -122,43 +122,48 @@
 .history-grid {
     @include grid-template;
 
-    > #historical-data,
-    > #compare-form-and-chart {
+    > #historical-data {
         @include grid-template(0, 0);
 
-        > .row {
+        // presets + custom-year form share one toolbar centered below the
+        // chart. The row stays vertically centered; a validation error is
+        // taken out of flow (absolute, below its field) so it can never shove
+        // the buttons/inputs around. margin-bottom reserves room for that error.
+        .compare-controls {
             display: flex;
-            align-items: flex-start;
-            height: 2rem;
-
-            > *:first-child {
-                margin-right: auto;
-                align-self: center;
-            }
-        }
-    }
-
-    > #historical-data {
-        > .row {
+            flex-wrap: wrap;
             align-items: center;
+            justify-content: center;
+            gap: calc($gap / 3);
+            margin-top: $gap;
+            margin-bottom: 1.5rem;
         }
-    }
 
-    > #compare-form-and-chart {
-        > .row {
-            > *:not(:first-child) {
-                margin-top: .15rem;
-            }
+        .compare-controls__divider {
+            align-self: center;
+            width: 1px;
+            height: 1.75rem;
+            margin: 0 calc($gap / 4);
+            background: $border-color-light;
         }
 
         form {
             display: flex;
+            align-items: center;
             gap: calc($gap / 3);
-            align-items: flex-start;
 
-            > *:last-child {
-                margin-top: .15rem;
+            > div {
+                position: relative;
             }
+        }
+
+        .invalid-feedback {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: max-content;
+            margin-top: 0.15rem;
+            white-space: nowrap;
         }
     }
 }
