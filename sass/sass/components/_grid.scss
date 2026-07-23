@@ -333,6 +333,7 @@ button.trend-card__value {
 
 // Year heatmap (server-rendered calendar)
 .heat-card {
+    min-width: 0;
     padding: calc($gap * 1.4) $gap;
     background: #fff;
     border: 1px solid $border-color-light;
@@ -348,6 +349,8 @@ button.trend-card__value {
 }
 
 .heat-scroll {
+    width: 100%;
+    min-width: 0;
     padding-bottom: 0.35rem;
     overflow-x: auto;
 }
@@ -355,8 +358,9 @@ button.trend-card__value {
 .heat-body {
     display: flex;
     gap: 5px;
+    justify-content: space-between;
     align-items: flex-start;
-    width: max-content;
+    width: 100%;
     min-width: max-content;
 }
 
@@ -377,7 +381,7 @@ button.trend-card__value {
 }
 
 .heat-month {
-    flex: 0 0 auto;
+    flex: 1 0 auto;
     min-width: max-content;
     display: flex;
     flex-direction: column;
