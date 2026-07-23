@@ -219,6 +219,8 @@ def test_filter_short_search_words(search_dict, expect):
         ("1999-1", [{"type": "Type_A", "name": "Name_A", "remark": "XXX"}]),
         ("-y 1999 -m 1", [{"type": "Type_A", "name": "Name_A", "remark": "XXX"}]),
         ("3000", []),
+        ("a", []),
+        ("ab", []),
         (
             "type_a",
             [
@@ -361,6 +363,8 @@ def test_expense_search_ordering(main_user):
         ("-y 1999 -m 1", 1, "Income Type"),
         ("2000", 0, None),
         ("-y 2000", 0, None),
+        ("a", 0, None),
+        ("ab", 0, None),
         ("type", 1, "Income Type"),
         ("-c type", 1, "Income Type"),
         ("remark", 1, "Income Type"),
@@ -412,6 +416,8 @@ def test_incomes_search_ordering(main_user):
         ("-y 1999 -m 1", "Author", "Book Title", "Remark"),
         ("2000", None, None, None),
         ("-y 2000", None, None, None),
+        ("a", None, None, None),
+        ("ab", None, None, None),
         ("auth", "Author", "Book Title", "Remark"),
         ("-c auth", "Author", "Book Title", "Remark"),
         ("titl", "Author", "Book Title", "Remark"),
