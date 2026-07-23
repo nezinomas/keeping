@@ -581,7 +581,7 @@ def test_tab_history_chart_consumption(client_logged):
 
 
 @time_machine.travel("1999-1-1")
-def test_tab_history_has_historical_and_compare_blocks(client_logged):
+def test_tab_history_has_unified_compare_panel(client_logged):
     DrinkFactory()
     DrinkFactory(date=date(1988, 1, 1))
 
@@ -589,28 +589,48 @@ def test_tab_history_has_historical_and_compare_blocks(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    # the historical-data + year-comparison blocks now live on the History tab
+    # the unified year-comparison panel lives on the History tab
     assert 'id="historical-data"' in content
     assert 'id="chart-history-container"' in content
-    assert 'id="compare-form-and-chart"' in content
 
-    # comparison buttons target the history chart, including an all_years button
+    # preset buttons target the single history chart, including an all_years button
     assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": 2})}"' in content
     all_years = response.context["all_years"]
     assert f'hx-get="{reverse("drinks:compare", kwargs={"qty": all_years})}"' in content
 
-    # the lazy-loaded compare form
-    assert f'hx-get="{reverse("drinks:compare_two")}"' in content
+    # the year-comparison form is embedded (not lazy-loaded) and posts to the
+    # same shared chart
+    assert 'id="compare-form"' in content
+    assert f'hx-post="{reverse("drinks:compare_two")}"' in content
+    assert 'hx-target="#chart-history-container"' in content
+
+    # the second overlay chart/container is gone (one unified chart)
+    assert 'id="compare-form-and-chart"' not in content
+    assert "chart-compare-two" not in content
 
 
-def test_tab_history_hides_historical_blocks_without_records(client_logged):
+@time_machine.travel("1999-1-1")
+def test_tab_history_chart_auto_loads_default_comparison(client_logged):
+    DrinkFactory()
+    DrinkFactory(date=date(1988, 1, 1))
+
     url = reverse("drinks:tab_history")
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    # with no records the historical/compare blocks are not rendered
+    # the shared chart fills itself on load with the 2-year preset
+    assert 'hx-trigger="load"' in content
+
+
+def test_tab_history_hides_compare_panel_without_records(client_logged):
+    url = reverse("drinks:tab_history")
+    response = client_logged.get(url)
+    content = response.content.decode("utf-8")
+
+    # with no records the comparison panel is not rendered
     assert 'id="historical-data"' not in content
-    assert 'id="compare-form-and-chart"' not in content
+    assert 'id="chart-history-container"' not in content
+    assert 'id="compare-form"' not in content
 
 
 @time_machine.travel("1999-12-31")
@@ -744,6 +764,7 @@ def test_compare_data_chart(client_logged):
     actual = response.context["chart"]
 
     assert response.status_code == 200
+    assert actual["title"]  # chart carries a title for Highcharts to render
     assert actual["serries"][0]["name"] == 1999
     assert round(actual["serries"][0]["data"][0], 2) == 16.13
 
@@ -790,11 +811,35 @@ def test_comparetwo_chart_data(client_logged):
     response = client_logged.post(url, {"year1": "1999", "year2": "2020"})
     actual = response.context["chart"]
 
+    assert actual["title"]  # chart carries a title for Highcharts to render
     assert actual["serries"][0]["name"] == 1999
     assert round(actual["serries"][0]["data"][0], 2) == 16.13
 
     assert actual["serries"][1]["name"] == 2020
     assert round(actual["serries"][1]["data"][0], 2) == 161.29
+
+
+def test_comparetwo_valid_feeds_unified_chart(client_logged):
+    DrinkFactory(date=date(1999, 1, 1))
+    DrinkFactory(date=date(2000, 1, 1))
+
+    url = reverse("drinks:compare_two")
+    response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
+    content = response.content.decode("utf-8")
+
+    # a valid submit feeds the single shared history chart
+    assert 'id="chart-history-data"' in content
+    assert "chart-compare-two-data" not in content
+
+
+def test_comparetwo_invalid_retargets_form(client_logged):
+    url = reverse("drinks:compare_two")
+    response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
+
+    # an invalid submit re-renders the form in place, leaving the chart untouched
+    assert response["HX-Retarget"] == "#compare-form"
+    assert response["HX-Reswap"] == "outerHTML"
+    assert not response.context["form"].is_valid()
 
 
 # -------------------------------------------------------------------------------------

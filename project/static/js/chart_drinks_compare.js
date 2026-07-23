@@ -23,7 +23,7 @@ function chartCompare(idData, idContainer) {
             height: "350px",
         },
         title: {
-            text: ""
+            text: chartData.title || ""
         },
         legend: {
             enabled: true,

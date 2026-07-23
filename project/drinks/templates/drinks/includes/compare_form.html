@@ -1,19 +1,7 @@
 {% load i18n %}
 
-<div class="row">
-    <div>
-        <b>{% translate 'Year comparison' %}</b>
-    </div>
-
-    <form novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#compare-form-and-chart">
-        {% csrf_token %}
-        <c-form-body :form=form />
-        <button type="submit" class="button-secondary" name="search">{% translate 'Filter' %}</button>
-    </form>
-</div>
-
-<div id="chart-compare-two-container"></div>
-
-{% if chart.serries  %}
-    {{chart|json_script:"chart-compare-two-data"}}
-{% endif %}
+<form id="compare-form" novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#chart-history-container" hx-swap="innerHTML">
+    {% csrf_token %}
+    <c-form-body :form=form />
+    <button type="submit" class="button-secondary" name="search">{% translate 'Filter' %}</button>
+</form>
