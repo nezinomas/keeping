@@ -356,9 +356,7 @@ button.trend-card__value {
     display: flex;
     gap: 5px;
     align-items: flex-start;
-    // fill the card and spread the 12 months across the same width as the chart
-    // above; fall back to horizontal scroll only when the year can't fit
-    width: 100%;
+    width: max-content;
     min-width: max-content;
 }
 
@@ -379,8 +377,8 @@ button.trend-card__value {
 }
 
 .heat-month {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 0 0 auto;
+    min-width: max-content;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -443,41 +441,6 @@ button.trend-card__value {
     }
 }
 
-@media only screen and (max-width: 991px) {
-    .heat-body {
-        display: grid;
-        grid-template-columns: repeat(4, max-content);
-        justify-content: start;
-        gap: 12px 8px;
-        width: auto;
-    }
-
-    .heat-daycol {
-        display: none;
-    }
-
-    .heat-month {
-        align-items: center;
-        padding: 4px 4px 2px;
-        border: 1px solid #eef1f4;
-        border-radius: $modal-border-radius;
-
-        .mini {
-            grid-template-rows: repeat(7, 10px);
-            grid-auto-columns: 10px;
-            gap: 1px;
-
-            i {
-                width: 10px;
-                height: 10px;
-            }
-        }
-
-        .mlabel {
-            font-size: 0.6rem;
-        }
-    }
-}
 
 
 // "What is a standard unit?" disclosure (sits flush at the bottom of the card)

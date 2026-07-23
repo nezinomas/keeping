@@ -476,7 +476,7 @@ button.trend-card__value:focus-visible {
   display: flex;
   gap: 5px;
   align-items: flex-start;
-  width: 100%;
+  width: max-content;
   min-width: max-content;
 }
 
@@ -496,8 +496,8 @@ button.trend-card__value:focus-visible {
 }
 
 .heat-month {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 0 0 auto;
+  min-width: max-content;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -552,36 +552,6 @@ button.trend-card__value:focus-visible {
   flex: 1;
 }
 
-@media only screen and (max-width: 991px) {
-  .heat-body {
-    display: grid;
-    grid-template-columns: repeat(4, max-content);
-    justify-content: start;
-    gap: 12px 8px;
-    width: auto;
-  }
-  .heat-daycol {
-    display: none;
-  }
-  .heat-month {
-    align-items: center;
-    padding: 4px 4px 2px;
-    border: 1px solid #eef1f4;
-    border-radius: 0.25rem;
-  }
-  .heat-month .mini {
-    grid-template-rows: repeat(7, 10px);
-    grid-auto-columns: 10px;
-    gap: 1px;
-  }
-  .heat-month .mini i {
-    width: 10px;
-    height: 10px;
-  }
-  .heat-month .mlabel {
-    font-size: 0.6rem;
-  }
-}
 .stdav-info {
   border-top: 1px solid #dee2e6;
 }
