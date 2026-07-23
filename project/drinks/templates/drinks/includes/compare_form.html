@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<form id="compare-form" novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#chart-history-container" hx-swap="innerHTML">
+<form id="compare-form" novalidate method="post" hx-post="{% url 'drinks:compare_two' %}" hx-target="#chart-history-container" hx-swap="innerHTML"{% if hx_swap_oob %} hx-swap-oob="true"{% endif %}>
     {% csrf_token %}
     <c-form-body :form=form />
     <button type="submit" class="button-secondary" name="search">{% translate 'Filter' %}</button>

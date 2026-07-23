@@ -131,6 +131,7 @@ class Compare(TemplateViewMixin):
                 "categories": list(month_names().values()),
                 "serries": chart_serries,
             },
+            "form": forms.DrinkCompareForm(user=self.request.user),
         }
 
 
