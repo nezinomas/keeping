@@ -240,7 +240,7 @@ def test_tab_index_renders_overview_sections(client_logged):
 
 
 @time_machine.travel("1999-1-1")
-def test_tab_index_chart_consumption(client_logged):
+def test_tab_index_chart_overview(client_logged):
     DrinkFactory()
 
     url = reverse("drinks:tab_index")
@@ -249,19 +249,23 @@ def test_tab_index_chart_consumption(client_logged):
     content = response.content.decode("utf-8")
     content = content.replace("\n", "")
 
-    assert '<div id="chart-consumption-container"></div>' in content
+    # consumption + quantity are merged into one full-width combined chart
+    assert '<div id="chart-overview-container"></div>' in content
+    assert '<div id="chart-consumption-container"></div>' not in content
+    assert '<div id="chart-quantity-container"></div>' not in content
 
 
 @time_machine.travel("1999-1-1")
-def test_tab_index_chart_quantity(client_logged):
+def test_tab_index_chart_overview_data_payloads(client_logged):
     DrinkFactory()
 
     url = reverse("drinks:tab_index")
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
-    content = content.replace("\n", "")
 
-    assert '<div id="chart-quantity-container"></div>' in content
+    # the combined chart is fed by both json payloads
+    assert 'id="chart-consumption-data"' in content
+    assert 'id="chart-quantity-data"' in content
 
 
 def test_tab_index_drinked_date(client_logged):
