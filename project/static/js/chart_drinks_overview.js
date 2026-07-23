@@ -142,7 +142,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     style: {
                         fontSize: "0.66rem",
                         color: "#3a3a3a",
-                        fontWeight: "normal",
+                        fontWeight: "bold",
                         textOutline: "none",
                     },
                     formatter: function () {
@@ -181,7 +181,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         fontSize: "0.62rem",
                         color: "#000",
                         textOutline: "none",
-                        fontWeight: "normal"
+                        fontWeight: "bold"
                     },
                     formatter: function () {
                         return this.y > 0 ? Highcharts.numberFormat(this.y, 1) : "";

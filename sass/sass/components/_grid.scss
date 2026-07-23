@@ -342,7 +342,7 @@ button.trend-card__value {
     .l1 { background: #cbe7cd; }
     .l2 { background: var(--chart-positive-dark); }
     .l3 { background: var(--chart-warning-dark); }
-    .l4 { background: var(--chart-negative-super-dark); }
+    .l4 { background: var(--chart-negative-dark); }  // "heavier day" — matches the Risks tab heavy-day colour
     .future { background: #f6f7f8; }
     .today { outline: 2px solid $secondary; outline-offset: -1px; }
 }

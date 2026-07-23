@@ -457,7 +457,7 @@ button.trend-card__value:focus-visible {
   background: var(--chart-warning-dark);
 }
 .heat-card .l4 {
-  background: var(--chart-negative-super-dark);
+  background: var(--chart-negative-dark);
 }
 .heat-card .future {
   background: #f6f7f8;
