@@ -1,77 +1,30 @@
 {% load i18n %}
-{% load static %}
 
 {% include 'drinks/includes/navbar.html' %}
 
 <main class="drinks-grid">
-    <div id="chart-consumption-container"></div>
-    <div id="chart-quantity-container"></div>
-
-
-    <div id="stats-tables">
-        <div id="tbl_consumption">
-            {% include 'drinks/includes/tbl_consumption.html' with ctx=tbl_consumption %}
-        </div>
-        <div id="tbl_last_day">
-            {% include 'drinks/includes/tbl_dry_days.html' with ctx=tbl_dray_days %}
-        </div>
-        <div id="tbl_alcohol">
-            {% include 'drinks/includes/tbl_alcohol.html' with ctx=tbl_alcohol %}
-        </div>
-        <div id="target_list">
-            {{ target }}
-            <button
-                class="button-secondary"
-                hx-get="{% url 'drinks:target_new' 'index' %}"
-                hx-target="#mainModal">
-                {% translate 'Goal for the year' %}
-            </button>
-        </div>
+    <div id="index-summary">
+        {% include 'drinks/includes/index_summary.html' %}
     </div>
 
-    <!-- Std AV table -->
-    <div id="tbl-stdav">
+    <div id="chart-overview-container"></div>
+
+    {% include 'drinks/includes/calendar.html' %}
+
+    <div id="breakdown">
         {% include 'drinks/includes/tbl_std_av.html' with ctx=tbl_std_av %}
-    </div>
 
-    <!-- Std AV image -->
-    {% get_current_language as LANGUAGE_CODE %}
-    {% with 'images/drinks_info_'|add:LANGUAGE_CODE|add:'.jpg' as image %}
-    <div id="info-img" class="text-center">
-        <img src="{% static image %}" width="500" alt="{% translate 'What is a standard unit of alcohol' %}">
-    </div>{% endwith %}
-
-    <!-- 1-6 months -->
-    <div id="chart-calendar-1H-container"></div>
-
-    <!-- 7-12 months -->
-    <div id="chart-calendar-2H-container"></div>
-
-    <!-- Historical data -->
-    <div id="historical-data">
-        <div class="row">
-            <div>
-                <b>{% translate 'Historical data' %}</b>
+        <details class="stdav-info">
+            <summary><i class="bi bi-info-circle" aria-hidden="true"></i> {% translate 'What is a standard unit?' %}</summary>
+            <div class="stdav-info__body">
+                <p>{% translate 'A standard unit is a fixed amount of pure alcohol, so different drinks compare on one scale. One unit is roughly:' %}</p>
+                <span>250 {% translate 'ml' %} {% translate 'Beer' %} (5%)</span>
+                <span>80 {% translate 'ml' %} {% translate 'Wine' %} (12%)</span>
+                <span>25 {% translate 'ml' %} {% translate 'Vodka' %} (40%)</span>
             </div>
-            <div class="flex">
-                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 2 %}" hx-target="#chart-history-container">{% translate '2 years' %}</button>
-                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 3 %}" hx-target="#chart-history-container">{% translate '3 years' %}</button>
-                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' 7 %}" hx-target="#chart-history-container">{% translate '7 years' %}</button>
-                <button type="button" class="button-secondary" hx-get="{% url 'drinks:compare' all_years %}" hx-target="#chart-history-container">{% translate 'All years' %}</button>
-            </div>
-        </div>
-
-        <div id="chart-history-container"></div>
+        </details>
     </div>
-
-    <!-- Compare form and chart -->
-    <div id="compare-form-and-chart" hx-get="{% url 'drinks:compare_two' %}" hx-trigger="load"></div>
-
 </main>
 
 {{chart_quantity.as_dict|json_script:"chart-quantity-data"}}
 {{chart_consumption.as_dict|json_script:"chart-consumption-data"}}
-
-{{chart_calendar_1H|json_script:"chart-calendar-1H-data"}}
-{{chart_calendar_2H|json_script:"chart-calendar-2H-data"}}
-

@@ -3,15 +3,21 @@ from types import SimpleNamespace
 
 import pytest
 import time_machine
+from django.utils.translation import gettext as _
 
 from project.drinks.lib.drinks_stats import DrinkStats
 
 from ...lib.drinks_options import DrinkConverter
+from ...services.calendar_chart import CalendarYearViewModel
 from ...services.index.builders import (
     DryDaysViewModel,
     IndexBuilder,
+    IndexCardViewModel,
+    LimitCardViewModel,
 )
-from ..factories import DrinkFactory
+from ...services.index.presenters import load_service
+from ...services.index.providers import IndexDataProvider
+from ..factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -19,6 +25,19 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(name="drink_converter")
 def fixture_drink_converter():
     return DrinkConverter("beer")
+
+
+def _card_builder(drink_converter, total_quantity=0.0, avg=0.0, target=0.0, **kwargs):
+    stats = SimpleNamespace(
+        year=1999,
+        yearly=SimpleNamespace(
+            total_quantity=total_quantity,
+            avg_daily_volume_ml=avg,
+        ),
+    )
+    return IndexBuilder(
+        converter=drink_converter, drink_stats=stats, target=target, **kwargs
+    )
 
 
 @pytest.mark.parametrize(
@@ -151,3 +170,178 @@ def test_dry_days_view_model_has_data():
 
     empty_model = DryDaysViewModel()
     assert empty_model.has_data is False
+
+
+# -------------------------------------------------------------------------------------
+#                                                          IndexBuilder.get_cards
+# -------------------------------------------------------------------------------------
+def test_get_cards_returns_four(main_user, drink_converter):
+    cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
+
+    assert len(cards) == 4
+    assert all(isinstance(c, IndexCardViewModel) for c in cards)
+
+
+@time_machine.travel("1999-01-05")
+def test_card_dry_days_with_data(main_user, drink_converter):
+    card = _card_builder(
+        drink_converter, latest_current_date=date(1999, 1, 1)
+    ).get_cards()[0]
+
+    assert card.state == "neutral"
+    assert card.value == "4"
+    assert card.note == "1999-01-01"
+
+
+def test_card_dry_days_empty(main_user, drink_converter):
+    card = _card_builder(drink_converter).get_cards()[0]
+
+    assert card.state == "empty"
+    assert card.value == ""
+    assert card.note == _("No data")
+
+
+def test_card_std_drinks_with_data(main_user, drink_converter):
+    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[1]
+
+    assert card.state == "neutral"
+    assert card.value == "250"  # 100 units * 2.5 std av per beer
+    assert card.note == _("Std Av this year")
+
+
+def test_card_std_drinks_empty(main_user, drink_converter):
+    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[1]
+
+    assert card.state == "empty"
+    assert card.value == ""
+    assert card.note == _("No data")
+
+
+def test_card_avg_per_day_over_limit(main_user, drink_converter):
+    card = _card_builder(
+        drink_converter, total_quantity=100.0, avg=300.0, target=250.0
+    ).get_cards()[2]
+
+    assert card.state == "negative"
+    assert card.value == "300 ml"
+    assert card.note == "50 ml " + _("over the limit")
+
+
+def test_card_avg_per_day_under_limit(main_user, drink_converter):
+    card = _card_builder(
+        drink_converter, total_quantity=100.0, avg=300.0, target=400.0
+    ).get_cards()[2]
+
+    assert card.state == "positive"
+    assert card.value == "300 ml"
+    assert card.note == "100 ml " + _("under the limit")
+
+
+def test_card_avg_per_day_equal_limit_is_positive(main_user, drink_converter):
+    card = _card_builder(
+        drink_converter, total_quantity=100.0, avg=250.0, target=250.0
+    ).get_cards()[2]
+
+    assert card.state == "positive"
+    assert card.note == "0 ml " + _("under the limit")
+
+
+def test_card_avg_per_day_no_limit(main_user, drink_converter):
+    card = _card_builder(
+        drink_converter, total_quantity=100.0, avg=300.0, target=0.0
+    ).get_cards()[2]
+
+    assert card.state == "neutral"
+    assert card.value == "300 ml"
+    assert card.note == _("No limit set")
+
+
+def test_card_avg_per_day_empty(main_user, drink_converter):
+    card = _card_builder(drink_converter, total_quantity=0.0, avg=0.0).get_cards()[2]
+
+    assert card.state == "empty"
+    assert card.value == ""
+    assert card.note == _("No data")
+
+
+def test_card_pure_alcohol_with_data(main_user, drink_converter):
+    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[3]
+
+    assert card.state == "neutral"
+    assert card.value == "2.5 L"  # 100 units -> 250 std av -> 2.5 L pure alcohol
+    assert card.note == _("this year")
+
+
+def test_card_pure_alcohol_empty(main_user, drink_converter):
+    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[3]
+
+    assert card.state == "empty"
+    assert card.value == ""
+    assert card.note == _("No data")
+
+
+# -------------------------------------------------------------------------------------
+#                                                            IndexDataProvider target
+# -------------------------------------------------------------------------------------
+def test_provider_reads_target_fields(main_user):
+    DrinkTargetFactory(user=main_user, year=1999, quantity=100)
+
+    data = IndexDataProvider(main_user, 1999).get_data()
+
+    assert data.target > 0.0
+    assert data.target_pcs > 0.0
+    assert data.target_id > 0
+
+
+def test_provider_target_defaults_to_zero(main_user):
+    data = IndexDataProvider(main_user, 1999).get_data()
+
+    assert data.target == 0.0
+    assert data.target_pcs == 0.0
+    assert data.target_id == 0
+
+
+# -------------------------------------------------------------------------------------
+#                                                                        load_service
+# -------------------------------------------------------------------------------------
+@time_machine.travel("1999-06-01")
+def test_load_service_returns_expected_keys(main_user):
+    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
+
+    actual = load_service(main_user, 1999)
+
+    assert set(actual) == {
+        "all_years",
+        "chart_quantity",
+        "chart_consumption",
+        "tbl_std_av",
+        "cards",
+        "limit",
+        "calendar",
+    }
+    assert len(actual["cards"]) == 4
+    assert all(isinstance(c, IndexCardViewModel) for c in actual["cards"])
+    assert isinstance(actual["limit"], LimitCardViewModel)
+    assert isinstance(actual["calendar"], CalendarYearViewModel)
+
+
+@time_machine.travel("1999-06-01")
+def test_load_service_limit_has_data(main_user):
+    DrinkTargetFactory(user=main_user, year=1999, quantity=100)
+
+    limit = load_service(main_user, 1999)["limit"]
+
+    assert limit.has_data is True
+    assert limit.ml > 0.0
+    assert limit.pcs > 0.0
+    assert limit.target_id > 0
+
+
+@time_machine.travel("1999-06-01")
+def test_load_service_limit_no_target(main_user):
+    limit = load_service(main_user, 1999)["limit"]
+
+    assert limit.has_data is False
+    assert limit.ml == 0.0
+    assert limit.pcs == 0.0
+    assert limit.target_id == 0

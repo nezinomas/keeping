@@ -18,3 +18,10 @@
 {% if heatmap %}
     <script nonce="{{ csp_nonce }}" src="{% static 'highcharts/modules/heatmap.js' %}"></script>
 {% endif %}
+
+
+{% if lollipop %}
+    <script nonce="{{ csp_nonce }}" src="{% static 'highcharts/highcharts-more.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'highcharts/modules/dumbbell.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'highcharts/modules/lollipop.js' %}"></script>
+{% endif %}

@@ -57,8 +57,7 @@ body:has(.quick-add) { padding-bottom: 6rem; }
         align-items: center;
     }
 
-    .quick-add__qty,
-    .quick-add__type {
+    .quick-add__qty {
         border: 1px solid $border-color-light;
         border-radius: 0.1rem;
         background: #fff;

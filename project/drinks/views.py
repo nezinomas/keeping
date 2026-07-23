@@ -3,6 +3,7 @@ from typing import cast
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 from django_htmx.http import trigger_client_event
@@ -47,10 +48,7 @@ class TabIndex(TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **{
-                "tab": "index",
-                "target": rendered_content(self.request, TargetLists, **kwargs),
-            },
+            **{"tab": "index"},
             **services.helper.drink_type_dropdown(self.request),
             **services.index.load_service(user, year),
         }
@@ -109,6 +107,7 @@ class TabHistory(TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"tab": "history"},
+            **{"form": forms.DrinkCompareForm(user=self.request.user)},
             **services.helper.drink_type_dropdown(self.request),
             **services.history.load_service(self.request.user),
         }
@@ -128,6 +127,7 @@ class Compare(TemplateViewMixin):
         )
         return {
             "chart": {
+                "title": gettext("Year comparison"),
                 "categories": list(month_names().values()),
                 "serries": chart_serries,
             },
@@ -140,7 +140,9 @@ class CompareTwo(FormViewMixin):
     success_url = reverse_lazy("drinks:compare_two")
 
     def form_valid(self, form, **kwargs):
-        context = {}
+        # a valid submit only updates the shared history chart; the form stays
+        # put in the header, so render just the chart data into its container
+        context = {"form": form}
         year1 = form.cleaned_data["year1"]
         year2 = form.cleaned_data["year2"]
         chart_serries = services.helper.several_years_consumption(
@@ -148,14 +150,19 @@ class CompareTwo(FormViewMixin):
         )
 
         if len(chart_serries) == 2:
-            context |= {
-                "form": form,
-                "chart": {
-                    "categories": list(month_names().values()),
-                    "serries": chart_serries,
-                },
+            context["chart"] = {
+                "title": gettext("Year comparison"),
+                "categories": list(month_names().values()),
+                "serries": chart_serries,
             }
-        return render(self.request, self.template_name, context)
+        return render(self.request, "drinks/includes/history.html", context)
+
+    def form_invalid(self, form):
+        # re-render the form (with errors) in place, leaving the chart untouched
+        response = super().form_invalid(form)
+        response["HX-Retarget"] = "#compare-form"
+        response["HX-Reswap"] = "outerHTML"
+        return response
 
 
 class New(CreateViewMixin):

@@ -1,9 +1,17 @@
 import pytest
 import time_machine
 
+from ....core.lib.date import years
 from ...services import history
 
 pytestmark = pytest.mark.django_db
+
+
+@time_machine.travel("2000-01-01")
+def test_load_service_all_years(main_user):
+    actual = history.load_service(main_user)
+
+    assert actual["all_years"] == len(years())
 
 
 @time_machine.travel("2000-01-01")

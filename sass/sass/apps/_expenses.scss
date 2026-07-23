@@ -1,0 +1,16 @@
+// Expenses App - Expenses table
+.expenses-table {
+    td:first-child {
+        padding-left: 0.5rem;
+    }
+
+    td.exception {
+        padding-left: 0.35rem;
+        border-left: 5px solid $exception;
+    }
+
+    .file-col {
+        min-width: 5rem;
+        width: 5rem;
+    }
+}

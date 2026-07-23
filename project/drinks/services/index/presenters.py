@@ -2,7 +2,7 @@ from ....core.lib.date import years
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DrinkStats
 from ..calendar_chart import CalendarChart
-from .builders import IndexBuilder
+from .builders import IndexBuilder, LimitCardViewModel
 from .providers import IndexDataProvider
 
 
@@ -26,14 +26,19 @@ def load_service(user, year: int) -> dict:
         latest_past_date=data.latest_past_date,
     )
 
+    limit = LimitCardViewModel(
+        has_data=data.target_id > 0,
+        ml=data.target,
+        pcs=data.target_pcs,
+        target_id=data.target_id,
+    )
+
     return {
         "all_years": len(years()),
         "chart_quantity": builder.chart_quantity(),
         "chart_consumption": builder.chart_consumption(),
-        "chart_calendar_1H": calendar_service.first_half_of_year(),
-        "chart_calendar_2H": calendar_service.second_half_of_year(),
-        "tbl_consumption": builder.tbl_consumption(),
-        "tbl_dray_days": builder.tbl_dry_days(),
-        "tbl_alcohol": builder.tbl_alcohol(),
         "tbl_std_av": builder.tbl_std_av(),
+        "cards": builder.get_cards(),
+        "limit": limit,
+        "calendar": calendar_service.year_grid(),
     }
