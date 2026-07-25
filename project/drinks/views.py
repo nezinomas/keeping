@@ -3,7 +3,6 @@ from typing import cast
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 from django_htmx.http import trigger_client_event
