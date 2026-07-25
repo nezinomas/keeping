@@ -480,7 +480,7 @@ def test_tab_risk_renders_warning_for_medium_week(client_logged):
     content = response.content.decode()
 
     assert response.status_code == 200
-    assert response.context["cards"][0].tone == "warning"
+    assert response.context["cards"][0].state == "medium"
     assert 'class="trend-card__value warning"' in content
 
 

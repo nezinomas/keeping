@@ -115,9 +115,9 @@ class RiskViewModelBuilder:
 
     def _build_current_week_card(self) -> StatCard:
         week = self._stats.current_week()
-        return StatCard.risk_band(
+        return StatCard.level(
             _("This week"),
-            band=week.state,
+            state=week.state,
             value=f"{week.stdav:.1f}",
             note=f"{_('Low-risk guideline')}: {WEEKLY_LOW_RISK_STDAV:.1f} Std Av",
         )
@@ -129,9 +129,9 @@ class RiskViewModelBuilder:
         if not week.has_data:
             return StatCard.empty(title, _("No data"))
 
-        return StatCard.risk_band(
+        return StatCard.level(
             title,
-            band=week.state,
+            state=week.state,
             value=f"{week.stdav:.1f}",
             note=f"{week.label} – {week.end}",
         )

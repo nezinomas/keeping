@@ -191,7 +191,7 @@ def test_card_dry_days_with_data(main_user, drink_converter):
         drink_converter, latest_current_date=date(1999, 1, 1)
     ).get_cards()[0]
 
-    assert card.tone == "neutral"
+    assert card.state == "neutral"
     assert card.value == "4"
     assert card.note == "1999-01-01"
 
@@ -199,7 +199,7 @@ def test_card_dry_days_with_data(main_user, drink_converter):
 def test_card_dry_days_empty(main_user, drink_converter):
     card = _card_builder(drink_converter).get_cards()[0]
 
-    assert card.blank is True
+    assert card.state == "empty"
     assert card.value == ""
     assert card.note == _("No data")
 
@@ -207,7 +207,7 @@ def test_card_dry_days_empty(main_user, drink_converter):
 def test_card_std_drinks_with_data(main_user, drink_converter):
     card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[1]
 
-    assert card.tone == "neutral"
+    assert card.state == "neutral"
     assert card.value == "250"  # 100 units * 2.5 std av per beer
     assert card.note == _("Std Av this year")
 
@@ -215,7 +215,7 @@ def test_card_std_drinks_with_data(main_user, drink_converter):
 def test_card_std_drinks_empty(main_user, drink_converter):
     card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[1]
 
-    assert card.blank is True
+    assert card.state == "empty"
     assert card.value == ""
     assert card.note == _("No data")
 
@@ -225,7 +225,7 @@ def test_card_avg_per_day_over_limit(main_user, drink_converter):
         drink_converter, total_quantity=100.0, avg=300.0, target=250.0
     ).get_cards()[2]
 
-    assert card.tone == "negative"
+    assert card.state == "high"
     assert card.value == "300 ml"
     assert card.note == "50 ml " + _("over the limit")
 
@@ -235,7 +235,7 @@ def test_card_avg_per_day_under_limit(main_user, drink_converter):
         drink_converter, total_quantity=100.0, avg=300.0, target=400.0
     ).get_cards()[2]
 
-    assert card.tone == "positive"
+    assert card.state == "low"
     assert card.value == "300 ml"
     assert card.note == "100 ml " + _("under the limit")
 
@@ -245,7 +245,7 @@ def test_card_avg_per_day_equal_limit_is_positive(main_user, drink_converter):
         drink_converter, total_quantity=100.0, avg=250.0, target=250.0
     ).get_cards()[2]
 
-    assert card.tone == "positive"
+    assert card.state == "low"
     assert card.note == "0 ml " + _("under the limit")
 
 
@@ -254,7 +254,7 @@ def test_card_avg_per_day_no_limit(main_user, drink_converter):
         drink_converter, total_quantity=100.0, avg=300.0, target=0.0
     ).get_cards()[2]
 
-    assert card.tone == "neutral"
+    assert card.state == "neutral"
     assert card.value == "300 ml"
     assert card.note == _("No limit set")
 
@@ -262,7 +262,7 @@ def test_card_avg_per_day_no_limit(main_user, drink_converter):
 def test_card_avg_per_day_empty(main_user, drink_converter):
     card = _card_builder(drink_converter, total_quantity=0.0, avg=0.0).get_cards()[2]
 
-    assert card.blank is True
+    assert card.state == "empty"
     assert card.value == ""
     assert card.note == _("No data")
 
@@ -270,7 +270,7 @@ def test_card_avg_per_day_empty(main_user, drink_converter):
 def test_card_pure_alcohol_with_data(main_user, drink_converter):
     card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[3]
 
-    assert card.tone == "neutral"
+    assert card.state == "neutral"
     assert card.value == "2.5 L"  # 100 units -> 250 std av -> 2.5 L pure alcohol
     assert card.note == _("this year")
 
@@ -278,7 +278,7 @@ def test_card_pure_alcohol_with_data(main_user, drink_converter):
 def test_card_pure_alcohol_empty(main_user, drink_converter):
     card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[3]
 
-    assert card.blank is True
+    assert card.state == "empty"
     assert card.value == ""
     assert card.note == _("No data")
 

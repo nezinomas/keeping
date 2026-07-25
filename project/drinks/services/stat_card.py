@@ -1,47 +1,37 @@
 from dataclasses import dataclass
 
+# The one vocabulary every tab describes a metric in. It is the union of what
+# the three tabs used to say separately: a level read against a threshold, or a
+# direction read against a baseline. Templates map these to colours and icons.
+EMPTY = "empty"
 NEUTRAL = "neutral"
-POSITIVE = "positive"
-NEGATIVE = "negative"
-WARNING = "warning"
-
-UP = "up"
-DOWN = "down"
-
-_ARROW_GLYPHS = {UP: "↑", DOWN: "↓"}
-
-# risk bands, as RiskStats names them, resolved to a tone
-RISK_BAND_TONES = {
-    "low": POSITIVE,
-    "medium": WARNING,
-    "high": NEGATIVE,
-}
+LOW = "low"
+MEDIUM = "medium"
+HIGH = "high"
+IMPROVING = "improving"
+WORSENING = "worsening"
 
 
 @dataclass(frozen=True)
 class StatCard:
-    """One summary tile: a title, a value, a note, and how to colour them.
+    """One summary tile on a tab: a title, a value, a note, and a state.
 
-    The three tab modules describe their metrics in different domain
-    vocabularies — a risk band is low/medium/high, a year-over-year comparison
-    is improving/worsening, an index metric is under/over a limit. This module
-    is where each of those resolves into the only two presentation facts a tile
-    needs: a `tone` and an `arrow`. The template then branches on nothing.
+    The three tab modules used to each publish their own `state` vocabulary and
+    each have their own near-identical template decode it. This is the single
+    vocabulary they now share, so one template decodes it once.
     """
 
     title: str
     value: str = ""
     note: str = ""
-    tone: str = NEUTRAL
-    arrow: str = ""
-    blank: bool = False
+    state: str = NEUTRAL
+    show_icon: bool = False
     explanation: str = ""
 
-    # -- constructors ------------------------------------------------------
     @classmethod
     def empty(cls, title: str, note: str) -> "StatCard":
-        """A tile with nothing to show; renders a dash in place of a value."""
-        return cls(title=title, note=note, blank=True)
+        """A tile with nothing to show."""
+        return cls(title=title, note=note, state=EMPTY)
 
     @classmethod
     def comparison(
@@ -53,31 +43,17 @@ class StatCard:
         note: str,
         explanation: str = "",
     ) -> "StatCard":
-        """A metric read against a baseline: tone and arrow follow direction."""
+        """A metric read against a baseline, so it has a direction."""
         return cls(
             title=title,
             value=value,
             note=note,
-            tone=POSITIVE if improving else NEGATIVE,
-            arrow=DOWN if improving else UP,
+            state=IMPROVING if improving else WORSENING,
+            show_icon=True,
             explanation=explanation,
         )
 
     @classmethod
-    def risk_band(cls, title: str, *, band: str, value: str, note: str) -> "StatCard":
-        """A metric read against risk guidelines rather than a baseline."""
-        return cls(
-            title=title,
-            value=value,
-            note=note,
-            tone=RISK_BAND_TONES.get(band, NEUTRAL),
-        )
-
-    # -- readers -----------------------------------------------------------
-    @property
-    def css_class(self) -> str:
-        return "" if self.tone == NEUTRAL else self.tone
-
-    @property
-    def arrow_glyph(self) -> str:
-        return _ARROW_GLYPHS.get(self.arrow, "")
+    def level(cls, title: str, *, state: str, value: str, note: str) -> "StatCard":
+        """A metric read against a threshold: a level, with no direction."""
+        return cls(title=title, value=value, note=note, state=state)

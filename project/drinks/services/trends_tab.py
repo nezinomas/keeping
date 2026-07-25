@@ -7,6 +7,7 @@ from ..lib.drinks_trend import (
     RecentPeriodComparison,
     TrendStats,
 )
+from . import stat_card
 from .consumption_year import ConsumptionYear
 from .stat_card import StatCard
 
@@ -169,11 +170,11 @@ class TrendsBuilder:
                 note=_("No limit set"),
             )
 
-        # a forecast has a direction but no arrow: it is not a like-for-like
-        # comparison against a past period
-        return StatCard(
-            title=title,
-            tone="negative" if stats.over else "positive",
+        # a forecast is read against the Drink Target, so it is a level, not a
+        # like-for-like comparison against a past period
+        return StatCard.level(
+            title,
+            state=stat_card.HIGH if stats.over else stat_card.LOW,
             value=f"{stats.projected_volume_liters:.1f} L",
             note=(
                 f"{_('Limit')}: {stats.target_volume_liters:.1f} L · "

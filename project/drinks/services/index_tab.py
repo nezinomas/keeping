@@ -9,6 +9,7 @@ from ...core.lib.date import ydays, years
 from ...core.lib.translation import month_names
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DrinkStats
+from . import stat_card
 from .consumption_year import ConsumptionYear
 from .stat_card import StatCard
 
@@ -198,12 +199,13 @@ class IndexBuilder:
         under_limit = avg <= self._target
         diff = abs(self._target - avg)
 
-        return StatCard(
-            title=title,
+        # a daily average is read against the Drink Target, so it is a level
+        return StatCard.level(
+            title,
+            state=stat_card.LOW if under_limit else stat_card.HIGH,
             value=value,
             note=f"{diff:.0f} ml "
             + (_("under the limit") if under_limit else _("over the limit")),
-            tone="positive" if under_limit else "negative",
         )
 
     def _card_pure_alcohol(self) -> StatCard:

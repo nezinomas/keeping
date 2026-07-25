@@ -130,9 +130,9 @@ def test_this_week_card_low():
 
     card = _card(RiskViewModelBuilder(stats).get_cards(), _("This week"))
 
-    assert card.tone == "positive"
+    assert card.state == "low"
     assert card.value == "3.0"
-    assert card.arrow == ""
+    assert card.show_icon is False
 
 
 @time_machine.travel("2026-02-11")
@@ -141,7 +141,7 @@ def test_this_week_card_high():
 
     card = _card(RiskViewModelBuilder(stats).get_cards(), _("This week"))
 
-    assert card.tone == "negative"
+    assert card.state == "high"
 
 
 @time_machine.travel("2026-03-01")
@@ -150,7 +150,7 @@ def test_worst_week_card_empty_without_data():
         RiskViewModelBuilder(RiskStats(current_daily=[])).get_cards(), _("Worst week")
     )
 
-    assert card.blank is True
+    assert card.state == "empty"
     assert card.value == ""
 
 
@@ -160,7 +160,7 @@ def test_worst_week_card_high():
 
     card = _card(RiskViewModelBuilder(stats).get_cards(), _("Worst week"))
 
-    assert card.tone == "negative"
+    assert card.state == "high"
     assert card.value == "30.0"
     # note shows the full week range: Monday – Sunday
     assert card.note == "2026-02-09 – 2026-02-15"
@@ -179,8 +179,8 @@ def test_count_card_improving():
         _("Weeks over guideline"),
     )
 
-    assert card.tone == "positive"
-    assert card.arrow == "down"
+    assert card.state == "improving"
+    assert card.show_icon is True
     assert card.value == "1"
     assert card.note == "1 / 2"
 
@@ -197,7 +197,7 @@ def test_count_card_worsening():
         _("Weeks over guideline"),
     )
 
-    assert card.tone == "negative"
+    assert card.state == "worsening"
 
 
 @time_machine.travel("2026-06-01")
@@ -206,8 +206,8 @@ def test_count_card_neutral_without_past():
 
     card = _card(RiskViewModelBuilder(stats).get_cards(), _("Weeks over guideline"))
 
-    assert card.tone == "neutral"
-    assert card.arrow == ""
+    assert card.state == "neutral"
+    assert card.show_icon is False
     assert card.value == "1"
 
 
