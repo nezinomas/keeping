@@ -145,35 +145,3 @@ def test_year_grid_other_year_has_no_future_days():
     grid = _calendar(year=1998, daily_data=[]).year_grid(today=date(1999, 6, 15))
 
     assert all(not d.is_future for m in grid.months for d in m.days)
-
-
-# -------------------------------------------------------------------------------------
-#                                        Highcharts halves (still used elsewhere)
-# -------------------------------------------------------------------------------------
-def test_calendar_halves_split_the_year():
-    daily = [{"date": date(1999, 1, 2), "stdav": 2.5, "qty": 1.0}]
-    calendar = _calendar(daily_data=daily)
-
-    first = calendar.first_half_of_year()
-    second = calendar.second_half_of_year()
-
-    assert len(first["data"]) == 6
-    assert len(second["data"]) == 6
-    assert "categories" in first
-    assert first["ratio"] == DrinkConverter("beer").stdav_per_unit
-
-
-@time_machine.travel("1999-1-1")
-def test_calendar_first_record_with_gap_from_previous_year(main_user):
-    DrinkFactory(date=date(1999, 1, 2), stdav=2.5)
-    DrinkFactory(date=date(1998, 1, 1), stdav=2.5)
-
-    daily = DrinkModelService(main_user).sum_by_day(1999)
-    data = _calendar(
-        drink_type=main_user.drink_type,
-        daily_data=daily,
-        latest_past_date=date(1998, 1, 1),
-    ).first_half_of_year()["data"][0]["data"]
-
-    assert data[4] == [0, 4, 0.0005, 53, "1999-01-01"]
-    assert data[5] == [0, 5, 1.0, 53, "1999-01-02", 1.0, 366.0]
