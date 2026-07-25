@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.utils.translation import gettext as _
 
 from ...lib.drinks_options import DrinkConverter
 from ...services.calendar_chart import (
@@ -67,10 +68,33 @@ def test_year_grid_levels_and_labels():
         _calendar(daily_data=daily).year_grid(today=date(1999, 12, 31)).months[0].days
     )
 
+    gap_str = _("Gap")
     assert [d.level for d in days[:5]] == [1, 2, 3, 4, 0]
-    assert days[0].label == "1999-01-01 · 0.4"
-    assert days[3].label == "1999-01-04 · 2.4"
+    assert days[0].label == f"1999-01-01 · {gap_str} 0d. · 0.4"
+    assert days[3].label == f"1999-01-04 · {gap_str} 1d. · 2.4"
     assert days[4].label == ""
+    assert days[0].gap == 0
+    assert days[3].gap == 1
+
+
+def test_year_grid_gaps_with_latest_past_date():
+    daily = [
+        {"date": date(1999, 1, 10), "stdav": 1.0, "qty": 0.5},
+        {"date": date(1999, 1, 15), "stdav": 2.0, "qty": 1.0},
+    ]
+    grid = _calendar(daily_data=daily, latest_past_date=date(1999, 1, 5)).year_grid(
+        today=date(1999, 12, 31)
+    )
+
+    jan_days = grid.months[0].days
+    day_10 = jan_days[9]
+    day_15 = jan_days[14]
+
+    gap_str = _("Gap")
+    assert day_10.gap == 5
+    assert day_10.label == f"1999-01-10 · {gap_str} 5d. · 0.5"
+    assert day_15.gap == 5
+    assert day_15.label == f"1999-01-15 · {gap_str} 5d. · 1.0"
 
 
 def test_year_grid_today_and_future_flags():

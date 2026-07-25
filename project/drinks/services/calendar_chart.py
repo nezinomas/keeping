@@ -27,7 +27,8 @@ class CalendarDayViewModel:
     level: int  # 0 = dry/no record; 1..4 = increasing intensity
     is_today: bool = False
     is_future: bool = False
-    label: str = ""  # tooltip text; "" for dry days, else f"{iso_date} · {qty:.1f}"
+    label: str = ""  # tooltip text
+    gap: int = 0
 
 
 @dataclass(frozen=True)
@@ -98,8 +99,19 @@ class CalendarChart:
         stdav_by_date = {row["date"]: row["stdav"] for row in self.daily_data}
         qty_by_date = {row["date"]: row["qty"] for row in self.daily_data}
 
+        gap_by_date = {}
+        if self.daily_data:
+            stats = CountStats(
+                year=self.year, data=self.daily_data, past_latest=self.latest_past_date
+            )
+            gaps_df = stats._calculate_gaps()
+            if not gaps_df.is_empty():
+                gap_by_date = {
+                    row["date"]: int(row["duration"]) for row in gaps_df.to_dicts()
+                }
+
         months = [
-            self._build_month(month, today, stdav_by_date, qty_by_date)
+            self._build_month(month, today, stdav_by_date, qty_by_date, gap_by_date)
             for month in range(1, 13)
         ]
 
@@ -111,13 +123,18 @@ class CalendarChart:
         today: date,
         stdav_by_date: dict[date, float],
         qty_by_date: dict[date, float],
+        gap_by_date: dict[date, int],
     ) -> CalendarMonthViewModel:
         first_day = date(self.year, month, 1)
         total_days = calendar.monthrange(self.year, month)[1]
 
         days = [
             self._build_day(
-                date(self.year, month, day), today, stdav_by_date, qty_by_date
+                date(self.year, month, day),
+                today,
+                stdav_by_date,
+                qty_by_date,
+                gap_by_date,
             )
             for day in range(1, total_days + 1)
         ]
@@ -135,11 +152,17 @@ class CalendarChart:
         today: date,
         stdav_by_date: dict[date, float],
         qty_by_date: dict[date, float],
+        gap_by_date: dict[date, int],
     ) -> CalendarDayViewModel:
         level = _stdav_level(stdav_by_date.get(day_date, 0.0))
         qty = qty_by_date.get(day_date, 0.0)
+        gap = gap_by_date.get(day_date, 0)
 
-        label = "" if level == 0 else f"{day_date:%Y-%m-%d} · {qty:.1f}"
+        if level == 0:
+            label = ""
+        else:
+            gap_title = _("Gap")
+            label = f"{day_date:%Y-%m-%d} · {gap_title} {gap}d. · {qty:.1f}"
 
         return CalendarDayViewModel(
             day=day_date.day,
@@ -147,4 +170,5 @@ class CalendarChart:
             is_today=day_date == today,
             is_future=day_date > today and self.year == today.year,
             label=label,
+            gap=gap,
         )
