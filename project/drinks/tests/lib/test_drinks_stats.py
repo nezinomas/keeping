@@ -85,6 +85,7 @@ def test_yearly_stats_no_data(drink_converter):
     stats = obj.yearly
 
     assert stats.avg_daily_volume_ml == 0.0
+    assert stats.avg_daily_stdav == 0.0
     assert stats.total_quantity == 0.0
     assert stats.stdav == 0.0
     assert stats.pure_alcohol_liters == 0.0

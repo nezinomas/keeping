@@ -36,6 +36,7 @@ def _card_builder(drink_converter, total_quantity=0.0, avg=0.0, target=0.0, **kw
             avg_daily_volume_ml=avg,
             stdav=stdav,
             pure_alcohol_liters=pure_alcohol,
+            avg_daily_stdav=avg,
         ),
     )
     return IndexBuilder(
@@ -259,6 +260,28 @@ def test_card_avg_per_day_no_limit(main_user, drink_converter):
     assert card.note == _("No limit set")
 
 
+def test_card_avg_per_day_stdav_over_limit(main_user):
+    converter = DrinkConverter("stdav")
+    card = _card_builder(
+        converter, total_quantity=100.0, avg=3.0, target=2.5
+    ).get_cards()[2]
+
+    assert card.state == "high"
+    assert card.value == "3.0"
+    assert card.note == "0.5 " + _("over the limit")
+
+
+def test_card_avg_per_day_stdav_under_limit(main_user):
+    converter = DrinkConverter("stdav")
+    card = _card_builder(
+        converter, total_quantity=100.0, avg=2.0, target=2.5
+    ).get_cards()[2]
+
+    assert card.state == "low"
+    assert card.value == "2.0"
+    assert card.note == "0.5 " + _("under the limit")
+
+
 def test_card_avg_per_day_empty(main_user, drink_converter):
     card = _card_builder(drink_converter, total_quantity=0.0, avg=0.0).get_cards()[2]
 
@@ -314,9 +337,23 @@ def test_index_tab_build_limit_has_data(main_user):
     limit = IndexTab.build(main_user, 1999)["limit"]
 
     assert limit.has_data is True
+    assert limit.unit == "ml"
     assert limit.ml > 0.0
     assert limit.pcs > 0.0
     assert limit.target_id > 0
+
+
+@time_machine.travel("1999-06-01")
+def test_index_tab_build_limit_stdav(main_user):
+    main_user.drink_type = "stdav"
+    DrinkTargetFactory(user=main_user, year=1999, quantity=2.5, drink_type="stdav")
+
+    limit = IndexTab.build(main_user, 1999)["limit"]
+
+    assert limit.has_data is True
+    assert limit.unit == "Std Av"
+    assert limit.ml == 2.5
+    assert limit.pcs == 2.5
 
 
 @time_machine.travel("1999-06-01")
