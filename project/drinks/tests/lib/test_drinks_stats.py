@@ -86,3 +86,16 @@ def test_yearly_stats_no_data(drink_converter):
 
     assert stats.avg_daily_volume_ml == 0.0
     assert stats.total_quantity == 0.0
+    assert stats.stdav == 0.0
+    assert stats.pure_alcohol_liters == 0.0
+
+
+def test_drink_stats_accepts_string_drink_type():
+    data = [
+        {"date": date(1999, 1, 1), "qty": 1, "stdav": 2.5},
+    ]
+    obj = DrinkStats("beer", data, today=date(1999, 12, 31))
+
+    assert obj.yearly.stdav == 2.5
+    assert obj.yearly.pure_alcohol_liters == 0.025
+    assert obj.convert_qty(1, "beer") == 1.0
