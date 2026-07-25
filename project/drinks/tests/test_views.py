@@ -389,8 +389,9 @@ def test_tab_trends_renders_summary_with_data(client_logged):
     content = response.content.decode()
 
     assert response.status_code == 200
-    assert 'class="trend-card"' in content
-    assert "positive" in content or "negative" in content
+    # tone and arrow are resolved by StatCard and asserted in
+    # tests/services/test_stat_card.py; this only pins the template to it
+    assert content.count('class="trend-card"') == len(response.context["cards"])
 
 
 # -------------------------------------------------------------------------------------
@@ -479,7 +480,8 @@ def test_tab_risk_renders_warning_for_medium_week(client_logged):
     content = response.content.decode()
 
     assert response.status_code == 200
-    assert "warning" in content
+    assert response.context["cards"][0].tone == "warning"
+    assert 'class="trend-card__value warning"' in content
 
 
 # -------------------------------------------------------------------------------------

@@ -14,16 +14,7 @@ from ..lib.drinks_risk import (
     YearOverYearCount,
 )
 from .consumption_year import ConsumptionYear
-
-
-@dataclass(frozen=True)
-class RiskCardViewModel:
-    title: str
-    state: str  # "empty", "neutral", "low", "high", "improving", "worsening"
-    show_icon: bool
-    value: str
-    note: str
-    explanation: str = ""
+from .stat_card import StatCard
 
 
 @dataclass(frozen=True)
@@ -114,7 +105,7 @@ class RiskViewModelBuilder:
             },
         )
 
-    def get_cards(self) -> list[RiskCardViewModel]:
+    def get_cards(self) -> list[StatCard]:
         return [
             self._build_current_week_card(),
             self._build_worst_week_card(),
@@ -122,32 +113,30 @@ class RiskViewModelBuilder:
             self._build_heavy_days_card(),
         ]
 
-    def _build_current_week_card(self) -> RiskCardViewModel:
+    def _build_current_week_card(self) -> StatCard:
         week = self._stats.current_week()
-        return RiskCardViewModel(
-            title=_("This week"),
-            state=week.state,
-            show_icon=False,
+        return StatCard.risk_band(
+            _("This week"),
+            band=week.state,
             value=f"{week.stdav:.1f}",
             note=f"{_('Low-risk guideline')}: {WEEKLY_LOW_RISK_STDAV:.1f} Std Av",
         )
 
-    def _build_worst_week_card(self) -> RiskCardViewModel:
+    def _build_worst_week_card(self) -> StatCard:
         week = self._stats.worst_week()
         title = _("Worst week")
 
         if not week.has_data:
-            return RiskCardViewModel(title, "empty", False, "", _("No data"))
+            return StatCard.empty(title, _("No data"))
 
-        return RiskCardViewModel(
-            title=title,
-            state=week.state,
-            show_icon=False,
+        return StatCard.risk_band(
+            title,
+            band=week.state,
             value=f"{week.stdav:.1f}",
             note=f"{week.label} – {week.end}",
         )
 
-    def _build_weeks_over_guideline_card(self) -> RiskCardViewModel:
+    def _build_weeks_over_guideline_card(self) -> StatCard:
         definition = _(
             "Weeks whose total exceeds the low-risk guideline of %(threshold)s Std Av."
         ) % {"threshold": f"{WEEKLY_LOW_RISK_STDAV:.1f}"}
@@ -155,7 +144,7 @@ class RiskViewModelBuilder:
             _("Weeks over guideline"), self._stats.weeks_over_guideline(), definition
         )
 
-    def _build_heavy_days_card(self) -> RiskCardViewModel:
+    def _build_heavy_days_card(self) -> StatCard:
         definition = _("Days with more than %(threshold)s Std Av in a single day.") % {
             "threshold": f"{HEAVY_DAY_STDAV:.0f}"
         }
@@ -168,26 +157,22 @@ class RiskViewModelBuilder:
         title: str,
         stats: YearOverYearCount | EmptyYearOverYearCount,
         definition: str,
-    ) -> RiskCardViewModel:
+    ) -> StatCard:
         if not stats.has_past:
-            return RiskCardViewModel(
+            return StatCard(
                 title=title,
-                state="neutral",
-                show_icon=False,
                 value=str(stats.current),
                 note=_("No prior year"),
                 explanation=definition,
             )
 
-        state = "improving" if stats.improving else "worsening"
         comparison = _(
             "The two numbers are this year and last year, up to the same date."
         )
 
-        return RiskCardViewModel(
-            title=title,
-            state=state,
-            show_icon=True,
+        return StatCard.comparison(
+            title,
+            improving=stats.improving,
             value=str(stats.current),
             note=f"{stats.current} / {stats.previous}",
             explanation=f"{definition} {comparison}",

@@ -9,8 +9,8 @@ from ...lib.drinks_stats import DataRow
 from ...lib.drinks_trend import (
     TrendStats,
 )
+from ...services.stat_card import StatCard
 from ...services.trends_tab import (
-    TrendCardViewModel,
     TrendChartViewModel,
     TrendsBuilder,
     TrendsTab,
@@ -102,7 +102,7 @@ def test_builder_get_cards(converter):
     cards = TrendsBuilder(stats).get_cards()
 
     assert len(cards) == 5
-    assert all(isinstance(c, TrendCardViewModel) for c in cards)
+    assert all(isinstance(c, StatCard) for c in cards)
     assert [c.title for c in cards] == [
         _("Trend (2 weeks)"),
         _("Trend (month)"),

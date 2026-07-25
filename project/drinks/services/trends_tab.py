@@ -8,6 +8,7 @@ from ..lib.drinks_trend import (
     TrendStats,
 )
 from .consumption_year import ConsumptionYear
+from .stat_card import StatCard
 
 
 @dataclass(frozen=True)
@@ -34,15 +35,6 @@ class TrendCumulativeViewModel:
     @property
     def as_dict(self) -> dict:
         return asdict(self)
-
-
-@dataclass(frozen=True)
-class TrendCardViewModel:
-    title: str
-    state: str  # "empty", "neutral", "improving", "worsening"
-    show_icon: bool
-    value: str
-    note: str
 
 
 class TrendsTab:
@@ -108,7 +100,7 @@ class TrendsBuilder:
             },
         )
 
-    def get_cards(self) -> list[TrendCardViewModel]:
+    def get_cards(self) -> list[StatCard]:
         return [
             self._build_period_card(
                 _("Trend (2 weeks)"), self._stats.compare_recent_period(14)
@@ -125,17 +117,9 @@ class TrendsBuilder:
 
     def _build_period_card(
         self, title: str, stats: RecentPeriodComparison | EmptyRecentPeriodComparison
-    ) -> TrendCardViewModel:
+    ) -> StatCard:
         if not stats.has_data:
-            return TrendCardViewModel(
-                title=title,
-                state="empty",
-                show_icon=False,
-                value="",
-                note=_("No data"),
-            )
-
-        state = "improving" if stats.improving else "worsening"
+            return StatCard.empty(title, _("No data"))
 
         value = (
             f"{stats.percentage_change:.1f}%"
@@ -143,38 +127,30 @@ class TrendsBuilder:
             else f"{stats.current_period_average:.1f}"
         )
 
-        note = (
-            f"{stats.current_period_average:.1f} / "
-            f"{stats.previous_period_average:.1f} Std Av"
-        )
-
-        return TrendCardViewModel(
-            title=title,
-            state=state,
-            show_icon=True,
+        return StatCard.comparison(
+            title,
+            improving=stats.improving,
             value=value,
-            note=note,
+            note=(
+                f"{stats.current_period_average:.1f} / "
+                f"{stats.previous_period_average:.1f} Std Av"
+            ),
         )
 
-    def _build_ytd_card(self) -> TrendCardViewModel:
+    def _build_ytd_card(self) -> StatCard:
         stats = self._stats.compare_year_to_date()
         title = _("This year vs last (to date)")
 
         if not stats.has_past:
-            return TrendCardViewModel(
+            return StatCard(
                 title=title,
-                state="neutral",
-                show_icon=False,
                 value=f"{stats.current_year_average:.1f}",
-                note=f"Std Av &middot; {_('No prior year')}",
+                note=f"Std Av · {_('No prior year')}",
             )
 
-        state = "improving" if stats.improving else "worsening"
-
-        return TrendCardViewModel(
-            title=title,
-            state=state,
-            show_icon=True,
+        return StatCard.comparison(
+            title,
+            improving=stats.improving,
             value=f"{stats.percentage_change:.1f}%",
             note=(
                 f"{stats.current_year_average:.1f} / "
@@ -182,28 +158,25 @@ class TrendsBuilder:
             ),
         )
 
-    def _build_projection_card(self) -> TrendCardViewModel:
+    def _build_projection_card(self) -> StatCard:
         stats = self._stats.calculate_projection()
         title = _("Year-end forecast")
 
         if not stats.has_target:
-            return TrendCardViewModel(
+            return StatCard(
                 title=title,
-                state="neutral",
-                show_icon=False,
                 value=f"{stats.projected_volume_liters:.1f} L",
                 note=_("No limit set"),
             )
 
-        state = "worsening" if stats.over else "improving"
-
-        return TrendCardViewModel(
+        # a forecast has a direction but no arrow: it is not a like-for-like
+        # comparison against a past period
+        return StatCard(
             title=title,
-            state=state,
-            show_icon=False,
+            tone="negative" if stats.over else "positive",
             value=f"{stats.projected_volume_liters:.1f} L",
             note=(
-                f"{_('Limit')}: {stats.target_volume_liters:.1f} L &middot; "
+                f"{_('Limit')}: {stats.target_volume_liters:.1f} L · "
                 f"{stats.percentage_difference:.1f}%"
             ),
         )
