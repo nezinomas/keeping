@@ -9,14 +9,13 @@ from project.drinks.lib.drinks_stats import DrinkStats
 
 from ...lib.drinks_options import DrinkConverter
 from ...services.calendar_chart import CalendarYearViewModel
-from ...services.index.builders import (
+from ...services.index_tab import (
     DryDaysViewModel,
     IndexBuilder,
     IndexCardViewModel,
+    IndexTab,
     LimitCardViewModel,
 )
-from ...services.index.presenters import load_service
-from ...services.index.providers import IndexDataProvider
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
@@ -281,34 +280,13 @@ def test_card_pure_alcohol_empty(main_user, drink_converter):
 
 
 # -------------------------------------------------------------------------------------
-#                                                            IndexDataProvider target
-# -------------------------------------------------------------------------------------
-def test_provider_reads_target_fields(main_user):
-    DrinkTargetFactory(user=main_user, year=1999, quantity=100)
-
-    data = IndexDataProvider(main_user, 1999).get_data()
-
-    assert data.target > 0.0
-    assert data.target_pcs > 0.0
-    assert data.target_id > 0
-
-
-def test_provider_target_defaults_to_zero(main_user):
-    data = IndexDataProvider(main_user, 1999).get_data()
-
-    assert data.target == 0.0
-    assert data.target_pcs == 0.0
-    assert data.target_id == 0
-
-
-# -------------------------------------------------------------------------------------
-#                                                                        load_service
+#                                                                         IndexTab.build
 # -------------------------------------------------------------------------------------
 @time_machine.travel("1999-06-01")
-def test_load_service_returns_expected_keys(main_user):
+def test_index_tab_build_returns_expected_keys(main_user):
     DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
 
-    actual = load_service(main_user, 1999)
+    actual = IndexTab.build(main_user, 1999)
 
     assert set(actual) == {
         "all_years",
@@ -326,10 +304,10 @@ def test_load_service_returns_expected_keys(main_user):
 
 
 @time_machine.travel("1999-06-01")
-def test_load_service_limit_has_data(main_user):
+def test_index_tab_build_limit_has_data(main_user):
     DrinkTargetFactory(user=main_user, year=1999, quantity=100)
 
-    limit = load_service(main_user, 1999)["limit"]
+    limit = IndexTab.build(main_user, 1999)["limit"]
 
     assert limit.has_data is True
     assert limit.ml > 0.0
@@ -338,8 +316,8 @@ def test_load_service_limit_has_data(main_user):
 
 
 @time_machine.travel("1999-06-01")
-def test_load_service_limit_no_target(main_user):
-    limit = load_service(main_user, 1999)["limit"]
+def test_index_tab_build_limit_no_target(main_user):
+    limit = IndexTab.build(main_user, 1999)["limit"]
 
     assert limit.has_data is False
     assert limit.ml == 0.0
