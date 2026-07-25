@@ -100,10 +100,10 @@ class IndexTab:
         with contextlib.suppress(Drink.DoesNotExist):
             latest_current_date = DrinkModelService(user).year(year).latest().date
 
-        if row := DrinkTargetModelService(user).year(year).first():
-            target = row.qty
-            target_pcs = row.max_bottles
-            target_id = row.id
+        target_dto = DrinkTargetModelService(user).get_target(year)
+        target = target_dto.qty
+        target_pcs = target_dto.max_bottles
+        target_id = target_dto.target_id
 
         converter = DrinkConverter(user.drink_type)
         stats = DrinkStats(converter, sum_by_month)

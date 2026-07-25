@@ -58,9 +58,8 @@ class TrendsTab:
         current_raw = service.sum_by_day(year)
         past_raw = service.sum_by_day(year - 1)
 
-        target = 0.0
-        if row := DrinkTargetModelService(user).year(year).first():
-            target = row.qty
+        target_dto = DrinkTargetModelService(user).get_target(year)
+        target = target_dto.qty
 
         converter = DrinkConverter(user.drink_type)
 
