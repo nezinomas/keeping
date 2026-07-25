@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _l
 
 from ..users.models import User
-from .lib.drinks_options import DrinkConverter
+from .lib.drink_quantity import DrinkQuantity
 
 
 class DrinkType(models.TextChoices):
@@ -27,15 +27,18 @@ class Drink(models.Model):
     class Meta:
         get_latest_by = ["date"]
 
-    def __str__(self):
-        msg = f"{self.date}, {self.option}, "
-        if self.option == "stdav":
-            stdav = str(self.stdav)
-        else:
-            ml = DrinkConverter(self.option).stdav_to_ml(self.stdav)
-            stdav = f"{int(ml)}ml"
+    @property
+    def amount(self) -> DrinkQuantity:
+        return DrinkQuantity.from_stdav(
+            self.stdav, self.option, is_volume=self.converted_from_ml
+        )
 
-        return msg + stdav
+    def __str__(self):
+        # always names the volume, even for a record entered as a count
+        volume = DrinkQuantity.from_stdav(self.stdav, self.option, is_volume=True)
+        shown = f"{int(volume.value)}ml" if volume.is_volume else str(volume.stdav)
+
+        return f"{self.date}, {self.option}, {shown}"
 
 
 class DrinkTarget(models.Model):
@@ -52,17 +55,23 @@ class DrinkTarget(models.Model):
         User, on_delete=models.CASCADE, related_name="drink_targets"
     )
 
-    def __str__(self):
-        ml = DrinkConverter(self.drink_type).stdav_to_ml(self.quantity)
+    @property
+    def amount(self) -> DrinkQuantity:
+        """The volume the user typed, in the drink type they chose at the time.
 
-        return f"{self.year}: {ml}"
+        Not the same reading as `DrinkTargetDTO.amount`, which re-expresses the
+        target in whichever drink type the user is currently viewing in.
+        """
+        return DrinkQuantity.from_stdav(self.quantity, self.drink_type, is_volume=True)
+
+    def __str__(self):
+        return f"{self.year}: {self.amount.value}"
 
     class Meta:
         ordering = ["-year"]
         unique_together = ["year", "user"]
 
     def save(self, *args, **kwargs):
-        if self.drink_type != "stdav":
-            self.quantity = DrinkConverter(self.drink_type).ml_to_stdav(self.quantity)
+        self.quantity = DrinkQuantity.from_volume(self.quantity, self.drink_type).stdav
 
         super().save(*args, **kwargs)

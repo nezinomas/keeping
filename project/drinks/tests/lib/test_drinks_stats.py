@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 
 from ...lib.drinks_options import DrinkConverter
-from ...lib.drinks_stats import DrinkStats
+from ...lib.drinks_stats import DataRow, DrinkStats
 
 pytestmark = pytest.mark.django_db
 
@@ -34,8 +34,8 @@ def fixture_drink_converter():
 )
 def test_monthly_stats(drink_type, stdav, qty, expect_qty, expect_vol):
     data = [
-        {"date": date(1999, 1, 1), "qty": qty, "stdav": stdav},
-        {"date": date(1999, 2, 1), "qty": qty * 2, "stdav": stdav * 2},
+        DataRow(date=date(1999, 1, 1), qty=qty, stdav=stdav),
+        DataRow(date=date(1999, 2, 1), qty=qty * 2, stdav=stdav * 2),
     ]
 
     converter = DrinkConverter(drink_type)
@@ -48,7 +48,7 @@ def test_monthly_stats(drink_type, stdav, qty, expect_qty, expect_vol):
 
 
 def test_monthly_stats_no_data(drink_converter):
-    obj = DrinkStats(drink_converter, [])
+    obj = DrinkStats(drink_converter)
     stats = obj.monthly
 
     assert stats.total_quantity == [0.0] * 12
@@ -68,8 +68,8 @@ def test_monthly_stats_no_data(drink_converter):
 )
 def test_yearly_stats(year, today, expect_avg_volume, expect_total_qty):
     data = [
-        {"date": date(year, 1, 1), "qty": 1, "stdav": 2.5},
-        {"date": date(year, 2, 1), "qty": 1, "stdav": 2.5},
+        DataRow(date=date(year, 1, 1), qty=1, stdav=2.5),
+        DataRow(date=date(year, 2, 1), qty=1, stdav=2.5),
     ]
 
     converter = DrinkConverter("beer")
@@ -81,8 +81,33 @@ def test_yearly_stats(year, today, expect_avg_volume, expect_total_qty):
 
 
 def test_yearly_stats_no_data(drink_converter):
-    obj = DrinkStats(drink_converter, [])
+    obj = DrinkStats(drink_converter)
     stats = obj.yearly
 
     assert stats.avg_daily_volume_ml == 0.0
     assert stats.total_quantity == 0.0
+    assert stats.stdav == 0.0
+    assert stats.pure_alcohol_liters == 0.0
+
+
+def test_yearly_stats_pure_alcohol(drink_converter):
+    data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
+
+    obj = DrinkStats(drink_converter, data, today=date(1999, 12, 31))
+
+    assert obj.yearly.stdav == 2.5
+    assert obj.yearly.pure_alcohol_liters == 0.025
+
+
+def test_year_falls_back_to_today_when_empty(drink_converter):
+    obj = DrinkStats(drink_converter, today=date(2005, 3, 1))
+
+    assert obj.year == 2005
+
+
+def test_year_comes_from_the_data(drink_converter):
+    data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
+
+    obj = DrinkStats(drink_converter, data, today=date(2005, 3, 1))
+
+    assert obj.year == 1999

@@ -9,12 +9,12 @@ from ...lib.drinks_stats import DataRow
 from ...lib.drinks_trend import (
     TrendStats,
 )
-from ...services.trends.builders import (
-    TrendCardViewModel,
+from ...services.stat_card import StatCard
+from ...services.trends_tab import (
     TrendChartViewModel,
     TrendsBuilder,
+    TrendsTab,
 )
-from ...services.trends.providers import TrendsDataProvider
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
@@ -102,7 +102,7 @@ def test_builder_get_cards(converter):
     cards = TrendsBuilder(stats).get_cards()
 
     assert len(cards) == 5
-    assert all(isinstance(c, TrendCardViewModel) for c in cards)
+    assert all(isinstance(c, StatCard) for c in cards)
     assert [c.title for c in cards] == [
         _("Trend (2 weeks)"),
         _("Trend (month)"),
@@ -113,32 +113,23 @@ def test_builder_get_cards(converter):
 
 
 # -------------------------------------------------------------------------------------
-#                                                                  TrendsDataProvider
+#                                                                        TrendsTab.build
 # -------------------------------------------------------------------------------------
 @time_machine.travel("2026-03-01")
-def test_provider_fetches_current_and_past_daily(main_user):
+def test_trends_tab_build_returns_charts_and_cards(main_user):
     DrinkFactory(user=main_user, date=date(2026, 1, 10), stdav=3)
     DrinkFactory(user=main_user, date=date(2025, 1, 10), stdav=2)
 
-    data = TrendsDataProvider(main_user, 2026).get_data()
+    result = TrendsTab.build(main_user, 2026)
 
-    assert len(data.current_daily) == 1
-    assert len(data.past_daily) == 1
-    assert data.current_daily[0]["date"] == date(2026, 1, 10)
-    assert data.past_daily[0]["date"] == date(2025, 1, 10)
+    assert set(result) == {"chart_trend", "chart_cumulative", "cards"}
+    assert len(result["cards"]) == 5
 
 
 @time_machine.travel("2026-03-01")
-def test_provider_reads_target(main_user):
+def test_trends_tab_build_reads_target(main_user):
     DrinkTargetFactory(user=main_user, year=2026, quantity=100)
 
-    data = TrendsDataProvider(main_user, 2026).get_data()
+    result = TrendsTab.build(main_user, 2026)
 
-    assert data.target
-
-
-@time_machine.travel("2026-03-01")
-def test_provider_target_defaults_to_zero(main_user):
-    data = TrendsDataProvider(main_user, 2026).get_data()
-
-    assert data.target == 0.0
+    assert result["chart_trend"].target == 100.0

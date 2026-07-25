@@ -2,8 +2,8 @@ from dataclasses import asdict, dataclass
 
 from django.utils.translation import gettext as _
 
-from ....core.lib.translation import month_names
-from ...lib.drinks_risk import (
+from ...core.lib.translation import month_names
+from ..lib.drinks_risk import (
     HEAVY_DAY_STDAV,
     MONTHLY_HEAVY_HIGH_RISK,
     MONTHLY_HEAVY_LOW_RISK,
@@ -13,16 +13,8 @@ from ...lib.drinks_risk import (
     RiskStats,
     YearOverYearCount,
 )
-
-
-@dataclass(frozen=True)
-class RiskCardViewModel:
-    title: str
-    state: str  # "empty", "neutral", "low", "high", "improving", "worsening"
-    show_icon: bool
-    value: str
-    note: str
-    explanation: str = ""
+from .consumption_year import ConsumptionYear
+from .stat_card import StatCard
 
 
 @dataclass(frozen=True)
@@ -36,7 +28,6 @@ class WeeklyRiskChartViewModel:
 
     @property
     def as_dict(self) -> dict:
-        """Bridges the gap between strict DTOs and Django's json_script"""
         return asdict(self)
 
 
@@ -52,6 +43,28 @@ class MonthlyHeavyDaysChartViewModel:
     @property
     def as_dict(self) -> dict:
         return asdict(self)
+
+
+class RiskTab:
+    """Deep module computing weekly drink distribution, heavy drinking days,
+    and risk assessment cards.
+    """
+
+    @classmethod
+    def build(cls, user, year: int) -> dict:
+        records = ConsumptionYear(user, year)
+
+        stats = RiskStats(
+            current_daily=records.daily,
+            past_daily=records.previous.daily,
+        )
+        builder = RiskViewModelBuilder(drink_stats=stats)
+
+        return {
+            "cards": builder.get_cards(),
+            "chart_weekly": builder.chart_weekly(),
+            "chart_heavy": builder.chart_heavy_days(),
+        }
 
 
 class RiskViewModelBuilder:
@@ -92,7 +105,7 @@ class RiskViewModelBuilder:
             },
         )
 
-    def get_cards(self) -> list[RiskCardViewModel]:
+    def get_cards(self) -> list[StatCard]:
         return [
             self._build_current_week_card(),
             self._build_worst_week_card(),
@@ -100,32 +113,30 @@ class RiskViewModelBuilder:
             self._build_heavy_days_card(),
         ]
 
-    def _build_current_week_card(self) -> RiskCardViewModel:
+    def _build_current_week_card(self) -> StatCard:
         week = self._stats.current_week()
-        return RiskCardViewModel(
-            title=_("This week"),
+        return StatCard.level(
+            _("This week"),
             state=week.state,
-            show_icon=False,
             value=f"{week.stdav:.1f}",
             note=f"{_('Low-risk guideline')}: {WEEKLY_LOW_RISK_STDAV:.1f} Std Av",
         )
 
-    def _build_worst_week_card(self) -> RiskCardViewModel:
+    def _build_worst_week_card(self) -> StatCard:
         week = self._stats.worst_week()
         title = _("Worst week")
 
         if not week.has_data:
-            return RiskCardViewModel(title, "empty", False, "", _("No data"))
+            return StatCard.empty(title, _("No data"))
 
-        return RiskCardViewModel(
-            title=title,
+        return StatCard.level(
+            title,
             state=week.state,
-            show_icon=False,
             value=f"{week.stdav:.1f}",
             note=f"{week.label} – {week.end}",
         )
 
-    def _build_weeks_over_guideline_card(self) -> RiskCardViewModel:
+    def _build_weeks_over_guideline_card(self) -> StatCard:
         definition = _(
             "Weeks whose total exceeds the low-risk guideline of %(threshold)s Std Av."
         ) % {"threshold": f"{WEEKLY_LOW_RISK_STDAV:.1f}"}
@@ -133,7 +144,7 @@ class RiskViewModelBuilder:
             _("Weeks over guideline"), self._stats.weeks_over_guideline(), definition
         )
 
-    def _build_heavy_days_card(self) -> RiskCardViewModel:
+    def _build_heavy_days_card(self) -> StatCard:
         definition = _("Days with more than %(threshold)s Std Av in a single day.") % {
             "threshold": f"{HEAVY_DAY_STDAV:.0f}"
         }
@@ -146,26 +157,22 @@ class RiskViewModelBuilder:
         title: str,
         stats: YearOverYearCount | EmptyYearOverYearCount,
         definition: str,
-    ) -> RiskCardViewModel:
+    ) -> StatCard:
         if not stats.has_past:
-            return RiskCardViewModel(
+            return StatCard(
                 title=title,
-                state="neutral",
-                show_icon=False,
                 value=str(stats.current),
                 note=_("No prior year"),
                 explanation=definition,
             )
 
-        state = "improving" if stats.improving else "worsening"
         comparison = _(
             "The two numbers are this year and last year, up to the same date."
         )
 
-        return RiskCardViewModel(
-            title=title,
-            state=state,
-            show_icon=True,
+        return StatCard.comparison(
+            title,
+            improving=stats.improving,
             value=str(stats.current),
             note=f"{stats.current} / {stats.previous}",
             explanation=f"{definition} {comparison}",

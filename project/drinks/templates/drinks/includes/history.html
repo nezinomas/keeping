@@ -1,5 +1,5 @@
-{% if chart.serries  %}
-{{chart|json_script:"chart-history-data"}}
+{% if chart.has_data %}
+{{chart.as_dict|json_script:"chart-history-data"}}
 {% endif %}
 
 {% include 'drinks/includes/compare_form.html' with hx_swap_oob="true" %}

@@ -4,10 +4,14 @@ from datetime import datetime
 
 from django.utils.translation import gettext as _
 
-from ....core.lib.date import ydays
-from ....core.lib.translation import month_names
-from ...lib.drinks_options import DrinkConverter
-from ...lib.drinks_stats import DrinkStats
+from ...core.lib.calendar_grid import CalendarGrid
+from ...core.lib.date import ydays, years
+from ...core.lib.translation import month_names
+from ..lib.drinks_options import DrinkConverter
+from ..lib.drinks_stats import DrinkStats
+from . import stat_card
+from .consumption_year import ConsumptionYear
+from .stat_card import StatCard
 
 
 @dataclass(frozen=True)
@@ -20,7 +24,6 @@ class ChartViewModel:
 
     @property
     def as_dict(self) -> dict:
-        """Bridges the gap between strict DTOs and Django's json_script"""
         return asdict(self)
 
 
@@ -31,21 +34,12 @@ class DryDaysViewModel:
 
     @property
     def has_data(self) -> bool:
-        """Allows templates to cleanly check {% if dry_days.has_data %}"""
         return self.date is not None
 
 
 @dataclass(frozen=True)
 class AlcoholViewModel:
     liters: float
-
-
-@dataclass(frozen=True)
-class IndexCardViewModel:
-    title: str
-    value: str
-    note: str
-    state: str = "neutral"  # "neutral" | "positive" | "negative" | "empty"
 
 
 @dataclass(frozen=True)
@@ -70,6 +64,46 @@ class StdAvViewModel:
     items: list[ConversionRowViewModel] = field(default_factory=list)
 
 
+class IndexTab:
+    """Deep module assembling overview metrics, targets, charts,
+    standard unit breakdowns, and calendar grid for the Drinks index tab.
+    """
+
+    @classmethod
+    def build(cls, user, year: int) -> dict:
+        records = ConsumptionYear(user, year)
+        target = records.target
+
+        builder = IndexBuilder(
+            converter=records.converter,
+            drink_stats=DrinkStats(records.converter, records.monthly),
+            target=target.qty,
+            latest_past_date=records.last_recorded_date_before,
+            latest_current_date=records.last_recorded_date,
+        )
+
+        limit = LimitCardViewModel(
+            has_data=target.has_data,
+            ml=target.qty,
+            pcs=target.max_bottles,
+            target_id=target.target_id,
+        )
+
+        return {
+            "all_years": len(years()),
+            "chart_quantity": builder.chart_quantity(),
+            "chart_consumption": builder.chart_consumption(),
+            "tbl_std_av": builder.tbl_std_av(),
+            "cards": builder.get_cards(),
+            "limit": limit,
+            "calendar": CalendarGrid.build(
+                year=year,
+                daily_data=records.daily_rows,
+                latest_past_date=records.last_recorded_date_before,
+            ),
+        }
+
+
 class IndexBuilder:
     def __init__(
         self,
@@ -78,14 +112,12 @@ class IndexBuilder:
         target: float = 0.0,
         latest_past_date: dt_date | None = None,
         latest_current_date: dt_date | None = None,
-        today: dt_date | None = None,  # Dependency injection fixes the testing trap
+        today: dt_date | None = None,
     ):
         self._target = target
         self._latest_past_date = latest_past_date
         self._latest_current_date = latest_current_date
-
         self._today = today or datetime.now().date()
-
         self._drink_stats = drink_stats
         self._converter = converter
 
@@ -119,7 +151,7 @@ class IndexBuilder:
         stdav = self._drink_stats.yearly.total_quantity / self._converter.ratio
         return AlcoholViewModel(liters=self._converter.stdav_to_alcohol(stdav))
 
-    def get_cards(self) -> list[IndexCardViewModel]:
+    def get_cards(self) -> list[StatCard]:
         return [
             self._card_dry_days(),
             self._card_std_drinks(),
@@ -127,82 +159,65 @@ class IndexBuilder:
             self._card_pure_alcohol(),
         ]
 
-    def _card_dry_days(self) -> IndexCardViewModel:
+    def _card_dry_days(self) -> StatCard:
         title = _("Days dry")
         dry = self.tbl_dry_days()
 
         if not dry.has_data:
-            return IndexCardViewModel(
-                title=title, value="", note=_("No data"), state="empty"
-            )
+            return StatCard.empty(title, _("No data"))
 
-        return IndexCardViewModel(
+        return StatCard(
             title=title,
             value=str(dry.delta),
             note=dry.date.strftime("%Y-%m-%d"),
-            state="neutral",
         )
 
-    def _card_std_drinks(self) -> IndexCardViewModel:
+    def _card_std_drinks(self) -> StatCard:
         title = _("Std drinks")
-        total_quantity = self._drink_stats.yearly.total_quantity
 
-        if not total_quantity:
-            return IndexCardViewModel(
-                title=title, value="", note=_("No data"), state="empty"
-            )
+        if not self._drink_stats.yearly.total_quantity:
+            return StatCard.empty(title, _("No data"))
 
-        stdav = total_quantity * self._converter.stdav_per_unit
-
-        return IndexCardViewModel(
+        return StatCard(
             title=title,
-            value=f"{stdav:.0f}",
+            value=f"{self._drink_stats.yearly.stdav:.0f}",
             note=_("Std Av this year"),
-            state="neutral",
         )
 
-    def _card_avg_per_day(self) -> IndexCardViewModel:
+    def _card_avg_per_day(self) -> StatCard:
         title = _("Avg per day")
 
         if not self._drink_stats.yearly.total_quantity:
-            return IndexCardViewModel(
-                title=title, value="", note=_("No data"), state="empty"
-            )
+            return StatCard.empty(title, _("No data"))
 
         avg = self._drink_stats.yearly.avg_daily_volume_ml
         value = f"{avg:.0f} ml"
 
         if not self._target:
-            return IndexCardViewModel(
-                title=title, value=value, note=_("No limit set"), state="neutral"
-            )
+            return StatCard(title=title, value=value, note=_("No limit set"))
 
         under_limit = avg <= self._target
         diff = abs(self._target - avg)
-        note = f"{diff:.0f} ml " + (
-            _("under the limit") if under_limit else _("over the limit")
-        )
 
-        return IndexCardViewModel(
-            title=title,
+        # a daily average is read against the Drink Target, so it is a level
+        return StatCard.level(
+            title,
+            state=stat_card.LOW if under_limit else stat_card.HIGH,
             value=value,
-            note=note,
-            state="positive" if under_limit else "negative",
+            note=f"{diff:.0f} ml "
+            + (_("under the limit") if under_limit else _("over the limit")),
         )
 
-    def _card_pure_alcohol(self) -> IndexCardViewModel:
+    def _card_pure_alcohol(self) -> StatCard:
         title = _("Pure alcohol")
 
         if not self._drink_stats.yearly.total_quantity:
-            return IndexCardViewModel(
-                title=title, value="", note=_("No data"), state="empty"
-            )
+            return StatCard.empty(title, _("No data"))
 
-        return IndexCardViewModel(
+        return StatCard(
             title=title,
-            value=f"{self.tbl_alcohol().liters:.1f} L",
+            value=f"{self._drink_stats.yearly.pure_alcohol_liters:.1f} L",
             note=_("this year"),
-            state="neutral",
         )
 
     def tbl_std_av(self) -> StdAvViewModel:
@@ -220,7 +235,6 @@ class IndexBuilder:
 
         day, week, month = self._get_period_counts(year)
 
-        # Pre-calculate base math for readability
         base_total = qty
         base_per_day = qty / day
         base_per_week = qty / week
@@ -269,7 +283,6 @@ class IndexBuilder:
         per_month: float,
         drink_type: str,
     ) -> ConversionRowViewModel:
-        """Helper factory method to keep standard conversions clean"""
         return ConversionRowViewModel(
             title=title,
             total=self._converter.convert_qty(total, drink_type),

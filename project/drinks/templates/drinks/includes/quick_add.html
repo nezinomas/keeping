@@ -3,7 +3,7 @@
 <div id="quick-add" class="quick-add"
      x-data="{
          open: false,
-         option: '{{ user.drink_type|default:'beer' }}',
+         option: '{{ drink_types.selected|default:'beer' }}',
          quantity: '',
          defaults: { beer: '1', wine: '150', vodka: '40', stdav: '1' },
          init() {
@@ -33,8 +33,8 @@
                 <select name="option" class="form-select"
                         x-model="option"
                         @change="updateQuantity()">
-                    {% for type in select_drink_type %}
-                    <option value="{{ type.1 }}" {% if type.1 == user.drink_type %}selected{% endif %}>{{ type.0 }}</option>
+                    {% for type in drink_types.options %}
+                    <option value="{{ type.1 }}" {% if type.1 == drink_types.selected %}selected{% endif %}>{{ type.0 }}</option>
                     {% endfor %}
                 </select>
             </div>

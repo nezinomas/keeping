@@ -38,9 +38,9 @@
 
     <div>
         <div class="dropdown">
-            <button class="dropdown__btn">{{current_drink_type}}</button>
+            <button class="dropdown__btn">{{ drink_types.label }}</button>
             <div class="dropdown__menu">
-                {% for type in select_drink_type %}
+                {% for type in drink_types.options %}
                 <a class="dropdown-item button-sm" href="{% url 'drinks:set_drink_type' type.1 %}?tab={{ tab }}" hx-get="{% url 'drinks:set_drink_type' type.1 %}?tab={{ tab }}" hx-swap="none">{{type.0}}</a>
                 {% endfor %}
             </div>

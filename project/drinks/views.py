@@ -3,13 +3,11 @@ from typing import cast
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 from django_htmx.http import trigger_client_event
 
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.translation import month_names
 from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -22,24 +20,34 @@ from ..core.mixins.views import (
 )
 from ..users.models import User
 from . import forms, models, services
-from .lib.drinks_options import DrinkConverter
 from .services.model_services import DrinkModelService, DrinkTargetModelService
+from .tabs import DrinkTabs
 
-TABS = ["index", "data", "history", "trends", "risk"]
+
+class DrinkTypeContextMixin:
+    """Puts the drink-type switcher into the context of every drinks tab."""
+
+    def get_context_data(self, **kwargs):
+        user = cast(User, self.request.user)
+
+        return {
+            **super().get_context_data(**kwargs),
+            "drink_types": services.DrinkTypeSelector.for_drink_type(user.drink_type),
+        }
 
 
-class Index(TemplateViewMixin):
+class Index(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/index.html"
 
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            **services.helper.drink_type_dropdown(self.request),
+            **{"reload_targets": DrinkTabs.all()},
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
 
-class TabIndex(TemplateViewMixin):
+class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_index.html"
 
     def get_context_data(self, **kwargs):
@@ -49,12 +57,11 @@ class TabIndex(TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"tab": "index"},
-            **services.helper.drink_type_dropdown(self.request),
-            **services.index.load_service(user, year),
+            **services.IndexTab.build(user, year),
         }
 
 
-class TabTrends(TemplateViewMixin):
+class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_trends.html"
 
     def get_context_data(self, **kwargs):
@@ -64,12 +71,11 @@ class TabTrends(TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"tab": "trends"},
-            **services.helper.drink_type_dropdown(self.request),
-            **services.trends.load_service(user, year),
+            **services.TrendsTab.build(user, year),
         }
 
 
-class TabRisk(TemplateViewMixin):
+class TabRisk(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_risk.html"
 
     def get_context_data(self, **kwargs):
@@ -79,12 +85,11 @@ class TabRisk(TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"tab": "risk"},
-            **services.helper.drink_type_dropdown(self.request),
-            **services.risk.load_service(user, year),
+            **services.RiskTab.build(user, year),
         }
 
 
-class TabData(ListViewMixin):
+class TabData(DrinkTypeContextMixin, ListViewMixin):
     service_class = DrinkModelService
     template_name = "drinks/tab_data.html"
 
@@ -96,11 +101,10 @@ class TabData(ListViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"tab": "data"},
-            **services.helper.drink_type_dropdown(self.request),
         }
 
 
-class TabHistory(TemplateViewMixin):
+class TabHistory(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_history.html"
 
     def get_context_data(self, **kwargs):
@@ -108,7 +112,6 @@ class TabHistory(TemplateViewMixin):
             **super().get_context_data(**kwargs),
             **{"tab": "history"},
             **{"form": forms.DrinkCompareForm(user=self.request.user)},
-            **services.helper.drink_type_dropdown(self.request),
             **services.history.load_service(self.request.user),
         }
 
@@ -118,19 +121,11 @@ class Compare(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        year = cast(int, user.year)
-
-        year = year + 1
+        year = cast(int, user.year) + 1
         qty = self.kwargs.get("qty", 0)
-        chart_serries = services.helper.several_years_consumption(
-            user=user, years=range(year - qty, year)
-        )
+
         return {
-            "chart": {
-                "title": gettext("Year comparison"),
-                "categories": list(month_names().values()),
-                "serries": chart_serries,
-            },
+            "chart": services.YearComparison.build(user, range(year - qty, year)),
             "form": forms.DrinkCompareForm(user=self.request.user),
         }
 
@@ -144,18 +139,13 @@ class CompareTwo(FormViewMixin):
         # a valid submit only updates the shared history chart; the form stays
         # put in the header, so render just the chart data into its container
         context = {"form": form}
-        year1 = form.cleaned_data["year1"]
-        year2 = form.cleaned_data["year2"]
-        chart_serries = services.helper.several_years_consumption(
-            user=self.request.user, years=[year1, year2]
-        )
+        years = [form.cleaned_data["year1"], form.cleaned_data["year2"]]
+        chart = services.YearComparison.build(self.request.user, years)
 
-        if len(chart_serries) == 2:
-            context["chart"] = {
-                "title": gettext("Year comparison"),
-                "categories": list(month_names().values()),
-                "serries": chart_serries,
-            }
+        # only plot a comparison when both years actually had records
+        if len(chart.serries) == len(years):
+            context["chart"] = chart
+
         return render(self.request, "drinks/includes/history.html", context)
 
     def form_invalid(self, form):
@@ -173,20 +163,11 @@ class New(CreateViewMixin):
     modal_form_title = _("Drinks")
 
     def get_hx_trigger_django(self):
-        tab = self.kwargs.get("tab")
-
-        if tab in TABS:
-            return f"reload{tab.title()}"
-
-        return "reloadData"
+        # a new drink lands in the Data tab unless it came from another one
+        return DrinkTabs.resolve(self.kwargs.get("tab"), default="data").reload_trigger
 
     def url(self):
-        tab = self.kwargs.get("tab")
-
-        if tab not in TABS:
-            tab = "index"
-
-        return reverse_lazy("drinks:new", kwargs={"tab": tab})
+        return DrinkTabs.resolve(self.kwargs.get("tab")).form_url("drinks:new")
 
 
 class Update(UpdateViewMixin):
@@ -210,7 +191,7 @@ class TargetLists(ListViewMixin):
 
     def get_queryset(self):
         user = cast(User, self.request.user)
-        return DrinkTargetModelService(user).year(user.year)
+        return DrinkTargetModelService(user).targets(user.year)
 
 
 class TargetNew(CreateViewMixin):
@@ -220,20 +201,11 @@ class TargetNew(CreateViewMixin):
     modal_form_title = _("New goal")
 
     def get_hx_trigger_django(self):
-        tab = self.kwargs.get("tab")
-
-        if tab in TABS:
-            return f"reload{tab.title()}"
-
-        return "reloadIndex"
+        # a new goal lands in the Overview tab unless it came from another one
+        return DrinkTabs.resolve(self.kwargs.get("tab")).reload_trigger
 
     def url(self):
-        tab = self.kwargs.get("tab")
-
-        if tab not in TABS:
-            tab = "index"
-
-        return reverse_lazy("drinks:target_new", kwargs={"tab": tab})
+        return DrinkTabs.resolve(self.kwargs.get("tab")).form_url("drinks:target_new")
 
 
 class TargetUpdate(UpdateViewMixin):
@@ -248,17 +220,13 @@ class TargetUpdate(UpdateViewMixin):
         obj = super().get_object()
 
         if obj:
-            if obj.drink_type == "stdav":
-                return obj
-
-            obj.quantity = DrinkConverter(obj.drink_type).stdav_to_ml(obj.quantity)
+            # the form edits the volume the user originally typed
+            obj.quantity = obj.amount.value
 
         return obj
 
 
 class SelectDrink(RedirectViewMixin):
-    tabs = TABS
-
     def get(self, request, *args, **kwargs):
         drink_type = kwargs.get("drink_type")
 
@@ -273,8 +241,7 @@ class SelectDrink(RedirectViewMixin):
             return super().get(request, *args, **kwargs)
 
         # stay on the tab the change was fired from
-        tab = request.GET.get("tab")
-        trigger = f"reload{tab.title()}" if tab in self.tabs else "reloadIndex"
+        trigger = DrinkTabs.resolve(request.GET.get("tab")).reload_trigger
 
         response = HttpResponse(status=204)
         trigger_client_event(response=response, name=trigger, params={})
@@ -305,8 +272,7 @@ class QuickAdd(View):
 
         form.save()
 
-        tab = request.POST.get("tab")
-        trigger = f"reload{tab.title()}" if tab in TABS else "reloadIndex"
+        trigger = DrinkTabs.resolve(request.POST.get("tab")).reload_trigger
 
         response = HttpResponse(status=204)
         trigger_client_event(response=response, name=trigger, params={})

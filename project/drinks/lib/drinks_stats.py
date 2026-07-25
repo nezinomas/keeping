@@ -1,4 +1,5 @@
 import calendar
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 from functools import cached_property
@@ -25,19 +26,20 @@ class MonthlyStatsDTO:
 class YearlyStatsDTO:
     avg_daily_volume_ml: float
     total_quantity: float
+    stdav: float = 0.0
+    pure_alcohol_liters: float = 0.0
 
 
 class DrinkStats:
     def __init__(
         self,
         converter: DrinkConverter,
-        data: list[dict] | None = None,
+        data: Sequence[DataRow] = (),
         today: date | None = None,
     ):
         self.converter = converter
         self.today = today or date.today()
-
-        self.data = [DataRow(**row) for row in (data or [])]
+        self.data = data
         self.year = self.data[0].date.year if self.data else self.today.year
 
     @cached_property
@@ -66,15 +68,24 @@ class DrinkStats:
     @cached_property
     def yearly(self) -> YearlyStatsDTO:
         if not self.data:
-            return YearlyStatsDTO(avg_daily_volume_ml=0.0, total_quantity=0.0)
+            return YearlyStatsDTO(
+                avg_daily_volume_ml=0.0,
+                total_quantity=0.0,
+                stdav=0.0,
+                pure_alcohol_liters=0.0,
+            )
 
         days_passed, month_limit = self._get_year_boundaries()
         total_volume = sum(self.monthly.total_volume_ml[:month_limit])
         total_quantity = sum(self.monthly.total_quantity[:month_limit])
+        stdav = total_quantity * self.converter.stdav_per_unit
+        pure_alcohol_liters = self.converter.stdav_to_alcohol(stdav)
 
         return YearlyStatsDTO(
             avg_daily_volume_ml=self._avg(total_volume, days_passed),
             total_quantity=total_quantity,
+            stdav=stdav,
+            pure_alcohol_liters=pure_alcohol_liters,
         )
 
     def _avg(self, total: float, days: int) -> float:

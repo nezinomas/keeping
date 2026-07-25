@@ -7,14 +7,13 @@ from django.utils.translation import gettext as _
 
 from ...lib.drinks_risk import RiskStats
 from ...lib.drinks_stats import DataRow
-from ...services import risk
-from ...services.risk.builders import (
+from ...services.risk_tab import (
     MonthlyHeavyDaysChartViewModel,
-    RiskCardViewModel,
+    RiskTab,
     RiskViewModelBuilder,
     WeeklyRiskChartViewModel,
 )
-from ...services.risk.providers import RiskDataProvider
+from ...services.stat_card import StatCard
 from ..factories import DrinkFactory
 
 pytestmark = pytest.mark.django_db
@@ -116,7 +115,7 @@ def test_get_cards_returns_four_view_models():
     cards = RiskViewModelBuilder(stats).get_cards()
 
     assert len(cards) == 4
-    assert all(isinstance(c, RiskCardViewModel) for c in cards)
+    assert all(isinstance(c, StatCard) for c in cards)
     assert [c.title for c in cards] == [
         _("This week"),
         _("Worst week"),
@@ -268,26 +267,14 @@ def test_zone_cards_have_no_explanation():
 # -------------------------------------------------------------------------------------
 #                                                                RiskDataProvider
 # -------------------------------------------------------------------------------------
+#                                                                          RiskTab.build
+# -------------------------------------------------------------------------------------
 @time_machine.travel("2026-03-01")
-def test_provider_fetches_current_and_past_daily(main_user):
-    DrinkFactory(user=main_user, date=date(2026, 1, 10), stdav=3)
+def test_risk_tab_build_returns_cards_and_charts(main_user):
+    DrinkFactory(user=main_user, date=date(2026, 1, 10), stdav=7)
     DrinkFactory(user=main_user, date=date(2025, 1, 10), stdav=2)
 
-    data = RiskDataProvider(main_user, 2026).get_data()
-
-    assert len(data.current_daily) == 1
-    assert len(data.past_daily) == 1
-    assert data.current_daily[0]["date"] == date(2026, 1, 10)
-
-
-# -------------------------------------------------------------------------------------
-#                                                                     load_service
-# -------------------------------------------------------------------------------------
-@time_machine.travel("2026-03-01")
-def test_load_service_returns_cards_and_charts(main_user):
-    DrinkFactory(user=main_user, date=date(2026, 1, 10), stdav=7)
-
-    result = risk.load_service(main_user, 2026)
+    result = RiskTab.build(main_user, 2026)
 
     assert set(result) == {"cards", "chart_weekly", "chart_heavy"}
     assert len(result["cards"]) == 4
@@ -295,10 +282,8 @@ def test_load_service_returns_cards_and_charts(main_user):
 
 
 @time_machine.travel("2026-03-01")
-def test_load_service_handles_no_data(main_user):
-    result = risk.load_service(main_user, 2026)
+def test_risk_tab_build_handles_no_data(main_user):
+    result = RiskTab.build(main_user, 2026)
 
-    # 2026-01-01 falls in the week starting Mon 2025-12-29; 2026-03-01 falls in
-    # the week starting Mon 2026-02-23 -> 9 dense weekly buckets, all empty
     assert len(result["cards"]) == 4
     assert result["chart_weekly"].data == [0.0] * 9

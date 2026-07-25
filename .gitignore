@@ -7,6 +7,7 @@ media/
 sass/node_modules/
 .idea/
 .claude/
+claude.md
 project.pyproj*
 *.p
 
@@ -15,6 +16,7 @@ project.pyproj*
 .agents/
 .cache/
 .Python
+docs/
 env/
 build/
 develop-eggs/

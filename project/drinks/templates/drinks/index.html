@@ -20,11 +20,9 @@
 
 
 <!-- htmx tab data load -->
-<div hx-get="{% url 'drinks:tab_index' %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
-<div hx-get="{% url 'drinks:tab_trends' %}" hx-target="#tab_content" hx-trigger="reloadTrends from:body"></div>
-<div hx-get="{% url 'drinks:tab_risk' %}" hx-target="#tab_content" hx-trigger="reloadRisk from:body"></div>
-<div hx-get="{% url 'drinks:tab_data' %}" hx-target="#tab_content" hx-trigger="reloadData from:body"></div>
-<div hx-get="{% url 'drinks:tab_history' %}" hx-target="#tab_content" hx-trigger="reloadHistory from:body"></div>
+{% for target in reload_targets %}
+<div hx-get="{{ target.url }}" hx-target="#tab_content" hx-trigger="{{ target.reload_trigger }} from:body"></div>
+{% endfor %}
 
 <!-- tab content -->
 <div id="tab_content">
