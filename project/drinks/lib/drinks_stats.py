@@ -1,4 +1,5 @@
 import calendar
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 from functools import cached_property
@@ -32,21 +33,14 @@ class YearlyStatsDTO:
 class DrinkStats:
     def __init__(
         self,
-        converter: DrinkConverter | str,
-        data: list[dict] | None = None,
+        converter: DrinkConverter,
+        data: Sequence[DataRow] = (),
         today: date | None = None,
     ):
-        if isinstance(converter, str):
-            self.converter = DrinkConverter(converter)
-        else:
-            self.converter = converter
-
+        self.converter = converter
         self.today = today or date.today()
-        self.data = [DataRow(**row) for row in (data or [])]
+        self.data = data
         self.year = self.data[0].date.year if self.data else self.today.year
-
-    def convert_qty(self, qty: float, to_type: str) -> float:
-        return self.converter.convert_qty(qty, to_type)
 
     @cached_property
     def monthly(self) -> MonthlyStatsDTO:

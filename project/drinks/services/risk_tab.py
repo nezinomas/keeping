@@ -13,8 +13,7 @@ from ..lib.drinks_risk import (
     RiskStats,
     YearOverYearCount,
 )
-from ..lib.drinks_stats import DataRow
-from .model_services import DrinkModelService
+from .consumption_year import ConsumptionYear
 
 
 @dataclass(frozen=True)
@@ -62,14 +61,12 @@ class RiskTab:
 
     @classmethod
     def build(cls, user, year: int) -> dict:
-        service = DrinkModelService(user)
-        current_raw = service.sum_by_day(year)
-        past_raw = service.sum_by_day(year - 1)
+        records = ConsumptionYear(user, year)
 
-        current_daily = [DataRow(**row) for row in current_raw]
-        past_daily = [DataRow(**row) for row in past_raw]
-
-        stats = RiskStats(current_daily=current_daily, past_daily=past_daily)
+        stats = RiskStats(
+            current_daily=records.daily,
+            past_daily=records.previous.daily,
+        )
         builder = RiskViewModelBuilder(drink_stats=stats)
 
         return {

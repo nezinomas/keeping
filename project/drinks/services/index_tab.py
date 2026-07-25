@@ -1,4 +1,3 @@
-import contextlib
 from dataclasses import asdict, dataclass, field
 from datetime import date as dt_date
 from datetime import datetime
@@ -10,8 +9,7 @@ from ...core.lib.date import ydays, years
 from ...core.lib.translation import month_names
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DrinkStats
-from ..models import Drink
-from .model_services import DrinkModelService, DrinkTargetModelService
+from .consumption_year import ConsumptionYear
 
 
 @dataclass(frozen=True)
@@ -79,48 +77,22 @@ class IndexTab:
 
     @classmethod
     def build(cls, user, year: int) -> dict:
-        sum_by_month = DrinkModelService(user).sum_by_month(year)
-        sum_by_day = DrinkModelService(user).sum_by_day(year)
-
-        target = 0.0
-        target_pcs = 0.0
-        target_id = 0
-        latest_past_date = None
-        latest_current_date = None
-
-        with contextlib.suppress(Drink.DoesNotExist):
-            latest_past_date = (
-                DrinkModelService(user)
-                .items()
-                .filter(date__year__lt=year)
-                .latest()
-                .date
-            )
-
-        with contextlib.suppress(Drink.DoesNotExist):
-            latest_current_date = DrinkModelService(user).year(year).latest().date
-
-        target_dto = DrinkTargetModelService(user).get_target(year)
-        target = target_dto.qty
-        target_pcs = target_dto.max_bottles
-        target_id = target_dto.target_id
-
-        converter = DrinkConverter(user.drink_type)
-        stats = DrinkStats(converter, sum_by_month)
+        records = ConsumptionYear(user, year)
+        target = records.target
 
         builder = IndexBuilder(
-            converter=converter,
-            drink_stats=stats,
-            target=target,
-            latest_past_date=latest_past_date,
-            latest_current_date=latest_current_date,
+            converter=records.converter,
+            drink_stats=DrinkStats(records.converter, records.monthly),
+            target=target.qty,
+            latest_past_date=records.last_recorded_date_before,
+            latest_current_date=records.last_recorded_date,
         )
 
         limit = LimitCardViewModel(
-            has_data=target_id > 0,
-            ml=target,
-            pcs=target_pcs,
-            target_id=target_id,
+            has_data=target.has_data,
+            ml=target.qty,
+            pcs=target.max_bottles,
+            target_id=target.target_id,
         )
 
         return {
@@ -132,8 +104,8 @@ class IndexTab:
             "limit": limit,
             "calendar": CalendarGrid.build(
                 year=year,
-                daily_data=sum_by_day,
-                latest_past_date=latest_past_date,
+                daily_data=records.daily_rows,
+                latest_past_date=records.last_recorded_date_before,
             ),
         }
 

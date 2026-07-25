@@ -1,6 +1,8 @@
+import contextlib
 from dataclasses import dataclass
+from datetime import date
 
-from django.db.models import F
+from django.db.models import F, QuerySet
 
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
@@ -34,17 +36,31 @@ class DrinkModelService(SumMixin, BaseModelService):
     def items(self):
         return self.objects
 
-    def sum_by_year(self, year: int | None = None) -> list[dict]:
+    def latest_date(self, year: int) -> date | None:
+        """Date of the last record in `year`, or None when the year is empty."""
+        with contextlib.suppress(models.Drink.DoesNotExist):
+            return self.year(year).latest().date
+
+        return None
+
+    def latest_date_before(self, year: int) -> date | None:
+        """Date of the last record in any year before `year`."""
+        with contextlib.suppress(models.Drink.DoesNotExist):
+            return self.objects.filter(date__year__lt=year).latest().date
+
+        return None
+
+    def sum_by_year(self, year: int | None = None) -> QuerySet:
         """
-        Returns list of dicts: [{'year': int, 'stdav': float, 'qty': float}]
+        Returns rows of: {'year': int, 'stdav': float, 'qty': float}
         """
         return self.year_sum(
             self.objects, year=year, sum_annotation="stdav", sum_column="stdav"
         ).annotate(qty=F("stdav") * self.ratio)
 
-    def sum_by_month(self, year: int, month: int | None = None) -> list[dict]:
+    def sum_by_month(self, year: int, month: int | None = None) -> QuerySet:
         """
-        Returns list of dicts: [{'date': datetime.date, 'stdav': float, 'qty': float}]
+        Returns rows of: {'date': datetime.date, 'stdav': float, 'qty': float}
         """
         return self.month_sum(
             self.objects,
@@ -54,9 +70,9 @@ class DrinkModelService(SumMixin, BaseModelService):
             sum_column="stdav",
         ).annotate(qty=F("stdav") * self.ratio)
 
-    def sum_by_day(self, year: int, month: int | None = None) -> list[dict]:
+    def sum_by_day(self, year: int, month: int | None = None) -> QuerySet:
         """
-        Returns list of dicts: [{'date': datetime.date, 'stdav': float, 'qty': float}]
+        Returns rows of: {'date': datetime.date, 'stdav': float, 'qty': float}
         """
         return self.day_sum(
             self.objects,

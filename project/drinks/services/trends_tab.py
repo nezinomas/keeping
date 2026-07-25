@@ -2,14 +2,12 @@ from dataclasses import asdict, dataclass
 
 from django.utils.translation import gettext as _
 
-from ..lib.drinks_options import DrinkConverter
-from ..lib.drinks_stats import DataRow
 from ..lib.drinks_trend import (
     EmptyRecentPeriodComparison,
     RecentPeriodComparison,
     TrendStats,
 )
-from .model_services import DrinkModelService, DrinkTargetModelService
+from .consumption_year import ConsumptionYear
 
 
 @dataclass(frozen=True)
@@ -54,22 +52,13 @@ class TrendsTab:
 
     @classmethod
     def build(cls, user, year: int) -> dict:
-        service = DrinkModelService(user)
-        current_raw = service.sum_by_day(year)
-        past_raw = service.sum_by_day(year - 1)
-
-        target_dto = DrinkTargetModelService(user).get_target(year)
-        target = target_dto.qty
-
-        converter = DrinkConverter(user.drink_type)
-
-        current_daily = [DataRow(**row) for row in current_raw] if current_raw else []
-        past_daily = [DataRow(**row) for row in past_raw] if past_raw else []
+        records = ConsumptionYear(user, year)
+        target = records.target.qty
 
         stats = TrendStats(
-            converter,
-            current_daily=current_daily,
-            past_daily=past_daily,
+            records.converter,
+            current_daily=records.daily,
+            past_daily=records.previous.daily,
             target=target,
         )
 

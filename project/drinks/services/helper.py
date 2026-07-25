@@ -1,7 +1,6 @@
 from .. import models
-from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DrinkStats
-from ..services.model_services import DrinkModelService
+from .consumption_year import ConsumptionYear
 
 
 def drink_type_dropdown(request):
@@ -15,16 +14,13 @@ def drink_type_dropdown(request):
 
 def several_years_consumption(user, years):
     series = []
-    converter = DrinkConverter(user.drink_type)
 
     for year in years:
-        consumption_data = DrinkModelService(user).sum_by_month(int(year))
-        if not consumption_data.exists():
+        records = ConsumptionYear(user, int(year))
+        if not records.monthly:
             continue
 
-        monthly_averages = DrinkStats(
-            converter, consumption_data
-        ).monthly.avg_daily_volume_ml
-        series.append({"name": year, "data": monthly_averages})
+        stats = DrinkStats(records.converter, records.monthly)
+        series.append({"name": year, "data": stats.monthly.avg_daily_volume_ml})
 
     return series
