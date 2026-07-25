@@ -7,15 +7,28 @@ from django.db.models import F, QuerySet
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
 from .. import models
+from ..lib.drink_quantity import DrinkQuantity
 from ..lib.drinks_options import DrinkConverter
 
 
 @dataclass(frozen=True)
 class DrinkTargetDTO:
+    """A year's Drink Target, in the drink type the user is currently viewing in.
+
+    A target is stored in Std Av, so it can be re-expressed in any drink type.
+    That makes this a different reading from `DrinkTarget.amount`, which is the
+    volume the user actually typed, in the drink type they chose at the time.
+    """
+
     has_data: bool = False
     target_id: int = 0
-    qty: float = 0.0
-    max_bottles: float = 0.0
+    amount: DrinkQuantity = DrinkQuantity(stdav=0.0, drink_type="stdav")
+    max_bottles: float = 0.0  # servings per year, not per day
+
+    @property
+    def qty(self) -> float:
+        """The daily volume, in the viewing drink type."""
+        return self.amount.value
 
 
 class DrinkModelService(SumMixin, BaseModelService):
@@ -88,23 +101,28 @@ class DrinkTargetModelService(BaseModelService):
         return models.DrinkTarget.objects.select_related("user").filter(user=self.user)
 
     def year(self, year):
-        converter = DrinkConverter(self.user.drink_type)
-        return (
-            self.objects.filter(year=year)
-            .annotate(stdav=F("quantity"))
-            .annotate(qty=converter.stdav_to_ml(stdav=F("stdav")))
-            .annotate(max_bottles=converter.max_bottles_per_year(year, F("stdav")))
-        )
+        return self.objects.filter(year=year)
+
+    def targets(self, year: int) -> list[DrinkTargetDTO]:
+        return [self._as_dto(row, year) for row in self.year(year)]
 
     def get_target(self, year: int) -> DrinkTargetDTO:
         if row := self.year(year).first():
-            return DrinkTargetDTO(
-                has_data=True,
-                target_id=row.id,
-                qty=row.qty,
-                max_bottles=row.max_bottles,
-            )
+            return self._as_dto(row, year)
+
         return DrinkTargetDTO()
 
     def items(self):
         return self.objects
+
+    def _as_dto(self, row, year: int) -> DrinkTargetDTO:
+        converter = DrinkConverter(self.user.drink_type)
+
+        return DrinkTargetDTO(
+            has_data=True,
+            target_id=row.id,
+            amount=DrinkQuantity.from_stdav(
+                row.quantity, self.user.drink_type, is_volume=True
+            ),
+            max_bottles=converter.max_bottles_per_year(year, row.quantity),
+        )

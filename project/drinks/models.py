@@ -57,7 +57,11 @@ class DrinkTarget(models.Model):
 
     @property
     def amount(self) -> DrinkQuantity:
-        # a target is always entered and shown as a volume
+        """The volume the user typed, in the drink type they chose at the time.
+
+        Not the same reading as `DrinkTargetDTO.amount`, which re-expresses the
+        target in whichever drink type the user is currently viewing in.
+        """
         return DrinkQuantity.from_stdav(self.quantity, self.drink_type, is_volume=True)
 
     def __str__(self):

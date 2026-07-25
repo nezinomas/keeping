@@ -192,7 +192,7 @@ class TargetLists(ListViewMixin):
 
     def get_queryset(self):
         user = cast(User, self.request.user)
-        return DrinkTargetModelService(user).year(user.year)
+        return DrinkTargetModelService(user).targets(user.year)
 
 
 class TargetNew(CreateViewMixin):
