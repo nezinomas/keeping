@@ -1,9 +1,19 @@
+from dataclasses import dataclass
+
 from django.db.models import F
 
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
 from .. import models
 from ..lib.drinks_options import DrinkConverter
+
+
+@dataclass(frozen=True)
+class DrinkTargetDTO:
+    has_data: bool = False
+    target_id: int = 0
+    qty: float = 0.0
+    max_bottles: float = 0.0
 
 
 class DrinkModelService(SumMixin, BaseModelService):
@@ -69,6 +79,16 @@ class DrinkTargetModelService(BaseModelService):
             .annotate(qty=converter.stdav_to_ml(stdav=F("stdav")))
             .annotate(max_bottles=converter.max_bottles_per_year(year, F("stdav")))
         )
+
+    def get_target(self, year: int) -> DrinkTargetDTO:
+        if row := self.year(year).first():
+            return DrinkTargetDTO(
+                has_data=True,
+                target_id=row.id,
+                qty=row.qty,
+                max_bottles=row.max_bottles,
+            )
+        return DrinkTargetDTO()
 
     def items(self):
         return self.objects

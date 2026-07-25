@@ -36,3 +36,26 @@ def test_drink_target_init_raises_if_anonymous_user():
 def test_drink_target_init_succeeds_with_real_user(main_user):
     # No need to save — just check __init__
     DrinkTargetModelService(user=main_user)
+
+
+@pytest.mark.django_db
+def test_get_target_no_data(main_user):
+    target_dto = DrinkTargetModelService(user=main_user).get_target(1999)
+
+    assert not target_dto.has_data
+    assert target_dto.target_id == 0
+    assert target_dto.qty == 0.0
+    assert target_dto.max_bottles == 0.0
+
+
+@pytest.mark.django_db
+def test_get_target_with_data(main_user):
+    from ..factories import DrinkTargetFactory
+
+    target = DrinkTargetFactory(user=main_user, year=1999, quantity=500)
+    target_dto = DrinkTargetModelService(user=main_user).get_target(1999)
+
+    assert target_dto.has_data
+    assert target_dto.target_id == target.id
+    assert target_dto.qty == 500.0  # 500ml beer = 2.5 stdav
+    assert target_dto.max_bottles == 365.0
