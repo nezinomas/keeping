@@ -221,7 +221,7 @@ class IndexBuilder:
                 title=title, value="", note=_("No data"), state="empty"
             )
 
-        stdav = total_quantity * self._converter.stdav_per_unit
+        stdav = self._drink_stats.yearly.stdav
 
         return IndexCardViewModel(
             title=title,
@@ -269,7 +269,7 @@ class IndexBuilder:
 
         return IndexCardViewModel(
             title=title,
-            value=f"{self.tbl_alcohol().liters:.1f} L",
+            value=f"{self._drink_stats.yearly.pure_alcohol_liters:.1f} L",
             note=_("this year"),
             state="neutral",
         )

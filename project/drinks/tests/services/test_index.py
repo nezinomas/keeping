@@ -27,11 +27,15 @@ def fixture_drink_converter():
 
 
 def _card_builder(drink_converter, total_quantity=0.0, avg=0.0, target=0.0, **kwargs):
+    stdav = total_quantity * drink_converter.stdav_per_unit
+    pure_alcohol = drink_converter.stdav_to_alcohol(stdav)
     stats = SimpleNamespace(
         year=1999,
         yearly=SimpleNamespace(
             total_quantity=total_quantity,
             avg_daily_volume_ml=avg,
+            stdav=stdav,
+            pure_alcohol_liters=pure_alcohol,
         ),
     )
     return IndexBuilder(
