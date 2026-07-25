@@ -23,7 +23,7 @@
             {% csrf_token %}
             <input type="hidden" name="tab" id="quick-add-tab" value="index">
 
-            <input type="text" name="quantity" class="quick-add__qty"
+            <input type="text" name="quantity" class="form-control quick-add__qty"
                    inputmode="decimal" autocomplete="off" required
                    placeholder="{% translate 'Quantity' %}"
                    x-model="quantity"

@@ -338,6 +338,7 @@ button.trend-card__value {
 
 // Year heatmap (server-rendered calendar)
 .heat-card {
+    position: relative;
     min-width: 0;
     padding: calc($gap * 1.4) $gap;
     background: #fff;
@@ -351,6 +352,31 @@ button.trend-card__value {
     .l4 { background: var(--chart-negative-dark); }  // "heavier day" — matches the Risks tab heavy-day colour
     .future { background: #f6f7f8; }
     .today { outline: 2px solid $secondary; outline-offset: -1px; }
+}
+
+.heat-tooltip {
+    position: absolute;
+    z-index: 100;
+    pointer-events: none;
+    background: #ffffff;
+    border: 2px solid #ccc;
+    border-radius: $modal-border-radius;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: $black-muted;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transform: translate(-50%, -100%) translateY(-8px);
+    white-space: nowrap;
+
+    &__date {
+        font-weight: 600;
+        margin-bottom: 0.15rem;
+    }
+
+    &__row {
+        color: $text-muted;
+    }
 }
 
 .heat-scroll {

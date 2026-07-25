@@ -281,6 +281,18 @@ def test_tab_index_drinked_date(client_logged):
     assert response.context["cards"][0].note == "1998-01-02"
 
 
+def test_tab_index_renders_calendar_data_label_attributes(client_logged):
+    DrinkFactory(date=date(1999, 1, 5), stdav=2.5, option="beer")
+
+    url = reverse("drinks:tab_index")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+    html = response.content.decode("utf-8")
+    assert 'data-label="' in html
+    assert "heat-tooltip" in html
+
+
 @pytest.mark.parametrize(
     "user_drink_type, drink_type, stdav, expect",
     [

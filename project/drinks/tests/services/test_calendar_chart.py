@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.utils.translation import gettext as _
 
 from ...lib.drinks_options import DrinkConverter
 from ...services.calendar_chart import (
@@ -37,7 +38,9 @@ def test_year_grid_empty_returns_full_year():
     assert all(isinstance(m, CalendarMonthViewModel) for m in grid.months)
     assert all(isinstance(d, CalendarDayViewModel) for m in grid.months for d in m.days)
     assert all(d.level == 0 for m in grid.months for d in m.days)
-    assert all(d.label == "" for m in grid.months for d in m.days)
+    assert all(d.label == "" for m in grid.months for d in m.days if not d.is_today)
+    gap_str = _("Gap")
+    assert grid.months[5].days[14].label == f"1999-06-15\n{gap_str}: 0d."
 
 
 def test_year_grid_month_metadata():
@@ -67,10 +70,35 @@ def test_year_grid_levels_and_labels():
         _calendar(daily_data=daily).year_grid(today=date(1999, 12, 31)).months[0].days
     )
 
+    qty_str = _("Quantity")
+    gap_str = _("Gap")
     assert [d.level for d in days[:5]] == [1, 2, 3, 4, 0]
-    assert days[0].label == "1999-01-01 · 0.4"
-    assert days[3].label == "1999-01-04 · 2.4"
+    assert days[0].label == f"1999-01-01\n{qty_str}: 0.4\n{gap_str}: 0d."
+    assert days[3].label == f"1999-01-04\n{qty_str}: 2.4\n{gap_str}: 1d."
     assert days[4].label == ""
+    assert days[0].gap == 0
+    assert days[3].gap == 1
+
+
+def test_year_grid_gaps_with_latest_past_date():
+    daily = [
+        {"date": date(1999, 1, 10), "stdav": 1.0, "qty": 0.5},
+        {"date": date(1999, 1, 15), "stdav": 2.0, "qty": 1.0},
+    ]
+    grid = _calendar(daily_data=daily, latest_past_date=date(1999, 1, 5)).year_grid(
+        today=date(1999, 12, 31)
+    )
+
+    jan_days = grid.months[0].days
+    day_10 = jan_days[9]
+    day_15 = jan_days[14]
+
+    qty_str = _("Quantity")
+    gap_str = _("Gap")
+    assert day_10.gap == 5
+    assert day_10.label == f"1999-01-10\n{qty_str}: 0.5\n{gap_str}: 5d."
+    assert day_15.gap == 5
+    assert day_15.label == f"1999-01-15\n{qty_str}: 1.0\n{gap_str}: 5d."
 
 
 def test_year_grid_today_and_future_flags():
@@ -82,6 +110,35 @@ def test_year_grid_today_and_future_flags():
     assert june[15].is_future is True  # 16th
     # a past month has no future days
     assert all(not d.is_future for d in grid.months[0].days)
+
+
+def test_year_grid_today_without_record_shows_date_and_gap():
+    daily = [{"date": date(1999, 6, 5), "stdav": 1.0, "qty": 0.5}]
+    grid = _calendar(daily_data=daily).year_grid(today=date(1999, 6, 15))
+
+    june_days = grid.months[5].days
+    today_day = june_days[14]  # 15th
+
+    gap_str = _("Gap")
+    assert today_day.is_today is True
+    assert today_day.level == 0
+    assert today_day.gap == 10
+    assert today_day.label == f"1999-06-15\n{gap_str}: 10d."
+
+
+def test_year_grid_today_without_record_uses_latest_past_date():
+    grid = _calendar(daily_data=[], latest_past_date=date(1998, 12, 1)).year_grid(
+        today=date(1999, 1, 10)
+    )
+
+    jan_days = grid.months[0].days
+    today_day = jan_days[9]  # 10th
+
+    gap_str = _("Gap")
+    assert today_day.is_today is True
+    assert today_day.level == 0
+    assert today_day.gap == 40
+    assert today_day.label == f"1999-01-10\n{gap_str}: 40d."
 
 
 def test_year_grid_other_year_has_no_future_days():
