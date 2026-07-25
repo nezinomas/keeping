@@ -38,7 +38,9 @@ def test_year_grid_empty_returns_full_year():
     assert all(isinstance(m, CalendarMonthViewModel) for m in grid.months)
     assert all(isinstance(d, CalendarDayViewModel) for m in grid.months for d in m.days)
     assert all(d.level == 0 for m in grid.months for d in m.days)
-    assert all(d.label == "" for m in grid.months for d in m.days)
+    assert all(d.label == "" for m in grid.months for d in m.days if not d.is_today)
+    gap_str = _("Gap")
+    assert grid.months[5].days[14].label == f"1999-06-15\n{gap_str}: 0d."
 
 
 def test_year_grid_month_metadata():
@@ -108,6 +110,35 @@ def test_year_grid_today_and_future_flags():
     assert june[15].is_future is True  # 16th
     # a past month has no future days
     assert all(not d.is_future for d in grid.months[0].days)
+
+
+def test_year_grid_today_without_record_shows_date_and_gap():
+    daily = [{"date": date(1999, 6, 5), "stdav": 1.0, "qty": 0.5}]
+    grid = _calendar(daily_data=daily).year_grid(today=date(1999, 6, 15))
+
+    june_days = grid.months[5].days
+    today_day = june_days[14]  # 15th
+
+    gap_str = _("Gap")
+    assert today_day.is_today is True
+    assert today_day.level == 0
+    assert today_day.gap == 10
+    assert today_day.label == f"1999-06-15\n{gap_str}: 10d."
+
+
+def test_year_grid_today_without_record_uses_latest_past_date():
+    grid = _calendar(daily_data=[], latest_past_date=date(1998, 12, 1)).year_grid(
+        today=date(1999, 1, 10)
+    )
+
+    jan_days = grid.months[0].days
+    today_day = jan_days[9]  # 10th
+
+    gap_str = _("Gap")
+    assert today_day.is_today is True
+    assert today_day.level == 0
+    assert today_day.gap == 40
+    assert today_day.label == f"1999-01-10\n{gap_str}: 40d."
 
 
 def test_year_grid_other_year_has_no_future_days():
