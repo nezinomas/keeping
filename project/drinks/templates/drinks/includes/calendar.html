@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<div class="heat-card">
+<div class="heat-card" id="heat-card">
     <div class="heat-scroll">
         <div class="heat-body">
             <div class="heat-daycol">
@@ -9,7 +9,7 @@
             {% for month in calendar.months %}
             <div class="heat-month">
                 <div class="mini">
-                    {% for day in month.days %}<i class="l{{ day.level }}{% if day.is_today %} today{% elif day.is_future %} future{% endif %}"{% if forloop.first %} style="--start:{{ month.leading_blanks|add:1 }}"{% endif %}{% if day.label %} title="{{ day.label }}"{% endif %}></i>{% endfor %}
+                    {% for day in month.days %}<i class="l{{ day.level }}{% if day.is_today %} today{% elif day.is_future %} future{% endif %}"{% if forloop.first %} style="--start:{{ month.leading_blanks|add:1 }}"{% endif %}{% if day.label %} data-label="{{ day.label }}"{% endif %}></i>{% endfor %}
                 </div>
                 <div class="mlabel">{{ month.name }}</div>
             </div>
@@ -29,4 +29,57 @@
         <span class="heat-legend__spacer"></span>
         <span><i class="today"></i> {% translate 'today' %}</span>
     </div>
+    <div id="heat-tooltip" class="heat-tooltip" style="display: none;"></div>
 </div>
+
+<script nonce="{{ csp_nonce }}">
+    (function () {
+        const card = document.getElementById('heat-card');
+        const tooltip = document.getElementById('heat-tooltip');
+        if (!card || !tooltip) return;
+
+        card.addEventListener('mouseover', function (e) {
+            const cell = e.target.closest('.mini i[data-label]');
+            if (!cell) {
+                tooltip.style.display = 'none';
+                return;
+            }
+            const label = cell.getAttribute('data-label');
+            if (!label) return;
+
+            const lines = label.split('\n');
+            let html = `<div class="heat-tooltip__date">${lines[0] || ''}</div>`;
+            if (lines[1]) html += `<div class="heat-tooltip__row">${lines[1]}</div>`;
+            if (lines[2]) html += `<div class="heat-tooltip__row">${lines[2]}</div>`;
+
+            tooltip.innerHTML = html;
+            tooltip.style.borderColor = getComputedStyle(cell).backgroundColor;
+            tooltip.style.display = 'block';
+
+            positionTooltip(cell);
+        });
+
+        card.addEventListener('mousemove', function (e) {
+            const cell = e.target.closest('.mini i[data-label]');
+            if (cell && tooltip.style.display === 'block') {
+                positionTooltip(cell);
+            }
+        });
+
+        card.addEventListener('mouseleave', function () {
+            tooltip.style.display = 'none';
+        });
+
+        function positionTooltip(cell) {
+            const cellRect = cell.getBoundingClientRect();
+            const cardRect = card.getBoundingClientRect();
+
+            const left = cellRect.left - cardRect.left + (cellRect.width / 2);
+            const top = cellRect.top - cardRect.top;
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+    })();
+</script>
+
