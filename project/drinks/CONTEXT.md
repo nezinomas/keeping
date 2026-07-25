@@ -41,7 +41,8 @@ _Avoid_: history chart, multi-year
 
 **Drink Target**:
 The maximum daily volume a user sets for one year. At most one per user per
-year.
+year. Stored in Std Av, so it is re-expressed in whichever Drink type is being
+viewed — the same target reads as 500 ml of beer or 234 ml of wine.
 _Avoid_: goal, limit, quota, budget
 
 ### Risk
