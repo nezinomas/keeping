@@ -9,7 +9,6 @@ from django.views.generic import View
 from django_htmx.http import trigger_client_event
 
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.translation import month_names
 from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -27,18 +26,29 @@ from .services.model_services import DrinkModelService, DrinkTargetModelService
 TABS = ["index", "data", "history", "trends", "risk"]
 
 
-class Index(TemplateViewMixin):
+class DrinkTypeContextMixin:
+    """Puts the drink-type switcher into the context of every drinks tab."""
+
+    def get_context_data(self, **kwargs):
+        user = cast(User, self.request.user)
+
+        return {
+            **super().get_context_data(**kwargs),
+            "drink_types": services.DrinkTypeSelector.for_drink_type(user.drink_type),
+        }
+
+
+class Index(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/index.html"
 
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            **services.helper.drink_type_dropdown(self.request),
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
 
-class TabIndex(TemplateViewMixin):
+class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_index.html"
 
     def get_context_data(self, **kwargs):
@@ -48,12 +58,11 @@ class TabIndex(TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"tab": "index"},
-            **services.helper.drink_type_dropdown(self.request),
             **services.IndexTab.build(user, year),
         }
 
 
-class TabTrends(TemplateViewMixin):
+class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_trends.html"
 
     def get_context_data(self, **kwargs):
@@ -63,12 +72,11 @@ class TabTrends(TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"tab": "trends"},
-            **services.helper.drink_type_dropdown(self.request),
             **services.TrendsTab.build(user, year),
         }
 
 
-class TabRisk(TemplateViewMixin):
+class TabRisk(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_risk.html"
 
     def get_context_data(self, **kwargs):
@@ -78,12 +86,11 @@ class TabRisk(TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"tab": "risk"},
-            **services.helper.drink_type_dropdown(self.request),
             **services.RiskTab.build(user, year),
         }
 
 
-class TabData(ListViewMixin):
+class TabData(DrinkTypeContextMixin, ListViewMixin):
     service_class = DrinkModelService
     template_name = "drinks/tab_data.html"
 
@@ -95,11 +102,10 @@ class TabData(ListViewMixin):
         return {
             **super().get_context_data(**kwargs),
             **{"tab": "data"},
-            **services.helper.drink_type_dropdown(self.request),
         }
 
 
-class TabHistory(TemplateViewMixin):
+class TabHistory(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_history.html"
 
     def get_context_data(self, **kwargs):
@@ -107,7 +113,6 @@ class TabHistory(TemplateViewMixin):
             **super().get_context_data(**kwargs),
             **{"tab": "history"},
             **{"form": forms.DrinkCompareForm(user=self.request.user)},
-            **services.helper.drink_type_dropdown(self.request),
             **services.history.load_service(self.request.user),
         }
 
@@ -117,19 +122,11 @@ class Compare(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        year = cast(int, user.year)
-
-        year = year + 1
+        year = cast(int, user.year) + 1
         qty = self.kwargs.get("qty", 0)
-        chart_serries = services.helper.several_years_consumption(
-            user=user, years=range(year - qty, year)
-        )
+
         return {
-            "chart": {
-                "title": gettext("Year comparison"),
-                "categories": list(month_names().values()),
-                "serries": chart_serries,
-            },
+            "chart": services.YearComparison.build(user, range(year - qty, year)),
             "form": forms.DrinkCompareForm(user=self.request.user),
         }
 
@@ -143,18 +140,13 @@ class CompareTwo(FormViewMixin):
         # a valid submit only updates the shared history chart; the form stays
         # put in the header, so render just the chart data into its container
         context = {"form": form}
-        year1 = form.cleaned_data["year1"]
-        year2 = form.cleaned_data["year2"]
-        chart_serries = services.helper.several_years_consumption(
-            user=self.request.user, years=[year1, year2]
-        )
+        years = [form.cleaned_data["year1"], form.cleaned_data["year2"]]
+        chart = services.YearComparison.build(self.request.user, years)
 
-        if len(chart_serries) == 2:
-            context["chart"] = {
-                "title": gettext("Year comparison"),
-                "categories": list(month_names().values()),
-                "serries": chart_serries,
-            }
+        # only plot a comparison when both years actually had records
+        if len(chart.serries) == len(years):
+            context["chart"] = chart
+
         return render(self.request, "drinks/includes/history.html", context)
 
     def form_invalid(self, form):

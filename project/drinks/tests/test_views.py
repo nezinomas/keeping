@@ -101,8 +101,8 @@ def test_index_context(client_logged):
     response = client_logged.get(url)
     context = response.context
 
-    assert "select_drink_type" in context
-    assert "current_drink_type" in context
+    assert "drink_types" in context
+    assert context["drink_types"].selected == "beer"
 
 
 @pytest.mark.parametrize(
@@ -774,9 +774,9 @@ def test_compare_data_chart(client_logged):
     actual = response.context["chart"]
 
     assert response.status_code == 200
-    assert actual["title"]  # chart carries a title for Highcharts to render
-    assert actual["serries"][0]["name"] == 1999
-    assert round(actual["serries"][0]["data"][0], 2) == 16.13
+    assert actual.title  # chart carries a title for Highcharts to render
+    assert actual.serries[0]["name"] == 1999
+    assert round(actual.serries[0]["data"][0], 2) == 16.13
 
 
 # -------------------------------------------------------------------------------------
@@ -821,12 +821,12 @@ def test_comparetwo_chart_data(client_logged):
     response = client_logged.post(url, {"year1": "1999", "year2": "2020"})
     actual = response.context["chart"]
 
-    assert actual["title"]  # chart carries a title for Highcharts to render
-    assert actual["serries"][0]["name"] == 1999
-    assert round(actual["serries"][0]["data"][0], 2) == 16.13
+    assert actual.title  # chart carries a title for Highcharts to render
+    assert actual.serries[0]["name"] == 1999
+    assert round(actual.serries[0]["data"][0], 2) == 16.13
 
-    assert actual["serries"][1]["name"] == 2020
-    assert round(actual["serries"][1]["data"][0], 2) == 161.29
+    assert actual.serries[1]["name"] == 2020
+    assert round(actual.serries[1]["data"][0], 2) == 161.29
 
 
 def test_compare_data_includes_form_and_oob_swap(client_logged):
