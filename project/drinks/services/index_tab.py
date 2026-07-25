@@ -48,6 +48,7 @@ class LimitCardViewModel:
     ml: float = 0.0
     pcs: float = 0.0
     target_id: int = 0
+    unit: str = "ml"
 
 
 @dataclass(frozen=True)
@@ -82,11 +83,14 @@ class IndexTab:
             latest_current_date=records.last_recorded_date,
         )
 
+        days = ydays(year)
+        unit = "Std Av" if records.converter.drink_type == "stdav" else "ml"
         limit = LimitCardViewModel(
             has_data=target.has_data,
             ml=target.qty,
-            pcs=target.max_bottles,
+            pcs=target.max_bottles / days if target.has_data and days else 0.0,
             target_id=target.target_id,
+            unit=unit,
         )
 
         return {
@@ -190,8 +194,14 @@ class IndexBuilder:
         if not self._drink_stats.yearly.total_quantity:
             return StatCard.empty(title, _("No data"))
 
-        avg = self._drink_stats.yearly.avg_daily_volume_ml
-        value = f"{avg:.0f} ml"
+        if self._converter.drink_type == "stdav":
+            avg = getattr(self._drink_stats.yearly, "avg_daily_stdav", 0.0)
+            unit = ""
+            value = f"{avg:.1f}"
+        else:
+            avg = self._drink_stats.yearly.avg_daily_volume_ml
+            unit = " ml"
+            value = f"{avg:.0f}{unit}"
 
         if not self._target:
             return StatCard(title=title, value=value, note=_("No limit set"))
@@ -199,12 +209,15 @@ class IndexBuilder:
         under_limit = avg <= self._target
         diff = abs(self._target - avg)
 
+        fmt = ".1f" if self._converter.drink_type == "stdav" else ".0f"
+        diff_str = f"{diff:{fmt}}{unit}"
+
         # a daily average is read against the Drink Target, so it is a level
         return StatCard.level(
             title,
             state=stat_card.LOW if under_limit else stat_card.HIGH,
             value=value,
-            note=f"{diff:.0f} ml "
+            note=f"{diff_str} "
             + (_("under the limit") if under_limit else _("over the limit")),
         )
 

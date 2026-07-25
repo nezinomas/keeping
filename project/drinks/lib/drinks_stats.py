@@ -28,6 +28,7 @@ class YearlyStatsDTO:
     total_quantity: float
     stdav: float = 0.0
     pure_alcohol_liters: float = 0.0
+    avg_daily_stdav: float = 0.0
 
 
 class DrinkStats:
@@ -73,6 +74,7 @@ class DrinkStats:
                 total_quantity=0.0,
                 stdav=0.0,
                 pure_alcohol_liters=0.0,
+                avg_daily_stdav=0.0,
             )
 
         days_passed, month_limit = self._get_year_boundaries()
@@ -86,6 +88,7 @@ class DrinkStats:
             total_quantity=total_quantity,
             stdav=stdav,
             pure_alcohol_liters=pure_alcohol_liters,
+            avg_daily_stdav=self._avg(stdav, days_passed),
         )
 
     def _avg(self, total: float, days: int) -> float:
