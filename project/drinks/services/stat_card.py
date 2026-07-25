@@ -64,9 +64,7 @@ class StatCard:
         )
 
     @classmethod
-    def risk_band(
-        cls, title: str, *, band: str, value: str, note: str
-    ) -> "StatCard":
+    def risk_band(cls, title: str, *, band: str, value: str, note: str) -> "StatCard":
         """A metric read against risk guidelines rather than a baseline."""
         return cls(
             title=title,

@@ -7,13 +7,13 @@ from django.utils.translation import gettext as _
 
 from ...lib.drinks_risk import RiskStats
 from ...lib.drinks_stats import DataRow
-from ...services.stat_card import StatCard
 from ...services.risk_tab import (
     MonthlyHeavyDaysChartViewModel,
     RiskTab,
     RiskViewModelBuilder,
     WeeklyRiskChartViewModel,
 )
+from ...services.stat_card import StatCard
 from ..factories import DrinkFactory
 
 pytestmark = pytest.mark.django_db

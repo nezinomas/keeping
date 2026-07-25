@@ -22,8 +22,7 @@ from ..core.mixins.views import (
 from ..users.models import User
 from . import forms, models, services
 from .services.model_services import DrinkModelService, DrinkTargetModelService
-
-TABS = ["index", "data", "history", "trends", "risk"]
+from .tabs import DrinkTabs
 
 
 class DrinkTypeContextMixin:
@@ -44,6 +43,7 @@ class Index(DrinkTypeContextMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
+            **{"reload_targets": DrinkTabs.all()},
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
@@ -164,20 +164,11 @@ class New(CreateViewMixin):
     modal_form_title = _("Drinks")
 
     def get_hx_trigger_django(self):
-        tab = self.kwargs.get("tab")
-
-        if tab in TABS:
-            return f"reload{tab.title()}"
-
-        return "reloadData"
+        # a new drink lands in the Data tab unless it came from another one
+        return DrinkTabs.resolve(self.kwargs.get("tab"), default="data").reload_trigger
 
     def url(self):
-        tab = self.kwargs.get("tab")
-
-        if tab not in TABS:
-            tab = "index"
-
-        return reverse_lazy("drinks:new", kwargs={"tab": tab})
+        return DrinkTabs.resolve(self.kwargs.get("tab")).form_url("drinks:new")
 
 
 class Update(UpdateViewMixin):
@@ -211,20 +202,11 @@ class TargetNew(CreateViewMixin):
     modal_form_title = _("New goal")
 
     def get_hx_trigger_django(self):
-        tab = self.kwargs.get("tab")
-
-        if tab in TABS:
-            return f"reload{tab.title()}"
-
-        return "reloadIndex"
+        # a new goal lands in the Overview tab unless it came from another one
+        return DrinkTabs.resolve(self.kwargs.get("tab")).reload_trigger
 
     def url(self):
-        tab = self.kwargs.get("tab")
-
-        if tab not in TABS:
-            tab = "index"
-
-        return reverse_lazy("drinks:target_new", kwargs={"tab": tab})
+        return DrinkTabs.resolve(self.kwargs.get("tab")).form_url("drinks:target_new")
 
 
 class TargetUpdate(UpdateViewMixin):
@@ -246,8 +228,6 @@ class TargetUpdate(UpdateViewMixin):
 
 
 class SelectDrink(RedirectViewMixin):
-    tabs = TABS
-
     def get(self, request, *args, **kwargs):
         drink_type = kwargs.get("drink_type")
 
@@ -262,8 +242,7 @@ class SelectDrink(RedirectViewMixin):
             return super().get(request, *args, **kwargs)
 
         # stay on the tab the change was fired from
-        tab = request.GET.get("tab")
-        trigger = f"reload{tab.title()}" if tab in self.tabs else "reloadIndex"
+        trigger = DrinkTabs.resolve(request.GET.get("tab")).reload_trigger
 
         response = HttpResponse(status=204)
         trigger_client_event(response=response, name=trigger, params={})
@@ -294,8 +273,7 @@ class QuickAdd(View):
 
         form.save()
 
-        tab = request.POST.get("tab")
-        trigger = f"reload{tab.title()}" if tab in TABS else "reloadIndex"
+        trigger = DrinkTabs.resolve(request.POST.get("tab")).reload_trigger
 
         response = HttpResponse(status=204)
         trigger_client_event(response=response, name=trigger, params={})
