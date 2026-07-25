@@ -58,19 +58,6 @@ body:has(.quick-add) { padding-bottom: 6rem; }
     }
 
     .quick-add__qty {
-        border: 1px solid $border-color-light;
-        border-radius: 0.1rem;
-        background: #fff;
-        padding: 0.4rem 0.5rem;
-        font-size: $font-size;
-
-        &:focus {
-            outline: 0;
-            border-color: $primary;
-        }
-    }
-
-    .quick-add__qty {
         flex: 1 1 6rem;
         min-width: 0;
     }

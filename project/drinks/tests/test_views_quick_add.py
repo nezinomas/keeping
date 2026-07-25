@@ -219,3 +219,12 @@ def test_quick_add_post_omits_date_uses_set_date_with_user_year(
         drink = models.Drink.objects.last()
         # set_date_with_user_year should default to today when viewing current year
         assert drink.date.year == 1999
+
+
+def test_quick_add_quantity_input_has_form_control_class(client_logged):
+    url = reverse("drinks:index")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+    html = response.content.decode("utf-8")
+    assert 'class="form-control quick-add__qty"' in html
