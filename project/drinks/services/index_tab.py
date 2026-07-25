@@ -1,13 +1,17 @@
+import contextlib
 from dataclasses import asdict, dataclass, field
 from datetime import date as dt_date
 from datetime import datetime
 
 from django.utils.translation import gettext as _
 
-from ....core.lib.date import ydays
-from ....core.lib.translation import month_names
-from ...lib.drinks_options import DrinkConverter
-from ...lib.drinks_stats import DrinkStats
+from ...core.lib.date import ydays, years
+from ...core.lib.translation import month_names
+from ..lib.drinks_options import DrinkConverter
+from ..lib.drinks_stats import DrinkStats
+from ..models import Drink
+from .calendar_chart import CalendarChart
+from .model_services import DrinkModelService, DrinkTargetModelService
 
 
 @dataclass(frozen=True)
@@ -20,7 +24,6 @@ class ChartViewModel:
 
     @property
     def as_dict(self) -> dict:
-        """Bridges the gap between strict DTOs and Django's json_script"""
         return asdict(self)
 
 
@@ -31,7 +34,6 @@ class DryDaysViewModel:
 
     @property
     def has_data(self) -> bool:
-        """Allows templates to cleanly check {% if dry_days.has_data %}"""
         return self.date is not None
 
 
@@ -70,6 +72,75 @@ class StdAvViewModel:
     items: list[ConversionRowViewModel] = field(default_factory=list)
 
 
+class IndexTab:
+    """Deep module assembling overview metrics, targets, charts,
+    standard unit breakdowns, and calendar grid for the Drinks index tab.
+    """
+
+    @classmethod
+    def build(cls, user, year: int) -> dict:
+        sum_by_month = DrinkModelService(user).sum_by_month(year)
+        sum_by_day = DrinkModelService(user).sum_by_day(year)
+
+        target = 0.0
+        target_pcs = 0.0
+        target_id = 0
+        latest_past_date = None
+        latest_current_date = None
+
+        with contextlib.suppress(Drink.DoesNotExist):
+            latest_past_date = (
+                DrinkModelService(user)
+                .items()
+                .filter(date__year__lt=year)
+                .latest()
+                .date
+            )
+
+        with contextlib.suppress(Drink.DoesNotExist):
+            latest_current_date = DrinkModelService(user).year(year).latest().date
+
+        if row := DrinkTargetModelService(user).year(year).first():
+            target = row.qty
+            target_pcs = row.max_bottles
+            target_id = row.id
+
+        converter = DrinkConverter(user.drink_type)
+        stats = DrinkStats(converter, sum_by_month)
+
+        builder = IndexBuilder(
+            converter=converter,
+            drink_stats=stats,
+            target=target,
+            latest_past_date=latest_past_date,
+            latest_current_date=latest_current_date,
+        )
+
+        calendar_service = CalendarChart(
+            year=year,
+            drink_type=user.drink_type,
+            daily_data=sum_by_day,
+            latest_past_date=latest_past_date,
+        )
+
+        limit = LimitCardViewModel(
+            has_data=target_id > 0,
+            ml=target,
+            pcs=target_pcs,
+            target_id=target_id,
+        )
+
+        return {
+            "all_years": len(years()),
+            "chart_quantity": builder.chart_quantity(),
+            "chart_consumption": builder.chart_consumption(),
+            "tbl_std_av": builder.tbl_std_av(),
+            "cards": builder.get_cards(),
+            "limit": limit,
+            "calendar": calendar_service.year_grid(),
+        }
+
+
 class IndexBuilder:
     def __init__(
         self,
@@ -78,14 +149,12 @@ class IndexBuilder:
         target: float = 0.0,
         latest_past_date: dt_date | None = None,
         latest_current_date: dt_date | None = None,
-        today: dt_date | None = None,  # Dependency injection fixes the testing trap
+        today: dt_date | None = None,
     ):
         self._target = target
         self._latest_past_date = latest_past_date
         self._latest_current_date = latest_current_date
-
         self._today = today or datetime.now().date()
-
         self._drink_stats = drink_stats
         self._converter = converter
 
@@ -220,7 +289,6 @@ class IndexBuilder:
 
         day, week, month = self._get_period_counts(year)
 
-        # Pre-calculate base math for readability
         base_total = qty
         base_per_day = qty / day
         base_per_week = qty / week
@@ -269,7 +337,6 @@ class IndexBuilder:
         per_month: float,
         drink_type: str,
     ) -> ConversionRowViewModel:
-        """Helper factory method to keep standard conversions clean"""
         return ConversionRowViewModel(
             title=title,
             total=self._converter.convert_qty(total, drink_type),

@@ -2,8 +2,8 @@ from dataclasses import asdict, dataclass
 
 from django.utils.translation import gettext as _
 
-from ....core.lib.translation import month_names
-from ...lib.drinks_risk import (
+from ...core.lib.translation import month_names
+from ..lib.drinks_risk import (
     HEAVY_DAY_STDAV,
     MONTHLY_HEAVY_HIGH_RISK,
     MONTHLY_HEAVY_LOW_RISK,
@@ -13,6 +13,8 @@ from ...lib.drinks_risk import (
     RiskStats,
     YearOverYearCount,
 )
+from ..lib.drinks_stats import DataRow
+from .model_services import DrinkModelService
 
 
 @dataclass(frozen=True)
@@ -36,7 +38,6 @@ class WeeklyRiskChartViewModel:
 
     @property
     def as_dict(self) -> dict:
-        """Bridges the gap between strict DTOs and Django's json_script"""
         return asdict(self)
 
 
@@ -52,6 +53,30 @@ class MonthlyHeavyDaysChartViewModel:
     @property
     def as_dict(self) -> dict:
         return asdict(self)
+
+
+class RiskTab:
+    """Deep module computing weekly drink distribution, heavy drinking days,
+    and risk assessment cards.
+    """
+
+    @classmethod
+    def build(cls, user, year: int) -> dict:
+        service = DrinkModelService(user)
+        current_raw = service.sum_by_day(year)
+        past_raw = service.sum_by_day(year - 1)
+
+        current_daily = [DataRow(**row) for row in current_raw]
+        past_daily = [DataRow(**row) for row in past_raw]
+
+        stats = RiskStats(current_daily=current_daily, past_daily=past_daily)
+        builder = RiskViewModelBuilder(drink_stats=stats)
+
+        return {
+            "cards": builder.get_cards(),
+            "chart_weekly": builder.chart_weekly(),
+            "chart_heavy": builder.chart_heavy_days(),
+        }
 
 
 class RiskViewModelBuilder:
