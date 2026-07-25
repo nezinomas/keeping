@@ -5,12 +5,12 @@ from datetime import datetime
 
 from django.utils.translation import gettext as _
 
+from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.date import ydays, years
 from ...core.lib.translation import month_names
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DrinkStats
 from ..models import Drink
-from .calendar_chart import CalendarChart
 from .model_services import DrinkModelService, DrinkTargetModelService
 
 
@@ -116,13 +116,6 @@ class IndexTab:
             latest_current_date=latest_current_date,
         )
 
-        calendar_service = CalendarChart(
-            year=year,
-            drink_type=user.drink_type,
-            daily_data=sum_by_day,
-            latest_past_date=latest_past_date,
-        )
-
         limit = LimitCardViewModel(
             has_data=target_id > 0,
             ml=target,
@@ -137,7 +130,11 @@ class IndexTab:
             "tbl_std_av": builder.tbl_std_av(),
             "cards": builder.get_cards(),
             "limit": limit,
-            "calendar": calendar_service.year_grid(),
+            "calendar": CalendarGrid.build(
+                year=year,
+                daily_data=sum_by_day,
+                latest_past_date=latest_past_date,
+            ),
         }
 
 

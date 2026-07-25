@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from project.drinks.lib.drinks_stats import DrinkStats
 
 from ...lib.drinks_options import DrinkConverter
-from ...services.calendar_chart import CalendarYearViewModel
+from ....core.lib.calendar_grid import CalendarYearViewModel
 from ...services.index_tab import (
     DryDaysViewModel,
     IndexBuilder,
