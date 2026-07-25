@@ -15,6 +15,7 @@ project.pyproj*
 .agents/
 .cache/
 .Python
+docs/
 env/
 build/
 develop-eggs/
