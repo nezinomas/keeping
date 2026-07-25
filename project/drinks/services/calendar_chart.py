@@ -161,8 +161,9 @@ class CalendarChart:
         if level == 0:
             label = ""
         else:
+            qty_title = _("Quantity")
             gap_title = _("Gap")
-            label = f"{day_date:%Y-%m-%d} · {gap_title} {gap}d. · {qty:.1f}"
+            label = f"{day_date:%Y-%m-%d}\n{qty_title}: {qty:.1f}\n{gap_title}: {gap}d."
 
         return CalendarDayViewModel(
             day=day_date.day,

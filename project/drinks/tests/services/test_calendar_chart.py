@@ -68,10 +68,11 @@ def test_year_grid_levels_and_labels():
         _calendar(daily_data=daily).year_grid(today=date(1999, 12, 31)).months[0].days
     )
 
+    qty_str = _("Quantity")
     gap_str = _("Gap")
     assert [d.level for d in days[:5]] == [1, 2, 3, 4, 0]
-    assert days[0].label == f"1999-01-01 · {gap_str} 0d. · 0.4"
-    assert days[3].label == f"1999-01-04 · {gap_str} 1d. · 2.4"
+    assert days[0].label == f"1999-01-01\n{qty_str}: 0.4\n{gap_str}: 0d."
+    assert days[3].label == f"1999-01-04\n{qty_str}: 2.4\n{gap_str}: 1d."
     assert days[4].label == ""
     assert days[0].gap == 0
     assert days[3].gap == 1
@@ -90,11 +91,12 @@ def test_year_grid_gaps_with_latest_past_date():
     day_10 = jan_days[9]
     day_15 = jan_days[14]
 
+    qty_str = _("Quantity")
     gap_str = _("Gap")
     assert day_10.gap == 5
-    assert day_10.label == f"1999-01-10 · {gap_str} 5d. · 0.5"
+    assert day_10.label == f"1999-01-10\n{qty_str}: 0.5\n{gap_str}: 5d."
     assert day_15.gap == 5
-    assert day_15.label == f"1999-01-15 · {gap_str} 5d. · 1.0"
+    assert day_15.label == f"1999-01-15\n{qty_str}: 1.0\n{gap_str}: 5d."
 
 
 def test_year_grid_today_and_future_flags():
