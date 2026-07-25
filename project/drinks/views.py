@@ -50,7 +50,7 @@ class TabIndex(TemplateViewMixin):
             **super().get_context_data(**kwargs),
             **{"tab": "index"},
             **services.helper.drink_type_dropdown(self.request),
-            **services.index.load_service(user, year),
+            **services.IndexTab.build(user, year),
         }
 
 
@@ -65,7 +65,7 @@ class TabTrends(TemplateViewMixin):
             **super().get_context_data(**kwargs),
             **{"tab": "trends"},
             **services.helper.drink_type_dropdown(self.request),
-            **services.trends.load_service(user, year),
+            **services.TrendsTab.build(user, year),
         }
 
 
@@ -80,7 +80,7 @@ class TabRisk(TemplateViewMixin):
             **super().get_context_data(**kwargs),
             **{"tab": "risk"},
             **services.helper.drink_type_dropdown(self.request),
-            **services.risk.load_service(user, year),
+            **services.RiskTab.build(user, year),
         }
 
 
