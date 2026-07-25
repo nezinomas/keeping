@@ -527,23 +527,17 @@ def test_tab_data(client_logged):
     assert f'<a role="button" hx-get="/drinks/delete/{p.pk}/"' in actual
 
 
-@pytest.mark.parametrize(
-    "drink_type, stdav, converted, expect",
-    [
-        ("beer", 2.5, False, "1,0 vnt"),
-        ("beer", 2.5, True, "500 ml"),
-        ("beer", 5, True, "1.000 ml"),
-    ],
-)
-def test_tab_data_quantity_value(client_logged, drink_type, stdav, converted, expect):
-    DrinkFactory(stdav=stdav, option=drink_type, converted_from_ml=converted)
+def test_tab_data_quantity_value(client_logged):
+    # the unit/rounding rules live in DrinkQuantity.display and are asserted in
+    # tests/lib/test_drink_quantity.py; this only pins the template to it
+    DrinkFactory(stdav=2.5, option="beer", converted_from_ml=True)
     response = client_logged.get(reverse("drinks:tab_data"))
 
     assert response.status_code == 200
 
     actual = response.content.decode("utf-8")
 
-    assert expect in actual
+    assert "500 ml" in actual
 
 
 # -------------------------------------------------------------------------------------
@@ -959,52 +953,22 @@ def test_update(client_logged):
 
 
 @pytest.mark.parametrize(
-    "drink_type, stdav, expect",
+    "converted, expect",
     [
-        ("beer", 2.5, 1.0),
-        ("wine", 8, 1.0),
-        ("vodka", 40, 1.0),
-        ("stdav", 1, 1.0),
+        (False, 1.0),
+        (True, 500.0),
     ],
 )
-def test_update_load_form_convert_quantity(
-    drink_type, stdav, expect, client_logged, main_user
-):
-    main_user.drink_type = drink_type
-    main_user.save()
-
-    p = DrinkFactory(stdav=stdav, option=drink_type)
+def test_update_load_form_prefills_typed_quantity(converted, expect, client_logged):
+    # which number the user gets back is DrinkQuantity.value, asserted in
+    # tests/lib/test_drink_quantity.py; this only pins the form to it
+    p = DrinkFactory(stdav=2.5, option="beer", converted_from_ml=converted)
 
     url = reverse("drinks:update", kwargs={"pk": p.pk})
     response = client_logged.get(url)
     form = response.context["form"]
 
-    assert f'name="stdav" value="{expect}"' in form.as_p()
-
-
-@pytest.mark.parametrize(
-    "drink_type, converted, value, expect",
-    [
-        ("beer", False, 2.5, 1.0),
-        ("beer", True, 2.5, 500.0),
-        ("wine", False, 8, 1.0),
-        ("wine", True, 8, 750.0),
-        ("vodka", False, 20, 0.5),
-        ("vodka", True, 40, 1000.0),
-        ("stdav", False, 10, 10.0),
-        ("stdav", True, 21, 21.0),
-    ],
-)
-def test_update_load_form_convert_ml(
-    drink_type, converted, value, expect, client_logged
-):
-    p = DrinkFactory(stdav=value, option=drink_type, converted_from_ml=converted)
-
-    url = reverse("drinks:update", kwargs={"pk": p.pk})
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert f'name="stdav" value="{expect}"' in form.as_p()
+    assert form.initial["stdav"] == expect
 
 
 def test_drinks_update_not_load_other_user(client_logged, second_user):

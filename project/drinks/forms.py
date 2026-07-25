@@ -8,7 +8,8 @@ from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
-from .lib.drinks_options import MAX_BOTTLES, DrinkConverter
+from .lib.drink_quantity import DrinkQuantity
+from .lib.drinks_options import MAX_BOTTLES
 from .models import Drink, DrinkTarget
 from .services.model_services import DrinkModelService, DrinkTargetModelService
 
@@ -52,28 +53,10 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         )
 
     def recalculate_stdav_on_opening_form(self):
-        if not self.instance.pk or self.instance.option == "stdav":
+        if not self.instance.pk:
             return
 
-        converter = DrinkConverter(self.instance.option)
-        if self.instance.converted_from_ml:
-            val = converter.stdav_to_ml(self.instance.stdav)
-        else:
-            val = self.instance.stdav * converter.ratio
-
-        self.initial["stdav"] = val
-
-    def calculate_stdav_conversion(self, drink_type_input, stdav_input):
-        converter = DrinkConverter(drink_type_input)
-
-        if stdav_input > MAX_BOTTLES:
-            stdav = converter.ml_to_stdav(stdav_input)
-            converted = True
-        else:
-            stdav = stdav_input / converter.ratio
-            converted = False
-
-        return stdav, converted
+        self.initial["stdav"] = self.instance.amount.value
 
     def clean(self):
         cleaned_data = super().clean()
@@ -81,12 +64,10 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         drink_type_input = cleaned_data.get("option")
         stdav_input = cleaned_data.get("stdav")
 
-        if drink_type_input and stdav_input is not None and drink_type_input != "stdav":
-            stdav, converted = self.calculate_stdav_conversion(
-                drink_type_input, stdav_input
-            )
-            cleaned_data["stdav"] = stdav
-            self.instance.converted_from_ml = converted
+        if drink_type_input and stdav_input is not None:
+            amount = DrinkQuantity.from_input(stdav_input, drink_type_input)
+            cleaned_data["stdav"] = amount.stdav
+            self.instance.converted_from_ml = amount.is_volume
 
         return cleaned_data
 

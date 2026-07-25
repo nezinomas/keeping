@@ -22,7 +22,6 @@ from ..core.mixins.views import (
 )
 from ..users.models import User
 from . import forms, models, services
-from .lib.drinks_options import DrinkConverter
 from .services.model_services import DrinkModelService, DrinkTargetModelService
 
 TABS = ["index", "data", "history", "trends", "risk"]
@@ -248,10 +247,8 @@ class TargetUpdate(UpdateViewMixin):
         obj = super().get_object()
 
         if obj:
-            if obj.drink_type == "stdav":
-                return obj
-
-            obj.quantity = DrinkConverter(obj.drink_type).stdav_to_ml(obj.quantity)
+            # the form edits the volume the user originally typed
+            obj.quantity = obj.amount.value
 
         return obj
 
