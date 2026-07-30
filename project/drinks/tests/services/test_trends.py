@@ -1,7 +1,9 @@
+import re
 from datetime import date
 
 import pytest
 import time_machine
+from django.conf import settings
 from django.utils.translation import gettext as _
 
 from ...lib.drinks_options import DrinkConverter
@@ -46,8 +48,39 @@ def test_chart_trend_view_model(converter):
     assert len(actual.rolling_30) == 5
     assert actual.rolling_7[0] == round(1000 / 7)  # full-window mean, rounded
     assert actual.target == 250
-    assert set(actual.text) == {"r7", "r30", "limit", "title", "unit"}
+    assert set(actual.text) == {"daily", "r7", "r30", "limit", "title", "unit"}
     assert actual.text["unit"] == "ml"
+
+
+@time_machine.travel("2026-01-05")
+def test_chart_trend_carries_unaveraged_daily_volume(converter):
+    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 5)])
+
+    actual = TrendsBuilder(stats, target=250).chart_trend()
+
+    # raw ml/day, one point per category: 5 std av * 200 ml beer on Jan 1 only
+    assert len(actual.daily) == len(actual.categories)
+    assert actual.daily == [1000, 0, 0, 0, 0]
+    assert actual.text["daily"] == _("Per day")
+
+
+@time_machine.travel("2026-01-05")
+def test_chart_trend_payload_matches_the_keys_its_script_reads(converter):
+    """The view model exists only to feed chart_drinks_trend.js.
+
+    A key the script reads but the builder never sends renders as ``undefined``
+    in the browser and no Python test would notice, so the two are pinned to
+    each other in both directions.
+    """
+    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 5)])
+    payload = TrendsBuilder(stats, target=250).chart_trend().as_dict
+
+    source = (settings.SITE_ROOT / "static" / "js" / "chart_drinks_trend.js").read_text(
+        encoding="utf-8"
+    )
+
+    assert set(re.findall(r"chartData\.(\w+)", source)) == set(payload)
+    assert set(re.findall(r"chartData\.text\.(\w+)", source)) == set(payload["text"])
 
 
 @time_machine.travel("2026-01-05")

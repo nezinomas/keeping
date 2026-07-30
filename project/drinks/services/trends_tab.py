@@ -15,6 +15,7 @@ from .stat_card import StatCard
 @dataclass(frozen=True)
 class TrendChartViewModel:
     categories: list[str]
+    daily: list[float]
     rolling_7: list[float]
     rolling_30: list[float]
     target: float
@@ -72,12 +73,14 @@ class TrendsBuilder:
     def chart_trend(self) -> TrendChartViewModel:
         return TrendChartViewModel(
             categories=self._stats.date_labels,
+            daily=[round(v) for v in self._stats.daily_volume_ml],
             rolling_7=[round(v) for v in self._stats.calculate_rolling_average(7)],
             rolling_30=[round(v) for v in self._stats.calculate_rolling_average(30)],
             target=self._target,
             text={
                 "title": _("Rolling average"),
                 "unit": "ml",
+                "daily": _("Per day"),
                 "r7": _("7-day average"),
                 "r30": _("30-day average"),
                 "limit": _("Limit"),
