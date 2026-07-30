@@ -4,6 +4,8 @@ from ...core.lib.date import ydays
 
 MAX_BOTTLES = 20
 
+CANONICAL_TYPE = "stdav"
+
 
 @dataclass(frozen=True)
 class _DrinkRatio:
@@ -43,6 +45,46 @@ class DrinkConverter:
 
     def stdav_to_ml(self, stdav: float) -> float:
         return (stdav * self._ratio.ml) / self._ratio.stdav
+
+    @property
+    def display_unit(self) -> str:
+        """The unit an amount of this drink type is read in."""
+        return "Std Av" if self.drink_type == CANONICAL_TYPE else "ml"
+
+    @property
+    def display_decimals(self) -> int:
+        """A whole ml is precise enough; Std Av needs a decimal to survive."""
+        return 1 if self.drink_type == CANONICAL_TYPE else 0
+
+    @property
+    def total_unit(self) -> str:
+        """The unit a year's worth of drinking is read in."""
+        return "Std Av" if self.drink_type == CANONICAL_TYPE else "L"
+
+    def display_to_total(self, value: float) -> float:
+        """A shown amount as a yearly total: millilitres add up to litres, but
+        Std Av is a count, so a thousand of them is not a litre of anything."""
+        if self.drink_type == CANONICAL_TYPE:
+            return value
+
+        return value / 1000
+
+    def stdav_to_display(self, stdav: float) -> float:
+        """Std Av in the unit it is shown in — the rule ``DrinkQuantity.value``
+        applies, so a chart and a card never disagree about what a number means.
+
+        Std Av is canonical and shown as typed; converting it would report the
+        10 ml of pure alcohol one Std Av contains, ten times the number a user
+        entered and ten times the Drink Target it is read against.
+        """
+        if self.drink_type == CANONICAL_TYPE:
+            return stdav
+
+        return self.stdav_to_ml(stdav)
+
+    def stdav_to_total(self, stdav: float) -> float:
+        """Std Av in the unit a yearly total is read in."""
+        return self.display_to_total(self.stdav_to_display(stdav))
 
     @staticmethod
     def stdav_to_alcohol(stdav: float) -> float:
