@@ -1,4 +1,7 @@
+from datetime import date
+
 import pytest
+import time_machine
 from django.urls import reverse
 
 from ...users.tests.factories import User
@@ -204,8 +207,6 @@ def test_quick_add_stores_expected_stdav(client_logged):
 def test_quick_add_post_omits_date_uses_set_date_with_user_year(
     client_logged, main_user
 ):
-    import time_machine
-
     with time_machine.travel("1999-01-15"):
         data = {
             "quantity": 2.5,
@@ -228,3 +229,61 @@ def test_quick_add_quantity_input_has_form_control_class(client_logged):
     assert response.status_code == 200
     html = response.content.decode("utf-8")
     assert 'class="form-control quick-add__qty"' in html
+
+
+def test_quick_add_has_a_day_select(client_logged):
+    url = reverse("drinks:index")
+    response = client_logged.get(url)
+    html = response.content.decode("utf-8")
+
+    assert 'class="select-wrapper quick-add__day"' in html
+    assert '<select name="date" class="form-select"' in html
+
+
+def test_quick_add_day_select_offers_today_and_the_four_days_before_it(client_logged):
+    with time_machine.travel("1999-01-15"):
+        url = reverse("drinks:index")
+        response = client_logged.get(url)
+        html = response.content.decode("utf-8")
+
+    assert '<option value="1999-01-15" selected>Šiandien</option>' in html
+    assert '<option value="1999-01-14">Vakar</option>' in html
+    assert '<option value="1999-01-13">Trečiadienis</option>' in html
+    assert '<option value="1999-01-12">Antradienis</option>' in html
+    assert '<option value="1999-01-11">Pirmadienis</option>' in html
+
+
+def test_quick_add_day_select_uses_today_not_the_year_being_browsed(
+    client_logged, main_user
+):
+    main_user.year = 1998
+    main_user.save()
+
+    with time_machine.travel("1999-01-15"):
+        url = reverse("drinks:index")
+        response = client_logged.get(url)
+        html = response.content.decode("utf-8")
+
+    assert '<option value="1999-01-15" selected>Šiandien</option>' in html
+
+
+def test_index_context_has_recent_days(client_logged):
+    with time_machine.travel("1999-01-15"):
+        url = reverse("drinks:index")
+        response = client_logged.get(url)
+
+    assert response.context["recent_days"].selected == "1999-01-15"
+
+
+def test_quick_add_post_stores_the_chosen_day(client_logged):
+    data = {
+        "quantity": 2.5,
+        "option": "beer",
+        "date": "1999-01-13",
+        "tab": "index",
+    }
+    url = reverse("drinks:quick_add")
+    response = client_logged.post(url, data)
+
+    assert response.status_code == 204
+    assert models.Drink.objects.last().date == date(1999, 1, 13)

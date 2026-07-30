@@ -39,6 +39,14 @@
                 </select>
             </div>
 
+            <div class="select-wrapper quick-add__day">
+                <select name="date" class="form-select">
+                    {% for day in recent_days.options %}
+                    <option value="{{ day.1 }}"{% if day.1 == recent_days.selected %} selected{% endif %}>{{ day.0 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <button type="submit" class="button-secondary">{% translate 'Add' %}</button>
             <button type="button" class="button-secondary"
                     @click.prevent="htmx.ajax('GET', '/drinks/' + document.getElementById('quick-add-tab').value + '/new/', '#mainModal')">

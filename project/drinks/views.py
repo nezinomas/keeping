@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import cast
 
 from django.http import HttpResponse
@@ -40,9 +41,13 @@ class Index(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/index.html"
 
     def get_context_data(self, **kwargs):
+        # the quick-add sheet lives on this page only, outside the tabs
+        recent_days = services.RecentDaySelector.for_day(datetime.now().date())
+
         return {
             **super().get_context_data(**kwargs),
             **{"reload_targets": DrinkTabs.all()},
+            **{"recent_days": recent_days},
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
