@@ -43,8 +43,8 @@ def test_monthly_stats(drink_type, stdav, qty, expect_qty, expect_vol):
     stats = obj.monthly
 
     assert stats.total_quantity == expect_qty
-    assert stats.total_volume_ml == expect_vol
-    assert len(stats.avg_daily_volume_ml) == 12
+    assert stats.total_volume == expect_vol
+    assert len(stats.avg_daily_volume) == 12
 
 
 def test_monthly_stats_no_data(drink_converter):
@@ -52,8 +52,30 @@ def test_monthly_stats_no_data(drink_converter):
     stats = obj.monthly
 
     assert stats.total_quantity == [0.0] * 12
-    assert stats.total_volume_ml == [0.0] * 12
-    assert stats.avg_daily_volume_ml == [0.0] * 12
+    assert stats.total_volume == [0.0] * 12
+    assert stats.avg_daily_volume == [0.0] * 12
+
+
+def test_monthly_stats_shows_std_av_as_typed():
+    """Std Av is canonical, so it is shown as typed — not as the ml in it.
+
+    Converting would put the Overview chart 10x above the Drink Target drawn
+    across it, the way the Trends chart used to be.
+    """
+    data = [DataRow(date=date(1999, 1, 1), qty=5, stdav=5)]
+
+    stats = DrinkStats(DrinkConverter("stdav"), data).monthly
+
+    assert stats.total_volume[0] == 5.0
+    assert stats.avg_daily_volume[0] == pytest.approx(5 / 31)
+
+
+def test_yearly_stats_shows_std_av_as_typed():
+    data = [DataRow(date=date(1999, 1, 1), qty=5, stdav=5)]
+
+    stats = DrinkStats(DrinkConverter("stdav"), data, today=date(1999, 1, 1)).yearly
+
+    assert stats.avg_daily_volume == 5.0
 
 
 @pytest.mark.parametrize(
@@ -76,7 +98,7 @@ def test_yearly_stats(year, today, expect_avg_volume, expect_total_qty):
     obj = DrinkStats(converter, data, today=today)
     stats = obj.yearly
 
-    assert round(stats.avg_daily_volume_ml, 2) == expect_avg_volume
+    assert round(stats.avg_daily_volume, 2) == expect_avg_volume
     assert stats.total_quantity == expect_total_qty
 
 
@@ -84,7 +106,7 @@ def test_yearly_stats_no_data(drink_converter):
     obj = DrinkStats(drink_converter)
     stats = obj.yearly
 
-    assert stats.avg_daily_volume_ml == 0.0
+    assert stats.avg_daily_volume == 0.0
     assert stats.avg_daily_stdav == 0.0
     assert stats.total_quantity == 0.0
     assert stats.stdav == 0.0

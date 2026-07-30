@@ -33,7 +33,7 @@ def _card_builder(drink_converter, total_quantity=0.0, avg=0.0, target=0.0, **kw
         year=1999,
         yearly=SimpleNamespace(
             total_quantity=total_quantity,
-            avg_daily_volume_ml=avg,
+            avg_daily_volume=avg,
             stdav=stdav,
             pure_alcohol_liters=pure_alcohol,
             avg_daily_stdav=avg,
@@ -157,7 +157,7 @@ def test_tbl_alcohol(drink_type, qty, expect, main_user, drink_converter):
         year=1999,
         yearly=SimpleNamespace(
             total_quantity=qty,
-            avg_daily_volume_ml=0.0,
+            avg_daily_volume=0.0,
         ),
     )
 

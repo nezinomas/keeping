@@ -65,7 +65,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         value: consumption.target,
                         zIndex: 10,
                         label: {
-                            text: `${consumption.text.limit}: ${consumption.target.toFixed()}`,
+                            text: `${consumption.text.limit}: ${consumption.target.toFixed(consumption.decimals)}`,
                             align: "right",
                             x: -5,
                             y: targetLabelY,
@@ -146,11 +146,14 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         textOutline: "none",
                     },
                     formatter: function () {
-                        return this.y > 0 ? Highcharts.numberFormat(this.y, 0) : "";
+                        return this.y > 0
+                            ? Highcharts.numberFormat(this.y, consumption.decimals)
+                            : "";
                     },
                 },
                 tooltip: {
-                    pointFormat: `${consumption.text.alcohol}: <b>{point.y:,.0f} ml</b><br>`,
+                    // the drink-type dropdown names the unit and its precision
+                    pointFormat: `${consumption.text.alcohol}: <b>{point.y:,.${consumption.decimals}f} ${consumption.text.unit}</b><br>`,
                 }
             },
             {

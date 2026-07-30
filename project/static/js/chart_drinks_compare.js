@@ -46,7 +46,7 @@ function chartCompare(idData, idContainer) {
         tooltip: {
             shared: true,
             crosshairs: true,
-            pointFormat: '<span style="color: {series.color}"><b>{series.name}</b>:</span> {point.y:,.0f}ml<br>',
+            pointFormat: `<span style="color: {series.color}"><b>{series.name}</b>:</span> {point.y:,.${chartData.decimals}f} ${chartData.unit}<br>`,
         },
         plotOptions: {
             area: {
