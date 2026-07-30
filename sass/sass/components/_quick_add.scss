@@ -62,7 +62,8 @@ body:has(.quick-add) { padding-bottom: 6rem; }
         min-width: 0;
     }
 
-    .quick-add__type {
+    .quick-add__type,
+    .quick-add__day {
         flex: 1 1 8rem;
     }
 
