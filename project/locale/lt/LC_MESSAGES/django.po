@@ -736,6 +736,14 @@ msgstr "Šeštadienis"
 msgid "Sunday"
 msgstr "Sekmadienis"
 
+#: .\drinks\services\recent_days.py:13
+msgid "Today"
+msgstr "Šiandien"
+
+#: .\drinks\services\recent_days.py:16
+msgid "Yesterday"
+msgstr "Vakar"
+
 #: .\core\mixins\formset.py:33
 msgid "The same accounts are selected."
 msgstr "Pasirinktos vienodos sąskaitos."
