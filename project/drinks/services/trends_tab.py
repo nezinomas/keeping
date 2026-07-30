@@ -19,6 +19,7 @@ class TrendChartViewModel:
     rolling_7: list[float]
     rolling_30: list[float]
     target: float
+    decimals: int
     text: dict[str, str]
 
     @property
@@ -70,16 +71,23 @@ class TrendsBuilder:
         self._stats = drink_stats
         self._target = target
 
+    def _rounded(self, values: list[float]) -> list[float]:
+        """Round to the precision the selected unit is read at."""
+        return [round(v, self._stats.decimals) for v in values]
+
     def chart_trend(self) -> TrendChartViewModel:
         return TrendChartViewModel(
             categories=self._stats.date_labels,
-            daily=[round(v) for v in self._stats.daily_volume_ml],
-            rolling_7=[round(v) for v in self._stats.calculate_rolling_average(7)],
-            rolling_30=[round(v) for v in self._stats.calculate_rolling_average(30)],
+            daily=self._rounded(self._stats.daily_volume),
+            rolling_7=self._rounded(self._stats.calculate_rolling_average(7)),
+            rolling_30=self._rounded(self._stats.calculate_rolling_average(30)),
             target=self._target,
+            decimals=self._stats.decimals,
             text={
                 "title": _("Rolling average"),
-                "unit": "ml",
+                # the dropdown decides the unit, so the axes and the tooltip
+                # never claim ml for an amount read as Std Av
+                "unit": self._stats.unit,
                 "daily": _("Per day"),
                 "r7": _("7-day average"),
                 "r30": _("30-day average"),
@@ -90,14 +98,12 @@ class TrendsBuilder:
     def chart_cumulative(self) -> TrendCumulativeViewModel:
         return TrendCumulativeViewModel(
             categories=self._stats.cumulative_categories,
-            this_year=[
-                round(v / 1000, 1) for v in self._stats.cumulative_current_year_ml
-            ],
-            last_year=[round(v / 1000, 1) for v in self._stats.cumulative_past_year_ml],
-            target=[round(v / 1000, 1) for v in self._stats.cumulative_target_ml],
+            this_year=[round(v, 1) for v in self._stats.cumulative_current_year],
+            last_year=[round(v, 1) for v in self._stats.cumulative_past_year],
+            target=[round(v, 1) for v in self._stats.cumulative_target],
             text={
                 "title": _("Cumulative (year over year)"),
-                "unit": "L",
+                "unit": self._stats.total_unit,
                 "this_year": _("This year"),
                 "last_year": _("Last year"),
                 "target": _("Target pace"),
@@ -165,11 +171,12 @@ class TrendsBuilder:
     def _build_projection_card(self) -> StatCard:
         stats = self._stats.calculate_projection()
         title = _("Year-end forecast")
+        unit = self._stats.total_unit
 
         if not stats.has_target:
             return StatCard(
                 title=title,
-                value=f"{stats.projected_volume_liters:.1f} L",
+                value=f"{stats.projected_total:.1f} {unit}",
                 note=_("No limit set"),
             )
 
@@ -178,9 +185,9 @@ class TrendsBuilder:
         return StatCard.level(
             title,
             state=stat_card.HIGH if stats.over else stat_card.LOW,
-            value=f"{stats.projected_volume_liters:.1f} L",
+            value=f"{stats.projected_total:.1f} {unit}",
             note=(
-                f"{_('Limit')}: {stats.target_volume_liters:.1f} L · "
+                f"{_('Limit')}: {stats.target_total:.1f} {unit} · "
                 f"{stats.percentage_difference:.1f}%"
             ),
         )

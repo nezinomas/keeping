@@ -65,6 +65,26 @@ def test_chart_trend_carries_unaveraged_daily_volume(converter):
 
 
 @time_machine.travel("2026-01-05")
+def test_chart_trend_unit_follows_the_selected_drink_type():
+    """The chart is labelled in whatever unit the drink-type dropdown selects."""
+    rows = [_row(date(2026, 1, 1), 5)]
+
+    beer = TrendsBuilder(TrendStats(DrinkConverter("beer"), rows)).chart_trend()
+    std_av = TrendsBuilder(TrendStats(DrinkConverter("stdav"), rows)).chart_trend()
+
+    assert beer.text["unit"] == "ml"
+    assert std_av.text["unit"] == "Std Av"
+    # ... and the series are in that unit, so the Limit line stays comparable
+    assert beer.daily[0] == 1000
+    assert std_av.daily[0] == 5
+    # a whole ml is precise enough; rounding Std Av that far would erase it,
+    # flattening a 2.2 average and a 1.5 target onto the same tick
+    assert beer.decimals == 0
+    assert std_av.decimals == 1
+    assert std_av.rolling_7[0] == round(5 / 7, 1)
+
+
+@time_machine.travel("2026-01-05")
 def test_chart_trend_payload_matches_the_keys_its_script_reads(converter):
     """The view model exists only to feed chart_drinks_trend.js.
 
@@ -116,6 +136,41 @@ def test_chart_cumulative_view_model(converter):
     assert actual.target[0] == 1.0  # 1000 ml/day target = 1.0 L cumulative on day 1
     assert set(actual.text) == {"this_year", "last_year", "target", "title", "unit"}
     assert actual.text["unit"] == "L"
+
+
+@time_machine.travel("2026-01-05")
+def test_chart_cumulative_counts_std_av_instead_of_bottling_it():
+    """A year of Std Av is a count, so it is never divided into litres."""
+    stats = TrendStats(
+        DrinkConverter("stdav"),
+        current_daily=[_row(date(2026, 1, 1), 5)],
+        past_daily=[_row(date(2025, 1, 1), 2)],
+        target=1.5,
+    )
+
+    actual = TrendsBuilder(stats, target=1.5).chart_cumulative()
+
+    assert actual.text["unit"] == "Std Av"
+    assert actual.this_year[0] == 5.0  # 5 Std Av, not 0.05 L
+    assert actual.last_year[0] == 2.0
+    assert actual.target[0] == 1.5
+
+
+@time_machine.travel("2026-01-05")
+def test_chart_cumulative_still_bottles_a_volume_drink_type(converter):
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 1), 5)],
+        past_daily=[_row(date(2025, 1, 1), 2)],
+        target=1000,
+    )
+
+    actual = TrendsBuilder(stats, target=1000).chart_cumulative()
+
+    assert actual.text["unit"] == "L"
+    assert actual.this_year[0] == 1.0  # 5 std av * 200 ml beer = 1000 ml = 1.0 L
+    assert actual.last_year[0] == 0.4
+    assert actual.target[0] == 1.0
 
 
 @time_machine.travel("2026-01-05")

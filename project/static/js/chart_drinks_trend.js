@@ -8,7 +8,7 @@ function chartTrend(idData, idContainer) {
         value: chartData.target,
         zIndex: 10,
         label: {
-            text: `${chartData.text.limit}: ${chartData.target.toFixed()}`,
+            text: `${chartData.text.limit}: ${chartData.target.toFixed(chartData.decimals)}`,
             align: "right",
             x: -5,
             style: {
@@ -42,8 +42,8 @@ function chartTrend(idData, idContainer) {
         },
         // the raw day peaks around 9x the 30-day mean, so the two share an x-axis
         // but not a y: the averages keep their own scale and stay readable against
-        // the Limit. Both are ml/day, so relative HEIGHTS across the two axes mean
-        // nothing — the shared tooltip is what carries the comparable numbers.
+        // the Limit. Both carry the SAME unit, so relative heights across the two
+        // axes mean nothing — the shared tooltip is what carries comparable numbers.
         yAxis: [{
             title: {
                 text: chartData.text.unit
@@ -62,11 +62,13 @@ function chartTrend(idData, idContainer) {
         tooltip: {
             shared: true,
             borderColor: '#ccc',
-            pointFormat: "<span style='color: {series.color}'>{series.name}: <b>{point.y:,.0f} ml</b></span><br/>"
+            // unit and precision come from the payload: the drink-type dropdown
+            // decides both, so this must never hardcode ml
+            pointFormat: `<span style='color: {series.color}'>{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
         },
         series: [{
-            // "line", not "spline": the raw day swings 0 -> 4000 -> 0 between
-            // neighbours, and a spline through that overshoots into negative ml
+            // the raw day as columns, so noise never reads as trend even before
+            // colour; at ~365 points each lands near 2px, which reads as texture
             type: "column",
             name: chartData.text.daily,
             data: chartData.daily,
@@ -74,10 +76,10 @@ function chartTrend(idData, idContainer) {
             color: "var(--chart-color-9)",
             opacity: 0.65,
             legendIndex: 2,
-            lineWidth: 1,
-            marker: {
-                enabled: false
-            }
+            borderWidth: 0,
+            groupPadding: 0.05,
+            pointPadding: 0,
+            crisp: false
         },
         {
             type: "spline",
