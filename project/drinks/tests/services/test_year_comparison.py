@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 import pytest
@@ -73,13 +74,11 @@ def test_only_the_users_own_records(main_user, second_user):
 
 
 def test_as_dict_is_json_serializable(main_user):
-    import json
-
     DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
 
     actual = YearComparison.build(main_user, [1999]).as_dict
 
-    assert set(actual) == {"title", "categories", "serries"}
+    assert set(actual) == {"title", "categories", "serries", "unit", "decimals"}
     assert json.dumps(actual)
 
 

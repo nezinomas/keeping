@@ -17,14 +17,15 @@ class DataRow:
 
 @dataclass(frozen=True)
 class MonthlyStatsDTO:
-    total_volume_ml: list[float]
-    avg_daily_volume_ml: list[float]
+    # in the unit the selected drink type is shown in, not always ml
+    total_volume: list[float]
+    avg_daily_volume: list[float]
     total_quantity: list[float]
 
 
 @dataclass(frozen=True)
 class YearlyStatsDTO:
-    avg_daily_volume_ml: float
+    avg_daily_volume: float
     total_quantity: float
     stdav: float = 0.0
     pure_alcohol_liters: float = 0.0
@@ -53,16 +54,16 @@ class DrinkStats:
             monthly_stdav[m] += row.stdav
             monthly_qty[m] += row.qty
 
-        # Convert stdav to ml and calculate daily averages
-        total_volume_ml = [self.converter.stdav_to_ml(v) for v in monthly_stdav]
-        avg_daily_volume_ml = [
+        # into the unit it is shown in, then daily averages
+        total_volume = [self.converter.stdav_to_display(v) for v in monthly_stdav]
+        avg_daily_volume = [
             self._avg(v, calendar.monthrange(self.year, i)[1])
-            for i, v in enumerate(total_volume_ml, 1)
+            for i, v in enumerate(total_volume, 1)
         ]
 
         return MonthlyStatsDTO(
-            total_volume_ml=total_volume_ml,
-            avg_daily_volume_ml=avg_daily_volume_ml,
+            total_volume=total_volume,
+            avg_daily_volume=avg_daily_volume,
             total_quantity=monthly_qty,
         )
 
@@ -70,7 +71,7 @@ class DrinkStats:
     def yearly(self) -> YearlyStatsDTO:
         if not self.data:
             return YearlyStatsDTO(
-                avg_daily_volume_ml=0.0,
+                avg_daily_volume=0.0,
                 total_quantity=0.0,
                 stdav=0.0,
                 pure_alcohol_liters=0.0,
@@ -78,13 +79,13 @@ class DrinkStats:
             )
 
         days_passed, month_limit = self._get_year_boundaries()
-        total_volume = sum(self.monthly.total_volume_ml[:month_limit])
+        total_volume = sum(self.monthly.total_volume[:month_limit])
         total_quantity = sum(self.monthly.total_quantity[:month_limit])
         stdav = total_quantity * self.converter.stdav_per_unit
         pure_alcohol_liters = self.converter.stdav_to_alcohol(stdav)
 
         return YearlyStatsDTO(
-            avg_daily_volume_ml=self._avg(total_volume, days_passed),
+            avg_daily_volume=self._avg(total_volume, days_passed),
             total_quantity=total_quantity,
             stdav=stdav,
             pure_alcohol_liters=pure_alcohol_liters,

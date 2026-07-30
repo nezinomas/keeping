@@ -21,6 +21,7 @@ class ChartViewModel:
     text: dict[str, str]
     target: float | None = None
     avg: float | None = None
+    decimals: int = 0
 
     @property
     def as_dict(self) -> dict:
@@ -84,7 +85,7 @@ class IndexTab:
         )
 
         days = ydays(year)
-        unit = "Std Av" if records.converter.drink_type == "stdav" else "ml"
+        unit = records.converter.display_unit
         limit = LimitCardViewModel(
             has_data=target.has_data,
             ml=target.qty,
@@ -133,14 +134,20 @@ class IndexBuilder:
         )
 
     def chart_consumption(self) -> ChartViewModel:
+        unit = self._converter.display_unit
+
         return ChartViewModel(
             categories=list(month_names().values()),
-            data=self._drink_stats.monthly.avg_daily_volume_ml,
+            data=self._drink_stats.monthly.avg_daily_volume,
             target=self._target,
-            avg=self._drink_stats.yearly.avg_daily_volume_ml,
+            avg=self._drink_stats.yearly.avg_daily_volume,
+            decimals=self._converter.display_decimals,
             text={
                 "limit": _("Limit"),
-                "alcohol": _("Alcohol consumption per day, milliliters"),
+                # the dropdown names the unit, so this never claims millilitres
+                # for an amount that is read as Std Av
+                "alcohol": f"{_('Alcohol consumption per day')}, {unit}",
+                "unit": unit,
             },
         )
 
@@ -199,7 +206,7 @@ class IndexBuilder:
             unit = ""
             value = f"{avg:.1f}"
         else:
-            avg = self._drink_stats.yearly.avg_daily_volume_ml
+            avg = self._drink_stats.yearly.avg_daily_volume
             unit = " ml"
             value = f"{avg:.0f}{unit}"
 

@@ -46,10 +46,10 @@ class EmptyYearToDateComparison:
 
 @dataclass(frozen=True)
 class YearEndProjection:
-    # projected volume by year-end at the current pace, litres
-    projected_volume_liters: float
-    # allowed volume for the whole year, litres
-    target_volume_liters: float
+    # by year-end at the current pace, in the unit a yearly total is read in
+    projected_total: float
+    # allowed for the whole year, in that same unit
+    target_total: float
     percentage_difference: float  # % over (+) or under (-) the yearly target
     over: bool
     has_target: bool = True
@@ -57,8 +57,8 @@ class YearEndProjection:
 
 @dataclass(frozen=True)
 class EmptyYearEndProjection:
-    projected_volume_liters: float
-    target_volume_liters: float = 0.0
+    projected_total: float
+    target_total: float = 0.0
     percentage_difference: float = 0.0
     over: bool = False
     has_target: bool = False
@@ -103,14 +103,23 @@ class TrendStats:
             return 0.0
         return round(abs(current - past) / past * 100, 1)
 
+    @property
+    def unit(self) -> str:
+        return self._converter.display_unit
+
+    @property
+    def decimals(self) -> int:
+        return self._converter.display_decimals
+
     @cached_property
-    def daily_volume_ml(self) -> list[float]:
-        """Dense day-by-day volume in ml (0 on days without records)."""
+    def daily_volume(self) -> list[float]:
+        """Dense day-by-day amount in the unit it is shown in (0 on days
+        without records)."""
         by_date = {row.date: row.stdav for row in self._current_year_records}
         start = date(self.current_year, 1, 1)
 
         return [
-            self._converter.stdav_to_ml(by_date.get(day, 0.0))
+            self._converter.stdav_to_display(by_date.get(day, 0.0))
             for day in self._date_range(start, self._year_end_date)
         ]
 
@@ -125,49 +134,43 @@ class TrendStats:
         end = date(self.current_year, 12, 31)
         return [day.isoformat() for day in self._date_range(start, end)]
 
-    @cached_property
-    def cumulative_current_year_ml(self) -> list[float]:
-        by_yday = {
-            row.date.timetuple().tm_yday: row.stdav
-            for row in self._current_year_records
-        }
-        days_passed = self._year_end_date.timetuple().tm_yday
-        cum = 0.0
-        series = []
-        for i in range(1, days_passed + 1):
-            cum += self._converter.stdav_to_ml(by_yday.get(i, 0.0))
-            series.append(cum)
-        return series
+    @property
+    def total_unit(self) -> str:
+        return self._converter.total_unit
 
-    @cached_property
-    def cumulative_past_year_ml(self) -> list[float]:
-        from ...core.lib.date import ydays
-
-        by_yday = {
-            row.date.timetuple().tm_yday: row.stdav for row in self._past_year_records
-        }
-        days = ydays(self.current_year)
+    def _running_total(self, rows: list[DataRow], days: int) -> list[float]:
+        """Day-by-day running total in ``total_unit``."""
+        by_yday = {row.date.timetuple().tm_yday: row.stdav for row in rows}
         cum = 0.0
         series = []
         for i in range(1, days + 1):
-            cum += self._converter.stdav_to_ml(by_yday.get(i, 0.0))
+            cum += self._converter.stdav_to_total(by_yday.get(i, 0.0))
             series.append(cum)
         return series
 
     @cached_property
-    def cumulative_target_ml(self) -> list[float]:
-        from ...core.lib.date import ydays
+    def cumulative_current_year(self) -> list[float]:
+        return self._running_total(
+            self._current_year_records, self._year_end_date.timetuple().tm_yday
+        )
 
+    @cached_property
+    def cumulative_past_year(self) -> list[float]:
+        return self._running_total(self._past_year_records, ydays(self.current_year))
+
+    @cached_property
+    def cumulative_target(self) -> list[float]:
         days = ydays(self.current_year)
         if not self._target:
             return [0.0] * days
 
-        target_ml = self._target * days
-        daily_pace = target_ml / days
-        return [daily_pace * i for i in range(1, days + 1)]
+        # the target is already a daily amount in the shown unit, so the pace is
+        # just that amount accumulated — only the total scale still applies
+        pace = self._converter.display_to_total(self._target)
+        return [pace * i for i in range(1, days + 1)]
 
     def calculate_rolling_average(self, window: int) -> list[float]:
-        """Trailing mean in ml/day, aligned to ``date_labels``.
+        """Trailing mean per day in ``unit``, aligned to ``date_labels``.
 
         The window is seeded with the ``window - 1`` days before Jan 1 (pulled
         from the previous year) and always divided by the full window, so the
@@ -178,7 +181,7 @@ class TrendStats:
         start = date(self.current_year, 1, 1) - timedelta(days=window - 1)
 
         series = [
-            self._converter.stdav_to_ml(lookup.get(day, 0.0))
+            self._converter.stdav_to_display(lookup.get(day, 0.0))
             for day in self._date_range(start, self._year_end_date)
         ]
 
@@ -228,24 +231,28 @@ class TrendStats:
         )
 
     def calculate_projection(self) -> YearEndProjection | EmptyYearEndProjection:
-        days_passed = len(self.daily_volume_ml)
-        pace = sum(self.daily_volume_ml) / days_passed if days_passed else 0.0  # ml/day
-        projected_ml = pace * ydays(self.current_year)
-        projected_l = round(projected_ml / 1000, 1)
+        # the pace and the Drink Target must be measured the same way: the target
+        # is a daily amount in the shown unit, so the pace is taken there too and
+        # only then scaled to a yearly total
+        days_passed = len(self.daily_volume)
+        pace = sum(self.daily_volume) / days_passed if days_passed else 0.0
+        days = ydays(self.current_year)
+
+        projected = self._converter.display_to_total(pace * days)
 
         if not self._target:
-            return EmptyYearEndProjection(projected_l)
+            return EmptyYearEndProjection(round(projected, 1))
 
-        target_ml = self._target * ydays(self.current_year)
+        allowed = self._converter.display_to_total(self._target * days)
         pct = 0.0
-        if target_ml:
-            pct = round((projected_ml - target_ml) / target_ml * 100, 1)
+        if allowed:
+            pct = round((projected - allowed) / allowed * 100, 1)
 
         return YearEndProjection(
-            projected_l,
-            round(target_ml / 1000, 1),
+            round(projected, 1),
+            round(allowed, 1),
             pct,
-            over=projected_ml > target_ml,
+            over=projected > allowed,
         )
 
     @cached_property

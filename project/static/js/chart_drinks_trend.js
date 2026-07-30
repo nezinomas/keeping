@@ -8,7 +8,7 @@ function chartTrend(idData, idContainer) {
         value: chartData.target,
         zIndex: 10,
         label: {
-            text: `${chartData.text.limit}: ${chartData.target.toFixed()}`,
+            text: `${chartData.text.limit}: ${chartData.target.toFixed(chartData.decimals)}`,
             align: "right",
             x: -5,
             style: {
@@ -40,23 +40,53 @@ function chartTrend(idData, idContainer) {
                 }
             }
         },
-        yAxis: {
+        // the raw day peaks around 9x the 30-day mean, so the two share an x-axis
+        // but not a y: the averages keep their own scale and stay readable against
+        // the Limit. Both carry the SAME unit, so relative heights across the two
+        // axes mean nothing — the shared tooltip is what carries comparable numbers.
+        yAxis: [{
             title: {
                 text: chartData.text.unit
             },
             min: 0,
             plotLines: plotLines,
         },
+        {
+            title: {
+                text: `${chartData.text.daily}, ${chartData.text.unit}`
+            },
+            min: 0,
+            opposite: true,
+            gridLineWidth: 0,
+        }],
         tooltip: {
             shared: true,
             borderColor: '#ccc',
-            pointFormat: "<span style='color: {series.color}'>{series.name}: <b>{point.y:,.0f} ml</b></span><br/>"
+            // unit and precision come from the payload: the drink-type dropdown
+            // decides both, so this must never hardcode ml
+            pointFormat: `<span style='color: {series.color}'>{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
         },
         series: [{
+            // the raw day as columns, so noise never reads as trend even before
+            // colour; at ~365 points each lands near 2px, which reads as texture
+            type: "column",
+            name: chartData.text.daily,
+            data: chartData.daily,
+            yAxis: 1,
+            color: "var(--chart-color-9)",
+            opacity: 0.65,
+            legendIndex: 2,
+            borderWidth: 0,
+            groupPadding: 0.05,
+            pointPadding: 0,
+            crisp: false
+        },
+        {
             type: "spline",
             name: chartData.text.r30,
             data: chartData.rolling_30,
             color: "var(--chart-negative-dark)",
+            legendIndex: 0,
             lineWidth: 3,
             marker: {
                 enabled: false
@@ -68,6 +98,7 @@ function chartTrend(idData, idContainer) {
             data: chartData.rolling_7,
             color: "#0691ff",
             opacity: 0.5,
+            legendIndex: 1,
             lineWidth: 1,
             marker: {
                 enabled: false

@@ -3,9 +3,7 @@ from dataclasses import dataclass
 from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext as _
 
-from .drinks_options import MAX_BOTTLES, DrinkConverter
-
-CANONICAL_TYPE = "stdav"
+from .drinks_options import CANONICAL_TYPE, MAX_BOTTLES, DrinkConverter
 
 
 @dataclass(frozen=True)

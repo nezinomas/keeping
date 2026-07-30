@@ -53,6 +53,30 @@ def test_rolling_average_divides_by_full_window(converter):
     assert stats.calculate_rolling_average(30) == pytest.approx([1000 / 30] * 5)
 
 
+@time_machine.travel("2026-01-05")
+def test_rolling_average_shows_std_av_as_typed():
+    """Std Av is canonical, so it is shown as typed — never scaled into ml.
+
+    ``stdav_to_ml`` would turn 1 Std Av into the 10 ml of pure alcohol it
+    contains, putting the series 10x above the Drink Target it is read against.
+    """
+    stats = TrendStats(
+        DrinkConverter("stdav"), current_daily=[_row(date(2026, 1, 1), 5)]
+    )
+
+    assert stats.calculate_rolling_average(7)[0] == pytest.approx(5 / 7)
+    assert stats.daily_volume[0] == pytest.approx(5)
+
+
+@time_machine.travel("2026-01-05")
+def test_rolling_average_still_converts_a_volume_drink_type(converter):
+    # beer is read as a volume, so 5 std av is still 1000 ml
+    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 5)])
+
+    assert stats.calculate_rolling_average(7)[0] == pytest.approx(1000 / 7)
+    assert stats.daily_volume[0] == pytest.approx(1000)
+
+
 @time_machine.travel("2026-01-02")
 def test_rolling_average_seeds_from_previous_december(converter):
     stats = TrendStats(
@@ -177,11 +201,34 @@ def test_projection_over_target(converter):
 
     projection = stats.calculate_projection()
 
-    assert projection.projected_volume_liters == 73.0  # 200 ml/day * 365 / 1000
-    assert projection.target_volume_liters == 36.5  # 100 ml/day * 365 / 1000
+    assert projection.projected_total == 73.0  # 200 ml/day * 365 / 1000
+    assert projection.target_total == 36.5  # 100 ml/day * 365 / 1000
     assert projection.percentage_difference == 100.0
     assert projection.over is True
     assert projection.has_target is True
+
+
+@time_machine.travel("2026-01-10")
+def test_projection_counts_std_av_instead_of_bottling_it():
+    """The forecast and the target it is read against share one unit.
+
+    The projection used to be built from millilitres while the target stayed in
+    Std Av, so a Std Av user was shown a forecast ten times their target.
+    """
+    # 10 Std Av over 10 days = 1 Std Av/day pace, against a 0.5/day target
+    stats = TrendStats(
+        DrinkConverter("stdav"),
+        current_daily=[_row(date(2026, 1, 1), 10)],
+        target=0.5,
+    )
+
+    projection = stats.calculate_projection()
+
+    assert stats.total_unit == "Std Av"
+    assert projection.projected_total == 365.0  # 1/day * 365, not 3650
+    assert projection.target_total == 182.5  # 0.5/day * 365
+    assert projection.percentage_difference == 100.0
+    assert projection.over is True
 
 
 @time_machine.travel("2026-01-10")

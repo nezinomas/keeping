@@ -51,6 +51,70 @@ def test_stdav_to_ml(drink_type, stdav, expect):
 
 
 @pytest.mark.parametrize(
+    "drink_type, unit, decimals, total_unit",
+    [
+        ("beer", "ml", 0, "L"),
+        ("wine", "ml", 0, "L"),
+        ("vodka", "ml", 0, "L"),
+        ("stdav", "Std Av", 1, "Std Av"),
+    ],
+)
+def test_display_units(drink_type, unit, decimals, total_unit):
+    actual = DrinkConverter(drink_type)
+
+    assert actual.display_unit == unit
+    assert actual.display_decimals == decimals
+    assert actual.total_unit == total_unit
+
+
+@pytest.mark.parametrize(
+    "drink_type, stdav, expect",
+    [
+        # a volume is shown as the volume it is
+        ("beer", 2.5, 500.0),
+        ("wine", 8.0, 750.0),
+        ("vodka", 40.0, 1000.0),
+        # Std Av is canonical: shown as typed, never as the ml of alcohol in it
+        ("stdav", 1.0, 1.0),
+    ],
+)
+def test_stdav_to_display(drink_type, stdav, expect):
+    actual = DrinkConverter(drink_type).stdav_to_display(stdav)
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
+    "drink_type, stdav, expect",
+    [
+        # a year's worth of a volume reads in litres
+        ("beer", 2.5, 0.5),
+        ("wine", 8.0, 0.75),
+        ("vodka", 40.0, 1.0),
+        # ... but Std Av is a count, so a thousand of them is not a litre
+        ("stdav", 1.0, 1.0),
+    ],
+)
+def test_stdav_to_total(drink_type, stdav, expect):
+    actual = DrinkConverter(drink_type).stdav_to_total(stdav)
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
+    "drink_type, value, expect",
+    [
+        ("beer", 1000.0, 1.0),
+        ("stdav", 1000.0, 1000.0),
+    ],
+)
+def test_display_to_total(drink_type, value, expect):
+    actual = DrinkConverter(drink_type).display_to_total(value)
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
     "drink_type, expect",
     [
         ("beer", 2.5),

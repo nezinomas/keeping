@@ -1033,6 +1033,10 @@ msgstr "Riba"
 msgid "Alcohol consumption per day, milliliters"
 msgstr "Alkoholio kiekis per dieną, ml"
 
+#: .\drinks\services\index_tab.py:145
+msgid "Alcohol consumption per day"
+msgstr "Alkoholio kiekis per dieną"
+
 #: .\drinks\services\index\builders.py:131
 msgid "Days dry"
 msgstr "Blaivios dienos"
