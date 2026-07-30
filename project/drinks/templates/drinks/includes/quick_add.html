@@ -6,6 +6,7 @@
          option: '{{ drink_types.selected|default:'beer' }}',
          quantity: '',
          defaults: { beer: '1', wine: '150', vodka: '40', stdav: '1' },
+         steps: { beer: 1, wine: 50, vodka: 10, stdav: 1 },
          init() {
              this.updateQuantity();
          },
@@ -41,11 +42,11 @@
                 </select>
             </div>
 
-            <input type="text" name="quantity" class="form-control quick-add__qty"
+            <input type="number" name="quantity" class="form-control quick-add__qty"
+                   min="0" :step="steps[option]"
                    inputmode="decimal" autocomplete="off" required
                    placeholder="{% translate 'Quantity' %}"
-                   x-model="quantity"
-                   x-on:input="quantity = $event.target.value.replace(',', '.')">
+                   x-model="quantity">
 
             <button type="submit" class="button-secondary">{% translate 'Add' %}</button>
             <button type="button" class="button-secondary"
