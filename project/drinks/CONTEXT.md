@@ -72,6 +72,12 @@ One of the five drinks views — Overview, Trends, Risk, History, Data. Each is
 fetched and reloaded independently.
 _Avoid_: page, panel, screen
 
+**Recent day**:
+One of the last five calendar days, offered in the quick-add sheet as Today,
+Yesterday and three weekday names. Always the real calendar day, never shifted
+into the year being browsed.
+_Avoid_: date option, day offset
+
 **Stat Card**:
 One summary tile on a Tab: a title, a value, a note, and how to colour them.
 The tone and arrow are resolved before it reaches a template — a Tab's own
