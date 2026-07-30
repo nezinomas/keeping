@@ -1,5 +1,6 @@
 import pytest
 import time_machine
+from django.utils.translation import gettext as _
 
 from ....core.lib.date import years
 from ...services import history
@@ -43,12 +44,34 @@ def test_pure_alcohol(drink_type, qty, stdav, expect, main_user):
 
 
 @pytest.mark.parametrize(
+    "drink_type, unit, decimals",
+    [
+        ("beer", "ml", 0),
+        ("wine", "ml", 0),
+        ("vodka", "ml", 0),
+        ("stdav", "Std Av", 1),
+    ],
+)
+@time_machine.travel("2000-01-01")
+def test_chart_is_labelled_in_the_selected_unit(drink_type, unit, decimals, main_user):
+    """A Std Av day is shown as typed, so the chart cannot claim millilitres."""
+    main_user.drink_type = drink_type
+
+    chart = history.load_service(main_user)["chart"]
+
+    assert chart["unit"] == unit
+    assert chart["decimals"] == decimals
+    assert chart["text"]["per_day"] == f"{_('Average per day')}, {unit}"
+
+
+@pytest.mark.parametrize(
     "drink_type, qty, stdav, expect",
     [
         ("beer", 365, 912.5, [500.0, 0.0]),
         ("wine", 365, 2_920, [750.0, 0.0]),
         ("vodka", 365, 14_600, [1000.0, 0.0]),
-        ("stdav", 365, 365, [10.0, 0.0]),
+        # 365 Std Av over 365 days is 1 a day — not the 10 ml of alcohol in it
+        ("stdav", 365, 365, [1.0, 0.0]),
     ],
 )
 @time_machine.travel("2000-01-01")
@@ -68,7 +91,7 @@ def test_per_day(drink_type, qty, stdav, expect, main_user):
         ("beer", 365, 912.5, [500.0, 182_500]),
         ("wine", 365, 2_920, [750.0, 273_750]),
         ("vodka", 365, 14_600, [1000.0, 365_000]),
-        ("stdav", 365, 365, [10.0, 3_650]),
+        ("stdav", 365, 365, [1.0, 365]),
     ],
 )
 @time_machine.travel("2000-01-01")

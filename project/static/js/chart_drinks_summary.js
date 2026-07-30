@@ -47,7 +47,7 @@ function chart_drinks_summary(idData, idContainer) {
             },
         }],
         tooltip: {
-            pointFormat: "<b>{point.y:,.0f} ml</b><br>",
+            pointFormat: `<b>{point.y:,.${chartData.decimals}f} ${chartData.unit}</b><br>`,
         },
         series: [{
             name: chartData.text.per_day,
@@ -62,7 +62,9 @@ function chart_drinks_summary(idData, idContainer) {
             },
             dataLabels: {
                 enabled: true,
-                format: "{point.y:.0f}",
+                // Std Av needs its decimal; rounding it to whole numbers would
+                // flatten a year of 1.0 a day onto the same label as 1.4
+                format: `{point.y:.${chartData.decimals}f}`,
                 y: -25,
                 verticalAlign:"top",
                 color: "var(--chart-negative-super-dark)",

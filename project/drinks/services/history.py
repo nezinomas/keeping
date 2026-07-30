@@ -59,10 +59,12 @@ class HistoryService:
         return df.group_by("year").agg(pl.col.qty.sum(), pl.col.stdav.sum())
 
     def _calculate_consumption_stats(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        # pure alcohol is a real volume whatever the drink type, but the amount
+        # itself is read in the unit the dropdown selects — Std Av as typed
         return df.with_columns(
             alcohol=self.converter.stdav_to_alcohol(pl.col.stdav),
-            ml=self.converter.stdav_to_ml(pl.col.stdav),
-        ).with_columns(per_day=pl.col.ml / pl.col.days_in_year)
+            shown=self.converter.stdav_to_display(pl.col.stdav),
+        ).with_columns(per_day=pl.col.shown / pl.col.days_in_year)
 
     def _calculate_days_in_year(self, df: pl.LazyFrame) -> pl.LazyFrame:
         now = datetime.now()
@@ -95,9 +97,11 @@ def load_service(user) -> dict:
             "categories": service.years,
             "data_ml": service.per_day,
             "data_alcohol": service.alcohol,
+            "unit": service.converter.display_unit,
+            "decimals": service.converter.display_decimals,
             "text": {
                 "title": _("Drinks"),
-                "per_day": _("Average per day, ml"),
+                "per_day": f"{_('Average per day')}, {service.converter.display_unit}",
                 "per_year": _("Pure alcohol per year, L"),
             },
         },
