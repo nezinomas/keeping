@@ -231,6 +231,54 @@ def test_quick_add_quantity_input_has_form_control_class(client_logged):
     assert 'class="form-control quick-add__qty"' in html
 
 
+def quantity_input(html):
+    """The quick-add quantity tag on its own, so attributes can be asserted."""
+    start = html.index('<input type="number" name="quantity"')
+
+    return html[start : html.index(">", start) + 1]
+
+
+def test_quick_add_quantity_input_is_a_number_field(client_logged):
+    url = reverse("drinks:index")
+    response = client_logged.get(url)
+    html = response.content.decode("utf-8")
+
+    assert '<input type="number" name="quantity"' in html
+
+    tag = quantity_input(html)
+    assert 'min="0"' in tag
+    assert 'inputmode="decimal"' in tag
+
+
+def test_quick_add_quantity_arrows_step_by_drink_type(client_logged):
+    url = reverse("drinks:index")
+    response = client_logged.get(url)
+    html = response.content.decode("utf-8")
+
+    assert "steps: { beer: 1, wine: 50, vodka: 10, stdav: 1 }" in html
+    assert ':step="steps[option]"' in quantity_input(html)
+
+
+def test_quick_add_quantity_leaves_number_parsing_to_the_browser(client_logged):
+    url = reverse("drinks:index")
+    response = client_logged.get(url)
+    html = response.content.decode("utf-8")
+
+    assert "$event.target.value.replace(',', '.')" not in html
+
+
+def test_quick_add_fields_run_day_then_drink_type_then_quantity(client_logged):
+    url = reverse("drinks:index")
+    response = client_logged.get(url)
+    html = response.content.decode("utf-8")
+
+    day = html.index('class="select-wrapper quick-add__day"')
+    drink_type = html.index('class="select-wrapper quick-add__type"')
+    quantity = html.index('class="form-control quick-add__qty"')
+
+    assert day < drink_type < quantity
+
+
 def test_quick_add_has_a_day_select(client_logged):
     url = reverse("drinks:index")
     response = client_logged.get(url)

@@ -57,9 +57,17 @@ body:has(.quick-add) { padding-bottom: 6rem; }
         align-items: center;
     }
 
+    // the up/down arrows are the point of this field, so opt back out of the
+    // project-wide `input { appearance: none }` reset that would strip them
     .quick-add__qty {
         flex: 1 1 6rem;
         min-width: 0;
+        appearance: auto;
+
+        // Chrome otherwise only paints them on hover
+        &::-webkit-inner-spin-button {
+            opacity: 1;
+        }
     }
 
     .quick-add__type,
