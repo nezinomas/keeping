@@ -231,6 +231,18 @@ def test_quick_add_quantity_input_has_form_control_class(client_logged):
     assert 'class="form-control quick-add__qty"' in html
 
 
+def test_quick_add_fields_run_day_then_drink_type_then_quantity(client_logged):
+    url = reverse("drinks:index")
+    response = client_logged.get(url)
+    html = response.content.decode("utf-8")
+
+    day = html.index('class="select-wrapper quick-add__day"')
+    drink_type = html.index('class="select-wrapper quick-add__type"')
+    quantity = html.index('class="form-control quick-add__qty"')
+
+    assert day < drink_type < quantity
+
+
 def test_quick_add_has_a_day_select(client_logged):
     url = reverse("drinks:index")
     response = client_logged.get(url)

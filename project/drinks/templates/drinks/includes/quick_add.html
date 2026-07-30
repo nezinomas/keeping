@@ -23,11 +23,13 @@
             {% csrf_token %}
             <input type="hidden" name="tab" id="quick-add-tab" value="index">
 
-            <input type="text" name="quantity" class="form-control quick-add__qty"
-                   inputmode="decimal" autocomplete="off" required
-                   placeholder="{% translate 'Quantity' %}"
-                   x-model="quantity"
-                   x-on:input="quantity = $event.target.value.replace(',', '.')">
+            <div class="select-wrapper quick-add__day">
+                <select name="date" class="form-select">
+                    {% for day in recent_days.options %}
+                    <option value="{{ day.1 }}"{% if day.1 == recent_days.selected %} selected{% endif %}>{{ day.0 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
             <div class="select-wrapper quick-add__type">
                 <select name="option" class="form-select"
@@ -39,13 +41,11 @@
                 </select>
             </div>
 
-            <div class="select-wrapper quick-add__day">
-                <select name="date" class="form-select">
-                    {% for day in recent_days.options %}
-                    <option value="{{ day.1 }}"{% if day.1 == recent_days.selected %} selected{% endif %}>{{ day.0 }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+            <input type="text" name="quantity" class="form-control quick-add__qty"
+                   inputmode="decimal" autocomplete="off" required
+                   placeholder="{% translate 'Quantity' %}"
+                   x-model="quantity"
+                   x-on:input="quantity = $event.target.value.replace(',', '.')">
 
             <button type="submit" class="button-secondary">{% translate 'Add' %}</button>
             <button type="button" class="button-secondary"
