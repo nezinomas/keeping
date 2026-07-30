@@ -78,7 +78,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         value: consumption.avg,
                         zIndex: 11,
                         label: {
-                            text: `Avg: ${consumption.avg.toFixed()}`,
+                            text: `Avg: ${consumption.avg.toFixed(consumption.decimals)}`,
                             align: "right",
                             x: -5,
                             y: avgLabelY,
