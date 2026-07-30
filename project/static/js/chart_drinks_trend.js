@@ -67,12 +67,12 @@ function chartTrend(idData, idContainer) {
         series: [{
             // "line", not "spline": the raw day swings 0 -> 4000 -> 0 between
             // neighbours, and a spline through that overshoots into negative ml
-            type: "line",
+            type: "column",
             name: chartData.text.daily,
             data: chartData.daily,
             yAxis: 1,
-            color: "var(--chart-color-7)",
-            opacity: 0.55,
+            color: "var(--chart-color-9)",
+            opacity: 0.65,
             legendIndex: 2,
             lineWidth: 1,
             marker: {
