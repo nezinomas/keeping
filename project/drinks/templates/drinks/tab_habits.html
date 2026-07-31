@@ -10,14 +10,23 @@
 
     <div id="chart-weekday-container"></div>
 
-    <!-- Typical year: the chart fetches itself, so the pooled range and the
-         caption naming it are always the same reading -->
+    <!-- Typical year: one shared chart with presets + custom range below it. The
+         chart fetches itself, so the range pooled and the caption naming it are
+         always the same reading -->
     <div id="typical-year">
         <div id="chart-typical-year-container" hx-get="{% url 'drinks:typical_year' %}" hx-trigger="load"></div>
 
         <div class="pool-controls">
-            <!-- filled by the same response as the chart, swapped out of band,
-                 so the boxes open on the years actually plotted -->
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year' %}" hx-target="#chart-typical-year-container">{% translate 'All years' %}</button>
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 1 %}" hx-target="#chart-typical-year-container">{{ user.year }}</button>
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 2 %}" hx-target="#chart-typical-year-container">{% translate '2 years' %}</button>
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 3 %}" hx-target="#chart-typical-year-container">{% translate '3 years' %}</button>
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 5 %}" hx-target="#chart-typical-year-container">{% translate '5 years' %}</button>
+
+            <span class="controls-divider"></span>
+
+            <!-- filled by the same response as the chart, swapped in out of
+                 band, so the boxes open on the years actually plotted -->
             <div id="typical-year-form"></div>
         </div>
     </div>

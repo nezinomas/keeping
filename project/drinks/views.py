@@ -88,17 +88,23 @@ class TypicalYearChart(FormViewMixin):
     re-pools it.
 
     A partial rather than part of the tab: the Habits container fetches this on
-    load and re-fetches it on every submit, so the chart, its caption and the
-    form's own boxes are always the same reading of the same range. Nothing is
-    remembered between fetches — a fresh tab opens on the full span, which is
-    the only default the app can claim to know.
+    load and re-fetches it on every preset and every submit, so the chart, its
+    caption and the form's own boxes are always the same reading of the same
+    range. Nothing is remembered between fetches — a fresh tab opens on the full
+    span, which is the only default the app can claim to know.
+
+    A `qty` in the url pools the last that many years instead, ending at the year
+    the header selects. Which of them actually contributed is read back off the
+    records, so asking for five years of a two-year history pools the two and
+    the caption says so.
     """
 
     form_class = forms.TypicalYearForm
     template_name = "drinks/includes/typical_year_form.html"
 
     def get(self, request, *args, **kwargs):
-        chart = services.TypicalYear.build(cast(User, request.user))
+        user = cast(User, request.user)
+        chart = services.TypicalYear.build(user, *self._preset_range(user))
         initial = (
             {"year_from": chart.year_from, "year_to": chart.year_to}
             if chart.has_data
@@ -106,6 +112,15 @@ class TypicalYearChart(FormViewMixin):
         )
 
         return self._render(chart, self.get_form(initial=initial))
+
+    def _preset_range(self, user) -> tuple[int | None, int | None]:
+        """The last `qty` years, or the whole span when no preset was asked for."""
+        qty = self.kwargs.get("qty")
+        if not qty:
+            return None, None
+
+        year = cast(int, user.year)
+        return year - qty + 1, year
 
     def form_valid(self, form, **kwargs):
         chart = services.TypicalYear.build(

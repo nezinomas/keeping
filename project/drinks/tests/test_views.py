@@ -4,6 +4,7 @@ from datetime import date
 import pytest
 import time_machine
 from django.urls import resolve, reverse, reverse_lazy
+from django.utils.translation import gettext as _
 
 from ...core.tests.utils import change_profile_year, setup_view
 from ...users.tests.factories import User
@@ -441,12 +442,65 @@ def test_tab_habits_loads_the_typical_year_chart(client_logged):
     assert 'id="typical-year-form"' in content
 
 
+def test_tab_habits_renders_the_pooled_range_presets(client_logged):
+    response = client_logged.get(reverse("drinks:tab_habits"))
+    content = response.content.decode()
+
+    assert f'hx-get="{reverse("drinks:typical_year")}"' in content
+    for qty in (1, 2, 3, 5):
+        url = reverse("drinks:typical_year_last", kwargs={"qty": qty})
+        assert f'hx-get="{url}"' in content
+
+    # the one-year preset is labelled with the year it pools, not "1 year"
+    assert ">1999<" in content
+    assert _("All years") in content
+    assert _("5 years") in content
+
+
 def test_typical_year_renders_chart_data(client_logged):
     DrinkFactory(date=date(1999, 1, 1))
 
     response = client_logged.get(reverse("drinks:typical_year"))
 
     assert 'id="chart-typical-year-data"' in response.content.decode()
+
+
+@pytest.mark.parametrize(
+    "qty, year_from",
+    [(1, 1999), (2, 1998), (3, 1997), (5, 1995)],
+)
+def test_typical_year_presets_end_at_the_header_year(qty, year_from, client_logged):
+    for year in range(1995, 2000):
+        DrinkFactory(date=date(year, 1, 5), stdav=5)
+
+    url = reverse("drinks:typical_year_last", kwargs={"qty": qty})
+    chart = client_logged.get(url).context["chart"]
+
+    assert chart.year_from == year_from
+    assert chart.year_to == 1999
+
+
+def test_typical_year_preset_pools_the_years_that_have_records(client_logged):
+    # asking for five years when only two were logged pools the two, and says so
+    DrinkFactory(date=date(1998, 1, 5), stdav=5)
+    DrinkFactory(date=date(1999, 1, 5), stdav=5)
+
+    url = reverse("drinks:typical_year_last", kwargs={"qty": 5})
+    chart = client_logged.get(url).context["chart"]
+
+    assert chart.year_from == 1998
+    assert chart.text["subtitle"] == "Apjungti 1998–1999 m."
+
+
+def test_typical_year_preset_opens_the_form_on_what_it_pooled(client_logged):
+    for year in range(1995, 2000):
+        DrinkFactory(date=date(year, 1, 5), stdav=5)
+
+    url = reverse("drinks:typical_year_last", kwargs={"qty": 3})
+    content = client_logged.get(url).content.decode()
+
+    assert 'name="year_from" value="1997"' in content
+    assert 'name="year_to" value="1999"' in content
 
 
 def test_typical_year_defaults_to_the_full_span(client_logged):
