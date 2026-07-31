@@ -32,6 +32,42 @@ class YearlyStatsDTO:
     avg_daily_stdav: float = 0.0
 
 
+@dataclass(frozen=True)
+class YearOverYear:
+    """One figure this year beside the same figure last year, up to the same
+    month and day.
+
+    Shared by every lib that compares a year with the one before it, so a card
+    reads the same four fields whether the figure is a count of days or an
+    amount per day. How it is shown is the caller's: a count whole, an amount
+    to the decimals its unit needs.
+    """
+
+    current: float
+    previous: float
+    improving: bool
+    has_past: bool = True
+
+    @classmethod
+    def compare(
+        cls, current: float, previous: float, *, has_past: bool
+    ) -> "YearOverYear | EmptyYearOverYear":
+        """Less is improving, which is true of every harm and frequency figure
+        the app reports. A figure where more is better needs its own rule."""
+        if not has_past:
+            return EmptyYearOverYear(current=current)
+
+        return cls(current, previous, improving=current < previous)
+
+
+@dataclass(frozen=True)
+class EmptyYearOverYear:
+    current: float
+    previous: float = 0.0
+    improving: bool = False
+    has_past: bool = False
+
+
 class DrinkStats:
     def __init__(
         self,

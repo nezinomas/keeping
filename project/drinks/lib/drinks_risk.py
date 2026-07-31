@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from functools import cached_property
 
 from ...core.lib.year_boundary import YearBoundary
-from .drinks_stats import DataRow
+from .drinks_stats import DataRow, EmptyYearOverYear, YearOverYear
 
 # Medical harm-framing thresholds, all expressed in the canonical std av unit
 # (1 std av = 10 g pure alcohol). The UK CMO low-risk guideline is 14 UK units
@@ -44,22 +44,6 @@ class EmptyWeeklyRiskZone:
     label: str = ""
     end: str = ""
     has_data: bool = False
-
-
-@dataclass(frozen=True)
-class YearOverYearCount:
-    current: int
-    previous: int
-    improving: bool
-    has_past: bool = True
-
-
-@dataclass(frozen=True)
-class EmptyYearOverYearCount:
-    current: int
-    previous: int = 0
-    improving: bool = False
-    has_past: bool = False
 
 
 class RiskStats:
@@ -165,17 +149,17 @@ class RiskStats:
 
     def _compare_year_over_year(
         self, current: int, previous: int
-    ) -> YearOverYearCount | EmptyYearOverYearCount:
-        if not self._past_daily_records:
-            return EmptyYearOverYearCount(current=current)
-        return YearOverYearCount(current, previous, improving=current < previous)
+    ) -> YearOverYear | EmptyYearOverYear:
+        return YearOverYear.compare(
+            current, previous, has_past=bool(self._past_daily_records)
+        )
 
-    def heavy_days(self) -> YearOverYearCount | EmptyYearOverYearCount:
+    def heavy_days(self) -> YearOverYear | EmptyYearOverYear:
         current = self._count_heavy_days(self._current_daily_records)
         previous = self._count_heavy_days(self._past_clipped_records)
         return self._compare_year_over_year(current, previous)
 
-    def weeks_over_guideline(self) -> YearOverYearCount | EmptyYearOverYearCount:
+    def weeks_over_guideline(self) -> YearOverYear | EmptyYearOverYear:
         current = self._count_weeks_exceeding_guideline(self._current_weekly_units)
         previous = self._count_weeks_exceeding_guideline(
             self._past_clipped_weekly_units
