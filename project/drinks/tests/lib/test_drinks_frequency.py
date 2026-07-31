@@ -306,6 +306,125 @@ def test_compare_intensity_is_the_same_figure_under_every_drink_type(drink_type)
 
 
 # -------------------------------------------------------------------------------------
+#                                                                      weekday_profile
+# -------------------------------------------------------------------------------------
+def test_weekday_profile_is_always_seven_points_monday_first():
+    actual = FrequencyStats(today=date(2026, 6, 15)).weekday_profile()
+
+    assert [point.weekday for point in actual] == [0, 1, 2, 3, 4, 5, 6]
+
+
+def test_weekday_profile_puts_a_monday_drink_at_index_zero():
+    # 2026-06-15 is a Monday, and the test says so rather than trusting it
+    monday = date(2026, 6, 15)
+    assert monday.weekday() == 0
+
+    actual = FrequencyStats([_row(monday, 5)], today=monday).weekday_profile()
+
+    assert actual[0].drinking_days == 1
+    assert [point.drinking_days for point in actual[1:]] == [0] * 6
+
+
+def test_weekday_profile_puts_a_sunday_drink_at_index_six():
+    # 2026-06-21 is a Sunday — the last index, since the week starts on Monday
+    sunday = date(2026, 6, 21)
+    assert sunday.weekday() == 6
+
+    actual = FrequencyStats([_row(sunday, 5)], today=sunday).weekday_profile()
+
+    assert actual[6].drinking_days == 1
+
+
+def test_weekday_profile_counts_only_the_weekdays_elapsed_in_a_running_year():
+    # 2026-01-15 is a Thursday: Jan 1 is a Thursday too, so three Thursdays have
+    # been reached (1st, 8th, 15th) but only two Fridays (2nd, 9th)
+    actual = FrequencyStats(
+        [_row(date(2026, 1, 1), 5)], today=date(2026, 1, 15)
+    ).weekday_profile()
+
+    assert actual[3].calendar_days == 3
+    assert actual[4].calendar_days == 2
+
+
+def test_weekday_profile_counts_every_occurrence_of_a_year_already_over():
+    # 2025 has 53 Wednesdays (Jan 1 was one) and 52 of every other weekday
+    actual = FrequencyStats(
+        [_row(date(2025, 1, 1), 5)], today=date(2026, 6, 15)
+    ).weekday_profile()
+
+    assert [point.calendar_days for point in actual] == [52, 52, 53, 52, 52, 52, 52]
+
+
+def test_weekday_profile_counts_a_weekday_not_yet_reached_as_zero():
+    # Jan 1 2026 is a Thursday, so on Jan 2 no Saturday has occurred at all
+    actual = FrequencyStats(
+        [_row(date(2026, 1, 1), 5)], today=date(2026, 1, 2)
+    ).weekday_profile()
+
+    assert actual[5].calendar_days == 0
+    assert actual[5].drinking_day_share == 0.0
+    assert actual[5].intensity == 0.0
+
+
+def test_weekday_profile_counts_distinct_dates_not_rows():
+    # two Drinks on one Monday are one Drinking day, as everywhere else
+    rows = [
+        _row(date(2026, 1, 5), 3),
+        _row(date(2026, 1, 5), 4),
+        _row(date(2026, 1, 12), 2),
+    ]
+
+    actual = FrequencyStats(rows, today=date(2026, 6, 15)).weekday_profile()
+
+    assert actual[0].drinking_days == 2
+    assert actual[0].stdav == 9.0
+
+
+def test_weekday_profile_rates_are_per_weekday_not_off_the_year_total():
+    # to Monday 2026-01-19 three Mondays have passed but only two Tuesdays, so
+    # the two weekdays have different denominators as well as different totals —
+    # a year-wide denominator would flatten both differences away
+    rows = [
+        _row(date(2026, 1, 5), 4),  # Monday
+        _row(date(2026, 1, 12), 8),  # Monday
+        _row(date(2026, 1, 6), 3),  # Tuesday
+    ]
+
+    actual = FrequencyStats(rows, today=date(2026, 1, 19)).weekday_profile()
+
+    assert actual[0].calendar_days == 3
+    assert actual[0].drinking_day_share == pytest.approx(2 / 3)
+    assert actual[0].intensity == 6.0
+    assert actual[1].calendar_days == 2
+    assert actual[1].drinking_day_share == pytest.approx(1 / 2)
+    assert actual[1].intensity == 3.0
+
+
+def test_weekday_profile_on_no_records_is_seven_zeroed_points():
+    actual = FrequencyStats(today=date(2026, 6, 15)).weekday_profile()
+
+    assert len(actual) == 7
+    assert all(point.drinking_days == 0 for point in actual)
+    assert all(point.stdav == 0.0 for point in actual)
+    assert all(point.drinking_day_share == 0.0 for point in actual)
+    assert all(point.intensity == 0.0 for point in actual)
+
+
+@pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
+def test_weekday_profile_is_the_same_figure_under_every_drink_type(drink_type):
+    # the rate is a ratio and the intensity is a harm metric, so neither follows
+    # the drink-type dropdown — this pins both against a later "conversion fix"
+    ratio = DrinkConverter(drink_type).ratio
+    rows = [_row(date(2026, 1, 5), 6, qty=6 * ratio)]
+
+    actual = FrequencyStats(rows, today=date(2026, 1, 19)).weekday_profile()
+
+    assert actual[0].intensity == 6.0
+    assert actual[0].stdav == 6.0
+    assert actual[0].drinking_day_share == pytest.approx(1 / 3)
+
+
+# -------------------------------------------------------------------------------------
 #                                                        the empty variants' field surface
 # -------------------------------------------------------------------------------------
 def test_empty_comparison_exposes_the_same_fields_as_the_populated_one():

@@ -1,9 +1,29 @@
 from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 from datetime import date
 from functools import cached_property
 
 from ...core.lib.year_boundary import YearBoundary
 from .drinks_stats import DataRow, EmptyYearOverYear, YearOverYear
+
+WEEKDAYS = 7
+
+
+@dataclass(frozen=True)
+class WeekdayPoint:
+    """One day of the week, as both a frequency and a severity.
+
+    The two are independent and a year total answers neither: a weekday can be
+    drunk on rarely and heavily, or often and lightly, and only the pair
+    distinguishes them.
+    """
+
+    weekday: int  # 0 = Monday, matching date.weekday()
+    calendar_days: int  # how many of that weekday the year has reached
+    drinking_days: int
+    stdav: float
+    drinking_day_share: float  # drinking_days / calendar_days
+    intensity: float  # stdav / drinking_days
 
 
 class FrequencyStats:
@@ -106,4 +126,46 @@ class FrequencyStats:
     def compare_intensity(self) -> YearOverYear | EmptyYearOverYear:
         return self._compare(
             self.intensity, self._intensity(self._past_clipped_records)
+        )
+
+    def _calendar_days_of(self, weekday: int) -> int:
+        """How many of one weekday the year has reached.
+
+        The denominator every rate below divides by, and it obeys the same year
+        boundary as everything else: a running year has had more Mondays than
+        Sundays if it started on a Monday, and counting all 52 would report a
+        rate that has not happened yet.
+        """
+        elapsed = self._year.days_elapsed
+        offset = (weekday - date(self._year.year, 1, 1).weekday()) % 7
+
+        return (elapsed - offset - 1) // WEEKDAYS + 1 if offset < elapsed else 0
+
+    def weekday_profile(self) -> list[WeekdayPoint]:
+        """The year resolved by day of the week, Monday first.
+
+        Always seven points: a weekday nobody drank on is a finding, and a chart
+        with a missing column would read as a chart of six days.
+        """
+        by_weekday: list[list[DataRow]] = [[] for _ in range(WEEKDAYS)]
+        for row in self._current_daily_records:
+            by_weekday[row.date.weekday()].append(row)
+
+        return [
+            self._weekday_point(weekday, rows)
+            for weekday, rows in enumerate(by_weekday)
+        ]
+
+    def _weekday_point(self, weekday: int, rows: Sequence[DataRow]) -> WeekdayPoint:
+        calendar_days = self._calendar_days_of(weekday)
+        drinking_days = self._count_drinking_days(rows)
+        stdav = sum(row.stdav for row in rows)
+
+        return WeekdayPoint(
+            weekday=weekday,
+            calendar_days=calendar_days,
+            drinking_days=drinking_days,
+            stdav=stdav,
+            drinking_day_share=drinking_days / calendar_days if calendar_days else 0.0,
+            intensity=stdav / drinking_days if drinking_days else 0.0,
         )
