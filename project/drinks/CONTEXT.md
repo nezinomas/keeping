@@ -53,6 +53,13 @@ spread over, not by the days in the year. Stays in Std Av whatever Drink type is
 selected, because it is read against the Heavy day threshold.
 _Avoid_: average, per-day, strength
 
+**Weekday profile**:
+One year's consumption resolved by day of the week, as both a Drinking-day rate
+and an Intensity. Each weekday is divided by how many times it has come round,
+not by the days in the year.
+_Avoid_: weekly pattern (that reads as the Risk tab's per-week totals), day
+breakdown
+
 ### Goals
 
 **Drink Target**:
@@ -84,9 +91,15 @@ _Avoid_: gap, streak, sober days
 ### Presentation
 
 **Tab**:
-One of the five drinks views — Overview, Trends, Risk, History, Data. Each is
-fetched and reloaded independently.
+One of the six drinks views — Overview, Habits, Trends, Risk, History, Data. Each
+is fetched and reloaded independently.
 _Avoid_: page, panel, screen
+
+**Habits tab**:
+The drinks view for recurring shape — which days, how intensely, how long the
+gaps — as opposed to level (Overview), direction (Trends) or harm (Risk). English
+`msgid` `Habits`, Lithuanian `Įpročiai`.
+_Avoid_: Weeks (the Risk tab owns weekly vocabulary), Patterns, Rhythm
 
 **Recent day**:
 One of the last five calendar days, offered in the quick-add sheet as Today,
