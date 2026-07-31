@@ -1079,6 +1079,14 @@ msgstr "Visada Std Av, nes rizikingo vartojimo dienos riba nustatyta Std Av."
 msgid "per calendar day"
 msgstr "per kalendorinę dieną"
 
+#: .\drinks\services\habits_tab.py:67
+msgid "Weekday profile"
+msgstr "Savaitės dienų profilis"
+
+#: .\drinks\services\habits_tab.py:68
+msgid "Drinking-day rate"
+msgstr "Vartojimo dienų dalis"
+
 #: .\drinks\services\history.py:100
 msgid "Average per day"
 msgstr "Vidutiniškai per dieną"
@@ -1408,6 +1416,10 @@ msgstr "Tendencijos"
 #: .\drinks\templates\drinks\includes\navbar.html:22
 msgid "Risk"
 msgstr "Rizikos"
+
+#: .\drinks\templates\drinks\includes\navbar.html:22
+msgid "Habits"
+msgstr "Įpročiai"
 
 #: .\drinks\templates\drinks\includes\quick_add.html:45
 msgid "More"
