@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from datetime import date
 from functools import cached_property
 
-from ...core.lib.date import ydays
 from ..lib.drinks_options import DrinkConverter
+from ..lib.drinks_year import YearBoundary
 
 
 @dataclass(frozen=True)
@@ -40,9 +40,9 @@ class DrinkStats:
         today: date | None = None,
     ):
         self.converter = converter
-        self.today = today or date.today()
         self.data = data
-        self.year = self.data[0].date.year if self.data else self.today.year
+        self._year = YearBoundary.from_records(data, today)
+        self.year = self._year.year
 
     @cached_property
     def monthly(self) -> MonthlyStatsDTO:
@@ -78,7 +78,8 @@ class DrinkStats:
                 avg_daily_stdav=0.0,
             )
 
-        days_passed, month_limit = self._get_year_boundaries()
+        days_passed = self._year.days_elapsed
+        month_limit = self._year.end_date.month
         total_volume = sum(self.monthly.total_volume[:month_limit])
         total_quantity = sum(self.monthly.total_quantity[:month_limit])
         stdav = total_quantity * self.converter.stdav_per_unit
@@ -94,8 +95,3 @@ class DrinkStats:
 
     def _avg(self, total: float, days: int) -> float:
         return total / days if days else 0.0
-
-    def _get_year_boundaries(self) -> tuple[int, int]:
-        if self.year == self.today.year:
-            return self.today.timetuple().tm_yday, self.today.month
-        return ydays(self.year), 12
