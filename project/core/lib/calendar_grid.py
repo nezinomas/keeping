@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 
 from ...counts.lib.stats import Stats as CountStats
 from .translation import month_names
+from .year_boundary import YearBoundary
 
 LEVEL_1_MAX = 2.0
 LEVEL_2_MAX = 4.0
@@ -61,7 +62,8 @@ class CalendarGrid:
         today: date | None = None,
         quantity_title: str | None = None,
     ) -> CalendarYearViewModel:
-        today = today or date.today()
+        boundary = YearBoundary.for_year(year, today)
+        today = boundary.today
         daily_data = daily_data or []
         quantity_title = quantity_title or _("Quantity")
 
@@ -95,9 +97,8 @@ class CalendarGrid:
 
         months = [
             cls._build_month(
-                year,
+                boundary,
                 month,
-                today,
                 val_by_date,
                 qty_by_date,
                 gap_by_date,
@@ -112,23 +113,22 @@ class CalendarGrid:
     @classmethod
     def _build_month(
         cls,
-        year: int,
+        boundary: YearBoundary,
         month: int,
-        today: date,
         val_by_date: dict[date, float],
         qty_by_date: dict[date, float],
         gap_by_date: dict[date, int],
         today_gap: int,
         quantity_title: str,
     ) -> CalendarMonthViewModel:
+        year = boundary.year
         first_day = date(year, month, 1)
         total_days = calendar.monthrange(year, month)[1]
 
         days = [
             cls._build_day(
-                year,
+                boundary,
                 date(year, month, day),
-                today,
                 val_by_date,
                 qty_by_date,
                 gap_by_date,
@@ -148,9 +148,8 @@ class CalendarGrid:
     @classmethod
     def _build_day(
         cls,
-        year: int,
+        boundary: YearBoundary,
         day_date: date,
-        today: date,
         val_by_date: dict[date, float],
         qty_by_date: dict[date, float],
         gap_by_date: dict[date, int],
@@ -160,7 +159,7 @@ class CalendarGrid:
         level = _calc_level(val_by_date.get(day_date, 0.0))
         qty = qty_by_date.get(day_date, 0.0)
         gap = gap_by_date.get(day_date, 0)
-        is_today = day_date == today
+        is_today = day_date == boundary.today
 
         if level == 0:
             if is_today:
@@ -181,7 +180,9 @@ class CalendarGrid:
             day=day_date.day,
             level=level,
             is_today=is_today,
-            is_future=day_date > today and year == today.year,
+            # past the end of the year on view: today's date in the year still
+            # running, nothing at all in one already finished
+            is_future=day_date > boundary.end_date,
             label=label,
             gap=gap,
         )
