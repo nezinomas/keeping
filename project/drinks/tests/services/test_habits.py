@@ -189,3 +189,32 @@ def test_build_on_a_year_with_no_drinks_does_not_raise(main_user):
 
     assert actual["chart_weekday"].intensity == [0.0] * 7
     assert actual["cards"][0].state == "empty"
+
+
+@pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
+@time_machine.travel("1999-06-01")
+def test_build_is_the_same_tab_under_every_drink_type(drink_type, main_user):
+    """Nothing on this tab follows the drink-type dropdown.
+
+    The rate is a ratio and the intensity is read against ``HEAVY_DAY_STDAV``, a
+    threshold defined in Std Av — so converting either would leave the plot line
+    marking a level the columns no longer measure.
+
+    This has to be asserted here rather than against ``HabitsBuilder``: the
+    builder is handed a ``FrequencyStats`` and never sees a drink type at all,
+    so a test that parametrizes one at that layer cannot fail. ``build`` is
+    where the drink type genuinely arrives — ``ConsumptionYear`` annotates
+    ``DataRow.qty`` off ``user.drink_type`` — so this is where the pin bites.
+    """
+    main_user.drink_type = drink_type
+    DrinkFactory(date=date(1999, 1, 4), stdav=7.9)  # a Monday
+
+    actual = HabitsTab.build(main_user, 1999)
+    chart = actual["chart_weekday"]
+
+    # 1 of the 22 Mondays reached by 1999-06-01, at 7.9 Std Av on the one
+    assert chart.drinking_day_share[0] == 4.5
+    assert chart.intensity[0] == 7.9
+    assert chart.text["intensity_unit"] == "Std Av"
+    assert chart.heavy_threshold == HEAVY_DAY_STDAV
+    assert actual["cards"][0].value == "7.9 Std Av"
