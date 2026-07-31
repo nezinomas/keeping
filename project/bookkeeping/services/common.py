@@ -1,16 +1,14 @@
-from datetime import datetime
+from datetime import date
+
+from ...core.lib.year_boundary import YearBoundary
 
 
-def average(qs):
-    now = datetime.now()
-    arr = []
+def average(qs, today: date | None = None):
+    """Yearly sums as monthly means, a running year divided by the months of it
+    that have happened."""
+    today = today or date.today()
 
-    for r in qs:
-        year = r["year"]
-        sum_val = float(r["sum"])
-
-        cnt = now.month if year == now.year else 12
-
-        arr.append(sum_val / cnt)
-
-    return arr
+    return [
+        float(r["sum"]) / YearBoundary.for_year(r["year"], today).end_date.month
+        for r in qs
+    ]

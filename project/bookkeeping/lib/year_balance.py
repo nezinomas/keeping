@@ -1,7 +1,6 @@
-from datetime import datetime
-
 import polars as pl
 
+from ...core.lib.year_boundary import YearBoundary
 from ..lib.make_dataframe import MakeDataFrame
 from .balance_base import BalanceBase
 
@@ -52,17 +51,17 @@ class YearBalance(BalanceBase):
 
     @property
     def avg_expenses(self) -> float:
-        _year = datetime.now().year
-        _month = datetime.now().month
+        boundary = YearBoundary.for_year(self.year)
 
-        # if  now().year == user.profile.year
-        # calculate average till current month
-        if self.year == _year:
+        # a year still running averages over the months it has reached; a
+        # finished one falls through to the base average over months with data
+        if boundary.is_current:
+            months = boundary.end_date.month
             # self._data is from base class
             df = self._data.select(
-                pl.col("expenses").filter(pl.col("date").dt.month() <= _month).sum()
+                pl.col("expenses").filter(pl.col("date").dt.month() <= months).sum()
             )
-            return df[0, 0] / _month
+            return df[0, 0] / months
 
         return super().average.get("expenses", 0)
 
