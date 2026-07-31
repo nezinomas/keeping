@@ -10,7 +10,6 @@ from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_options import DrinkConverter
-from ..lib.drinks_risk import HEAVY_DAY_STDAV
 from ..lib.drinks_stats import DrinkStats
 from . import stat_card
 from .consumption_year import ConsumptionYear
@@ -173,14 +172,15 @@ class IndexBuilder:
         return AlcoholViewModel(liters=self._converter.stdav_to_alcohol(stdav))
 
     def get_cards(self) -> list[StatCard]:
-        # the two averages sit side by side on purpose: one is spread over every
-        # day of the year, the other only over the days drunk on
+        # Drinking days stays here as the headline for the calendar grid below
+        # it; Intensity, the other half of the split, lives on the Habits tab,
+        # which is what keeps an Std Av figure from sitting beside an Avg per
+        # day that follows the drink-type dropdown
         return [
             self._card_dry_days(),
             self._card_drinking_days(),
             self._card_std_drinks(),
             self._card_avg_per_day(),
-            self._card_per_drinking_day(),
             self._card_pure_alcohol(),
         ]
 
@@ -227,34 +227,6 @@ class IndexBuilder:
             value=value,
             note=note,
             explanation=f"{definition} {arrow}",
-        )
-
-    def _card_per_drinking_day(self) -> StatCard:
-        title = _("Per drinking day")
-        intensity = self._frequency_stats.intensity
-
-        if not intensity:
-            return StatCard.empty(title, _("No data"))
-
-        # Intensity is a harm metric, so it stays in Std Av whatever the drink
-        # type dropdown says: the Heavy day threshold it is read against is
-        # defined there, and one decimal is what a Std Av needs to survive.
-        # Both the value and the note name the unit, because the Avg per day
-        # card next to this one does follow the dropdown.
-        definition = _(
-            "The year's Std Av divided by the days a Drink was recorded on, "
-            "not by every day of the year."
-        )
-        unit_note = _(
-            "Always in Std Av, because the Heavy day threshold is defined there."
-        )
-
-        return StatCard.level(
-            title,
-            state=stat_card.HIGH if intensity > HEAVY_DAY_STDAV else stat_card.LOW,
-            value=f"{intensity:.1f} Std Av",
-            note=f"{_('Heavy day')}: > {HEAVY_DAY_STDAV:.0f} Std Av",
-            explanation=f"{definition} {unit_note}",
         )
 
     def _card_std_drinks(self) -> StatCard:

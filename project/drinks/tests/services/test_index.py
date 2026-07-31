@@ -10,7 +10,6 @@ from project.drinks.lib.drinks_stats import DrinkStats
 from ....core.lib.calendar_grid import CalendarYearViewModel
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter
-from ...lib.drinks_risk import HEAVY_DAY_STDAV
 from ...lib.drinks_stats import DataRow
 from ...services.index_tab import (
     DryDaysViewModel,
@@ -190,10 +189,12 @@ def test_dry_days_view_model_has_data():
 # -------------------------------------------------------------------------------------
 #                                                          IndexBuilder.get_cards
 # -------------------------------------------------------------------------------------
-def test_get_cards_returns_six(main_user, drink_converter):
+def test_get_cards_returns_five(main_user, drink_converter):
+    # five plus the limit tile in index_summary.html makes six on the page; a
+    # sixth card here should have to argue with this test
     cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
 
-    assert len(cards) == 6
+    assert len(cards) == 5
     assert all(isinstance(c, StatCard) for c in cards)
 
 
@@ -205,9 +206,31 @@ def test_get_cards_order(main_user, drink_converter):
         _("Drinking days"),
         _("Std drinks"),
         _("Avg per day"),
-        _("Per drinking day"),
         _("Pure alcohol"),
     ]
+
+
+def test_get_cards_no_longer_carries_per_drinking_day(main_user, drink_converter):
+    # Intensity moved to the Habits tab: an Std Av figure must not sit beside
+    # Avg per day, which follows the drink-type dropdown
+    current = [_row(date(1999, 1, 1), 7.9)]
+
+    cards = _card_builder(
+        drink_converter, total_quantity=100.0, frequency_stats=_frequency(current)
+    ).get_cards()
+
+    assert _("Per drinking day") not in [c.title for c in cards]
+
+
+def test_get_cards_keeps_drinking_days(main_user, drink_converter):
+    # it stays: it is the headline for the calendar grid directly below it
+    current = [_row(date(1999, 1, 1), 7.9)]
+
+    cards = _card_builder(
+        drink_converter, total_quantity=100.0, frequency_stats=_frequency(current)
+    ).get_cards()
+
+    assert _("Drinking days") in [c.title for c in cards]
 
 
 @time_machine.travel("1999-01-05")
@@ -326,7 +349,7 @@ def test_card_avg_per_day_empty(main_user, drink_converter):
 
 
 def test_card_pure_alcohol_with_data(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[5]
+    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[4]
 
     assert card.state == "neutral"
     assert card.value == "2.5 L"  # 100 units -> 250 std av -> 2.5 L pure alcohol
@@ -334,7 +357,7 @@ def test_card_pure_alcohol_with_data(main_user, drink_converter):
 
 
 def test_card_pure_alcohol_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[5]
+    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[4]
 
     assert card.state == "empty"
     assert card.value == ""
@@ -419,84 +442,6 @@ def test_card_drinking_days_empty(main_user, drink_converter):
 
 
 # -------------------------------------------------------------------------------------
-#                                                                Per drinking day card
-# -------------------------------------------------------------------------------------
-def test_card_per_drinking_day_above_the_heavy_threshold(main_user, drink_converter):
-    current = [_row(date(1999, 1, 1), 7.9)]
-
-    card = _card_builder(
-        drink_converter, frequency_stats=_frequency(current)
-    ).get_cards()[4]
-
-    assert card.value == "7.9 Std Av"
-    assert card.note == f"{_('Heavy day')}: > {HEAVY_DAY_STDAV:.0f} Std Av"
-    assert card.state == "high"
-
-
-def test_card_per_drinking_day_below_the_heavy_threshold(main_user, drink_converter):
-    current = [_row(date(1999, 1, 1), 4.0)]
-
-    card = _card_builder(
-        drink_converter, frequency_stats=_frequency(current)
-    ).get_cards()[4]
-
-    assert card.value == "4.0 Std Av"
-    assert card.state == "low"
-
-
-def test_card_per_drinking_day_at_the_threshold_is_not_heavy(
-    main_user, drink_converter
-):
-    # the Heavy day rule is a strict `>`, and this card must not disagree with it
-    current = [_row(date(1999, 1, 1), HEAVY_DAY_STDAV)]
-
-    card = _card_builder(
-        drink_converter, frequency_stats=_frequency(current)
-    ).get_cards()[4]
-
-    assert card.state == "low"
-
-
-def test_card_per_drinking_day_explains_its_denominator_and_its_unit(
-    main_user, drink_converter
-):
-    # the note only carries the threshold, so the tooltip is where the card says
-    # what the figure is divided by and why it never follows the dropdown
-    current = [_row(date(1999, 1, 1), 7.9)]
-
-    card = _card_builder(
-        drink_converter, frequency_stats=_frequency(current)
-    ).get_cards()[4]
-
-    assert card.explanation == "{} {}".format(
-        _(
-            "The year's Std Av divided by the days a Drink was recorded on, "
-            "not by every day of the year."
-        ),
-        _("Always in Std Av, because the Heavy day threshold is defined there."),
-    )
-
-
-def test_card_per_drinking_day_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter, frequency_stats=_frequency()).get_cards()[4]
-
-    assert card.state == "empty"
-    assert card.value == ""
-    assert card.note == _("No data")
-    assert card.explanation == ""
-
-
-@pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
-def test_card_per_drinking_day_is_std_av_under_every_drink_type(drink_type, main_user):
-    converter = DrinkConverter(drink_type)
-    current = [_row(date(1999, 1, 1), 7.9, qty=7.9 * converter.ratio)]
-
-    card = _card_builder(converter, frequency_stats=_frequency(current)).get_cards()[4]
-
-    assert card.value == "7.9 Std Av"
-
-
-# -------------------------------------------------------------------------------------
 #                                                                         IndexTab.build
 # -------------------------------------------------------------------------------------
 @time_machine.travel("1999-06-01")
@@ -514,7 +459,7 @@ def test_index_tab_build_returns_expected_keys(main_user):
         "limit",
         "calendar",
     }
-    assert len(actual["cards"]) == 6
+    assert len(actual["cards"]) == 5
     assert all(isinstance(c, StatCard) for c in actual["cards"])
     assert isinstance(actual["limit"], LimitCardViewModel)
     assert isinstance(actual["calendar"], CalendarYearViewModel)
@@ -522,7 +467,8 @@ def test_index_tab_build_returns_expected_keys(main_user):
 
 @time_machine.travel("1999-06-01")
 def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
-    # two Drinks on one day and one on another: two Drinking days, 10 Std Av
+    # two Drinks on one day and one on another: two Drinking days, not three
+    # rows — the count DrinkStats' monthly rows could not have produced
     DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
     DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
     DrinkFactory(date=date(1999, 2, 20), stdav=5.0)
@@ -530,8 +476,7 @@ def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
 
     cards = IndexTab.build(main_user, 1999)["cards"]
 
-    assert cards[1].value == "2"  # Drinking days, not three rows
-    assert cards[4].value == "5.0 Std Av"  # 10 Std Av over 2 drinking days
+    assert cards[1].value == "2"
     assert cards[1].state == "worsening"  # 2 days against last year's 1
 
 
