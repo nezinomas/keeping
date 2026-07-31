@@ -60,6 +60,19 @@ not by the days in the year.
 _Avoid_: weekly pattern (that reads as the Risk tab's per-week totals), day
 breakdown
 
+**Typical year**:
+Twelve months pooled across several of a user's years, as both a Drinking-day
+rate and an Intensity — the same kind of shape as the Weekday profile, one
+period longer, and no year axis at all. Only years carrying a Drink contribute
+days to the denominator.
+_Avoid_: average year, seasonality, monthly totals (that is `sum_by_month`)
+
+**Pooled range**:
+The from-year and to-year a Typical year is drawn from. The user's choice, never
+the app's: it is what keeps a month-per-row era out of the profile without the
+app deciding whose years to trust. Always named on the chart it produced.
+_Avoid_: filter, period, span
+
 ### Goals
 
 **Drink Target**:
@@ -96,8 +109,9 @@ is fetched and reloaded independently.
 _Avoid_: page, panel, screen
 
 **Habits tab**:
-The drinks view for recurring shape — which days, how intensely, how long the
-gaps — as opposed to level (Overview), direction (Trends) or harm (Risk). English
+The drinks view for recurring shape — which days, how intensely, what a typical
+year looks like — as opposed to level (Overview), direction (Trends) or harm
+(Risk). English
 `msgid` `Habits`, Lithuanian `Įpročiai`.
 _Avoid_: Weeks (the Risk tab owns weekly vocabulary), Patterns, Rhythm
 
