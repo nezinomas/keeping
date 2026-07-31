@@ -1470,6 +1470,10 @@ msgstr "3 metų"
 msgid "7 years"
 msgstr "7 metų"
 
+#: .\drinks\templates\drinks\tab_habits.html:24
+msgid "5 years"
+msgstr "5 metų"
+
 #: .\drinks\templates\drinks\tab_history.html:20
 msgid "All years"
 msgstr "Visi metai"
