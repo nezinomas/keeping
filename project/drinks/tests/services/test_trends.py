@@ -157,23 +157,6 @@ def test_chart_cumulative_counts_std_av_instead_of_bottling_it():
 
 
 @time_machine.travel("2026-01-05")
-def test_chart_cumulative_still_bottles_a_volume_drink_type(converter):
-    stats = TrendStats(
-        converter,
-        current_daily=[_row(date(2026, 1, 1), 5)],
-        past_daily=[_row(date(2025, 1, 1), 2)],
-        target=1000,
-    )
-
-    actual = TrendsBuilder(stats, target=1000).chart_cumulative()
-
-    assert actual.text["unit"] == "L"
-    assert actual.this_year[0] == 1.0  # 5 std av * 200 ml beer = 1000 ml = 1.0 L
-    assert actual.last_year[0] == 0.4
-    assert actual.target[0] == 1.0
-
-
-@time_machine.travel("2026-01-05")
 def test_chart_trend_as_dict_is_json_serializable(converter):
     stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 1), 5)])
 

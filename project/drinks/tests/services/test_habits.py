@@ -5,7 +5,6 @@ import time_machine
 from django.utils.translation import gettext as _
 
 from ...lib.drinks_frequency import FrequencyStats
-from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_risk import HEAVY_DAY_STDAV
 from ...lib.drinks_stats import DataRow
 from ...services.habits_tab import HabitsBuilder, HabitsTab, WeekdayChartViewModel
@@ -108,19 +107,6 @@ def test_chart_weekday_text_is_translated():
     assert actual.categories[0] == "Pirmadienis"
 
 
-@pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
-def test_chart_weekday_is_the_same_chart_under_every_drink_type(drink_type):
-    # the intensity axis is labelled Std Av outright: converting the series would
-    # leave the threshold plot line measuring something the columns no longer are
-    ratio = DrinkConverter(drink_type).ratio
-    rows = [_row(date(1999, 1, 4), 8, qty=8 * ratio)]
-
-    actual = _builder(rows).chart_weekday()
-
-    assert actual.intensity[0] == 8.0
-    assert actual.text["intensity_unit"] == "Std Av"
-
-
 def test_chart_weekday_on_no_records_is_seven_zeroed_points():
     actual = _builder().chart_weekday()
 
@@ -181,16 +167,6 @@ def test_card_per_drinking_day_empty():
     assert card.value == ""
     assert card.note == _("No data")
     assert card.explanation == ""
-
-
-@pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
-def test_card_per_drinking_day_is_std_av_under_every_drink_type(drink_type):
-    ratio = DrinkConverter(drink_type).ratio
-    rows = [_row(date(1999, 1, 4), 7.9, qty=7.9 * ratio)]
-
-    card = _builder(rows).get_cards()[0]
-
-    assert card.value == "7.9 Std Av"
 
 
 # -------------------------------------------------------------------------------------

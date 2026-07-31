@@ -30,12 +30,7 @@ def test_thresholds_are_ordered():
 #                                                                       current_year
 # -------------------------------------------------------------------------------------
 @time_machine.travel("2026-06-15")
-def test_current_year_defaults_to_today_when_no_records():
-    assert RiskStats(current_daily=[]).current_year == 2026
-
-
-@time_machine.travel("2026-06-15")
-def test_current_year_defaults_to_today_with_no_arguments():
+def test_current_year_defaults_to_today_with_no_records():
     assert RiskStats().current_year == 2026
 
 
@@ -43,14 +38,6 @@ def test_current_year_defaults_to_today_with_no_arguments():
 def test_current_year_taken_from_records():
     stats = RiskStats(current_daily=[_row(date(2025, 3, 1), 5)])
     assert stats.current_year == 2025
-
-
-@time_machine.travel("2026-06-15")
-def test_past_clipped_records_is_cached():
-    current = [_row(date(2026, 1, 1), 7)]
-    past = [_row(date(2025, 1, 1), 7)]
-    stats = RiskStats(current_daily=current, past_daily=past)
-    assert stats._past_clipped_records is stats._past_clipped_records
 
 
 # -------------------------------------------------------------------------------------

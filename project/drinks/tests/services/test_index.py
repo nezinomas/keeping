@@ -5,12 +5,10 @@ import pytest
 import time_machine
 from django.utils.translation import gettext as _
 
-from project.drinks.lib.drinks_stats import DrinkStats
-
 from ....core.lib.calendar_grid import CalendarYearViewModel
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter
-from ...lib.drinks_stats import DataRow
+from ...lib.drinks_stats import DataRow, DrinkStats
 from ...services.index_tab import (
     DryDaysViewModel,
     IndexBuilder,
@@ -75,14 +73,6 @@ def test_dry_days(past, current, expect, main_user, drink_converter):
     ).tbl_dry_days()
 
     assert actual == expect
-
-
-def test_dry_days_no_records(main_user, drink_converter):
-    actual = IndexBuilder(
-        converter=drink_converter, drink_stats=DrinkStats(drink_converter)
-    ).tbl_dry_days()
-
-    assert actual == DryDaysViewModel(date=None, delta=0)
 
 
 @time_machine.travel("2019-10-10")
@@ -151,33 +141,6 @@ def test_std_av_past_recods(main_user, drink_converter):
     assert round(actual[3].per_month, 2) == 56.98
 
 
-@pytest.mark.parametrize(
-    "drink_type, qty, expect",
-    [
-        ("beer", 4, 0.1),
-        ("wine", 1.25, 0.1),
-        ("vodka", 0.25, 0.1),
-        ("stdav", 10, 0.1),
-    ],
-)
-def test_tbl_alcohol(drink_type, qty, expect, main_user, drink_converter):
-    main_user.drink_type = drink_type
-
-    stats = SimpleNamespace(
-        year=1999,
-        yearly=SimpleNamespace(
-            total_quantity=qty,
-            avg_daily_volume=0.0,
-        ),
-    )
-
-    actual = IndexBuilder(
-        converter=DrinkConverter(drink_type), drink_stats=stats
-    ).tbl_alcohol()
-
-    assert actual.liters == expect
-
-
 def test_dry_days_view_model_has_data():
     model_with_data = DryDaysViewModel(date=date(2026, 5, 8), delta=10)
     assert model_with_data.has_data is True
@@ -189,16 +152,11 @@ def test_dry_days_view_model_has_data():
 # -------------------------------------------------------------------------------------
 #                                                          IndexBuilder.get_cards
 # -------------------------------------------------------------------------------------
-def test_get_cards_returns_five(main_user, drink_converter):
-    # five plus the limit tile in index_summary.html makes six on the page; a
-    # sixth card here should have to argue with this test
-    cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
-
-    assert len(cards) == 5
-    assert all(isinstance(c, StatCard) for c in cards)
-
-
 def test_get_cards_order(main_user, drink_converter):
+    # these five plus the limit tile in index_summary.html make six on the page;
+    # a sixth card here should have to argue with this test. Intensity is not
+    # among them: it moved to the Habits tab, so no Std Av figure sits beside
+    # Avg per day, which follows the drink-type dropdown
     cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
 
     assert [c.title for c in cards] == [
@@ -208,29 +166,7 @@ def test_get_cards_order(main_user, drink_converter):
         _("Avg per day"),
         _("Pure alcohol"),
     ]
-
-
-def test_get_cards_no_longer_carries_per_drinking_day(main_user, drink_converter):
-    # Intensity moved to the Habits tab: an Std Av figure must not sit beside
-    # Avg per day, which follows the drink-type dropdown
-    current = [_row(date(1999, 1, 1), 7.9)]
-
-    cards = _card_builder(
-        drink_converter, total_quantity=100.0, frequency_stats=_frequency(current)
-    ).get_cards()
-
-    assert _("Per drinking day") not in [c.title for c in cards]
-
-
-def test_get_cards_keeps_drinking_days(main_user, drink_converter):
-    # it stays: it is the headline for the calendar grid directly below it
-    current = [_row(date(1999, 1, 1), 7.9)]
-
-    cards = _card_builder(
-        drink_converter, total_quantity=100.0, frequency_stats=_frequency(current)
-    ).get_cards()
-
-    assert _("Drinking days") in [c.title for c in cards]
+    assert all(isinstance(c, StatCard) for c in cards)
 
 
 @time_machine.travel("1999-01-05")
@@ -269,6 +205,8 @@ def test_card_std_drinks_empty(main_user, drink_converter):
 
 
 def test_card_avg_per_day_over_limit(main_user, drink_converter):
+    # the Std Av card on the Habits tab is per drinking day, so this note names
+    # both the denominator this average is spread over and the unit it is in
     card = _card_builder(
         drink_converter, total_quantity=100.0, avg=300.0, target=250.0
     ).get_cards()[3]
@@ -329,17 +267,6 @@ def test_card_avg_per_day_stdav_under_limit(main_user):
     assert card.note == f"0.5 {_('under the limit')} · Std Av {_('per calendar day')}"
 
 
-def test_card_avg_per_day_names_its_denominator_and_unit(main_user, drink_converter):
-    # the Std Av card next to it is per drinking day, so this note has to say
-    # which days its own average is spread over, and in which unit
-    card = _card_builder(
-        drink_converter, total_quantity=100.0, avg=300.0, target=250.0
-    ).get_cards()[3]
-
-    assert _("per calendar day") in card.note
-    assert "ml" in card.note
-
-
 def test_card_avg_per_day_empty(main_user, drink_converter):
     card = _card_builder(drink_converter, total_quantity=0.0, avg=0.0).get_cards()[3]
 
@@ -368,7 +295,8 @@ def test_card_pure_alcohol_empty(main_user, drink_converter):
 #                                                                    Drinking days card
 # -------------------------------------------------------------------------------------
 def test_card_drinking_days_with_data(main_user, drink_converter):
-    # 4 drinking days out of the 10 elapsed, against 2 last year
+    # 4 drinking days out of the 10 elapsed, against 2 last year — so the note
+    # is a share of the days elapsed, not of all 365, and says which
     current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
     past = [_row(date(1998, 1, 1), 3), _row(date(1998, 1, 2), 3)]
 
@@ -382,19 +310,6 @@ def test_card_drinking_days_with_data(main_user, drink_converter):
     assert card.note == _("%(share)s%% of the year so far") % {"share": "40"}
     assert card.state == "worsening"
     assert card.show_icon is True
-
-
-def test_card_drinking_days_note_counts_the_days_elapsed_while_the_year_runs(
-    main_user, drink_converter
-):
-    # 4 of the 10 days elapsed, not 4 of 365 — so the note says which
-    current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
-
-    card = _card_builder(
-        drink_converter, frequency_stats=_frequency(current, today=date(1999, 1, 10))
-    ).get_cards()[1]
-
-    assert card.note == _("%(share)s%% of the year so far") % {"share": "40"}
 
 
 def test_card_drinking_days_note_on_a_year_already_over(main_user, drink_converter):

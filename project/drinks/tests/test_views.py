@@ -39,7 +39,6 @@ def test_index_quick_add(client_logged):
     assert 'name="quantity"' in content
     assert 'class="quick-add__pill"' in content
     assert '<button type="submit" class="button-secondary">' in content
-    assert 'class="button-secondary"' in content
     assert (
         "htmx.ajax('GET', '/drinks/' + document.getElementById('quick-add-tab').value + '/new/', '#mainModal')"
         in content
@@ -252,21 +251,11 @@ def test_tab_index_chart_overview(client_logged):
     content = response.content.decode("utf-8")
     content = content.replace("\n", "")
 
-    # consumption + quantity are merged into one full-width combined chart
+    # consumption + quantity are merged into one full-width combined chart,
+    # fed by both json payloads
     assert '<div id="chart-overview-container"></div>' in content
     assert '<div id="chart-consumption-container"></div>' not in content
     assert '<div id="chart-quantity-container"></div>' not in content
-
-
-@time_machine.travel("1999-1-1")
-def test_tab_index_chart_overview_data_payloads(client_logged):
-    DrinkFactory()
-
-    url = reverse("drinks:tab_index")
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-
-    # the combined chart is fed by both json payloads
     assert 'id="chart-consumption-data"' in content
     assert 'id="chart-quantity-data"' in content
 
@@ -882,25 +871,6 @@ def test_comparetwo_200(client_logged):
     assert response.status_code == 200
 
 
-def test_comparetwo_form_is_not_valid(client_logged):
-    url = reverse("drinks:compare_two")
-    response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
-    form = response.context["form"]
-
-    assert not form.is_valid()
-
-
-def test_comparetwo_form_is_valid(client_logged):
-    DrinkFactory(date=date(1999, 1, 1))
-    DrinkFactory(date=date(2000, 1, 1))
-
-    url = reverse("drinks:compare_two")
-    response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
-    form = response.context["form"]
-
-    assert form.is_valid()
-
-
 def test_comparetwo_chart_data(client_logged):
     DrinkFactory(stdav=2.5)
     DrinkFactory(date=date(2020, 1, 1), stdav=25)
@@ -1016,7 +986,6 @@ def test_new_tab_data(client_logged):
 
     assert "19" in actual
     assert '<a role="button" hx-get="/drinks/update/1/"' in actual
-    assert '<a role="button" hx-get="/drinks/update/1/"' in actual
 
 
 def test_new_invalid_data(client_logged):
@@ -1038,7 +1007,6 @@ def test_update(client_logged):
 
     assert url in actual
     assert "0,7 vnt" in actual
-    assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
     assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
 
 

@@ -44,24 +44,6 @@ def test_drink_items(main_user, second_user):
     assert actual[0].user.username == "bob"
 
 
-def test_drink_items_different_counters(main_user, second_user):
-    DrinkFactory()
-    DrinkFactory(user=second_user)
-
-    actual = DrinkModelService(main_user).items()
-
-    assert len(actual) == 1
-
-
-def test_drink_items_different_counters_default_value(main_user, second_user):
-    DrinkFactory()
-    DrinkFactory(user=second_user)
-
-    actual = DrinkModelService(main_user).items()
-
-    assert len(actual) == 1
-
-
 def test_drink_year(main_user, second_user):
     DrinkFactory()
     DrinkFactory(user=second_user)
