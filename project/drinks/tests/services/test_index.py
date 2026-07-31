@@ -8,7 +8,10 @@ from django.utils.translation import gettext as _
 from project.drinks.lib.drinks_stats import DrinkStats
 
 from ....core.lib.calendar_grid import CalendarYearViewModel
+from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter
+from ...lib.drinks_risk import HEAVY_DAY_STDAV
+from ...lib.drinks_stats import DataRow
 from ...services.index_tab import (
     DryDaysViewModel,
     IndexBuilder,
@@ -24,6 +27,14 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(name="drink_converter")
 def fixture_drink_converter():
     return DrinkConverter("beer")
+
+
+def _row(dt: date, stdav: float, qty: float = 0.0) -> DataRow:
+    return DataRow(date=dt, stdav=stdav, qty=qty)
+
+
+def _frequency(current=(), past=(), today=date(1999, 1, 10)) -> FrequencyStats:
+    return FrequencyStats(current_daily=current, past_daily=past, today=today)
 
 
 def _card_builder(drink_converter, total_quantity=0.0, avg=0.0, target=0.0, **kwargs):
@@ -179,11 +190,24 @@ def test_dry_days_view_model_has_data():
 # -------------------------------------------------------------------------------------
 #                                                          IndexBuilder.get_cards
 # -------------------------------------------------------------------------------------
-def test_get_cards_returns_four(main_user, drink_converter):
+def test_get_cards_returns_six(main_user, drink_converter):
     cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
 
-    assert len(cards) == 4
+    assert len(cards) == 6
     assert all(isinstance(c, StatCard) for c in cards)
+
+
+def test_get_cards_order(main_user, drink_converter):
+    cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
+
+    assert [c.title for c in cards] == [
+        _("Days dry"),
+        _("Drinking days"),
+        _("Std drinks"),
+        _("Avg per day"),
+        _("Per drinking day"),
+        _("Pure alcohol"),
+    ]
 
 
 @time_machine.travel("1999-01-05")
@@ -206,7 +230,7 @@ def test_card_dry_days_empty(main_user, drink_converter):
 
 
 def test_card_std_drinks_with_data(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[1]
+    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[2]
 
     assert card.state == "neutral"
     assert card.value == "250"  # 100 units * 2.5 std av per beer
@@ -214,7 +238,7 @@ def test_card_std_drinks_with_data(main_user, drink_converter):
 
 
 def test_card_std_drinks_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[1]
+    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[2]
 
     assert card.state == "empty"
     assert card.value == ""
@@ -224,66 +248,77 @@ def test_card_std_drinks_empty(main_user, drink_converter):
 def test_card_avg_per_day_over_limit(main_user, drink_converter):
     card = _card_builder(
         drink_converter, total_quantity=100.0, avg=300.0, target=250.0
-    ).get_cards()[2]
+    ).get_cards()[3]
 
     assert card.state == "high"
     assert card.value == "300 ml"
-    assert card.note == "50 ml " + _("over the limit")
+    assert card.note == f"50 {_('over the limit')} · ml {_('per calendar day')}"
 
 
 def test_card_avg_per_day_under_limit(main_user, drink_converter):
     card = _card_builder(
         drink_converter, total_quantity=100.0, avg=300.0, target=400.0
-    ).get_cards()[2]
+    ).get_cards()[3]
 
     assert card.state == "low"
     assert card.value == "300 ml"
-    assert card.note == "100 ml " + _("under the limit")
+    assert card.note == f"100 {_('under the limit')} · ml {_('per calendar day')}"
 
 
 def test_card_avg_per_day_equal_limit_is_positive(main_user, drink_converter):
     card = _card_builder(
         drink_converter, total_quantity=100.0, avg=250.0, target=250.0
-    ).get_cards()[2]
+    ).get_cards()[3]
 
     assert card.state == "low"
-    assert card.note == "0 ml " + _("under the limit")
+    assert card.note == f"0 {_('under the limit')} · ml {_('per calendar day')}"
 
 
 def test_card_avg_per_day_no_limit(main_user, drink_converter):
     card = _card_builder(
         drink_converter, total_quantity=100.0, avg=300.0, target=0.0
-    ).get_cards()[2]
+    ).get_cards()[3]
 
     assert card.state == "neutral"
     assert card.value == "300 ml"
-    assert card.note == _("No limit set")
+    assert card.note == f"{_('No limit set')} · ml {_('per calendar day')}"
 
 
 def test_card_avg_per_day_stdav_over_limit(main_user):
     converter = DrinkConverter("stdav")
     card = _card_builder(
         converter, total_quantity=100.0, avg=3.0, target=2.5
-    ).get_cards()[2]
+    ).get_cards()[3]
 
     assert card.state == "high"
     assert card.value == "3.0"
-    assert card.note == "0.5 " + _("over the limit")
+    assert card.note == f"0.5 {_('over the limit')} · Std Av {_('per calendar day')}"
 
 
 def test_card_avg_per_day_stdav_under_limit(main_user):
     converter = DrinkConverter("stdav")
     card = _card_builder(
         converter, total_quantity=100.0, avg=2.0, target=2.5
-    ).get_cards()[2]
+    ).get_cards()[3]
 
     assert card.state == "low"
     assert card.value == "2.0"
-    assert card.note == "0.5 " + _("under the limit")
+    assert card.note == f"0.5 {_('under the limit')} · Std Av {_('per calendar day')}"
+
+
+def test_card_avg_per_day_names_its_denominator_and_unit(main_user, drink_converter):
+    # the Std Av card next to it is per drinking day, so this note has to say
+    # which days its own average is spread over, and in which unit
+    card = _card_builder(
+        drink_converter, total_quantity=100.0, avg=300.0, target=250.0
+    ).get_cards()[3]
+
+    assert _("per calendar day") in card.note
+    assert "ml" in card.note
 
 
 def test_card_avg_per_day_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=0.0, avg=0.0).get_cards()[2]
+    card = _card_builder(drink_converter, total_quantity=0.0, avg=0.0).get_cards()[3]
 
     assert card.state == "empty"
     assert card.value == ""
@@ -291,7 +326,7 @@ def test_card_avg_per_day_empty(main_user, drink_converter):
 
 
 def test_card_pure_alcohol_with_data(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[3]
+    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[5]
 
     assert card.state == "neutral"
     assert card.value == "2.5 L"  # 100 units -> 250 std av -> 2.5 L pure alcohol
@@ -299,11 +334,142 @@ def test_card_pure_alcohol_with_data(main_user, drink_converter):
 
 
 def test_card_pure_alcohol_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[3]
+    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[5]
 
     assert card.state == "empty"
     assert card.value == ""
     assert card.note == _("No data")
+
+
+# -------------------------------------------------------------------------------------
+#                                                                    Drinking days card
+# -------------------------------------------------------------------------------------
+def test_card_drinking_days_with_data(main_user, drink_converter):
+    # 4 drinking days out of the 10 elapsed, against 2 last year
+    current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
+    past = [_row(date(1998, 1, 1), 3), _row(date(1998, 1, 2), 3)]
+
+    card = _card_builder(
+        drink_converter,
+        total_quantity=100.0,
+        frequency_stats=_frequency(current, past),
+    ).get_cards()[1]
+
+    assert card.value == "4"
+    assert card.note == _("%(share)s%% of the year") % {"share": "40"}
+    assert card.state == "worsening"
+    assert card.show_icon is True
+
+
+def test_card_drinking_days_fewer_than_last_year_is_improving(
+    main_user, drink_converter
+):
+    current = [_row(date(1999, 1, 1), 3)]
+    past = [_row(date(1998, 1, 1), 3), _row(date(1998, 1, 2), 3)]
+
+    card = _card_builder(
+        drink_converter, frequency_stats=_frequency(current, past)
+    ).get_cards()[1]
+
+    assert card.state == "improving"
+
+
+def test_card_drinking_days_without_a_prior_year(main_user, drink_converter):
+    current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
+
+    card = _card_builder(
+        drink_converter, frequency_stats=_frequency(current)
+    ).get_cards()[1]
+
+    assert card.value == "4"
+    assert card.state == "neutral"
+    assert card.show_icon is False
+
+
+def test_card_drinking_days_empty(main_user, drink_converter):
+    card = _card_builder(drink_converter, frequency_stats=_frequency()).get_cards()[1]
+
+    assert card.state == "empty"
+    assert card.value == ""
+    assert card.note == _("No data")
+
+
+# -------------------------------------------------------------------------------------
+#                                                                Per drinking day card
+# -------------------------------------------------------------------------------------
+def test_card_per_drinking_day_above_the_heavy_threshold(main_user, drink_converter):
+    current = [_row(date(1999, 1, 1), 7.9)]
+
+    card = _card_builder(
+        drink_converter, frequency_stats=_frequency(current)
+    ).get_cards()[4]
+
+    assert card.value == "7.9 Std Av"
+    assert card.note == f"{_('Heavy day')}: > {HEAVY_DAY_STDAV:.0f} Std Av"
+    assert card.state == "high"
+
+
+def test_card_per_drinking_day_below_the_heavy_threshold(main_user, drink_converter):
+    current = [_row(date(1999, 1, 1), 4.0)]
+
+    card = _card_builder(
+        drink_converter, frequency_stats=_frequency(current)
+    ).get_cards()[4]
+
+    assert card.value == "4.0 Std Av"
+    assert card.state == "low"
+
+
+def test_card_per_drinking_day_at_the_threshold_is_not_heavy(
+    main_user, drink_converter
+):
+    # the Heavy day rule is a strict `>`, and this card must not disagree with it
+    current = [_row(date(1999, 1, 1), HEAVY_DAY_STDAV)]
+
+    card = _card_builder(
+        drink_converter, frequency_stats=_frequency(current)
+    ).get_cards()[4]
+
+    assert card.state == "low"
+
+
+def test_card_per_drinking_day_explains_its_denominator_and_its_unit(
+    main_user, drink_converter
+):
+    # the note only carries the threshold, so the tooltip is where the card says
+    # what the figure is divided by and why it never follows the dropdown
+    current = [_row(date(1999, 1, 1), 7.9)]
+
+    card = _card_builder(
+        drink_converter, frequency_stats=_frequency(current)
+    ).get_cards()[4]
+
+    assert card.explanation == "{} {}".format(
+        _(
+            "The year's Std Av divided by the days a Drink was recorded on, "
+            "not by every day of the year."
+        ),
+        _("Always in Std Av, because the Heavy day threshold is defined there."),
+    )
+
+
+def test_card_per_drinking_day_empty(main_user, drink_converter):
+    card = _card_builder(drink_converter, frequency_stats=_frequency()).get_cards()[4]
+
+    assert card.state == "empty"
+    assert card.value == ""
+    assert card.note == _("No data")
+    assert card.explanation == ""
+
+
+@pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
+def test_card_per_drinking_day_is_std_av_under_every_drink_type(drink_type, main_user):
+    converter = DrinkConverter(drink_type)
+    current = [_row(date(1999, 1, 1), 7.9, qty=7.9 * converter.ratio)]
+
+    card = _card_builder(converter, frequency_stats=_frequency(current)).get_cards()[4]
+
+    assert card.value == "7.9 Std Av"
 
 
 # -------------------------------------------------------------------------------------
@@ -324,10 +490,25 @@ def test_index_tab_build_returns_expected_keys(main_user):
         "limit",
         "calendar",
     }
-    assert len(actual["cards"]) == 4
+    assert len(actual["cards"]) == 6
     assert all(isinstance(c, StatCard) for c in actual["cards"])
     assert isinstance(actual["limit"], LimitCardViewModel)
     assert isinstance(actual["calendar"], CalendarYearViewModel)
+
+
+@time_machine.travel("1999-06-01")
+def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
+    # two Drinks on one day and one on another: two Drinking days, 10 Std Av
+    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
+    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
+    DrinkFactory(date=date(1999, 2, 20), stdav=5.0)
+    DrinkFactory(date=date(1998, 1, 10), stdav=2.5)
+
+    cards = IndexTab.build(main_user, 1999)["cards"]
+
+    assert cards[1].value == "2"  # Drinking days, not three rows
+    assert cards[4].value == "5.0 Std Av"  # 10 Std Av over 2 drinking days
+    assert cards[1].state == "worsening"  # 2 days against last year's 1
 
 
 @time_machine.travel("1999-06-01")

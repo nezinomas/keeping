@@ -8,7 +8,9 @@ from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.date import ydays, years
 from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
+from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_options import DrinkConverter
+from ..lib.drinks_risk import HEAVY_DAY_STDAV
 from ..lib.drinks_stats import DrinkStats
 from . import stat_card
 from .consumption_year import ConsumptionYear
@@ -80,6 +82,11 @@ class IndexTab:
         builder = IndexBuilder(
             converter=records.converter,
             drink_stats=DrinkStats(records.converter, records.monthly),
+            # counting Drinking days needs the daily rows, which DrinkStats is
+            # not given and must not be widened to carry
+            frequency_stats=FrequencyStats(
+                current_daily=records.daily, past_daily=records.previous.daily
+            ),
             target=target.qty,
             latest_past_date=records.last_recorded_date_before,
             latest_current_date=records.last_recorded_date,
@@ -115,6 +122,7 @@ class IndexBuilder:
         self,
         converter: DrinkConverter,
         drink_stats: DrinkStats,
+        frequency_stats: FrequencyStats | None = None,
         target: float = 0.0,
         latest_past_date: dt_date | None = None,
         latest_current_date: dt_date | None = None,
@@ -125,6 +133,7 @@ class IndexBuilder:
         self._latest_current_date = latest_current_date
         self._today = today or datetime.now().date()
         self._drink_stats = drink_stats
+        self._frequency_stats = frequency_stats or FrequencyStats()
         self._converter = converter
 
     def chart_quantity(self) -> ChartViewModel:
@@ -164,10 +173,14 @@ class IndexBuilder:
         return AlcoholViewModel(liters=self._converter.stdav_to_alcohol(stdav))
 
     def get_cards(self) -> list[StatCard]:
+        # the two averages sit side by side on purpose: one is spread over every
+        # day of the year, the other only over the days drunk on
         return [
             self._card_dry_days(),
+            self._card_drinking_days(),
             self._card_std_drinks(),
             self._card_avg_per_day(),
+            self._card_per_drinking_day(),
             self._card_pure_alcohol(),
         ]
 
@@ -182,6 +195,61 @@ class IndexBuilder:
             title=title,
             value=str(dry.delta),
             note=dry.date.strftime("%Y-%m-%d"),
+        )
+
+    def _card_drinking_days(self) -> StatCard:
+        title = _("Drinking days")
+        frequency = self._frequency_stats
+
+        if not frequency.drinking_days:
+            return StatCard.empty(title, _("No data"))
+
+        value = str(frequency.drinking_days)
+        note = _("%(share)s%% of the year") % {
+            "share": f"{frequency.drinking_day_share * 100:.0f}"
+        }
+        definition = _("Calendar days with at least one Drink recorded.")
+        comparison = frequency.compare_frequency()
+
+        if not comparison.has_past:
+            return StatCard(title=title, value=value, note=note, explanation=definition)
+
+        arrow = _("The arrow compares with last year, up to the same date.")
+
+        return StatCard.comparison(
+            title,
+            improving=comparison.improving,
+            value=value,
+            note=note,
+            explanation=f"{definition} {arrow}",
+        )
+
+    def _card_per_drinking_day(self) -> StatCard:
+        title = _("Per drinking day")
+        intensity = self._frequency_stats.intensity
+
+        if not intensity:
+            return StatCard.empty(title, _("No data"))
+
+        # Intensity is a harm metric, so it stays in Std Av whatever the drink
+        # type dropdown says: the Heavy day threshold it is read against is
+        # defined there, and one decimal is what a Std Av needs to survive.
+        # Both the value and the note name the unit, because the Avg per day
+        # card next to this one does follow the dropdown.
+        definition = _(
+            "The year's Std Av divided by the days a Drink was recorded on, "
+            "not by every day of the year."
+        )
+        unit_note = _(
+            "Always in Std Av, because the Heavy day threshold is defined there."
+        )
+
+        return StatCard.level(
+            title,
+            state=stat_card.HIGH if intensity > HEAVY_DAY_STDAV else stat_card.LOW,
+            value=f"{intensity:.1f} Std Av",
+            note=f"{_('Heavy day')}: > {HEAVY_DAY_STDAV:.0f} Std Av",
+            explanation=f"{definition} {unit_note}",
         )
 
     def _card_std_drinks(self) -> StatCard:
@@ -202,31 +270,36 @@ class IndexBuilder:
         if not self._drink_stats.yearly.total_quantity:
             return StatCard.empty(title, _("No data"))
 
+        unit = self._converter.display_unit
+        decimals = self._converter.display_decimals
+
         if self._converter.drink_type == "stdav":
+            # Std Av is shown as typed, so the value carries no unit suffix
             avg = getattr(self._drink_stats.yearly, "avg_daily_stdav", 0.0)
-            unit = ""
-            value = f"{avg:.1f}"
+            value = f"{avg:.{decimals}f}"
         else:
             avg = self._drink_stats.yearly.avg_daily_volume
-            unit = " ml"
-            value = f"{avg:.0f}{unit}"
+            value = f"{avg:.{decimals}f} {unit}"
+
+        # the Per drinking day card beside this one is Std Av over a different
+        # denominator, so this note names both of its own
+        denominator = f"{unit} {_('per calendar day')}"
 
         if not self._target:
-            return StatCard(title=title, value=value, note=_("No limit set"))
+            return StatCard(
+                title=title, value=value, note=f"{_('No limit set')} · {denominator}"
+            )
 
         under_limit = avg <= self._target
         diff = abs(self._target - avg)
-
-        fmt = ".1f" if self._converter.drink_type == "stdav" else ".0f"
-        diff_str = f"{diff:{fmt}}{unit}"
+        direction = _("under the limit") if under_limit else _("over the limit")
 
         # a daily average is read against the Drink Target, so it is a level
         return StatCard.level(
             title,
             state=stat_card.LOW if under_limit else stat_card.HIGH,
             value=value,
-            note=f"{diff_str} "
-            + (_("under the limit") if under_limit else _("over the limit")),
+            note=f"{diff:.{decimals}f} {direction} · {denominator}",
         )
 
     def _card_pure_alcohol(self) -> StatCard:
