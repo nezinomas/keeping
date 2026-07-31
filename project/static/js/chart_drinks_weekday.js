@@ -1,6 +1,13 @@
 function chartDrinksWeekday(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
+    // each axis wears its own series' colour, so a reader never has to work out
+    // which scale the columns are on and which one the line is on. Declared
+    // once here rather than twice, because an axis in one colour and its series
+    // in another is worse than neither being coloured at all
+    const rateColor = "var(--chart-color-0)";
+    const intensityColor = "var(--chart-color-6)";
+
     Highcharts.chart(idContainer, {
         chart: {
             height: "350px",
@@ -23,7 +30,11 @@ function chartDrinksWeekday(idData, idContainer) {
                 // make a Saturday drunk on every week look like there is room
                 // above it
                 title: {
-                    text: chartData.text.share_unit
+                    text: chartData.text.share_unit,
+                    style: { color: rateColor },
+                },
+                labels: {
+                    style: { color: rateColor },
                 },
                 min: 0,
                 max: 100,
@@ -33,7 +44,11 @@ function chartDrinksWeekday(idData, idContainer) {
                 // plot line below is defined in Std Av, and a converted series
                 // would leave it marking a level the columns no longer measure
                 title: {
-                    text: chartData.text.intensity_unit
+                    text: chartData.text.intensity_unit,
+                    style: { color: intensityColor },
+                },
+                labels: {
+                    style: { color: intensityColor },
                 },
                 min: 0,
                 opposite: true,
@@ -73,7 +88,7 @@ function chartDrinksWeekday(idData, idContainer) {
                 name: chartData.text.share,
                 data: chartData.drinking_day_share,
                 yAxis: 0,
-                color: "var(--chart-color-0)",
+                color: rateColor,
                 tooltip: {
                     valueSuffix: ` ${chartData.text.share_unit}`
                 },
@@ -86,7 +101,7 @@ function chartDrinksWeekday(idData, idContainer) {
                 name: chartData.text.intensity,
                 data: chartData.intensity,
                 yAxis: 1,
-                color: "var(--chart-color-6)",
+                color: intensityColor,
                 lineWidth: 2,
                 marker: {
                     enabled: true,

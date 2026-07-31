@@ -1,6 +1,8 @@
 function chartTrend(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
+    const dailyColor = "var(--chart-color-9)";
+
     const plotLines = (chartData.target !== null) ? [
     {
         color: "#333",
@@ -45,6 +47,9 @@ function chartTrend(idData, idContainer) {
         // the Limit. Both carry the SAME unit, so relative heights across the two
         // axes mean nothing — the shared tooltip is what carries comparable numbers.
         yAxis: [{
+            // left stays in default ink: it carries both rolling averages, in
+            // two different colours, so tinting it after either one would claim
+            // the scale for that series alone
             title: {
                 text: chartData.text.unit
             },
@@ -52,8 +57,13 @@ function chartTrend(idData, idContainer) {
             plotLines: plotLines,
         },
         {
+            // the right axis has one series, so it wears its colour
             title: {
-                text: `${chartData.text.daily}, ${chartData.text.unit}`
+                text: `${chartData.text.daily}, ${chartData.text.unit}`,
+                style: { color: dailyColor },
+            },
+            labels: {
+                style: { color: dailyColor },
             },
             min: 0,
             opposite: true,
@@ -73,7 +83,7 @@ function chartTrend(idData, idContainer) {
             name: chartData.text.daily,
             data: chartData.daily,
             yAxis: 1,
-            color: "var(--chart-color-9)",
+            color: dailyColor,
             opacity: 0.65,
             legendIndex: 2,
             borderWidth: 0,
