@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from django.urls import reverse, reverse_lazy
 
-TAB_NAMES = ("index", "data", "history", "trends", "risk")
+TAB_NAMES = ("index", "data", "history", "trends", "risk", "habits")
 DEFAULT_TAB = "index"
 
 

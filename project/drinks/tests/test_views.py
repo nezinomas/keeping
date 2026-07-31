@@ -79,21 +79,24 @@ def test_index_links(client_logged):
     )
     res = re.findall(pattern, content)
 
-    assert len(res) == 5
+    assert len(res) == 6
     assert res[0][0] == reverse("drinks:tab_index")
     assert res[0][1] == "Apžvalga"
 
-    assert res[1][0] == reverse("drinks:tab_trends")
-    assert res[1][1] == "Tendencijos"
+    assert res[1][0] == reverse("drinks:tab_habits")
+    assert res[1][1] == "Įpročiai"
 
-    assert res[2][0] == reverse("drinks:tab_risk")
-    assert res[2][1] == "Rizikos"
+    assert res[2][0] == reverse("drinks:tab_trends")
+    assert res[2][1] == "Tendencijos"
 
-    assert res[3][0] == reverse("drinks:tab_history")
-    assert res[3][1] == "Istorija"
+    assert res[3][0] == reverse("drinks:tab_risk")
+    assert res[3][1] == "Rizikos"
 
-    assert res[4][0] == reverse("drinks:tab_data")
-    assert res[4][1] == "Duomenys"
+    assert res[4][0] == reverse("drinks:tab_history")
+    assert res[4][1] == "Istorija"
+
+    assert res[5][0] == reverse("drinks:tab_data")
+    assert res[5][1] == "Duomenys"
 
 
 def test_index_context(client_logged):
@@ -337,6 +340,91 @@ def test_tab_index_chart_consumption_limit(
     actual = response.context["chart_consumption"].target
 
     assert expect == round(actual, 0)
+
+
+# -------------------------------------------------------------------------------------
+#                                                                        TabHabits View
+# -------------------------------------------------------------------------------------
+def test_tab_habits_func():
+    view = resolve("/drinks/habits/")
+
+    assert views.TabHabits == view.func.view_class
+
+
+def test_tab_habits_200(client_logged):
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_tab_habits_context_tab_value(client_logged):
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+
+    assert response.context["tab"] == "habits"
+
+
+def test_tab_habits_context(client_logged):
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+
+    assert "chart_weekday" in response.context
+    assert "cards" in response.context
+
+
+def test_tab_habits_renders_chart_data(client_logged):
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+
+    assert 'id="chart-weekday-data"' in response.content.decode()
+
+
+def test_tab_habits_keeps_the_drink_type_dropdown(client_logged):
+    # nothing on this tab follows the dropdown, but the navbar carries it, and
+    # switching type from here has to come back here rather than to Overview
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert 'data-tab="habits"' in content
+    assert "?tab=habits" in content
+
+
+@time_machine.travel("1999-06-01")
+def test_tab_habits_renders_cards_with_data(client_logged):
+    DrinkFactory(date=date(1999, 1, 4), stdav=7.9)
+
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    assert content.count('class="trend-card"') == len(response.context["cards"])
+
+
+@pytest.mark.parametrize(
+    "tab, active",
+    [
+        ("tab_index", False),
+        ("tab_habits", True),
+        ("tab_trends", False),
+        ("tab_risk", False),
+        ("tab_history", False),
+        ("tab_data", False),
+    ],
+)
+def test_habits_link_is_on_every_tab_and_active_only_on_its_own(
+    tab, active, client_logged
+):
+    response = client_logged.get(reverse(f"drinks:{tab}"))
+    content = response.content.decode()
+
+    habits_link = f'hx-get="{reverse("drinks:tab_habits")}"'
+
+    assert habits_link in content
+    marked_active = f'class="tab active"\n        {habits_link}' in content
+    assert marked_active is active
 
 
 # -------------------------------------------------------------------------------------

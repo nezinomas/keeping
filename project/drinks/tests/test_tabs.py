@@ -12,8 +12,10 @@ def test_resolve_keeps_a_known_tab(name):
     assert DrinkTabs.resolve(name).name == name
 
 
-@pytest.mark.parametrize("raw", ["xxx", "", None, "Index", "target"])
+@pytest.mark.parametrize("raw", ["xxx", "", None, "Index", "target", "Habits"])
 def test_resolve_falls_back_for_an_unknown_tab(raw):
+    # the default is Overview, and adding a tab must not quietly become the
+    # place an unrecognised value lands
     assert DrinkTabs.resolve(raw).name == "index"
 
 
@@ -39,6 +41,7 @@ def test_an_explicit_default_does_not_override_a_known_tab():
         ("history", "reloadHistory"),
         ("trends", "reloadTrends"),
         ("risk", "reloadRisk"),
+        ("habits", "reloadHabits"),
     ],
 )
 def test_reload_trigger(name, expect):
@@ -64,6 +67,7 @@ def test_every_tab_has_a_distinct_trigger():
         ("history", "/drinks/history/"),
         ("trends", "/drinks/trends/"),
         ("risk", "/drinks/risk/"),
+        ("habits", "/drinks/habits/"),
     ],
 )
 def test_url_resolves_for_every_tab(name, expect):

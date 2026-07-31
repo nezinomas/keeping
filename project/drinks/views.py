@@ -66,6 +66,23 @@ class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
+class TabHabits(DrinkTypeContextMixin, TemplateViewMixin):
+    # every figure on this tab is a count, a ratio or a Std Av harm metric, so
+    # none of them follows the dropdown — but the dropdown is in the navbar of
+    # every tab, so the mixin that fills it is not optional here either
+    template_name = "drinks/tab_habits.html"
+
+    def get_context_data(self, **kwargs):
+        user = cast(User, self.request.user)
+        year = cast(int, user.year)
+
+        return {
+            **super().get_context_data(**kwargs),
+            **{"tab": "habits"},
+            **services.HabitsTab.build(user, year),
+        }
+
+
 class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_trends.html"
 

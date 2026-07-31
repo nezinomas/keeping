@@ -194,6 +194,34 @@
 }
 
 
+// Habits grid
+.habits-grid {
+    @include grid-template;
+
+    // every container gets a named area: the tab grows by a chart per ticket
+    // (dry runs, typical year), and implicit flow would place each new one
+    // wherever the markup happened to put it
+    grid-template-areas:
+        "habits-summary"
+        "chart-weekday-container"
+    ;
+
+    > #habits-summary {
+        grid-area: habits-summary;
+        display: flex;
+        gap: $gap;
+
+        > * {
+            flex: 1;
+        }
+    }
+
+    > #chart-weekday-container {
+        grid-area: chart-weekday-container;
+    }
+}
+
+
 // Risk grid
 .risk-grid {
     @include grid-template;

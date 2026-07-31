@@ -1,0 +1,14 @@
+{% load i18n %}
+{% load static %}
+
+{% include 'drinks/includes/navbar.html' %}
+
+<main class="habits-grid">
+    <div id="habits-summary">
+        {% include 'drinks/includes/stat_cards.html' %}
+    </div>
+
+    <div id="chart-weekday-container"></div>
+</main>
+
+{{chart_weekday.as_dict|json_script:"chart-weekday-data"}}
