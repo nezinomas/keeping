@@ -41,11 +41,6 @@ class DryDaysViewModel:
 
 
 @dataclass(frozen=True)
-class AlcoholViewModel:
-    liters: float
-
-
-@dataclass(frozen=True)
 class LimitCardViewModel:
     has_data: bool = False
     ml: float = 0.0
@@ -166,10 +161,6 @@ class IndexBuilder:
             return DryDaysViewModel(date=latest, delta=delta)
 
         return DryDaysViewModel()
-
-    def tbl_alcohol(self) -> AlcoholViewModel:
-        stdav = self._drink_stats.yearly.total_quantity / self._converter.ratio
-        return AlcoholViewModel(liters=self._converter.stdav_to_alcohol(stdav))
 
     def get_cards(self) -> list[StatCard]:
         # Drinking days stays here as the headline for the calendar grid below
