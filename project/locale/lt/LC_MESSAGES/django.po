@@ -1037,6 +1037,43 @@ msgstr "Alkoholio kiekis per dieną, ml"
 msgid "Alcohol consumption per day"
 msgstr "Alkoholio kiekis per dieną"
 
+#: .\drinks\services\index_tab.py:201
+msgid "Drinking days"
+msgstr "Vartojimo dienos"
+
+#: .\drinks\services\index_tab.py:208
+#, python-format
+msgid "%(share)s%% of the year"
+msgstr "%(share)s%% metų dienų"
+
+#: .\drinks\services\index_tab.py:211
+msgid "Calendar days with at least one Drink recorded."
+msgstr "Kalendorinės dienos, kuriomis užfiksuotas bent vienas vartojimas."
+
+#: .\drinks\services\index_tab.py:217
+msgid "The arrow compares with last year, up to the same date."
+msgstr "Rodyklė lygina su pernai iki tos pačios datos."
+
+#: .\drinks\services\index_tab.py:228
+msgid "Per drinking day"
+msgstr "Vienai vartojimo dienai"
+
+#: .\drinks\services\index_tab.py:240
+msgid ""
+"The year's Std Av divided by the days a Drink was recorded on, not by every "
+"day of the year."
+msgstr ""
+"Metų Std Av, padalyti iš dienų, kuriomis užfiksuotas vartojimas, o ne iš "
+"visų metų dienų."
+
+#: .\drinks\services\index_tab.py:244
+msgid "Always in Std Av, because the Heavy day threshold is defined there."
+msgstr "Visada Std Av, nes rizikingo vartojimo dienos riba nustatyta Std Av."
+
+#: .\drinks\services\index_tab.py:277
+msgid "per calendar day"
+msgstr "per kalendorinę dieną"
+
 #: .\drinks\services\history.py:100
 msgid "Average per day"
 msgstr "Vidutiniškai per dieną"
