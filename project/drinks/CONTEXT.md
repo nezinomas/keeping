@@ -43,6 +43,16 @@ Average daily consumption of several years plotted side by side. Years with no
 Drinks drop out rather than showing as a flat line.
 _Avoid_: history chart, multi-year
 
+**Drinking day**:
+A calendar day with at least one Drink recorded. The counterpart to Dry days.
+_Avoid_: active day, wet day, session
+
+**Intensity**:
+Std Av per Drinking day: a year's total divided by the days it was actually
+spread over, not by the days in the year. Stays in Std Av whatever Drink type is
+selected, because it is read against the Heavy day threshold.
+_Avoid_: average, per-day, strength
+
 ### Goals
 
 **Drink Target**:
