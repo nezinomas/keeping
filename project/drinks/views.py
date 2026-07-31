@@ -83,6 +83,54 @@ class TabHabits(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
+class TypicalYearChart(FormViewMixin):
+    """The pooled typical-year chart on the Habits tab, and the range form that
+    re-pools it.
+
+    A partial rather than part of the tab: the Habits container fetches this on
+    load and re-fetches it on every submit, so the chart, its caption and the
+    form's own boxes are always the same reading of the same range. Nothing is
+    remembered between fetches — a fresh tab opens on the full span, which is
+    the only default the app can claim to know.
+    """
+
+    form_class = forms.TypicalYearForm
+    template_name = "drinks/includes/typical_year_form.html"
+
+    def get(self, request, *args, **kwargs):
+        chart = services.TypicalYear.build(cast(User, request.user))
+        initial = (
+            {"year_from": chart.year_from, "year_to": chart.year_to}
+            if chart.has_data
+            else {}
+        )
+
+        return self._render(chart, self.get_form(initial=initial))
+
+    def form_valid(self, form, **kwargs):
+        chart = services.TypicalYear.build(
+            cast(User, self.request.user),
+            form.cleaned_data["year_from"],
+            form.cleaned_data["year_to"],
+        )
+
+        return self._render(chart, form)
+
+    def form_invalid(self, form):
+        # re-render the form (with errors) in place, leaving the chart untouched
+        response = super().form_invalid(form)
+        response["HX-Retarget"] = "#typical-year-form"
+        response["HX-Reswap"] = "outerHTML"
+        return response
+
+    def _render(self, chart, form) -> HttpResponse:
+        return render(
+            self.request,
+            "drinks/includes/typical_year.html",
+            {"chart": chart, "form": form},
+        )
+
+
 class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_trends.html"
 

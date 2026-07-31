@@ -9,6 +9,18 @@
     </div>
 
     <div id="chart-weekday-container"></div>
+
+    <!-- Typical year: the chart fetches itself, so the pooled range and the
+         caption naming it are always the same reading -->
+    <div id="typical-year">
+        <div id="chart-typical-year-container" hx-get="{% url 'drinks:typical_year' %}" hx-trigger="load"></div>
+
+        <div class="pool-controls">
+            <!-- filled by the same response as the chart, swapped out of band,
+                 so the boxes open on the years actually plotted -->
+            <div id="typical-year-form"></div>
+        </div>
+    </div>
 </main>
 
 {{chart_weekday.as_dict|json_script:"chart-weekday-data"}}

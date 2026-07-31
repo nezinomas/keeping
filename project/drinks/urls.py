@@ -9,6 +9,7 @@ urlpatterns = [
     path("", views.Index.as_view(), name="index"),
     path("index/", views.TabIndex.as_view(), name="tab_index"),
     path("habits/", views.TabHabits.as_view(), name="tab_habits"),
+    path("typical_year/", views.TypicalYearChart.as_view(), name="typical_year"),
     path("trends/", views.TabTrends.as_view(), name="tab_trends"),
     path("risk/", views.TabRisk.as_view(), name="tab_risk"),
     path("data/", views.TabData.as_view(), name="tab_data"),

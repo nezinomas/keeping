@@ -417,6 +417,102 @@ def test_habits_link_is_on_every_tab_and_active_only_on_its_own(
 
 
 # -------------------------------------------------------------------------------------
+#                                                                 TypicalYearChart View
+# -------------------------------------------------------------------------------------
+def test_typical_year_func():
+    view = resolve("/drinks/typical_year/")
+
+    assert views.TypicalYearChart is view.func.view_class
+
+
+def test_typical_year_200(client_logged):
+    response = client_logged.get(reverse("drinks:typical_year"))
+
+    assert response.status_code == 200
+
+
+def test_tab_habits_loads_the_typical_year_chart(client_logged):
+    # the container fetches itself, so the pooled range never depends on the tab
+    response = client_logged.get(reverse("drinks:tab_habits"))
+    content = response.content.decode()
+
+    assert 'id="chart-typical-year-container"' in content
+    assert f'hx-get="{reverse("drinks:typical_year")}"' in content
+    assert 'id="typical-year-form"' in content
+
+
+def test_typical_year_renders_chart_data(client_logged):
+    DrinkFactory(date=date(1999, 1, 1))
+
+    response = client_logged.get(reverse("drinks:typical_year"))
+
+    assert 'id="chart-typical-year-data"' in response.content.decode()
+
+
+def test_typical_year_defaults_to_the_full_span(client_logged):
+    DrinkFactory(date=date(1999, 1, 1))
+    DrinkFactory(date=date(2005, 1, 1))
+
+    response = client_logged.get(reverse("drinks:typical_year"))
+    chart = response.context["chart"]
+    content = response.content.decode()
+
+    assert chart.year_from == 1999
+    assert chart.year_to == 2005
+    # the form opens on what is plotted, so the boxes and the caption agree
+    assert 'name="year_from" value="1999"' in content
+    assert 'name="year_to" value="2005"' in content
+
+
+def test_typical_year_without_records_renders_no_chart(client_logged):
+    response = client_logged.get(reverse("drinks:typical_year"))
+    content = response.content.decode()
+
+    assert not response.context["chart"].has_data
+    assert "chart-typical-year-data" not in content
+    assert 'id="typical-year-form"' in content
+
+
+def test_typical_year_with_one_year_of_data_renders(client_logged):
+    # nothing to narrow, so the form has one year in both boxes and the chart
+    # names that year alone
+    DrinkFactory(date=date(1999, 1, 1))
+
+    response = client_logged.get(reverse("drinks:typical_year"))
+
+    assert response.status_code == 200
+    assert response.context["chart"].text["subtitle"] == "1999"
+
+
+def test_typical_year_valid_pools_the_selected_range(client_logged):
+    DrinkFactory(date=date(1999, 1, 1))
+    DrinkFactory(date=date(2000, 1, 1))
+    DrinkFactory(date=date(2005, 1, 1))
+
+    url = reverse("drinks:typical_year")
+    response = client_logged.post(url, {"year_from": "1999", "year_to": "2000"})
+    content = response.content.decode()
+    chart = response.context["chart"]
+
+    assert chart.year_from == 1999
+    assert chart.year_to == 2000
+    assert 'id="chart-typical-year-data"' in content
+    # the form is swapped out of band, because it lives outside the container
+    assert 'id="typical-year-form"' in content
+    assert 'hx-swap-oob="true"' in content
+
+
+def test_typical_year_invalid_retargets_form(client_logged):
+    url = reverse("drinks:typical_year")
+    response = client_logged.post(url, {"year_from": "2005", "year_to": "1999"})
+
+    assert response["HX-Retarget"] == "#typical-year-form"
+    assert response["HX-Reswap"] == "outerHTML"
+    assert not response.context["form"].is_valid()
+    assert "chart-typical-year-data" not in response.content.decode()
+
+
+# -------------------------------------------------------------------------------------
 #                                                                        TabTrends View
 # -------------------------------------------------------------------------------------
 def test_tab_trends_func():

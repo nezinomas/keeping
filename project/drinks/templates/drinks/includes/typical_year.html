@@ -1,0 +1,5 @@
+{% if chart.has_data %}
+{{chart.as_dict|json_script:"chart-typical-year-data"}}
+{% endif %}
+
+{% include 'drinks/includes/typical_year_form.html' with hx_swap_oob="true" %}
