@@ -26,6 +26,20 @@ def test_current_year_taken_from_records():
     assert stats.current_year == 2025
 
 
+def test_is_current_year_while_the_year_runs():
+    rows = [_row(date(2026, 1, 5), 3)]
+
+    assert FrequencyStats(current_daily=rows, today=date(2026, 6, 15)).is_current_year
+
+
+def test_is_current_year_is_false_once_the_year_is_over():
+    rows = [_row(date(2025, 1, 5), 3)]
+
+    assert not FrequencyStats(
+        current_daily=rows, today=date(2026, 6, 15)
+    ).is_current_year
+
+
 # -------------------------------------------------------------------------------------
 #                                                                         drinking_days
 # -------------------------------------------------------------------------------------

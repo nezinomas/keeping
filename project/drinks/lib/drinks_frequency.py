@@ -34,6 +34,12 @@ class FrequencyStats:
         self._year = YearBoundary.from_records(current_daily, today)
         self.current_year = self._year.year
 
+    @property
+    def is_current_year(self) -> bool:
+        """Whether the year under view is still running, so that a share of it
+        is a share of the days elapsed and not of all 365."""
+        return self._year.is_current
+
     @staticmethod
     def _count_drinking_days(records: Iterable[DataRow]) -> int:
         """Calendar days carrying a Drink, not rows: a day can hold several."""

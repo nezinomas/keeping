@@ -356,9 +356,33 @@ def test_card_drinking_days_with_data(main_user, drink_converter):
     ).get_cards()[1]
 
     assert card.value == "4"
-    assert card.note == _("%(share)s%% of the year") % {"share": "40"}
+    assert card.note == _("%(share)s%% of the year so far") % {"share": "40"}
     assert card.state == "worsening"
     assert card.show_icon is True
+
+
+def test_card_drinking_days_note_counts_the_days_elapsed_while_the_year_runs(
+    main_user, drink_converter
+):
+    # 4 of the 10 days elapsed, not 4 of 365 — so the note says which
+    current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
+
+    card = _card_builder(
+        drink_converter, frequency_stats=_frequency(current, today=date(1999, 1, 10))
+    ).get_cards()[1]
+
+    assert card.note == _("%(share)s%% of the year so far") % {"share": "40"}
+
+
+def test_card_drinking_days_note_on_a_year_already_over(main_user, drink_converter):
+    # the year is finished, so the share is of all 365 days and nothing is "so far"
+    current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
+
+    card = _card_builder(
+        drink_converter, frequency_stats=_frequency(current, today=date(2000, 6, 1))
+    ).get_cards()[1]
+
+    assert card.note == _("%(share)s%% of the year") % {"share": "1"}
 
 
 def test_card_drinking_days_fewer_than_last_year_is_improving(

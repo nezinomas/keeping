@@ -205,9 +205,14 @@ class IndexBuilder:
             return StatCard.empty(title, _("No data"))
 
         value = str(frequency.drinking_days)
-        note = _("%(share)s%% of the year") % {
-            "share": f"{frequency.drinking_day_share * 100:.0f}"
-        }
+        # a running year's share is of the days elapsed, so the note says so
+        # rather than reading as a share of all twelve months
+        share = (
+            _("%(share)s%% of the year so far")
+            if frequency.is_current_year
+            else _("%(share)s%% of the year")
+        )
+        note = share % {"share": f"{frequency.drinking_day_share * 100:.0f}"}
         definition = _("Calendar days with at least one Drink recorded.")
         comparison = frequency.compare_frequency()
 
