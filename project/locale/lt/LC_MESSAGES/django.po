@@ -1003,11 +1003,15 @@ msgstr "Gėrimo tipas"
 msgid "%(year)s already has a goal."
 msgstr "%(year)s metai jau turi tikslą."
 
-#: .\drinks\forms.py:179
+#: .\drinks\forms.py:170 .\drinks\forms.py:218
 msgid "No records this year"
 msgstr "Šiais metais įrašų nėra"
 
-#: .\drinks\forms.py:186
+#: .\drinks\forms.py:180
+msgid "Years must be in order"
+msgstr "Metai turi būti didėjimo tvarka"
+
+#: .\drinks\forms.py:225
 msgid "Years must be different"
 msgstr "Metai turi būti skirtingi"
 
@@ -1086,6 +1090,15 @@ msgstr "Savaitės dienų profilis"
 #: .\drinks\services\habits_tab.py:68
 msgid "Drinking-day rate"
 msgstr "Vartojimo dienų dalis"
+
+#: .\drinks\services\typical_year.py:208
+msgid "Typical year"
+msgstr "Tipiniai metai"
+
+#: .\drinks\services\typical_year.py:235
+#, python-format
+msgid "Pooled %(year_from)s–%(year_to)s"
+msgstr "Apjungti %(year_from)s–%(year_to)s m."
 
 #: .\drinks\services\history.py:100
 msgid "Average per day"
