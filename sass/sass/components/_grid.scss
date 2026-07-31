@@ -6,6 +6,44 @@
 }
 
 
+// A toolbar of controls under a chart: presets, a year form, and whatever
+// validation error a field of it raises. Two tabs draw a chart the reader
+// re-scopes below it (History's year comparison, Habits' typical year), so the
+// rules are shared rather than copied into each grid.
+//
+// The row stays vertically centered; an error is taken out of flow (absolute,
+// below its field) so it can never shove the inputs around, and margin-bottom
+// reserves the room it needs.
+@mixin chart-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: calc($gap / 3);
+    margin-top: $gap;
+    margin-bottom: 1.5rem;
+
+    form {
+        display: flex;
+        align-items: center;
+        gap: calc($gap / 3);
+
+        > div {
+            position: relative;
+        }
+    }
+
+    .invalid-feedback {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: max-content;
+        margin-top: 0.15rem;
+        white-space: nowrap;
+    }
+}
+
+
 // Main grid
 .bookkeeping-grid {
     @include grid-template;
@@ -125,18 +163,9 @@
     > #historical-data {
         @include grid-template(0, 0);
 
-        // presets + custom-year form share one toolbar centered below the
-        // chart. The row stays vertically centered; a validation error is
-        // taken out of flow (absolute, below its field) so it can never shove
-        // the buttons/inputs around. margin-bottom reserves room for that error.
+        // presets + custom-year form share one toolbar centered below the chart
         .compare-controls {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-            gap: calc($gap / 3);
-            margin-top: $gap;
-            margin-bottom: 1.5rem;
+            @include chart-controls;
         }
 
         .compare-controls__divider {
@@ -145,25 +174,6 @@
             height: 1.75rem;
             margin: 0 calc($gap / 4);
             background: $border-color-light;
-        }
-
-        form {
-            display: flex;
-            align-items: center;
-            gap: calc($gap / 3);
-
-            > div {
-                position: relative;
-            }
-        }
-
-        .invalid-feedback {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: max-content;
-            margin-top: 0.15rem;
-            white-space: nowrap;
         }
     }
 }
@@ -204,6 +214,7 @@
     grid-template-areas:
         "habits-summary"
         "chart-weekday-container"
+        "typical-year"
     ;
 
     > #habits-summary {
@@ -218,6 +229,18 @@
 
     > #chart-weekday-container {
         grid-area: chart-weekday-container;
+    }
+
+    // the pooled chart and the range form that re-pools it are one unit: the
+    // form states which years the chart above it is drawn from
+    > #typical-year {
+        grid-area: typical-year;
+
+        @include grid-template(0, 0);
+
+        .pool-controls {
+            @include chart-controls;
+        }
     }
 }
 
