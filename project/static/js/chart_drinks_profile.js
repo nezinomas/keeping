@@ -1,4 +1,8 @@
-function chartDrinksWeekday(idData, idContainer) {
+// A recurring-shape profile: one category axis, and the two independent
+// questions the Habits tab asks of it — how often a Drink was recorded, and how
+// much on the days it was. Drawn for the weekday profile and for the pooled
+// typical year, which differ only in what a category is.
+function chartDrinksProfile(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
     // each axis wears its own series' colour, so a reader never has to work out
@@ -15,6 +19,11 @@ function chartDrinksWeekday(idData, idContainer) {
         title: {
             text: chartData.text.title
         },
+        subtitle: {
+            // which years a pooled chart is drawn from. The weekday profile
+            // reads the one year the tab already names, so it sends none
+            text: chartData.text.subtitle || ""
+        },
         legend: {
             enabled: true,
         },
@@ -25,7 +34,7 @@ function chartDrinksWeekday(idData, idContainer) {
         },
         yAxis: [
             {
-                // a share of the times that one weekday has come round, so it
+                // a share of the times that one category has come round, so it
                 // has a ceiling: letting the axis auto-scale past 100 would
                 // make a Saturday drunk on every week look like there is room
                 // above it
