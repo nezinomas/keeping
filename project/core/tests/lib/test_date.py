@@ -104,16 +104,6 @@ def test_set_year_for_month(main_user):
     assert actual == datetime(1999, 1, 1)
 
 
-@time_machine.travel("2020-1-1")
-@pytest.mark.parametrize(
-    "year, expect", [(2020, 1), (1999, 52), (2019, 52), (2000, 53), (2003, 53)]
-)
-def test_weeknumber(year, expect):
-    actual = lib_date.weeknumber(year=year)
-
-    assert actual == expect
-
-
 @time_machine.travel("2020-6-6")
 @pytest.mark.parametrize(
     "year, expect",

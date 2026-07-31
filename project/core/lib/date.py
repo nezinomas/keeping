@@ -5,6 +5,7 @@ from typing import List, Tuple
 
 from ...users.models import User
 from .translation import month_names
+from .year_boundary import YearBoundary
 
 MOTHS_WITH_DAYS_GENERIC = {
     "january": 31,
@@ -94,31 +95,11 @@ def set_date_with_user_year(user):
     return datetime(year, month, day)
 
 
-def weeknumber(year: int):
-    _current_year = datetime.now().year
-
-    if _current_year == year:
-        return datetime.now().isocalendar()[1]
-
-    # year have 53 weeks if starts on Wednesday or year is leap
-    weekday = date(year, 1, 1).weekday()  # 0=Monday
-    isleap = calendar.isleap(year)
-
-    return 53 if weekday == 2 or isleap else 52
-
-
 def yday(year: int) -> Tuple[int, int]:
-    now = datetime.now().date()
-    year = year or now.year
+    """Days of the year gone by, and days it holds."""
+    boundary = YearBoundary.for_year(year)
 
-    _year = now.year
-    _days = ydays(year)
-
-    if _year == year:
-        _day = now.timetuple().tm_yday
-        return (_day, _days)
-
-    return (_days, _days)
+    return (boundary.days_elapsed, ydays(boundary.year))
 
 
 def ydays(year: int) -> int:
