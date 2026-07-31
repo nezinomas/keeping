@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from datetime import date
 from functools import cached_property
 
+from ...core.lib.year_boundary import YearBoundary
 from ..lib.drinks_options import DrinkConverter
-from ..lib.drinks_year import YearBoundary
 
 
 @dataclass(frozen=True)

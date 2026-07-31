@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from functools import cached_property
 
+from ...core.lib.year_boundary import YearBoundary
 from .drinks_stats import DataRow
-from .drinks_year import YearBoundary
 
 # Medical harm-framing thresholds, all expressed in the canonical std av unit
 # (1 std av = 10 g pure alcohol). The UK CMO low-risk guideline is 14 UK units

@@ -3,9 +3,9 @@ from datetime import date, timedelta
 from functools import cached_property
 
 from ...core.lib.date import ydays
+from ...core.lib.year_boundary import YearBoundary
 from .drinks_options import DrinkConverter
 from .drinks_stats import DataRow
-from .drinks_year import YearBoundary
 
 
 @dataclass(frozen=True)

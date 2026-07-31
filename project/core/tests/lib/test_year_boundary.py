@@ -1,13 +1,20 @@
+from dataclasses import dataclass
 from datetime import date
 
 import time_machine
 
-from ...lib.drinks_stats import DataRow
-from ...lib.drinks_year import YearBoundary
+from ...lib.year_boundary import YearBoundary
 
 
-def _row(dt: date) -> DataRow:
-    return DataRow(date=dt, qty=0.0, stdav=0.0)
+@dataclass(frozen=True)
+class Row:
+    """A row of an app's own shape — all the boundary asks for is a date."""
+
+    date: date
+
+
+def _row(dt: date) -> Row:
+    return Row(date=dt)
 
 
 # -------------------------------------------------------------------------------------
@@ -31,6 +38,19 @@ def test_today_can_be_given_instead_of_the_clock():
     assert boundary.today == date(2019, 5, 4)
 
 
+@time_machine.travel("2026-06-15")
+def test_for_year_takes_the_year_the_caller_already_knows():
+    boundary = YearBoundary.for_year(2021)
+
+    assert boundary.year == 2021
+    assert boundary.today == date(2026, 6, 15)
+
+
+@time_machine.travel("2026-06-15")
+def test_for_year_without_a_year_is_the_year_running_now():
+    assert YearBoundary.for_year().year == 2026
+
+
 # -------------------------------------------------------------------------------------
 #                                                                              end_date
 # -------------------------------------------------------------------------------------
@@ -44,6 +64,12 @@ def test_end_date_is_dec_31_for_a_finished_year():
     boundary = YearBoundary(year=2025, today=date(2026, 6, 15))
 
     assert boundary.end_date == date(2025, 12, 31)
+
+
+def test_is_current_only_while_the_year_is_the_one_running():
+    assert YearBoundary(year=2026, today=date(2026, 12, 31)).is_current is True
+    assert YearBoundary(year=2025, today=date(2026, 1, 1)).is_current is False
+    assert YearBoundary(year=2027, today=date(2026, 6, 15)).is_current is False
 
 
 def test_end_date_is_dec_31_for_a_year_not_started_yet():
@@ -72,6 +98,43 @@ def test_days_elapsed_counts_the_leap_day():
     boundary = YearBoundary(year=2024, today=date(2026, 6, 15))
 
     assert boundary.days_elapsed == 366
+
+
+# -------------------------------------------------------------------------------------
+#                                                                         weeks_elapsed
+# -------------------------------------------------------------------------------------
+def test_weeks_elapsed_is_this_week_in_the_current_year():
+    boundary = YearBoundary(year=2026, today=date(2026, 7, 31))
+
+    assert boundary.weeks_elapsed == 31
+
+
+def test_weeks_elapsed_is_the_iso_week_count_of_a_finished_year():
+    # 52, not the 53 an "is it leap / does it start on a Wednesday" rule gives
+    boundary = YearBoundary(year=2025, today=date(2026, 7, 31))
+
+    assert boundary.weeks_elapsed == 52
+
+
+def test_weeks_elapsed_is_53_in_a_year_that_really_has_53_weeks():
+    boundary = YearBoundary(year=2020, today=date(2026, 7, 31))
+
+    assert boundary.weeks_elapsed == 53
+
+
+def test_weeks_elapsed_is_one_in_a_january_that_iso_counts_as_last_year():
+    # 2027-01-01 is week 53 of ISO year 2026, so the raw week number would
+    # divide a two-day-old year by 53
+    boundary = YearBoundary(year=2027, today=date(2027, 1, 1))
+
+    assert boundary.weeks_elapsed == 1
+
+
+def test_weeks_elapsed_is_the_full_count_in_a_december_iso_counts_as_next_year():
+    # 2024-12-30 is week 1 of ISO year 2025, and 2024 has 52 weeks
+    boundary = YearBoundary(year=2024, today=date(2024, 12, 30))
+
+    assert boundary.weeks_elapsed == 52
 
 
 # -------------------------------------------------------------------------------------
