@@ -2,8 +2,8 @@ from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.date import weeknumber
 from ..core.lib.utils import rendered_content
+from ..core.lib.year_boundary import YearBoundary
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -43,7 +43,7 @@ class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
 
         user = self.request.user
         year = user.year
-        week = weeknumber(year)
+        week = YearBoundary.for_year(year).weeks_elapsed
         data = InfoRowData(user, self.object.slug)
 
         context = {
