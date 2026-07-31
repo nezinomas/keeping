@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 from django.core.validators import ValidationError
+from django.db import IntegrityError, transaction
 
 from ...users.tests.factories import UserFactory
 from ..models import DrinkTarget
@@ -269,19 +270,25 @@ def test_drink_target_year(main_user):
     assert actual[0].user.username == "bob"
 
 
-def test_drink_target_year_positive():
-    actual = DrinkTargetFactory.build(year=-2000)
+def test_drink_target_year_positive(main_user):
+    # a saved user, so the year is the only invalid field: built with an unsaved
+    # one, full_clean also reports `user`, which would mask a year rule that
+    # stopped firing
+    actual = DrinkTargetFactory.build(year=-2000, user=main_user)
 
-    try:
+    with pytest.raises(ValidationError) as error:
         actual.full_clean()
-    except ValidationError as e:
-        assert "year" in e.message_dict
+
+    assert list(error.value.message_dict) == ["year"]
 
 
-@pytest.mark.xfail(raises=Exception)
-def test_drink_target_year_unique():
-    DrinkTargetFactory(year=1999)
-    DrinkTargetFactory(year=1999)
+def test_drink_target_year_unique(main_user):
+    # one target per year per user; the constraint holding is the passing
+    # behaviour, so assert it rather than marking the test xfail
+    DrinkTargetFactory(year=1999, user=main_user)
+
+    with pytest.raises(IntegrityError), transaction.atomic():
+        DrinkTargetFactory(year=1999, user=main_user)
 
 
 def test_drink_target_ordering():
