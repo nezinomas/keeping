@@ -54,6 +54,20 @@ class StatCard:
         )
 
     @classmethod
-    def level(cls, title: str, *, state: str, value: str, note: str) -> "StatCard":
+    def level(
+        cls,
+        title: str,
+        *,
+        state: str,
+        value: str,
+        note: str,
+        explanation: str = "",
+    ) -> "StatCard":
         """A metric read against a threshold: a level, with no direction."""
-        return cls(title=title, value=value, note=note, state=state)
+        return cls(
+            title=title,
+            value=value,
+            note=note,
+            state=state,
+            explanation=explanation,
+        )

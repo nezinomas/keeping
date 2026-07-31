@@ -70,6 +70,14 @@ def test_level_never_shows_an_icon():
     assert card.show_icon is False
 
 
+def test_level_carries_the_explanation():
+    card = StatCard.level(
+        "This week", state="high", value="30.0", note="", explanation="why"
+    )
+
+    assert card.explanation == "why"
+
+
 # -------------------------------------------------------------------------------------
 #                                                                         defaults
 # -------------------------------------------------------------------------------------
