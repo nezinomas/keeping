@@ -2,7 +2,8 @@ import contextlib
 from dataclasses import dataclass
 from datetime import date
 
-from django.db.models import F, QuerySet
+from django.db.models import Count, F, QuerySet, Sum
+from django.db.models.functions import ExtractMonth, ExtractYear
 
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
@@ -82,6 +83,34 @@ class DrinkModelService(SumMixin, BaseModelService):
             sum_annotation="stdav",
             sum_column="stdav",
         ).annotate(qty=F("stdav") * self.ratio)
+
+    def sum_by_year_month(
+        self, year_from: int | None = None, year_to: int | None = None
+    ) -> QuerySet:
+        """Every month the user has Drinks in, across years, in one query.
+
+        Returns rows of:
+        {'year': int, 'month': int, 'stdav': float, 'drinking_days': int}
+
+        The day count is why this is not `sum_by_month` over a loop of years: a
+        pooled monthly rate divides by the days a month reached, so it needs the
+        days a Drink was recorded on, and no sum of amounts can give them.
+
+        Canonical Std Av, with no `qty` annotation: what this feeds is a ratio
+        and a Std Av harm metric, neither of which follows the drink type.
+        """
+        qs = self.objects
+
+        if year_from:
+            qs = qs.filter(date__year__gte=year_from)
+        if year_to:
+            qs = qs.filter(date__year__lte=year_to)
+
+        return (
+            qs.values(year=ExtractYear("date"), month=ExtractMonth("date"))
+            .annotate(stdav=Sum("stdav"), drinking_days=Count("date", distinct=True))
+            .order_by("year", "month")
+        )
 
     def sum_by_day(self, year: int, month: int | None = None) -> QuerySet:
         """
