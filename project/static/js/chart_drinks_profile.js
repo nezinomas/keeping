@@ -9,7 +9,12 @@ function chartDrinksProfile(idData, idContainer) {
     // which scale the columns are on and which one the line is on. Declared
     // once here rather than twice, because an axis in one colour and its series
     // in another is worse than neither being coloured at all
-    const rateColor = "var(--chart-color-0)";
+    //
+    // the columns are the books chart's: a pale tint of --secondary drawn inside
+    // a solid line of it. The rate is a backdrop the intensity line is read
+    // against, and a solid block of colour competes with the line for attention
+    const rateColor = "var(--secondary)";
+    const rateFill = "var(--chart-alpha-25)";
     const intensityColor = "var(--chart-color-6)";
 
     Highcharts.chart(idContainer, {
@@ -86,8 +91,8 @@ function chartDrinksProfile(idData, idContainer) {
         },
         plotOptions: {
             column: {
-                borderWidth: 0,
-                borderRadius: 4,
+                borderWidth: 0.5,
+                borderRadius: 0,
                 groupPadding: 0.1,
             }
         },
@@ -97,7 +102,8 @@ function chartDrinksProfile(idData, idContainer) {
                 name: chartData.text.share,
                 data: chartData.drinking_day_share,
                 yAxis: 0,
-                color: rateColor,
+                color: rateFill,
+                borderColor: rateColor,
                 tooltip: {
                     valueSuffix: ` ${chartData.text.share_unit}`
                 },
