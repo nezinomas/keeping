@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.date import ydays, years
 from ...core.lib.translation import month_names
+from ...core.lib.year_boundary import YearBoundary
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DrinkStats
 from . import stat_card
@@ -312,17 +313,11 @@ class IndexBuilder:
         )
 
     def _get_period_counts(self, year: int | None) -> tuple[int, int, int]:
-        year = year or self._today.year
+        """Days, weeks and months the year has reached."""
+        boundary = YearBoundary.for_year(year, self._today)
 
-        _year = self._today.year
-        _month = self._today.month
-        _week = int(self._today.strftime("%V"))
-        _day = self._today.timetuple().tm_yday
-
-        if _year == year:
-            return (_day, _week, _month)
-
-        _days = ydays(year)
-        _weeks = dt_date(year, 12, 28).isocalendar()[1]
-
-        return (_days, _weeks, 12)
+        return (
+            boundary.days_elapsed,
+            boundary.weeks_elapsed,
+            boundary.end_date.month,
+        )
