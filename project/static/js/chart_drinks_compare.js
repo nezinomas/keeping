@@ -27,7 +27,6 @@ function chartCompare(idData, idContainer) {
         },
         legend: {
             enabled: true,
-            backgroundColor: undefined,
         },
         xAxis: {
             min: 0.4,
