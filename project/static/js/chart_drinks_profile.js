@@ -57,9 +57,15 @@ function chartDrinksProfile(idData, idContainer) {
             zIndex: 1,
             // the legend reads front layer first, whatever order they draw in
             legendIndex: layers.length - 1 - index,
-            tooltip: {
-                valueSuffix: ` ${chartData.text.share_unit}`
-            },
+            // read by the tooltip formatter below, which groups by span and so
+            // needs the metric on its own — `name` carries both
+            metric: chartData.text.share,
+            unit: chartData.text.share_unit,
+            layerLabel: layer.label,
+            // the axis colour, not the column's: a 10%-alpha backdrop fill is
+            // invisible as a tooltip bullet, and the metric is what the bullet
+            // is there to identify — the span is already the group's heading
+            dotColor: rateColor,
         });
 
         series.push({
@@ -85,9 +91,10 @@ function chartDrinksProfile(idData, idContainer) {
                 symbol: "circle",
             },
             legendIndex: layers.length + (layers.length - 1 - index),
-            tooltip: {
-                valueSuffix: ` ${chartData.text.intensity_unit}`
-            },
+            metric: chartData.text.intensity,
+            unit: chartData.text.intensity_unit,
+            layerLabel: layer.label,
+            dotColor: intensityColor,
         });
     });
 
@@ -100,6 +107,15 @@ function chartDrinksProfile(idData, idContainer) {
         },
         legend: {
             enabled: true,
+            // below the plot, against the theme's floating top-right default:
+            // four entries naming two metrics over two spans are far too wide
+            // to sit beside a centred title, and they cover it outright. Fixed
+            // here rather than only when a pooled layer is present, so pressing
+            // a preset does not make the legend jump across the chart
+            layout: "horizontal",
+            align: "center",
+            verticalAlign: "bottom",
+            floating: false,
         },
         xAxis: {
             categories: chartData.categories,
@@ -157,6 +173,48 @@ function chartDrinksProfile(idData, idContainer) {
         ],
         tooltip: {
             shared: true,
+            // one block per span, not four flat rows. The column and the line
+            // of a span are two readings of that span and belong together —
+            // side by side with another span's pair, a reader has to match four
+            // rows back to their series names to see which is which
+            formatter: function () {
+                if (!this.points || !this.points.length) {
+                    return false;
+                }
+
+                const groups = [];
+                this.points.forEach(function (point) {
+                    const label = point.series.userOptions.layerLabel;
+                    let group = groups.find((candidate) => candidate.label === label);
+                    if (!group) {
+                        group = { label: label, points: [] };
+                        groups.push(group);
+                    }
+                    group.points.push(point);
+                });
+
+                // `points` arrives in series order, which is back to front —
+                // reversed here so the reading in front is read first, as in
+                // the legend
+                groups.reverse();
+
+                let out = `<span style="font-size: 0.9em">${this.points[0].key}</span>`;
+
+                groups.forEach(function (group) {
+                    // a single layer needs no heading: the tab names the one
+                    // span it reads
+                    if (group.label) {
+                        out += `<br/><b>${group.label}</b>`;
+                    }
+                    group.points.forEach(function (point) {
+                        const options = point.series.userOptions;
+                        out += `<br/><span style="color: ${options.dotColor}">●</span> `
+                            + `${options.metric}: <b>${point.y} ${options.unit}</b>`;
+                    });
+                });
+
+                return out;
+            },
         },
         plotOptions: {
             column: {
