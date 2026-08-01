@@ -29,6 +29,14 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
+def test_index_loads_the_shared_chart_legend_defaults(client_logged):
+    # every Drinks chart reads its legend position from this one file, so the
+    # page dropping it would put every legend back in the theme's top corner
+    response = client_logged.get(reverse("drinks:index"))
+
+    assert "js/chart_drinks_legend.js" in response.content.decode()
+
+
 def test_index_quick_add(client_logged):
     # adding a drink now happens via the persistent quick-add widget
     # (bottom pill -> sheet) instead of a button in the nav

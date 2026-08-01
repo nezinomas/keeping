@@ -3,7 +3,13 @@ function chart_drinks_summary(idData, idContainer) {
 
     Highcharts.chart(idContainer, {
         chart: {
-            marginBottom: 67,
+            // an explicit bottom margin wins over Highcharts' own layout, so
+            // everything below the plot has to fit inside it: the year labels,
+            // the per-year data labels that sit 25px *under* their points, and
+            // — since the legend moved down there — the legend too. It was 67,
+            // which was enough for the first two and left the legend sitting on
+            // top of the years
+            marginBottom: 100,
         },
         title: {
             text: chartData.text.title,

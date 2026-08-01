@@ -106,16 +106,9 @@ function chartDrinksProfile(idData, idContainer) {
             text: chartData.text.title
         },
         legend: {
+            // position comes from chart_drinks_legend.js — under the plot, where
+            // four entries naming two metrics over two spans have room to sit
             enabled: true,
-            // below the plot, against the theme's floating top-right default:
-            // four entries naming two metrics over two spans are far too wide
-            // to sit beside a centred title, and they cover it outright. Fixed
-            // here rather than only when a pooled layer is present, so pressing
-            // a preset does not make the legend jump across the chart
-            layout: "horizontal",
-            align: "center",
-            verticalAlign: "bottom",
-            floating: false,
         },
         xAxis: {
             categories: chartData.categories,

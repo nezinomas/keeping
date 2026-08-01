@@ -5,6 +5,9 @@
 
 {% block head %}
     {% include 'highcharts.html' with lollipop=True %}
+    <!-- after the theme, so it overrides the corner it puts legends in, and
+         before the charts, so every one of them is drawn with it -->
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_legend.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_overview.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_trend.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_cumulative.js' %}"></script>
