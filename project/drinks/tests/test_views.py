@@ -447,14 +447,35 @@ def test_tab_habits_renders_the_pooled_range_presets(client_logged):
     content = response.content.decode()
 
     assert f'hx-get="{reverse("drinks:typical_year_all")}"' in content
-    for qty in (1, 2, 3, 5):
+    for qty in (2, 3, 5):
         url = reverse("drinks:typical_year_last", kwargs={"qty": qty})
         assert f'hx-get="{url}"' in content
 
-    # the one-year preset is labelled with the year it pools, not "1 year"
-    assert ">1999<" in content
     assert _("All years") in content
     assert _("5 years") in content
+
+
+def test_tab_habits_offers_no_preset_for_the_header_year(client_logged):
+    # the header year is drawn in front already, so pooling it on its own would
+    # plot the same twelve months twice
+    content = client_logged.get(reverse("drinks:tab_habits")).content.decode()
+
+    url = reverse("drinks:typical_year_last", kwargs={"qty": 1})
+
+    assert f'hx-get="{url}"' not in content
+    assert ">1999<" not in content
+
+
+def test_tab_habits_clears_the_pooled_layer_back_to_the_header_year(client_logged):
+    content = client_logged.get(reverse("drinks:tab_habits")).content.decode()
+
+    # the bare url is the state the tab opens on: the header year, nothing behind
+    url = reverse("drinks:typical_year")
+    clear = f'hx-get="{url}" hx-target="#chart-typical-year-container">{_("Clear")}<'
+
+    assert clear in content
+    # it undoes a Filter, so it sits after the form rather than among the presets
+    assert content.index('id="typical-year-form"') < content.index(clear)
 
 
 def test_typical_year_renders_chart_data(client_logged):

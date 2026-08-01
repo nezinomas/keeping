@@ -19,7 +19,6 @@
 
         <div class="pool-controls">
             <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_all' %}" hx-target="#chart-typical-year-container">{% translate 'All years' %}</button>
-            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 1 %}" hx-target="#chart-typical-year-container">{{ user.year }}</button>
             <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 2 %}" hx-target="#chart-typical-year-container">{% translate '2 years' %}</button>
             <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 3 %}" hx-target="#chart-typical-year-container">{% translate '3 years' %}</button>
             <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 5 %}" hx-target="#chart-typical-year-container">{% translate '5 years' %}</button>
@@ -29,6 +28,14 @@
             <!-- filled by the same response as the chart, swapped in out of
                  band, so the boxes open on the years actually plotted -->
             <div id="typical-year-form"></div>
+
+            <!-- no pooled range: the same fetch the tab opens on, so Clear puts
+                 the chart back to the header year alone. Beside Filter because
+                 that is what it undoes, and outside the form because it asks
+                 for a range rather than submitting one. There is deliberately
+                 no preset for the header year on its own — it is already in
+                 front of everything -->
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year' %}" hx-target="#chart-typical-year-container">{% translate 'Clear' %}</button>
         </div>
     </div>
 </main>
