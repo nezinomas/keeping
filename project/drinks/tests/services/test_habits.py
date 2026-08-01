@@ -36,6 +36,22 @@ def test_chart_weekday_view_model():
     assert len(actual.intensity) == 7
 
 
+def test_chart_weekday_is_one_unlabelled_layer():
+    # the tab already names the year it reads, so the legend needs no span
+    actual = _builder([_row(date(1999, 1, 4), 5)]).chart_weekday()
+
+    assert [layer.label for layer in actual.layers] == [""]
+    assert actual.layers[0].drinking_day_share == actual.drinking_day_share
+    assert actual.layers[0].intensity == actual.intensity
+
+
+def test_chart_weekday_as_dict_carries_its_layer():
+    actual = _builder([_row(date(1999, 1, 4), 5)]).chart_weekday().as_dict
+
+    assert sorted(actual) == ["categories", "heavy_threshold", "layers", "text"]
+    assert len(actual["layers"]) == 1
+
+
 def test_chart_weekday_categories_are_the_weekday_names_monday_first():
     actual = _builder().chart_weekday()
 

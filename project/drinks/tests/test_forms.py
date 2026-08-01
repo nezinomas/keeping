@@ -322,6 +322,18 @@ def test_typical_year_init_fields():
     assert '<input type="number" name="year_to"' in form
 
 
+def test_typical_year_boxes_open_on_the_users_full_span(main_user):
+    # nothing is pooled until this form is submitted, so the boxes propose the
+    # widest range there is rather than leaving the user to type one
+    DrinkFactory(date=date(1999, 1, 1))
+    DrinkFactory(date=date(2005, 1, 1))
+
+    form = TypicalYearForm(user=main_user).as_p()
+
+    assert 'name="year_from" value="1999"' in form
+    assert 'name="year_to" value="2005"' in form
+
+
 @pytest.mark.parametrize(
     "year_from, year_to",
     [

@@ -1,6 +1,6 @@
 import calendar
 from collections.abc import Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import date
 
 from django.utils.translation import gettext as _
@@ -9,6 +9,7 @@ from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
 from ..lib.drinks_risk import HEAVY_DAY_STDAV
 from .model_services import DrinkModelService
+from .profile_chart import ProfileLayer, profile_chart_dict
 
 MONTHS = 12
 
@@ -132,31 +133,80 @@ class TypicalYearProfile:
 
 
 @dataclass(frozen=True)
+class PooledRange:
+    """The years a pooled layer is drawn from — the user's explicit ask.
+
+    Open-ended by default: zeros mean every year on record, which is what the
+    All-years preset asks for. Narrowing it is what keeps a month-per-row era
+    out of the profile without the app deciding whose years to trust.
+    """
+
+    year_from: int = 0
+    year_to: int = 0
+
+    def profile(self, service: DrinkModelService) -> TypicalYearProfile:
+        """One query however many years are pooled: the aggregate groups in the
+        DB and the pooling happens here, so a decade does not cost a query a
+        year."""
+        rows = [
+            MonthTotal(**row)
+            for row in service.sum_by_year_month(self.year_from, self.year_to)
+        ]
+
+        return TypicalYearProfile.pool(rows)
+
+
+class NoPooledRange(PooledRange):
+    """Nothing pooled: the chart opens on the header year alone.
+
+    A state of its own rather than a None, so no caller branches on whether a
+    range was asked for — this answers the same question with an empty profile,
+    and costs no query doing it. The chart stays this way until the user presses
+    a preset or Filter, because pooling a decade behind the year they are
+    looking at is a reading to ask for, not one to be given unasked.
+    """
+
+    def profile(self, service: DrinkModelService) -> TypicalYearProfile:
+        return TypicalYearProfile.pool([])
+
+
+@dataclass(frozen=True)
 class TypicalYearChartViewModel:
     categories: list[str]
-    drinking_day_share: list[float]  # per cent of that month's days drunk on
-    intensity: list[float]  # Std Av per Drinking day
+    year: ProfileLayer  # the header year, always drawn, always in front
+    pooled: ProfileLayer  # the range the user asked to pool, behind it
     heavy_threshold: float
-    year_from: int
-    year_to: int
     text: dict[str, str]
+    # the span actually pooled, for the range boxes — not plotted, so `as_dict`
+    # leaves it out
+    year_from: int = 0
+    year_to: int = 0
 
     @property
     def has_data(self) -> bool:
-        return bool(self.year_to)
+        return bool(self.layers)
+
+    @property
+    def layers(self) -> list[ProfileLayer]:
+        """Back to front: the pooled range is the backdrop the header year is
+        read against, so it is drawn first and the year sits on top of it."""
+        return [layer for layer in (self.pooled, self.year) if layer.has_data]
 
     @property
     def as_dict(self) -> dict:
-        return asdict(self)
+        return profile_chart_dict(self)
 
 
 class TypicalYear:
-    """One typical year, pooled from as many of the user's years as they choose.
+    """One typical year, pooled from as many of the user's years as they choose,
+    behind the year they are looking at.
 
     The same object as the weekday profile, one period longer: a recurring
     shape, not a year-over-year level, which is why it belongs on Habits rather
     than History. Pooling is what makes the seasonal signal visible — eleven
-    Julys say something no single July can.
+    Julys say something no single July can — and the point of the chart is to
+    read the header year against that shape, so the year is always in front of
+    it.
 
     **No converter, deliberately.** The rate is a ratio and the intensity is a
     harm metric that stays in Std Av, so the drink-type dropdown reaches neither
@@ -167,46 +217,45 @@ class TypicalYear:
     **Which years get pooled is the user's call.** A user whose early years hold
     one row per month would see that era wreck the profile, and the app has no
     multi-user-safe way to tell those years apart from sparse honest ones. So it
-    does not try: the range is theirs to narrow, and the caption names whatever
-    it ends up being.
+    does not try: the range is theirs to narrow, and each layer is labelled with
+    whatever it ends up being.
     """
 
     @classmethod
     def build(
-        cls, user, year_from: int | None = None, year_to: int | None = None
+        cls, user, year: int, pooled: PooledRange = NoPooledRange()
     ) -> TypicalYearChartViewModel:
-        """The pooled chart for a range of years, or for every year on record.
+        """The header year, and the pooled range behind it if one was asked for.
 
-        One query however many years are pooled: the aggregate groups in the DB
-        and the pooling happens here, so a decade does not cost a query a year.
+        A query a layer, so the header year alone costs one: the pooled range
+        may not contain that year, which rules out reading both layers off a
+        single span.
         """
-        rows = [
-            MonthTotal(**row)
-            for row in DrinkModelService(user).sum_by_year_month(year_from, year_to)
-        ]
+        service = DrinkModelService(user)
 
-        return TypicalYearBuilder(TypicalYearProfile.pool(rows)).chart()
+        return TypicalYearBuilder(
+            # the header year is the same operation over one year, so it is the
+            # same kind of range — pooled over a span of exactly one
+            year=PooledRange(year, year).profile(service),
+            pooled=pooled.profile(service),
+        ).chart()
 
 
 class TypicalYearBuilder:
-    def __init__(self, profile: TypicalYearProfile):
-        self._profile = profile
+    def __init__(self, year: TypicalYearProfile, pooled: TypicalYearProfile):
+        self._year = year
+        self._pooled = pooled
 
     def chart(self) -> TypicalYearChartViewModel:
-        points = self._profile.points
-
         return TypicalYearChartViewModel(
             categories=list(month_names().values()),
-            drinking_day_share=[
-                round(point.drinking_day_share * 100, 1) for point in points
-            ],
-            intensity=[round(point.intensity, 1) for point in points],
+            year=self._layer(self._year),
+            pooled=self._layer(self._pooled),
             heavy_threshold=HEAVY_DAY_STDAV,
-            year_from=self._profile.year_from,
-            year_to=self._profile.year_to,
+            year_from=self._pooled.year_from,
+            year_to=self._pooled.year_to,
             text={
                 "title": _("Typical year"),
-                "subtitle": self._caption(),
                 "share": _("Drinking-day rate"),
                 "share_unit": "%",
                 "intensity": _("Per drinking day"),
@@ -218,16 +267,45 @@ class TypicalYearBuilder:
             },
         )
 
-    def _caption(self) -> str:
-        """The years actually pooled, named on the chart.
+    @classmethod
+    def _layer(cls, profile: TypicalYearProfile) -> ProfileLayer:
+        if not profile.has_data:
+            return ProfileLayer()
 
-        A narrowed range must never read as covering everything, so the caption
-        states the span rather than leaving it to be inferred from the tab.
+        points = profile.points
+
+        return ProfileLayer(
+            drinking_day_share=[
+                cls._value(point, point.drinking_day_share * 100) for point in points
+            ],
+            intensity=[cls._value(point, point.intensity) for point in points],
+            label=cls._label(profile),
+        )
+
+    @staticmethod
+    def _value(point: MonthPoint, value: float) -> float | None:
+        """A month no pooled year has reached yet has no reading, and a chart
+        draws that as a gap.
+
+        The one place this layer carries a null, and it earns it: a running
+        year's December plotted as 0.0 is indistinguishable from a December the
+        user got through without a Drink, and Highcharts has no other way to
+        break a line.
         """
-        year_from, year_to = self._profile.year_from, self._profile.year_to
+        if not point.calendar_days:
+            return None
 
-        if not self._profile.has_data:
-            return ""
+        return round(value, 1)
+
+    @staticmethod
+    def _label(profile: TypicalYearProfile) -> str:
+        """The years this layer was actually drawn from, named in the legend.
+
+        A narrowed range must never read as covering everything, and with two
+        layers on one chart neither may read as the other — so each states its
+        own span rather than leaving it to be inferred from the tab.
+        """
+        year_from, year_to = profile.year_from, profile.year_to
 
         if year_from == year_to:
             return str(year_to)

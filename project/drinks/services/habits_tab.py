@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 
 from django.utils.translation import gettext as _
 
@@ -7,6 +7,7 @@ from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_risk import HEAVY_DAY_STDAV
 from . import stat_card
 from .consumption_year import ConsumptionYear
+from .profile_chart import ProfileLayer, profile_chart_dict
 from .stat_card import StatCard
 
 
@@ -19,8 +20,18 @@ class WeekdayChartViewModel:
     text: dict[str, str]
 
     @property
+    def layers(self) -> list[ProfileLayer]:
+        """One span, and the tab already names it — so no label.
+
+        The Typical year draws the same chart with two layers; this one has
+        nothing to read against, because a weekday only recurs within the year
+        the header selects.
+        """
+        return [ProfileLayer(self.drinking_day_share, self.intensity)]
+
+    @property
     def as_dict(self) -> dict:
-        return asdict(self)
+        return profile_chart_dict(self)
 
 
 class HabitsTab:

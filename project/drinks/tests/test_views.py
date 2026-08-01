@@ -446,7 +446,7 @@ def test_tab_habits_renders_the_pooled_range_presets(client_logged):
     response = client_logged.get(reverse("drinks:tab_habits"))
     content = response.content.decode()
 
-    assert f'hx-get="{reverse("drinks:typical_year")}"' in content
+    assert f'hx-get="{reverse("drinks:typical_year_all")}"' in content
     for qty in (1, 2, 3, 5):
         url = reverse("drinks:typical_year_last", kwargs={"qty": qty})
         assert f'hx-get="{url}"' in content
@@ -463,6 +463,42 @@ def test_typical_year_renders_chart_data(client_logged):
     response = client_logged.get(reverse("drinks:typical_year"))
 
     assert 'id="chart-typical-year-data"' in response.content.decode()
+
+
+def test_typical_year_opens_on_the_header_year_alone(client_logged):
+    # the pooled range is a reading to ask for: it loads on a preset or on
+    # Filter, never on the first fetch
+    DrinkFactory(date=date(1995, 1, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+
+    chart = client_logged.get(reverse("drinks:typical_year")).context["chart"]
+
+    assert chart.year.label == "1999"
+    assert not chart.pooled.has_data
+    assert chart.layers == [chart.year]
+
+
+def test_typical_year_boxes_open_on_the_full_span_before_anything_is_pooled(
+    client_logged,
+):
+    DrinkFactory(date=date(1995, 1, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+
+    content = client_logged.get(reverse("drinks:typical_year")).content.decode()
+
+    assert 'name="year_from" value="1995"' in content
+    assert 'name="year_to" value="1999"' in content
+
+
+def test_typical_year_all_years_pools_every_year_behind_the_header_year(client_logged):
+    DrinkFactory(date=date(1995, 1, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+
+    chart = client_logged.get(reverse("drinks:typical_year_all")).context["chart"]
+
+    assert chart.year_from == 1995
+    assert chart.year_to == 1999
+    assert chart.layers == [chart.pooled, chart.year]
 
 
 @pytest.mark.parametrize(
@@ -489,7 +525,7 @@ def test_typical_year_preset_pools_the_years_that_have_records(client_logged):
     chart = client_logged.get(url).context["chart"]
 
     assert chart.year_from == 1998
-    assert chart.text["subtitle"] == "Apjungti 1998–1999 m."
+    assert chart.pooled.label == "Apjungti 1998–1999 m."
 
 
 def test_typical_year_preset_opens_the_form_on_what_it_pooled(client_logged):
@@ -501,21 +537,6 @@ def test_typical_year_preset_opens_the_form_on_what_it_pooled(client_logged):
 
     assert 'name="year_from" value="1997"' in content
     assert 'name="year_to" value="1999"' in content
-
-
-def test_typical_year_defaults_to_the_full_span(client_logged):
-    DrinkFactory(date=date(1999, 1, 1))
-    DrinkFactory(date=date(2005, 1, 1))
-
-    response = client_logged.get(reverse("drinks:typical_year"))
-    chart = response.context["chart"]
-    content = response.content.decode()
-
-    assert chart.year_from == 1999
-    assert chart.year_to == 2005
-    # the form opens on what is plotted, so the boxes and the caption agree
-    assert 'name="year_from" value="1999"' in content
-    assert 'name="year_to" value="2005"' in content
 
 
 def test_typical_year_without_records_renders_no_chart(client_logged):
@@ -535,7 +556,7 @@ def test_typical_year_with_one_year_of_data_renders(client_logged):
     response = client_logged.get(reverse("drinks:typical_year"))
 
     assert response.status_code == 200
-    assert response.context["chart"].text["subtitle"] == "1999"
+    assert response.context["chart"].year.label == "1999"
 
 
 def test_typical_year_valid_pools_the_selected_range(client_logged):
@@ -550,6 +571,8 @@ def test_typical_year_valid_pools_the_selected_range(client_logged):
 
     assert chart.year_from == 1999
     assert chart.year_to == 2000
+    # the header year stays in front of whatever the form asked to pool
+    assert chart.layers == [chart.pooled, chart.year]
     assert 'id="chart-typical-year-data"' in content
     # the form is swapped out of band, because it lives outside the container
     assert 'id="typical-year-form"' in content
