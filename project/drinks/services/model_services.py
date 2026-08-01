@@ -50,6 +50,12 @@ class DrinkModelService(SumMixin, BaseModelService):
     def items(self):
         return self.objects
 
+    def years(self) -> list[int]:
+        """Every calendar year the user has a Drink in, oldest first."""
+        return sorted(
+            self.objects.values_list("date__year", flat=True).order_by().distinct()
+        )
+
     def latest_date(self, year: int) -> date | None:
         """Date of the last record in `year`, or None when the year is empty."""
         with contextlib.suppress(models.Drink.DoesNotExist):
@@ -84,9 +90,7 @@ class DrinkModelService(SumMixin, BaseModelService):
             sum_column="stdav",
         ).annotate(qty=F("stdav") * self.ratio)
 
-    def sum_by_year_month(
-        self, year_from: int | None = None, year_to: int | None = None
-    ) -> QuerySet:
+    def sum_by_year_month(self, year_from: int = 0, year_to: int = 0) -> QuerySet:
         """Every month the user has Drinks in, across years, in one query.
 
         Returns rows of:
