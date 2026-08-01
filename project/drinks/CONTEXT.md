@@ -61,16 +61,24 @@ _Avoid_: weekly pattern (that reads as the Risk tab's per-week totals), day
 breakdown
 
 **Typical year**:
-Twelve months pooled across several of a user's years, as both a Drinking-day
-rate and an Intensity — the same kind of shape as the Weekday profile, one
-period longer, and no year axis at all. Only years carrying a Drink contribute
-days to the denominator.
+Twelve months as both a Drinking-day rate and an Intensity — the same kind of
+shape as the Weekday profile, one period longer, and no year axis at all. Always
+draws the year the header selects; draws a Pooled range behind it once the user
+asks for one. Only years carrying a Drink contribute days to the denominator.
 _Avoid_: average year, seasonality, monthly totals (that is `sum_by_month`)
 
+**Profile layer**:
+One span of time on a profile chart: its Drinking-day rate, its Intensity, and
+the label naming the span. Layers are ordered back to front, and the front one
+is the reading the chart is about. The Weekday profile has one, unlabelled,
+because its Tab already names the year; the Typical year has two.
+_Avoid_: series, dataset, overlay
+
 **Pooled range**:
-The from-year and to-year a Typical year is drawn from. The user's choice, never
-the app's: it is what keeps a month-per-row era out of the profile without the
-app deciding whose years to trust. Always named on the chart it produced.
+The from-year and to-year the Typical year's back layer is drawn from. The
+user's choice, never the app's: it is what keeps a month-per-row era out of the
+profile without the app deciding whose years to trust, and nothing is pooled
+until they press for it. Always named on the layer it produced.
 _Avoid_: filter, period, span
 
 ### Goals
