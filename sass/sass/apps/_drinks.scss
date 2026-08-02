@@ -14,6 +14,11 @@
 // Values are set in a condensed display face, labels in mono with wide letter
 // spacing, notes in the body sans. Panels are hairline frames rather than
 // filled cards.
+//
+// One section per component, and one block per class inside it: layout and skin
+// are the same rules here. Every Tab is fetched into `#tab_content`, which sits
+// inside the wrapper, so nothing in this file ever renders unscoped and nothing
+// needs a second, unscoped copy of itself to fall back to.
 
 
 // Panel: a hairline frame. Every chart, the calendar and the breakdown table
@@ -93,15 +98,23 @@
     nav#drinks-nav {
         margin-bottom: calc($gap * 1.5);
         gap: 0 1.6rem;
+        flex-wrap: wrap;
 
-        // no rule under the strip: the active Tab's own underline is the only
-        // line needed, and a second one below it read as a table head
+        // underline tabs (mirrors #main-nav; minimal, not buttons). No rule
+        // under the strip: the active Tab's own underline is the only line
+        // needed, and a second one below it read as a table head
         .tab {
             @include drinks-label;
 
             padding: 0.3rem 0.05rem 0.5rem;
+            border: 0;
             border-bottom: 2px solid transparent;
+            background: transparent;
             font-size: 0.66rem;
+            white-space: nowrap;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: $transition;
 
             &:hover,
             &:focus {
@@ -116,7 +129,12 @@
             }
         }
 
-        // the drink-type filter is chrome too, so it is ink and mono like a Tab
+        // the drink-type filter is chrome too, so it is ink and mono like a Tab,
+        // and it is pushed to the right of the tab strip
+        > div {
+            margin-left: auto;
+        }
+
         .dropdown__btn {
             @include drinks-label;
 
@@ -126,6 +144,12 @@
             &:hover {
                 color: $drinks-data;
             }
+        }
+
+        .dropdown__menu {
+            left: auto;
+            right: 0;
+            transform: none;
         }
     }
 
@@ -152,16 +176,13 @@
     }
 
     .trend-card {
+        position: relative;
         display: grid;
         grid-row: span 3;
         grid-template-rows: subgrid;
         // the row's 2rem is the space between two cards, not between a figure
         // and its note
         row-gap: 0.5rem;
-        padding: 0;
-        background: transparent;
-        border: 0;
-        border-radius: 0;
         text-align: center;
 
         &__label {
@@ -199,13 +220,24 @@
             }
         }
 
-        // both the gap from the figure and the line the marks stand on belong to
+        // the column beside the figure. The unit holds the flow, so the figure
+        // and the unit share a baseline, and the marks a figure carries — the
+        // information note and, on the daily-limit card, the edit trigger — are
+        // lifted out of it and stacked above the unit.
+        //
+        // Both the gap from the figure and the line the marks stand on belong to
         // the column rather than to the unit inside it: a card carrying no unit
         // — an Std Av figure is read as typed — would otherwise lose the gap and
         // drop its mark onto the figure's baseline. The empty box holds the line
-        // whether a unit is set in it or not
+        // whether a unit is set in it or not, and it is as tall as the unit
+        // rather than as tall as the figure: with the figure's own strut in it
+        // the stack would be three times too tall and the mark would land on the
+        // card's title
         &__meta {
+            position: relative;
+            display: inline-block;
             margin-left: 0.15em;
+            line-height: 0;
 
             &::before {
                 content: "";
@@ -252,55 +284,97 @@
             color: $drinks-ink-muted;
         }
 
-        // both marks stand over the unit rather than beside the figure: a mark
-        // this small reads as a footnote to the number, not as part of it
+        // a mark this small reads as a footnote to the number, not as part of
+        // it. It starts where the unit starts rather than sitting centred over
+        // it: the units differ in width by a factor of five ("%" against
+        // "Std Av"), and centring reads as a different placement on every card
         &__info,
         &__edit {
+            position: absolute;
+            bottom: calc(100% + 0.15em);
+            left: 0;
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
             font-size: 0.26em;
             color: $drinks-ink-faint;
 
             &:hover,
             &:focus-visible {
                 color: $drinks-data;
+                outline: none;
             }
         }
 
-        // it hangs inside the value, so without these it inherits the figure's
-        // condensed display face, its negative tracking and its tabular
-        // numerals — a sentence set in all three reads squeezed
+        &__info {
+            cursor: help;
+
+            &:hover .trend-card__explanation,
+            &:focus-visible .trend-card__explanation {
+                visibility: visible;
+                opacity: 1;
+            }
+        }
+
+        &__edit {
+            padding: 0;
+            border: 0;
+            background: none;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        // it hangs inside the value, so without a face of its own it inherits
+        // the figure's condensed display face, its negative tracking and its
+        // tabular numerals — a sentence set in all three reads squeezed
         &__explanation {
+            position: absolute;
             // the mark it hangs from stands above the unit, so it is dropped
             // clear of the figure rather than 8px under an icon that now sits
             // halfway up it
             top: calc(100% + 2.4em);
+            left: 50%;
+            z-index: 20;
+            width: max-content;
             max-width: 15rem;
             padding: 0.55rem 0.75rem;
-            border-radius: 0;
             background: $drinks-ink;
-            box-shadow: none;
+            color: $drinks-paper;
             font-family: $drinks-body;
             font-size: 0.72rem;
             font-weight: 400;
             font-variant-numeric: normal;
             letter-spacing: normal;
             line-height: 1.45;
+            text-align: left;
+            white-space: normal;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-50%);
+            transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+            pointer-events: none;
         }
     }
 
     // ---- panels ----------------------------------------------------------
     [id^="chart-"][id$="-container"],
-    #breakdown,
-    .heat-card {
+    #breakdown {
         @include drinks-panel;
     }
 
     // ---- calendar --------------------------------------------------------
-    // levels are ordered, so they are steps of one hue; a Heavy day is the top
-    // step *and* wears a harm ring, so harm is never read from a hue alone
-    // the four levels take the 1st, 3rd, 5th and 6th step of the ramp rather
-    // than the first four: an empty day and a Heavy day are the two readings a
-    // year is skimmed for, so they sit as far apart as the hue goes
+    // the year heatmap, server-rendered as a grid of blocks per month
     .heat-card {
+        @include drinks-panel;
+
+        min-width: 0;
+
+        // levels are ordered, so they are steps of one hue; a Heavy day is the
+        // top step *and* wears a harm ring, so harm is never read from a hue
+        // alone. The four levels take the 1st, 3rd, 5th and 6th step of the ramp
+        // rather than the first four: an empty day and a Heavy day are the two
+        // readings a year is skimmed for, so they sit as far apart as the hue
+        // goes
         .l0 { background: $drinks-empty; }
         .l1 { background: nth($drinks-ramp, 1); }
         .l2 { background: nth($drinks-ramp, 3); }
@@ -322,38 +396,124 @@
             outline: 2px solid $drinks-ink;
             outline-offset: -1px;
         }
+    }
 
-        .mini i {
-            border-radius: 0;
+    .heat-scroll {
+        width: 100%;
+        min-width: 0;
+        padding-bottom: 0.35rem;
+        overflow-x: auto;
+    }
+
+    .heat-body {
+        display: flex;
+        gap: 5px;
+        justify-content: space-between;
+        align-items: flex-start;
+        width: 100%;
+        min-width: max-content;
+    }
+
+    .heat-daycol {
+        flex: 0 0 auto;
+        display: grid;
+        grid-template-rows: repeat(7, 16px);
+        gap: 3px;
+        margin-right: 4px;
+        font-size: 0.62rem;
+        color: $drinks-ink-muted;
+
+        span {
+            display: flex;
+            align-items: center;
+            height: 16px;
         }
     }
 
-    .heat-daycol,
-    .heat-month .mlabel,
+    .heat-month {
+        flex: 1 0 auto;
+        min-width: max-content;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 7px;
+        padding: 0 6px;
+
+        // `& + &` would nest the wrapper into the sibling selector as well
+        & + .heat-month {
+            border-left: 1px solid $drinks-hair-soft;
+        }
+
+        .mini {
+            display: grid;
+            grid-template-rows: repeat(7, 16px);
+            grid-auto-flow: column;
+            grid-auto-columns: 16px;
+            gap: 3px;
+
+            i {
+                display: block;
+                width: 16px;
+                height: 16px;
+
+                &:first-child {
+                    grid-row-start: var(--start, 1);
+                }
+            }
+        }
+
+        .mlabel {
+            text-align: center;
+            font-size: 0.75rem;
+            color: $drinks-ink-muted;
+        }
+    }
+
     .heat-legend {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.7rem;
+        font-size: 0.72rem;
         color: $drinks-ink-muted;
-    }
 
-    .heat-month + .heat-month {
-        border-left: 1px solid $drinks-hair-soft;
-    }
+        i {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            vertical-align: middle;
+        }
 
-    .heat-legend i {
-        border-radius: 0;
-    }
+        .swatches {
+            display: inline-flex;
+            gap: 3px;
 
-    .heat-legend .swatches i:first-child {
-        box-shadow: inset 0 0 0 1px $drinks-hair;
+            // the empty day is paper, so only a hairline says it is a block
+            i:first-child {
+                box-shadow: inset 0 0 0 1px $drinks-hair;
+            }
+        }
+
+        &__spacer {
+            flex: 1;
+        }
     }
 
     .heat-tooltip {
+        position: absolute;
+        z-index: 100;
+        padding: 0.4rem 0.6rem;
         border: 1px solid $drinks-ink;
-        border-radius: 0;
         background: $drinks-paper;
         color: $drinks-ink;
-        box-shadow: none;
+        font-size: 0.72rem;
+        line-height: 1.35;
+        white-space: nowrap;
+        transform: translate(-50%, -100%) translateY(-8px);
+        pointer-events: none;
 
         &__date {
+            margin-bottom: 0.15rem;
             font-size: 0.68rem;
             font-weight: 400;
         }
@@ -364,16 +524,34 @@
     }
 
     // ---- tables ----------------------------------------------------------
+    // compact and minimal: the Overview breakdown and the Data tab
     .stdav-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-variant-numeric: tabular-nums;
+
         caption {
             @include drinks-label;
 
             padding: 0 0 0.7rem;
             font-size: 0.68rem;
             letter-spacing: 0.15em;
+            text-align: left;
             color: $drinks-ink;
             background: transparent;
             border-bottom: 0;
+        }
+
+        th,
+        td {
+            padding: 0.35rem $gap;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        th:first-child,
+        td:first-child {
+            text-align: left;
         }
 
         thead th {
@@ -394,9 +572,11 @@
             background: transparent;
         }
 
+        // emphasised summary row (e.g. the "Std Av" total)
         tbody tr.stdav-table__total td {
             border-top: 1px solid $drinks-ink;
             border-bottom: 0;
+            font-weight: 600;
             color: $drinks-ink;
 
             &:first-child {
@@ -404,6 +584,15 @@
                 font-size: 0.7rem;
                 letter-spacing: 0.1em;
             }
+        }
+
+        // action columns (shared <c-td-edit> / <c-td-delete> markup)
+        .edit-col,
+        .delete-col {
+            width: 2.25rem;
+            padding-left: 0;
+            padding-right: 0;
+            text-align: center;
         }
 
         .edit-col a {
@@ -435,15 +624,25 @@
         }
     }
 
-    // ---- disclosure + chart controls -------------------------------------
+    // ---- disclosure ------------------------------------------------------
+    // "What is a standard unit?", sitting flush at the bottom of the breakdown
     .stdav-info {
         border-top: 1px solid $drinks-hair-soft;
 
         summary {
             @include drinks-label;
 
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
             padding: 0.7rem 0 0;
             font-weight: 400;
+            list-style: none;
+            cursor: pointer;
+
+            &::-webkit-details-marker {
+                display: none;
+            }
 
             &:hover {
                 color: $drinks-ink;
@@ -451,11 +650,27 @@
         }
 
         &__body {
+            max-width: 62ch;
             padding: 0.5rem 0 0;
             color: $drinks-ink-muted;
+
+            p {
+                margin: 0 0 0.55rem;
+            }
+
+            span {
+                display: inline-block;
+                margin: 0 0.4rem 0.4rem 0;
+                padding: 0.2rem 0.5rem;
+                color: $text-muted;
+                background: $table-header-bg;
+                border: 1px solid $border-color-light;
+                border-radius: $modal-border-radius;
+            }
         }
     }
 
+    // ---- chart controls --------------------------------------------------
     .pool-controls,
     .compare-controls {
         .button-secondary {
@@ -541,395 +756,6 @@
                 border-color: $drinks-ink-muted;
                 color: $drinks-ink;
             }
-        }
-    }
-}
-
-
-// Drinks App - Navigation structure. The skin above dresses it; what is left
-// here is layout, which holds with or without the skin.
-nav#drinks-nav {
-    margin-bottom: $gap;
-    gap: 0 1.25rem;
-    flex-wrap: wrap;
-
-    // underline tabs (mirrors #main-nav; minimal, not buttons)
-    .tab {
-        border: 0;
-        border-bottom: 3px solid transparent;
-        background: transparent;
-        white-space: nowrap;
-        cursor: pointer;
-        padding: .35rem .15rem;
-        touch-action: manipulation;
-        transition: $transition;
-    }
-
-    // drink-type filter: pushed to the right of the tab strip
-    > div {
-        margin-left: auto;
-    }
-
-    .dropdown__menu {
-        left: auto;
-        right: 0;
-        transform: none;
-    }
-}
-
-
-// Drinks App - Compact, minimal table (Overview breakdown and Data tab)
-.stdav-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-variant-numeric: tabular-nums;
-
-    caption {
-        padding: 0.5rem $gap;
-        text-align: left;
-        font-weight: 600;
-    }
-
-    th,
-    td {
-        padding: 0.35rem $gap;
-        text-align: right;
-        vertical-align: middle;
-    }
-
-    th:first-child,
-    td:first-child {
-        text-align: left;
-    }
-
-    thead th {
-        font-weight: 600;
-    }
-
-    // emphasised summary row (e.g. the "Std Av" total)
-    tbody tr.stdav-table__total td {
-        font-weight: 600;
-    }
-
-    // action columns (shared <c-td-edit> / <c-td-delete> markup)
-    .edit-col,
-    .delete-col {
-        width: 2.25rem;
-        padding-left: 0;
-        padding-right: 0;
-        text-align: center;
-    }
-}
-
-
-// Drinks App - Stat Cards. Layout only; the skin above dresses them.
-//
-// A figure carries at most two marks — the information note and, on the
-// daily-limit card, the edit trigger. Both stack above the unit in one column
-// beside the figure, so the number is the only thing on its own line.
-.trend-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: calc($gap / 4);
-    padding: $gap;
-    border: 1px solid $border-color-light;
-    border-radius: $modal-border-radius;
-    background: $table-header-bg;
-    text-align: center;
-
-    &__label {
-        font-size: 0.9em;
-        color: $text-muted;
-    }
-
-    &__value {
-        font-size: 2em;
-        font-weight: 600;
-        color: $black-muted;
-
-        &.positive {
-            color: $positive-text;
-        }
-
-        &.negative {
-            color: $negative-text;
-        }
-
-        &.warning {
-            color: $warning-text;
-        }
-    }
-
-    &__note {
-        font-size: 0.9em;
-        color: $text-muted;
-    }
-
-    // the column beside the figure: the unit holds the flow, so the figure and
-    // the unit keep the baseline they shared before, and the marks are lifted
-    // out of it and centred over the unit
-    &__meta {
-        position: relative;
-        display: inline-block;
-        // the column is as tall as the unit, not as tall as the figure it sits
-        // beside: with the figure's own strut in it the stack would be three
-        // times too tall and the mark would land on the card's title
-        line-height: 0;
-    }
-
-    // the mark starts where the unit starts rather than sitting centred over it:
-    // the units differ in width by a factor of five ("%" against "Std Av"), and
-    // centring reads as a different placement on every card. A card with no unit
-    // keeps the column's own margin, so the mark never touches the figure
-    &__info,
-    &__edit {
-        position: absolute;
-        bottom: calc(100% + 0.15em);
-        left: 0;
-        display: inline-flex;
-        align-items: center;
-        line-height: 1;
-        font-size: 0.5em;
-        color: $text-muted;
-    }
-
-    &__info {
-        cursor: help;
-
-        &:hover,
-        &:focus-visible {
-            color: $primary;
-            outline: none;
-
-            .trend-card__explanation {
-                visibility: visible;
-                opacity: 1;
-            }
-        }
-    }
-
-    &__edit {
-        padding: 0;
-        border: 0;
-        background: none;
-        font-family: inherit;
-        cursor: pointer;
-
-        &:hover,
-        &:focus-visible {
-            color: $primary;
-            outline: none;
-        }
-    }
-
-    &__explanation {
-        position: absolute;
-        top: calc(100% + 8px);
-        left: 50%;
-        z-index: 20;
-        width: max-content;
-        max-width: 220px;
-        padding: 0.5rem 0.7rem;
-        border-radius: $modal-border-radius;
-        background: rgba(10, 20, 30, 0.9);
-        color: #fff;
-        font-size: 0.8rem;
-        font-weight: 400;
-        line-height: 1.35;
-        text-align: left;
-        white-space: normal;
-        opacity: 0;
-        visibility: hidden;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        transform: translateX(-50%);
-        transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
-        pointer-events: none;
-    }
-}
-
-
-// Drinks App - Year heatmap (server-rendered calendar)
-.heat-card {
-    position: relative;
-    min-width: 0;
-    padding: calc($gap * 1.4) $gap;
-    background: #fff;
-    border: 1px solid $border-color-light;
-    border-radius: $modal-border-radius;
-
-    .l0 { background: #eceef1; }
-    .l1 { background: #cbe7cd; }
-    .l2 { background: var(--chart-positive-dark); }
-    .l3 { background: var(--chart-warning-dark); }
-    .l4 { background: var(--chart-negative-dark); }  // "heavier day" — matches the Risks tab heavy-day colour
-    .future { background: #f6f7f8; }
-    .today { outline: 2px solid $secondary; outline-offset: -1px; }
-}
-
-.heat-tooltip {
-    position: absolute;
-    z-index: 100;
-    pointer-events: none;
-    background: #ffffff;
-    border: 2px solid #ccc;
-    border-radius: $modal-border-radius;
-    padding: 0.4rem 0.6rem;
-    font-size: 0.72rem;
-    line-height: 1.35;
-    color: $black-muted;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    transform: translate(-50%, -100%) translateY(-8px);
-    white-space: nowrap;
-
-    &__date {
-        font-weight: 600;
-        margin-bottom: 0.15rem;
-    }
-
-    &__row {
-        color: $text-muted;
-    }
-}
-
-.heat-scroll {
-    width: 100%;
-    min-width: 0;
-    padding-bottom: 0.35rem;
-    overflow-x: auto;
-}
-
-.heat-body {
-    display: flex;
-    gap: 5px;
-    justify-content: space-between;
-    align-items: flex-start;
-    width: 100%;
-    min-width: max-content;
-}
-
-.heat-daycol {
-    flex: 0 0 auto;
-    display: grid;
-    grid-template-rows: repeat(7, 16px);
-    gap: 3px;
-    margin-right: 4px;
-    font-size: 0.62rem;
-    color: $text-muted;
-
-    span {
-        display: flex;
-        align-items: center;
-        height: 16px;
-    }
-}
-
-.heat-month {
-    flex: 1 0 auto;
-    min-width: max-content;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 7px;
-    padding: 0 6px;
-
-    & + & {
-        border-left: 1px solid #eef1f4;
-    }
-
-    .mini {
-        display: grid;
-        grid-template-rows: repeat(7, 16px);
-        grid-auto-flow: column;
-        grid-auto-columns: 16px;
-        gap: 3px;
-
-        i {
-            display: block;
-            width: 16px;
-            height: 16px;
-            border-radius: 2px;
-
-            &:first-child {
-                grid-row-start: var(--start, 1);
-            }
-        }
-    }
-
-    .mlabel {
-        text-align: center;
-        font-size: 0.75rem;
-        color: $text-muted;
-    }
-}
-
-.heat-legend {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.7rem;
-    font-size: 0.72rem;
-    color: $text-muted;
-
-    i {
-        display: inline-block;
-        width: 13px;
-        height: 13px;
-        border-radius: 2px;
-        vertical-align: middle;
-    }
-
-    .swatches {
-        display: inline-flex;
-        gap: 3px;
-    }
-
-    &__spacer {
-        flex: 1;
-    }
-}
-
-
-// Drinks App - "What is a standard unit?" disclosure (sits flush at the bottom
-// of the breakdown)
-.stdav-info {
-    border-top: 1px solid $border-color-light;
-
-    summary {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.55rem $gap;
-        color: $primary;
-        font-weight: 500;
-        list-style: none;
-        cursor: pointer;
-
-        &::-webkit-details-marker {
-            display: none;
-        }
-
-        &:hover {
-            color: darken($primary, 8%);
-        }
-    }
-
-    &__body {
-        max-width: 62ch;
-        padding: 0 $gap 0.75rem;
-
-        p {
-            margin: 0 0 0.55rem;
-        }
-
-        span {
-            display: inline-block;
-            margin: 0 0.4rem 0.4rem 0;
-            padding: 0.2rem 0.5rem;
-            color: $text-muted;
-            background: $table-header-bg;
-            border: 1px solid $border-color-light;
-            border-radius: $modal-border-radius;
         }
     }
 }
