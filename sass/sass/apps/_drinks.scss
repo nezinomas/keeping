@@ -133,23 +133,36 @@
     // nothing frames a Stat Card and nothing separates one from the next: no
     // fill, no box, and no rule in either direction. Whitespace does the
     // separating, and the only line in a card is the short one over its note.
+    //
+    // A row of them is one grid rather than a row of independent cards: stacked
+    // on their own, a title that wraps to two lines at a narrow width pushes its
+    // own figure down and the row's figures no longer read along one line. The
+    // three rows — title, figure, note — belong to the row, and each card takes
+    // them by `subgrid` below.
     #index-summary,
     #trend-summary,
     #habits-summary,
     #risk-summary {
         position: relative;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-rows: auto auto auto;
         gap: 2rem;
         padding: calc($gap * 1.2) calc($gap * 0.9) calc($gap * 1.1);
     }
 
     .trend-card {
-        gap: 0.5rem;
+        display: grid;
+        grid-row: span 3;
+        grid-template-rows: subgrid;
+        // the row's 2rem is the space between two cards, not between a figure
+        // and its note
+        row-gap: 0.5rem;
         padding: 0;
         background: transparent;
         border: 0;
         border-radius: 0;
         text-align: center;
-        align-items: center;
 
         &__label {
             @include drinks-label;
@@ -259,7 +272,9 @@
     // the daily-limit card keeps its editable value; a dotted rule under the
     // figure is what says it can be pressed
     button.trend-card__value {
-        align-self: center;
+        // a grid cell, so it would otherwise stretch and carry its dotted rule
+        // the full width of the card
+        justify-self: center;
         border-bottom: 1px dotted $drinks-hair;
 
         &:hover {
