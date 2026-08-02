@@ -312,9 +312,7 @@
     .heat-daycol,
     .heat-month .mlabel,
     .heat-legend {
-        @include drinks-label;
-
-        font-size: 0.58rem;
+        color: $drinks-ink-muted;
     }
 
     .heat-month + .heat-month {
@@ -337,7 +335,6 @@
         box-shadow: none;
 
         &__date {
-            font-family: $drinks-mono;
             font-size: 0.68rem;
             font-weight: 400;
         }
