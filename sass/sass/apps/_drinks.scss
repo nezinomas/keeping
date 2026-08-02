@@ -199,12 +199,25 @@
             }
         }
 
+        // both the gap from the figure and the line the marks stand on belong to
+        // the column rather than to the unit inside it: a card carrying no unit
+        // — an Std Av figure is read as typed — would otherwise lose the gap and
+        // drop its mark onto the figure's baseline. The empty box holds the line
+        // whether a unit is set in it or not
+        &__meta {
+            margin-left: 0.15em;
+
+            &::before {
+                content: "";
+                display: inline-block;
+                font-size: 0.34em;
+                height: 1em;
+            }
+        }
+
         // the unit is a third of the figure and unemphasised: what is read is
         // the number, and "ml" beside it at the same weight competes with it
         &__unit {
-            // enough to read a word unit ("Std Av") as a separate token, tight
-            // enough that a symbol ("%") still belongs to the figure
-            margin-left: 0.15em;
             font-size: 0.34em;
             font-weight: 400;
             letter-spacing: 0;
@@ -239,9 +252,10 @@
             color: $drinks-ink-muted;
         }
 
-        // sits on the figure's baseline rather than centred on it: a mark this
-        // small reads as a footnote to the number, not as part of it
-        &__info {
+        // both marks stand over the unit rather than beside the figure: a mark
+        // this small reads as a footnote to the number, not as part of it
+        &__info,
+        &__edit {
             font-size: 0.26em;
             color: $drinks-ink-faint;
 
@@ -255,6 +269,10 @@
         // condensed display face, its negative tracking and its tabular
         // numerals — a sentence set in all three reads squeezed
         &__explanation {
+            // the mark it hangs from stands above the unit, so it is dropped
+            // clear of the figure rather than 8px under an icon that now sits
+            // halfway up it
+            top: calc(100% + 2.4em);
             max-width: 15rem;
             padding: 0.55rem 0.75rem;
             border-radius: 0;
@@ -266,20 +284,6 @@
             font-variant-numeric: normal;
             letter-spacing: normal;
             line-height: 1.45;
-        }
-    }
-
-    // the daily-limit card keeps its editable value; a dotted rule under the
-    // figure is what says it can be pressed
-    button.trend-card__value {
-        // a grid cell, so it would otherwise stretch and carry its dotted rule
-        // the full width of the card
-        justify-self: center;
-        border-bottom: 1px dotted $drinks-hair;
-
-        &:hover {
-            color: $drinks-data;
-            border-bottom-color: $drinks-data;
         }
     }
 

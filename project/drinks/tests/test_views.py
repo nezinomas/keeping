@@ -218,31 +218,64 @@ def test_tab_index_has_daily_limit_card(client_logged):
 
     # the daily-limit card replaces the old target table
     assert 'class="trend-card trend-card--limit"' in content
-    # there is no separate edit button; the value itself is the trigger
-    assert "trend-card__edit" not in content
+    # the figure is read, not pressed: a pencil beside it is the edit trigger
+    assert '<button type="button" class="trend-card__value"' not in content
 
-    # with no target set the value is a "+" that opens the goal modal (target_new)
+    # with no target set the pencil opens the goal modal (target_new)
     add_url = reverse("drinks:target_new", kwargs={"tab": "index"})
     assert (
-        f'<button type="button" class="trend-card__value" hx-get="{add_url}"' in content
+        f'<button type="button" class="trend-card__edit" hx-get="{add_url}"' in content
     )
     assert 'hx-target="#mainModal"' in content
-    assert ">+</button>" in content
+    assert 'class="bi bi-pencil"' in content
 
 
-def test_tab_index_daily_limit_value_click_uses_target_update(client_logged):
+def test_tab_index_daily_limit_edit_link_uses_target_update(client_logged):
     target = DrinkTargetFactory()
 
     url = reverse("drinks:tab_index")
     response = client_logged.get(url)
     content = response.content.decode()
 
-    # with a saved target the value (as a button) points at target_update
+    # with a saved target the pencil points at target_update
     edit_url = reverse("drinks:target_update", kwargs={"pk": target.pk})
     assert (
-        f'<button type="button" class="trend-card__value" hx-get="{edit_url}"'
-        in content
+        f'<button type="button" class="trend-card__edit" hx-get="{edit_url}"' in content
     )
+
+
+def test_tab_index_daily_limit_edit_link_sits_above_the_unit(client_logged):
+    """The pencil and the unit share one column beside the figure, the pencil on
+    top — so both live in the card's meta stack, the pencil first."""
+    DrinkTargetFactory()
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    meta = re.search(r'<span class="trend-card__meta">(.*?)</div>', content, re.S)
+    assert meta
+    assert meta.group(1).index("trend-card__edit") < meta.group(1).index(
+        "trend-card__unit"
+    )
+
+
+def test_tab_index_info_icon_sits_above_the_unit(client_logged):
+    """A Stat Card's information mark shares the meta stack with the unit, above
+    it, rather than trailing the figure."""
+    DrinkFactory()
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    metas = re.findall(r'<span class="trend-card__meta">(.*?)</div>', content, re.S)
+    stacked = [
+        m
+        for m in metas
+        if "trend-card__info" in m
+        and "trend-card__unit" in m
+        and m.index("trend-card__info") < m.index("trend-card__unit")
+    ]
+    assert stacked
 
 
 @time_machine.travel("1999-06-01")
