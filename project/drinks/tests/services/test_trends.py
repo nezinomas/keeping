@@ -231,6 +231,39 @@ def test_ytd_card_carries_its_percent_apart_from_the_figure(converter):
 
 
 @time_machine.travel("2026-03-01")
+def test_card_notes_join_their_values_with_a_slash(converter):
+    """Every Stat Card note joins its values with "/" — one card on a second
+    separator reads as a different kind of note than the four beside it."""
+    stats = TrendStats(
+        converter, current_daily=[_row(date(2026, 1, 10), 10)], target=250
+    )
+
+    notes = [c.note for c in TrendsBuilder(stats, target=250).get_cards()]
+
+    assert not [n for n in notes if "·" in n]
+
+
+@time_machine.travel("2026-03-01")
+def test_forecast_card_note_separates_the_limit_from_the_difference(converter):
+    stats = TrendStats(
+        converter, current_daily=[_row(date(2026, 1, 10), 10)], target=250
+    )
+
+    card = TrendsBuilder(stats, target=250).get_cards()[4]
+
+    assert re.fullmatch(rf"{_('Limit')}: [\d.]+ \S+ / -?[\d.]+%", card.note)
+
+
+@time_machine.travel("2026-03-01")
+def test_ytd_card_note_separates_its_unit_from_the_missing_year(converter):
+    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 10), 10)])
+
+    card = TrendsBuilder(stats).get_cards()[3]
+
+    assert card.note == f"Std Av / {_('No prior year')}"
+
+
+@time_machine.travel("2026-03-01")
 def test_forecast_card_carries_its_unit_apart_from_the_figure(converter):
     stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 10), 10)])
 

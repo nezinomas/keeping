@@ -253,15 +253,16 @@ class IndexBuilder:
         value = f"{avg:.{decimals}f}"
 
         # the Per drinking day card beside this one is Std Av over a different
-        # denominator, so this note names both of its own
-        denominator = f"{unit} {_('per calendar day')}"
+        # denominator, so this explanation names both of its own
+        explanation = f"{unit} {_('per calendar day')}"
 
         if not self._target:
             return StatCard(
                 title=title,
                 value=value,
                 unit=figure_unit,
-                note=f"{_('No limit set')} · {denominator}",
+                note=_("No limit set"),
+                explanation=explanation,
             )
 
         under_limit = avg <= self._target
@@ -274,7 +275,8 @@ class IndexBuilder:
             state=stat_card.LOW if under_limit else stat_card.HIGH,
             value=value,
             unit=figure_unit,
-            note=f"{diff:.{decimals}f} {direction} · {denominator}",
+            note=f"{diff:.{decimals}f} {direction}",
+            explanation=explanation,
         )
 
     def _card_pure_alcohol(self) -> StatCard:

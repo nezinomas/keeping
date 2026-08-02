@@ -5,15 +5,11 @@
 <div class="trend-card trend-card--limit">
     {% if limit.has_data %}{% url 'drinks:target_update' limit.target_id as limit_url %}{% else %}{% url 'drinks:target_new' 'index' as limit_url %}{% endif %}
     <div class="trend-card__label">{% translate 'Daily limit' %}</div>
+    <div class="trend-card__value">{% if limit.has_data %}{% if limit.unit == 'Std Av' %}{{ limit.ml|floatformat:'1g' }}{% else %}{{ limit.ml|floatformat:'0g' }}{% endif %}{% else %}&mdash;{% endif %}{# nothing between the pencil and the unit: whitespace inside the stack is a #}{# space set at the figure's size, and it shifts the unit off the pencil #}<span class="trend-card__meta"><button type="button" class="trend-card__edit" hx-get="{{ limit_url }}" hx-target="#mainModal" title="{% translate 'Goal for the year' %}" aria-label="{% translate 'Goal for the year' %}"><i class="bi bi-pencil" aria-hidden="true"></i></button>{% if limit.has_data and limit.unit != 'Std Av' %}<span class="trend-card__unit">{% translate 'ml' %}</span>{% endif %}</span>
+    </div>
     {% if limit.has_data %}
-    {% if limit.unit == 'Std Av' %}
-    <button type="button" class="trend-card__value" hx-get="{{ limit_url }}" hx-target="#mainModal" title="{% translate 'Goal for the year' %}">{{ limit.ml|floatformat:'1g' }}</button>
-    {% else %}
-    <button type="button" class="trend-card__value" hx-get="{{ limit_url }}" hx-target="#mainModal" title="{% translate 'Goal for the year' %}">{{ limit.ml|floatformat:'0g' }}<span class="trend-card__unit">{% translate 'ml' %}</span></button>
-    {% endif %}
     <div class="trend-card__note">{{ limit.pcs|floatformat:'1g' }} {% translate 'pcs' %} / {% translate 'day' %}</div>
     {% else %}
-    <button type="button" class="trend-card__value" hx-get="{{ limit_url }}" hx-target="#mainModal" title="{% translate 'Goal for the year' %}" aria-label="{% translate 'Goal for the year' %}">+</button>
     <div class="trend-card__note">{% translate 'No limit set' %}</div>
     {% endif %}
 </div>
