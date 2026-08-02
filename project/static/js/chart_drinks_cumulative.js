@@ -16,6 +16,7 @@ function chartDrinksCumulative(idData, idContainer) {
             type: "category",
             tickInterval: Math.ceil(chartData.categories.length / 12),
             labels: {
+                rotation: -45,
                 formatter: function () {
                     // categories are full ISO dates; show only MM-DD on the axis
                     return this.value.slice(5);
