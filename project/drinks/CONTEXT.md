@@ -169,7 +169,7 @@ achievement.
 _Avoid_: red, negative, danger, warning colour
 
 **Panel**:
-The hairline frame, with a registration mark at each corner, that a chart, the
+The hairline frame that a chart, the
 calendar or a table sits in. The frame is the only thing separating it from the
 page — a Panel has no fill and no shadow, and a Stat Card has no frame at all.
 _Avoid_: card, box, tile, container

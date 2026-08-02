@@ -12,49 +12,20 @@
 // is coloured for being under it.
 //
 // Values are set in a condensed display face, labels in mono with wide letter
-// spacing, notes in the body sans. Panels are hairline frames with registration
-// marks at the corners rather than filled cards.
+// spacing, notes in the body sans. Panels are hairline frames rather than
+// filled cards.
 
 
-// Panel: a hairline frame with a registration mark at each corner. Every chart,
-// the calendar and the breakdown table sit in one, so a Tab reads as a sheet of
-// plates rather than a stack of cards.
+// Panel: a hairline frame. Every chart, the calendar and the breakdown table
+// sit in one, so a Tab reads as a sheet of plates rather than a stack of cards.
 @mixin drinks-panel {
     position: relative;
     padding: calc($gap * 1.5) calc($gap * 1.6);
     background: $drinks-paper;
     border: 1px solid $drinks-hair;
     border-radius: 0;
-
-    // two pseudo-elements, two corners each: the marks are drawn as 1px
-    // gradients, so no extra markup is needed inside a container Highcharts owns
-    &::before,
-    &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background-repeat: no-repeat;
-        background-image:
-            linear-gradient($drinks-hair 0 0), linear-gradient($drinks-hair 0 0),
-            linear-gradient($drinks-hair 0 0), linear-gradient($drinks-hair 0 0);
-        background-size: 13px 1px, 1px 13px, 13px 1px, 1px 13px;
-    }
-
-    // top-left and bottom-right
-    &::before {
-        background-position:
-            -6px 6px, 6px -6px,
-            calc(100% + 6px) calc(100% - 7px), calc(100% - 7px) calc(100% + 6px);
-    }
-
-    // top-right and bottom-left
-    &::after {
-        background-position:
-            calc(100% + 6px) 6px, calc(100% - 7px) -6px,
-            -6px calc(100% - 7px), 6px calc(100% + 6px);
-    }
 }
+
 
 
 // Every label on a Tab: Tab names, axis captions, table heads, card titles.
