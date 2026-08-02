@@ -616,3 +616,316 @@ nav#drinks-nav {
         text-align: center;
     }
 }
+
+
+// Drinks App - Stat Cards. Layout only; the skin above dresses them.
+//
+// A figure carries at most two marks — the information note and, on the
+// daily-limit card, the edit trigger. Both stack above the unit in one column
+// beside the figure, so the number is the only thing on its own line.
+.trend-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: calc($gap / 4);
+    padding: $gap;
+    border: 1px solid $border-color-light;
+    border-radius: $modal-border-radius;
+    background: $table-header-bg;
+    text-align: center;
+
+    &__label {
+        font-size: 0.9em;
+        color: $text-muted;
+    }
+
+    &__value {
+        font-size: 2em;
+        font-weight: 600;
+        color: $black-muted;
+
+        &.positive {
+            color: $positive-text;
+        }
+
+        &.negative {
+            color: $negative-text;
+        }
+
+        &.warning {
+            color: $warning-text;
+        }
+    }
+
+    &__note {
+        font-size: 0.9em;
+        color: $text-muted;
+    }
+
+    // the column beside the figure: the unit holds the flow, so the figure and
+    // the unit keep the baseline they shared before, and the marks are lifted
+    // out of it and centred over the unit
+    &__meta {
+        position: relative;
+        display: inline-block;
+        // the column is as tall as the unit, not as tall as the figure it sits
+        // beside: with the figure's own strut in it the stack would be three
+        // times too tall and the mark would land on the card's title
+        line-height: 0;
+    }
+
+    // the mark starts where the unit starts rather than sitting centred over it:
+    // the units differ in width by a factor of five ("%" against "Std Av"), and
+    // centring reads as a different placement on every card. A card with no unit
+    // keeps the column's own margin, so the mark never touches the figure
+    &__info,
+    &__edit {
+        position: absolute;
+        bottom: calc(100% + 0.15em);
+        left: 0;
+        display: inline-flex;
+        align-items: center;
+        line-height: 1;
+        font-size: 0.5em;
+        color: $text-muted;
+    }
+
+    &__info {
+        cursor: help;
+
+        &:hover,
+        &:focus-visible {
+            color: $primary;
+            outline: none;
+
+            .trend-card__explanation {
+                visibility: visible;
+                opacity: 1;
+            }
+        }
+    }
+
+    &__edit {
+        padding: 0;
+        border: 0;
+        background: none;
+        font-family: inherit;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            color: $primary;
+            outline: none;
+        }
+    }
+
+    &__explanation {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 50%;
+        z-index: 20;
+        width: max-content;
+        max-width: 220px;
+        padding: 0.5rem 0.7rem;
+        border-radius: $modal-border-radius;
+        background: rgba(10, 20, 30, 0.9);
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 400;
+        line-height: 1.35;
+        text-align: left;
+        white-space: normal;
+        opacity: 0;
+        visibility: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        transform: translateX(-50%);
+        transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+        pointer-events: none;
+    }
+}
+
+
+// Drinks App - Year heatmap (server-rendered calendar)
+.heat-card {
+    position: relative;
+    min-width: 0;
+    padding: calc($gap * 1.4) $gap;
+    background: #fff;
+    border: 1px solid $border-color-light;
+    border-radius: $modal-border-radius;
+
+    .l0 { background: #eceef1; }
+    .l1 { background: #cbe7cd; }
+    .l2 { background: var(--chart-positive-dark); }
+    .l3 { background: var(--chart-warning-dark); }
+    .l4 { background: var(--chart-negative-dark); }  // "heavier day" — matches the Risks tab heavy-day colour
+    .future { background: #f6f7f8; }
+    .today { outline: 2px solid $secondary; outline-offset: -1px; }
+}
+
+.heat-tooltip {
+    position: absolute;
+    z-index: 100;
+    pointer-events: none;
+    background: #ffffff;
+    border: 2px solid #ccc;
+    border-radius: $modal-border-radius;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: $black-muted;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transform: translate(-50%, -100%) translateY(-8px);
+    white-space: nowrap;
+
+    &__date {
+        font-weight: 600;
+        margin-bottom: 0.15rem;
+    }
+
+    &__row {
+        color: $text-muted;
+    }
+}
+
+.heat-scroll {
+    width: 100%;
+    min-width: 0;
+    padding-bottom: 0.35rem;
+    overflow-x: auto;
+}
+
+.heat-body {
+    display: flex;
+    gap: 5px;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    min-width: max-content;
+}
+
+.heat-daycol {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-rows: repeat(7, 16px);
+    gap: 3px;
+    margin-right: 4px;
+    font-size: 0.62rem;
+    color: $text-muted;
+
+    span {
+        display: flex;
+        align-items: center;
+        height: 16px;
+    }
+}
+
+.heat-month {
+    flex: 1 0 auto;
+    min-width: max-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    padding: 0 6px;
+
+    & + & {
+        border-left: 1px solid #eef1f4;
+    }
+
+    .mini {
+        display: grid;
+        grid-template-rows: repeat(7, 16px);
+        grid-auto-flow: column;
+        grid-auto-columns: 16px;
+        gap: 3px;
+
+        i {
+            display: block;
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+
+            &:first-child {
+                grid-row-start: var(--start, 1);
+            }
+        }
+    }
+
+    .mlabel {
+        text-align: center;
+        font-size: 0.75rem;
+        color: $text-muted;
+    }
+}
+
+.heat-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.7rem;
+    font-size: 0.72rem;
+    color: $text-muted;
+
+    i {
+        display: inline-block;
+        width: 13px;
+        height: 13px;
+        border-radius: 2px;
+        vertical-align: middle;
+    }
+
+    .swatches {
+        display: inline-flex;
+        gap: 3px;
+    }
+
+    &__spacer {
+        flex: 1;
+    }
+}
+
+
+// Drinks App - "What is a standard unit?" disclosure (sits flush at the bottom
+// of the breakdown)
+.stdav-info {
+    border-top: 1px solid $border-color-light;
+
+    summary {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.55rem $gap;
+        color: $primary;
+        font-weight: 500;
+        list-style: none;
+        cursor: pointer;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        &:hover {
+            color: darken($primary, 8%);
+        }
+    }
+
+    &__body {
+        max-width: 62ch;
+        padding: 0 $gap 0.75rem;
+
+        p {
+            margin: 0 0 0.55rem;
+        }
+
+        span {
+            display: inline-block;
+            margin: 0 0.4rem 0.4rem 0;
+            padding: 0.2rem 0.5rem;
+            color: $text-muted;
+            background: $table-header-bg;
+            border: 1px solid $border-color-light;
+            border-radius: $modal-border-radius;
+        }
+    }
+}
