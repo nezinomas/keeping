@@ -1,8 +1,10 @@
+from datetime import date
+
 import pytest
 from django.contrib.auth.models import AnonymousUser
 
 from ...services.model_services import DrinkModelService, DrinkTargetModelService
-from ..factories import DrinkTargetFactory
+from ..factories import DrinkFactory, DrinkTargetFactory
 
 
 def test_drink_init_raises_if_no_user():
@@ -20,6 +22,20 @@ def test_drink_init_raises_if_anonymous_user():
 def test_drink_init_succeeds_with_real_user(main_user):
     # No need to save — just check __init__
     DrinkModelService(user=main_user)
+
+
+@pytest.mark.django_db
+def test_years_are_the_years_holding_a_drink_oldest_first(main_user):
+    DrinkFactory(date=date(2005, 3, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+    DrinkFactory(date=date(1999, 6, 1))
+
+    assert DrinkModelService(user=main_user).years() == [1999, 2005]
+
+
+@pytest.mark.django_db
+def test_years_without_records_is_empty_not_none(main_user):
+    assert DrinkModelService(user=main_user).years() == []
 
 
 def test_drink_target_init_raises_if_no_user():

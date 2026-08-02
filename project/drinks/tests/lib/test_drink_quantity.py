@@ -10,7 +10,8 @@ from ...lib.drink_quantity import DrinkQuantity
 @pytest.mark.parametrize(
     "value, drink_type, expect_stdav, expect_is_volume",
     [
-        # at or below MAX_BOTTLES the number is a count of pieces
+        # at or below MAX_BOTTLES the number is a count of pieces; the rule turns
+        # over between 20 and 21
         (1, "beer", 2.5, False),
         (20, "beer", 50.0, False),
         (1, "wine", 8.0, False),
@@ -36,12 +37,6 @@ def test_from_input(value, drink_type, expect_stdav, expect_is_volume):
     assert round(actual.stdav, 2) == expect_stdav
     assert actual.is_volume is expect_is_volume
     assert actual.drink_type == drink_type
-
-
-def test_from_input_max_bottles_boundary():
-    """20 is a count, 21 is millilitres — the rule turns over between them."""
-    assert DrinkQuantity.from_input(20, "beer").is_volume is False
-    assert DrinkQuantity.from_input(21, "beer").is_volume is True
 
 
 # -------------------------------------------------------------------------------------

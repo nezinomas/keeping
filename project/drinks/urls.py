@@ -8,6 +8,21 @@ app_name = App_name
 urlpatterns = [
     path("", views.Index.as_view(), name="index"),
     path("index/", views.TabIndex.as_view(), name="tab_index"),
+    path("habits/", views.TabHabits.as_view(), name="tab_habits"),
+    # no `qty` at all means no pooled layer: the chart opens on the header year
+    # alone, and a preset or the range form is what puts a range behind it
+    path("typical_year/", views.TypicalYearChart.as_view(), name="typical_year"),
+    path(
+        "typical_year/all/",
+        views.TypicalYearChart.as_view(),
+        {"qty": 0},
+        name="typical_year_all",
+    ),
+    path(
+        "typical_year/<int:qty>/",
+        views.TypicalYearChart.as_view(),
+        name="typical_year_last",
+    ),
     path("trends/", views.TabTrends.as_view(), name="tab_trends"),
     path("risk/", views.TabRisk.as_view(), name="tab_risk"),
     path("data/", views.TabData.as_view(), name="tab_data"),

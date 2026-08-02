@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from functools import cached_property
 
-from .drinks_stats import DataRow
+from ...core.lib.year_boundary import YearBoundary
+from .drinks_stats import DataRow, EmptyYearOverYear, YearOverYear
 
 # Medical harm-framing thresholds, all expressed in the canonical std av unit
 # (1 std av = 10 g pure alcohol). The UK CMO low-risk guideline is 14 UK units
@@ -45,22 +46,6 @@ class EmptyWeeklyRiskZone:
     has_data: bool = False
 
 
-@dataclass(frozen=True)
-class YearOverYearCount:
-    current: int
-    previous: int
-    improving: bool
-    has_past: bool = True
-
-
-@dataclass(frozen=True)
-class EmptyYearOverYearCount:
-    current: int
-    previous: int = 0
-    improving: bool = False
-    has_past: bool = False
-
-
 class RiskStats:
     """Alcohol harm-framing metrics derived from the daily (date, std av) series.
 
@@ -76,18 +61,8 @@ class RiskStats:
     ):
         self._current_daily_records = current_daily
         self._past_daily_records = past_daily
-        self._today = today or date.today()
-        self.current_year = (
-            self._current_daily_records[0].date.year
-            if self._current_daily_records
-            else self._today.year
-        )
-
-    @cached_property
-    def _year_end_date(self) -> date:
-        if self.current_year == self._today.year:
-            return self._today
-        return date(self.current_year, 12, 31)
+        self._year = YearBoundary.from_records(current_daily, today)
+        self.current_year = self._year.year
 
     @staticmethod
     def _week_start(day: date) -> date:
@@ -120,16 +95,8 @@ class RiskStats:
 
     @cached_property
     def _past_clipped_records(self) -> list[DataRow]:
-        """Previous-year rows up to the same month/day as today, for a fair
-        comparison. Matching on (month, day) rather than the ordinal
-        day-of-year avoids misaligning the cutoff when the current and
-        previous years have different lengths (a leap year on either side)."""
-        cutoff = (self._year_end_date.month, self._year_end_date.day)
-        return [
-            row
-            for row in self._past_daily_records
-            if (row.date.month, row.date.day) <= cutoff
-        ]
+        """Previous-year rows up to the same month and day as the year end."""
+        return self._year.clip(self._past_daily_records)
 
     @cached_property
     def _past_clipped_weekly_units(self) -> dict[date, float]:
@@ -145,7 +112,7 @@ class RiskStats:
     def weekly_series(self) -> list[WeeklySeriesPoint]:
         """Dense weekly totals from the first week of the year to the current week."""
         first_monday = self._week_start(date(self.current_year, 1, 1))
-        last_monday = self._week_start(self._year_end_date)
+        last_monday = self._week_start(self._year.end_date)
         units_by_week = self._current_weekly_units
 
         return [
@@ -167,7 +134,7 @@ class RiskStats:
         )
 
     def current_week(self) -> WeeklyRiskZone:
-        monday = self._week_start(self._year_end_date)
+        monday = self._week_start(self._year.end_date)
         return self._make_weekly_risk_zone(
             monday, self._current_weekly_units.get(monday, 0.0)
         )
@@ -182,17 +149,17 @@ class RiskStats:
 
     def _compare_year_over_year(
         self, current: int, previous: int
-    ) -> YearOverYearCount | EmptyYearOverYearCount:
-        if not self._past_daily_records:
-            return EmptyYearOverYearCount(current=current)
-        return YearOverYearCount(current, previous, improving=current < previous)
+    ) -> YearOverYear | EmptyYearOverYear:
+        return YearOverYear.compare(
+            current, previous, has_past=bool(self._past_daily_records)
+        )
 
-    def heavy_days(self) -> YearOverYearCount | EmptyYearOverYearCount:
+    def heavy_days(self) -> YearOverYear | EmptyYearOverYear:
         current = self._count_heavy_days(self._current_daily_records)
         previous = self._count_heavy_days(self._past_clipped_records)
         return self._compare_year_over_year(current, previous)
 
-    def weeks_over_guideline(self) -> YearOverYearCount | EmptyYearOverYearCount:
+    def weeks_over_guideline(self) -> YearOverYear | EmptyYearOverYear:
         current = self._count_weeks_exceeding_guideline(self._current_weekly_units)
         previous = self._count_weeks_exceeding_guideline(
             self._past_clipped_weekly_units

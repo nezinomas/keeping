@@ -124,6 +124,71 @@ class DrinkTargetForm(forms.ModelForm):
         return year
 
 
+class TypicalYearForm(forms.Form):
+    """Which of the user's years the typical-year chart pools.
+
+    Two integers, the same shape `DrinkCompareForm` uses, but a different
+    question: that form means "these two years, side by side" and drives the
+    History chart. This one bounds a range that gets pooled into one profile, so
+    the years are ordered, and equal ends are allowed — pooling a single year is
+    a narrower reading, not a mistake.
+
+    The range exists because the app cannot tell which of a user's years were
+    recorded a month at a time. It does not guess: the person who knows their
+    own history narrows it, and the chart names whatever they chose.
+
+    Nothing is pooled until this form is submitted, so the boxes open on the
+    user's full span rather than empty: a first press then pools everything,
+    which is the widest reading and the only one the app can propose without
+    choosing for them.
+    """
+
+    year_from = forms.IntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2100)]
+    )
+    year_to = forms.IntegerField(
+        validators=[MinValueValidator(1974), MaxValueValidator(2100)]
+    )
+
+    field_order = ["year_from", "year_to"]
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
+        # one query, read twice: the years propose the defaults here and decide
+        # what is a real year in clean()
+        self._years = DrinkModelService(self.user).years() if self.user else []
+
+        self.fields["year_from"].label = ""
+        self.fields["year_to"].label = ""
+
+        if self._years:
+            self.fields["year_from"].initial = self._years[0]
+            self.fields["year_to"].initial = self._years[-1]
+
+    def clean(self):
+        cleaned = super().clean()
+        year_from = cleaned.get("year_from")
+        year_to = cleaned.get("year_to")
+
+        years = self._years
+
+        msg_no_records = _("No records this year")
+        if year_from not in years and not self.errors.get("year_from"):
+            self.add_error("year_from", msg_no_records)
+
+        if year_to not in years and not self.errors.get("year_to"):
+            self.add_error("year_to", msg_no_records)
+
+        # a reversed range is a mistake to report, not one to correct: swapping
+        # it would caption the chart with a span the user never asked for
+        if year_from and year_to and year_from > year_to:
+            self.add_error("year_from", _("Years must be in order"))
+
+        return cleaned
+
+
 class DrinkCompareForm(forms.Form):
     year1 = forms.IntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2100)]

@@ -5,7 +5,12 @@ import pytest
 import time_machine
 from django.utils.translation import gettext as _
 
-from ...lib.drinks_risk import RiskStats
+from ...lib.drinks_risk import (
+    HEAVY_DAY_STDAV,
+    WEEKLY_HIGH_RISK_STDAV,
+    WEEKLY_LOW_RISK_STDAV,
+    RiskStats,
+)
 from ...lib.drinks_stats import DataRow
 from ...services.risk_tab import (
     MonthlyHeavyDaysChartViewModel,
@@ -265,9 +270,7 @@ def test_zone_cards_have_no_explanation():
 
 
 # -------------------------------------------------------------------------------------
-#                                                                RiskDataProvider
-# -------------------------------------------------------------------------------------
-#                                                                          RiskTab.build
+#                                                                         RiskTab.build
 # -------------------------------------------------------------------------------------
 @time_machine.travel("2026-03-01")
 def test_risk_tab_build_returns_cards_and_charts(main_user):
@@ -287,3 +290,41 @@ def test_risk_tab_build_handles_no_data(main_user):
 
     assert len(result["cards"]) == 4
     assert result["chart_weekly"].data == [0.0] * 9
+
+
+@pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
+@time_machine.travel("2026-03-01")
+def test_risk_tab_build_is_the_same_tab_under_every_drink_type(drink_type, main_user):
+    """Nothing on this tab follows the drink-type dropdown.
+
+    Every figure here is read against a guideline defined in Std Av, so
+    converting any of them would leave the plot lines and the band colours
+    marking levels the data no longer measures.
+
+    As on the Habits tab, this has to be asserted against ``build`` rather than
+    ``RiskViewModelBuilder``: the builder is handed a ``RiskStats`` and never
+    sees a drink type, so a test parametrizing one at that layer cannot fail.
+    ``build`` is where it arrives — ``ConsumptionYear`` annotates ``DataRow.qty``
+    off ``user.drink_type``.
+    """
+    main_user.drink_type = drink_type
+    DrinkFactory(user=main_user, date=date(2026, 2, 9), stdav=15)  # a Monday
+
+    result = RiskTab.build(main_user, 2026)
+    weekly, heavy = result["chart_weekly"], result["chart_heavy"]
+
+    # the week keeps its Std Av total, and the guidelines it is banded against
+    assert weekly.data[weekly.categories.index("2026-02-09")] == 15.0
+    assert weekly.low_risk == WEEKLY_LOW_RISK_STDAV
+    assert weekly.high_risk == WEEKLY_HIGH_RISK_STDAV
+    assert weekly.text["unit"] == "Std Av"
+
+    # 15 Std Av in one day is over the Heavy day threshold, in February
+    assert heavy.data[1] == 1
+    assert heavy.heavy_threshold == HEAVY_DAY_STDAV
+
+    cards = result["cards"]
+    assert _card(cards, _("Worst week")).value == "15.0"
+    assert _card(cards, _("Worst week")).state == "medium"
+    assert _card(cards, _("Heavy days")).value == "1"
+    assert _card(cards, _("Weeks over guideline")).value == "1"

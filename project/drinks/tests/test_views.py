@@ -4,6 +4,7 @@ from datetime import date
 import pytest
 import time_machine
 from django.urls import resolve, reverse, reverse_lazy
+from django.utils.translation import gettext as _
 
 from ...core.tests.utils import change_profile_year, setup_view
 from ...users.tests.factories import User
@@ -28,6 +29,31 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
+def test_index_loads_the_shared_chart_legend_defaults(client_logged):
+    # every Drinks chart reads its legend position from this one file, so the
+    # page dropping it would put every legend back in the theme's top corner
+    response = client_logged.get(reverse("drinks:index"))
+
+    assert "js/chart_drinks_legend.js" in response.content.decode()
+
+
+def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
+    # the skin is scoped to this wrapper rather than to the global palette: the
+    # tokens it redefines are the ones every Drinks chart reads, and no other
+    # app's page may inherit them
+    response = client_logged.get(reverse("drinks:index"))
+
+    assert 'class="drinks-skin"' in response.content.decode()
+
+
+def test_index_loads_the_paper_chart_theme(client_logged):
+    # the shared Highcharts theme is every other app's too, so the paper
+    # overrides ride in a file only this page loads
+    response = client_logged.get(reverse("drinks:index"))
+
+    assert "js/chart_drinks_paper.js" in response.content.decode()
+
+
 def test_index_quick_add(client_logged):
     # adding a drink now happens via the persistent quick-add widget
     # (bottom pill -> sheet) instead of a button in the nav
@@ -39,7 +65,6 @@ def test_index_quick_add(client_logged):
     assert 'name="quantity"' in content
     assert 'class="quick-add__pill"' in content
     assert '<button type="submit" class="button-secondary">' in content
-    assert 'class="button-secondary"' in content
     assert (
         "htmx.ajax('GET', '/drinks/' + document.getElementById('quick-add-tab').value + '/new/', '#mainModal')"
         in content
@@ -79,21 +104,24 @@ def test_index_links(client_logged):
     )
     res = re.findall(pattern, content)
 
-    assert len(res) == 5
+    assert len(res) == 6
     assert res[0][0] == reverse("drinks:tab_index")
     assert res[0][1] == "Apžvalga"
 
-    assert res[1][0] == reverse("drinks:tab_trends")
-    assert res[1][1] == "Tendencijos"
+    assert res[1][0] == reverse("drinks:tab_habits")
+    assert res[1][1] == "Įpročiai"
 
-    assert res[2][0] == reverse("drinks:tab_risk")
-    assert res[2][1] == "Rizikos"
+    assert res[2][0] == reverse("drinks:tab_trends")
+    assert res[2][1] == "Tendencijos"
 
-    assert res[3][0] == reverse("drinks:tab_history")
-    assert res[3][1] == "Istorija"
+    assert res[3][0] == reverse("drinks:tab_risk")
+    assert res[3][1] == "Rizikos"
 
-    assert res[4][0] == reverse("drinks:tab_data")
-    assert res[4][1] == "Duomenys"
+    assert res[4][0] == reverse("drinks:tab_history")
+    assert res[4][1] == "Istorija"
+
+    assert res[5][0] == reverse("drinks:tab_data")
+    assert res[5][1] == "Duomenys"
 
 
 def test_index_context(client_logged):
@@ -217,6 +245,41 @@ def test_tab_index_daily_limit_value_click_uses_target_update(client_logged):
     )
 
 
+@time_machine.travel("1999-06-01")
+def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged):
+    """The arrow is set well below the figure's size, so it needs its own
+    element rather than sitting in the value as a bare entity."""
+    # Drinking days only carries a direction once there is a year to compare
+    # against, so the arrow needs both years on record
+    DrinkFactory(date=date(1999, 1, 10), stdav=7)
+    DrinkFactory(date=date(1998, 1, 10), stdav=8)
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert 'class="trend-card__arrow"' in content
+
+
+def test_tab_index_renders_the_unit_apart_from_the_figure(client_logged):
+    """The skin sets a unit at a third of the figure's size, so it needs its own
+    element rather than trailing the value as text."""
+    DrinkFactory()
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert '<span class="trend-card__unit">L</span>' in content
+
+
+def test_tab_index_omits_the_unit_element_when_there_is_no_unit(client_logged):
+    DrinkFactory()
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert '<span class="trend-card__unit"></span>' not in content
+
+
 def test_tab_index_renders_overview_sections(client_logged):
     DrinkFactory()
 
@@ -249,21 +312,11 @@ def test_tab_index_chart_overview(client_logged):
     content = response.content.decode("utf-8")
     content = content.replace("\n", "")
 
-    # consumption + quantity are merged into one full-width combined chart
+    # consumption + quantity are merged into one full-width combined chart,
+    # fed by both json payloads
     assert '<div id="chart-overview-container"></div>' in content
     assert '<div id="chart-consumption-container"></div>' not in content
     assert '<div id="chart-quantity-container"></div>' not in content
-
-
-@time_machine.travel("1999-1-1")
-def test_tab_index_chart_overview_data_payloads(client_logged):
-    DrinkFactory()
-
-    url = reverse("drinks:tab_index")
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-
-    # the combined chart is fed by both json payloads
     assert 'id="chart-consumption-data"' in content
     assert 'id="chart-quantity-data"' in content
 
@@ -337,6 +390,284 @@ def test_tab_index_chart_consumption_limit(
     actual = response.context["chart_consumption"].target
 
     assert expect == round(actual, 0)
+
+
+# -------------------------------------------------------------------------------------
+#                                                                        TabHabits View
+# -------------------------------------------------------------------------------------
+def test_tab_habits_func():
+    view = resolve("/drinks/habits/")
+
+    assert views.TabHabits == view.func.view_class
+
+
+def test_tab_habits_200(client_logged):
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+
+
+def test_tab_habits_context_tab_value(client_logged):
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+
+    assert response.context["tab"] == "habits"
+
+
+def test_tab_habits_context(client_logged):
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+
+    assert "chart_weekday" in response.context
+    assert "cards" in response.context
+
+
+def test_tab_habits_renders_chart_data(client_logged):
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+
+    assert 'id="chart-weekday-data"' in response.content.decode()
+
+
+def test_tab_habits_keeps_the_drink_type_dropdown(client_logged):
+    # nothing on this tab follows the dropdown, but the navbar carries it, and
+    # switching type from here has to come back here rather than to Overview
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert 'data-tab="habits"' in content
+    assert "?tab=habits" in content
+
+
+@time_machine.travel("1999-06-01")
+def test_tab_habits_renders_cards_with_data(client_logged):
+    DrinkFactory(date=date(1999, 1, 4), stdav=7.9)
+
+    url = reverse("drinks:tab_habits")
+    response = client_logged.get(url)
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    assert content.count('class="trend-card"') == len(response.context["cards"])
+
+
+@pytest.mark.parametrize(
+    "tab, active",
+    [
+        ("tab_index", False),
+        ("tab_habits", True),
+        ("tab_trends", False),
+        ("tab_risk", False),
+        ("tab_history", False),
+        ("tab_data", False),
+    ],
+)
+def test_habits_link_is_on_every_tab_and_active_only_on_its_own(
+    tab, active, client_logged
+):
+    response = client_logged.get(reverse(f"drinks:{tab}"))
+    content = response.content.decode()
+
+    habits_link = f'hx-get="{reverse("drinks:tab_habits")}"'
+
+    assert habits_link in content
+    marked_active = f'class="tab active"\n        {habits_link}' in content
+    assert marked_active is active
+
+
+# -------------------------------------------------------------------------------------
+#                                                                 TypicalYearChart View
+# -------------------------------------------------------------------------------------
+def test_typical_year_func():
+    view = resolve("/drinks/typical_year/")
+
+    assert views.TypicalYearChart is view.func.view_class
+
+
+def test_typical_year_200(client_logged):
+    response = client_logged.get(reverse("drinks:typical_year"))
+
+    assert response.status_code == 200
+
+
+def test_tab_habits_loads_the_typical_year_chart(client_logged):
+    # the container fetches itself, so the pooled range never depends on the tab
+    response = client_logged.get(reverse("drinks:tab_habits"))
+    content = response.content.decode()
+
+    assert 'id="chart-typical-year-container"' in content
+    assert f'hx-get="{reverse("drinks:typical_year")}"' in content
+    assert 'id="typical-year-form"' in content
+
+
+def test_tab_habits_renders_the_pooled_range_presets(client_logged):
+    response = client_logged.get(reverse("drinks:tab_habits"))
+    content = response.content.decode()
+
+    assert f'hx-get="{reverse("drinks:typical_year_all")}"' in content
+    for qty in (2, 3, 5):
+        url = reverse("drinks:typical_year_last", kwargs={"qty": qty})
+        assert f'hx-get="{url}"' in content
+
+    assert _("All years") in content
+    assert _("5 years") in content
+
+
+def test_tab_habits_offers_no_preset_for_the_header_year(client_logged):
+    # the header year is drawn in front already, so pooling it on its own would
+    # plot the same twelve months twice
+    content = client_logged.get(reverse("drinks:tab_habits")).content.decode()
+
+    url = reverse("drinks:typical_year_last", kwargs={"qty": 1})
+
+    assert f'hx-get="{url}"' not in content
+    assert ">1999<" not in content
+
+
+def test_tab_habits_clears_the_pooled_layer_back_to_the_header_year(client_logged):
+    content = client_logged.get(reverse("drinks:tab_habits")).content.decode()
+
+    # the bare url is the state the tab opens on: the header year, nothing behind
+    url = reverse("drinks:typical_year")
+    clear = f'hx-get="{url}" hx-target="#chart-typical-year-container">{_("Clear")}<'
+
+    assert clear in content
+    # it undoes a Filter, so it sits after the form rather than among the presets
+    assert content.index('id="typical-year-form"') < content.index(clear)
+
+
+def test_typical_year_renders_chart_data(client_logged):
+    DrinkFactory(date=date(1999, 1, 1))
+
+    response = client_logged.get(reverse("drinks:typical_year"))
+
+    assert 'id="chart-typical-year-data"' in response.content.decode()
+
+
+def test_typical_year_opens_on_the_header_year_alone(client_logged):
+    # the pooled range is a reading to ask for: it loads on a preset or on
+    # Filter, never on the first fetch
+    DrinkFactory(date=date(1995, 1, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+
+    chart = client_logged.get(reverse("drinks:typical_year")).context["chart"]
+
+    assert chart.year.label == "1999"
+    assert not chart.pooled.has_data
+    assert chart.layers == [chart.year]
+
+
+def test_typical_year_boxes_open_on_the_full_span_before_anything_is_pooled(
+    client_logged,
+):
+    DrinkFactory(date=date(1995, 1, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+
+    content = client_logged.get(reverse("drinks:typical_year")).content.decode()
+
+    assert 'name="year_from" value="1995"' in content
+    assert 'name="year_to" value="1999"' in content
+
+
+def test_typical_year_all_years_pools_every_year_behind_the_header_year(client_logged):
+    DrinkFactory(date=date(1995, 1, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+
+    chart = client_logged.get(reverse("drinks:typical_year_all")).context["chart"]
+
+    assert chart.year_from == 1995
+    assert chart.year_to == 1999
+    assert chart.layers == [chart.pooled, chart.year]
+
+
+@pytest.mark.parametrize(
+    "qty, year_from",
+    [(1, 1999), (2, 1998), (3, 1997), (5, 1995)],
+)
+def test_typical_year_presets_end_at_the_header_year(qty, year_from, client_logged):
+    for year in range(1995, 2000):
+        DrinkFactory(date=date(year, 1, 5), stdav=5)
+
+    url = reverse("drinks:typical_year_last", kwargs={"qty": qty})
+    chart = client_logged.get(url).context["chart"]
+
+    assert chart.year_from == year_from
+    assert chart.year_to == 1999
+
+
+def test_typical_year_preset_pools_the_years_that_have_records(client_logged):
+    # asking for five years when only two were logged pools the two, and says so
+    DrinkFactory(date=date(1998, 1, 5), stdav=5)
+    DrinkFactory(date=date(1999, 1, 5), stdav=5)
+
+    url = reverse("drinks:typical_year_last", kwargs={"qty": 5})
+    chart = client_logged.get(url).context["chart"]
+
+    assert chart.year_from == 1998
+    assert chart.pooled.label == "Apjungti 1998–1999 m."
+
+
+def test_typical_year_preset_opens_the_form_on_what_it_pooled(client_logged):
+    for year in range(1995, 2000):
+        DrinkFactory(date=date(year, 1, 5), stdav=5)
+
+    url = reverse("drinks:typical_year_last", kwargs={"qty": 3})
+    content = client_logged.get(url).content.decode()
+
+    assert 'name="year_from" value="1997"' in content
+    assert 'name="year_to" value="1999"' in content
+
+
+def test_typical_year_without_records_renders_no_chart(client_logged):
+    response = client_logged.get(reverse("drinks:typical_year"))
+    content = response.content.decode()
+
+    assert not response.context["chart"].has_data
+    assert "chart-typical-year-data" not in content
+    assert 'id="typical-year-form"' in content
+
+
+def test_typical_year_with_one_year_of_data_renders(client_logged):
+    # nothing to narrow, so the form has one year in both boxes and the chart
+    # names that year alone
+    DrinkFactory(date=date(1999, 1, 1))
+
+    response = client_logged.get(reverse("drinks:typical_year"))
+
+    assert response.status_code == 200
+    assert response.context["chart"].year.label == "1999"
+
+
+def test_typical_year_valid_pools_the_selected_range(client_logged):
+    DrinkFactory(date=date(1999, 1, 1))
+    DrinkFactory(date=date(2000, 1, 1))
+    DrinkFactory(date=date(2005, 1, 1))
+
+    url = reverse("drinks:typical_year")
+    response = client_logged.post(url, {"year_from": "1999", "year_to": "2000"})
+    content = response.content.decode()
+    chart = response.context["chart"]
+
+    assert chart.year_from == 1999
+    assert chart.year_to == 2000
+    # the header year stays in front of whatever the form asked to pool
+    assert chart.layers == [chart.pooled, chart.year]
+    assert 'id="chart-typical-year-data"' in content
+    # the form is swapped out of band, because it lives outside the container
+    assert 'id="typical-year-form"' in content
+    assert 'hx-swap-oob="true"' in content
+
+
+def test_typical_year_invalid_retargets_form(client_logged):
+    url = reverse("drinks:typical_year")
+    response = client_logged.post(url, {"year_from": "2005", "year_to": "1999"})
+
+    assert response["HX-Retarget"] == "#typical-year-form"
+    assert response["HX-Reswap"] == "outerHTML"
+    assert not response.context["form"].is_valid()
+    assert "chart-typical-year-data" not in response.content.decode()
 
 
 # -------------------------------------------------------------------------------------
@@ -794,25 +1125,6 @@ def test_comparetwo_200(client_logged):
     assert response.status_code == 200
 
 
-def test_comparetwo_form_is_not_valid(client_logged):
-    url = reverse("drinks:compare_two")
-    response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
-    form = response.context["form"]
-
-    assert not form.is_valid()
-
-
-def test_comparetwo_form_is_valid(client_logged):
-    DrinkFactory(date=date(1999, 1, 1))
-    DrinkFactory(date=date(2000, 1, 1))
-
-    url = reverse("drinks:compare_two")
-    response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
-    form = response.context["form"]
-
-    assert form.is_valid()
-
-
 def test_comparetwo_chart_data(client_logged):
     DrinkFactory(stdav=2.5)
     DrinkFactory(date=date(2020, 1, 1), stdav=25)
@@ -928,7 +1240,6 @@ def test_new_tab_data(client_logged):
 
     assert "19" in actual
     assert '<a role="button" hx-get="/drinks/update/1/"' in actual
-    assert '<a role="button" hx-get="/drinks/update/1/"' in actual
 
 
 def test_new_invalid_data(client_logged):
@@ -950,7 +1261,6 @@ def test_update(client_logged):
 
     assert url in actual
     assert "0,7 vnt" in actual
-    assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
     assert f'<a role="button" hx-get="/drinks/update/{p.pk}/"' in actual
 
 

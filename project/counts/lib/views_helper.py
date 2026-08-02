@@ -1,10 +1,10 @@
 import contextlib
 from dataclasses import dataclass, field
-from datetime import datetime
 
 from django.db.models import Sum
 from django.urls import reverse_lazy
 
+from ...core.lib.year_boundary import YearBoundary
 from ...users.models import User
 from .. import models
 from ..services.model_services import CountModelService, CountTypeModelService
@@ -59,14 +59,16 @@ class InfoRowData:
 
     def _get_gap(self, year, slug):
         gap = 0
+        boundary = YearBoundary.for_year(year)
 
-        if year == datetime.now().year:
+        # a finished year has no open gap to report
+        if boundary.is_current:
             with contextlib.suppress(models.Count.DoesNotExist):
                 qs_latest = (
                     CountModelService(self.user)
                     .objects.filter(count_type__slug=slug)
                     .latest()
                 )
-                gap = (datetime.now().date() - qs_latest.date).days
+                gap = (boundary.today - qs_latest.date).days
 
         return gap

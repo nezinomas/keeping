@@ -846,6 +846,24 @@ def test_info_row(client_logged):
     assert context["current_gap"] == 4
 
 
+@time_machine.travel(datetime(2026, 7, 12))
+def test_info_row_week_of_a_finished_year_is_its_real_iso_count(
+    client_logged, main_user
+):
+    # 2025 has 52 ISO weeks; it is not a leap year but starts on a Wednesday,
+    # which an older rule read as 53 — and a per-week average divided by it
+    main_user.year = 2025
+    main_user.save()
+
+    CountFactory(date=date(2025, 7, 8), quantity=52)
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    response = client_logged.get(url)
+
+    assert response.context["week"] == 52
+    assert response.context["ratio"] == 1.0
+
+
 @time_machine.travel(datetime(2000, 7, 12))
 def test_info_row_gap_in_past_view(client_logged, main_user):
     main_user.year = 1999

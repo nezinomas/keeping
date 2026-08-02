@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from functools import cached_property
 
 from ...core.lib.date import ydays
+from ...core.lib.year_boundary import YearBoundary
 from .drinks_options import DrinkConverter
 from .drinks_stats import DataRow
 
@@ -77,21 +78,11 @@ class TrendStats:
     ):
         self._converter = converter
         self._target = target
-        self._today = today or date.today()
 
         self._current_year_records = current_daily or []
         self._past_year_records = past_daily or []
-        self.current_year = (
-            self._current_year_records[0].date.year
-            if self._current_year_records
-            else self._today.year
-        )
-
-    @cached_property
-    def _year_end_date(self) -> date:
-        if self.current_year == self._today.year:
-            return self._today
-        return date(self.current_year, 12, 31)
+        self._year = YearBoundary.from_records(self._current_year_records, today)
+        self.current_year = self._year.year
 
     @staticmethod
     def _date_range(start: date, end: date) -> list[date]:
@@ -120,13 +111,13 @@ class TrendStats:
 
         return [
             self._converter.stdav_to_display(by_date.get(day, 0.0))
-            for day in self._date_range(start, self._year_end_date)
+            for day in self._date_range(start, self._year.end_date)
         ]
 
     @cached_property
     def date_labels(self) -> list[str]:
         start = date(self.current_year, 1, 1)
-        return [day.isoformat() for day in self._date_range(start, self._year_end_date)]
+        return [day.isoformat() for day in self._date_range(start, self._year.end_date)]
 
     @cached_property
     def cumulative_categories(self) -> list[str]:
@@ -150,9 +141,7 @@ class TrendStats:
 
     @cached_property
     def cumulative_current_year(self) -> list[float]:
-        return self._running_total(
-            self._current_year_records, self._year_end_date.timetuple().tm_yday
-        )
+        return self._running_total(self._current_year_records, self._year.days_elapsed)
 
     @cached_property
     def cumulative_past_year(self) -> list[float]:
@@ -182,7 +171,7 @@ class TrendStats:
 
         series = [
             self._converter.stdav_to_display(lookup.get(day, 0.0))
-            for day in self._date_range(start, self._year_end_date)
+            for day in self._date_range(start, self._year.end_date)
         ]
 
         return [
@@ -194,7 +183,7 @@ class TrendStats:
         self, days: int
     ) -> RecentPeriodComparison | EmptyRecentPeriodComparison:
         """Most recent ``days`` vs the equal-length window right before it."""
-        end = self._year_end_date
+        end = self._year.end_date
         current_start = end - timedelta(days=days)
         previous_start = end - timedelta(days=2 * days)
         lookup = self._stdav_by_date
@@ -215,7 +204,7 @@ class TrendStats:
         )
 
     def compare_year_to_date(self) -> YearToDateComparison | EmptyYearToDateComparison:
-        day_of_year = self._year_end_date.timetuple().tm_yday
+        day_of_year = self._year.days_elapsed
         current = self._sum_stdav(self._current_year_records, day_of_year)
 
         if not self._past_year_records:

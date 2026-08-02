@@ -7,6 +7,8 @@ from django.utils.translation import gettext as _
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.date import ydays, years
 from ...core.lib.translation import month_names
+from ...core.lib.year_boundary import YearBoundary
+from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DrinkStats
 from . import stat_card
@@ -36,11 +38,6 @@ class DryDaysViewModel:
     @property
     def has_data(self) -> bool:
         return self.date is not None
-
-
-@dataclass(frozen=True)
-class AlcoholViewModel:
-    liters: float
 
 
 @dataclass(frozen=True)
@@ -79,6 +76,11 @@ class IndexTab:
         builder = IndexBuilder(
             converter=records.converter,
             drink_stats=DrinkStats(records.converter, records.monthly),
+            # counting Drinking days needs the daily rows, which DrinkStats is
+            # not given and must not be widened to carry
+            frequency_stats=FrequencyStats(
+                current_daily=records.daily, past_daily=records.previous.daily
+            ),
             target=target.qty,
             latest_past_date=records.last_recorded_date_before,
             latest_current_date=records.last_recorded_date,
@@ -114,6 +116,7 @@ class IndexBuilder:
         self,
         converter: DrinkConverter,
         drink_stats: DrinkStats,
+        frequency_stats: FrequencyStats | None = None,
         target: float = 0.0,
         latest_past_date: dt_date | None = None,
         latest_current_date: dt_date | None = None,
@@ -124,6 +127,7 @@ class IndexBuilder:
         self._latest_current_date = latest_current_date
         self._today = today or datetime.now().date()
         self._drink_stats = drink_stats
+        self._frequency_stats = frequency_stats or FrequencyStats()
         self._converter = converter
 
     def chart_quantity(self) -> ChartViewModel:
@@ -158,13 +162,14 @@ class IndexBuilder:
 
         return DryDaysViewModel()
 
-    def tbl_alcohol(self) -> AlcoholViewModel:
-        stdav = self._drink_stats.yearly.total_quantity / self._converter.ratio
-        return AlcoholViewModel(liters=self._converter.stdav_to_alcohol(stdav))
-
     def get_cards(self) -> list[StatCard]:
+        # Drinking days stays here as the headline for the calendar grid below
+        # it; Intensity, the other half of the split, lives on the Habits tab,
+        # which is what keeps an Std Av figure from sitting beside an Avg per
+        # day that follows the drink-type dropdown
         return [
             self._card_dry_days(),
+            self._card_drinking_days(),
             self._card_std_drinks(),
             self._card_avg_per_day(),
             self._card_pure_alcohol(),
@@ -181,6 +186,38 @@ class IndexBuilder:
             title=title,
             value=str(dry.delta),
             note=dry.date.strftime("%Y-%m-%d"),
+        )
+
+    def _card_drinking_days(self) -> StatCard:
+        title = _("Drinking days")
+        frequency = self._frequency_stats
+
+        if not frequency.drinking_days:
+            return StatCard.empty(title, _("No data"))
+
+        value = str(frequency.drinking_days)
+        # a running year's share is of the days elapsed, so the note says so
+        # rather than reading as a share of all twelve months
+        share = (
+            _("%(share)s%% of the year so far")
+            if frequency.is_current_year
+            else _("%(share)s%% of the year")
+        )
+        note = share % {"share": f"{frequency.drinking_day_share * 100:.0f}"}
+        definition = _("Calendar days with at least one Drink recorded.")
+        comparison = frequency.compare_frequency()
+
+        if not comparison.has_past:
+            return StatCard(title=title, value=value, note=note, explanation=definition)
+
+        arrow = _("The arrow compares with last year, up to the same date.")
+
+        return StatCard.comparison(
+            title,
+            improving=comparison.improving,
+            value=value,
+            note=note,
+            explanation=f"{definition} {arrow}",
         )
 
     def _card_std_drinks(self) -> StatCard:
@@ -201,31 +238,43 @@ class IndexBuilder:
         if not self._drink_stats.yearly.total_quantity:
             return StatCard.empty(title, _("No data"))
 
+        unit = self._converter.display_unit
+        decimals = self._converter.display_decimals
+
+        avg = self._drink_stats.yearly.avg_daily_volume
+        # the unit the note names is not always the one shown beside the figure:
+        # Std Av is read as typed, so the note names it and the figure does not
+        figure_unit = unit
+
         if self._converter.drink_type == "stdav":
             avg = getattr(self._drink_stats.yearly, "avg_daily_stdav", 0.0)
-            unit = ""
-            value = f"{avg:.1f}"
-        else:
-            avg = self._drink_stats.yearly.avg_daily_volume
-            unit = " ml"
-            value = f"{avg:.0f}{unit}"
+            figure_unit = ""
+
+        value = f"{avg:.{decimals}f}"
+
+        # the Per drinking day card beside this one is Std Av over a different
+        # denominator, so this note names both of its own
+        denominator = f"{unit} {_('per calendar day')}"
 
         if not self._target:
-            return StatCard(title=title, value=value, note=_("No limit set"))
+            return StatCard(
+                title=title,
+                value=value,
+                unit=figure_unit,
+                note=f"{_('No limit set')} · {denominator}",
+            )
 
         under_limit = avg <= self._target
         diff = abs(self._target - avg)
-
-        fmt = ".1f" if self._converter.drink_type == "stdav" else ".0f"
-        diff_str = f"{diff:{fmt}}{unit}"
+        direction = _("under the limit") if under_limit else _("over the limit")
 
         # a daily average is read against the Drink Target, so it is a level
         return StatCard.level(
             title,
             state=stat_card.LOW if under_limit else stat_card.HIGH,
             value=value,
-            note=f"{diff_str} "
-            + (_("under the limit") if under_limit else _("over the limit")),
+            unit=figure_unit,
+            note=f"{diff:.{decimals}f} {direction} · {denominator}",
         )
 
     def _card_pure_alcohol(self) -> StatCard:
@@ -236,7 +285,8 @@ class IndexBuilder:
 
         return StatCard(
             title=title,
-            value=f"{self._drink_stats.yearly.pure_alcohol_liters:.1f} L",
+            value=f"{self._drink_stats.yearly.pure_alcohol_liters:.1f}",
+            unit="L",
             note=_("this year"),
         )
 
@@ -312,17 +362,11 @@ class IndexBuilder:
         )
 
     def _get_period_counts(self, year: int | None) -> tuple[int, int, int]:
-        year = year or self._today.year
+        """Days, weeks and months the year has reached."""
+        boundary = YearBoundary.for_year(year, self._today)
 
-        _year = self._today.year
-        _month = self._today.month
-        _week = int(self._today.strftime("%V"))
-        _day = self._today.timetuple().tm_yday
-
-        if _year == year:
-            return (_day, _week, _month)
-
-        _days = ydays(year)
-        _weeks = dt_date(year, 12, 28).isocalendar()[1]
-
-        return (_days, _weeks, 12)
+        return (
+            boundary.days_elapsed,
+            boundary.weeks_elapsed,
+            boundary.end_date.month,
+        )

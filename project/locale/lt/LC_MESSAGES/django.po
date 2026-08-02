@@ -1003,11 +1003,15 @@ msgstr "Gėrimo tipas"
 msgid "%(year)s already has a goal."
 msgstr "%(year)s metai jau turi tikslą."
 
-#: .\drinks\forms.py:179
+#: .\drinks\forms.py:170 .\drinks\forms.py:218
 msgid "No records this year"
 msgstr "Šiais metais įrašų nėra"
 
-#: .\drinks\forms.py:186
+#: .\drinks\forms.py:180
+msgid "Years must be in order"
+msgstr "Metai turi būti didėjimo tvarka"
+
+#: .\drinks\forms.py:225
 msgid "Years must be different"
 msgstr "Metai turi būti skirtingi"
 
@@ -1036,6 +1040,65 @@ msgstr "Alkoholio kiekis per dieną, ml"
 #: .\drinks\services\index_tab.py:145
 msgid "Alcohol consumption per day"
 msgstr "Alkoholio kiekis per dieną"
+
+#: .\drinks\services\index_tab.py:201
+msgid "Drinking days"
+msgstr "Vartojimo dienos"
+
+#: .\drinks\services\index_tab.py:213
+#, python-format
+msgid "%(share)s%% of the year"
+msgstr "%(share)s%% metų dienų"
+
+#: .\drinks\services\index_tab.py:211
+#, python-format
+msgid "%(share)s%% of the year so far"
+msgstr "%(share)s%% metų dienų iki šiandien"
+
+#: .\drinks\services\index_tab.py:216
+msgid "Calendar days with at least one Drink recorded."
+msgstr "Kalendorinės dienos, kuriomis užfiksuotas bent vienas vartojimas."
+
+#: .\drinks\services\index_tab.py:222
+msgid "The arrow compares with last year, up to the same date."
+msgstr "Rodyklė lygina su pernai iki tos pačios datos."
+
+#: .\drinks\services\index_tab.py:233
+msgid "Per drinking day"
+msgstr "Vienai vartojimo dienai"
+
+#: .\drinks\services\index_tab.py:245
+msgid ""
+"The year's Std Av divided by the days a Drink was recorded on, not by every "
+"day of the year."
+msgstr ""
+"Metų Std Av, padalyti iš dienų, kuriomis užfiksuotas vartojimas, o ne iš "
+"visų metų dienų."
+
+#: .\drinks\services\index_tab.py:249
+msgid "Always in Std Av, because the Heavy day threshold is defined there."
+msgstr "Visada Std Av, nes rizikingo vartojimo dienos riba nustatyta Std Av."
+
+#: .\drinks\services\index_tab.py:291
+msgid "per calendar day"
+msgstr "per kalendorinę dieną"
+
+#: .\drinks\services\habits_tab.py:67
+msgid "Weekday profile"
+msgstr "Savaitės dienų profilis"
+
+#: .\drinks\services\habits_tab.py:68
+msgid "Drinking-day rate"
+msgstr "Vartojimo dienų dalis"
+
+#: .\drinks\services\typical_year.py:208
+msgid "Typical year"
+msgstr "Tipiniai metai"
+
+#: .\drinks\services\typical_year.py:235
+#, python-format
+msgid "Pooled %(year_from)s–%(year_to)s"
+msgstr "Apjungti %(year_from)s–%(year_to)s m."
 
 #: .\drinks\services\history.py:100
 msgid "Average per day"
@@ -1243,8 +1306,8 @@ msgstr "Tendencija (90 dienų)"
 
 #: .\drinks\services\trends\builders.py:137
 #: .\drinks\tests\services\test_trends.py:110
-msgid "This year vs last (to date)"
-msgstr "Šiemet vs pernai (iki šiandien)"
+msgid "This year vs last"
+msgstr "Šiemet vs pernai"
 
 #: .\drinks\services\trends\builders.py:163
 #: .\drinks\tests\services\test_trends.py:111
@@ -1367,6 +1430,10 @@ msgstr "Tendencijos"
 msgid "Risk"
 msgstr "Rizikos"
 
+#: .\drinks\templates\drinks\includes\navbar.html:22
+msgid "Habits"
+msgstr "Įpročiai"
+
 #: .\drinks\templates\drinks\includes\quick_add.html:45
 msgid "More"
 msgstr "Daugiau"
@@ -1402,6 +1469,10 @@ msgstr "3 metų"
 #: .\drinks\templates\drinks\tab_history.html:19
 msgid "7 years"
 msgstr "7 metų"
+
+#: .\drinks\templates\drinks\tab_habits.html:24
+msgid "5 years"
+msgstr "5 metų"
 
 #: .\drinks\templates\drinks\tab_history.html:20
 msgid "All years"

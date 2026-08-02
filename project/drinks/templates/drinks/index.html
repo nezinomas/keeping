@@ -5,11 +5,18 @@
 
 {% block head %}
     {% include 'highcharts.html' with lollipop=True %}
+    <!-- after the theme, so it overrides the corner it puts legends in, and
+         before the charts, so every one of them is drawn with it -->
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_legend.js' %}"></script>
+    <!-- the paper skin's half of the charts: same load-order reasoning as the
+         legend above, and after it, because it dresses the legend it positions -->
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_overview.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_trend.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_cumulative.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_weekly.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_heavy_days.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_profile.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_compare.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_summary.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
@@ -18,6 +25,11 @@
 
 {% block content %}
 
+
+<!-- the paper skin, scoped by this wrapper: it defines the tokens every Drinks
+     chart reads, so it has to sit outside #tab_content — a Tab swapped in by
+     htmx replaces what is inside it, never the tokens themselves -->
+<div class="drinks-skin">
 
 <!-- htmx tab data load -->
 {% for target in reload_targets %}
@@ -30,6 +42,8 @@
 </div>
 
 {% include 'drinks/includes/quick_add.html' %}
+
+</div>
 
 <script nonce="{{ csp_nonce }}">
     function initDrinksCharts() {
@@ -51,6 +65,9 @@
         if (document.getElementById('chart-heavy-data')) {
             chartDrinksHeavyDays('chart-heavy-data', 'chart-heavy-container');
         }
+        if (document.getElementById('chart-weekday-data')) {
+            chartDrinksProfile('chart-weekday-data', 'chart-weekday-container');
+        }
     }
 
     document.addEventListener('DOMContentLoaded', initDrinksCharts);
@@ -65,6 +82,9 @@
         }
         if (targetId === 'chart-history-container' && document.getElementById('chart-history-data')) {
             chartCompare('chart-history-data', 'chart-history-container');
+        }
+        if (targetId === 'chart-typical-year-container' && document.getElementById('chart-typical-year-data')) {
+            chartDrinksProfile('chart-typical-year-data', 'chart-typical-year-container');
         }
         if (targetId === 'mainModal') {
             const input = document.getElementById('id_quantity');

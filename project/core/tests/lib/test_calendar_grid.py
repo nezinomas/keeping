@@ -179,3 +179,12 @@ def test_build_other_year_has_no_future_days():
     grid = CalendarGrid.build(1998, daily_data=[], today=date(1999, 6, 15))
 
     assert all(not d.is_future for m in grid.months for d in m.days)
+
+
+def test_build_a_year_not_started_yet_has_no_future_days():
+    # next year is selectable in the app, and none of it is flagged future —
+    # long-standing behaviour, pinned here because the flag is now read off the
+    # year boundary rather than a year-versus-today comparison
+    grid = CalendarGrid.build(2000, daily_data=[], today=date(1999, 6, 15))
+
+    assert all(not d.is_future for m in grid.months for d in m.days)

@@ -1,0 +1,43 @@
+{% load i18n %}
+{% load static %}
+
+{% include 'drinks/includes/navbar.html' %}
+
+<main class="habits-grid">
+    <div id="habits-summary">
+        {% include 'drinks/includes/stat_cards.html' %}
+    </div>
+
+    <div id="chart-weekday-container"></div>
+
+    <!-- Typical year: one shared chart with presets + custom range below it. The
+         chart fetches itself, so the range pooled and the legend naming it are
+         always the same reading. The load fetch draws the header year alone —
+         a pooled backdrop only ever arrives on a press -->
+    <div id="typical-year">
+        <div id="chart-typical-year-container" hx-get="{% url 'drinks:typical_year' %}" hx-trigger="load"></div>
+
+        <div class="pool-controls">
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_all' %}" hx-target="#chart-typical-year-container">{% translate 'All years' %}</button>
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 2 %}" hx-target="#chart-typical-year-container">{% translate '2 years' %}</button>
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 3 %}" hx-target="#chart-typical-year-container">{% translate '3 years' %}</button>
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year_last' 5 %}" hx-target="#chart-typical-year-container">{% translate '5 years' %}</button>
+
+            <span class="controls-divider"></span>
+
+            <!-- filled by the same response as the chart, swapped in out of
+                 band, so the boxes open on the years actually plotted -->
+            <div id="typical-year-form"></div>
+
+            <!-- no pooled range: the same fetch the tab opens on, so Clear puts
+                 the chart back to the header year alone. Beside Filter because
+                 that is what it undoes, and outside the form because it asks
+                 for a range rather than submitting one. There is deliberately
+                 no preset for the header year on its own — it is already in
+                 front of everything -->
+            <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year' %}" hx-target="#chart-typical-year-container">{% translate 'Clear' %}</button>
+        </div>
+    </div>
+</main>
+
+{{chart_weekday.as_dict|json_script:"chart-weekday-data"}}

@@ -9,7 +9,7 @@
     {% if limit.unit == 'Std Av' %}
     <button type="button" class="trend-card__value" hx-get="{{ limit_url }}" hx-target="#mainModal" title="{% translate 'Goal for the year' %}">{{ limit.ml|floatformat:'1g' }}</button>
     {% else %}
-    <button type="button" class="trend-card__value" hx-get="{{ limit_url }}" hx-target="#mainModal" title="{% translate 'Goal for the year' %}">{{ limit.ml|floatformat:'0g' }} {% translate 'ml' %}</button>
+    <button type="button" class="trend-card__value" hx-get="{{ limit_url }}" hx-target="#mainModal" title="{% translate 'Goal for the year' %}">{{ limit.ml|floatformat:'0g' }}<span class="trend-card__unit">{% translate 'ml' %}</span></button>
     {% endif %}
     <div class="trend-card__note">{{ limit.pcs|floatformat:'1g' }} {% translate 'pcs' %} / {% translate 'day' %}</div>
     {% else %}

@@ -66,6 +66,102 @@ class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
+class TabHabits(DrinkTypeContextMixin, TemplateViewMixin):
+    # every figure on this tab is a count, a ratio or a Std Av harm metric, so
+    # none of them follows the dropdown — but the dropdown is in the navbar of
+    # every tab, so the mixin that fills it is not optional here either
+    template_name = "drinks/tab_habits.html"
+
+    def get_context_data(self, **kwargs):
+        user = cast(User, self.request.user)
+        year = cast(int, user.year)
+
+        return {
+            **super().get_context_data(**kwargs),
+            **{"tab": "habits"},
+            **services.HabitsTab.build(user, year),
+        }
+
+
+class TypicalYearChart(FormViewMixin):
+    """The typical-year chart on the Habits tab, and the range form that pools a
+    backdrop for it.
+
+    A partial rather than part of the tab: the Habits container fetches this on
+    load and re-fetches it on every preset and every submit, so the chart, its
+    legend and the form's own boxes are always the same reading of the same
+    range.
+
+    The header year is always plotted. A pooled range never is until the user
+    asks for one — a `qty` in the url pools the last that many years, `qty=0`
+    every year on record, and a submit whatever the boxes say. Which years
+    actually contributed is read back off the records, so asking for five years
+    of a two-year history pools the two and the legend says so.
+    """
+
+    form_class = forms.TypicalYearForm
+    template_name = "drinks/includes/typical_year_form.html"
+
+    def get(self, request, *args, **kwargs):
+        user = cast(User, request.user)
+        chart = services.TypicalYear.build(
+            user, cast(int, user.year), self._preset_range(user)
+        )
+
+        return self._render(chart, self.get_form(initial=self._initial(chart)))
+
+    def _preset_range(self, user) -> services.PooledRange:
+        """What the press asked to pool: the last `qty` years, every year, or —
+        when no preset was pressed at all — nothing."""
+        if "qty" not in self.kwargs:
+            return services.NoPooledRange()
+
+        qty = self.kwargs["qty"]
+        if not qty:
+            return services.PooledRange()
+
+        year = cast(int, user.year)
+        return services.PooledRange(year - qty + 1, year)
+
+    @staticmethod
+    def _initial(chart) -> dict:
+        """The boxes open on the range that is plotted, once one is.
+
+        Until then they keep the form's own defaults — the user's full span —
+        so a first press pools everything rather than erroring on empty boxes.
+        """
+        if not chart.pooled.has_data:
+            return {}
+
+        return {"year_from": chart.year_from, "year_to": chart.year_to}
+
+    def form_valid(self, form, **kwargs):
+        user = cast(User, self.request.user)
+        chart = services.TypicalYear.build(
+            user,
+            cast(int, user.year),
+            services.PooledRange(
+                form.cleaned_data["year_from"], form.cleaned_data["year_to"]
+            ),
+        )
+
+        return self._render(chart, form)
+
+    def form_invalid(self, form):
+        # re-render the form (with errors) in place, leaving the chart untouched
+        response = super().form_invalid(form)
+        response["HX-Retarget"] = "#typical-year-form"
+        response["HX-Reswap"] = "outerHTML"
+        return response
+
+    def _render(self, chart, form) -> HttpResponse:
+        return render(
+            self.request,
+            "drinks/includes/typical_year.html",
+            {"chart": chart, "form": form},
+        )
+
+
 class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_trends.html"
 

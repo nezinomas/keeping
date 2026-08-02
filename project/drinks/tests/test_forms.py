@@ -2,9 +2,10 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.utils.translation import gettext as _
 
 from ...users.tests.factories import UserFactory
-from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm
+from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm, TypicalYearForm
 from ..models import Drink
 from .factories import DrinkFactory, DrinkTargetFactory
 
@@ -305,3 +306,93 @@ def test_drink_filter_clean_years_fields(main_user, year1, year2, valid):
     )
 
     assert form.is_valid() == valid
+
+
+# -------------------------------------------------------------------------------------
+#                                                                          Typical Year
+# -------------------------------------------------------------------------------------
+def test_typical_year_init():
+    TypicalYearForm()
+
+
+def test_typical_year_init_fields():
+    form = TypicalYearForm().as_p()
+
+    assert '<input type="number" name="year_from"' in form
+    assert '<input type="number" name="year_to"' in form
+
+
+def test_typical_year_boxes_open_on_the_users_full_span(main_user):
+    # nothing is pooled until this form is submitted, so the boxes propose the
+    # widest range there is rather than leaving the user to type one
+    DrinkFactory(date=date(1999, 1, 1))
+    DrinkFactory(date=date(2005, 1, 1))
+
+    form = TypicalYearForm(user=main_user).as_p()
+
+    assert 'name="year_from" value="1999"' in form
+    assert 'name="year_to" value="2005"' in form
+
+
+@pytest.mark.parametrize(
+    "year_from, year_to",
+    [
+        (None, None),
+        ("", ""),
+        (None, 2000),
+        (2000, ""),
+        (111, 111),
+        (11111, 11111),
+        ("xxx", "xxx"),
+    ],
+)
+def test_typical_year_form_invalid(main_user, year_from, year_to):
+    form = TypicalYearForm(
+        user=main_user,
+        data={
+            "year_from": year_from,
+            "year_to": year_to,
+        },
+    )
+
+    assert not form.is_valid()
+
+
+@pytest.mark.parametrize(
+    "year_from, year_to, valid",
+    [
+        (2000, 2003, True),
+        (2000, 2000, True),  # pooling one year is a reading, not a mistake
+        (2003, 2003, True),
+        (2003, 2000, False),  # reversed, and never silently swapped
+        (2001, 2003, False),  # no records in 2001
+        (2000, 2002, False),  # no records in 2002
+        (1999, 2003, False),  # outside the years on record
+    ],
+)
+def test_typical_year_clean_years_fields(main_user, year_from, year_to, valid):
+    DrinkFactory(date=date(2000, 1, 1))
+    DrinkFactory(date=date(2003, 1, 1))
+
+    form = TypicalYearForm(
+        user=main_user,
+        data={
+            "year_from": year_from,
+            "year_to": year_to,
+        },
+    )
+
+    assert form.is_valid() == valid
+
+
+def test_typical_year_reversed_range_is_rejected_not_swapped(main_user):
+    # both years hold records, so the only thing wrong is their order — and it
+    # is reported as such rather than quietly corrected
+    DrinkFactory(date=date(2000, 1, 1))
+    DrinkFactory(date=date(2003, 1, 1))
+
+    form = TypicalYearForm(user=main_user, data={"year_from": 2003, "year_to": 2000})
+
+    assert not form.is_valid()
+    assert form.errors["year_from"] == [_("Years must be in order")]
+    assert "year_to" not in form.errors

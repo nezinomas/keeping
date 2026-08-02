@@ -131,16 +131,20 @@ class TrendsBuilder:
         if not stats.has_data:
             return StatCard.empty(title, _("No data"))
 
-        value = (
-            f"{stats.percentage_change:.1f}%"
-            if stats.previous_period_average
-            else f"{stats.current_period_average:.1f}"
-        )
+        # with no period to compare against there is no percentage to show, so
+        # the card falls back to the level itself — and to no unit with it
+        value = f"{stats.current_period_average:.1f}"
+        unit = ""
+
+        if stats.previous_period_average:
+            value = f"{stats.percentage_change:.1f}"
+            unit = "%"
 
         return StatCard.comparison(
             title,
             improving=stats.improving,
             value=value,
+            unit=unit,
             note=(
                 f"{stats.current_period_average:.1f} / "
                 f"{stats.previous_period_average:.1f} Std Av"
@@ -149,7 +153,11 @@ class TrendsBuilder:
 
     def _build_ytd_card(self) -> StatCard:
         stats = self._stats.compare_year_to_date()
-        title = _("This year vs last (to date)")
+        title = _("This year vs last")
+        # "to date" qualifies the reading rather than naming the metric, and a
+        # centred card has no room for a title that long — the explanation the
+        # card already carries says it instead
+        to_date = _("The arrow compares with last year, up to the same date.")
 
         if not stats.has_past:
             return StatCard(
@@ -161,11 +169,13 @@ class TrendsBuilder:
         return StatCard.comparison(
             title,
             improving=stats.improving,
-            value=f"{stats.percentage_change:.1f}%",
+            value=f"{stats.percentage_change:.1f}",
+            unit="%",
             note=(
                 f"{stats.current_year_average:.1f} / "
                 f"{stats.previous_year_average:.1f} Std Av"
             ),
+            explanation=to_date,
         )
 
     def _build_projection_card(self) -> StatCard:
@@ -176,7 +186,8 @@ class TrendsBuilder:
         if not stats.has_target:
             return StatCard(
                 title=title,
-                value=f"{stats.projected_total:.1f} {unit}",
+                value=f"{stats.projected_total:.1f}",
+                unit=unit,
                 note=_("No limit set"),
             )
 
@@ -185,7 +196,8 @@ class TrendsBuilder:
         return StatCard.level(
             title,
             state=stat_card.HIGH if stats.over else stat_card.LOW,
-            value=f"{stats.projected_total:.1f} {unit}",
+            value=f"{stats.projected_total:.1f}",
+            unit=unit,
             note=(
                 f"{_('Limit')}: {stats.target_total:.1f} {unit} · "
                 f"{stats.percentage_difference:.1f}%"
