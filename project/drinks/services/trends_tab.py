@@ -163,7 +163,7 @@ class TrendsBuilder:
             return StatCard(
                 title=title,
                 value=f"{stats.current_year_average:.1f}",
-                note=f"Std Av · {_('No prior year')}",
+                note=f"Std Av / {_('No prior year')}",
             )
 
         return StatCard.comparison(
@@ -199,7 +199,7 @@ class TrendsBuilder:
             value=f"{stats.projected_total:.1f}",
             unit=unit,
             note=(
-                f"{_('Limit')}: {stats.target_total:.1f} {unit} · "
+                f"{_('Limit')}: {stats.target_total:.1f} {unit} / "
                 f"{stats.percentage_difference:.1f}%"
             ),
         )
