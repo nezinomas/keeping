@@ -159,42 +159,42 @@
     }
 
     // ---- Stat Cards ------------------------------------------------------
-    // no fill and no box: a rule over the row, a hairline between neighbours,
-    // and the figure carrying the weight
+    // nothing frames a Stat Card and nothing separates one from the next: no
+    // fill, no box, and no rule in either direction. Whitespace does the
+    // separating, and the only line in a card is the short one over its note.
     #index-summary,
     #trend-summary,
     #habits-summary,
     #risk-summary {
-        gap: 0;
-        border-top: 2px solid $drinks-ink;
+        position: relative;
+        gap: 2rem;
+        padding: calc($gap * 1.2) calc($gap * 0.9) calc($gap * 1.1);
     }
 
     .trend-card {
-        gap: 0.25rem;
-        padding: 0.8rem 0.9rem 0.9rem;
+        gap: 0.5rem;
+        padding: 0;
         background: transparent;
         border: 0;
-        border-left: 1px solid $drinks-hair;
-        // closes the row of figures, and closes every row when they wrap
-        border-bottom: 1px solid $drinks-hair;
         border-radius: 0;
-        text-align: left;
-
-        &:first-child {
-            border-left: 0;
-            padding-left: 0;
-        }
+        text-align: center;
+        align-items: center;
 
         &__label {
             @include drinks-label;
+
+            letter-spacing: 0.22em;
         }
 
         &__value {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
             font-family: $drinks-display;
-            font-size: 2.1rem;
+            font-size: 3.1rem;
             font-weight: 700;
             line-height: 1;
-            letter-spacing: -0.015em;
+            letter-spacing: -0.03em;
             font-variant-numeric: tabular-nums;
             color: $drinks-ink;
 
@@ -215,13 +215,50 @@
             }
         }
 
+        // the unit is a third of the figure and unemphasised: what is read is
+        // the number, and "ml" beside it at the same weight competes with it
+        &__unit {
+            // enough to read a word unit ("Std Av") as a separate token, tight
+            // enough that a symbol ("%") still belongs to the figure
+            margin-left: 0.15em;
+            font-size: 0.34em;
+            font-weight: 400;
+            letter-spacing: 0;
+            color: $drinks-ink-muted;
+        }
+
+        // the direction, not a second figure: an arrow set at the figure's size
+        // read as loudly as the number it qualifies. Centred on the figure
+        // rather than sat on its baseline — a glyph this short hangs low on a
+        // baseline it shares with a 3rem numeral
+        &__arrow {
+            align-self: center;
+            margin-right: 0.1em;
+            font-size: 0.55em;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        // the one rule a Stat Card keeps, and it spans the text column rather
+        // than the card: it ties the note to the figure above instead of
+        // closing a box around both. Capped in absolute terms as well as by
+        // share, because the Habits row holds a single card — at 70% of that its
+        // rule would cross the whole sheet, which is the rule this skin removed
         &__note {
+            margin-top: 0.1rem;
+            margin-inline: auto;
+            padding-top: 0.5rem;
+            max-width: min(70%, 13rem);
+            border-top: 1px solid $drinks-hair-soft;
             font-size: 0.72rem;
             line-height: 1.35;
             color: $drinks-ink-muted;
         }
 
+        // sits on the figure's baseline rather than centred on it: a mark this
+        // small reads as a footnote to the number, not as part of it
         &__info {
+            font-size: 0.26em;
             color: $drinks-ink-faint;
 
             &:hover,
@@ -230,17 +267,28 @@
             }
         }
 
+        // it hangs inside the value, so without these it inherits the figure's
+        // condensed display face, its negative tracking and its tabular
+        // numerals — a sentence set in all three reads squeezed
         &__explanation {
+            max-width: 15rem;
+            padding: 0.55rem 0.75rem;
             border-radius: 0;
             background: $drinks-ink;
             box-shadow: none;
+            font-family: $drinks-body;
+            font-size: 0.72rem;
+            font-weight: 400;
+            font-variant-numeric: normal;
+            letter-spacing: normal;
+            line-height: 1.45;
         }
     }
 
     // the daily-limit card keeps its editable value; a dotted rule under the
     // figure is what says it can be pressed
     button.trend-card__value {
-        align-self: flex-start;
+        align-self: center;
         border-bottom: 1px dotted $drinks-hair;
 
         &:hover {
