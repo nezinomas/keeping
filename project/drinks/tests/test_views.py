@@ -37,6 +37,23 @@ def test_index_loads_the_shared_chart_legend_defaults(client_logged):
     assert "js/chart_drinks_legend.js" in response.content.decode()
 
 
+def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
+    # the skin is scoped to this wrapper rather than to the global palette: the
+    # tokens it redefines are the ones every Drinks chart reads, and no other
+    # app's page may inherit them
+    response = client_logged.get(reverse("drinks:index"))
+
+    assert 'class="drinks-skin"' in response.content.decode()
+
+
+def test_index_loads_the_paper_chart_theme(client_logged):
+    # the shared Highcharts theme is every other app's too, so the paper
+    # overrides ride in a file only this page loads
+    response = client_logged.get(reverse("drinks:index"))
+
+    assert "js/chart_drinks_paper.js" in response.content.decode()
+
+
 def test_index_quick_add(client_logged):
     # adding a drink now happens via the persistent quick-add widget
     # (bottom pill -> sheet) instead of a button in the nav

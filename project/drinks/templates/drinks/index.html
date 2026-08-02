@@ -8,6 +8,9 @@
     <!-- after the theme, so it overrides the corner it puts legends in, and
          before the charts, so every one of them is drawn with it -->
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_legend.js' %}"></script>
+    <!-- the paper skin's half of the charts: same load-order reasoning as the
+         legend above, and after it, because it dresses the legend it positions -->
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_overview.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_trend.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_cumulative.js' %}"></script>
@@ -23,6 +26,11 @@
 {% block content %}
 
 
+<!-- the paper skin, scoped by this wrapper: it defines the tokens every Drinks
+     chart reads, so it has to sit outside #tab_content — a Tab swapped in by
+     htmx replaces what is inside it, never the tokens themselves -->
+<div class="drinks-skin">
+
 <!-- htmx tab data load -->
 {% for target in reload_targets %}
 <div hx-get="{{ target.url }}" hx-target="#tab_content" hx-trigger="{{ target.reload_trigger }} from:body"></div>
@@ -34,6 +42,8 @@
 </div>
 
 {% include 'drinks/includes/quick_add.html' %}
+
+</div>
 
 <script nonce="{{ csp_nonce }}">
     function initDrinksCharts() {
