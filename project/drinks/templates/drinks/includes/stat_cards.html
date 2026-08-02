@@ -6,10 +6,8 @@
     <div class="trend-card__value">&mdash;</div>
     {% else %}
     <div class="trend-card__value {% if card.state == 'improving' or card.state == 'low' %}positive{% elif card.state == 'worsening' or card.state == 'high' %}negative{% elif card.state == 'medium' %}warning{% endif %}">
-        {% if card.show_icon %}
-            {% if card.state == 'improving' %}&darr;{% else %}&uarr;{% endif %}
-        {% endif %}
-        {{ card.value }}
+        {% if card.show_icon %}<span class="trend-card__arrow">{% if card.state == 'improving' %}&darr;{% else %}&uarr;{% endif %}</span>{% endif %}
+        {{ card.value }}{% if card.unit %}<span class="trend-card__unit">{{ card.unit }}</span>{% endif %}
         {% if card.explanation %}
         <span class="trend-card__info" tabindex="0" role="note" aria-label="{{ card.explanation }}">
             <i class="bi bi-info-circle" aria-hidden="true"></i>

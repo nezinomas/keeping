@@ -130,8 +130,46 @@ into the year being browsed.
 _Avoid_: date option, day offset
 
 **Stat Card**:
-One summary tile on a Tab: a title, a value, a note, and how to colour them.
-The tone and arrow are resolved before it reaches a template — a Tab's own
-vocabulary (a risk band, a year-over-year direction, a metric against a Drink
-Target) never reaches the markup.
+One summary tile on a Tab: a title, a value, the unit that value is read in, a
+note, and how to colour them. The tone and arrow are resolved before it reaches
+a template — a Tab's own vocabulary (a risk band, a year-over-year direction, a
+metric against a Drink Target) never reaches the markup. So is the unit: it is
+set at a third of the figure's size, so it is carried beside the value rather
+than inside it, and a card whose figure is read as typed carries none. Nothing
+frames a Stat Card and nothing rules between two of them — the figures are
+centred in whitespace, and the only line is the short one over the note.
 _Avoid_: trend card, widget, KPI, metric box
+
+**Paper skin**:
+The visual language every Tab wears: a white ground, chrome in ink, hairline
+Panels, figures in a condensed display face and every label in mono. It is
+scoped to the `.drinks-skin` wrapper `index.html` puts around every Tab, so no
+other app inherits it; the `--drinks-*` tokens it is built from are declared on
+`:root` instead, because Highcharts renders a tooltip outside that wrapper and a
+token it cannot resolve there is drawn black. Lives in `apps/_drinks.scss` and
+`chart_drinks_paper.js`, and nothing about it belongs in a core palette variable.
+_Avoid_: theme, style, look, design system
+
+**Data hue**:
+The one colour a reading is drawn in. Chrome carries no hue at all, so the only
+colour on a Tab is the data's. Two measures on one chart — the Weekday profile's
+rate and Intensity — take the Data hue and one second hue; several spans of the
+*same* measure, like a 7-day average against a 30-day one or one year against
+the next, take steps of the Data hue rather than hues of their own, because they
+are one metric read over ordered spans.
+_Avoid_: primary colour, accent, blue, series colour
+
+**Harm**:
+The colour a reading takes for being harmful, and nothing else: the part of a
+month over the Drink Target, a week over the Low-risk guideline, a Heavy day. It
+has two steps, guideline and threshold, so a week over one is not drawn as a week
+over the other. Nothing under a limit is coloured for being under it — there is
+no green on a Tab, because staying inside a limit is the baseline, not an
+achievement.
+_Avoid_: red, negative, danger, warning colour
+
+**Panel**:
+The hairline frame that a chart, the
+calendar or a table sits in. The frame is the only thing separating it from the
+page — a Panel has no fill and no shadow, and a Stat Card has no frame at all.
+_Avoid_: card, box, tile, container

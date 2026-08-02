@@ -23,6 +23,10 @@ class StatCard:
 
     title: str
     value: str = ""
+    # kept apart from the figure rather than baked into it: the skin sets a unit
+    # at a third of the figure's size, and a "300 ml" string cannot be split in
+    # a template without guessing where the number ends
+    unit: str = ""
     note: str = ""
     state: str = NEUTRAL
     show_icon: bool = False
@@ -41,12 +45,14 @@ class StatCard:
         improving: bool,
         value: str,
         note: str,
+        unit: str = "",
         explanation: str = "",
     ) -> "StatCard":
         """A metric read against a baseline, so it has a direction."""
         return cls(
             title=title,
             value=value,
+            unit=unit,
             note=note,
             state=IMPROVING if improving else WORSENING,
             show_icon=True,
@@ -61,12 +67,14 @@ class StatCard:
         state: str,
         value: str,
         note: str,
+        unit: str = "",
         explanation: str = "",
     ) -> "StatCard":
         """A metric read against a threshold: a level, with no direction."""
         return cls(
             title=title,
             value=value,
+            unit=unit,
             note=note,
             state=state,
             explanation=explanation,

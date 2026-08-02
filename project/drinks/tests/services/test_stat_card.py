@@ -84,8 +84,53 @@ def test_level_carries_the_explanation():
 
 
 def test_defaults_render_a_plain_card():
-    card = StatCard("Pure alcohol", value="2.5 L", note="this year")
+    card = StatCard("Pure alcohol", value="2.5", unit="L", note="this year")
 
     assert card.state == "neutral"
     assert card.show_icon is False
     assert card.explanation == ""
+
+
+# -------------------------------------------------------------------------------------
+#                                                                             unit
+# -------------------------------------------------------------------------------------
+
+
+def test_unit_is_carried_apart_from_the_figure():
+    """The unit is set smaller than the figure, so it cannot be baked into it."""
+    card = StatCard("Pure alcohol", value="2.5", unit="L")
+
+    assert card.value == "2.5"
+    assert card.unit == "L"
+
+
+def test_a_figure_with_no_unit_carries_an_empty_one():
+    card = StatCard("Days dry", value="12")
+
+    assert card.unit == ""
+
+
+@pytest.mark.parametrize(
+    "factory",
+    [
+        lambda: StatCard.empty("Days dry", "No data"),
+        lambda: StatCard.comparison("Heavy days", improving=True, value="1", note=""),
+        lambda: StatCard.level("This week", state="high", value="3.0", note=""),
+    ],
+)
+def test_every_constructor_carries_a_unit(factory):
+    assert factory().unit == ""
+
+
+def test_comparison_carries_the_unit_it_is_given():
+    card = StatCard.comparison(
+        "Trend (2 weeks)", improving=True, value="20.0", unit="%", note=""
+    )
+
+    assert card.unit == "%"
+
+
+def test_level_carries_the_unit_it_is_given():
+    card = StatCard.level("Avg per day", state="low", value="300", unit="ml", note="")
+
+    assert card.unit == "ml"

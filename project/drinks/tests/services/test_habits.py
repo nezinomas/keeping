@@ -143,7 +143,8 @@ def test_get_cards_carries_the_per_drinking_day_card():
 def test_card_per_drinking_day_above_the_heavy_threshold():
     card = _builder([_row(date(1999, 1, 4), 7.9)]).get_cards()[0]
 
-    assert card.value == "7.9 Std Av"
+    assert card.value == "7.9"
+    assert card.unit == "Std Av"
     assert card.note == f"{_('Heavy day')}: > {HEAVY_DAY_STDAV:.0f} Std Av"
     assert card.state == "high"
 
@@ -151,7 +152,8 @@ def test_card_per_drinking_day_above_the_heavy_threshold():
 def test_card_per_drinking_day_below_the_heavy_threshold():
     card = _builder([_row(date(1999, 1, 4), 4.0)]).get_cards()[0]
 
-    assert card.value == "4.0 Std Av"
+    assert card.value == "4.0"
+    assert card.unit == "Std Av"
     assert card.state == "low"
 
 
@@ -233,4 +235,5 @@ def test_build_is_the_same_tab_under_every_drink_type(drink_type, main_user):
     assert chart.intensity[0] == 7.9
     assert chart.text["intensity_unit"] == "Std Av"
     assert chart.heavy_threshold == HEAVY_DAY_STDAV
-    assert actual["cards"][0].value == "7.9 Std Av"
+    assert actual["cards"][0].value == "7.9"
+    assert actual["cards"][0].unit == "Std Av"

@@ -6,15 +6,19 @@ function chartOverview(consumptionId, quantityId, containerId) {
     const consumption = JSON.parse(document.getElementById(consumptionId).textContent);
     const quantity = JSON.parse(document.getElementById(quantityId).textContent);
 
-    const blue = "var(--secondary)";
+    const blue = "var(--drinks-data)";
 
     // fill the page as a hero chart: ~62% of the viewport, clamped so it never
     // gets cramped or absurdly tall
     const viewportH = window.innerHeight || 900;
     const chartHeight = Math.min(760, Math.max(480, Math.round(viewportH * 0.62)));
 
-    const avgLineColor = (consumption.avg > consumption.target) ? "var(--chart-negative-dark)" : "var(--chart-positive-dark)";
-    const avgTextColor = (consumption.avg > consumption.target) ? "var(--chart-negative-super-dark)" : "var(--chart-positive-super-dark)";
+    // the average is furniture: a level to read the months against, not a
+    // verdict. It stays in ink whichever side of the Limit it falls, because the
+    // area already turns above the Limit and the Stat Card already says which
+    // side it is on
+    const avgLineColor = "var(--drinks-ink-muted)";
+    const avgTextColor = "var(--drinks-ink-muted)";
 
     const avgLabelY = (consumption.target - 50 <= consumption.avg && consumption.avg <= consumption.target) ? 15 : -5;
     const targetLabelY = (consumption.avg - 50 <= consumption.target && consumption.target <= consumption.avg) ? 15 : -5;
@@ -38,9 +42,6 @@ function chartOverview(consumptionId, quantityId, containerId) {
             tickmarkPlacement: "on",
             min: 0.35,
             max: categoryMax - 0.35,
-            labels: {
-                rotation: -45,
-            }
         },
         yAxis: [
             {
@@ -54,36 +55,43 @@ function chartOverview(consumptionId, quantityId, containerId) {
                 plotLines: [
                     {
                         // Secondary x axis baseline at y=0
-                        color: "#000",
-                        width: 2,
+                        color: "var(--drinks-ink)",
+                        width: 1,
                         value: 0,
                         zIndex: 10,
                     },
                     {
-                        color: "#333",
-                        width: 2,
+                        // the Limit is the one rule that governs a colour: the
+                        // area above it turns, so the rule wears the same harm
+                        color: "var(--drinks-harm)",
+                        width: 1.5,
+                        dashStyle: "Dash",
                         value: consumption.target,
                         zIndex: 10,
-                        label: {
-                            text: `${consumption.text.limit}: ${consumption.target.toFixed(consumption.decimals)}`,
-                            align: "right",
-                            x: -5,
-                            y: targetLabelY,
-                            style: { color: "#333", fontWeight: "bold" }
-                        }
+                        label: Object.assign(
+                            drinksRuleLabel(
+                                `${consumption.text.limit}: ${consumption.target.toFixed(consumption.decimals)}`,
+                                "var(--drinks-harm)",
+                                "right"
+                            ),
+                            // the two rules step apart when they nearly coincide
+                            { y: targetLabelY - 8 }
+                        )
                     },
                     {
                         color: avgLineColor,
-                        width: 2,
+                        width: 1.5,
+                        dashStyle: "Dot",
                         value: consumption.avg,
                         zIndex: 11,
-                        label: {
-                            text: `Avg: ${consumption.avg.toFixed(consumption.decimals)}`,
-                            align: "right",
-                            x: -5,
-                            y: avgLabelY,
-                            style: { color: avgTextColor, fontWeight: "bold" }
-                        }
+                        label: Object.assign(
+                            drinksRuleLabel(
+                                `Avg: ${consumption.avg.toFixed(consumption.decimals)}`,
+                                avgTextColor,
+                                "right"
+                            ),
+                            { y: avgLabelY - 8 }
+                        )
                     }
                 ],
             },
@@ -116,16 +124,23 @@ function chartOverview(consumptionId, quantityId, containerId) {
                 name: consumption.text.alcohol,
                 showInLegend: false,
                 data: consumption.data,
+                // the zones below colour what is drawn; this is what the series
+                // itself is, and it is what the tooltip reads. Without it the
+                // series falls back to the first colour in the theme's ramp,
+                // which belongs to Year Comparison
+                color: "var(--drinks-data)",
                 zoneAxis: "y",
+                // under the Limit is the baseline reading, so it is the data
+                // hue; over it is the only part of the year that gets harm
                 zones: [
                     {
                         value: consumption.target,
-                        color: "var(--chart-positive-dark)",
-                        fillColor: "var(--chart-positive)"
+                        color: "var(--drinks-data)",
+                        fillColor: "var(--drinks-data-wash)"
                     },
                     {
-                        color: "var(--chart-negative-dark)",
-                        fillColor: "var(--chart-negative)"
+                        color: "var(--drinks-harm)",
+                        fillColor: "var(--drinks-harm-wash)"
                     }
                 ],
                 marker: {
@@ -140,9 +155,10 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     crop: false,
                     overflow: "allow",
                     style: {
-                        fontSize: "0.66rem",
-                        color: "#3a3a3a",
-                        fontWeight: "bold",
+                        fontFamily: "var(--drinks-mono)",
+                        fontSize: "10px",
+                        color: "var(--drinks-ink)",
+                        fontWeight: "400",
                         textOutline: "none",
                     },
                     formatter: function () {
@@ -152,8 +168,11 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     },
                 },
                 tooltip: {
-                    // the drink-type dropdown names the unit and its precision
-                    pointFormat: `${consumption.text.alcohol}: <b>{point.y:,.${consumption.decimals}f} ${consumption.text.unit}</b><br>`,
+                    // the drink-type dropdown names the unit and its precision.
+                    // The series colour, not the point's: the zones colour the
+                    // graph rather than the points, so a point has no colour of
+                    // its own to read here
+                    pointFormat: `${consumption.text.alcohol}: <span style="color: {series.color}"><b>{point.y:,.${consumption.decimals}f} ${consumption.text.unit}</b></span><br>`,
                 }
             },
             {
@@ -181,17 +200,18 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     crop: false,
                     overflow: "allow",
                     style: {
-                        fontSize: "0.62rem",
-                        color: "#000",
+                        fontFamily: "var(--drinks-mono)",
+                        fontSize: "10px",
+                        color: "var(--drinks-ink-muted)",
                         textOutline: "none",
-                        fontWeight: "bold"
+                        fontWeight: "400"
                     },
                     formatter: function () {
                         return this.y > 0 ? Highcharts.numberFormat(this.y, 1) : "";
                     },
                 },
                 tooltip: {
-                    pointFormat: `${quantity.text.quantity}: <b>{point.y:.1f}</b><br>`,
+                    pointFormat: `${quantity.text.quantity}: <span style="color: {series.color}"><b>{point.y:.1f}</b></span><br>`,
                 }
             }
         ]

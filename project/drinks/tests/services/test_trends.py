@@ -178,9 +178,66 @@ def test_builder_get_cards(converter):
         _("Trend (2 weeks)"),
         _("Trend (month)"),
         _("Trend (90 days)"),
-        _("This year vs last (to date)"),
+        _("This year vs last"),
         _("Year-end forecast"),
     ]
+
+
+@time_machine.travel("2026-03-01")
+def test_period_card_carries_its_percent_apart_from_the_figure(converter):
+    # a percentage needs both halves of the window: the last 14 days and the 14
+    # before them
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 2, 25), 10), _row(date(2026, 2, 10), 5)],
+    )
+
+    card = TrendsBuilder(stats).get_cards()[0]
+
+    assert card.unit == "%"
+    assert "%" not in card.value
+
+
+@time_machine.travel("2026-03-01")
+def test_ytd_card_says_it_reads_to_date_in_its_explanation(converter):
+    """ "to date" qualifies the reading, not the metric, so it belongs in the
+    explanation rather than in a title the card has no room for."""
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 10), 10)],
+        past_daily=[_row(date(2025, 1, 10), 5)],
+    )
+
+    card = TrendsBuilder(stats).get_cards()[3]
+
+    assert card.title == _("This year vs last")
+    assert card.explanation == _(
+        "The arrow compares with last year, up to the same date."
+    )
+
+
+@time_machine.travel("2026-03-01")
+def test_ytd_card_carries_its_percent_apart_from_the_figure(converter):
+    stats = TrendStats(
+        converter,
+        current_daily=[_row(date(2026, 1, 10), 10)],
+        past_daily=[_row(date(2025, 1, 10), 5)],
+    )
+
+    card = TrendsBuilder(stats).get_cards()[3]
+
+    assert card.unit == "%"
+    assert "%" not in card.value
+
+
+@time_machine.travel("2026-03-01")
+def test_forecast_card_carries_its_unit_apart_from_the_figure(converter):
+    stats = TrendStats(converter, current_daily=[_row(date(2026, 1, 10), 10)])
+
+    card = TrendsBuilder(stats).get_cards()[4]
+
+    assert card.unit == stats.total_unit
+    assert card.unit not in card.value
 
 
 # -------------------------------------------------------------------------------------

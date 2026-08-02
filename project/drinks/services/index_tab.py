@@ -241,13 +241,16 @@ class IndexBuilder:
         unit = self._converter.display_unit
         decimals = self._converter.display_decimals
 
+        avg = self._drink_stats.yearly.avg_daily_volume
+        # the unit the note names is not always the one shown beside the figure:
+        # Std Av is read as typed, so the note names it and the figure does not
+        figure_unit = unit
+
         if self._converter.drink_type == "stdav":
-            # Std Av is shown as typed, so the value carries no unit suffix
             avg = getattr(self._drink_stats.yearly, "avg_daily_stdav", 0.0)
-            value = f"{avg:.{decimals}f}"
-        else:
-            avg = self._drink_stats.yearly.avg_daily_volume
-            value = f"{avg:.{decimals}f} {unit}"
+            figure_unit = ""
+
+        value = f"{avg:.{decimals}f}"
 
         # the Per drinking day card beside this one is Std Av over a different
         # denominator, so this note names both of its own
@@ -255,7 +258,10 @@ class IndexBuilder:
 
         if not self._target:
             return StatCard(
-                title=title, value=value, note=f"{_('No limit set')} · {denominator}"
+                title=title,
+                value=value,
+                unit=figure_unit,
+                note=f"{_('No limit set')} · {denominator}",
             )
 
         under_limit = avg <= self._target
@@ -267,6 +273,7 @@ class IndexBuilder:
             title,
             state=stat_card.LOW if under_limit else stat_card.HIGH,
             value=value,
+            unit=figure_unit,
             note=f"{diff:.{decimals}f} {direction} · {denominator}",
         )
 
@@ -278,7 +285,8 @@ class IndexBuilder:
 
         return StatCard(
             title=title,
-            value=f"{self._drink_stats.yearly.pure_alcohol_liters:.1f} L",
+            value=f"{self._drink_stats.yearly.pure_alcohol_liters:.1f}",
+            unit="L",
             note=_("this year"),
         )
 

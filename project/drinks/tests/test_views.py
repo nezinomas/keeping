@@ -37,6 +37,23 @@ def test_index_loads_the_shared_chart_legend_defaults(client_logged):
     assert "js/chart_drinks_legend.js" in response.content.decode()
 
 
+def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
+    # the skin is scoped to this wrapper rather than to the global palette: the
+    # tokens it redefines are the ones every Drinks chart reads, and no other
+    # app's page may inherit them
+    response = client_logged.get(reverse("drinks:index"))
+
+    assert 'class="drinks-skin"' in response.content.decode()
+
+
+def test_index_loads_the_paper_chart_theme(client_logged):
+    # the shared Highcharts theme is every other app's too, so the paper
+    # overrides ride in a file only this page loads
+    response = client_logged.get(reverse("drinks:index"))
+
+    assert "js/chart_drinks_paper.js" in response.content.decode()
+
+
 def test_index_quick_add(client_logged):
     # adding a drink now happens via the persistent quick-add widget
     # (bottom pill -> sheet) instead of a button in the nav
@@ -226,6 +243,41 @@ def test_tab_index_daily_limit_value_click_uses_target_update(client_logged):
         f'<button type="button" class="trend-card__value" hx-get="{edit_url}"'
         in content
     )
+
+
+@time_machine.travel("1999-06-01")
+def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged):
+    """The arrow is set well below the figure's size, so it needs its own
+    element rather than sitting in the value as a bare entity."""
+    # Drinking days only carries a direction once there is a year to compare
+    # against, so the arrow needs both years on record
+    DrinkFactory(date=date(1999, 1, 10), stdav=7)
+    DrinkFactory(date=date(1998, 1, 10), stdav=8)
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert 'class="trend-card__arrow"' in content
+
+
+def test_tab_index_renders_the_unit_apart_from_the_figure(client_logged):
+    """The skin sets a unit at a third of the figure's size, so it needs its own
+    element rather than trailing the value as text."""
+    DrinkFactory()
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert '<span class="trend-card__unit">L</span>' in content
+
+
+def test_tab_index_omits_the_unit_element_when_there_is_no_unit(client_logged):
+    DrinkFactory()
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert '<span class="trend-card__unit"></span>' not in content
 
 
 def test_tab_index_renders_overview_sections(client_logged):

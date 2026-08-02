@@ -212,7 +212,8 @@ def test_card_avg_per_day_over_limit(main_user, drink_converter):
     ).get_cards()[3]
 
     assert card.state == "high"
-    assert card.value == "300 ml"
+    assert card.value == "300"
+    assert card.unit == "ml"
     assert card.note == f"50 {_('over the limit')} · ml {_('per calendar day')}"
 
 
@@ -222,7 +223,8 @@ def test_card_avg_per_day_under_limit(main_user, drink_converter):
     ).get_cards()[3]
 
     assert card.state == "low"
-    assert card.value == "300 ml"
+    assert card.value == "300"
+    assert card.unit == "ml"
     assert card.note == f"100 {_('under the limit')} · ml {_('per calendar day')}"
 
 
@@ -241,7 +243,8 @@ def test_card_avg_per_day_no_limit(main_user, drink_converter):
     ).get_cards()[3]
 
     assert card.state == "neutral"
-    assert card.value == "300 ml"
+    assert card.value == "300"
+    assert card.unit == "ml"
     assert card.note == f"{_('No limit set')} · ml {_('per calendar day')}"
 
 
@@ -253,6 +256,8 @@ def test_card_avg_per_day_stdav_over_limit(main_user):
 
     assert card.state == "high"
     assert card.value == "3.0"
+    # Std Av is shown as typed: the note names the unit, the figure does not
+    assert card.unit == ""
     assert card.note == f"0.5 {_('over the limit')} · Std Av {_('per calendar day')}"
 
 
@@ -279,7 +284,8 @@ def test_card_pure_alcohol_with_data(main_user, drink_converter):
     card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[4]
 
     assert card.state == "neutral"
-    assert card.value == "2.5 L"  # 100 units -> 250 std av -> 2.5 L pure alcohol
+    assert card.value == "2.5"  # 100 units -> 250 std av -> 2.5 L pure alcohol
+    assert card.unit == "L"
     assert card.note == _("this year")
 
 
