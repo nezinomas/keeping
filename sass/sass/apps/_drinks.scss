@@ -1,4 +1,501 @@
-// Drinks App - Navigation
+// Drinks — the paper skin.
+//
+// Everything visual about the Drinks Tabs lives under one root class, and
+// `drinks/index.html` is the only template that carries it. It is scoped rather
+// than global for two reasons: the tokens below are also the ones every Drinks
+// chart reads through `var(--drinks-*)`, and the rest of the app is still on the
+// core palette — no other app's page may inherit either.
+//
+// The skin has one idea: paper. Chrome is ink — Tabs, rules, table heads and
+// axis labels carry no hue at all — so the only colour on a Tab is the data's,
+// and $drinks-harm inside it means harm and nothing else. Nothing under a limit
+// is coloured for being under it.
+//
+// Values are set in a condensed display face, labels in mono with wide letter
+// spacing, notes in the body sans. Panels are hairline frames with registration
+// marks at the corners rather than filled cards.
+
+
+// Panel: a hairline frame with a registration mark at each corner. Every chart,
+// the calendar and the breakdown table sit in one, so a Tab reads as a sheet of
+// plates rather than a stack of cards.
+@mixin drinks-panel {
+    position: relative;
+    padding: calc($gap * 1.5) calc($gap * 1.6);
+    background: $drinks-paper;
+    border: 1px solid $drinks-hair;
+    border-radius: 0;
+
+    // two pseudo-elements, two corners each: the marks are drawn as 1px
+    // gradients, so no extra markup is needed inside a container Highcharts owns
+    &::before,
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-repeat: no-repeat;
+        background-image:
+            linear-gradient($drinks-hair 0 0), linear-gradient($drinks-hair 0 0),
+            linear-gradient($drinks-hair 0 0), linear-gradient($drinks-hair 0 0);
+        background-size: 13px 1px, 1px 13px, 13px 1px, 1px 13px;
+    }
+
+    // top-left and bottom-right
+    &::before {
+        background-position:
+            -6px 6px, 6px -6px,
+            calc(100% + 6px) calc(100% - 7px), calc(100% - 7px) calc(100% + 6px);
+    }
+
+    // top-right and bottom-left
+    &::after {
+        background-position:
+            calc(100% + 6px) 6px, calc(100% - 7px) -6px,
+            -6px calc(100% - 7px), 6px calc(100% + 6px);
+    }
+}
+
+
+// Every label on a Tab: Tab names, axis captions, table heads, card titles.
+@mixin drinks-label {
+    font-family: $drinks-mono;
+    font-size: 0.62rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $drinks-ink-muted;
+}
+
+
+.drinks-skin {
+    // ---- tokens ----------------------------------------------------------
+    // custom properties rather than only Sass variables, because the chart JS
+    // reads these same names
+    --drinks-paper: #{$drinks-paper};
+    --drinks-ink: #{$drinks-ink};
+    --drinks-ink-muted: #{$drinks-ink-muted};
+    --drinks-ink-faint: #{$drinks-ink-faint};
+    --drinks-hair: #{$drinks-hair};
+    --drinks-hair-soft: #{$drinks-hair-soft};
+
+    --drinks-data: #{$drinks-data};
+    --drinks-data-soft: #{$drinks-data-soft};
+    --drinks-data-wash: #{rgba($drinks-data, 0.12)};
+    --drinks-data-tint: #{rgba($drinks-data, 0.22)};
+    --drinks-data-faint: #{rgba($drinks-data, 0.09)};
+    --drinks-data-edge: #{rgba($drinks-data, 0.35)};
+
+    --drinks-second: #{$drinks-second};
+
+    --drinks-harm: #{$drinks-harm};
+    --drinks-harm-soft: #{$drinks-harm-soft};
+    --drinks-harm-wash: #{rgba($drinks-harm, 0.11)};
+
+    @each $step in $drinks-ramp {
+        --drinks-year-#{index($drinks-ramp, $step) - 1}: #{$step};
+    }
+
+    --drinks-display: #{$drinks-display};
+    --drinks-body: #{$drinks-body};
+    --drinks-mono: #{$drinks-mono};
+
+    // ---- the sheet -------------------------------------------------------
+    padding: calc($gap * 1.5) calc($gap * 1.5) calc($gap * 4);
+    background: $drinks-paper;
+    color: $drinks-ink;
+    font-family: $drinks-body;
+    font-size: 0.82rem;
+    line-height: 1.5;
+
+    // ---- Tabs ------------------------------------------------------------
+    nav#drinks-nav {
+        margin-bottom: calc($gap * 1.5);
+        gap: 0 1.6rem;
+
+        // no rule under the strip: the active Tab's own underline is the only
+        // line needed, and a second one below it read as a table head
+        .tab {
+            @include drinks-label;
+
+            padding: 0.3rem 0.05rem 0.5rem;
+            border-bottom: 2px solid transparent;
+            font-size: 0.66rem;
+
+            &:hover,
+            &:focus {
+                color: $drinks-ink;
+                border-bottom-color: $drinks-hair;
+            }
+
+            &.active {
+                color: $drinks-ink;
+                font-weight: 400;
+                border-bottom-color: $drinks-ink;
+            }
+        }
+
+        // the drink-type filter is chrome too, so it is ink and mono like a Tab
+        .dropdown__btn {
+            @include drinks-label;
+
+            color: $drinks-ink;
+            border-bottom: 1px dotted $drinks-hair;
+
+            &:hover {
+                color: $drinks-data;
+            }
+        }
+    }
+
+    // ---- Stat Cards ------------------------------------------------------
+    // no fill and no box: a rule over the row, a hairline between neighbours,
+    // and the figure carrying the weight
+    #index-summary,
+    #trend-summary,
+    #habits-summary,
+    #risk-summary {
+        gap: 0;
+        border-top: 2px solid $drinks-ink;
+    }
+
+    .trend-card {
+        gap: 0.25rem;
+        padding: 0.8rem 0.9rem 0.9rem;
+        background: transparent;
+        border: 0;
+        border-left: 1px solid $drinks-hair;
+        // closes the row of figures, and closes every row when they wrap
+        border-bottom: 1px solid $drinks-hair;
+        border-radius: 0;
+        text-align: left;
+
+        &:first-child {
+            border-left: 0;
+            padding-left: 0;
+        }
+
+        &__label {
+            @include drinks-label;
+        }
+
+        &__value {
+            font-family: $drinks-display;
+            font-size: 2.1rem;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.015em;
+            font-variant-numeric: tabular-nums;
+            color: $drinks-ink;
+
+            // a reading under a limit is the baseline, not an achievement, so it
+            // stays in ink. Only harm takes a colour, in two steps: a week over
+            // the Low-risk guideline is not yet a week over the High-risk
+            // threshold
+            &.positive {
+                color: $drinks-ink;
+            }
+
+            &.warning {
+                color: $drinks-harm-soft;
+            }
+
+            &.negative {
+                color: $drinks-harm;
+            }
+        }
+
+        &__note {
+            font-size: 0.72rem;
+            line-height: 1.35;
+            color: $drinks-ink-muted;
+        }
+
+        &__info {
+            color: $drinks-ink-faint;
+
+            &:hover,
+            &:focus-visible {
+                color: $drinks-data;
+            }
+        }
+
+        &__explanation {
+            border-radius: 0;
+            background: $drinks-ink;
+            box-shadow: none;
+        }
+    }
+
+    // the daily-limit card keeps its editable value; a dotted rule under the
+    // figure is what says it can be pressed
+    button.trend-card__value {
+        align-self: flex-start;
+        border-bottom: 1px dotted $drinks-hair;
+
+        &:hover {
+            color: $drinks-data;
+            border-bottom-color: $drinks-data;
+        }
+    }
+
+    // ---- panels ----------------------------------------------------------
+    [id^="chart-"][id$="-container"],
+    #breakdown,
+    .heat-card {
+        @include drinks-panel;
+    }
+
+    // ---- calendar --------------------------------------------------------
+    // levels are ordered, so they are steps of one hue; a Heavy day is the top
+    // step *and* wears a harm ring, so harm is never read from a hue alone
+    .heat-card {
+        .l0 { background: $drinks-hair-soft; }
+        .l1 { background: nth($drinks-ramp, 1); }
+        .l2 { background: nth($drinks-ramp, 2); }
+        .l3 { background: nth($drinks-ramp, 3); }
+
+        .l4 {
+            background: nth($drinks-ramp, 5);
+            box-shadow: inset 0 0 0 2px $drinks-harm;
+        }
+
+        .future {
+            background: transparent;
+            box-shadow: inset 0 0 0 1px $drinks-hair-soft;
+        }
+
+        .today {
+            outline: 2px solid $drinks-ink;
+            outline-offset: -1px;
+        }
+
+        .mini i {
+            border-radius: 0;
+        }
+    }
+
+    .heat-daycol,
+    .heat-month .mlabel,
+    .heat-legend {
+        @include drinks-label;
+
+        font-size: 0.58rem;
+    }
+
+    .heat-month + .heat-month {
+        border-left: 1px solid $drinks-hair-soft;
+    }
+
+    .heat-legend i {
+        border-radius: 0;
+    }
+
+    .heat-legend .swatches i:first-child {
+        box-shadow: inset 0 0 0 1px $drinks-hair;
+    }
+
+    .heat-tooltip {
+        border: 1px solid $drinks-ink;
+        border-radius: 0;
+        background: $drinks-paper;
+        color: $drinks-ink;
+        box-shadow: none;
+
+        &__date {
+            font-family: $drinks-mono;
+            font-size: 0.68rem;
+            font-weight: 400;
+        }
+
+        &__row {
+            color: $drinks-ink-muted;
+        }
+    }
+
+    // ---- tables ----------------------------------------------------------
+    .stdav-table {
+        caption {
+            @include drinks-label;
+
+            padding: 0 0 0.7rem;
+            font-size: 0.68rem;
+            letter-spacing: 0.15em;
+            color: $drinks-ink;
+            background: transparent;
+            border-bottom: 0;
+        }
+
+        thead th {
+            @include drinks-label;
+
+            font-size: 0.58rem;
+            background: transparent;
+            border-bottom: 1px solid $drinks-ink;
+        }
+
+        tbody td {
+            border-bottom: 1px solid $drinks-hair-soft;
+        }
+
+        tbody tr:nth-child(even) > td {
+            background: transparent;
+        }
+
+        tbody tr.stdav-table__total td {
+            border-top: 1px solid $drinks-ink;
+            border-bottom: 0;
+            color: $drinks-ink;
+
+            &:first-child {
+                font-family: $drinks-mono;
+                font-size: 0.7rem;
+                letter-spacing: 0.1em;
+            }
+        }
+
+        .edit-col a {
+            color: $drinks-ink-muted;
+        }
+
+        .delete-col a {
+            color: $drinks-harm;
+        }
+
+        &.hover tbody tr:hover > td {
+            background-color: $drinks-hair-soft !important;
+        }
+    }
+
+    // the Data tab's table stands alone on the Tab, so it carries the frame
+    .stdav-table.sticky-table {
+        border: 1px solid $drinks-hair;
+
+        thead th {
+            padding-top: 0.6rem;
+            background: $drinks-paper;
+        }
+
+        td,
+        th {
+            padding-left: $gap;
+            padding-right: $gap;
+        }
+    }
+
+    // ---- disclosure + chart controls -------------------------------------
+    .stdav-info {
+        border-top: 1px solid $drinks-hair-soft;
+
+        summary {
+            @include drinks-label;
+
+            padding: 0.7rem 0 0;
+            font-weight: 400;
+
+            &:hover {
+                color: $drinks-ink;
+            }
+        }
+
+        &__body {
+            padding: 0.5rem 0 0;
+            color: $drinks-ink-muted;
+        }
+    }
+
+    .pool-controls,
+    .compare-controls {
+        .button-secondary {
+            @include drinks-label;
+
+            padding: 0.3rem 0.7rem;
+            background: $drinks-paper;
+            border: 1px solid $drinks-hair;
+            border-radius: 0;
+            color: $drinks-ink-muted;
+
+            &:hover {
+                background: $drinks-hair-soft;
+                border-color: $drinks-ink-muted;
+                color: $drinks-ink;
+            }
+        }
+
+        .controls-divider {
+            background: $drinks-hair;
+        }
+    }
+
+    // ---- quick add -------------------------------------------------------
+    // the trigger and the form's own buttons are chrome, so they are outlined in
+    // ink rather than filled with it: a filled button is the one black shape on
+    // a page that has no other, and it reads as a different app
+    .quick-add__pill {
+        @include drinks-label;
+
+        padding: 0.4rem 1.1rem;
+        border: 1px solid $drinks-ink;
+        border-radius: 0;
+        background: $drinks-paper;
+        color: $drinks-ink;
+        box-shadow: none;
+
+        &:hover,
+        &:focus {
+            background: $drinks-hair-soft;
+            border-color: $drinks-ink;
+            color: $drinks-ink;
+        }
+    }
+
+    .quick-add__sheet {
+        border-radius: 0;
+        background: $drinks-paper;
+        border: 1px solid $drinks-hair;
+        box-shadow: none;
+
+        // the submit keeps the heavier rule, so the primary action still reads
+        // as the primary one without a fill
+        .quick-add__add {
+            @include drinks-label;
+
+            border: 1.5px solid $drinks-ink;
+            border-radius: 0;
+            background: $drinks-paper;
+            color: $drinks-ink;
+
+            &:hover {
+                background: $drinks-hair-soft;
+                border-color: $drinks-ink;
+            }
+
+            &:focus,
+            &:active {
+                box-shadow: none;
+            }
+        }
+
+        .button-secondary {
+            @include drinks-label;
+
+            border: 1px solid $drinks-hair;
+            border-radius: 0;
+            background: $drinks-paper;
+            color: $drinks-ink-muted;
+
+            &:hover {
+                background: $drinks-hair-soft;
+                border-color: $drinks-ink-muted;
+                color: $drinks-ink;
+            }
+        }
+    }
+}
+
+
+// Drinks App - Navigation structure. The skin above dresses it; what is left
+// here is layout, which holds with or without the skin.
 nav#drinks-nav {
     margin-bottom: $gap;
     gap: 0 1.25rem;
@@ -9,24 +506,11 @@ nav#drinks-nav {
         border: 0;
         border-bottom: 3px solid transparent;
         background: transparent;
-        color: $black;
         white-space: nowrap;
         cursor: pointer;
         padding: .35rem .15rem;
         touch-action: manipulation;
         transition: $transition;
-
-        &:hover,
-        &:focus {
-            color: $primary;
-            border-bottom-color: lighten($primary, 40%);
-        }
-
-        &.active {
-            color: $primary;
-            font-weight: 500;
-            border-bottom-color: $primary;
-        }
     }
 
     // drink-type filter: pushed to the right of the tab strip
@@ -41,6 +525,7 @@ nav#drinks-nav {
     }
 }
 
+
 // Drinks App - Compact, minimal table (Overview breakdown and Data tab)
 .stdav-table {
     width: 100%;
@@ -51,9 +536,6 @@ nav#drinks-nav {
         padding: 0.5rem $gap;
         text-align: left;
         font-weight: 600;
-        color: $black-muted;
-        background: $table-header-bg;
-        border-bottom: 1px solid $border-color-light;
     }
 
     th,
@@ -70,20 +552,11 @@ nav#drinks-nav {
 
     thead th {
         font-weight: 600;
-        color: $text-muted;
-        background: $table-header-bg;
-        border-bottom: 1px solid $border-color-light;
-    }
-
-    tbody tr:nth-child(even) > td {
-        background: #fbfbfc;
     }
 
     // emphasised summary row (e.g. the "Std Av" total)
     tbody tr.stdav-table__total td {
-        border-top: 2px solid $table-border-color;
         font-weight: 600;
-        color: $black-muted;
     }
 
     // action columns (shared <c-td-edit> / <c-td-delete> markup)
@@ -93,18 +566,5 @@ nav#drinks-nav {
         padding-left: 0;
         padding-right: 0;
         text-align: center;
-    }
-
-    .edit-col a {
-        color: $black;
-    }
-
-    .delete-col a {
-        color: $negative;
-    }
-
-    // opt-in row hover for clickable rows (Data tab)
-    &.hover tbody tr:hover > td {
-        background-color: $table-hover-bg !important;
     }
 }

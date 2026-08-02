@@ -94,3 +94,44 @@ $exception: $secondary;
 $chart-positive: darken($positive-bg, 5%);
 $chart-negative: darken($negative-bg, 5%);
 $chart-warning: darken($warning-bg, 5%);
+
+
+// --- 9. Drinks paper skin ---
+// Drinks only. The skin is scoped to `.drinks-skin` (see apps/_drinks.scss),
+// which is also where these become the CSS custom properties the Drinks charts
+// read — no other app's page inherits them.
+//
+// Two rules hold the palette together: colour belongs to data, so the chrome
+// (tabs, rules, labels) is ink; and $drinks-harm is reserved for harm, so
+// nothing under a limit is ever rewarded with a colour of its own.
+// the ground everything is drawn on: white, and named for what it is used for —
+// the sheet, a tooltip, the gap between two bars, the chip under a rule's label
+$drinks-paper: #fff;
+$drinks-ink: #16222b;
+$drinks-ink-muted: #5a6a75;
+$drinks-ink-faint: #8b979f;
+$drinks-hair: #cfd6da;
+$drinks-hair-soft: #e1e6e8;
+
+// the one data hue, and the lighter step a shorter window of the same measure
+// takes (7-day against 30-day: one metric, two windows, so one hue)
+$drinks-data: #16699b;
+$drinks-data-soft: #7fa6bf;
+
+// the second measure, for the one chart that carries two: the Habits profile
+// reads a Drinking-day rate and an Intensity off the same categories
+$drinks-second: #9a6e1c;
+
+// harm, in two steps: a week over the Low-risk guideline is not yet a week over
+// the High-risk threshold
+$drinks-harm: #a8434e;
+$drinks-harm-soft: #b06068;
+
+// Year Comparison and the calendar: years and levels are ordered, so they take
+// steps of one hue rather than hues of their own. Six steps is what keeps
+// neighbours apart; past that the legend and tooltip carry the identity.
+$drinks-ramp: (#8badc5, #6e97b2, #517f9e, #356788, #1c5173, #0c3b57);
+
+$drinks-display: "Bahnschrift SemiCondensed", "Bahnschrift", "Archivo Narrow", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+$drinks-body: "Segoe UI Variable Text", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+$drinks-mono: "Cascadia Mono", Consolas, "SF Mono", "Roboto Mono", ui-monospace, monospace;
