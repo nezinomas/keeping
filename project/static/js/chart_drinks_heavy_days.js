@@ -25,41 +25,34 @@ function chartDrinksHeavyDays(idData, idContainer) {
             },
             min: 0,
             allowDecimals: false,
+            // as on the weekly chart: nothing is shaded for being inside the
+            // guideline, and the two bands above it are one hue in two steps
             plotBands: [
-                { from: 0, to: chartData.low_risk, color: "rgba(76, 175, 80, 0.10)" },
-                { from: chartData.low_risk, to: chartData.high_risk, color: "rgba(255, 193, 7, 0.12)" },
-                { from: chartData.high_risk, to: Number.MAX_VALUE, color: "rgba(244, 67, 54, 0.12)" }
+                { from: chartData.low_risk, to: chartData.high_risk, color: "var(--drinks-harm-wash)" },
+                { from: chartData.high_risk, to: Number.MAX_VALUE, color: "var(--drinks-harm-wash)" }
             ],
             plotLines: [
                 {
-                    color: "#333",
-                    width: 2,
+                    color: "var(--drinks-harm-soft)",
+                    width: 1.5,
+                    dashStyle: "Dash",
                     value: chartData.low_risk,
                     zIndex: 5,
-                    label: {
-                        text: `${chartData.text.guideline}: ${chartData.low_risk.toFixed(0)}`,
-                        align: "right",
-                        x: -5,
-                        style: {
-                            color: "#333",
-                            fontWeight: "bold"
-                        }
-                    }
+                    label: drinksRuleLabel(
+                        `${chartData.text.guideline}: ${chartData.low_risk.toFixed(0)}`,
+                        "var(--drinks-harm-soft)"
+                    )
                 },
                 {
-                    color: "rgba(244, 67, 54, 1)",
-                    width: 2,
+                    color: "var(--drinks-harm)",
+                    width: 1.5,
+                    dashStyle: "Dash",
                     value: chartData.high_risk,
                     zIndex: 5,
-                    label: {
-                        text: `${chartData.text.high_risk_guideline}: ${chartData.high_risk.toFixed(0)}`,
-                        align: "right",
-                        x: -5,
-                        style: {
-                            color: "rgba(244, 67, 54, 1)",
-                            fontWeight: "bold"
-                        }
-                    }
+                    label: drinksRuleLabel(
+                        `${chartData.text.high_risk_guideline}: ${chartData.high_risk.toFixed(0)}`,
+                        "var(--drinks-harm)"
+                    )
                 }
             ]
         },
@@ -69,7 +62,9 @@ function chartDrinksHeavyDays(idData, idContainer) {
         series: [{
             name: chartData.text.heavy,
             data: chartData.data,
-            color: "var(--chart-negative-dark)",
+            // every bar here is a count of Heavy days, so the whole series is
+            // harm — there is no reading on this chart that is not
+            color: "var(--drinks-harm)",
             borderWidth: 0,
         }]
     });

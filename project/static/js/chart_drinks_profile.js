@@ -19,11 +19,14 @@ function chartDrinksProfile(idData, idContainer) {
     // read against, and a solid block of colour competes with the line for
     // attention. A layer behind it is paler still and has no solid border, so
     // the two never read as one series in two shades
-    const rateColor = "var(--secondary)";
-    const rateFill = "var(--chart-alpha-25)";
-    const backRateFill = "var(--chart-alpha-10)";
-    const backRateBorder = "var(--chart-alpha-30)";
-    const intensityColor = "var(--chart-color-6)";
+    const rateColor = "var(--drinks-data)";
+    const rateFill = "var(--drinks-data-tint)";
+    const backRateFill = "var(--drinks-data-faint)";
+    const backRateBorder = "var(--drinks-data-edge)";
+    // the one chart on a Tab that carries two measures rather than two spans of
+    // one, so the Intensity takes the skin's second hue. Not harm: harm marks a
+    // reading that is harmful, and an Intensity is only read against a threshold
+    const intensityColor = "var(--drinks-second)";
 
     const layers = chartData.layers;
     const series = [];
@@ -147,19 +150,19 @@ function chartDrinksProfile(idData, idContainer) {
                 gridLineWidth: 0,
                 plotLines: [
                     {
-                        color: "#333",
-                        width: 2,
+                        // ink, not harm: nothing on this chart turns red for
+                        // crossing it, so the rule is a level rather than a
+                        // verdict — and harm beside the Intensity's own hue
+                        // would read as a third series
+                        color: "var(--drinks-ink-muted)",
+                        width: 1.5,
+                        dashStyle: "Dash",
                         value: chartData.heavy_threshold,
                         zIndex: 5,
-                        label: {
-                            text: `${chartData.text.threshold_label}: > ${chartData.heavy_threshold.toFixed(0)} Std Av`,
-                            align: "right",
-                            x: -5,
-                            style: {
-                                color: "#333",
-                                fontWeight: "bold"
-                            }
-                        }
+                        label: drinksRuleLabel(
+                            `${chartData.text.threshold_label}: > ${chartData.heavy_threshold.toFixed(0)} Std Av`,
+                            "var(--drinks-ink-muted)"
+                        )
                     }
                 ]
             }
