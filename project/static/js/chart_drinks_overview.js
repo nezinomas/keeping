@@ -42,9 +42,6 @@ function chartOverview(consumptionId, quantityId, containerId) {
             tickmarkPlacement: "on",
             min: 0.35,
             max: categoryMax - 0.35,
-            labels: {
-                rotation: -45,
-            }
         },
         yAxis: [
             {

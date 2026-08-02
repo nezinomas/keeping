@@ -17,7 +17,6 @@ function chartDrinksWeekly(idData, idContainer) {
             type: "category",
             tickInterval: Math.ceil(chartData.categories.length / 12),
             labels: {
-                rotation: -45,
                 formatter: function () {
                     // categories are full ISO dates (week-start); show only MM-DD
                     return this.value.slice(5);

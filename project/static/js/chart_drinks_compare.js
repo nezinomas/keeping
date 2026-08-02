@@ -39,9 +39,6 @@ function chartCompare(idData, idContainer) {
             max: 10.8,
             tickmarkPlacement: "on",
             categories: chartData.categories,
-            labels: {
-                rotation: -45,
-            }
         },
         yAxis: {
             title: {
