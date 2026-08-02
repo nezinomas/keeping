@@ -130,10 +130,14 @@ into the year being browsed.
 _Avoid_: date option, day offset
 
 **Stat Card**:
-One summary tile on a Tab: a title, a value, a note, and how to colour them.
-The tone and arrow are resolved before it reaches a template — a Tab's own
-vocabulary (a risk band, a year-over-year direction, a metric against a Drink
-Target) never reaches the markup.
+One summary tile on a Tab: a title, a value, the unit that value is read in, a
+note, and how to colour them. The tone and arrow are resolved before it reaches
+a template — a Tab's own vocabulary (a risk band, a year-over-year direction, a
+metric against a Drink Target) never reaches the markup. So is the unit: it is
+set at a third of the figure's size, so it is carried beside the value rather
+than inside it, and a card whose figure is read as typed carries none. Nothing
+frames a Stat Card and nothing rules between two of them — the figures are
+centred in whitespace, and the only line is the short one over the note.
 _Avoid_: trend card, widget, KPI, metric box
 
 **Paper skin**:
