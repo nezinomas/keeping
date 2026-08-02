@@ -259,21 +259,24 @@
     // ---- calendar --------------------------------------------------------
     // levels are ordered, so they are steps of one hue; a Heavy day is the top
     // step *and* wears a harm ring, so harm is never read from a hue alone
+    // the four levels take the 1st, 3rd, 5th and 6th step of the ramp rather
+    // than the first four: an empty day and a Heavy day are the two readings a
+    // year is skimmed for, so they sit as far apart as the hue goes
     .heat-card {
-        .l0 { background: $drinks-hair-soft; }
+        .l0 { background: $drinks-empty; }
         .l1 { background: nth($drinks-ramp, 1); }
-        .l2 { background: nth($drinks-ramp, 2); }
-        .l3 { background: nth($drinks-ramp, 3); }
+        .l2 { background: nth($drinks-ramp, 3); }
+        .l3 { background: nth($drinks-ramp, 5); }
 
         .l4 {
-            background: nth($drinks-ramp, 5);
+            background: nth($drinks-ramp, 6);
             box-shadow: inset 0 0 0 2px $drinks-harm;
         }
 
-        // a day that has not come round yet reads as the empty day it will be if
-        // nothing is drunk on it — the same block as .l0, a step lighter
+        // a day that has not come round yet is drawn as the empty day it is —
+        // the same block as .l0, because neither carries a Drink
         .future {
-            background: mix($drinks-hair-soft, $drinks-paper, 45%);
+            background: $drinks-empty;
             box-shadow: none;
         }
 

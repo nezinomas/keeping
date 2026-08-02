@@ -132,6 +132,10 @@ $drinks-harm-soft: #b06068;
 // neighbours apart; past that the legend and tooltip carry the identity.
 $drinks-ramp: (#8badc5, #6e97b2, #517f9e, #356788, #1c5173, #0c3b57);
 
+// a day with nothing on it, drunk or not yet come round: one block, one colour,
+// so the calendar reads as the year it is rather than as two halves
+$drinks-empty: mix($drinks-hair-soft, $drinks-paper, 45%);
+
 $drinks-display: "Bahnschrift SemiCondensed", "Bahnschrift", "Archivo Narrow", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
 $drinks-body: "Segoe UI Variable Text", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
 $drinks-mono: "Cascadia Mono", Consolas, "SF Mono", "Roboto Mono", ui-monospace, monospace;
