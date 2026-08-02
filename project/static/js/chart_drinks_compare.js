@@ -1,7 +1,24 @@
-// The years take their colours from `chart_drinks_paper.js`: one hue in six
-// steps, palest year first, because the years this chart lays side by side are
-// ordered. Beyond six the steps repeat, and the legend and tooltip are what
-// carry a year's identity.
+// The years take steps of one hue, palest year first, because the years this
+// chart lays side by side are ordered.
+//
+// Which steps depends on how many years are plotted, which is why they are picked
+// here rather than left to the theme's colour list: that list is read from the
+// front, so two years would take the two palest steps and be drawn a hair apart.
+// Spreading the years the pool holds over the whole ramp instead keeps the oldest
+// palest and the newest darkest at every size — and two years, the commonest
+// reading, end up as far apart as the hue goes.
+const DRINKS_RAMP_STEPS = 6;
+
+function drinksYearColor(index, count) {
+    if (count < 2) {
+        return `var(--drinks-year-${DRINKS_RAMP_STEPS - 1})`;
+    }
+
+    const step = Math.round((index * (DRINKS_RAMP_STEPS - 1)) / (count - 1));
+
+    return `var(--drinks-year-${step})`;
+}
+
 function chartCompare(idData, idContainer) {
     const chartData = JSON.parse(
         document.getElementById(idData).textContent
@@ -41,10 +58,15 @@ function chartCompare(idData, idContainer) {
                 fillOpacity: 0.25
             }
         },
-        // the last year in is the newest, so it is the one drawn heaviest
+        // the last year in is the newest, so it is the darkest and the heaviest
         series: chartData.serries.map(function (series, index) {
-            const newest = index === chartData.serries.length - 1;
-            return Object.assign({}, series, { lineWidth: newest ? 2.5 : 1.5 });
+            const count = chartData.serries.length;
+            const newest = index === count - 1;
+
+            return Object.assign({}, series, {
+                color: drinksYearColor(index, count),
+                lineWidth: newest ? 2.5 : 1.5,
+            });
         })
     });
 };
