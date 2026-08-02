@@ -113,7 +113,8 @@ class HabitsBuilder:
         return StatCard.level(
             title,
             state=stat_card.HIGH if intensity > HEAVY_DAY_STDAV else stat_card.LOW,
-            value=f"{intensity:.1f} Std Av",
+            value=f"{intensity:.1f}",
+            unit="Std Av",
             note=f"{_('Heavy day')}: > {HEAVY_DAY_STDAV:.0f} Std Av",
             explanation=f"{definition} {unit_note}",
         )

@@ -245,6 +245,41 @@ def test_tab_index_daily_limit_value_click_uses_target_update(client_logged):
     )
 
 
+@time_machine.travel("1999-06-01")
+def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged):
+    """The arrow is set well below the figure's size, so it needs its own
+    element rather than sitting in the value as a bare entity."""
+    # Drinking days only carries a direction once there is a year to compare
+    # against, so the arrow needs both years on record
+    DrinkFactory(date=date(1999, 1, 10), stdav=7)
+    DrinkFactory(date=date(1998, 1, 10), stdav=8)
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert 'class="trend-card__arrow"' in content
+
+
+def test_tab_index_renders_the_unit_apart_from_the_figure(client_logged):
+    """The skin sets a unit at a third of the figure's size, so it needs its own
+    element rather than trailing the value as text."""
+    DrinkFactory()
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert '<span class="trend-card__unit">L</span>' in content
+
+
+def test_tab_index_omits_the_unit_element_when_there_is_no_unit(client_logged):
+    DrinkFactory()
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert '<span class="trend-card__unit"></span>' not in content
+
+
 def test_tab_index_renders_overview_sections(client_logged):
     DrinkFactory()
 
