@@ -68,10 +68,17 @@
 }
 
 
-.drinks-skin {
-    // ---- tokens ----------------------------------------------------------
-    // custom properties rather than only Sass variables, because the chart JS
-    // reads these same names
+// ---- tokens --------------------------------------------------------------
+// Custom properties rather than only Sass variables, because the chart JS reads
+// these same names — and declared on :root rather than on `.drinks-skin`,
+// because Highcharts renders a tooltip into a container it appends to <body>.
+// Scoped to the wrapper, every `var(--drinks-*)` a tooltip carries — its border
+// colour, the colour of a value — resolved to nothing out there: the border
+// vanished and the figures fell back to Highcharts' own #333.
+//
+// Only the names are global. Nothing outside Drinks reads a `--drinks-*`, no
+// core token is redefined, and the skin below stays scoped to its wrapper.
+:root {
     --drinks-paper: #{$drinks-paper};
     --drinks-ink: #{$drinks-ink};
     --drinks-ink-muted: #{$drinks-ink-muted};
@@ -99,7 +106,10 @@
     --drinks-display: #{$drinks-display};
     --drinks-body: #{$drinks-body};
     --drinks-mono: #{$drinks-mono};
+}
 
+
+.drinks-skin {
     // ---- the sheet -------------------------------------------------------
     padding: calc($gap * 1.5) calc($gap * 1.5) calc($gap * 4);
     background: $drinks-paper;
@@ -260,9 +270,11 @@
             box-shadow: inset 0 0 0 2px $drinks-harm;
         }
 
+        // a day that has not come round yet reads as the empty day it will be if
+        // nothing is drunk on it — the same block as .l0, a step lighter
         .future {
-            background: transparent;
-            box-shadow: inset 0 0 0 1px $drinks-hair-soft;
+            background: mix($drinks-hair-soft, $drinks-paper, 45%);
+            box-shadow: none;
         }
 
         .today {
@@ -330,7 +342,9 @@
             @include drinks-label;
 
             font-size: 0.58rem;
-            background: transparent;
+            // the header keeps the grey band it had before the skin: it carries
+            // no hue, and it is what separates the heads from the figures
+            background: $table-header-bg;
             border-bottom: 1px solid $drinks-ink;
         }
 
@@ -373,7 +387,7 @@
 
         thead th {
             padding-top: 0.6rem;
-            background: $drinks-paper;
+            background: $table-header-bg;
         }
 
         td,
