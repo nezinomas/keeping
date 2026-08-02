@@ -1306,8 +1306,8 @@ msgstr "Tendencija (90 dienų)"
 
 #: .\drinks\services\trends\builders.py:137
 #: .\drinks\tests\services\test_trends.py:110
-msgid "This year vs last (to date)"
-msgstr "Šiemet vs pernai (iki šiandien)"
+msgid "This year vs last"
+msgstr "Šiemet vs pernai"
 
 #: .\drinks\services\trends\builders.py:163
 #: .\drinks\tests\services\test_trends.py:111
