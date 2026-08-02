@@ -127,6 +127,11 @@ function chartOverview(consumptionId, quantityId, containerId) {
                 name: consumption.text.alcohol,
                 showInLegend: false,
                 data: consumption.data,
+                // the zones below colour what is drawn; this is what the series
+                // itself is, and it is what the tooltip reads. Without it the
+                // series falls back to the first colour in the theme's ramp,
+                // which belongs to Year Comparison
+                color: "var(--drinks-data)",
                 zoneAxis: "y",
                 // under the Limit is the baseline reading, so it is the data
                 // hue; over it is the only part of the year that gets harm
@@ -166,8 +171,11 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     },
                 },
                 tooltip: {
-                    // the drink-type dropdown names the unit and its precision
-                    pointFormat: `${consumption.text.alcohol}: <b>{point.y:,.${consumption.decimals}f} ${consumption.text.unit}</b><br>`,
+                    // the drink-type dropdown names the unit and its precision.
+                    // The series colour, not the point's: the zones colour the
+                    // graph rather than the points, so a point has no colour of
+                    // its own to read here
+                    pointFormat: `${consumption.text.alcohol}: <span style="color: {series.color}"><b>{point.y:,.${consumption.decimals}f} ${consumption.text.unit}</b></span><br>`,
                 }
             },
             {
@@ -206,7 +214,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     },
                 },
                 tooltip: {
-                    pointFormat: `${quantity.text.quantity}: <b>{point.y:.1f}</b><br>`,
+                    pointFormat: `${quantity.text.quantity}: <span style="color: {series.color}"><b>{point.y:.1f}</b></span><br>`,
                 }
             }
         ]

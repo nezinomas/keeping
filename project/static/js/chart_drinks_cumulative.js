@@ -31,6 +31,7 @@ function chartDrinksCumulative(idData, idContainer) {
         },
         tooltip: {
             shared: true,
+            // no borderColor: the border reads as the series being hovered
             // Std Av is counted rather than bottled, so the unit comes from the
             // payload instead of assuming litres
             pointFormat: `<span style='color: {series.color}'>{series.name}: <b>{point.y:,.1f} ${chartData.text.unit}</b></span><br/>`

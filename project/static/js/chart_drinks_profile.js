@@ -169,6 +169,9 @@ function chartDrinksProfile(idData, idContainer) {
         ],
         tooltip: {
             shared: true,
+            // the rate columns are a pale tint, so the border would be near
+            // invisible if it took the hovered series' own colour
+            borderColor: rateColor,
             // one block per span, not four flat rows. The column and the line
             // of a span are two readings of that span and belong together —
             // side by side with another span's pair, a reader has to match four
@@ -205,7 +208,8 @@ function chartDrinksProfile(idData, idContainer) {
                     group.points.forEach(function (point) {
                         const options = point.series.userOptions;
                         out += `<br/><span style="color: ${options.dotColor}">●</span> `
-                            + `${options.metric}: <b>${point.y} ${options.unit}</b>`;
+                            + `${options.metric}: <span style="color: ${options.dotColor}">`
+                            + `<b>${point.y} ${options.unit}</b></span>`;
                     });
                 });
 

@@ -66,6 +66,10 @@ function chartTrend(idData, idContainer) {
         }],
         tooltip: {
             shared: true,
+            // the 30-day average is what this chart is about, so the border is
+            // its colour rather than whichever of the three was hovered — the
+            // raw day is drawn in hairline, and a hairline border is no border
+            borderColor: "var(--drinks-data)",
             // unit and precision come from the payload: the drink-type dropdown
             // decides both, so this must never hardcode ml
             pointFormat: `<span style='color: {series.color}'>{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
@@ -83,7 +87,12 @@ function chartTrend(idData, idContainer) {
             borderWidth: 0,
             groupPadding: 0.05,
             pointPadding: 0,
-            crisp: false
+            crisp: false,
+            // hairline is right for a column and wrong for a figure, so this row
+            // of the shared tooltip reads in ink instead of in the series colour
+            tooltip: {
+                pointFormat: `<span style='color: var(--drinks-ink-muted)'>{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
+            }
         },
         {
             // the two averages are one metric over two windows, so they are two

@@ -65,8 +65,11 @@ function chartDrinksWeekly(idData, idContainer) {
             useHTML: true,
             formatter: function () {
                 const end = chartData.week_ends[this.point.index];
+                // the bar's own colour, not the series': each week is coloured
+                // by the band it lands in, and the tooltip says which
                 return `<span class="tooltip-header">${this.point.category} &ndash; ${end}</span><br/>`
-                    + `${this.series.name}: <b>${Highcharts.numberFormat(this.y, 1)} Std Av</b>`;
+                    + `${this.series.name}: <span style="color: ${this.point.color}">`
+                    + `<b>${Highcharts.numberFormat(this.y, 1)} Std Av</b></span>`;
             }
         },
         series: [{

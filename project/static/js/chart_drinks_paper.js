@@ -106,21 +106,14 @@ Highcharts.setOptions({
             },
         },
     },
+    // The tooltip keeps Highcharts' own colours — no background and no border
+    // colour is set here, so the border is drawn in the hovered series' colour.
+    // Only the width is: the shared theme switches the border off outright
+    // (`borderWidth: 0`), which is why a Drinks tooltip had no edge at all.
     tooltip: {
-        // the two literals on this page. Highcharts parses these two through its
-        // own colour code rather than handing them to the DOM, and a `var()` it
-        // cannot parse comes out black — so they are written out, and they track
-        // $drinks-paper and $drinks-ink in abstracts/_variables.scss
-        backgroundColor: "#ffffff",
-        borderColor: "#16222b",
-        borderRadius: 0,
         borderWidth: 1,
+        borderRadius: 3,
         shadow: false,
-        style: {
-            color: "var(--drinks-ink)",
-            fontFamily: "var(--drinks-body)",
-            fontSize: "12px",
-        },
     },
     legend: {
         backgroundColor: "transparent",

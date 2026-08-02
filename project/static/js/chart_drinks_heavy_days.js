@@ -57,7 +57,7 @@ function chartDrinksHeavyDays(idData, idContainer) {
             ]
         },
         tooltip: {
-            pointFormat: "<span>{series.name}: <b>{point.y}</b></span><br/>"
+            pointFormat: '{series.name}: <span style="color: {series.color}"><b>{point.y}</b></span><br/>'
         },
         series: [{
             name: chartData.text.heavy,
