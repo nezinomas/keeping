@@ -129,6 +129,11 @@ class TrendStats:
     def total_unit(self) -> str:
         return self._converter.total_unit
 
+    def as_total(self, stdav: float) -> float:
+        """A Std Av figure in the unit a total is read in, so a card never
+        reports Std Av under a dropdown set to beer."""
+        return self._converter.stdav_to_total(stdav)
+
     def _running_total(self, rows: list[DataRow], days: int) -> list[float]:
         """Day-by-day running total in ``total_unit``."""
         by_yday = {row.date.timetuple().tm_yday: row.stdav for row in rows}

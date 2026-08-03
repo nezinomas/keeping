@@ -260,7 +260,59 @@ def test_ytd_card_note_separates_its_unit_from_the_missing_year(converter):
 
     card = TrendsBuilder(stats).get_cards()[3]
 
-    assert card.note == f"Std Av / {_('No prior year')}"
+    assert card.note == f"L / {_('No prior year')}"
+
+
+@time_machine.travel("2026-03-01")
+def test_period_card_note_follows_the_selected_drink_type():
+    """A note saying Std Av under a dropdown set to beer reads the figure in a
+    unit the user never chose, so it is converted like every other total."""
+    rows = [_row(date(2026, 2, 25), 10), _row(date(2026, 2, 10), 5)]
+
+    beer = TrendsBuilder(TrendStats(DrinkConverter("beer"), rows)).get_cards()[0]
+    std_av = TrendsBuilder(TrendStats(DrinkConverter("stdav"), rows)).get_cards()[0]
+
+    # 10 std av of beer is 2000 ml, read as a total: 2 L
+    assert beer.note == "2.0 / 1.0 L"
+    assert std_av.note == "10.0 / 5.0 Std Av"
+
+
+@time_machine.travel("2026-03-01")
+def test_period_card_level_figure_follows_the_selected_drink_type():
+    """With no prior window the card shows the level itself — the same figure
+    the note carries, so it is read in the same unit."""
+    rows = [_row(date(2026, 2, 25), 10)]
+
+    card = TrendsBuilder(TrendStats(DrinkConverter("beer"), rows)).get_cards()[0]
+
+    assert card.value == "2.0"
+
+
+@time_machine.travel("2026-03-01")
+def test_ytd_card_note_follows_the_selected_drink_type():
+    current = [_row(date(2026, 1, 10), 10)]
+    past = [_row(date(2025, 1, 10), 5)]
+
+    beer = TrendsBuilder(
+        TrendStats(DrinkConverter("beer"), current_daily=current, past_daily=past)
+    ).get_cards()[3]
+    std_av = TrendsBuilder(
+        TrendStats(DrinkConverter("stdav"), current_daily=current, past_daily=past)
+    ).get_cards()[3]
+
+    assert beer.note == "2.0 / 1.0 L"
+    assert std_av.note == "10.0 / 5.0 Std Av"
+
+
+@time_machine.travel("2026-03-01")
+def test_ytd_card_figure_follows_the_selected_drink_type_without_a_past_year():
+    stats = TrendStats(
+        DrinkConverter("beer"), current_daily=[_row(date(2026, 1, 10), 10)]
+    )
+
+    card = TrendsBuilder(stats).get_cards()[3]
+
+    assert card.value == "2.0"
 
 
 @time_machine.travel("2026-03-01")

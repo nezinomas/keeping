@@ -131,9 +131,12 @@ class TrendsBuilder:
         if not stats.has_data:
             return StatCard.empty(title, _("No data"))
 
+        current = self._stats.as_total(stats.current_period_average)
+        previous = self._stats.as_total(stats.previous_period_average)
+
         # with no period to compare against there is no percentage to show, so
         # the card falls back to the level itself — and to no unit with it
-        value = f"{stats.current_period_average:.1f}"
+        value = f"{current:.1f}"
         unit = ""
 
         if stats.previous_period_average:
@@ -145,10 +148,7 @@ class TrendsBuilder:
             improving=stats.improving,
             value=value,
             unit=unit,
-            note=(
-                f"{stats.current_period_average:.1f} / "
-                f"{stats.previous_period_average:.1f} Std Av"
-            ),
+            note=f"{current:.1f} / {previous:.1f} {self._stats.total_unit}",
         )
 
     def _build_ytd_card(self) -> StatCard:
@@ -159,11 +159,15 @@ class TrendsBuilder:
         # card already carries says it instead
         to_date = _("The arrow compares with last year, up to the same date.")
 
+        unit = self._stats.total_unit
+        current = self._stats.as_total(stats.current_year_average)
+        previous = self._stats.as_total(stats.previous_year_average)
+
         if not stats.has_past:
             return StatCard(
                 title=title,
-                value=f"{stats.current_year_average:.1f}",
-                note=f"Std Av / {_('No prior year')}",
+                value=f"{current:.1f}",
+                note=f"{unit} / {_('No prior year')}",
             )
 
         return StatCard.comparison(
@@ -171,10 +175,7 @@ class TrendsBuilder:
             improving=stats.improving,
             value=f"{stats.percentage_change:.1f}",
             unit="%",
-            note=(
-                f"{stats.current_year_average:.1f} / "
-                f"{stats.previous_year_average:.1f} Std Av"
-            ),
+            note=f"{current:.1f} / {previous:.1f} {unit}",
             explanation=to_date,
         )
 
