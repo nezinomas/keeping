@@ -55,6 +55,7 @@ class TrendsTab:
             current_daily=records.daily,
             past_daily=records.previous.daily,
             target=target,
+            year=year,
         )
 
         builder = TrendsBuilder(drink_stats=stats, target=target)

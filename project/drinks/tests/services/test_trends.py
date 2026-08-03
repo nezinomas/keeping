@@ -346,3 +346,13 @@ def test_trends_tab_build_reads_target(main_user):
     result = TrendsTab.build(main_user, 2026)
 
     assert result["chart_trend"].target == 100.0
+
+
+@time_machine.travel("2026-08-03")
+def test_trends_tab_build_plots_the_selected_year_when_it_is_empty(main_user):
+    DrinkFactory(user=main_user, date=date(2026, 1, 10), stdav=3)
+
+    result = TrendsTab.build(main_user, 2027)
+
+    assert result["chart_trend"].categories[0] == "2027-01-01"
+    assert result["chart_cumulative"].categories[0] == "2027-01-01"

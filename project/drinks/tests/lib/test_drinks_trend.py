@@ -239,3 +239,25 @@ def test_projection_without_target(converter):
 
     assert projection.has_target is False
     assert projection.percentage_difference == 0.0
+
+
+# -------------------------------------------------------------------------------------
+#                                                                        selected year
+# -------------------------------------------------------------------------------------
+@time_machine.travel("2026-08-03")
+def test_year_the_caller_selected_wins_over_the_records(converter):
+    """A year picked in the header is read as itself, empty or not.
+
+    Deriving it from the rows made an empty year fall back to today's, so a 2027
+    with nothing in it yet plotted 2026 under a 2027 header.
+    """
+    stats = TrendStats(
+        converter,
+        year=2027,
+        current_daily=[],
+        past_daily=[_row(date(2026, 1, 1), 5)],
+    )
+
+    assert stats.current_year == 2027
+    assert stats.date_labels[0] == "2027-01-01"
+    assert stats.cumulative_categories[0] == "2027-01-01"

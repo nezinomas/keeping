@@ -74,6 +74,7 @@ class TrendStats:
         current_daily: list[DataRow] | None = None,
         past_daily: list[DataRow] | None = None,
         target: float = 0.0,
+        year: int | None = None,
         today: date | None = None,
     ):
         self._converter = converter
@@ -81,7 +82,14 @@ class TrendStats:
 
         self._current_year_records = current_daily or []
         self._past_year_records = past_daily or []
-        self._year = YearBoundary.from_records(self._current_year_records, today)
+        # the year under view is the one the caller selected, not the one the rows
+        # happen to fall in: a year with nothing recorded in it yet is still that
+        # year, and deriving it from the rows made it read as today's
+        self._year = (
+            YearBoundary.for_year(year, today)
+            if year
+            else YearBoundary.from_records(self._current_year_records, today)
+        )
         self.current_year = self._year.year
 
     @staticmethod
