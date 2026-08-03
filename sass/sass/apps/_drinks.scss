@@ -611,10 +611,8 @@
     }
 
     .quick-add__sheet {
-        border-radius: 0;
         background: $drinks-paper;
         border: 1px solid $drinks-hair;
-        box-shadow: none;
 
         .quick-add__add {
             @include drinks-label;
