@@ -313,6 +313,22 @@ def test_tab_index_omits_the_unit_element_when_there_is_no_unit(client_logged):
     assert '<span class="trend-card__unit"></span>' not in content
 
 
+def test_tab_index_std_av_table_reads_as_a_conversion(client_logged):
+    """Every row is the same year's alcohol restated, so the caption must not
+    claim the user drank that many beers, bottles of wine or litres of vodka."""
+    DrinkFactory()
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert "Perskaičiuota" in content
+    assert "Išgerta" not in content
+    assert (
+        "Tas pats alkoholio kiekis perskaičiuotas skirtingiems gėrimų tipams."
+        in content
+    )
+
+
 def test_tab_index_renders_overview_sections(client_logged):
     DrinkFactory()
 
