@@ -112,15 +112,6 @@
     }
 
     // ---- Stat Cards ------------------------------------------------------
-    // nothing frames a Stat Card and nothing separates one from the next: no
-    // fill, no box, and no rule in either direction. Whitespace does the
-    // separating, and the only line in a card is the short one over its note.
-    //
-    // A row of them is one grid rather than a row of independent cards: stacked
-    // on their own, a title that wraps to two lines at a narrow width pushes its
-    // own figure down and the row's figures no longer read along one line. The
-    // three rows — title, figure, note — belong to the row, and each card takes
-    // them by `subgrid` below.
     #index-summary,
     #trend-summary,
     #habits-summary,
@@ -281,7 +272,6 @@
     }
 
     // ---- calendar --------------------------------------------------------
-    // the year heatmap, server-rendered as a grid of blocks per month
     .heat-card {
         @include drinks-panel;
 
@@ -434,7 +424,6 @@
     }
 
     // ---- tables ----------------------------------------------------------
-    // compact and minimal: the Overview breakdown and the Data tab
     .stdav-table {
         width: 100%;
         border-collapse: collapse;
@@ -468,8 +457,6 @@
             @include drinks-label;
 
             font-size: 0.58rem;
-            // the header keeps the grey band it had before the skin: it carries
-            // no hue, and it is what separates the heads from the figures
             background: $table-header-bg;
             border-bottom: 1px solid $drinks-ink;
         }
@@ -482,7 +469,6 @@
             background: transparent;
         }
 
-        // emphasised summary row (e.g. the "Std Av" total)
         tbody tr.stdav-table__total td {
             border-top: 1px solid $drinks-ink;
             border-bottom: 0;
@@ -518,7 +504,6 @@
         }
     }
 
-    // the Data tab's table stands alone on the Tab, so it carries the frame
     .stdav-table.sticky-table {
         border: 1px solid $drinks-hair;
 
@@ -605,9 +590,6 @@
     }
 
     // ---- quick add -------------------------------------------------------
-    // the trigger and the form's own buttons are chrome, so they are outlined in
-    // ink rather than filled with it: a filled button is the one black shape on
-    // a page that has no other, and it reads as a different app
     .quick-add__pill {
         @include drinks-label;
 
@@ -632,8 +614,6 @@
         border: 1px solid $drinks-hair;
         box-shadow: none;
 
-        // the submit keeps the heavier rule, so the primary action still reads
-        // as the primary one without a fill
         .quick-add__add {
             @include drinks-label;
 
