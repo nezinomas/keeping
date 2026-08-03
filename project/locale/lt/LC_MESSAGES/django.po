@@ -1443,8 +1443,12 @@ msgid "Log a drink"
 msgstr "Įrašyti gėrimą"
 
 #: .\drinks\templates\drinks\includes\tbl_std_av.html:5
-msgid "Drunk"
-msgstr "Išgerta"
+msgid "Converted"
+msgstr "Perskaičiuota"
+
+#: .\drinks\templates\drinks\includes\tbl_std_av.html:6
+msgid "The same amount of alcohol, converted to different drink types."
+msgstr "Tas pats alkoholio kiekis perskaičiuotas skirtingiems gėrimų tipams."
 
 #: .\drinks\templates\drinks\includes\tbl_std_av.html:12
 msgid "Per month"
