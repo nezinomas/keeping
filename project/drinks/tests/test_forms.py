@@ -396,3 +396,13 @@ def test_typical_year_reversed_range_is_rejected_not_swapped(main_user):
     assert not form.is_valid()
     assert form.errors["year_from"] == [_("Years must be in order")]
     assert "year_to" not in form.errors
+
+
+@time_machine.travel("1999-01-01 12:05:04")
+def test_drink_filter_opens_on_the_header_year(main_user):
+    """The boxes follow the year in the header, not the calendar year."""
+    main_user.year = 2000
+
+    form = DrinkCompareForm(user=main_user).as_p()
+
+    assert '<input type="number" name="year2" value="2000"' in form

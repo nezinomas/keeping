@@ -206,8 +206,11 @@ class DrinkCompareForm(forms.Form):
         self.fields["year1"].label = ""
         self.fields["year2"].label = ""
 
-        # inital values
-        self.fields["year2"].initial = timezone.now().year
+        # inital values: the year in the header, which is not always the calendar
+        # one — the user can be looking at a year that has not started yet
+        self.fields["year2"].initial = (
+            getattr(self.user, "year", None) or timezone.now().year
+        )
 
     def clean(self):
         cleaned = super().clean()
