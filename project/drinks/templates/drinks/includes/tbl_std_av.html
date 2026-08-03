@@ -2,7 +2,10 @@
 {% load cell_format %}
 
 <table class="stdav-table">
-    <caption>{% translate 'Drunk' %}, {% translate 'pcs' %}</caption>
+    <caption>
+        {% translate 'Converted' %}, {% translate 'pcs' %}
+        <small class="stdav-table__note">{% translate 'The same amount of alcohol, converted to different drink types.' %}</small>
+    </caption>
     <thead>
         <tr>
             <th></th>

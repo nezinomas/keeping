@@ -444,6 +444,18 @@
             border-bottom: 0;
         }
 
+        // the rows are one amount restated four ways, so the caption carries a
+        // sentence saying so — read as prose, not as another mono label
+        caption .stdav-table__note {
+            display: block;
+            margin-top: 0.25rem;
+            font-family: $drinks-body;
+            font-size: 0.72rem;
+            letter-spacing: normal;
+            text-transform: none;
+            color: $drinks-ink-muted;
+        }
+
         th,
         td {
             padding: 0.35rem $gap;
