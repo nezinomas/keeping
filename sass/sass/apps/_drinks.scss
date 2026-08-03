@@ -1,28 +1,4 @@
-// Drinks — the paper skin.
-//
-// Everything visual about the Drinks Tabs lives under one root class, and
-// `drinks/index.html` is the only template that carries it. It is scoped rather
-// than global for two reasons: the tokens below are also the ones every Drinks
-// chart reads through `var(--drinks-*)`, and the rest of the app is still on the
-// core palette — no other app's page may inherit either.
-//
-// The skin has one idea: paper. Chrome is ink — Tabs, rules, table heads and
-// axis labels carry no hue at all — so the only colour on a Tab is the data's,
-// and $drinks-harm inside it means harm and nothing else. Nothing under a limit
-// is coloured for being under it.
-//
-// Values are set in a condensed display face, labels in mono with wide letter
-// spacing, notes in the body sans. Panels are hairline frames rather than
-// filled cards.
-//
-// One section per component, and one block per class inside it: layout and skin
-// are the same rules here. Every Tab is fetched into `#tab_content`, which sits
-// inside the wrapper, so nothing in this file ever renders unscoped and nothing
-// needs a second, unscoped copy of itself to fall back to.
 
-
-// Panel: a hairline frame. Every chart, the calendar and the breakdown table
-// sit in one, so a Tab reads as a sheet of plates rather than a stack of cards.
 @mixin drinks-panel {
     position: relative;
     padding: calc($gap * 1.5) calc($gap * 1.6);
@@ -31,9 +7,6 @@
     border-radius: 0;
 }
 
-
-
-// Every label on a Tab: Tab names, axis captions, table heads, card titles.
 @mixin drinks-label {
     font-family: $drinks-mono;
     font-size: 0.62rem;
@@ -44,16 +17,6 @@
 }
 
 
-// ---- tokens --------------------------------------------------------------
-// Custom properties rather than only Sass variables, because the chart JS reads
-// these same names — and declared on :root rather than on `.drinks-skin`,
-// because Highcharts renders a tooltip into a container it appends to <body>.
-// Scoped to the wrapper, every `var(--drinks-*)` a tooltip carries — its border
-// colour, the colour of a value — resolved to nothing out there: the border
-// vanished and the figures fell back to Highcharts' own #333.
-//
-// Only the names are global. Nothing outside Drinks reads a `--drinks-*`, no
-// core token is redefined, and the skin below stays scoped to its wrapper.
 :root {
     --drinks-paper: #{$drinks-paper};
     --drinks-ink: #{$drinks-ink};
@@ -100,9 +63,6 @@
         gap: 0 1.6rem;
         flex-wrap: wrap;
 
-        // underline tabs (mirrors #main-nav; minimal, not buttons). No rule
-        // under the strip: the active Tab's own underline is the only line
-        // needed, and a second one below it read as a table head
         .tab {
             @include drinks-label;
 
@@ -129,8 +89,6 @@
             }
         }
 
-        // the drink-type filter is chrome too, so it is ink and mono like a Tab,
-        // and it is pushed to the right of the tab strip
         > div {
             margin-left: auto;
         }
@@ -154,15 +112,6 @@
     }
 
     // ---- Stat Cards ------------------------------------------------------
-    // nothing frames a Stat Card and nothing separates one from the next: no
-    // fill, no box, and no rule in either direction. Whitespace does the
-    // separating, and the only line in a card is the short one over its note.
-    //
-    // A row of them is one grid rather than a row of independent cards: stacked
-    // on their own, a title that wraps to two lines at a narrow width pushes its
-    // own figure down and the row's figures no longer read along one line. The
-    // three rows — title, figure, note — belong to the row, and each card takes
-    // them by `subgrid` below.
     #index-summary,
     #trend-summary,
     #habits-summary,
@@ -180,8 +129,6 @@
         display: grid;
         grid-row: span 3;
         grid-template-rows: subgrid;
-        // the row's 2rem is the space between two cards, not between a figure
-        // and its note
         row-gap: 0.5rem;
         text-align: center;
 
@@ -203,10 +150,6 @@
             font-variant-numeric: tabular-nums;
             color: $drinks-ink;
 
-            // a reading under a limit is the baseline, not an achievement, so it
-            // stays in ink. Only harm takes a colour, in two steps: a week over
-            // the Low-risk guideline is not yet a week over the High-risk
-            // threshold
             &.positive {
                 color: $drinks-ink;
             }
@@ -220,19 +163,6 @@
             }
         }
 
-        // the column beside the figure. The unit holds the flow, so the figure
-        // and the unit share a baseline, and the marks a figure carries — the
-        // information note and, on the daily-limit card, the edit trigger — are
-        // lifted out of it and stacked above the unit.
-        //
-        // Both the gap from the figure and the line the marks stand on belong to
-        // the column rather than to the unit inside it: a card carrying no unit
-        // — an Std Av figure is read as typed — would otherwise lose the gap and
-        // drop its mark onto the figure's baseline. The empty box holds the line
-        // whether a unit is set in it or not, and it is as tall as the unit
-        // rather than as tall as the figure: with the figure's own strut in it
-        // the stack would be three times too tall and the mark would land on the
-        // card's title
         &__meta {
             position: relative;
             display: inline-block;
@@ -247,8 +177,6 @@
             }
         }
 
-        // the unit is a third of the figure and unemphasised: what is read is
-        // the number, and "ml" beside it at the same weight competes with it
         &__unit {
             font-size: 0.34em;
             font-weight: 400;
@@ -256,10 +184,6 @@
             color: $drinks-ink-muted;
         }
 
-        // the direction, not a second figure: an arrow set at the figure's size
-        // read as loudly as the number it qualifies. Centred on the figure
-        // rather than sat on its baseline — a glyph this short hangs low on a
-        // baseline it shares with a 3rem numeral
         &__arrow {
             align-self: center;
             margin-right: 0.1em;
@@ -268,11 +192,6 @@
             line-height: 1;
         }
 
-        // the one rule a Stat Card keeps, and it spans the text column rather
-        // than the card: it ties the note to the figure above instead of
-        // closing a box around both. Capped in absolute terms as well as by
-        // share, because the Habits row holds a single card — at 70% of that its
-        // rule would cross the whole sheet, which is the rule this skin removed
         &__note {
             margin-top: 0.1rem;
             margin-inline: auto;
@@ -284,10 +203,6 @@
             color: $drinks-ink-muted;
         }
 
-        // a mark this small reads as a footnote to the number, not as part of
-        // it. It starts where the unit starts rather than sitting centred over
-        // it: the units differ in width by a factor of five ("%" against
-        // "Std Av"), and centring reads as a different placement on every card
         &__info,
         &__edit {
             position: absolute;
@@ -324,14 +239,8 @@
             cursor: pointer;
         }
 
-        // it hangs inside the value, so without a face of its own it inherits
-        // the figure's condensed display face, its negative tracking and its
-        // tabular numerals — a sentence set in all three reads squeezed
         &__explanation {
             position: absolute;
-            // the mark it hangs from stands above the unit, so it is dropped
-            // clear of the figure rather than 8px under an icon that now sits
-            // halfway up it
             top: calc(100% + 2.4em);
             left: 50%;
             z-index: 20;
@@ -363,18 +272,11 @@
     }
 
     // ---- calendar --------------------------------------------------------
-    // the year heatmap, server-rendered as a grid of blocks per month
     .heat-card {
         @include drinks-panel;
 
         min-width: 0;
 
-        // levels are ordered, so they are steps of one hue; a Heavy day is the
-        // top step *and* wears a harm ring, so harm is never read from a hue
-        // alone. The four levels take the 1st, 3rd, 5th and 6th step of the ramp
-        // rather than the first four: an empty day and a Heavy day are the two
-        // readings a year is skimmed for, so they sit as far apart as the hue
-        // goes
         .l0 { background: $drinks-empty; }
         .l1 { background: nth($drinks-ramp, 1); }
         .l2 { background: nth($drinks-ramp, 3); }
@@ -382,19 +284,20 @@
 
         .l4 {
             background: nth($drinks-ramp, 6);
-            box-shadow: inset 0 0 0 2px $drinks-harm;
+            border: 2px solid $drinks-harm;
         }
 
-        // a day that has not come round yet is drawn as the empty day it is —
-        // the same block as .l0, because neither carries a Drink
         .future {
             background: $drinks-empty;
-            box-shadow: none;
+            border: 0;
         }
 
         .today {
-            outline: 2px solid $drinks-ink;
-            outline-offset: -1px;
+            border: 2px solid $drinks-ink;
+        }
+
+        .l4.today {
+            border: 2px solid $drinks-harm;
         }
     }
 
@@ -437,7 +340,7 @@
         flex-direction: column;
         align-items: center;
         gap: 7px;
-        padding: 0 6px;
+        padding: 2px 6px;
 
         // `& + &` would nest the wrapper into the sibling selector as well
         & + .heat-month {
@@ -524,7 +427,6 @@
     }
 
     // ---- tables ----------------------------------------------------------
-    // compact and minimal: the Overview breakdown and the Data tab
     .stdav-table {
         width: 100%;
         border-collapse: collapse;
@@ -558,8 +460,6 @@
             @include drinks-label;
 
             font-size: 0.58rem;
-            // the header keeps the grey band it had before the skin: it carries
-            // no hue, and it is what separates the heads from the figures
             background: $table-header-bg;
             border-bottom: 1px solid $drinks-ink;
         }
@@ -572,7 +472,6 @@
             background: transparent;
         }
 
-        // emphasised summary row (e.g. the "Std Av" total)
         tbody tr.stdav-table__total td {
             border-top: 1px solid $drinks-ink;
             border-bottom: 0;
@@ -608,7 +507,6 @@
         }
     }
 
-    // the Data tab's table stands alone on the Tab, so it carries the frame
     .stdav-table.sticky-table {
         border: 1px solid $drinks-hair;
 
@@ -650,7 +548,6 @@
         }
 
         &__body {
-            max-width: 62ch;
             padding: 0.5rem 0 0;
             color: $drinks-ink-muted;
 
@@ -695,9 +592,6 @@
     }
 
     // ---- quick add -------------------------------------------------------
-    // the trigger and the form's own buttons are chrome, so they are outlined in
-    // ink rather than filled with it: a filled button is the one black shape on
-    // a page that has no other, and it reads as a different app
     .quick-add__pill {
         @include drinks-label;
 
@@ -722,8 +616,6 @@
         border: 1px solid $drinks-hair;
         box-shadow: none;
 
-        // the submit keeps the heavier rule, so the primary action still reads
-        // as the primary one without a fill
         .quick-add__add {
             @include drinks-label;
 

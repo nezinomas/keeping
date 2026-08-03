@@ -14,6 +14,7 @@ class HistoryService:
     def __init__(self, user: User, data: list[dict]):
         self.history_df: pl.DataFrame = pl.DataFrame()
         self.converter: DrinkConverter = DrinkConverter(user.drink_type)
+        self._header_year: int = user.year
 
         if data:
             if isinstance(data, QuerySet):
@@ -42,7 +43,11 @@ class HistoryService:
 
         if not history_df.collect().is_empty():
             start_year = history_df.select(pl.col.year.min()).collect().item()
-            end_year = datetime.now().year
+            last_recorded = history_df.select(pl.col.year.max()).collect().item()
+            # the span runs to the furthest of the three: a header year ahead of
+            # the calendar year gets its own (empty) column, and a record dated
+            # in it is never joined away
+            end_year = max(datetime.now().year, self._header_year, last_recorded)
             years_df = pl.DataFrame({"year": range(start_year, end_year + 1)}).lazy()
             history_df = years_df.join(history_df, on="year", how="left").fill_null(0)
 

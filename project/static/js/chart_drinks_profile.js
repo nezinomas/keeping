@@ -104,6 +104,11 @@ function chartDrinksProfile(idData, idContainer) {
     Highcharts.chart(idContainer, {
         chart: {
             height: "350px",
+            // each axis picks its own ticks. Aligning them across two axes is
+            // there to make one set of gridlines fit both, and the intensity
+            // axis draws none — all it does here is override the rate axis'
+            // tickInterval to match the intensity's tick count
+            alignTicks: false,
         },
         title: {
             text: chartData.text.title
@@ -121,9 +126,13 @@ function chartDrinksProfile(idData, idContainer) {
         yAxis: [
             {
                 // a share of the times that one category has come round, so it
-                // has a ceiling: letting the axis auto-scale past 100 would
-                // make a Saturday drunk on every week look like there is room
-                // above it
+                // has a ceiling — but a rate that lives well under it spends the
+                // rest of the plot on empty air, and the shape the tab is about
+                // flattens. So the axis ends at the rate this reader actually
+                // reaches, rounded up to the next ten, rather than at a level
+                // picked for anyone: how often a Drink is recorded differs by an
+                // order of magnitude between accounts, and any fixed cap is
+                // wasted air for one of them and a wall for another
                 title: {
                     text: chartData.text.share_unit,
                     style: { color: rateColor },
@@ -131,8 +140,16 @@ function chartDrinksProfile(idData, idContainer) {
                 labels: {
                     style: { color: rateColor },
                 },
+                // zero is where a rate starts, so it is the one end that stays
+                // fixed: a share read off a floating baseline is not a share
                 min: 0,
-                max: 100,
+                // and the top never runs past the ceiling the metric itself has
+                ceiling: 100,
+                // tens, so the labels stay round however far up the axis goes
+                tickInterval: 10,
+                // no headroom above the tallest column: the padding is what
+                // would push a 29% peak onto the tick after the one it needs
+                maxPadding: 0,
             },
             {
                 // Std Av, deliberately not the drink-type dropdown's unit: the

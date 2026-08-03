@@ -126,3 +126,25 @@ def test_quantity(drink_type, qty, stdav, expect, main_user):
     actual = history.HistoryService(main_user, qs).quantity
 
     assert actual == expect
+
+
+@time_machine.travel("2000-01-01")
+def test_years_reach_the_header_year(main_user):
+    """A header year ahead of the calendar year still gets its column."""
+    main_user.year = 2001
+
+    qs = [{"year": 1999, "qty": 1, "stdav": 2.5}]
+    actual = history.HistoryService(main_user, qs).years
+
+    assert actual == [1999, 2000, 2001]
+
+
+@time_machine.travel("2000-01-01")
+def test_a_record_in_the_header_year_is_not_dropped(main_user):
+    main_user.year = 2001
+
+    qs = [{"year": 2001, "qty": 1, "stdav": 2.5}]
+    service = history.HistoryService(main_user, qs)
+
+    assert service.years == [2001]
+    assert service.quantity == [1.0]
