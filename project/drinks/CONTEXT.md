@@ -147,7 +147,7 @@ scoped to the `.paper-skin` wrapper `index.html` puts around every Tab, so no
 app still on the old design inherits it; the `--skin-*` tokens it is built from
 are declared on `:root` instead, because Highcharts renders a tooltip outside
 that wrapper and a token it cannot resolve there is drawn black. Lives in
-`skin/_paper.scss` and `chart_paper.js`, neither of which is this app's — Books
+`sass/sass/skin/` and `chart_paper.js`, neither of which is this app's — Books
 wears both — while `apps/_drinks.scss` holds only the markup this app alone
 renders, and nothing about it belongs in a core palette variable.
 _Avoid_: theme, style, look, design system
