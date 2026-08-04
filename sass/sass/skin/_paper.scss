@@ -101,6 +101,17 @@
     font-size: 0.82rem;
     line-height: 1.5;
 
+    // ---- chart panels ----------------------------------------------------
+    // The frame a chart is drawn inside. It sat in `apps/_drinks.scss` while
+    // Drinks was the only app drawing one, and this pattern already matched
+    // Books' `#chart-finished-container` from there — a books chart taking its
+    // frame from the drinks partial. Now that the chart itself wears the skin
+    // (`chart_paper.js`), so does the panel around it. `#breakdown` stays in
+    // Drinks: no other app renders it.
+    [id^="chart-"][id$="-container"] {
+        @include panel;
+    }
+
     // ---- Stat Cards ------------------------------------------------------
     // `<c-stat-cards>` lives in core, so its design lives in the skin
 

@@ -70,7 +70,8 @@
     }
 
     // ---- panels ----------------------------------------------------------
-    [id^="chart-"][id$="-container"],
+    // the chart containers' own panel is the skin's now — every paper page draws
+    // one. This is the conversion table beside the Overview, which only Drinks has
     #breakdown {
         @include panel;
     }
