@@ -21,14 +21,18 @@
 
 <div class="paper-skin">
 
+<!-- cards, chart, search, table: the table is the one variable-height thing on
+     the page — a year with two books and a year with fifty draw it at different
+     lengths — so nothing sits under it, and the search row sits directly above
+     the table it filters rather than above cards it cannot affect -->
 <main class="grid-one-col">
     <div class="stat-cards" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:cards' %}">{{ cards }}</div>
+
+    <div id="chart-finished-container"></div>
 
     <div hx-trigger="reloadSearch from:body"><c-search-form url="{% url 'books:search' %}" reset_url="{% url 'books:list' %}" target="#data" /></div>
 
     <div id="data" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
-
-    <div id="chart-finished-container"></div>
 </main>
 
 <div id="chart-finished-loader" hx-get="{% url 'books:chart_finished' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
