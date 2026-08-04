@@ -5,7 +5,7 @@
 
 {% block head %}
     {% include 'highcharts.html' with bullet="True" %}
-    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_books_readed.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_books_finished.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
 {% endblock head %}
 
@@ -26,15 +26,15 @@
 
     <div id="data" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
 
-    <div id="chart-readed-container"></div>
+    <div id="chart-finished-container"></div>
 </main>
 
-<div id="chart-readed-loader" hx-get="{% url 'books:chart_readed' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
+<div id="chart-finished-loader" hx-get="{% url 'books:chart_finished' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
 
 <script nonce="{{ csp_nonce }}">
     htmx.on('htmx:afterSwap', function (event) {
-        if (event.detail.target.id === 'chart-readed-loader' && document.getElementById('chart-readed-data')) {
-            chartReaded('chart-readed-data', 'chart-readed-container');
+        if (event.detail.target.id === 'chart-finished-loader' && document.getElementById('chart-finished-data')) {
+            chartFinished('chart-finished-data', 'chart-finished-container');
         }
     });
 </script>

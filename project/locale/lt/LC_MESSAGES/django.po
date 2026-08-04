@@ -535,8 +535,8 @@ msgstr "Kiek"
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
-#: .\books\services\chart_readed.py:37
-msgid "Readed books"
+#: .\books\services\chart_finished.py:37
+msgid "Finished books"
 msgstr "Perskaitytos knygos"
 
 #: .\books\templates\books\index.html:22

@@ -148,16 +148,16 @@ def test_info_row_no_target(client_logged):
 
 
 # ----------------------------------------------------------------------------
-#                                                                 Readed Books
+#                                                               Finished Books
 # ----------------------------------------------------------------------------
-def test_chart_readed_func():
-    view = resolve("/books/chart_readed/")
+def test_chart_finished_func():
+    view = resolve("/books/chart_finished/")
 
-    assert views.ChartReaded == view.func.view_class
+    assert views.ChartFinished == view.func.view_class
 
 
-def test_chart_readed_200(client_logged):
-    url = reverse("books:chart_readed")
+def test_chart_finished_200(client_logged):
+    url = reverse("books:chart_finished")
     response = client_logged.get(url)
 
     assert response.status_code == 200
@@ -166,11 +166,11 @@ def test_chart_readed_200(client_logged):
 def test_books_index_chart_year(client_logged):
     BookFactory(ended=date(1999, 1, 1))
 
-    url = reverse("books:chart_readed")
+    url = reverse("books:chart_finished")
     response = client_logged.get(url)
 
     content = response.content.decode("utf-8")
-    assert '<script id="chart-readed-data" type="application/json">' in content
+    assert '<script id="chart-finished-data" type="application/json">' in content
 
 
 # ----------------------------------------------------------------------------

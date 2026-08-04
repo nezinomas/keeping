@@ -61,24 +61,24 @@ def test_book_fields(main_user):
     assert date(1999, 1, 31) == actual.ended
 
 
-def test_book_readed_one_year(main_user):
+def test_book_finished_one_year(main_user):
     BookFactory()
     BookFactory(ended=date(1999, 1, 31))
     BookFactory(ended=date(1999, 12, 31))
     BookFactory(ended=date(1999, 12, 31), user=UserFactory(username="X", email="x@x.x"))
 
-    actual = list(BookModelService(main_user).readed(year=1999))
+    actual = list(BookModelService(main_user).finished(year=1999))
 
     assert actual == [{"year": 1999, "cnt": 2}]
 
 
-def test_book_readed_one_year_no_data(main_user):
-    actual = list(BookModelService(main_user).readed(year=1999))
+def test_book_finished_one_year_no_data(main_user):
+    actual = list(BookModelService(main_user).finished(year=1999))
 
     assert actual == []
 
 
-def test_book_readed_all_years(main_user):
+def test_book_finished_all_years(main_user):
     BookFactory()
     BookFactory(ended=date(1999, 1, 31))
     BookFactory(ended=date(1999, 12, 31))
@@ -87,13 +87,13 @@ def test_book_readed_all_years(main_user):
         ended=date(1998, 1, 31), user=UserFactory(username="XXX", email="x@x.x")
     )
 
-    actual = list(BookModelService(main_user).readed())
+    actual = list(BookModelService(main_user).finished())
 
     assert actual == [{"year": 1998, "cnt": 1}, {"year": 1999, "cnt": 2}]
 
 
-def test_book_readed_all_years_no_data(main_user):
-    actual = list(BookModelService(main_user).readed())
+def test_book_finished_all_years_no_data(main_user):
+    actual = list(BookModelService(main_user).finished())
 
     assert actual == []
 

@@ -8,33 +8,33 @@ from .model_services import BookModelService, BookTargetModelService
 
 
 @dataclass
-class ChartReadedData:
+class ChartFinishedData:
     user: User
     targets: dict = field(init=False, default_factory=dict)
-    readed: dict = field(init=False, default_factory=dict)
+    finished: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self.targets = dict(
             BookTargetModelService(self.user).objects.values_list("year", "quantity")
         )
-        self.readed = dict(
-            BookModelService(self.user).readed().values_list("year", "cnt")
+        self.finished = dict(
+            BookModelService(self.user).finished().values_list("year", "cnt")
         )
 
 
-class ChartReaded:
-    def __init__(self, data: ChartReadedData):
-        self._readed = data.readed
+class ChartFinished:
+    def __init__(self, data: ChartFinishedData):
+        self._finished = data.finished
         self._targets = data.targets
 
     def context(self):
         data = self._make_serries_data()
 
         return {
-            "categories": list(self._readed.keys()),
+            "categories": list(self._finished.keys()),
             "data": data,
             "targets": list(map(operator.itemgetter("target"), data)),
-            "chart_title": _("Readed books"),
+            "chart_title": _("Finished books"),
             "chart_column_color": "70, 171, 157",
         }
 
@@ -44,5 +44,5 @@ class ChartReaded:
                 "y": cnt,
                 "target": self._targets.get(year, 0),
             }
-            for year, cnt in self._readed.items()
+            for year, cnt in self._finished.items()
         ]
