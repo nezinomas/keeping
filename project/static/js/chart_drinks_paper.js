@@ -1,5 +1,5 @@
 // The paper skin, chart half: what every Drinks chart shares once the page is
-// wearing `.drinks-skin`.
+// wearing `.paper-skin`.
 //
 // The shared Highcharts theme belongs to every other app too, so none of this
 // can go there. It is scoped the same way `chart_drinks_legend.js` is — by

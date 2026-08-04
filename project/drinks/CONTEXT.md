@@ -143,11 +143,13 @@ _Avoid_: trend card, widget, KPI, metric box
 **Paper skin**:
 The visual language every Tab wears: a white ground, chrome in ink, hairline
 Panels, figures in a condensed display face and every label in mono. It is
-scoped to the `.drinks-skin` wrapper `index.html` puts around every Tab, so no
-other app inherits it; the `--skin-*` tokens it is built from are declared on
-`:root` instead, because Highcharts renders a tooltip outside that wrapper and a
-token it cannot resolve there is drawn black. Lives in `apps/_drinks.scss` and
-`chart_drinks_paper.js`, and nothing about it belongs in a core palette variable.
+scoped to the `.paper-skin` wrapper `index.html` puts around every Tab, so no
+app still on the old design inherits it; the `--skin-*` tokens it is built from
+are declared on `:root` instead, because Highcharts renders a tooltip outside
+that wrapper and a token it cannot resolve there is drawn black. Lives in
+`skin/_paper.scss` and `chart_drinks_paper.js` — `apps/_drinks.scss` holds only
+the markup this app alone renders — and nothing about it belongs in a core
+palette variable.
 _Avoid_: theme, style, look, design system
 
 **Data hue**:
