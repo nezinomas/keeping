@@ -1,5 +1,10 @@
 @use "sass:color";
 
+// The paper skin's bundle. Same shared partials as main.scss, but none of the
+// components the paper design has forked — table, search and pagination are
+// written on a clean slate in the skin, never as overrides of the legacy rules.
+// See CLAUDE.md, "CSS — two bundles, one per design".
+
 // 1. Abstracts
 @import 'abstracts/variables';
 @import 'abstracts/mixins';
@@ -14,15 +19,12 @@
 
 // 4. Generic Components
 @import 'components/grid';
-@import 'components/table';
 @import 'components/navbar';
 @import 'components/accordion';
-@import 'components/search';
 @import 'components/info_row';
 @import 'components/buttons';
 @import 'components/alert';
 @import 'components/forms';
-@import 'components/pagination';
 @import 'components/modal';
 @import 'components/quick_add';
 @import 'components/tooltip';
@@ -30,8 +32,4 @@
 @import 'components/utilities';
 
 // 5. App / Domain Specific
-@import 'apps/bookkeeping';
-@import 'apps/books';
-@import 'apps/counts';
-@import 'apps/expenses';
-@import 'apps/plans';
+@import 'apps/drinks';

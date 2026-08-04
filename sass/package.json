@@ -4,6 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "css": "npm run css:main && npm run css:paper",
+    "css:main": "npx --yes sass@1 sass/main.scss ../project/static/css/main.min.css --style=compressed",
+    "css:paper": "npx --yes sass@1 sass/paper.scss ../project/static/css/paper.min.css --style=compressed",
+    "watch": "npx --yes sass@1 --watch --style=compressed sass/main.scss:../project/static/css/main.min.css sass/paper.scss:../project/static/css/paper.min.css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
