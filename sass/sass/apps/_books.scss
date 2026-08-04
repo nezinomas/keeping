@@ -1,9 +1,18 @@
-// Books App - Book table
+// Books — the markup only this app renders. Everything else the page wears comes
+// from the skin, which owns `.main` in this bundle.
 .book-table {
+    // An Open book: started, not finished. It is a fact about the reading rather
+    // than chrome, so it takes the Data hue — the palest step of it, because the
+    // row beside it is the same table and not a different one. Set on the row, so
+    // the skin's translucent stripe reads over it rather than replacing it.
+    //
+    // In skin tokens rather than `$table-currently-reading`: that one is
+    // `lighten($primary, 71%)`, the legacy palette's blue, and no paper page
+    // should be drawing with it.
     tr.currently-reading-book {
-        background-color: $table-currently-reading;
-        border-top: $table-current-day-border-color 1px double;
-        border-bottom: $table-current-day-border-color 1px double;
+        background-color: rgba($data, 0.06);
+        border-top: 1px solid $hair;
+        border-bottom: 1px solid $hair;
     }
 
     .author-col {
