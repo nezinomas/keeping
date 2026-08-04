@@ -3,6 +3,13 @@
 {% load static %}
 
 
+<!-- the paper skin's bundle, in place of the legacy one: a whole stylesheet, not
+     an addition to it. The head block appends rather than replaces, so putting
+     the link there would load both bundles and hand the argument over .main,
+     #search-form and .pagination back to the cascade -->
+{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
+
+
 {% block head %}
     {% include 'highcharts.html' with lollipop=True %}
     <!-- after the theme, so it overrides the corner it puts legends in, and
