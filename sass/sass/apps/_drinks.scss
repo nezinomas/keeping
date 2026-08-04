@@ -1,59 +1,59 @@
 
-@mixin drinks-panel {
+@mixin panel {
     position: relative;
     padding: calc($gap * 1.5) calc($gap * 1.6);
-    background: $drinks-paper;
-    border: 1px solid $drinks-hair;
+    background: $paper;
+    border: 1px solid $hair;
     border-radius: 0;
 }
 
-@mixin drinks-label {
-    font-family: $drinks-mono;
+@mixin label {
+    font-family: $mono;
     font-size: 0.62rem;
     font-weight: 400;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: $drinks-ink-muted;
+    color: $ink-muted;
 }
 
 
 :root {
-    --drinks-paper: #{$drinks-paper};
-    --drinks-ink: #{$drinks-ink};
-    --drinks-ink-muted: #{$drinks-ink-muted};
-    --drinks-ink-faint: #{$drinks-ink-faint};
-    --drinks-hair: #{$drinks-hair};
-    --drinks-hair-soft: #{$drinks-hair-soft};
+    --drinks-paper: #{$paper};
+    --drinks-ink: #{$ink};
+    --drinks-ink-muted: #{$ink-muted};
+    --drinks-ink-faint: #{$ink-faint};
+    --drinks-hair: #{$hair};
+    --drinks-hair-soft: #{$hair-soft};
 
-    --drinks-data: #{$drinks-data};
-    --drinks-data-soft: #{$drinks-data-soft};
-    --drinks-data-wash: #{rgba($drinks-data, 0.12)};
-    --drinks-data-tint: #{rgba($drinks-data, 0.22)};
-    --drinks-data-faint: #{rgba($drinks-data, 0.09)};
-    --drinks-data-edge: #{rgba($drinks-data, 0.35)};
+    --drinks-data: #{$data};
+    --drinks-data-soft: #{$data-soft};
+    --drinks-data-wash: #{rgba($data, 0.12)};
+    --drinks-data-tint: #{rgba($data, 0.22)};
+    --drinks-data-faint: #{rgba($data, 0.09)};
+    --drinks-data-edge: #{rgba($data, 0.35)};
 
-    --drinks-second: #{$drinks-second};
+    --drinks-second: #{$second};
 
-    --drinks-harm: #{$drinks-harm};
-    --drinks-harm-soft: #{$drinks-harm-soft};
-    --drinks-harm-wash: #{rgba($drinks-harm, 0.11)};
+    --drinks-harm: #{$harm};
+    --drinks-harm-soft: #{$harm-soft};
+    --drinks-harm-wash: #{rgba($harm, 0.11)};
 
-    @each $step in $drinks-ramp {
-        --drinks-year-#{index($drinks-ramp, $step) - 1}: #{$step};
+    @each $step in $ramp {
+        --drinks-year-#{index($ramp, $step) - 1}: #{$step};
     }
 
-    --drinks-display: #{$drinks-display};
-    --drinks-body: #{$drinks-body};
-    --drinks-mono: #{$drinks-mono};
+    --drinks-display: #{$display};
+    --drinks-body: #{$body};
+    --drinks-mono: #{$mono};
 }
 
 
 .drinks-skin {
     // ---- the sheet -------------------------------------------------------
     padding: calc($gap * 1.5) calc($gap * 1.5) calc($gap * 4);
-    background: $drinks-paper;
-    color: $drinks-ink;
-    font-family: $drinks-body;
+    background: $paper;
+    color: $ink;
+    font-family: $body;
     font-size: 0.82rem;
     line-height: 1.5;
 
@@ -64,7 +64,7 @@
         flex-wrap: wrap;
 
         .tab {
-            @include drinks-label;
+            @include label;
 
             padding: 0.3rem 0.05rem 0.5rem;
             border: 0;
@@ -78,14 +78,14 @@
 
             &:hover,
             &:focus {
-                color: $drinks-ink;
-                border-bottom-color: $drinks-hair;
+                color: $ink;
+                border-bottom-color: $hair;
             }
 
             &.active {
-                color: $drinks-ink;
+                color: $ink;
                 font-weight: 400;
-                border-bottom-color: $drinks-ink;
+                border-bottom-color: $ink;
             }
         }
 
@@ -94,13 +94,13 @@
         }
 
         .dropdown__btn {
-            @include drinks-label;
+            @include label;
 
-            color: $drinks-ink;
-            border-bottom: 1px dotted $drinks-hair;
+            color: $ink;
+            border-bottom: 1px dotted $hair;
 
             &:hover {
-                color: $drinks-data;
+                color: $data;
             }
         }
 
@@ -133,7 +133,7 @@
         text-align: center;
 
         &__label {
-            @include drinks-label;
+            @include label;
 
             letter-spacing: 0.22em;
         }
@@ -142,24 +142,24 @@
             display: flex;
             align-items: baseline;
             justify-content: center;
-            font-family: $drinks-display;
+            font-family: $display;
             font-size: 3.1rem;
             font-weight: 700;
             line-height: 1;
             letter-spacing: -0.03em;
             font-variant-numeric: tabular-nums;
-            color: $drinks-ink;
+            color: $ink;
 
             &.positive {
-                color: $drinks-ink;
+                color: $ink;
             }
 
             &.warning {
-                color: $drinks-harm-soft;
+                color: $harm-soft;
             }
 
             &.negative {
-                color: $drinks-harm;
+                color: $harm;
             }
         }
 
@@ -181,7 +181,7 @@
             font-size: 0.34em;
             font-weight: 400;
             letter-spacing: 0;
-            color: $drinks-ink-muted;
+            color: $ink-muted;
         }
 
         &__arrow {
@@ -197,10 +197,10 @@
             margin-inline: auto;
             padding-top: 0.5rem;
             max-width: min(70%, 13rem);
-            border-top: 1px solid $drinks-hair-soft;
+            border-top: 1px solid $hair-soft;
             font-size: 0.72rem;
             line-height: 1.35;
-            color: $drinks-ink-muted;
+            color: $ink-muted;
         }
 
         &__info,
@@ -212,11 +212,11 @@
             align-items: center;
             line-height: 1;
             font-size: 0.26em;
-            color: $drinks-ink-faint;
+            color: $ink-faint;
 
             &:hover,
             &:focus-visible {
-                color: $drinks-data;
+                color: $data;
                 outline: none;
             }
         }
@@ -247,9 +247,9 @@
             width: max-content;
             max-width: 15rem;
             padding: 0.55rem 0.75rem;
-            background: $drinks-ink;
-            color: $drinks-paper;
-            font-family: $drinks-body;
+            background: $ink;
+            color: $paper;
+            font-family: $body;
             font-size: 0.72rem;
             font-weight: 400;
             font-variant-numeric: normal;
@@ -268,36 +268,36 @@
     // ---- panels ----------------------------------------------------------
     [id^="chart-"][id$="-container"],
     #breakdown {
-        @include drinks-panel;
+        @include panel;
     }
 
     // ---- calendar --------------------------------------------------------
     .heat-card {
-        @include drinks-panel;
+        @include panel;
 
         min-width: 0;
 
-        .l0 { background: $drinks-empty; }
-        .l1 { background: nth($drinks-ramp, 1); }
-        .l2 { background: nth($drinks-ramp, 3); }
-        .l3 { background: nth($drinks-ramp, 5); }
+        .l0 { background: $empty; }
+        .l1 { background: nth($ramp, 1); }
+        .l2 { background: nth($ramp, 3); }
+        .l3 { background: nth($ramp, 5); }
 
         .l4 {
-            background: nth($drinks-ramp, 6);
-            border: 2px solid $drinks-harm;
+            background: nth($ramp, 6);
+            border: 2px solid $harm;
         }
 
         .future {
-            background: $drinks-empty;
+            background: $empty;
             border: 0;
         }
 
         .today {
-            border: 2px solid $drinks-ink;
+            border: 2px solid $ink;
         }
 
         .l4.today {
-            border: 2px solid $drinks-harm;
+            border: 2px solid $harm;
         }
     }
 
@@ -324,7 +324,7 @@
         gap: 3px;
         margin-right: 4px;
         font-size: 0.62rem;
-        color: $drinks-ink-muted;
+        color: $ink-muted;
 
         span {
             display: flex;
@@ -344,7 +344,7 @@
 
         // `& + &` would nest the wrapper into the sibling selector as well
         & + .heat-month {
-            border-left: 1px solid $drinks-hair-soft;
+            border-left: 1px solid $hair-soft;
         }
 
         .mini {
@@ -368,7 +368,7 @@
         .mlabel {
             text-align: center;
             font-size: 0.75rem;
-            color: $drinks-ink-muted;
+            color: $ink-muted;
         }
     }
 
@@ -378,7 +378,7 @@
         gap: 0.5rem;
         margin-top: 0.7rem;
         font-size: 0.72rem;
-        color: $drinks-ink-muted;
+        color: $ink-muted;
 
         i {
             display: inline-block;
@@ -393,7 +393,7 @@
 
             // the empty day is paper, so only a hairline says it is a block
             i:first-child {
-                box-shadow: inset 0 0 0 1px $drinks-hair;
+                box-shadow: inset 0 0 0 1px $hair;
             }
         }
 
@@ -406,9 +406,9 @@
         position: absolute;
         z-index: 100;
         padding: 0.4rem 0.6rem;
-        border: 1px solid $drinks-ink;
-        background: $drinks-paper;
-        color: $drinks-ink;
+        border: 1px solid $ink;
+        background: $paper;
+        color: $ink;
         font-size: 0.72rem;
         line-height: 1.35;
         white-space: nowrap;
@@ -422,7 +422,7 @@
         }
 
         &__row {
-            color: $drinks-ink-muted;
+            color: $ink-muted;
         }
     }
 
@@ -433,13 +433,13 @@
         font-variant-numeric: tabular-nums;
 
         caption {
-            @include drinks-label;
+            @include label;
 
             padding: 0 0 0.7rem;
             font-size: 0.68rem;
             letter-spacing: 0.15em;
             text-align: left;
-            color: $drinks-ink;
+            color: $ink;
             background: transparent;
             border-bottom: 0;
         }
@@ -449,11 +449,11 @@
         caption .stdav-table__note {
             display: block;
             margin-top: 0.25rem;
-            font-family: $drinks-body;
+            font-family: $body;
             font-size: 0.72rem;
             letter-spacing: normal;
             text-transform: none;
-            color: $drinks-ink-muted;
+            color: $ink-muted;
         }
 
         th,
@@ -469,15 +469,15 @@
         }
 
         thead th {
-            @include drinks-label;
+            @include label;
 
             font-size: 0.58rem;
             background: $table-header-bg;
-            border-bottom: 1px solid $drinks-ink;
+            border-bottom: 1px solid $ink;
         }
 
         tbody td {
-            border-bottom: 1px solid $drinks-hair-soft;
+            border-bottom: 1px solid $hair-soft;
         }
 
         tbody tr:nth-child(even) > td {
@@ -485,13 +485,13 @@
         }
 
         tbody tr.stdav-table__total td {
-            border-top: 1px solid $drinks-ink;
+            border-top: 1px solid $ink;
             border-bottom: 0;
             font-weight: 600;
-            color: $drinks-ink;
+            color: $ink;
 
             &:first-child {
-                font-family: $drinks-mono;
+                font-family: $mono;
                 font-size: 0.7rem;
                 letter-spacing: 0.1em;
             }
@@ -507,20 +507,20 @@
         }
 
         .edit-col a {
-            color: $drinks-ink-muted;
+            color: $ink-muted;
         }
 
         .delete-col a {
-            color: $drinks-harm;
+            color: $harm;
         }
 
         &.hover tbody tr:hover > td {
-            background-color: $drinks-hair-soft !important;
+            background-color: $hair-soft !important;
         }
     }
 
     .stdav-table.sticky-table {
-        border: 1px solid $drinks-hair;
+        border: 1px solid $hair;
 
         thead th {
             padding-top: 0.6rem;
@@ -537,10 +537,10 @@
     // ---- disclosure ------------------------------------------------------
     // "What is a standard unit?", sitting flush at the bottom of the breakdown
     .stdav-info {
-        border-top: 1px solid $drinks-hair-soft;
+        border-top: 1px solid $hair-soft;
 
         summary {
-            @include drinks-label;
+            @include label;
 
             display: flex;
             align-items: center;
@@ -555,13 +555,13 @@
             }
 
             &:hover {
-                color: $drinks-ink;
+                color: $ink;
             }
         }
 
         &__body {
             padding: 0.5rem 0 0;
-            color: $drinks-ink-muted;
+            color: $ink-muted;
 
             p {
                 margin: 0 0 0.55rem;
@@ -583,60 +583,60 @@
     .pool-controls,
     .compare-controls {
         .button-secondary {
-            @include drinks-label;
+            @include label;
 
             padding: 0.3rem 0.7rem;
-            background: $drinks-paper;
-            border: 1px solid $drinks-hair;
+            background: $paper;
+            border: 1px solid $hair;
             border-radius: 0;
-            color: $drinks-ink-muted;
+            color: $ink-muted;
 
             &:hover {
-                background: $drinks-hair-soft;
-                border-color: $drinks-ink-muted;
-                color: $drinks-ink;
+                background: $hair-soft;
+                border-color: $ink-muted;
+                color: $ink;
             }
         }
 
         .controls-divider {
-            background: $drinks-hair;
+            background: $hair;
         }
     }
 
     // ---- quick add -------------------------------------------------------
     .quick-add__pill {
-        @include drinks-label;
+        @include label;
 
         padding: 0.4rem 1.1rem;
-        border: 1px solid $drinks-ink;
+        border: 1px solid $ink;
         border-radius: 0;
-        background: $drinks-paper;
-        color: $drinks-ink;
+        background: $paper;
+        color: $ink;
         box-shadow: none;
 
         &:hover,
         &:focus {
-            background: $drinks-hair-soft;
-            border-color: $drinks-ink;
-            color: $drinks-ink;
+            background: $hair-soft;
+            border-color: $ink;
+            color: $ink;
         }
     }
 
     .quick-add__sheet {
-        background: $drinks-paper;
-        border: 1px solid $drinks-hair;
+        background: $paper;
+        border: 1px solid $hair;
 
         .quick-add__add {
-            @include drinks-label;
+            @include label;
 
-            border: 1.5px solid $drinks-ink;
+            border: 1.5px solid $ink;
             border-radius: 0;
-            background: $drinks-paper;
-            color: $drinks-ink;
+            background: $paper;
+            color: $ink;
 
             &:hover {
-                background: $drinks-hair-soft;
-                border-color: $drinks-ink;
+                background: $hair-soft;
+                border-color: $ink;
             }
 
             &:focus,
@@ -646,17 +646,17 @@
         }
 
         .button-secondary {
-            @include drinks-label;
+            @include label;
 
-            border: 1px solid $drinks-hair;
+            border: 1px solid $hair;
             border-radius: 0;
-            background: $drinks-paper;
-            color: $drinks-ink-muted;
+            background: $paper;
+            color: $ink-muted;
 
             &:hover {
-                background: $drinks-hair-soft;
-                border-color: $drinks-ink-muted;
-                color: $drinks-ink;
+                background: $hair-soft;
+                border-color: $ink-muted;
+                color: $ink;
             }
         }
     }
