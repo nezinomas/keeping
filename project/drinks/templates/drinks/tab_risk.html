@@ -4,8 +4,8 @@
 {% include 'drinks/includes/navbar.html' %}
 
 <main class="risk-grid">
-    <div id="risk-summary">
-        {% include 'drinks/includes/stat_cards.html' %}
+    <div id="risk-summary" class="stat-cards">
+        <c-stat-cards :cards=cards />
     </div>
 
     <div id="chart-weekly-container"></div>

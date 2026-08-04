@@ -1,0 +1,25 @@
+// The sheet itself: the ground every paper page is drawn on, and the frame a
+// chart sits in. `.paper-skin` is layout rather than scope — the bundle already
+// decides which design a page wears — so what it carries is the page's own
+// surface and nothing that fights another rule for a class name.
+
+.paper-skin {
+    // ---- the sheet -------------------------------------------------------
+    padding: calc($gap * 1.5) calc($gap * 1.5) calc($gap * 4);
+    background: $paper;
+    color: $ink;
+    font-family: $body;
+    font-size: 0.82rem;
+    line-height: 1.5;
+
+    // ---- chart panels ----------------------------------------------------
+    // The frame a chart is drawn inside. It sat in `apps/_drinks.scss` while
+    // Drinks was the only app drawing one, and this pattern already matched
+    // Books' `#chart-finished-container` from there — a books chart taking its
+    // frame from the drinks partial. Now that the chart itself wears the skin
+    // (`chart_paper.js`), so does the panel around it. `#breakdown` stays in
+    // Drinks: no other app renders it.
+    [id^="chart-"][id$="-container"] {
+        @include panel;
+    }
+}

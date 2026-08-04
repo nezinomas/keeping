@@ -48,7 +48,7 @@ function chartDrinksCumulative(idData, idContainer) {
             type: "spline",
             name: chartData.text.this_year,
             data: chartData.this_year,
-            color: "var(--drinks-data)",
+            color: "var(--skin-data)",
             lineWidth: 2.5,
             marker: {
                 enabled: false
@@ -58,7 +58,7 @@ function chartDrinksCumulative(idData, idContainer) {
             type: "spline",
             name: chartData.text.last_year,
             data: chartData.last_year,
-            color: "var(--drinks-data-soft)",
+            color: "var(--skin-data-soft)",
             dashStyle: "ShortDash",
             lineWidth: 2,
             marker: {
@@ -69,7 +69,7 @@ function chartDrinksCumulative(idData, idContainer) {
             type: "spline",
             name: chartData.text.target,
             data: chartData.target,
-            color: "var(--drinks-ink-muted)",
+            color: "var(--skin-ink-muted)",
             dashStyle: "Dot",
             lineWidth: 1.5,
             marker: {

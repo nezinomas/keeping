@@ -4,11 +4,11 @@ import pytest
 import time_machine
 from django.utils.translation import gettext as _
 
+from ....core.lib.stat_card import StatCard
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_risk import HEAVY_DAY_STDAV
 from ...lib.drinks_stats import DataRow
 from ...services.habits_tab import HabitsBuilder, HabitsTab, WeekdayChartViewModel
-from ...services.stat_card import StatCard
 from ..factories import DrinkFactory
 
 pytestmark = pytest.mark.django_db

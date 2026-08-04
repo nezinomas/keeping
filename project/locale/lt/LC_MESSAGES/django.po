@@ -228,7 +228,7 @@ msgid "Wealth"
 msgstr "Turtas"
 
 #: .\bookkeeping\templates\bookkeeping\detailed.html:26
-#: .\books\templates\books\book_list.html:48
+#: .\books\views.py:81
 #: .\core\templates\core\no_records.html:9
 #: .\debts\templates\debts\debt_list.html:54
 #: .\debts\templates\debts\debtreturn_list.html:53
@@ -535,8 +535,8 @@ msgstr "Kiek"
 msgid "already has a goal."
 msgstr "metai jau turi tikslą."
 
-#: .\books\services\chart_readed.py:37
-msgid "Readed books"
+#: .\books\services\chart_finished.py:37
+msgid "Finished books"
 msgstr "Perskaitytos knygos"
 
 #: .\books\templates\books\index.html:22
@@ -548,19 +548,27 @@ msgstr "Knygą"
 msgid "year goal"
 msgstr "metų tikslą"
 
-#: .\books\templates\books\info_row.html:3
-msgid "Readed"
+#: .\books\templates\books\index.html:52
+msgid "Add book"
+msgstr "Pridėti knygą"
+
+#: .\books\services\cards.py:37
+msgid "Finished"
 msgstr "Perskaitytos"
 
-#: .\books\templates\books\info_row.html:4
+#: .\books\services\cards.py:43
 msgid "Reading"
 msgstr "Skaitomos"
 
-#: .\books\templates\books\info_row.html:7
+#: .\books\services\cards.py:47
 msgid "Goal"
 msgstr "Tikslas"
 
-#: .\books\views.py:99
+#: .\books\views.py:79
+msgid "No records"
+msgstr "Įrašų nėra"
+
+#: .\books\views.py:108
 msgid "New book"
 msgstr "Nauja knyga"
 

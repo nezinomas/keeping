@@ -1,0 +1,71 @@
+// paper's own #search-form: the bundle does not import components/_search, so
+// this is the only definition of it here. A row directly above the table it
+// filters — a hairline field and two mono labels, no fill.
+//
+// `.form-control` and `.button-secondary` are still tier-2 shared partials, so
+// the skin adjusts them inside this row the way it adjusts the quick-add sheet's
+// buttons. Both are ready to fork when the forms are.
+
+.paper-skin {
+    #search-form {
+        display: flex;
+        align-items: stretch;
+        gap: calc($gap / 2);
+
+        .form-control {
+            flex: 1;
+            padding: 0.4rem 0.7rem;
+            border: 1px solid $hair;
+            background: $paper;
+            color: $ink;
+            font-family: $body;
+            font-size: 0.8rem;
+
+            // the field states what it is until something is typed into it, so
+            // the placeholder is set as a label and the typed text as prose
+            &::placeholder {
+                font-family: $mono;
+                font-size: 0.66rem;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: $ink-faint;
+            }
+
+            &:focus {
+                border-color: $ink;
+                box-shadow: none;
+            }
+        }
+
+        .button-secondary {
+            @include label;
+
+            padding: 0.4rem 1.1rem;
+            border: 1px solid $hair;
+            border-radius: 0;
+            background: $paper;
+
+            &:hover {
+                background: $hair-soft;
+                border-color: $ink-muted;
+                color: $ink;
+            }
+
+            &:focus,
+            &:active {
+                box-shadow: none;
+            }
+        }
+
+        // Search is what the row is for, so it takes the ink border the
+        // quick-add pill takes; Reset only undoes it, and stays a hairline
+        button[type="submit"] {
+            border-color: $ink;
+            color: $ink;
+
+            &:hover {
+                border-color: $ink;
+            }
+        }
+    }
+}

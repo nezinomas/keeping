@@ -1,23 +1,23 @@
-// The paper skin, chart half: what every Drinks chart shares once the page is
-// wearing `.drinks-skin`.
+// The paper skin, chart half: what every chart on a page wearing `.paper-skin`
+// shares — the faces, the axes, the gridlines, the tooltip and the palette.
 //
 // The shared Highcharts theme belongs to every other app too, so none of this
 // can go there. It is scoped the same way `chart_drinks_legend.js` is — by
-// loading: `drinks/index.html` is the only page that pulls this file in, and the
-// only page that draws these charts. Loaded after the legend file, so the legend
-// keeps the position set there and only gains its type from here.
+// loading: only the pages wearing the skin pull this file in, which is Drinks'
+// index and Books' today. On Drinks it is loaded after the legend file, so the
+// legend keeps the position set there and only gains its type from here.
 //
-// The colours are the `--drinks-*` tokens the wrapper defines, read straight out
+// The colours are the `--skin-*` tokens the wrapper defines, read straight out
 // of the cascade: Highcharts writes them into inline SVG styles inside the
 // wrapper, so `var()` resolves. One place defines the palette, in SCSS.
 //
-// A label for a rule across the plot — a Limit, a guideline, a threshold.
+// A label for a rule across the plot — a Limit, a guideline, a Goal.
 //
 // It is drawn as HTML on a paper chip rather than as SVG text, because a bar or a
 // line that crosses the rule would otherwise be drawn over the label naming it:
 // the rule a mark is measured against has to stay readable exactly where marks
 // reach it.
-function drinksRuleLabel(text, color, align) {
+function paperRuleLabel(text, color, align) {
     const toRight = align === "right";
 
     return {
@@ -25,8 +25,8 @@ function drinksRuleLabel(text, color, align) {
         align: toRight ? "right" : "left",
         x: toRight ? -6 : 6,
         y: -13,
-        text: `<span style="background: var(--drinks-paper); padding: 0 4px;`
-            + ` color: ${color}; font-family: var(--drinks-mono); font-size: 10px;`
+        text: `<span style="background: var(--skin-paper); padding: 0 4px;`
+            + ` color: ${color}; font-family: var(--skin-mono); font-size: 10px;`
             + ` letter-spacing: 0.1em; white-space: nowrap;">${text}</span>`,
     };
 }
@@ -35,26 +35,26 @@ function drinksRuleLabel(text, color, align) {
 // so they take steps of one hue, palest year first, rather than a hue each.
 Highcharts.setOptions({
     colors: [
-        "var(--drinks-year-0)",
-        "var(--drinks-year-1)",
-        "var(--drinks-year-2)",
-        "var(--drinks-year-3)",
-        "var(--drinks-year-4)",
-        "var(--drinks-year-5)",
+        "var(--skin-year-0)",
+        "var(--skin-year-1)",
+        "var(--skin-year-2)",
+        "var(--skin-year-3)",
+        "var(--skin-year-4)",
+        "var(--skin-year-5)",
     ],
     chart: {
         backgroundColor: "transparent",
         spacing: [12, 6, 10, 6],
         style: {
-            fontFamily: "var(--drinks-body)",
+            fontFamily: "var(--skin-body)",
         },
     },
     title: {
         align: "left",
         margin: 24,
         style: {
-            color: "var(--drinks-ink)",
-            fontFamily: "var(--drinks-mono)",
+            color: "var(--skin-ink)",
+            fontFamily: "var(--skin-mono)",
             fontSize: "11px",
             fontWeight: "400",
             letterSpacing: "0.14em",
@@ -64,35 +64,35 @@ Highcharts.setOptions({
     subtitle: {
         align: "left",
         style: {
-            color: "var(--drinks-ink-muted)",
-            fontFamily: "var(--drinks-mono)",
+            color: "var(--skin-ink-muted)",
+            fontFamily: "var(--skin-mono)",
             fontSize: "10px",
             letterSpacing: "0.1em",
         },
     },
     // recessive axes: one ink baseline, hairline grid, mono labels
     xAxis: {
-        lineColor: "var(--drinks-ink)",
+        lineColor: "var(--skin-ink)",
         lineWidth: 1,
-        tickColor: "var(--drinks-hair)",
+        tickColor: "var(--skin-hair)",
         gridLineWidth: 0,
         labels: {
             style: {
-                color: "var(--drinks-ink-muted)",
-                fontFamily: "var(--drinks-mono)",
+                color: "var(--skin-ink-muted)",
+                fontFamily: "var(--skin-mono)",
                 fontSize: "10px",
                 letterSpacing: "0.08em",
             },
         },
     },
     yAxis: {
-        gridLineColor: "var(--drinks-hair-soft)",
+        gridLineColor: "var(--skin-hair-soft)",
         gridLineWidth: 1,
         lineWidth: 0,
         title: {
             style: {
-                color: "var(--drinks-ink-muted)",
-                fontFamily: "var(--drinks-mono)",
+                color: "var(--skin-ink-muted)",
+                fontFamily: "var(--skin-mono)",
                 fontSize: "10px",
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
@@ -100,8 +100,8 @@ Highcharts.setOptions({
         },
         labels: {
             style: {
-                color: "var(--drinks-ink-muted)",
-                fontFamily: "var(--drinks-mono)",
+                color: "var(--skin-ink-muted)",
+                fontFamily: "var(--skin-mono)",
                 fontSize: "10px",
             },
         },
@@ -118,13 +118,13 @@ Highcharts.setOptions({
     legend: {
         backgroundColor: "transparent",
         itemStyle: {
-            color: "var(--drinks-ink-muted)",
-            fontFamily: "var(--drinks-body)",
+            color: "var(--skin-ink-muted)",
+            fontFamily: "var(--skin-body)",
             fontSize: "12px",
             fontWeight: "400",
         },
         itemHoverStyle: {
-            color: "var(--drinks-ink)",
+            color: "var(--skin-ink)",
         },
     },
     plotOptions: {
@@ -141,9 +141,9 @@ Highcharts.setOptions({
                 },
             },
             dataLabels: {
-                color: "var(--drinks-ink)",
+                color: "var(--skin-ink)",
                 style: {
-                    fontFamily: "var(--drinks-mono)",
+                    fontFamily: "var(--skin-mono)",
                     fontSize: "10px",
                     fontWeight: "400",
                     textOutline: "none",
@@ -154,7 +154,7 @@ Highcharts.setOptions({
             borderWidth: 0,
             // a surface-coloured gap keeps neighbouring bars from reading as one
             // block of colour
-            borderColor: "var(--drinks-paper)",
+            borderColor: "var(--skin-paper)",
         },
     },
 });

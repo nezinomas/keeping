@@ -1,0 +1,48 @@
+// paper's own .pagination, and components/_pagination is likewise not in this
+// bundle. A pager is chrome, so it carries no hue: the page you are on is ink
+// over an ink rule, every other is muted until the cursor reaches it.
+
+.paper-skin {
+    .pagination {
+        display: flex;
+        justify-content: center;
+        column-gap: calc($gap * 1.2);
+        margin-top: calc($gap * 1.5);
+
+        li {
+            font-family: $mono;
+            font-size: 0.68rem;
+            letter-spacing: 0.06em;
+            color: $ink-muted;
+
+            // <c-paging> draws a page as an <a>, a <div> or a bare <i>
+            // depending on its state, so the rule hangs off whatever the li holds
+            > * {
+                display: inline-block;
+                padding: 0 0.2rem 0.15rem;
+                border-bottom: 1px solid transparent;
+                color: inherit;
+                text-decoration: none;
+            }
+
+            &.active {
+                color: $ink;
+
+                > * {
+                    border-bottom-color: $ink;
+                }
+            }
+
+            &.disabled {
+                color: $ink-faint;
+            }
+        }
+
+        a:hover,
+        a:focus {
+            color: $ink;
+            border-bottom-color: $hair;
+            outline: none;
+        }
+    }
+}

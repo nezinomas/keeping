@@ -43,15 +43,15 @@ def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
     # app's page may inherit them
     response = client_logged.get(reverse("drinks:index"))
 
-    assert 'class="drinks-skin"' in response.content.decode()
+    assert 'class="paper-skin"' in response.content.decode()
 
 
 def test_index_loads_the_paper_chart_theme(client_logged):
     # the shared Highcharts theme is every other app's too, so the paper
-    # overrides ride in a file only this page loads
+    # overrides ride in a file only the pages wearing the skin load
     response = client_logged.get(reverse("drinks:index"))
 
-    assert "js/chart_drinks_paper.js" in response.content.decode()
+    assert "js/chart_paper.js" in response.content.decode()
 
 
 def test_index_quick_add(client_logged):
@@ -207,7 +207,6 @@ def test_tab_index_context(client_logged):
     assert "chart_consumption" in response.context
     assert "tbl_std_av" in response.context
     assert "cards" in response.context
-    assert "limit" in response.context
     assert "calendar" in response.context
 
 
@@ -216,8 +215,9 @@ def test_tab_index_has_daily_limit_card(client_logged):
     response = client_logged.get(url)
     content = response.content.decode()
 
-    # the daily-limit card replaces the old target table
-    assert 'class="trend-card trend-card--limit"' in content
+    # the daily limit is a card in the component, not bespoke markup beside it
+    assert "trend-card--limit" not in content
+    assert content.count('class="trend-card"') == 6
     # the figure is read, not pressed: a pencil beside it is the edit trigger
     assert '<button type="button" class="trend-card__value"' not in content
 
@@ -770,7 +770,7 @@ def test_tab_trends_renders_summary_with_data(client_logged):
 
     assert response.status_code == 200
     # tone and arrow are resolved by StatCard and asserted in
-    # tests/services/test_stat_card.py; this only pins the template to it
+    # core/tests/lib/test_stat_card.py; this only pins the template to it
     assert content.count('class="trend-card"') == len(response.context["cards"])
 
 

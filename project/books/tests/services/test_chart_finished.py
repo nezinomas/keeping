@@ -3,17 +3,17 @@ from types import SimpleNamespace
 
 import pytest
 
-from ...services.chart_readed import ChartReaded, ChartReadedData
+from ...services.chart_finished import ChartFinished, ChartFinishedData
 from ..factories import BookFactory, BookTargetFactory
 
 pytestmark = pytest.mark.django_db
 
 
 # -------------------------------------------------------------------------------------
-#                                                                       ChartReadedData
+#                                                                     ChartFinishedData
 # -------------------------------------------------------------------------------------
 def test_data_targets_no_data(main_user):
-    actual = ChartReadedData(main_user).targets
+    actual = ChartFinishedData(main_user).targets
 
     assert actual == {}
 
@@ -22,34 +22,34 @@ def test_data_targets(main_user):
     BookTargetFactory(year=1, quantity=10)
     BookTargetFactory(year=2, quantity=20)
 
-    actual = ChartReadedData(main_user).targets
+    actual = ChartFinishedData(main_user).targets
 
     assert actual == {1: 10, 2: 20}
 
 
-def test_data_readed_no_data(main_user):
-    actual = ChartReadedData(main_user).readed
+def test_data_finished_no_data(main_user):
+    actual = ChartFinishedData(main_user).finished
 
     assert actual == {}
 
 
-def test_data_readed(main_user):
+def test_data_finished(main_user):
     BookFactory(started=date(2000, 1, 1))
     BookFactory(started=date(2000, 1, 1), ended=date(2000, 1, 31))
     BookFactory(started=date(2000, 1, 1), ended=date(2000, 1, 31))
     BookFactory(started=date(1998, 1, 1))
     BookFactory(started=date(1998, 1, 1), ended=date(1998, 1, 31))
 
-    actual = ChartReadedData(main_user).readed
+    actual = ChartFinishedData(main_user).finished
 
     assert actual == {1998: 1, 2000: 2}
 
 
 # -------------------------------------------------------------------------------------
-#                                                                           ChartReaded
+#                                                                         ChartFinished
 # -------------------------------------------------------------------------------------
-@pytest.fixture(name="readed")
-def fixture_readed():
+@pytest.fixture(name="finished")
+def fixture_finished():
     return {1111: 1, 2222: 2, 3333: 3}
 
 
@@ -59,39 +59,41 @@ def fixture_targets():
 
 
 def test_chart_context():
-    data = SimpleNamespace(readed={}, targets={})
+    data = SimpleNamespace(finished={}, targets={})
 
-    actual = ChartReaded(data).context()
+    actual = ChartFinished(data).context()
 
     assert "categories" in actual
     assert "data" in actual
     assert "targets" in actual
     assert "chart_title" in actual
-    assert "chart_column_color" in actual
+    # the chart takes its colours from the skin's tokens, so the context has no
+    # colour to hand it — no JS ever read this key
+    assert "chart_column_color" not in actual
 
 
-def test_chart_context_categories(readed, targets):
-    data = SimpleNamespace(readed=readed, targets=targets)
+def test_chart_context_categories(finished, targets):
+    data = SimpleNamespace(finished=finished, targets=targets)
 
-    actual = ChartReaded(data).context()
+    actual = ChartFinished(data).context()
     actual = actual["categories"]
 
     assert actual == [1111, 2222, 3333]
 
 
-def test_chart_context_targets(readed, targets):
-    data = SimpleNamespace(readed=readed, targets=targets)
+def test_chart_context_targets(finished, targets):
+    data = SimpleNamespace(finished=finished, targets=targets)
 
-    actual = ChartReaded(data).context()
+    actual = ChartFinished(data).context()
     actual = actual["targets"]
 
     assert actual == [11, 0, 33]
 
 
-def test_chart_context_data(readed, targets):
-    data = SimpleNamespace(readed=readed, targets=targets)
+def test_chart_context_data(finished, targets):
+    data = SimpleNamespace(finished=finished, targets=targets)
 
-    actual = ChartReaded(data).context()
+    actual = ChartFinished(data).context()
 
     assert actual["data"] == [
         {"y": 1, "target": 11},
@@ -100,9 +102,9 @@ def test_chart_context_data(readed, targets):
     ]
 
 
-def test_chart_context_chart_title(readed, targets):
-    data = SimpleNamespace(readed=readed, targets=targets)
+def test_chart_context_chart_title(finished, targets):
+    data = SimpleNamespace(finished=finished, targets=targets)
 
-    actual = ChartReaded(data).context()
+    actual = ChartFinished(data).context()
 
     assert actual["chart_title"] == "Perskaitytos knygos"

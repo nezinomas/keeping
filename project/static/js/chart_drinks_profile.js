@@ -19,14 +19,14 @@ function chartDrinksProfile(idData, idContainer) {
     // read against, and a solid block of colour competes with the line for
     // attention. A layer behind it is paler still and has no solid border, so
     // the two never read as one series in two shades
-    const rateColor = "var(--drinks-data)";
-    const rateFill = "var(--drinks-data-tint)";
-    const backRateFill = "var(--drinks-data-faint)";
-    const backRateBorder = "var(--drinks-data-edge)";
+    const rateColor = "var(--skin-data)";
+    const rateFill = "var(--skin-data-tint)";
+    const backRateFill = "var(--skin-data-faint)";
+    const backRateBorder = "var(--skin-data-edge)";
     // the one chart on a Tab that carries two measures rather than two spans of
     // one, so the Intensity takes the skin's second hue. Not harm: harm marks a
     // reading that is harmful, and an Intensity is only read against a threshold
-    const intensityColor = "var(--drinks-second)";
+    const intensityColor = "var(--skin-second)";
 
     const layers = chartData.layers;
     const series = [];
@@ -171,14 +171,14 @@ function chartDrinksProfile(idData, idContainer) {
                         // crossing it, so the rule is a level rather than a
                         // verdict — and harm beside the Intensity's own hue
                         // would read as a third series
-                        color: "var(--drinks-ink-muted)",
+                        color: "var(--skin-ink-muted)",
                         width: 1.5,
                         dashStyle: "Dash",
                         value: chartData.heavy_threshold,
                         zIndex: 5,
-                        label: drinksRuleLabel(
+                        label: paperRuleLabel(
                             `${chartData.text.threshold_label}: > ${chartData.heavy_threshold.toFixed(0)} Std Av`,
-                            "var(--drinks-ink-muted)"
+                            "var(--skin-ink-muted)"
                         )
                     }
                 ]

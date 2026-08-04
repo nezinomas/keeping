@@ -1,3 +1,3 @@
-from .chart_readed import ChartReaded as ChartReaded
-from .chart_readed import ChartReadedData as ChartReadedData
-from .info_row import InfoRow as InfoRow
+from .cards import Cards as Cards
+from .chart_finished import ChartFinished as ChartFinished
+from .chart_finished import ChartFinishedData as ChartFinishedData

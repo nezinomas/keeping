@@ -6,12 +6,12 @@ import time_machine
 from django.conf import settings
 from django.utils.translation import gettext as _
 
+from ....core.lib.stat_card import StatCard
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DataRow
 from ...lib.drinks_trend import (
     TrendStats,
 )
-from ...services.stat_card import StatCard
 from ...services.trends_tab import (
     TrendChartViewModel,
     TrendsBuilder,
