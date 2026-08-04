@@ -206,6 +206,119 @@
         }
     }
 
+    // ---- tables ----------------------------------------------------------
+    // `.main` is what a table is called everywhere in this app. The paper
+    // bundle does not import components/_table, so this is the only definition
+    // of it here — a table design, not an override of the legacy one.
+    .main {
+        width: 100%;
+        border-collapse: collapse;
+        font-variant-numeric: tabular-nums;
+
+        caption {
+            @include label;
+
+            padding: 0 0 0.7rem;
+            font-size: 0.68rem;
+            letter-spacing: 0.15em;
+            text-align: left;
+            color: $ink;
+            background: transparent;
+            border-bottom: 0;
+        }
+
+        // a caption may carry a sentence as well as its label — read as prose,
+        // not as another mono label
+        caption .main__note {
+            display: block;
+            margin-top: 0.25rem;
+            font-family: $body;
+            font-size: 0.72rem;
+            letter-spacing: normal;
+            text-transform: none;
+            color: $ink-muted;
+        }
+
+        // figures right, the row's name left. Zero specificity, so the markup's
+        // own .text-left / .text-center still place a cell where it asks to be
+        :where(th, td) {
+            padding: 0.35rem $gap;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        :where(th, td):first-child {
+            text-align: left;
+        }
+
+        thead th {
+            @include label;
+
+            font-size: 0.58rem;
+            background: $table-header-bg;
+            border-bottom: 1px solid $ink;
+        }
+
+        tbody td {
+            border-bottom: 1px solid $hair-soft;
+        }
+
+        // a summary row: ruled off above, and its name set as a label
+        tbody tr.main__total td {
+            border-top: 1px solid $ink;
+            border-bottom: 0;
+            font-weight: 600;
+            color: $ink;
+
+            &:first-child {
+                font-family: $mono;
+                font-size: 0.7rem;
+                letter-spacing: 0.1em;
+            }
+        }
+
+        // action columns (shared <c-td-edit> / <c-td-delete> markup)
+        .edit-col,
+        .delete-col {
+            width: 2.25rem;
+            padding-left: 0;
+            padding-right: 0;
+            text-align: center;
+        }
+
+        .edit-col a {
+            color: $ink-muted;
+        }
+
+        .delete-col a {
+            color: $harm;
+        }
+
+        // the stripe is fainter than the hover, so the cursor still reads on an
+        // even row
+        &.striped tbody tr:nth-child(even) > td {
+            background-color: rgba($ink, 0.035);
+        }
+
+        &.hover tbody tr:hover > td {
+            background-color: $hair-soft;
+        }
+    }
+
+    .main.sticky-table {
+        border: 1px solid $hair;
+
+        thead th {
+            padding-top: 0.6rem;
+            background: $table-header-bg;
+        }
+
+        :where(td, th) {
+            padding-left: $gap;
+            padding-right: $gap;
+        }
+    }
+
     // ---- quick add -------------------------------------------------------
     .quick-add__pill {
         @include label;
