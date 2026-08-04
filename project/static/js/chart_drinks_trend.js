@@ -21,6 +21,10 @@ function chartTrend(idData, idContainer) {
     Highcharts.chart(idContainer, {
         chart: {
             height: "350px",
+            // the raw day runs an order of magnitude above the averages, so
+            // aligning ticks across the two axes stretches the averages' axis to
+            // the raw day's tick count and leaves them squashed at the bottom
+            alignTicks: false,
         },
         title: {
             text: chartData.text.title
@@ -52,6 +56,16 @@ function chartTrend(idData, idContainer) {
                 text: chartData.text.unit
             },
             min: 0,
+            // the axis holds both averages, so it reaches the 7-day's peak — and
+            // the Limit however low they run, since they are read against it
+            softMax: (chartData.target !== null) ? chartData.target : undefined,
+            // the axis ends just above the 7-day's peak instead of on the next
+            // whole tick: at this range a tick is 200, so rounding up to one
+            // spends a seventh of the height on empty sky. The top gridline sits
+            // below the peak — the ticks are dense enough to read it against
+            endOnTick: false,
+            maxPadding: 0.02,
+            tickPixelInterval: 35,
             plotLines: plotLines,
         },
         {
@@ -61,6 +75,9 @@ function chartTrend(idData, idContainer) {
                 text: `${chartData.text.daily}, ${chartData.text.unit}`,
             },
             min: 0,
+            // keeps its default top padding so the peak day is not a column
+            // flush against the frame, but not the rounding up on top of it
+            endOnTick: false,
             opposite: true,
             gridLineWidth: 0,
         }],
