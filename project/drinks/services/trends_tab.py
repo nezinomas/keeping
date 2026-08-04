@@ -2,14 +2,14 @@ from dataclasses import asdict, dataclass
 
 from django.utils.translation import gettext as _
 
+from ...core.lib import stat_card
+from ...core.lib.stat_card import StatCard
 from ..lib.drinks_trend import (
     EmptyRecentPeriodComparison,
     RecentPeriodComparison,
     TrendStats,
 )
-from . import stat_card
 from .consumption_year import ConsumptionYear
-from .stat_card import StatCard
 
 
 @dataclass(frozen=True)

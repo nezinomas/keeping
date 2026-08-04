@@ -4,16 +4,16 @@ from datetime import datetime
 
 from django.utils.translation import gettext as _
 
+from ...core.lib import stat_card
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.date import ydays, years
+from ...core.lib.stat_card import StatCard
 from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DrinkStats
-from . import stat_card
 from .consumption_year import ConsumptionYear
-from .stat_card import StatCard
 
 
 @dataclass(frozen=True)

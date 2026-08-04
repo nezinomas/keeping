@@ -6,6 +6,7 @@ import time_machine
 from django.utils.translation import gettext as _
 
 from ....core.lib.calendar_grid import CalendarYearViewModel
+from ....core.lib.stat_card import StatCard
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DataRow, DrinkStats
@@ -15,7 +16,6 @@ from ...services.index_tab import (
     IndexTab,
     LimitCardViewModel,
 )
-from ...services.stat_card import StatCard
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db

@@ -5,6 +5,7 @@ import pytest
 import time_machine
 from django.utils.translation import gettext as _
 
+from ....core.lib.stat_card import StatCard
 from ...lib.drinks_risk import (
     HEAVY_DAY_STDAV,
     WEEKLY_HIGH_RISK_STDAV,
@@ -18,7 +19,6 @@ from ...services.risk_tab import (
     RiskViewModelBuilder,
     WeeklyRiskChartViewModel,
 )
-from ...services.stat_card import StatCard
 from ..factories import DrinkFactory
 
 pytestmark = pytest.mark.django_db
