@@ -67,7 +67,9 @@ def test_chart_context():
     assert "data" in actual
     assert "targets" in actual
     assert "chart_title" in actual
-    assert "chart_column_color" in actual
+    # the chart takes its colours from the skin's tokens, so the context has no
+    # colour to hand it — no JS ever read this key
+    assert "chart_column_color" not in actual
 
 
 def test_chart_context_categories(finished, targets):

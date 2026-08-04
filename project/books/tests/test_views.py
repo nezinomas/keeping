@@ -37,6 +37,14 @@ def test_books_index_wears_the_paper_bundle(client_logged):
     assert 'class="paper-skin"' in content
 
 
+def test_books_index_loads_the_paper_chart_theme(client_logged):
+    """The chart wears the skin because this page pulls the theme in."""
+    url = reverse("books:index")
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert "js/chart_paper.js" in content
+
+
 def test_books_index_goal_is_edited_from_its_card(client_logged):
     """The pencil in the Goal card is the page's only way into the goal form."""
     url = reverse("books:index")

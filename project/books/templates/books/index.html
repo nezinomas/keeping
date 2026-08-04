@@ -12,6 +12,9 @@
 
 {% block head %}
     {% include 'highcharts.html' with bullet="True" %}
+    <!-- the paper skin's half of the charts, after the shared theme it overrides
+         and before the chart it dresses -->
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_books_finished.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
 {% endblock head %}
