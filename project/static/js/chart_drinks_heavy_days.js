@@ -28,30 +28,30 @@ function chartDrinksHeavyDays(idData, idContainer) {
             // as on the weekly chart: nothing is shaded for being inside the
             // guideline, and the two bands above it are one hue in two steps
             plotBands: [
-                { from: chartData.low_risk, to: chartData.high_risk, color: "var(--drinks-harm-wash)" },
-                { from: chartData.high_risk, to: Number.MAX_VALUE, color: "var(--drinks-harm-wash)" }
+                { from: chartData.low_risk, to: chartData.high_risk, color: "var(--skin-harm-wash)" },
+                { from: chartData.high_risk, to: Number.MAX_VALUE, color: "var(--skin-harm-wash)" }
             ],
             plotLines: [
                 {
-                    color: "var(--drinks-harm-soft)",
+                    color: "var(--skin-harm-soft)",
                     width: 1.5,
                     dashStyle: "Dash",
                     value: chartData.low_risk,
                     zIndex: 5,
                     label: drinksRuleLabel(
                         `${chartData.text.guideline}: ${chartData.low_risk.toFixed(0)}`,
-                        "var(--drinks-harm-soft)"
+                        "var(--skin-harm-soft)"
                     )
                 },
                 {
-                    color: "var(--drinks-harm)",
+                    color: "var(--skin-harm)",
                     width: 1.5,
                     dashStyle: "Dash",
                     value: chartData.high_risk,
                     zIndex: 5,
                     label: drinksRuleLabel(
                         `${chartData.text.high_risk_guideline}: ${chartData.high_risk.toFixed(0)}`,
-                        "var(--drinks-harm)"
+                        "var(--skin-harm)"
                     )
                 }
             ]
@@ -64,7 +64,7 @@ function chartDrinksHeavyDays(idData, idContainer) {
             data: chartData.data,
             // every bar here is a count of Heavy days, so the whole series is
             // harm — there is no reading on this chart that is not
-            color: "var(--drinks-harm)",
+            color: "var(--skin-harm)",
             borderWidth: 0,
         }]
     });

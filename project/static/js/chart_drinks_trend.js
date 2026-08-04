@@ -3,18 +3,18 @@ function chartTrend(idData, idContainer) {
 
     // the raw day is noise the averages are read out of, not a reading of its
     // own, so it is drawn in hairline rather than in a colour
-    const dailyColor = "var(--drinks-hair)";
+    const dailyColor = "var(--skin-hair)";
 
     const plotLines = (chartData.target !== null) ? [
     {
-        color: "var(--drinks-harm)",
+        color: "var(--skin-harm)",
         width: 1.5,
         dashStyle: "Dash",
         value: chartData.target,
         zIndex: 10,
         label: drinksRuleLabel(
             `${chartData.text.limit}: ${chartData.target.toFixed(chartData.decimals)}`,
-            "var(--drinks-harm)"
+            "var(--skin-harm)"
         )
     }] : [];
 
@@ -69,7 +69,7 @@ function chartTrend(idData, idContainer) {
             // the 30-day average is what this chart is about, so the border is
             // its colour rather than whichever of the three was hovered — the
             // raw day is drawn in hairline, and a hairline border is no border
-            borderColor: "var(--drinks-data)",
+            borderColor: "var(--skin-data)",
             // unit and precision come from the payload: the drink-type dropdown
             // decides both, so this must never hardcode ml
             pointFormat: `<span style='color: {series.color}'>{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
@@ -91,7 +91,7 @@ function chartTrend(idData, idContainer) {
             // hairline is right for a column and wrong for a figure, so this row
             // of the shared tooltip reads in ink instead of in the series colour
             tooltip: {
-                pointFormat: `<span style='color: var(--drinks-ink-muted)'>{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
+                pointFormat: `<span style='color: var(--skin-ink-muted)'>{series.name}: <b>{point.y:,.${chartData.decimals}f} ${chartData.text.unit}</b></span><br/>`
             }
         },
         {
@@ -101,7 +101,7 @@ function chartTrend(idData, idContainer) {
             type: "spline",
             name: chartData.text.r30,
             data: chartData.rolling_30,
-            color: "var(--drinks-data)",
+            color: "var(--skin-data)",
             legendIndex: 0,
             lineWidth: 2.5,
             marker: {
@@ -112,7 +112,7 @@ function chartTrend(idData, idContainer) {
             type: "spline",
             name: chartData.text.r7,
             data: chartData.rolling_7,
-            color: "var(--drinks-data-soft)",
+            color: "var(--skin-data-soft)",
             legendIndex: 1,
             lineWidth: 1.5,
             marker: {

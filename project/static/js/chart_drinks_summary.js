@@ -31,13 +31,13 @@ function chart_drinks_summary(idData, idContainer) {
             labels: {
                 format: "{value:.0f}",
                 style: {
-                    color: "var(--drinks-data)",
+                    color: "var(--skin-data)",
                 },
             },
             title: {
                 text: "",
                 style: {
-                    color: "var(--drinks-data)",
+                    color: "var(--skin-data)",
                 }
             },
         }, {
@@ -45,13 +45,13 @@ function chart_drinks_summary(idData, idContainer) {
             labels: {
                 format: "{value:.0f}",
                 style: {
-                    color: "var(--drinks-second)",
+                    color: "var(--skin-second)",
                 },
             },
             title: {
                 text: "",
                 style: {
-                    color: "var(--drinks-second)",
+                    color: "var(--skin-second)",
                 }
             },
         }],
@@ -62,11 +62,11 @@ function chart_drinks_summary(idData, idContainer) {
             name: chartData.text.per_day,
             yAxis: 0,
             data: chartData.data_ml,
-            color: "var(--drinks-data)",
-            fillColor: "var(--drinks-data-wash)",
+            color: "var(--skin-data)",
+            fillColor: "var(--skin-data-wash)",
             type: "area",
             marker: {
-                fillColor: "var(--drinks-paper)",
+                fillColor: "var(--skin-paper)",
                 lineWidth: 2,
                 lineColor: null // inherit from series
             },
@@ -77,7 +77,7 @@ function chart_drinks_summary(idData, idContainer) {
                 format: `{point.y:.${chartData.decimals}f}`,
                 y: -25,
                 verticalAlign:"top",
-                color: "var(--drinks-ink)",
+                color: "var(--skin-ink)",
                 style: {
                     textOutline: 0,
                 },
@@ -88,13 +88,13 @@ function chart_drinks_summary(idData, idContainer) {
             name: chartData.text.per_year,
             yAxis: 1,
             data: chartData.data_alcohol,
-            color: "var(--drinks-second)",
+            color: "var(--skin-second)",
             type: "line",
             dataLabels: {
                 enabled: true,
                 format: "{point.y:.1f}",
                 y: 25,
-                color: "var(--drinks-second)",
+                color: "var(--skin-second)",
                 style: {
                     textOutline: 0,
                 },

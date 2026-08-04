@@ -18,33 +18,33 @@
 
 
 :root {
-    --drinks-paper: #{$paper};
-    --drinks-ink: #{$ink};
-    --drinks-ink-muted: #{$ink-muted};
-    --drinks-ink-faint: #{$ink-faint};
-    --drinks-hair: #{$hair};
-    --drinks-hair-soft: #{$hair-soft};
+    --skin-paper: #{$paper};
+    --skin-ink: #{$ink};
+    --skin-ink-muted: #{$ink-muted};
+    --skin-ink-faint: #{$ink-faint};
+    --skin-hair: #{$hair};
+    --skin-hair-soft: #{$hair-soft};
 
-    --drinks-data: #{$data};
-    --drinks-data-soft: #{$data-soft};
-    --drinks-data-wash: #{rgba($data, 0.12)};
-    --drinks-data-tint: #{rgba($data, 0.22)};
-    --drinks-data-faint: #{rgba($data, 0.09)};
-    --drinks-data-edge: #{rgba($data, 0.35)};
+    --skin-data: #{$data};
+    --skin-data-soft: #{$data-soft};
+    --skin-data-wash: #{rgba($data, 0.12)};
+    --skin-data-tint: #{rgba($data, 0.22)};
+    --skin-data-faint: #{rgba($data, 0.09)};
+    --skin-data-edge: #{rgba($data, 0.35)};
 
-    --drinks-second: #{$second};
+    --skin-second: #{$second};
 
-    --drinks-harm: #{$harm};
-    --drinks-harm-soft: #{$harm-soft};
-    --drinks-harm-wash: #{rgba($harm, 0.11)};
+    --skin-harm: #{$harm};
+    --skin-harm-soft: #{$harm-soft};
+    --skin-harm-wash: #{rgba($harm, 0.11)};
 
     @each $step in $ramp {
-        --drinks-year-#{index($ramp, $step) - 1}: #{$step};
+        --skin-year-#{index($ramp, $step) - 1}: #{$step};
     }
 
-    --drinks-display: #{$display};
-    --drinks-body: #{$body};
-    --drinks-mono: #{$mono};
+    --skin-display: #{$display};
+    --skin-body: #{$body};
+    --skin-mono: #{$mono};
 }
 
 

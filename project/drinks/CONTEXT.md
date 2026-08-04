@@ -144,7 +144,7 @@ _Avoid_: trend card, widget, KPI, metric box
 The visual language every Tab wears: a white ground, chrome in ink, hairline
 Panels, figures in a condensed display face and every label in mono. It is
 scoped to the `.drinks-skin` wrapper `index.html` puts around every Tab, so no
-other app inherits it; the `--drinks-*` tokens it is built from are declared on
+other app inherits it; the `--skin-*` tokens it is built from are declared on
 `:root` instead, because Highcharts renders a tooltip outside that wrapper and a
 token it cannot resolve there is drawn black. Lives in `apps/_drinks.scss` and
 `chart_drinks_paper.js`, and nothing about it belongs in a core palette variable.
