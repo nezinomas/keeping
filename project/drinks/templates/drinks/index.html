@@ -15,9 +15,10 @@
     <!-- after the theme, so it overrides the corner it puts legends in, and
          before the charts, so every one of them is drawn with it -->
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_legend.js' %}"></script>
-    <!-- the paper skin's half of the charts: same load-order reasoning as the
-         legend above, and after it, because it dresses the legend it positions -->
-    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_paper.js' %}"></script>
+    <!-- the paper skin's half of the charts, shared with any other page wearing
+         the skin: same load-order reasoning as the legend above, and after it,
+         because it dresses the legend it positions -->
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_overview.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_trend.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_cumulative.js' %}"></script>

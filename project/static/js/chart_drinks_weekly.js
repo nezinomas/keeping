@@ -43,7 +43,7 @@ function chartDrinksWeekly(idData, idContainer) {
                     dashStyle: "Dash",
                     value: chartData.low_risk,
                     zIndex: 5,
-                    label: drinksRuleLabel(
+                    label: paperRuleLabel(
                         `${chartData.text.guideline}: ${chartData.low_risk.toFixed(1)}`,
                         "var(--skin-harm-soft)"
                     )
@@ -54,7 +54,7 @@ function chartDrinksWeekly(idData, idContainer) {
                     dashStyle: "Dash",
                     value: chartData.high_risk,
                     zIndex: 5,
-                    label: drinksRuleLabel(
+                    label: paperRuleLabel(
                         `${chartData.text.high_risk_guideline}: ${chartData.high_risk.toFixed(1)}`,
                         "var(--skin-harm)"
                     )

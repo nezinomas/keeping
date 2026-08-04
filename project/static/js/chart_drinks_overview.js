@@ -69,7 +69,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         value: consumption.target,
                         zIndex: 10,
                         label: Object.assign(
-                            drinksRuleLabel(
+                            paperRuleLabel(
                                 `${consumption.text.limit}: ${consumption.target.toFixed(consumption.decimals)}`,
                                 "var(--skin-harm)",
                                 "right"
@@ -85,7 +85,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         value: consumption.avg,
                         zIndex: 11,
                         label: Object.assign(
-                            drinksRuleLabel(
+                            paperRuleLabel(
                                 `Avg: ${consumption.avg.toFixed(consumption.decimals)}`,
                                 avgTextColor,
                                 "right"

@@ -1,23 +1,23 @@
-// The paper skin, chart half: what every Drinks chart shares once the page is
-// wearing `.paper-skin`.
+// The paper skin, chart half: what every chart on a page wearing `.paper-skin`
+// shares — the faces, the axes, the gridlines, the tooltip and the palette.
 //
 // The shared Highcharts theme belongs to every other app too, so none of this
 // can go there. It is scoped the same way `chart_drinks_legend.js` is — by
-// loading: `drinks/index.html` is the only page that pulls this file in, and the
-// only page that draws these charts. Loaded after the legend file, so the legend
-// keeps the position set there and only gains its type from here.
+// loading: only the pages wearing the skin pull this file in, which is Drinks'
+// index and Books' today. On Drinks it is loaded after the legend file, so the
+// legend keeps the position set there and only gains its type from here.
 //
 // The colours are the `--skin-*` tokens the wrapper defines, read straight out
 // of the cascade: Highcharts writes them into inline SVG styles inside the
 // wrapper, so `var()` resolves. One place defines the palette, in SCSS.
 //
-// A label for a rule across the plot — a Limit, a guideline, a threshold.
+// A label for a rule across the plot — a Limit, a guideline, a Goal.
 //
 // It is drawn as HTML on a paper chip rather than as SVG text, because a bar or a
 // line that crosses the rule would otherwise be drawn over the label naming it:
 // the rule a mark is measured against has to stay readable exactly where marks
 // reach it.
-function drinksRuleLabel(text, color, align) {
+function paperRuleLabel(text, color, align) {
     const toRight = align === "right";
 
     return {
