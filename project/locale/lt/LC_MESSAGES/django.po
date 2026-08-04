@@ -228,7 +228,7 @@ msgid "Wealth"
 msgstr "Turtas"
 
 #: .\bookkeeping\templates\bookkeeping\detailed.html:26
-#: .\books\templates\books\book_list.html:48
+#: .\books\views.py:81
 #: .\core\templates\core\no_records.html:9
 #: .\debts\templates\debts\debt_list.html:54
 #: .\debts\templates\debts\debtreturn_list.html:53
@@ -560,7 +560,11 @@ msgstr "Skaitomos"
 msgid "Goal"
 msgstr "Tikslas"
 
-#: .\books\views.py:99
+#: .\books\views.py:79
+msgid "No records"
+msgstr "Įrašų nėra"
+
+#: .\books\views.py:108
 msgid "New book"
 msgstr "Nauja knyga"
 
