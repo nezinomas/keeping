@@ -68,16 +68,25 @@ class Lists(ListViewMixin):
 
     def get_context_data(self, **kwargs):
         page = int(self.request.GET.get("page", 1))
+        tab = self.request.GET.get("tab")
         sql = self.get_queryset()
         paginator = CountlessPaginator(
             query=sql, total_records=len(sql), per_page=self.per_page
         )
         page_range = paginator.get_elided_page_range(page=page)
 
+        # all records lists every year, so an empty one has no year to name
+        notice = _("No records")
+        if not tab:
+            notice = _("No records in <b>%(year)s</b>.") % {
+                "year": cast(User, self.request.user).year
+            }
+
         context = {
+            "notice": notice,
             "object_list": paginator.get_page(page),
             "url": reverse("books:list"),
-            "tab": self.request.GET.get("tab"),
+            "tab": tab,
             "first_item": paginator.count - paginator.per_page * (page - 1),
             "paginator_object": {
                 "total_pages": paginator.total_pages,

@@ -56,6 +56,21 @@ def test_books_index_search_form(client_logged):
     assert 'id="id_search"' in response
 
 
+def test_books_index_reads_cards_chart_search_table(client_logged):
+    """The table is the variable-height thing, so nothing goes under it."""
+    url = reverse("books:index")
+    content = client_logged.get(url).content.decode("utf-8")
+
+    order = [
+        content.index('class="stat-cards"'),
+        content.index('id="chart-finished-container"'),
+        content.index('id="search-form"'),
+        content.index('id="data"'),
+    ]
+
+    assert order == sorted(order)
+
+
 def test_books_index_context(client_logged):
     url = reverse("books:index")
     response = client_logged.get(url)
@@ -207,6 +222,32 @@ def test_list_all_books(client_logged):
     response = client_logged.get(url, {"tab": "all"})
     actual = response.context["object_list"]
     assert len(actual) == 2
+
+
+def test_list_all_books_lists_another_year(client_logged):
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
+
+    url = reverse("books:list")
+    actual = client_logged.get(url, {"tab": "all"}).content.decode("utf-8")
+
+    assert "Old Book" in actual
+    assert "1974-01-01" in actual
+
+
+def test_list_empty_state_names_the_year(client_logged):
+    url = reverse("books:list")
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert "<b>1999</b> metais įrašų nėra" in actual
+
+
+def test_list_all_books_empty_state_does_not_name_a_year(client_logged):
+    """?tab=all lists every year, so its empty state has no year to name."""
+    url = reverse("books:list")
+    actual = client_logged.get(url, {"tab": "all"}).content.decode("utf-8")
+
+    assert "Įrašų nėra" in actual
+    assert "1999" not in actual
 
 
 # ----------------------------------------------------------------------------
@@ -465,6 +506,31 @@ def test_search_found(client_logged):
     assert "1999-01-01" in actual
     assert "Book Title" in actual
     assert "Author" in actual
+
+
+def test_search_spans_years(client_logged):
+    """The year the header selects does not narrow a search."""
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
+
+    url = reverse("books:search")
+    actual = client_logged.get(url, {"search": "Old Book"}).content.decode("utf-8")
+
+    assert "Old Book" in actual
+    assert "1974-01-01" in actual
+
+
+def test_search_reset_url_restores_the_year(client_logged):
+    """Reset is what ends a search: its url is the selected year's list again."""
+    BookFactory(title="This Year")
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
+
+    index = client_logged.get(reverse("books:index")).content.decode("utf-8")
+    assert f'hx-get="{reverse("books:list")}"' in index
+
+    actual = client_logged.get(reverse("books:list")).content.decode("utf-8")
+
+    assert "This Year" in actual
+    assert "Old Book" not in actual
 
 
 def test_search_pagination_first_page(client_logged):

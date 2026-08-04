@@ -41,12 +41,8 @@
 
 {% else %}
 
-<div class="alert alert-warning">
-{% if notice %}
-    {{ notice|safe }}
-{% else %}
-    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
-{% endif %}
-</div>
+<!-- the Lists view states the year, or states nothing when ?tab=all widened the
+     table past having one; a search gets its own notice from SearchMixin -->
+<div class="alert alert-warning">{{ notice|safe }}</div>
 
 {% endif %}
