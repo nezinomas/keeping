@@ -207,7 +207,6 @@ def test_tab_index_context(client_logged):
     assert "chart_consumption" in response.context
     assert "tbl_std_av" in response.context
     assert "cards" in response.context
-    assert "limit" in response.context
     assert "calendar" in response.context
 
 
@@ -216,8 +215,9 @@ def test_tab_index_has_daily_limit_card(client_logged):
     response = client_logged.get(url)
     content = response.content.decode()
 
-    # the daily-limit card replaces the old target table
-    assert 'class="trend-card trend-card--limit"' in content
+    # the daily limit is a card in the component, not bespoke markup beside it
+    assert "trend-card--limit" not in content
+    assert content.count('class="trend-card"') == 6
     # the figure is read, not pressed: a pencil beside it is the edit trigger
     assert '<button type="button" class="trend-card__value"' not in content
 
