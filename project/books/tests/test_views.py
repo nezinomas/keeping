@@ -56,6 +56,19 @@ def test_books_index_goal_is_edited_from_its_card(client_logged):
     assert f'class="trend-card__edit" hx-get="{link}"' in content
 
 
+def test_books_index_adds_a_book_from_the_foot_of_the_page(client_logged):
+    """Both header buttons went with the info row, so this is the only way in."""
+    url = reverse("books:index")
+    content = client_logged.get(url).content.decode("utf-8")
+
+    link = reverse("books:new")
+
+    assert 'class="quick-add"' in content
+    assert f'class="quick-add__pill" hx-get="{link}"' in content
+    assert 'hx-target="#mainModal"' in content
+    assert "Pridėti knygą" in content
+
+
 def test_books_index_search_form(client_logged):
     url = reverse("books:index")
     response = client_logged.get(url).content.decode("utf-8")

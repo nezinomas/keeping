@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 
 
 <!-- the paper skin's bundle, in place of the legacy one: a whole stylesheet, not
@@ -39,6 +40,18 @@
 </main>
 
 <div id="chart-finished-loader" hx-get="{% url 'books:chart_finished' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
+
+<!-- Add book, and the page's only way into the book form since both header
+     buttons went with the info row. It borrows the quick-add pill's chrome and
+     none of its behaviour: Drinks' quick add is a sheet that submits on its own,
+     and this opens the modal that already exists. Inside the wrapper, because
+     that is where the skin draws the pill; fixed to the foot of the viewport by
+     .quick-add, which also reserves the space it covers -->
+<div class="quick-add">
+    <button type="button" class="quick-add__pill" hx-get="{% url 'books:new' %}" hx-target="#mainModal">
+        {% translate 'Add book' %}
+    </button>
+</div>
 
 </div>
 
