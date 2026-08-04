@@ -48,10 +48,10 @@ def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
 
 def test_index_loads_the_paper_chart_theme(client_logged):
     # the shared Highcharts theme is every other app's too, so the paper
-    # overrides ride in a file only this page loads
+    # overrides ride in a file only the pages wearing the skin load
     response = client_logged.get(reverse("drinks:index"))
 
-    assert "js/chart_drinks_paper.js" in response.content.decode()
+    assert "js/chart_paper.js" in response.content.decode()
 
 
 def test_index_quick_add(client_logged):

@@ -176,7 +176,7 @@ function chartDrinksProfile(idData, idContainer) {
                         dashStyle: "Dash",
                         value: chartData.heavy_threshold,
                         zIndex: 5,
-                        label: drinksRuleLabel(
+                        label: paperRuleLabel(
                             `${chartData.text.threshold_label}: > ${chartData.heavy_threshold.toFixed(0)} Std Av`,
                             "var(--skin-ink-muted)"
                         )

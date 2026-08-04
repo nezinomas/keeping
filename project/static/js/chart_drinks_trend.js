@@ -12,7 +12,7 @@ function chartTrend(idData, idContainer) {
         dashStyle: "Dash",
         value: chartData.target,
         zIndex: 10,
-        label: drinksRuleLabel(
+        label: paperRuleLabel(
             `${chartData.text.limit}: ${chartData.target.toFixed(chartData.decimals)}`,
             "var(--skin-harm)"
         )
