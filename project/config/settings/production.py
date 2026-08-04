@@ -31,7 +31,7 @@ MIDDLEWARE += [
 
 SECURE_CSP = {
     "default-src": [CSP.SELF],
-    "script-src": [CSP.SELF, CSP.NONCE, CSP.UNSAFE_EVAL, CSP.UNSAFE_INLINE],
+    "script-src": [CSP.SELF, CSP.NONCE, CSP.UNSAFE_EVAL],
     "style-src": [CSP.SELF, CSP.UNSAFE_INLINE, "https://fonts.googleapis.com"],
     "img-src": [CSP.SELF, "https:", "data:"],
     "font-src": [CSP.SELF, "https://fonts.gstatic.com"],
