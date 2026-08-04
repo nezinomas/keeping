@@ -31,5 +31,8 @@
 @import 'components/icons';
 @import 'components/utilities';
 
-// 5. App / Domain Specific
+// 5. The skin — before the apps, so its mixins exist when they include them
+@import 'skin/paper';
+
+// 6. App / Domain Specific
 @import 'apps/drinks';

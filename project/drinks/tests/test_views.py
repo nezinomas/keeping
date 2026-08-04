@@ -43,7 +43,7 @@ def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
     # app's page may inherit them
     response = client_logged.get(reverse("drinks:index"))
 
-    assert 'class="drinks-skin"' in response.content.decode()
+    assert 'class="paper-skin"' in response.content.decode()
 
 
 def test_index_loads_the_paper_chart_theme(client_logged):

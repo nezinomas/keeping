@@ -1,0 +1,266 @@
+// The paper skin. Everything here belongs to the skin rather than to an app:
+// the two mixins, the token block every paper chart reads, the sheet itself, the
+// stat cards (shared markup, `<c-stat-cards>` in core) and the quick-add pill.
+//
+// Imported by paper.scss *before* the apps, so the mixins exist by the time an
+// app partial includes them. See CLAUDE.md, "CSS — two bundles, one per design".
+
+@mixin panel {
+    position: relative;
+    padding: calc($gap * 1.5) calc($gap * 1.6);
+    background: $paper;
+    border: 1px solid $hair;
+    border-radius: 0;
+}
+
+@mixin label {
+    font-family: $mono;
+    font-size: 0.62rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $ink-muted;
+}
+
+
+:root {
+    --skin-paper: #{$paper};
+    --skin-ink: #{$ink};
+    --skin-ink-muted: #{$ink-muted};
+    --skin-ink-faint: #{$ink-faint};
+    --skin-hair: #{$hair};
+    --skin-hair-soft: #{$hair-soft};
+
+    --skin-data: #{$data};
+    --skin-data-soft: #{$data-soft};
+    --skin-data-wash: #{rgba($data, 0.12)};
+    --skin-data-tint: #{rgba($data, 0.22)};
+    --skin-data-faint: #{rgba($data, 0.09)};
+    --skin-data-edge: #{rgba($data, 0.35)};
+
+    --skin-second: #{$second};
+
+    --skin-harm: #{$harm};
+    --skin-harm-soft: #{$harm-soft};
+    --skin-harm-wash: #{rgba($harm, 0.11)};
+
+    @each $step in $ramp {
+        --skin-year-#{index($ramp, $step) - 1}: #{$step};
+    }
+
+    --skin-display: #{$display};
+    --skin-body: #{$body};
+    --skin-mono: #{$mono};
+}
+
+
+.paper-skin {
+    // ---- the sheet -------------------------------------------------------
+    padding: calc($gap * 1.5) calc($gap * 1.5) calc($gap * 4);
+    background: $paper;
+    color: $ink;
+    font-family: $body;
+    font-size: 0.82rem;
+    line-height: 1.5;
+
+    // ---- Stat Cards ------------------------------------------------------
+    // `<c-stat-cards>` lives in core, so its design lives in the skin
+    .trend-card {
+        position: relative;
+        display: grid;
+        grid-row: span 3;
+        grid-template-rows: subgrid;
+        row-gap: 0.5rem;
+        text-align: center;
+
+        &__label {
+            @include label;
+
+            letter-spacing: 0.22em;
+        }
+
+        &__value {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            font-family: $display;
+            font-size: 3.1rem;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+            color: $ink;
+
+            &.positive {
+                color: $ink;
+            }
+
+            &.warning {
+                color: $harm-soft;
+            }
+
+            &.negative {
+                color: $harm;
+            }
+        }
+
+        &__meta {
+            position: relative;
+            display: inline-block;
+            margin-left: 0.15em;
+            line-height: 0;
+
+            &::before {
+                content: "";
+                display: inline-block;
+                font-size: 0.34em;
+                height: 1em;
+            }
+        }
+
+        &__unit {
+            font-size: 0.34em;
+            font-weight: 400;
+            letter-spacing: 0;
+            color: $ink-muted;
+        }
+
+        &__arrow {
+            align-self: center;
+            margin-right: 0.1em;
+            font-size: 0.55em;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        &__note {
+            margin-top: 0.1rem;
+            margin-inline: auto;
+            padding-top: 0.5rem;
+            max-width: min(70%, 13rem);
+            border-top: 1px solid $hair-soft;
+            font-size: 0.72rem;
+            line-height: 1.35;
+            color: $ink-muted;
+        }
+
+        &__info,
+        &__edit {
+            position: absolute;
+            bottom: calc(100% + 0.15em);
+            left: 0;
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
+            font-size: 0.26em;
+            color: $ink-faint;
+
+            &:hover,
+            &:focus-visible {
+                color: $data;
+                outline: none;
+            }
+        }
+
+        &__info {
+            cursor: help;
+
+            &:hover .trend-card__explanation,
+            &:focus-visible .trend-card__explanation {
+                visibility: visible;
+                opacity: 1;
+            }
+        }
+
+        &__edit {
+            padding: 0;
+            border: 0;
+            background: none;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        &__explanation {
+            position: absolute;
+            top: calc(100% + 2.4em);
+            left: 50%;
+            z-index: 20;
+            width: max-content;
+            max-width: 15rem;
+            padding: 0.55rem 0.75rem;
+            background: $ink;
+            color: $paper;
+            font-family: $body;
+            font-size: 0.72rem;
+            font-weight: 400;
+            font-variant-numeric: normal;
+            letter-spacing: normal;
+            line-height: 1.45;
+            text-align: left;
+            white-space: normal;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-50%);
+            transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+            pointer-events: none;
+        }
+    }
+
+    // ---- quick add -------------------------------------------------------
+    .quick-add__pill {
+        @include label;
+
+        padding: 0.4rem 1.1rem;
+        border: 1px solid $ink;
+        border-radius: 0;
+        background: $paper;
+        color: $ink;
+        box-shadow: none;
+
+        &:hover,
+        &:focus {
+            background: $hair-soft;
+            border-color: $ink;
+            color: $ink;
+        }
+    }
+
+    .quick-add__sheet {
+        background: $paper;
+        border: 1px solid $hair;
+
+        .quick-add__add {
+            @include label;
+
+            border: 1.5px solid $ink;
+            border-radius: 0;
+            background: $paper;
+            color: $ink;
+
+            &:hover {
+                background: $hair-soft;
+                border-color: $ink;
+            }
+
+            &:focus,
+            &:active {
+                box-shadow: none;
+            }
+        }
+
+        .button-secondary {
+            @include label;
+
+            border: 1px solid $hair;
+            border-radius: 0;
+            background: $paper;
+            color: $ink-muted;
+
+            &:hover {
+                background: $hair-soft;
+                border-color: $ink-muted;
+                color: $ink;
+            }
+        }
+    }
+}
