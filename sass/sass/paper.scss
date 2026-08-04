@@ -4,6 +4,10 @@
 // components the paper design has forked — table, search and pagination are
 // written on a clean slate in the skin, never as overrides of the legacy rules.
 // See CLAUDE.md, "CSS — two bundles, one per design".
+//
+// `components/info_row` is not here either, and for a different reason: neither
+// paper app has an info row left to draw. Books' three Cards were the last of
+// it, so the partial ships only in the legacy bundle that still renders one.
 
 // 1. Abstracts
 @import 'abstracts/variables';
@@ -21,7 +25,6 @@
 @import 'components/grid';
 @import 'components/navbar';
 @import 'components/accordion';
-@import 'components/info_row';
 @import 'components/buttons';
 @import 'components/alert';
 @import 'components/forms';
@@ -35,4 +38,5 @@
 @import 'skin/paper';
 
 // 6. App / Domain Specific
+@import 'apps/books';
 @import 'apps/drinks';

@@ -65,6 +65,21 @@
 
     // ---- Stat Cards ------------------------------------------------------
     // `<c-stat-cards>` lives in core, so its design lives in the skin
+
+    // the grid a card's three subgrid rows resolve against — without it the
+    // cards have no shared baseline and stack. Drinks' four `#*-summary` ids
+    // still declare their own copy in apps/_drinks.scss, because they also lay
+    // the Daily limit card out beside the component; they can fold into this
+    // class whenever that partial is next opened.
+    .stat-cards {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-rows: auto auto auto;
+        gap: 2rem;
+        padding: calc($gap * 1.2) calc($gap * 0.9) calc($gap * 1.1);
+    }
+
     .trend-card {
         position: relative;
         display: grid;

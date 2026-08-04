@@ -1,7 +1,14 @@
 {% extends 'base.html' %}
 
 {% load static %}
-{% load i18n %}
+
+
+<!-- the paper skin's bundle, in place of the legacy one: a whole stylesheet, not
+     an addition to it. The head block appends rather than replaces, so putting
+     the link there would load both bundles and hand the argument over .main,
+     #search-form and .pagination back to the cascade -->
+{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
+
 
 {% block head %}
     {% include 'highcharts.html' with bullet="True" %}
@@ -12,17 +19,12 @@
 
 {% block content %}
 
+<div class="paper-skin">
+
 <main class="grid-one-col">
-    <div class="info-row">
-        <div hx-trigger="reloadSearch from:body"><c-search-form url="{% url 'books:search' %}" reset_url="{% url 'books:list' %}" target="#data" /></div>
+    <div class="stat-cards" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:cards' %}">{{ cards }}</div>
 
-        <div class="info-row-text" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}">{{info_row}}</div>
-
-        <div>
-            <c-new-button url="{% url 'books:new' %}" title="{% translate 'Book' context 'book add button' %}" />
-            <c-new-button url="{% url 'books:target_new' %}" title="{{ year|title }} {% translate 'year goal' %}" />
-        </div>
-    </div>
+    <div hx-trigger="reloadSearch from:body"><c-search-form url="{% url 'books:search' %}" reset_url="{% url 'books:list' %}" target="#data" /></div>
 
     <div id="data" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
 
@@ -30,6 +32,8 @@
 </main>
 
 <div id="chart-finished-loader" hx-get="{% url 'books:chart_finished' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
+
+</div>
 
 <script nonce="{{ csp_nonce }}">
     htmx.on('htmx:afterSwap', function (event) {

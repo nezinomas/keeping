@@ -28,33 +28,24 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
-def test_books_index_add_button(client_logged):
+def test_books_index_wears_the_paper_bundle(client_logged):
     url = reverse("books:index")
-    response = client_logged.get(url)
+    content = client_logged.get(url).content.decode("utf-8")
 
-    content = response.content.decode()
-
-    link = reverse("books:new")
-    pattern = re.compile(rf'<button .*? hx-get="{link}" .*?>(.*?)<\/button>')
-    res = re.findall(pattern, content)
-
-    assert res[0] == "Knygą"
+    assert "css/paper.min.css" in content
+    assert "css/main.min.css" not in content
+    assert 'class="paper-skin"' in content
 
 
-def test_books_index_add_target_button(main_user, client_logged):
-    main_user.year = 1111
-    main_user.save()
-
+def test_books_index_goal_is_edited_from_its_card(client_logged):
+    """The pencil in the Goal card is the page's only way into the goal form."""
     url = reverse("books:index")
-    response = client_logged.get(url)
-
-    content = response.content.decode()
+    content = client_logged.get(url).content.decode("utf-8")
 
     link = reverse("books:target_new")
-    pattern = re.compile(rf'<button .*? hx-get="{link}" .*?>(.*?)<\/button>')
-    res = re.findall(pattern, content)
 
-    assert res[0] == "1111 metų tikslą"
+    assert content.count(f'hx-get="{link}"') == 1
+    assert f'class="trend-card__edit" hx-get="{link}"' in content
 
 
 def test_books_index_search_form(client_logged):
@@ -72,79 +63,74 @@ def test_books_index_context(client_logged):
     assert "year" in response.context
     assert "tab" in response.context
     assert "books" in response.context
-    assert "info_row" in response.context
+    assert "cards" in response.context
 
 
 # ----------------------------------------------------------------------------
-#                                                                     Info Row
+#                                                                        Cards
 # ----------------------------------------------------------------------------
-def test_info_row_func():
-    view = resolve("/books/info_row/")
+CARD = re.compile(
+    r'trend-card__label">(.*?)</div>\s*<div class="trend-card__value">(.*?)</div>',
+    re.S,
+)
 
-    assert views.InfoRow == view.func.view_class
+
+def test_cards_func():
+    view = resolve("/books/cards/")
+
+    assert views.Cards == view.func.view_class
 
 
-def test_info_row_200(client_logged):
-    url = reverse("books:info_row")
+def test_cards_200(client_logged):
+    url = reverse("books:cards")
     response = client_logged.get(url)
 
     assert response.status_code == 200
 
 
 @time_machine.travel("1999-07-18")
-def test_info_row_html(client_logged):
+def test_cards_html(client_logged):
     BookFactory()
     BookFactory()
     BookFactory(ended=date(1999, 2, 1))
 
-    url = reverse("books:info_row")
-    response = client_logged.get(url)
+    url = reverse("books:cards")
+    content = client_logged.get(url).content.decode("utf-8")
 
-    content = response.content.decode("utf-8")
-
-    readed = re.compile(r'<div data-info-row="(\d+)">Perskaitytos:')
-    assert re.findall(readed, content) == ["1"]
-
-    reading = re.compile(r'<div data-info-row="(\d+)">Skaitomos:')
-    assert re.findall(reading, content) == ["2"]
+    assert content.count('class="trend-card"') == 3
+    assert re.findall(CARD, content)[:2] == [("Perskaitytos", "1"), ("Skaitomos", "2")]
 
 
 @time_machine.travel("1999-07-18")
-def test_info_row_no_data(client_logged):
-    url = reverse("books:info_row")
-    response = client_logged.get(url)
+def test_cards_no_data(client_logged):
+    url = reverse("books:cards")
+    content = client_logged.get(url).content.decode("utf-8")
 
-    content = response.content.decode("utf-8")
-
-    readed = re.compile(r'<div data-info-row="(\d+)">Perskaitytos:')
-    assert re.findall(readed, content) == ["0"]
-
-    reading = re.compile(r'<div data-info-row="(\d+)">Skaitomos:')
-    assert re.findall(reading, content) == ["0"]
+    assert re.findall(CARD, content)[:2] == [("Perskaitytos", "0"), ("Skaitomos", "0")]
 
 
-def test_info_row_update_link(client_logged):
+def test_cards_goal_pencil_opens_target_new(client_logged):
+    url = reverse("books:cards")
+    content = client_logged.get(url).content.decode("utf-8")
+
+    link = reverse("books:target_new")
+
+    assert f'<button type="button" class="trend-card__edit" hx-get="{link}"' in content
+    assert 'hx-target="#mainModal"' in content
+    assert 'class="bi bi-pencil"' in content
+    assert "Neįvestas tikslas" in content
+
+
+def test_cards_goal_pencil_opens_target_update(client_logged):
     t = BookTargetFactory()
 
-    url = reverse("books:info_row")
-    response = client_logged.get(url)
+    url = reverse("books:cards")
+    content = client_logged.get(url).content.decode("utf-8")
 
-    content = response.content.decode("utf-8")
     link = reverse("books:target_update", kwargs={"pk": t.pk})
 
-    pattern = re.compile(
-        rf'<a role="button" data-info-row="(\d+)" hx-get="{link}".*?><\/a>'
-    )
-    res = re.findall(pattern, content)
-
-    assert res[0] == "100"
-
-
-def test_info_row_no_target(client_logged):
-    url = reverse("books:info_row")
-    response = client_logged.get(url)
-
-    assert "Tikslas" not in response.context
+    assert f'<button type="button" class="trend-card__edit" hx-get="{link}"' in content
+    assert "Neįvestas tikslas" not in content
 
 
 # ----------------------------------------------------------------------------
