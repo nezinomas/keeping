@@ -2,6 +2,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import date as dt_date
 from datetime import datetime
 
+from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from ...core.lib import stat_card
@@ -41,15 +42,6 @@ class DryDaysViewModel:
 
 
 @dataclass(frozen=True)
-class LimitCardViewModel:
-    has_data: bool = False
-    ml: float = 0.0
-    pcs: float = 0.0
-    target_id: int = 0
-    unit: str = "ml"
-
-
-@dataclass(frozen=True)
 class ConversionRowViewModel:
     title: str
     total: float
@@ -82,18 +74,16 @@ class IndexTab:
                 current_daily=records.daily, past_daily=records.previous.daily
             ),
             target=target.qty,
+            target_id=target.target_id,
+            # the Drink Target is a daily volume; the card states it a second way,
+            # as the pieces of the selected Drink type that volume comes to
+            pcs_per_day=(
+                target.max_bottles / days
+                if target.has_data and (days := ydays(year))
+                else 0.0
+            ),
             latest_past_date=records.last_recorded_date_before,
             latest_current_date=records.last_recorded_date,
-        )
-
-        days = ydays(year)
-        unit = records.converter.display_unit
-        limit = LimitCardViewModel(
-            has_data=target.has_data,
-            ml=target.qty,
-            pcs=target.max_bottles / days if target.has_data and days else 0.0,
-            target_id=target.target_id,
-            unit=unit,
         )
 
         return {
@@ -102,7 +92,6 @@ class IndexTab:
             "chart_consumption": builder.chart_consumption(),
             "tbl_std_av": builder.tbl_std_av(),
             "cards": builder.get_cards(),
-            "limit": limit,
             "calendar": CalendarGrid.build(
                 year=year,
                 daily_data=records.daily_rows,
@@ -118,11 +107,15 @@ class IndexBuilder:
         drink_stats: DrinkStats,
         frequency_stats: FrequencyStats | None = None,
         target: float = 0.0,
+        target_id: int = 0,
+        pcs_per_day: float = 0.0,
         latest_past_date: dt_date | None = None,
         latest_current_date: dt_date | None = None,
         today: dt_date | None = None,
     ):
         self._target = target
+        self._target_id = target_id
+        self._pcs_per_day = pcs_per_day
         self._latest_past_date = latest_past_date
         self._latest_current_date = latest_current_date
         self._today = today or datetime.now().date()
@@ -173,6 +166,7 @@ class IndexBuilder:
             self._card_std_drinks(),
             self._card_avg_per_day(),
             self._card_pure_alcohol(),
+            self._card_limit(),
         ]
 
     def _card_dry_days(self) -> StatCard:
@@ -290,6 +284,39 @@ class IndexBuilder:
             value=f"{self._drink_stats.yearly.pure_alcohol_liters:.1f}",
             unit="L",
             note=_("this year"),
+        )
+
+    def _card_limit(self) -> StatCard:
+        """The year's Drink Target, and the only way into the form that sets it.
+
+        It was bespoke markup beside the card component until a StatCard could
+        carry a pencil, which is what the empty form needs: an unset limit is an
+        em dash and a note, and pressing the pencil is what makes it a figure.
+        """
+        title = _("Daily limit")
+        label = _("Goal for the year")
+
+        if not self._target:
+            return StatCard(
+                title=title,
+                note=_("No limit set"),
+                state=stat_card.EMPTY,
+                edit_url=reverse("drinks:target_new", kwargs={"tab": "index"}),
+                edit_label=label,
+            )
+
+        unit = self._converter.display_unit
+        decimals = self._converter.display_decimals
+        # Std Av is read as typed, so the figure carries no unit beside it
+        figure_unit = "" if self._converter.drink_type == "stdav" else unit
+
+        return StatCard(
+            title=title,
+            value=f"{self._target:.{decimals}f}",
+            unit=figure_unit,
+            note=f"{self._pcs_per_day:.1f} {_('pcs')} / {_('day')}",
+            edit_url=reverse("drinks:target_update", kwargs={"pk": self._target_id}),
+            edit_label=label,
         )
 
     def tbl_std_av(self) -> StdAvViewModel:

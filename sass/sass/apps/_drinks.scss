@@ -1,5 +1,5 @@
 // Drinks — the markup only this app renders. The skin it wears (the tokens, the
-// sheet, the stat cards, the table, the quick-add pill) lives in skin/_paper.scss.
+// sheet, the stat cards, the table, the quick-add pill) lives in skin/.
 
 .paper-skin {
     // ---- Tabs ------------------------------------------------------------
@@ -54,19 +54,6 @@
             right: 0;
             transform: none;
         }
-    }
-
-    // ---- Stat Cards ------------------------------------------------------
-    #index-summary,
-    #trend-summary,
-    #habits-summary,
-    #risk-summary {
-        position: relative;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        grid-template-rows: auto auto auto;
-        gap: 2rem;
-        padding: calc($gap * 1.2) calc($gap * 0.9) calc($gap * 1.1);
     }
 
     // ---- panels ----------------------------------------------------------

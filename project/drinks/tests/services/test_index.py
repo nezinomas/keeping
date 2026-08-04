@@ -3,19 +3,16 @@ from types import SimpleNamespace
 
 import pytest
 import time_machine
+from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from ....core.lib import stat_card
 from ....core.lib.calendar_grid import CalendarYearViewModel
 from ....core.lib.stat_card import StatCard
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DataRow, DrinkStats
-from ...services.index_tab import (
-    DryDaysViewModel,
-    IndexBuilder,
-    IndexTab,
-    LimitCardViewModel,
-)
+from ...services.index_tab import DryDaysViewModel, IndexBuilder, IndexTab
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
@@ -153,10 +150,11 @@ def test_dry_days_view_model_has_data():
 #                                                          IndexBuilder.get_cards
 # -------------------------------------------------------------------------------------
 def test_get_cards_order(main_user, drink_converter):
-    # these five plus the limit tile in index_summary.html make six on the page;
-    # a sixth card here should have to argue with this test. Intensity is not
-    # among them: it moved to the Habits tab, so no Std Av figure sits beside
-    # Avg per day, which follows the drink-type dropdown
+    # six cards, the Daily limit last: it was bespoke markup beside the component
+    # until a StatCard could carry a pencil, and it is a card like the rest now.
+    # A seventh should have to argue with this test. Intensity is not among them:
+    # it moved to the Habits tab, so no Std Av figure sits beside Avg per day,
+    # which follows the drink-type dropdown
     cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
 
     assert [c.title for c in cards] == [
@@ -165,8 +163,47 @@ def test_get_cards_order(main_user, drink_converter):
         _("Std drinks"),
         _("Avg per day"),
         _("Pure alcohol"),
+        _("Daily limit"),
     ]
     assert all(isinstance(c, StatCard) for c in cards)
+
+
+# -------------------------------------------------------------------------------------
+#                                                    IndexBuilder.get_cards: Daily limit
+# -------------------------------------------------------------------------------------
+def test_card_limit_with_target(main_user, drink_converter):
+    card = _card_builder(
+        drink_converter, target=500.0, target_id=7, pcs_per_day=0.6
+    ).get_cards()[5]
+
+    assert card.title == _("Daily limit")
+    assert card.value == "500"
+    assert card.unit == _("ml")
+    assert card.note == f"0.6 {_('pcs')} / {_('day')}"
+    assert card.edit_url == reverse("drinks:target_update", kwargs={"pk": 7})
+
+
+def test_card_limit_without_target(main_user, drink_converter):
+    """An unset limit is an em dash and a note, and its pencil opens a new goal."""
+    card = _card_builder(drink_converter).get_cards()[5]
+
+    assert card.title == _("Daily limit")
+    assert card.value == ""
+    assert card.unit == ""
+    assert card.note == _("No limit set")
+    assert card.state == stat_card.EMPTY
+    assert card.edit_url == reverse("drinks:target_new", kwargs={"tab": "index"})
+
+
+def test_card_limit_in_stdav_carries_no_unit(main_user):
+    """Std Av is read as typed, so the figure carries no unit beside it — and it
+    keeps the decimal a whole number would destroy."""
+    card = _card_builder(
+        DrinkConverter("stdav"), target=1.5, target_id=7, pcs_per_day=1.5
+    ).get_cards()[5]
+
+    assert card.value == "1.5"
+    assert card.unit == ""
 
 
 @time_machine.travel("1999-01-05")
@@ -381,12 +418,10 @@ def test_index_tab_build_returns_expected_keys(main_user):
         "chart_consumption",
         "tbl_std_av",
         "cards",
-        "limit",
         "calendar",
     }
-    assert len(actual["cards"]) == 5
+    assert len(actual["cards"]) == 6
     assert all(isinstance(c, StatCard) for c in actual["cards"])
-    assert isinstance(actual["limit"], LimitCardViewModel)
     assert isinstance(actual["calendar"], CalendarYearViewModel)
 
 
@@ -407,15 +442,16 @@ def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
 
 @time_machine.travel("1999-06-01")
 def test_index_tab_build_limit_has_data(main_user):
-    DrinkTargetFactory(user=main_user, year=1999, quantity=100)
+    target = DrinkTargetFactory(user=main_user, year=1999, quantity=100)
 
-    limit = IndexTab.build(main_user, 1999)["limit"]
+    card = IndexTab.build(main_user, 1999)["cards"][5]
 
-    assert limit.has_data is True
-    assert limit.unit == "ml"
-    assert limit.ml > 0.0
-    assert limit.pcs > 0.0
-    assert limit.target_id > 0
+    assert card.title == _("Daily limit")
+    assert card.state == stat_card.NEUTRAL
+    assert card.value == "100"
+    assert card.unit == "ml"
+    assert card.note.endswith(f"{_('pcs')} / {_('day')}")
+    assert card.edit_url == reverse("drinks:target_update", kwargs={"pk": target.pk})
 
 
 @time_machine.travel("1999-06-01")
@@ -423,19 +459,19 @@ def test_index_tab_build_limit_stdav(main_user):
     main_user.drink_type = "stdav"
     DrinkTargetFactory(user=main_user, year=1999, quantity=2.5, drink_type="stdav")
 
-    limit = IndexTab.build(main_user, 1999)["limit"]
+    card = IndexTab.build(main_user, 1999)["cards"][5]
 
-    assert limit.has_data is True
-    assert limit.unit == "Std Av"
-    assert limit.ml == 2.5
-    assert limit.pcs == 2.5
+    # Std Av is read as typed: the figure keeps its decimal and carries no unit
+    assert card.value == "2.5"
+    assert card.unit == ""
 
 
 @time_machine.travel("1999-06-01")
 def test_index_tab_build_limit_no_target(main_user):
-    limit = IndexTab.build(main_user, 1999)["limit"]
+    card = IndexTab.build(main_user, 1999)["cards"][5]
 
-    assert limit.has_data is False
-    assert limit.ml == 0.0
-    assert limit.pcs == 0.0
-    assert limit.target_id == 0
+    assert card.title == _("Daily limit")
+    assert card.state == stat_card.EMPTY
+    assert card.value == ""
+    assert card.note == _("No limit set")
+    assert card.edit_url == reverse("drinks:target_new", kwargs={"tab": "index"})
