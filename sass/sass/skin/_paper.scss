@@ -54,6 +54,44 @@
 }
 
 
+// A notice: the table has nothing in it, for the year, for the search, or at
+// all. The bundle does not import components/_alert, so this is the only `.alert`
+// rule in it and the legacy filled box is not underneath it.
+//
+// Nothing here is coloured for being empty — an empty table is the baseline of a
+// reading year, not a warning — so `.alert-warning`, which is what the markup
+// says, gets nothing beyond this.
+//
+// Nor is there an `.alert-danger`: every error a paper page can raise is a *field*
+// error, and `.invalid-feedback` in components/_forms draws those. The one that
+// looks like a non-field error — a Goal for a year that already has one — is
+// raised in `clean_year`, so it lands under the field too.
+//
+// Top-level rather than under `.paper-skin`: #mainModal sits in the footer,
+// outside the wrapper, so a notice drawn into a form would miss the rule.
+.alert {
+    padding: calc($gap * 1.2) 0;
+    border: 0;
+    border-top: 1px solid $hair;
+    border-bottom: 1px solid $hair;
+    border-radius: 0;
+    background: none;
+    font-family: $mono;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    color: $ink-muted;
+    text-align: center;
+
+    // set as a label, and a label is not shouted — in a mono face bold reads as
+    // weight where the figure only wants to be the sentence's subject
+    b,
+    strong {
+        font-weight: 400;
+        color: $ink;
+    }
+}
+
+
 .paper-skin {
     // ---- the sheet -------------------------------------------------------
     padding: calc($gap * 1.5) calc($gap * 1.5) calc($gap * 4);
@@ -343,6 +381,123 @@
         :where(td, th) {
             padding-left: $gap;
             padding-right: $gap;
+        }
+    }
+
+    // ---- the search row --------------------------------------------------
+    // paper's own #search-form: the bundle does not import components/_search,
+    // so this is the only definition of it here. A row directly above the table
+    // it filters — a hairline field and two mono labels, no fill.
+    //
+    // `.form-control` and `.button-secondary` are still tier-2 shared partials,
+    // so the skin adjusts them inside this row the way it adjusts the quick-add
+    // sheet's buttons below. Both are ready to fork when the forms are.
+    #search-form {
+        display: flex;
+        align-items: stretch;
+        gap: calc($gap / 2);
+
+        .form-control {
+            flex: 1;
+            padding: 0.4rem 0.7rem;
+            border: 1px solid $hair;
+            background: $paper;
+            color: $ink;
+            font-family: $body;
+            font-size: 0.8rem;
+
+            // the field states what it is until something is typed into it, so
+            // the placeholder is set as a label and the typed text as prose
+            &::placeholder {
+                font-family: $mono;
+                font-size: 0.66rem;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: $ink-faint;
+            }
+
+            &:focus {
+                border-color: $ink;
+                box-shadow: none;
+            }
+        }
+
+        .button-secondary {
+            @include label;
+
+            padding: 0.4rem 1.1rem;
+            border: 1px solid $hair;
+            border-radius: 0;
+            background: $paper;
+
+            &:hover {
+                background: $hair-soft;
+                border-color: $ink-muted;
+                color: $ink;
+            }
+
+            &:focus,
+            &:active {
+                box-shadow: none;
+            }
+        }
+
+        // Search is what the row is for, so it takes the ink border the
+        // quick-add pill takes; Reset only undoes it, and stays a hairline
+        button[type="submit"] {
+            border-color: $ink;
+            color: $ink;
+
+            &:hover {
+                border-color: $ink;
+            }
+        }
+    }
+
+    // ---- the pager -------------------------------------------------------
+    // paper's own .pagination, and components/_pagination is likewise not in
+    // this bundle. A pager is chrome, so it carries no hue: the page you are on
+    // is ink over an ink rule, every other is muted until the cursor reaches it.
+    .pagination {
+        display: flex;
+        justify-content: center;
+        column-gap: calc($gap * 1.2);
+        margin-top: calc($gap * 1.5);
+
+        li {
+            font-family: $mono;
+            font-size: 0.68rem;
+            letter-spacing: 0.06em;
+            color: $ink-muted;
+
+            // <c-paging> draws a page as an <a>, a <div> or a bare <i>
+            // depending on its state, so the rule hangs off whatever the li holds
+            > * {
+                display: inline-block;
+                padding: 0 0.2rem 0.15rem;
+                border-bottom: 1px solid transparent;
+                color: inherit;
+                text-decoration: none;
+            }
+
+            &.active {
+                color: $ink;
+
+                > * {
+                    border-bottom-color: $ink;
+                }
+            }
+
+            &.disabled {
+                color: $ink-faint;
+            }
+        }
+
+        a:hover,
+        a:focus {
+            color: $ink;
+            border-bottom-color: $hair;
+            outline: none;
         }
     }
 

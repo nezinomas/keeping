@@ -1,9 +1,9 @@
 @use "sass:color";
 
 // The paper skin's bundle. Same shared partials as main.scss, but none of the
-// components the paper design has forked — table, search and pagination are
-// written on a clean slate in the skin, never as overrides of the legacy rules.
-// See CLAUDE.md, "CSS — two bundles, one per design".
+// components the paper design has forked — table, search, pagination and alert
+// are written on a clean slate in the skin, never as overrides of the legacy
+// rules. See CLAUDE.md, "CSS — two bundles, one per design".
 //
 // `components/info_row` is not here either, and for a different reason: neither
 // paper app has an info row left to draw. Books' three Cards were the last of
@@ -26,7 +26,6 @@
 @import 'components/navbar';
 @import 'components/accordion';
 @import 'components/buttons';
-@import 'components/alert';
 @import 'components/forms';
 @import 'components/modal';
 @import 'components/quick_add';
