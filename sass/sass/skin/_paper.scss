@@ -263,6 +263,18 @@
             border-bottom: 1px solid $hair-soft;
         }
 
+        // where one group of rows ends and the next begins — a month in Drinks
+        // Data, an account elsewhere. Heavier than a row line, lighter than the
+        // header's: rows 1px $hair-soft < a group 2px $hair < the header 1px $ink.
+        //
+        // Two pixels rather than one, and on the cells rather than the row,
+        // because border-collapse resolves a tie by width first and then by
+        // origin — at 1px this rule would lose to the border-bottom the previous
+        // row's own td already carries. That is what the legacy 3px was for.
+        tbody tr.table-group-divider > td {
+            border-top: 2px solid $hair;
+        }
+
         // a summary row: ruled off above, and its name set as a label
         tbody tr.main__total td {
             border-top: 1px solid $ink;
