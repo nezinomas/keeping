@@ -11,12 +11,12 @@ const DRINKS_RAMP_STEPS = 6;
 
 function drinksYearColor(index, count) {
     if (count < 2) {
-        return `var(--drinks-year-${DRINKS_RAMP_STEPS - 1})`;
+        return `var(--skin-year-${DRINKS_RAMP_STEPS - 1})`;
     }
 
     const step = Math.round((index * (DRINKS_RAMP_STEPS - 1)) / (count - 1));
 
-    return `var(--drinks-year-${step})`;
+    return `var(--skin-year-${step})`;
 }
 
 function chartCompare(idData, idContainer) {

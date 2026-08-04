@@ -6,7 +6,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
     const consumption = JSON.parse(document.getElementById(consumptionId).textContent);
     const quantity = JSON.parse(document.getElementById(quantityId).textContent);
 
-    const blue = "var(--drinks-data)";
+    const blue = "var(--skin-data)";
 
     // fill the page as a hero chart: ~62% of the viewport, clamped so it never
     // gets cramped or absurdly tall
@@ -17,8 +17,8 @@ function chartOverview(consumptionId, quantityId, containerId) {
     // verdict. It stays in ink whichever side of the Limit it falls, because the
     // area already turns above the Limit and the Stat Card already says which
     // side it is on
-    const avgLineColor = "var(--drinks-ink-muted)";
-    const avgTextColor = "var(--drinks-ink-muted)";
+    const avgLineColor = "var(--skin-ink-muted)";
+    const avgTextColor = "var(--skin-ink-muted)";
 
     const avgLabelY = (consumption.target - 50 <= consumption.avg && consumption.avg <= consumption.target) ? 15 : -5;
     const targetLabelY = (consumption.avg - 50 <= consumption.target && consumption.target <= consumption.avg) ? 15 : -5;
@@ -55,7 +55,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                 plotLines: [
                     {
                         // Secondary x axis baseline at y=0
-                        color: "var(--drinks-ink)",
+                        color: "var(--skin-ink)",
                         width: 1,
                         value: 0,
                         zIndex: 10,
@@ -63,7 +63,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     {
                         // the Limit is the one rule that governs a colour: the
                         // area above it turns, so the rule wears the same harm
-                        color: "var(--drinks-harm)",
+                        color: "var(--skin-harm)",
                         width: 1.5,
                         dashStyle: "Dash",
                         value: consumption.target,
@@ -71,7 +71,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         label: Object.assign(
                             drinksRuleLabel(
                                 `${consumption.text.limit}: ${consumption.target.toFixed(consumption.decimals)}`,
-                                "var(--drinks-harm)",
+                                "var(--skin-harm)",
                                 "right"
                             ),
                             // the two rules step apart when they nearly coincide
@@ -128,19 +128,19 @@ function chartOverview(consumptionId, quantityId, containerId) {
                 // itself is, and it is what the tooltip reads. Without it the
                 // series falls back to the first colour in the theme's ramp,
                 // which belongs to Year Comparison
-                color: "var(--drinks-data)",
+                color: "var(--skin-data)",
                 zoneAxis: "y",
                 // under the Limit is the baseline reading, so it is the data
                 // hue; over it is the only part of the year that gets harm
                 zones: [
                     {
                         value: consumption.target,
-                        color: "var(--drinks-data)",
-                        fillColor: "var(--drinks-data-wash)"
+                        color: "var(--skin-data)",
+                        fillColor: "var(--skin-data-wash)"
                     },
                     {
-                        color: "var(--drinks-harm)",
-                        fillColor: "var(--drinks-harm-wash)"
+                        color: "var(--skin-harm)",
+                        fillColor: "var(--skin-harm-wash)"
                     }
                 ],
                 marker: {
@@ -155,9 +155,9 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     crop: false,
                     overflow: "allow",
                     style: {
-                        fontFamily: "var(--drinks-mono)",
+                        fontFamily: "var(--skin-mono)",
                         fontSize: "10px",
-                        color: "var(--drinks-ink)",
+                        color: "var(--skin-ink)",
                         fontWeight: "400",
                         textOutline: "none",
                     },
@@ -200,9 +200,9 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     crop: false,
                     overflow: "allow",
                     style: {
-                        fontFamily: "var(--drinks-mono)",
+                        fontFamily: "var(--skin-mono)",
                         fontSize: "10px",
-                        color: "var(--drinks-ink-muted)",
+                        color: "var(--skin-ink-muted)",
                         textOutline: "none",
                         fontWeight: "400"
                     },
