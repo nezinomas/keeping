@@ -1,10 +1,10 @@
 {% load i18n %}
 {% load cell_format %}
 
-<table class="stdav-table">
+<table class="main">
     <caption>
         {% translate 'Converted' %}, {% translate 'pcs' %}
-        <small class="stdav-table__note">{% translate 'The same amount of alcohol, converted to different drink types.' %}</small>
+        <small class="main__note">{% translate 'The same amount of alcohol, converted to different drink types.' %}</small>
     </caption>
     <thead>
         <tr>
@@ -17,7 +17,7 @@
     </thead>
     <tbody>
         {% for item in ctx.items %}
-        <tr {% if 'Av' in item.title %}class="stdav-table__total"{% endif %}>
+        <tr {% if 'Av' in item.title %}class="main__total"{% endif %}>
             <td class="text-left">{{ item.title }}</td>
             <td>{{item.total|cellformat}}</td>
             <td>{{item.per_day|cellformat}}</td>
