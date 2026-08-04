@@ -18,7 +18,7 @@ class BookModelService(SumMixin, BaseModelService):
     def items(self):
         return self.objects
 
-    def readed(self, year=None):
+    def finished(self, year=None):
         """
         Returns <QuerySet [{'year': int, 'cnt': int}]>
         """

@@ -1,4 +1,4 @@
-function chartReaded(idData, idContainer) {
+function chartFinished(idData, idContainer) {
     const chartData = JSON.parse(
         document.getElementById(idData).textContent
     );

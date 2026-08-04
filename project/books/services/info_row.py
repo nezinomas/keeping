@@ -20,7 +20,7 @@ class InfoRow:
         self.target = self._target()
 
     def _readed(self):
-        qs = BookModelService(self.user).readed().filter(year=self.year)
+        qs = BookModelService(self.user).finished().filter(year=self.year)
 
         return qs[0]["cnt"] if qs.exists() else 0
 

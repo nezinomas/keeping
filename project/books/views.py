@@ -33,13 +33,13 @@ class Index(TemplateViewMixin):
         return super().get_context_data(**kwargs) | context
 
 
-class ChartReaded(TemplateViewMixin):
-    template_name = "books/readed_books.html"
+class ChartFinished(TemplateViewMixin):
+    template_name = "books/finished_books.html"
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        data = services.ChartReadedData(user)
-        obj = services.ChartReaded(data)
+        data = services.ChartFinishedData(user)
+        obj = services.ChartFinished(data)
 
         return super().get_context_data(**kwargs) | {"chart": obj.context()}
 
