@@ -28,6 +28,11 @@ function chartDrinksCumulative(idData, idContainer) {
                 text: chartData.text.unit
             },
             min: 0,
+            // a cumulative curve ends at its own maximum, so rounding the axis
+            // up to the next whole tick spends a fifth of the plot on empty sky
+            // above the last point — the top tick may sit below the max here
+            endOnTick: false,
+            maxPadding: 0.02,
         },
         tooltip: {
             shared: true,
