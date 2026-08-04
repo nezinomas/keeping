@@ -27,7 +27,7 @@ class Index(TemplateViewMixin):
         context = {
             "year": year,
             "tab": self.request.GET.get("tab"),
-            "info_row": rendered_content(self.request, InfoRow, **self.kwargs),
+            "cards": rendered_content(self.request, Cards, **self.kwargs),
             "books": rendered_content(self.request, Lists, **self.kwargs),
         }
         return super().get_context_data(**kwargs) | context
@@ -44,18 +44,15 @@ class ChartFinished(TemplateViewMixin):
         return super().get_context_data(**kwargs) | {"chart": obj.context()}
 
 
-class InfoRow(TemplateViewMixin):
-    template_name = "books/info_row.html"
+class Cards(TemplateViewMixin):
+    template_name = "books/cards.html"
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        obj = services.InfoRow(user)
-        context = {
-            "readed": obj.readed,
-            "reading": obj.reading,
-            "target": obj.target,
-        }
-        return super().get_context_data(**kwargs) | context
+        year = cast(int, user.year)
+        cards = services.Cards.build(user, year)
+
+        return super().get_context_data(**kwargs) | {"cards": cards}
 
 
 class Lists(ListViewMixin):

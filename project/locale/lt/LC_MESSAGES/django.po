@@ -548,15 +548,15 @@ msgstr "Knygą"
 msgid "year goal"
 msgstr "metų tikslą"
 
-#: .\books\templates\books\info_row.html:3
-msgid "Readed"
+#: .\books\services\cards.py:37
+msgid "Finished"
 msgstr "Perskaitytos"
 
-#: .\books\templates\books\info_row.html:4
+#: .\books\services\cards.py:43
 msgid "Reading"
 msgstr "Skaitomos"
 
-#: .\books\templates\books\info_row.html:7
+#: .\books\services\cards.py:47
 msgid "Goal"
 msgstr "Tikslas"
 

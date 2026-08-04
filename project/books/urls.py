@@ -8,7 +8,7 @@ app_name = App_name
 
 urlpatterns = [
     path("", views.Index.as_view(), name="index"),
-    path("info_row/", views.InfoRow.as_view(), name="info_row"),
+    path("cards/", views.Cards.as_view(), name="cards"),
     path("chart_finished/", views.ChartFinished.as_view(), name="chart_finished"),
     path("lists/", views.Lists.as_view(), name="list"),
     path("new/", views.New.as_view(), name="new"),
