@@ -548,6 +548,10 @@ msgstr "Knygą"
 msgid "year goal"
 msgstr "metų tikslą"
 
+#: .\books\templates\books\index.html:52
+msgid "Add book"
+msgstr "Pridėti knygą"
+
 #: .\books\services\cards.py:37
 msgid "Finished"
 msgstr "Perskaitytos"
