@@ -33,8 +33,17 @@
 @import 'components/icons';
 @import 'components/utilities';
 
-// 5. The skin — before the apps, so its mixins exist when they include them
-@import 'skin/paper';
+// 5. The skin — tokens first, so its mixins exist for every partial after them,
+//    and the whole skin before the apps for the same reason. One file per
+//    component the paper design owns, in the order they are drawn on a page.
+@import 'skin/tokens';
+@import 'skin/notice';
+@import 'skin/sheet';
+@import 'skin/cards';
+@import 'skin/table';
+@import 'skin/search';
+@import 'skin/pagination';
+@import 'skin/quick_add';
 
 // 6. App / Domain Specific
 @import 'apps/books';
