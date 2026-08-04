@@ -3,8 +3,9 @@
 {% include 'drinks/includes/navbar.html' %}
 
 <main class="drinks-grid">
-    <div id="index-summary">
-        {% include 'drinks/includes/index_summary.html' %}
+    <!-- the id places the row in the tab's grid, the class draws the cards in it -->
+    <div id="index-summary" class="stat-cards">
+        <c-stat-cards :cards=cards />
     </div>
 
     <div id="chart-overview-container"></div>

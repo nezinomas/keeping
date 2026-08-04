@@ -4,8 +4,8 @@
 {% include 'drinks/includes/navbar.html' %}
 
 <main class="habits-grid">
-    <div id="habits-summary">
-        {% include 'drinks/includes/stat_cards.html' %}
+    <div id="habits-summary" class="stat-cards">
+        <c-stat-cards :cards=cards />
     </div>
 
     <div id="chart-weekday-container"></div>

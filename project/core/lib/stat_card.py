@@ -31,6 +31,10 @@ class StatCard:
     state: str = NEUTRAL
     show_icon: bool = False
     explanation: str = ""
+    # a figure the user can change: the url a pencil beside it opens, and what
+    # that pencil is called. The figure itself is still read, never pressed.
+    edit_url: str = ""
+    edit_label: str = ""
 
     @classmethod
     def empty(cls, title: str, note: str) -> "StatCard":

@@ -2,6 +2,7 @@ from dataclasses import asdict, dataclass
 
 from django.utils.translation import gettext as _
 
+from ...core.lib.stat_card import StatCard
 from ...core.lib.translation import month_names
 from ..lib.drinks_risk import (
     HEAVY_DAY_STDAV,
@@ -13,7 +14,6 @@ from ..lib.drinks_risk import (
 )
 from ..lib.drinks_stats import EmptyYearOverYear, YearOverYear
 from .consumption_year import ConsumptionYear
-from .stat_card import StatCard
 
 
 @dataclass(frozen=True)

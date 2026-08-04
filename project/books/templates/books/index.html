@@ -3,38 +3,62 @@
 {% load static %}
 {% load i18n %}
 
+
+<!-- the paper skin's bundle, in place of the legacy one: a whole stylesheet, not
+     an addition to it. The head block appends rather than replaces, so putting
+     the link there would load both bundles and hand the argument over .main,
+     #search-form and .pagination back to the cascade -->
+{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
+
+
 {% block head %}
     {% include 'highcharts.html' with bullet="True" %}
-    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_books_readed.js' %}"></script>
+    <!-- the paper skin's half of the charts, after the shared theme it overrides
+         and before the chart it dresses -->
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_books_finished.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
 {% endblock head %}
 
 
 {% block content %}
 
+<div class="paper-skin">
+
+<!-- cards, chart, search, table: the table is the one variable-height thing on
+     the page — a year with two books and a year with fifty draw it at different
+     lengths — so nothing sits under it, and the search row sits directly above
+     the table it filters rather than above cards it cannot affect -->
 <main class="grid-one-col">
-    <div class="info-row">
-        <div hx-trigger="reloadSearch from:body"><c-search-form url="{% url 'books:search' %}" reset_url="{% url 'books:list' %}" target="#data" /></div>
+    <div class="stat-cards" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:cards' %}">{{ cards }}</div>
 
-        <div class="info-row-text" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:info_row' %}">{{info_row}}</div>
+    <div id="chart-finished-container"></div>
 
-        <div>
-            <c-new-button url="{% url 'books:new' %}" title="{% translate 'Book' context 'book add button' %}" />
-            <c-new-button url="{% url 'books:target_new' %}" title="{{ year|title }} {% translate 'year goal' %}" />
-        </div>
-    </div>
+    <div hx-trigger="reloadSearch from:body"><c-search-form url="{% url 'books:search' %}" reset_url="{% url 'books:list' %}" target="#data" /></div>
 
     <div id="data" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
-
-    <div id="chart-readed-container"></div>
 </main>
 
-<div id="chart-readed-loader" hx-get="{% url 'books:chart_readed' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
+<div id="chart-finished-loader" hx-get="{% url 'books:chart_finished' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
+
+<!-- Add book, and the page's only way into the book form since both header
+     buttons went with the info row. It borrows the quick-add pill's chrome and
+     none of its behaviour: Drinks' quick add is a sheet that submits on its own,
+     and this opens the modal that already exists. Inside the wrapper, because
+     that is where the skin draws the pill; fixed to the foot of the viewport by
+     .quick-add, which also reserves the space it covers -->
+<div class="quick-add">
+    <button type="button" class="quick-add__pill" hx-get="{% url 'books:new' %}" hx-target="#mainModal">
+        {% translate 'Add book' %}
+    </button>
+</div>
+
+</div>
 
 <script nonce="{{ csp_nonce }}">
     htmx.on('htmx:afterSwap', function (event) {
-        if (event.detail.target.id === 'chart-readed-loader' && document.getElementById('chart-readed-data')) {
-            chartReaded('chart-readed-data', 'chart-readed-container');
+        if (event.detail.target.id === 'chart-finished-loader' && document.getElementById('chart-finished-data')) {
+            chartFinished('chart-finished-data', 'chart-finished-container');
         }
     });
 </script>

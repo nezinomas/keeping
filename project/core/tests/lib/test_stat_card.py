@@ -1,6 +1,6 @@
 import pytest
 
-from ...services.stat_card import StatCard
+from ...lib.stat_card import StatCard
 
 # -------------------------------------------------------------------------------------
 #                                                                            empty

@@ -4,8 +4,8 @@
 {% include 'drinks/includes/navbar.html' %}
 
 <main class="trends-grid">
-    <div id="trend-summary">
-        {% include 'drinks/includes/stat_cards.html' %}
+    <div id="trend-summary" class="stat-cards">
+        <c-stat-cards :cards=cards />
     </div>
 
     <div id="chart-trend-container"></div>

@@ -2,13 +2,13 @@ from dataclasses import dataclass
 
 from django.utils.translation import gettext as _
 
+from ...core.lib import stat_card
+from ...core.lib.stat_card import StatCard
 from ...core.lib.translation import weekday_names
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_risk import HEAVY_DAY_STDAV
-from . import stat_card
 from .consumption_year import ConsumptionYear
 from .profile_chart import ProfileLayer, profile_chart_dict
-from .stat_card import StatCard
 
 
 @dataclass(frozen=True)

@@ -27,35 +27,32 @@ class Index(TemplateViewMixin):
         context = {
             "year": year,
             "tab": self.request.GET.get("tab"),
-            "info_row": rendered_content(self.request, InfoRow, **self.kwargs),
+            "cards": rendered_content(self.request, Cards, **self.kwargs),
             "books": rendered_content(self.request, Lists, **self.kwargs),
         }
         return super().get_context_data(**kwargs) | context
 
 
-class ChartReaded(TemplateViewMixin):
-    template_name = "books/readed_books.html"
+class ChartFinished(TemplateViewMixin):
+    template_name = "books/finished_books.html"
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        data = services.ChartReadedData(user)
-        obj = services.ChartReaded(data)
+        data = services.ChartFinishedData(user)
+        obj = services.ChartFinished(data)
 
         return super().get_context_data(**kwargs) | {"chart": obj.context()}
 
 
-class InfoRow(TemplateViewMixin):
-    template_name = "books/info_row.html"
+class Cards(TemplateViewMixin):
+    template_name = "books/cards.html"
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        obj = services.InfoRow(user)
-        context = {
-            "readed": obj.readed,
-            "reading": obj.reading,
-            "target": obj.target,
-        }
-        return super().get_context_data(**kwargs) | context
+        year = cast(int, user.year)
+        cards = services.Cards.build(user, year)
+
+        return super().get_context_data(**kwargs) | {"cards": cards}
 
 
 class Lists(ListViewMixin):
@@ -71,16 +68,25 @@ class Lists(ListViewMixin):
 
     def get_context_data(self, **kwargs):
         page = int(self.request.GET.get("page", 1))
+        tab = self.request.GET.get("tab")
         sql = self.get_queryset()
         paginator = CountlessPaginator(
             query=sql, total_records=len(sql), per_page=self.per_page
         )
         page_range = paginator.get_elided_page_range(page=page)
 
+        # all records lists every year, so an empty one has no year to name
+        notice = _("No records")
+        if not tab:
+            notice = _("No records in <b>%(year)s</b>.") % {
+                "year": cast(User, self.request.user).year
+            }
+
         context = {
+            "notice": notice,
             "object_list": paginator.get_page(page),
             "url": reverse("books:list"),
-            "tab": self.request.GET.get("tab"),
+            "tab": tab,
             "first_item": paginator.count - paginator.per_page * (page - 1),
             "paginator_object": {
                 "total_pages": paginator.total_pages,
