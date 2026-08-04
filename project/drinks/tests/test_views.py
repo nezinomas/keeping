@@ -770,7 +770,7 @@ def test_tab_trends_renders_summary_with_data(client_logged):
 
     assert response.status_code == 200
     # tone and arrow are resolved by StatCard and asserted in
-    # tests/services/test_stat_card.py; this only pins the template to it
+    # core/tests/lib/test_stat_card.py; this only pins the template to it
     assert content.count('class="trend-card"') == len(response.context["cards"])
 
 
