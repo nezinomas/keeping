@@ -30,8 +30,15 @@
 {% block content %}
 
 
-<!-- outside #tab_content, so an htmx tab swap cannot replace the chart tokens -->
-<div class="paper-skin">
+<!-- outside #tab_content, so an htmx tab swap cannot replace the chart tokens.
+     `tab` is the open tab, owned here because the nav and the quick-add sheet
+     both read it and neither is re-rendered by a swap. -->
+<div class="paper-skin" x-data="{ tab: 'index' }">
+
+{% include 'drinks/includes/navbar.html' %}
+
+<!-- what the nav and the sheet send as `tab`, read by htmx at click time -->
+<input type="hidden" id="current-tab" name="tab" :value="tab">
 
 <!-- htmx tab data load -->
 {% for target in reload_targets %}
@@ -78,9 +85,6 @@
         const targetId = event.detail.target.id;
         if (targetId === 'tab_content') {
             initDrinksCharts();
-            const nav = document.querySelector('#drinks-nav');
-            const tabInput = document.getElementById('quick-add-tab');
-            if (nav && tabInput) { tabInput.value = nav.dataset.tab || 'index'; }
         }
         if (targetId === 'chart-history-container' && document.getElementById('chart-history-data')) {
             chartCompare('chart-history-data', 'chart-history-container');

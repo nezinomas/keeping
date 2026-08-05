@@ -26,7 +26,11 @@ from .tabs import DrinkTabs
 
 
 class DrinkTypeContextMixin:
-    """Puts the drink-type switcher into the context of every drinks tab."""
+    """Puts the drink-type switcher into the context of the page that draws it.
+
+    The nav and the quick-add sheet are rendered once, by Index, so no tab needs
+    it.
+    """
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
@@ -48,11 +52,13 @@ class Index(DrinkTypeContextMixin, TemplateViewMixin):
             **super().get_context_data(**kwargs),
             **{"reload_targets": DrinkTabs.all()},
             **{"recent_days": recent_days},
+            # the page always opens on Overview; the nav moves the mark from there
+            **{"tab": "index"},
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
 
-class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
+class TabIndex(TemplateViewMixin):
     template_name = "drinks/tab_index.html"
 
     def get_context_data(self, **kwargs):
@@ -66,9 +72,7 @@ class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
-class TabHabits(DrinkTypeContextMixin, TemplateViewMixin):
-    # nothing here follows the dropdown, but it is in every tab's navbar, so the
-    # mixin that fills it is still needed
+class TabHabits(TemplateViewMixin):
     template_name = "drinks/tab_habits.html"
 
     def get_context_data(self, **kwargs):
@@ -141,7 +145,7 @@ class TypicalYearChart(FormViewMixin):
         )
 
 
-class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
+class TabTrends(TemplateViewMixin):
     template_name = "drinks/tab_trends.html"
 
     def get_context_data(self, **kwargs):
@@ -155,7 +159,7 @@ class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
-class TabRisk(DrinkTypeContextMixin, TemplateViewMixin):
+class TabRisk(TemplateViewMixin):
     template_name = "drinks/tab_risk.html"
 
     def get_context_data(self, **kwargs):
@@ -169,7 +173,7 @@ class TabRisk(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
-class TabData(DrinkTypeContextMixin, ListViewMixin):
+class TabData(ListViewMixin):
     service_class = DrinkModelService
     template_name = "drinks/tab_data.html"
 
@@ -184,7 +188,7 @@ class TabData(DrinkTypeContextMixin, ListViewMixin):
         }
 
 
-class TabHistory(DrinkTypeContextMixin, TemplateViewMixin):
+class TabHistory(TemplateViewMixin):
     template_name = "drinks/tab_history.html"
 
     def get_context_data(self, **kwargs):

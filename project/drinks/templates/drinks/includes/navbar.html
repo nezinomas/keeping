@@ -1,8 +1,12 @@
 {% load i18n %}
 
-<nav id="drinks-nav" data-tab="{{ tab }}">
+<!-- Rendered once by index.html, outside #tab_content: a tab swap replaces the
+     body, so the open tab is Alpine state here rather than a server render. -->
+<nav id="drinks-nav">
     <button
         class="tab{% if tab == 'index' %} active{% endif %}"
+        :class="{ active: tab === 'index' }"
+        @click="tab = 'index'"
         hx-get="{% url 'drinks:tab_index' %}"
         hx-target="#tab_content">
         {% translate 'Overview' %}
@@ -10,6 +14,8 @@
 
     <button
         class="tab{% if tab == 'habits' %} active{% endif %}"
+        :class="{ active: tab === 'habits' }"
+        @click="tab = 'habits'"
         hx-get="{% url 'drinks:tab_habits' %}"
         hx-target="#tab_content">
         {% translate 'Habits' %}
@@ -17,6 +23,8 @@
 
     <button
         class="tab{% if tab == 'trends' %} active{% endif %}"
+        :class="{ active: tab === 'trends' }"
+        @click="tab = 'trends'"
         hx-get="{% url 'drinks:tab_trends' %}"
         hx-target="#tab_content">
         {% translate 'Trends' %}
@@ -24,6 +32,8 @@
 
     <button
         class="tab{% if tab == 'risk' %} active{% endif %}"
+        :class="{ active: tab === 'risk' }"
+        @click="tab = 'risk'"
         hx-get="{% url 'drinks:tab_risk' %}"
         hx-target="#tab_content">
         {% translate 'Risk' %}
@@ -31,6 +41,8 @@
 
     <button
         class="tab{% if tab == 'history' %} active{% endif %}"
+        :class="{ active: tab === 'history' }"
+        @click="tab = 'history'"
         hx-get="{% url 'drinks:tab_history' %}"
         hx-target="#tab_content">
         {% translate 'History' %}
@@ -38,17 +50,21 @@
 
     <button
         class="tab{% if tab == 'data' %} active{% endif %}"
+        :class="{ active: tab === 'data' }"
+        @click="tab = 'data'"
         hx-get="{% url 'drinks:tab_data' %}"
         hx-target="#tab_content">
         {% translate 'Data' %}
     </button>
 
-    <div>
+    <!-- the label is state too: no swap re-renders this nav, so the press moves it -->
+    <div x-data="{ drinkLabel: '{{ drink_types.label }}' }">
         <div class="dropdown">
-            <button class="dropdown__btn">{{ drink_types.label }}</button>
+            <button class="dropdown__btn" x-text="drinkLabel">{{ drink_types.label }}</button>
             <div class="dropdown__menu">
                 {% for type in drink_types.options %}
-                <a class="dropdown-item button-sm" href="{% url 'drinks:set_drink_type' type.1 %}?tab={{ tab }}" hx-get="{% url 'drinks:set_drink_type' type.1 %}?tab={{ tab }}" hx-swap="none">{{type.0}}</a>
+                <!-- hx-include, not a tab in the url: this nav outlives the tab -->
+                <a class="dropdown-item button-sm" @click="drinkLabel = '{{ type.0 }}'" href="{% url 'drinks:set_drink_type' type.1 %}" hx-get="{% url 'drinks:set_drink_type' type.1 %}" hx-include="#current-tab" hx-swap="none">{{type.0}}</a>
                 {% endfor %}
             </div>
         </div>
