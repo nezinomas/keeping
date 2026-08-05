@@ -1,3 +1,6 @@
+@use "../abstracts/variables" as *;
+@use "tokens";
+
 // The sheet itself: the ground every paper page is drawn on, and the frame a
 // chart sits in. `.paper-skin` is layout rather than scope — the bundle already
 // decides which design a page wears — so what it carries is the page's own
@@ -20,6 +23,6 @@
     // (`chart_paper.js`), so does the panel around it. `#breakdown` stays in
     // Drinks: no other app renders it.
     [id^="chart-"][id$="-container"] {
-        @include panel;
+        @include tokens.panel;
     }
 }

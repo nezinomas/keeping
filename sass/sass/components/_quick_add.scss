@@ -1,3 +1,8 @@
+@use "../abstracts/mixins" as *;
+@use "../abstracts/variables" as *;
+
+@use "sass:color";
+
 [x-cloak] { display: none !important; }
 
 body:has(.quick-add) { padding-bottom: 6rem; }
@@ -34,7 +39,7 @@ body:has(.quick-add) { padding-bottom: 6rem; }
     &:hover,
     &:focus {
         background: #fff;
-        border-color: lighten($primary, 50%);
+        border-color: color.adjust($primary, $lightness: 50%, $space: hsl);
     }
 }
 
@@ -86,8 +91,8 @@ body:has(.quick-add) { padding-bottom: 6rem; }
         font-size: $font-size;
 
         &:hover {
-            background-color: darken($primary, 6%);
-            border-color: darken($primary, 6%);
+            background-color: color.adjust($primary, $lightness: -6%, $space: hsl);
+            border-color: color.adjust($primary, $lightness: -6%, $space: hsl);
         }
 
         &:focus,

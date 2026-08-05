@@ -1,3 +1,5 @@
+@use "../abstracts/variables" as *;
+
 // A notice: the table has nothing in it, for the year, for the search, or at
 // all. The bundle does not import components/_alert, so this is the only `.alert`
 // rule in it and the legacy filled box is not underneath it.

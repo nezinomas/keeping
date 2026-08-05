@@ -1,3 +1,6 @@
+@use "../abstracts/mixins" as *;
+@use "../abstracts/variables" as *;
+
 // Counts App - Header title
 .counts-title {
     @include shadow;

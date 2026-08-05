@@ -1,3 +1,6 @@
+@use "../abstracts/variables" as *;
+@use "tokens";
+
 // Stat Cards. `<c-stat-cards>` lives in core, so its design lives in the skin
 // rather than in the partial of whichever app happened to render one first.
 
@@ -24,7 +27,7 @@
         text-align: center;
 
         &__label {
-            @include label;
+            @include tokens.label;
 
             letter-spacing: 0.22em;
         }

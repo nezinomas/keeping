@@ -1,3 +1,4 @@
+@use "sass:color";
 @mixin shadow {
     --border-radius: 0.25rem;
 
@@ -28,8 +29,8 @@
 @mixin gradient-tint($base, $name) {
     @for $i from 0 through 20 {
         $step: $i * 5;
-        $tint-ratio: $i / 20 * 100%;
-        $color: mix(white, $base, $tint-ratio);
+        $tint-ratio: $i * 0.05 * 100%;
+        $color: color.mix(white, $base, $tint-ratio);
         --#{$name}-#{$step}: #{$color};
     }
 }

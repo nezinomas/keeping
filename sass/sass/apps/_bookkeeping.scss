@@ -1,3 +1,6 @@
+@use "sass:map";
+@use "../abstracts/variables" as *;
+
 // Bookkeeping App - Search statistics
 .search-statistic {
     display: flex;
@@ -25,7 +28,7 @@
     table-layout: auto;
 
     .expand-column-width {
-        --column-width: #{map-get($column-widths, "day")};
+        --column-width: #{map.get($column-widths, "day")};
         min-width: var(--column-width);
         width: var(--column-width);
     }

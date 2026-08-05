@@ -1,3 +1,5 @@
+@use "../abstracts/variables" as *;
+
 #search-form {
     display: flex;
     gap: calc($gap / 3);

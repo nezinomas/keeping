@@ -1,3 +1,7 @@
+@use "../abstracts/variables" as *;
+
+@use "sass:color";
+
 .main {
 
     // .main scoped variables
@@ -165,11 +169,11 @@
             background-color: rgba(0, 0, 0, 0.03);
 
             &.table-success {
-                background-color: darken($positive-bg, 2%);
+                background-color: color.adjust($positive-bg, $lightness: -2%, $space: hsl);
             }
 
             &.table-danger {
-                background-color: darken($negative-bg, 2%);
+                background-color: color.adjust($negative-bg, $lightness: -2%, $space: hsl);
 
                 &.day-negative {
                     background-color: $negative-bg;
@@ -186,8 +190,8 @@
     &.hover {
         tr:not(.expand-expenses):hover>td {
             background-color: $table-hover-bg !important;
-            border-bottom: 1px solid darken($table-hover-bg, 20%);
-            border-top: 1px solid darken($table-hover-bg, 20%);
+            border-bottom: 1px solid color.adjust($table-hover-bg, $lightness: -20%, $space: hsl);
+            border-top: 1px solid color.adjust($table-hover-bg, $lightness: -20%, $space: hsl);
         }
     }
 }

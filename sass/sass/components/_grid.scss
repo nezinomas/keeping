@@ -1,3 +1,6 @@
+@use "../abstracts/mixins" as *;
+@use "../abstracts/variables" as *;
+
 @mixin grid-template($column-gap: $gap, $row-gap: calc($gap * 2)) {
     display: grid;
     grid-auto-columns: 1fr;

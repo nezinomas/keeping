@@ -10,41 +10,41 @@
 // it, so the partial ships only in the legacy bundle that still renders one.
 
 // 1. Abstracts
-@import 'abstracts/variables';
-@import 'abstracts/mixins';
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
 
 // 2. Base
-@import 'base/root';
-@import 'base/normalize';
-@import 'base/base';
+@use 'base/root';
+@use 'base/normalize';
+@use 'base/base';
 
 // 3. Vendors
-@import 'vendors/htmx';
+@use 'vendors/htmx';
 
 // 4. Generic Components
-@import 'components/grid';
-@import 'components/navbar';
-@import 'components/accordion';
-@import 'components/buttons';
-@import 'components/forms';
-@import 'components/modal';
-@import 'components/quick_add';
-@import 'components/tooltip';
-@import 'components/icons';
-@import 'components/utilities';
+@use 'components/grid';
+@use 'components/navbar';
+@use 'components/accordion';
+@use 'components/buttons';
+@use 'components/forms';
+@use 'components/modal';
+@use 'components/quick_add';
+@use 'components/tooltip';
+@use 'components/icons';
+@use 'components/utilities';
 
 // 5. The skin — tokens first, so its mixins exist for every partial after them,
 //    and the whole skin before the apps for the same reason. One file per
 //    component the paper design owns, in the order they are drawn on a page.
-@import 'skin/tokens';
-@import 'skin/notice';
-@import 'skin/sheet';
-@import 'skin/cards';
-@import 'skin/table';
-@import 'skin/search';
-@import 'skin/pagination';
-@import 'skin/quick_add';
+@use 'skin/tokens';
+@use 'skin/notice';
+@use 'skin/sheet';
+@use 'skin/cards';
+@use 'skin/table';
+@use 'skin/search';
+@use 'skin/pagination';
+@use 'skin/quick_add' as *;
 
 // 6. App / Domain Specific
-@import 'apps/books';
-@import 'apps/drinks';
+@use 'apps/books';
+@use 'apps/drinks';

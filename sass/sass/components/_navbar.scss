@@ -1,3 +1,8 @@
+@use "../abstracts/mixins" as *;
+@use "../abstracts/variables" as *;
+
+@use "sass:color";
+
 .dropdown {
     &:active,
     &:focus,
@@ -46,7 +51,7 @@
     }
 
     > *:hover {
-        background-color: lighten($primary, 30%);
+        background-color: color.adjust($primary, $lightness: 30%, $space: hsl);
         color: $nav-hover-text-color !important;
         transition: $transition;
     }

@@ -1,3 +1,5 @@
+@use "../abstracts/variables" as *;
+
 [x-cloak] {
     display: none !important;
 }

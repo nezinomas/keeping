@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // --- 1. Typography ---
 $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
 $font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !default;
@@ -52,7 +54,7 @@ $active-border: #545a60;
 
 
 // --- 5. Navigation ---
-$nav-bg: lighten($primary, 73.5%);
+$nav-bg: color.adjust($primary, $lightness: 73.5%, $space: hsl);
 $nav-hover-text-color: #fff;
 
 
@@ -62,18 +64,18 @@ $table-header-bg: #f9f9f9;
 $table-dash-color: #d1d1d1;
 $table-group-divider-color: #a2a2a2;
 
-$table-thead: lighten($primary, 72%);
+$table-thead: color.adjust($primary, $lightness: 72%, $space: hsl);
 $table-thead-text: $black-muted;
 
-$table-current-day: lighten($secondary, 43%);
+$table-current-day: color.adjust($secondary, $lightness: 43%, $space: hsl);
 $table-current-day-border-color: $secondary;
 
-$table-currently-reading: lighten($primary, 71%);
+$table-currently-reading: color.adjust($primary, $lightness: 71%, $space: hsl);
 
-$table-weekend: lighten($primary, 71%);
+$table-weekend: color.adjust($primary, $lightness: 71%, $space: hsl);
 $table-weekend-color: $black-muted;
 
-$table-hover-bg: lighten($secondary, 40%);
+$table-hover-bg: color.adjust($secondary, $lightness: 40%, $space: hsl);
 
 $column-widths: (
     "day": 2.5rem,
@@ -86,14 +88,14 @@ $column-widths: (
 
 
 // --- 7. Menus ---
-$arrow: darken($secondary, 10%);
+$arrow: color.adjust($secondary, $lightness: -10%, $space: hsl);
 $exception: $secondary;
 
 
 // --- 8. Charts ---
-$chart-positive: darken($positive-bg, 5%);
-$chart-negative: darken($negative-bg, 5%);
-$chart-warning: darken($warning-bg, 5%);
+$chart-positive: color.adjust($positive-bg, $lightness: -5%, $space: hsl);
+$chart-negative: color.adjust($negative-bg, $lightness: -5%, $space: hsl);
+$chart-warning: color.adjust($warning-bg, $lightness: -5%, $space: hsl);
 
 
 // --- 9. Paper skin ---
@@ -134,7 +136,7 @@ $ramp: (#8badc5, #6e97b2, #517f9e, #356788, #1c5173, #0c3b57);
 
 // a day with nothing on it, drunk or not yet come round: one block, one colour,
 // so the calendar reads as the year it is rather than as two halves
-$empty: mix($hair-soft, $paper, 45%);
+$empty: color.mix($hair-soft, $paper, 45%);
 
 $display: "Bahnschrift SemiCondensed", "Bahnschrift", "Archivo Narrow", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
 $body: "Segoe UI Variable Text", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;

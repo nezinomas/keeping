@@ -1,3 +1,5 @@
+@use "../abstracts/variables" as *;
+
 // Plans App - Plan residual row and star indicator
 .plans-residual-row {
     background-color: $table-current-day;
