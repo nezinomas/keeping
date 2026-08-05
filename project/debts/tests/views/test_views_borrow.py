@@ -36,8 +36,13 @@ def test_borrow_list_empty(client_logged):
 
 
 def test_borrow_list_with_data(client_logged):
-    obj1 = factories.BorrowFactory(closed=True, price=777_777, returned=250)
-    obj2 = factories.LendFactory(price=666_666)
+    # both named, because the assertions below look the names up in the page as
+    # substrings and the factory's `Faker("first_name")` cannot promise two
+    # distinguishable ones
+    obj1 = factories.BorrowFactory(
+        name="Borrow name", closed=True, price=777_777, returned=250
+    )
+    obj2 = factories.LendFactory(name="Lend name", price=666_666)
 
     url = reverse("debts:list", kwargs={"debt_type": "borrow"})
     response = client_logged.get(url)
