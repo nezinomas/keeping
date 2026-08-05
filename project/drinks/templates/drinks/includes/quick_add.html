@@ -57,7 +57,11 @@
         </form>
     </div>
 
-    <button type="button" class="quick-add__pill" @click="open = !open">
-        {% translate 'Log a drink' %}
-    </button>
+    <div class="quick-add__bar">
+        {% include 'drinks/includes/drink_type.html' %}
+
+        <button type="button" class="quick-add__pill" @click="open = !open">
+            {% translate 'Log a drink' %}
+        </button>
+    </div>
 </div>

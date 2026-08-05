@@ -142,15 +142,6 @@ def test_tabs_do_not_render_the_nav(tab, client_logged):
     assert 'id="drinks-nav"' not in response.content.decode()
 
 
-def test_index_nav_groups_the_tabs_apart_from_the_switcher(client_logged):
-    # one group, so the switcher's width cannot shift where the tabs centre
-    response = client_logged.get(reverse("drinks:index"))
-    content = response.content.decode()
-
-    assert '<div class="tabs">' in content
-    assert content.index('<div class="tabs">') < content.index("{ drinkLabel:")
-
-
 def test_index_nav_tracks_the_open_tab_in_alpine(client_logged):
     # rendered once on Overview, so the mark moves client-side from there
     response = client_logged.get(reverse("drinks:index"))
@@ -177,23 +168,22 @@ def test_index_drink_type_links_carry_the_open_tab(client_logged):
         assert f"{url}?tab=" not in content
 
 
-def test_index_drink_type_label_follows_the_choice(client_logged):
-    # nothing re-renders the label, so the press has to move it
+def test_index_switcher_sits_in_the_quick_add_bar(client_logged):
     response = client_logged.get(reverse("drinks:index"))
     content = response.content.decode()
 
-    assert "x-data=\"{ drinkLabel: 'Alus' }\"" in content
-    assert '<button class="dropdown__btn" x-text="drinkLabel">Alus</button>' in content
-    assert "drinkLabel = 'Vynas'" in content
+    assert '<div class="quick-add__bar">' in content
+    assert content.count('id="drink-type-control"') == 1
+    # the nav lost it: the bar is the only place a drink type is chosen
+    nav = content.split('<nav id="drinks-nav"')[1].split("</nav>")[0]
+    assert "dropdown" not in nav
 
 
-def test_index_drink_type_press_closes_the_menu(client_logged):
-    # :focus-within holds the menu open, so the press has to drop the focus
+def test_index_switcher_is_not_swapped_out_of_band(client_logged):
+    """The page draws the control itself; only a tab reload replaces it."""
     response = client_logged.get(reverse("drinks:index"))
-    content = response.content.decode()
 
-    for label in ("Alus", "Vynas", "Degtinė", "Std Av"):
-        assert f"@click=\"drinkLabel = '{label}'; $el.blur()\"" in content
+    assert "hx-swap-oob" not in response.content.decode()
 
 
 def test_index_context(client_logged):
@@ -203,6 +193,7 @@ def test_index_context(client_logged):
 
     assert "drink_types" in context
     assert context["drink_types"].selected == "beer"
+    assert context["drink_type_control"].selected == "beer"
 
 
 @pytest.mark.parametrize(
@@ -225,12 +216,91 @@ def test_index_select_drink_drop_down_title(
 
     content = response.content.decode("utf-8")
 
-    # rendered into the button and seeded into the Alpine state that then owns it
+    assert f'<button class="dropdown__btn">{expect}</button>' in content
+
+
+def test_index_drink_type_press_closes_the_menu(client_logged):
+    # :focus-within holds the menu open, so the press has to drop the focus
+    response = client_logged.get(reverse("drinks:index"))
+    content = response.content.decode()
+
+    assert content.count('@click="$el.blur()"') == len(models.DrinkType.values)
+
+
+@pytest.mark.parametrize(
+    "tab, expect",
+    [
+        ("index", "Vynas"),
+        ("trends", "Vynas"),
+        ("history", "Vynas"),
+        ("habits", "Std Av"),
+        ("risk", "Std Av"),
+    ],
+)
+def test_tab_reload_swaps_the_switcher_out_of_band(
+    tab, expect, main_user, client_logged
+):
+    """A tab arrives with the control its own readings are in."""
+    main_user.drink_type = "wine"
+    main_user.save()
+
+    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+    content = response.content.decode()
+
+    assert '<div id="drink-type-control" hx-swap-oob="true">' in content
+    assert expect in content
+
+
+@pytest.mark.parametrize("tab", ["habits", "risk"])
+def test_tab_reading_std_av_names_the_unit_and_offers_no_choice(tab, client_logged):
+    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+    content = response.content.decode()
+
+    assert '<span class="drink-type-unit">Std Av</span>' in content
+    assert "dropdown" not in content
+
+
+@pytest.mark.parametrize("tab", ["habits", "risk"])
+def test_tab_reading_std_av_says_the_whole_tab_is_in_it(tab, client_logged):
+    """A unit with no choice beside it has to say why it is there, and the
+    caption is part of that one control — not a label sitting next to it."""
+    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+    content = response.content.decode()
+
     assert (
-        f'<button class="dropdown__btn" x-text="drinkLabel">{expect}</button>'
-        in content
-    )
-    assert f"x-data=\"{{ drinkLabel: '{expect}' }}\"" in content
+        '<span class="drink-type-fixed">'
+        '<span class="drink-type-note">Visi duomenys rodomi</span>'
+        '<span class="drink-type-unit">Std Av</span>'
+        "</span>"
+    ) in content
+
+
+@pytest.mark.parametrize("tab", ["index", "trends", "history"])
+def test_tab_choosing_the_unit_carries_no_caption(tab, client_logged):
+    """The switcher says what it is by being pressable."""
+    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+
+    assert _("All data shown as") not in response.content.decode()
+
+
+def test_tab_reading_no_amount_empties_the_control(client_logged):
+    response = client_logged.get(reverse("drinks:tab_data"), HTTP_HX_REQUEST="true")
+    content = response.content.decode()
+
+    assert '<div id="drink-type-control" hx-swap-oob="true"></div>' in content
+
+
+@pytest.mark.parametrize("tab", ["index", "trends", "history", "habits", "risk"])
+def test_tab_context_carries_the_control(tab, client_logged):
+    response = client_logged.get(reverse(f"drinks:tab_{tab}"))
+
+    assert response.context["drink_type_control"] is not None
+
+
+def test_tab_context_carries_no_control(client_logged):
+    response = client_logged.get(reverse("drinks:tab_data"))
+
+    assert response.context["drink_type_control"] is None
 
 
 # -------------------------------------------------------------------------------------
