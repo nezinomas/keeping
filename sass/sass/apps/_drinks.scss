@@ -2,14 +2,10 @@
 @use "../abstracts/variables" as *;
 @use "../skin/tokens";
 
-// Drinks — the markup only this app renders. The skin it wears (the tokens, the
-// sheet, the stat cards, the table, the quick-add pill) lives in skin/.
 
 .paper-skin {
     // ---- Tabs ------------------------------------------------------------
     nav#drinks-nav {
-        // not inherited: the shared `[id*=-nav]` lays every nav out as a flex
-        // row, which leaves the tab group at the start of the line
         display: flex;
         justify-content: center;
         margin-bottom: calc($gap * 1.5);
@@ -60,21 +56,15 @@
     }
 
     #drink-type-control {
-        // so a bare unit is a box of the same height as the button, not an
-        // inline run of text that padding cannot grow
         display: flex;
         align-items: center;
 
-        // an empty control must not hold the pill off centre
         &:empty { display: none; }
 
-        // the menu is absolute, and the bar it sits in is fixed: without this it
-        // anchors to the bar and opens against the far edge of the screen
         .dropdown {
             position: relative;
         }
 
-        // the same control as the pill beside it, caret and all
         .dropdown__btn {
             @include tokens.pill;
         }
@@ -104,8 +94,6 @@
         }
     }
 
-    // the switcher's box on the tabs that only read the unit back: caption and
-    // unit are one control, so the box is drawn once, around both
     .drink-type-fixed {
         @include tokens.pill($hover: false);
 
@@ -114,14 +102,12 @@
         gap: 0 0.5rem;
     }
 
-    // the caption reads as a label, so it keeps the box's case and spacing
     .drink-type-note {
         white-space: nowrap;
         color: $ink-muted;
     }
 
     // ---- panels ----------------------------------------------------------
-    // the conversion table beside the Overview, which only Drinks draws
     #breakdown {
         @include tokens.panel;
     }
@@ -156,8 +142,6 @@
         }
     }
 
-    // the scroll box itself, so it must stay bounded by the card: no max-content
-    // min-width, or it grows to fit the year and overflows instead of scrolling
     .heat-body {
         display: flex;
         gap: 5px;
