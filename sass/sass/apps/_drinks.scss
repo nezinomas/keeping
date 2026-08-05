@@ -20,9 +20,6 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 0 1.6rem;
-            // the shared nav indents its first child; here that is the group
-            // itself, and the indent would land as a half-rem of false centre
-            padding-left: 0;
         }
 
         .tab {

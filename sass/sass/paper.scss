@@ -1,8 +1,9 @@
 @use "sass:color";
 
 // The paper skin's bundle: the shared partials, and none of the components the
-// paper design has forked — table, search, pagination, alert and info_row are
-// written on a clean slate in skin/. See CLAUDE.md, "CSS — two bundles".
+// paper design has forked — navbar, table, search, pagination, alert and
+// info_row are written on a clean slate in skin/. See CLAUDE.md, "CSS — two
+// bundles".
 
 // 1. Abstracts
 @use 'abstracts/variables' as *;
@@ -18,7 +19,6 @@
 
 // 4. Generic Components
 @use 'components/grid';
-@use 'components/navbar';
 @use 'components/accordion';
 @use 'components/buttons';
 @use 'components/forms';
@@ -30,6 +30,7 @@
 
 // 5. The skin — tokens first, so its mixins exist for the partials after them
 @use 'skin/tokens';
+@use 'skin/navbar';
 @use 'skin/notice';
 @use 'skin/sheet';
 @use 'skin/cards';
