@@ -155,9 +155,8 @@ class TrendsBuilder:
     def _build_ytd_card(self) -> StatCard:
         stats = self._stats.compare_year_to_date()
         title = _("This year vs last")
-        # "to date" qualifies the reading rather than naming the metric, and a
-        # centred card has no room for a title that long — the explanation the
-        # card already carries says it instead
+        # a centred card has no room for "to date" in the title, so the
+        # explanation the card already carries says it instead
         to_date = _("The arrow compares with last year, up to the same date.")
 
         unit = self._stats.total_unit

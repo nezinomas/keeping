@@ -157,11 +157,8 @@ def test_debt_return_blank_data(main_user):
 
 
 def test_lend_return_only_not_closed(main_user):
-    # Named here rather than left to the factory's `Faker("first_name")`. Both
-    # assertions look a name up in the rendered form as a substring, and two random
-    # first names are not guaranteed to be distinguishable that way: the pool holds
-    # "Tim" and "Timothy", so the closed debt's name can be found inside the open
-    # one's and the test fails on a form that excluded exactly what it should.
+    # both named: the assertions match substrings, and Faker can draw "Tim" inside
+    # "Timothy" — a pass or fail that says nothing about what the form excluded
     closed = factories.LendFactory(name="Closed lend", closed=True)
     not_closed = factories.LendFactory(name="Open lend", closed=False)
 

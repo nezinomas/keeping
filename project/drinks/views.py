@@ -67,9 +67,8 @@ class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
 
 
 class TabHabits(DrinkTypeContextMixin, TemplateViewMixin):
-    # every figure on this tab is a count, a ratio or a Std Av harm metric, so
-    # none of them follows the dropdown — but the dropdown is in the navbar of
-    # every tab, so the mixin that fills it is not optional here either
+    # nothing here follows the dropdown, but it is in every tab's navbar, so the
+    # mixin that fills it is still needed
     template_name = "drinks/tab_habits.html"
 
     def get_context_data(self, **kwargs):

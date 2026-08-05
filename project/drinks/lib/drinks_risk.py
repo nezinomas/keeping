@@ -7,11 +7,8 @@ from functools import cached_property
 from ...core.lib.year_boundary import YearBoundary
 from .drinks_stats import DataRow, EmptyYearOverYear, YearOverYear
 
-# Medical harm-framing thresholds, all expressed in the canonical std av unit
-# (1 std av = 10 g pure alcohol). The UK CMO low-risk guideline is 14 UK units
-# per week for both sexes; a UK unit is 8 g, so 14 * 8 / 10 = 11.2 std av.
-# The high-risk edge (~35 UK units) is a commonly cited "higher risk" marker
-# in UK guidance, not a universal clinical cutoff for all drinkers.
+# In std av (10 g pure alcohol). UK CMO low-risk is 14 UK units of 8 g a week,
+# so 14 * 8 / 10; the high-risk edge (~35 units) is a cited marker, not a cutoff.
 WEEKLY_LOW_RISK_STDAV = 11.2
 WEEKLY_HIGH_RISK_STDAV = 28.0
 # A heavy drinking day: ~60 g alcohol in a single day. This is a daily total,

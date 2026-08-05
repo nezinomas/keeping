@@ -271,9 +271,8 @@ def test_drink_target_year(main_user):
 
 
 def test_drink_target_year_positive(main_user):
-    # a saved user, so the year is the only invalid field: built with an unsaved
-    # one, full_clean also reports `user`, which would mask a year rule that
-    # stopped firing
+    # a saved user, so year is the only invalid field - an unsaved one makes
+    # full_clean report `user` too and masks a year rule that stopped firing
     actual = DrinkTargetFactory.build(year=-2000, user=main_user)
 
     with pytest.raises(ValidationError) as error:

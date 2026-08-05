@@ -217,10 +217,8 @@ def test_heavy_days_past_clipped_by_day_of_year():
 
 @time_machine.travel("2026-06-01")
 def test_heavy_days_past_dec31_not_dropped_when_past_year_is_leap():
-    # viewing completed year 2025 (365 days); the immediately preceding year,
-    # 2024, was a leap year (366 days) -> ordinal day-of-year numbers for Dec 31
-    # don't line up across the boundary (2025-12-31 is day 365, 2024-12-31 is
-    # day 366), so a naive day-of-year cutoff would wrongly drop 2024-12-31
+    # 2024 was a leap year, so Dec 31 is day 366 there and 365 in 2025 - a naive
+    # day-of-year cutoff drops 2024-12-31
     current = [_row(date(2025, 1, 1), 7)]
     past = [_row(date(2024, 12, 31), 9)]
     heavy = RiskStats(current_daily=current, past_daily=past).heavy_days()

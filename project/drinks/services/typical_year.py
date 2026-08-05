@@ -259,9 +259,8 @@ class TypicalYearBuilder:
                 "share": _("Drinking-day rate"),
                 "share_unit": "%",
                 "intensity": _("Per drinking day"),
-                # Std Av, not display_unit: the plot line is the Heavy day
-                # threshold, which is defined in Std Av, and a converted series
-                # would leave it marking a level the columns no longer measure
+                # not display_unit: the Heavy day plot line is defined in Std Av,
+                # and a converted series leaves it marking nothing
                 "intensity_unit": "Std Av",
                 "threshold_label": _("Heavy day"),
             },
