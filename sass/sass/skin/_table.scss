@@ -1,3 +1,6 @@
+@use "../abstracts/variables" as *;
+@use "tokens";
+
 // `.main` is what a table is called everywhere in this app. The paper bundle does
 // not import components/_table, so this is the only definition of it here — a
 // table design, not an override of the legacy one.
@@ -9,7 +12,7 @@
         font-variant-numeric: tabular-nums;
 
         caption {
-            @include label;
+            @include tokens.label;
 
             padding: 0 0 0.7rem;
             font-size: 0.68rem;
@@ -45,7 +48,7 @@
         }
 
         thead th {
-            @include label;
+            @include tokens.label;
 
             font-size: 0.58rem;
             background: $table-header-bg;

@@ -1,3 +1,6 @@
+@use "sass:list";
+@use "../abstracts/variables" as *;
+
 // The paper skin's two mixins and the token block every paper chart reads.
 //
 // Imported by paper.scss first, so the mixins exist by the time any other skin
@@ -47,7 +50,7 @@
     --skin-harm-wash: #{rgba($harm, 0.11)};
 
     @each $step in $ramp {
-        --skin-year-#{index($ramp, $step) - 1}: #{$step};
+        --skin-year-#{list.index($ramp, $step) - 1}: #{$step};
     }
 
     --skin-display: #{$display};

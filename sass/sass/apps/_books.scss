@@ -1,3 +1,5 @@
+@use "../abstracts/variables" as *;
+
 // Books — the markup only this app renders. Everything else the page wears comes
 // from the skin, which owns `.main` in this bundle.
 .book-table {

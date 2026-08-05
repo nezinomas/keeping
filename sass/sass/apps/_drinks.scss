@@ -1,3 +1,7 @@
+@use "sass:list";
+@use "../abstracts/variables" as *;
+@use "../skin/tokens";
+
 // Drinks — the markup only this app renders. The skin it wears (the tokens, the
 // sheet, the stat cards, the table, the quick-add pill) lives in skin/.
 
@@ -9,7 +13,7 @@
         flex-wrap: wrap;
 
         .tab {
-            @include label;
+            @include tokens.label;
 
             padding: 0.3rem 0.05rem 0.5rem;
             border: 0;
@@ -39,7 +43,7 @@
         }
 
         .dropdown__btn {
-            @include label;
+            @include tokens.label;
 
             color: $ink;
             border-bottom: 1px dotted $hair;
@@ -60,22 +64,22 @@
     // the chart containers' own panel is the skin's now — every paper page draws
     // one. This is the conversion table beside the Overview, which only Drinks has
     #breakdown {
-        @include panel;
+        @include tokens.panel;
     }
 
     // ---- calendar --------------------------------------------------------
     .heat-card {
-        @include panel;
+        @include tokens.panel;
 
         min-width: 0;
 
         .l0 { background: $empty; }
-        .l1 { background: nth($ramp, 1); }
-        .l2 { background: nth($ramp, 3); }
-        .l3 { background: nth($ramp, 5); }
+        .l1 { background: list.nth($ramp, 1); }
+        .l2 { background: list.nth($ramp, 3); }
+        .l3 { background: list.nth($ramp, 5); }
 
         .l4 {
-            background: nth($ramp, 6);
+            background: list.nth($ramp, 6);
             border: 2px solid $harm;
         }
 
@@ -224,7 +228,7 @@
         border-top: 1px solid $hair-soft;
 
         summary {
-            @include label;
+            @include tokens.label;
 
             display: flex;
             align-items: center;
@@ -267,7 +271,7 @@
     .pool-controls,
     .compare-controls {
         .button-secondary {
-            @include label;
+            @include tokens.label;
 
             padding: 0.3rem 0.7rem;
             background: $paper;
