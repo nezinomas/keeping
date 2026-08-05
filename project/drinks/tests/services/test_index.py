@@ -150,11 +150,7 @@ def test_dry_days_view_model_has_data():
 #                                                          IndexBuilder.get_cards
 # -------------------------------------------------------------------------------------
 def test_get_cards_order(main_user, drink_converter):
-    # six cards, the Daily limit last: it was bespoke markup beside the component
-    # until a StatCard could carry a pencil, and it is a card like the rest now.
-    # A seventh should have to argue with this test. Intensity is not among them:
-    # it moved to the Habits tab, so no Std Av figure sits beside Avg per day,
-    # which follows the drink-type dropdown
+    # six, the Daily limit last. A seventh should have to argue with this test
     cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
 
     assert [c.title for c in cards] == [

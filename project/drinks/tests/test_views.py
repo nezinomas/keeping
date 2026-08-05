@@ -38,9 +38,8 @@ def test_index_loads_the_shared_chart_legend_defaults(client_logged):
 
 
 def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
-    # the skin is scoped to this wrapper rather than to the global palette: the
-    # tokens it redefines are the ones every Drinks chart reads, and no other
-    # app's page may inherit them
+    # the wrapper scopes the tokens every Drinks chart reads, so no other app's
+    # page inherits them
     response = client_logged.get(reverse("drinks:index"))
 
     assert 'class="paper-skin"' in response.content.decode()

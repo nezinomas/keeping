@@ -36,9 +36,8 @@ def test_lend_list_empty(client_logged):
 
 
 def test_lend_list_with_data(client_logged):
-    # both named, because the assertions below look the names up in the page as
-    # substrings and the factory's `Faker("first_name")` cannot promise two
-    # distinguishable ones
+    # both named: the assertions match substrings, and Faker cannot promise two
+    # distinguishable names
     obj1 = factories.LendFactory(
         name="Lend name", closed=True, price=777_777, returned=250
     )

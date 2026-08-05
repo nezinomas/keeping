@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 
-# The one vocabulary every tab describes a metric in. It is the union of what
-# the three tabs used to say separately: a level read against a threshold, or a
-# direction read against a baseline. Templates map these to colours and icons.
+# A level read against a threshold, or a direction read against a baseline.
+# Templates map these to colours and icons.
 EMPTY = "empty"
 NEUTRAL = "neutral"
 LOW = "low"
@@ -23,9 +22,8 @@ class StatCard:
 
     title: str
     value: str = ""
-    # kept apart from the figure rather than baked into it: the skin sets a unit
-    # at a third of the figure's size, and a "300 ml" string cannot be split in
-    # a template without guessing where the number ends
+    # apart from the figure: the skin sets it at a third of the figure's size,
+    # and a template cannot split "300 ml" without guessing where the number ends
     unit: str = ""
     note: str = ""
     state: str = NEUTRAL
