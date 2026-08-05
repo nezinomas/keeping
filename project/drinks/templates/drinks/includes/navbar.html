@@ -67,7 +67,7 @@
             <div class="dropdown__menu">
                 {% for type in drink_types.options %}
                 <!-- hx-include, not a tab in the url: this nav outlives the tab -->
-                <a class="dropdown-item button-sm" @click="drinkLabel = '{{ type.0 }}'" href="{% url 'drinks:set_drink_type' type.1 %}" hx-get="{% url 'drinks:set_drink_type' type.1 %}" hx-include="#current-tab" hx-swap="none">{{type.0}}</a>
+                <a class="dropdown-item button-sm" @click="drinkLabel = '{{ type.0 }}'; $el.blur()" href="{% url 'drinks:set_drink_type' type.1 %}" hx-get="{% url 'drinks:set_drink_type' type.1 %}" hx-include="#current-tab" hx-swap="none">{{type.0}}</a>
                 {% endfor %}
             </div>
         </div>

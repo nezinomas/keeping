@@ -187,7 +187,17 @@ def test_index_drink_type_label_follows_the_choice(client_logged):
 
     assert "x-data=\"{ drinkLabel: 'Alus' }\"" in content
     assert '<button class="dropdown__btn" x-text="drinkLabel">Alus</button>' in content
-    assert "@click=\"drinkLabel = 'Vynas'\"" in content
+    assert "drinkLabel = 'Vynas'" in content
+
+
+def test_index_drink_type_press_closes_the_menu(client_logged):
+    # the menu is held open by :focus-within, and the nav is no longer thrown
+    # away by the tab reload, so the press has to drop the focus itself
+    response = client_logged.get(reverse("drinks:index"))
+    content = response.content.decode()
+
+    for label in ("Alus", "Vynas", "Degtinė", "Std Av"):
+        assert f"@click=\"drinkLabel = '{label}'; $el.blur()\"" in content
 
 
 def test_index_context(client_logged):
