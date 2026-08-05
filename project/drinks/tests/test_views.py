@@ -256,7 +256,7 @@ def test_tab_reading_std_av_names_the_unit_and_offers_no_choice(tab, client_logg
     response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
     content = response.content.decode()
 
-    assert '<span class="drink-type-unit">Std Av</span>' in content
+    assert '<span class="drink-type-unit">[ Std Av ]</span>' in content
     assert "dropdown" not in content
 
 
@@ -269,8 +269,8 @@ def test_tab_reading_std_av_says_the_whole_tab_is_in_it(tab, client_logged):
 
     assert (
         '<span class="drink-type-fixed">'
-        '<span class="drink-type-note">Visi duomenys rodomi</span>'
-        '<span class="drink-type-unit">Std Av</span>'
+        '<span class="drink-type-note">Duomenys rodomi</span>'
+        '<span class="drink-type-unit">[ Std Av ]</span>'
         "</span>"
     ) in content
 
@@ -280,7 +280,7 @@ def test_tab_choosing_the_unit_carries_no_caption(tab, client_logged):
     """The switcher says what it is by being pressable."""
     response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
 
-    assert _("All data shown as") not in response.content.decode()
+    assert _("Data shown as") not in response.content.decode()
 
 
 def test_tab_reading_no_amount_empties_the_control(client_logged):
