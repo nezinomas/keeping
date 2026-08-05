@@ -6,21 +6,7 @@
 
 .paper-skin {
     .quick-add__pill {
-        @include tokens.label;
-
-        padding: 0.4rem 1.1rem;
-        border: 1px solid $ink;
-        border-radius: 0;
-        background: $paper;
-        color: $ink;
-        box-shadow: none;
-
-        &:hover,
-        &:focus {
-            background: $hair-soft;
-            border-color: $ink;
-            color: $ink;
-        }
+        @include tokens.pill;
     }
 
     .quick-add__sheet {

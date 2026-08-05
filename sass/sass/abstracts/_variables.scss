@@ -54,8 +54,8 @@ $active-border: #545a60;
 
 
 // --- 5. Navigation ---
+// no nav uses this now — the grid and the legacy quick-add pill still do
 $nav-bg: color.adjust($primary, $lightness: 73.5%, $space: hsl);
-$nav-hover-text-color: #fff;
 
 
 // --- 6. Tables ---
