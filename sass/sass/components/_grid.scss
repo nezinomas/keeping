@@ -9,13 +9,8 @@
 }
 
 
-// A toolbar of controls under a chart: presets, a year form, and whatever
-// validation error a field of it raises. Two tabs draw a chart the reader
-// re-scopes below it (History's year comparison, Habits' typical year), so the
-// rules are shared rather than copied into each grid.
-//
-// The row stays vertically centered; an error is taken out of flow (absolute,
-// below its field) so it can never shove the inputs around, and margin-bottom
+// A toolbar of controls under a chart, shared by the two tabs that draw one.
+// The error is absolute, so it cannot shove the inputs around; margin-bottom
 // reserves the room it needs.
 @mixin chart-controls {
     display: flex;
@@ -142,10 +137,8 @@
         "breakdown"
     ;
 
-    // placement only: the id says which row of the tab the Cards occupy, and
-    // skin/_cards draws them inside it. An id out-specifies the skin's class, so
-    // a layout property left here would be the tab silently overriding the Card
-    // design — the four `#*-summary` rules below are the same
+    // placement only — an id out-specifies skin/_cards, so a layout property
+    // here would be the tab quietly overriding the Card design
     > #index-summary {
         grid-area: index-summary;
     }
@@ -206,9 +199,8 @@
 .habits-grid {
     @include grid-template;
 
-    // every container gets a named area: the tab grows by a chart per ticket
-    // (dry runs, typical year), and implicit flow would place each new one
-    // wherever the markup happened to put it
+    // named areas, because this tab grows by a chart and implicit flow would
+    // place each new one wherever the markup happened to put it
     grid-template-areas:
         "habits-summary"
         "chart-weekday-container"

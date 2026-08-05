@@ -1,32 +1,16 @@
 @use "../abstracts/variables" as *;
 
-// Books — the markup only this app renders. Everything else the page wears comes
-// from the skin, which owns `.main` in this bundle.
+// Books — the markup only this app renders; the rest comes from the skin.
 .book-table {
-    // An Open book: started, not finished. It is a fact about the reading rather
-    // than chrome, so it takes the Data hue — the palest step of it, because the
-    // row beside it is the same table and not a different one. Set on the row, so
-    // the skin's translucent stripe reads over it rather than replacing it.
-    //
-    // In skin tokens rather than `$table-currently-reading`: that one is
-    // `lighten($primary, 71%)`, the legacy palette's blue, and no paper page
-    // should be drawing with it.
+    // an Open book: started, not finished. Translucent, so the stripe reads over it
     tr.currently-reading-book {
         background-color: rgba($data, 0.06);
         border-top: 1px solid $hair;
         border-bottom: 1px solid $hair;
     }
 
-    // Column shares. The legacy design could fix Author at 20rem and Title at
-    // 40rem because `components/_table` set `table-layout: fixed`, where a width
-    // is read as a share of the table and scaled down to fit it. The skin's
-    // `.main` sizes columns to their content, and there a rem width is a floor
-    // instead: 60rem of floor before Nr, the remark, two dates and the action
-    // columns, which is what put a horizontal scrollbar under the page on
-    // anything narrower than a desktop.
-    //
-    // A percentage is a share of the table under either layout, so Title stays
-    // twice the Author's width and the table shrinks with the window.
+    // shares, not rem widths: the skin's table sizes columns to their content,
+    // where a rem width is a floor and the table stops shrinking with the window
     .author-col {
         width: 20%;
     }
@@ -35,16 +19,8 @@
         width: 40%;
     }
 
-    // A date is one token. Left to itself the table breaks "2026-07-25" after the
-    // month rather than give the column its 2rem, and with two date columns every
-    // row doubles in height to save them. `date-col` is what this app has always
-    // called the column — the legacy width map names it too.
-    //
-    // Only where the room exists, though: two unbreakable dates cost about 70px
-    // more than a 600px window has, and an overflowing table is worse than a
-    // wrapped date. 768px is where the table measured as still able to afford
-    // them — not the 992px the grid switches columns at, which would leave a
-    // 900px laptop wrapping every date in the table for no reason.
+    // otherwise the table breaks "2026-07-25" after the month and doubles every
+    // row's height. Only above 768px, where two unbreakable dates fit
     @media only screen and (min-width: 768px) {
         .date-col {
             white-space: nowrap;

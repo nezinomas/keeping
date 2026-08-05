@@ -1,10 +1,7 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// The sheet itself: the ground every paper page is drawn on, and the frame a
-// chart sits in. `.paper-skin` is layout rather than scope — the bundle already
-// decides which design a page wears — so what it carries is the page's own
-// surface and nothing that fights another rule for a class name.
+// The sheet every paper page is drawn on, and the frame a chart sits in.
 
 .paper-skin {
     // ---- the sheet -------------------------------------------------------
@@ -16,12 +13,7 @@
     line-height: 1.5;
 
     // ---- chart panels ----------------------------------------------------
-    // The frame a chart is drawn inside. It sat in `apps/_drinks.scss` while
-    // Drinks was the only app drawing one, and this pattern already matched
-    // Books' `#chart-finished-container` from there — a books chart taking its
-    // frame from the drinks partial. Now that the chart itself wears the skin
-    // (`chart_paper.js`), so does the panel around it. `#breakdown` stays in
-    // Drinks: no other app renders it.
+    // every paper page draws one, so the frame is the skin's rather than an app's
     [id^="chart-"][id$="-container"] {
         @include tokens.panel;
     }

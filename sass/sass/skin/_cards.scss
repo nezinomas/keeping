@@ -1,24 +1,12 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// Stat Cards. `<c-stat-cards>` lives in core, so its design lives in the skin
-// rather than in the partial of whichever app happened to render one first.
+// Stat Cards. `<c-stat-cards>` lives in core, so its design lives in the skin.
 
 .paper-skin {
-    // the grid a card's three subgrid rows resolve against — without it the
-    // cards have no shared baseline and stack. Drinks' four `#*-summary` ids
-    // carry this class beside the id they are placed by: the id belongs to the
-    // tab's grid in components/_grid, the class to the cards inside it.
+    // the grid the Cards' subgrid rows resolve against — without it they stack
     .stat-cards {
-        // How many Cards a row holds, and the gap between them. Both are stated
-        // per screen width below rather than left to `auto-fit`: a track count
-        // nobody can name is a track count the last-row rules cannot centre, and
-        // centring a short last row needs to know how wide a column is.
-        //
-        // Only the column gap moves with the screen. The row gap is the space
-        // between two rows of Cards, which a narrow screen needs more of rather
-        // than less — and the shift that centres a short row is measured in
-        // columns, so it is the column gap it has to read.
+        // both set per screen width below
         --cols: 2;
         --card-gap: 1rem;
 
@@ -30,16 +18,9 @@
         padding: calc($gap * 1.2) calc($gap * 0.9) calc($gap * 1.1);
     }
 
-    // Never more columns than there are Cards: an empty track at the end of the
-    // row would push the set off centre. The count is read off the markup rather
-    // than passed in — `:nth-child(2)` is "there is a second Card" — and the
-    // clamps run smallest-last, because they all weigh the same and the cascade
-    // decides the rest on source order.
-    //
-    // A set of three is the first of those clamps rather than a phone breakpoint
-    // of its own: three Cards fit a phone held upright, so a set that small keeps
-    // its row at every width, and Books' three never wrap. It is the tight column
-    // gap above that buys the room — at 2rem the third Card does not fit.
+    // Never more columns than Cards — an empty track pushes the set off centre.
+    // Smallest last: they weigh the same, so source order decides. Three fit a
+    // phone upright, so a set that small keeps its row at every width.
     .stat-cards:not(:has(.trend-card:nth-child(4))) {
         --cols: 3;
     }
@@ -52,41 +33,19 @@
         --cols: 1;
     }
 
-    // Three Cards or fewer: they keep their own width and sit together in the
-    // middle of the page. Stretched to a third of a wide screen each, a Card
-    // reads as a figure marooned in white rather than as one of a set — Books'
-    // three, on the widest screen, are what the cap is for.
-    //
-    // Four and up keep the elastic tracks above: at that count the set already
-    // spans the page, and capping would only wrap it into a second row early.
+    // Three or fewer keep their width and sit together in the middle; stretched
+    // across a wide screen a Card reads as marooned rather than as one of a set
     .stat-cards:not(:has(.trend-card:nth-child(4))) {
         grid-template-columns: repeat(var(--cols), minmax(0, 16rem));
         justify-content: center;
     }
 
     // ---- a short last row ------------------------------------------------
-    // Grid puts the leftover Cards in the first columns of a new row, hard
-    // against the left edge, and no grid property moves them: `justify-content`
-    // centres the whole set of tracks, never one row of items. So a leftover is
-    // slid across half the room its row leaves empty — a translate, which moves
-    // the Card without moving the track it was placed in, so the columns the
-    // rows above resolve against stay where they are. `100%` is one Card wide,
-    // which is one column wide, and a step across is that plus a gap.
-    //
-    // Which Cards those are is read off the row rather than off the size of the
-    // set: "starts a row and is the last Card" is a row of one, "starts a row
-    // with a single Card after it" a row of two. Both hold for any number of
-    // Cards, so a seventh Card would need nothing added here.
-    //
-    // Bounded above as well as below, unlike every other query in this file: the
-    // rules say what a short row looks like at a given number of columns, so they
-    // have to stop where that number changes. And each is asked for one more Card
-    // than the row holds, because a set too small to wrap has none of the columns
-    // the shift is measured in — the whole of a one-Card tab is a first row, and
-    // "starts a row and is the last Card" would otherwise slide it off centre.
+    // `justify-content` centres the tracks, not one row of items, so the
+    // leftovers are translated across half the room their row leaves empty.
+    // Bounded above too: the shift is measured in the columns of one breakpoint.
     @media only screen and (max-width: 767px) {
-        // two columns, one Card over: half a column across. Asked for a fourth
-        // Card, not a third: a set of three holds its own row here
+        // two columns, one Card over: half a column across
         .stat-cards:has(.trend-card:nth-child(4)) {
             .trend-card:nth-child(2n + 1):last-child {
                 transform: translateX(calc(50% + var(--card-gap) / 2));
@@ -111,10 +70,7 @@
 
     // ---- how many fit a row ----------------------------------------------
     // Two on a phone, three on a tablet, the whole set on a desktop. Six is the
-    // widest set any tab builds (Drinks' Overview), and 992px is where it has
-    // the room for all six — the tighter gap is part of what buys that room, as
-    // it is on the phone. The tablet is the one width that has to squeeze
-    // nothing, so it is the one that gets the wide gap back.
+    // widest set any tab builds, and the tight gap is what fits it at 992px.
     @media only screen and (min-width: 768px) {
         .stat-cards {
             --cols: 3;
@@ -170,13 +126,8 @@
 
             letter-spacing: 0.22em;
 
-            // A phone's Card is a fraction of the width a desktop's is, and a
-            // label is one long word: "PERSKAITYTOS" tracked at 0.22em is wider
-            // than the Card holding it, and a label does not overflow quietly —
-            // it runs into the label of the Card beside it. Tighter tracking is
-            // what buys the room for three of them across a phone; `anywhere` is
-            // the floor under that, so the narrowest screen breaks the word
-            // instead of spilling it over its neighbour.
+            // a label tracked at 0.22em is wider than a phone's Card, and it
+            // overflows into the label of the Card beside it rather than wrapping
             @media only screen and (max-width: 767px) {
                 font-size: 0.58rem;
                 letter-spacing: 0.1em;
@@ -242,11 +193,7 @@
             margin-top: 0.1rem;
             margin-inline: auto;
             padding-top: 0.5rem;
-            // 13rem where the Card has room for it, inset from its edges where it
-            // does not. 70% was struck against a Card that could be a third of the
-            // screen wide, where the 13rem always won; on a capped 16rem track the
-            // percentage is what wins, so it has to leave room for the 13rem the
-            // note is written to
+            // 13rem where the Card has room for it, inset where it does not
             max-width: min(85%, 13rem);
             border-top: 1px solid $hair-soft;
             font-size: 0.72rem;

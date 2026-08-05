@@ -1,9 +1,8 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// `.main` is what a table is called everywhere in this app. The paper bundle does
-// not import components/_table, so this is the only definition of it here — a
-// table design, not an override of the legacy one.
+// `.main` is what a table is called everywhere in this app. The paper bundle
+// does not import components/_table, so this is its only definition here.
 
 .paper-skin {
     .main {
@@ -59,14 +58,9 @@
             border-bottom: 1px solid $hair-soft;
         }
 
-        // where one group of rows ends and the next begins — a month in Drinks
-        // Data, an account elsewhere. Heavier than a row line, lighter than the
-        // header's: rows 1px $hair-soft < a group 2px $hair < the header 1px $ink.
-        //
-        // Two pixels rather than one, and on the cells rather than the row,
-        // because border-collapse resolves a tie by width first and then by
-        // origin — at 1px this rule would lose to the border-bottom the previous
-        // row's own td already carries. That is what the legacy 3px was for.
+        // where one group of rows ends and the next begins. 2px on the cells, not
+        // 1px on the row: border-collapse breaks a tie by width, so 1px would lose
+        // to the border-bottom the previous row's td already carries
         tbody tr.table-group-divider > td {
             border-top: 2px solid $hair;
         }

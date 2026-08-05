@@ -1,13 +1,8 @@
 @use "sass:color";
 
-// The paper skin's bundle. Same shared partials as main.scss, but none of the
-// components the paper design has forked — table, search, pagination and alert
-// are written on a clean slate in the skin, never as overrides of the legacy
-// rules. See CLAUDE.md, "CSS — two bundles, one per design".
-//
-// `components/info_row` is not here either, and for a different reason: neither
-// paper app has an info row left to draw. Books' three Cards were the last of
-// it, so the partial ships only in the legacy bundle that still renders one.
+// The paper skin's bundle: the shared partials, and none of the components the
+// paper design has forked — table, search, pagination, alert and info_row are
+// written on a clean slate in skin/. See CLAUDE.md, "CSS — two bundles".
 
 // 1. Abstracts
 @use 'abstracts/variables' as *;
@@ -33,9 +28,7 @@
 @use 'components/icons';
 @use 'components/utilities';
 
-// 5. The skin — tokens first, so its mixins exist for every partial after them,
-//    and the whole skin before the apps for the same reason. One file per
-//    component the paper design owns, in the order they are drawn on a page.
+// 5. The skin — tokens first, so its mixins exist for the partials after them
 @use 'skin/tokens';
 @use 'skin/notice';
 @use 'skin/sheet';

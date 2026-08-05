@@ -61,8 +61,7 @@
     }
 
     // ---- panels ----------------------------------------------------------
-    // the chart containers' own panel is the skin's now — every paper page draws
-    // one. This is the conversion table beside the Overview, which only Drinks has
+    // the conversion table beside the Overview, which only Drinks draws
     #breakdown {
         @include tokens.panel;
     }
