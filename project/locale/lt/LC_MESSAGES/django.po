@@ -1443,8 +1443,8 @@ msgid "Habits"
 msgstr "Įpročiai"
 
 #: .\drinks\templates\drinks\includes\drink_type.html:16
-msgid "All data shown as"
-msgstr "Visi duomenys rodomi"
+msgid "Data shown as"
+msgstr "Duomenys rodomi"
 
 #: .\drinks\templates\drinks\includes\quick_add.html:45
 msgid "More"
