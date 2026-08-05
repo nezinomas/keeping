@@ -26,7 +26,10 @@ from .tabs import DrinkTabs
 
 
 class DrinkTypeContextMixin:
-    """Puts the drink-type switcher into the context of every drinks tab."""
+    """Puts the drink-type switcher into the context of the page that draws it.
+
+    Only Index does: the nav and the quick-add sheet are rendered once, by it.
+    """
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
@@ -48,11 +51,13 @@ class Index(DrinkTypeContextMixin, TemplateViewMixin):
             **super().get_context_data(**kwargs),
             **{"reload_targets": DrinkTabs.all()},
             **{"recent_days": recent_days},
+            # always opens on Overview; the nav moves the mark from there
+            **{"tab": "index"},
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
 
-class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
+class TabIndex(TemplateViewMixin):
     template_name = "drinks/tab_index.html"
 
     def get_context_data(self, **kwargs):
@@ -66,9 +71,7 @@ class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
-class TabHabits(DrinkTypeContextMixin, TemplateViewMixin):
-    # nothing here follows the dropdown, but it is in every tab's navbar, so the
-    # mixin that fills it is still needed
+class TabHabits(TemplateViewMixin):
     template_name = "drinks/tab_habits.html"
 
     def get_context_data(self, **kwargs):
@@ -83,21 +86,6 @@ class TabHabits(DrinkTypeContextMixin, TemplateViewMixin):
 
 
 class TypicalYearChart(FormViewMixin):
-    """The typical-year chart on the Habits tab, and the range form that pools a
-    backdrop for it.
-
-    A partial rather than part of the tab: the Habits container fetches this on
-    load and re-fetches it on every preset and every submit, so the chart, its
-    legend and the form's own boxes are always the same reading of the same
-    range.
-
-    The header year is always plotted. A pooled range never is until the user
-    asks for one — a `qty` in the url pools the last that many years, `qty=0`
-    every year on record, and a submit whatever the boxes say. Which years
-    actually contributed is read back off the records, so asking for five years
-    of a two-year history pools the two and the legend says so.
-    """
-
     form_class = forms.TypicalYearForm
     template_name = "drinks/includes/typical_year_form.html"
 
@@ -124,11 +112,6 @@ class TypicalYearChart(FormViewMixin):
 
     @staticmethod
     def _initial(chart) -> dict:
-        """The boxes open on the range that is plotted, once one is.
-
-        Until then they keep the form's own defaults — the user's full span —
-        so a first press pools everything rather than erroring on empty boxes.
-        """
         if not chart.pooled.has_data:
             return {}
 
@@ -161,7 +144,7 @@ class TypicalYearChart(FormViewMixin):
         )
 
 
-class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
+class TabTrends(TemplateViewMixin):
     template_name = "drinks/tab_trends.html"
 
     def get_context_data(self, **kwargs):
@@ -175,7 +158,7 @@ class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
-class TabRisk(DrinkTypeContextMixin, TemplateViewMixin):
+class TabRisk(TemplateViewMixin):
     template_name = "drinks/tab_risk.html"
 
     def get_context_data(self, **kwargs):
@@ -189,7 +172,7 @@ class TabRisk(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
-class TabData(DrinkTypeContextMixin, ListViewMixin):
+class TabData(ListViewMixin):
     service_class = DrinkModelService
     template_name = "drinks/tab_data.html"
 
@@ -204,7 +187,7 @@ class TabData(DrinkTypeContextMixin, ListViewMixin):
         }
 
 
-class TabHistory(DrinkTypeContextMixin, TemplateViewMixin):
+class TabHistory(TemplateViewMixin):
     template_name = "drinks/tab_history.html"
 
     def get_context_data(self, **kwargs):

@@ -7,10 +7,19 @@
 
 .paper-skin {
     // ---- Tabs ------------------------------------------------------------
+    // outer tracks equal, so the switcher's width cannot pull the centre
     nav#drinks-nav {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         margin-bottom: calc($gap * 1.5);
-        gap: 0 1.6rem;
-        flex-wrap: wrap;
+
+        .tabs {
+            grid-column: 2;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0 1.6rem;
+        }
 
         .tab {
             @include tokens.label;
@@ -38,15 +47,16 @@
             }
         }
 
-        > div {
-            margin-left: auto;
+        // the switcher rides in the right-hand track, hard against its end
+        > div:last-child {
+            grid-column: 3;
+            justify-self: end;
         }
 
         .dropdown__btn {
             @include tokens.label;
 
             color: $ink;
-            border-bottom: 1px dotted $hair;
 
             &:hover {
                 color: $data;
