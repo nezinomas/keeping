@@ -58,7 +58,6 @@
             @include tokens.label;
 
             color: $ink;
-            border-bottom: 1px dotted $hair;
 
             &:hover {
                 color: $data;
