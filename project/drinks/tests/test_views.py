@@ -98,7 +98,8 @@ def test_index_links(client_logged):
     # content = content.replace('\n', '')
 
     pattern = re.compile(
-        r'<button\s+class="tab(?:\s+active)?"\s+hx-get="(.*?)"\s+hx-target="#tab_content">\s+(\w+)\s+<\/button',
+        r'<button\s+class="tab(?:\s+active)?"\s+:class="(?:.*?)"\s+@click="(?:.*?)"'
+        r'\s+hx-get="(.*?)"\s+hx-target="#tab_content">\s+(\w+)\s+<\/button',
         re.MULTILINE,
     )
     res = re.findall(pattern, content)
@@ -121,6 +122,78 @@ def test_index_links(client_logged):
 
     assert res[5][0] == reverse("drinks:tab_data")
     assert res[5][1] == "Duomenys"
+
+
+def test_index_renders_the_tab_nav_once(client_logged):
+    # the nav sits outside #tab_content, so a tab swap cannot replace it
+    response = client_logged.get(reverse("drinks:index"))
+
+    assert response.content.decode().count('id="drinks-nav"') == 1
+
+
+@pytest.mark.parametrize(
+    "tab",
+    ["tab_index", "tab_habits", "tab_trends", "tab_risk", "tab_history", "tab_data"],
+)
+def test_tabs_do_not_render_the_nav(tab, client_logged):
+    # a tab response is the body only; the page it lands in owns the nav
+    response = client_logged.get(reverse(f"drinks:{tab}"))
+
+    assert 'id="drinks-nav"' not in response.content.decode()
+
+
+def test_index_nav_groups_the_tabs_apart_from_the_switcher(client_logged):
+    # one group, so the switcher's width cannot shift where the tabs centre
+    response = client_logged.get(reverse("drinks:index"))
+    content = response.content.decode()
+
+    assert '<div class="tabs">' in content
+    assert content.index('<div class="tabs">') < content.index("{ drinkLabel:")
+
+
+def test_index_nav_tracks_the_open_tab_in_alpine(client_logged):
+    # rendered once on Overview, so the mark moves client-side from there
+    response = client_logged.get(reverse("drinks:index"))
+    content = response.content.decode()
+
+    assert "x-data=\"{ tab: 'index' }\"" in content
+    assert "@click=\"tab = 'habits'\"" in content
+    assert ":class=\"{ active: tab === 'habits' }\"" in content
+    assert 'class="tab active"' in content
+    assert content.count('class="tab active"') == 1
+
+
+def test_index_drink_type_links_carry_the_open_tab(client_logged):
+    # not baked into the url: htmx reads it off the input at click time
+    response = client_logged.get(reverse("drinks:index"))
+    content = response.content.decode()
+
+    assert '<input type="hidden" id="current-tab" name="tab" :value="tab">' in content
+    assert 'hx-include="#current-tab"' in content
+
+    for drink_type in models.DrinkType.values:
+        url = reverse("drinks:set_drink_type", kwargs={"drink_type": drink_type})
+        assert f'hx-get="{url}" hx-include="#current-tab"' in content
+        assert f"{url}?tab=" not in content
+
+
+def test_index_drink_type_label_follows_the_choice(client_logged):
+    # nothing re-renders the label, so the press has to move it
+    response = client_logged.get(reverse("drinks:index"))
+    content = response.content.decode()
+
+    assert "x-data=\"{ drinkLabel: 'Alus' }\"" in content
+    assert '<button class="dropdown__btn" x-text="drinkLabel">Alus</button>' in content
+    assert "drinkLabel = 'Vynas'" in content
+
+
+def test_index_drink_type_press_closes_the_menu(client_logged):
+    # :focus-within holds the menu open, so the press has to drop the focus
+    response = client_logged.get(reverse("drinks:index"))
+    content = response.content.decode()
+
+    for label in ("Alus", "Vynas", "Degtinė", "Std Av"):
+        assert f"@click=\"drinkLabel = '{label}'; $el.blur()\"" in content
 
 
 def test_index_context(client_logged):
@@ -152,32 +225,12 @@ def test_index_select_drink_drop_down_title(
 
     content = response.content.decode("utf-8")
 
-    assert f'<button class="dropdown__btn">{expect}</button>' in content
-
-
-def test_index_select_drink_drop_down_link_list(client_logged):
-    url = reverse("drinks:index")
-    response = client_logged.get(url)
-
-    content = response.content.decode()
-
-    # the dropdown reloads the current tab (here: index) via htmx
+    # rendered into the button and seeded into the Alpine state that then owns it
     assert (
-        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "beer"})}?tab=index"'  # noqa: E501
+        f'<button class="dropdown__btn" x-text="drinkLabel">{expect}</button>'
         in content
     )
-    assert (
-        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})}?tab=index"'  # noqa: E501
-        in content
-    )
-    assert (
-        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "vodka"})}?tab=index"'  # noqa: E501
-        in content
-    )
-    assert (
-        f'hx-get="{reverse("drinks:set_drink_type", kwargs={"drink_type": "stdav"})}?tab=index"'  # noqa: E501
-        in content
-    )
+    assert f"x-data=\"{{ drinkLabel: '{expect}' }}\"" in content
 
 
 # -------------------------------------------------------------------------------------
@@ -478,17 +531,6 @@ def test_tab_habits_renders_chart_data(client_logged):
     assert 'id="chart-weekday-data"' in response.content.decode()
 
 
-def test_tab_habits_keeps_the_drink_type_dropdown(client_logged):
-    # nothing on this tab follows the dropdown, but the navbar carries it, and
-    # switching type from here has to come back here rather than to Overview
-    url = reverse("drinks:tab_habits")
-    response = client_logged.get(url)
-    content = response.content.decode()
-
-    assert 'data-tab="habits"' in content
-    assert "?tab=habits" in content
-
-
 @time_machine.travel("1999-06-01")
 def test_tab_habits_renders_cards_with_data(client_logged):
     DrinkFactory(date=date(1999, 1, 4), stdav=7.9)
@@ -499,30 +541,6 @@ def test_tab_habits_renders_cards_with_data(client_logged):
 
     assert response.status_code == 200
     assert content.count('class="trend-card"') == len(response.context["cards"])
-
-
-@pytest.mark.parametrize(
-    "tab, active",
-    [
-        ("tab_index", False),
-        ("tab_habits", True),
-        ("tab_trends", False),
-        ("tab_risk", False),
-        ("tab_history", False),
-        ("tab_data", False),
-    ],
-)
-def test_habits_link_is_on_every_tab_and_active_only_on_its_own(
-    tab, active, client_logged
-):
-    response = client_logged.get(reverse(f"drinks:{tab}"))
-    content = response.content.decode()
-
-    habits_link = f'hx-get="{reverse("drinks:tab_habits")}"'
-
-    assert habits_link in content
-    marked_active = f'class="tab active"\n        {habits_link}' in content
-    assert marked_active is active
 
 
 # -------------------------------------------------------------------------------------
