@@ -7,8 +7,7 @@
 
 .paper-skin {
     // ---- Tabs ------------------------------------------------------------
-    // three tracks, the outer two equal: the tabs are centred on the nav itself,
-    // so the switcher's width — Alus or Degtinė — cannot pull the centre sideways
+    // outer tracks equal, so the switcher's width cannot pull the centre
     nav#drinks-nav {
         display: grid;
         grid-template-columns: 1fr auto 1fr;
