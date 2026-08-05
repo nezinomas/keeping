@@ -1,13 +1,9 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// paper's own #search-form: the bundle does not import components/_search, so
-// this is the only definition of it here. A row directly above the table it
-// filters — a hairline field and two mono labels, no fill.
-//
-// `.form-control` and `.button-secondary` are still tier-2 shared partials, so
-// the skin adjusts them inside this row the way it adjusts the quick-add sheet's
-// buttons. Both are ready to fork when the forms are.
+// paper's own #search-form: a hairline field and two mono labels, no fill.
+// `.form-control` and `.button-secondary` are still shared, so the skin adjusts
+// them here — the signal that both are ready to fork.
 
 .paper-skin {
     #search-form {

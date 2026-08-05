@@ -2,13 +2,8 @@
 @use "../abstracts/variables" as *;
 
 // The paper skin's two mixins and the token block every paper chart reads.
-//
-// Imported by paper.scss first, so the mixins exist by the time any other skin
-// partial or app partial includes them.
-//
-// The tokens are declared on `:root` rather than on `.paper-skin`, because
-// Highcharts renders a tooltip outside the wrapper and a token it cannot resolve
-// there is drawn black. See CLAUDE.md, "CSS — two bundles, one per design".
+// On `:root`, not `.paper-skin`: Highcharts draws a tooltip outside the wrapper,
+// and a token it cannot resolve there comes out black.
 
 @mixin panel {
     position: relative;
