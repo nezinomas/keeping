@@ -83,21 +83,6 @@ class TabHabits(DrinkTypeContextMixin, TemplateViewMixin):
 
 
 class TypicalYearChart(FormViewMixin):
-    """The typical-year chart on the Habits tab, and the range form that pools a
-    backdrop for it.
-
-    A partial rather than part of the tab: the Habits container fetches this on
-    load and re-fetches it on every preset and every submit, so the chart, its
-    legend and the form's own boxes are always the same reading of the same
-    range.
-
-    The header year is always plotted. A pooled range never is until the user
-    asks for one — a `qty` in the url pools the last that many years, `qty=0`
-    every year on record, and a submit whatever the boxes say. Which years
-    actually contributed is read back off the records, so asking for five years
-    of a two-year history pools the two and the legend says so.
-    """
-
     form_class = forms.TypicalYearForm
     template_name = "drinks/includes/typical_year_form.html"
 
@@ -124,11 +109,6 @@ class TypicalYearChart(FormViewMixin):
 
     @staticmethod
     def _initial(chart) -> dict:
-        """The boxes open on the range that is plotted, once one is.
-
-        Until then they keep the form's own defaults — the user's full span —
-        so a first press pools everything rather than erroring on empty boxes.
-        """
         if not chart.pooled.has_data:
             return {}
 
