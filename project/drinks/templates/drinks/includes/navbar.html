@@ -14,21 +14,21 @@
         </button>
 
         <button
-            class="tab{% if tab == 'habits' %} active{% endif %}"
-            :class="{ active: tab === 'habits' }"
-            @click="tab = 'habits'"
-            hx-get="{% url 'drinks:tab_habits' %}"
-            hx-target="#tab_content">
-            {% translate 'Habits' %}
-        </button>
-
-        <button
             class="tab{% if tab == 'trends' %} active{% endif %}"
             :class="{ active: tab === 'trends' }"
             @click="tab = 'trends'"
             hx-get="{% url 'drinks:tab_trends' %}"
             hx-target="#tab_content">
             {% translate 'Trends' %}
+        </button>
+
+        <button
+            class="tab{% if tab == 'habits' %} active{% endif %}"
+            :class="{ active: tab === 'habits' }"
+            @click="tab = 'habits'"
+            hx-get="{% url 'drinks:tab_habits' %}"
+            hx-target="#tab_content">
+            {% translate 'Habits' %}
         </button>
 
         <button

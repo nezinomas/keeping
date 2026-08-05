@@ -108,11 +108,11 @@ def test_index_links(client_logged):
     assert res[0][0] == reverse("drinks:tab_index")
     assert res[0][1] == "Apžvalga"
 
-    assert res[1][0] == reverse("drinks:tab_habits")
-    assert res[1][1] == "Įpročiai"
+    assert res[1][0] == reverse("drinks:tab_trends")
+    assert res[1][1] == "Tendencijos"
 
-    assert res[2][0] == reverse("drinks:tab_trends")
-    assert res[2][1] == "Tendencijos"
+    assert res[2][0] == reverse("drinks:tab_habits")
+    assert res[2][1] == "Įpročiai"
 
     assert res[3][0] == reverse("drinks:tab_risk")
     assert res[3][1] == "Rizikos"
