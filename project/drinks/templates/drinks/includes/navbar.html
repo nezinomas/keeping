@@ -1,7 +1,6 @@
 {% load i18n %}
 
-<!-- Rendered once by index.html, outside #tab_content: a tab swap replaces the
-     body, so the open tab is Alpine state here rather than a server render. -->
+<!-- rendered once, outside the swapped body, so the open tab is Alpine state -->
 <nav id="drinks-nav">
     <!-- one group, so the nav can centre it without the switcher pulling on it -->
     <div class="tabs">
@@ -60,7 +59,7 @@
         </button>
     </div>
 
-    <!-- the label is state too: no swap re-renders this nav, so the press moves it -->
+    <!-- the label is state too: nothing re-renders it, so the press moves it -->
     <div x-data="{ drinkLabel: '{{ drink_types.label }}' }">
         <div class="dropdown">
             <button class="dropdown__btn" x-text="drinkLabel">{{ drink_types.label }}</button>

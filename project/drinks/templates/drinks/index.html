@@ -30,9 +30,8 @@
 {% block content %}
 
 
-<!-- outside #tab_content, so an htmx tab swap cannot replace the chart tokens.
-     `tab` is the open tab, owned here because the nav and the quick-add sheet
-     both read it and neither is re-rendered by a swap. -->
+<!-- outside #tab_content: a tab swap must not replace the chart tokens, the
+     nav or `tab`, the open tab that both the nav and the sheet read -->
 <div class="paper-skin" x-data="{ tab: 'index' }">
 
 {% include 'drinks/includes/navbar.html' %}

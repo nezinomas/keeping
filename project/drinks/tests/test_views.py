@@ -143,8 +143,7 @@ def test_tabs_do_not_render_the_nav(tab, client_logged):
 
 
 def test_index_nav_groups_the_tabs_apart_from_the_switcher(client_logged):
-    # the six tabs are one group, so the nav can centre them in a track of their
-    # own and the switcher's width cannot shift that centre
+    # one group, so the switcher's width cannot shift where the tabs centre
     response = client_logged.get(reverse("drinks:index"))
     content = response.content.decode()
 
@@ -153,7 +152,7 @@ def test_index_nav_groups_the_tabs_apart_from_the_switcher(client_logged):
 
 
 def test_index_nav_tracks_the_open_tab_in_alpine(client_logged):
-    # rendered once on Overview, so the active mark moves client-side from there
+    # rendered once on Overview, so the mark moves client-side from there
     response = client_logged.get(reverse("drinks:index"))
     content = response.content.decode()
 
@@ -165,8 +164,7 @@ def test_index_nav_tracks_the_open_tab_in_alpine(client_logged):
 
 
 def test_index_drink_type_links_carry_the_open_tab(client_logged):
-    # the tab is no longer baked into the url: htmx reads it off the input at
-    # click time, which is the only way one nav can serve every tab
+    # not baked into the url: htmx reads it off the input at click time
     response = client_logged.get(reverse("drinks:index"))
     content = response.content.decode()
 
@@ -180,8 +178,7 @@ def test_index_drink_type_links_carry_the_open_tab(client_logged):
 
 
 def test_index_drink_type_label_follows_the_choice(client_logged):
-    # the nav outlives every swap, so nothing re-renders the label: the press
-    # that switches type has to move it
+    # nothing re-renders the label, so the press has to move it
     response = client_logged.get(reverse("drinks:index"))
     content = response.content.decode()
 
@@ -191,8 +188,7 @@ def test_index_drink_type_label_follows_the_choice(client_logged):
 
 
 def test_index_drink_type_press_closes_the_menu(client_logged):
-    # the menu is held open by :focus-within, and the nav is no longer thrown
-    # away by the tab reload, so the press has to drop the focus itself
+    # :focus-within holds the menu open, so the press has to drop the focus
     response = client_logged.get(reverse("drinks:index"))
     content = response.content.decode()
 
