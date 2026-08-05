@@ -1,14 +1,8 @@
 @use "../abstracts/variables" as *;
 
-// The paper design of the nav — the same class names the legacy
-// components/_navbar draws, in paper's own materials: a white ground under a
-// hairline instead of a tinted bar under a shadow, ink where the old design
-// reached for blue.
-//
-// The structural half stays shared: both navs on a paper page are a flex row of
-// items, some of which own a dropdown. What is scoped to #main-nav is scoped
-// there deliberately — the drinks tab row centres itself on a grid and does not
-// want the top bar's indents leaking into its tracks.
+// The paper design of the nav: the class names components/_navbar draws, in
+// paper's materials. Whatever only the top bar wants is scoped to #main-nav, so
+// the drinks tab row does not have to reset it back out.
 
 .dropdown {
     &:active,
@@ -126,8 +120,6 @@ nav#main-nav {
 
     flex-wrap: wrap;
 
-    // the indents that make each item a target, kept off the shared selector so
-    // no other nav has to reset them back out
     > *:first-child {
         padding-left: 0.5rem;
     }
