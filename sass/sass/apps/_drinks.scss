@@ -7,10 +7,23 @@
 
 .paper-skin {
     // ---- Tabs ------------------------------------------------------------
+    // three tracks, the outer two equal: the tabs are centred on the nav itself,
+    // so the switcher's width — Alus or Degtinė — cannot pull the centre sideways
     nav#drinks-nav {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         margin-bottom: calc($gap * 1.5);
-        gap: 0 1.6rem;
-        flex-wrap: wrap;
+
+        .tabs {
+            grid-column: 2;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0 1.6rem;
+            // the shared nav indents its first child; here that is the group
+            // itself, and the indent would land as a half-rem of false centre
+            padding-left: 0;
+        }
 
         .tab {
             @include tokens.label;
@@ -38,8 +51,10 @@
             }
         }
 
-        > div {
-            margin-left: auto;
+        // the switcher rides in the right-hand track, hard against its end
+        > div:last-child {
+            grid-column: 3;
+            justify-self: end;
         }
 
         .dropdown__btn {

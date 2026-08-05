@@ -142,6 +142,16 @@ def test_tabs_do_not_render_the_nav(tab, client_logged):
     assert 'id="drinks-nav"' not in response.content.decode()
 
 
+def test_index_nav_groups_the_tabs_apart_from_the_switcher(client_logged):
+    # the six tabs are one group, so the nav can centre them in a track of their
+    # own and the switcher's width cannot shift that centre
+    response = client_logged.get(reverse("drinks:index"))
+    content = response.content.decode()
+
+    assert '<div class="tabs">' in content
+    assert content.index('<div class="tabs">') < content.index("{ drinkLabel:")
+
+
 def test_index_nav_tracks_the_open_tab_in_alpine(client_logged):
     # rendered once on Overview, so the active mark moves client-side from there
     response = client_logged.get(reverse("drinks:index"))
