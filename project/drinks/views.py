@@ -28,8 +28,7 @@ from .tabs import DrinkTabs
 class DrinkTypeContextMixin:
     """Puts the drink-type switcher into the context of the page that draws it.
 
-    The nav and the quick-add sheet are rendered once, by Index, so no tab needs
-    it.
+    Only Index does: the nav and the quick-add sheet are rendered once, by it.
     """
 
     def get_context_data(self, **kwargs):
@@ -52,7 +51,7 @@ class Index(DrinkTypeContextMixin, TemplateViewMixin):
             **super().get_context_data(**kwargs),
             **{"reload_targets": DrinkTabs.all()},
             **{"recent_days": recent_days},
-            # the page always opens on Overview; the nav moves the mark from there
+            # always opens on Overview; the nav moves the mark from there
             **{"tab": "index"},
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
