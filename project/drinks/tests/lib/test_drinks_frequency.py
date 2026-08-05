@@ -381,9 +381,8 @@ def test_weekday_profile_counts_distinct_dates_not_rows():
 
 
 def test_weekday_profile_rates_are_per_weekday_not_off_the_year_total():
-    # to Monday 2026-01-19 three Mondays have passed but only two Tuesdays, so
-    # the two weekdays have different denominators as well as different totals —
-    # a year-wide denominator would flatten both differences away
+    # by Monday 2026-01-19 three Mondays have passed but only two Tuesdays, so
+    # the weekdays differ in denominator as well as total
     rows = [
         _row(date(2026, 1, 5), 4),  # Monday
         _row(date(2026, 1, 12), 8),  # Monday

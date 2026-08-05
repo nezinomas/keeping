@@ -82,9 +82,7 @@ class TrendStats:
 
         self._current_year_records = current_daily or []
         self._past_year_records = past_daily or []
-        # the year under view is the one the caller selected, not the one the rows
-        # happen to fall in: a year with nothing recorded in it yet is still that
-        # year, and deriving it from the rows made it read as today's
+        # the selected year, not the rows' - an empty year is still that year
         self._year = (
             YearBoundary.for_year(year, today)
             if year
@@ -233,9 +231,8 @@ class TrendStats:
         )
 
     def calculate_projection(self) -> YearEndProjection | EmptyYearEndProjection:
-        # the pace and the Drink Target must be measured the same way: the target
-        # is a daily amount in the shown unit, so the pace is taken there too and
-        # only then scaled to a yearly total
+        # the target is a daily amount in the shown unit, so the pace is taken
+        # there too and only then scaled to a year
         days_passed = len(self.daily_volume)
         pace = sum(self.daily_volume) / days_passed if days_passed else 0.0
         days = ydays(self.current_year)

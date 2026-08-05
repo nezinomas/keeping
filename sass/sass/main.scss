@@ -1,36 +1,36 @@
 @use "sass:color";
 
 // 1. Abstracts
-@import 'abstracts/variables';
-@import 'abstracts/mixins';
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
 
 // 2. Base
-@import 'base/root';
-@import 'base/normalize';
-@import 'base/base';
+@use 'base/root';
+@use 'base/normalize';
+@use 'base/base';
 
 // 3. Vendors
-@import 'vendors/htmx';
+@use 'vendors/htmx';
 
 // 4. Generic Components
-@import 'components/grid';
-@import 'components/table';
-@import 'components/navbar';
-@import 'components/accordion';
-@import 'components/search';
-@import 'components/info_row';
-@import 'components/buttons';
-@import 'components/alert';
-@import 'components/forms';
-@import 'components/pagination';
-@import 'components/modal';
-@import 'components/quick_add';
-@import 'components/tooltip';
-@import 'components/icons';
-@import 'components/utilities';
+@use 'components/grid';
+@use 'components/table';
+@use 'components/navbar';
+@use 'components/accordion';
+@use 'components/search';
+@use 'components/info_row';
+@use 'components/buttons';
+@use 'components/alert';
+@use 'components/forms';
+@use 'components/pagination';
+@use 'components/modal';
+@use 'components/quick_add';
+@use 'components/tooltip';
+@use 'components/icons';
+@use 'components/utilities';
 
 // 5. App / Domain Specific
-@import 'apps/bookkeeping';
-@import 'apps/counts';
-@import 'apps/expenses';
-@import 'apps/plans';
+@use 'apps/bookkeeping';
+@use 'apps/counts';
+@use 'apps/expenses';
+@use 'apps/plans';

@@ -44,9 +44,8 @@ class HistoryService:
         if not history_df.collect().is_empty():
             start_year = history_df.select(pl.col.year.min()).collect().item()
             last_recorded = history_df.select(pl.col.year.max()).collect().item()
-            # the span runs to the furthest of the three: a header year ahead of
-            # the calendar year gets its own (empty) column, and a record dated
-            # in it is never joined away
+            # the furthest of the three, so a header year ahead of the calendar
+            # year still gets its own column
             end_year = max(datetime.now().year, self._header_year, last_recorded)
             years_df = pl.DataFrame({"year": range(start_year, end_year + 1)}).lazy()
             history_df = years_df.join(history_df, on="year", how="left").fill_null(0)

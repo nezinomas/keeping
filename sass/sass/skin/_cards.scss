@@ -1,18 +1,116 @@
-// Stat Cards. `<c-stat-cards>` lives in core, so its design lives in the skin
-// rather than in the partial of whichever app happened to render one first.
+@use "../abstracts/variables" as *;
+@use "tokens";
+
+// Stat Cards. `<c-stat-cards>` lives in core, so its design lives in the skin.
 
 .paper-skin {
-    // the grid a card's three subgrid rows resolve against — without it the
-    // cards have no shared baseline and stack. Drinks' four `#*-summary` ids
-    // carry this class beside the id they are placed by: the id belongs to the
-    // tab's grid in components/_grid, the class to the cards inside it.
+    // the grid the Cards' subgrid rows resolve against — without it they stack
     .stat-cards {
+        // both set per screen width below
+        --cols: 2;
+        --card-gap: 1rem;
+
         position: relative;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
         grid-template-rows: auto auto auto;
-        gap: 2rem;
+        gap: 2rem var(--card-gap);
         padding: calc($gap * 1.2) calc($gap * 0.9) calc($gap * 1.1);
+    }
+
+    // Never more columns than Cards — an empty track pushes the set off centre.
+    // Smallest last: they weigh the same, so source order decides. Three fit a
+    // phone upright, so a set that small keeps its row at every width.
+    .stat-cards:not(:has(.trend-card:nth-child(4))) {
+        --cols: 3;
+    }
+
+    .stat-cards:not(:has(.trend-card:nth-child(3))) {
+        --cols: 2;
+    }
+
+    .stat-cards:not(:has(.trend-card:nth-child(2))) {
+        --cols: 1;
+    }
+
+    // Three or fewer keep their width and sit together in the middle; stretched
+    // across a wide screen a Card reads as marooned rather than as one of a set
+    .stat-cards:not(:has(.trend-card:nth-child(4))) {
+        grid-template-columns: repeat(var(--cols), minmax(0, 16rem));
+        justify-content: center;
+    }
+
+    // ---- a short last row ------------------------------------------------
+    // `justify-content` centres the tracks, not one row of items, so the
+    // leftovers are translated across half the room their row leaves empty.
+    // Bounded above too: the shift is measured in the columns of one breakpoint.
+    @media only screen and (max-width: 767px) {
+        // two columns, one Card over: half a column across
+        .stat-cards:has(.trend-card:nth-child(4)) {
+            .trend-card:nth-child(2n + 1):last-child {
+                transform: translateX(calc(50% + var(--card-gap) / 2));
+            }
+        }
+    }
+
+    @media only screen and (min-width: 768px) and (max-width: 991px) {
+        .stat-cards:has(.trend-card:nth-child(4)) {
+            // three columns, one Card over: a whole column across
+            .trend-card:nth-child(3n + 1):last-child {
+                transform: translateX(calc(100% + var(--card-gap)));
+            }
+
+            // three columns, two Cards over: half a column, both of them
+            .trend-card:nth-child(3n + 1):nth-last-child(2),
+            .trend-card:nth-child(3n + 1):nth-last-child(2) ~ .trend-card {
+                transform: translateX(calc(50% + var(--card-gap) / 2));
+            }
+        }
+    }
+
+    // ---- how many fit a row ----------------------------------------------
+    // Two on a phone, three on a tablet, the whole set on a desktop. Six is the
+    // widest set any tab builds, and the tight gap is what fits it at 992px.
+    @media only screen and (min-width: 768px) {
+        .stat-cards {
+            --cols: 3;
+            --card-gap: 2rem;
+        }
+
+        .stat-cards:not(:has(.trend-card:nth-child(3))) {
+            --cols: 2;
+        }
+
+        .stat-cards:not(:has(.trend-card:nth-child(2))) {
+            --cols: 1;
+        }
+    }
+
+    @media only screen and (min-width: 992px) {
+        .stat-cards {
+            --cols: 6;
+            --card-gap: 1.25rem;
+        }
+
+        .stat-cards:not(:has(.trend-card:nth-child(6))) {
+            --cols: 5;
+        }
+
+        .stat-cards:not(:has(.trend-card:nth-child(5))) {
+            --cols: 4;
+        }
+
+        .stat-cards:not(:has(.trend-card:nth-child(4))) {
+            --cols: 3;
+        }
+
+        .stat-cards:not(:has(.trend-card:nth-child(3))) {
+            --cols: 2;
+        }
+
+        .stat-cards:not(:has(.trend-card:nth-child(2))) {
+            --cols: 1;
+        }
     }
 
     .trend-card {
@@ -24,9 +122,17 @@
         text-align: center;
 
         &__label {
-            @include label;
+            @include tokens.label;
 
             letter-spacing: 0.22em;
+
+            // a label tracked at 0.22em is wider than a phone's Card, and it
+            // overflows into the label of the Card beside it rather than wrapping
+            @media only screen and (max-width: 767px) {
+                font-size: 0.58rem;
+                letter-spacing: 0.1em;
+                overflow-wrap: anywhere;
+            }
         }
 
         &__value {
@@ -87,7 +193,8 @@
             margin-top: 0.1rem;
             margin-inline: auto;
             padding-top: 0.5rem;
-            max-width: min(70%, 13rem);
+            // 13rem where the Card has room for it, inset where it does not
+            max-width: min(85%, 13rem);
             border-top: 1px solid $hair-soft;
             font-size: 0.72rem;
             line-height: 1.35;

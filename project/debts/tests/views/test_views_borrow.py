@@ -36,8 +36,12 @@ def test_borrow_list_empty(client_logged):
 
 
 def test_borrow_list_with_data(client_logged):
-    obj1 = factories.BorrowFactory(closed=True, price=777_777, returned=250)
-    obj2 = factories.LendFactory(price=666_666)
+    # both named: the assertions match substrings, and Faker cannot promise two
+    # distinguishable names
+    obj1 = factories.BorrowFactory(
+        name="Borrow name", closed=True, price=777_777, returned=250
+    )
+    obj2 = factories.LendFactory(name="Lend name", price=666_666)
 
     url = reverse("debts:list", kwargs={"debt_type": "borrow"})
     response = client_logged.get(url)

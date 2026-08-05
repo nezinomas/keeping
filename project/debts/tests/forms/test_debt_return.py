@@ -157,23 +157,25 @@ def test_debt_return_blank_data(main_user):
 
 
 def test_lend_return_only_not_closed(main_user):
-    b1 = factories.LendFactory(closed=True)
-    b2 = factories.LendFactory(closed=False)
+    # both named: the assertions match substrings, and Faker can draw "Tim" inside
+    # "Timothy" — a pass or fail that says nothing about what the form excluded
+    closed = factories.LendFactory(name="Closed lend", closed=True)
+    not_closed = factories.LendFactory(name="Open lend", closed=False)
 
     form = forms.DebtReturnForm(user=main_user, debt_type="lend").as_p()
 
-    assert b1.name not in form
-    assert b2.name in form
+    assert closed.name not in form
+    assert not_closed.name in form
 
 
 def test_borrow_return_only_not_closed(main_user):
-    b1 = factories.BorrowFactory(closed=True)
-    b2 = factories.BorrowFactory(closed=False)
+    closed = factories.BorrowFactory(name="Closed borrow", closed=True)
+    not_closed = factories.BorrowFactory(name="Open borrow", closed=False)
 
     form = forms.DebtReturnForm(user=main_user, debt_type="borrow").as_p()
 
-    assert b1.name not in form
-    assert b2.name in form
+    assert closed.name not in form
+    assert not_closed.name in form
 
 
 def test_lend_return_price_higher(main_user):

@@ -156,10 +156,8 @@ class IndexBuilder:
         return DryDaysViewModel()
 
     def get_cards(self) -> list[StatCard]:
-        # Drinking days stays here as the headline for the calendar grid below
-        # it; Intensity, the other half of the split, lives on the Habits tab,
-        # which is what keeps an Std Av figure from sitting beside an Avg per
-        # day that follows the drink-type dropdown
+        # Intensity, the other half of the split, is on the Habits tab: no Std Av
+        # figure beside an Avg per day that follows the drink-type dropdown
         return [
             self._card_dry_days(),
             self._card_drinking_days(),

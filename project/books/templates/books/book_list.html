@@ -11,8 +11,8 @@
             <th class="text-left author-col">{% translate 'Author' %}</th>
             <th class="text-left book-title-col">{% translate 'Title' %}</th>
             <th class="text-left remark-col">{% translate 'Remark' %}</th>
-            <th class="text-center">{% translate 'Started reading' %}</th>
-            <th class="text-center">{% translate 'Ended reading' %}</th>
+            <th class="text-center date-col">{% translate 'Started reading' %}</th>
+            <th class="text-center date-col">{% translate 'Ended reading' %}</th>
             <th class="edit-col"></th>
             <th class="delete-col"></th>
         </tr>
@@ -27,8 +27,8 @@
             <td class="text-left">{{ object.author }}</td>
             <td class="text-left">„{{ object.title }}”</td>
             <td class="text-left">{{ object.remark }}</td>
-            <td class="text-center">{{ object.started|date:"Y-m-d" }}</td>
-            <td class="text-center">{{ object.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
+            <td class="text-center date-col">{{ object.started|date:"Y-m-d" }}</td>
+            <td class="text-center date-col">{{ object.ended|date:"Y-m-d"|default_if_none:'-' }}</td>
             <c-td-edit :url=url_update />
             <c-td-delete :url=url_delete />
         </tr>

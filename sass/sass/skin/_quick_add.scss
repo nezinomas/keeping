@@ -1,11 +1,12 @@
-// The quick-add pill and sheet. `components/_quick_add` is a tier-2 shared
-// partial and carries the fixed wrapper that positions them; what the skin sets
-// here is how they are drawn — an ink border, no fill, no shadow. Books' Add book
-// button borrows the pill and none of the sheet.
+@use "../abstracts/variables" as *;
+@use "tokens";
+
+// How the quick-add pill and sheet are drawn — ink border, no fill, no shadow.
+// `components/_quick_add` still carries the wrapper that positions them.
 
 .paper-skin {
     .quick-add__pill {
-        @include label;
+        @include tokens.label;
 
         padding: 0.4rem 1.1rem;
         border: 1px solid $ink;
@@ -27,7 +28,7 @@
         border: 1px solid $hair;
 
         .quick-add__add {
-            @include label;
+            @include tokens.label;
 
             border: 1.5px solid $ink;
             border-radius: 0;
@@ -46,7 +47,7 @@
         }
 
         .button-secondary {
-            @include label;
+            @include tokens.label;
 
             border: 1px solid $hair;
             border-radius: 0;
