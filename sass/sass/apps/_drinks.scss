@@ -67,9 +67,18 @@
 
         .dropdown__btn {
             @include tokens.pill;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 8rem;
+
+            &::after {
+                content: "\e114";
+                margin-left: 0.5rem;
+            }
         }
 
-        // the bar sits at the foot of the page, so the menu opens upward
         .dropdown__menu {
             top: auto;
             bottom: calc(100% + 0.15rem);
