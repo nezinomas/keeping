@@ -22,21 +22,29 @@ from ..core.mixins.views import (
 from ..users.models import User
 from . import forms, models, services
 from .services.model_services import DrinkModelService, DrinkTargetModelService
-from .tabs import DrinkTabs
+from .tabs import DEFAULT_TAB, DrinkTabs
 
 
 class DrinkTypeContextMixin:
-    """Puts the drink-type switcher into the context of the page that draws it.
+    """Names the tab, and puts the drink-type control that tab wears with it.
 
-    Only Index does: the nav and the quick-add sheet are rendered once, by it.
+    Which of the three controls a tab gets — the switcher, a fixed Std Av, or
+    nothing — is the selector's call; a view only says which tab it is. Every
+    tab response carries it, because the control lives beside the quick-add
+    form, outside the swapped body, and is replaced out of band.
     """
+
+    tab = DEFAULT_TAB
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
 
         return {
             **super().get_context_data(**kwargs),
-            "drink_types": services.DrinkTypeSelector.for_drink_type(user.drink_type),
+            "tab": self.tab,
+            "drink_type_control": services.DrinkTypeSelector.for_tab(
+                self.tab, user.drink_type
+            ),
         }
 
 
@@ -46,19 +54,22 @@ class Index(DrinkTypeContextMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         # the quick-add sheet lives on this page only, outside the tabs
         recent_days = services.RecentDaySelector.for_day(datetime.now().date())
+        user = cast(User, self.request.user)
+        # the quick-add form logs any drink type, whatever the open tab reads in
+        drink_types = services.DrinkTypeSelector.for_drink_type(user.drink_type)
 
         return {
             **super().get_context_data(**kwargs),
             **{"reload_targets": DrinkTabs.all()},
             **{"recent_days": recent_days},
-            # always opens on Overview; the nav moves the mark from there
-            **{"tab": "index"},
+            **{"drink_types": drink_types},
             **{"content": rendered_content(self.request, TabIndex, **kwargs)},
         }
 
 
-class TabIndex(TemplateViewMixin):
+class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_index.html"
+    tab = "index"
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
@@ -66,13 +77,13 @@ class TabIndex(TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **{"tab": "index"},
             **services.IndexTab.build(user, year),
         }
 
 
-class TabHabits(TemplateViewMixin):
+class TabHabits(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_habits.html"
+    tab = "habits"
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
@@ -80,7 +91,6 @@ class TabHabits(TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **{"tab": "habits"},
             **services.HabitsTab.build(user, year),
         }
 
@@ -144,8 +154,9 @@ class TypicalYearChart(FormViewMixin):
         )
 
 
-class TabTrends(TemplateViewMixin):
+class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_trends.html"
+    tab = "trends"
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
@@ -153,13 +164,13 @@ class TabTrends(TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **{"tab": "trends"},
             **services.TrendsTab.build(user, year),
         }
 
 
-class TabRisk(TemplateViewMixin):
+class TabRisk(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_risk.html"
+    tab = "risk"
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
@@ -167,33 +178,27 @@ class TabRisk(TemplateViewMixin):
 
         return {
             **super().get_context_data(**kwargs),
-            **{"tab": "risk"},
             **services.RiskTab.build(user, year),
         }
 
 
-class TabData(ListViewMixin):
+class TabData(DrinkTypeContextMixin, ListViewMixin):
     service_class = DrinkModelService
     template_name = "drinks/tab_data.html"
+    tab = "data"
 
     def get_queryset(self):
         user = cast(User, self.request.user)
         return DrinkModelService(user).year(user.year)
 
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            **{"tab": "data"},
-        }
 
-
-class TabHistory(TemplateViewMixin):
+class TabHistory(DrinkTypeContextMixin, TemplateViewMixin):
     template_name = "drinks/tab_history.html"
+    tab = "history"
 
     def get_context_data(self, **kwargs):
         return {
             **super().get_context_data(**kwargs),
-            **{"tab": "history"},
             **{"form": forms.DrinkCompareForm(user=self.request.user)},
             **services.history.load_service(self.request.user),
         }

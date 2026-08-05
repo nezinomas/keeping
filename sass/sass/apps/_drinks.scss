@@ -7,14 +7,10 @@
 
 .paper-skin {
     // ---- Tabs ------------------------------------------------------------
-    // outer tracks equal, so the switcher's width cannot pull the centre
     nav#drinks-nav {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
         margin-bottom: calc($gap * 1.5);
 
         .tabs {
-            grid-column: 2;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -46,28 +42,79 @@
                 border-bottom-color: $ink;
             }
         }
+    }
 
-        // the switcher rides in the right-hand track, hard against its end
-        > div:last-child {
-            grid-column: 3;
-            justify-self: end;
+    // ---- drink-type control ----------------------------------------------
+    // rides in the quick-add bar, so it reads as part of logging a drink
+    .quick-add__bar {
+        display: flex;
+        align-items: center;
+        gap: 0 1rem;
+        margin-bottom: 0.75rem;
+
+        .quick-add__pill { margin-bottom: 0; }
+    }
+
+    #drink-type-control {
+        // so a bare unit is a box of the same height as the button, not an
+        // inline run of text that padding cannot grow
+        display: flex;
+        align-items: center;
+
+        // an empty control must not hold the pill off centre
+        &:empty { display: none; }
+
+        // the menu is absolute, and the bar it sits in is fixed: without this it
+        // anchors to the bar and opens against the far edge of the screen
+        .dropdown {
+            position: relative;
         }
 
+        // the same control as the pill beside it, caret and all
         .dropdown__btn {
-            @include tokens.label;
-
-            color: $ink;
-
-            &:hover {
-                color: $data;
-            }
+            @include tokens.pill;
         }
 
+        // the bar sits at the foot of the page, so the menu opens upward
         .dropdown__menu {
+            top: auto;
+            bottom: calc(100% + 0.15rem);
             left: auto;
             right: 0;
             transform: none;
+            background: $paper;
+            border: 1px solid $hair;
+            box-shadow: none;
+
+            > * {
+                @include tokens.label;
+
+                color: $ink;
+                text-decoration: none;
+            }
+
+            > *:hover {
+                background: $hair-soft;
+                color: $ink !important;
+            }
         }
+    }
+
+    // the switcher's box on the tabs that only read the unit back: caption and
+    // unit are one control, so the box is drawn once, around both
+    .drink-type-fixed {
+        @include tokens.pill($hover: false);
+
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0 0.5rem;
+    }
+
+    .drink-type-note {
+        text-transform: none;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+        color: $ink-muted;
     }
 
     // ---- panels ----------------------------------------------------------
