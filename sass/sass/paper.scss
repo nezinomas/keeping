@@ -1,50 +1,43 @@
 @use "sass:color";
 
-// The paper skin's bundle. Same shared partials as main.scss, but none of the
-// components the paper design has forked — table, search, pagination and alert
-// are written on a clean slate in the skin, never as overrides of the legacy
-// rules. See CLAUDE.md, "CSS — two bundles, one per design".
-//
-// `components/info_row` is not here either, and for a different reason: neither
-// paper app has an info row left to draw. Books' three Cards were the last of
-// it, so the partial ships only in the legacy bundle that still renders one.
+// The paper skin's bundle: the shared partials, and none of the components the
+// paper design has forked — table, search, pagination, alert and info_row are
+// written on a clean slate in skin/. See CLAUDE.md, "CSS — two bundles".
 
 // 1. Abstracts
-@import 'abstracts/variables';
-@import 'abstracts/mixins';
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
 
 // 2. Base
-@import 'base/root';
-@import 'base/normalize';
-@import 'base/base';
+@use 'base/root';
+@use 'base/normalize';
+@use 'base/base';
 
 // 3. Vendors
-@import 'vendors/htmx';
+@use 'vendors/htmx';
 
 // 4. Generic Components
-@import 'components/grid';
-@import 'components/navbar';
-@import 'components/accordion';
-@import 'components/buttons';
-@import 'components/forms';
-@import 'components/modal';
-@import 'components/quick_add';
-@import 'components/tooltip';
-@import 'components/icons';
-@import 'components/utilities';
+@use 'components/grid';
+@use 'components/navbar';
+@use 'components/accordion';
+@use 'components/buttons';
+@use 'components/forms';
+@use 'components/modal';
+@use 'components/quick_add';
+@use 'components/tooltip';
+@use 'components/icons';
+@use 'components/utilities';
 
-// 5. The skin — tokens first, so its mixins exist for every partial after them,
-//    and the whole skin before the apps for the same reason. One file per
-//    component the paper design owns, in the order they are drawn on a page.
-@import 'skin/tokens';
-@import 'skin/notice';
-@import 'skin/sheet';
-@import 'skin/cards';
-@import 'skin/table';
-@import 'skin/search';
-@import 'skin/pagination';
-@import 'skin/quick_add';
+// 5. The skin — tokens first, so its mixins exist for the partials after them
+@use 'skin/tokens';
+@use 'skin/notice';
+@use 'skin/sheet';
+@use 'skin/cards';
+@use 'skin/table';
+@use 'skin/search';
+@use 'skin/pagination';
+@use 'skin/quick_add' as *;
 
 // 6. App / Domain Specific
-@import 'apps/books';
-@import 'apps/drinks';
+@use 'apps/books';
+@use 'apps/drinks';

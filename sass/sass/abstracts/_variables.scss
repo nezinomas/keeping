@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // --- 1. Typography ---
 $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
 $font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !default;
@@ -52,7 +54,7 @@ $active-border: #545a60;
 
 
 // --- 5. Navigation ---
-$nav-bg: lighten($primary, 73.5%);
+$nav-bg: color.adjust($primary, $lightness: 73.5%, $space: hsl);
 $nav-hover-text-color: #fff;
 
 
@@ -62,18 +64,18 @@ $table-header-bg: #f9f9f9;
 $table-dash-color: #d1d1d1;
 $table-group-divider-color: #a2a2a2;
 
-$table-thead: lighten($primary, 72%);
+$table-thead: color.adjust($primary, $lightness: 72%, $space: hsl);
 $table-thead-text: $black-muted;
 
-$table-current-day: lighten($secondary, 43%);
+$table-current-day: color.adjust($secondary, $lightness: 43%, $space: hsl);
 $table-current-day-border-color: $secondary;
 
-$table-currently-reading: lighten($primary, 71%);
+$table-currently-reading: color.adjust($primary, $lightness: 71%, $space: hsl);
 
-$table-weekend: lighten($primary, 71%);
+$table-weekend: color.adjust($primary, $lightness: 71%, $space: hsl);
 $table-weekend-color: $black-muted;
 
-$table-hover-bg: lighten($secondary, 40%);
+$table-hover-bg: color.adjust($secondary, $lightness: 40%, $space: hsl);
 
 $column-widths: (
     "day": 2.5rem,
@@ -86,26 +88,19 @@ $column-widths: (
 
 
 // --- 7. Menus ---
-$arrow: darken($secondary, 10%);
+$arrow: color.adjust($secondary, $lightness: -10%, $space: hsl);
 $exception: $secondary;
 
 
 // --- 8. Charts ---
-$chart-positive: darken($positive-bg, 5%);
-$chart-negative: darken($negative-bg, 5%);
-$chart-warning: darken($warning-bg, 5%);
+$chart-positive: color.adjust($positive-bg, $lightness: -5%, $space: hsl);
+$chart-negative: color.adjust($negative-bg, $lightness: -5%, $space: hsl);
+$chart-warning: color.adjust($warning-bg, $lightness: -5%, $space: hsl);
 
 
 // --- 9. Paper skin ---
-// The palette behind the paper skin, shared by every app that wears it. Each
-// app's own stylesheet (see apps/_drinks.scss) turns these into the CSS custom
-// properties its charts read.
-//
-// Two rules hold the palette together: colour belongs to data, so the chrome
-// (tabs, rules, labels) is ink; and $harm is reserved for harm, so
-// nothing under a limit is ever rewarded with a colour of its own.
-// the ground everything is drawn on: white, and named for what it is used for —
-// the sheet, a tooltip, the gap between two bars, the chip under a rule's label
+// The paper palette. Two rules hold it together: colour belongs to data, so the
+// chrome is ink; and $harm is reserved for harm.
 $paper: #fff;
 $ink: #16222b;
 $ink-muted: #5a6a75;
@@ -127,14 +122,13 @@ $second: #9a6e1c;
 $harm: #a8434e;
 $harm-soft: #b06068;
 
-// Year Comparison and the calendar: years and levels are ordered, so they take
-// steps of one hue rather than hues of their own. Six steps is what keeps
-// neighbours apart; past that the legend and tooltip carry the identity.
+// years and levels are ordered, so they take steps of one hue. Six is as many as
+// keeps neighbours apart; past that the legend and tooltip carry the identity
 $ramp: (#8badc5, #6e97b2, #517f9e, #356788, #1c5173, #0c3b57);
 
 // a day with nothing on it, drunk or not yet come round: one block, one colour,
 // so the calendar reads as the year it is rather than as two halves
-$empty: mix($hair-soft, $paper, 45%);
+$empty: color.mix($hair-soft, $paper, 45%);
 
 $display: "Bahnschrift SemiCondensed", "Bahnschrift", "Archivo Narrow", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
 $body: "Segoe UI Variable Text", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;

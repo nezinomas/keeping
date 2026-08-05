@@ -1,3 +1,6 @@
+@use "../abstracts/mixins" as *;
+@use "../abstracts/variables" as *;
+
 @mixin grid-template($column-gap: $gap, $row-gap: calc($gap * 2)) {
     display: grid;
     grid-auto-columns: 1fr;
@@ -6,13 +9,8 @@
 }
 
 
-// A toolbar of controls under a chart: presets, a year form, and whatever
-// validation error a field of it raises. Two tabs draw a chart the reader
-// re-scopes below it (History's year comparison, Habits' typical year), so the
-// rules are shared rather than copied into each grid.
-//
-// The row stays vertically centered; an error is taken out of flow (absolute,
-// below its field) so it can never shove the inputs around, and margin-bottom
+// A toolbar of controls under a chart, shared by the two tabs that draw one.
+// The error is absolute, so it cannot shove the inputs around; margin-bottom
 // reserves the room it needs.
 @mixin chart-controls {
     display: flex;
@@ -139,11 +137,10 @@
         "breakdown"
     ;
 
+    // placement only — an id out-specifies skin/_cards, so a layout property
+    // here would be the tab quietly overriding the Card design
     > #index-summary {
         grid-area: index-summary;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: $gap;
     }
 
     > #chart-overview-container {
@@ -190,12 +187,6 @@
 
     > #trend-summary {
         grid-area: trend-summary;
-        display: flex;
-        gap: $gap;
-
-        > * {
-            flex: 1;
-        }
     }
 
     > #chart-trend-container {
@@ -208,9 +199,8 @@
 .habits-grid {
     @include grid-template;
 
-    // every container gets a named area: the tab grows by a chart per ticket
-    // (dry runs, typical year), and implicit flow would place each new one
-    // wherever the markup happened to put it
+    // named areas, because this tab grows by a chart and implicit flow would
+    // place each new one wherever the markup happened to put it
     grid-template-areas:
         "habits-summary"
         "chart-weekday-container"
@@ -219,12 +209,6 @@
 
     > #habits-summary {
         grid-area: habits-summary;
-        display: flex;
-        gap: $gap;
-
-        > * {
-            flex: 1;
-        }
     }
 
     > #chart-weekday-container {
@@ -257,12 +241,6 @@
 
     > #risk-summary {
         grid-area: risk-summary;
-        display: flex;
-        gap: $gap;
-
-        > * {
-            flex: 1;
-        }
     }
 
     > #chart-weekly-container {

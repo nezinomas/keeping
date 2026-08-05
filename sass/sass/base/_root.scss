@@ -1,3 +1,8 @@
+@use "../abstracts/mixins" as *;
+@use "../abstracts/variables" as *;
+
+@use "sass:color";
+
 :root {
     --primary: #{$primary};
     --secondary: #{$secondary};
@@ -11,17 +16,17 @@
     --negative-text: #{$negative-text};
 
     --chart-negative: #{$chart-negative};
-    --chart-negative-dark: #{darken($chart-negative, 15%)};
-    --chart-negative-super-dark: #{darken($chart-negative, 35%)};
+    --chart-negative-dark: #{color.adjust($chart-negative, $lightness: -15%, $space: hsl)};
+    --chart-negative-super-dark: #{color.adjust($chart-negative, $lightness: -35%, $space: hsl)};
 
     --chart-positive: #{$chart-positive};
-    --chart-positive-dark: #{darken($chart-positive, 15%)};
-    --chart-positive-super-dark: #{darken($chart-positive, 35%)};
+    --chart-positive-dark: #{color.adjust($chart-positive, $lightness: -15%, $space: hsl)};
+    --chart-positive-super-dark: #{color.adjust($chart-positive, $lightness: -35%, $space: hsl)};
 
     --warning-text: #{$warning-text};
     --chart-warning: #{$chart-warning};
-    --chart-warning-dark: #{darken($chart-warning, 15%)};
-    --chart-warning-super-dark: #{darken($chart-warning, 35%)};
+    --chart-warning-dark: #{color.adjust($chart-warning, $lightness: -15%, $space: hsl)};
+    --chart-warning-super-dark: #{color.adjust($chart-warning, $lightness: -35%, $space: hsl)};
 
     --chart-color-0: #3b82f6;
     --chart-color-1: #06b6d4;

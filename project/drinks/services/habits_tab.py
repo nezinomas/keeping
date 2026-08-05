@@ -80,10 +80,8 @@ class HabitsBuilder:
                 "share": _("Drinking-day rate"),
                 "share_unit": "%",
                 "intensity": _("Per drinking day"),
-                # deliberately not display_unit: the intensity axis carries a
-                # plot line at HEAVY_DAY_STDAV, which is defined in Std Av, so
-                # converting the series with the drink-type dropdown would leave
-                # the line marking a level the columns no longer measure
+                # not display_unit: the axis carries a plot line defined in
+                # Std Av, and a converted series leaves it marking nothing
                 "intensity_unit": "Std Av",
                 "threshold_label": _("Heavy day"),
             },
@@ -99,9 +97,8 @@ class HabitsBuilder:
         if not intensity:
             return StatCard.empty(title, _("No data"))
 
-        # Intensity is a harm metric, so it stays in Std Av whatever the drink
-        # type dropdown says: the Heavy day threshold it is read against is
-        # defined there, and one decimal is what a Std Av needs to survive.
+        # a harm metric stays in Std Av whatever the dropdown says - the Heavy
+        # day threshold it is read against is defined there
         definition = _(
             "The year's Std Av divided by the days a Drink was recorded on, "
             "not by every day of the year."

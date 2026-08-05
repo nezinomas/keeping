@@ -1,18 +1,8 @@
-// A notice: the table has nothing in it, for the year, for the search, or at
-// all. The bundle does not import components/_alert, so this is the only `.alert`
-// rule in it and the legacy filled box is not underneath it.
-//
-// Nothing here is coloured for being empty — an empty table is the baseline of a
-// reading year, not a warning — so `.alert-warning`, which is what the markup
-// says, gets nothing beyond this.
-//
-// Nor is there an `.alert-danger`: every error a paper page can raise is a *field*
-// error, and `.invalid-feedback` in components/_forms draws those. The one that
-// looks like a non-field error — a Goal for a year that already has one — is
-// raised in `clean_year`, so it lands under the field too.
-//
-// Top-level rather than under `.paper-skin`: #mainModal sits in the footer,
-// outside the wrapper, so a notice drawn into a form would miss the rule.
+@use "../abstracts/variables" as *;
+
+// A notice: the table has nothing in it. Uncoloured, warning or not — an empty
+// table is a baseline, not an error, and field errors are drawn by
+// `.invalid-feedback`. Top-level, because #mainModal sits outside `.paper-skin`.
 .alert {
     padding: calc($gap * 1.2) 0;
     border: 0;
@@ -26,8 +16,7 @@
     color: $ink-muted;
     text-align: center;
 
-    // set as a label, and a label is not shouted — in a mono face bold reads as
-    // weight where the figure only wants to be the sentence's subject
+    // in a mono face bold shouts; the figure only wants to be the subject
     b,
     strong {
         font-weight: 400;

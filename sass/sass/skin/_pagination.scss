@@ -1,6 +1,7 @@
-// paper's own .pagination, and components/_pagination is likewise not in this
-// bundle. A pager is chrome, so it carries no hue: the page you are on is ink
-// over an ink rule, every other is muted until the cursor reaches it.
+@use "../abstracts/variables" as *;
+
+// paper's own .pagination. A pager is chrome, so it carries no hue: the page you
+// are on is ink over an ink rule, every other muted until the cursor reaches it.
 
 .paper-skin {
     .pagination {
