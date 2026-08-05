@@ -2,7 +2,6 @@
 
 <!-- rendered once, outside the swapped body, so the open tab is Alpine state -->
 <nav id="drinks-nav">
-    <!-- one group, so the nav can centre it without the switcher pulling on it -->
     <div class="tabs">
         <button
             class="tab{% if tab == 'index' %} active{% endif %}"
@@ -14,21 +13,21 @@
         </button>
 
         <button
-            class="tab{% if tab == 'habits' %} active{% endif %}"
-            :class="{ active: tab === 'habits' }"
-            @click="tab = 'habits'"
-            hx-get="{% url 'drinks:tab_habits' %}"
-            hx-target="#tab_content">
-            {% translate 'Habits' %}
-        </button>
-
-        <button
             class="tab{% if tab == 'trends' %} active{% endif %}"
             :class="{ active: tab === 'trends' }"
             @click="tab = 'trends'"
             hx-get="{% url 'drinks:tab_trends' %}"
             hx-target="#tab_content">
             {% translate 'Trends' %}
+        </button>
+
+        <button
+            class="tab{% if tab == 'habits' %} active{% endif %}"
+            :class="{ active: tab === 'habits' }"
+            @click="tab = 'habits'"
+            hx-get="{% url 'drinks:tab_habits' %}"
+            hx-target="#tab_content">
+            {% translate 'Habits' %}
         </button>
 
         <button
@@ -57,18 +56,5 @@
             hx-target="#tab_content">
             {% translate 'Data' %}
         </button>
-    </div>
-
-    <!-- the label is state too: nothing re-renders it, so the press moves it -->
-    <div x-data="{ drinkLabel: '{{ drink_types.label }}' }">
-        <div class="dropdown">
-            <button class="dropdown__btn" x-text="drinkLabel">{{ drink_types.label }}</button>
-            <div class="dropdown__menu">
-                {% for type in drink_types.options %}
-                <!-- hx-include, not a tab in the url: this nav outlives the tab -->
-                <a class="dropdown-item button-sm" @click="drinkLabel = '{{ type.0 }}'; $el.blur()" href="{% url 'drinks:set_drink_type' type.1 %}" hx-get="{% url 'drinks:set_drink_type' type.1 %}" hx-include="#current-tab" hx-swap="none">{{type.0}}</a>
-                {% endfor %}
-            </div>
-        </div>
     </div>
 </nav>

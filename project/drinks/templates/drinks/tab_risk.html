@@ -1,6 +1,8 @@
 {% load i18n %}
 {% load static %}
 
+{% include 'drinks/includes/drink_type.html' with oob=True %}
+
 <main class="risk-grid">
     <div id="risk-summary" class="stat-cards">
         <c-stat-cards :cards=cards />
