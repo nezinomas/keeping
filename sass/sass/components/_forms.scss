@@ -120,7 +120,9 @@ fieldset {
         color: #343a40;
         position: absolute;
         right: 0.75rem;
-        top: calc(50% - 6px);
+        top: 50%;
+        transform: translateY(-50%);
+        line-height: 1;
         pointer-events: none;
     }
 
