@@ -18,6 +18,20 @@
         padding: calc($gap * 1.2) calc($gap * 0.9) calc($gap * 1.1);
     }
 
+    // Three Cards or fewer: they keep their own width and sit together in the
+    // middle of the page. Stretched to a third of a wide screen each, a Card
+    // reads as a figure marooned in white rather than as one of a set — Books'
+    // three, on the widest screen, are what the cap is for.
+    //
+    // Four and up keep the elastic tracks above: at that count the set already
+    // spans the page, and capping would only wrap it into a second row early.
+    // Counted rather than told, so nothing has to be passed down to the row a
+    // card lands in — `:nth-child(4)` is "there is a fourth Card".
+    .stat-cards:not(:has(.trend-card:nth-child(4))) {
+        grid-template-columns: repeat(auto-fit, minmax(10rem, 16rem));
+        justify-content: center;
+    }
+
     .trend-card {
         position: relative;
         display: grid;
@@ -90,7 +104,12 @@
             margin-top: 0.1rem;
             margin-inline: auto;
             padding-top: 0.5rem;
-            max-width: min(70%, 13rem);
+            // 13rem where the Card has room for it, inset from its edges where it
+            // does not. 70% was struck against a Card that could be a third of the
+            // screen wide, where the 13rem always won; on a capped 16rem track the
+            // percentage is what wins, so it has to leave room for the 13rem the
+            // note is written to
+            max-width: min(85%, 13rem);
             border-top: 1px solid $hair-soft;
             font-size: 0.72rem;
             line-height: 1.35;
