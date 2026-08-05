@@ -17,13 +17,37 @@
         border-bottom: 1px solid $hair;
     }
 
+    // Column shares. The legacy design could fix Author at 20rem and Title at
+    // 40rem because `components/_table` set `table-layout: fixed`, where a width
+    // is read as a share of the table and scaled down to fit it. The skin's
+    // `.main` sizes columns to their content, and there a rem width is a floor
+    // instead: 60rem of floor before Nr, the remark, two dates and the action
+    // columns, which is what put a horizontal scrollbar under the page on
+    // anything narrower than a desktop.
+    //
+    // A percentage is a share of the table under either layout, so Title stays
+    // twice the Author's width and the table shrinks with the window.
     .author-col {
-        min-width: 20rem;
-        width: 20rem;
+        width: 20%;
     }
 
     .book-title-col {
-        min-width: 40rem;
-        width: 40rem;
+        width: 40%;
+    }
+
+    // A date is one token. Left to itself the table breaks "2026-07-25" after the
+    // month rather than give the column its 2rem, and with two date columns every
+    // row doubles in height to save them. `date-col` is what this app has always
+    // called the column — the legacy width map names it too.
+    //
+    // Only where the room exists, though: two unbreakable dates cost about 70px
+    // more than a 600px window has, and an overflowing table is worse than a
+    // wrapped date. 768px is where the table measured as still able to afford
+    // them — not the 992px the grid switches columns at, which would leave a
+    // 900px laptop wrapping every date in the table for no reason.
+    @media only screen and (min-width: 768px) {
+        .date-col {
+            white-space: nowrap;
+        }
     }
 }
