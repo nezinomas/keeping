@@ -36,7 +36,15 @@
 
     <div hx-trigger="reloadSearch from:body"><c-search-form url="{% url 'books:search' %}" reset_url="{% url 'books:list' %}" target="#data" /></div>
 
-    <div id="data" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
+    <!-- table-responsive on the grid item itself, the way bookkeeping's tables
+         wear it: a grid track is at least as wide as the min-content of what is
+         in it, and a table's min-content is the sum of its columns, so on a phone
+         the book table was not merely overflowing — it was setting the width of
+         the page, and the Cards and the chart above it stretched with it. A grid
+         item that scrolls has an automatic minimum of zero, which is what lets
+         the column shrink to the screen; wrapping the table in a scrolling box
+         inside this div does nothing, because the item is what the track measures -->
+    <div id="data" class="table-responsive" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
 </main>
 
 <div id="chart-finished-loader" hx-get="{% url 'books:chart_finished' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
