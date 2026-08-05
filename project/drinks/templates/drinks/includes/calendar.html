@@ -1,20 +1,18 @@
 {% load i18n %}
 
 <div class="heat-card" id="heat-card">
-    <div class="heat-scroll">
-        <div class="heat-body">
-            <div class="heat-daycol">
-                <span>{% translate 'Mon' %}</span><span></span><span>{% translate 'Wed' %}</span><span></span><span>{% translate 'Fri' %}</span><span></span><span>{% translate 'Sun' %}</span>
-            </div>
-            {% for month in calendar.months %}
-            <div class="heat-month">
-                <div class="mini">
-                    {% for day in month.days %}<i class="l{{ day.level }}{% if day.is_today %} today{% elif day.is_future %} future{% endif %}"{% if forloop.first %} style="--start:{{ month.leading_blanks|add:1 }}"{% endif %}{% if day.label %} data-label="{{ day.label }}"{% endif %}></i>{% endfor %}
-                </div>
-                <div class="mlabel">{{ month.name }}</div>
-            </div>
-            {% endfor %}
+    <div class="heat-body table-responsive">
+        <div class="heat-daycol">
+            <span>{% translate 'Mon' %}</span><span></span><span>{% translate 'Wed' %}</span><span></span><span>{% translate 'Fri' %}</span><span></span><span>{% translate 'Sun' %}</span>
         </div>
+        {% for month in calendar.months %}
+        <div class="heat-month">
+            <div class="mini">
+                {% for day in month.days %}<i class="l{{ day.level }}{% if day.is_today %} today{% elif day.is_future %} future{% endif %}"{% if forloop.first %} style="--start:{{ month.leading_blanks|add:1 }}"{% endif %}{% if day.label %} data-label="{{ day.label }}"{% endif %}></i>{% endfor %}
+            </div>
+            <div class="mlabel">{{ month.name }}</div>
+        </div>
+        {% endfor %}
     </div>
     <div class="heat-legend">
         <span>{% translate 'No drink' %}</span>

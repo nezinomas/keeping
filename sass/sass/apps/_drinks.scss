@@ -96,20 +96,16 @@
         }
     }
 
-    .heat-scroll {
-        width: 100%;
-        min-width: 0;
-        padding-bottom: 0.35rem;
-        overflow-x: auto;
-    }
-
+    // the scroll box itself, so it must stay bounded by the card: no max-content
+    // min-width, or it grows to fit the year and overflows instead of scrolling
     .heat-body {
         display: flex;
         gap: 5px;
         justify-content: space-between;
         align-items: flex-start;
         width: 100%;
-        min-width: max-content;
+        min-width: 0;
+        padding-bottom: 0.35rem;
     }
 
     .heat-daycol {
