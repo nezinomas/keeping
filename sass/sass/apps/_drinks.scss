@@ -8,6 +8,10 @@
 .paper-skin {
     // ---- Tabs ------------------------------------------------------------
     nav#drinks-nav {
+        // not inherited: the shared `[id*=-nav]` lays every nav out as a flex
+        // row, which leaves the tab group at the start of the line
+        display: flex;
+        justify-content: center;
         margin-bottom: calc($gap * 1.5);
 
         .tabs {
@@ -110,9 +114,8 @@
         gap: 0 0.5rem;
     }
 
+    // the caption reads as a label, so it keeps the box's case and spacing
     .drink-type-note {
-        text-transform: none;
-        letter-spacing: 0.04em;
         white-space: nowrap;
         color: $ink-muted;
     }
