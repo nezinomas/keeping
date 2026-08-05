@@ -22,7 +22,8 @@
               hx-swap="none"
               hx-on::after-request="if (event.detail.successful || (event.detail.xhr && event.detail.xhr.status < 400)) { Alpine.$data(this).open = false; Alpine.$data(this).updateQuantity(); }">
             {% csrf_token %}
-            <input type="hidden" name="tab" id="quick-add-tab" value="index">
+            <!-- the open tab, from the page's Alpine scope: a submit reloads it -->
+            <input type="hidden" name="tab" id="quick-add-tab" :value="tab">
 
             <div class="select-wrapper quick-add__day">
                 <select name="date" class="form-select">
