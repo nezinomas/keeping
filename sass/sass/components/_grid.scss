@@ -142,11 +142,12 @@
         "breakdown"
     ;
 
+    // placement only: the id says which row of the tab the Cards occupy, and
+    // skin/_cards draws them inside it. An id out-specifies the skin's class, so
+    // a layout property left here would be the tab silently overriding the Card
+    // design — the four `#*-summary` rules below are the same
     > #index-summary {
         grid-area: index-summary;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: $gap;
     }
 
     > #chart-overview-container {
@@ -193,12 +194,6 @@
 
     > #trend-summary {
         grid-area: trend-summary;
-        display: flex;
-        gap: $gap;
-
-        > * {
-            flex: 1;
-        }
     }
 
     > #chart-trend-container {
@@ -222,12 +217,6 @@
 
     > #habits-summary {
         grid-area: habits-summary;
-        display: flex;
-        gap: $gap;
-
-        > * {
-            flex: 1;
-        }
     }
 
     > #chart-weekday-container {
@@ -260,12 +249,6 @@
 
     > #risk-summary {
         grid-area: risk-summary;
-        display: flex;
-        gap: $gap;
-
-        > * {
-            flex: 1;
-        }
     }
 
     > #chart-weekly-container {
