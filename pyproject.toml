@@ -50,6 +50,7 @@ dev = [
     "django-silk>=5.3.2",
     "pytest-picked>=0.5.1",
     "playwright>=1.62.0",
+    "pytest-playwright>=0.8.0",
 ]
 production = [
     "gunicorn>=23.0.0",
