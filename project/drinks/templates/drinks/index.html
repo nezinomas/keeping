@@ -3,10 +3,8 @@
 {% load static %}
 
 
-<!-- the paper skin's bundle, in place of the legacy one: a whole stylesheet, not
-     an addition to it. The head block appends rather than replaces, so putting
-     the link there would load both bundles and hand the argument over .main,
-     #search-form and .pagination back to the cascade -->
+<!-- the paper bundle in place of the legacy one, and not in the head block:
+     that appends, so both stylesheets would load and fight over .main -->
 {% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
 
 
@@ -15,9 +13,7 @@
     <!-- after the theme, so it overrides the corner it puts legends in, and
          before the charts, so every one of them is drawn with it -->
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_legend.js' %}"></script>
-    <!-- the paper skin's half of the charts, shared with any other page wearing
-         the skin: same load-order reasoning as the legend above, and after it,
-         because it dresses the legend it positions -->
+    <!-- after the legend, because it dresses the legend that one positions -->
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_overview.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_trend.js' %}"></script>
@@ -34,9 +30,7 @@
 {% block content %}
 
 
-<!-- the paper skin, scoped by this wrapper: it defines the tokens every Drinks
-     chart reads, so it has to sit outside #tab_content — a Tab swapped in by
-     htmx replaces what is inside it, never the tokens themselves -->
+<!-- outside #tab_content, so an htmx tab swap cannot replace the chart tokens -->
 <div class="paper-skin">
 
 <!-- htmx tab data load -->

@@ -4,10 +4,8 @@
 {% load i18n %}
 
 
-<!-- the paper skin's bundle, in place of the legacy one: a whole stylesheet, not
-     an addition to it. The head block appends rather than replaces, so putting
-     the link there would load both bundles and hand the argument over .main,
-     #search-form and .pagination back to the cascade -->
+<!-- the paper bundle in place of the legacy one, and not in the head block:
+     that appends, so both stylesheets would load and fight over .main -->
 {% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
 
 
@@ -25,10 +23,7 @@
 
 <div class="paper-skin">
 
-<!-- cards, chart, search, table: the table is the one variable-height thing on
-     the page — a year with two books and a year with fifty draw it at different
-     lengths — so nothing sits under it, and the search row sits directly above
-     the table it filters rather than above cards it cannot affect -->
+<!-- the table's height varies with the year, so nothing sits under it -->
 <main class="grid-one-col">
     <div class="stat-cards" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:cards' %}">{{ cards }}</div>
 
@@ -36,25 +31,16 @@
 
     <div hx-trigger="reloadSearch from:body"><c-search-form url="{% url 'books:search' %}" reset_url="{% url 'books:list' %}" target="#data" /></div>
 
-    <!-- table-responsive on the grid item itself, the way bookkeeping's tables
-         wear it: a grid track is at least as wide as the min-content of what is
-         in it, and a table's min-content is the sum of its columns, so on a phone
-         the book table was not merely overflowing — it was setting the width of
-         the page, and the Cards and the chart above it stretched with it. A grid
-         item that scrolls has an automatic minimum of zero, which is what lets
-         the column shrink to the screen; wrapping the table in a scrolling box
-         inside this div does nothing, because the item is what the track measures -->
+    <!-- table-responsive on the grid item itself: a scrolling item has an
+         automatic minimum of zero, which is what lets the column — and with it
+         the Cards and the chart above — shrink to a phone -->
     <div id="data" class="table-responsive" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
 </main>
 
 <div id="chart-finished-loader" hx-get="{% url 'books:chart_finished' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>
 
-<!-- Add book, and the page's only way into the book form since both header
-     buttons went with the info row. It borrows the quick-add pill's chrome and
-     none of its behaviour: Drinks' quick add is a sheet that submits on its own,
-     and this opens the modal that already exists. Inside the wrapper, because
-     that is where the skin draws the pill; fixed to the foot of the viewport by
-     .quick-add, which also reserves the space it covers -->
+<!-- the page's only way into the book form. It borrows the quick-add pill's
+     chrome and none of its behaviour — this opens the modal -->
 <div class="quick-add">
     <button type="button" class="quick-add__pill" hx-get="{% url 'books:new' %}" hx-target="#mainModal">
         {% translate 'Add book' %}

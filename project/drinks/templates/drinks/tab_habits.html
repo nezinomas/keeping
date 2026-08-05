@@ -10,10 +10,8 @@
 
     <div id="chart-weekday-container"></div>
 
-    <!-- Typical year: one shared chart with presets + custom range below it. The
-         chart fetches itself, so the range pooled and the legend naming it are
-         always the same reading. The load fetch draws the header year alone —
-         a pooled backdrop only ever arrives on a press -->
+    <!-- the chart fetches itself, so the range pooled and the legend naming it
+         are always the same reading. On load it draws the header year alone -->
     <div id="typical-year">
         <div id="chart-typical-year-container" hx-get="{% url 'drinks:typical_year' %}" hx-trigger="load"></div>
 
@@ -29,12 +27,8 @@
                  band, so the boxes open on the years actually plotted -->
             <div id="typical-year-form"></div>
 
-            <!-- no pooled range: the same fetch the tab opens on, so Clear puts
-                 the chart back to the header year alone. Beside Filter because
-                 that is what it undoes, and outside the form because it asks
-                 for a range rather than submitting one. There is deliberately
-                 no preset for the header year on its own — it is already in
-                 front of everything -->
+            <!-- the same fetch the tab opens on: Clear puts the chart back to
+                 the header year alone. Outside the form, since it asks for no range -->
             <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year' %}" hx-target="#chart-typical-year-container">{% translate 'Clear' %}</button>
         </div>
     </div>
