@@ -128,7 +128,7 @@ def test_index_renders_the_tab_nav_once(client_logged):
     # the nav sits outside #tab_content, so a tab swap cannot replace it
     response = client_logged.get(reverse("drinks:index"))
 
-    assert response.content.decode().count('id="drinks-nav"') == 1
+    assert response.content.decode().count('class="subnav"') == 1
 
 
 @pytest.mark.parametrize(
@@ -139,7 +139,7 @@ def test_tabs_do_not_render_the_nav(tab, client_logged):
     # a tab response is the body only; the page it lands in owns the nav
     response = client_logged.get(reverse(f"drinks:{tab}"))
 
-    assert 'id="drinks-nav"' not in response.content.decode()
+    assert 'class="subnav"' not in response.content.decode()
 
 
 def test_index_nav_tracks_the_open_tab_in_alpine(client_logged):
@@ -175,7 +175,7 @@ def test_index_switcher_sits_in_the_quick_add_bar(client_logged):
     assert '<div class="quick-add__bar">' in content
     assert content.count('id="drink-type-control"') == 1
     # the nav lost it: the bar is the only place a drink type is chosen
-    nav = content.split('<nav id="drinks-nav"')[1].split("</nav>")[0]
+    nav = content.split('<nav class="subnav"')[1].split("</nav>")[0]
     assert "dropdown" not in nav
 
 
