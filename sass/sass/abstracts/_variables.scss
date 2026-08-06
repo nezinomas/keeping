@@ -99,8 +99,9 @@ $chart-warning: color.adjust($warning-bg, $lightness: -5%, $space: hsl);
 
 
 // --- 9. Paper skin ---
-// The paper palette. Two rules hold it together: colour belongs to data, so the
-// chrome is ink; and $harm is reserved for harm.
+// The paper palette. Three rules hold it together: colour belongs to data, so the
+// chrome is ink; $harm is reserved for harm, meaning a defined threshold was
+// crossed; and there is no green, because staying inside a limit is the baseline.
 $paper: #fff;
 $ink: #16222b;
 $ink-muted: #5a6a75;
