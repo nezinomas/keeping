@@ -4,46 +4,6 @@
 
 
 .paper-skin {
-    // ---- Tabs ------------------------------------------------------------
-    nav#drinks-nav {
-        display: flex;
-        justify-content: center;
-        margin-bottom: calc($gap * 1.5);
-
-        .tabs {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0 1.6rem;
-        }
-
-        .tab {
-            @include tokens.label;
-
-            padding: 0.3rem 0.05rem 0.5rem;
-            border: 0;
-            border-bottom: 2px solid transparent;
-            background: transparent;
-            font-size: 0.66rem;
-            white-space: nowrap;
-            cursor: pointer;
-            touch-action: manipulation;
-            transition: $transition;
-
-            &:hover,
-            &:focus {
-                color: $ink;
-                border-bottom-color: $hair;
-            }
-
-            &.active {
-                color: $ink;
-                font-weight: 400;
-                border-bottom-color: $ink;
-            }
-        }
-    }
-
     // ---- drink-type control ----------------------------------------------
     // rides in the quick-add bar, so it reads as part of logging a drink
     .quick-add__bar {
