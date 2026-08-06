@@ -71,7 +71,8 @@
             display: inline-flex;
             align-items: center;
             justify-content: space-between;
-            min-width: 8rem;
+            min-width: 9.5rem;
+            padding-right: 0.5rem;
 
             &::after {
                 content: "\e114";
