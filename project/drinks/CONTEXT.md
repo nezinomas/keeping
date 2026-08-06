@@ -123,6 +123,15 @@ year looks like — as opposed to level (Overview), direction (Trends) or harm
 `msgid` `Habits`, Lithuanian `Įpročiai`.
 _Avoid_: Weeks (the Risk tab owns weekly vocabulary), Patterns, Rhythm
 
+**Drink type switcher**:
+The control beside the quick-add pill, naming the unit the open Tab reads its
+amounts in. Overview, Trends and History offer the choice; Habits and Risk name
+Std Av in one box that says so, and offer nothing, because a harm metric is
+defined there; Data lists what was typed and draws no control at all. Which of
+the three a Tab wears is the Tab's own fact, so it arrives with the Tab and is
+swapped in out of band.
+_Avoid_: unit picker, filter
+
 **Recent day**:
 One of the last five calendar days, offered in the quick-add sheet as Today,
 Yesterday and three weekday names. Always the real calendar day, never shifted

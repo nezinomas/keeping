@@ -1,7 +1,7 @@
-@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
 
-@use "sass:color";
+// Both bundles import this, so the nav never forked: one design on every page.
+// Top-bar-only rules are scoped to #main-nav, clear of the drinks tab row.
 
 .dropdown {
     &:active,
@@ -24,7 +24,6 @@
 }
 
 .dropdown__menu {
-    @include shadow;
     display: flex;
     flex-direction: column;
 
@@ -35,7 +34,9 @@
     margin: 0;
     min-width: max-content;
     text-align: left;
-    background-color: white;
+    background: $paper;
+    border: 1px solid $hair;
+    border-radius: 0;
     z-index: 999;
 
     opacity: 0;
@@ -48,37 +49,36 @@
     > * {
         display: block;
         padding: 0.25rem 1.75rem 0.25rem 0.75rem;
+        color: $ink-muted;
     }
 
     > *:hover {
-        background-color: color.adjust($primary, $lightness: 30%, $space: hsl);
-        color: $nav-hover-text-color !important;
+        background: $hair-soft;
+        color: $ink;
         transition: $transition;
     }
 
     > *.dropdown-divider {
-        background-color: rgb($black, .175);
         min-height: 1px;
         padding: 0;
+        background: $hair-soft;
     }
 }
 
-
 .dropdown__btn {
     border: 0;
-    background-color: transparent;
+    background: transparent;
     cursor: pointer;
     touch-action: manipulation;
 
     &::after {
         font-family: 'Glyphicons Halflings';
         content: " \e114";
-        padding-right: .25rem;
         font-size: 8px;
     }
 }
 
-
+// ---- shared structure -----------------------------------------------------
 [id*=-nav] {
     display: flex;
     align-items: center;
@@ -90,27 +90,19 @@
 
     a,
     a:visited {
-        color: $black;
+        color: $ink;
     }
 
     a:hover,
     a:focus,
     .dropdown__btn:hover {
         transition: $transition;
-        color: $primary;
-    }
-
-    > *:first-child {
-        padding-left: .5rem;
+        color: $data;
     }
 
     > div {
         display: flex;
         align-items: center;
-
-        > *:first-child {
-            padding: .5rem .25rem;
-        }
     }
 
     :has(.dropdown) {
@@ -118,30 +110,40 @@
     }
 }
 
-
+// ---- the top bar ----------------------------------------------------------
 nav#main-nav {
-    @include shadow;
-
-    --border-radius: 0;
-
-    background-color: $nav-bg;
     margin-bottom: $gap;
+    background: $paper;
+    border-bottom: 1px solid $hair;
 
     flex-wrap: wrap;
 
+    > *:first-child {
+        padding-left: 0.5rem;
+    }
+
+    > div > *:first-child {
+        padding: 0.5rem 0.25rem;
+    }
+
     > * {
-        border-bottom: 3px solid transparent;
+        border-bottom: 2px solid transparent;
 
         &:hover,
         &:focus {
             transition: $transition;
-            border-bottom-color: $primary;
+            border-bottom-color: $hair;
         }
     }
 
-    .day-of-year:hover{
-        border-bottom-color: transparent;
-        color: $black;
+    // a count, not a destination: nothing to press and nothing to underline
+    .day-of-year {
+        color: $ink-muted;
+
+        &:hover {
+            border-bottom-color: transparent;
+            color: $ink-muted;
+        }
     }
 
     > :last-child {
@@ -149,13 +151,12 @@ nav#main-nav {
     }
 
     > .active {
-        border-bottom: 3px solid $primary;
+        border-bottom: 2px solid $ink;
     }
 }
 
-
-// mobile devices
-@media(pointer: coarse) {
+// mobile devices — no hover to open a menu with, so a press opens it
+@media (pointer: coarse) {
     .dropdown__btn:hover + .dropdown__menu,
     .dropdown__menu:hover {
         opacity: 1;

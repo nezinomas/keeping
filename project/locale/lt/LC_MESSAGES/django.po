@@ -1442,6 +1442,10 @@ msgstr "Rizikos"
 msgid "Habits"
 msgstr "Įpročiai"
 
+#: .\drinks\templates\drinks\includes\drink_type.html:16
+msgid "Data shown as"
+msgstr "Duomenys rodomi"
+
 #: .\drinks\templates\drinks\includes\quick_add.html:45
 msgid "More"
 msgstr "Daugiau"

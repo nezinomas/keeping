@@ -1,7 +1,7 @@
 @use "sass:list";
 @use "../abstracts/variables" as *;
 
-// The paper skin's two mixins and the token block every paper chart reads.
+// The paper skin's three mixins and the token block every paper chart reads.
 // On `:root`, not `.paper-skin`: Highcharts draws a tooltip outside the wrapper,
 // and a token it cannot resolve there comes out black.
 
@@ -20,6 +20,29 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: $ink-muted;
+}
+
+// Every control that floats over the page in ink on paper: the quick-add pill
+// and the drink-type switcher beside it wear the same one. `$hover: false` for
+// the one that only reads a unit back — nothing to press, so nothing lights up.
+@mixin pill($hover: true) {
+    @include label;
+
+    padding: 0.4rem 1.1rem;
+    border: 1px solid $ink;
+    border-radius: 0;
+    background: $paper;
+    color: $ink;
+    box-shadow: none;
+
+    @if $hover {
+        &:hover,
+        &:focus {
+            background: $hair-soft;
+            border-color: $ink;
+            color: $ink;
+        }
+    }
 }
 
 

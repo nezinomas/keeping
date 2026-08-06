@@ -2,19 +2,15 @@
 @use "../abstracts/variables" as *;
 @use "../skin/tokens";
 
-// Drinks — the markup only this app renders. The skin it wears (the tokens, the
-// sheet, the stat cards, the table, the quick-add pill) lives in skin/.
 
 .paper-skin {
     // ---- Tabs ------------------------------------------------------------
-    // outer tracks equal, so the switcher's width cannot pull the centre
     nav#drinks-nav {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
+        display: flex;
+        justify-content: center;
         margin-bottom: calc($gap * 1.5);
 
         .tabs {
-            grid-column: 2;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -46,32 +42,82 @@
                 border-bottom-color: $ink;
             }
         }
+    }
 
-        // the switcher rides in the right-hand track, hard against its end
-        > div:last-child {
-            grid-column: 3;
-            justify-self: end;
+    // ---- drink-type control ----------------------------------------------
+    // rides in the quick-add bar, so it reads as part of logging a drink
+    .quick-add__bar {
+        display: flex;
+        align-items: center;
+        gap: 0 1rem;
+        margin-bottom: 0.75rem;
+
+        .quick-add__pill { margin-bottom: 0; }
+    }
+
+    #drink-type-control {
+        display: flex;
+        align-items: center;
+
+        &:empty { display: none; }
+
+        .dropdown {
+            position: relative;
         }
 
         .dropdown__btn {
-            @include tokens.label;
+            @include tokens.pill;
 
-            color: $ink;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 9.5rem;
+            padding-right: 0.5rem;
 
-            &:hover {
-                color: $data;
+            &::after {
+                content: "\e114";
+                margin-left: 0.5rem;
             }
         }
 
         .dropdown__menu {
+            top: auto;
+            bottom: calc(100% + 0.15rem);
             left: auto;
             right: 0;
             transform: none;
+            background: $paper;
+            border: 1px solid $hair;
+            box-shadow: none;
+
+            > * {
+                @include tokens.label;
+
+                color: $ink;
+                text-decoration: none;
+            }
+
+            > *:hover {
+                background: $hair-soft;
+                color: $ink !important;
+            }
         }
     }
 
+    .drink-type-fixed {
+        @include tokens.pill($hover: false);
+
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0 0.5rem;
+    }
+
+    .drink-type-note {
+        white-space: nowrap;
+        color: $ink-muted;
+    }
+
     // ---- panels ----------------------------------------------------------
-    // the conversion table beside the Overview, which only Drinks draws
     #breakdown {
         @include tokens.panel;
     }
@@ -106,8 +152,6 @@
         }
     }
 
-    // the scroll box itself, so it must stay bounded by the card: no max-content
-    // min-width, or it grows to fit the year and overflows instead of scrolling
     .heat-body {
         display: flex;
         gap: 5px;
