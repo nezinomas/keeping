@@ -5,6 +5,11 @@
 // `components/_quick_add` still carries the wrapper that positions them.
 
 .paper-skin {
+    .quick-add {
+        background: $paper;
+        border-top: 1px solid $hair;
+    }
+
     .quick-add__pill {
         @include tokens.pill;
     }
