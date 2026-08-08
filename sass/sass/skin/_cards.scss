@@ -190,7 +190,6 @@
         }
 
         &__note {
-            align-self: end;
             margin-top: 0.1rem;
             margin-inline: auto;
             padding-top: 0.5rem;
@@ -200,17 +199,6 @@
             font-size: 0.72rem;
             line-height: 1.35;
             color: $ink-muted;
-        }
-
-        // which threshold the figure crossed, in words — the figure's colour
-        // says the same thing, and colour must not be the only one saying it
-        &__band {
-            @include tokens.label;
-
-            display: block;
-            margin-bottom: 0.2rem;
-            font-size: 0.56rem;
-            color: $ink;
         }
 
         &__info,

@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 
 from django.utils.translation import gettext as _
 
-from ...core.lib.stat_card import HIGH, MEDIUM, StatCard
+from ...core.lib.stat_card import StatCard
 from ...core.lib.translation import month_names
 from ..lib.drinks_risk import (
     HEAVY_DAY_STDAV,
@@ -104,20 +104,11 @@ class RiskViewModelBuilder:
             self._build_heavy_days_card(),
         ]
 
-    @staticmethod
-    def _band_label(state: str) -> str:
-        """Which guideline a week crossed. Staying inside one crosses nothing."""
-        return {
-            MEDIUM: _("Over the low-risk guideline"),
-            HIGH: _("Over the high-risk threshold"),
-        }.get(state, "")
-
     def _build_current_week_card(self) -> StatCard:
         week = self._stats.current_week()
         return StatCard.level(
             _("This week"),
             state=week.state,
-            state_label=self._band_label(week.state),
             value=f"{week.stdav:.1f}",
             note=f"{_('Low-risk guideline')}: {WEEKLY_LOW_RISK_STDAV:.1f} Std Av",
         )
@@ -132,7 +123,6 @@ class RiskViewModelBuilder:
         return StatCard.level(
             title,
             state=week.state,
-            state_label=self._band_label(week.state),
             value=f"{week.stdav:.1f}",
             note=f"{week.label} – {week.end}",
         )

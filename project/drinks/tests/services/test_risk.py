@@ -132,8 +132,6 @@ def test_this_week_card_low():
     assert card.state == "low"
     assert card.value == "3.0"
     assert card.show_icon is False
-    # inside the guideline is the baseline, so there is no crossing to name
-    assert card.state_label == ""
 
 
 @time_machine.travel("2026-02-11")
@@ -143,17 +141,6 @@ def test_this_week_card_high():
     card = _card(RiskViewModelBuilder(stats).get_cards(), _("This week"))
 
     assert card.state == "high"
-    assert card.state_label == _("Over the high-risk threshold")
-
-
-@time_machine.travel("2026-02-11")
-def test_this_week_card_medium_names_the_band_it_crossed():
-    stats = RiskStats(current_daily=[_row(date(2026, 2, 9), 15)])
-
-    card = _card(RiskViewModelBuilder(stats).get_cards(), _("This week"))
-
-    assert card.state == "medium"
-    assert card.state_label == _("Over the low-risk guideline")
 
 
 @time_machine.travel("2026-03-01")
@@ -174,7 +161,6 @@ def test_worst_week_card_high():
 
     assert card.state == "high"
     assert card.value == "30.0"
-    assert card.state_label == _("Over the high-risk threshold")
     # note shows the full week range: Monday – Sunday
     assert card.note == "2026-02-09 – 2026-02-15"
 
