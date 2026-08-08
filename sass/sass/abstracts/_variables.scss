@@ -119,9 +119,10 @@ $data-soft: #7fa6bf;
 $second: #9a6e1c;
 
 // harm, in two steps: a week over the Low-risk guideline is not yet a week over
-// the High-risk threshold
-$harm: #a8434e;
-$harm-soft: #b06068;
+// the High-risk threshold. The steps are 3.04:1 apart and the deep one is 1.60:1
+// off $data, so neither pair collapses into one colour in greyscale
+$harm: #7d2733;
+$harm-soft: #c47f86;
 
 // years and levels are ordered, so they take steps of one hue. Six is as many as
 // keeps neighbours apart; past that the legend and tooltip carry the identity
