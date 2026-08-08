@@ -19,7 +19,7 @@ pytestmark = pytest.mark.django_db
 # -------------------------------------------------------------------------------------
 def test_index_func():
     view = resolve("/drinks/")
-    assert views.Index == view.func.view_class
+    assert views.TabIndex == view.func.view_class
 
 
 def test_index_200(client_logged):
@@ -95,12 +95,9 @@ def test_index_links(client_logged):
     url = reverse("drinks:index")
     response = client_logged.get(url)
     content = response.content.decode()
-    # content = content.replace('\n', '')
 
     pattern = re.compile(
-        r'<button\s+class="tab(?:\s+active)?"\s+:class="(?:.*?)"\s+@click="(?:.*?)"'
-        r'\s+hx-get="(.*?)"\s+hx-target="#tab_content">\s+(\w+)\s+<\/button',
-        re.MULTILINE,
+        r'<button\s+id="tab-\w+".*?hx-get="(.*?)".*?>\s*(\w+)\s*</button>', re.S
     )
     res = re.findall(pattern, content)
 
@@ -137,7 +134,7 @@ def test_index_renders_the_tab_nav_once(client_logged):
 )
 def test_tabs_do_not_render_the_nav(tab, client_logged):
     # a tab response is the body only; the page it lands in owns the nav
-    response = client_logged.get(reverse(f"drinks:{tab}"))
+    response = client_logged.get(reverse(f"drinks:{tab}"), HTTP_HX_REQUEST="true")
 
     assert 'class="subnav"' not in response.content.decode()
 
@@ -301,6 +298,105 @@ def test_tab_context_carries_no_control(client_logged):
     response = client_logged.get(reverse("drinks:tab_data"))
 
     assert response.context["drink_type_control"] is None
+
+
+# -------------------------------------------------------------------------------------
+#                                                                          Tab urls
+# -------------------------------------------------------------------------------------
+TABS = ["index", "trends", "habits", "risk", "history", "data"]
+
+
+def tab_button(content: str, name: str) -> str:
+    """The attributes of one tab button, so a test does not pin their order."""
+    match = re.search(rf'<button\s+id="tab-{name}"(.*?)>', content, re.S)
+
+    assert match, f"no button rendered for the {name} tab"
+    return match.group(1)
+
+
+@pytest.mark.parametrize("tab", TABS)
+def test_tab_url_opens_the_whole_page(tab, client_logged):
+    """A pushed url has to answer a bookmark and a reload, not just a swap."""
+    response = client_logged.get(reverse(f"drinks:tab_{tab}"))
+    content = response.content.decode()
+
+    assert 'role="tablist"' in content
+    assert 'id="quick-add"' in content
+
+
+@pytest.mark.parametrize("tab", TABS)
+def test_tab_url_opens_on_its_own_tab(tab, client_logged):
+    response = client_logged.get(reverse(f"drinks:tab_{tab}"))
+    content = response.content.decode()
+
+    assert f"{{ tab: '{tab}' }}" in content
+    assert 'aria-selected="true"' in tab_button(content, tab)
+
+
+@pytest.mark.parametrize("tab", TABS)
+def test_tab_url_over_htmx_is_only_the_fragment(tab, client_logged):
+    response = client_logged.get(reverse(f"drinks:tab_{tab}"), HTTP_HX_REQUEST="true")
+
+    assert 'role="tablist"' not in response.content.decode()
+
+
+def test_tab_url_restoring_history_is_the_whole_page(client_logged):
+    """Back asks over htmx too, and swaps what comes back into the whole body."""
+    response = client_logged.get(
+        reverse("drinks:tab_risk"),
+        HTTP_HX_REQUEST="true",
+        HTTP_HX_HISTORY_RESTORE_REQUEST="true",
+    )
+
+    assert 'role="tablist"' in response.content.decode()
+
+
+@pytest.mark.parametrize("tab", TABS)
+def test_tab_button_pushes_its_url(tab, client_logged):
+    attrs = tab_button(client_logged.get(reverse("drinks:index")).content.decode(), tab)
+
+    assert f'hx-get="/drinks/{tab}/"' in attrs
+    assert 'hx-push-url="true"' in attrs
+
+
+@pytest.mark.parametrize("tab", TABS)
+def test_every_tab_button_is_a_tab(tab, client_logged):
+    attrs = tab_button(client_logged.get(reverse("drinks:index")).content.decode(), tab)
+
+    assert 'role="tab"' in attrs
+    assert 'aria-controls="tab_content"' in attrs
+
+
+def test_only_the_open_tab_is_selected(client_logged):
+    content = client_logged.get(reverse("drinks:index")).content.decode()
+
+    assert 'aria-selected="true"' in tab_button(content, "index")
+    assert all('aria-selected="false"' in tab_button(content, t) for t in TABS[1:])
+
+
+def test_the_open_tab_is_the_only_one_in_the_focus_order(client_logged):
+    """Arrow keys move between tabs, so Tab enters the row once and leaves it."""
+    content = client_logged.get(reverse("drinks:index")).content.decode()
+
+    assert 'tabindex="0"' in tab_button(content, "index")
+    assert all('tabindex="-1"' in tab_button(content, t) for t in TABS[1:])
+
+
+def test_back_reloads_the_page_rather_than_restoring_a_snapshot(client_logged):
+    """htmx restores a snapshot by replacing the body, which runs every script in
+    it twice — `modal.js` dies on a redeclared constant. Never snapshotting turns
+    Back into a miss, and a miss into a plain page load."""
+    content = client_logged.get(reverse("drinks:index")).content.decode()
+
+    assert 'hx-history="false"' in content
+    assert "htmx.config.refreshOnHistoryMiss = true" in content
+
+
+def test_the_tabs_carry_a_tablist(client_logged):
+    content = client_logged.get(reverse("drinks:index")).content.decode()
+
+    assert 'role="tablist"' in content
+    assert 'role="tabpanel"' in content
 
 
 # -------------------------------------------------------------------------------------
@@ -654,7 +750,9 @@ def test_tab_habits_renders_the_pooled_range_presets(client_logged):
 def test_tab_habits_offers_no_preset_for_the_header_year(client_logged):
     # the header year is drawn in front already, so pooling it on its own would
     # plot the same twelve months twice
-    content = client_logged.get(reverse("drinks:tab_habits")).content.decode()
+    content = client_logged.get(
+        reverse("drinks:tab_habits"), HTTP_HX_REQUEST="true"
+    ).content.decode()
 
     url = reverse("drinks:typical_year_last", kwargs={"qty": 1})
 
@@ -924,7 +1022,7 @@ def test_tab_risk_renders_hover_explanation(client_logged):
     DrinkFactory(date=date(1999, 1, 10), stdav=7)
 
     url = reverse("drinks:tab_risk")
-    response = client_logged.get(url)
+    response = client_logged.get(url, HTTP_HX_REQUEST="true")
     content = response.content.decode()
 
     assert response.status_code == 200
@@ -1700,7 +1798,7 @@ def test_select_drink_redirect_follow(client_logged):
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
-    assert views.Index == response.resolver_match.func.view_class
+    assert views.TabIndex == response.resolver_match.func.view_class
 
 
 def test_select_drinks_set_drink_type(client_logged):
