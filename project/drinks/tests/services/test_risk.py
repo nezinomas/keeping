@@ -84,16 +84,10 @@ def test_chart_heavy_days_view_model():
     assert len(vm.data) == 12
     assert vm.data[0] == 1
     assert vm.heavy_threshold == 6.0
-    assert vm.low_risk == 3.0
-    assert vm.high_risk == 6.0
-    assert set(vm.text) == {
-        "title",
-        "unit",
-        "heavy",
-        "threshold_label",
-        "guideline",
-        "high_risk_guideline",
-    }
+    # every Heavy day is harm, so the chart carries no guideline to cross
+    assert not hasattr(vm, "low_risk")
+    assert not hasattr(vm, "high_risk")
+    assert set(vm.text) == {"title", "unit", "heavy", "threshold_label"}
 
 
 @time_machine.travel("2026-12-31")
@@ -106,8 +100,8 @@ def test_chart_heavy_days_as_dict_is_json_serializable():
     assert serialized["data"][0] == 1
     assert len(serialized["categories"]) == 12
     assert serialized["heavy_threshold"] == 6.0
-    assert serialized["low_risk"] == 3.0
-    assert serialized["high_risk"] == 6.0
+    assert "low_risk" not in serialized
+    assert "high_risk" not in serialized
 
 
 # -------------------------------------------------------------------------------------
