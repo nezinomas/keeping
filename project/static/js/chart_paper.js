@@ -155,6 +155,10 @@ Highcharts.setOptions({
             // a surface-coloured gap keeps neighbouring bars from reading as one
             // block of colour
             borderColor: "var(--skin-paper)",
+            // Highcharts rounds column corners by default from v11; every other
+            // chart in the project turns that off one by one, so the theme does
+            // it once for every chart that wears the paper skin
+            borderRadius: 0,
         },
     },
 });
