@@ -996,6 +996,17 @@ def test_tab_data(client_logged):
     assert f'<a role="button" hx-get="/drinks/delete/{p.pk}/"' in actual
 
 
+def test_tab_data_date_column_header(client_logged):
+    DrinkFactory()
+    response = client_logged.get(reverse("drinks:tab_data"))
+
+    actual = response.content.decode("utf-8")
+
+    assert '<th class="text-left">Data</th>' in actual
+    assert '<th class="text-left">Duomenys</th>' not in actual
+    assert '<th class="text-left">Gėrimo tipas</th>' in actual
+
+
 def test_tab_data_quantity_value(client_logged):
     # the unit/rounding rules live in DrinkQuantity.display and are asserted in
     # tests/lib/test_drink_quantity.py; this only pins the template to it
