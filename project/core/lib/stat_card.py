@@ -27,6 +27,8 @@ class StatCard:
     unit: str = ""
     note: str = ""
     state: str = NEUTRAL
+    # the state in words, so a band is not carried by colour alone
+    state_label: str = ""
     show_icon: bool = False
     explanation: str = ""
     # a figure the user can change: the url a pencil beside it opens, and what
@@ -70,6 +72,7 @@ class StatCard:
         value: str,
         note: str,
         unit: str = "",
+        state_label: str = "",
         explanation: str = "",
     ) -> "StatCard":
         """A metric read against a threshold: a level, with no direction."""
@@ -79,5 +82,6 @@ class StatCard:
             unit=unit,
             note=note,
             state=state,
+            state_label=state_label,
             explanation=explanation,
         )

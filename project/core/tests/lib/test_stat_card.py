@@ -70,6 +70,21 @@ def test_level_never_shows_an_icon():
     assert card.show_icon is False
 
 
+def test_level_carries_a_state_label():
+    """The band a level falls in, in words — colour alone cannot convey it."""
+    card = StatCard.level(
+        "This week", state="high", value="30.0", note="", state_label="over the limit"
+    )
+
+    assert card.state_label == "over the limit"
+
+
+def test_level_has_no_state_label_by_default():
+    card = StatCard.level("This week", state="low", value="3.0", note="")
+
+    assert card.state_label == ""
+
+
 def test_level_carries_the_explanation():
     card = StatCard.level(
         "This week", state="high", value="30.0", note="", explanation="why"
