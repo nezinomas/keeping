@@ -1201,6 +1201,14 @@ msgstr "Mažos rizikos riba"
 msgid "High-risk threshold"
 msgstr "Aukštos rizikos riba"
 
+#: .\drinks\services\risk_tab.py:110
+msgid "Over the low-risk guideline"
+msgstr "Viršyta mažos rizikos riba"
+
+#: .\drinks\services\risk_tab.py:111
+msgid "Over the high-risk threshold"
+msgstr "Viršyta aukštos rizikos riba"
+
 #: .\drinks\services\risk\builders.py:86
 msgid "Heavy days per month"
 msgstr "Rizikingo vartojimo dienos per mėnesį"
