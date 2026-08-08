@@ -25,36 +25,6 @@ function chartDrinksHeavyDays(idData, idContainer) {
             },
             min: 0,
             allowDecimals: false,
-            // as on the weekly chart: nothing is shaded for being inside the
-            // guideline, and the two bands above it are one hue in two steps
-            plotBands: [
-                { from: chartData.low_risk, to: chartData.high_risk, color: "var(--skin-harm-wash)" },
-                { from: chartData.high_risk, to: Number.MAX_VALUE, color: "var(--skin-harm-wash)" }
-            ],
-            plotLines: [
-                {
-                    color: "var(--skin-harm-soft)",
-                    width: 1.5,
-                    dashStyle: "Dash",
-                    value: chartData.low_risk,
-                    zIndex: 5,
-                    label: paperRuleLabel(
-                        `${chartData.text.guideline}: ${chartData.low_risk.toFixed(0)}`,
-                        "var(--skin-harm-soft)"
-                    )
-                },
-                {
-                    color: "var(--skin-harm)",
-                    width: 1.5,
-                    dashStyle: "Dash",
-                    value: chartData.high_risk,
-                    zIndex: 5,
-                    label: paperRuleLabel(
-                        `${chartData.text.high_risk_guideline}: ${chartData.high_risk.toFixed(0)}`,
-                        "var(--skin-harm)"
-                    )
-                }
-            ]
         },
         tooltip: {
             pointFormat: '{series.name}: <span style="color: {series.color}"><b>{point.y}</b></span><br/>'

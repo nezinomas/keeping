@@ -6,8 +6,6 @@ from ...core.lib.stat_card import StatCard
 from ...core.lib.translation import month_names
 from ..lib.drinks_risk import (
     HEAVY_DAY_STDAV,
-    MONTHLY_HEAVY_HIGH_RISK,
-    MONTHLY_HEAVY_LOW_RISK,
     WEEKLY_HIGH_RISK_STDAV,
     WEEKLY_LOW_RISK_STDAV,
     RiskStats,
@@ -35,8 +33,6 @@ class MonthlyHeavyDaysChartViewModel:
     categories: list[str]
     data: list[int]
     heavy_threshold: float
-    low_risk: float
-    high_risk: float
     text: dict[str, str]
 
     @property
@@ -92,15 +88,11 @@ class RiskViewModelBuilder:
             categories=list(month_names().values()),
             data=self._stats.monthly_heavy_days(),
             heavy_threshold=HEAVY_DAY_STDAV,
-            low_risk=MONTHLY_HEAVY_LOW_RISK,
-            high_risk=MONTHLY_HEAVY_HIGH_RISK,
             text={
                 "title": _("Heavy days per month"),
                 "unit": _("Days"),
                 "heavy": _("Heavy days"),
                 "threshold_label": _("Heavy day"),
-                "guideline": _("Low-risk guideline"),
-                "high_risk_guideline": _("High-risk threshold"),
             },
         )
 
