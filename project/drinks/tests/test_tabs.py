@@ -90,8 +90,33 @@ def test_form_url_normalises_an_unknown_tab():
 
 
 # -------------------------------------------------------------------------------------
+#                                                                            title
+# -------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "name, expect",
+    [
+        ("index", "Apžvalga"),
+        ("trends", "Tendencijos"),
+        ("habits", "Įpročiai"),
+        ("risk", "Rizikos"),
+        ("history", "Istorija"),
+        ("data", "Duomenys"),
+    ],
+)
+def test_title_is_translated(name, expect):
+    assert str(DrinkTab(name).title) == expect
+
+
+# -------------------------------------------------------------------------------------
 #                                                                              all
 # -------------------------------------------------------------------------------------
+
+
+def test_the_tabs_are_declared_in_the_order_the_nav_draws_them():
+    # the row is a tablist now, so this is also the order arrow keys walk
+    assert TAB_NAMES == ("index", "trends", "habits", "risk", "history", "data")
 
 
 def test_all_returns_every_tab_in_order():
