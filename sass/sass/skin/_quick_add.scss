@@ -18,23 +18,11 @@
         background: $paper;
         border: 1px solid $hair;
 
-        .quick-add__add {
-            @include tokens.label;
-
-            border: 1.5px solid $ink;
-            border-radius: 0;
-            background: $paper;
-            color: $ink;
-
-            &:hover {
-                background: $hair-soft;
-                border-color: $ink;
-            }
-
-            &:focus,
-            &:active {
-                box-shadow: none;
-            }
+        // stretch, as #search-form does: a paper button carries mono type two
+        // steps smaller than the field beside it, so only the row can say how
+        // tall both are
+        form {
+            align-items: stretch;
         }
 
         .quick-add__spin button {
@@ -48,6 +36,8 @@
         .button-secondary {
             @include tokens.label;
 
+            display: inline-flex;
+            align-items: center;
             border: 1px solid $hair;
             border-radius: 0;
             background: $paper;
