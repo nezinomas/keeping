@@ -422,6 +422,27 @@ def test_index_tab_build_returns_expected_keys(main_user):
 
 
 @time_machine.travel("1999-06-01")
+def test_index_tab_build_charts_stop_at_the_year_boundary(main_user):
+    # a month the year has not reached is not a month with no Drinks in it
+    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
+
+    actual = IndexTab.build(main_user, 1999)
+
+    assert actual["chart_consumption"].data[6:] == [None] * 6
+    assert actual["chart_quantity"].data[6:] == [None] * 6
+
+
+@time_machine.travel("1999-12-31")
+def test_index_tab_build_charts_run_to_december_once_the_year_is_over(main_user):
+    DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
+
+    actual = IndexTab.build(main_user, 1999)
+
+    assert None not in actual["chart_consumption"].data
+    assert None not in actual["chart_quantity"].data
+
+
+@time_machine.travel("1999-06-01")
 def test_index_tab_build_frequency_cards_read_the_daily_rows(main_user):
     # two Drinks on one day and one on another: two Drinking days, not three
     # rows — the count DrinkStats' monthly rows could not have produced

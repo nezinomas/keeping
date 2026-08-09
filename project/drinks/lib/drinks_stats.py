@@ -17,10 +17,13 @@ class DataRow:
 
 @dataclass(frozen=True)
 class MonthlyStatsDTO:
+    """Twelve months, of which the ones the year has not reached carry no
+    reading — see ``DrinkStats._to_boundary`` for why that is a null."""
+
     # in the unit the selected drink type is shown in, not always ml
-    total_volume: list[float]
-    avg_daily_volume: list[float]
-    total_quantity: list[float]
+    total_volume: list[float | None]
+    avg_daily_volume: list[float | None]
+    total_quantity: list[float | None]
 
 
 @dataclass(frozen=True)
@@ -98,10 +101,22 @@ class DrinkStats:
         ]
 
         return MonthlyStatsDTO(
-            total_volume=total_volume,
-            avg_daily_volume=avg_daily_volume,
-            total_quantity=monthly_qty,
+            total_volume=self._to_boundary(total_volume),
+            avg_daily_volume=self._to_boundary(avg_daily_volume),
+            total_quantity=self._to_boundary(monthly_qty),
         )
+
+    def _to_boundary(self, months: list[float]) -> list[float | None]:
+        """Months the year has not reached carry no reading, and a chart draws
+        that as a gap.
+
+        A running year's December plotted as 0.0 cannot be told apart from a
+        December the user got through without a Drink, and Highcharts has no
+        other way to break a line.
+        """
+        reached = self._year.end_date.month
+
+        return [value if m <= reached else None for m, value in enumerate(months, 1)]
 
     @cached_property
     def yearly(self) -> YearlyStatsDTO:
