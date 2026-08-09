@@ -12,6 +12,12 @@
          },
          updateQuantity() {
              this.quantity = this.defaults[this.option] || '1';
+         },
+         step(direction) {
+             const size = this.steps[this.option] || 1;
+             const from = parseFloat(String(this.quantity).replace(',', '.')) || 0;
+             // a fractional amount plus an integer step leaves 2.4000000000000004
+             this.quantity = String(Math.round(Math.max(0, from + direction * size) * 100) / 100);
          }
      }"
      @keydown.window.escape="open = false">
@@ -43,11 +49,24 @@
                 </select>
             </div>
 
-            <input type="number" name="quantity" class="form-control quick-add__qty"
-                   min="0" :step="steps[option]"
-                   inputmode="decimal" autocomplete="off" required
-                   placeholder="{% translate 'Quantity' %}"
-                   x-model="quantity">
+            <div class="quick-add__qty-field">
+                <!-- keyup, not input: x-model binds on input and overwrites the rewrite -->
+                <input type="text" name="quantity" class="form-control quick-add__qty"
+                       inputmode="decimal" autocomplete="off" required
+                       placeholder="{% translate 'Quantity' %}"
+                       x-model="quantity"
+                       @keyup="quantity = quantity.replace(',', '.').replace(/[^0-9.]/g, '').replace(/^(\d*\.?\d*).*/, '$1')"
+                       @keydown.up.prevent="step(1)"
+                       @keydown.down.prevent="step(-1)">
+                <!-- aria-hidden and unfocusable, as a native spin button is:
+                     the arrow keys above are the accessible path -->
+                <span class="quick-add__spin" aria-hidden="true">
+                    <button type="button" class="quick-add__spin-up" tabindex="-1"
+                            @click="step(1)"></button>
+                    <button type="button" class="quick-add__spin-down" tabindex="-1"
+                            @click="step(-1)"></button>
+                </span>
+            </div>
 
             <button type="submit" class="button-secondary">{% translate 'Add' %}</button>
             <button type="button" class="button-secondary"

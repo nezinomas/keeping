@@ -95,16 +95,6 @@
         if (targetId === 'chart-typical-year-container' && document.getElementById('chart-typical-year-data')) {
             chartDrinksProfile('chart-typical-year-data', 'chart-typical-year-container');
         }
-        if (targetId === 'mainModal') {
-            const input = document.getElementById('id_quantity');
-            if (input) {
-                input.type = 'text';
-                input.addEventListener('keyup', function (e) {
-                    e.preventDefault();
-                    input.value = input.value.replace(/,/g, '.');
-                });
-            }
-        }
     });
 </script>
 

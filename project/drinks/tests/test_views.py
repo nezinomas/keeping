@@ -72,6 +72,12 @@ def test_index_quick_add(client_logged):
     assert '<select name="option" class="form-select"' in content
 
 
+def test_index_has_no_inline_separator_script(client_logged):
+    response = client_logged.get(reverse("drinks:index"))
+
+    assert "input.value.replace(/,/g, '.')" not in response.content.decode()
+
+
 def test_index_quick_add_prefilled_and_esc_close(client_logged, main_user):
     main_user.drink_type = "wine"
     main_user.save()

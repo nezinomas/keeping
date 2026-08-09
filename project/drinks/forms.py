@@ -5,7 +5,11 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
+from ..core.lib.form_widgets import (
+    DatePickerWidget,
+    DecimalCommaWidget,
+    YearPickerWidget,
+)
 from ..core.mixins.forms import YearBetweenMixin
 from .apps import App_name
 from .lib.drink_quantity import DrinkQuantity
@@ -18,6 +22,10 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
     class Meta:
         model = Drink
         fields = ["user", "date", "stdav", "option"]
+
+        widgets = {
+            "stdav": DecimalCommaWidget(),
+        }
 
     field_order = ["date", "option", "stdav"]
 
@@ -79,6 +87,7 @@ class DrinkTargetForm(forms.ModelForm):
 
         widgets = {
             "year": YearPickerWidget(),
+            "quantity": DecimalCommaWidget(),
         }
 
     field_order = ["year", "drink_type", "quantity"]
