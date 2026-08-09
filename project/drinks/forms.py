@@ -125,24 +125,6 @@ class DrinkTargetForm(forms.ModelForm):
 
 
 class TypicalYearForm(forms.Form):
-    """Which of the user's years the typical-year chart pools.
-
-    Two integers, the same shape `DrinkCompareForm` uses, but a different
-    question: that form means "these two years, side by side" and drives the
-    History chart. This one bounds a range that gets pooled into one profile, so
-    the years are ordered, and equal ends are allowed — pooling a single year is
-    a narrower reading, not a mistake.
-
-    The range exists because the app cannot tell which of a user's years were
-    recorded a month at a time. It does not guess: the person who knows their
-    own history narrows it, and the chart names whatever they chose.
-
-    Nothing is pooled until this form is submitted, so the boxes open on the
-    user's full span rather than empty: a first press then pools everything,
-    which is the widest reading and the only one the app can propose without
-    choosing for them.
-    """
-
     year_from = forms.IntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2100)]
     )
