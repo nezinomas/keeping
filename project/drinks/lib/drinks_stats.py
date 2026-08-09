@@ -17,9 +17,6 @@ class DataRow:
 
 @dataclass(frozen=True)
 class MonthlyStatsDTO:
-    """Twelve months, of which the ones the year has not reached carry no
-    reading — see ``DrinkStats._to_boundary`` for why that is a null."""
-
     # in the unit the selected drink type is shown in, not always ml
     total_volume: list[float | None]
     avg_daily_volume: list[float | None]
@@ -107,13 +104,8 @@ class DrinkStats:
         )
 
     def _to_boundary(self, months: list[float]) -> list[float | None]:
-        """Months the year has not reached carry no reading, and a chart draws
-        that as a gap.
-
-        A running year's December plotted as 0.0 cannot be told apart from a
-        December the user got through without a Drink, and Highcharts has no
-        other way to break a line.
-        """
+        # a running year's December drawn as 0.0 cannot be told apart from a
+        # December with no Drink in it, and a null is the only way to break a line
         reached = self._year.end_date.month
 
         return [value if m <= reached else None for m, value in enumerate(months, 1)]
