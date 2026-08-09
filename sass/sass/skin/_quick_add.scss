@@ -37,6 +37,14 @@
             }
         }
 
+        .quick-add__spin button {
+            color: $ink-muted;
+
+            &:hover {
+                color: $ink;
+            }
+        }
+
         .button-secondary {
             @include tokens.label;
 
