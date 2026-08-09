@@ -48,12 +48,42 @@ def test_monthly_stats(drink_type, stdav, qty, expect_qty, expect_vol):
 
 
 def test_monthly_stats_no_data(drink_converter):
-    obj = DrinkStats(drink_converter)
+    obj = DrinkStats(drink_converter, today=date(1999, 12, 31))
     stats = obj.monthly
 
     assert stats.total_quantity == [0.0] * 12
     assert stats.total_volume == [0.0] * 12
     assert stats.avg_daily_volume == [0.0] * 12
+
+
+def test_monthly_stats_stop_at_the_year_boundary():
+    data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
+
+    stats = DrinkStats(DrinkConverter("beer"), data, today=date(1999, 8, 9)).monthly
+
+    assert stats.avg_daily_volume[7] == 0.0  # August has begun
+    assert stats.avg_daily_volume[8:] == [None] * 4
+    assert stats.total_quantity[8:] == [None] * 4
+    assert stats.total_volume[8:] == [None] * 4
+
+
+def test_monthly_stats_run_to_december_once_the_year_is_over():
+    data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
+
+    stats = DrinkStats(DrinkConverter("beer"), data, today=date(2005, 3, 1)).monthly
+
+    assert None not in stats.avg_daily_volume
+    assert None not in stats.total_quantity
+    assert None not in stats.total_volume
+
+
+def test_yearly_stats_ignore_the_months_past_the_boundary():
+    data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
+
+    stats = DrinkStats(DrinkConverter("beer"), data, today=date(1999, 8, 9)).yearly
+
+    assert stats.total_quantity == 1.0
+    assert stats.stdav == 2.5
 
 
 def test_monthly_stats_shows_std_av_as_typed():

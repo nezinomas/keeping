@@ -20,7 +20,9 @@ from .consumption_year import ConsumptionYear
 @dataclass(frozen=True)
 class ChartViewModel:
     categories: list[str]
-    data: list[float]
+    # a month the year has not reached is a null, so the chart breaks the line
+    # there rather than drawing a zero it has no reading for
+    data: list[float | None]
     text: dict[str, str]
     target: float | None = None
     avg: float | None = None
