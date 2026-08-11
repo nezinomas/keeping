@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 
 from ...lib.drinks_options import DrinkConverter
-from ...lib.drinks_stats import DataRow, DrinkStats
+from ...lib.drinks_stats import DataRow, DrinkStats, YearOverYear
 
 pytestmark = pytest.mark.django_db
 
@@ -164,3 +164,25 @@ def test_year_comes_from_the_data(drink_converter):
     obj = DrinkStats(drink_converter, data, today=date(2005, 3, 1))
 
     assert obj.year == 1999
+
+
+# -------------------------------------------------------------------------------------
+#                                                                        YearOverYear
+# -------------------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "current, previous, expect",
+    [(1.0, 2.0, True), (2.0, 1.0, False), (2.0, 2.0, True)],
+)
+def test_compare_reads_a_year_equal_to_the_last_as_crossing_nothing(
+    current, previous, expect
+):
+    """Harm means a threshold was crossed, and last year's own figure is not
+    above itself."""
+    assert YearOverYear.compare(current, previous, has_past=True).improving is expect
+
+
+def test_compare_without_a_past_year_carries_the_current_figure():
+    empty = YearOverYear.compare(3.0, 0.0, has_past=False)
+
+    assert empty.has_past is False
+    assert empty.current == 3.0
