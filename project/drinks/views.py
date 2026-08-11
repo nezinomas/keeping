@@ -9,7 +9,6 @@ from django.views.generic import View
 from django_htmx.http import trigger_client_event
 
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -48,26 +47,40 @@ class DrinkTypeContextMixin:
         }
 
 
-class Index(DrinkTypeContextMixin, TemplateViewMixin):
-    template_name = "drinks/index.html"
+class TabViewMixin(DrinkTypeContextMixin):
+    """A tab is a fragment to htmx and a whole page to everyone else.
 
-    def get_context_data(self, **kwargs):
-        # the quick-add sheet lives on this page only, outside the tabs
-        recent_days = services.RecentDaySelector.for_day(datetime.now().date())
+    Its url is pushed to the address bar, so it has to answer a bookmark and a
+    reload too. A history restore asks over htmx but swaps the whole body, so
+    that one wants the page as well.
+    """
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        htmx = self.request.htmx
+
+        if htmx and not htmx.history_restore_request:
+            return response
+
+        return render(
+            self.request,
+            "drinks/index.html",
+            {**context, **self._page(), "content": response.rendered_content},
+        )
+
+    def _page(self) -> dict:
+        """What the shell around a tab needs, and no tab does."""
         user = cast(User, self.request.user)
-        # the quick-add form logs any drink type, whatever the open tab reads in
-        drink_types = services.DrinkTypeSelector.for_drink_type(user.drink_type)
 
         return {
-            **super().get_context_data(**kwargs),
-            **{"reload_targets": DrinkTabs.all()},
-            **{"recent_days": recent_days},
-            **{"drink_types": drink_types},
-            **{"content": rendered_content(self.request, TabIndex, **kwargs)},
+            "tabs": DrinkTabs.all(),
+            "recent_days": services.RecentDaySelector.for_day(datetime.now().date()),
+            # the sheet logs any drink type, whatever the open tab reads in
+            "drink_types": services.DrinkTypeSelector.for_drink_type(user.drink_type),
         }
 
 
-class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
+class TabIndex(TabViewMixin, TemplateViewMixin):
     template_name = "drinks/tab_index.html"
     tab = "index"
 
@@ -81,7 +94,7 @@ class TabIndex(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
-class TabHabits(DrinkTypeContextMixin, TemplateViewMixin):
+class TabHabits(TabViewMixin, TemplateViewMixin):
     template_name = "drinks/tab_habits.html"
     tab = "habits"
 
@@ -154,7 +167,7 @@ class TypicalYearChart(FormViewMixin):
         )
 
 
-class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
+class TabTrends(TabViewMixin, TemplateViewMixin):
     template_name = "drinks/tab_trends.html"
     tab = "trends"
 
@@ -168,7 +181,7 @@ class TabTrends(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
-class TabRisk(DrinkTypeContextMixin, TemplateViewMixin):
+class TabRisk(TabViewMixin, TemplateViewMixin):
     template_name = "drinks/tab_risk.html"
     tab = "risk"
 
@@ -182,7 +195,7 @@ class TabRisk(DrinkTypeContextMixin, TemplateViewMixin):
         }
 
 
-class TabData(DrinkTypeContextMixin, ListViewMixin):
+class TabData(TabViewMixin, ListViewMixin):
     service_class = DrinkModelService
     template_name = "drinks/tab_data.html"
     tab = "data"
@@ -192,7 +205,7 @@ class TabData(DrinkTypeContextMixin, ListViewMixin):
         return DrinkModelService(user).year(user.year)
 
 
-class TabHistory(DrinkTypeContextMixin, TemplateViewMixin):
+class TabHistory(TabViewMixin, TemplateViewMixin):
     template_name = "drinks/tab_history.html"
     tab = "history"
 

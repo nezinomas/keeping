@@ -5,6 +5,11 @@
 // `components/_quick_add` still carries the wrapper that positions them.
 
 .paper-skin {
+    .quick-add {
+        background: $paper;
+        border-top: 1px solid $hair;
+    }
+
     .quick-add__pill {
         @include tokens.pill;
     }
@@ -13,28 +18,26 @@
         background: $paper;
         border: 1px solid $hair;
 
-        .quick-add__add {
-            @include tokens.label;
+        // stretch, as #search-form does: a paper button carries mono type two
+        // steps smaller than the field beside it, so only the row can say how
+        // tall both are
+        form {
+            align-items: stretch;
+        }
 
-            border: 1.5px solid $ink;
-            border-radius: 0;
-            background: $paper;
-            color: $ink;
+        .quick-add__spin button {
+            color: $ink-muted;
 
             &:hover {
-                background: $hair-soft;
-                border-color: $ink;
-            }
-
-            &:focus,
-            &:active {
-                box-shadow: none;
+                color: $ink;
             }
         }
 
         .button-secondary {
             @include tokens.label;
 
+            display: inline-flex;
+            align-items: center;
             border: 1px solid $hair;
             border-radius: 0;
             background: $paper;

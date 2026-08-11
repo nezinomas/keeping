@@ -1,8 +1,18 @@
 from dataclasses import dataclass
 
 from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
-TAB_NAMES = ("index", "data", "history", "trends", "risk", "habits")
+# in the order the tab row draws them, which is the order arrow keys walk
+TAB_TITLES = {
+    "index": _("Overview"),
+    "trends": _("Trends"),
+    "habits": _("Habits"),
+    "risk": _("Risk"),
+    "history": _("History"),
+    "data": _("Data"),
+}
+TAB_NAMES = tuple(TAB_TITLES)
 DEFAULT_TAB = "index"
 
 
@@ -16,6 +26,10 @@ class DrinkTab:
     """
 
     name: str
+
+    @property
+    def title(self) -> str:
+        return TAB_TITLES[self.name]
 
     @property
     def reload_trigger(self) -> str:

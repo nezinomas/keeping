@@ -18,9 +18,9 @@ class DataRow:
 @dataclass(frozen=True)
 class MonthlyStatsDTO:
     # in the unit the selected drink type is shown in, not always ml
-    total_volume: list[float]
-    avg_daily_volume: list[float]
-    total_quantity: list[float]
+    total_volume: list[float | None]
+    avg_daily_volume: list[float | None]
+    total_quantity: list[float | None]
 
 
 @dataclass(frozen=True)
@@ -53,11 +53,15 @@ class YearOverYear:
         cls, current: float, previous: float, *, has_past: bool
     ) -> "YearOverYear | EmptyYearOverYear":
         """Less is improving, which is true of every harm and frequency figure
-        the app reports. A figure where more is better needs its own rule."""
+        the app reports. A figure where more is better needs its own rule.
+
+        A year level with the one before it improves rather than worsens: harm
+        means a threshold was crossed, and last year is not above itself.
+        """
         if not has_past:
             return EmptyYearOverYear(current=current)
 
-        return cls(current, previous, improving=current < previous)
+        return cls(current, previous, improving=current <= previous)
 
 
 @dataclass(frozen=True)
@@ -98,10 +102,17 @@ class DrinkStats:
         ]
 
         return MonthlyStatsDTO(
-            total_volume=total_volume,
-            avg_daily_volume=avg_daily_volume,
-            total_quantity=monthly_qty,
+            total_volume=self._to_boundary(total_volume),
+            avg_daily_volume=self._to_boundary(avg_daily_volume),
+            total_quantity=self._to_boundary(monthly_qty),
         )
+
+    def _to_boundary(self, months: list[float]) -> list[float | None]:
+        # a running year's December drawn as 0.0 cannot be told apart from a
+        # December with no Drink in it, and a null is the only way to break a line
+        reached = self._year.end_date.month
+
+        return [value if m <= reached else None for m, value in enumerate(months, 1)]
 
     @cached_property
     def yearly(self) -> YearlyStatsDTO:

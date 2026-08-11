@@ -32,7 +32,7 @@
 
 <!-- outside #tab_content: a tab swap must not replace the chart tokens, the
      nav or `tab`, the open tab that both the nav and the sheet read -->
-<div class="paper-skin" x-data="{ tab: 'index' }">
+<div class="paper-skin" hx-history="false" x-data="{ tab: '{{ tab }}' }">
 
 {% include 'drinks/includes/navbar.html' %}
 
@@ -40,12 +40,12 @@
 <input type="hidden" id="current-tab" name="tab" :value="tab">
 
 <!-- htmx tab data load -->
-{% for target in reload_targets %}
-<div hx-get="{{ target.url }}" hx-target="#tab_content" hx-trigger="{{ target.reload_trigger }} from:body"></div>
+{% for drink_tab in tabs %}
+<div hx-get="{{ drink_tab.url }}" hx-target="#tab_content" hx-trigger="{{ drink_tab.reload_trigger }} from:body"></div>
 {% endfor %}
 
 <!-- tab content -->
-<div id="tab_content">
+<div id="tab_content" role="tabpanel" :aria-labelledby="'tab-' + tab">
     {{content}}
 </div>
 
@@ -54,6 +54,10 @@
 </div>
 
 <script nonce="{{ csp_nonce }}">
+    // the page is never snapshotted, so Back always misses; without this htmx
+    // would ask for it and swap the body, running every script in it twice
+    htmx.config.refreshOnHistoryMiss = true;
+
     function initDrinksCharts() {
         if (document.getElementById('chart-consumption-data')) {
             chartOverview('chart-consumption-data', 'chart-quantity-data', 'chart-overview-container');
@@ -90,16 +94,6 @@
         }
         if (targetId === 'chart-typical-year-container' && document.getElementById('chart-typical-year-data')) {
             chartDrinksProfile('chart-typical-year-data', 'chart-typical-year-container');
-        }
-        if (targetId === 'mainModal') {
-            const input = document.getElementById('id_quantity');
-            if (input) {
-                input.type = 'text';
-                input.addEventListener('keyup', function (e) {
-                    e.preventDefault();
-                    input.value = input.value.replace(/,/g, '.');
-                });
-            }
         }
     });
 </script>
