@@ -13,7 +13,7 @@ from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_options import DrinkConverter
-from ..lib.drinks_stats import DrinkStats
+from ..lib.drinks_stats import DrinkStats, EmptyYearOverYear, YearOverYear
 from .consumption_year import ConsumptionYear
 
 
@@ -65,9 +65,18 @@ class IndexTab:
         records = ConsumptionYear(user, year)
         target = records.target
 
+        # last year read no further than today's month and day, so the baseline
+        # each card states covers the same span as the figure above it
+        boundary = YearBoundary.for_year(year)
+
         builder = IndexBuilder(
             converter=records.converter,
             drink_stats=DrinkStats(records.converter, records.monthly),
+            previous_stats=DrinkStats(
+                records.converter,
+                records.previous.daily,
+                today=boundary.previous_end_date,
+            ),
             # counting Drinking days needs the daily rows, which DrinkStats is
             # not given and must not be widened to carry
             frequency_stats=FrequencyStats(
@@ -105,6 +114,7 @@ class IndexBuilder:
         self,
         converter: DrinkConverter,
         drink_stats: DrinkStats,
+        previous_stats: DrinkStats | None = None,
         frequency_stats: FrequencyStats | None = None,
         target: float = 0.0,
         target_id: int = 0,
@@ -120,6 +130,7 @@ class IndexBuilder:
         self._latest_current_date = latest_current_date
         self._today = today or datetime.now().date()
         self._drink_stats = drink_stats
+        self._previous_stats = previous_stats or DrinkStats(converter)
         self._frequency_stats = frequency_stats or FrequencyStats()
         self._converter = converter
 
@@ -167,6 +178,17 @@ class IndexBuilder:
             self._card_limit(),
         ]
 
+    @staticmethod
+    def _last_year(value: str) -> str:
+        return f"{_('Last year')} {value}"
+
+    def _against_last_year(
+        self, current: float, previous: float
+    ) -> YearOverYear | EmptyYearOverYear:
+        return YearOverYear.compare(
+            current, previous, has_past=bool(self._previous_stats.yearly.total_quantity)
+        )
+
     def _card_dry_days(self) -> StatCard:
         title = _("Days dry")
         dry = self.tbl_dry_days()
@@ -188,19 +210,24 @@ class IndexBuilder:
             return StatCard.empty(title, _("No data"))
 
         value = str(frequency.drinking_days)
-        # a running year's share is of the days elapsed, so the note says so
-        # rather than reading as a share of all twelve months
+        # a running year's share is of the days elapsed, so it says so rather
+        # than reading as a share of all twelve months
         share = (
             _("%(share)s%% of the year so far")
             if frequency.is_current_year
             else _("%(share)s%% of the year")
         )
-        note = share % {"share": f"{frequency.drinking_day_share * 100:.0f}"}
+        share = share % {"share": f"{frequency.drinking_day_share * 100:.0f}"}
         definition = _("Calendar days with at least one Drink recorded.")
         comparison = frequency.compare_frequency()
 
         if not comparison.has_past:
-            return StatCard(title=title, value=value, note=note, explanation=definition)
+            return StatCard(
+                title=title,
+                value=value,
+                note=share,
+                explanation=f"{share} · {definition}",
+            )
 
         arrow = _("The arrow compares with last year, up to the same date.")
 
@@ -208,8 +235,8 @@ class IndexBuilder:
             title,
             improving=comparison.improving,
             value=value,
-            note=note,
-            explanation=f"{definition} {arrow}",
+            note=self._last_year(f"{comparison.previous:.0f}"),
+            explanation=f"{share} · {definition} {arrow}",
         )
 
     def _card_std_drinks(self) -> StatCard:
@@ -218,10 +245,19 @@ class IndexBuilder:
         if not self._drink_stats.yearly.total_quantity:
             return StatCard.empty(title, _("No data"))
 
-        return StatCard(
-            title=title,
-            value=f"{self._drink_stats.yearly.stdav:.0f}",
-            note=_("Std Av this year"),
+        stdav = self._drink_stats.yearly.stdav
+        value = f"{stdav:.0f}"
+        comparison = self._against_last_year(stdav, self._previous_stats.yearly.stdav)
+
+        if not comparison.has_past:
+            return StatCard(title=title, value=value, note=_("Std Av this year"))
+
+        return StatCard.comparison(
+            title,
+            improving=comparison.improving,
+            value=value,
+            note=self._last_year(f"{comparison.previous:.0f}"),
+            explanation=_("The arrow compares with last year, up to the same date."),
         )
 
     def _card_avg_per_day(self) -> StatCard:
@@ -233,43 +269,75 @@ class IndexBuilder:
         unit = self._converter.display_unit
         decimals = self._converter.display_decimals
 
-        avg = self._drink_stats.yearly.avg_daily_volume
-        # the unit the note names is not always the one shown beside the figure:
-        # Std Av is read as typed, so the note names it and the figure does not
-        figure_unit = unit
-
-        if self._converter.drink_type == "stdav":
-            avg = getattr(self._drink_stats.yearly, "avg_daily_stdav", 0.0)
-            figure_unit = ""
-
+        avg = self._avg_daily(self._drink_stats)
+        # Std Av is read as typed, so the figure carries no unit beside it while
+        # the explanation still names one
+        figure_unit = "" if self._converter.drink_type == "stdav" else unit
         value = f"{avg:.{decimals}f}"
+
+        comparison = self._against_last_year(avg, self._avg_daily(self._previous_stats))
+        baseline = self._last_year(f"{comparison.previous:.{decimals}f}")
 
         # the Per drinking day card beside this one is Std Av over a different
         # denominator, so this explanation names both of its own
         explanation = f"{unit} {_('per calendar day')}"
 
         if not self._target:
-            return StatCard(
-                title=title,
+            if not comparison.has_past:
+                return StatCard(
+                    title=title,
+                    value=value,
+                    unit=figure_unit,
+                    note=_("No limit set"),
+                    explanation=explanation,
+                )
+
+            return StatCard.comparison(
+                title,
+                improving=comparison.improving,
                 value=value,
                 unit=figure_unit,
-                note=_("No limit set"),
+                note=baseline,
                 explanation=explanation,
             )
 
         under_limit = avg <= self._target
-        diff = abs(self._target - avg)
+        diff = f"{abs(self._target - avg):.{decimals}f}"
         direction = _("under the limit") if under_limit else _("over the limit")
+        limit_note = f"{diff} {direction}"
 
-        # a daily average is read against the Drink Target, so it is a level
+        # the Drink Target is a defined threshold and outranks the baseline, so it
+        # keeps the colour while the arrow carries the direction
+        state = stat_card.LOW if under_limit else stat_card.HIGH
+
+        if not comparison.has_past:
+            return StatCard.level(
+                title,
+                state=state,
+                value=value,
+                unit=figure_unit,
+                note=limit_note,
+                explanation=explanation,
+            )
+
         return StatCard.level(
             title,
-            state=stat_card.LOW if under_limit else stat_card.HIGH,
+            state=state,
             value=value,
             unit=figure_unit,
-            note=f"{diff:.{decimals}f} {direction}",
-            explanation=explanation,
+            note=baseline,
+            show_icon=True,
+            improving=comparison.improving,
+            explanation=f"{explanation} · {limit_note}",
         )
+
+    def _avg_daily(self, stats: DrinkStats) -> float:
+        """Std Av is read as typed and everything else as a volume — a baseline
+        on the other measure would state last year in the wrong unit."""
+        if self._converter.drink_type == "stdav":
+            return stats.yearly.avg_daily_stdav
+
+        return stats.yearly.avg_daily_volume
 
     def _card_pure_alcohol(self) -> StatCard:
         title = _("Pure alcohol")
@@ -277,11 +345,22 @@ class IndexBuilder:
         if not self._drink_stats.yearly.total_quantity:
             return StatCard.empty(title, _("No data"))
 
-        return StatCard(
-            title=title,
-            value=f"{self._drink_stats.yearly.pure_alcohol_liters:.1f}",
+        liters = self._drink_stats.yearly.pure_alcohol_liters
+        value = f"{liters:.1f}"
+        comparison = self._against_last_year(
+            liters, self._previous_stats.yearly.pure_alcohol_liters
+        )
+
+        if not comparison.has_past:
+            return StatCard(title=title, value=value, unit="L", note=_("this year"))
+
+        return StatCard.comparison(
+            title,
+            improving=comparison.improving,
+            value=value,
             unit="L",
-            note=_("this year"),
+            note=self._last_year(f"{comparison.previous:.1f}"),
+            explanation=_("The arrow compares with last year, up to the same date."),
         )
 
     def _card_limit(self) -> StatCard:
