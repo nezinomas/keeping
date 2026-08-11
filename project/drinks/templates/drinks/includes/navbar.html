@@ -26,7 +26,8 @@
             @click="tab = '{{ drink_tab.name }}'"
             hx-get="{{ drink_tab.url }}"
             hx-push-url="true"
-            hx-target="#tab_content">
+            hx-target="#tab_content"
+            hx-indicator="#indicator">
             {{ drink_tab.title }}
         </button>
         {% endfor %}
