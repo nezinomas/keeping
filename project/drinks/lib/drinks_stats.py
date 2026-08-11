@@ -53,11 +53,15 @@ class YearOverYear:
         cls, current: float, previous: float, *, has_past: bool
     ) -> "YearOverYear | EmptyYearOverYear":
         """Less is improving, which is true of every harm and frequency figure
-        the app reports. A figure where more is better needs its own rule."""
+        the app reports. A figure where more is better needs its own rule.
+
+        A year level with the one before it improves rather than worsens: harm
+        means a threshold was crossed, and last year is not above itself.
+        """
         if not has_past:
             return EmptyYearOverYear(current=current)
 
-        return cls(current, previous, improving=current < previous)
+        return cls(current, previous, improving=current <= previous)
 
 
 @dataclass(frozen=True)
