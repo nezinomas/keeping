@@ -627,6 +627,26 @@ def test_tab_index_renders_calendar_data_label_attributes(client_logged):
     assert "heat-tooltip" in html
 
 
+def test_tab_index_calendar_days_are_reachable_by_keyboard(client_logged):
+    DrinkFactory(date=date(1999, 1, 5), stdav=2.5, option="beer")
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    html = response.content.decode("utf-8")
+
+    assert 'tabindex="-1" aria-label="1999-01-05, ' in html
+
+
+def test_tab_index_calendar_legend_states_the_bounds_of_each_level(client_logged):
+    DrinkFactory(date=date(1999, 1, 5), stdav=2.5, option="beer")
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    html = response.content.decode("utf-8")
+
+    for bound in ("0", "&lt;2", "2-4", "4-6", "&gt;=6"):
+        assert f"<span>{bound}</span>" in html
+    assert "Std Av" in html
+
+
 @pytest.mark.parametrize(
     "user_drink_type, drink_type, stdav, expect",
     [

@@ -5,12 +5,13 @@ from datetime import date
 from django.utils.translation import gettext as _
 
 from ...counts.lib.stats import Stats as CountStats
+from ...drinks.lib.drinks_risk import HEAVY_DAY_STDAV
 from .translation import month_names
 from .year_boundary import YearBoundary
 
 LEVEL_1_MAX = 2.0
 LEVEL_2_MAX = 4.0
-LEVEL_3_MAX = 6.0
+LEVEL_3_MAX = HEAVY_DAY_STDAV
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,10 @@ class CalendarDayViewModel:
     label: str = ""
     gap: int = 0
 
+    @property
+    def speech(self) -> str:
+        return self.label.replace("\n", ", ")
+
 
 @dataclass(frozen=True)
 class CalendarMonthViewModel:
@@ -32,8 +37,19 @@ class CalendarMonthViewModel:
 
 
 @dataclass(frozen=True)
+class CalendarLegendViewModel:
+    bounds: tuple[str, ...]
+    unit: str = ""
+
+
+@dataclass(frozen=True)
 class CalendarYearViewModel:
     months: list[CalendarMonthViewModel]
+    legend: CalendarLegendViewModel = CalendarLegendViewModel(bounds=())
+
+
+def _fmt(bound: float) -> str:
+    return f"{bound:g}"
 
 
 def _calc_level(val: float) -> int:
@@ -57,6 +73,7 @@ class CalendarGrid:
         latest_past_date: date | None = None,
         today: date | None = None,
         quantity_title: str | None = None,
+        unit: str = "",
     ) -> CalendarYearViewModel:
         boundary = YearBoundary.for_year(year, today)
         today = boundary.today
@@ -104,7 +121,20 @@ class CalendarGrid:
             for month in range(1, 13)
         ]
 
-        return CalendarYearViewModel(months=months)
+        return CalendarYearViewModel(months=months, legend=cls._legend(unit))
+
+    @staticmethod
+    def _legend(unit: str) -> CalendarLegendViewModel:
+        return CalendarLegendViewModel(
+            bounds=(
+                "0",
+                f"<{_fmt(LEVEL_1_MAX)}",
+                f"{_fmt(LEVEL_1_MAX)}-{_fmt(LEVEL_2_MAX)}",
+                f"{_fmt(LEVEL_2_MAX)}-{_fmt(LEVEL_3_MAX)}",
+                f">={_fmt(LEVEL_3_MAX)}",
+            ),
+            unit=unit,
+        )
 
     @classmethod
     def _build_month(
@@ -157,12 +187,15 @@ class CalendarGrid:
         gap = gap_by_date.get(day_date, 0)
         is_today = day_date == boundary.today
 
+        is_future = day_date > boundary.end_date
+
         if level == 0:
+            label = f"{day_date:%Y-%m-%d}\n{_('No drink')}"
             if is_today:
                 gap_title = _("Gap")
                 label = f"{day_date:%Y-%m-%d}\n{gap_title}: {today_gap}d."
                 gap = today_gap
-            else:
+            if is_future:
                 label = ""
         else:
             gap_title = _("Gap")
@@ -176,7 +209,7 @@ class CalendarGrid:
             day=day_date.day,
             level=level,
             is_today=is_today,
-            is_future=day_date > boundary.end_date,
+            is_future=is_future,
             label=label,
             gap=gap,
         )
