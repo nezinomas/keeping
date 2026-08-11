@@ -8,7 +8,7 @@
         {% for month in calendar.months %}
         <div class="heat-month">
             <div class="mini">
-                {% for day in month.days %}<i class="l{{ day.level }}{% if day.is_today %} today{% elif day.is_future %} future{% endif %}"{% if forloop.first %} style="--start:{{ month.leading_blanks|add:1 }}"{% endif %}{% if day.label %} data-label="{{ day.label }}"{% endif %}></i>{% endfor %}
+                {% for day in month.days %}<i class="l{{ day.level }}{% if day.is_today %} today{% elif day.is_future %} future{% endif %}"{% if forloop.first %} style="--start:{{ month.leading_blanks|add:1 }}"{% endif %}{% if day.label %} role="img" tabindex="-1" aria-label="{{ day.speech }}" data-label="{{ day.label }}"{% endif %}></i>{% endfor %}
             </div>
             <div class="mlabel">{{ month.name }}</div>
         </div>
@@ -16,12 +16,16 @@
     </div>
     <div class="heat-legend">
         <span>{% translate 'No drink' %}</span>
-        <span class="swatches">
-            <i class="l0"></i>
-            <i class="l1"></i>
-            <i class="l2"></i>
-            <i class="l3"></i>
-            <i class="l4"></i>
+        <span class="heat-legend__scale">
+            <span class="swatches">
+                <i class="l0"></i>
+                <i class="l1"></i>
+                <i class="l2"></i>
+                <i class="l3"></i>
+                <i class="l4"></i>
+            </span>
+            <span class="heat-legend__bounds">{% for bound in calendar.legend.bounds %}<span>{{ bound }}</span>{% endfor %}</span>
+            {% if calendar.legend.unit %}<span class="heat-legend__unit">{{ calendar.legend.unit }}</span>{% endif %}
         </span>
         <span>{% translate 'Heavy day' %}</span>
         <span class="heat-legend__spacer"></span>
@@ -36,12 +40,12 @@
         const tooltip = document.getElementById('heat-tooltip');
         if (!card || !tooltip) return;
 
-        card.addEventListener('mouseover', function (e) {
-            const cell = e.target.closest('.mini i[data-label]');
-            if (!cell) {
-                tooltip.style.display = 'none';
-                return;
-            }
+        const CELL = '.mini i[data-label]';
+        const cells = Array.from(card.querySelectorAll(CELL));
+        let current = cells.length - 1;
+        if (cells.length) cells[current].tabIndex = 0;
+
+        function show(cell) {
             const label = cell.getAttribute('data-label');
             if (!label) return;
 
@@ -55,17 +59,65 @@
             tooltip.style.display = 'block';
 
             positionTooltip(cell);
+        }
+
+        function hide() {
+            tooltip.style.display = 'none';
+        }
+
+        function moveTo(index) {
+            const next = Math.max(0, Math.min(index, cells.length - 1));
+            cells[current].tabIndex = -1;
+            current = next;
+            cells[current].tabIndex = 0;
+            cells[current].focus();
+        }
+
+        card.addEventListener('mouseover', function (e) {
+            const cell = e.target.closest(CELL);
+            cell ? show(cell) : hide();
         });
 
         card.addEventListener('mousemove', function (e) {
-            const cell = e.target.closest('.mini i[data-label]');
+            const cell = e.target.closest(CELL);
             if (cell && tooltip.style.display === 'block') {
                 positionTooltip(cell);
             }
         });
 
-        card.addEventListener('mouseleave', function () {
-            tooltip.style.display = 'none';
+        card.addEventListener('mouseleave', hide);
+
+        card.addEventListener('click', function (e) {
+            const cell = e.target.closest(CELL);
+            if (!cell) {
+                hide();
+                return;
+            }
+            moveTo(cells.indexOf(cell));
+        });
+
+        card.addEventListener('focusin', function (e) {
+            const cell = e.target.closest(CELL);
+            if (!cell) return;
+            current = cells.indexOf(cell);
+            show(cell);
+        });
+
+        card.addEventListener('focusout', hide);
+
+        const STEP = {ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7};
+
+        card.addEventListener('keydown', function (e) {
+            if (!e.target.closest(CELL)) return;
+
+            let target;
+            if (e.key in STEP) target = current + STEP[e.key];
+            else if (e.key === 'Home') target = 0;
+            else if (e.key === 'End') target = cells.length - 1;
+            else return;
+
+            e.preventDefault();
+            moveTo(target);
         });
 
         function positionTooltip(cell) {
