@@ -221,12 +221,6 @@
 
         &__info {
             cursor: help;
-
-            &:hover .trend-card__explanation,
-            &:focus-visible .trend-card__explanation {
-                visibility: visible;
-                opacity: 1;
-            }
         }
 
         &__edit {
@@ -237,13 +231,28 @@
             cursor: pointer;
         }
 
+        // the trigger sits inside the figure and the tooltip is the Card's own
+        // child, so the reveal crosses between them instead of running down.
+        // Spelled out rather than `&__info`: inside :has() that `&` expands to
+        // the whole parent selector, and demands a .paper-skin within the Card.
+        &:has(.trend-card__info:hover),
+        &:has(.trend-card__info:focus-visible) {
+            .trend-card__explanation {
+                visibility: visible;
+                opacity: 1;
+            }
+        }
+
         &__explanation {
             position: absolute;
-            top: calc(100% + 2.4em);
+            top: calc(100% + 0.35rem);
             left: 50%;
             z-index: 20;
             width: max-content;
-            max-width: 15rem;
+            // never wider than its Card, so it cannot leave the grid — and the
+            // grid never leaves the page. This is what keeps it on screen at
+            // every width instead of running off the right edge of an end Card.
+            max-width: min(15rem, 100%);
             padding: 0.55rem 0.75rem;
             background: $ink;
             color: $paper;
