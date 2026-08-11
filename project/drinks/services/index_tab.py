@@ -56,17 +56,11 @@ class StdAvViewModel:
 
 
 class IndexTab:
-    """Deep module assembling overview metrics, targets, charts,
-    standard unit breakdowns, and calendar grid for the Drinks index tab.
-    """
-
     @classmethod
     def build(cls, user, year: int) -> dict:
         records = ConsumptionYear(user, year)
         target = records.target
 
-        # last year read no further than today's month and day, so the baseline
-        # each card states covers the same span as the figure above it
         boundary = YearBoundary.for_year(year)
 
         builder = IndexBuilder(
@@ -77,15 +71,11 @@ class IndexTab:
                 records.previous.daily,
                 today=boundary.previous_end_date,
             ),
-            # counting Drinking days needs the daily rows, which DrinkStats is
-            # not given and must not be widened to carry
             frequency_stats=FrequencyStats(
                 current_daily=records.daily, past_daily=records.previous.daily
             ),
             target=target.qty,
             target_id=target.target_id,
-            # the Drink Target is a daily volume; the card states it a second way,
-            # as the pieces of the selected Drink type that volume comes to
             pcs_per_day=(
                 target.max_bottles / days
                 if target.has_data and (days := ydays(year))
@@ -152,8 +142,6 @@ class IndexBuilder:
             decimals=self._converter.display_decimals,
             text={
                 "limit": _("Limit"),
-                # the dropdown names the unit, so this never claims millilitres
-                # for an amount that is read as Std Av
                 "alcohol": f"{_('Alcohol consumption per day')}, {unit}",
                 "unit": unit,
             },
@@ -167,8 +155,6 @@ class IndexBuilder:
         return DryDaysViewModel()
 
     def get_cards(self) -> list[StatCard]:
-        # Intensity, the other half of the split, is on the Habits tab: no Std Av
-        # figure beside an Avg per day that follows the drink-type dropdown
         return [
             self._card_dry_days(),
             self._card_drinking_days(),
@@ -214,8 +200,6 @@ class IndexBuilder:
             return StatCard.empty(title, _("No data"))
 
         value = str(frequency.drinking_days)
-        # a running year's share is of the days elapsed, so it says so rather
-        # than reading as a share of all twelve months
         share = (
             _("%(share)s%% of the year so far")
             if frequency.is_current_year
@@ -272,16 +256,12 @@ class IndexBuilder:
         decimals = self._converter.display_decimals
 
         avg = self._avg_daily(self._drink_stats)
-        # Std Av is read as typed, so the figure carries no unit beside it while
-        # the explanation still names one
         figure_unit = "" if self._converter.drink_type == "stdav" else unit
         value = f"{avg:.{decimals}f}"
 
         comparison = self._against_last_year(avg, self._avg_daily(self._previous_stats))
         baseline = self._last_year(f"{comparison.previous:.{decimals}f}")
 
-        # the Per drinking day card beside this one is Std Av over a different
-        # denominator, so this explanation names both of its own
         explanation = (f"{unit} {_('per calendar day')}",)
 
         if comparison.has_past:
@@ -311,8 +291,6 @@ class IndexBuilder:
         direction = _("under the limit") if under_limit else _("over the limit")
         limit_note = f"{diff} {direction}"
 
-        # the Drink Target is a defined threshold and outranks the baseline, so it
-        # keeps the colour while the arrow carries the direction
         state = stat_card.LOW if under_limit else stat_card.HIGH
 
         if not comparison.has_past:
@@ -337,8 +315,6 @@ class IndexBuilder:
         )
 
     def _avg_daily(self, stats: DrinkStats) -> float:
-        """Std Av is read as typed and everything else as a volume — a baseline
-        on the other measure would state last year in the wrong unit."""
         if self._converter.drink_type == "stdav":
             return stats.yearly.avg_daily_stdav
 
@@ -369,12 +345,6 @@ class IndexBuilder:
         )
 
     def _card_limit(self) -> StatCard:
-        """The year's Drink Target, and the only way into the form that sets it.
-
-        It was bespoke markup beside the card component until a StatCard could
-        carry a pencil, which is what the empty form needs: an unset limit is an
-        em dash and a note, and pressing the pencil is what makes it a figure.
-        """
         title = _("Daily limit")
         label = _("Goal for the year")
 
@@ -389,7 +359,6 @@ class IndexBuilder:
 
         unit = self._converter.display_unit
         decimals = self._converter.display_decimals
-        # Std Av is read as typed, so the figure carries no unit beside it
         figure_unit = "" if self._converter.drink_type == "stdav" else unit
 
         return StatCard(
@@ -473,7 +442,6 @@ class IndexBuilder:
         )
 
     def _get_period_counts(self, year: int | None) -> tuple[int, int, int]:
-        """Days, weeks and months the year has reached."""
         boundary = YearBoundary.for_year(year, self._today)
 
         return (

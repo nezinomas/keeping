@@ -16,18 +16,18 @@ LEVEL_3_MAX = 6.0
 @dataclass(frozen=True)
 class CalendarDayViewModel:
     day: int
-    level: int  # 0 = dry/no record; 1..4 = increasing intensity
+    level: int
     is_today: bool = False
     is_future: bool = False
-    label: str = ""  # tooltip text
+    label: str = ""
     gap: int = 0
 
 
 @dataclass(frozen=True)
 class CalendarMonthViewModel:
-    name: str  # localized month name
-    number: int  # 1..12
-    leading_blanks: int  # 0..6 = Monday-based weekday index of day 1
+    name: str
+    number: int
+    leading_blanks: int
     days: list[CalendarDayViewModel]
 
 
@@ -49,10 +49,6 @@ def _calc_level(val: float) -> int:
 
 
 class CalendarGrid:
-    """Deep module generating server-rendered CSS-grid heatmap view models
-    with month/day layouts, gap tracking, level intensities, and localized tooltips.
-    """
-
     @classmethod
     def build(
         cls,
@@ -180,8 +176,6 @@ class CalendarGrid:
             day=day_date.day,
             level=level,
             is_today=is_today,
-            # past the end of the year on view: today's date in the year still
-            # running, nothing at all in one already finished
             is_future=day_date > boundary.end_date,
             label=label,
             gap=gap,
