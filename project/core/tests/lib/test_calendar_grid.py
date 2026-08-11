@@ -75,21 +75,21 @@ def test_build_month_metadata():
     jan = grid.months[0]
     assert jan.number == 1
     assert len(jan.days) == 31
-    assert jan.leading_blanks == date(1999, 1, 1).weekday()  # Friday -> 4
+    assert jan.leading_blanks == date(1999, 1, 1).weekday()
 
     feb = grid.months[1]
     assert feb.number == 2
     assert len(feb.days) == 28
-    assert feb.leading_blanks == date(1999, 2, 1).weekday()  # Monday -> 0
+    assert feb.leading_blanks == date(1999, 2, 1).weekday()
 
 
 def test_build_all_levels_and_labels():
     daily = [
-        {"date": date(1999, 1, 1), "stdav": 1.0, "qty": 0.4},  # level 1
-        {"date": date(1999, 1, 2), "stdav": 2.0, "qty": 0.8},  # level 2
-        {"date": date(1999, 1, 3), "stdav": 4.0, "qty": 1.6},  # level 3
-        {"date": date(1999, 1, 4), "stdav": 6.0, "qty": 2.4},  # level 4
-        {"date": date(1999, 1, 5), "stdav": 0.0, "qty": 0.0},  # level 0
+        {"date": date(1999, 1, 1), "stdav": 1.0, "qty": 0.4},
+        {"date": date(1999, 1, 2), "stdav": 2.0, "qty": 0.8},
+        {"date": date(1999, 1, 3), "stdav": 4.0, "qty": 1.6},
+        {"date": date(1999, 1, 4), "stdav": 6.0, "qty": 2.4},
+        {"date": date(1999, 1, 5), "stdav": 0.0, "qty": 0.0},
     ]
 
     days = (
@@ -136,10 +136,9 @@ def test_build_today_and_future_flags():
     grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 6, 15))
 
     june = grid.months[5].days
-    assert june[14].is_today is True  # 15th
+    assert june[14].is_today is True
     assert june[14].is_future is False
-    assert june[15].is_future is True  # 16th
-    # a past month has no future days
+    assert june[15].is_future is True
     assert all(not d.is_future for d in grid.months[0].days)
 
 
@@ -148,7 +147,7 @@ def test_build_today_without_record_shows_date_and_gap():
     grid = CalendarGrid.build(1999, daily_data=daily, today=date(1999, 6, 15))
 
     june_days = grid.months[5].days
-    today_day = june_days[14]  # 15th
+    today_day = june_days[14]
 
     gap_str = _("Gap")
     assert today_day.is_today is True
@@ -166,7 +165,7 @@ def test_build_today_without_record_uses_latest_past_date():
     )
 
     jan_days = grid.months[0].days
-    today_day = jan_days[9]  # 10th
+    today_day = jan_days[9]
 
     gap_str = _("Gap")
     assert today_day.is_today is True
@@ -182,8 +181,6 @@ def test_build_other_year_has_no_future_days():
 
 
 def test_build_a_year_not_started_yet_has_no_future_days():
-    # next year is selectable and none of it is flagged future - long-standing
-    # behaviour, pinned because the flag now reads off the year boundary
     grid = CalendarGrid.build(2000, daily_data=[], today=date(1999, 6, 15))
 
     assert all(not d.is_future for m in grid.months for d in m.days)
