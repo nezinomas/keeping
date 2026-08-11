@@ -176,7 +176,12 @@ class TrendsBuilder:
             value=f"{stats.percentage_change:.1f}",
             unit="%",
             note=f"{current:.1f} / {previous:.1f} {unit}",
-            explanation=to_date,
+            # the note is two figures with nothing naming them, and Risk already
+            # owns that sentence for a note of the same shape
+            explanation=(
+                _("The two numbers are this year and last year, up to the same date."),
+                to_date,
+            ),
         )
 
     def _build_projection_card(self) -> StatCard:

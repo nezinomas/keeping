@@ -163,3 +163,15 @@ def test_view_regenerate_no_errors(client_logged):
     response = client_logged.get(f"{url}?type=xxx&ajax_trigger=1", {})
 
     assert response.status_code == 204
+
+
+# -------------------------------------------------------------------------------------
+#                                                                          Base Template
+# -------------------------------------------------------------------------------------
+def test_base_leaves_the_loader_styles_to_the_stylesheet(client_logged):
+    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
+
+    meta = '<meta name="htmx-config" content=\'{"includeIndicatorStyles": false}\'>'
+
+    assert meta in content
+    assert content.index(meta) < content.index("htmx.min.js")

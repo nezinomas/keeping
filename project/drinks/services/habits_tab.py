@@ -113,5 +113,5 @@ class HabitsBuilder:
             value=f"{intensity:.1f}",
             unit="Std Av",
             note=f"{_('Heavy day')}: > {HEAVY_DAY_STDAV:.0f} Std Av",
-            explanation=f"{definition} {unit_note}",
+            explanation=(definition, unit_note),
         )

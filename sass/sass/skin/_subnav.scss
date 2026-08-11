@@ -1,0 +1,46 @@
+@use "../abstracts/variables" as *;
+@use "tokens";
+
+// The secondary nav a redesigned app wears under the site nav. Shared, so a rule
+// one app's row needs is written here for every app's, never in apps/.
+
+.paper-skin {
+    .subnav {
+        display: flex;
+        justify-content: center;
+        margin-bottom: calc($gap * 1.5);
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0 1.6rem;
+        }
+
+        .tab {
+            @include tokens.label;
+
+            padding: 0.3rem 0.05rem 0.5rem;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            background: transparent;
+            font-size: 0.66rem;
+            white-space: nowrap;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: $transition;
+
+            &:hover,
+            &:focus {
+                color: $ink;
+                border-bottom-color: $hair;
+            }
+
+            &.active {
+                color: $ink;
+                font-weight: 400;
+                border-bottom-color: $ink;
+            }
+        }
+    }
+}

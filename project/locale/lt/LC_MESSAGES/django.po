@@ -1466,8 +1466,8 @@ msgstr "Tas pats alkoholio kiekis perskaičiuotas skirtingiems gėrimų tipams."
 msgid "Per month"
 msgstr "Per mėnesį"
 
-#: .\drinks\templates\drinks\tab_data.html:12
-msgid "Dink Type"
+#: .\drinks\templates\drinks\tab_data.html:11
+msgid "Drink Type"
 msgstr "Gėrimo tipas"
 
 #: .\drinks\templates\drinks\tab_history.html:14

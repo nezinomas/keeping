@@ -211,8 +211,11 @@ def test_ytd_card_says_it_reads_to_date_in_its_explanation(converter):
     card = TrendsBuilder(stats).get_cards()[3]
 
     assert card.title == _("This year vs last")
-    assert card.explanation == _(
-        "The arrow compares with last year, up to the same date."
+    # the note is two bare figures, so the first paragraph names them — the same
+    # sentence the Risk tab uses for a note of the same shape
+    assert card.explanation == (
+        _("The two numbers are this year and last year, up to the same date."),
+        _("The arrow compares with last year, up to the same date."),
     )
 
 

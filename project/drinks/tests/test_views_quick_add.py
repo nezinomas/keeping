@@ -123,38 +123,59 @@ def test_quick_add_post_omits_date_uses_set_date_with_user_year(
 
 def quantity_input(html):
     """The quick-add quantity tag on its own, so attributes can be asserted."""
-    start = html.index('<input type="number" name="quantity"')
+    start = html.index('<input type="text" name="quantity"')
 
     return html[start : html.index(">", start) + 1]
 
 
-def test_quick_add_quantity_input_is_a_number_field(client_logged):
+def test_quick_add_quantity_input_is_a_text_field(client_logged):
     url = reverse("drinks:index")
     response = client_logged.get(url)
     html = response.content.decode("utf-8")
 
-    assert '<input type="number" name="quantity"' in html
+    assert 'inputmode="decimal"' in quantity_input(html)
 
-    tag = quantity_input(html)
-    assert 'min="0"' in tag
-    assert 'inputmode="decimal"' in tag
+
+def test_quick_add_quantity_rewrites_a_decimal_comma_on_the_model(client_logged):
+    url = reverse("drinks:index")
+    response = client_logged.get(url)
+    html = response.content.decode("utf-8")
+
+    assert "quantity.replace(',', '.')" in quantity_input(html)
+
+
+def test_quick_add_quantity_drops_what_is_not_a_number(client_logged):
+    # 150b answered 422 with an empty body, so the sheet said nothing at all —
+    # and a second dot is no more parseable than a letter
+    url = reverse("drinks:index")
+    response = client_logged.get(url)
+    tag = quantity_input(response.content.decode("utf-8"))
+
+    assert "[^0-9.]" in tag
+    assert r"^(\d*\.?\d*).*" in tag
 
 
 def test_quick_add_quantity_arrows_step_by_drink_type(client_logged):
+    # a text field has no native spinner, so the steps are drawn and driven here
     url = reverse("drinks:index")
     response = client_logged.get(url)
     html = response.content.decode("utf-8")
 
     assert "steps: { beer: 1, wine: 50, vodka: 10, stdav: 1 }" in html
-    assert ':step="steps[option]"' in quantity_input(html)
+    assert 'class="quick-add__spin-up"' in html
+    assert 'class="quick-add__spin-down"' in html
+    assert '@click="step(1)"' in html
+    assert '@click="step(-1)"' in html
 
 
-def test_quick_add_quantity_leaves_number_parsing_to_the_browser(client_logged):
+def test_quick_add_quantity_steps_from_the_keyboard(client_logged):
+    # a native spin button is not focusable either; the arrow keys are the path
     url = reverse("drinks:index")
     response = client_logged.get(url)
-    html = response.content.decode("utf-8")
+    tag = quantity_input(response.content.decode("utf-8"))
 
-    assert "$event.target.value.replace(',', '.')" not in html
+    assert '@keydown.up.prevent="step(1)"' in tag
+    assert '@keydown.down.prevent="step(-1)"' in tag
 
 
 def test_quick_add_fields_run_day_then_drink_type_then_quantity(client_logged):

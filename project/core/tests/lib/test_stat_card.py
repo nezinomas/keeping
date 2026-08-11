@@ -45,10 +45,10 @@ def test_comparison_always_shows_an_icon():
 
 def test_comparison_carries_the_explanation():
     card = StatCard.comparison(
-        "Heavy days", improving=True, value="1", note="1 / 2", explanation="why"
+        "Heavy days", improving=True, value="1", note="1 / 2", explanation=("why",)
     )
 
-    assert card.explanation == "why"
+    assert card.explanation == ("why",)
 
 
 # -------------------------------------------------------------------------------------
@@ -63,8 +63,8 @@ def test_level_keeps_the_state_it_is_given(state):
     assert card.state == state
 
 
-def test_level_never_shows_an_icon():
-    """A level is read against a threshold — there is no direction to point."""
+def test_level_shows_no_icon_unless_it_is_asked_for_one():
+    """A threshold on its own has no direction to point at."""
     card = StatCard.level("This week", state="high", value="30.0", note="")
 
     assert card.show_icon is False
@@ -72,10 +72,10 @@ def test_level_never_shows_an_icon():
 
 def test_level_carries_the_explanation():
     card = StatCard.level(
-        "This week", state="high", value="30.0", note="", explanation="why"
+        "This week", state="high", value="30.0", note="", explanation=("why",)
     )
 
-    assert card.explanation == "why"
+    assert card.explanation == ("why",)
 
 
 # -------------------------------------------------------------------------------------
@@ -88,7 +88,15 @@ def test_defaults_render_a_plain_card():
 
     assert card.state == "neutral"
     assert card.show_icon is False
-    assert card.explanation == ""
+    assert card.explanation == ()
+
+
+def test_an_explanation_carries_each_sentence_apart():
+    """The template renders one paragraph per part, so the parts stay separate
+    all the way from the service rather than being glued with a separator."""
+    card = StatCard("Drinking days", explanation=("a share", "a definition."))
+
+    assert card.explanation == ("a share", "a definition.")
 
 
 # -------------------------------------------------------------------------------------
@@ -134,3 +142,36 @@ def test_level_carries_the_unit_it_is_given():
     card = StatCard.level("Avg per day", state="low", value="300", unit="ml", note="")
 
     assert card.unit == "ml"
+
+
+# -------------------------------------------------------------------------------------
+#                                                                            arrow
+# -------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("improving", [True, False])
+def test_comparison_carries_the_direction_the_arrow_points(improving):
+    card = StatCard.comparison("Heavy days", improving=improving, value="1", note="")
+
+    assert card.improving is improving
+
+
+def test_a_level_can_point_at_a_direction_it_is_not_coloured_by():
+    """A threshold owns the colour; a baseline owns the arrow, and one card can
+    read against both."""
+    card = StatCard.level(
+        "Avg per day",
+        state="high",
+        value="3.0",
+        note="",
+        improving=True,
+        show_icon=True,
+    )
+
+    assert card.state == "high"
+    assert card.show_icon is True
+    assert card.improving is True
+
+
+def test_a_plain_card_points_at_nothing():
+    assert StatCard("Pure alcohol", value="2.5").improving is False

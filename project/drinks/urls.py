@@ -6,7 +6,7 @@ from .apps import App_name
 app_name = App_name
 
 urlpatterns = [
-    path("", views.Index.as_view(), name="index"),
+    path("", views.TabIndex.as_view(), name="index"),
     path("index/", views.TabIndex.as_view(), name="tab_index"),
     path("habits/", views.TabHabits.as_view(), name="tab_habits"),
     # no `qty` at all means no pooled layer: the chart opens on the header year
