@@ -170,3 +170,24 @@ def test_clip_of_nothing_is_empty():
     boundary = YearBoundary(year=2026, today=date(2026, 2, 1))
 
     assert boundary.clip([]) == []
+
+
+# -------------------------------------------------------------------------------------
+#                                                                   previous_end_date
+# -------------------------------------------------------------------------------------
+def test_previous_end_date_is_the_same_month_and_day_a_year_back():
+    boundary = YearBoundary(year=2026, today=date(2026, 8, 11))
+
+    assert boundary.previous_end_date == date(2025, 8, 11)
+
+
+def test_previous_end_date_of_a_finished_year_is_the_whole_year_before_it():
+    boundary = YearBoundary(year=2020, today=date(2026, 8, 11))
+
+    assert boundary.previous_end_date == date(2019, 12, 31)
+
+
+def test_previous_end_date_clamps_a_leap_day_onto_a_common_year():
+    boundary = YearBoundary(year=2024, today=date(2024, 2, 29))
+
+    assert boundary.previous_end_date == date(2023, 2, 28)
