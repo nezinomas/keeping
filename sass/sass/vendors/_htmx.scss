@@ -2,10 +2,20 @@
     display: none;
 }
 
-.htmx-request .htmx-indicator {
-    display: inline;
-}
-
+// A scrim that appears and vanishes inside a fast swap reads as a glitch, so the
+// reveal waits out the span where a page still feels instant.
+.htmx-request .htmx-indicator,
 .htmx-request.htmx-indicator {
     display: inline;
+    opacity: 0;
+    // full-screen while invisible, so it must not swallow clicks
+    pointer-events: none;
+    animation: htmx-indicator-reveal 120ms linear 280ms forwards;
+}
+
+@keyframes htmx-indicator-reveal {
+    to {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }

@@ -6,6 +6,9 @@
 <html lang="{{LANGUAGE_CODE}}">
   <head>
     <meta charset="utf-8">
+    <!-- above the script, because htmx reads the config at load: its own indicator
+         styles would outrank the delayed reveal in the bundle -->
+    <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
     <script nonce="{{ csp_nonce }}" src="{% static 'htmx/htmx.min.js' %}"></script> <!-- Htmx -->
     <script nonce="{{ csp_nonce }}" defer src="{% static 'alpinejs/alpinejs_morth_3.14.8.js' %}"></script> <!-- Alpine Plugins -->
     <script nonce="{{ csp_nonce }}" defer src="{% static 'alpinejs/alpinejs_3.14.8.js' %}"></script> <!-- Alpine Core -->
