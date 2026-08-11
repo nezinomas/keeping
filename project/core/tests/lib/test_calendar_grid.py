@@ -4,7 +4,9 @@ import pytest
 import time_machine
 from django.utils.translation import gettext as _
 
+from ....drinks.lib.drinks_risk import HEAVY_DAY_STDAV
 from ...lib.calendar_grid import (
+    LEVEL_3_MAX,
     CalendarDayViewModel,
     CalendarGrid,
     CalendarMonthViewModel,
@@ -64,7 +66,7 @@ def test_build_empty_returns_full_year():
     assert all(isinstance(m, CalendarMonthViewModel) for m in grid.months)
     assert all(isinstance(d, CalendarDayViewModel) for m in grid.months for d in m.days)
     assert all(d.level == 0 for m in grid.months for d in m.days)
-    assert all(d.label == "" for m in grid.months for d in m.days if not d.is_today)
+    assert all(d.label == "" for m in grid.months for d in m.days if d.is_future)
     gap_str = _("Gap")
     assert grid.months[5].days[14].label == f"1999-06-15\n{gap_str}: 0d."
 
@@ -103,7 +105,7 @@ def test_build_all_levels_and_labels():
     assert [d.level for d in days[:5]] == [1, 2, 3, 4, 0]
     assert days[0].label == f"1999-01-01\n{qty_str}: 0.4\n{gap_str}: 0d."
     assert days[3].label == f"1999-01-04\n{qty_str}: 2.4\n{gap_str}: 1d."
-    assert days[4].label == ""
+    assert days[4].label == f"1999-01-05\n{_('No drink')}"
     assert days[0].gap == 0
     assert days[3].gap == 1
 
@@ -178,6 +180,47 @@ def test_build_other_year_has_no_future_days():
     grid = CalendarGrid.build(1998, daily_data=[], today=date(1999, 6, 15))
 
     assert all(not d.is_future for m in grid.months for d in m.days)
+
+
+def test_a_dry_day_is_labelled_rather_than_left_blank():
+    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 12, 31))
+
+    assert grid.months[0].days[0].label == f"1999-01-01\n{_('No drink')}"
+
+
+def test_a_future_day_carries_no_label():
+    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 6, 15))
+
+    assert grid.months[5].days[15].label == ""
+
+
+def test_a_days_speech_is_its_label_on_one_line():
+    daily = [{"date": date(1999, 1, 1), "stdav": 1.0, "qty": 0.4}]
+    grid = CalendarGrid.build(1999, daily_data=daily, today=date(1999, 12, 31))
+
+    qty_str = _("Quantity")
+    gap_str = _("Gap")
+    assert grid.months[0].days[0].speech == (
+        f"1999-01-01, {qty_str}: 0.4, {gap_str}: 0d."
+    )
+
+
+def test_legend_bounds_name_every_level():
+    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 12, 31))
+
+    assert grid.legend.bounds == ("0", "<2", "2-4", "4-6", ">=6")
+
+
+def test_legend_carries_the_unit_the_levels_are_read_in():
+    grid = CalendarGrid.build(
+        1999, daily_data=[], today=date(1999, 12, 31), unit="Std Av"
+    )
+
+    assert grid.legend.unit == "Std Av"
+
+
+def test_the_top_level_starts_at_the_heavy_day_threshold():
+    assert LEVEL_3_MAX == HEAVY_DAY_STDAV
 
 
 def test_build_a_year_not_started_yet_has_no_future_days():
