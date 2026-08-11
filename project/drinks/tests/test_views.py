@@ -367,6 +367,13 @@ def test_tab_button_pushes_its_url(tab, client_logged):
 
 
 @pytest.mark.parametrize("tab", TABS)
+def test_tab_button_shows_the_loader_while_it_fetches(tab, client_logged):
+    attrs = tab_button(client_logged.get(reverse("drinks:index")).content.decode(), tab)
+
+    assert 'hx-indicator="#indicator"' in attrs
+
+
+@pytest.mark.parametrize("tab", TABS)
 def test_every_tab_button_is_a_tab(tab, client_logged):
     attrs = tab_button(client_logged.get(reverse("drinks:index")).content.decode(), tab)
 
