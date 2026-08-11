@@ -636,6 +636,28 @@ def test_tab_index_calendar_days_are_reachable_by_keyboard(client_logged):
     assert 'tabindex="-1" aria-label="1999-01-05, ' in html
 
 
+def test_tab_index_htmx_fragment_carries_no_inline_script(client_logged):
+    DrinkFactory(date=date(1999, 1, 5), stdav=2.5, option="beer")
+
+    response = client_logged.get(reverse("drinks:tab_index"), HTTP_HX_REQUEST="true")
+    fragment = response.content.decode("utf-8")
+
+    opening_tags = re.findall(r"<script[^>]*>", fragment)
+
+    assert "heat-card" in fragment
+    assert opening_tags
+    assert all('type="application/json"' in tag for tag in opening_tags)
+
+
+def test_tab_index_loads_the_calendar_script_as_a_static_file(client_logged):
+    DrinkFactory(date=date(1999, 1, 5), stdav=2.5, option="beer")
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    html = response.content.decode("utf-8")
+
+    assert "js/drinks_calendar.js" in html
+
+
 def test_tab_index_calendar_legend_states_the_bounds_of_each_level(client_logged):
     DrinkFactory(date=date(1999, 1, 5), stdav=2.5, option="beer")
 
