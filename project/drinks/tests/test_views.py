@@ -4,6 +4,7 @@ from datetime import date
 import pytest
 import time_machine
 from django.urls import resolve, reverse, reverse_lazy
+from django.utils.html import escape
 from django.utils.translation import gettext as _
 
 from ...core.tests.utils import change_profile_year, setup_view
@@ -1038,6 +1039,23 @@ def test_tab_risk_renders_hover_explanation(client_logged):
     assert "bi bi-info-circle" in content
     assert 'class="trend-card__explanation"' in content
     assert 'x-show="open"' not in content
+
+
+@time_machine.travel("1999-06-01")
+def test_tab_index_renders_each_explanation_part_as_its_own_paragraph(client_logged):
+    DrinkFactory(date=date(1999, 1, 10), stdav=7)
+    DrinkFactory(date=date(1998, 1, 10), stdav=7)
+
+    url = reverse("drinks:tab_index")
+    response = client_logged.get(url, HTTP_HX_REQUEST="true")
+    content = response.content.decode()
+
+    card = next(c for c in response.context["cards"] if c.title == _("Drinking days"))
+    assert len(card.explanation) == 3
+    for part in card.explanation:
+        assert f"<p>{escape(part)}</p>" in content
+    # a label cannot hold markup, so it stays the parts run together
+    assert f'aria-label="{escape(" ".join(card.explanation))}"' in content
 
 
 @time_machine.travel("1999-06-01")

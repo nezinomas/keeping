@@ -169,7 +169,7 @@ def test_card_per_drinking_day_explains_its_denominator_and_its_unit():
     # what the figure is divided by and why it never follows the dropdown
     card = _builder([_row(date(1999, 1, 4), 7.9)]).get_cards()[0]
 
-    assert card.explanation == "{} {}".format(
+    assert card.explanation == (
         _(
             "The year's Std Av divided by the days a Drink was recorded on, "
             "not by every day of the year."
@@ -184,7 +184,7 @@ def test_card_per_drinking_day_empty():
     assert card.state == "empty"
     assert card.value == ""
     assert card.note == _("No data")
-    assert card.explanation == ""
+    assert card.explanation == ()
 
 
 # -------------------------------------------------------------------------------------

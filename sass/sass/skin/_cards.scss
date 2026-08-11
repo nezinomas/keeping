@@ -260,6 +260,12 @@
             transform: translateX(-50%);
             transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
             pointer-events: none;
+
+            // normalize zeroes every p margin, so the paragraphs would read as
+            // one block without this
+            p + p {
+                margin-top: 0.5rem;
+            }
         }
     }
 }

@@ -45,10 +45,10 @@ def test_comparison_always_shows_an_icon():
 
 def test_comparison_carries_the_explanation():
     card = StatCard.comparison(
-        "Heavy days", improving=True, value="1", note="1 / 2", explanation="why"
+        "Heavy days", improving=True, value="1", note="1 / 2", explanation=("why",)
     )
 
-    assert card.explanation == "why"
+    assert card.explanation == ("why",)
 
 
 # -------------------------------------------------------------------------------------
@@ -72,10 +72,10 @@ def test_level_shows_no_icon_unless_it_is_asked_for_one():
 
 def test_level_carries_the_explanation():
     card = StatCard.level(
-        "This week", state="high", value="30.0", note="", explanation="why"
+        "This week", state="high", value="30.0", note="", explanation=("why",)
     )
 
-    assert card.explanation == "why"
+    assert card.explanation == ("why",)
 
 
 # -------------------------------------------------------------------------------------
@@ -88,7 +88,15 @@ def test_defaults_render_a_plain_card():
 
     assert card.state == "neutral"
     assert card.show_icon is False
-    assert card.explanation == ""
+    assert card.explanation == ()
+
+
+def test_an_explanation_carries_each_sentence_apart():
+    """The template renders one paragraph per part, so the parts stay separate
+    all the way from the service rather than being glued with a separator."""
+    card = StatCard("Drinking days", explanation=("a share", "a definition."))
+
+    assert card.explanation == ("a share", "a definition.")
 
 
 # -------------------------------------------------------------------------------------

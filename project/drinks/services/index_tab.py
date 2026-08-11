@@ -182,6 +182,10 @@ class IndexBuilder:
     def _last_year(value: str) -> str:
         return f"{_('Last year')} {value}"
 
+    @staticmethod
+    def _arrow_note() -> str:
+        return _("The arrow compares with last year, up to the same date.")
+
     def _against_last_year(
         self, current: float, previous: float
     ) -> YearOverYear | EmptyYearOverYear:
@@ -226,17 +230,15 @@ class IndexBuilder:
                 title=title,
                 value=value,
                 note=share,
-                explanation=f"{share} · {definition}",
+                explanation=(share, definition),
             )
-
-        arrow = _("The arrow compares with last year, up to the same date.")
 
         return StatCard.comparison(
             title,
             improving=comparison.improving,
             value=value,
             note=self._last_year(f"{comparison.previous:.0f}"),
-            explanation=f"{share} · {definition} {arrow}",
+            explanation=(share, definition, self._arrow_note()),
         )
 
     def _card_std_drinks(self) -> StatCard:
@@ -257,7 +259,7 @@ class IndexBuilder:
             improving=comparison.improving,
             value=value,
             note=self._last_year(f"{comparison.previous:.0f}"),
-            explanation=_("The arrow compares with last year, up to the same date."),
+            explanation=(self._arrow_note(),),
         )
 
     def _card_avg_per_day(self) -> StatCard:
@@ -280,7 +282,10 @@ class IndexBuilder:
 
         # the Per drinking day card beside this one is Std Av over a different
         # denominator, so this explanation names both of its own
-        explanation = f"{unit} {_('per calendar day')}"
+        explanation = (f"{unit} {_('per calendar day')}",)
+
+        if comparison.has_past:
+            explanation += (self._arrow_note(),)
 
         if not self._target:
             if not comparison.has_past:
@@ -328,7 +333,7 @@ class IndexBuilder:
             note=baseline,
             show_icon=True,
             improving=comparison.improving,
-            explanation=f"{explanation} · {limit_note}",
+            explanation=explanation,
         )
 
     def _avg_daily(self, stats: DrinkStats) -> float:
@@ -360,7 +365,7 @@ class IndexBuilder:
             value=value,
             unit="L",
             note=self._last_year(f"{comparison.previous:.1f}"),
-            explanation=_("The arrow compares with last year, up to the same date."),
+            explanation=(self._arrow_note(),),
         )
 
     def _card_limit(self) -> StatCard:

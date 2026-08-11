@@ -154,7 +154,7 @@ class RiskViewModelBuilder:
                 title=title,
                 value=str(stats.current),
                 note=_("No prior year"),
-                explanation=definition,
+                explanation=(definition,),
             )
 
         comparison = _(
@@ -166,5 +166,5 @@ class RiskViewModelBuilder:
             improving=stats.improving,
             value=str(stats.current),
             note=f"{stats.current} / {stats.previous}",
-            explanation=f"{definition} {comparison}",
+            explanation=(definition, comparison),
         )
