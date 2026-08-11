@@ -282,7 +282,7 @@ def test_card_avg_per_day_over_limit(main_user, drink_converter):
     assert card.value == "300"
     assert card.unit == "ml"
     assert card.note == f"50 {_('over the limit')}"
-    assert card.explanation == f"ml {_('per calendar day')}"
+    assert card.explanation == (f"ml {_('per calendar day')}",)
 
 
 def test_card_avg_per_day_under_limit(main_user, drink_converter):
@@ -294,7 +294,7 @@ def test_card_avg_per_day_under_limit(main_user, drink_converter):
     assert card.value == "300"
     assert card.unit == "ml"
     assert card.note == f"100 {_('under the limit')}"
-    assert card.explanation == f"ml {_('per calendar day')}"
+    assert card.explanation == (f"ml {_('per calendar day')}",)
 
 
 def test_card_avg_per_day_equal_limit_is_positive(main_user, drink_converter):
@@ -304,7 +304,7 @@ def test_card_avg_per_day_equal_limit_is_positive(main_user, drink_converter):
 
     assert card.state == "low"
     assert card.note == f"0 {_('under the limit')}"
-    assert card.explanation == f"ml {_('per calendar day')}"
+    assert card.explanation == (f"ml {_('per calendar day')}",)
 
 
 def test_card_avg_per_day_no_limit(main_user, drink_converter):
@@ -316,7 +316,7 @@ def test_card_avg_per_day_no_limit(main_user, drink_converter):
     assert card.value == "300"
     assert card.unit == "ml"
     assert card.note == _("No limit set")
-    assert card.explanation == f"ml {_('per calendar day')}"
+    assert card.explanation == (f"ml {_('per calendar day')}",)
 
 
 def test_card_avg_per_day_stdav_over_limit(main_user):
@@ -330,7 +330,7 @@ def test_card_avg_per_day_stdav_over_limit(main_user):
     # Std Av is shown as typed: the explanation names the unit, the figure does not
     assert card.unit == ""
     assert card.note == f"0.5 {_('over the limit')}"
-    assert card.explanation == f"Std Av {_('per calendar day')}"
+    assert card.explanation == (f"Std Av {_('per calendar day')}",)
 
 
 def test_card_avg_per_day_stdav_under_limit(main_user):
@@ -342,7 +342,7 @@ def test_card_avg_per_day_stdav_under_limit(main_user):
     assert card.state == "low"
     assert card.value == "2.0"
     assert card.note == f"0.5 {_('under the limit')}"
-    assert card.explanation == f"Std Av {_('per calendar day')}"
+    assert card.explanation == (f"Std Av {_('per calendar day')}",)
 
 
 def test_card_avg_per_day_notes_last_year_but_is_still_coloured_by_the_limit(
@@ -363,8 +363,10 @@ def test_card_avg_per_day_notes_last_year_but_is_still_coloured_by_the_limit(
     assert card.note == f"{_('Last year')} 280"
     assert card.show_icon is True
     assert card.improving is False
+    # the card has an arrow, so its tooltip has to say what the arrow compares
     assert card.explanation == (
-        f"ml {_('per calendar day')} · 100 {_('under the limit')}"
+        f"ml {_('per calendar day')}",
+        _("The arrow compares with last year, up to the same date."),
     )
 
 
@@ -382,7 +384,10 @@ def test_card_avg_per_day_without_a_limit_compares_with_last_year(
 
     assert card.state == "improving"
     assert card.note == f"{_('Last year')} 320"
-    assert card.explanation == f"ml {_('per calendar day')}"
+    assert card.explanation == (
+        f"ml {_('per calendar day')}",
+        _("The arrow compares with last year, up to the same date."),
+    )
 
 
 def test_card_avg_per_day_stdav_reads_the_baseline_in_std_av_too(main_user):
@@ -459,9 +464,11 @@ def test_card_drinking_days_with_data(main_user, drink_converter):
     assert card.show_icon is True
 
 
-def test_card_drinking_days_keeps_the_share_in_its_explanation(
+def test_card_drinking_days_explains_itself_in_three_paragraphs(
     main_user, drink_converter
 ):
+    """A reading, a definition and a key to the arrow are three kinds of
+    statement, so each is its own paragraph."""
     current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
     past = [_row(date(1998, 1, 1), 3)]
 
@@ -469,8 +476,25 @@ def test_card_drinking_days_keeps_the_share_in_its_explanation(
         drink_converter, frequency_stats=_frequency(current, past)
     ).get_cards()[1]
 
-    assert card.explanation.startswith(
-        _("%(share)s%% of the year so far") % {"share": "40"}
+    assert card.explanation == (
+        _("%(share)s%% of the year so far") % {"share": "40"},
+        _("Calendar days with at least one Drink recorded."),
+        _("The arrow compares with last year, up to the same date."),
+    )
+
+
+def test_card_drinking_days_drops_the_arrow_paragraph_without_a_baseline(
+    main_user, drink_converter
+):
+    current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
+
+    card = _card_builder(
+        drink_converter, frequency_stats=_frequency(current)
+    ).get_cards()[1]
+
+    assert card.explanation == (
+        _("%(share)s%% of the year so far") % {"share": "40"},
+        _("Calendar days with at least one Drink recorded."),
     )
 
 
@@ -482,7 +506,7 @@ def test_card_drinking_days_note_on_a_year_already_over(main_user, drink_convert
         drink_converter, frequency_stats=_frequency(current, today=date(2000, 6, 1))
     ).get_cards()[1]
 
-    assert card.explanation.startswith(_("%(share)s%% of the year") % {"share": "1"})
+    assert card.explanation[0] == _("%(share)s%% of the year") % {"share": "1"}
 
 
 def test_card_drinking_days_fewer_than_last_year_is_improving(

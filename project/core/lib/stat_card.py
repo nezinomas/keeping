@@ -31,7 +31,9 @@ class StatCard:
     # which way the arrow points, kept apart from `state` so a card read against
     # a threshold can still point at a baseline
     improving: bool = False
-    explanation: str = ""
+    # one sentence per part: the template renders each as its own paragraph, so
+    # nothing here decides how they are separated
+    explanation: tuple[str, ...] = ()
     # a figure the user can change: the url a pencil beside it opens, and what
     # that pencil is called. The figure itself is still read, never pressed.
     edit_url: str = ""
@@ -51,7 +53,7 @@ class StatCard:
         value: str,
         note: str,
         unit: str = "",
-        explanation: str = "",
+        explanation: tuple[str, ...] = (),
     ) -> "StatCard":
         """A metric read against a baseline, so it has a direction."""
         return cls(
@@ -74,7 +76,7 @@ class StatCard:
         value: str,
         note: str,
         unit: str = "",
-        explanation: str = "",
+        explanation: tuple[str, ...] = (),
         improving: bool = False,
         show_icon: bool = False,
     ) -> "StatCard":
