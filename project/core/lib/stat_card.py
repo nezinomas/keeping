@@ -28,6 +28,9 @@ class StatCard:
     note: str = ""
     state: str = NEUTRAL
     show_icon: bool = False
+    # which way the arrow points, kept apart from `state` so a card read against
+    # a threshold can still point at a baseline
+    improving: bool = False
     explanation: str = ""
     # a figure the user can change: the url a pencil beside it opens, and what
     # that pencil is called. The figure itself is still read, never pressed.
@@ -58,6 +61,7 @@ class StatCard:
             note=note,
             state=IMPROVING if improving else WORSENING,
             show_icon=True,
+            improving=improving,
             explanation=explanation,
         )
 
@@ -71,13 +75,18 @@ class StatCard:
         note: str,
         unit: str = "",
         explanation: str = "",
+        improving: bool = False,
+        show_icon: bool = False,
     ) -> "StatCard":
-        """A metric read against a threshold: a level, with no direction."""
+        """A metric read against a threshold, which colours it — and optionally
+        against a baseline too, which only points its arrow."""
         return cls(
             title=title,
             value=value,
             unit=unit,
             note=note,
             state=state,
+            show_icon=show_icon,
+            improving=improving,
             explanation=explanation,
         )
