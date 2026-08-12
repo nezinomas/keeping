@@ -1,52 +1,74 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from ..models import DrinkType
 from ..tabs import DrinkTabs
 
-# tabs whose amounts follow the selected Drink type, and tabs read in Std Av
-# whatever it says; the rest read no amount, so they show no switcher at all
 SELECTING_TABS = ("index", "trends", "history")
 STDAV_TABS = ("habits", "risk")
+
+# the template maps these to markup
+CHOICE = "choice"
+FIXED = "fixed"
+ABSENT = "absent"
 
 
 @dataclass(frozen=True)
 class DrinkTypeSelector:
-    """The drink-type switcher shown beside the quick-add form.
-
-    Needs only the drink type itself — not a request, not a user — so a tab
-    can be rendered for any drink type without one.
-    """
+    """Needs only the drink type, not a request or a user, so a tab can render
+    for any type without one."""
 
     selected: str  # the raw value, e.g. "beer"
-    label: str  # its translated label, e.g. "Beer"
-    options: list[tuple[str, str]] = field(default_factory=list)  # (label, value)
 
-    @classmethod
-    def for_drink_type(cls, drink_type: str) -> "DrinkTypeSelector":
-        return cls(
-            selected=drink_type,
-            label=DrinkType(drink_type).label,
-            # a list, not the zip it used to be: two templates iterate this on
-            # the same page and an iterator would be empty for the second
-            options=list(zip(DrinkType.labels, DrinkType.values)),
-        )
+    state = CHOICE
 
-    @classmethod
-    def for_tab(cls, tab: str, drink_type: str) -> "DrinkTypeSelector | None":
-        """What one tab shows where the switcher goes.
+    @property
+    def label(self) -> str:
+        return DrinkType(self.selected).label
 
-        Overview, Trends and History read their amounts in the selected Drink
-        type, so they offer the choice. Habits and Risk are harm metrics,
-        defined in Std Av, so they name that unit and offer nothing. Data lists
-        what was typed, each row in its own drink type, so it needs neither.
-        """
-        name = DrinkTabs.resolve(tab).name
+    @property
+    def options(self) -> list[tuple[str, str]]:
+        # a list, not the zip it used to be: two templates iterate this on the
+        # same page and an iterator would be empty for the second
+        return list(zip(DrinkType.labels, DrinkType.values))
 
-        if name in SELECTING_TABS:
-            return cls.for_drink_type(drink_type)
 
-        if name in STDAV_TABS:
-            stdav = DrinkType.STDAV
-            return cls(selected=stdav.value, label=stdav.label)
+@dataclass(frozen=True)
+class FixedDrinkTypeSelector:
+    """A harm metric is defined in Std Av, so the tabs reading one name that
+    unit and offer no choice."""
 
-        return None
+    selected = DrinkType.STDAV.value
+    state = FIXED
+    options = ()
+
+    @property
+    def label(self) -> str:
+        return DrinkType(self.selected).label
+
+
+@dataclass(frozen=True)
+class NoDrinkTypeSelector:
+    """Never None: a tab that reads no single amount still answers every
+    question the template asks."""
+
+    selected = ""
+    label = ""
+    options = ()
+    state = ABSENT
+
+
+DrinkTypeControl = DrinkTypeSelector | FixedDrinkTypeSelector | NoDrinkTypeSelector
+
+
+def control_for_tab(tab: str, drink_type: str) -> DrinkTypeControl:
+    """Data lists what was typed, each row in its own drink type, so it reads no
+    single amount and wears no control."""
+    name = DrinkTabs.resolve(tab).name
+
+    if name in SELECTING_TABS:
+        return DrinkTypeSelector(drink_type)
+
+    if name in STDAV_TABS:
+        return FixedDrinkTypeSelector()
+
+    return NoDrinkTypeSelector()

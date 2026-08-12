@@ -33,9 +33,7 @@ class DrinkTypeContextMixin:
         return {
             **super().get_context_data(**kwargs),
             "tab": self.tab,
-            "drink_type_control": services.DrinkTypeSelector.for_tab(
-                self.tab, user.drink_type
-            ),
+            "drink_type_control": services.control_for_tab(self.tab, user.drink_type),
         }
 
 
@@ -60,7 +58,7 @@ class TabViewMixin(DrinkTypeContextMixin):
         return {
             "tabs": DrinkTabs.all(),
             "recent_days": services.RecentDaySelector.for_day(datetime.now().date()),
-            "drink_types": services.DrinkTypeSelector.for_drink_type(user.drink_type),
+            "drink_types": services.DrinkTypeSelector(user.drink_type),
         }
 
 
