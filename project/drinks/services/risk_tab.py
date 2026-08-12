@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 
 from django.utils.translation import gettext as _
 
@@ -10,6 +10,7 @@ from ...core.lib.stat_card import (
     StatCard,
 )
 from ...core.lib.translation import month_names
+from ..lib.chart_view_model import ChartViewModel
 from ..lib.drinks_risk import (
     HEAVY_DAY_STDAV,
     WEEKLY_HIGH_RISK_STDAV,
@@ -21,7 +22,7 @@ from .consumption_year import ConsumptionYear
 
 
 @dataclass(frozen=True)
-class WeeklyRiskChartViewModel:
+class WeeklyRiskChartViewModel(ChartViewModel):
     categories: list[str]
     week_ends: list[str]
     data: list[float]
@@ -29,21 +30,13 @@ class WeeklyRiskChartViewModel:
     high_risk: float
     text: dict[str, str]
 
-    @property
-    def as_dict(self) -> dict:
-        return asdict(self)
-
 
 @dataclass(frozen=True)
-class MonthlyHeavyDaysChartViewModel:
+class MonthlyHeavyDaysChartViewModel(ChartViewModel):
     categories: list[str]
     data: list[int]
     heavy_threshold: float
     text: dict[str, str]
-
-    @property
-    def as_dict(self) -> dict:
-        return asdict(self)
 
 
 class RiskTab:

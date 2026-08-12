@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 
 from django.utils.translation import gettext as _
 
@@ -10,6 +10,7 @@ from ...core.lib.stat_card import (
     LevelStatCard,
     StatCard,
 )
+from ..lib.chart_view_model import ChartViewModel
 from ..lib.drinks_trend import (
     EmptyRecentPeriodComparison,
     RecentPeriodComparison,
@@ -19,7 +20,7 @@ from .consumption_year import ConsumptionYear
 
 
 @dataclass(frozen=True)
-class TrendChartViewModel:
+class TrendChartViewModel(ChartViewModel):
     categories: list[str]
     daily: list[float]
     rolling_7: list[float]
@@ -28,22 +29,14 @@ class TrendChartViewModel:
     decimals: int
     text: dict[str, str]
 
-    @property
-    def as_dict(self) -> dict:
-        return asdict(self)
-
 
 @dataclass(frozen=True)
-class TrendCumulativeViewModel:
+class TrendCumulativeViewModel(ChartViewModel):
     categories: list[str]
     this_year: list[float]
     last_year: list[float]
     target: list[float]
     text: dict[str, str]
-
-    @property
-    def as_dict(self) -> dict:
-        return asdict(self)
 
 
 class TrendsTab:
