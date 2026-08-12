@@ -1,6 +1,6 @@
 import pytest
 
-from ...services.drink_type_selector import (
+from ...lib.drink_type_control import (
     DrinkTypeSelector,
     FixedDrinkTypeSelector,
     NoDrinkTypeSelector,

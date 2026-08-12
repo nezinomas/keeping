@@ -25,6 +25,7 @@ from ..lib.drinks_stats import (
     YearOverYear,
     YearOverYearReading,
 )
+from ..tabs import DrinkTab
 from .consumption_year import ConsumptionYear
 
 
@@ -365,7 +366,7 @@ class IndexBuilder:
             return EmptyStatCard(
                 title=title,
                 note=_("No limit set"),
-                edit_url=reverse("drinks:target_new", kwargs={"tab": "index"}),
+                edit_url=DrinkTab.resolve("index").form_url("drinks:target_new"),
                 edit_label=label,
             )
 
