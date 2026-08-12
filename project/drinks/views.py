@@ -24,7 +24,7 @@ from .services.model_services import DrinkModelService, DrinkTargetModelService
 from .tabs import DEFAULT_TAB, DrinkTabs
 
 
-class DrinkTypeContextMixin:
+class TabViewMixin:
     tab = DEFAULT_TAB
 
     def get_context_data(self, **kwargs):
@@ -36,8 +36,6 @@ class DrinkTypeContextMixin:
             "drink_type_control": services.control_for_tab(self.tab, user.drink_type),
         }
 
-
-class TabViewMixin(DrinkTypeContextMixin):
     def render_to_response(self, context, **response_kwargs):
         response = super().render_to_response(context, **response_kwargs)
         htmx = self.request.htmx
