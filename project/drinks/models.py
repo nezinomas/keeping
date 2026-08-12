@@ -1,16 +1,9 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.utils.translation import gettext_lazy as _l
 
 from ..users.models import User
 from .lib.drink_quantity import DrinkQuantity
-
-
-class DrinkType(models.TextChoices):
-    BEER = "beer", _l("Beer")
-    WINE = "wine", _l("Wine")
-    VODKA = "vodka", _l("Vodka")
-    STDAV = "stdav", "Std Av"
+from .lib.drink_types import DrinkType
 
 
 class Drink(models.Model):

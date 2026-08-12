@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import date as dt_date
 from datetime import datetime
 
@@ -8,27 +8,37 @@ from django.utils.translation import gettext as _
 from ...core.lib import stat_card
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.date import ydays, years
-from ...core.lib.stat_card import StatCard
+from ...core.lib.stat_card import (
+    Card,
+    ComparisonStatCard,
+    EmptyStatCard,
+    LevelStatCard,
+    StatCard,
+)
 from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
+from ..lib.chart_view_model import ChartViewModel
+from ..lib.drink_types import DrinkType
 from ..lib.drinks_frequency import FrequencyStats
-from ..lib.drinks_options import DrinkConverter
-from ..lib.drinks_stats import DrinkStats, EmptyYearOverYear, YearOverYear
+from ..lib.drinks_options import DRINK_SPECS, DrinkConverter
+from ..lib.drinks_stats import (
+    DrinkStats,
+    EmptyYearOverYear,
+    YearOverYear,
+    YearOverYearReading,
+)
+from ..tabs import DrinkTab
 from .consumption_year import ConsumptionYear
 
 
 @dataclass(frozen=True)
-class ChartViewModel:
+class MonthlyChartViewModel(ChartViewModel):
     categories: list[str]
     data: list[float | None]
     text: dict[str, str]
     target: float | None = None
     avg: float | None = None
     decimals: int = 0
-
-    @property
-    def as_dict(self) -> dict:
-        return asdict(self)
 
 
 @dataclass(frozen=True)
@@ -125,17 +135,17 @@ class IndexBuilder:
         self._frequency_stats = frequency_stats or FrequencyStats()
         self._converter = converter
 
-    def chart_quantity(self) -> ChartViewModel:
-        return ChartViewModel(
+    def chart_quantity(self) -> MonthlyChartViewModel:
+        return MonthlyChartViewModel(
             categories=list(month_names().values()),
             data=self._drink_stats.monthly.total_quantity,
             text={"quantity": _("Quantity")},
         )
 
-    def chart_consumption(self) -> ChartViewModel:
+    def chart_consumption(self) -> MonthlyChartViewModel:
         unit = self._converter.display_unit
 
-        return ChartViewModel(
+        return MonthlyChartViewModel(
             categories=list(month_names().values()),
             data=self._drink_stats.monthly.avg_daily_volume,
             target=self._target,
@@ -155,7 +165,7 @@ class IndexBuilder:
 
         return DryDaysViewModel()
 
-    def get_cards(self) -> list[StatCard]:
+    def get_cards(self) -> list[Card]:
         return [
             self._card_dry_days(),
             self._card_drinking_days(),
@@ -175,17 +185,18 @@ class IndexBuilder:
 
     def _against_last_year(
         self, current: float, previous: float
-    ) -> YearOverYear | EmptyYearOverYear:
-        return YearOverYear.compare(
-            current, previous, has_past=bool(self._previous_stats.yearly.total_quantity)
-        )
+    ) -> YearOverYearReading:
+        if not self._previous_stats.yearly.total_quantity:
+            return EmptyYearOverYear(current)
 
-    def _card_dry_days(self) -> StatCard:
+        return YearOverYear(current, previous)
+
+    def _card_dry_days(self) -> Card:
         title = _("Days dry")
         dry = self.tbl_dry_days()
 
         if not dry.has_data:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         return StatCard(
             title=title,
@@ -193,12 +204,12 @@ class IndexBuilder:
             note=dry.date.strftime("%Y-%m-%d"),
         )
 
-    def _card_drinking_days(self) -> StatCard:
+    def _card_drinking_days(self) -> Card:
         title = _("Drinking days")
         frequency = self._frequency_stats
 
         if not frequency.drinking_days:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         value = str(frequency.drinking_days)
         share = (
@@ -218,7 +229,7 @@ class IndexBuilder:
                 explanation=(share, definition),
             )
 
-        return StatCard.comparison(
+        return ComparisonStatCard(
             title,
             improving=comparison.improving,
             value=value,
@@ -226,11 +237,11 @@ class IndexBuilder:
             explanation=(share, definition, self._arrow_note()),
         )
 
-    def _card_std_drinks(self) -> StatCard:
+    def _card_std_drinks(self) -> Card:
         title = _("Std drinks")
 
         if not self._drink_stats.yearly.total_quantity:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         stdav = self._drink_stats.yearly.stdav
         value = f"{stdav:.0f}"
@@ -239,7 +250,7 @@ class IndexBuilder:
         if not comparison.has_past:
             return StatCard(title=title, value=value, note=_("Std Av this year"))
 
-        return StatCard.comparison(
+        return ComparisonStatCard(
             title,
             improving=comparison.improving,
             value=value,
@@ -247,17 +258,17 @@ class IndexBuilder:
             explanation=(self._arrow_note(),),
         )
 
-    def _card_avg_per_day(self) -> StatCard:
+    def _card_avg_per_day(self) -> Card:
         title = _("Avg per day")
 
         if not self._drink_stats.yearly.total_quantity:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         unit = self._converter.display_unit
         decimals = self._converter.display_decimals
 
         avg = self._avg_daily(self._drink_stats)
-        figure_unit = "" if self._converter.drink_type == "stdav" else unit
+        figure_unit = self._converter.figure_unit
         value = f"{avg:.{decimals}f}"
 
         comparison = self._against_last_year(avg, self._avg_daily(self._previous_stats))
@@ -278,7 +289,7 @@ class IndexBuilder:
                     explanation=explanation,
                 )
 
-            return StatCard.comparison(
+            return ComparisonStatCard(
                 title,
                 improving=comparison.improving,
                 value=value,
@@ -295,7 +306,7 @@ class IndexBuilder:
         state = stat_card.LOW if under_limit else stat_card.HIGH
 
         if not comparison.has_past:
-            return StatCard.level(
+            return LevelStatCard(
                 title,
                 state=state,
                 value=value,
@@ -304,7 +315,7 @@ class IndexBuilder:
                 explanation=explanation,
             )
 
-        return StatCard.level(
+        return LevelStatCard(
             title,
             state=state,
             value=value,
@@ -316,16 +327,16 @@ class IndexBuilder:
         )
 
     def _avg_daily(self, stats: DrinkStats) -> float:
-        if self._converter.drink_type == "stdav":
+        if self._converter.is_canonical:
             return stats.yearly.avg_daily_stdav
 
         return stats.yearly.avg_daily_volume
 
-    def _card_pure_alcohol(self) -> StatCard:
+    def _card_pure_alcohol(self) -> Card:
         title = _("Pure alcohol")
 
         if not self._drink_stats.yearly.total_quantity:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         liters = self._drink_stats.yearly.pure_alcohol_liters
         value = f"{liters:.1f}"
@@ -336,7 +347,7 @@ class IndexBuilder:
         if not comparison.has_past:
             return StatCard(title=title, value=value, unit="L", note=_("this year"))
 
-        return StatCard.comparison(
+        return ComparisonStatCard(
             title,
             improving=comparison.improving,
             value=value,
@@ -345,27 +356,24 @@ class IndexBuilder:
             explanation=(self._arrow_note(),),
         )
 
-    def _card_limit(self) -> StatCard:
+    def _card_limit(self) -> Card:
         title = _("Daily limit")
         label = _("Goal for the year")
 
         if not self._target:
-            return StatCard(
+            return EmptyStatCard(
                 title=title,
                 note=_("No limit set"),
-                state=stat_card.EMPTY,
-                edit_url=reverse("drinks:target_new", kwargs={"tab": "index"}),
+                edit_url=DrinkTab.resolve("index").form_url("drinks:target_new"),
                 edit_label=label,
             )
 
-        unit = self._converter.display_unit
         decimals = self._converter.display_decimals
-        figure_unit = "" if self._converter.drink_type == "stdav" else unit
 
         return StatCard(
             title=title,
             value=f"{self._target:.{decimals}f}",
-            unit=figure_unit,
+            unit=self._converter.figure_unit,
             note=f"{self._pcs_per_day:.1f} {_('pcs')} / {_('day')}",
             edit_url=reverse("drinks:target_update", kwargs={"pk": self._target_id}),
             edit_label=label,
@@ -385,61 +393,29 @@ class IndexBuilder:
             return []
 
         day, week, month = self._get_period_counts(year)
+        base = (qty, qty / day, qty / week, qty / month)
 
-        base_total = qty
-        base_per_day = qty / day
-        base_per_week = qty / week
-        base_per_month = qty / month
-
-        return [
-            self._create_conversion_row(
-                _("Beer") + ", 0.5L",
-                base_total,
-                base_per_day,
-                base_per_week,
-                base_per_month,
-                "beer",
-            ),
-            self._create_conversion_row(
-                _("Wine") + ", 0.75L",
-                base_total,
-                base_per_day,
-                base_per_week,
-                base_per_month,
-                "wine",
-            ),
-            self._create_conversion_row(
-                _("Vodka") + ", 1L",
-                base_total,
-                base_per_day,
-                base_per_week,
-                base_per_month,
-                "vodka",
-            ),
-            ConversionRowViewModel(
-                title="Std Av",
-                total=base_total * self._converter.stdav_per_unit,
-                per_day=base_per_day * self._converter.stdav_per_unit,
-                per_week=base_per_week * self._converter.stdav_per_unit,
-                per_month=base_per_month * self._converter.stdav_per_unit,
-            ),
-        ]
+        return [self._create_conversion_row(t, base) for t in DrinkType]
 
     def _create_conversion_row(
-        self,
-        title: str,
-        total: float,
-        per_day: float,
-        per_week: float,
-        per_month: float,
-        drink_type: str,
+        self, drink_type: DrinkType, base: tuple[float, ...]
     ) -> ConversionRowViewModel:
+        spec = DRINK_SPECS[drink_type]
+        title = drink_type.label
+
+        if not spec.is_canonical:
+            title = f"{title}, {spec.ml / 1000:g}L"
+
+        total, per_day, per_week, per_month = (
+            self._converter.convert_qty(value, drink_type) for value in base
+        )
+
         return ConversionRowViewModel(
             title=title,
-            total=self._converter.convert_qty(total, drink_type),
-            per_day=self._converter.convert_qty(per_day, drink_type),
-            per_week=self._converter.convert_qty(per_week, drink_type),
-            per_month=self._converter.convert_qty(per_month, drink_type),
+            total=total,
+            per_day=per_day,
+            per_week=per_week,
+            per_month=per_month,
         )
 
     def _get_period_counts(self, year: int | None) -> tuple[int, int, int]:

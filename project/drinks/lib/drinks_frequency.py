@@ -4,7 +4,12 @@ from datetime import date
 from functools import cached_property
 
 from ...core.lib.year_boundary import YearBoundary
-from .drinks_stats import DataRow, EmptyYearOverYear, YearOverYear
+from .drinks_stats import (
+    DataRow,
+    EmptyYearOverYear,
+    YearOverYear,
+    YearOverYearReading,
+)
 
 WEEKDAYS = 7
 
@@ -111,19 +116,18 @@ class FrequencyStats:
         """Previous-year rows up to the same month and day as the year end."""
         return self._year.clip(self._past_daily_records)
 
-    def _compare(
-        self, current: float, previous: float
-    ) -> YearOverYear | EmptyYearOverYear:
-        return YearOverYear.compare(
-            current, previous, has_past=bool(self._past_daily_records)
-        )
+    def _compare(self, current: float, previous: float) -> YearOverYearReading:
+        if not self._past_daily_records:
+            return EmptyYearOverYear(current)
 
-    def compare_frequency(self) -> YearOverYear | EmptyYearOverYear:
+        return YearOverYear(current, previous)
+
+    def compare_frequency(self) -> YearOverYearReading:
         return self._compare(
             self.drinking_days, self._count_drinking_days(self._past_clipped_records)
         )
 
-    def compare_intensity(self) -> YearOverYear | EmptyYearOverYear:
+    def compare_intensity(self) -> YearOverYearReading:
         return self._compare(
             self.intensity, self._intensity(self._past_clipped_records)
         )

@@ -5,7 +5,7 @@ import pytest
 import time_machine
 from django.utils.translation import gettext as _
 
-from ....core.lib.stat_card import StatCard
+from ....core.lib.stat_card import Card
 from ...lib.drinks_risk import (
     HEAVY_DAY_STDAV,
     WEEKLY_HIGH_RISK_STDAV,
@@ -114,7 +114,7 @@ def test_get_cards_returns_four_view_models():
     cards = RiskViewModelBuilder(stats).get_cards()
 
     assert len(cards) == 4
-    assert all(isinstance(c, StatCard) for c in cards)
+    assert all(isinstance(c, Card) for c in cards)
     assert [c.title for c in cards] == [
         _("This week"),
         _("Worst week"),

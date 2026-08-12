@@ -5,10 +5,21 @@ from .apps import App_name
 
 app_name = App_name
 
+TAB_VIEWS = (
+    views.TabIndex,
+    views.TabTrends,
+    views.TabHabits,
+    views.TabRisk,
+    views.TabHistory,
+    views.TabData,
+)
+
 urlpatterns = [
     path("", views.TabIndex.as_view(), name="index"),
-    path("index/", views.TabIndex.as_view(), name="tab_index"),
-    path("habits/", views.TabHabits.as_view(), name="tab_habits"),
+    *(
+        path(f"{view.tab.name}/", view.as_view(), name=view.tab.url_name)
+        for view in TAB_VIEWS
+    ),
     # no `qty` at all means no pooled layer: the chart opens on the header year
     # alone, and a preset or the range form is what puts a range behind it
     path("typical_year/", views.TypicalYearChart.as_view(), name="typical_year"),
@@ -23,10 +34,6 @@ urlpatterns = [
         views.TypicalYearChart.as_view(),
         name="typical_year_last",
     ),
-    path("trends/", views.TabTrends.as_view(), name="tab_trends"),
-    path("risk/", views.TabRisk.as_view(), name="tab_risk"),
-    path("data/", views.TabData.as_view(), name="tab_data"),
-    path("history/", views.TabHistory.as_view(), name="tab_history"),
     path("<slug:tab>/new/", views.New.as_view(), name="new"),
     path("update/<int:pk>/", views.Update.as_view(), name="update"),
     path("delete/<int:pk>/", views.Delete.as_view(), name="delete"),

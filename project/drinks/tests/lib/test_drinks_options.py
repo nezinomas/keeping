@@ -1,6 +1,35 @@
 import pytest
 
-from ...lib.drinks_options import DrinkConverter
+from ...lib.drink_types import DrinkType
+from ...lib.drinks_options import DRINK_SPECS, DrinkConverter, DrinkTypeSpec
+
+
+def test_every_drink_type_has_a_spec():
+    assert set(DRINK_SPECS) == set(DrinkType.values)
+
+
+def test_a_canonical_type_reads_its_own_units_whatever_it_is_called(monkeypatch):
+    monkeypatch.setitem(
+        DRINK_SPECS,
+        "grog",
+        DrinkTypeSpec(
+            stdav=1,
+            ml=10,
+            is_canonical=True,
+            display_unit="Grog",
+            total_unit="Grog",
+            display_decimals=2,
+        ),
+    )
+
+    actual = DrinkConverter("grog")
+
+    assert actual.display_unit == "Grog"
+    assert actual.total_unit == "Grog"
+    assert actual.display_decimals == 2
+    assert actual.figure_unit == ""
+    assert actual.display_to_total(1000.0) == 1000.0
+    assert actual.stdav_to_display(1.0) == 1.0
 
 
 @pytest.mark.parametrize(

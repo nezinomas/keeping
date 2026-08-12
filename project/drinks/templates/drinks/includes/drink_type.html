@@ -5,7 +5,7 @@ carries: htmx moves it onto the one the page drew, so the control always names
 the unit the open tab reads in. Nothing to swap on a full page load.
 {% endcomment %}
 {% if not oob or request.htmx %}
-<div id="drink-type-control"{% if oob %} hx-swap-oob="true"{% endif %}>{% if drink_type_control.options %}<div class="dropdown">
+<div id="drink-type-control"{% if oob %} hx-swap-oob="true"{% endif %}>{% if drink_type_control.state == 'choice' %}<div class="dropdown">
         <button class="dropdown__btn">{{ drink_type_control.label }}</button>
         <div class="dropdown__menu">
             {% for type in drink_type_control.options %}
@@ -13,5 +13,5 @@ the unit the open tab reads in. Nothing to swap on a full page load.
             <a class="dropdown-item button-sm" @click="$el.blur()" href="{% url 'drinks:set_drink_type' type.1 %}" hx-get="{% url 'drinks:set_drink_type' type.1 %}" hx-include="#current-tab" hx-swap="none">{{ type.0 }}</a>
             {% endfor %}
         </div>
-    </div>{% elif drink_type_control %}<span class="drink-type-fixed"><span class="drink-type-note">{% translate 'Data shown as' %}</span><span class="drink-type-unit">[ {{ drink_type_control.label }} ]</span></span>{% endif %}</div>
+    </div>{% elif drink_type_control.state == 'fixed' %}<span class="drink-type-fixed"><span class="drink-type-note">{% translate 'Data shown as' %}</span><span class="drink-type-unit">[ {{ drink_type_control.label }} ]</span></span>{% endif %}</div>
 {% endif %}
