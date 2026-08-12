@@ -5,7 +5,6 @@ from .drink_type_selector import (
     DrinkTypeSelector,
     FixedDrinkTypeSelector,
     NoDrinkTypeSelector,
-    control_for_tab,
 )
 from .habits_tab import HabitsTab
 from .index_tab import IndexTab
@@ -31,5 +30,4 @@ __all__ = [
     "TrendsTab",
     "TypicalYear",
     "YearComparison",
-    "control_for_tab",
 ]
