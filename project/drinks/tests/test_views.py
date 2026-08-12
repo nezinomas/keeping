@@ -1108,7 +1108,7 @@ def test_tab_index_renders_each_explanation_part_as_its_own_paragraph(client_log
 
 
 @time_machine.travel("1999-06-01")
-def test_tab_risk_renders_warning_for_medium_week(client_logged):
+def test_tab_risk_renders_the_state_modifier_for_a_medium_week(client_logged):
     # week of 1999-05-31 (Monday) contains "today"; 15 std av sits between the
     # low (11.2) and high (28.0) guidelines -> the amber "medium" band
     DrinkFactory(date=date(1999, 5, 31), stdav=15)
@@ -1119,7 +1119,7 @@ def test_tab_risk_renders_warning_for_medium_week(client_logged):
 
     assert response.status_code == 200
     assert response.context["cards"][0].state == "medium"
-    assert 'class="trend-card__value warning"' in content
+    assert 'class="trend-card__value trend-card__value--medium"' in content
 
 
 # -------------------------------------------------------------------------------------
