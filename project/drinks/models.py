@@ -10,7 +10,7 @@ class Drink(models.Model):
     date = models.DateField()
     stdav = models.FloatField(validators=[MinValueValidator(0.1)])
     option = models.CharField(
-        max_length=7,
+        max_length=16,
         choices=DrinkType.choices,
         default=DrinkType.BEER,
     )
@@ -40,7 +40,7 @@ class DrinkTarget(models.Model):
     )
     quantity = models.FloatField()
     drink_type = models.CharField(
-        max_length=7,
+        max_length=16,
         choices=DrinkType.choices,
         default=DrinkType.BEER,
     )
