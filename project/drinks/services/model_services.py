@@ -9,6 +9,7 @@ from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
 from .. import models
 from ..lib.drink_quantity import DrinkQuantity
+from ..lib.drink_types import DrinkType
 from ..lib.drinks_options import DrinkConverter
 
 
@@ -23,7 +24,7 @@ class DrinkTargetDTO:
 
     has_data: bool = False
     target_id: int = 0
-    amount: DrinkQuantity = DrinkQuantity(stdav=0.0, drink_type="stdav")
+    amount: DrinkQuantity = DrinkQuantity(stdav=0.0, drink_type=DrinkType.STDAV)
     max_bottles: float = 0.0  # servings per year, not per day
 
     @property
