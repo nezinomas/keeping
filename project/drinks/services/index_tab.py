@@ -17,8 +17,9 @@ from ...core.lib.stat_card import (
 )
 from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
+from ..lib.drink_types import DrinkType
 from ..lib.drinks_frequency import FrequencyStats
-from ..lib.drinks_options import DrinkConverter
+from ..lib.drinks_options import DRINK_SPECS, DrinkConverter
 from ..lib.drinks_stats import (
     DrinkStats,
     EmptyYearOverYear,
@@ -395,61 +396,29 @@ class IndexBuilder:
             return []
 
         day, week, month = self._get_period_counts(year)
+        base = (qty, qty / day, qty / week, qty / month)
 
-        base_total = qty
-        base_per_day = qty / day
-        base_per_week = qty / week
-        base_per_month = qty / month
-
-        return [
-            self._create_conversion_row(
-                _("Beer") + ", 0.5L",
-                base_total,
-                base_per_day,
-                base_per_week,
-                base_per_month,
-                "beer",
-            ),
-            self._create_conversion_row(
-                _("Wine") + ", 0.75L",
-                base_total,
-                base_per_day,
-                base_per_week,
-                base_per_month,
-                "wine",
-            ),
-            self._create_conversion_row(
-                _("Vodka") + ", 1L",
-                base_total,
-                base_per_day,
-                base_per_week,
-                base_per_month,
-                "vodka",
-            ),
-            ConversionRowViewModel(
-                title="Std Av",
-                total=base_total * self._converter.stdav_per_unit,
-                per_day=base_per_day * self._converter.stdav_per_unit,
-                per_week=base_per_week * self._converter.stdav_per_unit,
-                per_month=base_per_month * self._converter.stdav_per_unit,
-            ),
-        ]
+        return [self._create_conversion_row(t, base) for t in DrinkType]
 
     def _create_conversion_row(
-        self,
-        title: str,
-        total: float,
-        per_day: float,
-        per_week: float,
-        per_month: float,
-        drink_type: str,
+        self, drink_type: DrinkType, base: tuple[float, ...]
     ) -> ConversionRowViewModel:
+        spec = DRINK_SPECS[drink_type]
+        title = drink_type.label
+
+        if not spec.is_canonical:
+            title = f"{title}, {spec.ml / 1000:g}L"
+
+        total, per_day, per_week, per_month = (
+            self._converter.convert_qty(value, drink_type) for value in base
+        )
+
         return ConversionRowViewModel(
             title=title,
-            total=self._converter.convert_qty(total, drink_type),
-            per_day=self._converter.convert_qty(per_day, drink_type),
-            per_week=self._converter.convert_qty(per_week, drink_type),
-            per_month=self._converter.convert_qty(per_month, drink_type),
+            total=total,
+            per_day=per_day,
+            per_week=per_week,
+            per_month=per_month,
         )
 
     def _get_period_counts(self, year: int | None) -> tuple[int, int, int]:
