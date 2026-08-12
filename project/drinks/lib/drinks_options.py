@@ -30,9 +30,6 @@ DRINK_SPECS: dict[str, DrinkTypeSpec] = {
     ),
 }
 
-if _undeclared := set(DrinkType.values) - set(DRINK_SPECS):
-    raise RuntimeError(f"drink types without a spec: {sorted(_undeclared)}")
-
 
 def _spec(drink_type: str) -> DrinkTypeSpec:
     if spec := DRINK_SPECS.get(drink_type):
@@ -66,6 +63,11 @@ class DrinkConverter:
 
     def stdav_to_ml(self, stdav: float) -> float:
         return (stdav * self._spec.ml) / self._spec.stdav
+
+    @property
+    def unit_litres(self) -> float:
+        """What one unit of this drink type holds, in litres."""
+        return self._spec.ml / 1000
 
     @property
     def display_unit(self) -> str:

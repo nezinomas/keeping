@@ -105,6 +105,21 @@ def test_display_units(drink_type, unit, decimals, total_unit):
 
 
 @pytest.mark.parametrize(
+    "drink_type, expect",
+    [
+        ("beer", 0.5),
+        ("wine", 0.75),
+        ("vodka", 1.0),
+        ("stdav", 0.01),
+    ],
+)
+def test_unit_litres(drink_type, expect):
+    actual = DrinkConverter(drink_type).unit_litres
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
     "drink_type, stdav, expect",
     [
         # a volume is shown as the volume it is
