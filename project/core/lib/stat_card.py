@@ -13,12 +13,7 @@ WORSENING = "worsening"
 
 @dataclass(frozen=True)
 class StatCard:
-    """One summary tile on a tab: a title, a value, a note, and a state.
-
-    The three tab modules used to each publish their own `state` vocabulary and
-    each have their own near-identical template decode it. This is the single
-    vocabulary they now share, so one template decodes it once.
-    """
+    """A figure that stands on its own: no threshold behind it, no baseline."""
 
     title: str
     value: str = ""
@@ -26,11 +21,6 @@ class StatCard:
     # and a template cannot split "300 ml" without guessing where the number ends
     unit: str = ""
     note: str = ""
-    state: str = NEUTRAL
-    show_icon: bool = False
-    # which way the arrow points, kept apart from `state` so a card read against
-    # a threshold can still point at a baseline
-    improving: bool = False
     # one sentence per part: the template renders each as its own paragraph, so
     # nothing here decides how they are separated
     explanation: tuple[str, ...] = ()
@@ -39,56 +29,67 @@ class StatCard:
     edit_url: str = ""
     edit_label: str = ""
 
-    @classmethod
-    def empty(cls, title: str, note: str) -> "StatCard":
-        """A tile with nothing to show."""
-        return cls(title=title, note=note, state=EMPTY)
+    # Not fields - invalid states are unconstructible (e.g., `StatCard(state="high")`)
+    state = NEUTRAL
+    show_icon = False
+    improving = False
 
-    @classmethod
-    def comparison(
-        cls,
-        title: str,
-        *,
-        improving: bool,
-        value: str,
-        note: str,
-        unit: str = "",
-        explanation: tuple[str, ...] = (),
-    ) -> "StatCard":
-        """A metric read against a baseline, so it has a direction."""
-        return cls(
-            title=title,
-            value=value,
-            unit=unit,
-            note=note,
-            state=IMPROVING if improving else WORSENING,
-            show_icon=True,
-            improving=improving,
-            explanation=explanation,
-        )
 
-    @classmethod
-    def level(
-        cls,
-        title: str,
-        *,
-        state: str,
-        value: str,
-        note: str,
-        unit: str = "",
-        explanation: tuple[str, ...] = (),
-        improving: bool = False,
-        show_icon: bool = False,
-    ) -> "StatCard":
-        """A metric read against a threshold, which colours it — and optionally
-        against a baseline too, which only points its arrow."""
-        return cls(
-            title=title,
-            value=value,
-            unit=unit,
-            note=note,
-            state=state,
-            show_icon=show_icon,
-            improving=improving,
-            explanation=explanation,
-        )
+@dataclass(frozen=True)
+class EmptyStatCard:
+    """A tile with nothing to show, and often the pencil that would fill it."""
+
+    title: str
+    note: str = ""
+    edit_url: str = ""
+    edit_label: str = ""
+
+    value = ""
+    unit = ""
+    state = EMPTY
+    show_icon = False
+    improving = False
+    explanation = ()
+
+
+@dataclass(frozen=True)
+class ComparisonStatCard:
+    """A metric read against a baseline, so its direction is its state."""
+
+    title: str
+    improving: bool = False
+    value: str = ""
+    unit: str = ""
+    note: str = ""
+    explanation: tuple[str, ...] = ()
+
+    show_icon = True
+    edit_url = ""
+    edit_label = ""
+
+    @property
+    def state(self) -> str:
+        return IMPROVING if self.improving else WORSENING
+
+
+@dataclass(frozen=True)
+class LevelStatCard:
+    """A metric read against a threshold, which colours it — and optionally
+    against a baseline too, which only points its arrow."""
+
+    title: str
+    state: str = NEUTRAL
+    value: str = ""
+    unit: str = ""
+    note: str = ""
+    # kept apart from `state` so a card read against a threshold can still point
+    # at a baseline
+    improving: bool = False
+    show_icon: bool = False
+    explanation: tuple[str, ...] = ()
+
+    edit_url = ""
+    edit_label = ""
+
+
+Card = StatCard | EmptyStatCard | ComparisonStatCard | LevelStatCard

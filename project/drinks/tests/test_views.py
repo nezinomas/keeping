@@ -525,6 +525,20 @@ def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged)
     assert 'class="trend-card__arrow"' in content
 
 
+@time_machine.travel("1999-06-01")
+def test_tab_index_renders_the_state_modifier_for_a_compared_card(client_logged):
+    """A comparison resolves its state from the direction rather than storing
+    one, so the template has to reach a property to colour it."""
+    DrinkFactory(date=date(1999, 1, 10), stdav=7)
+    DrinkFactory(date=date(1998, 1, 10), stdav=8)
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert 'class="trend-card__value trend-card__value--improving"' in content
+    assert 'trend-card__value--"' not in content
+
+
 def test_tab_index_renders_the_unit_apart_from_the_figure(client_logged):
     """The skin sets a unit at a third of the figure's size, so it needs its own
     element rather than trailing the value as text."""

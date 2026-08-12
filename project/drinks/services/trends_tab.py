@@ -3,7 +3,13 @@ from dataclasses import asdict, dataclass
 from django.utils.translation import gettext as _
 
 from ...core.lib import stat_card
-from ...core.lib.stat_card import StatCard
+from ...core.lib.stat_card import (
+    Card,
+    ComparisonStatCard,
+    EmptyStatCard,
+    LevelStatCard,
+    StatCard,
+)
 from ..lib.drinks_trend import (
     EmptyRecentPeriodComparison,
     RecentPeriodComparison,
@@ -111,7 +117,7 @@ class TrendsBuilder:
             },
         )
 
-    def get_cards(self) -> list[StatCard]:
+    def get_cards(self) -> list[Card]:
         return [
             self._build_period_card(
                 _("Trend (2 weeks)"), self._stats.compare_recent_period(14)
@@ -128,9 +134,9 @@ class TrendsBuilder:
 
     def _build_period_card(
         self, title: str, stats: RecentPeriodComparison | EmptyRecentPeriodComparison
-    ) -> StatCard:
+    ) -> Card:
         if not stats.has_data:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         current = self._stats.as_total(stats.current_period_average)
         previous = self._stats.as_total(stats.previous_period_average)
@@ -144,7 +150,7 @@ class TrendsBuilder:
             value = f"{stats.percentage_change:.1f}"
             unit = "%"
 
-        return StatCard.comparison(
+        return ComparisonStatCard(
             title,
             improving=stats.improving,
             value=value,
@@ -152,7 +158,7 @@ class TrendsBuilder:
             note=f"{current:.1f} / {previous:.1f} {self._stats.total_unit}",
         )
 
-    def _build_ytd_card(self) -> StatCard:
+    def _build_ytd_card(self) -> Card:
         stats = self._stats.compare_year_to_date()
         title = _("This year vs last")
         # a centred card has no room for "to date" in the title, so the
@@ -170,7 +176,7 @@ class TrendsBuilder:
                 note=f"{unit} / {_('No prior year')}",
             )
 
-        return StatCard.comparison(
+        return ComparisonStatCard(
             title,
             improving=stats.improving,
             value=f"{stats.percentage_change:.1f}",
@@ -184,7 +190,7 @@ class TrendsBuilder:
             ),
         )
 
-    def _build_projection_card(self) -> StatCard:
+    def _build_projection_card(self) -> Card:
         stats = self._stats.calculate_projection()
         title = _("Year-end forecast")
         unit = self._stats.total_unit
@@ -199,7 +205,7 @@ class TrendsBuilder:
 
         # a forecast is read against the Drink Target, so it is a level, not a
         # like-for-like comparison against a past period
-        return StatCard.level(
+        return LevelStatCard(
             title,
             state=stat_card.HIGH if stats.over else stat_card.LOW,
             value=f"{stats.projected_total:.1f}",
