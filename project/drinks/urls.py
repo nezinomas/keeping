@@ -37,7 +37,6 @@ urlpatterns = [
     path("<slug:tab>/new/", views.New.as_view(), name="new"),
     path("update/<int:pk>/", views.Update.as_view(), name="update"),
     path("delete/<int:pk>/", views.Delete.as_view(), name="delete"),
-    path("target/lists/", views.TargetLists.as_view(), name="target_list"),
     path("<slug:tab>/target/new/", views.TargetNew.as_view(), name="target_new"),
     path("target/update/<int:pk>/", views.TargetUpdate.as_view(), name="target_update"),
     path("compare/<int:qty>/", views.Compare.as_view(), name="compare"),

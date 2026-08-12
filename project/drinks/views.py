@@ -249,15 +249,6 @@ class Delete(DeleteViewMixin):
     modal_form_title = _("Delete drinks")
 
 
-class TargetLists(ListViewMixin):
-    template_name = "drinks/drinktarget_list.html"
-    service_class = DrinkTargetModelService
-
-    def get_queryset(self):
-        user = cast(User, self.request.user)
-        return DrinkTargetModelService(user).targets(user.year)
-
-
 class TargetNew(CreateViewMixin):
     service_class = DrinkTargetModelService
     form_class = forms.DrinkTargetForm
