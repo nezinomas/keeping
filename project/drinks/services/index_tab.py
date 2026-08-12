@@ -20,7 +20,7 @@ from ...core.lib.year_boundary import YearBoundary
 from ..lib.chart_view_model import ChartViewModel
 from ..lib.drink_types import DrinkType
 from ..lib.drinks_frequency import FrequencyStats
-from ..lib.drinks_options import DRINK_SPECS, DrinkConverter
+from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import (
     DrinkStats,
     EmptyYearOverYear,
@@ -400,11 +400,11 @@ class IndexBuilder:
     def _create_conversion_row(
         self, drink_type: DrinkType, base: tuple[float, ...]
     ) -> ConversionRowViewModel:
-        spec = DRINK_SPECS[drink_type]
+        converter = DrinkConverter(drink_type)
         title = drink_type.label
 
-        if not spec.is_canonical:
-            title = f"{title}, {spec.ml / 1000:g}L"
+        if not converter.is_canonical:
+            title = f"{title}, {converter.unit_litres:g}L"
 
         total, per_day, per_week, per_month = (
             self._converter.convert_qty(value, drink_type) for value in base
