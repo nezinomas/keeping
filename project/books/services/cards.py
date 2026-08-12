@@ -3,8 +3,7 @@ from dataclasses import dataclass
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from ...core.lib import stat_card
-from ...core.lib.stat_card import StatCard
+from ...core.lib.stat_card import Card, EmptyStatCard, StatCard
 from ...users.models import User
 from ..models import BookTarget
 from .model_services import BookModelService, BookTargetModelService
@@ -25,10 +24,10 @@ class Cards:
     year: int
 
     @classmethod
-    def build(cls, user: User, year: int) -> list[StatCard]:
+    def build(cls, user: User, year: int) -> list[Card]:
         return cls(user, year)._cards()
 
-    def _cards(self) -> list[StatCard]:
+    def _cards(self) -> list[Card]:
         return [self._finished(), self._reading(), self._goal()]
 
     def _finished(self) -> StatCard:
@@ -43,16 +42,15 @@ class Cards:
 
         return StatCard(title=_("Reading"), value=str(count))
 
-    def _goal(self) -> StatCard:
+    def _goal(self) -> Card:
         title = _("Goal")
 
         try:
             target = BookTargetModelService(self.user).objects.get(year=self.year)
         except BookTarget.DoesNotExist:
-            return StatCard(
+            return EmptyStatCard(
                 title=title,
                 note=_("No goal set"),
-                state=stat_card.EMPTY,
                 edit_url=reverse("books:target_new"),
                 edit_label=_("New goal"),
             )

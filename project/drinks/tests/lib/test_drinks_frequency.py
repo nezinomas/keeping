@@ -424,7 +424,7 @@ def test_weekday_profile_is_the_same_figure_under_every_drink_type(drink_type):
 
 
 # -------------------------------------------------------------------------------------
-#                                                        the empty variants' field surface
+#                                                    the empty variants' read surface
 # -------------------------------------------------------------------------------------
 def test_empty_comparison_exposes_the_same_fields_as_the_populated_one():
     populated = FrequencyStats(
@@ -434,4 +434,8 @@ def test_empty_comparison_exposes_the_same_fields_as_the_populated_one():
     ).compare_frequency()
     empty = FrequencyStats(today=date(2026, 6, 15)).compare_frequency()
 
-    assert {f for f in vars(populated)} == {f for f in vars(empty)}
+    # not vars(): the two agree on constants the caller cannot pass in, and those
+    # live on the class rather than in __dict__
+    assert {n for n in dir(populated) if not n.startswith("_")} == {
+        n for n in dir(empty) if not n.startswith("_")
+    }

@@ -147,15 +147,14 @@
             font-variant-numeric: tabular-nums;
             color: $ink;
 
-            &.positive {
-                color: $ink;
-            }
-
-            &.warning {
+            // only a crossed threshold takes a colour; improving, low, neutral
+            // and empty stay on $ink, because staying inside a limit is baseline
+            &--medium {
                 color: $harm-soft;
             }
 
-            &.negative {
+            &--high,
+            &--worsening {
                 color: $harm;
             }
         }

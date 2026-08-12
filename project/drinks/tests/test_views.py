@@ -298,13 +298,15 @@ def test_tab_reading_no_amount_empties_the_control(client_logged):
 def test_tab_context_carries_the_control(tab, client_logged):
     response = client_logged.get(reverse(f"drinks:tab_{tab}"))
 
-    assert response.context["drink_type_control"] is not None
+    assert response.context["drink_type_control"].state in ("choice", "fixed")
 
 
-def test_tab_context_carries_no_control(client_logged):
+def test_tab_context_carries_a_control_that_draws_nothing(client_logged):
+    """Never None — the tab that reads no amount still answers every question
+    the template asks."""
     response = client_logged.get(reverse("drinks:tab_data"))
 
-    assert response.context["drink_type_control"] is None
+    assert response.context["drink_type_control"].state == "absent"
 
 
 # -------------------------------------------------------------------------------------
@@ -523,6 +525,20 @@ def test_tab_index_renders_the_direction_arrow_in_its_own_element(client_logged)
     content = response.content.decode()
 
     assert 'class="trend-card__arrow"' in content
+
+
+@time_machine.travel("1999-06-01")
+def test_tab_index_renders_the_state_modifier_for_a_compared_card(client_logged):
+    """A comparison resolves its state from the direction rather than storing
+    one, so the template has to reach a property to colour it."""
+    DrinkFactory(date=date(1999, 1, 10), stdav=7)
+    DrinkFactory(date=date(1998, 1, 10), stdav=8)
+
+    response = client_logged.get(reverse("drinks:tab_index"))
+    content = response.content.decode()
+
+    assert 'class="trend-card__value trend-card__value--improving"' in content
+    assert 'trend-card__value--"' not in content
 
 
 def test_tab_index_renders_the_unit_apart_from_the_figure(client_logged):
@@ -1108,7 +1124,7 @@ def test_tab_index_renders_each_explanation_part_as_its_own_paragraph(client_log
 
 
 @time_machine.travel("1999-06-01")
-def test_tab_risk_renders_warning_for_medium_week(client_logged):
+def test_tab_risk_renders_the_state_modifier_for_a_medium_week(client_logged):
     # week of 1999-05-31 (Monday) contains "today"; 15 std av sits between the
     # low (11.2) and high (28.0) guidelines -> the amber "medium" band
     DrinkFactory(date=date(1999, 5, 31), stdav=15)
@@ -1119,7 +1135,7 @@ def test_tab_risk_renders_warning_for_medium_week(client_logged):
 
     assert response.status_code == 200
     assert response.context["cards"][0].state == "medium"
-    assert 'class="trend-card__value warning"' in content
+    assert 'class="trend-card__value trend-card__value--medium"' in content
 
 
 # -------------------------------------------------------------------------------------
