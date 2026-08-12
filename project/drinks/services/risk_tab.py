@@ -16,7 +16,7 @@ from ..lib.drinks_risk import (
     WEEKLY_LOW_RISK_STDAV,
     RiskStats,
 )
-from ..lib.drinks_stats import EmptyYearOverYear, YearOverYear
+from ..lib.drinks_stats import YearOverYearReading
 from .consumption_year import ConsumptionYear
 
 
@@ -152,7 +152,7 @@ class RiskViewModelBuilder:
     def _build_comparison_card(
         self,
         title: str,
-        stats: YearOverYear | EmptyYearOverYear,
+        stats: YearOverYearReading,
         definition: str,
     ) -> Card:
         if not stats.has_past:

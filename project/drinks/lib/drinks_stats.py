@@ -37,39 +37,34 @@ class YearOverYear:
     """One figure this year beside the same figure last year, up to the same
     month and day.
 
-    Shared by every lib that compares a year with the one before it, so a card
-    reads the same four fields whether the figure is a count of days or an
-    amount per day. How it is shown is the caller's: a count whole, an amount
-    to the decimals its unit needs.
+    How it is shown is the caller's: a count whole, an amount to the decimals
+    its unit needs.
     """
 
     current: float
     previous: float
-    improving: bool
-    has_past: bool = True
 
-    @classmethod
-    def compare(
-        cls, current: float, previous: float, *, has_past: bool
-    ) -> "YearOverYear | EmptyYearOverYear":
-        """Less is improving, which is true of every harm and frequency figure
-        the app reports. A figure where more is better needs its own rule.
+    has_past = True
 
-        A year level with the one before it improves rather than worsens: harm
-        means a threshold was crossed, and last year is not above itself.
-        """
-        if not has_past:
-            return EmptyYearOverYear(current=current)
-
-        return cls(current, previous, improving=current <= previous)
+    @property
+    def improving(self) -> bool:
+        """Less is improving, so a figure where more is better needs its own
+        rule. Equal improves: last year is not above itself."""
+        return self.current <= self.previous
 
 
 @dataclass(frozen=True)
 class EmptyYearOverYear:
+    """The same reading with no year behind it: the figure stands alone."""
+
     current: float
-    previous: float = 0.0
-    improving: bool = False
-    has_past: bool = False
+
+    previous = 0.0
+    improving = False
+    has_past = False
+
+
+YearOverYearReading = YearOverYear | EmptyYearOverYear
 
 
 class DrinkStats:
