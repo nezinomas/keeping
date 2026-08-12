@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext as _
 
-from .drinks_options import CANONICAL_TYPE, MAX_BOTTLES, DrinkConverter
+from .drinks_options import MAX_BOTTLES, DrinkConverter
 
 
 @dataclass(frozen=True)
@@ -28,10 +28,10 @@ class DrinkQuantity:
     @classmethod
     def from_input(cls, value: float, drink_type: str) -> "DrinkQuantity":
         """Interpret a number typed into the quantity field."""
-        if drink_type == CANONICAL_TYPE:
-            return cls(stdav=value, drink_type=drink_type)
-
         converter = DrinkConverter(drink_type)
+
+        if converter.is_canonical:
+            return cls(stdav=value, drink_type=drink_type)
 
         if value > MAX_BOTTLES:
             return cls(converter.ml_to_stdav(value), drink_type, is_volume=True)
@@ -41,10 +41,10 @@ class DrinkQuantity:
     @classmethod
     def from_volume(cls, ml: float, drink_type: str) -> "DrinkQuantity":
         """Interpret a number that is always a volume, never a count."""
-        if drink_type == CANONICAL_TYPE:
-            return cls(stdav=ml, drink_type=drink_type)
-
         converter = DrinkConverter(drink_type)
+
+        if converter.is_canonical:
+            return cls(stdav=ml, drink_type=drink_type)
 
         return cls(converter.ml_to_stdav(ml), drink_type, is_volume=True)
 
@@ -53,7 +53,7 @@ class DrinkQuantity:
         cls, stdav: float, drink_type: str, *, is_volume: bool = False
     ) -> "DrinkQuantity":
         """Rebuild an amount from a stored row."""
-        if drink_type == CANONICAL_TYPE:
+        if DrinkConverter(drink_type).is_canonical:
             is_volume = False
 
         return cls(stdav=stdav, drink_type=drink_type, is_volume=is_volume)
@@ -62,10 +62,10 @@ class DrinkQuantity:
     @property
     def value(self) -> float:
         """The amount in the unit it is shown in."""
-        if self.drink_type == CANONICAL_TYPE:
-            return self.stdav
-
         converter = DrinkConverter(self.drink_type)
+
+        if converter.is_canonical:
+            return self.stdav
 
         if self.is_volume:
             return converter.stdav_to_ml(self.stdav)
