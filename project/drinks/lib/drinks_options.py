@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from ...core.lib.date import ydays
 from .drink_types import DrinkType
 
 MAX_BOTTLES = 20
@@ -8,8 +7,8 @@ MAX_BOTTLES = 20
 
 @dataclass(frozen=True)
 class DrinkTypeSpec:
-    stdav: float  # how many Std Av in one unit
-    ml: float  # what one unit is, in millilitres
+    stdav: float  # how many Std Av in one serving
+    ml: float  # what one serving is, in millilitres
     is_canonical: bool = False
     display_unit: str = "ml"
     total_unit: str = "L"
@@ -30,35 +29,42 @@ DRINK_SPECS: dict[str, DrinkTypeSpec] = {
     ),
 }
 
-if _undeclared := set(DrinkType.values) - set(DRINK_SPECS):
-    raise RuntimeError(f"drink types without a spec: {sorted(_undeclared)}")
 
-# for data that predates the choices, not for a declared type left out above.
-# Std Av's ratios only: an unrecognised type is not the canonical one.
-_CANONICAL_SPEC = DRINK_SPECS[DrinkType.STDAV]
-_LEGACY_SPEC = DrinkTypeSpec(stdav=_CANONICAL_SPEC.stdav, ml=_CANONICAL_SPEC.ml)
+def stdav_to_alcohol[T](stdav: T) -> T:
+    """Std Av as litres of pure alcohol, for a number or a data frame column.
+
+    One Std Av is 10 g of it, and the rule holds for every drink type.
+    """
+    return stdav * 0.01
+
+
+def _spec(drink_type: str) -> DrinkTypeSpec:
+    if spec := DRINK_SPECS.get(drink_type):
+        return spec
+
+    raise ValueError(f"undeclared drink type: {drink_type!r}")
 
 
 class DrinkConverter:
     def __init__(self, drink_type: str):
         self.drink_type = drink_type
-        self._spec = DRINK_SPECS.get(drink_type, _LEGACY_SPEC)
+        self._spec = _spec(drink_type)
 
     @property
     def is_canonical(self) -> bool:
         return self._spec.is_canonical
 
     @property
-    def ratio(self) -> float:
+    def servings_per_stdav(self) -> float:
+        # the scalar the ORM annotates a Std Av column with; everywhere else
+        # reads a direction below
         return 1 / self._spec.stdav
 
-    @property
-    def stdav_per_unit(self) -> float:
-        return self._spec.stdav
+    def servings_to_stdav(self, servings: float) -> float:
+        return servings * self._spec.stdav
 
-    def convert_qty(self, qty: float, to_type: str) -> float:
-        target = DRINK_SPECS.get(to_type, _LEGACY_SPEC)
-        return (qty * self._spec.stdav) / target.stdav
+    def stdav_to_servings(self, stdav: float) -> float:
+        return stdav / self._spec.stdav
 
     def ml_to_stdav(self, ml: int | float) -> float:
         return (ml * self._spec.stdav) / self._spec.ml
@@ -94,13 +100,6 @@ class DrinkConverter:
         return value / 1000
 
     def stdav_to_display(self, stdav: float) -> float:
-        """Std Av in the unit it is shown in — the rule ``DrinkQuantity.value``
-        applies, so a chart and a card never disagree about what a number means.
-
-        The canonical type is shown as typed; converting it would report the
-        10 ml of pure alcohol one Std Av contains, ten times the number a user
-        entered and ten times the Drink Target it is read against.
-        """
         if self._spec.is_canonical:
             return stdav
 
@@ -109,12 +108,3 @@ class DrinkConverter:
     def stdav_to_total(self, stdav: float) -> float:
         """Std Av in the unit a yearly total is read in."""
         return self.display_to_total(self.stdav_to_display(stdav))
-
-    @staticmethod
-    def stdav_to_alcohol(stdav: float) -> float:
-        # one stdav = 10g pure alcohol (100%)
-        return stdav * 0.01
-
-    def max_bottles_per_year(self, year: int, max_stdav: float) -> float:
-        days = ydays(year)
-        return (max_stdav * days) / self._spec.stdav

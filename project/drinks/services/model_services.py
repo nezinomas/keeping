@@ -9,6 +9,7 @@ from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
 from .. import models
 from ..lib.drink_quantity import DrinkQuantity
+from ..lib.drink_types import DrinkType
 from ..lib.drinks_options import DrinkConverter
 
 
@@ -23,8 +24,7 @@ class DrinkTargetDTO:
 
     has_data: bool = False
     target_id: int = 0
-    amount: DrinkQuantity = DrinkQuantity(stdav=0.0, drink_type="stdav")
-    max_bottles: float = 0.0  # servings per year, not per day
+    amount: DrinkQuantity = DrinkQuantity(stdav=0.0, drink_type=DrinkType.STDAV)
 
     @property
     def qty(self) -> float:
@@ -41,8 +41,8 @@ class DrinkModelService(SumMixin, BaseModelService):
         )
 
     @property
-    def ratio(self) -> float:
-        return DrinkConverter(self.user.drink_type).ratio
+    def servings_per_stdav(self) -> float:
+        return DrinkConverter(self.user.drink_type).servings_per_stdav
 
     def year(self, year):
         return self.objects.filter(date__year=year)
@@ -76,7 +76,7 @@ class DrinkModelService(SumMixin, BaseModelService):
         """
         return self.year_sum(
             self.objects, year=year, sum_annotation="stdav", sum_column="stdav"
-        ).annotate(qty=F("stdav") * self.ratio)
+        ).annotate(qty=F("stdav") * self.servings_per_stdav)
 
     def sum_by_month(self, year: int, month: int | None = None) -> QuerySet:
         """
@@ -88,7 +88,7 @@ class DrinkModelService(SumMixin, BaseModelService):
             month=month,
             sum_annotation="stdav",
             sum_column="stdav",
-        ).annotate(qty=F("stdav") * self.ratio)
+        ).annotate(qty=F("stdav") * self.servings_per_stdav)
 
     def sum_by_year_month(self, year_from: int = 0, year_to: int = 0) -> QuerySet:
         """Every month the user has Drinks in, across years, in one query.
@@ -126,7 +126,7 @@ class DrinkModelService(SumMixin, BaseModelService):
             month=month,
             sum_annotation="stdav",
             sum_column="stdav",
-        ).annotate(qty=F("stdav") * self.ratio)
+        ).annotate(qty=F("stdav") * self.servings_per_stdav)
 
 
 class DrinkTargetModelService(BaseModelService):
@@ -136,20 +136,9 @@ class DrinkTargetModelService(BaseModelService):
     def year(self, year):
         return self.objects.filter(year=year)
 
-    def targets(self, year: int) -> list[DrinkTargetDTO]:
-        return [self._as_dto(row, year) for row in self.year(year)]
-
     def get_target(self, year: int) -> DrinkTargetDTO:
-        if row := self.year(year).first():
-            return self._as_dto(row, year)
-
-        return DrinkTargetDTO()
-
-    def items(self):
-        return self.objects
-
-    def _as_dto(self, row, year: int) -> DrinkTargetDTO:
-        converter = DrinkConverter(self.user.drink_type)
+        if not (row := self.year(year).first()):
+            return DrinkTargetDTO()
 
         return DrinkTargetDTO(
             has_data=True,
@@ -157,5 +146,7 @@ class DrinkTargetModelService(BaseModelService):
             amount=DrinkQuantity.from_stdav(
                 row.quantity, self.user.drink_type, is_volume=True
             ),
-            max_bottles=converter.max_bottles_per_year(year, row.quantity),
         )
+
+    def items(self):
+        return self.objects

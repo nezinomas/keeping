@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from ..drinks.lib.drink_types import DrinkType
 from ..journals.models import Journal
 
 
@@ -8,7 +9,11 @@ class User(AbstractUser):
     year = models.PositiveIntegerField(null=True, blank=True)
     month = models.PositiveIntegerField(null=True, blank=True)
     journal = models.ForeignKey(Journal, on_delete=models.CASCADE, related_name="users")
-    drink_type = models.CharField(max_length=16, default="beer")
+    drink_type = models.CharField(
+        max_length=16,
+        choices=DrinkType.choices,
+        default=DrinkType.BEER,
+    )
     email = models.EmailField(unique=True)
 
     def __str__(self):

@@ -8,23 +8,10 @@ from .drinks_options import MAX_BOTTLES, DrinkConverter
 
 @dataclass(frozen=True)
 class DrinkQuantity:
-    """A drink amount: canonical in Std Av, aware of the unit it is shown in.
-
-    Std Av is the canonical unit, so an amount of that drink type is entered,
-    stored and displayed as the same number — nothing is converted for it.
-
-    Every other drink type is entered and displayed either as a volume in
-    millilitres or as a count of pieces. ``MAX_BOTTLES`` is the rule that
-    decides which one a typed number meant: nobody drinks more than 20 bottles
-    in a day, so a larger number can only have been millilitres. Which way a
-    stored record was entered is what ``Drink.converted_from_ml`` remembers.
-    """
-
     stdav: float
     drink_type: str
     is_volume: bool = False
 
-    # -- constructors ------------------------------------------------------
     @classmethod
     def from_input(cls, value: float, drink_type: str) -> "DrinkQuantity":
         """Interpret a number typed into the quantity field."""
@@ -36,7 +23,7 @@ class DrinkQuantity:
         if value > MAX_BOTTLES:
             return cls(converter.ml_to_stdav(value), drink_type, is_volume=True)
 
-        return cls(value / converter.ratio, drink_type)
+        return cls(converter.servings_to_stdav(value), drink_type)
 
     @classmethod
     def from_volume(cls, ml: float, drink_type: str) -> "DrinkQuantity":
@@ -58,7 +45,6 @@ class DrinkQuantity:
 
         return cls(stdav=stdav, drink_type=drink_type, is_volume=is_volume)
 
-    # -- readers -----------------------------------------------------------
     @property
     def value(self) -> float:
         """The amount in the unit it is shown in."""
@@ -70,7 +56,7 @@ class DrinkQuantity:
         if self.is_volume:
             return converter.stdav_to_ml(self.stdav)
 
-        return self.stdav * converter.ratio
+        return converter.stdav_to_servings(self.stdav)
 
     @property
     def unit_label(self) -> str:

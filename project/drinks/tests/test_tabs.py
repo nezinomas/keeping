@@ -5,7 +5,7 @@ from ..lib.drink_type_control import (
     FixedDrinkTypeSelector,
     NoDrinkTypeSelector,
 )
-from ..tabs import TABS, DrinkTab
+from ..tabs import TABS, DrinkTab, tab_reload_response
 
 NAMES = tuple(tab.name for tab in TABS)
 
@@ -149,3 +149,28 @@ def test_a_tab_reading_no_single_amount_draws_no_switcher():
 
     assert isinstance(control, NoDrinkTypeSelector)
     assert control.state == "absent"
+
+
+# -------------------------------------------------------------------------------------
+#                                                            tab_reload_response
+# -------------------------------------------------------------------------------------
+
+
+def test_a_reload_response_carries_no_body():
+    response = tab_reload_response("trends")
+
+    assert response.status_code == 204
+    assert not response.content
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_a_reload_response_fires_the_tabs_own_trigger(name):
+    response = tab_reload_response(name)
+
+    assert DrinkTab.resolve(name).reload_trigger in response.headers["HX-Trigger"]
+
+
+def test_a_reload_response_falls_back_to_the_named_default():
+    response = tab_reload_response("nonsense", default="data")
+
+    assert "reloadData" in response.headers["HX-Trigger"]

@@ -158,10 +158,10 @@ def test_intensity_is_unchanged_by_the_order_of_the_days():
 def test_intensity_is_the_same_figure_under_every_drink_type(drink_type):
     # qty is the drink-type reading of the same Std Av; intensity is a harm
     # metric and must never be computed from it
-    ratio = DrinkConverter(drink_type).ratio
+    converter = DrinkConverter(drink_type)
     rows = [
-        _row(date(2026, 1, 5), 7, qty=7 * ratio),
-        _row(date(2026, 1, 8), 3, qty=3 * ratio),
+        _row(date(2026, 1, 5), 7, qty=converter.stdav_to_servings(7)),
+        _row(date(2026, 1, 8), 3, qty=converter.stdav_to_servings(3)),
     ]
 
     stats = FrequencyStats(current_daily=rows, today=date(2026, 6, 15))
@@ -295,9 +295,9 @@ def test_compare_intensity_on_no_data_is_empty_and_does_not_raise():
 
 @pytest.mark.parametrize("drink_type", ["beer", "wine", "vodka", "stdav"])
 def test_compare_intensity_is_the_same_figure_under_every_drink_type(drink_type):
-    ratio = DrinkConverter(drink_type).ratio
-    current = [_row(date(2026, 1, 5), 6, qty=6 * ratio)]
-    past = [_row(date(2025, 1, 5), 4, qty=4 * ratio)]
+    converter = DrinkConverter(drink_type)
+    current = [_row(date(2026, 1, 5), 6, qty=converter.stdav_to_servings(6))]
+    past = [_row(date(2025, 1, 5), 4, qty=converter.stdav_to_servings(4))]
 
     actual = FrequencyStats(current, past, today=date(2026, 6, 15)).compare_intensity()
 
@@ -413,8 +413,8 @@ def test_weekday_profile_on_no_records_is_seven_zeroed_points():
 def test_weekday_profile_is_the_same_figure_under_every_drink_type(drink_type):
     # the rate is a ratio and the intensity is a harm metric, so neither follows
     # the drink-type dropdown — this pins both against a later "conversion fix"
-    ratio = DrinkConverter(drink_type).ratio
-    rows = [_row(date(2026, 1, 5), 6, qty=6 * ratio)]
+    converter = DrinkConverter(drink_type)
+    rows = [_row(date(2026, 1, 5), 6, qty=converter.stdav_to_servings(6))]
 
     actual = FrequencyStats(rows, today=date(2026, 1, 19)).weekday_profile()
 
