@@ -298,13 +298,15 @@ def test_tab_reading_no_amount_empties_the_control(client_logged):
 def test_tab_context_carries_the_control(tab, client_logged):
     response = client_logged.get(reverse(f"drinks:tab_{tab}"))
 
-    assert response.context["drink_type_control"] is not None
+    assert response.context["drink_type_control"].state in ("choice", "fixed")
 
 
-def test_tab_context_carries_no_control(client_logged):
+def test_tab_context_carries_a_control_that_draws_nothing(client_logged):
+    """Never None — the tab that reads no amount still answers every question
+    the template asks."""
     response = client_logged.get(reverse("drinks:tab_data"))
 
-    assert response.context["drink_type_control"] is None
+    assert response.context["drink_type_control"].state == "absent"
 
 
 # -------------------------------------------------------------------------------------
