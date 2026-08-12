@@ -1359,14 +1359,14 @@ def test_select_drink_func():
 
 
 def test_select_drink_redirect(client_logged):
-    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "xxx"})
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})
     response = client_logged.get(url)
 
     assert response.status_code == 302
 
 
 def test_select_drink_redirect_follow(client_logged):
-    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "xxx"})
+    url = reverse("drinks:set_drink_type", kwargs={"drink_type": "wine"})
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
@@ -1381,17 +1381,15 @@ def test_select_drinks_set_drink_type(client_logged):
     assert actual.drink_type == "wine"
 
 
-def test_select_drinks_set_default_drink_type(main_user, client_logged):
+def test_select_drinks_undeclared_drink_type_is_not_found(main_user, client_logged):
     main_user.drink_type = "wine"
     main_user.save()
 
-    assert User.objects.first().drink_type == "wine"
-
     url = reverse("drinks:set_drink_type", kwargs={"drink_type": "xxx"})
-    client_logged.get(url)
-    actual = User.objects.first()
+    response = client_logged.get(url)
 
-    assert actual.drink_type == "beer"
+    assert response.status_code == 404
+    assert User.objects.first().drink_type == "wine"
 
 
 def test_select_drink_htmx_stays_on_current_tab(client_logged):
