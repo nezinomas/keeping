@@ -25,14 +25,6 @@ from .tabs import DEFAULT_TAB, DrinkTabs
 
 
 class DrinkTypeContextMixin:
-    """Names the tab, and puts the drink-type control that tab wears with it.
-
-    Which of the three controls a tab gets — the switcher, a fixed Std Av, or
-    nothing — is the selector's call; a view only says which tab it is. Every
-    tab response carries it, because the control lives beside the quick-add
-    form, outside the swapped body, and is replaced out of band.
-    """
-
     tab = DEFAULT_TAB
 
     def get_context_data(self, **kwargs):
@@ -48,13 +40,6 @@ class DrinkTypeContextMixin:
 
 
 class TabViewMixin(DrinkTypeContextMixin):
-    """A tab is a fragment to htmx and a whole page to everyone else.
-
-    Its url is pushed to the address bar, so it has to answer a bookmark and a
-    reload too. A history restore asks over htmx but swaps the whole body, so
-    that one wants the page as well.
-    """
-
     def render_to_response(self, context, **response_kwargs):
         response = super().render_to_response(context, **response_kwargs)
         htmx = self.request.htmx
@@ -75,7 +60,6 @@ class TabViewMixin(DrinkTypeContextMixin):
         return {
             "tabs": DrinkTabs.all(),
             "recent_days": services.RecentDaySelector.for_day(datetime.now().date()),
-            # the sheet logs any drink type, whatever the open tab reads in
             "drink_types": services.DrinkTypeSelector.for_drink_type(user.drink_type),
         }
 
@@ -121,8 +105,6 @@ class TypicalYearChart(FormViewMixin):
         return self._render(chart, self.get_form(initial=self._initial(chart)))
 
     def _preset_range(self, user) -> services.PooledRange:
-        """What the press asked to pool: the last `qty` years, every year, or —
-        when no preset was pressed at all — nothing."""
         if "qty" not in self.kwargs:
             return services.NoPooledRange()
 
@@ -153,7 +135,6 @@ class TypicalYearChart(FormViewMixin):
         return self._render(chart, form)
 
     def form_invalid(self, form):
-        # re-render the form (with errors) in place, leaving the chart untouched
         response = super().form_invalid(form)
         response["HX-Retarget"] = "#typical-year-form"
         response["HX-Reswap"] = "outerHTML"
@@ -237,8 +218,6 @@ class CompareTwo(FormViewMixin):
     success_url = reverse_lazy("drinks:compare_two")
 
     def form_valid(self, form, **kwargs):
-        # a valid submit only updates the shared history chart; the form stays
-        # put in the header, so render just the chart data into its container
         context = {"form": form}
         years = [form.cleaned_data["year1"], form.cleaned_data["year2"]]
         chart = services.YearComparison.build(self.request.user, years)
@@ -250,7 +229,6 @@ class CompareTwo(FormViewMixin):
         return render(self.request, "drinks/includes/history.html", context)
 
     def form_invalid(self, form):
-        # re-render the form (with errors) in place, leaving the chart untouched
         response = super().form_invalid(form)
         response["HX-Retarget"] = "#compare-form"
         response["HX-Reswap"] = "outerHTML"
@@ -264,7 +242,6 @@ class New(CreateViewMixin):
     modal_form_title = _("Drinks")
 
     def get_hx_trigger_django(self):
-        # a new drink lands in the Data tab unless it came from another one
         return DrinkTabs.resolve(self.kwargs.get("tab"), default="data").reload_trigger
 
     def url(self):
@@ -302,7 +279,6 @@ class TargetNew(CreateViewMixin):
     modal_form_title = _("New goal")
 
     def get_hx_trigger_django(self):
-        # a new goal lands in the Overview tab unless it came from another one
         return DrinkTabs.resolve(self.kwargs.get("tab")).reload_trigger
 
     def url(self):
