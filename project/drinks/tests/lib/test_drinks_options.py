@@ -32,6 +32,16 @@ def test_a_canonical_type_reads_its_own_units_whatever_it_is_called(monkeypatch)
     assert actual.stdav_to_display(1.0) == 1.0
 
 
+def test_an_undeclared_drink_type_is_an_error():
+    with pytest.raises(ValueError):
+        DrinkConverter("grog")
+
+
+def test_converting_to_an_undeclared_drink_type_is_an_error():
+    with pytest.raises(ValueError):
+        DrinkConverter("beer").convert_qty(1, "grog")
+
+
 @pytest.mark.parametrize(
     "drink_type, expect",
     [
@@ -39,7 +49,6 @@ def test_a_canonical_type_reads_its_own_units_whatever_it_is_called(monkeypatch)
         ("wine", 0.125),
         ("vodka", 0.025),
         ("stdav", 1.0),
-        ("unknown", 1.0),
     ],
 )
 def test_ratio(drink_type, expect):
@@ -55,7 +64,6 @@ def test_ratio(drink_type, expect):
         ("wine", 750, 8.0),
         ("vodka", 1000, 40.0),
         ("stdav", 10, 1.0),
-        ("unknown", 500, 50.0),
     ],
 )
 def test_ml_to_stdav(drink_type, ml, expect):
@@ -150,7 +158,6 @@ def test_display_to_total(drink_type, value, expect):
         ("wine", 8.0),
         ("vodka", 40.0),
         ("stdav", 1.0),
-        ("unknown", 1.0),
     ],
 )
 def test_stdav_per_unit(drink_type, expect):

@@ -33,16 +33,18 @@ DRINK_SPECS: dict[str, DrinkTypeSpec] = {
 if _undeclared := set(DrinkType.values) - set(DRINK_SPECS):
     raise RuntimeError(f"drink types without a spec: {sorted(_undeclared)}")
 
-# for data that predates the choices, not for a declared type left out above.
-# Std Av's ratios only: an unrecognised type is not the canonical one.
-_CANONICAL_SPEC = DRINK_SPECS[DrinkType.STDAV]
-_LEGACY_SPEC = DrinkTypeSpec(stdav=_CANONICAL_SPEC.stdav, ml=_CANONICAL_SPEC.ml)
+
+def _spec(drink_type: str) -> DrinkTypeSpec:
+    if spec := DRINK_SPECS.get(drink_type):
+        return spec
+
+    raise ValueError(f"undeclared drink type: {drink_type!r}")
 
 
 class DrinkConverter:
     def __init__(self, drink_type: str):
         self.drink_type = drink_type
-        self._spec = DRINK_SPECS.get(drink_type, _LEGACY_SPEC)
+        self._spec = _spec(drink_type)
 
     @property
     def is_canonical(self) -> bool:
@@ -57,8 +59,7 @@ class DrinkConverter:
         return self._spec.stdav
 
     def convert_qty(self, qty: float, to_type: str) -> float:
-        target = DRINK_SPECS.get(to_type, _LEGACY_SPEC)
-        return (qty * self._spec.stdav) / target.stdav
+        return (qty * self._spec.stdav) / _spec(to_type).stdav
 
     def ml_to_stdav(self, ml: int | float) -> float:
         return (ml * self._spec.stdav) / self._spec.ml
