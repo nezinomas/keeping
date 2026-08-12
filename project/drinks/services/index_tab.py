@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import date as dt_date
 from datetime import datetime
 
@@ -17,6 +17,7 @@ from ...core.lib.stat_card import (
 )
 from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
+from ..lib.chart_view_model import ChartViewModel
 from ..lib.drink_types import DrinkType
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_options import DRINK_SPECS, DrinkConverter
@@ -31,17 +32,13 @@ from .consumption_year import ConsumptionYear
 
 
 @dataclass(frozen=True)
-class ChartViewModel:
+class MonthlyChartViewModel(ChartViewModel):
     categories: list[str]
     data: list[float | None]
     text: dict[str, str]
     target: float | None = None
     avg: float | None = None
     decimals: int = 0
-
-    @property
-    def as_dict(self) -> dict:
-        return asdict(self)
 
 
 @dataclass(frozen=True)
@@ -138,17 +135,17 @@ class IndexBuilder:
         self._frequency_stats = frequency_stats or FrequencyStats()
         self._converter = converter
 
-    def chart_quantity(self) -> ChartViewModel:
-        return ChartViewModel(
+    def chart_quantity(self) -> MonthlyChartViewModel:
+        return MonthlyChartViewModel(
             categories=list(month_names().values()),
             data=self._drink_stats.monthly.total_quantity,
             text={"quantity": _("Quantity")},
         )
 
-    def chart_consumption(self) -> ChartViewModel:
+    def chart_consumption(self) -> MonthlyChartViewModel:
         unit = self._converter.display_unit
 
-        return ChartViewModel(
+        return MonthlyChartViewModel(
             categories=list(month_names().values()),
             data=self._drink_stats.monthly.avg_daily_volume,
             target=self._target,

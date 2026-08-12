@@ -1,16 +1,17 @@
 from collections.abc import Iterable
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
 from ...core.lib.translation import month_names
+from ..lib.chart_view_model import ChartViewModel
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DrinkStats
 from .consumption_year import ConsumptionYear
 
 
 @dataclass(frozen=True)
-class YearComparisonChartViewModel:
+class YearComparisonChartViewModel(ChartViewModel):
     title: str
     categories: list[str]
     serries: list[dict] = field(default_factory=list)
@@ -20,10 +21,6 @@ class YearComparisonChartViewModel:
     @property
     def has_data(self) -> bool:
         return bool(self.serries)
-
-    @property
-    def as_dict(self) -> dict:
-        return asdict(self)
 
 
 class YearComparison:
