@@ -4,7 +4,6 @@ from ...services.drink_type_selector import (
     DrinkTypeSelector,
     FixedDrinkTypeSelector,
     NoDrinkTypeSelector,
-    control_for_tab,
 )
 
 
@@ -93,35 +92,8 @@ def test_every_control_answers_what_the_template_reads(control):
         assert hasattr(control, name), name
 
 
-# -------------------------------------------------------------------------------------
-#                                                                    for the tab
-# -------------------------------------------------------------------------------------
-
-
-@pytest.mark.parametrize("tab", ["index", "trends", "history"])
-def test_a_tab_reading_the_selected_type_offers_the_choice(tab):
-    control = control_for_tab(tab, "wine")
-
-    assert isinstance(control, DrinkTypeSelector)
-    assert control.state == "choice"
-    assert control.selected == "wine"
-
-
-@pytest.mark.parametrize("tab", ["habits", "risk"])
-def test_a_tab_reading_a_harm_metric_names_std_av(tab):
-    control = control_for_tab(tab, "wine")
-
-    assert isinstance(control, FixedDrinkTypeSelector)
-    assert control.state == "fixed"
-
-
-def test_a_tab_reading_no_single_amount_draws_no_switcher():
-    """The Data tab lists what was typed, each row in its own drink type."""
-    control = control_for_tab("data", "wine")
-
-    assert isinstance(control, NoDrinkTypeSelector)
-    assert control.state == "absent"
-
-
-def test_an_unknown_tab_falls_back_to_the_default_one():
-    assert control_for_tab("nonsense", "wine").selected == "wine"
+@pytest.mark.parametrize(
+    "control_class", [DrinkTypeSelector, FixedDrinkTypeSelector, NoDrinkTypeSelector]
+)
+def test_every_control_is_built_from_a_drink_type(control_class):
+    assert isinstance(control_class.for_type("beer"), control_class)

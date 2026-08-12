@@ -21,19 +21,22 @@ from ..core.mixins.views import (
 from ..users.models import User
 from . import forms, models, services
 from .services.model_services import DrinkModelService, DrinkTargetModelService
-from .tabs import DEFAULT_TAB, DrinkTabs
+from .tabs import DEFAULT_TAB, TABS, DrinkTab
 
 
 class TabViewMixin:
     tab = DEFAULT_TAB
+
+    def get_template_names(self):
+        return [self.tab.template_name]
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
 
         return {
             **super().get_context_data(**kwargs),
-            "tab": self.tab,
-            "drink_type_control": services.control_for_tab(self.tab, user.drink_type),
+            "tab": self.tab.name,
+            "drink_type_control": self.tab.control(user.drink_type),
         }
 
     def render_to_response(self, context, **response_kwargs):
@@ -54,15 +57,14 @@ class TabViewMixin:
         user = cast(User, self.request.user)
 
         return {
-            "tabs": DrinkTabs.all(),
+            "tabs": TABS,
             "recent_days": services.RecentDaySelector.for_day(datetime.now().date()),
             "drink_types": services.DrinkTypeSelector(user.drink_type),
         }
 
 
 class TabIndex(TabViewMixin, TemplateViewMixin):
-    template_name = "drinks/tab_index.html"
-    tab = "index"
+    tab = DrinkTab.resolve("index")
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
@@ -75,8 +77,7 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
 
 
 class TabHabits(TabViewMixin, TemplateViewMixin):
-    template_name = "drinks/tab_habits.html"
-    tab = "habits"
+    tab = DrinkTab.resolve("habits")
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
@@ -145,8 +146,7 @@ class TypicalYearChart(FormViewMixin):
 
 
 class TabTrends(TabViewMixin, TemplateViewMixin):
-    template_name = "drinks/tab_trends.html"
-    tab = "trends"
+    tab = DrinkTab.resolve("trends")
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
@@ -159,8 +159,7 @@ class TabTrends(TabViewMixin, TemplateViewMixin):
 
 
 class TabRisk(TabViewMixin, TemplateViewMixin):
-    template_name = "drinks/tab_risk.html"
-    tab = "risk"
+    tab = DrinkTab.resolve("risk")
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
@@ -174,8 +173,7 @@ class TabRisk(TabViewMixin, TemplateViewMixin):
 
 class TabData(TabViewMixin, ListViewMixin):
     service_class = DrinkModelService
-    template_name = "drinks/tab_data.html"
-    tab = "data"
+    tab = DrinkTab.resolve("data")
 
     def get_queryset(self):
         user = cast(User, self.request.user)
@@ -183,8 +181,7 @@ class TabData(TabViewMixin, ListViewMixin):
 
 
 class TabHistory(TabViewMixin, TemplateViewMixin):
-    template_name = "drinks/tab_history.html"
-    tab = "history"
+    tab = DrinkTab.resolve("history")
 
     def get_context_data(self, **kwargs):
         return {
@@ -237,10 +234,10 @@ class New(CreateViewMixin):
     modal_form_title = _("Drinks")
 
     def get_hx_trigger_django(self):
-        return DrinkTabs.resolve(self.kwargs.get("tab"), default="data").reload_trigger
+        return DrinkTab.resolve(self.kwargs.get("tab"), default="data").reload_trigger
 
     def url(self):
-        return DrinkTabs.resolve(self.kwargs.get("tab")).form_url("drinks:new")
+        return DrinkTab.resolve(self.kwargs.get("tab")).form_url("drinks:new")
 
 
 class Update(UpdateViewMixin):
@@ -274,10 +271,10 @@ class TargetNew(CreateViewMixin):
     modal_form_title = _("New goal")
 
     def get_hx_trigger_django(self):
-        return DrinkTabs.resolve(self.kwargs.get("tab")).reload_trigger
+        return DrinkTab.resolve(self.kwargs.get("tab")).reload_trigger
 
     def url(self):
-        return DrinkTabs.resolve(self.kwargs.get("tab")).form_url("drinks:target_new")
+        return DrinkTab.resolve(self.kwargs.get("tab")).form_url("drinks:target_new")
 
 
 class TargetUpdate(UpdateViewMixin):
@@ -312,7 +309,7 @@ class SelectDrink(RedirectViewMixin):
             return super().get(request, *args, **kwargs)
 
         # stay on the tab the change was fired from
-        trigger = DrinkTabs.resolve(request.GET.get("tab")).reload_trigger
+        trigger = DrinkTab.resolve(request.GET.get("tab")).reload_trigger
 
         response = HttpResponse(status=204)
         trigger_client_event(response=response, name=trigger, params={})
@@ -343,7 +340,7 @@ class QuickAdd(View):
 
         form.save()
 
-        trigger = DrinkTabs.resolve(request.POST.get("tab")).reload_trigger
+        trigger = DrinkTab.resolve(request.POST.get("tab")).reload_trigger
 
         response = HttpResponse(status=204)
         trigger_client_event(response=response, name=trigger, params={})

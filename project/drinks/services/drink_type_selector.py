@@ -1,10 +1,6 @@
 from dataclasses import dataclass
 
 from ..models import DrinkType
-from ..tabs import DrinkTabs
-
-SELECTING_TABS = ("index", "trends", "history")
-STDAV_TABS = ("habits", "risk")
 
 # the template maps these to markup
 CHOICE = "choice"
@@ -20,6 +16,10 @@ class DrinkTypeSelector:
     selected: str  # the raw value, e.g. "beer"
 
     state = CHOICE
+
+    @classmethod
+    def for_type(cls, drink_type: str) -> "DrinkTypeSelector":
+        return cls(drink_type)
 
     @property
     def label(self) -> str:
@@ -41,6 +41,10 @@ class FixedDrinkTypeSelector:
     state = FIXED
     options = ()
 
+    @classmethod
+    def for_type(cls, drink_type: str) -> "FixedDrinkTypeSelector":
+        return cls()
+
     @property
     def label(self) -> str:
         return DrinkType(self.selected).label
@@ -56,19 +60,9 @@ class NoDrinkTypeSelector:
     options = ()
     state = ABSENT
 
+    @classmethod
+    def for_type(cls, drink_type: str) -> "NoDrinkTypeSelector":
+        return cls()
+
 
 DrinkTypeControl = DrinkTypeSelector | FixedDrinkTypeSelector | NoDrinkTypeSelector
-
-
-def control_for_tab(tab: str, drink_type: str) -> DrinkTypeControl:
-    """Data lists what was typed, each row in its own drink type, so it reads no
-    single amount and wears no control."""
-    name = DrinkTabs.resolve(tab).name
-
-    if name in SELECTING_TABS:
-        return DrinkTypeSelector(drink_type)
-
-    if name in STDAV_TABS:
-        return FixedDrinkTypeSelector()
-
-    return NoDrinkTypeSelector()
