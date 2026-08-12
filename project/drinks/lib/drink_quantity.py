@@ -23,7 +23,7 @@ class DrinkQuantity:
         if value > MAX_BOTTLES:
             return cls(converter.ml_to_stdav(value), drink_type, is_volume=True)
 
-        return cls(value / converter.ratio, drink_type)
+        return cls(converter.servings_to_stdav(value), drink_type)
 
     @classmethod
     def from_volume(cls, ml: float, drink_type: str) -> "DrinkQuantity":
@@ -56,7 +56,7 @@ class DrinkQuantity:
         if self.is_volume:
             return converter.stdav_to_ml(self.stdav)
 
-        return self.stdav * converter.ratio
+        return converter.stdav_to_servings(self.stdav)
 
     @property
     def unit_label(self) -> str:

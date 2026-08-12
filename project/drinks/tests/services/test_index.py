@@ -10,7 +10,7 @@ from ....core.lib import stat_card
 from ....core.lib.calendar_grid import CalendarYearViewModel
 from ....core.lib.stat_card import Card
 from ...lib.drinks_frequency import FrequencyStats
-from ...lib.drinks_options import DrinkConverter
+from ...lib.drinks_options import DrinkConverter, stdav_to_alcohol
 from ...lib.drinks_stats import DataRow, DrinkStats
 from ...services.index_tab import DryDaysViewModel, IndexBuilder, IndexTab
 from ..factories import DrinkFactory, DrinkTargetFactory
@@ -32,14 +32,14 @@ def _frequency(current=(), past=(), today=date(1999, 1, 10)) -> FrequencyStats:
 
 
 def _stats(drink_converter, total_quantity=0.0, avg=0.0, year=1999):
-    stdav = total_quantity * drink_converter.stdav_per_unit
+    stdav = drink_converter.servings_to_stdav(total_quantity)
     return SimpleNamespace(
         year=year,
         yearly=SimpleNamespace(
             total_quantity=total_quantity,
             avg_daily_volume=avg,
             stdav=stdav,
-            pure_alcohol_liters=drink_converter.stdav_to_alcohol(stdav),
+            pure_alcohol_liters=stdav_to_alcohol(stdav),
             avg_daily_stdav=avg,
         ),
     )
