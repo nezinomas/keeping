@@ -6,9 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
-from django_htmx.http import trigger_client_event
 
-from ..core.lib.date import set_date_with_user_year
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -21,7 +19,21 @@ from ..core.mixins.views import (
 from ..users.models import User
 from . import forms, models, services
 from .services.model_services import DrinkModelService, DrinkTargetModelService
-from .tabs import DEFAULT_TAB, TABS, DrinkTab
+from .tabs import DEFAULT_TAB, TABS, DrinkTab, tab_reload_response
+
+
+class HtmxFormRetargetMixin:
+    """The target swapped on success is the chart, so the errors have to be
+    retargeted at the form's own wrapper."""
+
+    retarget = ""
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        response["HX-Retarget"] = self.retarget
+        response["HX-Reswap"] = "outerHTML"
+
+        return response
 
 
 class TabViewMixin:
@@ -89,28 +101,30 @@ class TabHabits(TabViewMixin, TemplateViewMixin):
         }
 
 
-class TypicalYearChart(FormViewMixin):
+class TypicalYearChart(HtmxFormRetargetMixin, FormViewMixin):
     form_class = forms.TypicalYearForm
     template_name = "drinks/includes/typical_year_form.html"
+    retarget = "#typical-year-form"
 
     def get(self, request, *args, **kwargs):
-        user = cast(User, request.user)
-        chart = services.TypicalYear.build(
-            user, cast(int, user.year), self._preset_range(user)
-        )
+        year = cast(int, cast(User, request.user).year)
+        chart = self._chart(services.PooledRange.resolve(year, self.kwargs.get("qty")))
 
         return self._render(chart, self.get_form(initial=self._initial(chart)))
 
-    def _preset_range(self, user) -> services.PooledRange:
-        if "qty" not in self.kwargs:
-            return services.NoPooledRange()
+    def form_valid(self, form, **kwargs):
+        chart = self._chart(
+            services.PooledRange(
+                form.cleaned_data["year_from"], form.cleaned_data["year_to"]
+            )
+        )
 
-        qty = self.kwargs["qty"]
-        if not qty:
-            return services.PooledRange()
+        return self._render(chart, form)
 
-        year = cast(int, user.year)
-        return services.PooledRange(year - qty + 1, year)
+    def _chart(self, pooled: services.PooledRange):
+        user = cast(User, self.request.user)
+
+        return services.TypicalYear.build(user, cast(int, user.year), pooled)
 
     @staticmethod
     def _initial(chart) -> dict:
@@ -118,24 +132,6 @@ class TypicalYearChart(FormViewMixin):
             return {}
 
         return {"year_from": chart.year_from, "year_to": chart.year_to}
-
-    def form_valid(self, form, **kwargs):
-        user = cast(User, self.request.user)
-        chart = services.TypicalYear.build(
-            user,
-            cast(int, user.year),
-            services.PooledRange(
-                form.cleaned_data["year_from"], form.cleaned_data["year_to"]
-            ),
-        )
-
-        return self._render(chart, form)
-
-    def form_invalid(self, form):
-        response = super().form_invalid(form)
-        response["HX-Retarget"] = "#typical-year-form"
-        response["HX-Reswap"] = "outerHTML"
-        return response
 
     def _render(self, chart, form) -> HttpResponse:
         return render(
@@ -196,35 +192,33 @@ class Compare(TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
-        year = cast(int, user.year) + 1
-        qty = self.kwargs.get("qty", 0)
 
         return {
-            "chart": services.YearComparison.build(user, range(year - qty, year)),
-            "form": forms.DrinkCompareForm(user=self.request.user),
+            "chart": services.YearComparison.for_recent(
+                user, cast(int, user.year), self.kwargs.get("qty", 0)
+            ),
+            "form": forms.DrinkCompareForm(user=user),
         }
 
 
-class CompareTwo(FormViewMixin):
+class CompareTwo(HtmxFormRetargetMixin, FormViewMixin):
     form_class = forms.DrinkCompareForm
     template_name = "drinks/includes/compare_form.html"
     success_url = reverse_lazy("drinks:compare_two")
+    retarget = "#compare-form"
 
     def form_valid(self, form, **kwargs):
-        context = {"form": form}
-        years = [form.cleaned_data["year1"], form.cleaned_data["year2"]]
-        chart = services.YearComparison.build(self.request.user, years)
+        chart = services.YearComparison.for_pair(
+            self.request.user,
+            form.cleaned_data["year1"],
+            form.cleaned_data["year2"],
+        )
 
-        if len(chart.serries) == len(years):
-            context["chart"] = chart
-
-        return render(self.request, "drinks/includes/history.html", context)
-
-    def form_invalid(self, form):
-        response = super().form_invalid(form)
-        response["HX-Retarget"] = "#compare-form"
-        response["HX-Reswap"] = "outerHTML"
-        return response
+        return render(
+            self.request,
+            "drinks/includes/history.html",
+            {"form": form, "chart": chart},
+        )
 
 
 class New(CreateViewMixin):
@@ -309,11 +303,7 @@ class SelectDrink(RedirectViewMixin):
             return super().get(request, *args, **kwargs)
 
         # stay on the tab the change was fired from
-        trigger = DrinkTab.resolve(request.GET.get("tab")).reload_trigger
-
-        response = HttpResponse(status=204)
-        trigger_client_event(response=response, name=trigger, params={})
-        return response
+        return tab_reload_response(request.GET.get("tab"))
 
     def get_redirect_url(self, *args, **kwargs):
         return reverse_lazy("drinks:index")
@@ -321,27 +311,11 @@ class SelectDrink(RedirectViewMixin):
 
 class QuickAdd(View):
     def post(self, request, *args, **kwargs):
-        user = cast(User, request.user)
-        option = request.POST.get("option") or user.drink_type
-        date = request.POST.get("date") or set_date_with_user_year(user)
-
-        form = forms.DrinkForm(
-            data={
-                "user": user.pk,
-                "date": date,
-                "option": option,
-                "stdav": request.POST.get("quantity"),
-            },
-            user=user,
-        )
+        form = forms.QuickAddForm.from_post(request.POST, cast(User, request.user))
 
         if not form.is_valid():
             return HttpResponse(status=422)
 
         form.save()
 
-        trigger = DrinkTab.resolve(request.POST.get("tab")).reload_trigger
-
-        response = HttpResponse(status=204)
-        trigger_client_event(response=response, name=trigger, params={})
-        return response
+        return tab_reload_response(request.POST.get("tab"))
