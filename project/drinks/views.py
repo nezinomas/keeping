@@ -222,7 +222,6 @@ class CompareTwo(FormViewMixin):
         years = [form.cleaned_data["year1"], form.cleaned_data["year2"]]
         chart = services.YearComparison.build(self.request.user, years)
 
-        # only plot a comparison when both years actually had records
         if len(chart.serries) == len(years):
             context["chart"] = chart
 
@@ -297,7 +296,6 @@ class TargetUpdate(UpdateViewMixin):
         obj = super().get_object()
 
         if obj:
-            # the form edits the volume the user originally typed
             obj.quantity = obj.amount.value
 
         return obj
