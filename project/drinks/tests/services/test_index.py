@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 
 from ....core.lib import stat_card
 from ....core.lib.calendar_grid import CalendarYearViewModel
-from ....core.lib.stat_card import StatCard
+from ....core.lib.stat_card import Card
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DataRow, DrinkStats
@@ -175,7 +175,7 @@ def test_get_cards_order(main_user, drink_converter):
         _("Pure alcohol"),
         _("Daily limit"),
     ]
-    assert all(isinstance(c, StatCard) for c in cards)
+    assert all(isinstance(c, Card) for c in cards)
 
 
 # -------------------------------------------------------------------------------------
@@ -562,7 +562,7 @@ def test_index_tab_build_returns_expected_keys(main_user):
         "calendar",
     }
     assert len(actual["cards"]) == 6
-    assert all(isinstance(c, StatCard) for c in actual["cards"])
+    assert all(isinstance(c, Card) for c in actual["cards"])
     assert isinstance(actual["calendar"], CalendarYearViewModel)
 
 

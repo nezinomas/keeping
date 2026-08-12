@@ -8,7 +8,13 @@ from django.utils.translation import gettext as _
 from ...core.lib import stat_card
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.date import ydays, years
-from ...core.lib.stat_card import StatCard
+from ...core.lib.stat_card import (
+    Card,
+    ComparisonStatCard,
+    EmptyStatCard,
+    LevelStatCard,
+    StatCard,
+)
 from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
 from ..lib.drinks_frequency import FrequencyStats
@@ -155,7 +161,7 @@ class IndexBuilder:
 
         return DryDaysViewModel()
 
-    def get_cards(self) -> list[StatCard]:
+    def get_cards(self) -> list[Card]:
         return [
             self._card_dry_days(),
             self._card_drinking_days(),
@@ -180,12 +186,12 @@ class IndexBuilder:
             current, previous, has_past=bool(self._previous_stats.yearly.total_quantity)
         )
 
-    def _card_dry_days(self) -> StatCard:
+    def _card_dry_days(self) -> Card:
         title = _("Days dry")
         dry = self.tbl_dry_days()
 
         if not dry.has_data:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         return StatCard(
             title=title,
@@ -193,12 +199,12 @@ class IndexBuilder:
             note=dry.date.strftime("%Y-%m-%d"),
         )
 
-    def _card_drinking_days(self) -> StatCard:
+    def _card_drinking_days(self) -> Card:
         title = _("Drinking days")
         frequency = self._frequency_stats
 
         if not frequency.drinking_days:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         value = str(frequency.drinking_days)
         share = (
@@ -218,7 +224,7 @@ class IndexBuilder:
                 explanation=(share, definition),
             )
 
-        return StatCard.comparison(
+        return ComparisonStatCard(
             title,
             improving=comparison.improving,
             value=value,
@@ -226,11 +232,11 @@ class IndexBuilder:
             explanation=(share, definition, self._arrow_note()),
         )
 
-    def _card_std_drinks(self) -> StatCard:
+    def _card_std_drinks(self) -> Card:
         title = _("Std drinks")
 
         if not self._drink_stats.yearly.total_quantity:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         stdav = self._drink_stats.yearly.stdav
         value = f"{stdav:.0f}"
@@ -239,7 +245,7 @@ class IndexBuilder:
         if not comparison.has_past:
             return StatCard(title=title, value=value, note=_("Std Av this year"))
 
-        return StatCard.comparison(
+        return ComparisonStatCard(
             title,
             improving=comparison.improving,
             value=value,
@@ -247,11 +253,11 @@ class IndexBuilder:
             explanation=(self._arrow_note(),),
         )
 
-    def _card_avg_per_day(self) -> StatCard:
+    def _card_avg_per_day(self) -> Card:
         title = _("Avg per day")
 
         if not self._drink_stats.yearly.total_quantity:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         unit = self._converter.display_unit
         decimals = self._converter.display_decimals
@@ -278,7 +284,7 @@ class IndexBuilder:
                     explanation=explanation,
                 )
 
-            return StatCard.comparison(
+            return ComparisonStatCard(
                 title,
                 improving=comparison.improving,
                 value=value,
@@ -295,7 +301,7 @@ class IndexBuilder:
         state = stat_card.LOW if under_limit else stat_card.HIGH
 
         if not comparison.has_past:
-            return StatCard.level(
+            return LevelStatCard(
                 title,
                 state=state,
                 value=value,
@@ -304,7 +310,7 @@ class IndexBuilder:
                 explanation=explanation,
             )
 
-        return StatCard.level(
+        return LevelStatCard(
             title,
             state=state,
             value=value,
@@ -321,11 +327,11 @@ class IndexBuilder:
 
         return stats.yearly.avg_daily_volume
 
-    def _card_pure_alcohol(self) -> StatCard:
+    def _card_pure_alcohol(self) -> Card:
         title = _("Pure alcohol")
 
         if not self._drink_stats.yearly.total_quantity:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         liters = self._drink_stats.yearly.pure_alcohol_liters
         value = f"{liters:.1f}"
@@ -336,7 +342,7 @@ class IndexBuilder:
         if not comparison.has_past:
             return StatCard(title=title, value=value, unit="L", note=_("this year"))
 
-        return StatCard.comparison(
+        return ComparisonStatCard(
             title,
             improving=comparison.improving,
             value=value,
@@ -345,15 +351,14 @@ class IndexBuilder:
             explanation=(self._arrow_note(),),
         )
 
-    def _card_limit(self) -> StatCard:
+    def _card_limit(self) -> Card:
         title = _("Daily limit")
         label = _("Goal for the year")
 
         if not self._target:
-            return StatCard(
+            return EmptyStatCard(
                 title=title,
                 note=_("No limit set"),
-                state=stat_card.EMPTY,
                 edit_url=reverse("drinks:target_new", kwargs={"tab": "index"}),
                 edit_label=label,
             )
