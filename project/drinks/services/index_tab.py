@@ -19,7 +19,12 @@ from ...core.lib.translation import month_names
 from ...core.lib.year_boundary import YearBoundary
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_options import DrinkConverter
-from ..lib.drinks_stats import DrinkStats, EmptyYearOverYear, YearOverYear
+from ..lib.drinks_stats import (
+    DrinkStats,
+    EmptyYearOverYear,
+    YearOverYear,
+    YearOverYearReading,
+)
 from .consumption_year import ConsumptionYear
 
 
@@ -181,10 +186,11 @@ class IndexBuilder:
 
     def _against_last_year(
         self, current: float, previous: float
-    ) -> YearOverYear | EmptyYearOverYear:
-        return YearOverYear.compare(
-            current, previous, has_past=bool(self._previous_stats.yearly.total_quantity)
-        )
+    ) -> YearOverYearReading:
+        if not self._previous_stats.yearly.total_quantity:
+            return EmptyYearOverYear(current)
+
+        return YearOverYear(current, previous)
 
     def _card_dry_days(self) -> Card:
         title = _("Days dry")
