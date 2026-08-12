@@ -270,7 +270,7 @@ class IndexBuilder:
         decimals = self._converter.display_decimals
 
         avg = self._avg_daily(self._drink_stats)
-        figure_unit = "" if self._converter.drink_type == "stdav" else unit
+        figure_unit = self._converter.figure_unit
         value = f"{avg:.{decimals}f}"
 
         comparison = self._against_last_year(avg, self._avg_daily(self._previous_stats))
@@ -329,7 +329,7 @@ class IndexBuilder:
         )
 
     def _avg_daily(self, stats: DrinkStats) -> float:
-        if self._converter.drink_type == "stdav":
+        if self._converter.is_canonical:
             return stats.yearly.avg_daily_stdav
 
         return stats.yearly.avg_daily_volume
@@ -370,14 +370,12 @@ class IndexBuilder:
                 edit_label=label,
             )
 
-        unit = self._converter.display_unit
         decimals = self._converter.display_decimals
-        figure_unit = "" if self._converter.drink_type == "stdav" else unit
 
         return StatCard(
             title=title,
             value=f"{self._target:.{decimals}f}",
-            unit=figure_unit,
+            unit=self._converter.figure_unit,
             note=f"{self._pcs_per_day:.1f} {_('pcs')} / {_('day')}",
             edit_url=reverse("drinks:target_update", kwargs={"pk": self._target_id}),
             edit_label=label,
