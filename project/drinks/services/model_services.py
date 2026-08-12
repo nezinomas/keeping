@@ -5,7 +5,6 @@ from datetime import date
 from django.db.models import Count, F, QuerySet, Sum
 from django.db.models.functions import ExtractMonth, ExtractYear
 
-from ...core.lib.date import ydays
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
 from .. import models
@@ -26,7 +25,6 @@ class DrinkTargetDTO:
     has_data: bool = False
     target_id: int = 0
     amount: DrinkQuantity = DrinkQuantity(stdav=0.0, drink_type=DrinkType.STDAV)
-    max_bottles: float = 0.0  # servings per year, not per day
 
     @property
     def qty(self) -> float:
@@ -138,20 +136,9 @@ class DrinkTargetModelService(BaseModelService):
     def year(self, year):
         return self.objects.filter(year=year)
 
-    def targets(self, year: int) -> list[DrinkTargetDTO]:
-        return [self._as_dto(row, year) for row in self.year(year)]
-
     def get_target(self, year: int) -> DrinkTargetDTO:
-        if row := self.year(year).first():
-            return self._as_dto(row, year)
-
-        return DrinkTargetDTO()
-
-    def items(self):
-        return self.objects
-
-    def _as_dto(self, row, year: int) -> DrinkTargetDTO:
-        converter = DrinkConverter(self.user.drink_type)
+        if not (row := self.year(year).first()):
+            return DrinkTargetDTO()
 
         return DrinkTargetDTO(
             has_data=True,
@@ -159,6 +146,7 @@ class DrinkTargetModelService(BaseModelService):
             amount=DrinkQuantity.from_stdav(
                 row.quantity, self.user.drink_type, is_volume=True
             ),
-            # the target is a daily amount, so a year of it is a year's servings
-            max_bottles=ydays(year) * converter.stdav_to_servings(row.quantity),
         )
+
+    def items(self):
+        return self.objects

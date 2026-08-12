@@ -1301,36 +1301,6 @@ def test_target_update(drink_type, ml, expect, client_logged):
     assert actual.quantity == expect
 
 
-@pytest.mark.parametrize(
-    "user_drink_type, drink_type, ml, expect_ml, expect_pcs",
-    [
-        ("beer", "beer", 500, "500,0", "365"),
-        ("wine", "beer", 500, "234,4", "114"),
-        ("vodka", "beer", 500, "62,5", "23"),
-        ("beer", "wine", 750, "1.600,0", "1.168"),
-        ("wine", "wine", 750, "750,0", "365"),
-        ("vodka", "wine", 750, "200,0", "73"),
-        ("beer", "vodka", 1000, "8.000,0", "5.840"),
-        ("wine", "vodka", 1000, "3.750,0", "1.825"),
-        ("vodka", "vodka", 1000, "1.000,0", "365"),
-    ],
-)
-def test_target_lists(
-    user_drink_type, drink_type, ml, expect_ml, expect_pcs, main_user, client_logged
-):
-    main_user.drink_type = user_drink_type
-    main_user.save()
-
-    DrinkTargetFactory(drink_type=drink_type, quantity=ml)
-
-    url = reverse("drinks:target_list")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f"<td>{expect_ml}</td>" in actual
-    assert f"<td>{expect_pcs}</td>" in actual
-
-
 def test_target_update_not_load_other_user(client_logged, second_user):
     DrinkTargetFactory()
     obj = DrinkTargetFactory(quantity=666, user=second_user)
@@ -1339,15 +1309,6 @@ def test_target_update_not_load_other_user(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
-
-
-def test_target_empty_db(client_logged):
-    DrinkFactory()
-
-    url = reverse("drinks:target_list")
-    response = client_logged.get(url)
-
-    assert "Neįvestas tikslas" in response.content.decode("utf-8")
 
 
 # -------------------------------------------------------------------------------------
