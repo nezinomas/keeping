@@ -94,13 +94,6 @@ class DrinkConverter:
         return value / 1000
 
     def stdav_to_display(self, stdav: float) -> float:
-        """Std Av in the unit it is shown in — the rule ``DrinkQuantity.value``
-        applies, so a chart and a card never disagree about what a number means.
-
-        The canonical type is shown as typed; converting it would report the
-        10 ml of pure alcohol one Std Av contains, ten times the number a user
-        entered and ten times the Drink Target it is read against.
-        """
         if self._spec.is_canonical:
             return stdav
 
