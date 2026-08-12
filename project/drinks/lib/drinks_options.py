@@ -30,8 +30,11 @@ DRINK_SPECS: dict[str, DrinkTypeSpec] = {
 }
 
 
-def stdav_to_alcohol(stdav: float) -> float:
-    # one stdav = 10g pure alcohol (100%), and the rule holds for every type
+def stdav_to_alcohol[T](stdav: T) -> T:
+    """Std Av as litres of pure alcohol, for a number or a data frame column.
+
+    One Std Av is 10 g of it, and the rule holds for every drink type.
+    """
     return stdav * 0.01
 
 

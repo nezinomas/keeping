@@ -1,3 +1,4 @@
+import polars as pl
 import pytest
 
 from ...lib.drink_types import DrinkType
@@ -220,3 +221,12 @@ def test_stdav_to_alcohol(stdav, expect):
     actual = stdav_to_alcohol(stdav)
 
     assert actual == expect
+
+
+def test_stdav_to_alcohol_reads_a_data_frame_column():
+    # the History service hands it a polars column, not a number
+    df = pl.DataFrame({"stdav": [2.5, 8.0]})
+
+    actual = df.with_columns(alcohol=stdav_to_alcohol(pl.col.stdav))
+
+    assert actual["alcohol"].to_list() == [0.025, 0.08]
