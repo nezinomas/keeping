@@ -261,6 +261,33 @@ def test_chart_as_dict_carries_the_layers_it_draws_and_no_python_only_span():
 
 
 # -------------------------------------------------------------------------------------
+#                                                                   PooledRange.resolve
+# -------------------------------------------------------------------------------------
+def test_resolve_without_a_qty_pools_nothing():
+    assert isinstance(PooledRange.resolve(2025), NoPooledRange)
+
+
+def test_resolve_of_zero_pools_every_year_on_record():
+    actual = PooledRange.resolve(2025, 0)
+
+    # not NoPooledRange, which subclasses it
+    assert type(actual) is PooledRange
+    assert (actual.year_from, actual.year_to) == (0, 0)
+
+
+def test_resolve_of_a_count_ends_the_span_on_the_header_year():
+    actual = PooledRange.resolve(2025, 3)
+
+    assert (actual.year_from, actual.year_to) == (2023, 2025)
+
+
+def test_resolve_of_one_pools_the_header_year_alone():
+    actual = PooledRange.resolve(2025, 1)
+
+    assert (actual.year_from, actual.year_to) == (2025, 2025)
+
+
+# -------------------------------------------------------------------------------------
 #                                                                     TypicalYear.build
 # -------------------------------------------------------------------------------------
 @time_machine.travel("2026-07-15")

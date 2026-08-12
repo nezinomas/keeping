@@ -80,6 +80,21 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         return cleaned_data
 
 
+class QuickAddForm(DrinkForm):
+    @classmethod
+    def from_post(cls, post, user) -> "QuickAddForm":
+        return cls(
+            data={
+                "user": user.pk,
+                "date": post.get("date") or set_date_with_user_year(user),
+                "option": post.get("option") or user.drink_type,
+                # the bar labels the box quantity; the model stores Std Av
+                "stdav": post.get("quantity"),
+            },
+            user=user,
+        )
+
+
 class DrinkTargetForm(forms.ModelForm):
     class Meta:
         model = DrinkTarget
