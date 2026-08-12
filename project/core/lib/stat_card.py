@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 
-# A level read against a threshold, or a direction read against a baseline.
-# Templates map these to colours and icons.
 EMPTY = "empty"
 NEUTRAL = "neutral"
 LOW = "low"
@@ -16,23 +14,17 @@ class StatCard:
     """A figure that stands on its own: no threshold behind it, no baseline."""
 
     title: str
-    value: str = ""
-    # apart from the figure: the skin sets it at a third of the figure's size,
-    # and a template cannot split "300 ml" without guessing where the number ends
-    unit: str = ""
     note: str = ""
-    # one sentence per part: the template renders each as its own paragraph, so
-    # nothing here decides how they are separated
-    explanation: tuple[str, ...] = ()
-    # a figure the user can change: the url a pencil beside it opens, and what
-    # that pencil is called. The figure itself is still read, never pressed.
     edit_url: str = ""
     edit_label: str = ""
 
-    # Not fields - invalid states are unconstructible (e.g., `StatCard(state="high")`)
-    state = NEUTRAL
+    value: str = ""
+    unit: str = ""
     show_icon = False
     improving = False
+    explanation: tuple[str, ...] = ()
+
+    state = NEUTRAL
 
 
 @dataclass(frozen=True)
@@ -46,10 +38,11 @@ class EmptyStatCard:
 
     value = ""
     unit = ""
-    state = EMPTY
     show_icon = False
     improving = False
     explanation = ()
+
+    state = EMPTY
 
 
 @dataclass(frozen=True)
@@ -57,15 +50,15 @@ class ComparisonStatCard:
     """A metric read against a baseline, so its direction is its state."""
 
     title: str
-    improving: bool = False
-    value: str = ""
-    unit: str = ""
     note: str = ""
-    explanation: tuple[str, ...] = ()
-
-    show_icon = True
     edit_url = ""
     edit_label = ""
+
+    value: str = ""
+    unit: str = ""
+    show_icon = True
+    improving: bool = False
+    explanation: tuple[str, ...] = ()
 
     @property
     def state(self) -> str:
@@ -78,18 +71,17 @@ class LevelStatCard:
     against a baseline too, which only points its arrow."""
 
     title: str
-    state: str = NEUTRAL
-    value: str = ""
-    unit: str = ""
     note: str = ""
-    # kept apart from `state` so a card read against a threshold can still point
-    # at a baseline
-    improving: bool = False
-    show_icon: bool = False
-    explanation: tuple[str, ...] = ()
-
     edit_url = ""
     edit_label = ""
+
+    value: str = ""
+    unit: str = ""
+    show_icon: bool = False
+    improving: bool = False
+    explanation: tuple[str, ...] = ()
+
+    state: str = NEUTRAL
 
 
 Card = StatCard | EmptyStatCard | ComparisonStatCard | LevelStatCard
