@@ -4,7 +4,9 @@ from dataclasses import dataclass
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from .services.drink_type_selector import (
+# `lib`, not `services`: the services package imports the tab builders, and
+# reading them from there would close an import loop.
+from .lib.drink_type_control import (
     DrinkTypeControl,
     DrinkTypeSelector,
     FixedDrinkTypeSelector,
