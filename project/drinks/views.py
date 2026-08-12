@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import cast
 
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -290,13 +290,13 @@ class TargetUpdate(UpdateViewMixin):
 
 class SelectDrink(RedirectViewMixin):
     def get(self, request, *args, **kwargs):
-        drink_type = kwargs.get("drink_type")
+        drink_type = kwargs["drink_type"]
 
         if drink_type not in models.DrinkType.values:
-            drink_type = models.DrinkType.BEER.value
+            raise Http404
 
         user = cast(User, request.user)
-        user.drink_type = cast(str, drink_type)
+        user.drink_type = drink_type
         user.save()
 
         if not request.htmx:
