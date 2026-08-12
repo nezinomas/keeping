@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from datetime import date as dt_date
 from datetime import datetime
 
+from django.template.defaultfilters import floatformat
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
@@ -20,7 +21,7 @@ from ...core.lib.year_boundary import YearBoundary
 from ..lib.chart_view_model import ChartViewModel
 from ..lib.drink_types import DrinkType
 from ..lib.drinks_frequency import FrequencyStats
-from ..lib.drinks_options import DRINK_SPECS, DrinkConverter
+from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import (
     DrinkStats,
     EmptyYearOverYear,
@@ -86,11 +87,6 @@ class IndexTab:
             ),
             target=target.qty,
             target_id=target.target_id,
-            pcs_per_day=(
-                target.max_bottles / days
-                if target.has_data and (days := ydays(year))
-                else 0.0
-            ),
             latest_past_date=records.last_recorded_date_before,
             latest_current_date=records.last_recorded_date,
         )
@@ -119,14 +115,12 @@ class IndexBuilder:
         frequency_stats: FrequencyStats | None = None,
         target: float = 0.0,
         target_id: int = 0,
-        pcs_per_day: float = 0.0,
         latest_past_date: dt_date | None = None,
         latest_current_date: dt_date | None = None,
         today: dt_date | None = None,
     ):
         self._target = target
         self._target_id = target_id
-        self._pcs_per_day = pcs_per_day
         self._latest_past_date = latest_past_date
         self._latest_current_date = latest_current_date
         self._today = today or datetime.now().date()
@@ -374,10 +368,17 @@ class IndexBuilder:
             title=title,
             value=f"{self._target:.{decimals}f}",
             unit=self._converter.figure_unit,
-            note=f"{self._pcs_per_day:.1f} {_('pcs')} / {_('day')}",
+            note=_("%(amount)s per year") % {"amount": self._target_a_year()},
             edit_url=reverse("drinks:target_update", kwargs={"pk": self._target_id}),
             edit_label=label,
         )
+
+    def _target_a_year(self) -> str:
+        """A daily limit as the year it adds up to, in the unit a total takes."""
+        days = ydays(self._drink_stats.year)
+        total = self._converter.display_to_total(self._target * days)
+
+        return f"{floatformat(total, 1)} {self._converter.total_unit}"
 
     def tbl_std_av(self) -> StdAvViewModel:
         return StdAvViewModel(
@@ -400,14 +401,16 @@ class IndexBuilder:
     def _create_conversion_row(
         self, drink_type: DrinkType, base: tuple[float, ...]
     ) -> ConversionRowViewModel:
-        spec = DRINK_SPECS[drink_type]
+        converter = DrinkConverter(drink_type)
         title = drink_type.label
 
-        if not spec.is_canonical:
-            title = f"{title}, {spec.ml / 1000:g}L"
+        if not converter.is_canonical:
+            one_serving = converter.stdav_to_total(converter.servings_to_stdav(1))
+            title = f"{title}, {one_serving:g}{converter.total_unit}"
 
         total, per_day, per_week, per_month = (
-            self._converter.convert_qty(value, drink_type) for value in base
+            converter.stdav_to_servings(self._converter.servings_to_stdav(value))
+            for value in base
         )
 
         return ConversionRowViewModel(

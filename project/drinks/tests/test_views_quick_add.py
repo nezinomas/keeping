@@ -4,9 +4,7 @@ import pytest
 import time_machine
 from django.urls import reverse
 
-from ...users.tests.factories import User
 from .. import models
-from .factories import DrinkFactory
 
 pytestmark = pytest.mark.django_db
 

@@ -1,11 +1,11 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from django.http import HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django_htmx.http import trigger_client_event
 
-# `lib`, not `services`: the services package imports the tab builders, and
-# reading them from there would close an import loop.
 from .lib.drink_type_control import (
     DrinkTypeControl,
     DrinkTypeSelector,
@@ -16,12 +16,15 @@ from .lib.drink_type_control import (
 
 @dataclass(frozen=True)
 class DrinkTab:
-    """One drinks tab. Every spelling of its name — url, template, client
-    event — is derived here rather than retyped at the call site."""
-
     name: str
     title: str
     control: Callable[[str], DrinkTypeControl]
+
+    @classmethod
+    def resolve(cls, raw: str | None, default: str = "") -> "DrinkTab":
+        """`default` is the tab that owns the change when a url kwarg, query
+        string or form field named no valid one."""
+        return BY_NAME.get(raw) or BY_NAME.get(default) or DEFAULT_TAB
 
     @property
     def url_name(self) -> str:
@@ -42,12 +45,6 @@ class DrinkTab:
     def form_url(self, url_name: str):
         return reverse_lazy(url_name, kwargs={"tab": self.name})
 
-    @classmethod
-    def resolve(cls, raw: str | None, default: str = "") -> "DrinkTab":
-        """`default` is the tab that owns the change when a url kwarg, query
-        string or form field named no valid one."""
-        return BY_NAME.get(raw) or BY_NAME.get(default) or DEFAULT_TAB
-
 
 # in the order the tab row draws them, which is the order arrow keys walk
 TABS = (
@@ -60,3 +57,12 @@ TABS = (
 )
 BY_NAME = {tab.name: tab for tab in TABS}
 DEFAULT_TAB = BY_NAME["index"]
+
+
+def tab_reload_response(raw: str, default: str = "") -> HttpResponse:
+    response = HttpResponse(status=204)
+    trigger_client_event(
+        response=response, name=DrinkTab.resolve(raw, default).reload_trigger, params={}
+    )
+
+    return response

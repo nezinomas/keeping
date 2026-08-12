@@ -1,7 +1,13 @@
+import polars as pl
 import pytest
 
 from ...lib.drink_types import DrinkType
-from ...lib.drinks_options import DRINK_SPECS, DrinkConverter, DrinkTypeSpec
+from ...lib.drinks_options import (
+    DRINK_SPECS,
+    DrinkConverter,
+    DrinkTypeSpec,
+    stdav_to_alcohol,
+)
 
 
 def test_every_drink_type_has_a_spec():
@@ -32,6 +38,11 @@ def test_a_canonical_type_reads_its_own_units_whatever_it_is_called(monkeypatch)
     assert actual.stdav_to_display(1.0) == 1.0
 
 
+def test_an_undeclared_drink_type_is_an_error():
+    with pytest.raises(ValueError):
+        DrinkConverter("grog")
+
+
 @pytest.mark.parametrize(
     "drink_type, expect",
     [
@@ -39,11 +50,42 @@ def test_a_canonical_type_reads_its_own_units_whatever_it_is_called(monkeypatch)
         ("wine", 0.125),
         ("vodka", 0.025),
         ("stdav", 1.0),
-        ("unknown", 1.0),
     ],
 )
-def test_ratio(drink_type, expect):
-    actual = DrinkConverter(drink_type).ratio
+def test_servings_per_stdav(drink_type, expect):
+    actual = DrinkConverter(drink_type).servings_per_stdav
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
+    "drink_type, servings, expect",
+    [
+        ("beer", 1, 2.5),
+        ("wine", 1, 8.0),
+        ("vodka", 1, 40.0),
+        ("stdav", 1, 1.0),
+        ("beer", 2, 5.0),
+    ],
+)
+def test_servings_to_stdav(drink_type, servings, expect):
+    actual = DrinkConverter(drink_type).servings_to_stdav(servings)
+
+    assert actual == expect
+
+
+@pytest.mark.parametrize(
+    "drink_type, stdav, expect",
+    [
+        ("beer", 2.5, 1.0),
+        ("wine", 8.0, 1.0),
+        ("vodka", 40.0, 1.0),
+        ("stdav", 1.0, 1.0),
+        ("beer", 5.0, 2.0),
+    ],
+)
+def test_stdav_to_servings(drink_type, stdav, expect):
+    actual = DrinkConverter(drink_type).stdav_to_servings(stdav)
 
     assert actual == expect
 
@@ -55,7 +97,6 @@ def test_ratio(drink_type, expect):
         ("wine", 750, 8.0),
         ("vodka", 1000, 40.0),
         ("stdav", 10, 1.0),
-        ("unknown", 500, 50.0),
     ],
 )
 def test_ml_to_stdav(drink_type, ml, expect):
@@ -144,23 +185,7 @@ def test_display_to_total(drink_type, value, expect):
 
 
 @pytest.mark.parametrize(
-    "drink_type, expect",
-    [
-        ("beer", 2.5),
-        ("wine", 8.0),
-        ("vodka", 40.0),
-        ("stdav", 1.0),
-        ("unknown", 1.0),
-    ],
-)
-def test_stdav_per_unit(drink_type, expect):
-    actual = DrinkConverter(drink_type).stdav_per_unit
-
-    assert actual == expect
-
-
-@pytest.mark.parametrize(
-    "qty, from_, to, expect",
+    "servings, from_, to, expect",
     [
         (1, "beer", "beer", 1),
         (1, "beer", "wine", 0.31),
@@ -176,37 +201,32 @@ def test_stdav_per_unit(drink_type, expect):
         (1, "vodka", "stdav", 40),
     ],
 )
-def test_convert_qty(qty, from_, to, expect):
-    actual = DrinkConverter(from_).convert_qty(qty, to)
+def test_servings_read_in_another_drink_type(servings, from_, to, expect):
+    stdav = DrinkConverter(from_).servings_to_stdav(servings)
+    actual = DrinkConverter(to).stdav_to_servings(stdav)
 
     assert round(actual, 2) == expect
 
 
 @pytest.mark.parametrize(
-    "drink_type, stdav, expect",
+    "stdav, expect",
     [
-        ("beer", 2.5, 0.025),
-        ("wine", 8, 0.08),
-        ("vodka", 40, 0.4),
-        ("stdav", 1, 0.01),
+        (2.5, 0.025),
+        (8, 0.08),
+        (40, 0.4),
+        (1, 0.01),
     ],
 )
-def test_stdav_to_alcohol(drink_type, stdav, expect):
-    actual = DrinkConverter(drink_type).stdav_to_alcohol(stdav)
+def test_stdav_to_alcohol(stdav, expect):
+    actual = stdav_to_alcohol(stdav)
 
     assert actual == expect
 
 
-@pytest.mark.parametrize(
-    "drink_type, year, stdav, expect",
-    [
-        ("beer", 1999, 2.5, 365),
-        ("wine", 1999, 8, 365),
-        ("vodka", 1999, 40, 365),
-        ("stdav", 1999, 1, 365),
-    ],
-)
-def test_max_bottles_per_year(drink_type, year, stdav, expect):
-    actual = DrinkConverter(drink_type).max_bottles_per_year(year=year, max_stdav=stdav)
+def test_stdav_to_alcohol_reads_a_data_frame_column():
+    # the History service hands it a polars column, not a number
+    df = pl.DataFrame({"stdav": [2.5, 8.0]})
 
-    assert actual == expect
+    actual = df.with_columns(alcohol=stdav_to_alcohol(pl.col.stdav))
+
+    assert actual["alcohol"].to_list() == [0.025, 0.08]

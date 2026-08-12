@@ -5,7 +5,7 @@ from datetime import date
 from functools import cached_property
 
 from ...core.lib.year_boundary import YearBoundary
-from ..lib.drinks_options import DrinkConverter
+from ..lib.drinks_options import DrinkConverter, stdav_to_alcohol
 
 
 @dataclass(frozen=True)
@@ -21,6 +21,7 @@ class MonthlyStatsDTO:
     total_volume: list[float | None]
     avg_daily_volume: list[float | None]
     total_quantity: list[float | None]
+    total_stdav: list[float | None]
 
 
 @dataclass(frozen=True)
@@ -100,6 +101,7 @@ class DrinkStats:
             total_volume=self._to_boundary(total_volume),
             avg_daily_volume=self._to_boundary(avg_daily_volume),
             total_quantity=self._to_boundary(monthly_qty),
+            total_stdav=self._to_boundary(monthly_stdav),
         )
 
     def _to_boundary(self, months: list[float]) -> list[float | None]:
@@ -124,8 +126,8 @@ class DrinkStats:
         month_limit = self._year.end_date.month
         total_volume = sum(self.monthly.total_volume[:month_limit])
         total_quantity = sum(self.monthly.total_quantity[:month_limit])
-        stdav = total_quantity * self.converter.stdav_per_unit
-        pure_alcohol_liters = self.converter.stdav_to_alcohol(stdav)
+        stdav = sum(self.monthly.total_stdav[:month_limit])
+        pure_alcohol_liters = stdav_to_alcohol(stdav)
 
         return YearlyStatsDTO(
             avg_daily_volume=self._avg(total_volume, days_passed),

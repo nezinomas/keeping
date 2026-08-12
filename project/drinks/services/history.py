@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.date import years
 from ...users.models import User
-from ..lib.drinks_options import DrinkConverter
+from ..lib.drinks_options import DrinkConverter, stdav_to_alcohol
 from ..services.model_services import DrinkModelService
 
 
@@ -66,7 +66,7 @@ class HistoryService:
         # pure alcohol is a real volume whatever the drink type, but the amount
         # itself is read in the unit the dropdown selects — Std Av as typed
         return df.with_columns(
-            alcohol=self.converter.stdav_to_alcohol(pl.col.stdav),
+            alcohol=stdav_to_alcohol(pl.col.stdav),
             shown=self.converter.stdav_to_display(pl.col.stdav),
         ).with_columns(per_day=pl.col.shown / pl.col.days_in_year)
 

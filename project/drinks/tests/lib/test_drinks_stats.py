@@ -82,6 +82,23 @@ def test_monthly_stats_run_to_december_once_the_year_is_over():
     assert None not in stats.total_volume
 
 
+def test_monthly_stats_carry_the_std_av_they_summed():
+    data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
+
+    stats = DrinkStats(DrinkConverter("beer"), data, today=date(1999, 12, 31)).monthly
+
+    assert stats.total_stdav[0] == 2.5
+    assert stats.total_stdav[1] == 0.0
+
+
+def test_yearly_std_av_is_summed_not_rebuilt_from_the_shown_quantity():
+    data = [DataRow(date=date(1999, 1, 1), qty=0.1 * 0.4, stdav=0.1)]
+
+    stats = DrinkStats(DrinkConverter("beer"), data, today=date(1999, 12, 31)).yearly
+
+    assert stats.stdav == 0.1
+
+
 def test_yearly_stats_ignore_the_months_past_the_boundary():
     data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
 
