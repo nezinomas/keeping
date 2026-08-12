@@ -7,7 +7,7 @@ from django.urls import resolve, reverse, reverse_lazy
 from django.utils.html import escape
 from django.utils.translation import gettext as _
 
-from ...core.tests.utils import change_profile_year, setup_view
+from ...core.tests.utils import setup_view
 from ...users.tests.factories import User
 from .. import forms, models, views
 from .factories import DrinkFactory, DrinkTargetFactory
