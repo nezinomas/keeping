@@ -5,6 +5,7 @@ from datetime import date
 from django.db.models import Count, F, QuerySet, Sum
 from django.db.models.functions import ExtractMonth, ExtractYear
 
+from ...core.lib.date import ydays
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
 from .. import models
@@ -42,8 +43,8 @@ class DrinkModelService(SumMixin, BaseModelService):
         )
 
     @property
-    def ratio(self) -> float:
-        return DrinkConverter(self.user.drink_type).ratio
+    def servings_per_stdav(self) -> float:
+        return DrinkConverter(self.user.drink_type).servings_per_stdav
 
     def year(self, year):
         return self.objects.filter(date__year=year)
@@ -77,7 +78,7 @@ class DrinkModelService(SumMixin, BaseModelService):
         """
         return self.year_sum(
             self.objects, year=year, sum_annotation="stdav", sum_column="stdav"
-        ).annotate(qty=F("stdav") * self.ratio)
+        ).annotate(qty=F("stdav") * self.servings_per_stdav)
 
     def sum_by_month(self, year: int, month: int | None = None) -> QuerySet:
         """
@@ -89,7 +90,7 @@ class DrinkModelService(SumMixin, BaseModelService):
             month=month,
             sum_annotation="stdav",
             sum_column="stdav",
-        ).annotate(qty=F("stdav") * self.ratio)
+        ).annotate(qty=F("stdav") * self.servings_per_stdav)
 
     def sum_by_year_month(self, year_from: int = 0, year_to: int = 0) -> QuerySet:
         """Every month the user has Drinks in, across years, in one query.
@@ -127,7 +128,7 @@ class DrinkModelService(SumMixin, BaseModelService):
             month=month,
             sum_annotation="stdav",
             sum_column="stdav",
-        ).annotate(qty=F("stdav") * self.ratio)
+        ).annotate(qty=F("stdav") * self.servings_per_stdav)
 
 
 class DrinkTargetModelService(BaseModelService):
@@ -158,5 +159,6 @@ class DrinkTargetModelService(BaseModelService):
             amount=DrinkQuantity.from_stdav(
                 row.quantity, self.user.drink_type, is_volume=True
             ),
-            max_bottles=converter.max_bottles_per_year(year, row.quantity),
+            # the target is a daily amount, so a year of it is a year's servings
+            max_bottles=ydays(year) * converter.stdav_to_servings(row.quantity),
         )

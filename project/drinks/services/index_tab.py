@@ -404,10 +404,12 @@ class IndexBuilder:
         title = drink_type.label
 
         if not converter.is_canonical:
-            title = f"{title}, {converter.unit_litres:g}L"
+            one_serving = converter.stdav_to_total(converter.servings_to_stdav(1))
+            title = f"{title}, {one_serving:g}{converter.total_unit}"
 
         total, per_day, per_week, per_month = (
-            self._converter.convert_qty(value, drink_type) for value in base
+            converter.stdav_to_servings(self._converter.servings_to_stdav(value))
+            for value in base
         )
 
         return ConversionRowViewModel(

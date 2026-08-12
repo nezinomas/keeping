@@ -65,7 +65,7 @@ def test_converter_follows_the_users_drink_type(main_user):
     actual = ConsumptionYear(main_user, 1999).converter
 
     assert actual.drink_type == "wine"
-    assert actual.stdav_per_unit == 8
+    assert actual.servings_to_stdav(1) == 8
 
 
 def test_last_recorded_date(main_user, _records):

@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from ...core.lib.date import ydays
 from .drink_types import DrinkType
 
 MAX_BOTTLES = 20
@@ -8,8 +7,8 @@ MAX_BOTTLES = 20
 
 @dataclass(frozen=True)
 class DrinkTypeSpec:
-    stdav: float  # how many Std Av in one unit
-    ml: float  # what one unit is, in millilitres
+    stdav: float  # how many Std Av in one serving
+    ml: float  # what one serving is, in millilitres
     is_canonical: bool = False
     display_unit: str = "ml"
     total_unit: str = "L"
@@ -31,6 +30,11 @@ DRINK_SPECS: dict[str, DrinkTypeSpec] = {
 }
 
 
+def stdav_to_alcohol(stdav: float) -> float:
+    # one stdav = 10g pure alcohol (100%), and the rule holds for every type
+    return stdav * 0.01
+
+
 def _spec(drink_type: str) -> DrinkTypeSpec:
     if spec := DRINK_SPECS.get(drink_type):
         return spec
@@ -48,26 +52,22 @@ class DrinkConverter:
         return self._spec.is_canonical
 
     @property
-    def ratio(self) -> float:
+    def servings_per_stdav(self) -> float:
+        # the scalar the ORM annotates a Std Av column with; everywhere else
+        # reads a direction below
         return 1 / self._spec.stdav
 
-    @property
-    def stdav_per_unit(self) -> float:
-        return self._spec.stdav
+    def servings_to_stdav(self, servings: float) -> float:
+        return servings * self._spec.stdav
 
-    def convert_qty(self, qty: float, to_type: str) -> float:
-        return (qty * self._spec.stdav) / _spec(to_type).stdav
+    def stdav_to_servings(self, stdav: float) -> float:
+        return stdav / self._spec.stdav
 
     def ml_to_stdav(self, ml: int | float) -> float:
         return (ml * self._spec.stdav) / self._spec.ml
 
     def stdav_to_ml(self, stdav: float) -> float:
         return (stdav * self._spec.ml) / self._spec.stdav
-
-    @property
-    def unit_litres(self) -> float:
-        """What one unit of this drink type holds, in litres."""
-        return self._spec.ml / 1000
 
     @property
     def display_unit(self) -> str:
@@ -105,12 +105,3 @@ class DrinkConverter:
     def stdav_to_total(self, stdav: float) -> float:
         """Std Av in the unit a yearly total is read in."""
         return self.display_to_total(self.stdav_to_display(stdav))
-
-    @staticmethod
-    def stdav_to_alcohol(stdav: float) -> float:
-        # one stdav = 10g pure alcohol (100%)
-        return stdav * 0.01
-
-    def max_bottles_per_year(self, year: int, max_stdav: float) -> float:
-        days = ydays(year)
-        return (max_stdav * days) / self._spec.stdav
