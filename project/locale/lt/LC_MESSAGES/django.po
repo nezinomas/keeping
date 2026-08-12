@@ -1342,6 +1342,11 @@ msgstr "ml"
 msgid "pcs"
 msgstr "vnt"
 
+#: .\drinks\services\index_tab.py:377
+#, python-format
+msgid "%(amount)s per year"
+msgstr "%(amount)s per metus"
+
 #: .\drinks\templates\drinks\drinktarget_list.html:23
 msgid "No goal set"
 msgstr "Neįvestas tikslas"
