@@ -1,6 +1,11 @@
 import pytest
 
-from ...lib.drinks_options import DrinkConverter
+from ...lib.drink_types import DrinkType
+from ...lib.drinks_options import DRINK_SPECS, DrinkConverter
+
+
+def test_every_drink_type_has_a_spec():
+    assert set(DRINK_SPECS) == set(DrinkType.values)
 
 
 @pytest.mark.parametrize(

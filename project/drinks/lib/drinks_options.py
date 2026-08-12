@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from ...core.lib.date import ydays
+from .drink_types import DrinkType
 
 MAX_BOTTLES = 20
 
@@ -8,25 +9,30 @@ CANONICAL_TYPE = "stdav"
 
 
 @dataclass(frozen=True)
-class _DrinkRatio:
-    stdav: float
-    ml: float
+class DrinkTypeSpec:
+    stdav: float  # how many Std Av in one unit
+    ml: float  # what one unit is, in millilitres
+    is_canonical: bool = False
 
 
-_DRINK_RATIOS: dict[str, _DrinkRatio] = {
-    "beer": _DrinkRatio(stdav=2.5, ml=500),  # 500ml  -> 2.5 std_av
-    "wine": _DrinkRatio(stdav=8, ml=750),  # 750ml  -> 8   std_av
-    "vodka": _DrinkRatio(stdav=40, ml=1000),  # 1000ml -> 40  std_av
-    "stdav": _DrinkRatio(stdav=1, ml=10),  # 10ml   -> 1   std_av
+DRINK_SPECS: dict[str, DrinkTypeSpec] = {
+    DrinkType.BEER: DrinkTypeSpec(stdav=2.5, ml=500),  # 500ml  -> 2.5 std_av
+    DrinkType.WINE: DrinkTypeSpec(stdav=8, ml=750),  # 750ml  -> 8   std_av
+    DrinkType.VODKA: DrinkTypeSpec(stdav=40, ml=1000),  # 1000ml -> 40  std_av
+    DrinkType.STDAV: DrinkTypeSpec(stdav=1, ml=10, is_canonical=True),
 }
 
-_DEFAULT_RATIO = _DRINK_RATIOS["stdav"]
+if _undeclared := set(DrinkType.values) - set(DRINK_SPECS):
+    raise RuntimeError(f"drink types without a spec: {sorted(_undeclared)}")
+
+# for data that predates the choices; a declared type left out is the guard's job
+_LEGACY_SPEC = DRINK_SPECS[DrinkType.STDAV]
 
 
 class DrinkConverter:
     def __init__(self, drink_type: str):
         self.drink_type = drink_type
-        self._ratio = _DRINK_RATIOS.get(drink_type, _DEFAULT_RATIO)
+        self._ratio = DRINK_SPECS.get(drink_type, _LEGACY_SPEC)
 
     @property
     def ratio(self) -> float:
@@ -37,7 +43,7 @@ class DrinkConverter:
         return self._ratio.stdav
 
     def convert_qty(self, qty: float, to_type: str) -> float:
-        target = _DRINK_RATIOS.get(to_type, _DEFAULT_RATIO)
+        target = DRINK_SPECS.get(to_type, _LEGACY_SPEC)
         return (qty * self._ratio.stdav) / target.stdav
 
     def ml_to_stdav(self, ml: int | float) -> float:
