@@ -182,14 +182,13 @@ def test_get_cards_order(main_user, drink_converter):
 #                                                    IndexBuilder.get_cards: Daily limit
 # -------------------------------------------------------------------------------------
 def test_card_limit_with_target(main_user, drink_converter):
-    card = _card_builder(
-        drink_converter, target=500.0, target_id=7, pcs_per_day=0.6
-    ).get_cards()[5]
+    card = _card_builder(drink_converter, target=500.0, target_id=7).get_cards()[5]
 
     assert card.title == _("Daily limit")
     assert card.value == "500"
     assert card.unit == _("ml")
-    assert card.note == f"0.6 {_('pcs')} / {_('day')}"
+    # 500 ml a day over 1999 is 182,5 L, read in the unit a year's total takes
+    assert card.note == _("%(amount)s per year") % {"amount": "182,5 L"}
     assert card.edit_url == reverse("drinks:target_update", kwargs={"pk": 7})
 
 
@@ -208,12 +207,13 @@ def test_card_limit_without_target(main_user, drink_converter):
 def test_card_limit_in_stdav_carries_no_unit(main_user):
     """Std Av is read as typed, so the figure carries no unit beside it — and it
     keeps the decimal a whole number would destroy."""
-    card = _card_builder(
-        DrinkConverter("stdav"), target=1.5, target_id=7, pcs_per_day=1.5
-    ).get_cards()[5]
+    card = _card_builder(DrinkConverter("stdav"), target=1.5, target_id=7).get_cards()[
+        5
+    ]
 
     assert card.value == "1.5"
     assert card.unit == ""
+    assert card.note == _("%(amount)s per year") % {"amount": "547,5 Std Av"}
 
 
 @time_machine.travel("1999-01-05")
@@ -612,7 +612,7 @@ def test_index_tab_build_limit_has_data(main_user):
     assert card.state == stat_card.NEUTRAL
     assert card.value == "100"
     assert card.unit == "ml"
-    assert card.note.endswith(f"{_('pcs')} / {_('day')}")
+    assert card.note == _("%(amount)s per year") % {"amount": "36,5 L"}
     assert card.edit_url == reverse("drinks:target_update", kwargs={"pk": target.pk})
 
 
