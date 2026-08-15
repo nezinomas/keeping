@@ -4,9 +4,7 @@ import pytest
 import time_machine
 from django.utils.translation import gettext as _
 
-from ....drinks.lib.drinks_risk import HEAVY_DAY_STDAV
 from ...lib.calendar_grid import (
-    LEVEL_3_MAX,
     CalendarDayViewModel,
     CalendarGrid,
     CalendarMonthViewModel,
@@ -14,6 +12,8 @@ from ...lib.calendar_grid import (
 )
 
 pytestmark = pytest.mark.django_db
+
+THRESHOLDS = (2.0, 4.0, 6.0)
 
 
 @time_machine.travel("1999-06-15")
@@ -34,7 +34,9 @@ def test_calendar_grid_levels_and_labels():
         {"date": date(1999, 1, 3), "stdav": 5.0, "qty": 2.0},
         {"date": date(1999, 1, 4), "stdav": 7.0, "qty": 2.8},
     ]
-    grid = CalendarGrid.build(1999, daily_data=daily, today=date(1999, 12, 31))
+    grid = CalendarGrid.build(
+        1999, daily_data=daily, today=date(1999, 12, 31), thresholds=THRESHOLDS
+    )
 
     jan_days = grid.months[0].days
     assert jan_days[0].level == 1
@@ -95,7 +97,9 @@ def test_build_all_levels_and_labels():
     ]
 
     days = (
-        CalendarGrid.build(1999, daily_data=daily, today=date(1999, 12, 31))
+        CalendarGrid.build(
+            1999, daily_data=daily, today=date(1999, 12, 31), thresholds=THRESHOLDS
+        )
         .months[0]
         .days
     )
@@ -206,9 +210,30 @@ def test_a_days_speech_is_its_label_on_one_line():
 
 
 def test_legend_bounds_name_every_level():
-    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 12, 31))
+    grid = CalendarGrid.build(
+        1999, daily_data=[], today=date(1999, 12, 31), thresholds=THRESHOLDS
+    )
 
     assert grid.legend.bounds == ("0", "<2", "2-4", "4-6", ">=6")
+
+
+def test_without_thresholds_the_legend_has_two_steps():
+    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 12, 31))
+
+    assert grid.legend.bounds == ("0", ">0")
+
+
+def test_legend_carries_the_words_at_either_end_of_the_scale():
+    grid = CalendarGrid.build(
+        1999,
+        daily_data=[],
+        today=date(1999, 12, 31),
+        low_title="nothing",
+        high_title="plenty",
+    )
+
+    assert grid.legend.low_title == "nothing"
+    assert grid.legend.high_title == "plenty"
 
 
 def test_legend_carries_the_unit_the_levels_are_read_in():
@@ -219,8 +244,15 @@ def test_legend_carries_the_unit_the_levels_are_read_in():
     assert grid.legend.unit == "Std Av"
 
 
-def test_the_top_level_starts_at_the_heavy_day_threshold():
-    assert LEVEL_3_MAX == HEAVY_DAY_STDAV
+def test_without_thresholds_every_day_with_a_value_is_one_level():
+    daily = [
+        {"date": date(1999, 1, 1), "qty": 0.1},
+        {"date": date(1999, 1, 2), "qty": 99.0},
+        {"date": date(1999, 1, 3), "qty": 0.0},
+    ]
+    grid = CalendarGrid.build(1999, daily_data=daily, today=date(1999, 12, 31))
+
+    assert [d.level for d in grid.months[0].days[:3]] == [1, 1, 0]
 
 
 def test_build_a_year_not_started_yet_has_no_future_days():

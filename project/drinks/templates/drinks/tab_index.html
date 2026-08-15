@@ -10,7 +10,8 @@
 
     <div id="chart-overview-container"></div>
 
-    {% include 'drinks/includes/calendar.html' %}
+    <c-calendar :calendar=calendar />
+
 
     <div id="breakdown">
         {% include 'drinks/includes/tbl_std_av.html' with ctx=tbl_std_av %}

@@ -1,4 +1,6 @@
-function initDrinksCalendar() {
+// a static file, not inline: an inline script re-inserted by an htmx swap loses
+// its nonce, and production's CSP has no unsafe-inline to fall back on
+function initCalendar() {
     const card = document.getElementById('heat-card');
     const tooltip = document.getElementById('heat-tooltip');
     if (!card || !tooltip) return;
