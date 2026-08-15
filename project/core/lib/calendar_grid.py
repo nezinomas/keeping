@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 
+from django.utils.dates import MONTHS_3
 from django.utils.translation import gettext as _
 
 from .day_stats import Stats
@@ -30,6 +31,10 @@ class CalendarMonthViewModel:
     number: int
     leading_blanks: int
     days: list[CalendarDayViewModel]
+
+    @property
+    def abbr(self) -> str:
+        return str(MONTHS_3[self.number])
 
 
 @dataclass(frozen=True)

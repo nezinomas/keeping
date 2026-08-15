@@ -35,17 +35,32 @@
         }
     }
 
+    .gap-strip__month {
+        display: flex;
+
+        // the rule takes its width from the month rather than overlaying the last
+        // day: a tick is 0.7px at 360, so a line drawn on it would erase a Record
+        &:not(:last-child) {
+            border-right: 1px solid $hair;
+        }
+    }
+
     .gap-strip__ruler {
         display: flex;
         margin-top: 3px;
 
-        // no tracking: twelve four-letter names do not fit the row with it
+        // no tracking: twelve month names do not fit the row with it
         span {
             @include tokens.label;
 
             letter-spacing: 0;
             overflow: hidden;
             text-align: center;
+
+            // the same 11px the month rules above spend, or the two rows drift
+            &:not(:last-child) {
+                border-right: 1px solid transparent;
+            }
 
             @media only screen and (max-width: 767px) {
                 font-size: 0.5rem;
