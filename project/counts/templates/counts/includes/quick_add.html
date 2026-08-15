@@ -1,5 +1,12 @@
+{% load i18n %}
+
 <div class="quick-add">
     <div class="quick-add__bar">
         <span class="counter-name">{{ object.title }}</span>
+
+        {# CNT-10 turns these three into the Add record pill and the Counter menu #}
+        <c-new-button url="{% url 'counts:new' tab object.slug %}" title="{% translate 'Record' context 'record button' %}" />
+        <button type="button" class="button-secondary" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#mainModal"><i class="bi bi-pencil-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
+        <button type="button" class="button-danger" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#mainModal"><i class="bi bi-trash-fill"></i> {% translate 'Counter' context 'counter button' %}</button>
     </div>
 </div>

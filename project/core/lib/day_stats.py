@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import date, datetime
 from functools import cached_property
 
@@ -5,6 +6,13 @@ import polars as pl
 from polars.exceptions import ColumnNotFoundError
 
 from .translation import month_names, weekday_names
+
+
+@dataclass(frozen=True)
+class GapSpan:
+    start: date
+    end: date
+    days: int
 
 
 class Stats:
@@ -87,6 +95,29 @@ class Stats:
             .collect()
         )
         return {row["duration"]: row["qty"] for row in summary_df.to_dicts()}
+
+    def gap_spans(self) -> list[GapSpan]:
+        """Every gap with a record at each end, oldest first.
+
+        The first record opens one only when ``past_latest`` gives it something
+        to reach back to — where ``gaps()`` measures it from January 1st.
+        """
+        rows = self._calculate_gaps()
+
+        if rows.is_empty():
+            return []
+
+        spans = [
+            GapSpan(rows[i - 1, "date"], rows[i, "date"], rows[i, "duration"])
+            for i in range(1, rows.height)
+        ]
+
+        if self._past_latest:
+            spans.insert(
+                0, GapSpan(self._past_latest, rows[0, "date"], rows[0, "duration"])
+            )
+
+        return spans
 
     def _totals_by_year_df(self) -> pl.DataFrame:
         return (

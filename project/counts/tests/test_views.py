@@ -400,8 +400,9 @@ def test_index_context(client_logged):
     response = client_logged.get(url)
 
     assert "object" in response.context
-    assert "info_row" in response.context
+    assert "cards" in response.context
     assert "content" in response.context
+    assert "info_row" not in response.context
 
 
 # -------------------------------------------------------------------------------------
@@ -502,19 +503,15 @@ def test_tab_index_chart_histogram(client_logged):
 
 
 @time_machine.travel(datetime(1999, 7, 18))
-def test_index_info_row(client_logged):
-    obj = CountFactory(quantity=3)
+def test_index_draws_the_overview_cards(client_logged):
+    CountFactory(date=date(1999, 7, 8), quantity=3)
 
-    url = reverse("counts:index", kwargs={"slug": obj.count_type.slug})
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    content = client_logged.get(url).content.decode("utf-8")
 
-    pattern = re.compile(r"Kiek:.+(\d+).+Savaitė.+(\d+).+Per savaitę.+([\d,]+)")
-
-    for m in re.finditer(pattern, content):
-        assert m.group(1) == 3
-        assert m.group(2) == 28
-        assert m.group(3) == "0,1"
+    assert content.count('class="trend-card"') == 3
+    assert "ŠIAIS METAIS" in content.upper()
+    assert "info-row" not in content
 
 
 @time_machine.travel(datetime(1999, 1, 1))
@@ -699,6 +696,27 @@ def test_history_context(client_logged):
     assert "chart_histogram" in response.context
     assert "slug" in response.context
     assert response.context["slug"] == obj.slug
+
+
+def test_history_context_carries_the_cards_and_keeps_records(client_logged):
+    CountFactory()
+
+    url = reverse("counts:tab_history", kwargs={"slug": "count-type"})
+    response = client_logged.get(url)
+
+    assert len(response.context["cards"]) == 3
+    assert response.context["records"] == 1
+    assert "info_row" not in response.context
+
+
+def test_history_of_a_counter_with_no_records_renders_its_empty_state(client_logged):
+    CountTypeFactory()
+
+    url = reverse("counts:tab_history", kwargs={"slug": "count-type"})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert content.count('class="trend-card"') == 3
+    assert "Įrašų nėra" in content
 
 
 def test_history_chart_weekdays(client_logged):
@@ -950,61 +968,3 @@ def test_empty_user_not_logged(client):
     response = client.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is Login
-
-
-# -------------------------------------------------------------------------------------
-#                                                                              Info Row
-# -------------------------------------------------------------------------------------
-def test_info_row_func():
-    view = resolve("/counts/xxx/info_row/")
-
-    assert views.InfoRow is view.func.view_class
-
-
-@time_machine.travel(datetime(1999, 7, 12))
-def test_info_row(client_logged):
-    CountFactory(date=date(1999, 7, 8), quantity=1)
-    CountFactory(date=date(1999, 1, 1), quantity=1)
-    CountFactory(date=date(1999, 1, 1), quantity=1)
-
-    url = reverse("counts:index", kwargs={"slug": "count-type"})
-    response = client_logged.get(url)
-    context = response.context
-
-    assert context["object"].title == "Count Type"
-    assert context["week"] == 28
-    assert context["total"] == 3
-    assert round(context["ratio"], 2) == 0.11
-    assert context["current_gap"] == 4
-
-
-@time_machine.travel(datetime(2026, 7, 12))
-def test_info_row_week_of_a_finished_year_is_its_real_iso_count(
-    client_logged, main_user
-):
-    # 2025 has 52 ISO weeks; it is not a leap year but starts on a Wednesday,
-    # which an older rule read as 53 — and a per-week average divided by it
-    main_user.year = 2025
-    main_user.save()
-
-    CountFactory(date=date(2025, 7, 8), quantity=52)
-
-    url = reverse("counts:index", kwargs={"slug": "count-type"})
-    response = client_logged.get(url)
-
-    assert response.context["week"] == 52
-    assert response.context["ratio"] == 1.0
-
-
-@time_machine.travel(datetime(2000, 7, 12))
-def test_info_row_gap_in_past_view(client_logged, main_user):
-    main_user.year = 1999
-
-    CountFactory(date=date(1999, 1, 1), quantity=1)
-    CountFactory(date=date(2000, 1, 1), quantity=1)
-
-    url = reverse("counts:index", kwargs={"slug": "count-type"})
-    response = client_logged.get(url)
-    context = response.context
-
-    assert context["current_gap"] == 0
