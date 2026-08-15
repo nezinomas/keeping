@@ -4,6 +4,7 @@ from datetime import date, datetime
 import pytest
 import time_machine
 from django.urls import resolve, reverse
+from django.utils.dates import MONTHS_3
 
 from ...users.views import Login
 from .. import forms, views
@@ -579,6 +580,33 @@ def test_index_gap_strip_draws_a_leap_year(client_logged, main_user):
     strip = _gap_strip(client_logged.get(url).content.decode("utf-8"))
 
     assert strip.count("<i") == 366
+
+
+def _gap_strip_ruler(content: str) -> str:
+    return re.search(r'<div class="gap-strip__ruler".*?</div>', content, re.S).group()
+
+
+@time_machine.travel(datetime(1999, 7, 1))
+def test_index_gap_strip_ruler_uses_djangos_month_abbreviations(client_logged):
+    CountFactory(date=date(1999, 1, 2))
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    ruler = _gap_strip_ruler(client_logged.get(url).content.decode("utf-8"))
+
+    assert re.findall(r">([^<>]+)</span>", ruler) == [
+        str(MONTHS_3[number]) for number in range(1, 13)
+    ]
+
+
+@time_machine.travel(datetime(1999, 7, 1))
+def test_index_gap_strip_wraps_every_month(client_logged):
+    CountFactory(date=date(1999, 1, 2))
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    strip = _gap_strip(client_logged.get(url).content.decode("utf-8"))
+
+    assert strip.count("gap-strip__month") == 12
+    assert strip.count("<i") == 365
 
 
 @time_machine.travel(datetime(1999, 1, 10))
