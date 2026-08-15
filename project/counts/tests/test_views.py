@@ -390,7 +390,12 @@ def test_index_links(client_logged):
         assert f'hx-get="{tab.url("xxx")}"' in content
         assert str(tab.title) in content
 
-    assert [str(tab.title) for tab in TABS] == ["Apžvalga", "Istorija", "Duomenys"]
+    assert [str(tab.title) for tab in TABS] == [
+        "Apžvalga",
+        "Periodiškumas",
+        "Istorija",
+        "Duomenys",
+    ]
 
 
 def test_index_context(client_logged):
@@ -471,35 +476,15 @@ def test_tab_index_func():
     assert views.TabIndex == view.func.view_class
 
 
-def test_tab_index_chart_weekdays(client_logged):
+def test_tab_index_leaves_the_pooled_charts_to_periodicity(client_logged):
     CountFactory()
 
     url = reverse("counts:tab_index", kwargs={"slug": "count-type"})
     response = client_logged.get(url)
-    content = response.content.decode("utf-8")
 
-    assert '<div id="chart-weekdays-container"></div>' in content
-
-
-def test_tab_index_chart_months(client_logged):
-    CountFactory()
-
-    url = reverse("counts:index", kwargs={"slug": "count-type"})
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-
-    assert '<div id="chart-months-container"></div>' in content
-
-
-def test_tab_index_chart_histogram(client_logged):
-    CountFactory()
-
-    url = reverse("counts:index", kwargs={"slug": "count-type"})
-    response = client_logged.get(url)
-
-    content = response.content.decode("utf-8")
-
-    assert '<div id="chart-histogram-container">' in content
+    assert "chart_weekdays" not in response.context
+    assert "chart_months" not in response.context
+    assert "chart_histogram" not in response.context
 
 
 @time_machine.travel(datetime(1999, 7, 18))
@@ -691,9 +676,9 @@ def test_history_context(client_logged):
     url = reverse("counts:tab_history", kwargs={"slug": obj.slug})
     response = client_logged.get(url)
 
-    assert "chart_weekdays" in response.context
     assert "chart_years" in response.context
-    assert "chart_histogram" in response.context
+    assert "chart_weekdays" not in response.context
+    assert "chart_histogram" not in response.context
     assert "slug" in response.context
     assert response.context["slug"] == obj.slug
 
@@ -719,17 +704,6 @@ def test_history_of_a_counter_with_no_records_renders_its_empty_state(client_log
     assert "Įrašų nėra" in content
 
 
-def test_history_chart_weekdays(client_logged):
-    obj = CountTypeFactory()
-    CountFactory()
-
-    url = reverse("counts:tab_history", kwargs={"slug": obj.slug})
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-
-    assert '<div id="chart-weekdays-container"></div>' in content
-
-
 def test_history_chart_years(client_logged):
     obj = CountTypeFactory()
     CountFactory()
@@ -739,7 +713,8 @@ def test_history_chart_years(client_logged):
 
     content = response.content.decode("utf-8")
 
-    assert '<div id="chart-years-container"></div>' in content
+    assert '<div id="chart-years-container">' in content
+    assert 'id="chart-years-data"' in content
 
 
 # -------------------------------------------------------------------------------------

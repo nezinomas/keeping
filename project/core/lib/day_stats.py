@@ -97,11 +97,8 @@ class Stats:
         return {row["duration"]: row["qty"] for row in summary_df.to_dicts()}
 
     def gap_spans(self) -> list[GapSpan]:
-        """Every gap with a record at each end, oldest first.
-
-        The first record opens one only when ``past_latest`` gives it something
-        to reach back to — where ``gaps()`` measures it from January 1st.
-        """
+        """Every gap with a record at each end, oldest first — where ``gaps()``
+        measures the first record from January 1st when nothing precedes it."""
         rows = self._calculate_gaps()
 
         if rows.is_empty():

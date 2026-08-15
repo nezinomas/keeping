@@ -1,8 +1,9 @@
 """How far apart a Counter's Records are, and nothing else.
 
 Gaps come from ``core.lib.day_stats``, which the Calendar already reads: a Card
-and a Calendar tooltip disagreeing about the same date is the day both stop
-being believed.
+and a Calendar tooltip disagreeing about one date is the day both stop being
+believed. The Current gap is open where the rest are closed, so it enters none
+of them.
 """
 
 from collections.abc import Sequence
@@ -39,6 +40,7 @@ class EmptyGap:
 class Rhythm:
     records: Sequence[dict] = ()
     today: date = field(default_factory=date.today)
+    year: int = 0
 
     @cached_property
     def gaps(self) -> list[Gap]:
@@ -48,11 +50,37 @@ class Rhythm:
         ]
 
     @cached_property
+    def year_gaps(self) -> list[Gap]:
+        """A year's Gaps reach back to the last Record of the year before."""
+        return [gap for gap in self.gaps if gap.dates[-1].year == self.year]
+
+    # the two medians read different sets on purpose: a year holding two Gaps
+    # has no median worth the name, where thirteen years hold thirty-six
+    @cached_property
     def typical_gap(self) -> Gap | EmptyGap:
+        return self._median(self.gaps)
+
+    @cached_property
+    def year_median_gap(self) -> Gap | EmptyGap:
+        return self._median(self.year_gaps)
+
+    @cached_property
+    def longest_gap(self) -> Gap | EmptyGap:
         if not self.gaps:
             return EmptyGap()
 
-        return Gap(days=median(gap.days for gap in self.gaps))
+        return max(self.gaps, key=lambda gap: gap.days)
+
+    @property
+    def year_records(self) -> int:
+        return sum(1 for record in self.records if record["date"].year == self.year)
+
+    @staticmethod
+    def _median(gaps: list[Gap]) -> Gap | EmptyGap:
+        if not gaps:
+            return EmptyGap()
+
+        return Gap(days=median(gap.days for gap in gaps))
 
     @property
     def total_ever(self) -> float:

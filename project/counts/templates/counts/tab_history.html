@@ -7,16 +7,9 @@
 
 {% if records %}
 
-<div class="grid-three-col">
-    <div id="chart-weekdays-container"></div>
-    <div id="chart-years-container"></div>
-    <div id="chart-histogram-container">
-        {{chart_weekdays|json_script:"chart-weekdays-data"}}
-        {{chart_years|json_script:"chart-years-data"}}
-        {{chart_histogram|json_script:"chart-histogram-data"}}
-    </div>
+<div id="chart-years-container">
+    {{chart_years|json_script:"chart-years-data"}}
 </div>
-
 
 {% else %}
 
