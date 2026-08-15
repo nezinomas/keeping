@@ -4,6 +4,9 @@
 {% load i18n %}
 
 
+{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
+
+
 {% block head %}
     {% include 'highcharts.html' with heatmap="True" %}
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_calendar.js' %}"></script>
@@ -14,6 +17,8 @@
 
 {% block content %}
 
+<div class="paper-skin">
+
 <div class="counts-title">{{object.title}}</div>
 
 <main id="tab_content" class="grid-one-col">
@@ -23,6 +28,8 @@
 <div hx-get="{% url 'counts:tab_data' object.slug %}" hx-target="#tab_content" hx-trigger="reloadData from:body"></div>
 <div hx-get="{% url 'counts:tab_index' object.slug %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
 <div hx-get="{% url 'counts:tab_history' object.slug %}" hx-target="#tab_content" hx-trigger="reloadHistory from:body"></div>
+
+</div>
 
 
 <script nonce="{{ csp_nonce }}">
