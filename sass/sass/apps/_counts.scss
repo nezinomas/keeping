@@ -17,4 +17,39 @@
             background: $data;
         }
     }
+
+    .gap-strip {
+        display: flex;
+        margin-top: 0.9rem;
+
+        // no gap between the ticks: at 768 a 1px one is wider than the tick it
+        // separates, and a run of days has to read as one length
+        i {
+            flex: 1 1 0;
+            height: 14px;
+            background: $empty;
+
+            &.hit {
+                background: $data;
+            }
+        }
+    }
+
+    .gap-strip__ruler {
+        display: flex;
+        margin-top: 3px;
+
+        // no tracking: twelve four-letter names do not fit the row with it
+        span {
+            @include tokens.label;
+
+            letter-spacing: 0;
+            overflow: hidden;
+            text-align: center;
+
+            @media only screen and (max-width: 767px) {
+                font-size: 0.5rem;
+            }
+        }
+    }
 }

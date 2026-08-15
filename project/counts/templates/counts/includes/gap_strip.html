@@ -1,0 +1,5 @@
+<div class="gap-strip" aria-hidden="true">{% for month in calendar.months %}{% for day in month.days %}<i{% if day.level %} class="hit"{% endif %}{% if day.label %} data-label="{{ day.label }}"{% endif %}></i>{% endfor %}{% endfor %}</div>
+
+{# spans weighted by days, so February is narrower; four letters because #}
+{# Rugpjūtis and Rugsėjis both cut to RUG at three #}
+<div class="gap-strip__ruler" aria-hidden="true">{% for month in calendar.months %}<span style="flex: {{ month.days|length }} 1 0">{{ month.name|slice:":4" }}</span>{% endfor %}</div>
