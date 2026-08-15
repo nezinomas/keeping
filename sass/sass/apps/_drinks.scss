@@ -3,62 +3,11 @@
 @use "../skin/tokens";
 
 .paper-skin {
-    .quick-add__bar {
-        display: flex;
-        align-items: center;
-        gap: 0 1rem;
-        margin-bottom: 0.75rem;
-
-        .quick-add__pill { margin-bottom: 0; }
-    }
-
     #drink-type-control {
         display: flex;
         align-items: center;
 
         &:empty { display: none; }
-
-        .dropdown {
-            position: relative;
-        }
-
-        .dropdown__btn {
-            @include tokens.pill;
-
-            display: inline-flex;
-            align-items: center;
-            justify-content: space-between;
-            min-width: 9.5rem;
-            padding-right: 0.5rem;
-
-            &::after {
-                content: "\e114";
-                margin-left: 0.5rem;
-            }
-        }
-
-        .dropdown__menu {
-            top: auto;
-            bottom: calc(100% + 0.15rem);
-            left: auto;
-            right: 0;
-            transform: none;
-            background: $paper;
-            border: 1px solid $hair;
-            box-shadow: none;
-
-            > * {
-                @include tokens.label;
-
-                color: $ink;
-                text-decoration: none;
-            }
-
-            > *:hover {
-                background: $hair-soft;
-                color: $ink !important;
-            }
-        }
     }
 
     .drink-type-fixed {
