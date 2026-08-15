@@ -17,22 +17,26 @@
 
 {% block content %}
 
-<div class="paper-skin">
+<div class="paper-skin" hx-history="false" x-data="{ tab: '{{ tab }}' }">
 
-<div class="counts-title">{{object.title}}</div>
+{% include 'counts/includes/navbar.html' %}
 
-<main id="tab_content" class="grid-one-col">
-    {{tab_content}}
+{% for count_tab, url in tabs %}
+<div hx-get="{{ url }}" hx-target="#tab_content" hx-trigger="{{ count_tab.reload_trigger }} from:body"></div>
+{% endfor %}
+
+<main id="tab_content" class="grid-one-col" role="tabpanel" :aria-labelledby="'tab-' + tab">
+    {{content}}
 </main>
 
-<div hx-get="{% url 'counts:tab_data' object.slug %}" hx-target="#tab_content" hx-trigger="reloadData from:body"></div>
-<div hx-get="{% url 'counts:tab_index' object.slug %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
-<div hx-get="{% url 'counts:tab_history' object.slug %}" hx-target="#tab_content" hx-trigger="reloadHistory from:body"></div>
+{% include 'counts/includes/quick_add.html' %}
 
 </div>
 
 
 <script nonce="{{ csp_nonce }}">
+    htmx.config.refreshOnHistoryMiss = true;
+
     function initCountsCharts() {
         if (document.getElementById('chart-months-container')) {
             chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');

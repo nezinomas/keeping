@@ -1,4 +1,4 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
@@ -21,6 +21,7 @@ from .lib.views_helper import (
 )
 from .models import Count
 from .services.model_services import CountModelService, CountTypeModelService
+from .tabs import DEFAULT_TAB, TABS, CountTab
 
 
 class Redirect(RedirectViewMixin):
@@ -58,33 +59,47 @@ class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
         return {**super().get_context_data(**kwargs), **context}
 
 
-class Index(CountTypetObjectMixin, TemplateViewMixin):
-    template_name = "counts/index.html"
+class TabViewMixin(CountTypetObjectMixin):
+    tab = DEFAULT_TAB
 
     def dispatch(self, request, *args, **kwargs):
-        super().get_object()
+        self.get_object()
 
         if not self.object:
             return redirect(reverse("counts:redirect"))
 
         return super().dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        super().get_object()
+    def get_template_names(self):
+        return [self.tab.template_name]
 
-        context = {
-            "tab_content": rendered_content(self.request, TabIndex, **self.kwargs),
+    def get_context_data(self, **kwargs):
+        return {**super().get_context_data(**self.kwargs), "tab": self.tab.name}
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        htmx = self.request.htmx
+
+        if htmx and not htmx.history_restore_request:
+            return response
+
+        return render(
+            self.request,
+            "counts/index.html",
+            {**context, **self._page(), "content": response.rendered_content},
+        )
+
+    def _page(self) -> dict:
+        return {
+            "object": self.object,
+            "tabs": [(tab, tab.url(self.object.slug)) for tab in TABS],
         }
 
-        return super().get_context_data(**self.kwargs) | context
 
-
-class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
-    template_name = "counts/tab_index.html"
+class TabIndex(TabViewMixin, TemplateViewMixin):
+    tab = CountTab.resolve("index")
 
     def get_context_data(self, **kwargs):
-        super().get_object()
-
         user = self.request.user
         count_type = self.object.slug
         context = services.index.load_index_service(user, count_type)
@@ -98,9 +113,9 @@ class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
         }
 
 
-class TabData(ListViewMixin):
+class TabData(TabViewMixin, ListViewMixin):
+    tab = CountTab.resolve("data")
     model = Count
-    template_name = "counts/tab_data.html"
 
     def get_queryset(self):
         year = self.request.user.year
@@ -117,8 +132,8 @@ class TabData(ListViewMixin):
         }
 
 
-class TabHistory(TemplateViewMixin):
-    template_name = "counts/tab_history.html"
+class TabHistory(TabViewMixin, TemplateViewMixin):
+    tab = CountTab.resolve("history")
 
     def get_context_data(self, **kwargs):
         user = self.request.user

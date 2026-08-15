@@ -8,6 +8,7 @@ from django.urls import resolve, reverse
 from ...users.views import Login
 from .. import forms, views
 from ..models import Count, CountType
+from ..tabs import TABS
 from .factories import CountFactory, CountTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -277,7 +278,7 @@ def test_redirect_redirect_to_index(client_logged):
     response = client_logged.get(url, follow=True)
 
     assert response.status_code == 200
-    assert views.Index == response.resolver_match.func.view_class
+    assert views.TabIndex == response.resolver_match.func.view_class
 
 
 def test_redirect_redirect_to_empty(client_logged):
@@ -310,8 +311,8 @@ def test_redirect_count_first(client_logged):
     url = reverse("counts:redirect")
     response = client_logged.get(url, follow=True)
 
-    assert response.resolver_match.func.view_class is views.Index
-    assert '<div class="counts-title">AAA</div>' in response.content.decode("utf-8")
+    assert response.resolver_match.func.view_class is views.TabIndex
+    assert '<span class="counter-name">AAA</span>' in response.content.decode("utf-8")
 
 
 # -------------------------------------------------------------------------------------
@@ -320,7 +321,7 @@ def test_redirect_count_first(client_logged):
 def test_index_func():
     view = resolve("/counts/xxx/")
 
-    assert views.Index == view.func.view_class
+    assert views.TabIndex == view.func.view_class
 
 
 def test_index_200(client_logged):
@@ -354,7 +355,7 @@ def test_index_redirect(client_logged):
     url = reverse("counts:index", kwargs={"slug": "XXX"})
     response = client_logged.get(url, follow=True)
 
-    assert views.Index is response.resolver_match.func.view_class
+    assert views.TabIndex is response.resolver_match.func.view_class
     assert response.resolver_match.url_name == "index"
     assert response.resolver_match.kwargs["slug"] == obj.slug
 
@@ -382,29 +383,13 @@ def test_index_links(client_logged):
     CountTypeFactory(title="Xxx")
 
     url = reverse("counts:index", kwargs={"slug": "xxx"})
+    content = client_logged.get(url).content.decode()
 
-    response = client_logged.get(url)
-    content = response.content.decode()
-    content = content.replace("\n", "")
-    content = content.replace("           ", "")
-    content = content.replace("       ", "")
+    for tab in TABS:
+        assert f'hx-get="{tab.url("xxx")}"' in content
+        assert str(tab.title) in content
 
-    pattern = re.compile(
-        r'<button class="button-(active|secondary)" hx-get="(.*?)" hx-target="#tab_content"> (\w+) <\/button',  # noqa: E501
-        re.MULTILINE,
-    )
-    res = re.findall(pattern, content)
-
-    assert len(res) == 3
-
-    assert res[0][1] == reverse("counts:tab_index", kwargs={"slug": "xxx"})
-    assert res[0][2] == "Grafikai"
-
-    assert res[1][1] == reverse("counts:tab_data", kwargs={"slug": "xxx"})
-    assert res[1][2] == "Duomenys"
-
-    assert res[2][1] == reverse("counts:tab_history", kwargs={"slug": "xxx"})
-    assert res[2][2] == "Istorija"
+    assert [str(tab.title) for tab in TABS] == ["Apžvalga", "Istorija", "Duomenys"]
 
 
 def test_index_context(client_logged):
@@ -415,7 +400,64 @@ def test_index_context(client_logged):
 
     assert "object" in response.context
     assert "info_row" in response.context
-    assert "tab_content" in response.context
+    assert "content" in response.context
+
+
+# -------------------------------------------------------------------------------------
+#                                                                               Tab Nav
+# -------------------------------------------------------------------------------------
+@pytest.mark.parametrize("open_tab", [tab.name for tab in TABS])
+def test_nav_marks_the_open_tab(client_logged, open_tab):
+    CountTypeFactory(title="Xxx")
+
+    url = reverse(f"counts:tab_{open_tab}", kwargs={"slug": "xxx"})
+    content = client_logged.get(url).content.decode()
+
+    assert content.count('role="tab"') == len(TABS)
+    assert content.count('aria-selected="true"') == 1
+    assert f'id="tab-{open_tab}"' in content
+    assert re.search(rf'id="tab-{open_tab}"[^>]+aria-selected="true"', content)
+
+
+def test_nav_tabs_push_their_url(client_logged):
+    CountTypeFactory(title="Xxx")
+
+    url = reverse("counts:index", kwargs={"slug": "xxx"})
+    content = client_logged.get(url).content.decode()
+
+    assert content.count('hx-push-url="true"') == len(TABS)
+
+
+def test_the_page_has_no_header_and_names_the_counter_in_the_quick_add_bar(
+    client_logged,
+):
+    CountTypeFactory(title="Xxx")
+
+    url = reverse("counts:index", kwargs={"slug": "xxx"})
+    content = client_logged.get(url).content.decode()
+
+    assert "counts-title" not in content
+    assert content.count('<span class="counter-name">Xxx</span>') == 1
+
+
+def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
+    CountTypeFactory(title="Xxx")
+
+    url = reverse("counts:tab_history", kwargs={"slug": "xxx"})
+    content = client_logged.get(url).content.decode()
+
+    assert 'class="quick-add"' in content
+    assert 'class="subnav"' in content
+
+
+def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
+    CountTypeFactory(title="Xxx")
+
+    url = reverse("counts:tab_history", kwargs={"slug": "xxx"})
+    content = client_logged.get(url, headers={"HX-Request": "true"}).content.decode()
+
+    assert 'class="quick-add"' not in content
+    assert 'class="subnav"' not in content
 
 
 # -------------------------------------------------------------------------------------
