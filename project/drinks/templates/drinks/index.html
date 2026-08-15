@@ -3,8 +3,6 @@
 {% load static %}
 
 
-<!-- the paper bundle in place of the legacy one, and not in the head block:
-     that appends, so both stylesheets would load and fight over .main -->
 {% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
 
 
