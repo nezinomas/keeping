@@ -1,31 +1,38 @@
 import pytest
 
-from ..tabs import TAB_NAMES, DrinkTab, DrinkTabs
+from ..lib.drink_type_control import (
+    DrinkTypeSelector,
+    FixedDrinkTypeSelector,
+    NoDrinkTypeSelector,
+)
+from ..tabs import TABS, DrinkTab, tab_reload_response
+
+NAMES = tuple(tab.name for tab in TABS)
 
 # -------------------------------------------------------------------------------------
 #                                                                          resolve
 # -------------------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("name", TAB_NAMES)
+@pytest.mark.parametrize("name", NAMES)
 def test_resolve_keeps_a_known_tab(name):
-    assert DrinkTabs.resolve(name).name == name
+    assert DrinkTab.resolve(name).name == name
 
 
 @pytest.mark.parametrize("raw", ["xxx", "", None, "Index", "target", "Habits"])
 def test_resolve_falls_back_for_an_unknown_tab(raw):
     # the default is Overview, and adding a tab must not quietly become the
     # place an unrecognised value lands
-    assert DrinkTabs.resolve(raw).name == "index"
+    assert DrinkTab.resolve(raw).name == "index"
 
 
 @pytest.mark.parametrize("raw", ["xxx", None])
 def test_resolve_honours_an_explicit_default(raw):
-    assert DrinkTabs.resolve(raw, default="data").name == "data"
+    assert DrinkTab.resolve(raw, default="data").name == "data"
 
 
 def test_an_explicit_default_does_not_override_a_known_tab():
-    assert DrinkTabs.resolve("risk", default="data").name == "risk"
+    assert DrinkTab.resolve("risk", default="data").name == "risk"
 
 
 # -------------------------------------------------------------------------------------
@@ -45,13 +52,13 @@ def test_an_explicit_default_does_not_override_a_known_tab():
     ],
 )
 def test_reload_trigger(name, expect):
-    assert DrinkTab(name).reload_trigger == expect
+    assert DrinkTab.resolve(name).reload_trigger == expect
 
 
 def test_every_tab_has_a_distinct_trigger():
-    triggers = [tab.reload_trigger for tab in DrinkTabs.all()]
+    triggers = [tab.reload_trigger for tab in TABS]
 
-    assert len(set(triggers)) == len(TAB_NAMES)
+    assert len(set(triggers)) == len(TABS)
 
 
 # -------------------------------------------------------------------------------------
@@ -71,12 +78,12 @@ def test_every_tab_has_a_distinct_trigger():
     ],
 )
 def test_url_resolves_for_every_tab(name, expect):
-    assert DrinkTab(name).url == expect
+    assert DrinkTab.resolve(name).url == expect
 
 
 @pytest.mark.parametrize("url_name", ["drinks:new", "drinks:target_new"])
 def test_form_url_carries_the_tab(url_name):
-    actual = DrinkTabs.resolve("risk").form_url(url_name)
+    actual = DrinkTab.resolve("risk").form_url(url_name)
 
     assert str(actual).endswith("/risk/new/") or str(actual).endswith(
         "/risk/target/new/"
@@ -84,15 +91,86 @@ def test_form_url_carries_the_tab(url_name):
 
 
 def test_form_url_normalises_an_unknown_tab():
-    actual = DrinkTabs.resolve("xxx").form_url("drinks:new")
+    actual = DrinkTab.resolve("xxx").form_url("drinks:new")
 
     assert str(actual) == "/drinks/index/new/"
 
 
 # -------------------------------------------------------------------------------------
-#                                                                              all
+#                                                                            title
 # -------------------------------------------------------------------------------------
 
 
-def test_all_returns_every_tab_in_order():
-    assert [tab.name for tab in DrinkTabs.all()] == list(TAB_NAMES)
+@pytest.mark.parametrize(
+    "name, expect",
+    [
+        ("index", "Apžvalga"),
+        ("trends", "Tendencijos"),
+        ("habits", "Įpročiai"),
+        ("risk", "Rizikos"),
+        ("history", "Istorija"),
+        ("data", "Duomenys"),
+    ],
+)
+def test_title_is_translated(name, expect):
+    assert str(DrinkTab.resolve(name).title) == expect
+
+
+# -------------------------------------------------------------------------------------
+#                                                                    the tab table
+# -------------------------------------------------------------------------------------
+
+
+def test_the_tabs_are_declared_in_the_order_the_nav_draws_them():
+    # the row is a tablist now, so this is also the order arrow keys walk
+    assert NAMES == ("index", "trends", "habits", "risk", "history", "data")
+
+
+@pytest.mark.parametrize("name", ["index", "trends", "history"])
+def test_a_tab_reading_the_selected_type_offers_the_choice(name):
+    control = DrinkTab.resolve(name).control("wine")
+
+    assert isinstance(control, DrinkTypeSelector)
+    assert control.state == "choice"
+    assert control.selected == "wine"
+
+
+@pytest.mark.parametrize("name", ["habits", "risk"])
+def test_a_tab_reading_a_harm_metric_names_std_av(name):
+    control = DrinkTab.resolve(name).control("wine")
+
+    assert isinstance(control, FixedDrinkTypeSelector)
+    assert control.state == "fixed"
+
+
+def test_a_tab_reading_no_single_amount_draws_no_switcher():
+    """The Data tab lists what was typed, each row in its own drink type."""
+    control = DrinkTab.resolve("data").control("wine")
+
+    assert isinstance(control, NoDrinkTypeSelector)
+    assert control.state == "absent"
+
+
+# -------------------------------------------------------------------------------------
+#                                                            tab_reload_response
+# -------------------------------------------------------------------------------------
+
+
+def test_a_reload_response_carries_no_body():
+    response = tab_reload_response("trends")
+
+    assert response.status_code == 204
+    assert not response.content
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_a_reload_response_fires_the_tabs_own_trigger(name):
+    response = tab_reload_response(name)
+
+    assert DrinkTab.resolve(name).reload_trigger in response.headers["HX-Trigger"]
+
+
+def test_a_reload_response_falls_back_to_the_named_default():
+    response = tab_reload_response("nonsense", default="data")
+
+    assert "reloadData" in response.headers["HX-Trigger"]

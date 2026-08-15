@@ -1,3 +1,4 @@
+import calendar
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
@@ -56,6 +57,18 @@ class YearBoundary:
     def end_date(self) -> date:
         """Today while the year is running, Dec 31 once it is over."""
         return self.today if self.is_current else date(self.year, 12, 31)
+
+    @property
+    def previous_end_date(self) -> date:
+        """The same point in the year before — how far a baseline may read.
+
+        Feb 29 clamps onto Feb 28, which is the only day of the year that has no
+        counterpart a year back.
+        """
+        end = self.end_date
+        day = min(end.day, calendar.monthrange(self.year - 1, end.month)[1])
+
+        return date(self.year - 1, end.month, day)
 
     @property
     def days_elapsed(self) -> int:

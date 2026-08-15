@@ -106,7 +106,7 @@ def test_books_index_context(client_logged):
 #                                                                        Cards
 # ----------------------------------------------------------------------------
 CARD = re.compile(
-    r'trend-card__label">(.*?)</div>\s*<div class="trend-card__value">(.*?)</div>',
+    r'trend-card__label">(.*?)</div>\s*<div class="trend-card__value[^"]*">(.*?)</div>',
     re.S,
 )
 

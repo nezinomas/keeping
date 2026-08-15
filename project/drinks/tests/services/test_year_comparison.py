@@ -88,3 +88,74 @@ def test_series_data_covers_twelve_months(main_user):
     actual = YearComparison.build(main_user, [1999])
 
     assert len(actual.serries[0]["data"]) == 12
+
+
+# -------------------------------------------------------------------------------------
+#                                                               YearComparison.for_pair
+# -------------------------------------------------------------------------------------
+def test_a_pair_both_years_on_record(main_user):
+    DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
+    DrinkFactory(date=date(2000, 1, 1), stdav=25)
+
+    actual = YearComparison.for_pair(main_user, 1999, 2000)
+
+    assert [s["name"] for s in actual.serries] == [1999, 2000]
+    assert actual.has_data is True
+
+
+def test_a_pair_missing_one_year_draws_nothing(main_user):
+    DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
+
+    actual = YearComparison.for_pair(main_user, 1999, 2000)
+
+    assert actual.has_data is False
+
+
+def test_a_pair_missing_both_years_draws_nothing(main_user):
+    actual = YearComparison.for_pair(main_user, 1999, 2000)
+
+    assert actual.has_data is False
+
+
+def test_a_pair_that_draws_nothing_is_still_a_chart_view_model(main_user):
+    actual = YearComparison.for_pair(main_user, 1999, 2000)
+
+    assert isinstance(actual, YearComparisonChartViewModel)
+    assert len(actual.categories) == 12
+
+
+# -------------------------------------------------------------------------------------
+#                                                             YearComparison.for_recent
+# -------------------------------------------------------------------------------------
+def test_recent_years_end_with_the_header_year(main_user):
+    DrinkFactory(date=date(1998, 1, 1), stdav=2.5)
+    DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
+    DrinkFactory(date=date(2000, 1, 1), stdav=2.5)
+
+    actual = YearComparison.for_recent(main_user, 1999, 2)
+
+    assert [s["name"] for s in actual.serries] == [1998, 1999]
+
+
+def test_recent_years_of_one_is_the_header_year_alone(main_user):
+    DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
+
+    actual = YearComparison.for_recent(main_user, 1999, 1)
+
+    assert [s["name"] for s in actual.serries] == [1999]
+
+
+def test_recent_years_of_none_draws_nothing(main_user):
+    DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
+
+    actual = YearComparison.for_recent(main_user, 1999, 0)
+
+    assert actual.has_data is False
+
+
+def test_recent_years_are_best_effort(main_user):
+    DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
+
+    actual = YearComparison.for_recent(main_user, 1999, 5)
+
+    assert [s["name"] for s in actual.serries] == [1999]

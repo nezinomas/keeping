@@ -4,7 +4,7 @@ import pytest
 import time_machine
 from django.utils.translation import gettext as _
 
-from ....core.lib.stat_card import StatCard
+from ....core.lib.stat_card import Card
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_risk import HEAVY_DAY_STDAV
 from ...lib.drinks_stats import DataRow
@@ -137,7 +137,7 @@ def test_get_cards_carries_the_per_drinking_day_card():
     cards = _builder([_row(date(1999, 1, 4), 7.9)]).get_cards()
 
     assert [card.title for card in cards] == [_("Per drinking day")]
-    assert all(isinstance(card, StatCard) for card in cards)
+    assert all(isinstance(card, Card) for card in cards)
 
 
 def test_card_per_drinking_day_above_the_heavy_threshold():
@@ -169,7 +169,7 @@ def test_card_per_drinking_day_explains_its_denominator_and_its_unit():
     # what the figure is divided by and why it never follows the dropdown
     card = _builder([_row(date(1999, 1, 4), 7.9)]).get_cards()[0]
 
-    assert card.explanation == "{} {}".format(
+    assert card.explanation == (
         _(
             "The year's Std Av divided by the days a Drink was recorded on, "
             "not by every day of the year."
@@ -184,7 +184,7 @@ def test_card_per_drinking_day_empty():
     assert card.state == "empty"
     assert card.value == ""
     assert card.note == _("No data")
-    assert card.explanation == ""
+    assert card.explanation == ()
 
 
 # -------------------------------------------------------------------------------------

@@ -144,6 +144,16 @@ class PooledRange:
     year_from: int = 0
     year_to: int = 0
 
+    @classmethod
+    def resolve(cls, year: int, qty: int | None = None) -> "PooledRange":
+        if qty is None:
+            return NoPooledRange()
+
+        if not qty:
+            return cls()
+
+        return cls(year - qty + 1, year)
+
     def profile(self, service: DrinkModelService) -> TypicalYearProfile:
         """One query however many years are pooled: the aggregate groups in the
         DB and the pooling happens here, so a decade does not cost a query a

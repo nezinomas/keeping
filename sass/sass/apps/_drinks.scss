@@ -2,10 +2,7 @@
 @use "../abstracts/variables" as *;
 @use "../skin/tokens";
 
-
 .paper-skin {
-    // ---- drink-type control ----------------------------------------------
-    // rides in the quick-add bar, so it reads as part of logging a drink
     .quick-add__bar {
         display: flex;
         align-items: center;
@@ -77,12 +74,10 @@
         color: $ink-muted;
     }
 
-    // ---- panels ----------------------------------------------------------
     #breakdown {
         @include tokens.panel;
     }
 
-    // ---- calendar --------------------------------------------------------
     .heat-card {
         @include tokens.panel;
 
@@ -147,7 +142,6 @@
         gap: 7px;
         padding: 2px 6px;
 
-        // `& + &` would nest the wrapper into the sibling selector as well
         & + .heat-month {
             border-left: 1px solid $hair-soft;
         }
@@ -167,6 +161,11 @@
                 &:first-child {
                     grid-row-start: var(--start, 1);
                 }
+
+                &:focus-visible {
+                    outline: 2px solid $ink;
+                    outline-offset: 2px;
+                }
             }
         }
 
@@ -179,8 +178,9 @@
 
     .heat-legend {
         display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.35rem 0.5rem;
         margin-top: 0.7rem;
         font-size: 0.72rem;
         color: $ink-muted;
@@ -192,18 +192,53 @@
             vertical-align: middle;
         }
 
-        .swatches {
-            display: inline-flex;
-            gap: 3px;
+        > span:not([class]) {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            height: 13px;
+            line-height: 13px;
+        }
 
-            // the empty day is paper, so only a hairline says it is a block
-            i:first-child {
+        &__scale {
+            display: inline-flex;
+            flex-direction: column;
+        }
+
+        .swatches,
+        &__bounds {
+            display: grid;
+            grid-template-columns: repeat(5, 1.7rem);
+            gap: 3px;
+        }
+
+        .swatches i {
+            width: 100%;
+
+            &:first-child {
                 box-shadow: inset 0 0 0 1px $hair;
             }
         }
 
+        &__bounds {
+            margin-top: 2px;
+            font-size: 0.62rem;
+            text-align: center;
+            color: $ink-muted;
+        }
+
+        &__unit {
+            font-size: 0.62rem;
+            text-align: center;
+            color: $ink-muted;
+        }
+
         &__spacer {
             flex: 1;
+
+            @media only screen and (max-width: 767px) {
+                display: none;
+            }
         }
     }
 
@@ -231,8 +266,6 @@
         }
     }
 
-    // ---- disclosure ------------------------------------------------------
-    // "What is a standard unit?", sitting flush at the bottom of the breakdown
     .stdav-info {
         border-top: 1px solid $hair-soft;
 
@@ -276,12 +309,13 @@
         }
     }
 
-    // ---- chart controls --------------------------------------------------
     .pool-controls,
     .compare-controls {
         .button-secondary {
             @include tokens.label;
 
+            display: inline-flex;
+            align-items: center;
             padding: 0.3rem 0.7rem;
             background: $paper;
             border: 1px solid $hair;

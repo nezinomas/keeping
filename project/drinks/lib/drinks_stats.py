@@ -5,7 +5,7 @@ from datetime import date
 from functools import cached_property
 
 from ...core.lib.year_boundary import YearBoundary
-from ..lib.drinks_options import DrinkConverter
+from ..lib.drinks_options import DrinkConverter, stdav_to_alcohol
 
 
 @dataclass(frozen=True)
@@ -18,9 +18,10 @@ class DataRow:
 @dataclass(frozen=True)
 class MonthlyStatsDTO:
     # in the unit the selected drink type is shown in, not always ml
-    total_volume: list[float]
-    avg_daily_volume: list[float]
-    total_quantity: list[float]
+    total_volume: list[float | None]
+    avg_daily_volume: list[float | None]
+    total_quantity: list[float | None]
+    total_stdav: list[float | None]
 
 
 @dataclass(frozen=True)
@@ -37,35 +38,34 @@ class YearOverYear:
     """One figure this year beside the same figure last year, up to the same
     month and day.
 
-    Shared by every lib that compares a year with the one before it, so a card
-    reads the same four fields whether the figure is a count of days or an
-    amount per day. How it is shown is the caller's: a count whole, an amount
-    to the decimals its unit needs.
+    How it is shown is the caller's: a count whole, an amount to the decimals
+    its unit needs.
     """
 
     current: float
     previous: float
-    improving: bool
-    has_past: bool = True
 
-    @classmethod
-    def compare(
-        cls, current: float, previous: float, *, has_past: bool
-    ) -> "YearOverYear | EmptyYearOverYear":
-        """Less is improving, which is true of every harm and frequency figure
-        the app reports. A figure where more is better needs its own rule."""
-        if not has_past:
-            return EmptyYearOverYear(current=current)
+    has_past = True
 
-        return cls(current, previous, improving=current < previous)
+    @property
+    def improving(self) -> bool:
+        """Less is improving, so a figure where more is better needs its own
+        rule. Equal improves: last year is not above itself."""
+        return self.current <= self.previous
 
 
 @dataclass(frozen=True)
 class EmptyYearOverYear:
+    """The same reading with no year behind it: the figure stands alone."""
+
     current: float
-    previous: float = 0.0
-    improving: bool = False
-    has_past: bool = False
+
+    previous = 0.0
+    improving = False
+    has_past = False
+
+
+YearOverYearReading = YearOverYear | EmptyYearOverYear
 
 
 class DrinkStats:
@@ -98,10 +98,18 @@ class DrinkStats:
         ]
 
         return MonthlyStatsDTO(
-            total_volume=total_volume,
-            avg_daily_volume=avg_daily_volume,
-            total_quantity=monthly_qty,
+            total_volume=self._to_boundary(total_volume),
+            avg_daily_volume=self._to_boundary(avg_daily_volume),
+            total_quantity=self._to_boundary(monthly_qty),
+            total_stdav=self._to_boundary(monthly_stdav),
         )
+
+    def _to_boundary(self, months: list[float]) -> list[float | None]:
+        # a running year's December drawn as 0.0 cannot be told apart from a
+        # December with no Drink in it, and a null is the only way to break a line
+        reached = self._year.end_date.month
+
+        return [value if m <= reached else None for m, value in enumerate(months, 1)]
 
     @cached_property
     def yearly(self) -> YearlyStatsDTO:
@@ -118,8 +126,8 @@ class DrinkStats:
         month_limit = self._year.end_date.month
         total_volume = sum(self.monthly.total_volume[:month_limit])
         total_quantity = sum(self.monthly.total_quantity[:month_limit])
-        stdav = total_quantity * self.converter.stdav_per_unit
-        pure_alcohol_liters = self.converter.stdav_to_alcohol(stdav)
+        stdav = sum(self.monthly.total_stdav[:month_limit])
+        pure_alcohol_liters = stdav_to_alcohol(stdav)
 
         return YearlyStatsDTO(
             avg_daily_volume=self._avg(total_volume, days_passed),

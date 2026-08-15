@@ -5,7 +5,13 @@ import time_machine
 from django.utils.translation import gettext as _
 
 from ...users.tests.factories import UserFactory
-from ..forms import DrinkCompareForm, DrinkForm, DrinkTargetForm, TypicalYearForm
+from ..forms import (
+    DrinkCompareForm,
+    DrinkForm,
+    DrinkTargetForm,
+    QuickAddForm,
+    TypicalYearForm,
+)
 from ..models import Drink
 from .factories import DrinkFactory, DrinkTargetFactory
 
@@ -23,10 +29,31 @@ def test_drink_init_fields(main_user):
     form = DrinkForm(user=main_user).as_p()
 
     assert '<input type="text" name="date"' in form
-    assert '<input type="number" name="stdav"' in form
+    assert '<input type="text" name="stdav"' in form
     assert '<select name="option"' in form
     assert '<select name="user"' not in form
     assert '<input type="text" name="counter_type"' not in form
+
+
+def test_drink_quantity_rewrites_a_decimal_comma(main_user):
+    form = DrinkForm(user=main_user).as_p()
+
+    assert 'inputmode="decimal"' in form
+    assert "@keyup=" in form
+    assert "$el.value.replace(" in form
+    assert "[^0-9.]" in form
+    assert r"^(\d*\.?\d*).*" in form
+
+
+@pytest.mark.parametrize("typed", ["1", "1.5", "0.75", "500", "1.", ".5"])
+def test_drink_quantity_accepts_every_shape_the_widget_allows(main_user, typed):
+    # the keyup filter leaves digits and one dot, so a trailing or leading dot
+    # is reachable and has to parse
+    form = DrinkForm(
+        user=main_user, data={"date": "1999-01-01", "option": "beer", "stdav": typed}
+    )
+
+    assert form.is_valid(), form.errors
 
 
 def test_drink_help_text(main_user):
@@ -150,6 +177,53 @@ def test_drink_blank_data(main_user):
 
 
 # -------------------------------------------------------------------------------------
+#                                                                             Quick Add
+# -------------------------------------------------------------------------------------
+def test_quick_add_reads_the_quantity_the_bar_posts(main_user):
+    form = QuickAddForm.from_post(
+        {"quantity": "2.5", "option": "beer", "date": "1999-01-01"}, main_user
+    )
+
+    assert form.is_valid(), form.errors
+    assert form.cleaned_data["stdav"] == pytest.approx(6.25, rel=0.01)
+
+
+def test_quick_add_without_an_option_falls_back_to_the_users_drink_type(main_user):
+    main_user.drink_type = "wine"
+
+    form = QuickAddForm.from_post({"quantity": "1", "date": "1999-01-01"}, main_user)
+
+    assert form.is_valid(), form.errors
+    assert form.cleaned_data["option"] == "wine"
+
+
+@time_machine.travel("1999-01-01 12:05:04")
+def test_quick_add_without_a_date_falls_back_to_the_header_year(main_user):
+    main_user.year = 1999
+
+    form = QuickAddForm.from_post({"quantity": "1", "option": "beer"}, main_user)
+
+    assert form.is_valid(), form.errors
+    assert form.cleaned_data["date"] == date(1999, 1, 1)
+
+
+def test_quick_add_without_a_quantity_is_invalid(main_user):
+    form = QuickAddForm.from_post({"option": "beer", "date": "1999-01-01"}, main_user)
+
+    assert not form.is_valid()
+    assert "stdav" in form.errors
+
+
+def test_quick_add_saves_a_drink(main_user):
+    form = QuickAddForm.from_post(
+        {"quantity": "1", "option": "beer", "date": "1999-01-01"}, main_user
+    )
+    form.save()
+
+    assert Drink.objects.count() == 1
+
+
+# -------------------------------------------------------------------------------------
 #                                                                          Drink Target
 # -------------------------------------------------------------------------------------
 def test_drink_target_init(main_user):
@@ -160,9 +234,19 @@ def test_drink_target_init_fields(main_user):
     form = DrinkTargetForm(user=main_user).as_p()
 
     assert '<input type="text" name="year"' in form
-    assert '<input type="number" name="quantity"' in form
+    assert '<input type="text" name="quantity"' in form
     assert '<select name="drink_type"' in form
     assert '<select name="user"' not in form
+
+
+def test_drink_target_quantity_rewrites_a_decimal_comma(main_user):
+    form = DrinkTargetForm(user=main_user).as_p()
+
+    assert 'inputmode="decimal"' in form
+    assert "@keyup=" in form
+    assert "$el.value.replace(" in form
+    assert "[^0-9.]" in form
+    assert r"^(\d*\.?\d*).*" in form
 
 
 @time_machine.travel("1974-1-1")

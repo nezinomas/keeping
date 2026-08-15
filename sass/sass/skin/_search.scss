@@ -21,13 +21,14 @@
             font-size: 0.8rem;
 
             // the field states what it is until something is typed into it, so
-            // the placeholder is set as a label and the typed text as prose
+            // the placeholder is set as a label and the typed text as prose —
+            // and $ink-muted because a label carrying meaning has to pass AA
             &::placeholder {
                 font-family: $mono;
                 font-size: 0.66rem;
                 letter-spacing: 0.14em;
                 text-transform: uppercase;
-                color: $ink-faint;
+                color: $ink-muted;
             }
 
             &:focus {

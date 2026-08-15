@@ -5,7 +5,12 @@ from datetime import date, timedelta
 from functools import cached_property
 
 from ...core.lib.year_boundary import YearBoundary
-from .drinks_stats import DataRow, EmptyYearOverYear, YearOverYear
+from .drinks_stats import (
+    DataRow,
+    EmptyYearOverYear,
+    YearOverYear,
+    YearOverYearReading,
+)
 
 # In std av (10 g pure alcohol). UK CMO low-risk is 14 UK units of 8 g a week,
 # so 14 * 8 / 10; the high-risk edge (~35 units) is a cited marker, not a cutoff.
@@ -14,8 +19,6 @@ WEEKLY_HIGH_RISK_STDAV = 28.0
 # A heavy drinking day: ~60 g alcohol in a single day. This is a daily total,
 # not a single-occasion "binge" (which guidance defines per drinking session).
 HEAVY_DAY_STDAV = 6.0
-MONTHLY_HEAVY_LOW_RISK = 3.0
-MONTHLY_HEAVY_HIGH_RISK = 6.0
 
 
 @dataclass(frozen=True)
@@ -146,17 +149,18 @@ class RiskStats:
 
     def _compare_year_over_year(
         self, current: int, previous: int
-    ) -> YearOverYear | EmptyYearOverYear:
-        return YearOverYear.compare(
-            current, previous, has_past=bool(self._past_daily_records)
-        )
+    ) -> YearOverYearReading:
+        if not self._past_daily_records:
+            return EmptyYearOverYear(current)
 
-    def heavy_days(self) -> YearOverYear | EmptyYearOverYear:
+        return YearOverYear(current, previous)
+
+    def heavy_days(self) -> YearOverYearReading:
         current = self._count_heavy_days(self._current_daily_records)
         previous = self._count_heavy_days(self._past_clipped_records)
         return self._compare_year_over_year(current, previous)
 
-    def weeks_over_guideline(self) -> YearOverYear | EmptyYearOverYear:
+    def weeks_over_guideline(self) -> YearOverYearReading:
         current = self._count_weeks_exceeding_guideline(self._current_weekly_units)
         previous = self._count_weeks_exceeding_guideline(
             self._past_clipped_weekly_units
