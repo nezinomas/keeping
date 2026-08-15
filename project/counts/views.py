@@ -2,8 +2,6 @@ from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.utils import rendered_content
-from ..core.lib.year_boundary import YearBoundary
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -14,12 +12,9 @@ from ..core.mixins.views import (
 )
 from . import services
 from .forms import CountForm, CountTypeForm
-from .lib.views_helper import (
-    CountTypetObjectMixin,
-    CountUrlMixin,
-    InfoRowData,
-)
+from .lib.views_helper import CountTypetObjectMixin, CountUrlMixin
 from .models import Count
+from .services.cards import HistoryCards, OverviewCards
 from .services.model_services import CountModelService, CountTypeModelService
 from .tabs import DEFAULT_TAB, TABS, CountTab
 
@@ -34,29 +29,6 @@ class Redirect(RedirectViewMixin):
 
 class Empty(TemplateViewMixin):
     template_name = "counts/empty.html"
-
-
-class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
-    template_name = "counts/info_row.html"
-
-    def get_context_data(self, **kwargs):
-        super().get_object()
-
-        user = self.request.user
-        year = user.year
-        week = YearBoundary.for_year(year).weeks_elapsed
-        data = InfoRowData(user, self.object.slug)
-
-        context = {
-            "object": self.object,
-            "tab": self.kwargs.get("tab", "index"),
-            "records": self.kwargs.get("records", 0),
-            "week": week,
-            "total": data.total,
-            "ratio": data.total / week,
-            "current_gap": data.gap,
-        }
-        return {**super().get_context_data(**kwargs), **context}
 
 
 class TabViewMixin(CountTypetObjectMixin):
@@ -107,9 +79,7 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
         return {
             **super().get_context_data(**self.kwargs),
             **context,
-            "info_row": rendered_content(
-                self.request, InfoRow, **self.kwargs | {"tab": "index"}
-            ),
+            "cards": OverviewCards.build(user, count_type),
         }
 
 
@@ -123,14 +93,6 @@ class TabData(TabViewMixin, ListViewMixin):
 
         return CountModelService(self.request.user).year(year=year, count_type=slug)
 
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**self.kwargs),
-            "info_row": rendered_content(
-                self.request, InfoRow, **self.kwargs | {"tab": "data"}
-            ),
-        }
-
 
 class TabHistory(TabViewMixin, TemplateViewMixin):
     tab = CountTab.resolve("history")
@@ -143,11 +105,7 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
         return {
             **super().get_context_data(**self.kwargs),
             **context,
-            "info_row": rendered_content(
-                self.request,
-                InfoRow,
-                **self.kwargs | {"tab": "history", "records": context["records"]},
-            ),
+            "cards": HistoryCards.build(user, count_type),
         }
 
 
