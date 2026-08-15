@@ -3,6 +3,7 @@ from datetime import date
 import time_machine
 
 from ...lib.drinks_risk import (
+    CALENDAR_LEVELS,
     HEAVY_DAY_STDAV,
     WEEKLY_HIGH_RISK_STDAV,
     WEEKLY_LOW_RISK_STDAV,
@@ -21,6 +22,10 @@ def _row(dt: date, stdav: float) -> DataRow:
 def test_thresholds_are_ordered():
     assert 0 < WEEKLY_LOW_RISK_STDAV < WEEKLY_HIGH_RISK_STDAV
     assert HEAVY_DAY_STDAV > 0
+
+
+def test_the_calendars_top_level_starts_at_the_heavy_day_threshold():
+    assert CALENDAR_LEVELS[-1] == HEAVY_DAY_STDAV
 
 
 # -------------------------------------------------------------------------------------

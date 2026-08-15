@@ -15,19 +15,13 @@
         {% endfor %}
     </div>
     <div class="heat-legend">
-        <span>{% translate 'No drink' %}</span>
+        <span>{{ calendar.legend.low_title }}</span>
         <span class="heat-legend__scale">
-            <span class="swatches">
-                <i class="l0"></i>
-                <i class="l1"></i>
-                <i class="l2"></i>
-                <i class="l3"></i>
-                <i class="l4"></i>
-            </span>
+            <span class="swatches">{% for bound in calendar.legend.bounds %}<i class="l{{ forloop.counter0 }}"></i>{% endfor %}</span>
             <span class="heat-legend__bounds">{% for bound in calendar.legend.bounds %}<span>{{ bound }}</span>{% endfor %}</span>
             {% if calendar.legend.unit %}<span class="heat-legend__unit">{{ calendar.legend.unit }}</span>{% endif %}
         </span>
-        <span>{% translate 'Heavy day' %}</span>
+        <span>{{ calendar.legend.high_title }}</span>
         <span class="heat-legend__spacer"></span>
         <span><i class="today"></i> {% translate 'today' %}</span>
     </div>

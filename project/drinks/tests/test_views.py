@@ -569,7 +569,7 @@ def test_tab_index_loads_the_calendar_script_as_a_static_file(client_logged):
     response = client_logged.get(reverse("drinks:tab_index"))
     html = response.content.decode("utf-8")
 
-    assert "js/drinks_calendar.js" in html
+    assert "js/calendar.js" in html
 
 
 # -------------------------------------------------------------------------------------
