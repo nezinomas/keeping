@@ -861,6 +861,76 @@ msgstr "Skaitiklis"
 msgid "This title is reserved for the system."
 msgstr "Šis pavadinimas rezervuotas sistemai."
 
+#: .\counts\services\cards.py:30
+msgctxt "counts card"
+msgid "This year"
+msgstr "Šiais metais"
+
+#: .\counts\services\cards.py:31
+msgid "Total ever"
+msgstr "Iš viso"
+
+#: .\counts\services\cards.py:32
+msgid "Days since the last record"
+msgstr "Dienos nuo paskutinio įrašo"
+
+#: .\counts\services\cards.py:33
+#, python-format
+msgid "since %(year)s"
+msgstr "nuo %(year)s"
+
+#: .\counts\services\cards.py:34
+#, python-format
+msgid "typically %(days)s d."
+msgstr "įprastai %(days)s d."
+
+#: .\counts\services\cards.py:35
+msgctxt "counts card"
+msgid "Years"
+msgstr "Metų"
+
+#: .\counts\services\cards.py:36
+msgid "Years with at least one record"
+msgstr "Metai, kuriais yra bent vienas įrašas"
+
+#: .\counts\services\cards.py:37
+msgid "Median year"
+msgstr "Vidutiniai metai"
+
+#: .\counts\services\cards.py:38
+msgid "The median of the yearly totals"
+msgstr "Metinių sumų mediana"
+
+#: .\counts\services\cards.py:39
+#, python-format
+msgid "from %(low)s to %(high)s"
+msgstr "nuo %(low)s iki %(high)s"
+
+#: .\counts\services\cards.py:40
+msgid "Per year"
+msgstr "Per metus"
+
+#: .\counts\services\cards.py:41
+msgid "Records a year, over the counter's whole life"
+msgstr "Vidutiniškai įrašų per metus, per visą laiką"
+
+#: .\counts\services\cards.py:42
+msgid "Median gap"
+msgstr "Vidutinis tarpas"
+
+#: .\counts\services\cards.py:43
+msgid "The median of every gap"
+msgstr "Visų tarpų mediana"
+
+#: .\counts\services\cards.py:44
+msgid "Longest gap"
+msgstr "Ilgiausias tarpas"
+
+#: .\counts\services\cards.py:45
+#, python-format
+msgid "this year: %(value)s"
+msgstr "šiemet: %(value)s"
+
 #: .\counts\services\index.py:30
 #, python-format
 msgid "Weekdays, %(year)s year"
@@ -1434,6 +1504,10 @@ msgstr "Dienos riba"
 #: .\drinks\templates\drinks\includes\index_summary.html:25
 msgid "day"
 msgstr "diena"
+
+#: .\counts\tabs.py:35
+msgid "Periodicity"
+msgstr "Periodiškumas"
 
 #: .\drinks\templates\drinks\includes\navbar.html:8
 msgid "Overview"
