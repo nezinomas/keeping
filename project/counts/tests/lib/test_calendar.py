@@ -6,7 +6,8 @@ import time_machine
 from django.test import override_settings
 
 from ....core.exceptions import MethodInvalidError
-from ...lib.stats import Calendar, Stats
+from ....core.lib.day_stats import Stats
+from ...lib.stats import Calendar
 from ...services.model_services import CountModelService
 from ..factories import CountFactory
 
