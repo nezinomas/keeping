@@ -5,7 +5,7 @@ from datetime import date
 
 from django.utils.translation import gettext as _
 
-from ...counts.lib.stats import Stats as CountStats
+from .day_stats import Stats
 from .translation import month_names
 from .year_boundary import YearBoundary
 
@@ -85,7 +85,7 @@ class CalendarGrid:
 
         gap_by_date = {}
         if daily_data:
-            stats = CountStats(year=year, data=daily_data, past_latest=latest_past_date)
+            stats = Stats(year=year, data=daily_data, past_latest=latest_past_date)
             gaps_df = stats._calculate_gaps()
             if not gaps_df.is_empty():
                 gap_by_date = {

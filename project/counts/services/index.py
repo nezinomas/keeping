@@ -5,9 +5,10 @@ from typing import Dict, List
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
+from ...core.lib.day_stats import Stats
 from ...core.lib.translation import weekday_names
 from ...users.models import User
-from ..lib.stats import Calendar, Stats
+from ..lib.stats import Calendar
 from ..models import Count
 from ..services.model_services import CountModelService
 
@@ -48,7 +49,7 @@ class IndexService:
         }
 
     def chart_years(self, title: str = _lazy("Year")) -> str:
-        year_totals = self._stats.year_totals()
+        year_totals = self._stats.totals_by_year()
         return {
             "data": list(year_totals.values()),
             "categories": list(year_totals.keys()),
