@@ -14,5 +14,7 @@
 </div>
 
 <div class="counts-calendar">
-    <c-calendar :calendar=calendar />
+    <c-calendar :calendar="calendar">
+        {% include 'counts/includes/gap_strip.html' %}
+    </c-calendar>
 </div>

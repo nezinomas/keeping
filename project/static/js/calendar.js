@@ -5,6 +5,9 @@ function initCalendar() {
     const tooltip = document.getElementById('heat-tooltip');
     if (!card || !tooltip) return;
 
+    // anything labelled takes the tooltip; only the month grid takes the
+    // keyboard walk, or the roving index would cross the same year twice
+    const HOVER = '[data-label]';
     const CELL = '.mini i[data-label]';
     const cells = Array.from(card.querySelectorAll(CELL));
     let current = cells.length - 1;
@@ -39,12 +42,12 @@ function initCalendar() {
     }
 
     card.addEventListener('mouseover', function (e) {
-        const cell = e.target.closest(CELL);
+        const cell = e.target.closest(HOVER);
         cell ? show(cell) : hide();
     });
 
     card.addEventListener('mousemove', function (e) {
-        const cell = e.target.closest(CELL);
+        const cell = e.target.closest(HOVER);
         if (cell && tooltip.style.display === 'block') {
             positionTooltip(cell);
         }
@@ -54,11 +57,11 @@ function initCalendar() {
 
     card.addEventListener('click', function (e) {
         const cell = e.target.closest(CELL);
-        if (!cell) {
-            hide();
+        if (cell) {
+            moveTo(cells.indexOf(cell));
             return;
         }
-        moveTo(cells.indexOf(cell));
+        if (!e.target.closest(HOVER)) hide();
     });
 
     card.addEventListener('focusin', function (e) {

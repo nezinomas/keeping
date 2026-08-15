@@ -552,6 +552,35 @@ def test_index_calendar_draws_presence_at_one_level(client_logged):
     assert response.context["calendar"].legend.bounds == ("0", ">0")
 
 
+def _gap_strip(content: str) -> str:
+    return re.search(r'<div class="gap-strip".*?</div>', content, re.S).group()
+
+
+@time_machine.travel(datetime(1999, 7, 1))
+def test_index_gap_strip_draws_one_tick_a_day(client_logged):
+    CountFactory(date=date(1999, 1, 2))
+    CountFactory(date=date(1999, 3, 4))
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    strip = _gap_strip(client_logged.get(url).content.decode("utf-8"))
+
+    assert strip.count("<i") == 365
+    assert strip.count('class="hit"') == 2
+
+
+@time_machine.travel(datetime(2000, 7, 1))
+def test_index_gap_strip_draws_a_leap_year(client_logged, main_user):
+    main_user.year = 2000
+    main_user.save()
+
+    CountFactory(date=date(2000, 1, 2))
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    strip = _gap_strip(client_logged.get(url).content.decode("utf-8"))
+
+    assert strip.count("<i") == 366
+
+
 @time_machine.travel(datetime(1999, 1, 10))
 def test_index_calendar_empty_day_says_no_records(client_logged):
     CountFactory(date=date(1999, 1, 2))
