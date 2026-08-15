@@ -20,25 +20,37 @@ class IndexService:
     def records(self):
         return self._stats.number_of_records
 
+    @property
+    def span(self) -> str:
+        """The years the pooled charts read, so a picture names its window."""
+        years = list(self._stats.totals_by_year())
+
+        if not years:
+            return str(self._year)
+
+        return str(years[0]) if len(years) == 1 else f"{years[0]}–{years[-1]}"
+
     def chart_weekdays(self, title: str = None) -> str:
         if not title:
-            title = _("Weekdays, %(year)s year") % ({"year": self._year})
+            title = _("Days of week")
 
         return {
             "data": [x["count"] for x in self._stats.weekdays_stats()],
             "categories": [x[:4] for x in Stats.weekdays()],
             "chart_title": title,
+            "subtitle": self.span,
             "chart_column_color": "70, 171, 157",
         }
 
     def chart_months(self, title: str = None) -> str:
         if not title:
-            title = self._year
+            title = _("Months")
 
         return {
             "data": self._stats.months_stats(),
             "categories": Stats.months(),
             "chart_title": title,
+            "subtitle": self.span,
             "chart_column_color": "70, 171, 157",
         }
 
@@ -48,6 +60,7 @@ class IndexService:
             "data": list(year_totals.values()),
             "categories": list(year_totals.keys()),
             "chart_title": title,
+            "subtitle": self.span,
             "chart_column_color": "70, 171, 157",
         }
 
@@ -57,6 +70,7 @@ class IndexService:
             "data": list(gaps.values()),
             "categories": [f"{x}d" for x in gaps.keys()],
             "chart_title": _("Frequency of gaps, in days"),
+            "subtitle": self.span,
             "chart_column_color": "196, 37, 37",
         }
 
@@ -113,6 +127,15 @@ def load_index_service(user, count_type: str) -> dict:
             low_title=_("No records"),
             high_title=_("Record"),
         ),
+    }
+
+
+def load_periodicity_service(user, count_type: str) -> dict:
+    year = user.year
+    stats = Stats(data=Data(user, count_type).items)
+    srv = IndexService(year, stats)
+
+    return {
         "chart_weekdays": srv.chart_weekdays(),
         "chart_months": srv.chart_months(),
         "chart_histogram": srv.chart_histogram(),
@@ -121,13 +144,10 @@ def load_index_service(user, count_type: str) -> dict:
 
 def load_history_service(user, count_type: str) -> dict:
     year = user.year
-    data = Data(user, count_type).items
-    stats = Stats(data=data)
+    stats = Stats(data=Data(user, count_type).items)
     srv = IndexService(year, stats)
 
     return {
         "records": srv.records,
-        "chart_weekdays": srv.chart_weekdays(_("Days of week")),
         "chart_years": srv.chart_years(),
-        "chart_histogram": srv.chart_histogram(),
     }

@@ -10,6 +10,11 @@ urlpatterns = [
     path("none/", views.Empty.as_view(), name="empty"),
     path("<slug:slug>/", views.TabIndex.as_view(), name="index"),
     path("<slug:slug>/index/", views.TabIndex.as_view(), name="tab_index"),
+    path(
+        "<slug:slug>/periodicity/",
+        views.TabPeriodicity.as_view(),
+        name="tab_periodicity",
+    ),
     path("<slug:slug>/data/", views.TabData.as_view(), name="tab_data"),
     path("<slug:slug>/history/", views.TabHistory.as_view(), name="tab_history"),
     path("<slug:tab>/<slug:slug>/new/", views.New.as_view(), name="new"),

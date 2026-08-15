@@ -931,6 +931,15 @@ msgstr "Ilgiausias tarpas"
 msgid "this year: %(value)s"
 msgstr "šiemet: %(value)s"
 
+#: .\counts\services\cards.py:46
+#, python-format
+msgid "this year: %(days)s d."
+msgstr "šiemet: %(days)s d."
+
+#: .\counts\services\index.py:47
+msgid "Months"
+msgstr "Mėnesiai"
+
 #: .\counts\services\index.py:30
 #, python-format
 msgid "Weekdays, %(year)s year"

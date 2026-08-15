@@ -14,9 +14,9 @@ from . import services
 from .forms import CountForm, CountTypeForm
 from .lib.views_helper import CountTypetObjectMixin, CountUrlMixin
 from .models import Count
-from .services.cards import HistoryCards, OverviewCards
+from .services.cards import HistoryCards, OverviewCards, PeriodicityCards
 from .services.model_services import CountModelService, CountTypeModelService
-from .tabs import DEFAULT_TAB, TABS, CountTab
+from .tabs import BY_NAME, DEFAULT_TAB, TABS, CountTab
 
 
 class Redirect(RedirectViewMixin):
@@ -83,6 +83,21 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
         }
 
 
+class TabPeriodicity(TabViewMixin, TemplateViewMixin):
+    tab = CountTab.resolve("periodicity")
+
+    def get_context_data(self, **kwargs):
+        user = self.request.user
+        count_type = self.object.slug
+        context = services.index.load_periodicity_service(user, count_type)
+
+        return {
+            **super().get_context_data(**self.kwargs),
+            **context,
+            "cards": PeriodicityCards.build(user, count_type),
+        }
+
+
 class TabData(TabViewMixin, ListViewMixin):
     tab = CountTab.resolve("data")
     model = Count
@@ -121,17 +136,14 @@ class New(CountUrlMixin, CreateViewMixin):
     def get_hx_trigger_django(self):
         tab = self.kwargs.get("tab")
 
-        if tab in ["index", "data", "history"]:
-            return f"reload{tab.title()}"
+        if tab in BY_NAME:
+            return BY_NAME[tab].reload_trigger
 
         return "reloadData"
 
     def url(self):
         count_type = self.kwargs.get("slug")
-        tab = self.kwargs.get("tab")
-
-        if tab not in ["index", "data", "history"]:
-            tab = "index"
+        tab = CountTab.resolve(self.kwargs.get("tab")).name
 
         return reverse_lazy("counts:new", kwargs={"slug": count_type, "tab": tab})
 

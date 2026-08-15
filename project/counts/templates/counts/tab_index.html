@@ -5,16 +5,6 @@
     <c-stat-cards :cards=cards />
 </div>
 
-<div class="grid-three-col">
-    <div id="chart-weekdays-container"></div>
-    <div id="chart-months-container"></div>
-    <div id="chart-histogram-container">
-        {{chart_weekdays|json_script:"chart-weekdays-data"}}
-        {{chart_months|json_script:"chart-months-data"}}
-        {{chart_histogram|json_script:"chart-histogram-data"}}
-    </div>
-</div>
-
 <div class="counts-calendar">
     <c-calendar :calendar="calendar">
         {% include 'counts/includes/gap_strip.html' %}

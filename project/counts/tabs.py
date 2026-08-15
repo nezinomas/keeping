@@ -32,6 +32,7 @@ class CountTab:
 
 TABS = (
     CountTab("index", _("Overview")),
+    CountTab("periodicity", _("Periodicity")),
     CountTab("history", _("History")),
     CountTab("data", _("Data")),
 )

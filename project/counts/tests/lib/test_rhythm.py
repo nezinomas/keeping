@@ -119,3 +119,81 @@ def test_current_gap_counts_the_days_since_the_last_record():
 
 def test_current_gap_of_a_counter_with_no_records_is_zero():
     assert Rhythm([], today=date(1999, 1, 11)).current_gap == 0
+
+
+# -------------------------------------------------------------------------------------
+#                                                            Read against a Counter year
+# -------------------------------------------------------------------------------------
+def test_the_first_gap_of_a_year_reaches_back_to_the_year_before():
+    rhythm = Rhythm(
+        _records(date(1998, 12, 22), date(1999, 1, 1), date(1999, 1, 3)), year=1999
+    )
+
+    assert [gap.days for gap in rhythm.year_gaps] == [10, 2]
+
+
+def test_a_single_record_in_a_year_gives_no_completed_gap():
+    rhythm = Rhythm(_records(date(1999, 5, 1)), year=1999)
+
+    assert rhythm.year_gaps == []
+    assert isinstance(rhythm.year_median_gap, EmptyGap)
+
+
+def test_the_current_gap_enters_neither_the_years_longest_nor_its_median():
+    rhythm = Rhythm(
+        _records(date(1999, 1, 1), date(1999, 1, 3)),
+        today=date(1999, 12, 31),
+        year=1999,
+    )
+
+    assert rhythm.current_gap == 362
+    assert rhythm.year_median_gap.days == 2
+    assert rhythm.longest_gap.days == 2
+
+
+def test_an_empty_year_returns_the_empty_variants():
+    rhythm = Rhythm(_records(date(1998, 1, 1), date(1998, 1, 5)), year=1999)
+
+    assert rhythm.year_gaps == []
+    assert isinstance(rhythm.year_median_gap, EmptyGap)
+    assert rhythm.year_records == 0
+
+
+def test_the_years_median_and_the_typical_gap_read_different_sets():
+    rhythm = Rhythm(
+        _records(
+            date(1997, 1, 1),
+            date(1997, 1, 3),
+            date(1997, 1, 5),
+            date(1999, 1, 1),
+            date(1999, 3, 1),
+        ),
+        year=1999,
+    )
+
+    assert [gap.days for gap in rhythm.gaps] == [2, 2, 726, 59]
+    assert rhythm.year_median_gap.days == 392.5
+    assert rhythm.typical_gap.days == 30.5
+
+
+def test_year_records_counts_the_records_of_the_year_on_view():
+    rhythm = Rhythm(
+        _records(date(1998, 1, 1), date(1999, 1, 1), date(1999, 6, 1)), year=1999
+    )
+
+    assert rhythm.year_records == 2
+
+
+def test_the_longest_gap_names_the_records_at_its_ends():
+    rhythm = Rhythm(
+        _records(date(1999, 1, 1), date(1999, 1, 3), date(1999, 5, 1)), year=1999
+    )
+
+    assert rhythm.longest_gap.days == 118
+    assert rhythm.longest_gap.label == "1999-01-03 → 1999-05-01"
+
+
+def test_a_counter_with_one_record_has_no_longest_gap():
+    rhythm = Rhythm(_records(date(1999, 1, 1)), year=1999)
+
+    assert isinstance(rhythm.longest_gap, EmptyGap)
