@@ -5,7 +5,7 @@ import pytest
 import time_machine
 from django.utils.translation import gettext as _
 
-from ....core.lib.stat_card import StatCard
+from ....core.lib.stat_card import Card
 from ...lib.drinks_risk import (
     HEAVY_DAY_STDAV,
     WEEKLY_HIGH_RISK_STDAV,
@@ -84,16 +84,10 @@ def test_chart_heavy_days_view_model():
     assert len(vm.data) == 12
     assert vm.data[0] == 1
     assert vm.heavy_threshold == 6.0
-    assert vm.low_risk == 3.0
-    assert vm.high_risk == 6.0
-    assert set(vm.text) == {
-        "title",
-        "unit",
-        "heavy",
-        "threshold_label",
-        "guideline",
-        "high_risk_guideline",
-    }
+    # every Heavy day is harm, so the chart carries no guideline to cross
+    assert not hasattr(vm, "low_risk")
+    assert not hasattr(vm, "high_risk")
+    assert set(vm.text) == {"title", "unit", "heavy", "threshold_label"}
 
 
 @time_machine.travel("2026-12-31")
@@ -106,8 +100,8 @@ def test_chart_heavy_days_as_dict_is_json_serializable():
     assert serialized["data"][0] == 1
     assert len(serialized["categories"]) == 12
     assert serialized["heavy_threshold"] == 6.0
-    assert serialized["low_risk"] == 3.0
-    assert serialized["high_risk"] == 6.0
+    assert "low_risk" not in serialized
+    assert "high_risk" not in serialized
 
 
 # -------------------------------------------------------------------------------------
@@ -120,7 +114,7 @@ def test_get_cards_returns_four_view_models():
     cards = RiskViewModelBuilder(stats).get_cards()
 
     assert len(cards) == 4
-    assert all(isinstance(c, StatCard) for c in cards)
+    assert all(isinstance(c, Card) for c in cards)
     assert [c.title for c in cards] == [
         _("This week"),
         _("Worst week"),
@@ -233,15 +227,12 @@ def test_heavy_days_explanation_holds_threshold_and_comparison():
 
     # the descriptive text lives in the collapsible explanation, not the note
     assert card.note == "1 / 2"
-    assert "6" in card.explanation
-    assert "Std Av" in card.explanation
-    expected = (
+    # the definition and the key to the two numbers are separate paragraphs
+    assert card.explanation == (
         _("Days with more than %(threshold)s Std Av in a single day.")
-        % {"threshold": "6"}
-        + " "
-        + _("The two numbers are this year and last year, up to the same date.")
+        % {"threshold": "6"},
+        _("The two numbers are this year and last year, up to the same date."),
     )
-    assert card.explanation == expected
 
 
 @time_machine.travel("2026-06-01")
@@ -252,10 +243,10 @@ def test_weeks_over_explanation_holds_guideline():
 
     # no prior year -> explanation is the definition only (no comparison sentence)
     assert card.note == _("No prior year")
-    assert "11.2" in card.explanation
-    assert card.explanation == _(
-        "Weeks whose total exceeds the low-risk guideline of %(threshold)s Std Av."
-    ) % {"threshold": "11.2"}
+    assert card.explanation == (
+        _("Weeks whose total exceeds the low-risk guideline of %(threshold)s Std Av.")
+        % {"threshold": "11.2"},
+    )
 
 
 @time_machine.travel("2026-06-01")
@@ -265,8 +256,8 @@ def test_zone_cards_have_no_explanation():
         RiskStats(current_daily=[_row(date(2026, 1, 5), 5)])
     ).get_cards()
 
-    assert _card(cards, _("This week")).explanation == ""
-    assert _card(cards, _("Worst week")).explanation == ""
+    assert _card(cards, _("This week")).explanation == ()
+    assert _card(cards, _("Worst week")).explanation == ()
 
 
 # -------------------------------------------------------------------------------------

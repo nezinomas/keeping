@@ -172,7 +172,10 @@ _Avoid_: primary colour, accent, blue, series colour
 
 **Harm**:
 The colour a reading takes for being harmful, and nothing else: the part of a
-month over the Drink Target, a week over the Low-risk guideline, a Heavy day. It
+month over the Drink Target, a week over the Low-risk guideline, a Heavy day,
+a year running above the same span of the year before it. That last one is a
+threshold like the others — last year's figure to the same date is a defined
+value, not a feeling that the number looks large. It
 has two steps, guideline and threshold, so a week over one is not drawn as a week
 over the other. Nothing under a limit is coloured for being under it — there is
 no green on a Tab, because staying inside a limit is the baseline, not an

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from django.utils.translation import gettext as _
 
 from ...core.lib import stat_card
-from ...core.lib.stat_card import StatCard
+from ...core.lib.stat_card import Card, EmptyStatCard, LevelStatCard
 from ...core.lib.translation import weekday_names
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_risk import HEAVY_DAY_STDAV
@@ -87,15 +87,15 @@ class HabitsBuilder:
             },
         )
 
-    def get_cards(self) -> list[StatCard]:
+    def get_cards(self) -> list[Card]:
         return [self._card_per_drinking_day()]
 
-    def _card_per_drinking_day(self) -> StatCard:
+    def _card_per_drinking_day(self) -> Card:
         title = _("Per drinking day")
         intensity = self._stats.intensity
 
         if not intensity:
-            return StatCard.empty(title, _("No data"))
+            return EmptyStatCard(title, _("No data"))
 
         # a harm metric stays in Std Av whatever the dropdown says - the Heavy
         # day threshold it is read against is defined there
@@ -107,11 +107,11 @@ class HabitsBuilder:
             "Always in Std Av, because the Heavy day threshold is defined there."
         )
 
-        return StatCard.level(
+        return LevelStatCard(
             title,
             state=stat_card.HIGH if intensity > HEAVY_DAY_STDAV else stat_card.LOW,
             value=f"{intensity:.1f}",
             unit="Std Av",
             note=f"{_('Heavy day')}: > {HEAVY_DAY_STDAV:.0f} Std Av",
-            explanation=f"{definition} {unit_note}",
+            explanation=(definition, unit_note),
         )

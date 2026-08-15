@@ -6,7 +6,7 @@ import time_machine
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from ....core.lib.stat_card import StatCard
+from ....core.lib.stat_card import Card
 from ...lib.drinks_options import DrinkConverter
 from ...lib.drinks_stats import DataRow
 from ...lib.drinks_trend import (
@@ -173,7 +173,7 @@ def test_builder_get_cards(converter):
     cards = TrendsBuilder(stats).get_cards()
 
     assert len(cards) == 5
-    assert all(isinstance(c, StatCard) for c in cards)
+    assert all(isinstance(c, Card) for c in cards)
     assert [c.title for c in cards] == [
         _("Trend (2 weeks)"),
         _("Trend (month)"),
@@ -211,8 +211,11 @@ def test_ytd_card_says_it_reads_to_date_in_its_explanation(converter):
     card = TrendsBuilder(stats).get_cards()[3]
 
     assert card.title == _("This year vs last")
-    assert card.explanation == _(
-        "The arrow compares with last year, up to the same date."
+    # the note is two bare figures, so the first paragraph names them — the same
+    # sentence the Risk tab uses for a note of the same shape
+    assert card.explanation == (
+        _("The two numbers are this year and last year, up to the same date."),
+        _("The arrow compares with last year, up to the same date."),
     )
 
 

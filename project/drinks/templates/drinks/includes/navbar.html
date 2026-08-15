@@ -1,60 +1,35 @@
-{% load i18n %}
-
 <!-- rendered once, outside the swapped body, so the open tab is Alpine state -->
 <nav class="subnav">
-    <div class="tabs">
+    <div class="tabs" role="tablist"
+         x-data="{
+             move(step) {
+                 const buttons = [...$el.querySelectorAll('[role=tab]')];
+                 const at = buttons.indexOf(document.activeElement);
+                 const next = buttons[(at + step + buttons.length) % buttons.length];
+                 next.focus();
+                 next.click();
+             }
+         }"
+         @keydown.arrow-right.prevent="move(1)"
+         @keydown.arrow-left.prevent="move(-1)">
+        {% for drink_tab in tabs %}
         <button
-            class="tab{% if tab == 'index' %} active{% endif %}"
-            :class="{ active: tab === 'index' }"
-            @click="tab = 'index'"
-            hx-get="{% url 'drinks:tab_index' %}"
-            hx-target="#tab_content">
-            {% translate 'Overview' %}
+            id="tab-{{ drink_tab.name }}"
+            class="tab{% if tab == drink_tab.name %} active{% endif %}"
+            role="tab"
+            aria-controls="tab_content"
+            aria-selected="{% if tab == drink_tab.name %}true{% else %}false{% endif %}"
+            tabindex="{% if tab == drink_tab.name %}0{% else %}-1{% endif %}"
+            :class="{ active: tab === '{{ drink_tab.name }}' }"
+            :aria-selected="tab === '{{ drink_tab.name }}'"
+            :tabindex="tab === '{{ drink_tab.name }}' ? 0 : -1"
+            @click="tab = '{{ drink_tab.name }}'"
+            hx-get="{{ drink_tab.url }}"
+            hx-push-url="true"
+            hx-target="#tab_content"
+            hx-indicator="#indicator">
+            {{ drink_tab.title }}
         </button>
-
-        <button
-            class="tab{% if tab == 'trends' %} active{% endif %}"
-            :class="{ active: tab === 'trends' }"
-            @click="tab = 'trends'"
-            hx-get="{% url 'drinks:tab_trends' %}"
-            hx-target="#tab_content">
-            {% translate 'Trends' %}
-        </button>
-
-        <button
-            class="tab{% if tab == 'habits' %} active{% endif %}"
-            :class="{ active: tab === 'habits' }"
-            @click="tab = 'habits'"
-            hx-get="{% url 'drinks:tab_habits' %}"
-            hx-target="#tab_content">
-            {% translate 'Habits' %}
-        </button>
-
-        <button
-            class="tab{% if tab == 'risk' %} active{% endif %}"
-            :class="{ active: tab === 'risk' }"
-            @click="tab = 'risk'"
-            hx-get="{% url 'drinks:tab_risk' %}"
-            hx-target="#tab_content">
-            {% translate 'Risk' %}
-        </button>
-
-        <button
-            class="tab{% if tab == 'history' %} active{% endif %}"
-            :class="{ active: tab === 'history' }"
-            @click="tab = 'history'"
-            hx-get="{% url 'drinks:tab_history' %}"
-            hx-target="#tab_content">
-            {% translate 'History' %}
-        </button>
-
-        <button
-            class="tab{% if tab == 'data' %} active{% endif %}"
-            :class="{ active: tab === 'data' }"
-            @click="tab = 'data'"
-            hx-get="{% url 'drinks:tab_data' %}"
-            hx-target="#tab_content">
-            {% translate 'Data' %}
-        </button>
+        {% endfor %}
     </div>
 </nav>

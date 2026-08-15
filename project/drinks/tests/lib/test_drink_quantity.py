@@ -159,8 +159,6 @@ def test_decimal_places(is_volume, expect_places):
     assert actual.decimal_places == expect_places
 
 
-def test_unknown_drink_type_falls_back_to_std_av_ratios():
-    actual = DrinkQuantity.from_input(500, "unknown")
-
-    assert actual.is_volume is True
-    assert actual.stdav == 50.0
+def test_an_undeclared_drink_type_is_an_error():
+    with pytest.raises(ValueError):
+        DrinkQuantity.from_input(500, "grog")
