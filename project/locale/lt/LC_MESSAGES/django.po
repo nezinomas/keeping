@@ -922,6 +922,10 @@ msgctxt "record button"
 msgid "Record"
 msgstr "Įrašą"
 
+#: .\counts\services\index.py:56
+msgid "Record"
+msgstr "Įrašas"
+
 #: .\counts\templates\counts\info_row.html:48
 #: .\counts\templates\counts\info_row.html:49
 msgctxt "counter button"
