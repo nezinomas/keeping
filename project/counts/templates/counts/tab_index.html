@@ -13,10 +13,6 @@
     </div>
 </div>
 
-<div class="grid-two-col">
-    <div id="chart-calendar-1H-container"></div>
-    <div id="chart-calendar-2H-container">
-        {{chart_calendar_1H|json_script:"chart-calendar-1H-data"}}
-        {{chart_calendar_2H|json_script:"chart-calendar-2H-data"}}
-    </div>
+<div class="counts-calendar">
+    <c-calendar :calendar=calendar />
 </div>

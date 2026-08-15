@@ -65,6 +65,7 @@ class CalendarGrid:
         latest_past_date: date | None = None,
         today: date | None = None,
         quantity_title: str | None = None,
+        empty_title: str | None = None,
         unit: str = "",
         # no thresholds means presence, not a scale nobody configured
         thresholds: Sequence[float] = (),
@@ -75,6 +76,7 @@ class CalendarGrid:
         today = boundary.today
         daily_data = daily_data or []
         quantity_title = quantity_title or _("Quantity")
+        empty_title = empty_title or _("No drink")
 
         val_key = "stdav" if daily_data and "stdav" in daily_data[0] else "qty"
 
@@ -113,6 +115,7 @@ class CalendarGrid:
                 gap_by_date,
                 today_gap,
                 quantity_title,
+                empty_title,
                 thresholds,
             )
             for month in range(1, 13)
@@ -160,6 +163,7 @@ class CalendarGrid:
         gap_by_date: dict[date, int],
         today_gap: int,
         quantity_title: str,
+        empty_title: str,
         thresholds: Sequence[float],
     ) -> CalendarMonthViewModel:
         year = boundary.year
@@ -175,6 +179,7 @@ class CalendarGrid:
                 gap_by_date,
                 today_gap,
                 quantity_title,
+                empty_title,
                 thresholds,
             )
             for day in range(1, total_days + 1)
@@ -197,6 +202,7 @@ class CalendarGrid:
         gap_by_date: dict[date, int],
         today_gap: int,
         quantity_title: str,
+        empty_title: str,
         thresholds: Sequence[float],
     ) -> CalendarDayViewModel:
         level = _calc_level(val_by_date.get(day_date, 0.0), thresholds)
@@ -207,7 +213,7 @@ class CalendarGrid:
         is_future = day_date > boundary.end_date
 
         if level == 0:
-            label = f"{day_date:%Y-%m-%d}\n{_('No drink')}"
+            label = f"{day_date:%Y-%m-%d}\n{empty_title}"
             if is_today:
                 gap_title = _("Gap")
                 label = f"{day_date:%Y-%m-%d}\n{gap_title}: {today_gap}d."

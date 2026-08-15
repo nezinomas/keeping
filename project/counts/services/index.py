@@ -1,14 +1,12 @@
 import contextlib
 import datetime
-from typing import Dict, List
 
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
+from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.day_stats import Stats
-from ...core.lib.translation import weekday_names
 from ...users.models import User
-from ..lib.stats import Calendar
 from ..models import Count
 from ..services.model_services import CountModelService
 
@@ -21,10 +19,6 @@ class IndexService:
     @property
     def records(self):
         return self._stats.number_of_records
-
-    @property
-    def calendar_data(self):
-        return Calendar(self._stats).chart_data()
 
     def chart_weekdays(self, title: str = None) -> str:
         if not title:
@@ -55,16 +49,6 @@ class IndexService:
             "categories": list(year_totals.keys()),
             "chart_title": title,
             "chart_column_color": "70, 171, 157",
-        }
-
-    def chart_calendar(self, data: List[Dict]) -> str:
-        return {
-            "data": data,
-            "categories": [x[0] for x in list(weekday_names().values())],
-            "text": {
-                "gap": _("Gap"),
-                "quantity": _("Quantity"),
-            },
         }
 
     def chart_histogram(self) -> str:
@@ -115,15 +99,20 @@ class Data:
 def load_index_service(user, count_type: str) -> dict:
     year = user.year
     data = Data(user, count_type)
-    stats = Stats(year=year, data=data.sum_by_day, past_latest=data.past_latest)
+    daily = list(data.sum_by_day)
+    latest_past_date = data.past_latest
+    stats = Stats(year=year, data=daily, past_latest=latest_past_date)
     srv = IndexService(year, stats)
 
-    # cash calendar data
-    calendar_data = srv.calendar_data
-
     return {
-        "chart_calendar_1H": srv.chart_calendar(calendar_data[:6]),
-        "chart_calendar_2H": srv.chart_calendar(calendar_data[6:]),
+        "calendar": CalendarGrid.build(
+            year=year,
+            daily_data=daily,
+            latest_past_date=latest_past_date,
+            empty_title=_("No records"),
+            low_title=_("No records"),
+            high_title=_("Record"),
+        ),
         "chart_weekdays": srv.chart_weekdays(),
         "chart_months": srv.chart_months(),
         "chart_histogram": srv.chart_histogram(),

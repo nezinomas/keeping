@@ -517,17 +517,50 @@ def test_index_info_row(client_logged):
 
 
 @time_machine.travel(datetime(1999, 1, 1))
-def test_index_chart_calendar_gap_from_previous_year(client_logged):
+def test_index_calendar_replaces_the_heatmap_charts(client_logged):
+    CountFactory()
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    response = client_logged.get(url)
+
+    assert "calendar" in response.context
+    assert "chart_calendar_1H" not in response.context
+    assert "chart_calendar_2H" not in response.context
+
+
+@time_machine.travel(datetime(1999, 1, 1))
+def test_index_calendar_gap_from_previous_year(client_logged):
     CountFactory(date=date(1998, 1, 1))
     CountFactory(date=date(1999, 1, 2))
 
     url = reverse("counts:index", kwargs={"slug": "count-type"})
     response = client_logged.get(url)
-    context = response.context
-    chart_data = context["chart_calendar_1H"]["data"][0]["data"]
+    january = response.context["calendar"].months[0]
 
-    assert chart_data[4] == [0, 4, 0.0005, 53, "1999-01-01"]
-    assert chart_data[5] == [0, 5, 1.0, 53, "1999-01-02", 1.0, 366.0]
+    assert january.days[1].gap == 366
+
+
+@time_machine.travel(datetime(1999, 1, 10))
+def test_index_calendar_draws_presence_at_one_level(client_logged):
+    CountFactory(date=date(1999, 1, 2), quantity=99)
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    response = client_logged.get(url)
+    january = response.context["calendar"].months[0]
+
+    assert january.days[1].level == 1
+    assert response.context["calendar"].legend.bounds == ("0", ">0")
+
+
+@time_machine.travel(datetime(1999, 1, 10))
+def test_index_calendar_empty_day_says_no_records(client_logged):
+    CountFactory(date=date(1999, 1, 2))
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    response = client_logged.get(url)
+    january = response.context["calendar"].months[0]
+
+    assert january.days[0].label == "1999-01-01\nĮrašų nėra"
 
 
 # -------------------------------------------------------------------------------------
