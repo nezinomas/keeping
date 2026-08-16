@@ -1,7 +1,9 @@
+import re
 from datetime import date, datetime
 
 import pytest
 import time_machine
+from django.conf import settings
 from django.urls import resolve, reverse
 
 from ...core.lib.day_stats import Stats
@@ -15,6 +17,14 @@ pytestmark = pytest.mark.django_db
 def _context(client_logged):
     url = reverse("counts:tab_periodicity", kwargs={"slug": "count-type"})
     return client_logged.get(url).context
+
+
+def _script_keys() -> set[str]:
+    source = (
+        settings.SITE_ROOT / "static" / "js" / "chart_counts_periodicity.js"
+    ).read_text(encoding="utf-8")
+
+    return set(re.findall(r"chartData\.(\w+)", source))
 
 
 def test_periodicity_func():
@@ -129,6 +139,13 @@ def test_periodicity_charts_of_a_single_year_caption_that_year_alone(client_logg
     CountFactory(date=date(1999, 1, 1))
 
     assert _context(client_logged)["chart_weekdays"]["subtitle"] == "1999"
+
+
+def test_periodicity_charts_are_titled_under_the_key_the_script_reads(client_logged):
+    CountFactory()
+
+    assert "chart_title" in _script_keys()
+    assert _context(client_logged)["chart_weekdays"]["chart_title"] == "Savaitės dienos"
 
 
 def test_periodicity_renders_its_chart_containers(client_logged):
