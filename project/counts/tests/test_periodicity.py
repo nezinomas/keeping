@@ -148,6 +148,12 @@ def test_periodicity_charts_are_titled_under_the_key_the_script_reads(client_log
     assert _context(client_logged)["chart_weekdays"]["chart_title"] == "Savaitės dienos"
 
 
+def test_periodicity_chart_payload_matches_the_keys_its_script_reads(client_logged):
+    CountFactory()
+
+    assert _script_keys() == set(_context(client_logged)["chart_weekdays"])
+
+
 def test_periodicity_renders_its_chart_containers(client_logged):
     CountFactory()
 
