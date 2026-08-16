@@ -11,13 +11,10 @@
 
 <div class="paper-skin">
 
-<div class="row">
-    <div class="col text-center">
-        <div class="alert alert-warning">{% translate 'You have no counters.' %}</div>
-    </div>
-</div>
+{% include 'counts/includes/notice.html' with notice='no_counters' %}
 
-<div><button type="button" class="button-secondary" hx-get="{% url 'counts:type_new' %}" hx-target="#mainModal">{% translate 'Add counter'%}</button>
+<div class="text-center mt-3">
+    <button type="button" class="button-secondary" hx-get="{% url 'counts:type_new' %}" hx-target="#mainModal">{% translate 'Add counter'%}</button>
 </div>
 
 </div>

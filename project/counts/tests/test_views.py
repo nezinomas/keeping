@@ -652,13 +652,48 @@ def test_data(client_logged):
 
 
 def test_data_no_records(client_logged):
-    CountTypeFactory()
+    CountFactory(date=date(1974, 1, 1))
 
     url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
     response = client_logged.get(url, follow=True)
     actual = response.content.decode("utf-8")
 
     assert "<b>1999</b> metais įrašų nėra." in actual
+
+
+def test_data_of_a_counter_with_no_records_at_all_names_no_year(client_logged):
+    CountTypeFactory()
+
+    url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
+    actual = client_logged.get(url, follow=True).content.decode("utf-8")
+
+    assert "Įrašų nėra" in actual
+    assert "metais įrašų nėra" not in actual
+
+
+def test_data_scrolls_its_table_rather_than_the_page(client_logged):
+    CountFactory()
+
+    url = reverse("counts:tab_data", kwargs={"slug": "count-type"})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert actual.index('class="table-responsive"') < actual.index("<table")
+
+
+def test_the_counts_notices_are_the_paper_notice_and_not_the_legacy_alert(
+    client_logged,
+):
+    CountTypeFactory()
+
+    for url in (
+        reverse("counts:tab_data", kwargs={"slug": "count-type"}),
+        reverse("counts:tab_history", kwargs={"slug": "count-type"}),
+        reverse("counts:empty"),
+    ):
+        actual = client_logged.get(url).content.decode("utf-8")
+
+        assert '<div class="alert">' in actual
+        assert "alert-warning" not in actual
 
 
 # -------------------------------------------------------------------------------------
@@ -710,6 +745,7 @@ def test_history_of_a_counter_with_no_records_renders_its_empty_state(client_log
 
     assert content.count('class="trend-card"') == 3
     assert "Įrašų nėra" in content
+    assert "Trūksta duomenų." not in content
 
 
 def test_history_chart_years(client_logged):

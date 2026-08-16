@@ -12,6 +12,7 @@ from ..core.mixins.views import (
 )
 from . import services
 from .forms import CountForm, CountTypeForm
+from .lib.notices import NO_RECORDS, notice_state
 from .lib.views_helper import CountTypetObjectMixin, CountUrlMixin
 from .models import Count
 from .services.cards import HistoryCards, OverviewCards, PeriodicityCards
@@ -108,6 +109,20 @@ class TabData(TabViewMixin, ListViewMixin):
 
         return CountModelService(self.request.user).year(year=year, count_type=slug)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**self.kwargs)
+        has_records = (
+            CountModelService(self.request.user)
+            .items(count_type=self.kwargs.get("slug"))
+            .exists()
+        )
+
+        return {
+            **context,
+            "notice": notice_state(has_records, bool(context["object_list"])),
+            "notice_year": self.request.user.year,
+        }
+
 
 class TabHistory(TabViewMixin, TemplateViewMixin):
     tab = CountTab.resolve("history")
@@ -121,6 +136,7 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
             **super().get_context_data(**self.kwargs),
             **context,
             "cards": HistoryCards.build(user, count_type),
+            "notice": "" if context["records"] else NO_RECORDS,
         }
 
 
