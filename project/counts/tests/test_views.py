@@ -361,23 +361,17 @@ def test_index_redirect(client_logged):
     assert response.resolver_match.kwargs["slug"] == obj.slug
 
 
-def test_index_add_button(client_logged):
+def test_index_add_record_pill_opens_the_form_for_whichever_tab_is_open(client_logged):
     CountTypeFactory()
 
     url = reverse("counts:index", kwargs={"slug": "count-type"})
-    response = client_logged.get(url)
-    content = response.content.decode()
+    content = client_logged.get(url).content.decode()
 
-    pattern = re.compile(
-        r'<button type="button" class="button-outline-success" hx-get="(.*?)" .*?>(\w+)<\/button>'  # noqa: E501
-    )
-    res = re.findall(pattern, content)
+    late_bound = reverse("counts:new", kwargs={"slug": "count-type", "tab": "TAB"})
 
-    assert len(res[0]) == 2
-    assert res[0][0] == reverse(
-        "counts:new", kwargs={"slug": "count-type", "tab": "index"}
-    )
-    assert res[0][1] == "Įrašą"
+    assert 'class="quick-add__pill"' in content
+    assert f'data-url="{late_bound}"' in content
+    assert "Pridėti įrašą" in content
 
 
 def test_index_loads_the_paper_chart_theme(client_logged):
