@@ -15,7 +15,7 @@ function chartPeriodicity(idData, idContainer) {
             height: "300px",
         },
         title: {
-            text: chartData.title,
+            text: chartData.chart_title,
         },
         xAxis: {
             categories: chartData.categories,
