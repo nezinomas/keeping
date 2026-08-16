@@ -9,6 +9,7 @@
 
 {% block head %}
     {% include 'highcharts.html' %}
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_counts_periodicity.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/calendar.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>

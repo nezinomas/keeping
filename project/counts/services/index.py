@@ -39,7 +39,6 @@ class IndexService:
             "categories": [x[:4] for x in Stats.weekdays()],
             "chart_title": title,
             "subtitle": self.span,
-            "chart_column_color": "70, 171, 157",
         }
 
     def chart_months(self, title: str = None) -> str:
@@ -51,7 +50,6 @@ class IndexService:
             "categories": Stats.months(),
             "chart_title": title,
             "subtitle": self.span,
-            "chart_column_color": "70, 171, 157",
         }
 
     def chart_years(self, title: str = _lazy("Year")) -> str:
@@ -61,7 +59,6 @@ class IndexService:
             "categories": list(year_totals.keys()),
             "chart_title": title,
             "subtitle": self.span,
-            "chart_column_color": "70, 171, 157",
         }
 
     def chart_histogram(self) -> str:
@@ -71,7 +68,6 @@ class IndexService:
             "categories": [f"{x}d" for x in gaps.keys()],
             "chart_title": _("Frequency of gaps, in days"),
             "subtitle": self.span,
-            "chart_column_color": "196, 37, 37",
         }
 
 

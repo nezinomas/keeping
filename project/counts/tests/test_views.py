@@ -380,6 +380,14 @@ def test_index_add_button(client_logged):
     assert res[0][1] == "Įrašą"
 
 
+def test_index_loads_the_paper_chart_theme(client_logged):
+    CountTypeFactory()
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+
+    assert "js/chart_paper.js" in client_logged.get(url).content.decode()
+
+
 def test_index_links(client_logged):
     CountTypeFactory(title="Xxx")
 
