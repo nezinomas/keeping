@@ -965,6 +965,30 @@ msgstr "Jūs neturite skaitiklių."
 msgid "Add counter"
 msgstr "Pridėti skaitiklį"
 
+#: .\counts\templates\counts\includes\quick_add.html:24
+msgid "Add record"
+msgstr "Pridėti įrašą"
+
+#: .\counts\templates\counts\includes\quick_add.html:16
+msgid "Rename counter"
+msgstr "Pervadinti skaitiklį"
+
+#: .\counts\templates\counts\includes\quick_add.html:17
+msgctxt "counter menu"
+msgid "Delete counter"
+msgstr "Ištrinti skaitiklį"
+
+#: .\core\templates\core\generic_delete_form.html:14
+#, python-format
+msgid ""
+"Deleting %(counter)s also deletes %(count)s records made since %(year)s."
+msgstr ""
+"Ištrynus %(counter)s bus ištrinta ir %(count)s įrašų, sukurtų nuo %(year)s."
+
+#: .\core\templates\core\generic_delete_form.html:18
+msgid "Type the counter's title to confirm"
+msgstr "Įrašykite skaitiklio pavadinimą"
+
 #: .\counts\templates\counts\info_row.html:10 .\templates\base.html:125
 msgid "Charts"
 msgstr "Grafikai"
