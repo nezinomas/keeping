@@ -101,8 +101,7 @@
                 color: $ink !important;
             }
 
-            // the item you are already on, marked the way the tab row marks the
-            // open tab — an ink rule under it, and no second signal
+            // the item you are already on, marked as the tab row marks the open tab
             > .active {
                 text-decoration: underline;
                 text-underline-offset: 3px;

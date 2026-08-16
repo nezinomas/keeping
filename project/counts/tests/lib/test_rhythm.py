@@ -199,8 +199,7 @@ def test_a_counter_with_one_record_has_no_longest_gap():
     assert isinstance(rhythm.longest_gap, EmptyGap)
 
 
-# a Counter recording a few times a year, with one length it keeps returning to,
-# and one recording most weeks — the two shapes the bins have to serve at once
+# the two shapes the bins must serve at once: a repeated length, and a low cluster
 SPARSE = [59, 63, 63, 63, 63, 63, 63, 66, 68, 73, 81, 87, 98, 119, 143, 167, 189, 229]
 DENSE = [
     4,
