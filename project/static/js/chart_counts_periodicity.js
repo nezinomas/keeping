@@ -1,4 +1,3 @@
-// One category axis and one count, which is every reading Counts draws.
 // `chart_paper.js` supplies the ground, the faces, the axes and the gridlines.
 function chartPeriodicity(idData, idContainer) {
     const chartData = JSON.parse(
