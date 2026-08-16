@@ -26,6 +26,4 @@ class CountTypetObjectMixin:
                 self.object = CountTypeModelService(self.request.user).objects.get(
                     slug=count_type_slug
                 )
-
-                # push self.object to self.kwargs
                 self.kwargs["object"] = self.object

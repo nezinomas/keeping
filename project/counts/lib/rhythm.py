@@ -1,9 +1,8 @@
 """How far apart a Counter's Records are, and nothing else.
 
-Gaps come from ``core.lib.day_stats``, which the Calendar already reads: a Card
-and a Calendar tooltip disagreeing about one date is the day both stop being
-believed. The Current gap is open where the rest are closed, so it enters none
-of them.
+Gaps come from ``core.lib.day_stats`` rather than being re-derived here, because
+a Card and a Calendar tooltip disagreeing about one date is the day both stop
+being believed.
 """
 
 from collections.abc import Sequence
