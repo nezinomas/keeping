@@ -313,7 +313,9 @@ def test_redirect_count_first(client_logged):
     response = client_logged.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is views.TabIndex
-    assert '<span class="counter-name">AAA</span>' in response.content.decode("utf-8")
+    assert '<button class="dropdown__btn">AAA</button>' in response.content.decode(
+        "utf-8"
+    )
 
 
 # -------------------------------------------------------------------------------------
@@ -372,6 +374,61 @@ def test_index_add_record_pill_opens_the_form_for_whichever_tab_is_open(client_l
     assert 'class="quick-add__pill"' in content
     assert f'data-url="{late_bound}"' in content
     assert "Pridėti įrašą" in content
+
+
+def _quick_add_bar(client_logged, slug="count-type"):
+    url = reverse("counts:index", kwargs={"slug": slug})
+    content = client_logged.get(url).content.decode()
+
+    return content[content.index('class="quick-add__bar"') :]
+
+
+def test_index_counter_menu_names_the_open_counter_and_lists_the_others(client_logged):
+    CountTypeFactory(title="Xxx")
+    CountTypeFactory(title="Yyy")
+
+    bar = _quick_add_bar(client_logged, "xxx")
+
+    assert '<button class="dropdown__btn">Xxx</button>' in bar
+    for slug, title in (("xxx", "Xxx"), ("yyy", "Yyy")):
+        url = reverse("counts:index", kwargs={"slug": slug})
+        assert f'href="{url}">{title}</a>' in bar
+
+
+def test_index_counter_menu_marks_the_open_counter(client_logged):
+    CountTypeFactory(title="Xxx")
+    CountTypeFactory(title="Yyy")
+
+    bar = _quick_add_bar(client_logged, "xxx")
+    open_url = reverse("counts:index", kwargs={"slug": "xxx"})
+    other_url = reverse("counts:index", kwargs={"slug": "yyy"})
+
+    assert f'class="active" href="{open_url}"' in bar
+    assert f'class="active" href="{other_url}"' not in bar
+
+
+def test_index_counter_menu_puts_the_three_counter_acts_under_a_divider(client_logged):
+    obj = CountTypeFactory()
+
+    bar = _quick_add_bar(client_logged)
+    divider = bar.index("dropdown-divider")
+
+    for url in (
+        reverse("counts:type_update", kwargs={"pk": obj.pk}),
+        reverse("counts:type_delete", kwargs={"pk": obj.pk}),
+        reverse("counts:type_new"),
+    ):
+        assert bar.index(f'hx-get="{url}"') > divider
+        assert 'hx-target="#mainModal"' in bar
+
+
+def test_index_counter_menu_replaces_the_rename_and_delete_buttons(client_logged):
+    CountTypeFactory()
+
+    bar = _quick_add_bar(client_logged)
+
+    assert "button-danger" not in bar
+    assert "counter-name" not in bar
 
 
 def test_index_loads_the_paper_chart_theme(client_logged):
@@ -446,7 +503,7 @@ def test_the_page_has_no_header_and_names_the_counter_in_the_quick_add_bar(
     content = client_logged.get(url).content.decode()
 
     assert "counts-title" not in content
-    assert content.count('<span class="counter-name">Xxx</span>') == 1
+    assert content.count('<button class="dropdown__btn">Xxx</button>') == 1
 
 
 def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged):
@@ -915,23 +972,90 @@ def test_count_type_delete_load_form(client_logged):
     assert "Ar tikrai norite ištrinti: <strong>Count Type</strong>?" in actual
 
 
+def test_count_type_delete_names_the_records_it_takes_and_the_title_to_type(
+    client_logged,
+):
+    obj = CountTypeFactory()
+    CountFactory(date=date(1974, 1, 1))
+    CountFactory(date=date(1999, 1, 1))
+
+    url = reverse("counts:type_delete", kwargs={"pk": obj.pk})
+    context = client_logged.get(url).context
+
+    assert context["delete_confirm"] == obj.title
+    assert "2" in context["delete_warning"]
+    assert "1974" in context["delete_warning"]
+
+
+def test_count_type_delete_of_an_empty_counter_warns_about_nothing(client_logged):
+    obj = CountTypeFactory()
+
+    url = reverse("counts:type_delete", kwargs={"pk": obj.pk})
+    context = client_logged.get(url).context
+
+    assert context["delete_warning"] == ""
+    assert context["delete_confirm"] == obj.title
+
+
+def test_count_type_delete_form_asks_for_the_typed_title(client_logged):
+    obj = CountTypeFactory()
+
+    url = reverse("counts:type_delete", kwargs={"pk": obj.pk})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert 'name="confirm"' in actual
+    assert "Įrašykite skaitiklio pavadinimą" in actual
+
+
+def test_count_type_delete_without_the_title_deletes_nothing(client_logged):
+    _type = CountTypeFactory()
+    CountFactory(count_type=_type)
+
+    url = reverse("counts:type_delete", kwargs={"pk": _type.pk})
+    client_logged.post(url)
+
+    assert CountType.objects.count() == 1
+    assert Count.objects.count() == 1
+
+
+def test_count_type_delete_with_the_wrong_title_deletes_nothing(client_logged):
+    _type = CountTypeFactory()
+
+    url = reverse("counts:type_delete", kwargs={"pk": _type.pk})
+    client_logged.post(url, {"confirm": "Not It"})
+
+    assert CountType.objects.count() == 1
+
+
 def test_count_type_delete(client_logged):
     _type = CountTypeFactory()
     CountFactory(count_type=_type)
 
     url = reverse("counts:type_delete", kwargs={"pk": _type.pk})
 
-    client_logged.post(url)
+    client_logged.post(url, {"confirm": _type.title})
 
     assert CountType.objects.count() == 0
     assert Count.objects.count() == 0
+
+
+def test_a_record_delete_asks_for_no_typed_title(client_logged):
+    obj = CountFactory()
+
+    url = reverse("counts:delete", kwargs={"pk": obj.pk})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert 'name="confirm"' not in actual
+    assert "x-data" not in actual
 
 
 def test_count_type_delete_htmx_redirect_header(client_logged):
     _type = CountTypeFactory()
 
     url = reverse("counts:type_delete", kwargs={"pk": _type.pk})
-    response = client_logged.post(url, **{"HTTP_HX-Request": "true"})
+    response = client_logged.post(
+        url, {"confirm": _type.title}, **{"HTTP_HX-Request": "true"}
+    )
 
     assert response.headers["HX-Redirect"] == reverse(
         "counts:index", kwargs={"slug": "count-type"}

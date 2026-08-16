@@ -100,6 +100,13 @@
                 background: $hair-soft;
                 color: $ink !important;
             }
+
+            // the item you are already on, marked the way the tab row marks the
+            // open tab — an ink rule under it, and no second signal
+            > .active {
+                text-decoration: underline;
+                text-underline-offset: 3px;
+            }
         }
     }
 }
