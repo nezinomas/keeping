@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from ...lib.rhythm import EmptyGap, Rhythm
 
@@ -197,3 +197,104 @@ def test_a_counter_with_one_record_has_no_longest_gap():
     rhythm = Rhythm(_records(date(1999, 1, 1)), year=1999)
 
     assert isinstance(rhythm.longest_gap, EmptyGap)
+
+
+# a Counter recording a few times a year, with one length it keeps returning to,
+# and one recording most weeks — the two shapes the bins have to serve at once
+SPARSE = [59, 63, 63, 63, 63, 63, 63, 66, 68, 73, 81, 87, 98, 119, 143, 167, 189, 229]
+DENSE = [
+    4,
+    5,
+    5,
+    6,
+    6,
+    6,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    10,
+    10,
+    11,
+    11,
+    12,
+    12,
+    13,
+    14,
+    14,
+    17,
+    19,
+    21,
+    26,
+    30,
+    40,
+    58,
+]
+
+
+def _spaced(gaps):
+    day = date(1999, 1, 1)
+    dates = [day]
+    for gap in gaps:
+        day += timedelta(days=gap)
+        dates.append(day)
+
+    return _records(*dates)
+
+
+def test_a_counter_with_no_records_has_no_gap_distribution():
+    assert Rhythm([]).gap_distribution == []
+
+
+def test_gaps_all_of_one_length_make_a_single_bin():
+    bins = Rhythm(_spaced([7, 7, 7])).gap_distribution
+
+    assert [(x.low, x.high, x.count) for x in bins] == [(7, 7, 3)]
+
+
+def test_a_bin_holding_one_length_labels_that_length_alone():
+    assert Rhythm(_spaced([7, 7, 7])).gap_distribution[0].label == "7"
+
+
+def test_a_bin_spanning_lengths_labels_both_ends():
+    assert Rhythm(_spaced(SPARSE)).gap_distribution[0].label == "59–69"
+
+
+def test_every_gap_lands_in_exactly_one_bin():
+    bins = Rhythm(_spaced(DENSE)).gap_distribution
+
+    assert sum(x.count for x in bins) == len(DENSE)
+
+
+def test_the_bins_run_from_the_shortest_gap_to_the_longest():
+    bins = Rhythm(_spaced(DENSE)).gap_distribution
+
+    assert bins[0].low == min(DENSE)
+    assert bins[-1].high == max(DENSE)
+
+
+def test_the_edges_come_from_the_counters_own_gaps():
+    sparse = Rhythm(_spaced(SPARSE)).gap_distribution
+    dense = Rhythm(_spaced(DENSE)).gap_distribution
+
+    assert (sparse[0].low, sparse[-1].high) != (dense[0].low, dense[-1].high)
+
+
+def test_a_sparse_counters_repeated_length_stands_out_as_one_bar():
+    bins = Rhythm(_spaced(SPARSE)).gap_distribution
+    tallest = max(bins, key=lambda x: x.count)
+    runner_up = sorted(x.count for x in bins)[-2]
+
+    assert tallest.low <= 63 <= tallest.high
+    assert tallest.count > 2 * runner_up
+
+
+def test_a_dense_counters_cluster_does_not_collapse_into_one_bin():
+    bins = Rhythm(_spaced(DENSE)).gap_distribution
+
+    assert len([x for x in bins if x.low <= 14 and x.high >= 4]) >= 3
