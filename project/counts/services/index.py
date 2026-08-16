@@ -22,7 +22,7 @@ class IndexService:
 
     @property
     def span(self) -> str:
-        """The years the pooled charts read, so a picture names its window."""
+        """A chart that pools must caption the years it pooled."""
         years = list(self._stats.totals_by_year())
 
         if not years:

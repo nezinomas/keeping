@@ -16,7 +16,7 @@ from .model_services import CountModelService
 
 @dataclass
 class CounterLife:
-    """Every Record a Counter holds, read in one query and shared by every row."""
+    """Every Record a Counter holds, in one query, shared by all three rows."""
 
     records: list[dict]
     boundary: YearBoundary
