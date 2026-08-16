@@ -1,3 +1,4 @@
+from django.db.models import Min
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -211,3 +212,37 @@ class TypeDelete(TypeUrlMixin, DeleteViewMixin):
     hx_trigger_django = "afterType"
     hx_redirect = reverse_lazy("counts:redirect")
     modal_form_title = _("Delete count type")
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "delete_warning": self._warning(),
+            "delete_confirm": self.object.title,
+            "delete_confirm_label": _("Type the counter's title to confirm"),
+        }
+
+    # a disabled button is a speed bump; the refusal has to be the server's
+    def post(self, *args, **kwargs):
+        self.object = self.get_object()
+
+        if self.request.POST.get("confirm", "") != self.object.title:
+            return self.render_to_response(self.get_context_data())
+
+        return super().post(*args, **kwargs)
+
+    def _warning(self) -> str:
+        records = CountModelService(self.request.user).items(
+            count_type=self.object.slug
+        )
+        first = records.aggregate(first=Min("date"))["first"]
+
+        if not first:
+            return ""
+
+        return _(
+            "Deleting %(counter)s also deletes %(count)s records made since %(year)s."
+        ) % {
+            "counter": self.object.title,
+            "count": records.count(),
+            "year": first.year,
+        }

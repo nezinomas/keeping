@@ -2,10 +2,6 @@
 @use "../skin/tokens";
 
 .paper-skin {
-    .counter-name {
-        @include tokens.pill($hover: false);
-    }
-
     .counts-calendar {
         // a grid item defaults to min-width:auto, and the twelve month blocks
         // would push past the viewport instead of scrolling inside the panel
