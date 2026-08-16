@@ -1,0 +1,13 @@
+{% load i18n %}
+
+{% if notice %}
+<div class="alert">
+    {% if notice == 'empty_year' %}
+        {% blocktranslate with year=notice_year %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+    {% elif notice == 'no_records' %}
+        {% translate 'No records' %}
+    {% elif notice == 'no_counters' %}
+        {% translate 'You have no counters.' %}
+    {% endif %}
+</div>
+{% endif %}
