@@ -1,5 +1,5 @@
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import pytest
 import time_machine
@@ -146,6 +146,22 @@ def test_periodicity_charts_are_titled_under_the_key_the_script_reads(client_log
 
     assert "chart_title" in _script_keys()
     assert _context(client_logged)["chart_weekdays"]["chart_title"] == "Savaitės dienos"
+
+
+def test_periodicity_gap_distribution_bins_rather_than_drawing_a_bar_a_length(
+    client_logged,
+):
+    day = date(1999, 1, 1)
+    CountFactory(date=day)
+    for gap in (2, 3, 5, 8, 13, 21, 34, 55, 89, 144):
+        day += timedelta(days=gap)
+        CountFactory(date=day)
+
+    chart = _context(client_logged)["chart_histogram"]
+
+    assert len(chart["categories"]) <= 8
+    assert sum(chart["data"]) == 10
+    assert chart["categories"][0].startswith("2")
 
 
 def test_periodicity_chart_payload_matches_the_keys_its_script_reads(client_logged):

@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _lazy
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.day_stats import Stats
 from ...users.models import User
+from ..lib.rhythm import GapBin, Rhythm
 from ..models import Count
 from ..services.model_services import CountModelService
 
@@ -61,11 +62,10 @@ class IndexService:
             "subtitle": self.span,
         }
 
-    def chart_histogram(self) -> str:
-        gaps = self._stats.gaps()
+    def chart_histogram(self, bins: list[GapBin]) -> dict:
         return {
-            "data": list(gaps.values()),
-            "categories": [f"{x}d" for x in gaps.keys()],
+            "data": [x.count for x in bins],
+            "categories": [x.label for x in bins],
             "chart_title": _("Frequency of gaps, in days"),
             "subtitle": self.span,
         }
@@ -128,13 +128,13 @@ def load_index_service(user, count_type: str) -> dict:
 
 def load_periodicity_service(user, count_type: str) -> dict:
     year = user.year
-    stats = Stats(data=Data(user, count_type).items)
-    srv = IndexService(year, stats)
+    records = list(Data(user, count_type).items)
+    srv = IndexService(year, Stats(data=records))
 
     return {
         "chart_weekdays": srv.chart_weekdays(),
         "chart_months": srv.chart_months(),
-        "chart_histogram": srv.chart_histogram(),
+        "chart_histogram": srv.chart_histogram(Rhythm(records).gap_distribution),
     }
 
 

@@ -5,6 +5,7 @@ a Card and a Calendar tooltip disagreeing about one date is the day both stop
 being believed.
 """
 
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import date
@@ -14,6 +15,7 @@ from statistics import median
 from ...core.lib.day_stats import Stats
 
 DAYS_A_YEAR = 365.25
+GAP_BINS = 8
 
 
 @dataclass(frozen=True)
@@ -33,6 +35,17 @@ class EmptyGap:
     dates = ()
     label = ""
     has_data = False
+
+
+@dataclass(frozen=True)
+class GapBin:
+    low: int
+    high: int
+    count: int
+
+    @property
+    def label(self) -> str:
+        return str(self.low) if self.low == self.high else f"{self.low}–{self.high}"
 
 
 @dataclass
@@ -73,6 +86,45 @@ class Rhythm:
     @property
     def year_records(self) -> int:
         return sum(1 for record in self.records if record["date"].year == self.year)
+
+    @cached_property
+    def gap_distribution(self) -> list[GapBin]:
+        days = sorted(int(gap.days) for gap in self.gaps)
+
+        if not days:
+            return []
+
+        edges = self._bin_edges(days)
+
+        return [
+            GapBin(
+                low=low,
+                high=high - 1,
+                count=sum(1 for day in days if low <= day < high),
+            )
+            for low, high in zip(edges, edges[1:], strict=False)
+        ]
+
+    @staticmethod
+    def _bin_edges(days: list[int]) -> list[int]:
+        low, high = days[0], days[-1]
+
+        if low == high:
+            return [low, high + 1]
+
+        # geometric, because a gap is read against the ones around it rather than
+        # on an absolute scale: equal widths spend most of the axis on a tail
+        start = math.log(max(low, 1))
+        step = (math.log(high + 1) - start) / GAP_BINS
+        raw = [round(math.exp(start + step * i)) for i in range(GAP_BINS + 1)]
+        raw[0], raw[-1] = low, high + 1
+
+        edges = []
+        for edge in raw:
+            if not edges or edge > edges[-1]:
+                edges.append(edge)
+
+        return edges
 
     @staticmethod
     def _median(gaps: list[Gap]) -> Gap | EmptyGap:
