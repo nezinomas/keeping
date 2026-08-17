@@ -70,10 +70,12 @@ class CalendarGrid:
         latest_past_date: date | None = None,
         today: date | None = None,
         quantity_title: str | None = None,
-        empty_title: str | None = None,
+        empty_title: str = "",
         unit: str = "",
         # no thresholds means presence, not a scale nobody configured
         thresholds: Sequence[float] = (),
+        # the column the levels are read off, where it is not the one displayed
+        value_key: str = "qty",
         low_title: str = "",
         high_title: str = "",
     ) -> CalendarYearViewModel:
@@ -81,23 +83,17 @@ class CalendarGrid:
         today = boundary.today
         daily_data = daily_data or []
         quantity_title = quantity_title or _("Quantity")
-        empty_title = empty_title or _("No drink")
 
-        val_key = "stdav" if daily_data and "stdav" in daily_data[0] else "qty"
-
-        val_by_date = {row["date"]: row.get(val_key, 0.0) for row in daily_data}
+        val_by_date = {row["date"]: row.get(value_key, 0.0) for row in daily_data}
         qty_by_date = {
-            row["date"]: row.get("qty", row.get(val_key, 0.0)) for row in daily_data
+            row["date"]: row.get("qty", row.get(value_key, 0.0)) for row in daily_data
         }
 
         gap_by_date = {}
         if daily_data:
-            stats = Stats(year=year, data=daily_data, past_latest=latest_past_date)
-            gaps_df = stats._calculate_gaps()
-            if not gaps_df.is_empty():
-                gap_by_date = {
-                    row["date"]: int(row["duration"]) for row in gaps_df.to_dicts()
-                }
+            gap_by_date = Stats(
+                year=year, data=daily_data, past_latest=latest_past_date
+            ).gap_by_date()
 
         today_gap = 0
         latest_recorded = None
@@ -218,7 +214,7 @@ class CalendarGrid:
         is_future = day_date > boundary.end_date
 
         if level == 0:
-            label = f"{day_date:%Y-%m-%d}\n{empty_title}"
+            label = "\n".join(filter(None, (f"{day_date:%Y-%m-%d}", empty_title)))
             if is_today:
                 gap_title = _("Gap")
                 label = f"{day_date:%Y-%m-%d}\n{gap_title}: {today_gap}d."
