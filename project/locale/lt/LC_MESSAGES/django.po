@@ -857,10 +857,6 @@ msgstr "Kiekis"
 msgid "Count type"
 msgstr "Skaitiklis"
 
-#: .\counts\forms.py:86
-msgid "This title is reserved for the system."
-msgstr "Šis pavadinimas rezervuotas sistemai."
-
 #: .\counts\services\cards.py:30
 msgctxt "counts card"
 msgid "This year"
