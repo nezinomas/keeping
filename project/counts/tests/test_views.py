@@ -19,7 +19,7 @@ pytestmark = pytest.mark.django_db
 #                                                                   Count Create/Update
 # -------------------------------------------------------------------------------------
 def test_view_new_func():
-    view = resolve("/counts/c/tab/xxx/new/")
+    view = resolve("/counts/c/xxx/new/tab/")
 
     assert views.New is view.func.view_class
 
