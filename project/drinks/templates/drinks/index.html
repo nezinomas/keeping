@@ -33,14 +33,14 @@
      nav or `tab`, the open tab that both the nav and the sheet read -->
 <div class="paper-skin" hx-history="false" x-data="{ tab: '{{ tab }}' }">
 
-{% include 'drinks/includes/navbar.html' %}
+<c-subnav :tabs=tabs :active=tab />
 
 <!-- what the nav and the sheet send as `tab`, read by htmx at click time -->
 <input type="hidden" id="current-tab" name="tab" :value="tab">
 
 <!-- htmx tab data load -->
-{% for drink_tab in tabs %}
-<div hx-get="{{ drink_tab.url }}" hx-target="#tab_content" hx-trigger="{{ drink_tab.reload_trigger }} from:body"></div>
+{% for drink_tab, url in tabs %}
+<div hx-get="{{ url }}" hx-target="#tab_content" hx-trigger="{{ drink_tab.reload_trigger }} from:body"></div>
 {% endfor %}
 
 <!-- tab content -->

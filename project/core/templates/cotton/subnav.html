@@ -1,3 +1,4 @@
+{# rendered once, outside the swapped body, so the open tab is Alpine state #}
 <nav class="subnav">
     <div class="tabs" role="tablist"
          x-data="{
@@ -11,23 +12,23 @@
          }"
          @keydown.arrow-right.prevent="move(1)"
          @keydown.arrow-left.prevent="move(-1)">
-        {% for count_tab, url in tabs %}
+        {% for nav_tab, url in tabs %}
         <button
-            id="tab-{{ count_tab.name }}"
-            class="tab{% if tab == count_tab.name %} active{% endif %}"
+            id="tab-{{ nav_tab.name }}"
+            class="tab{% if active == nav_tab.name %} active{% endif %}"
             role="tab"
             aria-controls="tab_content"
-            aria-selected="{% if tab == count_tab.name %}true{% else %}false{% endif %}"
-            tabindex="{% if tab == count_tab.name %}0{% else %}-1{% endif %}"
-            :class="{ active: tab === '{{ count_tab.name }}' }"
-            :aria-selected="tab === '{{ count_tab.name }}'"
-            :tabindex="tab === '{{ count_tab.name }}' ? 0 : -1"
-            @click="tab = '{{ count_tab.name }}'"
+            aria-selected="{% if active == nav_tab.name %}true{% else %}false{% endif %}"
+            tabindex="{% if active == nav_tab.name %}0{% else %}-1{% endif %}"
+            :class="{ active: tab === '{{ nav_tab.name }}' }"
+            :aria-selected="tab === '{{ nav_tab.name }}'"
+            :tabindex="tab === '{{ nav_tab.name }}' ? 0 : -1"
+            @click="tab = '{{ nav_tab.name }}'"
             hx-get="{{ url }}"
             hx-push-url="true"
             hx-target="#tab_content"
             hx-indicator="#indicator">
-            {{ count_tab.title }}
+            {{ nav_tab.title }}
         </button>
         {% endfor %}
     </div>
