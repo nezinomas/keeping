@@ -33,11 +33,15 @@ function initCalendar() {
         tooltip.style.display = 'none';
     }
 
-    function moveTo(index) {
-        const next = Math.max(0, Math.min(index, cells.length - 1));
+    // one cell holds the tab stop: a click that only set `current` left a second
+    function rove(index) {
         cells[current].tabIndex = -1;
-        current = next;
+        current = Math.max(0, Math.min(index, cells.length - 1));
         cells[current].tabIndex = 0;
+    }
+
+    function moveTo(index) {
+        rove(index);
         cells[current].focus();
     }
 
@@ -67,7 +71,7 @@ function initCalendar() {
     card.addEventListener('focusin', function (e) {
         const cell = e.target.closest(CELL);
         if (!cell) return;
-        current = cells.indexOf(cell);
+        rove(cells.indexOf(cell));
         show(cell);
     });
 
