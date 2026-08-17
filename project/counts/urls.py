@@ -18,7 +18,7 @@ urlpatterns = [
     ),
     path("c/<slug:slug>/data/", views.TabData.as_view(), name="tab_data"),
     path("c/<slug:slug>/history/", views.TabHistory.as_view(), name="tab_history"),
-    path("c/<slug:tab>/<slug:slug>/new/", views.New.as_view(), name="new"),
+    path("c/<slug:slug>/new/<slug:tab>/", views.New.as_view(), name="new"),
     path("update/<int:pk>/", views.Update.as_view(), name="update"),
     path("delete/<int:pk>/", views.Delete.as_view(), name="delete"),
     path("type/new/", views.TypeNew.as_view(), name="type_new"),

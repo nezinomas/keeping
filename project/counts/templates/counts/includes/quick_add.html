@@ -17,7 +17,7 @@
 
         {# the tab comes from Alpine: this bar renders once and outlives every swap #}
         <button type="button" class="quick-add__pill"
-                data-url="{% url 'counts:new' 'TAB' object.slug %}"
+                data-url="{% url 'counts:new' object.slug 'TAB' %}"
                 @click="htmx.ajax('GET', $el.dataset.url.replace('TAB', tab), '#mainModal')">{% translate 'Add record' %}</button>
     </div>
 </div>
