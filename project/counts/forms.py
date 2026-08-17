@@ -67,22 +67,3 @@ class CountTypeForm(forms.ModelForm):
         self.fields["user"].widget = forms.HiddenInput()
 
         self.fields["title"].label = _("Title")
-
-    def clean_title(self):
-        reserved_titles = [
-            "none",
-            "type",
-            "delete",
-            "update",
-            "info_row",
-            "index",
-            "data",
-            "history",
-            "empty",
-        ]
-        title = self.cleaned_data["title"]
-
-        if title and title.lower() in reserved_titles:
-            self.add_error("title", _("This title is reserved for the system."))
-
-        return title

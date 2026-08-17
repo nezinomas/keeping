@@ -28,7 +28,7 @@ def _script_keys() -> set[str]:
 
 
 def test_periodicity_func():
-    view = resolve("/counts/xxx/periodicity/")
+    view = resolve("/counts/c/xxx/periodicity/")
 
     assert views.TabPeriodicity is view.func.view_class
 

@@ -129,35 +129,32 @@ def test_count_type_blank_data(main_user):
 
 
 @pytest.mark.parametrize(
-    "reserved_title",
+    "title",
     [
-        ("none"),
-        ("None"),
-        ("type"),
-        ("Type"),
-        ("update"),
-        ("Update"),
-        ("delete"),
-        ("Delete"),
-        ("info_row"),
-        ("Info_row"),
-        ("index"),
-        ("Index"),
-        ("data"),
-        ("Data"),
-        ("history"),
-        ("History"),
-        ("empty"),
-        ("Empty"),
+        "none",
+        "None",
+        "type",
+        "Type",
+        "update",
+        "Update",
+        "delete",
+        "Delete",
+        "info_row",
+        "Info_row",
+        "index",
+        "Index",
+        "data",
+        "Data",
+        "history",
+        "History",
+        "empty",
+        "Empty",
     ],
 )
-def test_count_type_reserved_title(reserved_title, main_user):
-    form = CountTypeForm(user=main_user, data={"title": reserved_title})
+def test_count_type_title_no_longer_collides_with_a_route(title, main_user):
+    form = CountTypeForm(user=main_user, data={"title": title})
 
-    assert not form.is_valid()
-    assert len(form.errors) == 1
-    assert "title" in form.errors
-    assert "Šis pavadinimas rezervuotas sistemai." in form.errors["title"]
+    assert form.is_valid()
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())

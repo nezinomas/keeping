@@ -19,7 +19,7 @@ pytestmark = pytest.mark.django_db
 #                                                                   Count Create/Update
 # -------------------------------------------------------------------------------------
 def test_view_new_func():
-    view = resolve("/counts/tab/xxx/new/")
+    view = resolve("/counts/c/tab/xxx/new/")
 
     assert views.New is view.func.view_class
 
@@ -322,9 +322,21 @@ def test_redirect_count_first(client_logged):
 #                                                                            Index View
 # -------------------------------------------------------------------------------------
 def test_index_func():
-    view = resolve("/counts/xxx/")
+    view = resolve("/counts/c/xxx/")
 
     assert views.TabIndex == view.func.view_class
+
+
+@pytest.mark.parametrize("title", ["Data", "None", "Type", "History"])
+def test_a_counter_named_like_a_route_opens_its_own_page(title, client_logged):
+    obj = CountTypeFactory(title=title)
+
+    url = reverse("counts:index", kwargs={"slug": obj.slug})
+    response = client_logged.get(url)
+
+    assert response.status_code == 200
+    assert views.TabIndex is response.resolver_match.func.view_class
+    assert response.resolver_match.kwargs["slug"] == obj.slug
 
 
 def test_index_200(client_logged):
@@ -530,7 +542,7 @@ def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged):
 #                                                                             Tab Index
 # -------------------------------------------------------------------------------------
 def test_tab_index_func():
-    view = resolve("/counts/xxx/index/")
+    view = resolve("/counts/c/xxx/index/")
 
     assert views.TabIndex == view.func.view_class
 
@@ -665,7 +677,7 @@ def test_index_calendar_empty_day_says_no_records(client_logged):
 #                                                                              Tab List
 # -------------------------------------------------------------------------------------
 def test_data_func():
-    view = resolve("/counts/xxx/data/")
+    view = resolve("/counts/c/xxx/data/")
 
     assert views.TabData is view.func.view_class
 
@@ -751,7 +763,7 @@ def test_the_counts_notices_are_the_paper_notice_and_not_the_legacy_alert(
 #                                                                           Tab History
 # -------------------------------------------------------------------------------------
 def test_history_func():
-    view = resolve("/counts/xxx/history/")
+    view = resolve("/counts/c/xxx/history/")
 
     assert views.TabHistory == view.func.view_class
 
