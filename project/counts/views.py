@@ -17,8 +17,9 @@ from .lib.notices import NO_RECORDS, notice_state
 from .lib.views_helper import CountTypetObjectMixin, CountUrlMixin
 from .models import Count
 from .services.cards import HistoryCards, OverviewCards, PeriodicityCards
+from .services.counter_life import CounterLife
 from .services.model_services import CountModelService, CountTypeModelService
-from .tabs import BY_NAME, DEFAULT_TAB, TABS, CountTab
+from .tabs import DEFAULT_TAB, TABS, CountTab
 
 
 class Redirect(RedirectViewMixin):
@@ -69,19 +70,20 @@ class TabViewMixin(CountTypetObjectMixin):
             "tabs": [(tab, tab.url(self.object.slug)) for tab in TABS],
         }
 
+    def _life(self) -> CounterLife:
+        return CounterLife.read(self.request.user, self.object.slug)
+
 
 class TabIndex(TabViewMixin, TemplateViewMixin):
     tab = CountTab.resolve("index")
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
-        count_type = self.object.slug
-        context = services.index.load_index_service(user, count_type)
+        life = self._life()
 
         return {
             **super().get_context_data(**self.kwargs),
-            **context,
-            "cards": OverviewCards.build(user, count_type),
+            **services.index.load_index_service(life),
+            "cards": OverviewCards.build(life),
         }
 
 
@@ -89,14 +91,12 @@ class TabPeriodicity(TabViewMixin, TemplateViewMixin):
     tab = CountTab.resolve("periodicity")
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
-        count_type = self.object.slug
-        context = services.index.load_periodicity_service(user, count_type)
+        life = self._life()
 
         return {
             **super().get_context_data(**self.kwargs),
-            **context,
-            "cards": PeriodicityCards.build(user, count_type),
+            **services.index.load_periodicity_service(life),
+            "cards": PeriodicityCards.build(life),
         }
 
 
@@ -129,14 +129,13 @@ class TabHistory(TabViewMixin, TemplateViewMixin):
     tab = CountTab.resolve("history")
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
-        count_type = self.kwargs.get("slug")
-        context = services.index.load_history_service(user, count_type)
+        life = self._life()
+        context = services.index.load_history_service(life)
 
         return {
             **super().get_context_data(**self.kwargs),
             **context,
-            "cards": HistoryCards.build(user, count_type),
+            "cards": HistoryCards.build(life),
             "notice": "" if context["records"] else NO_RECORDS,
         }
 
@@ -151,12 +150,7 @@ class New(CountUrlMixin, CreateViewMixin):
         return super().get_form(data, files, **kwargs)
 
     def get_hx_trigger_django(self):
-        tab = self.kwargs.get("tab")
-
-        if tab in BY_NAME:
-            return BY_NAME[tab].reload_trigger
-
-        return "reloadData"
+        return CountTab.resolve(self.kwargs.get("tab"), default="data").reload_trigger
 
     def url(self):
         count_type = self.kwargs.get("slug")
@@ -175,7 +169,7 @@ class Update(CountUrlMixin, UpdateViewMixin):
 class Delete(CountUrlMixin, DeleteViewMixin):
     service_class = CountModelService
     hx_trigger_django = "reloadData"
-    modal_form_title = _("Delete counter")
+    modal_form_title = _("Delete record")
 
 
 # -------------------------------------------------------------------------------------

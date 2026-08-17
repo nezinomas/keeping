@@ -5,17 +5,18 @@ import time_machine
 
 from ....core.lib.stat_card import EMPTY, NEUTRAL
 from ...services.cards import HistoryCards, OverviewCards
+from ...services.counter_life import CounterLife
 from ..factories import CountFactory, CountTypeFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def _overview(user):
-    return OverviewCards.build(user, "count-type")
+    return OverviewCards.build(CounterLife.read(user, "count-type"))
 
 
 def _history(user):
-    return HistoryCards.build(user, "count-type")
+    return HistoryCards.build(CounterLife.read(user, "count-type"))
 
 
 # -------------------------------------------------------------------------------------
