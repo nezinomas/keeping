@@ -40,18 +40,6 @@ def test_stats_weekdays_list():
 # -------------------------------------------------------------------------------------
 
 
-def test_stats_number_of_records(data):
-    stats = Stats(year=1999, data=data)
-    assert stats.number_of_records == 6.0
-
-
-def test_stats_number_of_records_fallback_to_shape(data):
-    # Data without 'qty' or 'quantity' column
-    incomplete_data = [{"date": date(1999, 1, 1), "other": 1.0}]
-    stats = Stats(data=incomplete_data)
-    assert stats.number_of_records == 1
-
-
 def test_stats_prepare_dataframe_renames_quantity():
     data = [{"date": date(1999, 1, 1), "quantity": 1.0}]
     stats = Stats(data=data)
@@ -132,17 +120,18 @@ def test_stats_totals_by_year_empty():
 # -------------------------------------------------------------------------------------
 
 
-def test_stats_gaps_standard(data):
+def test_stats_gap_by_date_measures_each_record_from_the_one_before(data):
     data.append({"date": date(1999, 2, 2), "qty": 1.0})
-    actual = Stats(year=1999, data=data).gaps()
-    assert actual == {1: 1, 7: 2, 17: 1, 304: 1}
+    actual = Stats(year=1999, data=data).gap_by_date()
+    assert actual[date(1999, 1, 8)] == 7
+    assert actual[date(1999, 2, 2)] == 1
+    assert actual[date(1999, 12, 3)] == 304
 
 
-def test_stats_gaps_with_past_latest(data):
-    data.append({"date": date(1999, 2, 2), "qty": 1.0})
-    actual = Stats(year=1999, data=data, past_latest=date(1998, 1, 1)).gaps()
-    assert actual == {1: 1, 7: 1, 17: 1, 304: 1, 372: 1}
+def test_stats_gap_by_date_with_past_latest(data):
+    actual = Stats(year=1999, data=data, past_latest=date(1998, 1, 1)).gap_by_date()
+    assert actual[date(1999, 1, 8)] == 372
 
 
-def test_stats_gaps_empty():
-    assert Stats(year=1999, data=[]).gaps() == {}
+def test_stats_gap_by_date_empty():
+    assert Stats(year=1999, data=[]).gap_by_date() == {}

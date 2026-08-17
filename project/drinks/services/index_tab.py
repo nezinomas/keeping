@@ -104,6 +104,8 @@ class IndexTab:
                 latest_past_date=records.last_recorded_date_before,
                 unit="Std Av",
                 thresholds=CALENDAR_LEVELS,
+                value_key="stdav",
+                empty_title=_("No drink"),
                 low_title=_("No drink"),
                 high_title=_("Heavy day"),
             ),

@@ -35,7 +35,11 @@ def test_calendar_grid_levels_and_labels():
         {"date": date(1999, 1, 4), "stdav": 7.0, "qty": 2.8},
     ]
     grid = CalendarGrid.build(
-        1999, daily_data=daily, today=date(1999, 12, 31), thresholds=THRESHOLDS
+        1999,
+        daily_data=daily,
+        today=date(1999, 12, 31),
+        thresholds=THRESHOLDS,
+        value_key="stdav",
     )
 
     jan_days = grid.months[0].days
@@ -98,7 +102,12 @@ def test_build_all_levels_and_labels():
 
     days = (
         CalendarGrid.build(
-            1999, daily_data=daily, today=date(1999, 12, 31), thresholds=THRESHOLDS
+            1999,
+            daily_data=daily,
+            today=date(1999, 12, 31),
+            thresholds=THRESHOLDS,
+            value_key="stdav",
+            empty_title=_("No drink"),
         )
         .months[0]
         .days
@@ -187,9 +196,17 @@ def test_build_other_year_has_no_future_days():
 
 
 def test_a_dry_day_is_labelled_rather_than_left_blank():
-    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 12, 31))
+    grid = CalendarGrid.build(
+        1999, daily_data=[], today=date(1999, 12, 31), empty_title=_("No drink")
+    )
 
     assert grid.months[0].days[0].label == f"1999-01-01\n{_('No drink')}"
+
+
+def test_an_empty_day_with_no_word_for_empty_is_labelled_with_its_date_alone():
+    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 12, 31))
+
+    assert grid.months[0].days[0].label == "1999-01-01"
 
 
 def test_a_future_day_carries_no_label():

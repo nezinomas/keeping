@@ -3,7 +3,6 @@ from datetime import date, datetime
 from functools import cached_property
 
 import polars as pl
-from polars.exceptions import ColumnNotFoundError
 
 from .translation import month_names, weekday_names
 
@@ -34,13 +33,6 @@ class Stats:
     @staticmethod
     def weekdays() -> list[str]:
         return list(weekday_names().values())
-
-    @property
-    def number_of_records(self):
-        try:
-            return self._df.select(pl.col("qty").sum())[0, 0]
-        except ColumnNotFoundError:
-            return self._df.shape[0]
 
     def weekdays_stats(self) -> list[dict[str, float]]:
         if self._full_year_df.is_empty():
@@ -80,25 +72,20 @@ class Stats:
 
         return {row["year"]: row["qty"] for row in self._totals_by_year_df().to_dicts()}
 
-    def gaps(self) -> dict[int, int]:
-        """{gap in days: how many gaps of that length}"""
-        history_df = self._calculate_gaps()
+    def gap_by_date(self) -> dict[date, int]:
+        """Days since the record before, per record — where the first record of
+        all measures from January 1st, having nothing to reach back to."""
+        rows = self._calculate_gaps()
 
-        if history_df.is_empty():
+        if rows.is_empty():
             return {}
 
-        summary_df = (
-            history_df.lazy()
-            .group_by("duration")
-            .agg(qty=pl.col("qty").count())
-            .sort("duration")
-            .collect()
-        )
-        return {row["duration"]: row["qty"] for row in summary_df.to_dicts()}
+        return {row["date"]: int(row["duration"]) for row in rows.to_dicts()}
 
     def gap_spans(self) -> list[GapSpan]:
-        """Every gap with a record at each end, oldest first — where ``gaps()``
-        measures the first record from January 1st when nothing precedes it."""
+        """Every gap with a record at each end, oldest first — where
+        ``gap_by_date()`` measures the first record from January 1st when
+        nothing precedes it."""
         rows = self._calculate_gaps()
 
         if rows.is_empty():
