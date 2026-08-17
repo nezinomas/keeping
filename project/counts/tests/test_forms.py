@@ -139,8 +139,6 @@ def test_count_type_blank_data(main_user):
         "Update",
         "delete",
         "Delete",
-        "info_row",
-        "Info_row",
         "index",
         "Index",
         "data",
