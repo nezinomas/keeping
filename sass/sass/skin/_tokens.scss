@@ -15,31 +15,36 @@
 
 @mixin label {
     font-family: $mono;
-    font-size: 0.62rem;
+    // 12px is the floor for uppercase mono, whose letterforms are already tight
+    font-size: 0.75rem;
     font-weight: 400;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: $ink-muted;
 }
 
-// Every control that floats over the page in ink on paper: the quick-add pill
-// and the drink-type switcher beside it wear the same one. `$hover: false` for
-// the one that only reads a unit back — nothing to press, so nothing lights up.
-@mixin pill($hover: true) {
-    @include label;
-
-    padding: 0.4rem 1.1rem;
-    border: 1px solid $ink;
+// Every button on a paper page: the body face and no tracking, because mono caps
+// are chrome and an action is a word. `$hover: false` when there is nothing to press.
+@mixin button($hover: true) {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid $hair;
     border-radius: 0;
     background: $paper;
-    color: $ink;
     box-shadow: none;
+    font-family: $body;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+    color: $ink-muted;
 
     @if $hover {
         &:hover,
         &:focus {
             background: $hair-soft;
-            border-color: $ink;
+            border-color: $ink-muted;
             color: $ink;
         }
     }

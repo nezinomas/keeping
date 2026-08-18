@@ -1,23 +1,14 @@
-{% load i18n %}
-
-
-{{info_row}}
+<div class="stat-cards">
+    <c-stat-cards :cards=cards />
+</div>
 
 {% if records %}
 
-<div class="grid-three-col">
-    <div id="chart-weekdays-container"></div>
-    <div id="chart-years-container"></div>
-    <div id="chart-histogram-container">
-        {{chart_weekdays|json_script:"chart-weekdays-data"}}
-        {{chart_years|json_script:"chart-years-data"}}
-        {{chart_histogram|json_script:"chart-histogram-data"}}
-    </div>
-</div>
-
+<div id="chart-years-container"></div>
+{{chart_years|json_script:"chart-years-data"}}
 
 {% else %}
 
-{% include 'core/no_records.html' with data_missing=True %}
+{% include 'counts/includes/notice.html' %}
 
 {% endif %}

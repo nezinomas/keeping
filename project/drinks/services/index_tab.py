@@ -22,6 +22,7 @@ from ..lib.chart_view_model import ChartViewModel
 from ..lib.drink_types import DrinkType
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_options import DrinkConverter
+from ..lib.drinks_risk import CALENDAR_LEVELS
 from ..lib.drinks_stats import (
     DrinkStats,
     EmptyYearOverYear,
@@ -102,6 +103,11 @@ class IndexTab:
                 daily_data=records.daily_rows,
                 latest_past_date=records.last_recorded_date_before,
                 unit="Std Av",
+                thresholds=CALENDAR_LEVELS,
+                value_key="stdav",
+                empty_title=_("No drink"),
+                low_title=_("No drink"),
+                high_title=_("Heavy day"),
             ),
         }
 

@@ -1,8 +1,8 @@
 @use "sass:color";
 
 // The paper skin's bundle: the shared partials, and none of the components the
-// paper design has forked — table, search, pagination, alert and info_row are
-// written on a clean slate in skin/. See CLAUDE.md, "CSS — two bundles".
+// paper design has forked — table, search, pagination and alert are written on
+// a clean slate in skin/. See CLAUDE.md, "CSS — two bundles".
 
 // 1. Abstracts
 @use 'abstracts/variables' as *;
@@ -34,6 +34,7 @@
 @use 'skin/sheet';
 @use 'skin/subnav';
 @use 'skin/cards';
+@use 'skin/calendar';
 @use 'skin/table';
 @use 'skin/search';
 @use 'skin/pagination';
@@ -41,4 +42,5 @@
 
 // 6. App / Domain Specific
 @use 'apps/books';
+@use 'apps/counts';
 @use 'apps/drinks';

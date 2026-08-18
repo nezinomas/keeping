@@ -1,0 +1,3 @@
+<div class="gap-strip" aria-hidden="true">{% for month in calendar.months %}<span class="gap-strip__month" style="flex: {{ month.days|length }} 1 0">{% for day in month.days %}<i{% if day.level %} class="hit"{% endif %}{% if day.label %} data-label="{{ day.label }}"{% endif %}></i>{% endfor %}</span>{% endfor %}</div>
+
+<div class="gap-strip__ruler" aria-hidden="true">{% for month in calendar.months %}<span style="flex: {{ month.days|length }} 1 0">{{ month.abbr }}</span>{% endfor %}</div>

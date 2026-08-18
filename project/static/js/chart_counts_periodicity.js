@@ -1,9 +1,9 @@
+// `chart_paper.js` supplies the ground, the faces, the axes and the gridlines.
 function chartPeriodicity(idData, idContainer) {
     const chartData = JSON.parse(
         document.getElementById(idData).textContent
     );
 
-    // if no data
     if (!chartData.categories.length) {
         chartData.categories = ["0"];
         chartData.data = [0];
@@ -15,54 +15,40 @@ function chartPeriodicity(idData, idContainer) {
             height: "300px",
         },
         title: {
-            text: chartData.title,
+            text: chartData.chart_title,
+        },
+        subtitle: {
+            text: chartData.subtitle,
+        },
+        legend: {
+            enabled: false,
         },
         xAxis: {
             categories: chartData.categories,
-            crosshair: true,
-            gridLineWidth: 0,
-            labels: {
-                useHTML: true,
-                formatter: function () { /* use formatter to break word. */
-                    return `<div style="word-wrap: break-word; word-break:break-all; width:40px; text-align: right">${this.value}</div>`;
-                },
-                rotation: -45,
-            }
+            type: "category",
         },
         yAxis: {
             title: {
                 text: ""
             },
+            min: 0,
+            allowDecimals: false,
         },
         tooltip: {
-            shared: true,
             headerFormat: "",
             pointFormat: "{point.category}: <b>{point.y:.0f}</b><br>",
         },
-        plotOptions: {
-            bar: {
-                grouping: false,
-                shadow: false,
-            }
-        },
         series: [{
             data: chartData.data,
-            color: `var(--chart-alpha-25)`,
-            borderColor: `var(--secondary)`,
-            borderRadius: 0,
+            color: "var(--skin-data-tint)",
+            borderColor: "var(--skin-data)",
             borderWidth: 0.5,
             dataLabels: {
                 enabled: true,
-                rotation: 0,
-                color: `#333`,
+                // an empty category has no bar to hang a figure on
                 formatter: function () {
-                    return (this.y != 0) ? this.y : "";
+                    return this.y != 0 ? this.y : "";
                 },
-                style: {
-                    fontSize: "11px",
-                    fontWeight: "bold",
-                    textOutline: false
-                }
             }
         }]
     });

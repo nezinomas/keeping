@@ -109,26 +109,6 @@ def test_count_order(main_user):
     assert str(actual[1]) == "1999-01-01: 1.0"
 
 
-def test_count_quantity_for_one_year(main_user, counters):
-    actual = CountModelService(main_user).sum_by_year(
-        year=1999, count_type="count-type"
-    )
-    actual = list(actual)
-
-    assert actual[0]["qty"] == 5.5
-
-
-def test_count_quantity_for_all_years(main_user, counters):
-    CountFactory(date=date(2020, 1, 1), quantity=10)
-    CountFactory(date=date(2020, 12, 1), quantity=5)
-
-    actual = CountModelService(main_user).sum_by_year(count_type="count-type")
-    actual = list(actual)
-
-    assert actual[0]["qty"] == 5.5
-    assert actual[1]["qty"] == 15
-
-
 def test_count_days_quantity_sum(main_user, counters):
     actual = CountModelService(main_user).sum_by_day(1999, count_type="count-type")
 

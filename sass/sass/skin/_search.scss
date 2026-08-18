@@ -1,7 +1,7 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// paper's own #search-form: a hairline field and two mono labels, no fill.
+// paper's own #search-form: a hairline field and two hairline buttons, no fill.
 // `.form-control` and `.button-secondary` are still shared, so the skin adjusts
 // them here — the signal that both are ready to fork.
 
@@ -20,14 +20,9 @@
             font-family: $body;
             font-size: 0.8rem;
 
-            // the field states what it is until something is typed into it, so
-            // the placeholder is set as a label and the typed text as prose —
-            // and $ink-muted because a label carrying meaning has to pass AA
+            // the placeholder sits where typed prose will sit, so it is prose
+            // too, and $ink-muted because a hint carrying meaning has to pass AA
             &::placeholder {
-                font-family: $mono;
-                font-size: 0.66rem;
-                letter-spacing: 0.14em;
-                text-transform: uppercase;
                 color: $ink-muted;
             }
 
@@ -37,28 +32,19 @@
             }
         }
 
+        // wider than a button elsewhere, because it stretches to the field beside it
         .button-secondary {
-            @include tokens.label;
+            @include tokens.button;
 
             padding: 0.4rem 1.1rem;
-            border: 1px solid $hair;
-            border-radius: 0;
-            background: $paper;
 
-            &:hover {
-                background: $hair-soft;
-                border-color: $ink-muted;
-                color: $ink;
-            }
-
-            &:focus,
             &:active {
                 box-shadow: none;
             }
         }
 
-        // Search is what the row is for, so it takes the ink border the
-        // quick-add pill takes; Reset only undoes it, and stays a hairline
+        // Search is what the row is for, so it is the one button drawn in ink;
+        // Reset only undoes it, and stays a hairline
         button[type="submit"] {
             border-color: $ink;
             color: $ink;

@@ -1,0 +1,23 @@
+{% load i18n %}
+
+<div class="quick-add">
+    <div class="quick-add__bar">
+        <div class="dropdown">
+            <button class="dropdown__btn">{{ object.title }}</button>
+            <div class="dropdown__menu">
+                {% for counter in counts_menu %}
+                <a{% if counter.slug == object.slug %} class="active"{% endif %} href="{% url 'counts:index' counter.slug %}">{{ counter.title }}</a>
+                {% endfor %}
+                <span class="dropdown-divider"></span>
+                <a role="button" href="#" hx-get="{% url 'counts:type_update' object.pk %}" hx-target="#mainModal">{% translate 'Rename counter' %}</a>
+                <a role="button" href="#" hx-get="{% url 'counts:type_delete' object.pk %}" hx-target="#mainModal">{% translate 'Delete counter' context 'counter menu' %}</a>
+                <a role="button" href="#" hx-get="{% url 'counts:type_new' %}" hx-target="#mainModal">{% translate 'Add counter' %}</a>
+            </div>
+        </div>
+
+        {# the tab comes from Alpine: this bar renders once and outlives every swap #}
+        <button type="button" class="quick-add__pill"
+                data-url="{% url 'counts:new' object.slug 'TAB' %}"
+                @click="htmx.ajax('GET', $el.dataset.url.replace('TAB', tab), '#mainModal')">{% translate 'Add record' %}</button>
+    </div>
+</div>

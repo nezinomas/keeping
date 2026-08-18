@@ -1,3 +1,5 @@
+from django.db.models import QuerySet
+
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import BaseModelService
 from .. import models
@@ -27,21 +29,7 @@ class CountModelService(SumMixin, BaseModelService):
 
         return qs
 
-    def sum_by_year(self, year=None, count_type=None):
-        # Returns
-        # QuerySet [{'date': datetime.date, 'qty': float}]
-        qs = self.objects
-
-        if count_type:
-            qs = qs.filter(count_type__slug=count_type)
-
-        return self.year_sum(
-            qs, year=year, sum_annotation="qty", sum_column="quantity"
-        ).order_by("date")
-
-    def sum_by_day(self, year, count_type=None, month=None) -> list:
-        # Returns
-        # QuerySet [{'date': datetime.date, 'qty': float}]
+    def sum_by_day(self, year, count_type=None, month=None) -> QuerySet:
         qs = self.objects
 
         if count_type:

@@ -125,12 +125,15 @@ $harm: #7d2733;
 $harm-soft: #c47f86;
 
 // years and levels are ordered, so they take steps of one hue. Six is as many as
-// keeps neighbours apart; past that the legend and tooltip carry the identity
-$ramp: (#8badc5, #6e97b2, #517f9e, #356788, #1c5173, #0c3b57);
+// keeps neighbours apart, and the palest is 3.12:1 on paper so it stays findable
+$ramp: (#6e97b2, #5a85a0, #47728e, #33607b, #204d69, #0c3b57);
 
 // a day with nothing on it, drunk or not yet come round: one block, one colour,
 // so the calendar reads as the year it is rather than as two halves
 $empty: color.mix($hair-soft, $paper, 45%);
+
+// the smallest a control may be pressed at on a phone
+$touch: 44px;
 
 $display: "Bahnschrift SemiCondensed", "Bahnschrift", "Archivo Narrow", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
 $body: "Segoe UI Variable Text", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
