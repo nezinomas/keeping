@@ -76,12 +76,13 @@ Highcharts.setOptions({
         lineWidth: 1,
         tickColor: "var(--skin-hair)",
         gridLineWidth: 0,
+        // an x label names a month, a weekday or a year, so it reads as a word;
+        // the axis title below is chrome and keeps the mono caps
         labels: {
             style: {
                 color: "var(--skin-ink-muted)",
-                fontFamily: "var(--skin-mono)",
-                fontSize: "10px",
-                letterSpacing: "0.08em",
+                fontFamily: "var(--skin-body)",
+                fontSize: "11px",
             },
         },
     },
