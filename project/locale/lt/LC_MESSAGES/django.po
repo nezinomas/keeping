@@ -721,6 +721,10 @@ msgstr "Kiekis"
 msgid "Gap"
 msgstr "Tarpas"
 
+#: .\project\counts\templates\counts\tab_index.html:2
+msgid "Gaps"
+msgstr "Tarpai"
+
 #: .\project\core\lib\form_widgets.py:9
 #: .\project\core\tests\lib\test_form_widgets.py:9
 #: .\project\core\tests\lib\test_form_widgets.py:18
