@@ -1,8 +1,0 @@
-{% load i18n %}
-{% comment %}
-Names the unit the open Tab reads, so it arrives with the Tab out of band. Data
-draws no unit, so there the app names itself.
-{% endcomment %}
-{% if not oob or request.htmx %}
-<h1 id="page-heading" class="page-head__title"{% if oob %} hx-swap-oob="true"{% endif %}>{% firstof drink_type_control.label _("Drinks") %}</h1>
-{% endif %}

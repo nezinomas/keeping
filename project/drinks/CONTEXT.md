@@ -132,12 +132,6 @@ the three a Tab wears is the Tab's own fact, so it arrives with the Tab and is
 swapped in out of band.
 _Avoid_: unit picker, filter
 
-**Page heading**:
-The `h1` at the left of the tab band, naming the unit the open Tab reads — the
-same fact the Drink type switcher states, so it arrives with the Tab out of band
-too. Data draws no unit, so there the heading is the app's own name.
-_Avoid_: title (that is the browser tab's), masthead, header
-
 **Recent day**:
 One of the last five calendar days, offered in the quick-add sheet as Today,
 Yesterday and three weekday names. Always the real calendar day, never shifted
