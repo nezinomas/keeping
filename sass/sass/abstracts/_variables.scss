@@ -132,6 +132,9 @@ $ramp: (#6e97b2, #5a85a0, #47728e, #33607b, #204d69, #0c3b57);
 // so the calendar reads as the year it is rather than as two halves
 $empty: color.mix($hair-soft, $paper, 45%);
 
+// the smallest a control may be pressed at on a phone
+$touch: 44px;
+
 $display: "Bahnschrift SemiCondensed", "Bahnschrift", "Archivo Narrow", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
 $body: "Segoe UI Variable Text", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
 $mono: "Cascadia Mono", Consolas, "SF Mono", "Roboto Mono", ui-monospace, monospace;

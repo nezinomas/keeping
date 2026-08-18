@@ -15,16 +15,16 @@
 
 @mixin label {
     font-family: $mono;
-    font-size: 0.62rem;
+    // 12px is the floor for uppercase mono, whose letterforms are already tight
+    font-size: 0.75rem;
     font-weight: 400;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: $ink-muted;
 }
 
-// Every control that floats over the page in ink on paper: the quick-add pill
-// and the drink-type switcher beside it wear the same one. `$hover: false` for
-// the one that only reads a unit back — nothing to press, so nothing lights up.
+// Every control that floats over the page in ink on paper. `$hover: false` for
+// the one that only reads a unit back: nothing to press, so no lift and no target.
 @mixin pill($hover: true) {
     @include label;
 
@@ -36,6 +36,11 @@
     box-shadow: none;
 
     @if $hover {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: $touch;
+
         &:hover,
         &:focus {
             background: $hair-soft;
