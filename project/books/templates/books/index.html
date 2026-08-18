@@ -4,8 +4,9 @@
 {% load i18n %}
 
 
-<!-- the paper bundle in place of the legacy one, and not in the head block:
-     that appends, so both stylesheets would load and fight over .main -->
+{% block title %}{% translate 'Books' %}{% endblock title %}
+
+
 {% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
 
 
@@ -22,6 +23,8 @@
 {% block content %}
 
 <div class="paper-skin">
+
+<h1 class="visually-hidden">{% translate 'Books' %}</h1>
 
 <!-- the table's height varies with the year, so nothing sits under it -->
 <main class="grid-one-col">

@@ -20,11 +20,15 @@
         .tab {
             @include tokens.label;
 
+            // the height grows above the label, so the underline that marks the
+            // open tab stays the same distance under it
+            display: inline-flex;
+            align-items: flex-end;
+            min-height: $touch;
             padding: 0.3rem 0.05rem 0.5rem;
             border: 0;
             border-bottom: 2px solid transparent;
             background: transparent;
-            font-size: 0.66rem;
             white-space: nowrap;
             cursor: pointer;
             touch-action: manipulation;

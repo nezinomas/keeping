@@ -4,46 +4,62 @@
 {% load i18n %}
 
 
+{% block title %}{{ tab_title }} | {{ object.title }}{% endblock title %}
+
+
+{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
+
+
 {% block head %}
-    {% include 'highcharts.html' with heatmap="True" %}
-    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_calendar.js' %}"></script>
+    {% include 'highcharts.html' %}
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_counts_periodicity.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/calendar.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
 {% endblock head %}
 
 
 {% block content %}
 
-<div class="counts-title">{{object.title}}</div>
+<div class="paper-skin" hx-history="false" x-data="{ tab: '{{ tab }}' }">
 
-<main id="tab_content" class="grid-one-col">
-    {{tab_content}}
+<c-subnav :tabs=tabs :active=tab />
+
+{% for count_tab, url in tabs %}
+<div hx-get="{{ url }}" hx-target="#tab_content" hx-trigger="{{ count_tab.reload_trigger }} from:body"></div>
+{% endfor %}
+
+<main id="tab_content" class="grid-one-col" role="tabpanel" :aria-labelledby="'tab-' + tab">
+    {{content}}
 </main>
 
-<div hx-get="{% url 'counts:tab_data' object.slug %}" hx-target="#tab_content" hx-trigger="reloadData from:body"></div>
-<div hx-get="{% url 'counts:tab_index' object.slug %}" hx-target="#tab_content" hx-trigger="reloadIndex from:body"></div>
-<div hx-get="{% url 'counts:tab_history' object.slug %}" hx-target="#tab_content" hx-trigger="reloadHistory from:body"></div>
+{% include 'counts/includes/quick_add.html' %}
+
+</div>
 
 
 <script nonce="{{ csp_nonce }}">
+    htmx.config.refreshOnHistoryMiss = true;
+
     function initCountsCharts() {
         if (document.getElementById('chart-months-container')) {
             chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
             chartPeriodicity('chart-months-data', 'chart-months-container');
             chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
-            chartCalender('chart-calendar-1H-data', 'chart-calendar-1H-container');
-            chartCalender('chart-calendar-2H-data', 'chart-calendar-2H-container');
         }
         if (document.getElementById('chart-years-container')) {
-            chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
             chartPeriodicity('chart-years-data', 'chart-years-container');
-            chartPeriodicity('chart-histogram-data', 'chart-histogram-container');
         }
     }
 
     document.addEventListener('DOMContentLoaded', initCountsCharts);
+    document.addEventListener('DOMContentLoaded', initCalendar);
+
     htmx.on('htmx:afterSwap', function (event) {
-        if (event.detail.target.id === 'tab_content') initCountsCharts();
+        if (event.detail.target.id === 'tab_content') {
+            initCountsCharts();
+            initCalendar();
+        }
     });
 </script>
 

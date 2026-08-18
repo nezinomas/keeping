@@ -19,6 +19,8 @@ WEEKLY_HIGH_RISK_STDAV = 28.0
 # A heavy drinking day: ~60 g alcohol in a single day. This is a daily total,
 # not a single-occasion "binge" (which guidance defines per drinking session).
 HEAVY_DAY_STDAV = 6.0
+# The calendar's levels, in std av: the darkest one starts at the guideline.
+CALENDAR_LEVELS = (2.0, 4.0, HEAVY_DAY_STDAV)
 
 
 @dataclass(frozen=True)

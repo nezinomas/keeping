@@ -1,16 +1,79 @@
-@use "../abstracts/mixins" as *;
 @use "../abstracts/variables" as *;
+@use "../skin/tokens";
 
-// Counts App - Header title
-.counts-title {
-    @include shadow;
+.paper-skin {
+    .counts-calendar {
+        // a grid item defaults to min-width:auto, and the twelve month blocks
+        // would push past the viewport instead of scrolling inside the panel
+        min-width: 0;
+    }
 
-    --border-radius: 0;
+    .gap-strip-panel {
+        @include tokens.panel;
+    }
 
-    font-weight: 500;
-    font-size: 1.5em;
-    text-align: center;
-    margin-bottom: $gap;
-    padding: 0.25rem 0 0.4rem 0;
-    color: primary;
+    // mono caps are chrome; a reading's name is prose
+    .gap-strip-panel__title {
+        margin: 0 0 0.8rem;
+        font-family: $body;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        letter-spacing: normal;
+        text-transform: none;
+        color: $ink;
+    }
+
+    .gap-strip {
+        display: flex;
+
+        // no gap between the ticks: at 768 a 1px one is wider than the tick it
+        // separates, and a run of days has to read as one length
+        i {
+            flex: 1 1 0;
+            height: 14px;
+            background: $empty;
+
+            &.hit {
+                background: $data;
+            }
+        }
+    }
+
+    .gap-strip__month {
+        display: flex;
+
+        // the rule takes its width from the month rather than overlaying the last
+        // day: a tick is 0.7px at 360, so a line drawn on it would erase a Record
+        &:not(:last-child) {
+            border-right: 1px solid $hair;
+        }
+    }
+
+    .gap-strip__ruler {
+        display: flex;
+        margin-top: 3px;
+
+        // a month name is a word, not chrome: body face, no caps, no tracking
+        span {
+            color: $ink-muted;
+            font-size: 0.6875rem;
+            overflow: hidden;
+            text-align: center;
+
+            // the 1px the month rules above spend, or the two rows drift
+            &:not(:last-child) {
+                border-right: 1px solid transparent;
+            }
+
+            // a phone fits six abbreviations at a readable size, not twelve, so
+            // every other month goes rather than the type
+            @media only screen and (max-width: 767px) {
+                overflow: visible;
+
+                &:nth-child(even) {
+                    color: transparent;
+                }
+            }
+        }
+    }
 }

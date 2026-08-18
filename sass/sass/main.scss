@@ -18,7 +18,6 @@
 @use 'components/navbar';
 @use 'components/accordion';
 @use 'components/search';
-@use 'components/info_row';
 @use 'components/buttons';
 @use 'components/alert';
 @use 'components/forms';
@@ -31,6 +30,5 @@
 
 // 5. App / Domain Specific
 @use 'apps/bookkeeping';
-@use 'apps/counts';
 @use 'apps/expenses';
 @use 'apps/plans';

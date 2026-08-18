@@ -1,26 +1,36 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// How the quick-add pill and sheet are drawn — ink border, no fill, no shadow.
+// How the quick-add pill and sheet are drawn — hairline, no fill, no shadow.
 // `components/_quick_add` still carries the wrapper that positions them.
+
+// the shared wrapper reserves room for a tall dock; this one is a single
+// hairline row, so the page gives back the difference
+body:has(.paper-skin) {
+    padding-bottom: 3.5rem;
+}
 
 .paper-skin {
     .quick-add {
+        padding-top: 0.5rem;
         background: $paper;
         border-top: 1px solid $hair;
     }
 
+    // Books draws the pill bare, the other two draw it in a bar; the same gap
+    // under it either way, so all three docks are one height
     .quick-add__pill {
-        @include tokens.pill;
+        @include tokens.button;
+
+        margin-bottom: 0.5rem;
     }
 
     .quick-add__sheet {
         background: $paper;
         border: 1px solid $hair;
 
-        // stretch, as #search-form does: a paper button carries mono type two
-        // steps smaller than the field beside it, so only the row can say how
-        // tall both are
+        // stretch, as #search-form does: a button and the field beside it carry
+        // different type, so only the row can say how tall both are
         form {
             align-items: stretch;
         }
@@ -34,19 +44,62 @@
         }
 
         .button-secondary {
-            @include tokens.label;
+            @include tokens.button;
+        }
+    }
 
-            display: inline-flex;
-            align-items: center;
-            border: 1px solid $hair;
-            border-radius: 0;
+    .quick-add__bar {
+        display: flex;
+        align-items: center;
+        gap: 0 1rem;
+        margin-bottom: 0.5rem;
+
+        .quick-add__pill { margin-bottom: 0; }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown__btn {
+            @include tokens.button;
+
+            justify-content: space-between;
+            min-width: 9.5rem;
+            padding-right: 0.5rem;
+
+            &::after {
+                content: "\e114";
+                margin-left: 0.5rem;
+            }
+        }
+
+        .dropdown__menu {
+            // the bar is fixed at the foot, so every menu in it opens upward
+            top: auto;
+            bottom: calc(100% + 0.15rem);
+            left: auto;
+            right: 0;
+            transform: none;
             background: $paper;
-            color: $ink-muted;
+            border: 1px solid $hair;
+            box-shadow: none;
 
-            &:hover {
-                background: $hair-soft;
-                border-color: $ink-muted;
+            > * {
+                @include tokens.label;
+
                 color: $ink;
+                text-decoration: none;
+            }
+
+            > *:hover {
+                background: $hair-soft;
+                color: $ink !important;
+            }
+
+            // the item you are already on, marked as the tab row marks the open tab
+            > .active {
+                text-decoration: underline;
+                text-underline-offset: 3px;
             }
         }
     }

@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<form method="POST" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted">
+<form method="POST" id="modal-form" class="modal-content modal-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ url }}" data-hx-trigger-form="{{hx_trigger_form}}"  :data-hx-inserted="inserted"{% if delete_confirm %} x-data="{ typed: '' }"{% endif %}>
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">{{ modal_form_title|safe }}</h5>
@@ -10,9 +10,14 @@
         <p>
             {% translate 'Are you sure you want to delete' %}: <strong>{{ object }}</strong>?
         </p>
+        {% if delete_warning %}<p>{{ delete_warning }}</p>{% endif %}
+        {% if delete_confirm %}
+        <label for="delete-confirm">{{ delete_confirm_label }}</label>
+        <input type="text" id="delete-confirm" name="confirm" class="form-control" autocomplete="off" x-model="typed">
+        {% endif %}
     </div>
     <div class="modal-footer">
-        <button type="submit" id="_close" class="button-danger" autofocus>{% translate 'Delete' %}</button>
+        <button type="submit" id="_close" class="button-danger"{% if delete_confirm %} disabled :disabled="typed !== '{{ delete_confirm|escapejs }}'"{% endif %} autofocus>{% translate 'Delete' %}</button>
         <button type="button" class="button-active modal-close">{% translate 'Close' %}</button>
     </div>
 </form>

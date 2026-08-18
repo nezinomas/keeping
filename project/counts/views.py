@@ -1,9 +1,8 @@
-from django.shortcuts import redirect
+from django.db.models import Min
+from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.utils import rendered_content
-from ..core.lib.year_boundary import YearBoundary
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -14,13 +13,13 @@ from ..core.mixins.views import (
 )
 from . import services
 from .forms import CountForm, CountTypeForm
-from .lib.views_helper import (
-    CountTypetObjectMixin,
-    CountUrlMixin,
-    InfoRowData,
-)
+from .lib.notices import NO_RECORDS, notice_state
+from .lib.views_helper import CountTypetObjectMixin, CountUrlMixin
 from .models import Count
+from .services.cards import HistoryCards, OverviewCards, PeriodicityCards
+from .services.counter_life import CounterLife
 from .services.model_services import CountModelService, CountTypeModelService
+from .tabs import DEFAULT_TAB, TABS, CountTab
 
 
 class Redirect(RedirectViewMixin):
@@ -35,72 +34,76 @@ class Empty(TemplateViewMixin):
     template_name = "counts/empty.html"
 
 
-class InfoRow(CountTypetObjectMixin, TemplateViewMixin):
-    template_name = "counts/info_row.html"
-
-    def get_context_data(self, **kwargs):
-        super().get_object()
-
-        user = self.request.user
-        year = user.year
-        week = YearBoundary.for_year(year).weeks_elapsed
-        data = InfoRowData(user, self.object.slug)
-
-        context = {
-            "object": self.object,
-            "tab": self.kwargs.get("tab", "index"),
-            "records": self.kwargs.get("records", 0),
-            "week": week,
-            "total": data.total,
-            "ratio": data.total / week,
-            "current_gap": data.gap,
-        }
-        return {**super().get_context_data(**kwargs), **context}
-
-
-class Index(CountTypetObjectMixin, TemplateViewMixin):
-    template_name = "counts/index.html"
+class TabViewMixin(CountTypetObjectMixin):
+    tab = DEFAULT_TAB
 
     def dispatch(self, request, *args, **kwargs):
-        super().get_object()
+        self.get_object()
 
         if not self.object:
             return redirect(reverse("counts:redirect"))
 
         return super().dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        super().get_object()
+    def get_template_names(self):
+        return [self.tab.template_name]
 
-        context = {
-            "tab_content": rendered_content(self.request, TabIndex, **self.kwargs),
+    def get_context_data(self, **kwargs):
+        return {**super().get_context_data(**self.kwargs), "tab": self.tab.name}
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        htmx = self.request.htmx
+
+        if htmx and not htmx.history_restore_request:
+            return response
+
+        return render(
+            self.request,
+            "counts/index.html",
+            {**context, **self._page(), "content": response.rendered_content},
+        )
+
+    def _page(self) -> dict:
+        return {
+            "object": self.object,
+            "tab_title": self.tab.title,
+            "tabs": [(tab, tab.url(self.object.slug)) for tab in TABS],
         }
 
-        return super().get_context_data(**self.kwargs) | context
+    def _life(self) -> CounterLife:
+        return CounterLife.read(self.request.user, self.object.slug)
 
 
-class TabIndex(CountTypetObjectMixin, TemplateViewMixin):
-    template_name = "counts/tab_index.html"
+class TabIndex(TabViewMixin, TemplateViewMixin):
+    tab = CountTab.resolve("index")
 
     def get_context_data(self, **kwargs):
-        super().get_object()
-
-        user = self.request.user
-        count_type = self.object.slug
-        context = services.index.load_index_service(user, count_type)
+        life = self._life()
 
         return {
             **super().get_context_data(**self.kwargs),
-            **context,
-            "info_row": rendered_content(
-                self.request, InfoRow, **self.kwargs | {"tab": "index"}
-            ),
+            **services.index.load_index_service(life),
+            "cards": OverviewCards.build(life),
         }
 
 
-class TabData(ListViewMixin):
+class TabPeriodicity(TabViewMixin, TemplateViewMixin):
+    tab = CountTab.resolve("periodicity")
+
+    def get_context_data(self, **kwargs):
+        life = self._life()
+
+        return {
+            **super().get_context_data(**self.kwargs),
+            **services.index.load_periodicity_service(life),
+            "cards": PeriodicityCards.build(life),
+        }
+
+
+class TabData(TabViewMixin, ListViewMixin):
+    tab = CountTab.resolve("data")
     model = Count
-    template_name = "counts/tab_data.html"
 
     def get_queryset(self):
         year = self.request.user.year
@@ -109,30 +112,32 @@ class TabData(ListViewMixin):
         return CountModelService(self.request.user).year(year=year, count_type=slug)
 
     def get_context_data(self, **kwargs):
+        context = super().get_context_data(**self.kwargs)
+        has_records = (
+            CountModelService(self.request.user)
+            .items(count_type=self.kwargs.get("slug"))
+            .exists()
+        )
+
         return {
-            **super().get_context_data(**self.kwargs),
-            "info_row": rendered_content(
-                self.request, InfoRow, **self.kwargs | {"tab": "data"}
-            ),
+            **context,
+            "notice": notice_state(has_records, bool(context["object_list"])),
+            "notice_year": self.request.user.year,
         }
 
 
-class TabHistory(TemplateViewMixin):
-    template_name = "counts/tab_history.html"
+class TabHistory(TabViewMixin, TemplateViewMixin):
+    tab = CountTab.resolve("history")
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
-        count_type = self.kwargs.get("slug")
-        context = services.index.load_history_service(user, count_type)
+        life = self._life()
+        context = services.index.load_history_service(life)
 
         return {
             **super().get_context_data(**self.kwargs),
             **context,
-            "info_row": rendered_content(
-                self.request,
-                InfoRow,
-                **self.kwargs | {"tab": "history", "records": context["records"]},
-            ),
+            "cards": HistoryCards.build(life),
+            "notice": "" if context["records"] else NO_RECORDS,
         }
 
 
@@ -146,19 +151,11 @@ class New(CountUrlMixin, CreateViewMixin):
         return super().get_form(data, files, **kwargs)
 
     def get_hx_trigger_django(self):
-        tab = self.kwargs.get("tab")
-
-        if tab in ["index", "data", "history"]:
-            return f"reload{tab.title()}"
-
-        return "reloadData"
+        return CountTab.resolve(self.kwargs.get("tab"), default="data").reload_trigger
 
     def url(self):
         count_type = self.kwargs.get("slug")
-        tab = self.kwargs.get("tab")
-
-        if tab not in ["index", "data", "history"]:
-            tab = "index"
+        tab = CountTab.resolve(self.kwargs.get("tab")).name
 
         return reverse_lazy("counts:new", kwargs={"slug": count_type, "tab": tab})
 
@@ -173,7 +170,7 @@ class Update(CountUrlMixin, UpdateViewMixin):
 class Delete(CountUrlMixin, DeleteViewMixin):
     service_class = CountModelService
     hx_trigger_django = "reloadData"
-    modal_form_title = _("Delete counter")
+    modal_form_title = _("Delete record")
 
 
 # -------------------------------------------------------------------------------------
@@ -210,3 +207,37 @@ class TypeDelete(TypeUrlMixin, DeleteViewMixin):
     hx_trigger_django = "afterType"
     hx_redirect = reverse_lazy("counts:redirect")
     modal_form_title = _("Delete count type")
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "delete_warning": self._warning(),
+            "delete_confirm": self.object.title,
+            "delete_confirm_label": _("Type the counter's title to confirm"),
+        }
+
+    # a disabled button is a speed bump; the refusal has to be the server's
+    def post(self, *args, **kwargs):
+        self.object = self.get_object()
+
+        if self.request.POST.get("confirm", "") != self.object.title:
+            return self.render_to_response(self.get_context_data())
+
+        return super().post(*args, **kwargs)
+
+    def _warning(self) -> str:
+        records = CountModelService(self.request.user).items(
+            count_type=self.object.slug
+        )
+        first = records.aggregate(first=Min("date"))["first"]
+
+        if not first:
+            return ""
+
+        return _(
+            "Deleting %(counter)s also deletes %(count)s records made since %(year)s."
+        ) % {
+            "counter": self.object.title,
+            "count": records.count(),
+            "year": first.year,
+        }

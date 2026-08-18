@@ -1,10 +1,9 @@
 {% load i18n %}
 
 
-{{info_row}}
-
 {% if object_list %}
 
+<div class="table-responsive">
 <table class="main striped hover sticky-table">
     <thead>
         <tr>
@@ -28,7 +27,8 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 
 {% else %}
-    {% if not records %}{% include 'core/no_records.html' %}{% endif %}
+    {% include 'counts/includes/notice.html' %}
 {% endif %}
