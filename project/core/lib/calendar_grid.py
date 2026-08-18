@@ -141,7 +141,7 @@ class CalendarGrid:
                     f"{_fmt(low)}-{_fmt(high)}"
                     for low, high in zip(thresholds, thresholds[1:], strict=False)
                 ),
-                f">={_fmt(thresholds[-1])}",
+                f"≥{_fmt(thresholds[-1])}",
             )
         else:
             bounds = ("0", "≥1")
