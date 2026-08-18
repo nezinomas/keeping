@@ -23,7 +23,9 @@
 
 <div class="paper-skin" hx-history="false" x-data="{ tab: '{{ tab }}' }">
 
-<c-subnav :tabs=tabs :active=tab />
+<c-subnav :tabs=tabs :active=tab>
+    <c-slot name="heading"><h1 class="page-head__title">{{ object.title }}</h1></c-slot>
+</c-subnav>
 
 {% for count_tab, url in tabs %}
 <div hx-get="{{ url }}" hx-target="#tab_content" hx-trigger="{{ count_tab.reload_trigger }} from:body"></div>
