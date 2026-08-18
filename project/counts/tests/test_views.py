@@ -5,6 +5,7 @@ import pytest
 import time_machine
 from django.urls import resolve, reverse
 from django.utils.dates import MONTHS_3
+from django.utils.translation import gettext as _
 
 from ...users.views import Login
 from .. import forms, views
@@ -373,6 +374,25 @@ def test_index_redirect(client_logged):
     assert views.TabIndex is response.resolver_match.func.view_class
     assert response.resolver_match.url_name == "index"
     assert response.resolver_match.kwargs["slug"] == obj.slug
+
+
+@pytest.mark.parametrize(
+    "tab, expected",
+    [
+        ("index", "Overview"),
+        ("periodicity", "Periodicity"),
+        ("data", "Data"),
+    ],
+)
+def test_index_names_the_open_tab_and_the_counter_in_the_browser_title(
+    client_logged, tab, expected
+):
+    obj = CountTypeFactory(title="Xxx")
+
+    url = reverse(f"counts:tab_{tab}", kwargs={"slug": obj.slug})
+    content = client_logged.get(url).content.decode()
+
+    assert f"<title>{_(expected)} | Xxx</title>" in content
 
 
 def test_index_add_record_pill_opens_the_form_for_whichever_tab_is_open(client_logged):

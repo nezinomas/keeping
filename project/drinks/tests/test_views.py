@@ -30,6 +30,20 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
+@pytest.mark.parametrize(
+    "tab, expected",
+    [
+        ("index", "Overview"),
+        ("trends", "Trends"),
+        ("data", "Data"),
+    ],
+)
+def test_index_names_the_open_tab_in_the_browser_title(client_logged, tab, expected):
+    response = client_logged.get(reverse(f"drinks:tab_{tab}"))
+
+    assert f"<title>{_(expected)} | {_('Drinks')}</title>" in response.content.decode()
+
+
 def test_index_loads_the_shared_chart_legend_defaults(client_logged):
     # every Drinks chart reads its legend position from this one file, so the
     # page dropping it would put every legend back in the theme's top corner

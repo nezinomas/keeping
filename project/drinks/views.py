@@ -69,6 +69,7 @@ class TabViewMixin:
         user = cast(User, self.request.user)
 
         return {
+            "tab_title": self.tab.title,
             "tabs": [(tab, tab.url) for tab in TABS],
             "recent_days": services.RecentDaySelector.for_day(datetime.now().date()),
             "drink_types": services.DrinkTypeSelector(user.drink_type),

@@ -4,6 +4,7 @@ from datetime import date
 import pytest
 import time_machine
 from django.urls import resolve, reverse
+from django.utils.translation import gettext as _
 
 from ...users.tests.factories import UserFactory
 from .. import models, views
@@ -26,6 +27,12 @@ def test_index_200(client_logged):
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+def test_books_index_names_itself_in_the_browser_title(client_logged):
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
+
+    assert f"<title>{_('Books')}</title>" in content
 
 
 def test_books_index_wears_the_paper_bundle(client_logged):
