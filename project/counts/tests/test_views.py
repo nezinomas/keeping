@@ -4,9 +4,9 @@ from datetime import date, datetime
 import pytest
 import time_machine
 from django.urls import resolve, reverse
-from django.utils.dates import MONTHS_3
 from django.utils.translation import gettext as _
 
+from ...core.lib.translation import month_abbr
 from ...users.views import Login
 from .. import forms, views
 from ..models import Count, CountType
@@ -623,7 +623,7 @@ def test_index_calendar_draws_presence_at_one_level(client_logged):
     january = response.context["calendar"].months[0]
 
     assert january.days[1].level == 1
-    assert response.context["calendar"].legend.bounds == ("0", ">0")
+    assert response.context["calendar"].legend.bounds == ("0", "≥1")
 
 
 def _gap_strip(content: str) -> str:
@@ -667,7 +667,7 @@ def test_index_gap_strip_ruler_uses_djangos_month_abbreviations(client_logged):
     ruler = _gap_strip_ruler(client_logged.get(url).content.decode("utf-8"))
 
     assert re.findall(r">([^<>]+)</span>", ruler) == [
-        str(MONTHS_3[number]) for number in range(1, 13)
+        month_abbr(number) for number in range(1, 13)
     ]
 
 
