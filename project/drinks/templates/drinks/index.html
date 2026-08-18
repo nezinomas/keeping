@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
+
+
+{% block title %}{{ tab_title }} | {% translate 'Drinks' %}{% endblock title %}
 
 
 {% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}

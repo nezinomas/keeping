@@ -67,6 +67,7 @@ class TabViewMixin(CountTypetObjectMixin):
     def _page(self) -> dict:
         return {
             "object": self.object,
+            "tab_title": self.tab.title,
             "tabs": [(tab, tab.url(self.object.slug)) for tab in TABS],
         }
 
