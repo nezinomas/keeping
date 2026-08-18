@@ -5,35 +5,10 @@
 // one app's row needs is written here for every app's, never in apps/.
 
 .paper-skin {
-    // the empty third column is what keeps the tabs centred on the page rather
-    // than on the space the heading leaves
-    .page-head {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: end;
-        margin-bottom: calc($gap * 1.5);
-
-        @media only screen and (max-width: 767px) {
-            grid-template-columns: 1fr;
-            justify-items: center;
-        }
-    }
-
-    // the page name is the user's own word, so it keeps its case and takes the
-    // display face — the mono uppercase beside it is chrome
-    .page-head__title {
-        margin: 0;
-        font-family: $display;
-        font-size: 1.35rem;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-        line-height: 1.1;
-        color: $ink;
-    }
-
     .subnav {
         display: flex;
         justify-content: center;
+        margin-bottom: calc($gap * 1.5);
 
         .tabs {
             display: flex;
