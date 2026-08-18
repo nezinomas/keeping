@@ -35,6 +35,13 @@ def test_books_index_names_itself_in_the_browser_title(client_logged):
     assert f"<title>{_('Books')}</title>" in content
 
 
+def test_books_index_heads_the_page_where_only_a_reader_hears_it(client_logged):
+    # Books draws no tab row, so it has no band to put a visible heading in
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
+
+    assert f'<h1 class="visually-hidden">{_("Books")}</h1>' in content
+
+
 def test_books_index_wears_the_paper_bundle(client_logged):
     url = reverse("books:index")
     content = client_logged.get(url).content.decode("utf-8")

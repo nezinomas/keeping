@@ -24,6 +24,8 @@
 
 <div class="paper-skin">
 
+<h1 class="visually-hidden">{% translate 'Books' %}</h1>
+
 <!-- the table's height varies with the year, so nothing sits under it -->
 <main class="grid-one-col">
     <div class="stat-cards" hx-trigger="reload from:body, afterTarget from:body" hx-get="{% url 'books:cards' %}">{{ cards }}</div>
