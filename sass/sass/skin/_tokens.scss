@@ -23,28 +23,26 @@
     color: $ink-muted;
 }
 
-// Every control that floats over the page in ink on paper. `$hover: false` for
-// the one that only reads a unit back: nothing to press, so no lift and no target.
-@mixin pill($hover: true) {
+// Every button on a paper page. It carries the label's tracking but not its caps,
+// because a button says a word. `$hover: false` for the one that only reads a
+// unit back: nothing to press, so nothing lights up.
+@mixin button($hover: true) {
     @include label;
 
-    padding: 0.4rem 1.1rem;
-    border: 1px solid $ink;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid $hair;
     border-radius: 0;
     background: $paper;
-    color: $ink;
     box-shadow: none;
+    text-transform: none;
 
     @if $hover {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: $touch;
-
         &:hover,
         &:focus {
             background: $hair-soft;
-            border-color: $ink;
+            border-color: $ink-muted;
             color: $ink;
         }
     }
