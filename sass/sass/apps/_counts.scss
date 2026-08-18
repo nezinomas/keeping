@@ -52,8 +52,14 @@
                 border-right: 1px solid transparent;
             }
 
+            // a phone fits six abbreviations at a readable size, not twelve, so
+            // every other month goes rather than the type
             @media only screen and (max-width: 767px) {
-                font-size: 0.5rem;
+                overflow: visible;
+
+                &:nth-child(even) {
+                    color: transparent;
+                }
             }
         }
     }
