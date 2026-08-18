@@ -1,7 +1,7 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// paper's own #search-form: a hairline field and two mono labels, no fill.
+// paper's own #search-form: a hairline field and two hairline buttons, no fill.
 // `.form-control` and `.button-secondary` are still shared, so the skin adjusts
 // them here — the signal that both are ready to fork.
 

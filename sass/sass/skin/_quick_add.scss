@@ -1,7 +1,7 @@
 @use "../abstracts/variables" as *;
 @use "tokens";
 
-// How the quick-add pill and sheet are drawn — ink border, no fill, no shadow.
+// How the quick-add pill and sheet are drawn — hairline, no fill, no shadow.
 // `components/_quick_add` still carries the wrapper that positions them.
 
 // the shared wrapper reserves room for a tall dock; this one is a single
@@ -29,9 +29,8 @@ body:has(.paper-skin) {
         background: $paper;
         border: 1px solid $hair;
 
-        // stretch, as #search-form does: a paper button carries mono type two
-        // steps smaller than the field beside it, so only the row can say how
-        // tall both are
+        // stretch, as #search-form does: a button and the field beside it carry
+        // different type, so only the row can say how tall both are
         form {
             align-items: stretch;
         }
