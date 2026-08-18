@@ -237,7 +237,7 @@ def test_legend_bounds_name_every_level():
 def test_without_thresholds_the_legend_has_two_steps():
     grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 12, 31))
 
-    assert grid.legend.bounds == ("0", ">0")
+    assert grid.legend.bounds == ("0", "≥1")
 
 
 def test_legend_carries_the_words_at_either_end_of_the_scale():

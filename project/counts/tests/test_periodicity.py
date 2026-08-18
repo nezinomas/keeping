@@ -8,6 +8,7 @@ from django.urls import resolve, reverse
 from django.utils.dates import WEEKDAYS_ABBR
 
 from ...core.lib.stat_card import EMPTY
+from ...core.lib.translation import month_abbr
 from .. import views
 from .factories import CountFactory, CountTypeFactory
 
@@ -122,6 +123,14 @@ def test_periodicity_months_are_twelve(client_logged):
     CountFactory()
 
     assert len(_context(client_logged)["chart_months"]["categories"]) == 12
+
+
+def test_periodicity_months_use_the_same_abbreviations_as_the_gap_strip(client_logged):
+    CountFactory()
+
+    categories = _context(client_logged)["chart_months"]["categories"]
+
+    assert categories == [month_abbr(number) for number in range(1, 13)]
 
 
 def test_periodicity_charts_pool_every_record_and_caption_the_span(client_logged):

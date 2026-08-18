@@ -3,6 +3,7 @@ from django.utils.translation import gettext as _
 
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.day_stats import Stats
+from ...core.lib.translation import month_abbr
 from ..lib.rhythm import GapBin
 from .counter_life import CounterLife
 from .model_services import CountModelService
@@ -24,7 +25,7 @@ class IndexService:
     def chart_months(self, title: str = "") -> dict:
         return {
             "data": self._stats.months_stats(),
-            "categories": Stats.months(),
+            "categories": [month_abbr(month) for month in range(1, 13)],
             "chart_title": title or _("Months"),
             "subtitle": self._span,
         }

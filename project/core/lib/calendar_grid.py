@@ -3,11 +3,10 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 
-from django.utils.dates import MONTHS_3
 from django.utils.translation import gettext as _
 
 from .day_stats import Stats
-from .translation import month_names
+from .translation import month_abbr, month_names
 from .year_boundary import YearBoundary
 
 
@@ -34,7 +33,7 @@ class CalendarMonthViewModel:
 
     @property
     def abbr(self) -> str:
-        return str(MONTHS_3[self.number])
+        return month_abbr(self.number)
 
 
 @dataclass(frozen=True)
@@ -145,7 +144,7 @@ class CalendarGrid:
                 f">={_fmt(thresholds[-1])}",
             )
         else:
-            bounds = ("0", ">0")
+            bounds = ("0", "≥1")
 
         return CalendarLegendViewModel(
             bounds=bounds,
