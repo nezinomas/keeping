@@ -231,7 +231,7 @@ def test_legend_bounds_name_every_level():
         1999, daily_data=[], today=date(1999, 12, 31), thresholds=THRESHOLDS
     )
 
-    assert grid.legend.bounds == ("0", "<2", "2-4", "4-6", ">=6")
+    assert grid.legend.bounds == ("0", "<2", "2-4", "4-6", "≥6")
 
 
 def test_without_thresholds_the_legend_has_two_steps():
