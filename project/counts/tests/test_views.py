@@ -395,6 +395,15 @@ def test_index_names_the_open_tab_and_the_counter_in_the_browser_title(
     assert f"<title>{_(expected)} | Xxx</title>" in content
 
 
+def test_index_heads_the_page_with_the_open_counter(client_logged):
+    obj = CountTypeFactory(title="Xxx")
+
+    url = reverse("counts:index", kwargs={"slug": obj.slug})
+    content = client_logged.get(url).content.decode()
+
+    assert '<h1 class="page-head__title">Xxx</h1>' in content
+
+
 def test_index_add_record_pill_opens_the_form_for_whichever_tab_is_open(client_logged):
     CountTypeFactory()
 
