@@ -48,8 +48,8 @@
             }
         }
 
-        // Search is what the row is for, so it takes the ink border the
-        // quick-add pill takes; Reset only undoes it, and stays a hairline
+        // Search is what the row is for, so it is the one button drawn in ink;
+        // Reset only undoes it, and stays a hairline
         button[type="submit"] {
             border-color: $ink;
             color: $ink;

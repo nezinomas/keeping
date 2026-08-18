@@ -23,12 +23,9 @@
     color: $ink-muted;
 }
 
-// Every button on a paper page. It carries the label's tracking but not its caps,
-// because a button says a word. `$hover: false` for the one that only reads a
-// unit back: nothing to press, so nothing lights up.
+// Every button on a paper page: the body face and no tracking, because mono caps
+// are chrome and an action is a word. `$hover: false` when there is nothing to press.
 @mixin button($hover: true) {
-    @include label;
-
     display: inline-flex;
     align-items: center;
     padding: 0.3rem 0.7rem;
@@ -36,7 +33,12 @@
     border-radius: 0;
     background: $paper;
     box-shadow: none;
+    font-family: $body;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: normal;
     text-transform: none;
+    color: $ink-muted;
 
     @if $hover {
         &:hover,
