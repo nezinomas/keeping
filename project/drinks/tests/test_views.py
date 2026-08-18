@@ -150,6 +150,35 @@ def test_index_renders_the_tab_nav_once(client_logged):
 
 
 @pytest.mark.parametrize(
+    "tab, expected",
+    [
+        ("tab_index", "Alus"),
+        ("tab_habits", "Std Av"),
+        ("tab_risk", "Std Av"),
+        ("tab_data", "Gėrimai"),
+    ],
+)
+def test_index_heads_the_page_with_the_unit_the_open_tab_reads(
+    client_logged, tab, expected
+):
+    content = client_logged.get(reverse(f"drinks:{tab}")).content.decode()
+
+    assert f'class="page-head__title">{expected}</h1>' in content
+
+
+@pytest.mark.parametrize(
+    "tab",
+    ["tab_index", "tab_habits", "tab_trends", "tab_risk", "tab_history", "tab_data"],
+)
+def test_tabs_swap_the_page_heading_out_of_band(tab, client_logged):
+    response = client_logged.get(reverse(f"drinks:{tab}"), HTTP_HX_REQUEST="true")
+    content = response.content.decode()
+
+    assert 'id="page-heading"' in content
+    assert 'hx-swap-oob="true"' in content
+
+
+@pytest.mark.parametrize(
     "tab",
     ["tab_index", "tab_habits", "tab_trends", "tab_risk", "tab_history", "tab_data"],
 )
