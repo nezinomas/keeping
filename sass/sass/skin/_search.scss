@@ -20,14 +20,9 @@
             font-family: $body;
             font-size: 0.8rem;
 
-            // the field states what it is until something is typed into it, so
-            // the placeholder is set as a label and the typed text as prose —
-            // and $ink-muted because a label carrying meaning has to pass AA
+            // the placeholder sits where typed prose will sit, so it is prose
+            // too, and $ink-muted because a hint carrying meaning has to pass AA
             &::placeholder {
-                font-family: $mono;
-                font-size: 0.66rem;
-                letter-spacing: 0.14em;
-                text-transform: uppercase;
                 color: $ink-muted;
             }
 
