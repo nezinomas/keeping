@@ -1,5 +1,4 @@
 @use "../abstracts/variables" as *;
-@use "../skin/tokens";
 
 .paper-skin {
     .counts-calendar {
@@ -39,15 +38,14 @@
         display: flex;
         margin-top: 3px;
 
-        // no tracking: twelve month names do not fit the row with it
+        // a month name is a word, not chrome: body face, no caps, no tracking
         span {
-            @include tokens.label;
-
-            letter-spacing: 0;
+            color: $ink-muted;
+            font-size: 0.6875rem;
             overflow: hidden;
             text-align: center;
 
-            // the same 11px the month rules above spend, or the two rows drift
+            // the 1px the month rules above spend, or the two rows drift
             &:not(:last-child) {
                 border-right: 1px solid transparent;
             }
