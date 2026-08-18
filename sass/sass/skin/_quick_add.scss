@@ -4,14 +4,25 @@
 // How the quick-add pill and sheet are drawn — ink border, no fill, no shadow.
 // `components/_quick_add` still carries the wrapper that positions them.
 
+// the shared wrapper reserves room for a tall dock; this one is a single
+// hairline row, so the page gives back the difference
+body:has(.paper-skin) {
+    padding-bottom: 3.5rem;
+}
+
 .paper-skin {
     .quick-add {
+        padding-top: 0.5rem;
         background: $paper;
         border-top: 1px solid $hair;
     }
 
+    // Books draws the pill bare, the other two draw it in a bar; the same gap
+    // under it either way, so all three docks are one height
     .quick-add__pill {
-        @include tokens.pill;
+        @include tokens.button;
+
+        margin-bottom: 0.5rem;
     }
 
     .quick-add__sheet {
@@ -34,20 +45,7 @@
         }
 
         .button-secondary {
-            @include tokens.label;
-
-            display: inline-flex;
-            align-items: center;
-            border: 1px solid $hair;
-            border-radius: 0;
-            background: $paper;
-            color: $ink-muted;
-
-            &:hover {
-                background: $hair-soft;
-                border-color: $ink-muted;
-                color: $ink;
-            }
+            @include tokens.button;
         }
     }
 
@@ -55,7 +53,7 @@
         display: flex;
         align-items: center;
         gap: 0 1rem;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
 
         .quick-add__pill { margin-bottom: 0; }
 
@@ -64,10 +62,8 @@
         }
 
         .dropdown__btn {
-            @include tokens.pill;
+            @include tokens.button;
 
-            display: inline-flex;
-            align-items: center;
             justify-content: space-between;
             min-width: 9.5rem;
             padding-right: 0.5rem;

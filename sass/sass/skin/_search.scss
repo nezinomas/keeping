@@ -37,21 +37,12 @@
             }
         }
 
+        // wider than a button elsewhere, because it stretches to the field beside it
         .button-secondary {
-            @include tokens.label;
+            @include tokens.button;
 
             padding: 0.4rem 1.1rem;
-            border: 1px solid $hair;
-            border-radius: 0;
-            background: $paper;
 
-            &:hover {
-                background: $hair-soft;
-                border-color: $ink-muted;
-                color: $ink;
-            }
-
-            &:focus,
             &:active {
                 box-shadow: none;
             }

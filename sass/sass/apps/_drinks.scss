@@ -10,7 +10,7 @@
     }
 
     .drink-type-fixed {
-        @include tokens.pill($hover: false);
+        @include tokens.button($hover: false);
 
         display: inline-flex;
         align-items: baseline;
@@ -83,21 +83,7 @@
     .pool-controls,
     .compare-controls {
         .button-secondary {
-            @include tokens.label;
-
-            display: inline-flex;
-            align-items: center;
-            padding: 0.3rem 0.7rem;
-            background: $paper;
-            border: 1px solid $hair;
-            border-radius: 0;
-            color: $ink-muted;
-
-            &:hover {
-                background: $hair-soft;
-                border-color: $ink-muted;
-                color: $ink;
-            }
+            @include tokens.button;
         }
 
         .controls-divider {
