@@ -1,4 +1,5 @@
 @use "../abstracts/variables" as *;
+@use "../skin/tokens";
 
 .paper-skin {
     .counts-calendar {
@@ -7,9 +8,23 @@
         min-width: 0;
     }
 
+    .gap-strip-panel {
+        @include tokens.panel;
+    }
+
+    // mono caps are chrome; a reading's name is prose
+    .gap-strip-panel__title {
+        margin: 0 0 0.8rem;
+        font-family: $body;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        letter-spacing: normal;
+        text-transform: none;
+        color: $ink;
+    }
+
     .gap-strip {
         display: flex;
-        margin-top: 0.9rem;
 
         // no gap between the ticks: at 768 a 1px one is wider than the tick it
         // separates, and a run of days has to read as one length

@@ -682,6 +682,37 @@ def test_index_gap_strip_wraps_every_month(client_logged):
     assert strip.count("<i") == 365
 
 
+@time_machine.travel(datetime(1999, 7, 1))
+def test_index_gap_strip_sits_outside_the_calendar_panel(client_logged):
+    CountFactory(date=date(1999, 1, 2))
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert 'class="gap-strip-panel"' in content
+    assert "gap-strip" not in content[content.index('id="heat-card"') :]
+
+
+@time_machine.travel(datetime(1999, 7, 1))
+def test_index_gap_strip_is_drawn_above_the_calendar(client_logged):
+    CountFactory(date=date(1999, 1, 2))
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert content.index('class="gap-strip-panel"') < content.index('id="heat-card"')
+
+
+@time_machine.travel(datetime(1999, 7, 1))
+def test_index_gap_strip_panel_is_titled(client_logged):
+    CountFactory(date=date(1999, 1, 2))
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert '<h2 class="gap-strip-panel__title">Tarpai</h2>' in content
+
+
 @time_machine.travel(datetime(1999, 1, 10))
 def test_index_calendar_empty_day_says_no_records(client_logged):
     CountFactory(date=date(1999, 1, 2))

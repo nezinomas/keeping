@@ -1,9 +1,14 @@
+{% load i18n %}
+
 <div class="stat-cards">
     <c-stat-cards :cards=cards />
 </div>
 
+<div class="gap-strip-panel">
+    <h2 class="gap-strip-panel__title">{% translate 'Gaps' %}</h2>
+    {% include 'counts/includes/gap_strip.html' %}
+</div>
+
 <div class="counts-calendar">
-    <c-calendar :calendar="calendar">
-        {% include 'counts/includes/gap_strip.html' %}
-    </c-calendar>
+    <c-calendar :calendar="calendar" />
 </div>
