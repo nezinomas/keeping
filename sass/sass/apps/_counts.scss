@@ -6,12 +6,6 @@
         // a grid item defaults to min-width:auto, and the twelve month blocks
         // would push past the viewport instead of scrolling inside the panel
         min-width: 0;
-
-        // presence has one level, and it has to be findable: three lit cells in
-        // 365 are lost at the pale end of the ramp Drinks reads as low
-        .heat-card .l1 {
-            background: $data;
-        }
     }
 
     .gap-strip {
