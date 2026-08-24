@@ -293,14 +293,8 @@ class TypicalYearBuilder:
 
     @staticmethod
     def _value(point: MonthPoint, value: float) -> float | None:
-        """A month no pooled year has reached yet has no reading, and a chart
-        draws that as a gap.
-
-        The one place this layer carries a null, and it earns it: a running
-        year's December plotted as 0.0 is indistinguishable from a December the
-        user got through without a Drink, and Highcharts has no other way to
-        break a line.
-        """
+        """A month no pooled year has reached has no reading, and a null is the
+        only way to break a line — 0.0 would read as a Drink-free December."""
         if not point.calendar_days:
             return None
 

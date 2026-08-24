@@ -23,15 +23,12 @@ class BookForm(forms.ModelForm):
         self.fields["started"].widget = DatePickerWidget()
         self.fields["ended"].widget = DatePickerWidget()
 
-        # initial values
         self.fields["started"].initial = set_date_with_user_year(self.user)
 
-        # user input
         self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
-        # labels
         self.fields["started"].label = _("Started reading")
         self.fields["ended"].label = _("Ended reading")
         self.fields["title"].label = _("Title")
@@ -87,12 +84,10 @@ class BookTargetForm(forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # user input
         self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
 
-        # inital values
         self.fields["year"].initial = set_date_with_user_year(self.user).year
 
         self.fields["year"].label = _("Year")
@@ -101,11 +96,9 @@ class BookTargetForm(forms.ModelForm):
     def clean_year(self):
         year = self.cleaned_data["year"]
 
-        # if update
         if self.instance.pk:
             return year
 
-        # if new record
         qs = BookTargetModelService(self.user).year(year)
         if qs.exists():
             msg = _("already has a goal.")

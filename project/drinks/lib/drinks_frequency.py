@@ -32,20 +32,10 @@ class WeekdayPoint:
 
 
 class FrequencyStats:
-    """When and how often — the shape counterpart to ``RiskStats`` (harm) and
-    ``TrendStats`` (direction).
+    """How often a user drinks, kept apart from how much on a day they do.
 
-    Every average the app showed before this divided a year's total by all the
-    days elapsed, which fuses two independent behaviours: how often a user
-    drinks, and how much on a day they do. Drinking days answers the first,
-    Intensity the second, and a year-over-year move in the total can finally be
-    attributed to one of them.
-
-    Intensity stays in Std Av whatever Drink type is selected, because it is
-    read against ``HEAVY_DAY_STDAV`` and a threshold defined in Std Av only
-    lines up with a figure in Std Av. Everything else here is a count of days
-    or a ratio, so no drink-type conversion belongs anywhere in this module —
-    ``DataRow.qty`` is deliberately never read.
+    Intensity is read against ``HEAVY_DAY_STDAV``, so it stays in Std Av
+    whatever Drink type is selected and no conversion belongs in this module.
     """
 
     def __init__(
@@ -94,11 +84,8 @@ class FrequencyStats:
         return self._share(self.dry_days)
 
     def _share(self, days: int) -> float:
-        """A count of days as a fraction of the year reached.
-
-        Both shares are 0.0 for a year with no Drinks at all: nothing was
-        recorded, and a year nobody logged is not evidence of a year spent dry.
-        """
+        """A count of days as a fraction of the year reached. A year with no
+        Drinks scores 0.0: nobody logged it, which is not a year spent dry."""
         if not self._current_daily_records:
             return 0.0
 
@@ -133,13 +120,8 @@ class FrequencyStats:
         )
 
     def _calendar_days_of(self, weekday: int) -> int:
-        """How many of one weekday the year has reached.
-
-        The denominator every rate below divides by, and it obeys the same year
-        boundary as everything else: a running year has had more Mondays than
-        Sundays if it started on a Monday, and counting all 52 would report a
-        rate that has not happened yet.
-        """
+        """How many of one weekday the year has reached — counting all 52 in a
+        running year would report a rate that has not happened yet."""
         elapsed = self._year.days_elapsed
         offset = (weekday - date(self._year.year, 1, 1).weekday()) % 7
 
