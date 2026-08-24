@@ -4,6 +4,7 @@ from typing import cast
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 
@@ -54,15 +55,12 @@ class TabViewMixin:
     def render_to_response(self, context, **response_kwargs):
         response = super().render_to_response(context, **response_kwargs)
         htmx = self.request.htmx
+        page = {**context, **self._page(), "content": response.rendered_content}
 
         if htmx and not htmx.history_restore_request:
-            return response
+            return render(self.request, "drinks/tab_fragment.html", page)
 
-        return render(
-            self.request,
-            "drinks/index.html",
-            {**context, **self._page(), "content": response.rendered_content},
-        )
+        return render(self.request, "drinks/index.html", page)
 
     def _page(self) -> dict:
         """What the shell around a tab needs, and no tab does."""
@@ -70,6 +68,7 @@ class TabViewMixin:
 
         return {
             "tab_title": self.tab.title,
+            "page_title": format_lazy("{} | {}", _("Drinks"), self.tab.title),
             "tabs": [(tab, tab.url) for tab in TABS],
             "recent_days": services.RecentDaySelector.for_day(datetime.now().date()),
             "drink_types": services.DrinkTypeSelector(user.drink_type),
