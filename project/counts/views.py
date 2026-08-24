@@ -1,3 +1,5 @@
+import contextlib
+
 from django.db.models import Min
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
@@ -15,8 +17,8 @@ from ..core.mixins.views import (
 from . import services
 from .forms import CountForm, CountTypeForm
 from .lib.notices import NO_RECORDS, notice_state
-from .lib.views_helper import CountTypetObjectMixin, CountUrlMixin
-from .models import Count
+from .lib.views_helper import CountUrlMixin
+from .models import Count, CountType
 from .services.cards import HistoryCards, OverviewCards, PeriodicityCards
 from .services.counter_life import CounterLife
 from .services.model_services import CountModelService, CountTypeModelService
@@ -35,8 +37,22 @@ class Empty(TemplateViewMixin):
     template_name = "counts/empty.html"
 
 
-class TabViewMixin(CountTypetObjectMixin):
+class TabViewMixin:
     tab = DEFAULT_TAB
+    object = None
+
+    def get_object(self):
+        self.object = self.kwargs.get("object")
+
+        if self.object:
+            return
+
+        if count_type_slug := self.kwargs.get("slug"):
+            with contextlib.suppress(CountType.DoesNotExist):
+                self.object = CountTypeModelService(self.request.user).objects.get(
+                    slug=count_type_slug
+                )
+                self.kwargs["object"] = self.object
 
     def dispatch(self, request, *args, **kwargs):
         self.get_object()
@@ -172,9 +188,6 @@ class Delete(CountUrlMixin, DeleteViewMixin):
     modal_form_title = _("Delete record")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                           Count Types
-# -------------------------------------------------------------------------------------
 class TypeUrlMixin:
     def get_hx_redirect(self):
         return self.get_success_url()
