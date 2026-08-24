@@ -84,9 +84,13 @@ body:has(.paper-skin) {
             border: 1px solid $hair;
             box-shadow: none;
 
+            // a choice is a word, so the menu wears the button face, not mono caps
             > * {
-                @include tokens.label;
-
+                font-family: $body;
+                font-size: 0.8125rem;
+                font-weight: 500;
+                letter-spacing: normal;
+                text-transform: none;
                 color: $ink;
                 text-decoration: none;
             }

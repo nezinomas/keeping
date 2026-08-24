@@ -13,7 +13,7 @@
         {% if delete_warning %}<p>{{ delete_warning }}</p>{% endif %}
         {% if delete_confirm %}
         <label for="delete-confirm">{{ delete_confirm_label }}</label>
-        <input type="text" id="delete-confirm" name="confirm" class="form-control" autocomplete="off" x-model="typed">
+        <input type="text" id="delete-confirm" name="confirm" class="form-control input-danger" autocomplete="off" x-model="typed">
         {% endif %}
     </div>
     <div class="modal-footer">

@@ -392,7 +392,26 @@ def test_index_names_the_open_tab_and_the_counter_in_the_browser_title(
     url = reverse(f"counts:tab_{tab}", kwargs={"slug": obj.slug})
     content = client_logged.get(url).content.decode()
 
-    assert f"<title>{_(expected)} | Xxx</title>" in content
+    assert f"<title>Xxx | {_(expected)}</title>" in content
+
+
+@pytest.mark.parametrize(
+    "tab, expected",
+    [
+        ("index", "Overview"),
+        ("periodicity", "Periodicity"),
+        ("data", "Data"),
+    ],
+)
+def test_tab_fragment_carries_the_title_so_htmx_can_swap_it(
+    client_logged, tab, expected
+):
+    obj = CountTypeFactory(title="Xxx")
+
+    url = reverse(f"counts:tab_{tab}", kwargs={"slug": obj.slug})
+    content = client_logged.get(url, HTTP_HX_REQUEST="true").content.decode()
+
+    assert f"<title>Xxx | {_(expected)}</title>" in content
 
 
 def test_index_add_record_pill_opens_the_form_for_whichever_tab_is_open(client_logged):
@@ -1168,3 +1187,12 @@ def test_empty_user_not_logged(client):
     response = client.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is Login
+
+
+def test_count_type_delete_confirm_field_is_marked_as_dangerous(client_logged):
+    obj = CountTypeFactory()
+
+    url = reverse("counts:type_delete", kwargs={"pk": obj.pk})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert 'class="form-control input-danger"' in actual
