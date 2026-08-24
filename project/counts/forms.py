@@ -38,7 +38,6 @@ class CountForm(YearBetweenMixin, forms.ModelForm):
             )
             self.fields["count_type"].initial = obj
 
-        # initial value for user field
         self.fields["user"].initial = self.user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
@@ -61,7 +60,6 @@ class CountTypeForm(forms.ModelForm):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # user input
         self.fields["user"].initial = user
         self.fields["user"].disabled = True
         self.fields["user"].widget = forms.HiddenInput()
