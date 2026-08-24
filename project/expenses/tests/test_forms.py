@@ -39,6 +39,7 @@ def test_expense_init_fields(main_user):
     assert '<select name="expense_name"' in form
 
     assert '<input type="text" name="total_sum"' in form
+    assert 'inputmode="decimal"' in form
     assert '<input type="number" name="quantity"' in form
     assert '<input type="text" name="price"' in form
     assert '<textarea name="remark"' in form

@@ -19,7 +19,9 @@ from .services.model_services import (
 
 class ExpenseForm(ConvertPriceMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
-    total_sum = forms.CharField(required=False)
+    total_sum = forms.CharField(
+        required=False, widget=forms.TextInput(attrs={"inputmode": "decimal"})
+    )
 
     class Meta:
         model = Expense
