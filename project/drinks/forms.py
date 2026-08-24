@@ -33,7 +33,6 @@ class DrinkForm(YearBetweenMixin, forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # Set the counter type for the instance
         self.instance.counter_type = App_name
 
         self.date_field_settings()
@@ -111,7 +110,6 @@ class DrinkTargetForm(forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # initial values
         self.fields["year"].initial = set_date_with_user_year(self.user).year
 
         self.user_field_settings()
@@ -135,11 +133,9 @@ class DrinkTargetForm(forms.ModelForm):
     def clean_year(self):
         year = self.cleaned_data["year"]
 
-        # if update
         if self.instance.pk:
             return year
 
-        # if new record
         qs = DrinkTargetModelService(self.user).year(year)
         if qs.exists():
             msg = _("%(year)s already has a goal.") % {"year": year}
@@ -212,7 +208,7 @@ class DrinkCompareForm(forms.Form):
         self.fields["year1"].label = ""
         self.fields["year2"].label = ""
 
-        # inital values: the year in the header, which is not always the calendar
+        # initial values: the year in the header, which is not always the calendar
         # one — the user can be looking at a year that has not started yet
         self.fields["year2"].initial = (
             getattr(self.user, "year", None) or timezone.now().year
