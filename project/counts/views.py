@@ -1,6 +1,7 @@
 from django.db.models import Min
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.mixins.views import (
@@ -54,20 +55,18 @@ class TabViewMixin(CountTypetObjectMixin):
     def render_to_response(self, context, **response_kwargs):
         response = super().render_to_response(context, **response_kwargs)
         htmx = self.request.htmx
+        page = {**context, **self._page(), "content": response.rendered_content}
 
         if htmx and not htmx.history_restore_request:
-            return response
+            return render(self.request, "counts/tab_fragment.html", page)
 
-        return render(
-            self.request,
-            "counts/index.html",
-            {**context, **self._page(), "content": response.rendered_content},
-        )
+        return render(self.request, "counts/index.html", page)
 
     def _page(self) -> dict:
         return {
             "object": self.object,
             "tab_title": self.tab.title,
+            "page_title": format_lazy("{} | {}", self.object.title, self.tab.title),
             "tabs": [(tab, tab.url(self.object.slug)) for tab in TABS],
         }
 
