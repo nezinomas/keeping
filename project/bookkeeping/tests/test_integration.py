@@ -11,3 +11,4 @@ class BookkeepingIndex(TestCase, Browser):
     def test_index(self):
         with self.assertNumQueries(30):
             self.browser.get(f"{self.live_server_url}")
+            self.wait_until_idle()
