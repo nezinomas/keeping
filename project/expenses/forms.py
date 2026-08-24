@@ -19,7 +19,9 @@ from .services.model_services import (
 
 class ExpenseForm(ConvertPriceMixin, forms.ModelForm):
     price = forms.FloatField(min_value=0.01)
-    total_sum = forms.CharField(required=False)
+    total_sum = forms.CharField(
+        required=False, widget=forms.TextInput(attrs={"inputmode": "decimal"})
+    )
 
     class Meta:
         model = Expense
@@ -62,10 +64,9 @@ class ExpenseForm(ConvertPriceMixin, forms.ModelForm):
         # form inputs settings
         self.fields["date"].widget = DatePickerWidget()
 
-        self.fields["price"].widget.attrs = {
-            "readonly": True,
-            "class": "disabled",
-        }
+        self.fields["price"].widget = forms.TextInput(
+            attrs={"readonly": True, "class": "disabled"}
+        )
         self.fields["remark"].widget.attrs["rows"] = 3
 
     def _initial_fields_values(self):

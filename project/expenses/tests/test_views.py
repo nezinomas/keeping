@@ -236,7 +236,7 @@ def test_expenses_load_update_form_field_values(client_logged):
     assert '<option value="1" selected>Expense Type</option>' in form
     assert '<option value="1" selected>Expense Name</option>' in form
     assert '<input type="number" name="quantity" value="13"' in form
-    assert '<input type="number" name="price" value="0.01"' in form
+    assert '<input type="text" name="price" value="0.01"' in form
 
 
 def test_expenses_update_to_another_year(client_logged):

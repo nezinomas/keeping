@@ -8,6 +8,11 @@ LANGUAGE_CODE = "lt"
 
 TEMPLATES[0]["OPTIONS"]["debug"] = False
 
+MIDDLEWARE = [
+    "project.core.tests.serialize_requests.serialize_requests",
+    *MIDDLEWARE,
+]
+
 
 DATABASES = {
     "default": {
