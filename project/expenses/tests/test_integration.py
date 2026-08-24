@@ -5,7 +5,8 @@ import time_machine
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.expected_conditions import staleness_of
+from selenium.webdriver.support.ui import Select, WebDriverWait
 
 from ...accounts.tests.factories import AccountFactory
 from ...core.tests.test_integration_browser import Browser
@@ -40,6 +41,18 @@ class Expenses(Browser):
         # select Account
         elem = Select(self.browser.find_element(By.ID, "id_account"))
         elem.select_by_value(f"{a.id}")
+
+    def _open_update_form(self):
+        edit = self.browser.find_element(By.CSS_SELECTOR, "a.edit")
+        edit.click()
+        WebDriverWait(self.browser, 10).until(
+            lambda b: b.find_element(By.ID, "id_price").get_attribute("value") != ""
+        )
+        return edit
+
+    def _submit_and_wait_for_the_list(self, edit):
+        self.browser.find_element(By.ID, "_close").click()
+        WebDriverWait(self.browser, 10).until(staleness_of(edit))
 
     def test_add_one_expense_and_close_modal_form(self):
         self._fill_selects()
@@ -220,6 +233,51 @@ class Expenses(Browser):
         assert "This field is required." in e1.text
         assert "This field is required." in e2.text
         assert "Ensure this value is greater than or equal to 0.01." in e3.text
+
+    @time_machine.travel("1999-1-1 10:11:12")
+    def test_update_one_expense_price(self):
+        ExpenseFactory()
+
+        self.browser.get(f"{self.live_server_url}/expenses/")
+
+        edit = self._open_update_form()
+
+        assert (
+            self.browser.find_element(By.ID, "id_price").get_attribute("value")
+            == "1.12"
+        )
+
+        self.browser.find_element(By.ID, "id_total_sum").send_keys("5.36")
+        self.browser.find_element(By.ID, "add_price").click()
+
+        self._submit_and_wait_for_the_list(edit)
+
+        page = self.browser.page_source
+        assert "6,48" in page
+        assert "invalid-feedback" not in page
+
+    @time_machine.travel("1999-1-1 10:11:12")
+    def test_update_one_expense_account_keeps_the_price(self):
+        account = AccountFactory(title="Account2")
+        ExpenseFactory(price=648)
+
+        self.browser.get(f"{self.live_server_url}/expenses/")
+
+        edit = self._open_update_form()
+
+        assert (
+            self.browser.find_element(By.ID, "id_price").get_attribute("value")
+            == "6.48"
+        )
+
+        elem = Select(self.browser.find_element(By.ID, "id_account"))
+        elem.select_by_value(f"{account.id}")
+
+        self._submit_and_wait_for_the_list(edit)
+
+        page = self.browser.page_source
+        assert "6,48" in page
+        assert "invalid-feedback" not in page
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_search(self):
