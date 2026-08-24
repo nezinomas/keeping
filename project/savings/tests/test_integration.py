@@ -1,5 +1,3 @@
-from time import sleep
-
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
@@ -14,10 +12,11 @@ pytestmark = pytest.mark.django_db
 @pytest.mark.webtest
 class Savings(Browser):
     def test_add_savings_and_check_fields_not_zero(self):
-        self.browser.get(f"{self.live_server_url}/savings/")
-
         a = AccountFactory()
         t = SavingTypeFactory()
+
+        self.browser.get(f"{self.live_server_url}/savings/")
+        self.wait_until_idle()
 
         # click Add Savings button (translated as 'Record' or 'Įrašas')
         buttons = self.browser.find_elements(By.TAG_NAME, "button")
@@ -30,7 +29,7 @@ class Savings(Browser):
         if record_btn:
             record_btn.click()
 
-        sleep(0.5)
+        self.wait_until_idle()
 
         # select saving type
         elem = Select(self.browser.find_element(By.ID, "id_saving_type"))
@@ -45,7 +44,7 @@ class Savings(Browser):
 
         # click 'Insert' button
         self.browser.find_element(By.ID, "_new").click()
-        sleep(0.5)
+        self.wait_until_idle()
 
         # sum and fee fields should be empty, not 0.0 or 0
         assert self.browser.find_element(By.ID, "id_price").get_attribute("value") == ""

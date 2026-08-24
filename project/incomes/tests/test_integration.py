@@ -1,5 +1,3 @@
-from time import sleep
-
 import pytest
 import time_machine
 from selenium.webdriver.common.by import By
@@ -20,8 +18,7 @@ class Incomes(Browser):
         IncomeFactory(remark="zzzz")
 
         self.browser.get(f"{self.live_server_url}/incomes/")
-
-        sleep(0.1)
+        self.wait_until_idle()
 
         rows = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr")
         assert len(rows) == 3
@@ -29,8 +26,7 @@ class Incomes(Browser):
         search = self.browser.find_element(by=By.ID, value="id_search")
         search.send_keys("xxxx")
         search.send_keys(Keys.RETURN)
-
-        sleep(0.1)
+        self.wait_until_idle()
 
         rows = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr")
         assert len(rows) == 1  # head row + find row
