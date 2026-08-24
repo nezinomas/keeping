@@ -2,6 +2,7 @@ from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
 from ...users.tests.factories import UserFactory
@@ -36,3 +37,21 @@ class Browser(LiveServerTestCase):
             {"name": "sessionid", "value": cookie.value, "secure": False, "path": "/"}
         )
         self.browser.refresh()
+        self.wait_until_idle()
+
+    def wait_until_idle(self, timeout=10):
+        # The test thread and the live server share one in-memory sqlite
+        # connection, so a query here during a request wedges both. A streak,
+        # because a swap starts the next wave of load-triggered requests.
+        quiet = 0
+
+        def settled(browser):
+            nonlocal quiet
+            idle = browser.execute_script(
+                "return document.readyState === 'complete'"
+                " && !document.querySelector('.htmx-request')"
+            )
+            quiet = quiet + 1 if idle else 0
+            return quiet == 3
+
+        WebDriverWait(self.browser, timeout, poll_frequency=0.1).until(settled)
