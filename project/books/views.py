@@ -127,9 +127,6 @@ class Search(SearchViewMixin):
     search_method = "search_books"
 
 
-# --------------------------------------------------------------------------------------
-#                                                                          Target Views
-# --------------------------------------------------------------------------------------
 class TargetNew(CreateViewMixin):
     service_class = BookTargetModelService
     hx_trigger_django = "afterTarget"
