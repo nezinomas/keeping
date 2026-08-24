@@ -1168,3 +1168,12 @@ def test_empty_user_not_logged(client):
     response = client.get(url, follow=True)
 
     assert response.resolver_match.func.view_class is Login
+
+
+def test_count_type_delete_confirm_field_is_marked_as_dangerous(client_logged):
+    obj = CountTypeFactory()
+
+    url = reverse("counts:type_delete", kwargs={"pk": obj.pk})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert 'class="form-control input-danger"' in actual
