@@ -40,7 +40,7 @@ def test_expense_init_fields(main_user):
 
     assert '<input type="text" name="total_sum"' in form
     assert '<input type="number" name="quantity"' in form
-    assert '<input type="number" name="price"' in form
+    assert '<input type="text" name="price"' in form
     assert '<textarea name="remark"' in form
 
     assert '<input type="checkbox" name="exception"' in form

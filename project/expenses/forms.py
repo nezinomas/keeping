@@ -62,10 +62,9 @@ class ExpenseForm(ConvertPriceMixin, forms.ModelForm):
         # form inputs settings
         self.fields["date"].widget = DatePickerWidget()
 
-        self.fields["price"].widget.attrs = {
-            "readonly": True,
-            "class": "disabled",
-        }
+        self.fields["price"].widget = forms.TextInput(
+            attrs={"readonly": True, "class": "disabled"}
+        )
         self.fields["remark"].widget.attrs["rows"] = 3
 
     def _initial_fields_values(self):
