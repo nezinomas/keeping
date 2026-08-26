@@ -1,6 +1,10 @@
 from django.utils.translation import gettext_lazy as _
 
-from ...lib.form_widgets import DatePickerWidget, YearPickerWidget
+from ...lib.form_widgets import (
+    DatePickerWidget,
+    DecimalCommaWidget,
+    YearPickerWidget,
+)
 
 
 def test_date_picker_widget_default_attrs():
@@ -66,3 +70,19 @@ def test_date_picker_uses_gettext_lazy(mocker):
 
     widget = DatePickerWidget()
     assert widget.attrs["placeholder"] == "Translated Date"
+
+
+def test_decimal_comma_widget_default_attrs():
+    widget = DecimalCommaWidget()
+
+    assert widget.attrs["inputmode"] == "decimal"
+    assert widget.attrs["autocomplete"] == "off"
+    assert widget.attrs["spellcheck"] == "false"
+
+
+def test_decimal_comma_widget_with_custom_attrs():
+    widget = DecimalCommaWidget(attrs={"autocomplete": "on", "class": "x"})
+
+    assert widget.attrs["autocomplete"] == "on"
+    assert widget.attrs["class"] == "x"
+    assert widget.attrs["inputmode"] == "decimal"

@@ -23,7 +23,7 @@ def test_transaction_init_fields(main_user):
     form = TransactionForm(user=main_user).as_p()
 
     assert '<input type="text" name="date"' in form
-    assert '<input type="number" name="price"' in form
+    assert '<input type="text" name="price"' in form
     assert '<select name="from_account"' in form
     assert '<select name="to_account"' in form
 
@@ -79,6 +79,25 @@ def test_transaction_valid_data(main_user):
     assert data.price == 1
     assert data.from_account == a_from
     assert data.to_account == a_to
+
+
+@time_machine.travel("1999-1-1")
+def test_transaction_price_accepts_a_decimal_comma(main_user):
+    a_from = AccountFactory()
+    a_to = AccountFactory(title="Account2")
+
+    form = TransactionForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "from_account": a_from.pk,
+            "to_account": a_to.pk,
+            "price": "12,1",
+        },
+    )
+
+    assert form.is_valid(), form.errors
+    assert form.save().price == 1210
 
 
 @time_machine.travel("1999-2-2")
@@ -145,8 +164,8 @@ def test_saving_change_fields(main_user):
     assert '<input type="text" name="date"' in form
     assert '<select name="to_account"' in form
     assert '<select name="from_account"' in form
-    assert '<input type="number" name="price"' in form
-    assert '<input type="number" name="fee"' in form
+    assert '<input type="text" name="price"' in form
+    assert '<input type="text" name="fee"' in form
     assert '<input type="checkbox" name="close"' in form
 
 
@@ -203,6 +222,29 @@ def test_saving_change_valid_data(main_user):
     assert data.fee == 1
     assert data.from_account == a_from
     assert data.to_account == a_to
+
+
+def test_saving_change_price_and_fee_accept_a_decimal_comma(main_user):
+    a_from = SavingTypeFactory()
+    a_to = SavingTypeFactory(title="Savings2")
+
+    form = SavingChangeForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "from_account": a_from.pk,
+            "to_account": a_to.pk,
+            "price": "12,1",
+            "fee": "0,55",
+        },
+    )
+
+    assert form.is_valid(), form.errors
+
+    data = form.save()
+
+    assert data.price == 1210
+    assert data.fee == 55
 
 
 def test_saving_change_valid_data_with_no_fee(main_user):
@@ -365,8 +407,8 @@ def test_saving_close_fields(main_user):
     assert '<input type="text" name="date"' in form
     assert '<select name="to_account"' in form
     assert '<select name="from_account"' in form
-    assert '<input type="number" name="price"' in form
-    assert '<input type="number" name="fee"' in form
+    assert '<input type="text" name="price"' in form
+    assert '<input type="text" name="fee"' in form
     assert '<input type="checkbox" name="close"' in form
 
 
@@ -423,6 +465,29 @@ def test_saving_close_valid_data(main_user):
     assert data.fee == 1
     assert data.from_account == a_from
     assert data.to_account == a_to
+
+
+def test_saving_close_price_and_fee_accept_a_decimal_comma(main_user):
+    a_from = SavingTypeFactory()
+    a_to = AccountFactory(title="Account2")
+
+    form = SavingCloseForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "from_account": a_from.pk,
+            "to_account": a_to.pk,
+            "price": "12,1",
+            "fee": "0,55",
+        },
+    )
+
+    assert form.is_valid(), form.errors
+
+    data = form.save()
+
+    assert data.price == 1210
+    assert data.fee == 55
 
 
 def test_saving_close_valid_data_no_fee(main_user):

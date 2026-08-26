@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.lib.date import set_date_with_user_year
+from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from ..savings.services.model_services import (
@@ -15,7 +16,7 @@ from .models import SavingChange, SavingClose, SavingType, Transaction
 
 
 class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
-    price = forms.FloatField(min_value=0.01)
+    price = CommaFloatField(min_value=0.01)
 
     class Meta:
         model = Transaction
@@ -35,8 +36,6 @@ class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
     def _initial_fields_values(self):
         self.fields["date"].widget = DatePickerWidget()
 
-        # initial values
-        self.fields["price"].widget.attrs = {"step": "0.01"}
         self.fields["price"].label = _("Amount")
         self.fields["date"].initial = set_date_with_user_year(self.user)
 
@@ -69,8 +68,8 @@ class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
 
 
 class SavingCloseForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
-    price = forms.FloatField(min_value=0.01)
-    fee = forms.FloatField(min_value=0.01, required=False)
+    price = CommaFloatField(min_value=0.01)
+    fee = CommaFloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
 
     class Meta:
@@ -125,8 +124,8 @@ class SavingCloseForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
 
 
 class SavingChangeForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
-    price = forms.FloatField(min_value=0.01)
-    fee = forms.FloatField(min_value=0.01, required=False)
+    price = CommaFloatField(min_value=0.01)
+    fee = CommaFloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
 
     class Meta:

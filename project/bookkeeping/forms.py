@@ -9,6 +9,7 @@ from ..accounts.services.model_services import (
 )
 from ..core.lib import date as core_date
 from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
 from ..expenses.services.model_services import ExpenseTypeModelService
 from ..pensions.services.model_services import PensionTypeModelService
@@ -48,7 +49,7 @@ class DateFieldMixin:
 
 
 class SavingWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
-    price = forms.FloatField(min_value=0, required=False)
+    price = CommaFloatField(min_value=0, required=False)
 
     class Meta:
         model = SavingWorth
@@ -78,7 +79,7 @@ class SavingWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
 
 
 class AccountWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
-    price = forms.FloatField(min_value=0, required=False)
+    price = CommaFloatField(min_value=0, required=False)
 
     class Meta:
         model = AccountWorth
@@ -108,7 +109,7 @@ class AccountWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
 
 
 class PensionWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
-    price = forms.FloatField(min_value=0, required=False)
+    price = CommaFloatField(min_value=0, required=False)
 
     class Meta:
         model = PensionWorth

@@ -22,7 +22,7 @@ def test_debt_init_fields(main_user):
     assert '<input type="text" name="date"' in form
     assert '<select name="account"' in form
     assert '<input type="text" name="name"' in form
-    assert '<input type="number" name="price"' in form
+    assert '<input type="text" name="price"' in form
     assert '<input type="checkbox" name="closed"' in form
     assert '<textarea name="remark"' in form
 
@@ -132,6 +132,25 @@ def test_debt_valid_data(main_user):
     assert e.account == a
     assert e.remark == "Rm"
     assert not e.closed
+
+
+def test_debt_price_accepts_a_decimal_comma(main_user):
+    a = AccountFactory()
+
+    form = forms.DebtForm(
+        user=main_user,
+        debt_type="lend",
+        data={
+            "date": "1999-01-01",
+            "name": "Name",
+            "price": "12,1",
+            "account": a.pk,
+            "closed": False,
+        },
+    )
+
+    assert form.is_valid(), form.errors
+    assert form.save().price == 1210
 
 
 @time_machine.travel("1999-2-2")

@@ -54,8 +54,4 @@
         <script nonce="{{ csp_nonce }}" src="{% static 'js/year-picker.js' %}"></script>
     {% endif %}
 
-    {% if 'price' in form.fields or 'fee' in form.fields %}
-        <script nonce="{{ csp_nonce }}" src="{% static 'js/alter_price.js' %}"></script>
-    {% endif %}
-
 {% endblock from_scripts %}
