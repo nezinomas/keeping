@@ -98,8 +98,8 @@ def test_pension_init_fields(main_user):
 
     assert '<input type="text" name="date"' in form
     assert '<select name="pension_type"' in form
-    assert '<input type="number" name="price"' in form
-    assert '<input type="number" name="fee"' in form
+    assert '<input type="text" name="price"' in form
+    assert '<input type="text" name="fee"' in form
     assert '<textarea name="remark"' in form
 
 
@@ -135,6 +135,27 @@ def test_pension_valid_data(main_user):
     assert data.fee == 1
     assert data.remark == "remark"
     assert data.pension_type.title == t.title
+
+
+def test_pension_price_and_fee_accept_a_decimal_comma(main_user):
+    t = PensionTypeFactory()
+
+    form = PensionForm(
+        user=main_user,
+        data={
+            "date": "2000-01-01",
+            "price": "12,1",
+            "fee": "0,55",
+            "pension_type": t.pk,
+        },
+    )
+
+    assert form.is_valid(), form.errors
+
+    data = form.save()
+
+    assert data.price == 1210
+    assert data.fee == 55
 
 
 def test_pension_valid_data_no_price(main_user):

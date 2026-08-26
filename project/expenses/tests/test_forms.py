@@ -142,6 +142,27 @@ def test_exepense_insert_only_one_year_to_future(main_user):
     assert "Metai negali būti vėlesni nei 2000" in form.errors["date"]
 
 
+def test_expense_price_accepts_a_decimal_comma(main_user):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(parent=t)
+
+    form = ExpenseForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "price": "12,1",
+            "quantity": 1,
+            "expense_type": t.pk,
+            "expense_name": n.pk,
+            "account": a.pk,
+        },
+    )
+
+    assert form.is_valid(), form.errors
+    assert form.save().price == 1210
+
+
 def test_expenses_form_blank_data(main_user):
     form = ExpenseForm(user=main_user, data={})
 

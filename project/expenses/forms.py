@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.lib.date import set_date_with_user_year
+from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from .models import Expense, ExpenseName, ExpenseType
 from .services.model_services import (
@@ -18,7 +19,7 @@ from .services.model_services import (
 
 
 class ExpenseForm(ConvertPriceMixin, forms.ModelForm):
-    price = forms.FloatField(min_value=0.01)
+    price = CommaFloatField(min_value=0.01)
     total_sum = forms.CharField(
         required=False, widget=forms.TextInput(attrs={"inputmode": "decimal"})
     )

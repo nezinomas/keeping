@@ -21,7 +21,7 @@ def test_debt_return_init_fields(main_user):
     assert '<input type="text" name="date"' in form
     assert '<select name="account"' in form
     assert '<select name="debt"' in form
-    assert '<input type="number" name="price"' in form
+    assert '<input type="text" name="price"' in form
     assert '<textarea name="remark"' in form
 
     assert '<select name="user"' not in form
@@ -93,6 +93,25 @@ def test_lend_return_valid_data(main_user):
     assert e.debt == b
     assert e.price == 1
     assert e.remark == "Rm"
+
+
+def test_lend_return_price_accepts_a_decimal_comma(main_user):
+    a = AccountFactory()
+    b = factories.LendFactory(price=200000)
+
+    form = forms.DebtReturnForm(
+        user=main_user,
+        debt_type="lend",
+        data={
+            "date": "1999-12-02",
+            "debt": b.pk,
+            "price": "12,1",
+            "account": a.pk,
+        },
+    )
+
+    assert form.is_valid(), form.errors
+    assert form.save().price == 1210
 
 
 def test_borrow_return_valid_data(main_user):
