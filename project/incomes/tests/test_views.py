@@ -122,7 +122,7 @@ def test_income_load_update_form(client_logged):
 
     assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="date" value="1999-01-01"' in actual
-    assert f'<input type="number" name="price" value="77.77"' in actual
+    assert '<input type="text" name="price" value="77.77"' in actual
     assert '<option value="1" selected>Account1</option>' in actual
     assert '<option value="1" selected>Income Type</option>' in actual
     assert "remark" in actual

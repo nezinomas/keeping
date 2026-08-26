@@ -174,6 +174,24 @@ def test_income_valid_data(main_user):
     assert data.income_type.title == t.title
 
 
+def test_income_price_accepts_a_decimal_comma(main_user):
+    a = AccountFactory()
+    t = IncomeTypeFactory()
+
+    form = IncomeForm(
+        user=main_user,
+        data={
+            "date": "2000-01-01",
+            "price": "12,1",
+            "account": a.pk,
+            "income_type": t.pk,
+        },
+    )
+
+    assert form.is_valid(), form.errors
+    assert form.save().price == 1210
+
+
 @time_machine.travel("1999-1-1")
 def test_income_insert_only_one_year_to_future(main_user):
     a = AccountFactory()

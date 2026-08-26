@@ -5,6 +5,7 @@ from django.utils.translation import gettext as _
 
 from ..core.lib.convert_price import PlanConvertPriceMixin, int_cents_to_float
 from ..core.lib.date import monthnames, set_date_with_user_year
+from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import YearPickerWidget
 from ..core.lib.translation import month_names
 from ..expenses.services.model_services import ExpenseTypeModelService
@@ -37,18 +38,18 @@ COPY_PLAN_MAP = {
 
 
 class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
-    january = forms.FloatField(**MONTH_FIELD_KWARGS)
-    february = forms.FloatField(**MONTH_FIELD_KWARGS)
-    march = forms.FloatField(**MONTH_FIELD_KWARGS)
-    april = forms.FloatField(**MONTH_FIELD_KWARGS)
-    may = forms.FloatField(**MONTH_FIELD_KWARGS)
-    june = forms.FloatField(**MONTH_FIELD_KWARGS)
-    july = forms.FloatField(**MONTH_FIELD_KWARGS)
-    august = forms.FloatField(**MONTH_FIELD_KWARGS)
-    september = forms.FloatField(**MONTH_FIELD_KWARGS)
-    october = forms.FloatField(**MONTH_FIELD_KWARGS)
-    november = forms.FloatField(**MONTH_FIELD_KWARGS)
-    december = forms.FloatField(**MONTH_FIELD_KWARGS)
+    january = CommaFloatField(**MONTH_FIELD_KWARGS)
+    february = CommaFloatField(**MONTH_FIELD_KWARGS)
+    march = CommaFloatField(**MONTH_FIELD_KWARGS)
+    april = CommaFloatField(**MONTH_FIELD_KWARGS)
+    may = CommaFloatField(**MONTH_FIELD_KWARGS)
+    june = CommaFloatField(**MONTH_FIELD_KWARGS)
+    july = CommaFloatField(**MONTH_FIELD_KWARGS)
+    august = CommaFloatField(**MONTH_FIELD_KWARGS)
+    september = CommaFloatField(**MONTH_FIELD_KWARGS)
+    october = CommaFloatField(**MONTH_FIELD_KWARGS)
+    november = CommaFloatField(**MONTH_FIELD_KWARGS)
+    december = CommaFloatField(**MONTH_FIELD_KWARGS)
 
     class Meta:
         widgets = {

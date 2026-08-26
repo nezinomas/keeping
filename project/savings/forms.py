@@ -4,6 +4,7 @@ from django.utils.translation import gettext as _
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.lib.date import set_date_with_user_year
+from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.mixins.forms import YearBetweenMixin
 from .models import Saving, SavingType
@@ -32,8 +33,8 @@ class SavingTypeForm(forms.ModelForm):
 
 
 class SavingForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
-    price = forms.FloatField(min_value=0, required=False)
-    fee = forms.FloatField(min_value=0, required=False)
+    price = CommaFloatField(min_value=0, required=False)
+    fee = CommaFloatField(min_value=0, required=False)
 
     class Meta:
         model = Saving
@@ -49,9 +50,6 @@ class SavingForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
 
         self.fields["date"].widget = DatePickerWidget()
 
-        # form inputs settings
-        self.fields["price"].widget.attrs = {"step": "0.01"}
-        self.fields["fee"].widget.attrs = {"step": "0.01"}
         self.fields["remark"].widget.attrs["rows"] = 3
 
         # inital values
