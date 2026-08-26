@@ -168,6 +168,20 @@ def test_income_save_converts_to_cents(main_user):
     assert mar_plan.income_type == income_type
 
 
+def test_income_month_accepts_a_decimal_comma(main_user):
+    income_type = IncomeTypeFactory()
+
+    form = IncomePlanForm(
+        data={"year": 1999, "income_type": income_type.pk, "january": "12,1"},
+        user=main_user,
+    )
+
+    assert form.is_valid(), form.errors
+    form.save()
+
+    assert IncomePlan.objects.get(month=1).price == 1210
+
+
 def test_income_loads_initial_and_converts_from_cents(main_user):
     income_type = IncomeTypeFactory()
     plan_jan = IncomePlanFactory(month=1, price=15_000, income_type=income_type)

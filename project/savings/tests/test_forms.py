@@ -295,6 +295,30 @@ def test_saving_valid_data_with_no_fee(main_user):
     assert data.saving_type.title == t.title
 
 
+@time_machine.travel("1999-1-1")
+def test_saving_price_and_fee_accept_a_decimal_comma(main_user):
+    a = AccountFactory()
+    t = SavingTypeFactory()
+
+    form = SavingForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "price": "12,1",
+            "fee": "0,55",
+            "account": a.pk,
+            "saving_type": t.pk,
+        },
+    )
+
+    assert form.is_valid(), form.errors
+
+    data = form.save()
+
+    assert data.price == 1210
+    assert data.fee == 55
+
+
 @time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
 def test_saving_invalid_date(main_user, year):

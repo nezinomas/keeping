@@ -21,7 +21,7 @@ def test_saving_worth_init(main_user):
 def test_saving_worth_init_fields(main_user):
     form = SavingWorthForm(user=main_user).as_p()
 
-    assert '<input type="number" name="price"' in form
+    assert '<input type="text" name="price"' in form
     assert '<select name="saving_type"' in form
 
 
@@ -54,6 +54,19 @@ def test_saving_worth_valid_data(main_user):
     assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
     assert data.price == 1
     assert data.saving_type.title == t.title
+
+
+@time_machine.travel("1999-2-2 03:02:01")
+def test_saving_worth_price_accepts_a_decimal_comma(main_user):
+    t = SavingTypeFactory()
+
+    form = SavingWorthForm(
+        user=main_user,
+        data={"date": "1999-1-2", "price": "12,1", "saving_type": t.pk},
+    )
+
+    assert form.is_valid(), form.errors
+    assert form.save().price == 1210
 
 
 @time_machine.travel("1999-2-2 03:02:01")
@@ -157,7 +170,7 @@ def test_account_worth_init(main_user):
 def test_account_worth_init_fields(main_user):
     form = AccountWorthForm(user=main_user).as_p()
 
-    assert '<input type="number" name="price"' in form
+    assert '<input type="text" name="price"' in form
     assert '<select name="account"' in form
 
 
@@ -191,6 +204,19 @@ def test_account_worth_valid_data(main_user):
     assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
     assert data.price == 1
     assert data.account.title == a.title
+
+
+@time_machine.travel("1999-01-02 03:02:01")
+def test_account_worth_price_accepts_a_decimal_comma(main_user):
+    a = AccountFactory()
+
+    form = AccountWorthForm(
+        user=main_user,
+        data={"date": "1999-1-2", "price": "12,1", "account": a.pk},
+    )
+
+    assert form.is_valid(), form.errors
+    assert form.save().price == 1210
 
 
 @time_machine.travel("1999-01-02 03:02:01")
@@ -259,7 +285,7 @@ def test_pension_worth_init(main_user):
 def test_pension_worth_init_fields(main_user):
     form = PensionWorthForm(user=main_user).as_p()
 
-    assert '<input type="number" name="price"' in form
+    assert '<input type="text" name="price"' in form
     assert '<select name="pension_type"' in form
 
 
@@ -293,6 +319,19 @@ def test_pension_worth_valid_data(main_user):
     assert data.date == datetime(1999, 1, 2, 3, 2, 1, tzinfo=timezone.utc)
     assert data.price == 1
     assert data.pension_type.title == p.title
+
+
+@time_machine.travel("1999-12-12 3:2:1")
+def test_pension_worth_price_accepts_a_decimal_comma(main_user):
+    p = PensionTypeFactory()
+
+    form = PensionWorthForm(
+        user=main_user,
+        data={"date": "1999-1-2", "price": "12,1", "pension_type": p.pk},
+    )
+
+    assert form.is_valid(), form.errors
+    assert form.save().price == 1210
 
 
 @time_machine.travel("1999-12-12 3:2:1")
