@@ -30,6 +30,9 @@ class DecimalCommaWidget(forms.TextInput):
     def __init__(self, attrs=None):
         default_attrs = {
             "inputmode": "decimal",
+            # a phone treats a text input as prose, and autocorrect rewrites it
+            "autocomplete": "off",
+            "spellcheck": "false",
             "@keyup": "$el.value = $el.value.replace(',', '.')"
             r".replace(/[^0-9.]/g, '').replace(/^(\d*\.?\d*).*/, '$1')",
         }
