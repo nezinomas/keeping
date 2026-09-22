@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<form method="POST" class="settings-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ view.url }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
+<form method="POST" class="settings-form" novalidate autocomplete="off" tabindex="-1" hx-post="{{ view.url }}" hx-headers:inherited='{"X-CSRFToken":"{{ csrf_token }}"}'>
     {% csrf_token %}
     <c-form-errors :errors=form.non_field_errors />
     <c-form-body :form=form />

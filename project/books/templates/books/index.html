@@ -53,8 +53,8 @@
 </div>
 
 <script nonce="{{ csp_nonce }}">
-    htmx.on('htmx:afterSwap', function (event) {
-        if (event.detail.target.id === 'chart-finished-loader' && document.getElementById('chart-finished-data')) {
+    htmx.on('htmx:after:swap', function (event) {
+        if (event.detail.ctx.target.id === 'chart-finished-loader' && document.getElementById('chart-finished-data')) {
             chartFinished('chart-finished-data', 'chart-finished-container');
         }
     });

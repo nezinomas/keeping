@@ -171,7 +171,7 @@ def test_view_regenerate_no_errors(client_logged):
 def test_base_leaves_the_loader_styles_to_the_stylesheet(client_logged):
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
 
-    meta = '<meta name="htmx-config" content=\'{"includeIndicatorStyles": false}\'>'
+    meta = '<meta name="htmx-config" content=\'{"includeIndicatorCSS": false}\'>'
 
     assert meta in content
     assert content.index(meta) < content.index("htmx.min.js")
