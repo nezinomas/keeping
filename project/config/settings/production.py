@@ -24,6 +24,17 @@ TEMPLATES[0]["OPTIONS"]["loaders"] = [
 ]
 
 
+# Content-hashed static filenames. Without them a deploy that changes a file in
+# place - htmx.min.js and modal.js both did - leaves cached browsers running the
+# old asset against the new markup.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+    },
+}
+
+
 MIDDLEWARE += [
     "django.middleware.csp.ContentSecurityPolicyMiddleware",
 ]
