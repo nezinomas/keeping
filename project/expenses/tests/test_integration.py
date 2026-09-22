@@ -287,3 +287,35 @@ class Expenses(Browser):
 
         cells = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr[1]/td")
         assert cells[5].text == "xxxx"
+
+    def _modal_display(self):
+        return self.browser.find_element(
+            By.ID, "mainModalContainer"
+        ).value_of_css_property("display")
+
+    @time_machine.travel("1999-1-1 10:11:12")
+    def test_modal_closes_after_update_and_close(self):
+        ExpenseFactory()
+
+        self._open_update_form()
+        assert self._modal_display() == "block"
+
+        self._submit_and_close_update_form()
+
+        assert self._modal_display() == "none"
+
+    @time_machine.travel("1999-1-1 10:11:12")
+    def test_modal_closes_after_delete(self):
+        ExpenseFactory()
+
+        self.browser.get(f"{self.live_server_url}/expenses/")
+        self.wait_until_idle()
+
+        self.browser.find_element(By.CSS_SELECTOR, ".delete-col a").click()
+        self.wait_until_idle()
+        assert self._modal_display() == "block"
+
+        self.browser.find_element(By.ID, "_close").click()
+        self.wait_until_idle()
+
+        assert self._modal_display() == "none"

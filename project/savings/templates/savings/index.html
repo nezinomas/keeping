@@ -19,7 +19,7 @@
             <h6>{% translate 'Funds' %}</h6>
             <c-new-button url="{% url 'savings:new' %}" title="{{ record_button_title }}" css_class="flex-right" />
         </div>
-        <div id="saving_list" class="margin-bottom" hx-get="{% url 'savings:list' %}" hx-trigger="reload from:body, afterType from:body" hx-target="this" hx-indicator="#indicator">{{saving}}</div>
+        <div id="saving_list" class="margin-bottom" hx-get="{% url 'savings:list' %}" hx-trigger="reload from:body, afterType from:body" hx-target="this" hx-indicator:inherited="#indicator">{{saving}}</div>
 
         <!-- Pensions -->
         <div class="button-row">

@@ -120,6 +120,14 @@ function initializeModals() {
 
     // show modal on click button with hx-target="#mainModal"
     htmx.on('htmx:after:swap', (e) => {
+        // An empty response is a save/delete that just closed the modal in
+        // before:swap. htmx 2 skipped this event entirely when the swap was
+        // cancelled; htmx 4 still fires it, so without this the dialog reopens
+        // empty over the page.
+        if (!e.detail.ctx?.text) {
+            return;
+        }
+
         const targetId = e.detail.ctx?.target?.id;
         const modal = new Modal(targetId)
         MODALS[targetId] = modal;
