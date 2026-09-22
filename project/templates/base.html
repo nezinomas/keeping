@@ -8,7 +8,11 @@
     <meta charset="utf-8">
     <!-- above the script, because htmx reads the config at load: its own indicator
          CSS would outrank the delayed reveal in the bundle -->
-    <meta name="htmx-config" content='{"includeIndicatorCSS": false}'>
+    <!-- noSwap keeps htmx 2's contract: an error response is never swapped into
+         the page. Without the 4xx/5xx entries htmx 4 would paste Django's error
+         page into whatever the request targeted. 204/304 are htmx's own defaults,
+         repeated because this replaces the list rather than extending it -->
+    <meta name="htmx-config" content='{"includeIndicatorCSS": false, "noSwap": [204, 304, "4xx", "5xx"]}'>
     <script nonce="{{ csp_nonce }}" src="{% static 'htmx/htmx.min.js' %}"></script> <!-- Htmx -->
     <script nonce="{{ csp_nonce }}" src="{% static 'htmx/ext/hx-alpine-compat.js' %}"></script> <!-- Alpine state survives a morph swap -->
     <script nonce="{{ csp_nonce }}" defer src="{% static 'alpinejs/alpinejs_3.14.8.js' %}"></script> <!-- Alpine Core -->

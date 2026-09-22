@@ -171,7 +171,13 @@ def test_view_regenerate_no_errors(client_logged):
 def test_base_leaves_the_loader_styles_to_the_stylesheet(client_logged):
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
 
-    meta = '<meta name="htmx-config" content=\'{"includeIndicatorCSS": false}\'>'
+    assert '"includeIndicatorCSS": false' in content
+    assert content.index('<meta name="htmx-config"') < content.index("htmx.min.js")
 
-    assert meta in content
-    assert content.index(meta) < content.index("htmx.min.js")
+
+def test_base_keeps_error_responses_out_of_the_page(client_logged):
+    """htmx 4 swaps 4xx/5xx by default, which would paste Django's error page
+    into whatever the request targeted."""
+    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
+
+    assert '"noSwap": [204, 304, "4xx", "5xx"]' in content
