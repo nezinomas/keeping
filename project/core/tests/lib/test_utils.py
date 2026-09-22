@@ -125,3 +125,17 @@ def test_add_fast_urls_custom_pk_key(mocker):
 
     assert actual[0]["url_update"] == "/app/update/42/"
     assert actual[0]["url_delete"] == "/app/delete/42/"
+
+
+def test_http_htmx_response_trigger_detail_is_an_object():
+    """htmx 4 throws on a null event detail - the header must carry {}."""
+    response = utils.http_htmx_response("reload")
+
+    assert response.headers["HX-Trigger"] == '{"reload": {}}'
+
+
+def test_http_htmx_response_without_trigger():
+    response = utils.http_htmx_response()
+
+    assert response.status_code == 204
+    assert "HX-Trigger" not in response.headers

@@ -109,8 +109,10 @@ def rendered_content(request, view_class, **kwargs):
 def http_htmx_response(hx_trigger_name=None, status_code=204):
     headers = {}
     if hx_trigger_name:
+        # {} and not None: htmx 4 reads the detail off the header and throws on a
+        # null one, which aborts the response before the event is ever dispatched
         headers = {
-            "HX-Trigger": json.dumps({hx_trigger_name: None}),
+            "HX-Trigger": json.dumps({hx_trigger_name: {}}),
         }
 
     return HttpResponse(
