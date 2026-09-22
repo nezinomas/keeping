@@ -124,7 +124,7 @@ def test_index_quick_add_prefilled_and_esc_close(client_logged, main_user):
     assert "wine: '150'" in content
     assert "vodka: '40'" in content
     assert "stdav: '1'" in content
-    assert "event.detail.xhr" in content
+    assert "event.detail.ctx.response.raw.ok" in content
     assert "Alpine.$data(this).open = false" in content
 
 
@@ -429,13 +429,16 @@ def test_the_open_tab_is_the_only_one_in_the_focus_order(client_logged):
 
 
 def test_back_reloads_the_page_rather_than_restoring_a_snapshot(client_logged):
-    """htmx restores a snapshot by replacing the body, which runs every script in
-    it twice — `modal.js` dies on a redeclared constant. Never snapshotting turns
-    Back into a miss, and a miss into a plain page load."""
+    """htmx 2 restored a snapshot by replacing the body, which ran every script in
+    it twice — `modal.js` died on a redeclared constant, so this page opted out of
+    snapshotting and forced a full reload on a miss instead. htmx 4 core has no
+    ajax-based history restore at all (that moved to the opt-in hx-history-cache
+    extension, not loaded here), so Back is already a plain page load — nothing
+    left to configure."""
     content = client_logged.get(reverse("drinks:index")).content.decode()
 
-    assert 'hx-history="false"' in content
-    assert "htmx.config.refreshOnHistoryMiss = true" in content
+    assert 'hx-history="false"' not in content
+    assert "refreshOnHistoryMiss" not in content
 
 
 def test_the_tabs_carry_a_tablist(client_logged):

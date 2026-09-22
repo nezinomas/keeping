@@ -30,15 +30,15 @@ function sumPrices() {
  * Resets form fields after submission if triggered by the "_new" button.
  */
 function resetFormFields(event) {
-    const targetId = event.detail.target?.id;
-    const response = event.detail.xhr?.response;
+    const targetId = event.detail.ctx?.target?.id;
+    const responseText = event.detail.ctx?.text;
 
-    // Exit if the target is not mainModal or there's a response
-    if (targetId !== "mainModal" || response) {
+    // Exit if the target is not mainModal or there's response content
+    if (targetId !== "mainModal" || responseText) {
         return;
     }
 
-    const submitterId = event.detail.requestConfig?.triggeringEvent?.submitter?.id;
+    const submitterId = event.detail.ctx?.request?.submitter?.id;
 
     if (submitterId === "_new") {
         // Exit if the active form is not an expense form
@@ -74,7 +74,7 @@ Enter allowed in texarea
 Enter on id_total_sum input calls sumPrices()
 Enter disabled on rest of form inputs
 */
-document.getElementById("modal-form").addEventListener("keypress", (e) => {
+document.querySelector(".modal-form").addEventListener("keypress", (e) => {
     if (e.key === "Enter" && e.target.id === "id_total_sum") {
         e.preventDefault();
         sumPrices();
@@ -82,4 +82,4 @@ document.getElementById("modal-form").addEventListener("keypress", (e) => {
 });
 
 
-htmx.on("htmx:beforeSwap", resetFormFields);
+htmx.on("htmx:before:swap", resetFormFields);

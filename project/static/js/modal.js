@@ -11,7 +11,7 @@ class Modal {
     constructor(id) {
         this.id = id;
         this.container = document.querySelector(`#${id}Container`);
-        this.form = this.container?.querySelector('#modal-form');
+        this.form = this.container?.querySelector('.modal-form');
     }
 
     show() {
@@ -119,14 +119,14 @@ function initializeModals() {
 
 
     // show modal on click button with hx-target="#mainModal"
-    htmx.on('htmx:afterSwap', (e) => {
-        const targetId = e.detail.target?.id;
+    htmx.on('htmx:after:swap', (e) => {
+        const targetId = e.detail.ctx?.target?.id;
         const modal = new Modal(targetId)
         MODALS[targetId] = modal;
         modal.show();
 
         if (targetId === 'imgModal') {
-            const url = e.detail.requestConfig?.triggeringEvent?.originalTarget?.dataset?.url;
+            const url = e.detail.ctx?.sourceElement?.dataset?.url;
             if (url) {
                 const modalBodyInput = document.querySelector(`#${targetId} .modal-body`);
                 modalBodyInput && (modalBodyInput.innerHTML = `<img src="${url}" />`);
@@ -136,24 +136,27 @@ function initializeModals() {
 
 
     // reload modal form with error messages or reset fields and close modal form
-    htmx.on('htmx:beforeSwap', (e) => {
-        const targetId = e.detail.target?.id;
-        const response = e.detail.xhr?.response;
+    htmx.on('htmx:before:swap', (e) => {
+        const targetId = e.detail.ctx?.target?.id;
+        const responseText = e.detail.ctx?.text;
 
-        // Exit if the target is not mainModal or there's a response
-        if (targetId !== "mainModal" || response) {
+        // Exit if the target is not mainModal or there's response content
+        if (targetId !== "mainModal" || responseText) {
             return;
         }
 
         MODALS.mainModal.resetErrorMessages();
         MODALS.mainModal.resetForm();
 
-        const submitterId = e.detail.requestConfig?.triggeringEvent?.submitter?.id;
+        const submitterId = e.detail.ctx?.request?.submitter?.id;
         if (submitterId === '_close') {
             MODALS.mainModal.hide();
         }
 
-        e.detail.shouldSwap = false;
+        // no preventDefault(): a 204 already gets swap:"none" from htmx's own
+        // noSwap config, so there's nothing to cancel - and htmx 4 fires the
+        // server's HX-Trigger header only once the swap completes, so
+        // cancelling it here would also silently swallow that trigger
     });
 };
 
