@@ -37,7 +37,7 @@
     <!-- table-responsive on the grid item itself: a scrolling item has an
          automatic minimum of zero, which is what lets the column — and with it
          the Cards and the chart above — shrink to a phone -->
-    <div id="data" class="table-responsive" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator="#indicator">{{books}}</div>
+    <div id="data" class="table-responsive" hx-trigger="reload from:body" hx-get="{% url 'books:list' %}{% if tab %}?tab={{tab}}{% endif %}" hx-indicator:inherited="#indicator">{{books}}</div>
 </main>
 
 <div id="chart-finished-loader" hx-get="{% url 'books:chart_finished' %}" hx-trigger="load, reload from:body, afterTarget from:body"></div>

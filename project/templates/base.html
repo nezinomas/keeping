@@ -188,7 +188,10 @@
 
     <footer>
       <div id="mainModalContainer" class="modal">
-        <div id="mainModal" class="modal-dialog" hx-target:inherited="#mainModal" hx-swap="outerMorph" x-data="{ inserted: false }"></div>
+        <!-- no hx-swap here: a request with no source element (htmx.ajax) reads the
+             swap off its target, and anything "outer" replaces this div itself,
+             taking the x-data scope and every later modal with it -->
+        <div id="mainModal" class="modal-dialog" hx-target:inherited="#mainModal" x-data="{ inserted: false }"></div>
       </div>
 
       <script nonce="{{ csp_nonce }}" src="{% static 'js/modal.js' %}"></script>
