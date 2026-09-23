@@ -678,6 +678,10 @@ msgstr "Išvalyti pasirinkimą"
 msgid "Close the picker"
 msgstr "Uždaryti"
 
+#: .\project\core\i18n.py:14
+msgid "- Select an option -"
+msgstr "- Pasirinkti -"
+
 #: .\project\core\i18n.py:10
 msgid "Select Month"
 msgstr "Pasirinkti mėnesį"
