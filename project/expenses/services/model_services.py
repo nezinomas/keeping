@@ -57,6 +57,21 @@ class ExpenseNameModelService(BaseModelService):
         return self.objects.none()
 
 
+class ExpenseKeywordModelService(BaseModelService):
+    def get_queryset(self):
+        return models.ExpenseKeyword.objects.select_related(
+            "expense_name", "expense_name__parent"
+        ).filter(journal=self.user.journal)
+
+    def year(self, year: int):
+        return self.objects.filter(
+            expense_name__in=ExpenseNameModelService(self.user).year(year)
+        )
+
+    def items(self):
+        return self.objects
+
+
 class ExpenseModelService(SumMixin, BaseModelService):
     def get_queryset(self):
         return models.Expense.objects.select_related(

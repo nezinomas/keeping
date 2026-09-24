@@ -4,7 +4,7 @@ import factory
 
 from ...accounts.tests.factories import AccountFactory
 from ...journals.tests.factories import JournalFactory
-from ..models import Expense, ExpenseName, ExpenseType
+from ..models import Expense, ExpenseKeyword, ExpenseName, ExpenseType
 
 
 class ExpenseTypeFactory(factory.django.DjangoModelFactory):
@@ -40,3 +40,12 @@ class ExpenseFactory(factory.django.DjangoModelFactory):
     quantity = 13
     remark = "Remark"
     exception = False
+
+
+class ExpenseKeywordFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExpenseKeyword
+
+    journal = factory.SubFactory(JournalFactory)
+    keyword = "keyword"
+    expense_name = factory.SubFactory(ExpenseNameFactory)
