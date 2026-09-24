@@ -4,6 +4,7 @@ from io import BytesIO
 import pytest
 import time_machine
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import reverse
 from PIL import Image
 
 from ...accounts.tests.factories import AccountFactory
@@ -274,6 +275,77 @@ def test_exepense_form_necessary_type_and_exception(main_user):
             "Expense Type yra 'Būtina', todėl ji negali būti pažymėta kaip 'Išimtis'"
         ]
     }
+
+
+# ----------------------------------------------------------------------------
+#                                                    ExpenseNameChoicesMixin
+# ----------------------------------------------------------------------------
+def test_expense_name_choices_mixin_hx_get_default(main_user):
+    form = ExpenseForm(user=main_user).as_p()
+
+    assert f'hx-get="{reverse("expenses:load_expense_name")}"' in form
+    assert 'hx-target="#id_expense_name"' in form
+    assert 'hx-trigger="change"' in form
+
+
+def test_expense_name_choices_mixin_keeps_translated_name_label(main_user):
+    form = ExpenseForm(user=main_user).as_p()
+
+    assert '<label for="id_expense_name">Išlaidų pavadinimas:</label>' in form
+
+
+def test_expense_name_choices_mixin_hx_get_with_prefix(main_user):
+    form = ExpenseForm(user=main_user, prefix="form-3").as_p()
+
+    url = reverse("expenses:load_expense_name")
+    assert f'hx-get="{url}?prefix=form-3"' in form
+    assert 'hx-target="#id_form-3-expense_name"' in form
+
+
+class _YearOverrideExpenseForm(ExpenseForm):
+    def names_year(self):
+        return 2005
+
+
+def test_expense_name_choices_mixin_names_year_in_hx_get(main_user):
+    form = _YearOverrideExpenseForm(user=main_user).as_p()
+
+    url = reverse("expenses:load_expense_name")
+    assert f'hx-get="{url}?year=2005"' in form
+
+
+def test_expense_name_choices_mixin_names_year_filters_names(main_user):
+    t = ExpenseTypeFactory()
+    n_2005 = ExpenseNameFactory(title="N-2005", parent=t, valid_for=2005)
+    ExpenseNameFactory(title="N-1999", parent=t, valid_for=1999)
+
+    form = _YearOverrideExpenseForm(user=main_user, initial={"expense_type": t.pk})
+
+    assert list(form.fields["expense_name"].queryset) == [n_2005]
+
+
+def test_expense_name_choices_mixin_initial_type_fills_names(main_user):
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="N", parent=t)
+
+    form = ExpenseForm(user=main_user, initial={"expense_type": t.pk})
+
+    assert list(form.fields["expense_name"].queryset) == [n]
+
+
+def test_expense_name_choices_mixin_posted_type_overrides_initial(main_user):
+    t1 = ExpenseTypeFactory(title="T1")
+    t2 = ExpenseTypeFactory(title="T2")
+    ExpenseNameFactory(title="N1", parent=t1)
+    n2 = ExpenseNameFactory(title="N2", parent=t2)
+
+    form = ExpenseForm(
+        user=main_user,
+        initial={"expense_type": t1.pk},
+        data={"expense_type": t2.pk},
+    )
+
+    assert list(form.fields["expense_name"].queryset) == [n2]
 
 
 # ----------------------------------------------------------------------------
