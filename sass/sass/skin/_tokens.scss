@@ -72,6 +72,9 @@
     --skin-harm-soft: #{$harm-soft};
     --skin-harm-wash: #{rgba($harm, 0.11)};
 
+    --skin-attention: #{$attention};
+    --skin-attention-wash: #{rgba($attention, 0.3)};
+
     @each $step in $ramp {
         --skin-year-#{list.index($ramp, $step) - 1}: #{$step};
     }
