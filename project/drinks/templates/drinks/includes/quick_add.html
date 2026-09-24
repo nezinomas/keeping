@@ -26,7 +26,7 @@
          @click.outside="open = false">
         <form hx-post="{% url 'drinks:quick_add' %}"
               hx-swap="none"
-              hx-on::after-request="if (event.detail.successful || (event.detail.xhr && event.detail.xhr.status < 400)) { Alpine.$data(this).open = false; Alpine.$data(this).updateQuantity(); }">
+              hx-on::after:request="if (event.detail.ctx.response.raw.ok) { Alpine.$data(this).open = false; Alpine.$data(this).updateQuantity(); }">
             {% csrf_token %}
             <!-- the open tab, from the page's Alpine scope: a submit reloads it -->
             <input type="hidden" name="tab" id="quick-add-tab" :value="tab">

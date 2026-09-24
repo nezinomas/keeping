@@ -1,4 +1,5 @@
-<option value="">---------</option>
+{% load i18n %}
+<option value="">{% translate "- Select an option -" %}</option>
 {% for item in object_list %}
 <option value="{{ item.pk }}">{{ item.title }}</option>
 {% endfor %}

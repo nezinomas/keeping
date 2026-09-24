@@ -35,7 +35,7 @@
 
 <!-- outside #tab_content: a tab swap must not replace the chart tokens, the
      nav or `tab`, the open tab that both the nav and the sheet read -->
-<div class="paper-skin" hx-history="false" x-data="{ tab: '{{ tab }}' }">
+<div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
 
 <c-subnav :tabs=tabs :active=tab />
 
@@ -55,10 +55,9 @@
 </div>
 
 <script nonce="{{ csp_nonce }}">
-    // the page is never snapshotted, so Back always misses; without this htmx
-    // would ask for it and swap the body, running every script in it twice
-    htmx.config.refreshOnHistoryMiss = true;
-
+    // htmx 4 core has no ajax-based history restore (that moved to the opt-in
+    // hx-history-cache extension, which isn't loaded), so Back always falls
+    // through to a plain browser navigation - nothing here runs init scripts twice.
     function initDrinksCharts() {
         if (document.getElementById('chart-consumption-data')) {
             chartOverview('chart-consumption-data', 'chart-quantity-data', 'chart-overview-container');
@@ -86,8 +85,8 @@
     document.addEventListener('DOMContentLoaded', initDrinksCharts);
     document.addEventListener('DOMContentLoaded', initCalendar);
 
-    htmx.on('htmx:afterSwap', function (event) {
-        const targetId = event.detail.target.id;
+    htmx.on('htmx:after:swap', function (event) {
+        const targetId = event.detail.ctx.target.id;
         if (targetId === 'tab_content') {
             initDrinksCharts();
             initCalendar();

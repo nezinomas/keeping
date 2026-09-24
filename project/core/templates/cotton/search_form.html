@@ -5,8 +5,8 @@
     id="search-form"
     hx-get="{{ url }}"
     hx-target="{{ target }}"
-    hx-swap="innerHTML"
-    hx-indicator="#indicator"
+    hx-swap:inherited="innerHTML"
+    hx-indicator:inherited="#indicator"
     x-data="{ search_str: '' }">
 
         <input type="search" name="search"

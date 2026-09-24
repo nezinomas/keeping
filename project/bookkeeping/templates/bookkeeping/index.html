@@ -69,7 +69,7 @@
     document.addEventListener('DOMContentLoaded', compareValues);
 
     /* check on ajax reload */
-    htmx.on("htmx:afterSwap", (e) => {
+    htmx.on("htmx:after:swap", (e) => {
         compareValues();
     });
 </script>
