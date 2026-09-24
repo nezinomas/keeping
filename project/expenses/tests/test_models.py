@@ -5,8 +5,9 @@ import mock
 import pytest
 import time_machine
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files import File
-from django.db import models
+from django.db import IntegrityError, models, transaction
 from django.db.models.signals import post_save
 from override_storage import override_storage
 
@@ -15,13 +16,18 @@ from ...accounts.services.model_services import AccountBalanceModelService
 from ...accounts.tests.factories import AccountFactory
 from ...journals.models import Journal
 from ...users.tests.factories import UserFactory
-from ..models import Expense, ExpenseName, ExpenseType
+from ..models import Expense, ExpenseKeyword, ExpenseName, ExpenseType
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
     ExpenseTypeModelService,
 )
-from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
+from .factories import (
+    ExpenseFactory,
+    ExpenseKeywordFactory,
+    ExpenseNameFactory,
+    ExpenseTypeFactory,
+)
 
 pytestmark = pytest.mark.django_db
 is_sqlite = "sqlite3" in settings.DATABASES["default"]["ENGINE"]
@@ -839,3 +845,114 @@ def test_expenses_list_dynamic_locale_en(main_user):
     assert len(actual) == 1
     # MariaDB 'en_US' uses a period for decimals
     assert actual[0]["price_str"] == "12.50"
+
+
+# ----------------------------------------------------------------------------
+#                                                              Expense Keyword
+# ----------------------------------------------------------------------------
+def test_expense_keyword_str():
+    e = ExpenseKeywordFactory.build(keyword="jogurt")
+
+    assert str(e) == "jogurt"
+
+
+def test_expense_keyword_normalises_on_save(main_user):
+    obj = ExpenseKeywordFactory(journal=main_user.journal, keyword="  Jogurt ")
+
+    obj.refresh_from_db()
+
+    assert obj.keyword == "jogurt"
+
+
+def test_expense_keyword_unique_per_journal(main_user):
+    ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt")
+
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt")
+
+
+def test_expense_keyword_same_keyword_different_journal(main_user, second_user):
+    other_name = ExpenseNameFactory(
+        parent=ExpenseTypeFactory(title="Buitinės", journal=second_user.journal)
+    )
+    ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt")
+    ExpenseKeywordFactory(
+        journal=second_user.journal, keyword="jogurt", expense_name=other_name
+    )
+
+    assert ExpenseKeyword.objects.count() == 2
+
+
+def test_expense_keyword_clean_passes_for_own_journal_name(main_user):
+    name = ExpenseNameFactory(parent=ExpenseTypeFactory(journal=main_user.journal))
+    obj = ExpenseKeywordFactory.build(journal=main_user.journal, expense_name=name)
+
+    obj.clean()
+
+
+def test_expense_keyword_clean_fails_for_other_journal_name(main_user, second_user):
+    name = ExpenseNameFactory(parent=ExpenseTypeFactory(journal=second_user.journal))
+    obj = ExpenseKeywordFactory.build(journal=main_user.journal, expense_name=name)
+
+    with pytest.raises(ValidationError):
+        obj.clean()
+
+
+def test_expense_keyword_keeps_its_name_among_same_titled_names(main_user):
+    maistas = ExpenseTypeFactory(title="Maistas", journal=main_user.journal)
+    buitines = ExpenseTypeFactory(title="Buitinės", journal=main_user.journal)
+    ExpenseNameFactory(title="Kita", parent=maistas)
+    kita = ExpenseNameFactory(title="Kita", parent=buitines)
+
+    obj = ExpenseKeywordFactory(
+        journal=main_user.journal, keyword="servet", expense_name=kita
+    )
+    obj.refresh_from_db()
+
+    assert obj.expense_name == kita
+    assert obj.expense_name.parent == buitines
+
+
+def test_expense_keyword_clean_fails_for_same_titled_name_of_other_journal(
+    main_user, second_user
+):
+    own_type = ExpenseTypeFactory(title="Maistas", journal=main_user.journal)
+    other_type = ExpenseTypeFactory(title="Buitinės", journal=second_user.journal)
+    ExpenseNameFactory(title="Kita", parent=own_type)
+    other = ExpenseNameFactory(title="Kita", parent=other_type)
+    obj = ExpenseKeywordFactory.build(journal=main_user.journal, expense_name=other)
+
+    with pytest.raises(ValidationError):
+        obj.clean()
+
+
+def test_expense_keyword_full_clean_without_name_is_a_field_error(main_user):
+    obj = ExpenseKeyword(journal=main_user.journal, keyword="jogurt")
+
+    with pytest.raises(ValidationError) as e:
+        obj.full_clean()
+
+    assert "expense_name" in e.value.message_dict
+
+
+def test_expense_keyword_full_clean_refuses_other_spelling_of_existing(main_user):
+    name = ExpenseNameFactory(parent=ExpenseTypeFactory(journal=main_user.journal))
+    ExpenseKeywordFactory(
+        journal=main_user.journal, keyword="jogurt", expense_name=name
+    )
+    obj = ExpenseKeyword(journal=main_user.journal, keyword="Jogurt", expense_name=name)
+
+    with pytest.raises(ValidationError):
+        obj.full_clean()
+
+
+@pytest.mark.parametrize("keyword", [" ab ", "   "])
+def test_expense_keyword_full_clean_checks_length_after_normalising(main_user, keyword):
+    name = ExpenseNameFactory(parent=ExpenseTypeFactory(journal=main_user.journal))
+    obj = ExpenseKeyword(journal=main_user.journal, keyword=keyword, expense_name=name)
+
+    with pytest.raises(ValidationError) as e:
+        obj.full_clean()
+
+    assert "keyword" in e.value.message_dict

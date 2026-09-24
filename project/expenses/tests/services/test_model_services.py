@@ -7,6 +7,7 @@ from mock import MagicMock
 
 from ... import models
 from ...services.model_services import (
+    ExpenseKeywordModelService,
     ExpenseModelService,
     ExpenseNameModelService,
     ExpenseTypeModelService,
@@ -173,6 +174,95 @@ class TestExpenseService:
         qs = models.Expense.objects.none()
         results = service.expenses_list(qs)
         assert not list(results)
+
+
+def test_expense_keyword_init_raises_if_no_user():
+    with pytest.raises(ValueError, match="User required"):
+        ExpenseKeywordModelService(user=None)
+
+
+def test_expense_keyword_init_raises_if_anonymous_user():
+    anon = AnonymousUser()
+    with pytest.raises(ValueError, match="Authenticated user required"):
+        ExpenseKeywordModelService(user=anon)
+
+
+@pytest.mark.django_db
+def test_expense_keyword_init_succeeds_with_real_user(main_user):
+    ExpenseKeywordModelService(user=main_user)
+
+
+@pytest.mark.django_db
+def test_expense_keyword_items(main_user):
+    factories.ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt")
+    factories.ExpenseKeywordFactory(journal=main_user.journal, keyword="banan")
+
+    actual = ExpenseKeywordModelService(main_user).items()
+
+    assert actual.count() == 2
+
+
+@pytest.mark.django_db
+def test_expense_keyword_items_other_journal(main_user, second_user):
+    other_name = factories.ExpenseNameFactory(
+        parent=factories.ExpenseTypeFactory(
+            title="Buitinės", journal=second_user.journal
+        )
+    )
+    factories.ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt")
+    factories.ExpenseKeywordFactory(
+        journal=second_user.journal, keyword="banan", expense_name=other_name
+    )
+
+    actual = ExpenseKeywordModelService(main_user).items()
+
+    assert actual.count() == 1
+    assert actual[0].keyword == "jogurt"
+
+
+@pytest.mark.django_db
+def test_expense_keyword_year(main_user):
+    name_2024 = factories.ExpenseNameFactory(
+        title="N2024",
+        parent=factories.ExpenseTypeFactory(journal=main_user.journal),
+        valid_for=2024,
+    )
+    name_2026 = factories.ExpenseNameFactory(
+        title="N2026", parent=factories.ExpenseTypeFactory(journal=main_user.journal)
+    )
+    factories.ExpenseKeywordFactory(
+        journal=main_user.journal, keyword="old", expense_name=name_2024
+    )
+    factories.ExpenseKeywordFactory(
+        journal=main_user.journal, keyword="new", expense_name=name_2026
+    )
+
+    actual = ExpenseKeywordModelService(main_user).year(2026)
+
+    assert actual.count() == 1
+    assert actual[0].keyword == "new"
+
+
+@pytest.mark.django_db
+def test_expense_keyword_year_same_titled_names_in_other_types(main_user):
+    maistas = factories.ExpenseTypeFactory(title="Maistas", journal=main_user.journal)
+    buitines = factories.ExpenseTypeFactory(title="Buitinės", journal=main_user.journal)
+    old_kita = factories.ExpenseNameFactory(
+        title="Kita", parent=maistas, valid_for=2024
+    )
+    kita = factories.ExpenseNameFactory(title="Kita", parent=buitines)
+    factories.ExpenseKeywordFactory(
+        journal=main_user.journal, keyword="duon", expense_name=old_kita
+    )
+    factories.ExpenseKeywordFactory(
+        journal=main_user.journal, keyword="servet", expense_name=kita
+    )
+
+    actual = ExpenseKeywordModelService(main_user).year(2026)
+
+    assert [(k.keyword, k.expense_name.parent) for k in actual] == [
+        ("servet", buitines)
+    ]
 
 
 def test_year_method_raises_not_implemented_error(mocker):
