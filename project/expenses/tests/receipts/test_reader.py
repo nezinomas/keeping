@@ -1,0 +1,27 @@
+from pathlib import Path
+
+import pytest
+
+from ...receipts.errors import UnrecognisedReceiptError
+from ...receipts.reader import ReceiptReader
+from .pdfs import FIXTURES, table_pdf
+
+FIXTURE = FIXTURES / "barbora.pdf"
+
+
+def test_reader_reads_barbora_fixture_into_29_lines():
+    receipt = ReceiptReader.read(FIXTURE)
+
+    assert len(receipt.lines) == 29
+
+
+def test_reader_raises_when_no_parser_recognises_the_pdf(tmp_path):
+    path = table_pdf(
+        tmp_path / "unknown.pdf",
+        text_above="UNKNOWN SHOP",
+        header=("Item", "Qty", "Sum"),
+        rows=[("Apple", "2 vnt.", "€1,20")],
+    )
+
+    with pytest.raises(UnrecognisedReceiptError):
+        ReceiptReader.read(path)
