@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .apps import App_name
-from .views import expenses, expenses_name, expenses_type
+from .views import expenses, expenses_import, expenses_name, expenses_type
 
 app_name = App_name
 
@@ -9,6 +9,8 @@ app_name = App_name
 urlpatterns = [
     path("", expenses.Index.as_view(), name="index"),
     path("<int:month>/", expenses.Index.as_view(), name="index"),
+    path("import/", expenses_import.Import.as_view(), name="import"),
+    path("import/save/", expenses_import.ImportSave.as_view(), name="import_save"),
     path("list/", expenses.Lists.as_view(), name="list"),
     path("list/<int:month>/", expenses.Lists.as_view(), name="list"),
     path("new/", expenses.New.as_view(), name="new"),

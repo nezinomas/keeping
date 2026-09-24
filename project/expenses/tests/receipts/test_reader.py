@@ -1,8 +1,8 @@
-from pathlib import Path
+from io import BytesIO
 
 import pytest
 
-from ...receipts.errors import UnrecognisedReceiptError
+from ...receipts.errors import UnreadableReceiptTextError, UnrecognisedReceiptError
 from ...receipts.reader import ReceiptReader
 from .pdfs import FIXTURES, table_pdf
 
@@ -25,3 +25,8 @@ def test_reader_raises_when_no_parser_recognises_the_pdf(tmp_path):
 
     with pytest.raises(UnrecognisedReceiptError):
         ReceiptReader.read(path)
+
+
+def test_reader_raises_unreadable_when_the_file_is_not_a_pdf():
+    with pytest.raises(UnreadableReceiptTextError):
+        ReceiptReader.read(BytesIO(b"hello, not a pdf"))
