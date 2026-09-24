@@ -39,6 +39,12 @@ class ExpenseNameChoicesMixin:
 
         return initial.pk if hasattr(initial, "pk") else initial
 
+    def _instance_expense_type_pk(self):
+        if self.instance.pk:
+            return self.instance.expense_type.pk
+
+        return 0
+
     def _expense_type_pk(self):
         pk = self._posted_expense_type_pk()
         if pk:
@@ -48,10 +54,7 @@ class ExpenseNameChoicesMixin:
         if pk:
             return pk
 
-        if self.instance.pk:
-            return self.instance.expense_type.pk
-
-        return 0
+        return self._instance_expense_type_pk()
 
     def _overwrite_expense_name_query(self):
         qs = ExpenseNameModelService(self.user).none()
