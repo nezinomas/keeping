@@ -1,3 +1,4 @@
+import contextlib
 from datetime import datetime
 from typing import Any, cast
 
@@ -105,11 +106,24 @@ class LoadExpenseName(ListViewMixin):
     object_list = []
 
     def get(self, request, *args, **kwargs):
-        if expense_type_pk := request.GET.get("expense_type", None):
-            self.object_list = (
-                ExpenseNameModelService(request.user)
-                .year(request.user.year)
-                .filter(parent=expense_type_pk)
-            )
+        prefix = request.GET.get("prefix", "")
+        field = f"{prefix}-expense_type" if prefix else "expense_type"
+
+        expense_type_pk = 0
+        with contextlib.suppress(TypeError, ValueError):
+            expense_type_pk = int(request.GET.get(field))
+
+        if not expense_type_pk:
+            return self.render_to_response({"object_list": self.object_list})
+
+        year = request.user.year
+        with contextlib.suppress(TypeError, ValueError):
+            year = int(request.GET.get("year"))
+
+        self.object_list = (
+            ExpenseNameModelService(request.user)
+            .year(year)
+            .filter(parent=expense_type_pk)
+        )
 
         return self.render_to_response({"object_list": self.object_list})
