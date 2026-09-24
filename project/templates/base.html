@@ -7,10 +7,14 @@
   <head>
     <meta charset="utf-8">
     <!-- above the script, because htmx reads the config at load: its own indicator
-         styles would outrank the delayed reveal in the bundle -->
-    <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
+         CSS would outrank the delayed reveal in the bundle -->
+    <!-- noSwap keeps htmx 2's contract: an error response is never swapped into
+         the page. Without the 4xx/5xx entries htmx 4 would paste Django's error
+         page into whatever the request targeted. 204/304 are htmx's own defaults,
+         repeated because this replaces the list rather than extending it -->
+    <meta name="htmx-config" content='{"includeIndicatorCSS": false, "noSwap": [204, 304, "4xx", "5xx"]}'>
     <script nonce="{{ csp_nonce }}" src="{% static 'htmx/htmx.min.js' %}"></script> <!-- Htmx -->
-    <script nonce="{{ csp_nonce }}" defer src="{% static 'alpinejs/alpinejs_morth_3.14.8.js' %}"></script> <!-- Alpine Plugins -->
+    <script nonce="{{ csp_nonce }}" src="{% static 'htmx/ext/hx-alpine-compat.js' %}"></script> <!-- Alpine state survives a morph swap -->
     <script nonce="{{ csp_nonce }}" defer src="{% static 'alpinejs/alpinejs_3.14.8.js' %}"></script> <!-- Alpine Core -->
     <script nonce="{{ csp_nonce }}" src="{% static 'litepicker/litepicker.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'yearpicker/year_picker.min.js' %}"></script>
@@ -188,12 +192,15 @@
 
     <footer>
       <div id="mainModalContainer" class="modal">
-        <div id="mainModal" class="modal-dialog" hx-target="this" hx-ext="alpine-morph" hx-swap="morph" x-data="{ inserted: false }"></div>
+        <!-- no hx-swap here: a request with no source element (htmx.ajax) reads the
+             swap off its target, and anything "outer" replaces this div itself,
+             taking the x-data scope and every later modal with it -->
+        <div id="mainModal" class="modal-dialog" hx-target:inherited="#mainModal" x-data="{ inserted: false }"></div>
       </div>
 
       <script nonce="{{ csp_nonce }}" src="{% static 'js/modal.js' %}"></script>
       <script nonce="{{ csp_nonce }}">
-        document.addEventListener('htmx:afterSwap', function () {
+        document.addEventListener('htmx:after:swap', function () {
             if (typeof stickyThead !== 'undefined') {
                 const tables = document.querySelectorAll('.sticky-table');
                 if (tables.length) stickyThead.apply(tables);

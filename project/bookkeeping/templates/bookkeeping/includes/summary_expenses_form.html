@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load static %}
 
 <form novalidate method="post" id="expenses-summary-form">
     {% csrf_token %}
@@ -13,7 +14,7 @@
 
         <div id="chart-container">
             {{chart|json_script:"chart-data"}}
-            <script nonce="{{ csp_nonce }}" src="/static/js/chart_summary_expenses.js"></script>
+            <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_summary_expenses.js' %}"></script>
             <script nonce="{{ csp_nonce }}">
                 chartExpenses('chart-data', 'chart-container');
             </script>

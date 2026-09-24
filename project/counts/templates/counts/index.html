@@ -21,7 +21,7 @@
 
 {% block content %}
 
-<div class="paper-skin" hx-history="false" x-data="{ tab: '{{ tab }}' }">
+<div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
 
 <c-subnav :tabs=tabs :active=tab />
 
@@ -39,8 +39,6 @@
 
 
 <script nonce="{{ csp_nonce }}">
-    htmx.config.refreshOnHistoryMiss = true;
-
     function initCountsCharts() {
         if (document.getElementById('chart-months-container')) {
             chartPeriodicity('chart-weekdays-data', 'chart-weekdays-container');
@@ -55,8 +53,8 @@
     document.addEventListener('DOMContentLoaded', initCountsCharts);
     document.addEventListener('DOMContentLoaded', initCalendar);
 
-    htmx.on('htmx:afterSwap', function (event) {
-        if (event.detail.target.id === 'tab_content') {
+    htmx.on('htmx:after:swap', function (event) {
+        if (event.detail.ctx.target.id === 'tab_content') {
             initCountsCharts();
             initCalendar();
         }
