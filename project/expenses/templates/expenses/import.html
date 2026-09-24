@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load static %}
+
+
+{% block title %}{% translate 'Import receipt' %}{% endblock title %}
+
+
+{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
+
+
+{% block head %}
+{% get_current_language as LANG %}
+<script nonce="{{ csp_nonce }}" defer src="{% static 'litepicker/translations/'|add:LANG|add:'.js' %}"></script>
+{% endblock head %}
+
+
+{% block content %}
+
+<div class="paper-skin">
+<h1 class="visually-hidden">{% translate 'Import receipt' %}</h1>
+
+<div id="import">
+    {% include 'expenses/includes/import_upload.html' %}
+</div>
+
+</div>
+
+{% endblock content %}

@@ -1,0 +1,10 @@
+// Import receipt — the Open line highlight, the only colour on this page.
+// A row waiting for the user: no Expense name chosen, and not skipped.
+.main tbody tr:has(select[name$="-expense_name"] option[value=""]:checked):not(:has(input[name$="-skip"]:checked)) {
+    background-color: var(--skin-attention-wash);
+}
+
+// a narrow screen squeezes every column, and the title must stay readable
+.main input[name$="-title"] {
+    min-width: 16rem;
+}
