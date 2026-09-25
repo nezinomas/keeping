@@ -12,6 +12,7 @@ from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
+from ..core.lib.utils import int_or_zero
 from .models import Expense, ExpenseName, ExpenseType
 from .services.model_services import (
     ExpenseNameModelService,
@@ -26,18 +27,14 @@ class ExpenseNameChoicesMixin:
         return self.user.year
 
     def _posted_expense_type_pk(self):
-        pk = 0
-        with contextlib.suppress(TypeError, ValueError):
-            pk = int(self.data.get(self.add_prefix("expense_type")))
-
-        return pk
+        return int_or_zero(self.data.get(self.add_prefix("expense_type")))
 
     def _initial_expense_type_pk(self):
         initial = self.get_initial_for_field(
             self.fields["expense_type"], "expense_type"
         )
 
-        return initial.pk if hasattr(initial, "pk") else initial
+        return int_or_zero(getattr(initial, "pk", initial))
 
     def _instance_expense_type_pk(self):
         if self.instance.pk:

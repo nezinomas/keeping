@@ -1,4 +1,3 @@
-import contextlib
 from datetime import datetime
 from typing import Any, cast
 
@@ -6,7 +5,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ...core.lib.convert_price import ConvertPriceMixin
-from ...core.lib.utils import add_fast_urls, get_action_buttons_html
+from ...core.lib.utils import add_fast_urls, get_action_buttons_html, int_or_zero
 from ...core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -106,19 +105,15 @@ class LoadExpenseName(ListViewMixin):
     object_list = []
 
     def get(self, request, *args, **kwargs):
-        prefix = request.GET.get("prefix", "")
-        field = f"{prefix}-expense_type" if prefix else "expense_type"
+        field = "expense_type"
+        if prefix := request.GET.get("prefix", ""):
+            field = f"{prefix}-expense_type"
 
-        expense_type_pk = 0
-        with contextlib.suppress(TypeError, ValueError):
-            expense_type_pk = int(request.GET.get(field))
-
+        expense_type_pk = int_or_zero(request.GET.get(field))
         if not expense_type_pk:
             return self.render_to_response({"object_list": self.object_list})
 
-        year = request.user.year
-        with contextlib.suppress(TypeError, ValueError):
-            year = int(request.GET.get("year"))
+        year = int_or_zero(request.GET.get("year")) or request.user.year
 
         self.object_list = (
             ExpenseNameModelService(request.user)

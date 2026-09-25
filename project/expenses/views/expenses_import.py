@@ -1,5 +1,3 @@
-import contextlib
-
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -8,6 +6,7 @@ from django.utils.translation import gettext as _
 from django.views import View
 from django_htmx.http import HttpResponseClientRedirect
 
+from ...core.lib.utils import int_or_zero
 from ..forms_import import ReceiptUploadForm, ReviewFormSet, ReviewReceiptForm
 from ..receipts.errors import UnreadableReceiptTextError, UnrecognisedReceiptError
 from ..receipts.reader import ReceiptReader
@@ -16,12 +15,6 @@ from ..services.receipt_import import ReceiptImport
 
 UPLOAD_TEMPLATE = "expenses/includes/import_upload.html"
 REVIEW_TEMPLATE = "expenses/includes/import_review.html"
-
-
-def _post_int(data, key):
-    with contextlib.suppress(TypeError, ValueError):
-        return int(data.get(key))
-    return 0
 
 
 def _review_context(
@@ -102,13 +95,12 @@ class ImportSave(View):
         receipt_form = ReviewReceiptForm(user=request.user, data=request.POST)
         receipt_valid = receipt_form.is_valid()
 
-        year = (
-            receipt_form.cleaned_data["date"].year
-            if receipt_valid
-            else request.user.year
-        )
-        shop_money = _post_int(request.POST, "shop_money")
-        shop_money_line = _post_int(request.POST, "shop_money_line")
+        year = request.user.year
+        if receipt_valid:
+            year = receipt_form.cleaned_data["date"].year
+
+        shop_money = int_or_zero(request.POST.get("shop_money"))
+        shop_money_line = int_or_zero(request.POST.get("shop_money_line"))
 
         formset = ReviewFormSet(
             data=request.POST,
@@ -126,7 +118,7 @@ class ImportSave(View):
                 receipt_form,
                 formset,
                 lines_total=lines_total,
-                receipt_total=_post_int(request.POST, "total"),
+                receipt_total=int_or_zero(request.POST.get("total")),
                 shop_money=shop_money,
                 shop_money_line=shop_money_line,
             )
