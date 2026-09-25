@@ -1,6 +1,13 @@
 import pytest
 
-from ...receipts.converters import amount, cell, is_deposit, money
+from ...receipts.converters import (
+    amount,
+    cell,
+    is_deposit,
+    is_money,
+    lines,
+    money,
+)
 from ...receipts.errors import UnreadableReceiptTextError
 from ...receipts.layout import DEFAULT_UNIT_WORDS
 
@@ -22,6 +29,17 @@ def test_cell_collapses_runs_of_whitespace():
     assert cell("A    B") == "A B"
 
 
+def test_lines_none_becomes_no_lines():
+    assert lines(None) == ()
+
+
+def test_lines_keeps_line_breaks_and_cleans_each_line():
+    assert lines(" Milk   3,95 A\n2,49 X 0,224 kg ") == (
+        "Milk 3,95 A",
+        "2,49 X 0,224 kg",
+    )
+
+
 @pytest.mark.parametrize(
     "text,expected",
     [
@@ -37,6 +55,24 @@ def test_money_reads_euro_text_as_cents(text, expected):
 
 @pytest.mark.parametrize("text", ["", "abc", "€", "€2,8x"])
 def test_money_raises_on_unreadable_text(text):
+    with pytest.raises(UnreadableReceiptTextError):
+        money(text)
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("3,95", 395),
+        ("-0,16", -16),
+        ("-1,06", -106),
+    ],
+)
+def test_money_reads_maxima_text_as_cents(text, expected):
+    assert money(text) == expected
+
+
+@pytest.mark.parametrize("text", ["3.95", "3,9", "abc", "", "-€0,16", "€-0,16"])
+def test_money_raises_on_unreadable_maxima_text(text):
     with pytest.raises(UnreadableReceiptTextError):
         money(text)
 
@@ -78,3 +114,13 @@ def test_is_deposit_false_for_ordinary_line():
     title = "Bananai, nuo 20 cm, 1 kg"
 
     assert is_deposit(title, ("UŽSTATAS",)) is False
+
+
+@pytest.mark.parametrize("text", ["2,49", "€2,49", "-0,16"])
+def test_is_money_true_for_money_text(text):
+    assert is_money(text)
+
+
+@pytest.mark.parametrize("text", ["Pack 3", "3", ""])
+def test_is_money_false_for_other_text(text):
+    assert not is_money(text)
