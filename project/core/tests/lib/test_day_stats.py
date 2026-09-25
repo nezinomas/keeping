@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from ...lib.day_stats import Stats
+from ...lib.day_stats import GapSpan, Stats
 
 
 @pytest.fixture(name="data")
@@ -131,6 +131,13 @@ def test_stats_gap_by_date_measures_each_record_from_the_one_before(data):
 def test_stats_gap_by_date_with_past_latest(data):
     actual = Stats(year=1999, data=data, past_latest=date(1998, 1, 1)).gap_by_date()
     assert actual[date(1999, 1, 8)] == 372
+
+
+def test_stats_gap_spans_open_on_past_latest(data):
+    actual = Stats(year=1999, data=data, past_latest=date(1998, 1, 1)).gap_spans()
+
+    assert actual[0] == GapSpan(date(1998, 1, 1), date(1999, 1, 8), 372)
+    assert actual[1] == GapSpan(date(1999, 1, 8), date(1999, 1, 15), 7)
 
 
 def test_stats_gap_by_date_empty():

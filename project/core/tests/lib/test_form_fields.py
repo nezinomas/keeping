@@ -114,6 +114,23 @@ def test_preloaded_field_default_before_preload_refuses_every_pk():
     assert "account" in form.errors
 
 
+def test_preloaded_field_counts_the_blank_among_its_choices():
+    a = AccountFactory()
+
+    field = PreloadedForm().fields["account"]
+    field.preload([a])
+
+    assert len(field.choices) == 2
+    assert bool(field.choices)
+
+
+def test_preloaded_field_without_blank_or_objects_has_no_choices():
+    field = PreloadedModelChoiceField(queryset=Account.objects.none(), empty_label=None)
+
+    assert len(field.choices) == 0
+    assert not field.choices
+
+
 def test_preloaded_field_default_before_preload_offers_only_blank():
     form = PreloadedForm()
 
