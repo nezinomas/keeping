@@ -924,6 +924,12 @@ msgstr "šiandien"
 msgid "Currently"
 msgstr "Šiuo metu"
 
+msgid "Choose file"
+msgstr "Pasirinkti failą"
+
+msgid "No file chosen"
+msgstr "Failas nepasirinktas"
+
 #: .\project\core\templates\cotton\input_file.html:15
 #: .\project\drinks\templates\drinks\tab_habits.html:32
 #: .\project\drinks\tests\test_views.py:662
