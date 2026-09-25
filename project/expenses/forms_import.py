@@ -9,7 +9,7 @@ from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
 from .forms import ExpenseNameChoicesMixin
-from .models import ExpenseName, ExpenseType
+from .models import ExpenseKeyword, ExpenseName, ExpenseType
 from .receipts.receipt import ReceiptLine
 from .services.keyword_match import KeywordMatcher, normalise_keyword
 from .services.model_services import ExpenseTypeModelService
@@ -91,7 +91,10 @@ class ReviewLineForm(ExpenseNameChoicesMixin, ConvertPriceMixin, forms.Form):
     expense_name = forms.ModelChoiceField(
         queryset=ExpenseName.objects.none(), required=False
     )
-    keyword = forms.CharField(required=False)
+    keyword = forms.CharField(
+        required=False,
+        max_length=ExpenseKeyword._meta.get_field("keyword").max_length,
+    )
 
     _required_fields = (
         "title",

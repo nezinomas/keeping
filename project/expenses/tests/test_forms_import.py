@@ -256,6 +256,36 @@ def test_line_form_keyword_too_short(main_user):
     assert form.errors["keyword"] == ["Raktažodis turi būti bent 3 simbolių."]
 
 
+def test_line_form_keyword_too_long(main_user):
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(parent=t, title="Pieno produktai")
+
+    data = _line_data(
+        title="a" * 101, expense_type=t.pk, expense_name=n.pk, keyword="a" * 101
+    )
+
+    form = ReviewLineForm(user=main_user, year=1999, data=data)
+
+    assert not form.is_valid()
+    assert form.errors["keyword"] == [
+        "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 100 ženklų "
+        "(dabartinis ilgis 101)."
+    ]
+
+
+def test_line_form_keyword_of_stored_length_passes(main_user):
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(parent=t, title="Pieno produktai")
+
+    data = _line_data(
+        title="a" * 100, expense_type=t.pk, expense_name=n.pk, keyword="a" * 100
+    )
+
+    form = ReviewLineForm(user=main_user, year=1999, data=data)
+
+    assert form.is_valid(), form.errors
+
+
 def test_line_form_keyword_not_in_title(main_user):
     t = ExpenseTypeFactory()
     n = ExpenseNameFactory(parent=t, title="Pieno produktai")
