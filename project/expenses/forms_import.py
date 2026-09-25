@@ -16,7 +16,14 @@ from .services.model_services import ExpenseTypeModelService
 from .services.receipt_import import ReviewedLine
 
 
-class ReceiptUploadForm(forms.Form):
+class _JournalAccountChoicesMixin:
+    def _limit_account_to_journal(self, user):
+        accounts = AccountModelService(user).items()
+        self.fields["account"].queryset = accounts
+        return accounts
+
+
+class ReceiptUploadForm(_JournalAccountChoicesMixin, forms.Form):
     pdf = forms.FileField()
     date = forms.DateField(widget=DatePickerWidget())
     account = forms.ModelChoiceField(queryset=Account.objects.none())
@@ -25,9 +32,9 @@ class ReceiptUploadForm(forms.Form):
         self.user = user
         super().__init__(*args, **kwargs)
 
-        self.fields["account"].queryset = AccountModelService(user).items()
+        accounts = self._limit_account_to_journal(user)
         self.fields["date"].initial = set_date_with_user_year(user)
-        self.fields["account"].initial = AccountModelService(user).items().first()
+        self.fields["account"].initial = accounts.first()
         self._translate_fields()
 
     def _translate_fields(self):
@@ -43,11 +50,9 @@ class ReceiptUploadForm(forms.Form):
         return pdf
 
 
-class ReviewReceiptForm(forms.Form):
-    date = forms.DateField(widget=forms.HiddenInput())
-    account = forms.ModelChoiceField(
-        queryset=Account.objects.none(), widget=forms.HiddenInput()
-    )
+class ReviewReceiptForm(_JournalAccountChoicesMixin, forms.Form):
+    date = forms.DateField()
+    account = forms.ModelChoiceField(queryset=Account.objects.none())
     total = forms.IntegerField(widget=forms.HiddenInput())
     shop_money = forms.IntegerField(min_value=0, widget=forms.HiddenInput())
     shop_money_line = forms.IntegerField(
@@ -58,7 +63,7 @@ class ReviewReceiptForm(forms.Form):
         self.user = user
         super().__init__(*args, **kwargs)
 
-        self.fields["account"].queryset = AccountModelService(user).items()
+        self._limit_account_to_journal(user)
 
     def clean_shop_money_line(self):
         return self.cleaned_data.get("shop_money_line") or 0
@@ -68,7 +73,7 @@ class ReviewReceiptForm(forms.Form):
         shop_money_line = 0
         if receipt.shop_money > 0:
             prices = [line.price for line in receipt.lines]
-            shop_money_line = max(range(len(prices)), key=lambda i: prices[i])
+            shop_money_line = prices.index(max(prices))
 
         return {
             "date": date,
