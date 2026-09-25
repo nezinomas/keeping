@@ -356,7 +356,7 @@ def test_expense_last_months_empty_expenses(main_user):
 @factory.django.mute_signals(post_save)
 def test_expense_last_months_one_of_expenses_empty(main_user):
     t1 = ExpenseTypeFactory(title="T1")
-    t2 = ExpenseTypeFactory(title="T2")
+    ExpenseTypeFactory(title="T2")
 
     ExpenseFactory(date=date(1999, 1, 1), price=3, expense_type=t1)
 

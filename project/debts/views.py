@@ -93,7 +93,7 @@ class DebtUpdate(ConvertPriceMixin, AddDebtTypeMixin, DebtMixin, UpdateViewMixin
     def url(self):
         return (
             reverse_lazy(
-                f"debts:update",
+                "debts:update",
                 kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
             )
             if self.object
@@ -111,7 +111,7 @@ class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
     def url(self):
         return (
             reverse_lazy(
-                f"debts:delete",
+                "debts:delete",
                 kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
             )
             if self.object

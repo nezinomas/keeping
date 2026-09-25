@@ -68,6 +68,7 @@ select = [
     "N",
     "R",
     "I",
+    "F",
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -79,4 +80,8 @@ select = [
 ]
 "test_*.py" = [
     "E501",
+]
+"project/config/settings/*.py" = [
+    "F403",
+    "F405",
 ]

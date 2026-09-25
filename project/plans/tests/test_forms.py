@@ -131,7 +131,7 @@ def test_income_negative_number(main_user):
     }
 
     # Add a negative number to every single month
-    for key, _ in month_names().items():
+    for key, _name in month_names().items():
         data[key.lower()] = -1.00
 
     form = IncomePlanForm(user=main_user, data=data)
@@ -354,7 +354,7 @@ def test_expense_negative_number(main_user):
     }
 
     # Add a negative number to every single month
-    for key, _ in month_names().items():
+    for key, _name in month_names().items():
         data[key.lower()] = -1.00
 
     form = ExpensePlanForm(user=main_user, data=data)
@@ -562,7 +562,7 @@ def test_saving_negative_number(main_user):
     }
 
     # Add a negative number to every single month
-    for key, _ in month_names().items():
+    for key, _name in month_names().items():
         data[key.lower()] = -1.00
 
     form = SavingPlanForm(user=main_user, data=data)
@@ -863,7 +863,7 @@ def test_necessary_negative_number(main_user):
     }
 
     # Add a negative number to every single month
-    for key, _ in month_names().items():
+    for key, _name in month_names().items():
         data[key.lower()] = -1.00
 
     form = NecessaryPlanForm(user=main_user, data=data)
@@ -1058,7 +1058,7 @@ def test_day_negative_number(main_user):
     }
 
     # Add a negative number to every single month
-    for key, _ in month_names().items():
+    for key, _name in month_names().items():
         data[key.lower()] = -1.00
 
     form = DayPlanForm(user=main_user, data=data)

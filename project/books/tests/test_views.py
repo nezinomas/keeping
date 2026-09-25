@@ -473,7 +473,7 @@ def test_view_books_delete_load_form(client_logged):
 
     assert url in actual
     assert '<form method="POST"' in actual
-    assert f"Ar tikrai norite ištrinti: <strong>Book Title</strong>?" in actual
+    assert "Ar tikrai norite ištrinti: <strong>Book Title</strong>?" in actual
 
 
 def test_view_books_delete(client_logged):

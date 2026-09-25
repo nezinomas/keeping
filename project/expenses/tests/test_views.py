@@ -673,7 +673,7 @@ def test_expenses_name_update_func():
 
 def test_expense_name_new_load_form(client_logged):
     url = reverse("expenses:name_new")
-    p = ExpenseTypeFactory()
+    ExpenseTypeFactory()
 
     response = client_logged.get(url)
 

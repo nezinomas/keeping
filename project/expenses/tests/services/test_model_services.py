@@ -123,12 +123,14 @@ class TestExpenseService:
 
     def test_expenses_list_urls(self, service):
         """
-        It should generate correct update and delete URLs using the ID.
+        It should carry the ID the update and delete URLs are built from.
         """
         obj = factories.ExpenseFactory()
         qs = models.Expense.objects.all()
 
         result = service.expenses_list(qs)[0]
+
+        assert result["id"] == obj.pk
 
     def test_expenses_list_pdf_detection_vs_image(self, service):
         """
