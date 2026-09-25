@@ -65,9 +65,9 @@
             border-top: 2px solid $hair;
         }
 
-        // a summary row: ruled off above, and its name set as a label
+        // a summary row, its name set as a label; the ink rule above it is the
+        // upper row's (below)
         :is(tbody, tfoot) tr.main__total td {
-            border-top: 1px solid $ink;
             border-bottom: 0;
             font-weight: 600;
             color: $ink;
@@ -79,14 +79,8 @@
             }
         }
 
-        // several main__total rows in a row (the Import's tfoot): the ink
-        // rule belongs above the first only
-        tr.main__total + tr.main__total td {
-            border-top: 0;
-        }
-
-        // the ink rule drawn from the row above: border-collapse gives a 1px tie
-        // to the upper cell, so the total row's own border-top would lose
+        // drawn from the row above: border-collapse gives a 1px tie to the upper
+        // cell, so a total row's own border-top would lose
         tr:not(.main__total):has(+ tr.main__total) > td,
         tbody:has(+ tfoot > tr.main__total:first-child) > tr:last-child > td {
             border-bottom-color: $ink;
