@@ -1,3 +1,5 @@
+@use "../abstracts/variables" as *;
+
 // Import receipt — the Open line highlight, the only colour on this page.
 // A row waiting for the user: no Expense name chosen, and not skipped.
 .main tbody tr:has(select[name$="-expense_name"] option[value=""]:checked):not(:has(input[name$="-skip"]:checked)) {
@@ -7,4 +9,40 @@
 // a narrow screen squeezes every column, and the title must stay readable
 .main input[name$="-title"] {
     min-width: 16rem;
+}
+
+// PDF failas · Data · Sąskaita · Nuskaityti in one row, bottom-aligned so
+// differing label lengths still line the inputs up
+.import-upload {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: $gap;
+}
+
+@media only screen and (max-width: 767px) {
+    .import-upload {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+#upload {
+    margin-bottom: 2rem;
+}
+
+// Nuskaityti and Išsaugoti at the height of the form-control inputs beside
+// them, without touching the shared button mixin
+#upload .button-secondary,
+#review .button-secondary {
+    padding: 0.35rem 0.75rem;
+}
+
+#review input[name$="-amount"],
+#review input[name$="-price"] {
+    text-align: right;
+}
+
+.import-save {
+    text-align: right;
 }

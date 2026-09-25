@@ -1,3 +1,4 @@
+import re
 from unittest.mock import patch
 
 import pytest
@@ -239,6 +240,22 @@ def test_import_post_every_skip_box_named_form_n_skip(main_user, client_logged):
     assert 'name="form-28-skip"' in text
 
 
+def _section(text, tag):
+    match = re.search(rf"<{tag}>.*?</{tag}>", text, re.DOTALL)
+    return match.group(0)
+
+
+def _shop_money_receipt():
+    return _receipt(
+        lines=(
+            ReceiptLine(title="A", amount=1, price=500, is_deposit=False),
+            ReceiptLine(title="B", amount=1, price=100, is_deposit=False),
+        ),
+        total=500,
+        shop_money=100,
+    )
+
+
 def _receipt(**kwargs):
     lines = kwargs.pop(
         "lines",
@@ -341,6 +358,81 @@ def test_import_post_agreeing_totals_no_warning(main_user, client_logged):
 
     text = response.content.decode()
     assert '<p :hidden="!disagree" hidden>' in text
+
+
+def test_import_review_thead_classes_without_shop_money(main_user, client_logged):
+    a = AccountFactory()
+    url = reverse("expenses:import")
+
+    response = client_logged.post(
+        url,
+        data=_upload_data(a, _barbora_file(), date="2026-09-18"),
+    )
+
+    thead = _section(response.content.decode(), "thead")
+    assert thead.count('class="text-left"') == 4
+    assert thead.count('class="text-center"') == 1
+    assert "<th>Kiekis</th>" in thead
+    assert "<th>Kaina</th>" in thead
+
+
+def test_import_review_thead_classes_with_shop_money(main_user, client_logged):
+    a = AccountFactory()
+    url = reverse("expenses:import")
+
+    with patch.object(ReceiptReader, "read", return_value=_shop_money_receipt()):
+        response = client_logged.post(
+            url,
+            data=_upload_data(a, _barbora_file(), date="1999-01-05"),
+        )
+
+    thead = _section(response.content.decode(), "thead")
+    assert thead.count('class="text-left"') == 4
+    assert thead.count('class="text-center"') == 2
+
+
+def test_import_review_tfoot_two_rows_without_shop_money(main_user, client_logged):
+    a = AccountFactory()
+    url = reverse("expenses:import")
+
+    response = client_logged.post(
+        url,
+        data=_upload_data(a, _barbora_file(), date="2026-09-18"),
+    )
+
+    tfoot = _section(response.content.decode(), "tfoot")
+    assert tfoot.count('class="main__total"') == 2
+    assert "Eilučių suma" in tfoot
+    assert "Čekio suma" in tfoot
+    assert "&middot;" not in tfoot
+    assert "·" not in tfoot
+
+
+def test_import_review_tfoot_three_rows_with_shop_money(main_user, client_logged):
+    a = AccountFactory()
+    url = reverse("expenses:import")
+
+    with patch.object(ReceiptReader, "read", return_value=_shop_money_receipt()):
+        response = client_logged.post(
+            url,
+            data=_upload_data(a, _barbora_file(), date="1999-01-05"),
+        )
+
+    tfoot = _section(response.content.decode(), "tfoot")
+    assert tfoot.count('class="main__total"') == 3
+    assert "Eilučių suma" in tfoot
+    assert "Čekio suma" in tfoot
+    assert "Parduotuvės pinigai" in tfoot
+    assert "&middot;" not in tfoot
+    assert "·" not in tfoot
+
+
+def test_import_upload_row_wrapper_class(main_user, client_logged):
+    url = reverse("expenses:import")
+
+    response = client_logged.get(url)
+
+    assert 'class="import-upload"' in response.content.decode()
 
 
 # ----------------------------------------------------------------------------
