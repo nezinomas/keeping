@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ..models import ExpenseKeyword, ExpenseName
@@ -11,7 +11,7 @@ class Match:
     keyword: str
     expense_name: "ExpenseName"
 
-    def initial(self) -> dict:
+    def initial(self) -> dict[str, Any]:
         return {
             "expense_type": self.expense_name.parent,
             "expense_name": self.expense_name,
@@ -21,7 +21,7 @@ class Match:
 
 @dataclass(frozen=True)
 class NoMatch:
-    def initial(self) -> dict:
+    def initial(self) -> dict[str, Any]:
         return {}
 
 
