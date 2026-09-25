@@ -424,7 +424,7 @@ def test_savings_close_update(client_logged):
         "to_account": obj.to_account.pk,
     }
     url = reverse("transactions:savings_close_update", kwargs={"pk": obj.pk})
-    response = client_logged.post(url, data)
+    client_logged.post(url, data)
     actual = SavingClose.objects.get(pk=obj.pk)
 
     assert actual.date == date(1999, 12, 31)
@@ -444,7 +444,7 @@ def test_savings_close_update_no_fee(client_logged):
         "to_account": obj.to_account.pk,
     }
     url = reverse("transactions:savings_close_update", kwargs={"pk": obj.pk})
-    response = client_logged.post(url, data)
+    client_logged.post(url, data)
     actual = SavingClose.objects.get(pk=obj.pk)
 
     assert actual.date == date(1999, 12, 31)

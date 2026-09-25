@@ -3,7 +3,6 @@ from datetime import date
 import pytest
 
 from ...expenses.tests.factories import ExpenseFactory
-from ...journals.models import Journal
 from ...users.tests.factories import UserFactory
 from ..models import Journal
 from .factories import JournalFactory

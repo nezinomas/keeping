@@ -129,7 +129,6 @@ def test_averages_data_with_six_months(data):
 
 def test_averages_no_data(data_empty):
     actual = ForecastCalculator(month=1, data=data_empty).medians()
-    expect = {"expenses": 0, "savings": 0}
 
     assert actual.expenses == 0
     assert actual.savings == 0
