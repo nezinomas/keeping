@@ -34,5 +34,11 @@ class ReceiptReader:
             )
             for parser in PARSERS:
                 if parser.recognises(text):
-                    return parser.parse(document)
+                    return cls._with_lines(parser.parse(document))
         raise UnrecognisedReceiptError()
+
+    @classmethod
+    def _with_lines(cls, receipt: Receipt) -> Receipt:
+        if not receipt.lines:
+            raise UnreadableReceiptTextError()
+        return receipt
