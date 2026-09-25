@@ -41,7 +41,17 @@ def _text(path):
         )
 
 
-@pytest.mark.parametrize("fixture", [FIXTURES / "barbora.pdf", FIXTURES / "maxima.pdf"])
+@pytest.mark.parametrize(
+    "fixture",
+    [
+        FIXTURES / "barbora.pdf",
+        FIXTURES / "maxima.pdf",
+        FIXTURES / "barbora_promotion.pdf",
+        FIXTURES / "barbora_substitute.pdf",
+        FIXTURES / "barbora_two_pages.pdf",
+        FIXTURES / "maxima_markdown.pdf",
+    ],
+)
 def test_each_fixture_is_recognised_by_exactly_one_parser(fixture):
     text = _text(fixture)
 

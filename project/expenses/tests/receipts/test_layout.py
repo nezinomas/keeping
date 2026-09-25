@@ -42,10 +42,22 @@ def test_table_layout_defaults_to_shared_words():
         marker="Shop",
         columns=Columns(title="Prekė", amount="Kiekis", price="Kaina"),
         total_label="Suma",
+        promotion_label="Akcija",
     )
 
     assert layout.unit_words == DEFAULT_UNIT_WORDS
     assert layout.deposit_words == DEFAULT_DEPOSIT_WORDS
+
+
+def test_table_layout_holds_promotion_label():
+    layout = TableLayout(
+        marker="Shop",
+        columns=Columns(title="Prekė", amount="Kiekis", price="Kaina"),
+        total_label="Suma",
+        promotion_label="Akcija",
+    )
+
+    assert layout.promotion_label == "Akcija"
 
 
 def test_layout_adding_a_word_keeps_the_defaults():
@@ -53,6 +65,7 @@ def test_layout_adding_a_word_keeps_the_defaults():
         marker="Shop",
         columns=Columns(title="Prekė", amount="Kiekis", price="Kaina"),
         total_label="Suma",
+        promotion_label="Akcija",
         unit_words=DEFAULT_UNIT_WORDS | {"g": Unit.WEIGHT},
         deposit_words=DEFAULT_DEPOSIT_WORDS + ("DEPOSIT",),
     )

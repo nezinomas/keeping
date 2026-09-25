@@ -5,12 +5,20 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
+from reportlab.platypus import (
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "receipts"
 
 
-def table_pdf(path: Path, *, text_above: str, header: tuple[str, ...], rows) -> Path:
+def table_pdf(
+    path: Path, *, text_above: str, header: tuple[str, ...], rows, more_tables=()
+) -> Path:
     doc = SimpleDocTemplate(
         str(path),
         pagesize=letter,
@@ -20,15 +28,12 @@ def table_pdf(path: Path, *, text_above: str, header: tuple[str, ...], rows) -> 
         rightMargin=0.5 * inch,
     )
 
-    story = []
-
     styles = getSampleStyleSheet()
-    story.append(Paragraph(text_above, styles["Normal"]))
-
-    table_data = [list(header)] + [list(row) for row in rows]
-    table = Table(table_data)
-    table.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.black)]))
-    story.append(table)
+    story = [Paragraph(text_above, styles["Normal"])]
+    for table_rows in ([header, *rows], *more_tables):
+        table = Table([list(row) for row in table_rows])
+        table.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.black)]))
+        story += [table, Spacer(1, 12)]
 
     doc.build(story)
     return path

@@ -29,6 +29,7 @@ class TableLayout:
     marker: str
     columns: Columns
     total_label: str
+    promotion_label: str
     unit_words: Mapping[str, Unit] = DEFAULT_UNIT_WORDS
     deposit_words: tuple[str, ...] = DEFAULT_DEPOSIT_WORDS
 
