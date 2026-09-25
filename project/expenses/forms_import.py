@@ -18,8 +18,8 @@ from .services.receipt_import import ReviewedLine
 
 
 class _JournalAccountChoicesMixin:
-    def _limit_account_to_journal(self, user):
-        accounts = AccountModelService(user).items()
+    def _limit_account_to_journal(self):
+        accounts = AccountModelService(self.user).items()
         self.fields["account"].queryset = accounts
         return accounts
 
@@ -33,7 +33,7 @@ class ReceiptUploadForm(_JournalAccountChoicesMixin, forms.Form):
         self.user = user
         super().__init__(*args, **kwargs)
 
-        accounts = self._limit_account_to_journal(user)
+        accounts = self._limit_account_to_journal()
         self.fields["date"].initial = set_date_with_user_year(user)
         self.fields["account"].initial = accounts.first()
         self._translate_fields()
@@ -64,7 +64,7 @@ class ReviewReceiptForm(_JournalAccountChoicesMixin, forms.Form):
         self.user = user
         super().__init__(*args, **kwargs)
 
-        self._limit_account_to_journal(user)
+        self._limit_account_to_journal()
 
     def clean_shop_money_line(self):
         return self.cleaned_data.get("shop_money_line") or 0
@@ -173,21 +173,22 @@ class ReviewLineForm(ExpenseNameChoicesMixin, ConvertPriceMixin, forms.Form):
                 ),
             )
 
-    def _validate_price(self, cleaned_data):
-        price = cleaned_data.get("price")
-        if price is None or "price" in self.errors:
+    def _validate_positive(self, cleaned_data, field_name: str, error_msg: str):
+        val = cleaned_data.get(field_name)
+        if val is None or field_name in self.errors:
             return
+        if val <= 0:
+            self.add_error(field_name, error_msg)
 
-        if price <= 0:
-            self.add_error("price", _("Price must be greater than zero."))
+    def _validate_price(self, cleaned_data):
+        self._validate_positive(
+            cleaned_data, "price", _("Price must be greater than zero.")
+        )
 
     def _validate_amount(self, cleaned_data):
-        amount = cleaned_data.get("amount")
-        if amount is None or "amount" in self.errors:
-            return
-
-        if amount <= 0:
-            self.add_error("amount", _("Quantity must be greater than zero."))
+        self._validate_positive(
+            cleaned_data, "amount", _("Quantity must be greater than zero.")
+        )
 
     def _validate_keyword(self, cleaned_data):
         keyword = cleaned_data.get("keyword")
