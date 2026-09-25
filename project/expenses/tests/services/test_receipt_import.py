@@ -1,6 +1,8 @@
 from datetime import date
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from ....accounts.services.model_services import AccountBalanceModelService
 from ....accounts.tests.factories import AccountFactory
@@ -227,6 +229,199 @@ def test_receipt_import_shop_money_lowers_the_flagged_line_regardless_of_positio
     assert flagged.price == 573
 
 
+def _keyword_lines(expense_name, count, *, prefix):
+    return tuple(
+        ReviewedLine(
+            line=_line(title=f"Prekė {i}", price=100),
+            expense_name=expense_name,
+            keyword=f"{prefix}{i}",
+            carries_shop_money=False,
+        )
+        for i in range(count)
+    )
+
+
+def test_receipt_import_new_keyword_query_count_does_not_grow_with_lines(main_user):
+    journal = main_user.journal
+    account = AccountFactory(journal=journal)
+    expense_type = ExpenseTypeFactory(title="Maistas RIQN", journal=journal)
+    name = ExpenseNameFactory(title="Prekė RIQN", parent=expense_type)
+
+    def save_count(count, prefix):
+        lines = _keyword_lines(name, count, prefix=prefix)
+        with CaptureQueriesContext(connection) as ctx:
+            ReceiptImport.save(
+                lines=lines,
+                shop_money=0,
+                date=date(2026, 1, 1),
+                account=account,
+                journal=journal,
+            )
+        return len(ctx.captured_queries)
+
+    two = save_count(2, "newkw2-")
+    six = save_count(6, "newkw6-")
+
+    assert two == six
+
+
+def test_receipt_import_existing_keyword_query_count_does_not_grow_with_lines(
+    main_user,
+):
+    journal = main_user.journal
+    account = AccountFactory(journal=journal)
+    expense_type = ExpenseTypeFactory(title="Maistas RIQE", journal=journal)
+    old_name = ExpenseNameFactory(title="Sena RIQE", parent=expense_type)
+    new_name = ExpenseNameFactory(title="Nauja RIQE", parent=expense_type)
+
+    def save_count(count, prefix):
+        for i in range(count):
+            ExpenseKeywordFactory(
+                journal=journal, keyword=f"{prefix}{i}", expense_name=old_name
+            )
+        lines = _keyword_lines(new_name, count, prefix=prefix)
+        with CaptureQueriesContext(connection) as ctx:
+            ReceiptImport.save(
+                lines=lines,
+                shop_money=0,
+                date=date(2026, 1, 1),
+                account=account,
+                journal=journal,
+            )
+        return len(ctx.captured_queries)
+
+    two = save_count(2, "oldkw2-")
+    six = save_count(6, "oldkw6-")
+
+    assert two == six
+
+
+def test_receipt_import_repoints_existing_keyword_pk_unchanged(main_user):
+    journal = main_user.journal
+    account = AccountFactory(journal=journal)
+    expense_type = ExpenseTypeFactory(title="Maistas RIPK", journal=journal)
+    old_name = ExpenseNameFactory(title="Sena RIPK", parent=expense_type)
+    new_name = ExpenseNameFactory(title="Nauja RIPK", parent=expense_type)
+    existing = ExpenseKeywordFactory(
+        journal=journal, keyword="pienas", expense_name=old_name
+    )
+    original_pk = existing.pk
+
+    lines = (
+        ReviewedLine(
+            line=_line(title="Pienas 2%", price=100),
+            expense_name=new_name,
+            keyword="Pienas",
+            carries_shop_money=False,
+        ),
+    )
+
+    ReceiptImport.save(
+        lines=lines,
+        shop_money=0,
+        date=date(2026, 1, 1),
+        account=account,
+        journal=journal,
+    )
+
+    existing.refresh_from_db()
+    assert existing.pk == original_pk
+    assert existing.expense_name == new_name
+
+
+def test_receipt_import_two_lines_same_new_keyword_last_choice_wins(main_user):
+    journal = main_user.journal
+    account = AccountFactory(journal=journal)
+    expense_type = ExpenseTypeFactory(title="Maistas RITK", journal=journal)
+    name_first = ExpenseNameFactory(title="Pirma RITK", parent=expense_type)
+    name_last = ExpenseNameFactory(title="Paskutine RITK", parent=expense_type)
+
+    lines = (
+        ReviewedLine(
+            line=_line(title="Jogurtas natūralus", price=100),
+            expense_name=name_first,
+            keyword="jogurt",
+            carries_shop_money=False,
+        ),
+        ReviewedLine(
+            line=_line(title="Jogurtas graikiškas", price=150),
+            expense_name=name_last,
+            keyword="jogurt",
+            carries_shop_money=False,
+        ),
+    )
+
+    ReceiptImport.save(
+        lines=lines,
+        shop_money=0,
+        date=date(2026, 1, 1),
+        account=account,
+        journal=journal,
+    )
+
+    keywords = ExpenseKeyword.objects.filter(journal=journal, keyword="jogurt")
+    assert keywords.count() == 1
+    assert keywords.first().expense_name == name_last
+
+
+def test_receipt_import_same_keyword_in_another_journal_is_untouched(
+    main_user, second_user
+):
+    journal = main_user.journal
+    other_journal = second_user.journal
+    account = AccountFactory(journal=journal)
+    expense_type = ExpenseTypeFactory(title="Maistas RIXJ", journal=journal)
+    name = ExpenseNameFactory(title="Prekė RIXJ", parent=expense_type)
+
+    other_type = ExpenseTypeFactory(title="Maistas RIXJ2", journal=other_journal)
+    other_name = ExpenseNameFactory(title="Kita RIXJ2", parent=other_type)
+    other_keyword = ExpenseKeywordFactory(
+        journal=other_journal, keyword="pienas", expense_name=other_name
+    )
+
+    lines = (
+        ReviewedLine(
+            line=_line(title="Pienas", price=100),
+            expense_name=name,
+            keyword="pienas",
+            carries_shop_money=False,
+        ),
+    )
+
+    ReceiptImport.save(
+        lines=lines,
+        shop_money=0,
+        date=date(2026, 1, 1),
+        account=account,
+        journal=journal,
+    )
+
+    other_keyword.refresh_from_db()
+    assert other_keyword.expense_name == other_name
+
+    created = ExpenseKeyword.objects.get(journal=journal, keyword="pienas")
+    assert created.expense_name == name
+    assert created.pk != other_keyword.pk
+
+
+def test_receipt_import_of_no_lines_runs_no_keyword_query(main_user):
+    account = AccountFactory(journal=main_user.journal)
+
+    with CaptureQueriesContext(connection) as ctx:
+        ReceiptImport.save(
+            lines=(),
+            shop_money=0,
+            date=date(2026, 1, 1),
+            account=account,
+            journal=main_user.journal,
+        )
+
+    assert not any(
+        "expenses_expensekeyword" in query["sql"].lower()
+        for query in ctx.captured_queries
+    )
+
+
 def test_receipt_import_repoints_existing_keyword_last_choice_wins(main_user):
     journal = main_user.journal
     expense_type = ExpenseTypeFactory(title="Maistas RIK", journal=journal)
@@ -277,17 +472,9 @@ def test_receipt_import_rolls_back_expenses_and_keywords_on_failure(main_user, m
             carries_shop_money=False,
         ),
     )
-    update_or_create = ExpenseKeyword.objects.update_or_create
-
-    def write_first_then_fail(**kwargs):
-        if kwargs["keyword"] == "sviest":
-            raise RuntimeError
-        return update_or_create(**kwargs)
-
     mocker.patch(
-        "project.expenses.services.receipt_import.ExpenseKeyword.objects"
-        ".update_or_create",
-        side_effect=write_first_then_fail,
+        "project.expenses.services.receipt_import.ExpenseKeyword.objects.bulk_create",
+        side_effect=RuntimeError,
     )
 
     with pytest.raises(RuntimeError):
@@ -301,6 +488,48 @@ def test_receipt_import_rolls_back_expenses_and_keywords_on_failure(main_user, m
 
     assert Expense.objects.count() == 0
     assert ExpenseKeyword.objects.count() == 0
+
+
+def test_receipt_import_rolls_back_a_repointed_keyword_on_failure(main_user, mocker):
+    journal = main_user.journal
+    expense_type = ExpenseTypeFactory(title="Maistas RIFR", journal=journal)
+    old_name = ExpenseNameFactory(title="Sena RIFR", parent=expense_type)
+    new_name = ExpenseNameFactory(title="Nauja RIFR", parent=expense_type)
+    existing = ExpenseKeywordFactory(
+        journal=journal, keyword="pienas", expense_name=old_name
+    )
+    account = AccountFactory(journal=journal)
+    lines = (
+        ReviewedLine(
+            line=_line(title="Pienas", price=100),
+            expense_name=new_name,
+            keyword="pienas",
+            carries_shop_money=False,
+        ),
+        ReviewedLine(
+            line=_line(title="Sviestas", price=200),
+            expense_name=new_name,
+            keyword="sviest",
+            carries_shop_money=False,
+        ),
+    )
+    mocker.patch(
+        "project.expenses.services.receipt_import.ExpenseKeyword.objects.bulk_create",
+        side_effect=RuntimeError,
+    )
+
+    with pytest.raises(RuntimeError):
+        ReceiptImport.save(
+            lines=lines,
+            shop_money=0,
+            date=date(2026, 1, 1),
+            account=account,
+            journal=journal,
+        )
+
+    existing.refresh_from_db()
+    assert existing.expense_name == old_name
+    assert Expense.objects.count() == 0
 
 
 def test_receipt_import_of_no_lines_saves_nothing_and_skips_the_sync(main_user, mocker):

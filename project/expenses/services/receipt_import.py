@@ -117,10 +117,22 @@ class ReceiptImport:
     ) -> None:
         # last choice wins: later lines overwrite earlier ones for the same keyword
         by_keyword = {normalise_keyword(rl.keyword): rl.expense_name for rl in reviewed}
+        if not by_keyword:
+            return
 
-        for keyword, expense_name in by_keyword.items():
-            ExpenseKeyword.objects.update_or_create(
-                journal=journal,
-                keyword=keyword,
-                defaults={"expense_name": expense_name},
+        existing = {
+            row.keyword: row
+            for row in ExpenseKeyword.objects.filter(
+                journal=journal, keyword__in=by_keyword
             )
+        }
+
+        for keyword, row in existing.items():
+            row.expense_name = by_keyword[keyword]
+        ExpenseKeyword.objects.bulk_update(existing.values(), ["expense_name"])
+
+        ExpenseKeyword.objects.bulk_create(
+            ExpenseKeyword(journal=journal, keyword=keyword, expense_name=expense_name)
+            for keyword, expense_name in by_keyword.items()
+            if keyword not in existing
+        )
