@@ -13,7 +13,7 @@ _TRAILING_MONEY = re.compile(rf"({converters.BARE_MONEY})(?: [A-Z])?$")
 
 
 @dataclass
-class _Product:
+class _PendingLine:
     title: str
     price: int
     amount: int = 1
@@ -34,10 +34,10 @@ class TextReceiptParser:
         # the lines must end on the page they start on: a page break brings the
         # PDF's own footer and header between them, and those are not lines
         end = self._index_of_prefix(page, start, self.layout.lines_end)
-        products = self._products(list(page[start:end]))
+        pending = self._pending_lines(list(page[start:end]))
         tail = [*page[end:], *(line for later in pages[at + 1 :] for line in later)]
         return Receipt(
-            lines=tuple(self._receipt_line(product) for product in products),
+            lines=tuple(self._receipt_line(line) for line in pending),
             total=self._total(tail),
             shop_money=self._shop_money(tail),
         )
@@ -60,51 +60,51 @@ class TextReceiptParser:
                 return index
         raise UnreadableReceiptTextError(prefix)
 
-    def _products(self, region: list[str]) -> list[_Product]:
-        products: list[_Product] = []
+    def _pending_lines(self, region: list[str]) -> list[_PendingLine]:
+        pending: list[_PendingLine] = []
         pending_title = ""
         for line in region:
             if self._is_amount_line(line):
-                pending_title = self._apply_amount(products, pending_title, line)
+                pending_title = self._apply_amount(pending, pending_title, line)
             elif line.startswith(self.layout.item_discount_prefixes):
-                pending_title = self._apply_discount(products, pending_title, line)
+                pending_title = self._apply_discount(pending, pending_title, line)
             else:
-                pending_title = self._apply_text(products, pending_title, line)
+                pending_title = self._apply_text(pending, pending_title, line)
         if pending_title:
             raise UnreadableReceiptTextError(pending_title)
-        return products
+        return pending
 
     def _is_amount_line(self, line: str) -> bool:
         before, separator, _ = line.partition(self.layout.amount_separator)
         return bool(separator) and converters.is_money(before)
 
     def _apply_amount(
-        self, products: list[_Product], pending_title: str, line: str
+        self, pending: list[_PendingLine], pending_title: str, line: str
     ) -> str:
-        if pending_title or not products:
+        if pending_title or not pending:
             raise UnreadableReceiptTextError(line)
         _, amount_text = line.split(self.layout.amount_separator, 1)
-        products[-1].amount = converters.amount(amount_text, self.layout.unit_words)
+        pending[-1].amount = converters.amount(amount_text, self.layout.unit_words)
         return ""
 
     def _apply_discount(
-        self, products: list[_Product], pending_title: str, line: str
+        self, pending: list[_PendingLine], pending_title: str, line: str
     ) -> str:
-        if pending_title or not products:
+        if pending_title or not pending:
             raise UnreadableReceiptTextError(line)
         _, money_text = self._priced(line)
-        products[-1].price += converters.money(money_text)
+        pending[-1].price += converters.money(money_text)
         return ""
 
     def _apply_text(
-        self, products: list[_Product], pending_title: str, line: str
+        self, pending: list[_PendingLine], pending_title: str, line: str
     ) -> str:
         match = _PRICED_LINE.match(line)
         if match is None:
             return self._joined(pending_title, line)
         title_part, money_text = self._checked_vat(match)
         title = self._joined(pending_title, title_part)
-        products.append(_Product(title=title, price=converters.money(money_text)))
+        pending.append(_PendingLine(title=title, price=converters.money(money_text)))
         return ""
 
     def _priced(self, line: str) -> tuple[str, str]:
@@ -124,12 +124,12 @@ class TextReceiptParser:
             return f"{pending_title} {text}"
         return text
 
-    def _receipt_line(self, product: _Product) -> ReceiptLine:
+    def _receipt_line(self, line: _PendingLine) -> ReceiptLine:
         return ReceiptLine(
-            title=product.title,
-            amount=product.amount,
-            price=product.price,
-            is_deposit=converters.is_deposit(product.title, self.layout.deposit_words),
+            title=line.title,
+            amount=line.amount,
+            price=line.price,
+            is_deposit=converters.is_deposit(line.title, self.layout.deposit_words),
         )
 
     def _total(self, tail: list[str]) -> int:
