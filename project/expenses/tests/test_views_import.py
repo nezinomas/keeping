@@ -569,6 +569,69 @@ def test_import_save_tampered_account_refused(main_user, second_user, client_log
     assert "Pasirinkite tinkamą reikšmę" in response.content.decode()
 
 
+def test_import_save_tampered_account_still_shows_shop_money_radios(
+    main_user, second_user, client_logged
+):
+    a = AccountFactory(journal=second_user.journal)
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
+
+    data = _save_data(
+        [
+            {
+                "title": "Naturalus jogurtas VILVI",
+                "price": "5,00",
+                "expense_type": t.pk,
+                "expense_name": n.pk,
+                "keyword": "jogurt",
+            }
+        ],
+        a,
+        shop_money="100",
+        shop_money_line="0",
+    )
+
+    url = reverse("expenses:import_save")
+    response = client_logged.post(url, data=data)
+
+    assert response.status_code == 200
+    assert Expense.objects.count() == 0
+    text = response.content.decode()
+    radio = '<input type="radio" class="form-check-input" name="shop_money_line"'
+    assert radio in text
+    assert re.search(r'name="shop_money_line" value="0"[^>]*\bchecked>', text)
+
+
+def test_import_save_tampered_shop_money_line_out_of_range_refused(
+    main_user, client_logged
+):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
+
+    data = _save_data(
+        [
+            {
+                "title": "Naturalus jogurtas VILVI",
+                "price": "5,00",
+                "expense_type": t.pk,
+                "expense_name": n.pk,
+                "keyword": "jogurt",
+            }
+        ],
+        a,
+        shop_money="100",
+        shop_money_line="5",
+    )
+
+    url = reverse("expenses:import_save")
+    response = client_logged.post(url, data=data)
+
+    assert response.status_code == 200
+    assert Expense.objects.count() == 0
+    assert "Parduotuvės pinigų eilutės šiame čekyje nėra." in response.content.decode()
+
+
 def test_import_save_tampered_expense_type_refused(
     main_user, second_user, client_logged
 ):

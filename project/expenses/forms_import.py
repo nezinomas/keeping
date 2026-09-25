@@ -245,7 +245,7 @@ class _ReviewFormSet(forms.BaseFormSet):
 
         index = self.shop_money_line
         if not (0 <= index < len(self.forms)):
-            raise ValidationError(_("Shop money cannot go on a skipped line."))
+            raise ValidationError(_("The Shop money line is not on this receipt."))
 
         row = self.forms[index]
         if row.cleaned_data.get("skip"):

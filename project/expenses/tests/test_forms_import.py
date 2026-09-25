@@ -449,7 +449,7 @@ def test_formset_shop_money_line_out_of_range(main_user):
     formset = _formset(data, main_user, shop_money=100, shop_money_line=5)
 
     assert not formset.is_valid()
-    msg = "Parduotuvės pinigų negalima priskirti praleistai eilutei."
+    msg = "Parduotuvės pinigų eilutės šiame čekyje nėra."
     assert formset.non_form_errors() == [msg]
 
 

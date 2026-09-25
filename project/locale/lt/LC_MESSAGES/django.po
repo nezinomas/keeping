@@ -2422,6 +2422,10 @@ msgstr "Čekio nepavyko nuskaityti."
 msgid "Shop money cannot go on a skipped line."
 msgstr "Parduotuvės pinigų negalima priskirti praleistai eilutei."
 
+#: .\project\expenses\forms_import.py:1
+msgid "The Shop money line is not on this receipt."
+msgstr "Parduotuvės pinigų eilutės šiame čekyje nėra."
+
 #: .\project\expenses\forms.py:1
 msgid "Shop money would leave this price at zero or below."
 msgstr "Parduotuvės pinigai šią kainą padarytų nulinę arba neigiamą."

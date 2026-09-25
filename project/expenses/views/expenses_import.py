@@ -6,7 +6,6 @@ from django.utils.translation import gettext as _
 from django.views import View
 from django_htmx.http import HttpResponseClientRedirect
 
-from ...core.lib.utils import int_or_zero
 from ..forms_import import ReceiptUploadForm, ReviewFormSet, ReviewReceiptForm
 from ..receipts.errors import UnreadableReceiptTextError, UnrecognisedReceiptError
 from ..receipts.reader import ReceiptReader
@@ -99,8 +98,8 @@ class ImportSave(View):
         if receipt_valid:
             year = receipt_form.cleaned_data["date"].year
 
-        shop_money = int_or_zero(request.POST.get("shop_money"))
-        shop_money_line = int_or_zero(request.POST.get("shop_money_line"))
+        shop_money = receipt_form.cleaned_data.get("shop_money", 0)
+        shop_money_line = receipt_form.cleaned_data.get("shop_money_line", 0)
 
         formset = ReviewFormSet(
             data=request.POST,
@@ -118,7 +117,7 @@ class ImportSave(View):
                 receipt_form,
                 formset,
                 lines_total=lines_total,
-                receipt_total=int_or_zero(request.POST.get("total")),
+                receipt_total=receipt_form.cleaned_data.get("total", 0),
                 shop_money=shop_money,
                 shop_money_line=shop_money_line,
             )
