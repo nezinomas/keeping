@@ -22,9 +22,7 @@
         {{ slot }} {% endif %}
 
     {# --- COMMON ELEMENTS (Errors & Help Text) --- #}
-    {% for error in field.errors %}
-        <div class="invalid-feedback">{{ error }}</div>
-    {% endfor %}
+    <c-field-errors :errors=field.errors />
 
     {% if field.help_text %}
         <div class="form-text">{{ field.help_text|safe }}</div>

@@ -3,15 +3,18 @@ from unittest.mock import patch
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.template.loader import render_to_string
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
+from ..forms_import import ReviewFormSet, ReviewReceiptForm
 from ..models import Expense, ExpenseKeyword
 from ..receipts import reader
 from ..receipts.errors import UnreadableReceiptTextError
 from ..receipts.reader import ReceiptReader
 from ..receipts.receipt import Receipt, ReceiptLine
 from ..receipts.text_parser import TextReceiptParser
+from ..views.expenses_import import REVIEW_TEMPLATE, _review_context
 from .factories import ExpenseKeywordFactory, ExpenseNameFactory, ExpenseTypeFactory
 from .receipts.pdfs import (
     EMPTY_TEXT_LAYOUT,
@@ -680,3 +683,216 @@ def test_import_upload_file_control_speaks_the_app_language(main_user, client_lo
     assert "Pasirinkti failą" in text
     assert 'data-empty="Failas nepasirinktas"' in text
     assert re.search(r'<input type="file" name="pdf"[^>]*class="visually-hidden"', text)
+
+
+# ----------------------------------------------------------------------------
+#                                                          Error markup, colspan
+# ----------------------------------------------------------------------------
+def test_import_save_invalid_title_shows_invalid_feedback(main_user, client_logged):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
+
+    data = _save_data(
+        [
+            {
+                "title": "",
+                "price": "5,00",
+                "expense_type": t.pk,
+                "expense_name": n.pk,
+                "keyword": "jogurt",
+            }
+        ],
+        a,
+    )
+
+    url = reverse("expenses:import_save")
+    response = client_logged.post(url, data=data)
+
+    text = response.content.decode()
+    row = _section(text, "tbody")
+    assert '<div class="invalid-feedback">' in row
+
+
+def test_import_save_tampered_account_shows_invalid_feedback(
+    main_user, second_user, client_logged
+):
+    a = AccountFactory(journal=second_user.journal)
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
+
+    data = _save_data(
+        [
+            {
+                "title": "Naturalus jogurtas VILVI",
+                "price": "5,00",
+                "expense_type": t.pk,
+                "expense_name": n.pk,
+                "keyword": "jogurt",
+            }
+        ],
+        a,
+    )
+
+    url = reverse("expenses:import_save")
+    response = client_logged.post(url, data=data)
+
+    text = response.content.decode()
+    assert '<div class="invalid-feedback">Pasirinkite tinkamą reikšmę' in text
+
+
+def test_import_save_shop_money_out_of_range_shows_invalid_feedback(
+    main_user, client_logged
+):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
+
+    data = _save_data(
+        [
+            {
+                "title": "Naturalus jogurtas VILVI",
+                "price": "5,00",
+                "expense_type": t.pk,
+                "expense_name": n.pk,
+                "keyword": "jogurt",
+            }
+        ],
+        a,
+        shop_money="100",
+        shop_money_line="5",
+    )
+
+    url = reverse("expenses:import_save")
+    response = client_logged.post(url, data=data)
+
+    text = response.content.decode()
+    assert (
+        '<div class="invalid-feedback">Parduotuvės pinigų eilutės šiame čekyje nėra.'
+        in text
+    )
+
+
+def _tfoot_rows(text):
+    tfoot = _section(text, "tfoot")
+    return re.findall(r"<tr class=\"main__total\">.*?</tr>", tfoot, re.DOTALL)
+
+
+def test_import_review_tfoot_cells_collapsed_without_shop_money(
+    main_user, client_logged
+):
+    a = AccountFactory()
+    url = reverse("expenses:import")
+
+    response = client_logged.post(
+        url,
+        data=_upload_data(a, _barbora_file(), date="2026-09-18"),
+    )
+
+    text = response.content.decode()
+    rows = _tfoot_rows(text)
+
+    assert len(rows) == 2
+    for row in rows:
+        cells = re.findall(r"<td[^>]*>", row)
+        assert len(cells) == 3
+        assert 'colspan="3"' in cells[-1]
+    assert "<td></td>" not in _section(text, "tfoot")
+
+
+def test_import_review_tfoot_cells_collapsed_with_shop_money(main_user, client_logged):
+    a = AccountFactory()
+    url = reverse("expenses:import")
+
+    with patch.object(ReceiptReader, "read", return_value=_shop_money_receipt()):
+        response = client_logged.post(
+            url,
+            data=_upload_data(a, _barbora_file(), date="1999-01-05"),
+        )
+
+    text = response.content.decode()
+    rows = _tfoot_rows(text)
+
+    assert len(rows) == 3
+    for row in rows:
+        cells = re.findall(r"<td[^>]*>", row)
+        assert len(cells) == 3
+        assert 'colspan="4"' in cells[-1]
+    assert "<td></td>" not in _section(text, "tfoot")
+
+
+def test_import_review_row_error_colspan_with_shop_money(main_user, client_logged):
+    a = AccountFactory()
+
+    data = _save_data(
+        [{"skip": "on"}],
+        a,
+        shop_money="100",
+        shop_money_line="0",
+    )
+
+    url = reverse("expenses:import_save")
+    response = client_logged.post(url, data=data)
+
+    text = response.content.decode()
+    assert "Parduotuvės pinigų negalima priskirti praleistai eilutei." in text
+    match = re.search(
+        r'<td colspan="(\d+)">\s*<div class="invalid-feedback">'
+        r"Parduotuvės pinigų negalima priskirti praleistai eilutei\.",
+        text,
+    )
+    assert match is not None
+    assert match.group(1) == "8"
+
+
+def test_import_review_row_error_colspan_without_shop_money(main_user):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="Pieno produktai", parent=t)
+
+    data = _save_data(
+        [
+            {
+                "title": "Naturalus jogurtas VILVI",
+                "price": "5,00",
+                "expense_type": t.pk,
+                "expense_name": n.pk,
+                "keyword": "jogurt",
+            }
+        ],
+        a,
+    )
+
+    receipt_form = ReviewReceiptForm(user=main_user, data=data)
+    assert receipt_form.is_valid()
+
+    formset = ReviewFormSet(
+        data=data,
+        shop_money=0,
+        shop_money_line=0,
+        form_kwargs={
+            "user": main_user,
+            "year": receipt_form.cleaned_data["date"].year,
+        },
+    )
+    assert formset.is_valid()
+    formset.forms[0].add_error(None, "Test forced row error.")
+
+    context = _review_context(
+        receipt_form,
+        formset,
+        lines_total=500,
+        receipt_total=500,
+        shop_money=0,
+        shop_money_line=0,
+    )
+
+    html = render_to_string(REVIEW_TEMPLATE, context)
+
+    match = re.search(
+        r'<td colspan="(\d+)">\s*<div class="invalid-feedback">'
+        r"Test forced row error\.",
+        html,
+    )
+    assert match is not None
+    assert match.group(1) == "7"
