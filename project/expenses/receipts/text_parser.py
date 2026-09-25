@@ -66,7 +66,7 @@ class TextReceiptParser:
         for line in region:
             if self._is_amount_line(line):
                 pending_title = self._apply_amount(products, pending_title, line)
-            elif line.startswith(self.layout.item_discount_prefix):
+            elif line.startswith(self.layout.item_discount_prefixes):
                 pending_title = self._apply_discount(products, pending_title, line)
             else:
                 pending_title = self._apply_text(products, pending_title, line)

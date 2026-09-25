@@ -71,7 +71,7 @@ def test_text_layout_holds_its_fields():
         lines_end="-----",
         vat_classes=("A", "B"),
         amount_separator=" x ",
-        item_discount_prefix="Deal:",
+        item_discount_prefixes=("Deal:",),
         shop_money_label="Paid",
         total_label="Total",
     )
@@ -81,9 +81,24 @@ def test_text_layout_holds_its_fields():
     assert layout.lines_end == "-----"
     assert layout.vat_classes == ("A", "B")
     assert layout.amount_separator == " x "
-    assert layout.item_discount_prefix == "Deal:"
+    assert layout.item_discount_prefixes == ("Deal:",)
     assert layout.shop_money_label == "Paid"
     assert layout.total_label == "Total"
+
+
+def test_text_layout_item_discount_prefixes_is_a_tuple():
+    layout = TextLayout(
+        marker="Shop",
+        lines_start="Items:",
+        lines_end="-----",
+        vat_classes=("A",),
+        amount_separator=" x ",
+        item_discount_prefixes=("Deal:", "Markdown"),
+        shop_money_label="Paid",
+        total_label="Total",
+    )
+
+    assert layout.item_discount_prefixes == ("Deal:", "Markdown")
 
 
 def test_text_layout_defaults_to_shared_words():
@@ -93,7 +108,7 @@ def test_text_layout_defaults_to_shared_words():
         lines_end="-----",
         vat_classes=("A",),
         amount_separator=" x ",
-        item_discount_prefix="Deal:",
+        item_discount_prefixes=("Deal:",),
         shop_money_label="Paid",
         total_label="Total",
     )
@@ -109,7 +124,7 @@ def test_text_layout_adding_a_word_keeps_the_defaults():
         lines_end="-----",
         vat_classes=("A",),
         amount_separator=" x ",
-        item_discount_prefix="Deal:",
+        item_discount_prefixes=("Deal:",),
         shop_money_label="Paid",
         total_label="Total",
         unit_words=DEFAULT_UNIT_WORDS | {"g": Unit.WEIGHT},
