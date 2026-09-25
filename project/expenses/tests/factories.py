@@ -10,6 +10,8 @@ from ..models import Expense, ExpenseKeyword, ExpenseName, ExpenseType
 class ExpenseTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExpenseType
+        # on title alone: a second journal's type needs its own title, or it gets
+        # the first journal's
         django_get_or_create = ("title",)
 
     journal = factory.SubFactory(JournalFactory)
