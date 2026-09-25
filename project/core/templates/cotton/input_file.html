@@ -20,5 +20,11 @@
         </div>
     {% endif %}
 
-    <input type="file" name="{{ field.html_name }}" class="form-control {% if field.errors %}is-invalid{% endif %}" id="{{ field.id_for_label }}" {% if field.field.required and not field.value %}required{% endif %}>
+    <div class="file-input" x-data="{ name: '' }">
+        <input type="file" name="{{ field.html_name }}" class="visually-hidden" id="{{ field.id_for_label }}" {% if field.field.required and not field.value %}required{% endif %} @change="name = $el.files.length ? $el.files[0].name : ''">
+        <label for="{{ field.id_for_label }}" class="form-control{% if field.errors %} is-invalid{% endif %}">
+            <span class="file-input__button">{% translate "Choose file" %}</span>
+            <span class="file-input__name" data-empty="{% translate 'No file chosen' %}" x-text="name || $el.dataset.empty">{% translate "No file chosen" %}</span>
+        </label>
+    </div>
 </c-field-wrapper>

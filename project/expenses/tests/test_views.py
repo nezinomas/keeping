@@ -156,6 +156,15 @@ def test_expenses_load_new_form(main_user, client_logged):
     assert "Įrašyti ir uždaryti</button>" in actual
 
 
+def test_expenses_new_form_file_control_speaks_the_app_language(client_logged):
+    url = reverse("expenses:new")
+
+    text = client_logged.get(url).content.decode()
+
+    assert "Pasirinkti failą" in text
+    assert 'data-empty="Failas nepasirinktas"' in text
+
+
 def test_expenses_save(client_logged):
     a = AccountFactory()
     t = ExpenseTypeFactory()

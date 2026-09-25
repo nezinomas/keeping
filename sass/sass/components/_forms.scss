@@ -63,7 +63,8 @@ fieldset {
     border-radius: 0;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 
-    &:focus {
+    &:focus,
+    .file-input:focus-within > & {
         border-color: $secondary;
         outline: 0;
         box-shadow:
@@ -74,7 +75,8 @@ fieldset {
     &.is-invalid {
         border-color: $negative;
 
-        &:focus {
+        &:focus,
+        .file-input:focus-within > & {
             outline: 0;
             box-shadow:
                 inset 0 1px 2px rgba($black, .075),
@@ -95,27 +97,39 @@ fieldset {
         }
     }
 
-    &[type="file"] {
-        overflow: hidden;
-        border: solid 1px #dee2e6;
-        padding: 0;
+}
 
-        &:not(:disabled):not([readonly]) {
-            cursor: pointer;
-        }
+// the native file input hidden: the browser draws its button and "no file" text
+// in its own language, not the app's, so a label stands in for both
+.file-input {
+    position: relative;
+
+    > .form-control {
+        display: flex;
+        align-items: stretch;
+        height: 100%;
+        padding: 0;
+        overflow: hidden;
+        cursor: pointer;
     }
 
-    &::file-selector-button {
-        padding: .35rem 0.35rem;
-        border-right-color: #dee2e6;
-        border-right-style: solid;
+    &__button {
+        padding: .35rem;
         margin-inline-end: .5rem;
-        border-width: 0 1px 0 0;
+        border-right: 1px solid #dee2e6;
         background-color: #f7f7f7;
+    }
 
-        &:hover {
-            background-color: #e1e1e1;
-        }
+    > .form-control:hover .file-input__button {
+        background-color: #e1e1e1;
+    }
+
+    &__name {
+        align-self: center;
+        padding-inline-end: .75rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 }
 
