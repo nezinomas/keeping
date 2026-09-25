@@ -54,7 +54,7 @@ class ExpenseGroup:
 class ExpenseGroups:
     @classmethod
     def build(cls, lines: tuple[ReviewedLine, ...]) -> list[ExpenseGroup]:
-        by_name: dict["ExpenseName", list[ReviewedLine]] = {}
+        by_name: dict[ExpenseName, list[ReviewedLine]] = {}
         for reviewed in lines:
             by_name.setdefault(reviewed.expense_name, []).append(reviewed)
 

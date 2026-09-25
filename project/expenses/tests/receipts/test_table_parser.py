@@ -89,9 +89,11 @@ def test_table_receipt_parser_raises_when_no_table_carries_the_headers(tmp_path)
         header=("A", "B", "C"),
         rows=[("1", "2", "3")],
     )
-    with pdfplumber.open(path) as document:
-        with pytest.raises(UnreadableReceiptTextError):
-            TableReceiptParser(LAYOUT).parse(document)
+    with (
+        pdfplumber.open(path) as document,
+        pytest.raises(UnreadableReceiptTextError),
+    ):
+        TableReceiptParser(LAYOUT).parse(document)
 
 
 def test_table_receipt_parser_raises_when_no_total_row(tmp_path):
@@ -100,9 +102,11 @@ def test_table_receipt_parser_raises_when_no_total_row(tmp_path):
     path = table_pdf(
         tmp_path / "no_total.pdf", text_above="ACME SHOP", header=header, rows=rows
     )
-    with pdfplumber.open(path) as document:
-        with pytest.raises(UnreadableReceiptTextError):
-            TableReceiptParser(LAYOUT).parse(document)
+    with (
+        pdfplumber.open(path) as document,
+        pytest.raises(UnreadableReceiptTextError),
+    ):
+        TableReceiptParser(LAYOUT).parse(document)
 
 
 def test_table_receipt_parser_satisfies_shop_parser_protocol():

@@ -867,9 +867,8 @@ def test_expense_keyword_normalises_on_save(main_user):
 def test_expense_keyword_unique_per_journal(main_user):
     ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt")
 
-    with pytest.raises(IntegrityError):
-        with transaction.atomic():
-            ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt")
+    with pytest.raises(IntegrityError), transaction.atomic():
+        ExpenseKeywordFactory(journal=main_user.journal, keyword="jogurt")
 
 
 def test_expense_keyword_same_keyword_different_journal(main_user, second_user):

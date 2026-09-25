@@ -215,7 +215,7 @@ class _ReviewFormSet(forms.BaseFormSet):
         self._check_shop_money()
 
     def _check_duplicate_keywords(self):
-        by_keyword: dict[str, list[tuple[forms.Form, "ExpenseName"]]] = {}
+        by_keyword: dict[str, list[tuple[forms.Form, ExpenseName]]] = {}
         for form in self.forms:
             if form.cleaned_data.get("skip"):
                 continue
