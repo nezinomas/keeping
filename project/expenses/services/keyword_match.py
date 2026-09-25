@@ -6,11 +6,6 @@ if TYPE_CHECKING:
     from ..models import ExpenseKeyword, ExpenseName
 
 
-def normalise_keyword(text: str) -> str:
-    """The one spelling rule: `Jogurt` and `jogurt` are the same Keyword."""
-    return text.strip().casefold()
-
-
 @dataclass(frozen=True)
 class Match:
     keyword: str

@@ -1,4 +1,5 @@
-from ...services.keyword_match import KeywordMatcher, Match, NoMatch, normalise_keyword
+from ...keywords import normalise_keyword
+from ...services.keyword_match import KeywordMatcher, Match, NoMatch
 from ..factories import ExpenseNameFactory, ExpenseTypeFactory
 
 
