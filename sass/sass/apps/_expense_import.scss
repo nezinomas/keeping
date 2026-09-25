@@ -1,0 +1,78 @@
+@use "../abstracts/variables" as *;
+
+// Import receipt — the Open line highlight, the only colour on this page.
+// A row waiting for the user: no Expense name chosen, and not skipped.
+.main tbody tr:has(select[name$="-expense_name"] option[value=""]:checked):not(:has(input[name$="-skip"]:checked)) {
+    background-color: var(--skin-attention-wash);
+}
+
+// a narrow screen squeezes every column, and the title must stay readable
+.main input[name$="-title"] {
+    min-width: 16rem;
+}
+
+// every control on one line: an error grows its cell downward, as the worth
+// forms' fields align to their start, instead of pushing its control up
+#review tbody td {
+    vertical-align: baseline;
+}
+
+// PDF failas · Data · Sąskaita · Nuskaityti in one row. Label, control and
+// error are three shared rows, so an error grows the last one and moves no input
+.import-upload {
+    display: grid;
+    grid-template-rows: auto auto auto;
+    grid-auto-flow: column;
+    justify-content: start;
+    column-gap: $gap;
+
+    > div {
+        display: grid;
+        grid-template-rows: subgrid;
+        grid-row: span 3;
+        align-content: start;
+    }
+
+    > button {
+        grid-row: 2;
+        align-self: start;
+    }
+}
+
+@media only screen and (max-width: 767px) {
+    .import-upload {
+        grid-auto-flow: row;
+        grid-template-rows: none;
+        grid-template-columns: 1fr;
+        row-gap: $gap;
+
+        > div {
+            display: block;
+            grid-row: auto;
+        }
+
+        > button {
+            grid-row: auto;
+        }
+    }
+}
+
+#upload {
+    margin-bottom: 2rem;
+}
+
+// Nuskaityti and Išsaugoti at the height of the form-control inputs beside
+// them, without touching the shared button mixin
+#upload .button-secondary,
+#review .button-secondary {
+    padding: 0.35rem 0.75rem;
+}
+
+#review input[name$="-amount"],
+#review input[name$="-price"] {
+    text-align: right;
+}
+
+.import-save {
+    text-align: right;
+}

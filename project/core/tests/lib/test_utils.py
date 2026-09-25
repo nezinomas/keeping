@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 
+import pytest
 from django.test import override_settings
 from django.urls import Resolver404
 
@@ -139,3 +140,11 @@ def test_http_htmx_response_without_trigger():
 
     assert response.status_code == 204
     assert "HX-Trigger" not in response.headers
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [("7", 7), (7, 7), ("-3", -3), (None, 0), ("", 0), ("abc", 0), ("1.5", 0)],
+)
+def test_int_or_zero(value, expected):
+    assert utils.int_or_zero(value) == expected

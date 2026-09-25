@@ -156,6 +156,15 @@ def test_expenses_load_new_form(main_user, client_logged):
     assert "Įrašyti ir uždaryti</button>" in actual
 
 
+def test_expenses_new_form_file_control_speaks_the_app_language(client_logged):
+    url = reverse("expenses:new")
+
+    text = client_logged.get(url).content.decode()
+
+    assert "Pasirinkti failą" in text
+    assert 'data-empty="Failas nepasirinktas"' in text
+
+
 def test_expenses_save(client_logged):
     a = AccountFactory()
     t = ExpenseTypeFactory()
@@ -664,7 +673,7 @@ def test_expenses_name_update_func():
 
 def test_expense_name_new_load_form(client_logged):
     url = reverse("expenses:name_new")
-    p = ExpenseTypeFactory()
+    ExpenseTypeFactory()
 
     response = client_logged.get(url)
 
@@ -787,6 +796,89 @@ def test_load_expense_name_must_logged(client):
     from ...users.views import Login
 
     assert response.resolver_match.func.view_class is Login
+
+
+def test_load_expense_name_prefix(client_logged):
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="N", parent=t)
+
+    url = reverse("expenses:load_expense_name")
+    response = client_logged.get(url, {"prefix": "form-3", "form-3-expense_type": t.pk})
+
+    assert list(response.context["object_list"]) == [n]
+
+
+def test_load_expense_name_prefix_reads_only_prefixed_field(client_logged):
+    t = ExpenseTypeFactory()
+    ExpenseNameFactory(title="N", parent=t)
+
+    url = reverse("expenses:load_expense_name")
+    response = client_logged.get(url, {"prefix": "form-3", "expense_type": t.pk})
+
+    assert response.context["object_list"] == []
+
+
+def test_load_expense_name_year(client_logged):
+    t = ExpenseTypeFactory()
+    n_default = ExpenseNameFactory(title="N-default", parent=t)
+    n_2005 = ExpenseNameFactory(title="N-2005", parent=t, valid_for=2005)
+
+    url = reverse("expenses:load_expense_name")
+    response = client_logged.get(url, {"expense_type": t.pk, "year": 2005})
+
+    assert set(response.context["object_list"]) == {n_default, n_2005}
+
+
+def test_load_expense_name_year_excludes_other_year(client_logged):
+    t = ExpenseTypeFactory()
+    ExpenseNameFactory(title="N-2005", parent=t, valid_for=2005)
+
+    url = reverse("expenses:load_expense_name")
+    response = client_logged.get(url, {"expense_type": t.pk, "year": 2006})
+
+    assert list(response.context["object_list"]) == []
+
+
+def test_load_expense_name_prefix_and_year(client_logged):
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="N", parent=t, valid_for=2005)
+
+    url = reverse("expenses:load_expense_name")
+    response = client_logged.get(
+        url,
+        {"prefix": "form-3", "form-3-expense_type": t.pk, "year": 2005},
+    )
+
+    assert list(response.context["object_list"]) == [n]
+
+
+def test_load_expense_name_type_not_integer_is_missing(client_logged):
+    url = reverse("expenses:load_expense_name")
+    response = client_logged.get(url, {"expense_type": "abc"})
+
+    assert response.context["object_list"] == []
+
+
+def test_load_expense_name_year_not_integer_falls_back_to_user_year(client_logged):
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="N", parent=t)
+
+    url = reverse("expenses:load_expense_name")
+    response = client_logged.get(url, {"expense_type": t.pk, "year": "abc"})
+
+    assert list(response.context["object_list"]) == [n]
+
+
+def test_load_expense_name_other_journal_type_yields_no_names(
+    client_logged, second_user
+):
+    t = ExpenseTypeFactory(journal=second_user.journal)
+    ExpenseNameFactory(title="N", parent=t)
+
+    url = reverse("expenses:load_expense_name")
+    response = client_logged.get(url, {"expense_type": t.pk})
+
+    assert response.context["object_list"].count() == 0
 
 
 # -------------------------------------------------------------------------------------

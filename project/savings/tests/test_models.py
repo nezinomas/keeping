@@ -9,7 +9,6 @@ from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
 from ...accounts.tests.factories import AccountFactory
 from ...incomes.tests.factories import IncomeFactory
-from ...savings.models import SavingBalance
 from ...savings.tests.factories import (
     SavingBalanceFactory,
     SavingFactory,

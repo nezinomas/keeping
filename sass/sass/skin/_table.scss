@@ -65,9 +65,9 @@
             border-top: 2px solid $hair;
         }
 
-        // a summary row: ruled off above, and its name set as a label
-        tbody tr.main__total td {
-            border-top: 1px solid $ink;
+        // a summary row, its name set as a label; the ink rule above it is the
+        // upper row's (below)
+        :is(tbody, tfoot) tr.main__total td {
             border-bottom: 0;
             font-weight: 600;
             color: $ink;
@@ -77,6 +77,13 @@
                 font-size: 0.7rem;
                 letter-spacing: 0.1em;
             }
+        }
+
+        // drawn from the row above: border-collapse gives a 1px tie to the upper
+        // cell, so a total row's own border-top would lose
+        tr:not(.main__total):has(+ tr.main__total) > td,
+        tbody:has(+ tfoot > tr.main__total:first-child) > tr:last-child > td {
+            border-bottom-color: $ink;
         }
 
         // action columns (shared <c-td-edit> / <c-td-delete> markup)

@@ -128,7 +128,7 @@ def test_lazy_properties_instantiate_correctly(mocker):
     view.request = mocker.Mock()
     view.request.user = "test_user"
 
-    instance = view.service_instance
+    view.service_instance
     model = view.model_class
 
     view.service_class.assert_called_once_with("test_user")

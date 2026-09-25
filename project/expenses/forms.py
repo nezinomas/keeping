@@ -1,5 +1,6 @@
 import contextlib
 from datetime import datetime
+from urllib.parse import urlencode
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -11,6 +12,7 @@ from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
+from ..core.lib.utils import int_or_zero
 from .models import Expense, ExpenseName, ExpenseType
 from .services.model_services import (
     ExpenseNameModelService,
@@ -18,7 +20,75 @@ from .services.model_services import (
 )
 
 
-class ExpenseForm(ConvertPriceMixin, forms.ModelForm):
+class ExpenseNameChoicesMixin:
+    """Needs self.user set by the form before its methods are called."""
+
+    def names_year(self):
+        return self.user.year
+
+    def _posted_expense_type_pk(self):
+        return int_or_zero(self.data.get(self.add_prefix("expense_type")))
+
+    def _initial_expense_type_pk(self):
+        initial = self.get_initial_for_field(
+            self.fields["expense_type"], "expense_type"
+        )
+
+        return int_or_zero(getattr(initial, "pk", initial))
+
+    def _instance_expense_type_pk(self):
+        if self.instance.pk:
+            return self.instance.expense_type.pk
+
+        return 0
+
+    def _expense_type_pk(self):
+        pk = self._posted_expense_type_pk()
+        if pk:
+            return pk
+
+        pk = self._initial_expense_type_pk()
+        if pk:
+            return pk
+
+        return self._instance_expense_type_pk()
+
+    def _overwrite_expense_name_query(self):
+        self._set_expense_name_choices(self._expense_type_pk())
+
+    def _set_expense_name_choices(self, expense_type_pk):
+        qs = ExpenseNameModelService(self.user).none()
+
+        if expense_type_pk:
+            qs = (
+                ExpenseNameModelService(self.user)
+                .year(self.names_year())
+                .filter(parent=expense_type_pk)
+            )
+
+        self.fields["expense_name"].queryset = qs
+
+    def _set_htmx_attributes(self):
+        url = reverse("expenses:load_expense_name")
+
+        params = {}
+        if self.prefix:
+            params["prefix"] = self.prefix
+        if self.names_year() != self.user.year:
+            params["year"] = self.names_year()
+
+        if params:
+            url = f"{url}?{urlencode(params)}"
+
+        expense_type = self.fields["expense_type"]
+        expense_type.widget.attrs["hx-get"] = url
+        # self["expense_name"] would cache the BoundField before labels are translated
+        name = self.fields["expense_name"].get_bound_field(self, "expense_name")
+        expense_type.widget.attrs["hx-target"] = f"#{name.auto_id}"
+        expense_type.widget.attrs["hx-trigger"] = "change"
+
+
+class ExpenseForm(ExpenseNameChoicesMixin, ConvertPriceMixin, forms.ModelForm):
     price = CommaFloatField(min_value=0.01)
     total_sum = forms.CharField(
         required=False, widget=forms.TextInput(attrs={"inputmode": "decimal"})
@@ -90,33 +160,6 @@ class ExpenseForm(ConvertPriceMixin, forms.ModelForm):
         self.fields["expense_type"].queryset = ExpenseTypeModelService(
             self.user
         ).items()
-
-    def _overwrite_expense_name_query(self):
-        expense_type_pk = None
-        with contextlib.suppress(TypeError, ValueError):
-            expense_type_pk = int(self.data.get("expense_type"))
-
-        if expense_type_pk is None and self.instance.pk:
-            expense_type_pk = self.instance.expense_type.pk
-
-        if expense_type_pk:
-            qs = (
-                ExpenseNameModelService(self.user)
-                .year(self.user.year)
-                .filter(parent=expense_type_pk)
-            )
-        else:
-            qs = ExpenseNameModelService(self.user).none()
-
-        self.fields["expense_name"].queryset = qs
-
-    def _set_htmx_attributes(self):
-        url = reverse("expenses:load_expense_name")
-
-        expense_type = self.fields["expense_type"]
-        expense_type.widget.attrs["hx-get"] = url
-        expense_type.widget.attrs["hx-target"] = "#id_expense_name"
-        expense_type.widget.attrs["hx-trigger"] = "change"
 
     def _translate_fields(self):
         self.fields["date"].label = _("Date")

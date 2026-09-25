@@ -80,7 +80,7 @@ def test_income_type_title_too_short(main_user):
 
 
 def test_income_type_unique_name(main_user):
-    b = IncomeTypeFactory(title="XXX")
+    IncomeTypeFactory(title="XXX")
 
     form = IncomeTypeForm(
         user=main_user,

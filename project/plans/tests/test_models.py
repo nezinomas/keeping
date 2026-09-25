@@ -525,7 +525,7 @@ def test_necessary_plan_title_too_short():
 
 def test_necessary_plan_title_too_long():
     # 101 characters is over the max_length=100 limit
-    expense_type = ExpenseTypeFactory()
+    ExpenseTypeFactory()
     obj = NecessaryPlanFactory(title="a" * 101)
 
     with pytest.raises(ValidationError) as exc:
@@ -544,7 +544,7 @@ def test_necessary_plan_title_too_long():
     ],
 )
 def test_necessary_plan_title_invalid_characters(title):
-    expense_type = ExpenseTypeFactory()
+    ExpenseTypeFactory()
     obj = NecessaryPlanFactory(title=title)
 
     with pytest.raises(ValidationError) as exc:
