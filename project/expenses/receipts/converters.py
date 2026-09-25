@@ -1,27 +1,44 @@
 import re
 from collections.abc import Mapping
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
 from .errors import UnreadableReceiptTextError
 from .layout import Unit
 
 _WHITESPACE = re.compile(r"\s+")
-_MONEY = re.compile(r"^€(\d+,\d{2})$")
+# a minus only on the bare form: no sample has shown a negative euro price
+_MONEY = re.compile(r"^(€|-?)(\d+,\d{2})$")
 _AMOUNT = re.compile(r"^(\d+(?:,\d+)?) (\S+?)\.?$")
 
 
-def cell(value: str | None) -> str:
+def _text(value: str | None) -> str:
     text = ""
     if value is not None:
         text = value
-    return _WHITESPACE.sub(" ", text).strip()
+    return text
+
+
+def cell(value: str | None) -> str:
+    return _WHITESPACE.sub(" ", _text(value)).strip()
+
+
+def lines(value: str | None) -> tuple[str, ...]:
+    return tuple(cell(line) for line in _text(value).splitlines())
+
+
+def is_money(text: str) -> bool:
+    return _MONEY.match(text) is not None
 
 
 def money(text: str) -> int:
     match = _MONEY.match(text)
     if match is None:
         raise UnreadableReceiptTextError(text)
-    return int(Decimal(match.group(1).replace(",", ".")) * 100)
+    sign, digits = match.groups()
+    cents = int(Decimal(digits.replace(",", ".")) * 100)
+    if sign == "-":
+        cents = -cents
+    return cents
 
 
 def amount(text: str, unit_words: Mapping[str, Unit]) -> int:
