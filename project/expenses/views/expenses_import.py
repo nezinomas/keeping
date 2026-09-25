@@ -98,8 +98,8 @@ class ImportSave(View):
         if receipt_valid:
             year = receipt_form.cleaned_data["date"].year
 
-        shop_money = receipt_form.cleaned_data.get("shop_money", 0)
-        shop_money_line = receipt_form.cleaned_data.get("shop_money_line", 0)
+        shop_money = receipt_form.cleaned_data.get("shop_money") or 0
+        shop_money_line = receipt_form.cleaned_data.get("shop_money_line") or 0
 
         formset = ReviewFormSet(
             data=request.POST,
@@ -117,7 +117,7 @@ class ImportSave(View):
                 receipt_form,
                 formset,
                 lines_total=lines_total,
-                receipt_total=receipt_form.cleaned_data.get("total", 0),
+                receipt_total=receipt_form.cleaned_data.get("total") or 0,
                 shop_money=shop_money,
                 shop_money_line=shop_money_line,
             )
