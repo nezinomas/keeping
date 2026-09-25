@@ -42,6 +42,9 @@ def money(text: str) -> int:
 
 
 def amount(text: str, unit_words: Mapping[str, Unit]) -> int:
+    if text == "0":
+        return 0
+
     match = _AMOUNT.match(text)
     if match is None:
         raise UnreadableReceiptTextError(text)

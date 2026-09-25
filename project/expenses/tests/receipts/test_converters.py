@@ -98,6 +98,27 @@ def test_amount_raises_on_unreadable_text(text):
         amount(text, DEFAULT_UNIT_WORDS)
 
 
+def test_amount_reads_bare_zero_as_not_collected():
+    assert amount("0", DEFAULT_UNIT_WORDS) == 0
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("0 vnt.", 0),
+        ("0 kg", 1),
+    ],
+)
+def test_amount_zero_with_unit_keeps_current_reading(text, expected):
+    assert amount(text, DEFAULT_UNIT_WORDS) == expected
+
+
+@pytest.mark.parametrize("text", ["0,0", "00"])
+def test_amount_zero_variants_without_unit_still_raise(text):
+    with pytest.raises(UnreadableReceiptTextError):
+        amount(text, DEFAULT_UNIT_WORDS)
+
+
 def test_is_deposit_true_for_can():
     title = "Skardinė (depozitinė) 0,10 EUR, 1 vnt. (UŽSTATAS)"
 
