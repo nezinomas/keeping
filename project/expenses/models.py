@@ -8,7 +8,7 @@ from ..accounts.models import Account
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
-from .services.keyword_match import normalise_keyword
+from .keywords import normalise_keyword
 
 
 class ExpenseType(TitleAbstract):

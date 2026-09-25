@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 from django.db import transaction
 
 from ...core.signals import accounts_signal, update_journal_first_record
+from ..keywords import normalise_keyword
 from ..models import Expense, ExpenseKeyword
 from ..receipts.receipt import ReceiptLine
-from .keyword_match import normalise_keyword
 
 if TYPE_CHECKING:
     from ...accounts.models import Account
