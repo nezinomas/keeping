@@ -1,5 +1,6 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -88,22 +89,25 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
 
         # Extract the values of the unique grouping fields
         grouping_data = {f: self.cleaned_data[f] for f in self.Meta.grouping_fields}
-        for month_idx, month_name in enumerate(monthnames(), start=1):
-            price = self.cleaned_data.get(month_name)
+        with transaction.atomic():
+            for month_idx, month_name in enumerate(monthnames(), start=1):
+                price = self.cleaned_data.get(month_name)
 
-            # Lookup criteria for this specific month row
-            lookup = {
-                "year": year,
-                "month": month_idx,
-                "journal": journal,
-                **grouping_data,
-            }
+                # Lookup criteria for this specific month row
+                lookup = {
+                    "year": year,
+                    "month": month_idx,
+                    "journal": journal,
+                    **grouping_data,
+                }
 
-            service = self.Meta.service_class(self.user)
-            if price is not None:
-                service.objects.update_or_create(**lookup, defaults={"price": price})
-            else:
-                service.objects.filter(**lookup).delete()
+                service = self.Meta.service_class(self.user)
+                if price is not None:
+                    service.objects.update_or_create(
+                        **lookup, defaults={"price": price}
+                    )
+                else:
+                    service.objects.filter(**lookup).delete()
 
         return self.instance
 
