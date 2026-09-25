@@ -28,9 +28,8 @@ class TextReceiptParser:
 
     def parse(self, document: pdfplumber.PDF) -> Receipt:
         pages = [converters.lines(page.extract_text()) for page in document.pages]
-        at = self._page_of(pages, self.layout.lines_start)
+        at, start = self._start_of_lines(pages)
         page = pages[at]
-        start = self._index_after(page, self.layout.lines_start)
         # the lines must end on the page they start on: a page break brings the
         # PDF's own footer and header between them, and those are not lines
         end = self._index_of_prefix(page, start, self.layout.lines_end)
@@ -42,16 +41,12 @@ class TextReceiptParser:
             shop_money=self._shop_money(tail),
         )
 
-    def _page_of(self, pages: list[tuple[str, ...]], marker: str) -> int:
-        for index, page in enumerate(pages):
-            if any(marker in line for line in page):
-                return index
-        raise UnreadableReceiptTextError(marker)
-
-    def _index_after(self, lines: tuple[str, ...], marker: str) -> int:
-        for index, line in enumerate(lines):
-            if marker in line:
-                return index + 1
+    def _start_of_lines(self, pages: list[tuple[str, ...]]) -> tuple[int, int]:
+        marker = self.layout.lines_start
+        for at, page in enumerate(pages):
+            for index, line in enumerate(page):
+                if marker in line:
+                    return at, index + 1
         raise UnreadableReceiptTextError(marker)
 
     def _index_of_prefix(self, lines: tuple[str, ...], start: int, prefix: str) -> int:

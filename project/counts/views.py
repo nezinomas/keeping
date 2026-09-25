@@ -42,11 +42,6 @@ class TabViewMixin:
     object = None
 
     def get_object(self):
-        self.object = self.kwargs.get("object")
-
-        if self.object:
-            return
-
         if count_type_slug := self.kwargs.get("slug"):
             with contextlib.suppress(CountType.DoesNotExist):
                 self.object = CountTypeModelService(self.request.user).objects.get(

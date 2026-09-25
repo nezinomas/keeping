@@ -36,22 +36,9 @@ class ExpenseNameChoicesMixin:
 
         return int_or_zero(getattr(initial, "pk", initial))
 
-    def _instance_expense_type_pk(self):
-        if self.instance.pk:
-            return self.instance.expense_type.pk
-
-        return 0
-
     def _expense_type_pk(self):
-        pk = self._posted_expense_type_pk()
-        if pk:
-            return pk
-
-        pk = self._initial_expense_type_pk()
-        if pk:
-            return pk
-
-        return self._instance_expense_type_pk()
+        # a ModelForm's instance reaches here through its initial
+        return self._posted_expense_type_pk() or self._initial_expense_type_pk()
 
     def _overwrite_expense_name_query(self):
         self._set_expense_name_choices(self._expense_type_pk())

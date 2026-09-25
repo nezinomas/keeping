@@ -129,9 +129,6 @@ class ReviewLineForm(ExpenseNameChoicesMixin, ConvertPriceMixin, forms.Form):
     def names_year(self):
         return self.year
 
-    def _instance_expense_type_pk(self):
-        return 0
-
     def _set_expense_name_choices(self, expense_type_pk):
         super()._set_expense_name_choices(expense_type_pk)
         self.fields["expense_name"].preload(self.choices.names_for(expense_type_pk))
@@ -241,11 +238,7 @@ class _ReviewFormSet(forms.BaseFormSet):
             if form.cleaned_data.get("skip"):
                 continue
 
-            keyword = form.cleaned_data.get("keyword")
-            if not keyword:
-                continue
-
-            by_keyword.setdefault(keyword, []).append(
+            by_keyword.setdefault(form.cleaned_data["keyword"], []).append(
                 (form, form.cleaned_data.get("expense_name"))
             )
 
