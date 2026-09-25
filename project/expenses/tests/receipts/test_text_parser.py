@@ -168,6 +168,62 @@ def test_text_receipt_parser_raises_on_discount_with_no_line_above(tmp_path):
         TextReceiptParser(LAYOUT).parse(document)
 
 
+def test_text_receipt_parser_raises_on_discount_without_a_price(tmp_path):
+    lines = [
+        "CORNER SHOP LTD",
+        "Items:",
+        "Bread 1,20 A",
+        "Deal on: bread",
+        "-----",
+        "Total due 1,20",
+    ]
+
+    with (
+        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
+        pytest.raises(UnreadableReceiptTextError),
+    ):
+        TextReceiptParser(LAYOUT).parse(document)
+
+
+def test_text_receipt_parser_raises_on_total_without_money(tmp_path):
+    lines = [
+        "CORNER SHOP LTD",
+        "Items:",
+        "Bread 1,20 A",
+        "-----",
+        "Total due soon",
+    ]
+
+    with (
+        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
+        pytest.raises(UnreadableReceiptTextError),
+    ):
+        TextReceiptParser(LAYOUT).parse(document)
+
+
+class _TextPage:
+    def __init__(self, text):
+        self._text = text
+
+    def extract_text(self):
+        return self._text
+
+
+class _TextDocument:
+    def __init__(self, *texts):
+        self.pages = [_TextPage(text) for text in texts]
+
+
+def test_text_receipt_parser_skips_blank_lines_between_items():
+    document = _TextDocument(
+        "CORNER SHOP LTD\nItems:\nBread 1,20 A\n\nButter 2,00 A\n-----\nTotal due 3,20"
+    )
+
+    receipt = TextReceiptParser(LAYOUT).parse(document)
+
+    assert [line.title for line in receipt.lines] == ["Bread", "Butter"]
+
+
 def test_text_receipt_parser_raises_on_amount_line_with_no_line_above(tmp_path):
     lines = [
         "CORNER SHOP LTD",
