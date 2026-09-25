@@ -7,11 +7,18 @@ from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
 from ..models import Expense, ExpenseKeyword
+from ..receipts import reader
 from ..receipts.errors import UnreadableReceiptTextError
 from ..receipts.reader import ReceiptReader
 from ..receipts.receipt import Receipt, ReceiptLine
+from ..receipts.text_parser import TextReceiptParser
 from .factories import ExpenseKeywordFactory, ExpenseNameFactory, ExpenseTypeFactory
-from .receipts.pdfs import FIXTURES, table_pdf
+from .receipts.pdfs import (
+    EMPTY_TEXT_LAYOUT,
+    FIXTURES,
+    empty_text_receipt_pdf,
+    table_pdf,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -138,6 +145,22 @@ def test_import_post_unreadable_receipt_error(main_user, client_logged):
             url,
             data=_upload_data(a, _barbora_file(), date="1999-01-05"),
         )
+
+    assert response.status_code == 200
+    assert "Čekio nepavyko nuskaityti." in response.content.decode()
+
+
+def test_import_post_receipt_with_no_lines_error(
+    main_user, client_logged, tmp_path, monkeypatch
+):
+    monkeypatch.setattr(reader, "PARSERS", (TextReceiptParser(EMPTY_TEXT_LAYOUT),))
+    path = empty_text_receipt_pdf(tmp_path / "empty.pdf")
+    url = reverse("expenses:import")
+
+    response = client_logged.post(
+        url,
+        data=_upload_data(AccountFactory(), _upload("empty.pdf", path.read_bytes())),
+    )
 
     assert response.status_code == 200
     assert "Čekio nepavyko nuskaityti." in response.content.decode()

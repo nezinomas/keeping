@@ -3,10 +3,18 @@ from io import BytesIO
 import pdfplumber
 import pytest
 
-from ...receipts import converters
+from ...receipts import converters, reader
 from ...receipts.errors import UnreadableReceiptTextError, UnrecognisedReceiptError
+from ...receipts.layout import Columns, TableLayout
 from ...receipts.reader import PARSERS, ReceiptReader
-from .pdfs import FIXTURES, table_pdf
+from ...receipts.table_parser import TableReceiptParser
+from ...receipts.text_parser import TextReceiptParser
+from .pdfs import (
+    EMPTY_TEXT_LAYOUT,
+    FIXTURES,
+    empty_text_receipt_pdf,
+    table_pdf,
+)
 
 FIXTURE = FIXTURES / "barbora.pdf"
 
@@ -58,3 +66,36 @@ def test_each_fixture_is_recognised_by_exactly_one_parser(fixture):
     matches = [parser for parser in PARSERS if parser.recognises(text)]
 
     assert len(matches) == 1
+
+
+NO_LINES_TABLE_LAYOUT = TableLayout(
+    marker="ACME SHOP",
+    columns=Columns(title="Item", amount="Qty", price="Sum"),
+    total_label="Grand total",
+    promotion_label="Promo applied",
+)
+
+
+def test_reader_raises_unreadable_when_a_text_receipt_has_no_lines(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(reader, "PARSERS", (TextReceiptParser(EMPTY_TEXT_LAYOUT),))
+    path = empty_text_receipt_pdf(tmp_path / "empty.pdf")
+
+    with pytest.raises(UnreadableReceiptTextError):
+        ReceiptReader.read(path)
+
+
+def test_reader_raises_unreadable_when_no_table_row_was_collected(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(reader, "PARSERS", (TableReceiptParser(NO_LINES_TABLE_LAYOUT),))
+    path = table_pdf(
+        tmp_path / "empty.pdf",
+        text_above="ACME SHOP",
+        header=("Item", "Qty", "Sum"),
+        rows=[("Apple", "0", "€0,00"), ("Grand total", "", "€0,00")],
+    )
+
+    with pytest.raises(UnreadableReceiptTextError):
+        ReceiptReader.read(path)

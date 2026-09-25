@@ -13,6 +13,8 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+from ...receipts.layout import TextLayout
+
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "receipts"
 
 
@@ -49,3 +51,29 @@ def text_pdf(path: Path, lines, *, more_pages=()) -> Path:
         pdf.showPage()
     pdf.save()
     return path
+
+
+EMPTY_TEXT_LAYOUT = TextLayout(
+    marker="CORNER SHOP LTD",
+    lines_start="Items:",
+    lines_end="-----",
+    vat_classes=("A",),
+    amount_separator=" x ",
+    item_discount_prefixes=("Deal on:",),
+    shop_money_label="Paid with points",
+    total_label="Total due",
+)
+
+
+def empty_text_receipt_pdf(path: Path) -> Path:
+    """A receipt of EMPTY_TEXT_LAYOUT with Shop money but no lines."""
+    return text_pdf(
+        path,
+        [
+            "CORNER SHOP LTD",
+            "Items:",
+            "-----",
+            "Paid with points -0,30 A",
+            "Total due 0,00",
+        ],
+    )
