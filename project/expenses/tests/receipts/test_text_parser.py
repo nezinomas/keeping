@@ -329,9 +329,11 @@ def test_text_receipt_parser_raises_when_the_lines_cross_a_page(tmp_path):
         more_pages=(["Butter 2,00 A", "-----", "Total due 3,20"],),
     )
 
-    with pdfplumber.open(path) as document:
-        with pytest.raises(UnreadableReceiptTextError):
-            TextReceiptParser(LAYOUT).parse(document)
+    with (
+        pdfplumber.open(path) as document,
+        pytest.raises(UnreadableReceiptTextError),
+    ):
+        TextReceiptParser(LAYOUT).parse(document)
 
 
 def test_text_receipt_parser_reads_a_total_on_a_later_page(tmp_path):
