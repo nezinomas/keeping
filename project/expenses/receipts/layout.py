@@ -31,3 +31,17 @@ class TableLayout:
     total_label: str
     unit_words: Mapping[str, Unit] = DEFAULT_UNIT_WORDS
     deposit_words: tuple[str, ...] = DEFAULT_DEPOSIT_WORDS
+
+
+@dataclass(frozen=True)
+class TextLayout:
+    marker: str
+    lines_start: str
+    lines_end: str
+    vat_classes: tuple[str, ...]
+    amount_separator: str
+    item_discount_prefix: str
+    shop_money_label: str
+    total_label: str
+    unit_words: Mapping[str, Unit] = DEFAULT_UNIT_WORDS
+    deposit_words: tuple[str, ...] = DEFAULT_DEPOSIT_WORDS

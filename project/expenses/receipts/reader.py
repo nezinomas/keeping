@@ -5,12 +5,16 @@ from pdfplumber.utils.exceptions import MalformedPDFException, PdfminerException
 
 from . import converters
 from .errors import UnreadableReceiptTextError, UnrecognisedReceiptError
-from .layouts import BARBORA
+from .layouts import BARBORA, MAXIMA
 from .receipt import Receipt
 from .shop_parser import ShopParser
 from .table_parser import TableReceiptParser
+from .text_parser import TextReceiptParser
 
-PARSERS: tuple[ShopParser, ...] = (TableReceiptParser(BARBORA),)
+PARSERS: tuple[ShopParser, ...] = (
+    TableReceiptParser(BARBORA),
+    TextReceiptParser(MAXIMA),
+)
 
 
 @dataclass
