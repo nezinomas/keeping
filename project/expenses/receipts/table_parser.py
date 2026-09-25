@@ -30,10 +30,14 @@ class TableReceiptParser:
         return self.layout.marker in text
 
     def parse(self, document: pdfplumber.PDF) -> Receipt:
-        for rows in self._tables(document):
+        tables = list(self._tables(document))
+        for index, rows in enumerate(tables):
             if self._carries_columns(rows[0]):
-                return self._receipt(
-                    rows, ColumnIndexes.of(rows[0], self.layout.columns)
+                at = ColumnIndexes.of(rows[0], self.layout.columns)
+                body = self._product_rows(tables, index)
+                return Receipt(
+                    lines=tuple(self._product_lines(body, at)),
+                    total=self._total(tables),
                 )
         raise UnreadableReceiptTextError(self.layout.marker)
 
@@ -46,22 +50,58 @@ class TableReceiptParser:
     def _carries_columns(self, header: Row) -> bool:
         return all(name in header for name in self.layout.columns.names)
 
-    def _receipt(self, rows: list[Row], at: ColumnIndexes) -> Receipt:
-        return Receipt(
-            lines=tuple(self._product_lines(rows, at)),
-            total=self._total(rows, at),
-        )
+    def _product_rows(self, tables: list[list[Row]], header_index: int) -> list[Row]:
+        width = len(tables[header_index][0])
+        rows = list(tables[header_index][1:])
+        for later in tables[header_index + 1 :]:
+            if len(later[0]) == width:
+                rows.extend(later)
+        return rows
 
-    def _product_lines(
-        self, rows: list[Row], at: ColumnIndexes
-    ) -> Iterator[ReceiptLine]:
-        body = rows[1:]
-        end = next((n for n, row in enumerate(body) if row[at.amount] == ""), len(body))
+    def _product_lines(self, body: list[Row], at: ColumnIndexes) -> list[ReceiptLine]:
+        lines: list[ReceiptLine] = []
+        stop = len(body)
+        index = 0
+        while index < len(body):
+            row = body[index]
+            if self._is_promotion(row):
+                index, line = self._promotion_line(body, index, at)
+                lines.append(line)
+                continue
+            if row[at.amount] == "":
+                stop = index
+                break
+            if row[at.amount] == "0":
+                index = self._skip_not_collected(body, index, at)
+                continue
+            lines.append(self._line(row, at))
+            index += 1
         # a product row after the first blank amount means a line would be lost
-        if any(row[at.amount] for row in body[end:]):
+        if any(row[at.amount] for row in body[stop:]):
             raise UnreadableReceiptTextError(self.layout.columns.amount)
-        for row in body[:end]:
-            yield self._line(row, at)
+        return lines
+
+    def _is_promotion(self, row: Row) -> bool:
+        return self.layout.promotion_label in row
+
+    def _promotion_line(
+        self, body: list[Row], index: int, at: ColumnIndexes
+    ) -> tuple[int, ReceiptLine]:
+        if index + 1 == len(body):
+            raise UnreadableReceiptTextError(self.layout.promotion_label)
+        promotion_row, product_row = body[index], body[index + 1]
+        if product_row[at.amount] in ("", "0") or product_row[at.price] != "":
+            raise UnreadableReceiptTextError(self.layout.promotion_label)
+        priced = [*product_row]
+        priced[at.price] = promotion_row[at.price]
+        return index + 2, self._line(priced, at)
+
+    def _skip_not_collected(
+        self, body: list[Row], index: int, at: ColumnIndexes
+    ) -> int:
+        if converters.money(body[index][at.price]) != 0:
+            raise UnreadableReceiptTextError(body[index][at.price])
+        return index + 1
 
     def _line(self, row: Row, at: ColumnIndexes) -> ReceiptLine:
         title = row[at.title]
@@ -72,8 +112,12 @@ class TableReceiptParser:
             is_deposit=converters.is_deposit(title, self.layout.deposit_words),
         )
 
-    def _total(self, rows: list[Row], at: ColumnIndexes) -> int:
-        for row in rows[1:]:
-            if row[at.title] == self.layout.total_label:
-                return converters.money(row[at.price])
+    def _total(self, tables: list[list[Row]]) -> int:
+        for rows in tables:
+            for row in rows:
+                if self.layout.total_label in row:
+                    return converters.money(self._last_non_empty(row))
         raise UnreadableReceiptTextError(self.layout.total_label)
+
+    def _last_non_empty(self, row: Row) -> str:
+        return next((value for value in reversed(row) if value), "")

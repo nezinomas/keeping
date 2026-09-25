@@ -15,6 +15,7 @@ LAYOUT = TableLayout(
     marker="ACME SHOP",
     columns=Columns(title="Item", amount="Qty", price="Sum paid"),
     total_label="Grand total",
+    promotion_label="Promo applied",
     deposit_words=DEFAULT_DEPOSIT_WORDS + ("DEPOSIT",),
 )
 
@@ -121,6 +122,163 @@ def test_table_receipt_parser_raises_on_a_product_row_after_a_blank_amount(tmp_p
     ]
     path = table_pdf(
         tmp_path / "gap.pdf", text_above="ACME SHOP", header=header, rows=rows
+    )
+    with pdfplumber.open(path) as document, pytest.raises(UnreadableReceiptTextError):
+        TableReceiptParser(LAYOUT).parse(document)
+
+
+def test_table_receipt_parser_reads_a_continuation_table(tmp_path):
+    header = ("No", "Item", "Qty", "Sum\npaid")
+    first_table = [header, ("1", "Apple", "2 vnt.", "€1,20")]
+    second_table = [
+        ("2", "Pear", "1 vnt.", "€0,80"),
+        ("", "Grand total", "", "€2,00"),
+    ]
+    path = table_pdf(
+        tmp_path / "continuation.pdf",
+        text_above="ACME SHOP",
+        header=first_table[0],
+        rows=first_table[1:],
+        more_tables=(second_table,),
+    )
+    with pdfplumber.open(path) as document:
+        receipt = TableReceiptParser(LAYOUT).parse(document)
+
+    assert [line.title for line in receipt.lines] == ["Apple", "Pear"]
+    assert receipt.total == 200
+
+
+def test_table_receipt_parser_ignores_a_narrower_table(tmp_path):
+    header = ("No", "Item", "Qty", "Sum\npaid")
+    first_table = [
+        header,
+        ("1", "Apple", "2 vnt.", "€1,20"),
+        ("", "Grand total", "", "€1,20"),
+    ]
+    narrower_table = [("Deposit", "€0,10")]
+    path = table_pdf(
+        tmp_path / "narrower.pdf",
+        text_above="ACME SHOP",
+        header=first_table[0],
+        rows=first_table[1:],
+        more_tables=(narrower_table,),
+    )
+    with pdfplumber.open(path) as document:
+        receipt = TableReceiptParser(LAYOUT).parse(document)
+
+    assert [line.title for line in receipt.lines] == ["Apple"]
+
+
+def test_table_receipt_parser_reads_the_total_from_a_separate_table(tmp_path):
+    header = ("No", "Item", "Qty", "Sum\npaid")
+    first_table = [header, ("1", "Apple", "2 vnt.", "€1,20")]
+    total_table = [("Grand total", "€1,20")]
+    path = table_pdf(
+        tmp_path / "separate_total.pdf",
+        text_above="ACME SHOP",
+        header=first_table[0],
+        rows=first_table[1:],
+        more_tables=(total_table,),
+    )
+    with pdfplumber.open(path) as document:
+        receipt = TableReceiptParser(LAYOUT).parse(document)
+
+    assert receipt.total == 120
+    assert [line.title for line in receipt.lines] == ["Apple"]
+
+
+def test_table_receipt_parser_gives_the_promotion_price_to_the_row_below(tmp_path):
+    header = ("No", "Item", "Qty", "Sum\npaid")
+    rows = [
+        ("1", "Promo applied", "", "€3,49"),
+        ("2", "Cucumbers", "2 vnt.", ""),
+        ("", "Grand total", "", "€3,49"),
+    ]
+    path = table_pdf(
+        tmp_path / "promo.pdf", text_above="ACME SHOP", header=header, rows=rows
+    )
+    with pdfplumber.open(path) as document:
+        receipt = TableReceiptParser(LAYOUT).parse(document)
+
+    assert len(receipt.lines) == 1
+    assert receipt.lines[0].title == "Cucumbers"
+    assert receipt.lines[0].amount == 2
+    assert receipt.lines[0].price == 349
+
+
+def test_table_receipt_parser_raises_when_a_promotion_row_is_followed_by_a_priced_row(
+    tmp_path,
+):
+    header = ("No", "Item", "Qty", "Sum\npaid")
+    rows = [
+        ("1", "Promo applied", "", "€3,49"),
+        ("2", "Cucumbers", "2 vnt.", "€1,00"),
+        ("", "Grand total", "", "€3,49"),
+    ]
+    path = table_pdf(
+        tmp_path / "promo_priced.pdf", text_above="ACME SHOP", header=header, rows=rows
+    )
+    with pdfplumber.open(path) as document, pytest.raises(UnreadableReceiptTextError):
+        TableReceiptParser(LAYOUT).parse(document)
+
+
+def test_table_receipt_parser_raises_when_a_promoted_row_was_not_collected(
+    tmp_path,
+):
+    header = ("No", "Item", "Qty", "Sum\npaid")
+    rows = [
+        ("1", "Promo applied", "", "€3,49"),
+        ("", "Cucumbers", "0", ""),
+        ("", "Grand total", "", "€3,49"),
+    ]
+    path = table_pdf(
+        tmp_path / "promo_zero.pdf", text_above="ACME SHOP", header=header, rows=rows
+    )
+    with pdfplumber.open(path) as document, pytest.raises(UnreadableReceiptTextError):
+        TableReceiptParser(LAYOUT).parse(document)
+
+
+def test_table_receipt_parser_raises_when_a_promotion_row_is_last(tmp_path):
+    header = ("No", "Item", "Qty", "Sum\npaid")
+    rows = [
+        ("1", "Apple", "2 vnt.", "€1,20"),
+        ("2", "Promo applied", "", "€0,50"),
+    ]
+    path = table_pdf(
+        tmp_path / "promo_last.pdf", text_above="ACME SHOP", header=header, rows=rows
+    )
+    with pdfplumber.open(path) as document, pytest.raises(UnreadableReceiptTextError):
+        TableReceiptParser(LAYOUT).parse(document)
+
+
+def test_table_receipt_parser_drops_a_not_collected_row(tmp_path):
+    header = ("No", "Item", "Qty", "Sum\npaid")
+    rows = [
+        ("1", "Apple", "2 vnt.", "€1,20"),
+        ("2", "Not collected", "0", "€0,00"),
+        ("", "Grand total", "", "€1,20"),
+    ]
+    path = table_pdf(
+        tmp_path / "zero_amount.pdf", text_above="ACME SHOP", header=header, rows=rows
+    )
+    with pdfplumber.open(path) as document:
+        receipt = TableReceiptParser(LAYOUT).parse(document)
+
+    assert [line.title for line in receipt.lines] == ["Apple"]
+
+
+def test_table_receipt_parser_raises_when_a_zero_amount_row_has_a_price(tmp_path):
+    header = ("No", "Item", "Qty", "Sum\npaid")
+    rows = [
+        ("1", "Apple", "2 vnt.", "€1,20"),
+        ("2", "Odd row", "0", "€0,50"),
+        ("", "Grand total", "", "€1,70"),
+    ]
+    path = table_pdf(
+        tmp_path / "zero_amount_priced.pdf",
+        text_above="ACME SHOP",
+        header=header,
+        rows=rows,
     )
     with pdfplumber.open(path) as document, pytest.raises(UnreadableReceiptTextError):
         TableReceiptParser(LAYOUT).parse(document)

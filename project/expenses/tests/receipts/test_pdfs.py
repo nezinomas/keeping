@@ -61,3 +61,19 @@ def test_text_pdf_puts_more_pages_after_the_first(tmp_path):
 
     with pdfplumber.open(path) as pdf:
         assert [page.extract_text() for page in pdf.pages] == ["Page one", "Page two"]
+
+
+def test_table_pdf_draws_more_tables_as_grids_of_their_own(tmp_path):
+    path = table_pdf(
+        tmp_path / "test.pdf",
+        text_above="ACME SHOP",
+        header=("Name", "Sum"),
+        rows=[("Apple", "€1,20")],
+        more_tables=([("Total", "€1,20")],),
+    )
+
+    with pdfplumber.open(path) as pdf:
+        assert pdf.pages[0].extract_tables() == [
+            [["Name", "Sum"], ["Apple", "€1,20"]],
+            [["Total", "€1,20"]],
+        ]

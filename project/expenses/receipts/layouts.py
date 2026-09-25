@@ -8,6 +8,7 @@ BARBORA = TableLayout(
         price="Suma su nuolaida",
     ),
     total_label="Bendra suma",
+    promotion_label="Pritaikyta akcija",
 )
 
 MAXIMA = TextLayout(
