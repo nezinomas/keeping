@@ -1,4 +1,4 @@
-from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -8,7 +8,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from ...users.tests.factories import UserFactory
 
 
-class Browser(LiveServerTestCase):
+class Browser(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

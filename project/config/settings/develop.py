@@ -15,9 +15,6 @@ INSTALLED_APPS += [
 
 
 STATIC_ROOT = None
-STATICFILES_DIRS = [
-    SITE_ROOT / "static",
-]
 
 # print SQL queries in shell_plus
 SHELL_PLUS_PRINT_SQL = True
