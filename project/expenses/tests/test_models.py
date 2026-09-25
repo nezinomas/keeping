@@ -927,6 +927,18 @@ def test_expense_keyword_clean_fails_for_same_titled_name_of_other_journal(
         obj.clean()
 
 
+def test_expense_keyword_clean_other_journal_name_message(main_user, second_user):
+    name = ExpenseNameFactory(parent=ExpenseTypeFactory(journal=second_user.journal))
+    obj = ExpenseKeywordFactory.build(journal=main_user.journal, expense_name=name)
+
+    with pytest.raises(ValidationError) as e:
+        obj.clean()
+
+    assert e.value.message_dict == {
+        "expense_name": ["Išlaidų pavadinimas priklauso kitam žurnalui."]
+    }
+
+
 def test_expense_keyword_full_clean_without_name_is_a_field_error(main_user):
     obj = ExpenseKeyword(journal=main_user.journal, keyword="jogurt")
 

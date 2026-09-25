@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import F
+from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.models import TitleAbstract
@@ -88,7 +89,7 @@ class ExpenseKeyword(models.Model):
 
         if self.expense_name.parent.journal_id != self.journal_id:
             raise ValidationError(
-                {"expense_name": "The expense name belongs to another journal."}
+                {"expense_name": _("The expense name belongs to another journal.")}
             )
 
     def save(self, *args, **kwargs):

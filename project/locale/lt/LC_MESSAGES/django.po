@@ -2446,6 +2446,10 @@ msgstr "Raktažodis turi būti prekės pavadinime."
 msgid "The same keyword is used for different expense names."
 msgstr "Tas pats raktažodis naudojamas skirtingiems išlaidų pavadinimams."
 
+#: .\project\expenses\models.py:1
+msgid "The expense name belongs to another journal."
+msgstr "Išlaidų pavadinimas priklauso kitam žurnalui."
+
 #: .\project\expenses\forms.py:1
 msgid "Save"
 msgstr "Išsaugoti"
