@@ -26,7 +26,7 @@
       @input="recompute()">
     {% csrf_token %}
     {% for field in receipt_form %}
-        {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        <c-field-errors :errors=field.errors />
     {% endfor %}
     {{ receipt_form.total }}
     {{ receipt_form.shop_money }}
@@ -34,9 +34,7 @@
 
     {{ formset.management_form }}
 
-    {% for error in formset.non_form_errors %}
-        <div class="invalid-feedback">{{ error }}</div>
-    {% endfor %}
+    <c-field-errors :errors=formset.non_form_errors />
 
     <div class="table-responsive">
     <table class="main">
@@ -58,10 +56,8 @@
             {% for form in formset %}
                 {% if form.non_field_errors %}
                     <tr>
-                        <td colspan="8">
-                            {% for error in form.non_field_errors %}
-                                <div class="invalid-feedback">{{ error }}</div>
-                            {% endfor %}
+                        <td colspan="{% if shop_money > 0 %}8{% else %}7{% endif %}">
+                            <c-field-errors :errors=form.non_field_errors />
                         </td>
                     </tr>
                 {% endif %}
@@ -72,27 +68,27 @@
                     </td>
                     <td>
                         {% render_field form.title class="form-control" aria-label=form.title.label %}
-                        {% for error in form.title.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        <c-field-errors :errors=form.title.errors />
                     </td>
                     <td>
                         {% render_field form.amount class="form-control" aria-label=form.amount.label %}
-                        {% for error in form.amount.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        <c-field-errors :errors=form.amount.errors />
                     </td>
                     <td>
                         {% render_field form.price class="form-control" aria-label=form.price.label %}
-                        {% for error in form.price.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        <c-field-errors :errors=form.price.errors />
                     </td>
                     <td>
                         {% render_field form.expense_type class="form-select" aria-label=form.expense_type.label %}
-                        {% for error in form.expense_type.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        <c-field-errors :errors=form.expense_type.errors />
                     </td>
                     <td>
                         {% render_field form.expense_name class="form-select" aria-label=form.expense_name.label %}
-                        {% for error in form.expense_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        <c-field-errors :errors=form.expense_name.errors />
                     </td>
                     <td>
                         {% render_field form.keyword class="form-control" aria-label=form.keyword.label %}
-                        {% for error in form.keyword.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        <c-field-errors :errors=form.keyword.errors />
                     </td>
                     {% if shop_money > 0 %}
                         <td class="text-center">
@@ -107,27 +103,18 @@
             <tr class="main__total">
                 <td colspan="3">{% translate 'Lines total' %}</td>
                 <td><span x-text="(linesTotal / 100).toFixed(2).replace('.', ',')">{{ lines_total|price|floatformat:2 }}</span></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                {% if shop_money > 0 %}<td></td>{% endif %}
+                <td colspan="{% if shop_money > 0 %}4{% else %}3{% endif %}"></td>
             </tr>
             <tr class="main__total">
                 <td colspan="3">{% translate 'Receipt total' %}</td>
                 <td>{{ receipt_total|price|floatformat:2 }}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                {% if shop_money > 0 %}<td></td>{% endif %}
+                <td colspan="{% if shop_money > 0 %}4{% else %}3{% endif %}"></td>
             </tr>
             {% if shop_money > 0 %}
                 <tr class="main__total">
                     <td colspan="3">{% translate 'Shop money' %}</td>
                     <td>{{ shop_money|price|floatformat:2 }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td colspan="4"></td>
                 </tr>
             {% endif %}
         </tfoot>
