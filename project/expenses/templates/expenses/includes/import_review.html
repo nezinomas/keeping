@@ -16,7 +16,7 @@
               let cents = 0;
               this.$el.querySelectorAll('input[name$=\'-price\']').forEach((el) => {
                   const val = parseFloat((el.value || '').replace(',', '.'));
-                  if (!isNaN(val)) cents += Math.round(val * 100);
+                  if (!isNaN(val)) cents += Math.trunc(val * 100 + 0.00001);
               });
               this.linesTotal = cents;
               this.disagree = cents !== ({{ receipt_total }} + {{ shop_money }});
