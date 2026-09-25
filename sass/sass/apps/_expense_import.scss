@@ -11,6 +11,12 @@
     min-width: 16rem;
 }
 
+// every control on one line: an error grows its cell downward, as the worth
+// forms' fields align to their start, instead of pushing its control up
+#review tbody td {
+    vertical-align: baseline;
+}
+
 // PDF failas · Data · Sąskaita · Nuskaityti in one row. Label, control and
 // error are three shared rows, so an error grows the last one and moves no input
 .import-upload {
