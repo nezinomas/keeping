@@ -11,19 +11,43 @@
     min-width: 16rem;
 }
 
-// PDF failas · Data · Sąskaita · Nuskaityti in one row, bottom-aligned so
-// differing label lengths still line the inputs up
+// PDF failas · Data · Sąskaita · Nuskaityti in one row. Label, control and
+// error are three shared rows, so an error grows the last one and moves no input
 .import-upload {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    gap: $gap;
+    display: grid;
+    grid-template-rows: auto auto auto;
+    grid-auto-flow: column;
+    justify-content: start;
+    column-gap: $gap;
+
+    > div {
+        display: grid;
+        grid-template-rows: subgrid;
+        grid-row: span 3;
+        align-content: start;
+    }
+
+    > button {
+        grid-row: 2;
+        align-self: start;
+    }
 }
 
 @media only screen and (max-width: 767px) {
     .import-upload {
-        flex-direction: column;
-        align-items: stretch;
+        grid-auto-flow: row;
+        grid-template-rows: none;
+        grid-template-columns: 1fr;
+        row-gap: $gap;
+
+        > div {
+            display: block;
+            grid-row: auto;
+        }
+
+        > button {
+            grid-row: auto;
+        }
     }
 }
 
