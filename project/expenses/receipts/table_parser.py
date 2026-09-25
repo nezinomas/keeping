@@ -36,7 +36,7 @@ class TableReceiptParser:
                 at = ColumnIndexes.of(rows[0], self.layout.columns)
                 body = self._product_rows(tables, index)
                 return Receipt(
-                    lines=tuple(self._product_lines(body, at)),
+                    lines=tuple(self._receipt_lines(body, at)),
                     total=self._total(tables),
                 )
         raise UnreadableReceiptTextError(self.layout.marker)
@@ -58,7 +58,7 @@ class TableReceiptParser:
                 rows.extend(later)
         return rows
 
-    def _product_lines(self, body: list[Row], at: ColumnIndexes) -> list[ReceiptLine]:
+    def _receipt_lines(self, body: list[Row], at: ColumnIndexes) -> list[ReceiptLine]:
         lines: list[ReceiptLine] = []
         stop = len(body)
         index = 0
