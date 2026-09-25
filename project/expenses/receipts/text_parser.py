@@ -8,8 +8,8 @@ from .errors import UnreadableReceiptTextError
 from .layout import TextLayout
 from .receipt import Receipt, ReceiptLine
 
-_PRICED_LINE = re.compile(r"^(.*) (-?\d+,\d{2}) ([A-Z])$")
-_TRAILING_MONEY = re.compile(r"(-?\d+,\d{2})(?: [A-Z])?$")
+_PRICED_LINE = re.compile(rf"^(.*) ({converters.BARE_MONEY}) ([A-Z])$")
+_TRAILING_MONEY = re.compile(rf"({converters.BARE_MONEY})(?: [A-Z])?$")
 
 
 @dataclass

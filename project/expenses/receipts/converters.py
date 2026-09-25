@@ -6,8 +6,11 @@ from .errors import UnreadableReceiptTextError
 from .layout import Unit
 
 _WHITESPACE = re.compile(r"\s+")
+_DIGITS = r"\d+,\d{2}"
+# money as a text receipt prints it inside a line; a parser matches with it
+BARE_MONEY = rf"-?{_DIGITS}"
 # a minus only on the bare form: no sample has shown a negative euro price
-_MONEY = re.compile(r"^(€|-?)(\d+,\d{2})$")
+_MONEY = re.compile(rf"^(€|-?)({_DIGITS})$")
 _AMOUNT = re.compile(r"^(\d+(?:,\d+)?) (\S+?)\.?$")
 
 
