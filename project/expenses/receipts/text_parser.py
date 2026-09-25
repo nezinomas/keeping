@@ -64,6 +64,8 @@ class TextReceiptParser:
         pending: list[_PendingLine] = []
         pending_title = ""
         for line in region:
+            if not line:
+                continue
             if self._is_amount_line(line):
                 pending_title = self._apply_amount(pending, pending_title, line)
             elif line.startswith(self.layout.item_discount_prefixes):
