@@ -5,6 +5,7 @@ from ...receipts.layout import (
     DEFAULT_UNIT_WORDS,
     Columns,
     TableLayout,
+    TextLayout,
     Unit,
 )
 
@@ -58,6 +59,63 @@ def test_layout_adding_a_word_keeps_the_defaults():
 
     assert layout.unit_words["vnt"] == Unit.PIECES
     assert layout.unit_words["kg"] == Unit.WEIGHT
+    assert layout.unit_words["g"] == Unit.WEIGHT
+    assert "UŽSTATAS" in layout.deposit_words
+    assert "DEPOSIT" in layout.deposit_words
+
+
+def test_text_layout_holds_its_fields():
+    layout = TextLayout(
+        marker="Shop",
+        lines_start="Items:",
+        lines_end="-----",
+        vat_classes=("A", "B"),
+        amount_separator=" x ",
+        item_discount_prefix="Deal:",
+        shop_money_label="Paid",
+        total_label="Total",
+    )
+
+    assert layout.marker == "Shop"
+    assert layout.lines_start == "Items:"
+    assert layout.lines_end == "-----"
+    assert layout.vat_classes == ("A", "B")
+    assert layout.amount_separator == " x "
+    assert layout.item_discount_prefix == "Deal:"
+    assert layout.shop_money_label == "Paid"
+    assert layout.total_label == "Total"
+
+
+def test_text_layout_defaults_to_shared_words():
+    layout = TextLayout(
+        marker="Shop",
+        lines_start="Items:",
+        lines_end="-----",
+        vat_classes=("A",),
+        amount_separator=" x ",
+        item_discount_prefix="Deal:",
+        shop_money_label="Paid",
+        total_label="Total",
+    )
+
+    assert layout.unit_words == DEFAULT_UNIT_WORDS
+    assert layout.deposit_words == DEFAULT_DEPOSIT_WORDS
+
+
+def test_text_layout_adding_a_word_keeps_the_defaults():
+    layout = TextLayout(
+        marker="Shop",
+        lines_start="Items:",
+        lines_end="-----",
+        vat_classes=("A",),
+        amount_separator=" x ",
+        item_discount_prefix="Deal:",
+        shop_money_label="Paid",
+        total_label="Total",
+        unit_words=DEFAULT_UNIT_WORDS | {"g": Unit.WEIGHT},
+        deposit_words=DEFAULT_DEPOSIT_WORDS + ("DEPOSIT",),
+    )
+
     assert layout.unit_words["g"] == Unit.WEIGHT
     assert "UŽSTATAS" in layout.deposit_words
     assert "DEPOSIT" in layout.deposit_words
