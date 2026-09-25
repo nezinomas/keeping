@@ -270,6 +270,26 @@ def test_import_post_shop_money_radios_only_when_positive(main_user, client_logg
     assert 'name="form-0-shop_money_line"' not in text
 
 
+def test_import_post_shop_money_radios_are_drawn_as_form_checks(
+    main_user, client_logged
+):
+    a = AccountFactory()
+    receipt = _receipt(
+        lines=(ReceiptLine(title="A", amount=1, price=600, is_deposit=False),),
+        total=500,
+        shop_money=100,
+    )
+
+    with patch.object(ReceiptReader, "read", return_value=receipt):
+        response = client_logged.post(
+            reverse("expenses:import"),
+            data=_upload_data(a, _barbora_file(), date="1999-01-05"),
+        )
+
+    radio = '<input type="radio" class="form-check-input" name="shop_money_line"'
+    assert radio in response.content.decode()
+
+
 def test_import_post_no_shop_money_radios(main_user, client_logged):
     a = AccountFactory()
     url = reverse("expenses:import")
