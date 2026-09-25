@@ -13,7 +13,7 @@ LAYOUT = TextLayout(
     lines_end="-----",
     vat_classes=("A", "B"),
     amount_separator=" x ",
-    item_discount_prefix="Deal on:",
+    item_discount_prefixes=("Deal on:", "Markdown"),
     shop_money_label="Paid with points",
     total_label="Total due",
 )
@@ -75,6 +75,41 @@ def test_text_receipt_parser_folds_an_item_discount_into_the_line_above(tmp_path
     receipt = _receipt(tmp_path, BASE_LINES)
 
     assert receipt.lines[1].price == 200
+
+
+def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
+    tmp_path,
+):
+    lines = [
+        "CORNER SHOP LTD",
+        "Items:",
+        "Bread 1,20 A",
+        "Markdown -0,20 A",
+        "-----",
+        "Total due 1,00",
+    ]
+
+    receipt = _receipt(tmp_path, lines)
+
+    assert receipt.lines[0].price == 100
+
+
+def test_text_receipt_parser_raises_on_second_prefix_discount_with_no_line_above(
+    tmp_path,
+):
+    lines = [
+        "CORNER SHOP LTD",
+        "Items:",
+        "Markdown -0,20 A",
+        "-----",
+        "Total due 1,00",
+    ]
+
+    with (
+        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
+        pytest.raises(UnreadableReceiptTextError),
+    ):
+        TextReceiptParser(LAYOUT).parse(document)
 
 
 def test_text_receipt_parser_defaults_amount_to_one_piece(tmp_path):

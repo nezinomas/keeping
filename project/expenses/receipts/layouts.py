@@ -16,7 +16,7 @@ MAXIMA = TextLayout(
     lines_end="=====",
     vat_classes=("A",),
     amount_separator=" X ",
-    item_discount_prefix="AČIŪ nuolaida prekei:",
+    item_discount_prefixes=("AČIŪ nuolaida prekei:", "Nukainojimas"),
     shop_money_label="Atsiskaityta MAXIMOS pinigais",
     total_label="Kvito suma",
 )

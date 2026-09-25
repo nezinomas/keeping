@@ -40,7 +40,7 @@ class TextLayout:
     lines_end: str
     vat_classes: tuple[str, ...]
     amount_separator: str
-    item_discount_prefix: str
+    item_discount_prefixes: tuple[str, ...]
     shop_money_label: str
     total_label: str
     unit_words: Mapping[str, Unit] = DEFAULT_UNIT_WORDS
