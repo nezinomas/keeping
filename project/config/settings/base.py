@@ -48,7 +48,12 @@ MEDIA_URL = "/media/"
 
 
 STATIC_URL = "/static/"
-STATIC_ROOT = Path(SITE_ROOT) / "static"
+# Source files live in project/static and are found through STATICFILES_DIRS.
+# collectstatic copies them to STATIC_ROOT, which must be a DIFFERENT directory
+# (staticfiles.E002). ManifestStaticFilesStorage in production writes the hashed
+# copies and staticfiles.json there; nginx serves /static/ from it.
+STATICFILES_DIRS = [SITE_ROOT / "static"]
+STATIC_ROOT = PROJECT_ROOT / "staticfiles"
 
 
 DEBUG = False

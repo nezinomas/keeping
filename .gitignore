@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 
 # my folders
+/staticfiles/
 media/
 sass/node_modules/
 .idea/
