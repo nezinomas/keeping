@@ -9,8 +9,10 @@
       hx-headers:inherited='{"X-CSRFToken":"{{ csrf_token }}"}'>
     {% csrf_token %}
     <c-form-errors :errors=upload_form.non_field_errors />
-    <c-form-body :form=upload_form />
-    <button type="submit" class="button-secondary">{% translate 'Read' %}</button>
+    <div class="import-upload">
+        <c-form-body :form=upload_form />
+        <button type="submit" class="button-secondary">{% translate 'Read' %}</button>
+    </div>
 </form>
 
 <!-- in the partial so every swap initialises the date picker again; its

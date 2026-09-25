@@ -43,14 +43,14 @@
         <caption>{% translate 'Import receipt' %}</caption>
         <thead>
             <tr>
-                <th>{{ formset.empty_form.skip.label }}</th>
-                <th>{{ formset.empty_form.title.label }}</th>
+                <th class="text-center">{{ formset.empty_form.skip.label }}</th>
+                <th class="text-left">{{ formset.empty_form.title.label }}</th>
                 <th>{{ formset.empty_form.amount.label }}</th>
                 <th>{{ formset.empty_form.price.label }}</th>
-                <th>{{ formset.empty_form.expense_type.label }}</th>
-                <th>{{ formset.empty_form.expense_name.label }}</th>
-                <th>{{ formset.empty_form.keyword.label }}</th>
-                {% if shop_money > 0 %}<th>{% translate 'Shop money' %}</th>{% endif %}
+                <th class="text-left">{{ formset.empty_form.expense_type.label }}</th>
+                <th class="text-left">{{ formset.empty_form.expense_name.label }}</th>
+                <th class="text-left">{{ formset.empty_form.keyword.label }}</th>
+                {% if shop_money > 0 %}<th class="text-center">{% translate 'Shop money' %}</th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -66,7 +66,7 @@
                     </tr>
                 {% endif %}
                 <tr>
-                    <td>
+                    <td class="text-center">
                         {{ form.is_deposit }}
                         {% render_field form.skip class="form-check-input" aria-label=form.skip.label %}
                     </td>
@@ -95,7 +95,7 @@
                         {% for error in form.keyword.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
                     </td>
                     {% if shop_money > 0 %}
-                        <td>
+                        <td class="text-center">
                             <input type="radio" class="form-check-input" name="shop_money_line" value="{{ forloop.counter0 }}" aria-label="{% translate 'Shop money' %}" {% if forloop.counter0 == shop_money_line %}checked{% endif %}>
                         </td>
                     {% endif %}
@@ -105,21 +105,38 @@
         </tbody>
         <tfoot>
             <tr class="main__total">
-                <td colspan="8">
-                    {% translate 'Lines total' %} <span x-text="(linesTotal / 100).toFixed(2).replace('.', ',')">{{ lines_total|price|floatformat:2 }}</span>
-                    &middot;
-                    {% translate 'Receipt total' %} {{ receipt_total|price|floatformat:2 }}
-                    {% if shop_money > 0 %}
-                        &middot;
-                        {% translate 'Shop money' %} {{ shop_money|price|floatformat:2 }}
-                    {% endif %}
-                </td>
+                <td colspan="3">{% translate 'Lines total' %}</td>
+                <td><span x-text="(linesTotal / 100).toFixed(2).replace('.', ',')">{{ lines_total|price|floatformat:2 }}</span></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                {% if shop_money > 0 %}<td></td>{% endif %}
             </tr>
+            <tr class="main__total">
+                <td colspan="3">{% translate 'Receipt total' %}</td>
+                <td>{{ receipt_total|price|floatformat:2 }}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                {% if shop_money > 0 %}<td></td>{% endif %}
+            </tr>
+            {% if shop_money > 0 %}
+                <tr class="main__total">
+                    <td colspan="3">{% translate 'Shop money' %}</td>
+                    <td>{{ shop_money|price|floatformat:2 }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            {% endif %}
         </tfoot>
     </table>
     </div>
 
     <p :hidden="!disagree"{% if not totals_disagree %} hidden{% endif %}>{% translate 'The totals differ — check the prices before saving.' %}</p>
 
-    <button type="submit" class="button-secondary">{% translate 'Save' %}</button>
+    <div class="import-save">
+        <button type="submit" class="button-secondary">{% translate 'Save' %}</button>
+    </div>
 </form>
