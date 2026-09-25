@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, cast
 
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
@@ -104,7 +105,7 @@ class LoadExpenseName(ListViewMixin):
     template_name = "core/dropdown.html"
     object_list = []
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs) -> HttpResponse:
         field = "expense_type"
         if prefix := request.GET.get("prefix", ""):
             field = f"{prefix}-expense_type"

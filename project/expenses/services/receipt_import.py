@@ -61,7 +61,9 @@ class ExpenseGroups:
         return [cls._group(name, rows) for name, rows in by_name.items()]
 
     @classmethod
-    def _group(cls, expense_name, rows: list[ReviewedLine]) -> ExpenseGroup:
+    def _group(
+        cls, expense_name: "ExpenseName", rows: list[ReviewedLine]
+    ) -> ExpenseGroup:
         price = sum(row.line.price for row in rows)
         quantity = sum(row.line.amount for row in rows if not row.line.is_deposit)
         if quantity == 0:
@@ -110,7 +112,9 @@ class ReceiptImport:
         return expenses
 
     @classmethod
-    def _save_keywords(cls, reviewed: tuple[ReviewedLine, ...], journal: "Journal"):
+    def _save_keywords(
+        cls, reviewed: tuple[ReviewedLine, ...], journal: "Journal"
+    ) -> None:
         # last choice wins: later lines overwrite earlier ones for the same keyword
         by_keyword = {normalise_keyword(rl.keyword): rl.expense_name for rl in reviewed}
 
