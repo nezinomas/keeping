@@ -491,3 +491,4 @@ def test_index_shows_import_link(main_user, client_logged):
     text = response.content.decode()
     assert "Importuoti čekį" in text
     assert reverse("expenses:import") in text
+    assert 'class="button-outline-success import-receipt"' in text
