@@ -63,4 +63,5 @@ def amount(text: str, unit_words: Mapping[str, Unit]) -> int:
 
 
 def is_deposit(title: str, deposit_words: tuple[str, ...]) -> bool:
-    return any(word in title for word in deposit_words)
+    title_folded = title.casefold()
+    return any(word.casefold() in title_folded for word in deposit_words)
