@@ -60,24 +60,19 @@ class TableReceiptParser:
 
     def _receipt_lines(self, body: list[Row], at: ColumnIndexes) -> list[ReceiptLine]:
         lines: list[ReceiptLine] = []
-        stop = len(body)
-        index = 0
-        while index < len(body):
-            row = body[index]
+        rows = iter(body)
+        for row in rows:
             if self._is_promotion(row):
-                index, line = self._promotion_line(body, index, at)
-                lines.append(line)
+                lines.append(self._promotion_line(row, rows, at))
                 continue
             if row[at.amount] == "":
-                stop = index
                 break
             if row[at.amount] == "0":
-                index = self._skip_not_collected(body, index, at)
+                self._verify_not_collected(row, at)
                 continue
             lines.append(self._line(row, at))
-            index += 1
         # a product row after the first blank amount means a line would be lost
-        if any(row[at.amount] for row in body[stop:]):
+        if any(row[at.amount] for row in rows):
             raise UnreadableReceiptTextError(self.layout.columns.amount)
         return lines
 
@@ -85,23 +80,21 @@ class TableReceiptParser:
         return self.layout.promotion_label in row
 
     def _promotion_line(
-        self, body: list[Row], index: int, at: ColumnIndexes
-    ) -> tuple[int, ReceiptLine]:
-        if index + 1 == len(body):
-            raise UnreadableReceiptTextError(self.layout.promotion_label)
-        promotion_row, product_row = body[index], body[index + 1]
+        self, promotion_row: Row, rows: Iterator[Row], at: ColumnIndexes
+    ) -> ReceiptLine:
+        try:
+            product_row = next(rows)
+        except StopIteration:
+            raise UnreadableReceiptTextError(self.layout.promotion_label) from None
         if product_row[at.amount] in ("", "0") or product_row[at.price] != "":
             raise UnreadableReceiptTextError(self.layout.promotion_label)
         priced = [*product_row]
         priced[at.price] = promotion_row[at.price]
-        return index + 2, self._line(priced, at)
+        return self._line(priced, at)
 
-    def _skip_not_collected(
-        self, body: list[Row], index: int, at: ColumnIndexes
-    ) -> int:
-        if converters.money(body[index][at.price]) != 0:
-            raise UnreadableReceiptTextError(body[index][at.price])
-        return index + 1
+    def _verify_not_collected(self, row: Row, at: ColumnIndexes) -> None:
+        if converters.money(row[at.price]) != 0:
+            raise UnreadableReceiptTextError(row[at.price])
 
     def _line(self, row: Row, at: ColumnIndexes) -> ReceiptLine:
         title = row[at.title]
