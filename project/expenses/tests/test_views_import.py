@@ -3,7 +3,9 @@ from unittest.mock import patch
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connection
 from django.template.loader import render_to_string
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
@@ -461,6 +463,31 @@ def test_import_upload_row_wrapper_class(main_user, client_logged):
     assert 'class="import-upload"' in response.content.decode()
 
 
+def _n_line_receipt(n):
+    lines = tuple(
+        ReceiptLine(title=f"Product {i}", amount=1, price=100 + i, is_deposit=False)
+        for i in range(n)
+    )
+    return Receipt(lines=lines, total=sum(line.price for line in lines))
+
+
+def test_import_post_query_count_equal_for_2_and_6_lines(main_user, client_logged):
+    a = AccountFactory()
+    url = reverse("expenses:import")
+
+    counts = {}
+    for n in (2, 6):
+        upload_data = _upload_data(a, _barbora_file(), date="2026-09-18")
+        with patch.object(ReceiptReader, "read", return_value=_n_line_receipt(n)):
+            with CaptureQueriesContext(connection) as ctx:
+                response = client_logged.post(url, data=upload_data)
+
+        assert response.status_code == 200
+        counts[n] = len(ctx.captured_queries)
+
+    assert counts[2] == counts[6]
+
+
 # ----------------------------------------------------------------------------
 #                                                                   ImportSave
 # ----------------------------------------------------------------------------
@@ -660,6 +687,65 @@ def test_import_save_tampered_expense_type_refused(
 
     assert response.status_code == 200
     assert Expense.objects.count() == 0
+
+
+def _n_rows(n, run, price="5,00"):
+    rows = []
+    for i in range(n):
+        t = ExpenseTypeFactory(title=f"{run}-T{i}")
+        name = ExpenseNameFactory(title=f"{run}-N{i}", parent=t)
+        rows.append(
+            {
+                "title": f"Product {run}{i} kw{run}{i}",
+                "price": price,
+                "expense_type": t.pk,
+                "expense_name": name.pk,
+                "keyword": f"kw{run}{i}",
+            }
+        )
+    return rows
+
+
+def test_import_save_invalid_query_count_equal_for_2_and_6_lines(
+    main_user, client_logged
+):
+    a = AccountFactory()
+    url = reverse("expenses:import_save")
+
+    counts = {}
+    for n in (2, 6):
+        data = _save_data(_n_rows(n, run=f"inv{n}", price="0"), a)
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = client_logged.post(url, data=data)
+
+        assert response.status_code == 200
+        assert Expense.objects.count() == 0
+        counts[n] = len(ctx.captured_queries)
+
+    assert counts[2] == counts[6]
+
+
+def test_import_save_valid_query_count_equal_for_2_and_6_lines(
+    main_user, client_logged
+):
+    a = AccountFactory()
+    url = reverse("expenses:import_save")
+
+    counts = {}
+    expected_total = 0
+    for n in (2, 6):
+        data = _save_data(_n_rows(n, run=f"val{n}"), a)
+        expected_total += n
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = client_logged.post(url, data=data)
+
+        assert response.status_code == 200
+        assert Expense.objects.count() == expected_total
+        counts[n] = len(ctx.captured_queries)
+
+    assert counts[2] == counts[6]
 
 
 # ----------------------------------------------------------------------------

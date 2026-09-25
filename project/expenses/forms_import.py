@@ -6,7 +6,7 @@ from ..accounts.models import Account
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.convert_price import ConvertPriceMixin, int_cents_to_float
 from ..core.lib.date import set_date_with_user_year
-from ..core.lib.form_fields import CommaFloatField
+from ..core.lib.form_fields import CommaFloatField, PreloadedModelChoiceField
 from ..core.lib.form_widgets import DatePickerWidget
 from .forms import ExpenseNameChoicesMixin
 from .keywords import normalise_keyword
@@ -15,6 +15,7 @@ from .receipts.receipt import ReceiptLine
 from .services.keyword_match import KeywordMatcher
 from .services.model_services import ExpenseTypeModelService
 from .services.receipt_import import ReviewedLine
+from .services.review_choices import ReviewChoices
 
 
 class _JournalAccountChoicesMixin:
@@ -91,10 +92,10 @@ class ReviewLineForm(ExpenseNameChoicesMixin, ConvertPriceMixin, forms.Form):
     price = CommaFloatField(required=False)
     is_deposit = forms.BooleanField(required=False, widget=forms.HiddenInput())
     skip = forms.BooleanField(required=False)
-    expense_type = forms.ModelChoiceField(
+    expense_type = PreloadedModelChoiceField(
         queryset=ExpenseType.objects.none(), required=False
     )
-    expense_name = forms.ModelChoiceField(
+    expense_name = PreloadedModelChoiceField(
         queryset=ExpenseName.objects.none(), required=False
     )
     keyword = forms.CharField(
@@ -114,9 +115,13 @@ class ReviewLineForm(ExpenseNameChoicesMixin, ConvertPriceMixin, forms.Form):
     def __init__(self, *args, user, year, **kwargs):
         self.user = user
         self.year = year
+        if "choices" not in kwargs:
+            kwargs["choices"] = ReviewChoices.load(user, year)
+        self.choices = kwargs.pop("choices")
         super().__init__(*args, **kwargs)
 
         self.fields["expense_type"].queryset = ExpenseTypeModelService(user).items()
+        self.fields["expense_type"].preload(self.choices.types)
         self._overwrite_expense_name_query()
         self._set_htmx_attributes()
         self._translate_fields()
@@ -126,6 +131,10 @@ class ReviewLineForm(ExpenseNameChoicesMixin, ConvertPriceMixin, forms.Form):
 
     def _instance_expense_type_pk(self):
         return 0
+
+    def _set_expense_name_choices(self, expense_type_pk):
+        super()._set_expense_name_choices(expense_type_pk)
+        self.fields["expense_name"].preload(self.choices.names_for(expense_type_pk))
 
     def _translate_fields(self):
         self.fields["title"].label = _("Product")
@@ -212,6 +221,11 @@ class _ReviewFormSet(forms.BaseFormSet):
     def __init__(self, *args, shop_money=0, shop_money_line=0, **kwargs):
         self.shop_money = shop_money
         self.shop_money_line = shop_money_line
+
+        form_kwargs = kwargs["form_kwargs"]
+        choices = ReviewChoices.load(form_kwargs["user"], form_kwargs["year"])
+        kwargs["form_kwargs"] = form_kwargs | {"choices": choices}
+
         super().__init__(*args, **kwargs)
 
     def clean(self):

@@ -54,9 +54,11 @@ class ExpenseNameChoicesMixin:
         return self._instance_expense_type_pk()
 
     def _overwrite_expense_name_query(self):
+        self._set_expense_name_choices(self._expense_type_pk())
+
+    def _set_expense_name_choices(self, expense_type_pk):
         qs = ExpenseNameModelService(self.user).none()
 
-        expense_type_pk = self._expense_type_pk()
         if expense_type_pk:
             qs = (
                 ExpenseNameModelService(self.user)

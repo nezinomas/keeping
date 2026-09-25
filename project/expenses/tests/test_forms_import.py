@@ -361,6 +361,18 @@ def test_line_form_name_of_another_type_refused(main_user):
     assert "expense_name" in form.errors
 
 
+def test_line_form_name_not_valid_for_import_year_refused(main_user):
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(title="N-2005", parent=t, valid_for=2005)
+
+    data = _line_data(expense_type=t.pk, expense_name=n.pk, keyword="jogurt")
+
+    form = ReviewLineForm(user=main_user, year=1999, data=data)
+
+    assert not form.is_valid()
+    assert "expense_name" in form.errors
+
+
 # ----------------------------------------------------------------------------
 #                                                              ReviewFormSet
 # ----------------------------------------------------------------------------
