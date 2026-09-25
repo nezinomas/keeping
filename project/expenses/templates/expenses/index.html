@@ -30,7 +30,7 @@
             {% endif %}
 
             <c-new-button url="{% url 'expenses:new' %}" title="{% translate 'Expenses' context 'expenses button' %}" css_class="flex-right" />
-            <a href="{% url 'expenses:import' %}">{% translate 'Import receipt' %}</a>
+            <c-import-button />
         </div>
 
         <!-- month buttons -->

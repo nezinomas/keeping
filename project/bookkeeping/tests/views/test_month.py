@@ -25,6 +25,20 @@ def test_view_month_200(client_logged):
     assert response.status_code == 200
 
 
+def test_view_month_import_button_after_expenses_button(client_logged):
+    url = reverse("bookkeeping:month")
+    response = client_logged.get(url)
+    text = response.content.decode()
+
+    expenses_url = reverse("expenses:new")
+    import_url = reverse("expenses:import")
+
+    assert 'class="button-outline-success import-receipt"' in text
+    assert f'href="{import_url}"' in text
+    assert "Importuoti čekį" in text
+    assert text.index(expenses_url) < text.index(import_url)
+
+
 @pytest.mark.parametrize(
     "month, expect",
     [

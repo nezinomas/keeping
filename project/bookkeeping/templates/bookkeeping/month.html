@@ -41,6 +41,7 @@
     <!-- Add buttons -->
     <div id="month-add-buttons" class="button-row flex-right wrap">
         <c-new-button url="{% url 'expenses:new' %}" title="{% translate 'Expenses' context 'expenses button' %}" />
+        <c-import-button />
         <c-new-button url="{% url 'incomes:new' %}" title="{% translate 'Incomes' context 'incomes button' %}" />
         <c-new-button url="{% url 'savings:new' %}" title="{% translate 'Savings' context 'savings button' %}" />
         <c-new-button url="{% url 'transactions:new' %}" title="{% translate 'Transactions' context 'transactions button' %}" />

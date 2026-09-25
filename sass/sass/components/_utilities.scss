@@ -77,7 +77,7 @@
         }
     }
 
-    > button {
+    > :is(button, a) {
         max-width: max-content;
     }
 
