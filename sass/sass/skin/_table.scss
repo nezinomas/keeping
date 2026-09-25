@@ -85,8 +85,9 @@
             border-top: 0;
         }
 
-        // a tfoot's ink rule drawn from the row above: border-collapse gives a
-        // 1px tie to the upper cell, so the tfoot's own border-top would lose
+        // the ink rule drawn from the row above: border-collapse gives a 1px tie
+        // to the upper cell, so the total row's own border-top would lose
+        tr:not(.main__total):has(+ tr.main__total) > td,
         tbody:has(+ tfoot > tr.main__total:first-child) > tr:last-child > td {
             border-bottom-color: $ink;
         }
