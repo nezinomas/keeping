@@ -1,0 +1,20 @@
+{% load i18n %}
+{% load static %}
+
+<form id="upload" method="post" novalidate
+      hx-post="{% url 'expenses:import' %}"
+      hx-target="#import"
+      hx-swap="innerHTML"
+      hx-encoding="multipart/form-data"
+      hx-headers:inherited='{"X-CSRFToken":"{{ csrf_token }}"}'>
+    {% csrf_token %}
+    <c-form-errors :errors=upload_form.non_field_errors />
+    <div class="import-upload">
+        <c-form-body :form=upload_form />
+        <button type="submit" class="button-secondary">{% translate 'Read' %}</button>
+    </div>
+</form>
+
+<!-- in the partial so every swap initialises the date picker again; its
+     translations declare a const, so import.html loads them once -->
+<script nonce="{{ csp_nonce }}" defer src="{% static 'js/date-picker.js' %}"></script>

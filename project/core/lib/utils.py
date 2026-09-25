@@ -119,3 +119,10 @@ def http_htmx_response(hx_trigger_name=None, status_code=204):
         status=status_code,
         headers=headers,
     )
+
+
+def int_or_zero(value) -> int:
+    number = 0
+    with contextlib.suppress(TypeError, ValueError):
+        number = int(value)
+    return number

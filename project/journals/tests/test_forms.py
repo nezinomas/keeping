@@ -34,8 +34,8 @@ def test_form_selected_expenses(main_user):
 
 
 def test_form_bad_json_for_expenses(main_user):
-    e1 = ExpenseTypeFactory(title="X")
-    e2 = ExpenseTypeFactory(title="Y")
+    ExpenseTypeFactory(title="X")
+    ExpenseTypeFactory(title="Y")
 
     main_user.journal.unnecessary_expenses = "None"
     main_user.journal.save()

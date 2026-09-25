@@ -1271,7 +1271,7 @@ def test_day_invalid_data(client_logged):
 
 
 def test_day_load_update_form_field_values(client_logged):
-    obj = DayPlanFactory(year=1999, month=1, price=5)
+    DayPlanFactory(year=1999, month=1, price=5)
 
     url = reverse(
         "plans:day_update",
@@ -1296,7 +1296,7 @@ def test_day_load_update_form_field_values(client_logged):
 
 
 def test_day_load_update_load_form(client_logged):
-    obj = DayPlanFactory()
+    DayPlanFactory()
 
     url = reverse("plans:day_update", kwargs={"year": 1999})
     response = client_logged.get(url)
@@ -1319,7 +1319,7 @@ def test_day_update(client_logged):
 
 def test_day_update_not_load_other_journal(client_logged, second_user):
     second_user_journal = second_user.journal
-    obj = DayPlanFactory(journal=second_user_journal, month=1, price=666)
+    DayPlanFactory(journal=second_user_journal, month=1, price=666)
 
     url = reverse("plans:day_update", kwargs={"year": 1999})
     response = client_logged.get(url)
@@ -1359,7 +1359,7 @@ def test_day_delete_func():
 
 
 def test_day_delete_200(client_logged):
-    p = DayPlanFactory()
+    DayPlanFactory()
 
     url = reverse("plans:day_delete", kwargs={"year": 1999})
     response = client_logged.get(url)
@@ -1612,7 +1612,7 @@ def test_necessary_update_not_load_other_journal(client_logged, second_user):
 
 
 def test_necessary_list_price_converted_in_template(client_logged):
-    expense_type = ExpenseTypeFactory()
+    ExpenseTypeFactory()
     NecessaryPlanFactory(month=1, price=5)
     NecessaryPlanFactory(month=2, price=5)
     NecessaryPlanFactory(month=3, price=5)

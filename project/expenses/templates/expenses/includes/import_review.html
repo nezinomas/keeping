@@ -1,0 +1,129 @@
+{% load i18n %}
+{% load widget_tweaks %}
+{% load math %}
+
+<form id="review" method="post" novalidate
+      hx-post="{% url 'expenses:import_save' %}"
+      hx-target="#review"
+      hx-swap="outerHTML"
+      {# date and account are the upload form's, so a change there is what Save uses #}
+      hx-include="#upload"
+      hx-headers:inherited='{"X-CSRFToken":"{{ csrf_token }}"}'
+      x-data="{
+          disagree: {{ totals_disagree|yesno:'true,false' }},
+          linesTotal: {{ lines_total }},
+          recompute() {
+              let cents = 0;
+              this.$el.querySelectorAll('input[name$=\'-price\']').forEach((el) => {
+                  const val = parseFloat((el.value || '').replace(',', '.'));
+                  if (!isNaN(val)) cents += Math.trunc(val * 100 + 0.00001);
+              });
+              this.linesTotal = cents;
+              this.disagree = cents !== ({{ receipt_total }} + {{ shop_money }});
+          },
+      }"
+      x-init="recompute()"
+      @input="recompute()">
+    {% csrf_token %}
+    {% for field in receipt_form %}
+        <c-field-errors :errors=field.errors />
+    {% endfor %}
+    {{ receipt_form.total }}
+    {{ receipt_form.shop_money }}
+    {% if shop_money <= 0 %}{{ receipt_form.shop_money_line }}{% endif %}
+
+    {{ formset.management_form }}
+
+    <c-field-errors :errors=formset.non_form_errors />
+
+    <div class="table-responsive">
+    <table class="main">
+        <caption>{% translate 'Import receipt' %}</caption>
+        <thead>
+            <tr>
+                <th class="text-center">{{ formset.empty_form.skip.label }}</th>
+                <th class="text-left">{{ formset.empty_form.title.label }}</th>
+                <th>{{ formset.empty_form.amount.label }}</th>
+                <th>{{ formset.empty_form.price.label }}</th>
+                <th class="text-left">{{ formset.empty_form.expense_type.label }}</th>
+                <th class="text-left">{{ formset.empty_form.expense_name.label }}</th>
+                <th class="text-left">{{ formset.empty_form.keyword.label }}</th>
+                {% if shop_money > 0 %}<th class="text-center">{% translate 'Shop money' %}</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% with WIDGET_ERROR_CLASS="is-invalid" %}
+            {% for form in formset %}
+                {% if form.non_field_errors %}
+                    <tr>
+                        <td colspan="{% if shop_money > 0 %}8{% else %}7{% endif %}">
+                            <c-field-errors :errors=form.non_field_errors />
+                        </td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td class="text-center">
+                        {{ form.is_deposit }}
+                        {% render_field form.skip class="form-check-input" aria-label=form.skip.label %}
+                    </td>
+                    <td>
+                        {% render_field form.title class="form-control" aria-label=form.title.label %}
+                        <c-field-errors :errors=form.title.errors />
+                    </td>
+                    <td>
+                        {% render_field form.amount class="form-control" aria-label=form.amount.label %}
+                        <c-field-errors :errors=form.amount.errors />
+                    </td>
+                    <td>
+                        {% render_field form.price class="form-control" aria-label=form.price.label %}
+                        <c-field-errors :errors=form.price.errors />
+                    </td>
+                    <td>
+                        {% render_field form.expense_type class="form-select" aria-label=form.expense_type.label %}
+                        <c-field-errors :errors=form.expense_type.errors />
+                    </td>
+                    <td>
+                        {% render_field form.expense_name class="form-select" aria-label=form.expense_name.label %}
+                        <c-field-errors :errors=form.expense_name.errors />
+                    </td>
+                    <td>
+                        {% render_field form.keyword class="form-control" aria-label=form.keyword.label %}
+                        <c-field-errors :errors=form.keyword.errors />
+                    </td>
+                    {% if shop_money > 0 %}
+                        <td class="text-center">
+                            <input type="radio" class="form-check-input" name="shop_money_line" value="{{ forloop.counter0 }}" aria-label="{% translate 'Shop money' %}" {% if forloop.counter0 == shop_money_line %}checked{% endif %}>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            {% endwith %}
+        </tbody>
+        <tfoot>
+            <tr class="main__total">
+                <td colspan="3">{% translate 'Lines total' %}</td>
+                <td><span x-text="(linesTotal / 100).toFixed(2).replace('.', ',')">{{ lines_total|price|floatformat:2 }}</span></td>
+                <td colspan="{% if shop_money > 0 %}4{% else %}3{% endif %}"></td>
+            </tr>
+            <tr class="main__total">
+                <td colspan="3">{% translate 'Receipt total' %}</td>
+                <td>{{ receipt_total|price|floatformat:2 }}</td>
+                <td colspan="{% if shop_money > 0 %}4{% else %}3{% endif %}"></td>
+            </tr>
+            {% if shop_money > 0 %}
+                <tr class="main__total">
+                    <td colspan="3">{% translate 'Shop money' %}</td>
+                    <td>{{ shop_money|price|floatformat:2 }}</td>
+                    <td colspan="4"></td>
+                </tr>
+            {% endif %}
+        </tfoot>
+    </table>
+    </div>
+
+    <p :hidden="!disagree"{% if not totals_disagree %} hidden{% endif %}>{% translate 'The totals differ — check the prices before saving.' %}</p>
+
+    <div class="import-save">
+        <button type="submit" class="button-secondary">{% translate 'Save' %}</button>
+    </div>
+</form>

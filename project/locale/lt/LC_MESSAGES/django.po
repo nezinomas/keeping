@@ -924,6 +924,12 @@ msgstr "šiandien"
 msgid "Currently"
 msgstr "Šiuo metu"
 
+msgid "Choose file"
+msgstr "Pasirinkti failą"
+
+msgid "No file chosen"
+msgstr "Failas nepasirinktas"
+
 #: .\project\core\templates\cotton\input_file.html:15
 #: .\project\drinks\templates\drinks\tab_habits.html:32
 #: .\project\drinks\tests\test_views.py:662
@@ -2359,6 +2365,98 @@ msgstr ""
 #: .\project\users\views.py:303
 msgid "Delete user"
 msgstr "Trinti vartotoją"
+
+#: .\project\expenses\views\expenses_import.py:1
+msgid "Import receipt"
+msgstr "Importuoti čekį"
+
+#: .\project\expenses\forms.py:1
+msgid "PDF file"
+msgstr "PDF failas"
+
+#: .\project\expenses\forms.py:1
+msgid "Read"
+msgstr "Nuskaityti"
+
+#: .\project\expenses\templates\expenses\import.html:1
+msgid "Skip"
+msgstr "Praleisti"
+
+#: .\project\expenses\templates\expenses\import.html:1
+msgid "Product"
+msgstr "Prekė"
+
+#: .\project\expenses\templates\expenses\import.html:1
+msgid "Keyword"
+msgstr "Raktažodis"
+
+#: .\project\expenses\templates\expenses\import.html:1
+msgid "Shop money"
+msgstr "Parduotuvės pinigai"
+
+#: .\project\expenses\templates\expenses\import.html:1
+msgid "Lines total"
+msgstr "Eilučių suma"
+
+#: .\project\expenses\templates\expenses\import.html:1
+msgid "Receipt total"
+msgstr "Čekio suma"
+
+#: .\project\expenses\templates\expenses\import.html:1
+msgid "The totals differ — check the prices before saving."
+msgstr "Sumos nesutampa — patikrinkite kainas prieš išsaugodami."
+
+#: .\project\expenses\forms.py:1
+msgid "Only PDF files can be imported."
+msgstr "Galima importuoti tik PDF failus."
+
+#: .\project\expenses\receipts\errors.py:1
+msgid "This PDF is not a receipt from a supported shop."
+msgstr "Šis PDF nėra palaikomos parduotuvės čekis."
+
+#: .\project\expenses\receipts\errors.py:1
+msgid "The receipt could not be read."
+msgstr "Čekio nepavyko nuskaityti."
+
+#: .\project\expenses\forms.py:1
+msgid "Shop money cannot go on a skipped line."
+msgstr "Parduotuvės pinigų negalima priskirti praleistai eilutei."
+
+#: .\project\expenses\forms_import.py:1
+msgid "The Shop money line is not on this receipt."
+msgstr "Parduotuvės pinigų eilutės šiame čekyje nėra."
+
+#: .\project\expenses\forms.py:1
+msgid "Shop money would leave this price at zero or below."
+msgstr "Parduotuvės pinigai šią kainą padarytų nulinę arba neigiamą."
+
+#: .\project\expenses\forms.py:1
+msgid "Price must be greater than zero."
+msgstr "Kaina turi būti didesnė už nulį."
+
+#: .\project\expenses\forms.py:1
+msgid "Quantity must be greater than zero."
+msgstr "Kiekis turi būti didesnis už nulį."
+
+#: .\project\expenses\forms.py:1
+msgid "Keyword must be at least 3 characters."
+msgstr "Raktažodis turi būti bent 3 simbolių."
+
+#: .\project\expenses\forms.py:1
+msgid "Keyword must appear in the product title."
+msgstr "Raktažodis turi būti prekės pavadinime."
+
+#: .\project\expenses\forms.py:1
+msgid "The same keyword is used for different expense names."
+msgstr "Tas pats raktažodis naudojamas skirtingiems išlaidų pavadinimams."
+
+#: .\project\expenses\models.py:1
+msgid "The expense name belongs to another journal."
+msgstr "Išlaidų pavadinimas priklauso kitam žurnalui."
+
+#: .\project\expenses\forms.py:1
+msgid "Save"
+msgstr "Išsaugoti"
 
 #~ msgctxt "book add button"
 #~ msgid "Book"

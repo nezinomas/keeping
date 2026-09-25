@@ -3,9 +3,10 @@
 ## Contexts
 
 - [Drinks](./project/drinks/CONTEXT.md) — records alcohol consumption and reports it against a yearly goal
+- [Expenses](./project/expenses/CONTEXT.md) — records what a user spends, and reads shop receipts back into Expenses, remembering by Keyword where each product goes
 
 The remaining apps under `project/` (accounts, bookkeeping, books, counts, debts,
-expenses, incomes, journals, pensions, plans, savings, transactions, users) have
+incomes, journals, pensions, plans, savings, transactions, users) have
 no glossary yet. Their absence here means "not modelled", not "no domain".
 
 ## Relationships

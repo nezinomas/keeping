@@ -48,8 +48,6 @@ class Command(BaseCommand):
         }
         try:
             call_command("runserver", **runserver_options)
-        except Exception as e:
-            raise
         finally:
             if freezer:
                 freezer.stop()

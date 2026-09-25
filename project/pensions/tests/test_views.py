@@ -332,7 +332,6 @@ def test_type_save_invalid_data(client_logged):
 def test_type_update_load_form(client_logged):
     pension = PensionTypeFactory()
 
-    data = {"title": "TTT"}
     url = reverse("pensions:type_update", kwargs={"pk": pension.pk})
 
     response = client_logged.get(url)

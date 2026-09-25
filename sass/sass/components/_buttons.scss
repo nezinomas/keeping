@@ -79,6 +79,20 @@
         content:"\e205";
         font-size: .75rem;
     }
+
+    &.import-receipt::before {
+        font-family: 'Glyphicons Halflings';
+        content: "\e022";
+        font-size: .75rem;
+    }
+}
+
+// a link wearing a button class gets none of a <button>'s own border or text
+a.button-outline-success {
+    border-style: solid;
+    border-width: 1px;
+    text-align: center;
+    text-decoration: none;
 }
 
 

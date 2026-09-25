@@ -143,7 +143,7 @@ def test_saving_type_closed_in_current_year(main_user):
 
 
 def test_saving_type_unique_name(main_user):
-    b = SavingTypeFactory(title="XXX")
+    SavingTypeFactory(title="XXX")
 
     form = SavingTypeForm(
         user=main_user,
