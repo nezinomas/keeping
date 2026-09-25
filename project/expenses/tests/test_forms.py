@@ -10,7 +10,7 @@ from PIL import Image
 from ...accounts.tests.factories import AccountFactory
 from ...users.tests.factories import UserFactory
 from ..forms import ExpenseForm, ExpenseNameForm, ExpenseTypeForm
-from .factories import ExpenseNameFactory, ExpenseTypeFactory
+from .factories import ExpenseFactory, ExpenseNameFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -329,6 +329,16 @@ def test_expense_name_choices_mixin_initial_type_fills_names(main_user):
     n = ExpenseNameFactory(title="N", parent=t)
 
     form = ExpenseForm(user=main_user, initial={"expense_type": t.pk})
+
+    assert list(form.fields["expense_name"].queryset) == [n]
+
+
+def test_expense_name_choices_mixin_instance_type_fills_names(main_user):
+    t = ExpenseTypeFactory(title="T")
+    n = ExpenseNameFactory(title="N", parent=t)
+    ExpenseNameFactory(title="Other", parent=ExpenseTypeFactory(title="Other"))
+
+    form = ExpenseForm(user=main_user, instance=ExpenseFactory(expense_type=t))
 
     assert list(form.fields["expense_name"].queryset) == [n]
 
