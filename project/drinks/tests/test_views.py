@@ -712,6 +712,29 @@ def test_typical_year_opens_on_the_header_year_alone(client_logged):
     assert chart.layers == [chart.year]
 
 
+def test_typical_year_preset_fills_the_form_with_the_pooled_span(client_logged):
+    DrinkFactory(date=date(1998, 1, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+
+    url = reverse("drinks:typical_year_last", kwargs={"qty": 2})
+    form = client_logged.get(url).context["form"]
+
+    assert form.initial == {"year_from": 1998, "year_to": 1999}
+
+
+def test_typical_year_valid_post_pools_the_asked_range(client_logged):
+    DrinkFactory(date=date(1998, 1, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+
+    url = reverse("drinks:typical_year")
+    response = client_logged.post(url, {"year_from": "1998", "year_to": "1999"})
+    chart = response.context["chart"]
+
+    assert chart.pooled.has_data
+    assert (chart.year_from, chart.year_to) == (1998, 1999)
+    assert "HX-Retarget" not in response
+
+
 def test_typical_year_invalid_retargets_form(client_logged):
     url = reverse("drinks:typical_year")
     response = client_logged.post(url, {"year_from": "2005", "year_to": "1999"})
@@ -1017,6 +1040,18 @@ def test_compare_data_includes_form_and_oob_swap(client_logged):
     assert isinstance(response.context["form"], forms.DrinkCompareForm)
     assert 'id="compare-form"' in content
     assert 'hx-swap-oob="true"' in content
+
+
+def test_comparetwo_valid_post_renders_the_pair(client_logged):
+    DrinkFactory(date=date(1998, 1, 1))
+    DrinkFactory(date=date(1999, 1, 1))
+
+    url = reverse("drinks:compare_two")
+    response = client_logged.post(url, {"year1": "1998", "year2": "1999"})
+    names = [serie["name"] for serie in response.context["chart"].serries]
+
+    assert names == [1998, 1999]
+    assert "HX-Retarget" not in response
 
 
 def test_comparetwo_invalid_retargets_form(client_logged):
