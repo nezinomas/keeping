@@ -96,7 +96,7 @@
                     </td>
                     {% if shop_money > 0 %}
                         <td>
-                            <input type="radio" name="shop_money_line" value="{{ forloop.counter0 }}" aria-label="{% translate 'Shop money' %}" {% if forloop.counter0 == shop_money_line %}checked{% endif %}>
+                            <input type="radio" class="form-check-input" name="shop_money_line" value="{{ forloop.counter0 }}" aria-label="{% translate 'Shop money' %}" {% if forloop.counter0 == shop_money_line %}checked{% endif %}>
                         </td>
                     {% endif %}
                 </tr>
