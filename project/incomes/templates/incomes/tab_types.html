@@ -1,0 +1,39 @@
+{% load i18n %}
+
+<div class="table-responsive">
+<table class="main striped hover">
+    <thead class="sortable-header-row">
+        <tr>
+            <c-sort-th key="title" :active=table.order :url=tab_url target="#tab_content" class="text-left">{% translate 'Incomes type' %}</c-sort-th>
+            <c-sort-th key="this_year" :active=table.order :url=tab_url target="#tab_content">{% translate 'This year' %}</c-sort-th>
+            <c-sort-th key="last_year" :active=table.order :url=tab_url target="#tab_content">{% translate 'Last year' %}</c-sort-th>
+            <c-sort-th key="share" :active=table.order :url=tab_url target="#tab_content">{% translate 'Share' %}</c-sort-th>
+            <c-sort-th key="last_income" :active=table.order :url=tab_url target="#tab_content">{% translate 'Last income' %}</c-sort-th>
+            <th class="edit-col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in table.rows %}
+        {% url 'incomes:type_update' row.pk as url_update %}
+        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal">
+            <td class="text-left">{{ row.title }}</td>
+            <td>{{ row.this_year }}</td>
+            <td>{{ row.last_year }}</td>
+            <td>{{ row.share }}</td>
+            <td>{{ row.last_income }}</td>
+            <c-td-edit :url=url_update />
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr class="main__total">
+            <td class="text-left">{% translate 'Total' %}</td>
+            <td>{{ table.total.this_year }}</td>
+            <td>{{ table.total.last_year }}</td>
+            <td>{{ table.total.share }}</td>
+            <td></td>
+            <td class="edit-col"></td>
+        </tr>
+    </tfoot>
+</table>
+</div>

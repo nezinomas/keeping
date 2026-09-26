@@ -1,0 +1,9 @@
+<c-vars key="" active="" url="" target="" class="" />
+
+<th{% if class %} class="{{ class }}"{% endif %}>
+    {% if key == active %}
+    <span>{{ slot }}</span>
+    {% else %}
+    <a role="button" hx-get="{{ url }}?order={{ key }}" hx-target="{{ target }}">{{ slot }}</a>
+    {% endif %}
+</th>

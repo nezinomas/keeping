@@ -4,45 +4,43 @@
 
 {% if object_list %}
 
-<div hx-trigger="reload from:body, afterType from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator:inherited="#indicator">
-    <table class="main striped hover sticky-table">
-        <thead>
-            <tr>
-                <th class="text-left">{% translate 'Date' %}</th>
-                <th class="text-left">{% translate 'Incomes type' %}</th>
-                <th class="text-left">{% translate 'Account' %}</th>
-                <th class="remark-col text-left">{% translate 'Remark' %}</th>
-                <th class="price-col">{% translate 'Amount' %}</th>
-                <th class="edit-col"></th>
-                <th class="delete-col"></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for object in object_list %}
-            {% url 'incomes:update' object.id as url_update %}
-            {% url 'incomes:delete' object.id as url_delete %}
-            <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
-                <td class="text-left">{{ object.date|date:"Y-m-d" }}</td>
-                <td class="text-left">{% firstof object.income_type object.income_type__title %}</td>
-                <td class="text-left">{% firstof object.account.title object.account__title %}</td>
-                <td class="text-left">{{ object.remark }}</td>
-                <td>{{object.price|price|cellformat}}</td>
-                <c-td-edit :url=url_update />
-                <c-td-delete :url=url_delete />
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<table class="main striped hover sticky-table">
+    <thead>
+        <tr>
+            <th class="text-left">{% translate 'Date' %}</th>
+            <th class="text-left">{% translate 'Incomes type' %}</th>
+            <th class="text-left">{% translate 'Account' %}</th>
+            <th class="remark-col text-left">{% translate 'Remark' %}</th>
+            <th class="price-col">{% translate 'Amount' %}</th>
+            <th class="edit-col"></th>
+            <th class="delete-col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for object in object_list %}
+        {% url 'incomes:update' object.id as url_update %}
+        {% url 'incomes:delete' object.id as url_delete %}
+        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal" class="{% ifchanged object.date|date:"F" %}{% if not forloop.first %}table-group-divider{% endif %}{% endifchanged %}">
+            <td class="text-left">{{ object.date|date:"Y-m-d" }}</td>
+            <td class="text-left">{{ object.income_type__title }}</td>
+            <td class="text-left">{{ object.account__title }}</td>
+            <td class="text-left">{{ object.remark }}</td>
+            <td>{{object.price|price|cellformat}}</td>
+            <c-td-edit :url=url_update />
+            <c-td-delete :url=url_delete />
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 
 <c-paging :url=url :search=search :paginator_object=paginator_object :page_obj=object_list target="#data"/>
 
 {% else %}
 
-<div class="alert alert-warning" hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
+<div class="alert alert-warning">
 {% if notice %}
-    {{ notice|safe }}
+    {{ notice }}
 {% else %}
     {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 {% endif %}
