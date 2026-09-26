@@ -15,7 +15,7 @@ def _sum(rows: Sequence[dict]) -> int:
 
 
 def _euro(euro: float) -> str:
-    return floatformat(euro, "2g")
+    return floatformat(euro, "0g")
 
 
 @dataclass(frozen=True)
