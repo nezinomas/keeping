@@ -119,7 +119,7 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
                 list(types),
                 list(service.sum_by_type_between(*year_span(boundary))),
                 list(service.sum_by_type_between(*last_year_span(boundary))),
-                list(service.last_date_by_type()),
+                list(service.last_date_by_type(boundary.end_date)),
                 self.request.GET.get("order", ""),
             ),
         }

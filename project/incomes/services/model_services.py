@@ -95,9 +95,10 @@ class IncomeModelService(SumMixin, BaseModelService):
             .values("sum", date=F("month"))
         )
 
-    def last_date_by_type(self):
+    def last_date_by_type(self, end: date):
         return (
-            self.objects.values("income_type")
+            self.objects.filter(date__lte=end)
+            .values("income_type")
             .annotate(date=Max("date"), title=F("income_type__title"))
             .order_by()
             .values("title", "date")

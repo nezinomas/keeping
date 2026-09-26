@@ -581,6 +581,20 @@ def test_types_tab_states_each_type_in_a_table(client_logged):
     assert "c-accordion" not in content and 'class="accordion"' not in content
 
 
+@time_machine.travel("2000-09-15")
+def test_types_tab_of_a_past_year_shows_its_own_last_income(main_user, client_logged):
+    main_user.year = 1999
+    main_user.save()
+    alga = IncomeTypeFactory(title="Alga")
+    IncomeFactory(date=date(1999, 5, 5), income_type=alga)
+    IncomeFactory(date=date(2000, 2, 2), income_type=alga)
+
+    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+
+    assert "<td>1999-05-05</td>" in content
+    assert "2000-02-02" not in content
+
+
 def test_types_tab_edits_each_type_from_its_row(client_logged):
     alga = IncomeTypeFactory(title="Alga")
     link = reverse("incomes:type_update", kwargs={"pk": alga.pk})
