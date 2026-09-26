@@ -1,9 +1,3 @@
-{% load i18n %}
-
-<div class="button-row row-reverse">
-    <c-new-button url="{% url 'incomes:new' %}" title="{% translate 'Incomes' context 'incomes button' %}" />
-</div>
-
 <c-search-form url="{% url 'incomes:search' %}" reset_url="{% url 'incomes:list' %}" target="#data" />
 
 <div id="data" class="table-responsive">
