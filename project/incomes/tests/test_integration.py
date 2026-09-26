@@ -17,7 +17,7 @@ class Incomes(Browser):
         IncomeFactory(remark="yyyy")
         IncomeFactory(remark="zzzz")
 
-        self.browser.get(f"{self.live_server_url}/incomes/")
+        self.browser.get(f"{self.live_server_url}/incomes/data/")
         self.wait_until_idle()
 
         rows = self.browser.find_elements(by=By.XPATH, value="//table/tbody/tr")
