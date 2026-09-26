@@ -16,11 +16,6 @@ class SavingTypeModelService(BaseModelService):
             journal=self.user.journal
         )
 
-    def year(self, year):
-        raise NotImplementedError(
-            "SavingTypeModelService.year is not implemented. Use items() instead."
-        )
-
     def all(self):
         return self.objects.all()
 

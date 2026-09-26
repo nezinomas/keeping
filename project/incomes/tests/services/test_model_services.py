@@ -1,9 +1,7 @@
-import re
 from datetime import date
 
 import pytest
 from django.contrib.auth.models import AnonymousUser
-from mock import MagicMock
 
 from ...services.model_services import IncomeModelService, IncomeTypeModelService
 from ..factories import IncomeFactory, IncomeTypeFactory
@@ -41,34 +39,6 @@ def test_income_type_init_raises_if_anonymous_user():
 def test_income_type_init_succeeds_with_real_user(main_user):
     # No need to save — just check __init__
     IncomeTypeModelService(user=main_user)
-
-
-def test_year_method_raises_not_implemented_error(mocker):
-    mocker.patch(
-        "project.incomes.services.model_services.IncomeTypeModelService.get_queryset",
-        return_value="X",
-    )
-    service = IncomeTypeModelService(user=MagicMock())
-
-    expected_msg = (
-        "IncomeTypeModelService.year is not implemented. Use items() instead."
-    )
-    with pytest.raises(NotImplementedError, match=re.escape(expected_msg)):
-        service.year(2023)
-
-
-def test_year_method_does_not_call_database(mocker):
-    mck = mocker.MagicMock()
-    mocker.patch(
-        "project.incomes.services.model_services.IncomeTypeModelService.get_queryset",
-        return_value=mck,
-    )
-    service = IncomeTypeModelService(MagicMock())
-
-    with pytest.raises(NotImplementedError):
-        service.year(2023)
-
-    mck.filter.assert_not_called()
 
 
 @pytest.mark.django_db
@@ -133,3 +103,7 @@ def test_last_date_by_type_stops_at_the_given_day(main_user):
     actual = IncomeModelService(main_user).last_date_by_type(date(1999, 12, 31))
 
     assert list(actual) == [{"title": "Alga", "date": date(1999, 3, 5)}]
+
+
+def test_income_type_model_service_promises_no_year():
+    assert not hasattr(IncomeTypeModelService, "year")

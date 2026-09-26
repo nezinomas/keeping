@@ -12,11 +12,6 @@ class AccountModelService(BaseModelService):
             journal=self.user.journal
         )
 
-    def year(self, year: int):
-        raise NotImplementedError(
-            "AccountModelService.year is not implemented. Use items() instead."
-        )
-
     def items(self, year: Optional[int] = None):
         year = year or self.user.year
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))

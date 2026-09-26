@@ -9,15 +9,12 @@ class DummyMixinService(CommonMethodsMixin):
     pass
 
 
-def test_common_methods_mixin_year_not_implemented():
-    service = DummyMixinService()
-
-    with pytest.raises(NotImplementedError, match="Method year is not implemented."):
-        service.year(2026)
-
-
 def test_common_methods_mixin_items_not_implemented():
     service = DummyMixinService()
 
     with pytest.raises(NotImplementedError, match="Method items is not implemented."):
         service.items()
+
+
+def test_common_methods_mixin_promises_no_year():
+    assert not hasattr(CommonMethodsMixin, "year")
