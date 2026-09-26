@@ -2493,7 +2493,7 @@ msgid "Share"
 msgstr "Dalis"
 
 msgid "Last income"
-msgstr "Paskutinės pajamos"
+msgstr "Paskutinį kartą"
 
 msgid "Add income type"
 msgstr "Pridėti pajamų rūšį"
