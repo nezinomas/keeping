@@ -13,6 +13,7 @@
 {% block head %}
     {% include 'highcharts.html' %}
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
+    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_incomes_months.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/sticky-table-headers.js' %}"></script>
 {% endblock head %}
 
@@ -31,5 +32,21 @@
 </main>
 
 </div>
+
+<script nonce="{{ csp_nonce }}">
+    function initIncomesChart() {
+        if (document.getElementById('chart-months-data')) {
+            chartIncomesMonths('chart-months-data', 'chart-months-container');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initIncomesChart);
+
+    htmx.on('htmx:after:swap', function (event) {
+        if (event.detail.ctx.target.id === 'tab_content') {
+            initIncomesChart();
+        }
+    });
+</script>
 
 {% endblock content %}

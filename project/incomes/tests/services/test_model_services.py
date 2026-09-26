@@ -89,3 +89,20 @@ def test_sum_by_type_between_sums_each_type_largest_first(main_user):
         {"title": "Alga", "sum": 500},
         {"title": "Kita", "sum": 100},
     ]
+
+
+@pytest.mark.django_db
+def test_sum_by_month_between_sums_each_month_in_order(main_user):
+    IncomeFactory(date=date(1999, 3, 5), price=200)
+    IncomeFactory(date=date(1999, 1, 5), price=100)
+    IncomeFactory(date=date(1999, 1, 20), price=50)
+    IncomeFactory(date=date(1999, 3, 6), price=999)
+
+    actual = IncomeModelService(main_user).sum_by_month_between(
+        date(1999, 1, 1), date(1999, 3, 5)
+    )
+
+    assert list(actual) == [
+        {"date": date(1999, 1, 1), "sum": 150},
+        {"date": date(1999, 3, 1), "sum": 200},
+    ]

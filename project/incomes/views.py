@@ -17,6 +17,7 @@ from ..core.mixins.views import (
 )
 from . import forms
 from .services.cards import OverviewCards
+from .services.chart_months import ChartMonths
 from .services.model_services import IncomeModelService, IncomeTypeModelService
 from .tabs import DEFAULT_TAB, TABS, IncomeTab
 
@@ -53,14 +54,21 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         boundary = YearBoundary.for_year(self.request.user.year)
         service = IncomeModelService(self.request.user)
-        year = service.sum_by_type_between(date(boundary.year, 1, 1), boundary.end_date)
-        last_year = service.sum_by_type_between(
-            date(boundary.year - 1, 1, 1), boundary.previous_end_date
-        )
+        this_span = (date(boundary.year, 1, 1), boundary.end_date)
+        last_span = (date(boundary.year - 1, 1, 1), boundary.previous_end_date)
 
         return {
             **super().get_context_data(**kwargs),
-            "cards": OverviewCards.build(list(year), list(last_year), boundary),
+            "cards": OverviewCards.build(
+                list(service.sum_by_type_between(*this_span)),
+                list(service.sum_by_type_between(*last_span)),
+                boundary,
+            ),
+            "chart": ChartMonths.build(
+                list(service.sum_by_month_between(*this_span)),
+                list(service.sum_by_month_between(*last_span)),
+                boundary,
+            ),
         }
 
 

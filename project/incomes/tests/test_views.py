@@ -1,3 +1,5 @@
+import json
+import re
 from datetime import date
 
 import pytest
@@ -578,6 +580,22 @@ def test_overview_states_the_year_in_three_cards(client_logged):
     assert "Alga" in content
     assert "Pernai 800,00" in content
     assert "9 mėnesiai" in content
+
+
+@time_machine.travel("1999-09-15")
+def test_overview_charts_the_year_against_last_year_to_the_same_day(client_logged):
+    IncomeFactory(date=date(1999, 2, 5), price=90_000)
+    IncomeFactory(date=date(1998, 9, 10), price=80_000)
+    IncomeFactory(date=date(1998, 9, 20), price=5_000)
+
+    content = client_logged.get(reverse("incomes:tab_index")).content.decode()
+    chart = json.loads(
+        re.search(r'id="chart-months-data"[^>]*>(.*?)</script>', content)[1]
+    )
+    data = {series["name"]: series["data"] for series in chart["series"]}
+
+    assert data["1999"] == [0.0, 900.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    assert data["1998"][8] == 800.0
 
 
 def _tab_queries(client, tab):
