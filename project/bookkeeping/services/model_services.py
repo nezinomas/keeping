@@ -10,9 +10,6 @@ from .. import models
 
 
 class CommonMethodsMixin:
-    def year(self, year: int):
-        raise NotImplementedError("Method year is not implemented.")
-
     def items(self):
         raise NotImplementedError("Method items is not implemented.")
 

@@ -1,11 +1,12 @@
 import contextlib
 
 from django.db.models import Min
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
+from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -37,8 +38,10 @@ class Empty(TemplateViewMixin):
     template_name = "counts/empty.html"
 
 
-class TabViewMixin:
+class TabViewMixin(CoreTabViewMixin):
     tab = DEFAULT_TAB
+    fragment_template = "counts/tab_fragment.html"
+    page_template = "counts/index.html"
     object = None
 
     def get_object(self):
@@ -57,23 +60,10 @@ class TabViewMixin:
 
         return super().dispatch(request, *args, **kwargs)
 
-    def get_template_names(self):
-        return [self.tab.template_name]
-
     def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**self.kwargs), "tab": self.tab.name}
+        return super().get_context_data(**self.kwargs)
 
-    def render_to_response(self, context, **response_kwargs):
-        response = super().render_to_response(context, **response_kwargs)
-        htmx = self.request.htmx
-        page = {**context, **self._page(), "content": response.rendered_content}
-
-        if htmx and not htmx.history_restore_request:
-            return render(self.request, "counts/tab_fragment.html", page)
-
-        return render(self.request, "counts/index.html", page)
-
-    def _page(self) -> dict:
+    def page_context(self) -> dict:
         return {
             "object": self.object,
             "tab_title": self.tab.title,

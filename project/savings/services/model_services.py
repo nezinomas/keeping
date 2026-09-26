@@ -6,7 +6,7 @@ from django.db.models import Count, F, Q, Sum, Value
 from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import BaseModelService, DatedModelService
 from .. import models
 
 
@@ -14,11 +14,6 @@ class SavingTypeModelService(BaseModelService):
     def get_queryset(self):
         return models.SavingType.objects.select_related("journal").filter(
             journal=self.user.journal
-        )
-
-    def year(self, year):
-        raise NotImplementedError(
-            "SavingTypeModelService.year is not implemented. Use items() instead."
         )
 
     def all(self):
@@ -32,7 +27,7 @@ class SavingTypeModelService(BaseModelService):
         return self.objects.filter(Q(closed__isnull=True) | Q(closed__gte=year))
 
 
-class SavingModelService(SumMixin, BaseModelService):
+class SavingModelService(SumMixin, DatedModelService):
     def get_queryset(self):
         return models.Saving.objects.select_related("account", "saving_type").filter(
             saving_type__journal=self.user.journal
@@ -118,7 +113,7 @@ class SavingModelService(SumMixin, BaseModelService):
         )
 
 
-class SavingBalanceModelService(BaseModelService):
+class SavingBalanceModelService(DatedModelService):
     def get_queryset(self):
         return models.SavingBalance.objects.select_related("saving_type").filter(
             saving_type__journal=self.user.journal

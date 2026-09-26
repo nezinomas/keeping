@@ -1,9 +1,7 @@
-import re
 from datetime import date
 
 import pytest
 from django.contrib.auth.models import AnonymousUser
-from mock import MagicMock
 
 from ... import models
 from ...services.model_services import (
@@ -267,30 +265,5 @@ def test_expense_keyword_year_same_titled_names_in_other_types(main_user):
     ]
 
 
-def test_year_method_raises_not_implemented_error(mocker):
-    mocker.patch(
-        "project.expenses.services.model_services.ExpenseTypeModelService.get_queryset",
-        return_value="X",
-    )
-    service = ExpenseTypeModelService(user=MagicMock())
-
-    expected_msg = (
-        "ExpenseTypeModelService.year is not implemented. Use items() instead."
-    )
-    with pytest.raises(NotImplementedError, match=re.escape(expected_msg)):
-        service.year(2023)
-
-
-def test_year_method_does_not_call_database_pure_pytest(mocker):
-    mock_qs = mocker.MagicMock()
-    mocker.patch(
-        "project.expenses.services.model_services.ExpenseTypeModelService.get_queryset",
-        return_value=mock_qs,
-    )
-
-    service = ExpenseTypeModelService(mocker.MagicMock())
-
-    with pytest.raises(NotImplementedError):
-        service.year(2023)
-
-    mock_qs.filter.assert_not_called()
+def test_expense_type_model_service_promises_no_year():
+    assert not hasattr(ExpenseTypeModelService, "year")

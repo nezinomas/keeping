@@ -1,12 +1,10 @@
-from datetime import date
-
-from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import ConvertPriceMixin
 from ..core.lib.year_boundary import YearBoundary
+from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -23,37 +21,15 @@ from .services.type_rows import TypesTable
 from .tabs import DEFAULT_TAB, TABS, IncomeTab
 
 
-def year_span(boundary: YearBoundary) -> tuple[date, date]:
-    return date(boundary.year, 1, 1), boundary.end_date
-
-
-def last_year_span(boundary: YearBoundary) -> tuple[date, date]:
-    return date(boundary.year - 1, 1, 1), boundary.previous_end_date
-
-
-class TabViewMixin:
+class TabViewMixin(CoreTabViewMixin):
     tab = DEFAULT_TAB
-
-    def get_template_names(self):
-        return [self.tab.template_name]
+    fragment_template = "incomes/tab_fragment.html"
+    page_template = "incomes/index.html"
 
     def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            "tab": self.tab.name,
-            "tab_url": self.tab.url,
-        }
+        return {**super().get_context_data(**kwargs), "tab_url": self.tab.url}
 
-    def render_to_response(self, context, **response_kwargs):
-        response = super().render_to_response(context, **response_kwargs)
-        page = {**context, **self._page(), "content": response.rendered_content}
-
-        if self.request.htmx:
-            return render(self.request, "incomes/tab_fragment.html", page)
-
-        return render(self.request, "incomes/index.html", page)
-
-    def _page(self) -> dict:
+    def page_context(self) -> dict:
         return {
             "page_title": format_lazy("{} | {}", _("Incomes"), self.tab.title),
             "tabs": [(tab, tab.url) for tab in TABS],
@@ -66,19 +42,17 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         boundary = YearBoundary.for_year(self.request.user.year)
         service = IncomeModelService(self.request.user)
-        this_span = year_span(boundary)
-        last_span = last_year_span(boundary)
 
         return {
             **super().get_context_data(**kwargs),
             "cards": OverviewCards.build(
-                list(service.sum_by_type_between(*this_span)),
-                list(service.sum_by_type_between(*last_span)),
+                list(service.sum_by_type_between(*boundary.span)),
+                list(service.sum_by_type_between(*boundary.previous_span)),
                 boundary,
             ),
             "chart": ChartMonths.build(
-                list(service.sum_by_month_between(*this_span)),
-                list(service.sum_by_month_between(*last_span)),
+                list(service.sum_by_month_between(*boundary.span)),
+                list(service.sum_by_month_between(*boundary.previous_span)),
                 boundary,
             ),
         }
@@ -117,8 +91,8 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
             **super().get_context_data(**kwargs),
             "table": TypesTable.build(
                 list(types),
-                list(service.sum_by_type_between(*year_span(boundary))),
-                list(service.sum_by_type_between(*last_year_span(boundary))),
+                list(service.sum_by_type_between(*boundary.span)),
+                list(service.sum_by_type_between(*boundary.previous_span)),
                 list(service.last_date_by_type(boundary.end_date)),
                 self.request.GET.get("order", ""),
             ),

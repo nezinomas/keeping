@@ -191,3 +191,23 @@ def test_previous_end_date_clamps_a_leap_day_onto_a_common_year():
     boundary = YearBoundary(year=2024, today=date(2024, 2, 29))
 
     assert boundary.previous_end_date == date(2023, 2, 28)
+
+
+#                                                                  span, previous_span
+# -------------------------------------------------------------------------------------
+def test_span_runs_from_new_year_to_today_while_the_year_runs():
+    boundary = YearBoundary(year=2026, today=date(2026, 8, 11))
+
+    assert boundary.span == (date(2026, 1, 1), date(2026, 8, 11))
+
+
+def test_span_of_a_finished_year_is_the_whole_year():
+    boundary = YearBoundary(year=2025, today=date(2026, 8, 11))
+
+    assert boundary.span == (date(2025, 1, 1), date(2025, 12, 31))
+
+
+def test_previous_span_stops_on_the_same_day_a_year_back():
+    boundary = YearBoundary(year=2026, today=date(2026, 8, 11))
+
+    assert boundary.previous_span == (date(2025, 1, 1), date(2025, 8, 11))

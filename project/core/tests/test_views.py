@@ -181,3 +181,9 @@ def test_base_keeps_error_responses_out_of_the_page(client_logged):
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
 
     assert '"noSwap": [204, 304, "4xx", "5xx"]' in content
+
+
+def test_base_reloads_the_page_on_back(client_logged):
+    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
+
+    assert '"history": "reload"' in content

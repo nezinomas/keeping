@@ -3,7 +3,7 @@ from collections import defaultdict
 from django.db.models import Count, F, Sum
 from django.utils.translation import gettext_lazy as _
 
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import DatedModelService
 from ...expenses.services.model_services import ExpenseTypeModelService
 from .. import models
 
@@ -41,7 +41,7 @@ class CommonMethodsMixin:
         )
 
 
-class IncomePlanModelService(CommonMethodsMixin, BaseModelService):
+class IncomePlanModelService(CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
         return models.IncomePlan.objects.select_related(
             "journal", "income_type"
@@ -54,7 +54,7 @@ class IncomePlanModelService(CommonMethodsMixin, BaseModelService):
         return self.generic_summed_by_month(year, "income_type")
 
 
-class ExpensePlanModelService(CommonMethodsMixin, BaseModelService):
+class ExpensePlanModelService(CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
         return models.ExpensePlan.objects.select_related(
             "journal", "expense_type"
@@ -69,7 +69,7 @@ class ExpensePlanModelService(CommonMethodsMixin, BaseModelService):
         )
 
 
-class SavingPlanModelService(CommonMethodsMixin, BaseModelService):
+class SavingPlanModelService(CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
         return models.SavingPlan.objects.select_related(
             "journal", "saving_type"
@@ -82,7 +82,7 @@ class SavingPlanModelService(CommonMethodsMixin, BaseModelService):
         return self.generic_summed_by_month(year, "saving_type")
 
 
-class DayPlanModelService(CommonMethodsMixin, BaseModelService):
+class DayPlanModelService(CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
         return models.DayPlan.objects.select_related("journal").filter(
             journal=self.user.journal
@@ -95,7 +95,7 @@ class DayPlanModelService(CommonMethodsMixin, BaseModelService):
         return self.generic_summed_by_month(year, "year")
 
 
-class NecessaryPlanModelService(CommonMethodsMixin, BaseModelService):
+class NecessaryPlanModelService(CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
         return models.NecessaryPlan.objects.select_related("journal").filter(
             journal=self.user.journal

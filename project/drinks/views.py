@@ -8,6 +8,7 @@ from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 
+from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -37,32 +38,20 @@ class HtmxFormRetargetMixin:
         return response
 
 
-class TabViewMixin:
+class TabViewMixin(CoreTabViewMixin):
     tab = DEFAULT_TAB
-
-    def get_template_names(self):
-        return [self.tab.template_name]
+    fragment_template = "drinks/tab_fragment.html"
+    page_template = "drinks/index.html"
 
     def get_context_data(self, **kwargs):
         user = cast(User, self.request.user)
 
         return {
             **super().get_context_data(**kwargs),
-            "tab": self.tab.name,
             "drink_type_control": self.tab.control(user.drink_type),
         }
 
-    def render_to_response(self, context, **response_kwargs):
-        response = super().render_to_response(context, **response_kwargs)
-        htmx = self.request.htmx
-        page = {**context, **self._page(), "content": response.rendered_content}
-
-        if htmx and not htmx.history_restore_request:
-            return render(self.request, "drinks/tab_fragment.html", page)
-
-        return render(self.request, "drinks/index.html", page)
-
-    def _page(self) -> dict:
+    def page_context(self) -> dict:
         """What the shell around a tab needs, and no tab does."""
         user = cast(User, self.request.user)
 

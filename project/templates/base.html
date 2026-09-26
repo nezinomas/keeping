@@ -12,7 +12,9 @@
          the page. Without the 4xx/5xx entries htmx 4 would paste Django's error
          page into whatever the request targeted. 204/304 are htmx's own defaults,
          repeated because this replaces the list rather than extending it -->
-    <meta name="htmx-config" content='{"includeIndicatorCSS": false, "noSwap": [204, 304, "4xx", "5xx"]}'>
+    <!-- history reload: a swapped Back restore re-runs the footer scripts and never
+         fires DOMContentLoaded, so charts stay blank -->
+    <meta name="htmx-config" content='{"includeIndicatorCSS": false, "noSwap": [204, 304, "4xx", "5xx"], "history": "reload"}'>
     <script nonce="{{ csp_nonce }}" src="{% static 'htmx/htmx.min.js' %}"></script> <!-- Htmx -->
     <script nonce="{{ csp_nonce }}" src="{% static 'htmx/ext/hx-alpine-compat.js' %}"></script> <!-- Alpine state survives a morph swap -->
     <script nonce="{{ csp_nonce }}" defer src="{% static 'alpinejs/alpinejs_3.14.8.js' %}"></script> <!-- Alpine Core -->
