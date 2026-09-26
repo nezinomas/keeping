@@ -17,7 +17,7 @@ class TabViewMixin:
         page = {**context, **self.page_context(), "content": response.rendered_content}
         template = self.page_template
 
-        # a Back restore rebuilds the whole page, so it needs the shell too
+        # base.html reloads on Back, so this runs only if htmx swaps a restore again
         if htmx and not htmx.history_restore_request:
             template = self.fragment_template
 
