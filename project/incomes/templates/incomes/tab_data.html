@@ -1,0 +1,5 @@
+<c-search-form url="{% url 'incomes:search' %}" reset_url="{% url 'incomes:list' %}" target="#data" />
+
+<div id="data" class="table-responsive">
+    {% include 'incomes/income_list.html' %}
+</div>

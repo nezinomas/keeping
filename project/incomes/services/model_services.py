@@ -1,6 +1,7 @@
-from typing import Optional
+from collections.abc import Sequence
+from datetime import date
 
-from django.db.models import Count, F, Sum, Value
+from django.db.models import F, Max, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ...core.mixins.sum import SumMixin
@@ -30,12 +31,12 @@ class IncomeModelService(SumMixin, BaseModelService):
         )
 
     def year(self, year: int):
-        return self.objects.filter(date__year=year)
+        return self.items().filter(date__year=year)
 
     def items(self):
         return self.objects.all()
 
-    def sum_by_year(self, income_type: Optional[list] = None):
+    def sum_by_year(self, income_type: Sequence[str] = ()):
         qs = self.objects
 
         if income_type:
@@ -43,7 +44,7 @@ class IncomeModelService(SumMixin, BaseModelService):
 
         return self.year_sum(qs)
 
-    def sum_by_month(self, year: int, month: Optional[int] = None):
+    def sum_by_month(self, year: int, month: int = 0):
         return self.month_sum(self.objects, year, month).annotate(
             title=Value("incomes")
         )
@@ -64,8 +65,7 @@ class IncomeModelService(SumMixin, BaseModelService):
 
     def sum_by_year_and_type(self):
         return (
-            self.objects.annotate(cnt=Count("income_type"))
-            .annotate(year=TruncYear("date"))
+            self.objects.annotate(year=TruncYear("date"))
             .values("year", "income_type")
             .annotate(
                 sum=Sum("price"),
@@ -74,6 +74,34 @@ class IncomeModelService(SumMixin, BaseModelService):
             )
             .order_by("income_type__title", "date")
             .values("date", "sum", "title")
+        )
+
+    def sum_by_type_between(self, start: date, end: date):
+        return (
+            self.objects.filter(date__range=(start, end))
+            .values("income_type")
+            .annotate(sum=Sum("price"), title=F("income_type__title"))
+            .order_by("-sum", "title")
+            .values("title", "sum")
+        )
+
+    def sum_by_month_between(self, start: date, end: date):
+        return (
+            self.objects.filter(date__range=(start, end))
+            .annotate(month=TruncMonth("date"))
+            .values("month")
+            .annotate(sum=Sum("price"))
+            .order_by("month")
+            .values("sum", date=F("month"))
+        )
+
+    def last_date_by_type(self, end: date):
+        return (
+            self.objects.filter(date__lte=end)
+            .values("income_type")
+            .annotate(date=Max("date"), title=F("income_type__title"))
+            .order_by()
+            .values("title", "date")
         )
 
     def incomes(self):

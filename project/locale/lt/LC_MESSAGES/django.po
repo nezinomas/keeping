@@ -2458,6 +2458,46 @@ msgstr "Išlaidų pavadinimas priklauso kitam žurnalui."
 msgid "Save"
 msgstr "Išsaugoti"
 
+msgid "Types"
+msgstr "Rūšys"
+
+msgid "Largest type"
+msgstr "Didžiausia rūšis"
+
+msgid "The income type with the biggest share of this year"
+msgstr "Didžiausią šių metų dalį sudaranti pajamų rūšis"
+
+msgid "The year's total divided by the months it has reached"
+msgstr "Metų suma, padalinta iš prabėgusių mėnesių"
+
+#, python-format
+msgid "%(share)s%% of the year's total"
+msgstr "%(share)s%% metų sumos"
+
+#, python-format
+msgid "Last year %(amount)s"
+msgstr "Pernai %(amount)s"
+
+#, python-format
+msgid "%(count)s month"
+msgid_plural "%(count)s months"
+msgstr[0] "%(count)s mėnuo"
+msgstr[1] "%(count)s mėnesiai"
+msgstr[2] "%(count)s mėnesio"
+msgstr[3] "%(count)s mėnesių"
+
+msgid "Add income"
+msgstr "Pridėti pajamas"
+
+msgid "Share"
+msgstr "Dalis"
+
+msgid "Last income"
+msgstr "Paskutinį kartą"
+
+msgid "Add income type"
+msgstr "Pridėti pajamų rūšį"
+
 #~ msgctxt "book add button"
 #~ msgid "Book"
 #~ msgstr "Knygą"
