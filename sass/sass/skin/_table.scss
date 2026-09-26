@@ -114,6 +114,41 @@
         }
     }
 
+    // a sortable header (<c-sort-th>): the active column is a span, every other one
+    // a link; the glyph is the hint, inked darker on the column in use
+    .sortable-header-row th {
+        > span,
+        > a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+
+            &::before {
+                font-family: 'Glyphicons Halflings';
+                content: "\e113";
+                font-size: 8px;
+            }
+        }
+
+        > span::before {
+            color: $ink;
+        }
+
+        > a {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+
+            &::before {
+                color: $ink-faint;
+            }
+
+            &:hover::before {
+                color: $ink-muted;
+            }
+        }
+    }
+
     .main.sticky-table {
         border: 1px solid $hair;
 
