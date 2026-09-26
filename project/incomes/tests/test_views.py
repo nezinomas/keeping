@@ -568,6 +568,41 @@ def test_types_tab_lists_the_income_types(client_logged):
 
 
 @time_machine.travel("1999-09-15")
+def test_types_tab_states_each_type_in_a_table(client_logged):
+    alga = IncomeTypeFactory(title="Alga")
+    IncomeTypeFactory(title="Kita")
+    IncomeFactory(date=date(1999, 2, 5), price=90_000, income_type=alga)
+
+    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+
+    assert '<td class="text-left">Kita</td>' in content
+    assert "<td>900</td>" in content
+    assert "Paskutinės pajamos" in content
+    assert "c-accordion" not in content and 'class="accordion"' not in content
+
+
+def test_types_tab_edits_each_type_from_its_row(client_logged):
+    alga = IncomeTypeFactory(title="Alga")
+    link = reverse("incomes:type_update", kwargs={"pk": alga.pk})
+
+    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+
+    assert f'<tr hx-get="{link}" hx-trigger="dblclick"' in content
+    assert f'hx-get="{link}" hx-target="#mainModal" class="edit"' in content
+
+
+def test_the_add_type_pill_waits_for_the_types_tab(client_logged):
+    link = reverse("incomes:type_new")
+
+    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+
+    pill = f'class="quick-add__pill" hx-get="{link}"'
+
+    assert f"x-show=\"tab === 'types'\" x-cloak {pill}" in content
+    assert "Pridėti pajamų rūšį" in content
+
+
+@time_machine.travel("1999-09-15")
 def test_overview_states_the_year_in_three_cards(client_logged):
     alga = IncomeTypeFactory(title="Alga")
     IncomeFactory(date=date(1999, 1, 5), price=90_000, income_type=alga)
@@ -603,8 +638,8 @@ def test_every_tab_offers_one_add_income_pill(client_logged, tab):
     content = client_logged.get(tab.url).content.decode()
     link = reverse("incomes:new")
 
-    assert content.count('class="quick-add__pill"') == 1
-    assert f'class="quick-add__pill" hx-get="{link}"' in content
+    assert content.count('class="quick-add__pill"') == 2
+    assert content.count(f'class="quick-add__pill" hx-get="{link}"') == 1
     assert "Pridėti pajamas" in content
 
 
