@@ -2,7 +2,7 @@ from django.db.models import F, Sum, Value
 from django.db.models.functions import ExtractYear
 
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import DatedModelService
 from .. import models
 
 
@@ -51,7 +51,7 @@ class CommonMethodsMixin:
         )
 
 
-class TransactionModelService(CommonMethodsMixin, BaseModelService):
+class TransactionModelService(CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
         return models.Transaction.objects.select_related(
             "from_account", "to_account"
@@ -68,7 +68,7 @@ class TransactionModelService(CommonMethodsMixin, BaseModelService):
         return self.base_expenses()
 
 
-class SavingCloseModelService(SumMixin, CommonMethodsMixin, BaseModelService):
+class SavingCloseModelService(SumMixin, CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
         return models.SavingClose.objects.select_related(
             "from_account", "to_account"
@@ -90,7 +90,7 @@ class SavingCloseModelService(SumMixin, CommonMethodsMixin, BaseModelService):
         return self.base_expenses(fee=True)
 
 
-class SavingChangeModelService(CommonMethodsMixin, BaseModelService):
+class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
         return models.SavingChange.objects.select_related(
             "from_account", "to_account"

@@ -11,8 +11,5 @@ class UserModelService(BaseModelService):
             journal=self.user.journal
         )
 
-    def year(self, year: int):
-        raise NotImplementedError("Method year is not implemented.")
-
     def items(self):
         raise NotImplementedError("Method items is not implemented.")

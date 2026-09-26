@@ -2,11 +2,11 @@ from django.db.models import Count, F, Q
 from django.db.models.functions import ExtractYear, TruncYear
 
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import DatedModelService
 from .. import models
 
 
-class BookModelService(SumMixin, BaseModelService):
+class BookModelService(SumMixin, DatedModelService):
     def get_queryset(self):
         return models.Book.objects.select_related("user").filter(user=self.user)
 
@@ -45,7 +45,7 @@ class BookModelService(SumMixin, BaseModelService):
         )
 
 
-class BookTargetModelService(BaseModelService):
+class BookTargetModelService(DatedModelService):
     def get_queryset(self):
         return models.BookTarget.objects.select_related("user").filter(user=self.user)
 

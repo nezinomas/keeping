@@ -2,7 +2,7 @@ from django.db.models import F, Sum
 from django.db.models.functions import ExtractYear
 
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import BaseModelService, DatedModelService
 from .. import models
 
 
@@ -12,16 +12,11 @@ class PensionTypeModelService(BaseModelService):
             journal=self.user.journal
         )
 
-    def year(self, year: int):
-        raise NotImplementedError(
-            "PensionTypeModelService.year is not implemented. Use items() instead."
-        )
-
     def items(self):
         return self.objects.all()
 
 
-class PensionModelService(SumMixin, BaseModelService):
+class PensionModelService(SumMixin, DatedModelService):
     def get_queryset(self):
         return models.Pension.objects.select_related("pension_type").filter(
             pension_type__journal=self.user.journal
@@ -47,7 +42,7 @@ class PensionModelService(SumMixin, BaseModelService):
         )
 
 
-class PensionBalanceModelService(BaseModelService):
+class PensionBalanceModelService(DatedModelService):
     def get_queryset(self):
         return models.PensionBalance.objects.select_related("pension_type").filter(
             pension_type__journal=self.user.journal
