@@ -38,7 +38,11 @@ class TabViewMixin:
         return [self.tab.template_name]
 
     def get_context_data(self, **kwargs):
-        return {**super().get_context_data(**kwargs), "tab": self.tab.name}
+        return {
+            **super().get_context_data(**kwargs),
+            "tab": self.tab.name,
+            "tab_url": self.tab.url,
+        }
 
     def render_to_response(self, context, **response_kwargs):
         response = super().render_to_response(context, **response_kwargs)
@@ -51,7 +55,6 @@ class TabViewMixin:
 
     def _page(self) -> dict:
         return {
-            "tab_url": self.tab.url,
             "page_title": format_lazy("{} | {}", _("Incomes"), self.tab.title),
             "tabs": [(tab, tab.url) for tab in TABS],
         }
@@ -108,7 +111,7 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
         user = self.request.user
         boundary = YearBoundary.for_year(user.year)
         service = IncomeModelService(user)
-        types = IncomeTypeModelService(user).items().values("id", "title", "type")
+        types = IncomeTypeModelService(user).items().values("id", "title")
 
         return {
             **super().get_context_data(**kwargs),
@@ -117,6 +120,7 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
                 list(service.sum_by_type_between(*year_span(boundary))),
                 list(service.sum_by_type_between(*last_year_span(boundary))),
                 list(service.last_date_by_type()),
+                self.request.GET.get("order", ""),
             ),
         }
 

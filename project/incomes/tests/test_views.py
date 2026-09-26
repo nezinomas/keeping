@@ -591,6 +591,42 @@ def test_types_tab_edits_each_type_from_its_row(client_logged):
     assert f'hx-get="{link}" hx-target="#mainModal" class="edit"' in content
 
 
+@time_machine.travel("1999-09-15")
+def test_types_tab_sorts_by_the_asked_column(client_logged):
+    alga = IncomeTypeFactory(title="Alga")
+    zeta = IncomeTypeFactory(title="Zeta")
+    IncomeFactory(date=date(1999, 2, 5), price=10_000, income_type=alga)
+    IncomeFactory(date=date(1999, 2, 5), price=90_000, income_type=zeta)
+    url = reverse("incomes:tab_types")
+
+    by_title = client_logged.get(url).content.decode()
+    by_share = client_logged.get(url, {"order": "share"}).content.decode()
+
+    assert by_title.index(">Alga<") < by_title.index(">Zeta<")
+    assert by_share.index(">Zeta<") < by_share.index(">Alga<")
+
+
+def test_types_tab_links_every_header_but_the_active_one(client_logged):
+    url = reverse("incomes:tab_types")
+
+    content = client_logged.get(url, {"order": "share"}).content.decode()
+
+    assert '<thead class="sortable-header-row">' in content
+    assert "<span>Dalis</span>" in content
+    for key in ("title", "this_year", "last_year", "last_income"):
+        assert f'hx-get="{url}?order={key}" hx-target="#tab_content"' in content
+    assert f"{url}?order=share" not in content
+
+
+def test_types_tab_draws_no_groups(client_logged):
+    IncomeTypeFactory(title="Alga", type="salary")
+    IncomeTypeFactory(title="Kita", type="other")
+
+    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+
+    assert "table-group-divider" not in content
+
+
 def test_the_add_type_pill_waits_for_the_types_tab(client_logged):
     link = reverse("incomes:type_new")
 
