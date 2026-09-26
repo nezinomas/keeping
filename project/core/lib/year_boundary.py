@@ -71,6 +71,14 @@ class YearBoundary:
         return date(self.year - 1, end.month, day)
 
     @property
+    def span(self) -> tuple[date, date]:
+        return date(self.year, 1, 1), self.end_date
+
+    @property
+    def previous_span(self) -> tuple[date, date]:
+        return date(self.year - 1, 1, 1), self.previous_end_date
+
+    @property
     def days_elapsed(self) -> int:
         """Days of the year covered — day-of-year today, 365 or 366 for a year
         already finished."""
