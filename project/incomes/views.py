@@ -1,4 +1,6 @@
+from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import ConvertPriceMixin
@@ -12,10 +14,37 @@ from ..core.mixins.views import (
 )
 from . import forms
 from .services.model_services import IncomeModelService, IncomeTypeModelService
+from .tabs import DEFAULT_TAB, TABS, IncomeTab
 
 
-class Index(TemplateViewMixin):
-    template_name = "incomes/index.html"
+class TabViewMixin:
+    tab = DEFAULT_TAB
+
+    def get_template_names(self):
+        return [self.tab.template_name]
+
+    def get_context_data(self, **kwargs):
+        return {**super().get_context_data(**kwargs), "tab": self.tab.name}
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        page = {**context, **self._page(), "content": response.rendered_content}
+
+        if self.request.htmx:
+            return render(self.request, "incomes/tab_fragment.html", page)
+
+        return render(self.request, "incomes/index.html", page)
+
+    def _page(self) -> dict:
+        return {
+            "tab_url": self.tab.url,
+            "page_title": format_lazy("{} | {}", _("Incomes"), self.tab.title),
+            "tabs": [(tab, tab.url) for tab in TABS],
+        }
+
+
+class TabIndex(TabViewMixin, TemplateViewMixin):
+    tab = IncomeTab.resolve("index")
 
 
 class Lists(ListViewMixin):
@@ -27,10 +56,20 @@ class Lists(ListViewMixin):
         return IncomeModelService(user).year(user.year).order_by("-date", "price")
 
 
+class TabData(TabViewMixin, Lists):
+    tab = IncomeTab.resolve("data")
+
+
+class TabTypes(TabViewMixin, ListViewMixin):
+    tab = IncomeTab.resolve("types")
+    service_class = IncomeTypeModelService
+
+
+# the nav and Bookkeeping open these too, so they take no tab kwarg
 class New(CreateViewMixin):
     service_class = IncomeModelService
     form_class = forms.IncomeForm
-    success_url = reverse_lazy("incomes:list")
+    success_url = reverse_lazy("incomes:tab_data")
     hx_trigger_form = "reload"
     modal_form_title = _("Incomes")
 
@@ -38,38 +77,33 @@ class New(CreateViewMixin):
 class Update(ConvertPriceMixin, UpdateViewMixin):
     service_class = IncomeModelService
     form_class = forms.IncomeForm
-    success_url = reverse_lazy("incomes:list")
+    success_url = reverse_lazy("incomes:tab_data")
     hx_trigger_django = "reload"
     modal_form_title = _("Incomes")
 
 
 class Delete(DeleteViewMixin):
     service_class = IncomeModelService
-    success_url = reverse_lazy("incomes:list")
+    success_url = reverse_lazy("incomes:tab_data")
     modal_form_title = _("Delete income")
-
-
-class TypeLists(ListViewMixin):
-    template_name = "incomes/incometype_list.html"
-    service_class = IncomeTypeModelService
 
 
 class TypeNew(CreateViewMixin):
     service_class = IncomeTypeModelService
     form_class = forms.IncomeTypeForm
-    hx_trigger_django = "afterType"
+    hx_trigger_django = "reload"
     modal_form_title = _("Incomes type")
     url_name = "type_new"
-    success_url = reverse_lazy("incomes:type_list")
+    success_url = reverse_lazy("incomes:tab_types")
 
 
 class TypeUpdate(UpdateViewMixin):
     service_class = IncomeTypeModelService
     form_class = forms.IncomeTypeForm
-    hx_trigger_django = "afterType"
+    hx_trigger_django = "reload"
     modal_form_title = _("Incomes type")
     url_name = "type_update"
-    success_url = reverse_lazy("incomes:type_list")
+    success_url = reverse_lazy("incomes:tab_types")
 
 
 class Search(SearchViewMixin):

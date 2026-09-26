@@ -2,10 +2,13 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import resolve, reverse
 
 from ...accounts.tests.factories import AccountFactory
 from .. import models, views
+from ..tabs import TABS
 from .factories import Income, IncomeFactory, IncomeTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -17,13 +20,19 @@ pytestmark = pytest.mark.django_db
 def test_incomes_index_func():
     view = resolve("/incomes/")
 
-    assert views.Index == view.func.view_class
+    assert views.TabIndex == view.func.view_class
 
 
 def test_incomes_lists_func():
     view = resolve("/incomes/lists/")
 
     assert views.Lists == view.func.view_class
+
+
+def test_incomes_data_func():
+    view = resolve("/incomes/data/")
+
+    assert views.TabData == view.func.view_class
 
 
 def test_incomes_new_func():
@@ -38,10 +47,10 @@ def test_incomes_update_func():
     assert views.Update == view.func.view_class
 
 
-def test_types_lists_func():
-    view = resolve("/incomes/type/")
+def test_types_tab_func():
+    view = resolve("/incomes/types/")
 
-    assert views.TypeLists == view.func.view_class
+    assert views.TabTypes == view.func.view_class
 
 
 def test_types_new_func():
@@ -231,18 +240,27 @@ def test_income_update_past_record(main_user, client_logged):
     assert actual.remark == "Pastaba"
 
 
-def test_incomes_index_search_form(client_logged):
-    url = reverse("incomes:index")
+def test_incomes_data_search_form(client_logged):
+    url = reverse("incomes:tab_data")
     response = client_logged.get(url).content.decode("utf-8")
 
     assert '<input type="search" name="search"' in response
     assert reverse("incomes:search") in response
 
 
+def test_incomes_list_renders_the_rows_alone(client_logged):
+    IncomeFactory()
+
+    content = client_logged.get(reverse("incomes:list")).content.decode()
+
+    assert "10,00</td>" in content
+    assert '<nav class="subnav">' not in content
+
+
 def test_incomes_list_price_value(client_logged):
     IncomeFactory()
 
-    url = reverse("incomes:list")
+    url = reverse("incomes:tab_data")
     response = client_logged.get(url).content.decode("utf-8")
 
     assert "10,00</td>" in response
@@ -346,6 +364,15 @@ def test_type_save(client_logged):
     actual = response.content.decode("utf-8")
 
     assert "TTT" in actual
+
+
+def test_type_save_htmx_trigger_value(client_logged):
+    url = reverse("incomes:type_new")
+    data = {"title": "TTT", "type": "salary"}
+
+    response = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
+
+    assert response.headers["HX-Trigger"] == '{"reload": {}}'
 
 
 def test_type_save_invalid_data(client_logged):
@@ -461,3 +488,78 @@ def test_search_pagination_second_page(client_logged):
     actual = response.content.decode("utf-8")
 
     assert actual.count("Income Type") == 1
+
+
+# -------------------------------------------------------------------------------------
+#                                                                                 Tabs
+# -------------------------------------------------------------------------------------
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged, tab):
+    content = client_logged.get(tab.url).content.decode()
+
+    assert '<nav class="subnav">' in content
+    assert "paper.min.css" in content
+    assert 'class="paper-skin"' in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged, tab):
+    content = client_logged.get(
+        tab.url, headers={"HX-Request": "true"}
+    ).content.decode()
+
+    assert '<nav class="subnav">' not in content
+    assert "<title>" in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_only_the_open_tab_reloads_on_a_saved_income(client_logged, tab):
+    content = client_logged.get(
+        tab.url, headers={"HX-Request": "true"}
+    ).content.decode()
+
+    listener = (
+        f'hx-get="{tab.url}" hx-target="#tab_content" hx-trigger="reload from:body"'
+    )
+    assert listener in content
+    assert content.count("reload from:body") == 1
+
+
+def test_nav_offers_every_tab(client_logged):
+    content = client_logged.get(reverse("incomes:index")).content.decode()
+
+    for tab in TABS:
+        assert f'hx-get="{tab.url}"' in content
+
+
+def test_browser_title_names_the_open_tab(client_logged):
+    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+
+    assert "<title>Pajamos | Rūšys</title>" in content
+
+
+def test_types_tab_lists_the_income_types(client_logged):
+    IncomeTypeFactory(title="Alga")
+
+    content = client_logged.get(reverse("incomes:tab_types")).content.decode()
+
+    assert "Alga" in content
+
+
+def _tab_queries(client, tab):
+    with CaptureQueriesContext(connection) as queries:
+        client.get(tab.url, headers={"HX-Request": "true"})
+    return len(queries)
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_tab_query_count_does_not_grow_with_the_incomes(client_logged, tab):
+    for i in range(2):
+        IncomeFactory(income_type=IncomeTypeFactory(title=f"T{i}"))
+    two = _tab_queries(client_logged, tab)
+
+    for i in range(2, 6):
+        IncomeFactory(income_type=IncomeTypeFactory(title=f"T{i}"))
+    six = _tab_queries(client_logged, tab)
+
+    assert six == two

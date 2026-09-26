@@ -1,0 +1,7 @@
+{% load i18n %}
+
+<div class="button-row">
+    <c-new-button url="{% url 'incomes:type_new' %}" title="{% translate 'Incomes type' context 'income type button' %}" />
+</div>
+
+<c-accordion :object_list=object_list title="{% translate 'Incomes type' %}" url_name='incomes:type_update' />
