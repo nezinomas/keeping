@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from datetime import date
 
-from django.db.models import F, Sum, Value
+from django.db.models import F, Max, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ...core.mixins.sum import SumMixin
@@ -93,6 +93,14 @@ class IncomeModelService(SumMixin, BaseModelService):
             .annotate(sum=Sum("price"))
             .order_by("month")
             .values("sum", date=F("month"))
+        )
+
+    def last_date_by_type(self):
+        return (
+            self.objects.values("income_type")
+            .annotate(date=Max("date"), title=F("income_type__title"))
+            .order_by()
+            .values("title", "date")
         )
 
     def incomes(self):

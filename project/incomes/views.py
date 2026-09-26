@@ -19,7 +19,16 @@ from . import forms
 from .services.cards import OverviewCards
 from .services.chart_months import ChartMonths
 from .services.model_services import IncomeModelService, IncomeTypeModelService
+from .services.type_rows import TypesTable
 from .tabs import DEFAULT_TAB, TABS, IncomeTab
+
+
+def year_span(boundary: YearBoundary) -> tuple[date, date]:
+    return date(boundary.year, 1, 1), boundary.end_date
+
+
+def last_year_span(boundary: YearBoundary) -> tuple[date, date]:
+    return date(boundary.year - 1, 1, 1), boundary.previous_end_date
 
 
 class TabViewMixin:
@@ -54,8 +63,8 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         boundary = YearBoundary.for_year(self.request.user.year)
         service = IncomeModelService(self.request.user)
-        this_span = (date(boundary.year, 1, 1), boundary.end_date)
-        last_span = (date(boundary.year - 1, 1, 1), boundary.previous_end_date)
+        this_span = year_span(boundary)
+        last_span = last_year_span(boundary)
 
         return {
             **super().get_context_data(**kwargs),
@@ -92,9 +101,24 @@ class TabData(TabViewMixin, Lists):
     tab = IncomeTab.resolve("data")
 
 
-class TabTypes(TabViewMixin, ListViewMixin):
+class TabTypes(TabViewMixin, TemplateViewMixin):
     tab = IncomeTab.resolve("types")
-    service_class = IncomeTypeModelService
+
+    def get_context_data(self, **kwargs):
+        user = self.request.user
+        boundary = YearBoundary.for_year(user.year)
+        service = IncomeModelService(user)
+        types = IncomeTypeModelService(user).items().values("id", "title", "type")
+
+        return {
+            **super().get_context_data(**kwargs),
+            "table": TypesTable.build(
+                list(types),
+                list(service.sum_by_type_between(*year_span(boundary))),
+                list(service.sum_by_type_between(*last_year_span(boundary))),
+                list(service.last_date_by_type()),
+            ),
+        }
 
 
 # the nav and Bookkeeping open these too, so they take no tab kwarg

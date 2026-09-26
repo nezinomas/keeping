@@ -1,3 +1,39 @@
 {% load i18n %}
 
-<c-accordion :object_list=object_list title="{% translate 'Incomes type' %}" url_name='incomes:type_update' />
+<div class="table-responsive">
+<table class="main striped hover">
+    <thead>
+        <tr>
+            <th class="text-left">{% translate 'Incomes type' %}</th>
+            <th>{% translate 'This year' %}</th>
+            <th>{% translate 'Last year' %}</th>
+            <th>{% translate 'Share' %}</th>
+            <th>{% translate 'Last income' %}</th>
+            <th class="edit-col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in table.rows %}
+        {% url 'incomes:type_update' row.pk as url_update %}
+        <tr hx-get="{{ url_update }}" hx-trigger="dblclick" hx-target="#mainModal"{% if row.starts_group %} class="table-group-divider"{% endif %}>
+            <td class="text-left">{{ row.title }}</td>
+            <td>{{ row.this_year }}</td>
+            <td>{{ row.last_year }}</td>
+            <td>{{ row.share }}</td>
+            <td>{{ row.last_income }}</td>
+            <c-td-edit :url=url_update />
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr class="main__total">
+            <td class="text-left">{% translate 'Total' %}</td>
+            <td>{{ table.total.this_year }}</td>
+            <td>{{ table.total.last_year }}</td>
+            <td>{{ table.total.share }}</td>
+            <td></td>
+            <td class="edit-col"></td>
+        </tr>
+    </tfoot>
+</table>
+</div>

@@ -106,3 +106,19 @@ def test_sum_by_month_between_sums_each_month_in_order(main_user):
         {"date": date(1999, 1, 1), "sum": 150},
         {"date": date(1999, 3, 1), "sum": 200},
     ]
+
+
+@pytest.mark.django_db
+def test_last_date_by_type_gives_each_type_its_latest_income(main_user):
+    alga = IncomeTypeFactory(title="Alga")
+    kita = IncomeTypeFactory(title="Kita")
+    IncomeFactory(date=date(1999, 3, 5), income_type=alga)
+    IncomeFactory(date=date(1999, 1, 5), income_type=alga)
+    IncomeFactory(date=date(1998, 6, 1), income_type=kita)
+
+    actual = IncomeModelService(main_user).last_date_by_type()
+
+    assert sorted(actual, key=lambda row: row["title"]) == [
+        {"title": "Alga", "date": date(1999, 3, 5)},
+        {"title": "Kita", "date": date(1998, 6, 1)},
+    ]
