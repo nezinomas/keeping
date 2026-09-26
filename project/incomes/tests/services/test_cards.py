@@ -22,8 +22,8 @@ def test_three_cards_in_order():
 def test_this_year_is_the_total_in_euro():
     card = _cards()["Šiais metais"]
 
-    assert card.value == "1.200,00"
-    assert card.note == "Pernai 800,00"
+    assert card.value == "1.200"
+    assert card.note == "Pernai 800"
 
 
 def test_this_year_has_no_note_when_last_year_is_empty():
@@ -33,7 +33,7 @@ def test_this_year_has_no_note_when_last_year_is_empty():
 def test_per_month_divides_a_running_year_by_the_months_reached():
     card = _cards()["Per mėnesį"]
 
-    assert card.value == "133,33"
+    assert card.value == "133"
     assert card.note == "9 mėnesiai"
     assert card.explanation == ("Metų suma, padalinta iš prabėgusių mėnesių",)
 
@@ -41,7 +41,7 @@ def test_per_month_divides_a_running_year_by_the_months_reached():
 def test_per_month_divides_a_finished_year_by_twelve():
     card = _cards(boundary=FINISHED)["Per mėnesį"]
 
-    assert card.value == "100,00"
+    assert card.value == "100"
     assert card.note == "12 mėnesių"
 
 
@@ -57,7 +57,7 @@ def test_an_empty_year_is_three_empty_cards():
     cards = _cards(year=[]).values()
 
     assert [card.state for card in cards] == [EMPTY] * 3
-    assert all("0,00" not in f"{card.value}{card.note}" for card in cards)
+    assert all("0" not in f"{card.value}{card.note}" for card in cards)
 
 
 def test_no_card_carries_a_state_or_an_arrow():
