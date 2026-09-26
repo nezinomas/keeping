@@ -1,10 +1,12 @@
 import re
+from datetime import date
 
 import pytest
 from django.contrib.auth.models import AnonymousUser
 from mock import MagicMock
 
 from ...services.model_services import IncomeModelService, IncomeTypeModelService
+from ..factories import IncomeFactory, IncomeTypeFactory
 
 
 def test_income_init_raises_if_no_user():
@@ -67,3 +69,23 @@ def test_year_method_does_not_call_database(mocker):
         service.year(2023)
 
     mck.filter.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_sum_by_type_between_sums_each_type_largest_first(main_user):
+    alga = IncomeTypeFactory(title="Alga")
+    kita = IncomeTypeFactory(title="Kita")
+    IncomeFactory(date=date(1999, 1, 5), price=100, income_type=kita)
+    IncomeFactory(date=date(1999, 2, 5), price=300, income_type=alga)
+    IncomeFactory(date=date(1999, 3, 5), price=200, income_type=alga)
+    IncomeFactory(date=date(1999, 3, 6), price=999, income_type=alga)
+    IncomeFactory(date=date(1998, 12, 31), price=999, income_type=alga)
+
+    actual = IncomeModelService(main_user).sum_by_type_between(
+        date(1999, 1, 1), date(1999, 3, 5)
+    )
+
+    assert list(actual) == [
+        {"title": "Alga", "sum": 500},
+        {"title": "Kita", "sum": 100},
+    ]

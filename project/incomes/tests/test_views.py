@@ -565,6 +565,21 @@ def test_types_tab_lists_the_income_types(client_logged):
     assert "Alga" in content
 
 
+@time_machine.travel("1999-09-15")
+def test_overview_states_the_year_in_three_cards(client_logged):
+    alga = IncomeTypeFactory(title="Alga")
+    IncomeFactory(date=date(1999, 1, 5), price=90_000, income_type=alga)
+    IncomeFactory(date=date(1998, 1, 5), price=80_000, income_type=alga)
+    IncomeFactory(date=date(1998, 12, 5), price=5_000, income_type=alga)
+
+    content = client_logged.get(reverse("incomes:tab_index")).content.decode()
+
+    assert "Didžiausia rūšis" in content
+    assert "Alga" in content
+    assert "Pernai 800,00" in content
+    assert "9 mėnesiai" in content
+
+
 def _tab_queries(client, tab):
     with CaptureQueriesContext(connection) as queries:
         client.get(tab.url, headers={"HX-Request": "true"})
