@@ -266,6 +266,25 @@ def test_incomes_list_price_value(client_logged):
     assert "10,00</td>" in response
 
 
+@pytest.mark.parametrize(
+    "url, query",
+    [("incomes:list", {}), ("incomes:search", {"search": "Alga"})],
+    ids=["list", "search"],
+)
+def test_list_and_search_render_the_same_type_and_account_cells(
+    client_logged, url, query
+):
+    IncomeFactory(
+        income_type=IncomeTypeFactory(title="Alga"),
+        account=AccountFactory(title="Kasa"),
+    )
+
+    content = client_logged.get(reverse(url), query).content.decode()
+
+    assert '<td class="text-left">Alga</td>' in content
+    assert '<td class="text-left">Kasa</td>' in content
+
+
 # -------------------------------------------------------------------------------------
 #                                                                         Income Delete
 # -------------------------------------------------------------------------------------
