@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from django.db.models import Count, F, Sum, Value
+from django.db.models import F, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ...core.mixins.sum import SumMixin
@@ -65,8 +65,7 @@ class IncomeModelService(SumMixin, BaseModelService):
 
     def sum_by_year_and_type(self):
         return (
-            self.objects.annotate(cnt=Count("income_type"))
-            .annotate(year=TruncYear("date"))
+            self.objects.annotate(year=TruncYear("date"))
             .values("year", "income_type")
             .annotate(
                 sum=Sum("price"),
