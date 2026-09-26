@@ -1,7 +1,7 @@
 from django.db.models import Sum
 
 from ....accounts.services.model_services import AccountBalanceModelService
-from ....core.services.model_services import BaseModelService
+from ....core.services.model_services import DatedModelService
 from ....pensions.services.model_services import PensionBalanceModelService
 from ....savings.services.model_services import SavingBalanceModelService
 from ....users.models import User
@@ -26,7 +26,7 @@ class WealthDataProvider:
             ),
         )
 
-    def _get_balance(self, field_name: str, service: BaseModelService) -> float:
+    def _get_balance(self, field_name: str, service: DatedModelService) -> float:
         return (
             service.year(self.year).aggregate(Sum(field_name))[f"{field_name}__sum"]
             or 0.0
