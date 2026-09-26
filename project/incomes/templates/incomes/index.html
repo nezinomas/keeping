@@ -31,6 +31,12 @@
     {{ content }}
 </main>
 
+<div class="quick-add">
+    <button type="button" class="quick-add__pill" hx-get="{% url 'incomes:new' %}" hx-target="#mainModal">
+        {% translate 'Add income' %}
+    </button>
+</div>
+
 </div>
 
 <script nonce="{{ csp_nonce }}">

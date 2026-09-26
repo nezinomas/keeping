@@ -598,6 +598,23 @@ def test_overview_charts_the_year_against_last_year_to_the_same_day(client_logge
     assert data["1998"][8] == 800.0
 
 
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_every_tab_offers_one_add_income_pill(client_logged, tab):
+    content = client_logged.get(tab.url).content.decode()
+    link = reverse("incomes:new")
+
+    assert content.count('class="quick-add__pill"') == 1
+    assert f'class="quick-add__pill" hx-get="{link}"' in content
+    assert "Pridėti pajamas" in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_the_pill_stays_outside_the_swapped_tab(client_logged, tab):
+    content = client_logged.get(tab.url, headers={"HX-Request": "true"}).content
+
+    assert b"quick-add" not in content
+
+
 def _tab_queries(client, tab):
     with CaptureQueriesContext(connection) as queries:
         client.get(tab.url, headers={"HX-Request": "true"})
