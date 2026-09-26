@@ -86,6 +86,16 @@ class IncomeModelService(SumMixin, BaseModelService):
             .values("title", "sum")
         )
 
+    def sum_by_month_between(self, start: date, end: date):
+        return (
+            self.objects.filter(date__range=(start, end))
+            .annotate(month=TruncMonth("date"))
+            .values("month")
+            .annotate(sum=Sum("price"))
+            .order_by("month")
+            .values("sum", date=F("month"))
+        )
+
     def incomes(self):
         """
         Used only in the post_save signal.
