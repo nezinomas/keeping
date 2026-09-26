@@ -32,11 +32,6 @@ class ExpenseTypeModelService(BaseModelService):
             .filter(journal=self.user.journal)
         )
 
-    def year(self, year: int):
-        raise NotImplementedError(
-            "ExpenseTypeModelService.year is not implemented. Use items() instead."
-        )
-
     def items(self):
         return self.objects
 

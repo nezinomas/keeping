@@ -12,11 +12,6 @@ class PensionTypeModelService(BaseModelService):
             journal=self.user.journal
         )
 
-    def year(self, year: int):
-        raise NotImplementedError(
-            "PensionTypeModelService.year is not implemented. Use items() instead."
-        )
-
     def items(self):
         return self.objects.all()
 

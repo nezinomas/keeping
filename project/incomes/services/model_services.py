@@ -15,11 +15,6 @@ class IncomeTypeModelService(BaseModelService):
             journal=self.user.journal
         )
 
-    def year(self, year: int):
-        raise NotImplementedError(
-            "IncomeTypeModelService.year is not implemented. Use items() instead."
-        )
-
     def items(self):
         return self.objects.all()
 

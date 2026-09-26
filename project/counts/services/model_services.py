@@ -44,10 +44,5 @@ class CountTypeModelService(BaseModelService):
     def get_queryset(self):
         return models.CountType.objects.select_related("user").filter(user=self.user)
 
-    def year(self, year):
-        raise NotImplementedError(
-            "CountTypeModelService.year is not implemented. Use items() instead."
-        )
-
     def items(self):
         return self.objects

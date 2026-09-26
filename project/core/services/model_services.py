@@ -25,9 +25,6 @@ class BaseModelService(ABC, Generic[_QS]):
     def get_queryset(self) -> _QS: ...
 
     @abstractmethod
-    def year(self, year: int) -> _QS: ...
-
-    @abstractmethod
     def items(self) -> _QS: ...
 
 
