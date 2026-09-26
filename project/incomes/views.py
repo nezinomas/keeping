@@ -1,5 +1,3 @@
-from datetime import date
-
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
@@ -21,14 +19,6 @@ from .services.chart_months import ChartMonths
 from .services.model_services import IncomeModelService, IncomeTypeModelService
 from .services.type_rows import TypesTable
 from .tabs import DEFAULT_TAB, TABS, IncomeTab
-
-
-def year_span(boundary: YearBoundary) -> tuple[date, date]:
-    return date(boundary.year, 1, 1), boundary.end_date
-
-
-def last_year_span(boundary: YearBoundary) -> tuple[date, date]:
-    return date(boundary.year - 1, 1, 1), boundary.previous_end_date
 
 
 class TabViewMixin:
@@ -66,19 +56,17 @@ class TabIndex(TabViewMixin, TemplateViewMixin):
     def get_context_data(self, **kwargs):
         boundary = YearBoundary.for_year(self.request.user.year)
         service = IncomeModelService(self.request.user)
-        this_span = year_span(boundary)
-        last_span = last_year_span(boundary)
 
         return {
             **super().get_context_data(**kwargs),
             "cards": OverviewCards.build(
-                list(service.sum_by_type_between(*this_span)),
-                list(service.sum_by_type_between(*last_span)),
+                list(service.sum_by_type_between(*boundary.span)),
+                list(service.sum_by_type_between(*boundary.previous_span)),
                 boundary,
             ),
             "chart": ChartMonths.build(
-                list(service.sum_by_month_between(*this_span)),
-                list(service.sum_by_month_between(*last_span)),
+                list(service.sum_by_month_between(*boundary.span)),
+                list(service.sum_by_month_between(*boundary.previous_span)),
                 boundary,
             ),
         }
@@ -117,8 +105,8 @@ class TabTypes(TabViewMixin, TemplateViewMixin):
             **super().get_context_data(**kwargs),
             "table": TypesTable.build(
                 list(types),
-                list(service.sum_by_type_between(*year_span(boundary))),
-                list(service.sum_by_type_between(*last_year_span(boundary))),
+                list(service.sum_by_type_between(*boundary.span)),
+                list(service.sum_by_type_between(*boundary.previous_span)),
                 list(service.last_date_by_type(boundary.end_date)),
                 self.request.GET.get("order", ""),
             ),
