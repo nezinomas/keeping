@@ -2,12 +2,12 @@ from django.db.models import F, Q, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth
 
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import DatedModelService
 from ...users.models import User
 from .. import models
 
 
-class DebtModelService(BaseModelService):
+class DebtModelService(DatedModelService):
     def __init__(self, user: User, debt_type: str):
         self.debt_type = debt_type
 
@@ -78,7 +78,7 @@ class DebtModelService(BaseModelService):
         )
 
 
-class DebtReturnModelService(SumMixin, BaseModelService):
+class DebtReturnModelService(SumMixin, DatedModelService):
     def __init__(self, user: User, debt_type: str):
         self.debt_type = debt_type
 

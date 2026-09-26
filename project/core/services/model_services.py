@@ -29,3 +29,8 @@ class BaseModelService(ABC, Generic[_QS]):
 
     @abstractmethod
     def items(self) -> _QS: ...
+
+
+class DatedModelService(BaseModelService[_QS]):
+    @abstractmethod
+    def year(self, year: int) -> _QS: ...

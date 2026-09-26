@@ -5,7 +5,7 @@ from django.db.models import F, Max, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
 
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import BaseModelService, DatedModelService
 from .. import models
 
 
@@ -24,7 +24,7 @@ class IncomeTypeModelService(BaseModelService):
         return self.objects.all()
 
 
-class IncomeModelService(SumMixin, BaseModelService):
+class IncomeModelService(SumMixin, DatedModelService):
     def get_queryset(self):
         return models.Income.objects.select_related("account", "income_type").filter(
             income_type__journal=self.user.journal

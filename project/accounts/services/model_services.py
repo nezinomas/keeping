@@ -2,7 +2,7 @@ from typing import Optional
 
 from django.db.models import Q
 
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import BaseModelService, DatedModelService
 from .. import models
 
 
@@ -28,7 +28,7 @@ class AccountModelService(BaseModelService):
         return self.objects.none()
 
 
-class AccountBalanceModelService(BaseModelService):
+class AccountBalanceModelService(DatedModelService):
     def get_queryset(self):
         return models.AccountBalance.objects.select_related("account").filter(
             account__journal=self.user.journal

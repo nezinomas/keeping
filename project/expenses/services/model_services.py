@@ -20,7 +20,7 @@ from django.db.models.functions import (
 )
 
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import BaseModelService, DatedModelService
 from .. import models
 
 
@@ -41,7 +41,7 @@ class ExpenseTypeModelService(BaseModelService):
         return self.objects
 
 
-class ExpenseNameModelService(BaseModelService):
+class ExpenseNameModelService(DatedModelService):
     def get_queryset(self):
         return models.ExpenseName.objects.select_related("parent").filter(
             parent__journal=self.user.journal
@@ -57,7 +57,7 @@ class ExpenseNameModelService(BaseModelService):
         return self.objects.none()
 
 
-class ExpenseKeywordModelService(BaseModelService):
+class ExpenseKeywordModelService(DatedModelService):
     def get_queryset(self):
         return models.ExpenseKeyword.objects.select_related(
             "expense_name", "expense_name__parent"
@@ -72,7 +72,7 @@ class ExpenseKeywordModelService(BaseModelService):
         return self.objects
 
 
-class ExpenseModelService(SumMixin, BaseModelService):
+class ExpenseModelService(SumMixin, DatedModelService):
     def get_queryset(self):
         return models.Expense.objects.select_related(
             "expense_type", "expense_name", "account"

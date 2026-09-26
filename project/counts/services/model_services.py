@@ -1,11 +1,11 @@
 from django.db.models import QuerySet
 
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import BaseModelService, DatedModelService
 from .. import models
 
 
-class CountModelService(SumMixin, BaseModelService):
+class CountModelService(SumMixin, DatedModelService):
     def get_queryset(self):
         return (
             models.Count.objects.select_related("user")

@@ -6,7 +6,7 @@ from django.db.models import Count, F, QuerySet, Sum
 from django.db.models.functions import ExtractMonth, ExtractYear
 
 from ...core.mixins.sum import SumMixin
-from ...core.services.model_services import BaseModelService
+from ...core.services.model_services import DatedModelService
 from .. import models
 from ..lib.drink_quantity import DrinkQuantity
 from ..lib.drink_types import DrinkType
@@ -32,7 +32,7 @@ class DrinkTargetDTO:
         return self.amount.value
 
 
-class DrinkModelService(SumMixin, BaseModelService):
+class DrinkModelService(SumMixin, DatedModelService):
     def get_queryset(self):
         return (
             models.Drink.objects.select_related("user")
@@ -129,7 +129,7 @@ class DrinkModelService(SumMixin, BaseModelService):
         ).annotate(qty=F("stdav") * self.servings_per_stdav)
 
 
-class DrinkTargetModelService(BaseModelService):
+class DrinkTargetModelService(DatedModelService):
     def get_queryset(self):
         return models.DrinkTarget.objects.select_related("user").filter(user=self.user)
 
