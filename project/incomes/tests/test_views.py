@@ -534,6 +534,15 @@ def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged, t
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_a_history_restore_rebuilds_the_whole_page(client_logged, tab):
+    headers = {"HX-Request": "true", "HX-History-Restore-Request": "true"}
+
+    content = client_logged.get(tab.url, headers=headers).content.decode()
+
+    assert '<nav class="subnav">' in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
 def test_only_the_open_tab_reloads_on_a_saved_income(client_logged, tab):
     content = client_logged.get(
         tab.url, headers={"HX-Request": "true"}
