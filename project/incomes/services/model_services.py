@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional
 
 from django.db.models import F, Sum, Value
 from django.db.models.functions import ExtractYear, TruncMonth, TruncYear
@@ -31,12 +31,12 @@ class IncomeModelService(SumMixin, BaseModelService):
         )
 
     def year(self, year: int):
-        return self.objects.filter(date__year=year)
+        return self.items().filter(date__year=year)
 
     def items(self):
         return self.objects.all()
 
-    def sum_by_year(self, income_type: Optional[list] = None):
+    def sum_by_year(self, income_type: Sequence[str] = ()):
         qs = self.objects
 
         if income_type:
@@ -44,7 +44,7 @@ class IncomeModelService(SumMixin, BaseModelService):
 
         return self.year_sum(qs)
 
-    def sum_by_month(self, year: int, month: Optional[int] = None):
+    def sum_by_month(self, year: int, month: int = 0):
         return self.month_sum(self.objects, year, month).annotate(
             title=Value("incomes")
         )
