@@ -25,6 +25,15 @@
         --cols: 3;
     }
 
+    // three Cards keep one row even on a phone, so there their figures shrink
+    // with the screen; a value still too long ends in an ellipsis
+    @media only screen and (max-width: 767px) {
+        .stat-cards:has(.trend-card:nth-child(3)):not(:has(.trend-card:nth-child(4)))
+            .trend-card__value {
+            font-size: clamp(1.6rem, 8vw, 3.1rem);
+        }
+    }
+
     .stat-cards:not(:has(.trend-card:nth-child(3))) {
         --cols: 2;
     }
@@ -115,6 +124,7 @@
 
     .trend-card {
         position: relative;
+        min-width: 0;
         display: grid;
         grid-row: span 3;
         grid-template-rows: subgrid;
@@ -146,6 +156,7 @@
             letter-spacing: -0.03em;
             font-variant-numeric: tabular-nums;
             color: $ink;
+            min-width: 0;
 
             // only a crossed threshold takes a colour; improving, low, neutral
             // and empty stay on $ink, because staying inside a limit is baseline
@@ -159,7 +170,17 @@
             }
         }
 
+        // a value too long for a phone's column ends in an ellipsis; the full
+        // value is in its title
+        &__figure {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         &__meta {
+            flex: none;
             position: relative;
             display: inline-block;
             margin-left: 0.15em;
