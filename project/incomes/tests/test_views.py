@@ -577,7 +577,7 @@ def test_types_tab_states_each_type_in_a_table(client_logged):
 
     assert '<td class="text-left">Kita</td>' in content
     assert "<td>900</td>" in content
-    assert "Paskutinės pajamos" in content
+    assert "Paskutinį kartą" in content
     assert "c-accordion" not in content and 'class="accordion"' not in content
 
 
