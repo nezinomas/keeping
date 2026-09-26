@@ -53,7 +53,14 @@ class Lists(ListViewMixin):
 
     def get_queryset(self):
         user = self.request.user
-        return IncomeModelService(user).year(user.year).order_by("-date", "price")
+        return (
+            IncomeModelService(user)
+            .year(user.year)
+            .order_by("-date", "price")
+            .values(
+                "id", "date", "income_type__title", "account__title", "price", "remark"
+            )
+        )
 
 
 class TabData(TabViewMixin, Lists):
