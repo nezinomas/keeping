@@ -116,9 +116,20 @@ def test_last_date_by_type_gives_each_type_its_latest_income(main_user):
     IncomeFactory(date=date(1999, 1, 5), income_type=alga)
     IncomeFactory(date=date(1998, 6, 1), income_type=kita)
 
-    actual = IncomeModelService(main_user).last_date_by_type()
+    actual = IncomeModelService(main_user).last_date_by_type(date(1999, 12, 31))
 
     assert sorted(actual, key=lambda row: row["title"]) == [
         {"title": "Alga", "date": date(1999, 3, 5)},
         {"title": "Kita", "date": date(1998, 6, 1)},
     ]
+
+
+@pytest.mark.django_db
+def test_last_date_by_type_stops_at_the_given_day(main_user):
+    alga = IncomeTypeFactory(title="Alga")
+    IncomeFactory(date=date(1999, 3, 5), income_type=alga)
+    IncomeFactory(date=date(2000, 1, 5), income_type=alga)
+
+    actual = IncomeModelService(main_user).last_date_by_type(date(1999, 12, 31))
+
+    assert list(actual) == [{"title": "Alga", "date": date(1999, 3, 5)}]
