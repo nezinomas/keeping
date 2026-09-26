@@ -2489,6 +2489,15 @@ msgstr[3] "%(count)s mėnesių"
 msgid "Add income"
 msgstr "Pridėti pajamas"
 
+msgid "Share"
+msgstr "Dalis"
+
+msgid "Last income"
+msgstr "Paskutinės pajamos"
+
+msgid "Add income type"
+msgstr "Pridėti pajamų rūšį"
+
 #~ msgctxt "book add button"
 #~ msgid "Book"
 #~ msgstr "Knygą"
