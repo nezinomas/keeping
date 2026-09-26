@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 
 from django.db.models import Count, F, Sum, Value
@@ -74,6 +75,15 @@ class IncomeModelService(SumMixin, BaseModelService):
             )
             .order_by("income_type__title", "date")
             .values("date", "sum", "title")
+        )
+
+    def sum_by_type_between(self, start: date, end: date):
+        return (
+            self.objects.filter(date__range=(start, end))
+            .values("income_type")
+            .annotate(sum=Sum("price"), title=F("income_type__title"))
+            .order_by("-sum", "title")
+            .values("title", "sum")
         )
 
     def incomes(self):

@@ -1,9 +1,12 @@
+from datetime import date
+
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.year_boundary import YearBoundary
 from ..core.mixins.views import (
     CreateViewMixin,
     DeleteViewMixin,
@@ -13,6 +16,7 @@ from ..core.mixins.views import (
     UpdateViewMixin,
 )
 from . import forms
+from .services.cards import OverviewCards
 from .services.model_services import IncomeModelService, IncomeTypeModelService
 from .tabs import DEFAULT_TAB, TABS, IncomeTab
 
@@ -45,6 +49,19 @@ class TabViewMixin:
 
 class TabIndex(TabViewMixin, TemplateViewMixin):
     tab = IncomeTab.resolve("index")
+
+    def get_context_data(self, **kwargs):
+        boundary = YearBoundary.for_year(self.request.user.year)
+        service = IncomeModelService(self.request.user)
+        year = service.sum_by_type_between(date(boundary.year, 1, 1), boundary.end_date)
+        last_year = service.sum_by_type_between(
+            date(boundary.year - 1, 1, 1), boundary.previous_end_date
+        )
+
+        return {
+            **super().get_context_data(**kwargs),
+            "cards": OverviewCards.build(list(year), list(last_year), boundary),
+        }
 
 
 class Lists(ListViewMixin):
