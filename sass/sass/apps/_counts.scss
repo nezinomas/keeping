@@ -43,12 +43,14 @@
                 border-right: 1px solid transparent;
             }
 
-            // a phone fits six abbreviations at a readable size, not twelve, so
-            // every other month goes rather than the type
+            // a phone fits four month names at a readable size, not twelve, so two
+            // in three go rather than the type; only a shown name may spill over
             @media only screen and (max-width: 767px) {
-                overflow: visible;
+                &:nth-child(3n + 1) {
+                    overflow: visible;
+                }
 
-                &:nth-child(even) {
+                &:not(:nth-child(3n + 1)) {
                     color: transparent;
                 }
             }

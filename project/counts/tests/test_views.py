@@ -6,7 +6,7 @@ import time_machine
 from django.urls import resolve, reverse
 from django.utils.translation import gettext as _
 
-from ...core.lib.translation import month_abbr
+from ...core.lib.translation import month_names
 from ...users.views import Login
 from .. import forms, views
 from ..models import Count, CountType
@@ -691,15 +691,13 @@ def _gap_strip_ruler(content: str) -> str:
 
 
 @time_machine.travel(datetime(1999, 7, 1))
-def test_index_gap_strip_ruler_uses_djangos_month_abbreviations(client_logged):
+def test_index_gap_strip_ruler_names_months_as_the_calendar_does(client_logged):
     CountFactory(date=date(1999, 1, 2))
 
     url = reverse("counts:index", kwargs={"slug": "count-type"})
     ruler = _gap_strip_ruler(client_logged.get(url).content.decode("utf-8"))
 
-    assert re.findall(r">([^<>]+)</span>", ruler) == [
-        month_abbr(number) for number in range(1, 13)
-    ]
+    assert re.findall(r">([^<>]+)</span>", ruler) == list(month_names().values())
 
 
 @time_machine.travel(datetime(1999, 7, 1))
