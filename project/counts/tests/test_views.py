@@ -720,7 +720,7 @@ def test_index_gap_strip_sits_outside_the_calendar_panel(client_logged):
     url = reverse("counts:index", kwargs={"slug": "count-type"})
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert 'class="gap-strip-panel"' in content
+    assert '<h2 class="panel__title">Tarpai</h2>' in content
     assert "gap-strip" not in content[content.index('id="heat-card"') :]
 
 
@@ -731,7 +731,9 @@ def test_index_gap_strip_is_drawn_above_the_calendar(client_logged):
     url = reverse("counts:index", kwargs={"slug": "count-type"})
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert content.index('class="gap-strip-panel"') < content.index('id="heat-card"')
+    assert content.index('<h2 class="panel__title">Tarpai</h2>') < content.index(
+        'id="heat-card"'
+    )
 
 
 @time_machine.travel(datetime(1999, 7, 1))
@@ -741,7 +743,17 @@ def test_index_gap_strip_panel_is_titled(client_logged):
     url = reverse("counts:index", kwargs={"slug": "count-type"})
     content = client_logged.get(url).content.decode("utf-8")
 
-    assert '<h2 class="gap-strip-panel__title">Tarpai</h2>' in content
+    assert '<h2 class="panel__title">Tarpai</h2>' in content
+
+
+@time_machine.travel(datetime(1999, 7, 1))
+def test_index_calendar_panel_is_titled(client_logged):
+    CountFactory(date=date(1999, 1, 2))
+
+    url = reverse("counts:index", kwargs={"slug": "count-type"})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert '<h2 class="panel__title">Kalendorius</h2>' in content
 
 
 @time_machine.travel(datetime(1999, 1, 10))
@@ -867,6 +879,7 @@ def test_history_context(client_logged):
     assert "chart_years" in response.context
     assert "chart_weekdays" not in response.context
     assert "chart_histogram" not in response.context
+    assert "span" in response.context
     assert "slug" in response.context
     assert response.context["slug"] == obj.slug
 
@@ -904,6 +917,17 @@ def test_history_chart_years(client_logged):
 
     assert '<div id="chart-years-container">' in content
     assert 'id="chart-years-data"' in content
+
+
+def test_history_panel_is_titled_and_captions_the_span(client_logged):
+    CountFactory(date=date(1997, 1, 1))
+    CountFactory(date=date(1999, 1, 1))
+
+    url = reverse("counts:tab_history", kwargs={"slug": "count-type"})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert '<h2 class="panel__title">Metai</h2>' in content
+    assert '<p class="panel__subtitle">1997–1999</p>' in content
 
 
 # -------------------------------------------------------------------------------------

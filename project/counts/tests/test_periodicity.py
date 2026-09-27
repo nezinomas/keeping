@@ -4,6 +4,8 @@ from datetime import date, datetime, timedelta
 import pytest
 import time_machine
 from django.conf import settings
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import resolve, reverse
 from django.utils.dates import WEEKDAYS_ABBR
 
@@ -15,9 +17,13 @@ from .factories import CountFactory, CountTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-def _context(client_logged):
+def _response(client_logged):
     url = reverse("counts:tab_periodicity", kwargs={"slug": "count-type"})
-    return client_logged.get(url).context
+    return client_logged.get(url)
+
+
+def _context(client_logged):
+    return _response(client_logged).context
 
 
 def _script_keys() -> set[str]:
@@ -137,24 +143,31 @@ def test_periodicity_charts_pool_every_record_and_caption_the_span(client_logged
     CountFactory(date=date(1996, 5, 1))
     CountFactory(date=date(1999, 1, 1))
 
-    context = _context(client_logged)
+    response = _response(client_logged)
+    content = response.content.decode("utf-8")
 
-    assert sum(context["chart_weekdays"]["data"]) == 2
-    for key in ("chart_weekdays", "chart_months", "chart_histogram"):
-        assert context[key]["subtitle"] == "1996–1999"
+    assert sum(response.context["chart_weekdays"]["data"]) == 2
+    assert response.context["span"] == "1996–1999"
+    assert content.count('<p class="panel__subtitle">1996–1999</p>') == 3
 
 
 def test_periodicity_charts_of_a_single_year_caption_that_year_alone(client_logged):
     CountFactory(date=date(1999, 1, 1))
 
-    assert _context(client_logged)["chart_weekdays"]["subtitle"] == "1999"
+    response = _response(client_logged)
+
+    assert response.context["span"] == "1999"
+    assert '<p class="panel__subtitle">1999</p>' in response.content.decode("utf-8")
 
 
-def test_periodicity_charts_are_titled_under_the_key_the_script_reads(client_logged):
+def test_periodicity_panels_are_titled_in_lithuanian(client_logged):
     CountFactory()
 
-    assert "chart_title" in _script_keys()
-    assert _context(client_logged)["chart_weekdays"]["chart_title"] == "Savaitės dienos"
+    content = _response(client_logged).content.decode("utf-8")
+
+    assert '<h2 class="panel__title">Savaitės dienos</h2>' in content
+    assert '<h2 class="panel__title">Mėnesiai</h2>' in content
+    assert '<h2 class="panel__title">Tarpų dažnis, dienomis</h2>' in content
 
 
 def test_periodicity_gap_distribution_bins_rather_than_drawing_a_bar_a_length(
@@ -188,3 +201,25 @@ def test_periodicity_renders_its_chart_containers(client_logged):
     assert '<div id="chart-weekdays-container"></div>' in content
     assert '<div id="chart-months-container"></div>' in content
     assert '<div id="chart-histogram-container">' in content
+
+
+def _tab_queries(client, name):
+    url = reverse(name, kwargs={"slug": "count-type"})
+    with CaptureQueriesContext(connection) as queries:
+        client.get(url)
+    return len(queries)
+
+
+@pytest.mark.parametrize(
+    "name", ["counts:index", "counts:tab_periodicity", "counts:tab_history"]
+)
+def test_tab_query_count_does_not_grow_with_the_records(client_logged, name):
+    for _i in range(2):
+        CountFactory()
+    two = _tab_queries(client_logged, name)
+
+    for _i in range(2, 6):
+        CountFactory()
+    six = _tab_queries(client_logged, name)
+
+    assert six == two

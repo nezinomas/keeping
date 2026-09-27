@@ -4,11 +4,10 @@
     <c-stat-cards :cards=cards />
 </div>
 
-<div class="gap-strip-panel">
-    <h2 class="gap-strip-panel__title">{% translate 'Gaps' %}</h2>
+<c-panel title="{% translate 'Gaps' %}">
     {% include 'counts/includes/gap_strip.html' %}
-</div>
+</c-panel>
 
-<div class="counts-calendar">
+<c-panel title="{% translate 'Calendar' %}">
     <c-calendar :calendar="calendar" />
-</div>
+</c-panel>

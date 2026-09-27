@@ -10,42 +10,33 @@ from .model_services import CountModelService
 
 
 class IndexService:
-    def __init__(self, span: str, stats: Stats):
-        self._span = span
+    def __init__(self, stats: Stats):
         self._stats = stats
 
-    def chart_weekdays(self, title: str = "") -> dict:
+    def chart_weekdays(self) -> dict:
         return {
             "data": [x["count"] for x in self._stats.weekdays_stats()],
             "categories": [str(WEEKDAYS_ABBR[day]) for day in range(7)],
-            "chart_title": title or _("Days of week"),
-            "subtitle": self._span,
         }
 
-    def chart_months(self, title: str = "") -> dict:
+    def chart_months(self) -> dict:
         return {
             "data": self._stats.months_stats(),
             "categories": [month_abbr(month) for month in range(1, 13)],
-            "chart_title": title or _("Months"),
-            "subtitle": self._span,
         }
 
-    def chart_years(self, title: str = "") -> dict:
+    def chart_years(self) -> dict:
         year_totals = self._stats.totals_by_year()
 
         return {
             "data": list(year_totals.values()),
             "categories": list(year_totals.keys()),
-            "chart_title": title or _("Year"),
-            "subtitle": self._span,
         }
 
     def chart_histogram(self, bins: list[GapBin]) -> dict:
         return {
             "data": [x.count for x in bins],
             "categories": [x.label for x in bins],
-            "chart_title": _("Frequency of gaps, in days"),
-            "subtitle": self._span,
         }
 
 
@@ -69,9 +60,10 @@ def load_index_service(life: CounterLife) -> dict:
 
 
 def load_periodicity_service(life: CounterLife) -> dict:
-    srv = IndexService(life.span, Stats(data=life.records))
+    srv = IndexService(Stats(data=life.records))
 
     return {
+        "span": life.span,
         "chart_weekdays": srv.chart_weekdays(),
         "chart_months": srv.chart_months(),
         "chart_histogram": srv.chart_histogram(life.rhythm.gap_distribution),
@@ -79,9 +71,10 @@ def load_periodicity_service(life: CounterLife) -> dict:
 
 
 def load_history_service(life: CounterLife) -> dict:
-    srv = IndexService(life.span, Stats(data=life.records))
+    srv = IndexService(Stats(data=life.records))
 
     return {
         "records": len(life.records),
+        "span": life.span,
         "chart_years": srv.chart_years(),
     }

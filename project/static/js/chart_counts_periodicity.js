@@ -14,12 +14,6 @@ function chartPeriodicity(idData, idContainer) {
             type: "column",
             height: "300px",
         },
-        title: {
-            text: chartData.chart_title,
-        },
-        subtitle: {
-            text: chartData.subtitle,
-        },
         legend: {
             enabled: false,
         },

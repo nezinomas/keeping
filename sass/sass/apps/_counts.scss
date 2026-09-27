@@ -1,28 +1,6 @@
 @use "../abstracts/variables" as *;
-@use "../skin/tokens";
 
 .paper-skin {
-    .counts-calendar {
-        // a grid item defaults to min-width:auto, and the twelve month blocks
-        // would push past the viewport instead of scrolling inside the panel
-        min-width: 0;
-    }
-
-    .gap-strip-panel {
-        @include tokens.panel;
-    }
-
-    // mono caps are chrome; a reading's name is prose
-    .gap-strip-panel__title {
-        margin: 0 0 0.8rem;
-        font-family: $body;
-        font-size: 0.9375rem;
-        font-weight: 500;
-        letter-spacing: normal;
-        text-transform: none;
-        color: $ink;
-    }
-
     .gap-strip {
         display: flex;
 
