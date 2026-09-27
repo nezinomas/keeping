@@ -117,8 +117,8 @@ function chartDrinksProfile(idData, idContainer) {
             text: chartData.text.title
         },
         legend: {
-            // position comes from chart_drinks_legend.js — under the plot, where
-            // four entries naming two metrics over two spans have room to sit
+            // position comes from chart_paper.js — under the plot, where four
+            // entries naming two metrics over two spans have room to sit
             enabled: true,
         },
         xAxis: {

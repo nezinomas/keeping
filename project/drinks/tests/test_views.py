@@ -67,12 +67,12 @@ def test_tab_fragment_carries_the_title_so_htmx_can_swap_it(
     assert f"<title>{_('Drinks')} | {_(expected)}</title>" in response.content.decode()
 
 
-def test_index_loads_the_shared_chart_legend_defaults(client_logged):
-    # every Drinks chart reads its legend position from this one file, so the
-    # page dropping it would put every legend back in the theme's top corner
-    response = client_logged.get(reverse("drinks:index"))
+def test_index_takes_its_legend_position_from_the_paper_charts(client_logged):
+    # chart_paper.js places every paper legend, so Drinks keeps no file of its own
+    content = client_logged.get(reverse("drinks:index")).content.decode()
 
-    assert "js/chart_drinks_legend.js" in response.content.decode()
+    assert "js/chart_paper.js" in content
+    assert "js/chart_drinks_legend.js" not in content
 
 
 def test_index_wraps_every_tab_in_the_paper_skin(client_logged):

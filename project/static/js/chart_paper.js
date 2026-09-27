@@ -2,10 +2,8 @@
 // shares — the faces, the axes, the gridlines, the tooltip and the palette.
 //
 // The shared Highcharts theme belongs to every other app too, so none of this
-// can go there. It is scoped the same way `chart_drinks_legend.js` is — by
-// loading: only the pages wearing the skin pull this file in, which is Drinks'
-// index and Books' today. On Drinks it is loaded after the legend file, so the
-// legend keeps the position set there and only gains its type from here.
+// can go there. It is scoped by loading: only the pages wearing the skin pull
+// this file in.
 //
 // The colours are the `--skin-*` tokens the wrapper defines, read straight out
 // of the cascade: Highcharts writes them into inline SVG styles inside the
@@ -116,7 +114,13 @@ Highcharts.setOptions({
         borderRadius: 3,
         shadow: false,
     },
+    // under the plot: the theme's top-right corner shares the title's row, and a
+    // legend wider than two entries covers it. Each chart still sets `enabled`
     legend: {
+        layout: "horizontal",
+        align: "center",
+        verticalAlign: "bottom",
+        floating: false,
         backgroundColor: "transparent",
         itemStyle: {
             color: "var(--skin-ink-muted)",
