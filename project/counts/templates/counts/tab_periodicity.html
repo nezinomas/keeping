@@ -1,11 +1,19 @@
+{% load i18n %}
+
 <div class="stat-cards">
     <c-stat-cards :cards=cards />
 </div>
 
 <div class="grid-three-col">
-    <div id="chart-weekdays-container"></div>
-    <div id="chart-months-container"></div>
-    <div id="chart-histogram-container"></div>
+    <c-panel title="{% translate 'Days of week' %}" subtitle="{{ span }}">
+        <div id="chart-weekdays-container"></div>
+    </c-panel>
+    <c-panel title="{% translate 'Months' %}" subtitle="{{ span }}">
+        <div id="chart-months-container"></div>
+    </c-panel>
+    <c-panel title="{% translate 'Frequency of gaps, in days' %}" subtitle="{{ span }}">
+        <div id="chart-histogram-container"></div>
+    </c-panel>
 </div>
 
 {# outside the containers: Highcharts empties the one it draws into #}

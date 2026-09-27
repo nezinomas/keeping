@@ -22,10 +22,6 @@
         color: $ink-muted;
     }
 
-    #breakdown {
-        @include tokens.panel;
-    }
-
     // the shared calendar draws no harm: this border means Heavy day
     .heat-card {
         .l4 {

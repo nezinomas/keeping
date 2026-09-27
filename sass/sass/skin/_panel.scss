@@ -1,0 +1,22 @@
+@use "../abstracts/variables" as *;
+@use "tokens";
+
+.paper-skin .panel {
+    @include tokens.panel;
+    // a grid item defaults to min-width:auto, and a chart or table can push
+    // past the viewport instead of shrinking inside the Panel
+    min-width: 0;
+}
+
+.panel__title {
+    @include tokens.label;
+    color: $ink;
+    margin: 0 0 10px;
+}
+
+.panel__subtitle {
+    font-family: $body;
+    font-size: 0.8125rem;
+    color: $ink-muted;
+    margin: -0.5rem 0 0.8rem;
+}

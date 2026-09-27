@@ -50,7 +50,6 @@ def test_chart_weekly_view_model():
     assert vm.week_ends[index] == "2026-01-11"  # Sunday of that week
     assert len(vm.categories) == len(vm.data) == len(vm.week_ends)
     assert set(vm.text) == {
-        "title",
         "unit",
         "weekly",
         "guideline",
@@ -84,10 +83,23 @@ def test_chart_heavy_days_view_model():
     assert len(vm.data) == 12
     assert vm.data[0] == 1
     assert vm.heavy_threshold == 6.0
-    # every Heavy day is harm, so the chart carries no guideline to cross
-    assert not hasattr(vm, "low_risk")
-    assert not hasattr(vm, "high_risk")
-    assert set(vm.text) == {"title", "unit", "heavy", "threshold_label"}
+    assert vm.low_risk == 3.0
+    assert vm.high_risk == 6.0
+    assert set(vm.text) == {
+        "heavy",
+        "definition",
+        "guideline",
+        "high_risk_guideline",
+    }
+
+
+@time_machine.travel("2026-12-31")
+def test_chart_heavy_days_names_the_heavy_day_threshold():
+    stats = RiskStats(current_daily=[_row(date(2026, 1, 1), 7)])
+
+    vm = RiskViewModelBuilder(stats).chart_heavy_days()
+
+    assert vm.text["definition"] == f"{_('Heavy day')}: > 6 Std Av"
 
 
 @time_machine.travel("2026-12-31")
@@ -100,8 +112,8 @@ def test_chart_heavy_days_as_dict_is_json_serializable():
     assert serialized["data"][0] == 1
     assert len(serialized["categories"]) == 12
     assert serialized["heavy_threshold"] == 6.0
-    assert "low_risk" not in serialized
-    assert "high_risk" not in serialized
+    assert serialized["low_risk"] == 3.0
+    assert serialized["high_risk"] == 6.0
 
 
 # -------------------------------------------------------------------------------------

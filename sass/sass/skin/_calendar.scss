@@ -1,14 +1,11 @@
 @use "sass:list";
 @use "../abstracts/variables" as *;
-@use "tokens";
 
 // Nested in .paper-skin, so every selector keeps the specificity it had while
 // this lived in apps/_drinks.
 
 .paper-skin {
     .heat-card {
-        @include tokens.panel;
-
         min-width: 0;
 
         .l0 { background: $empty; }

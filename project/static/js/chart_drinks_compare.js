@@ -26,10 +26,6 @@ function chartCompare(idData, idContainer) {
 
     Highcharts.chart(idContainer, {
         chart: {
-            height: "350px",
-        },
-        title: {
-            text: chartData.title || ""
         },
         legend: {
             enabled: true,

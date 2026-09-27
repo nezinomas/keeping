@@ -18,11 +18,7 @@ function chartTrend(idData, idContainer) {
 
     Highcharts.chart(idContainer, {
         chart: {
-            height: "350px",
             alignTicks: false,
-        },
-        title: {
-            text: chartData.text.title
         },
         legend: {
             enabled: true,

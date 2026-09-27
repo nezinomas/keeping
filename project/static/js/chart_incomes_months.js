@@ -7,10 +7,6 @@ function chartIncomesMonths(idData, idContainer) {
     Highcharts.chart(idContainer, {
         chart: {
             type: "column",
-            height: "350px",
-        },
-        title: {
-            text: "",
         },
         legend: {
             enabled: true,

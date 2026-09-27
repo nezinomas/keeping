@@ -4,7 +4,7 @@ import polars as pl
 from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 
-from ...core.lib.date import years
+from ...core.lib.date import yday, years
 from ...users.models import User
 from ..lib.drinks_options import DrinkConverter, stdav_to_alcohol
 from ..services.model_services import DrinkModelService
@@ -37,6 +37,20 @@ class HistoryService:
     @property
     def quantity(self) -> list[int]:
         return self._data_frame_column("qty")
+
+    @property
+    def forecast(self) -> list[dict]:
+        """The running year's straight-line pace of pure alcohol, as one point."""
+        calendar_year = datetime.now().year
+
+        if calendar_year not in self.years:
+            return []
+
+        index = self.years.index(calendar_year)
+        days_elapsed, ydays_total = yday(calendar_year)
+        litres = self.alcohol[index] / days_elapsed * ydays_total
+
+        return [{"x": index, "y": litres}]
 
     def _prepare_data_frame(self, data) -> pl.DataFrame:
         history_df = pl.DataFrame(data).lazy()
@@ -101,12 +115,13 @@ def load_service(user) -> dict:
             "categories": service.years,
             "data_ml": service.per_day,
             "data_alcohol": service.alcohol,
+            "forecast": service.forecast,
             "unit": service.converter.display_unit,
             "decimals": service.converter.display_decimals,
             "text": {
-                "title": _("Drinks"),
                 "per_day": f"{_('Average per day')}, {service.converter.display_unit}",
                 "per_year": _("Pure alcohol per year, L"),
+                "forecast": _("Forecast"),
             },
         },
     }

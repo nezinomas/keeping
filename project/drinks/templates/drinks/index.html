@@ -11,11 +11,7 @@
 
 
 {% block head %}
-    {% include 'highcharts.html' with lollipop=True %}
-    <!-- after the theme, so it overrides the corner it puts legends in, and
-         before the charts, so every one of them is drawn with it -->
-    <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_legend.js' %}"></script>
-    <!-- after the legend, because it dresses the legend that one positions -->
+    {% include 'highcharts.html' %}
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_overview.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_trend.js' %}"></script>
@@ -36,6 +32,8 @@
 <!-- outside #tab_content: a tab swap must not replace the chart tokens, the
      nav or `tab`, the open tab that both the nav and the sheet read -->
 <div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
+
+<h1 class="visually-hidden">{% translate 'Drinks' %}</h1>
 
 <c-subnav :tabs=tabs :active=tab />
 

@@ -6,7 +6,7 @@ from datetime import date
 from django.utils.translation import gettext as _
 
 from .day_stats import Stats
-from .translation import month_abbr, month_names
+from .translation import month_names
 from .year_boundary import YearBoundary
 
 
@@ -30,10 +30,6 @@ class CalendarMonthViewModel:
     number: int
     leading_blanks: int
     days: list[CalendarDayViewModel]
-
-    @property
-    def abbr(self) -> str:
-        return month_abbr(self.number)
 
 
 @dataclass(frozen=True)

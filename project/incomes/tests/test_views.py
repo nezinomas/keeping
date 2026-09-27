@@ -661,6 +661,12 @@ def test_the_add_type_pill_waits_for_the_types_tab(client_logged):
     assert "Pridėti pajamų rūšį" in content
 
 
+def test_overview_titles_the_months_panel(client_logged):
+    content = client_logged.get(reverse("incomes:tab_index")).content.decode()
+
+    assert '<h2 class="panel__title">Pajamos per mėnesį</h2>' in content
+
+
 @time_machine.travel("1999-09-15")
 def test_overview_states_the_year_in_three_cards(client_logged):
     alga = IncomeTypeFactory(title="Alga")
