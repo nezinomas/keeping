@@ -883,10 +883,10 @@ def test_tab_risk_titles_its_panels(client_logged):
     assert f'<h2 class="panel__title">{_("Heavy days per month")}</h2>' in content
 
 
-def test_tab_risk_heavy_panel_subtitle_names_the_threshold(client_logged):
+def test_tab_risk_heavy_panel_leaves_the_threshold_to_its_chart(client_logged):
     content = client_logged.get(reverse("drinks:tab_risk")).content.decode()
 
-    assert f'<p class="panel__subtitle">{_("Heavy day")}: > 6 Std Av</p>' in content
+    assert "panel__subtitle" not in content
 
 
 @time_machine.travel("1999-06-01")
