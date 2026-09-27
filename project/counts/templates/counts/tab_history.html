@@ -1,10 +1,14 @@
+{% load i18n %}
+
 <div class="stat-cards">
     <c-stat-cards :cards=cards />
 </div>
 
 {% if records %}
 
-<div id="chart-years-container"></div>
+<c-panel title="{% translate 'Year' %}" subtitle="{{ span }}">
+    <div id="chart-years-container"></div>
+</c-panel>
 {{chart_years|json_script:"chart-years-data"}}
 
 {% else %}
