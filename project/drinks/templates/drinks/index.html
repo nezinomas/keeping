@@ -37,6 +37,8 @@
      nav or `tab`, the open tab that both the nav and the sheet read -->
 <div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
 
+<h1 class="visually-hidden">{% translate 'Drinks' %}</h1>
+
 <c-subnav :tabs=tabs :active=tab />
 
 <!-- what the nav and the sheet send as `tab`, read by htmx at click time -->
