@@ -9,9 +9,6 @@ function chartIncomesMonths(idData, idContainer) {
             type: "column",
             height: "350px",
         },
-        title: {
-            text: "",
-        },
         legend: {
             enabled: true,
         },

@@ -3,6 +3,8 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import resolve, reverse
 from django.utils.translation import gettext as _
 
@@ -104,6 +106,30 @@ def test_books_index_reads_cards_chart_search_table(client_logged):
     ]
 
     assert order == sorted(order)
+
+
+def test_books_index_titles_the_finished_books_panel(client_logged):
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
+
+    assert '<h2 class="panel__title">Perskaitytos knygos</h2>' in content
+
+
+def _index_queries(client):
+    with CaptureQueriesContext(connection) as queries:
+        client.get(reverse("books:index"))
+    return len(queries)
+
+
+def test_books_index_query_count_does_not_grow_with_the_books(client_logged):
+    for _i in range(2):
+        BookFactory()
+    two = _index_queries(client_logged)
+
+    for _i in range(2, 6):
+        BookFactory()
+    six = _index_queries(client_logged)
+
+    assert six == two
 
 
 def test_books_index_context(client_logged):

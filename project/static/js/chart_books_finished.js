@@ -12,9 +12,6 @@ function chartFinished(idData, idContainer) {
         chart: {
             type: "bullet"
         },
-        title: {
-            text: chartData.chart_title,
-        },
         xAxis: {
             categories: chartData.categories,
         },
