@@ -116,7 +116,9 @@ $data-soft: #7fa6bf;
 
 // the second measure, for the one chart that carries two: the Habits profile
 // reads a Drinking-day rate and an Intensity off the same categories
-$second: #9a6e1c;
+$second: #b57dcd;
+// the same hue a step darker, for text beside a $second mark: $second is 3.10:1
+$second-ink: #8e57a5;
 
 // harm, in two steps: a week over the Low-risk guideline is not yet a week over
 // the High-risk threshold. The steps are 3.04:1 apart and the deep one is 1.60:1
