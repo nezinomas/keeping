@@ -93,9 +93,8 @@ class RiskViewModelBuilder:
             low_risk=MONTHLY_HEAVY_LOW_RISK,
             high_risk=MONTHLY_HEAVY_HIGH_RISK,
             text={
-                "unit": _("Days"),
                 "heavy": _("Heavy days"),
-                "threshold_label": _("Heavy day"),
+                "definition": f"{_('Heavy day')}: > {HEAVY_DAY_STDAV:g} Std Av",
                 "guideline": _("Low-risk guideline"),
                 "high_risk_guideline": _("High-risk threshold"),
             },

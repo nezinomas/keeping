@@ -1,10 +1,17 @@
 function chartDrinksHeavyDays(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
+    // a month up to the Low-risk guideline has not crossed it, so it takes the
+    // soft step; only a month over it wears full harm
+    const data = chartData.data.map((y) => ({
+        y: y,
+        color: y > chartData.low_risk ? "var(--skin-harm)" : "var(--skin-harm-soft)",
+    }));
+
     Highcharts.chart(idContainer, {
-        chart: {
+        chart: Highcharts.merge(PAPER_PANE_TITLE_SPACE, {
             type: "column",
-        },
+        }),
         legend: {
             enabled: false,
         },
@@ -13,17 +20,11 @@ function chartDrinksHeavyDays(idData, idContainer) {
             type: "category",
         },
         yAxis: {
-            title: {
-                text: chartData.text.unit
-            },
+            title: Highcharts.merge(PAPER_PANE_TITLE, {
+                text: chartData.text.definition,
+            }),
             min: 0,
             allowDecimals: false,
-            // as on the weekly chart: nothing is shaded for being inside the
-            // guideline, and the two bands above it are one hue in two steps
-            plotBands: [
-                { from: chartData.low_risk, to: chartData.high_risk, color: "var(--skin-harm-wash)" },
-                { from: chartData.high_risk, to: Number.MAX_VALUE, color: "var(--skin-harm-wash)" }
-            ],
             plotLines: [
                 {
                     color: "var(--skin-harm-soft)",
@@ -51,13 +52,12 @@ function chartDrinksHeavyDays(idData, idContainer) {
             ]
         },
         tooltip: {
-            pointFormat: '{series.name}: <span style="color: {series.color}"><b>{point.y}</b></span><br/>'
+            // in ink: the soft harm step fails AA as text
+            pointFormat: '{series.name}: <b>{point.y}</b><br/>'
         },
         series: [{
             name: chartData.text.heavy,
-            data: chartData.data,
-            // every bar here is a count of Heavy days, so the whole series is
-            // harm — there is no reading on this chart that is not
+            data: data,
             color: "var(--skin-harm)",
             borderWidth: 0,
         }]

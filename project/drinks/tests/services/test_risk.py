@@ -86,12 +86,20 @@ def test_chart_heavy_days_view_model():
     assert vm.low_risk == 3.0
     assert vm.high_risk == 6.0
     assert set(vm.text) == {
-        "unit",
         "heavy",
-        "threshold_label",
+        "definition",
         "guideline",
         "high_risk_guideline",
     }
+
+
+@time_machine.travel("2026-12-31")
+def test_chart_heavy_days_names_the_heavy_day_threshold():
+    stats = RiskStats(current_daily=[_row(date(2026, 1, 1), 7)])
+
+    vm = RiskViewModelBuilder(stats).chart_heavy_days()
+
+    assert vm.text["definition"] == f"{_('Heavy day')}: > 6 Std Av"
 
 
 @time_machine.travel("2026-12-31")
