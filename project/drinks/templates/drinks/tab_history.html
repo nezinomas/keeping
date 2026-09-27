@@ -5,10 +5,12 @@
 {% if records %}
 
 <main class="history-grid">
-    <div id="chart-summary-container"></div>
+    <c-panel title="{% translate 'Drinks' %}">
+        <div id="chart-summary-container"></div>
+    </c-panel>
 
     <!-- Year comparison: one shared chart with presets + custom pick below it -->
-    <div id="historical-data">
+    <c-panel id="historical-data" title="{% translate 'Year comparison' %}">
         <div id="chart-history-container" hx-get="{% url 'drinks:compare' 2 %}" hx-trigger="load"></div>
 
         <div class="compare-controls">
@@ -20,7 +22,7 @@
 
             {% include 'drinks/includes/compare_form.html' %}
         </div>
-    </div>
+    </c-panel>
 </main>
 
 {{chart|json_script:"chart-summary-data"}}

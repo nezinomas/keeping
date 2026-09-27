@@ -265,7 +265,6 @@ class TypicalYearBuilder:
             year_from=self._pooled.year_from,
             year_to=self._pooled.year_to,
             text={
-                "title": _("Typical year"),
                 "share": _("Drinking-day rate"),
                 "share_unit": "%",
                 "intensity": _("Per drinking day"),

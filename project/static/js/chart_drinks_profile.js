@@ -113,9 +113,6 @@ function chartDrinksProfile(idData, idContainer) {
             // tickInterval to match the intensity's tick count
             alignTicks: false,
         },
-        title: {
-            text: chartData.text.title
-        },
         legend: {
             // position comes from chart_paper.js — under the plot, where four
             // entries naming two metrics over two spans have room to sit

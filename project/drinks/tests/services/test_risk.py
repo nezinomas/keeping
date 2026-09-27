@@ -50,7 +50,6 @@ def test_chart_weekly_view_model():
     assert vm.week_ends[index] == "2026-01-11"  # Sunday of that week
     assert len(vm.categories) == len(vm.data) == len(vm.week_ends)
     assert set(vm.text) == {
-        "title",
         "unit",
         "weekly",
         "guideline",
@@ -87,7 +86,6 @@ def test_chart_heavy_days_view_model():
     assert vm.low_risk == 3.0
     assert vm.high_risk == 6.0
     assert set(vm.text) == {
-        "title",
         "unit",
         "heavy",
         "threshold_label",

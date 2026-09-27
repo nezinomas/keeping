@@ -78,7 +78,6 @@ class RiskViewModelBuilder:
             low_risk=WEEKLY_LOW_RISK_STDAV,
             high_risk=WEEKLY_HIGH_RISK_STDAV,
             text={
-                "title": _("Weekly units with risk bands"),
                 "unit": "Std Av",
                 "weekly": _("Weekly units"),
                 "guideline": _("Low-risk guideline"),
@@ -94,7 +93,6 @@ class RiskViewModelBuilder:
             low_risk=MONTHLY_HEAVY_LOW_RISK,
             high_risk=MONTHLY_HEAVY_HIGH_RISK,
             text={
-                "title": _("Heavy days per month"),
                 "unit": _("Days"),
                 "heavy": _("Heavy days"),
                 "threshold_label": _("Heavy day"),

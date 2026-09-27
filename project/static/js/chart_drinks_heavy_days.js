@@ -6,12 +6,6 @@ function chartDrinksHeavyDays(idData, idContainer) {
             type: "column",
             height: "350px",
         },
-        title: {
-            text: chartData.text.title
-        },
-        subtitle: {
-            text: `${chartData.text.threshold_label}: > ${chartData.heavy_threshold.toFixed()} Std Av`
-        },
         legend: {
             enabled: false,
         },

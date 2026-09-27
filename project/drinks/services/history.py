@@ -104,7 +104,6 @@ def load_service(user) -> dict:
             "unit": service.converter.display_unit,
             "decimals": service.converter.display_decimals,
             "text": {
-                "title": _("Drinks"),
                 "per_day": f"{_('Average per day')}, {service.converter.display_unit}",
                 "per_year": _("Pure alcohol per year, L"),
             },

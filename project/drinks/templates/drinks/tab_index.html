@@ -8,12 +8,15 @@
         <c-stat-cards :cards=cards />
     </div>
 
-    <div id="chart-overview-container"></div>
+    <c-panel id="panel-overview" title="{% translate 'Consumption by month' %}">
+        <div id="chart-overview-container"></div>
+    </c-panel>
 
-    <c-calendar :calendar=calendar />
+    <c-panel id="panel-calendar" title="{% translate 'Calendar' %}">
+        <c-calendar :calendar=calendar />
+    </c-panel>
 
-
-    <div id="breakdown">
+    <c-panel id="breakdown" title="{% translate 'Converted' %}, {% translate 'pcs' %}" subtitle="{% translate 'The same amount of alcohol, converted to different drink types.' %}">
         {% include 'drinks/includes/tbl_std_av.html' with ctx=tbl_std_av %}
 
         <details class="stdav-info">
@@ -25,7 +28,7 @@
                 <span>25 {% translate 'ml' %} {% translate 'Vodka' %} (40%)</span>
             </div>
         </details>
-    </div>
+    </c-panel>
 </main>
 
 {{chart_quantity.as_dict|json_script:"chart-quantity-data"}}
