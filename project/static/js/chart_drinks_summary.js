@@ -1,101 +1,71 @@
 function chart_drinks_summary(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
+    const paper = paperTwoPanes();
+    const blue = "var(--skin-data)";
 
-    Highcharts.chart(idContainer, {
-        chart: {
-            // an explicit bottom margin wins over Highcharts' own layout, so
-            // everything below the plot has to fit inside it: the year labels,
-            // the per-year data labels that sit 25px *under* their points, and
-            // — since the legend moved down there — the legend too. It was 67,
-            // which was enough for the first two and left the legend sitting on
-            // top of the years
-            marginBottom: 100,
-        },
-        legend: {
-            enabled: true,
-        },
-        xAxis: {
-            min: 0.49,
-            max: chartData.categories.length - 1.49,
-            categories: chartData.categories,
-            type: "category",
-            tickmarkPlacement: "on",
-        },
-        // each axis wears its series' hue; the pure alcohol's takes the text step,
-        // because $second itself fails AA as text
-        yAxis: [{
-            labels: {
-                format: "{value:.0f}",
-                style: {
-                    color: "var(--skin-data)",
+    Highcharts.chart(idContainer, Highcharts.merge(paper.base, {
+        xAxis: paper.xAxis(chartData.categories),
+        yAxis: [
+            Highcharts.merge(paper.paneTop, {
+                title: { text: chartData.text.per_day },
+            }),
+            Highcharts.merge(paper.paneBottom, {
+                title: { text: chartData.text.per_year },
+            }),
+        ],
+        series: [
+            {
+                type: "area",
+                yAxis: 0,
+                opacity: 0.85,
+                name: chartData.text.per_day,
+                showInLegend: false,
+                data: chartData.data_ml,
+                color: blue,
+                fillColor: "var(--skin-data-wash)",
+                marker: {
+                    enabled: true,
+                    radius: 2.5,
+                    symbol: "circle",
+                },
+                dataLabels: {
+                    enabled: true,
+                    verticalAlign: "bottom",
+                    y: -8,
+                    crop: false,
+                    overflow: "allow",
+                    style: paper.readingDataLabelStyle,
+                    formatter: function () {
+                        return this.y > 0
+                            ? Highcharts.numberFormat(this.y, chartData.decimals)
+                            : "";
+                    },
+                },
+                tooltip: {
+                    pointFormat: `${chartData.text.per_day}: <span style="color: {series.color}"><b>{point.y:,.${chartData.decimals}f} ${chartData.unit}</b></span><br>`,
                 },
             },
-            title: {
-                text: "",
-                style: {
-                    color: "var(--skin-data)",
-                }
-            },
-        }, {
-            opposite: true,
-            labels: {
-                format: "{value:.0f}",
-                style: {
-                    color: "var(--skin-second-ink)",
+            Highcharts.merge(paper.bottomBars, {
+                name: chartData.text.per_year,
+                data: chartData.data_alcohol,
+                zIndex: 1,
+                tooltip: {
+                    pointFormat: `${chartData.text.per_year}: <span style="color: {series.color}"><b>{point.y:.1f} L</b></span><br>`,
                 },
-            },
-            title: {
-                text: "",
-                style: {
-                    color: "var(--skin-second-ink)",
-                }
-            },
-        }],
-        tooltip: {
-            pointFormat: `<b>{point.y:,.${chartData.decimals}f} ${chartData.unit}</b><br>`,
-        },
-        series: [{
-            name: chartData.text.per_day,
-            yAxis: 0,
-            data: chartData.data_ml,
-            color: "var(--skin-data)",
-            fillColor: "var(--skin-data-wash)",
-            type: "area",
-            marker: {
-                fillColor: "var(--skin-paper)",
-                lineWidth: 2,
-                lineColor: null // inherit from series
-            },
-            dataLabels: {
-                enabled: true,
-                // Std Av needs its decimal; rounding it to whole numbers would
-                // flatten a year of 1.0 a day onto the same label as 1.4
-                format: `{point.y:.${chartData.decimals}f}`,
-                y: -25,
-                verticalAlign:"top",
-                color: "var(--skin-ink)",
-                style: {
-                    textOutline: 0,
+            }),
+            // the running year's straight-line pace: a hollow bar behind the filled one
+            Highcharts.merge(paper.bottomBars, {
+                name: chartData.text.forecast,
+                data: chartData.forecast,
+                color: "transparent",
+                borderColor: blue,
+                borderWidth: 1,
+                states: { hover: { color: "transparent" } },
+                dataLabels: { enabled: false },
+                tooltip: {
+                    pointFormat: `${chartData.text.forecast}: <span style="color: ${blue}"><b>{point.y:.1f} L</b></span><br>`,
                 },
-            },
-            enableMouseTracking: false,
-            fillOpacity: 0.65,
-        }, {
-            name: chartData.text.per_year,
-            yAxis: 1,
-            data: chartData.data_alcohol,
-            color: "var(--skin-second)",
-            type: "line",
-            dataLabels: {
-                enabled: true,
-                format: "{point.y:.1f}",
-                y: 25,
-                color: "var(--skin-second-ink)",
-                style: {
-                    textOutline: 0,
-                },
-            },
-            enableMouseTracking: false,
-        }],
-    });
+            }),
+        ],
+    }));
 };
