@@ -1,0 +1,7 @@
+<c-search-form url="{% url 'books:search' %}" reset_url="{% url 'books:list' %}" target="#data" />
+
+<!-- table-responsive on the grid item itself: a scrolling item has an automatic
+     minimum of zero, which is what lets the column shrink to a phone -->
+<div id="data" class="table-responsive">
+    {% include 'books/book_list.html' %}
+</div>
