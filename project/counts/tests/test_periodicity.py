@@ -131,7 +131,7 @@ def test_periodicity_months_are_twelve(client_logged):
     assert len(_context(client_logged)["chart_months"]["categories"]) == 12
 
 
-def test_periodicity_months_use_the_same_abbreviations_as_the_gap_strip(client_logged):
+def test_periodicity_months_use_djangos_month_abbreviations(client_logged):
     CountFactory()
 
     categories = _context(client_logged)["chart_months"]["categories"]
