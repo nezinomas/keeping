@@ -10,18 +10,25 @@ from django.utils.translation import gettext as _
 
 from ...users.tests.factories import UserFactory
 from .. import models, views
+from ..tabs import TABS
 from .factories import Book, BookFactory, BookTargetFactory
 
 pytestmark = pytest.mark.django_db
 
 
 # ----------------------------------------------------------------------------
-#                                                             Books Index View
+#                                                                         Tabs
 # ----------------------------------------------------------------------------
 def test_index_func():
     view = resolve("/books/")
 
-    assert views.Index == view.func.view_class
+    assert views.TabIndex == view.func.view_class
+
+
+def test_data_func():
+    view = resolve("/books/data/")
+
+    assert views.TabData == view.func.view_class
 
 
 def test_index_200(client_logged):
@@ -31,51 +38,81 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
-def test_books_index_names_itself_in_the_browser_title(client_logged):
-    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged, tab):
+    content = client_logged.get(tab.url).content.decode()
 
-    assert f"<title>{_('Books')}</title>" in content
-
-
-def test_books_index_heads_the_page_where_only_a_reader_hears_it(client_logged):
-    # Books draws no tab row, so it has no band to put a visible heading in
-    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
-
-    assert f'<h1 class="visually-hidden">{_("Books")}</h1>' in content
-
-
-def test_books_index_wears_the_paper_bundle(client_logged):
-    url = reverse("books:index")
-    content = client_logged.get(url).content.decode("utf-8")
-
+    assert '<nav class="subnav">' in content
     assert "css/paper.min.css" in content
     assert "css/main.min.css" not in content
     assert 'class="paper-skin"' in content
 
 
-def test_books_index_loads_the_paper_chart_theme(client_logged):
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged, tab):
+    content = client_logged.get(
+        tab.url, headers={"HX-Request": "true"}
+    ).content.decode()
+
+    assert '<nav class="subnav">' not in content
+    assert "<title>" in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_a_history_restore_rebuilds_the_whole_page(client_logged, tab):
+    headers = {"HX-Request": "true", "HX-History-Restore-Request": "true"}
+
+    content = client_logged.get(tab.url, headers=headers).content.decode()
+
+    assert '<nav class="subnav">' in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_only_the_open_tab_reloads_on_a_saved_book_or_goal(client_logged, tab):
+    content = client_logged.get(
+        tab.url, headers={"HX-Request": "true"}
+    ).content.decode()
+
+    listener = (
+        f'hx-get="{tab.url}" hx-target="#tab_content"'
+        ' hx-trigger="reload from:body, afterTarget from:body"'
+    )
+    assert listener in content
+    assert content.count("reload from:body") == 1
+
+
+def test_nav_offers_every_tab(client_logged):
+    content = client_logged.get(reverse("books:index")).content.decode()
+
+    for tab in TABS:
+        assert f'hx-get="{tab.url}"' in content
+
+
+@pytest.mark.parametrize(
+    ("name", "title"), [("index", "Knygos | Apžvalga"), ("data", "Knygos | Duomenys")]
+)
+def test_browser_title_names_the_open_tab(client_logged, name, title):
+    content = client_logged.get(reverse(f"books:tab_{name}")).content.decode()
+
+    assert f"<title>{title}</title>" in content
+
+
+def test_books_heads_the_page_where_only_a_reader_hears_it(client_logged):
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
+
+    assert f'<h1 class="visually-hidden">{_("Books")}</h1>' in content
+
+
+def test_books_loads_the_paper_chart_theme(client_logged):
     """The chart wears the skin because this page pulls the theme in."""
-    url = reverse("books:index")
-    content = client_logged.get(url).content.decode("utf-8")
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
     assert "js/chart_paper.js" in content
 
 
-def test_books_index_goal_is_edited_from_its_card(client_logged):
-    """The pencil in the Goal card is the page's only way into the goal form."""
-    url = reverse("books:index")
-    content = client_logged.get(url).content.decode("utf-8")
-
-    link = reverse("books:target_new")
-
-    assert content.count(f'hx-get="{link}"') == 1
-    assert f'class="trend-card__edit" hx-get="{link}"' in content
-
-
-def test_books_index_adds_a_book_from_the_foot_of_the_page(client_logged):
-    """Both header buttons went with the info row, so this is the only way in."""
-    url = reverse("books:index")
-    content = client_logged.get(url).content.decode("utf-8")
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_books_adds_a_book_from_the_foot_of_every_tab(client_logged, tab):
+    content = client_logged.get(tab.url).content.decode("utf-8")
 
     link = reverse("books:new")
 
@@ -85,65 +122,27 @@ def test_books_index_adds_a_book_from_the_foot_of_the_page(client_logged):
     assert "Pridėti knygą" in content
 
 
-def test_books_index_search_form(client_logged):
-    url = reverse("books:index")
-    response = client_logged.get(url).content.decode("utf-8")
-
-    assert '<input type="search" name="search"' in response
-    assert 'id="id_search"' in response
-
-
-def test_books_index_reads_cards_chart_search_table(client_logged):
-    """The table is the variable-height thing, so nothing goes under it."""
-    url = reverse("books:index")
-    content = client_logged.get(url).content.decode("utf-8")
-
-    order = [
-        content.index('class="stat-cards"'),
-        content.index('id="chart-finished-container"'),
-        content.index('id="search-form"'),
-        content.index('id="data"'),
-    ]
-
-    assert order == sorted(order)
-
-
-def test_books_index_titles_the_finished_books_panel(client_logged):
-    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
-
-    assert '<h2 class="panel__title">Perskaitytos knygos</h2>' in content
-
-
-def _index_queries(client):
+def _tab_queries(client, tab):
     with CaptureQueriesContext(connection) as queries:
-        client.get(reverse("books:index"))
+        client.get(tab.url)
     return len(queries)
 
 
-def test_books_index_query_count_does_not_grow_with_the_books(client_logged):
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_tab_query_count_does_not_grow_with_the_books(client_logged, tab):
     for _i in range(2):
         BookFactory()
-    two = _index_queries(client_logged)
+    two = _tab_queries(client_logged, tab)
 
     for _i in range(2, 6):
         BookFactory()
-    six = _index_queries(client_logged)
+    six = _tab_queries(client_logged, tab)
 
     assert six == two
 
 
-def test_books_index_context(client_logged):
-    url = reverse("books:index")
-    response = client_logged.get(url)
-
-    assert "year" in response.context
-    assert "tab" in response.context
-    assert "books" in response.context
-    assert "cards" in response.context
-
-
 # ----------------------------------------------------------------------------
-#                                                                        Cards
+#                                                                 Overview Tab
 # ----------------------------------------------------------------------------
 CARD = re.compile(
     r'trend-card__label">(.*?)</div>\s*<div class="trend-card__value[^"]*">'
@@ -152,57 +151,70 @@ CARD = re.compile(
 )
 
 
-def test_cards_func():
-    view = resolve("/books/cards/")
+def test_overview_holds_cards_and_chart_and_no_table(client_logged):
+    BookFactory()
 
-    assert views.Cards == view.func.view_class
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
+
+    assert content.index('class="stat-cards"') < content.index(
+        'id="chart-finished-container"'
+    )
+    assert 'id="search-form"' not in content
+    assert 'id="data"' not in content
 
 
-def test_cards_200(client_logged):
-    url = reverse("books:cards")
-    response = client_logged.get(url)
+def test_overview_titles_the_finished_books_panel(client_logged):
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
-    assert response.status_code == 200
+    assert '<h2 class="panel__title">Perskaitytos knygos</h2>' in content
+
+
+def test_overview_carries_the_chart_data(client_logged):
+    BookFactory(ended=date(1999, 1, 1))
+
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
+
+    assert '<script id="chart-finished-data" type="application/json">' in content
 
 
 @time_machine.travel("1999-07-18")
-def test_cards_html(client_logged):
+def test_overview_cards(client_logged):
     BookFactory()
     BookFactory()
     BookFactory(ended=date(1999, 2, 1))
 
-    url = reverse("books:cards")
-    content = client_logged.get(url).content.decode("utf-8")
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
     assert content.count('class="trend-card"') == 3
     assert re.findall(CARD, content)[:2] == [("Perskaitytos", "1"), ("Skaitomos", "2")]
 
 
 @time_machine.travel("1999-07-18")
-def test_cards_no_data(client_logged):
-    url = reverse("books:cards")
-    content = client_logged.get(url).content.decode("utf-8")
+def test_overview_cards_no_data(client_logged):
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
     assert re.findall(CARD, content)[:2] == [("Perskaitytos", "0"), ("Skaitomos", "0")]
 
 
-def test_cards_goal_pencil_opens_target_new(client_logged):
-    url = reverse("books:cards")
-    content = client_logged.get(url).content.decode("utf-8")
+def test_overview_goal_pencil_opens_target_new(client_logged):
+    """The pencil in the Goal card is the page's only way into the goal form."""
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
     link = reverse("books:target_new")
 
+    assert content.count(f'hx-get="{link}"') == 1
     assert f'<button type="button" class="trend-card__edit" hx-get="{link}"' in content
-    assert 'hx-target="#mainModal"' in content
+    assert re.search(
+        rf'trend-card__edit" hx-get="{link}"[^>]*hx-target="#mainModal"', content
+    )
     assert 'class="bi bi-pencil"' in content
     assert "Neįvestas tikslas" in content
 
 
-def test_cards_goal_pencil_opens_target_update(client_logged):
+def test_overview_goal_pencil_opens_target_update(client_logged):
     t = BookTargetFactory()
 
-    url = reverse("books:cards")
-    content = client_logged.get(url).content.decode("utf-8")
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
 
     link = reverse("books:target_update", kwargs={"pk": t.pk})
 
@@ -211,29 +223,57 @@ def test_cards_goal_pencil_opens_target_update(client_logged):
 
 
 # ----------------------------------------------------------------------------
-#                                                               Finished Books
+#                                                                     Data Tab
 # ----------------------------------------------------------------------------
-def test_chart_finished_func():
-    view = resolve("/books/chart_finished/")
+def test_data_tab_reads_search_then_table(client_logged):
+    """The table is the variable-height thing, so nothing goes under it."""
+    content = client_logged.get(reverse("books:tab_data")).content.decode("utf-8")
 
-    assert views.ChartFinished == view.func.view_class
-
-
-def test_chart_finished_200(client_logged):
-    url = reverse("books:chart_finished")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
+    assert '<input type="search" name="search"' in content
+    assert 'id="id_search"' in content
+    assert content.index('id="search-form"') < content.index('id="data"')
+    assert 'id="chart-finished-container"' not in content
 
 
-def test_books_index_chart_year(client_logged):
-    BookFactory(ended=date(1999, 1, 1))
+def test_data_tab_lists_this_year(client_logged):
+    BookFactory(title="This Year")
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
 
-    url = reverse("books:chart_finished")
-    response = client_logged.get(url)
+    content = client_logged.get(reverse("books:tab_data")).content.decode("utf-8")
 
-    content = response.content.decode("utf-8")
-    assert '<script id="chart-finished-data" type="application/json">' in content
+    assert "This Year" in content
+    assert "Old Book" not in content
+
+
+def test_data_tab_all_records_lists_every_year(client_logged):
+    BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
+
+    url = reverse("books:tab_data")
+    content = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
+
+    assert "Old Book" in content
+
+
+def test_data_tab_all_records_reloads_all_records(client_logged):
+    url = reverse("books:tab_data")
+    content = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
+
+    assert f'hx-get="{url}?scope=all" hx-target="#tab_content"' in content
+
+
+def test_navbar_all_records_opens_the_data_tab_on_every_year(client_logged):
+    content = client_logged.get(reverse("books:index")).content.decode("utf-8")
+
+    assert f'href="{reverse("books:tab_data")}?scope=all"' in content
+
+
+def test_all_records_pages_keep_their_scope(client_logged):
+    Book.objects.bulk_create(BookFactory.build_batch(51, user=UserFactory()))
+
+    url = reverse("books:list")
+    content = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
+
+    assert f'hx-get="{url}?page=2&scope=all"' in content
 
 
 # ----------------------------------------------------------------------------
@@ -281,7 +321,7 @@ def test_list_all_books(client_logged):
     BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31))
 
     url = reverse("books:list")
-    response = client_logged.get(url, {"tab": "all"})
+    response = client_logged.get(url, {"scope": "all"})
     actual = response.context["object_list"]
     assert len(actual) == 2
 
@@ -290,7 +330,7 @@ def test_list_all_books_lists_another_year(client_logged):
     BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
 
     url = reverse("books:list")
-    actual = client_logged.get(url, {"tab": "all"}).content.decode("utf-8")
+    actual = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
 
     assert "Old Book" in actual
     assert "1974-01-01" in actual
@@ -304,9 +344,9 @@ def test_list_empty_state_names_the_year(client_logged):
 
 
 def test_list_all_books_empty_state_does_not_name_a_year(client_logged):
-    """?tab=all lists every year, so its empty state has no year to name."""
+    """?scope=all lists every year, so its empty state has no year to name."""
     url = reverse("books:list")
-    actual = client_logged.get(url, {"tab": "all"}).content.decode("utf-8")
+    actual = client_logged.get(url, {"scope": "all"}).content.decode("utf-8")
 
     assert "Įrašų nėra" in actual
     assert "1999" not in actual
@@ -586,8 +626,8 @@ def test_search_reset_url_restores_the_year(client_logged):
     BookFactory(title="This Year")
     BookFactory(started=date(1974, 1, 1), ended=date(1974, 1, 31), title="Old Book")
 
-    index = client_logged.get(reverse("books:index")).content.decode("utf-8")
-    assert f'hx-get="{reverse("books:list")}"' in index
+    data = client_logged.get(reverse("books:tab_data")).content.decode("utf-8")
+    assert f'hx-get="{reverse("books:list")}"' in data
 
     actual = client_logged.get(reverse("books:list")).content.decode("utf-8")
 
