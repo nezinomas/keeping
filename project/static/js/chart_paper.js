@@ -47,26 +47,10 @@ Highcharts.setOptions({
             fontFamily: "var(--skin-body)",
         },
     },
+    // the Panel title is drawn in HTML, above the chart (core/CONTEXT.md); a
+    // chart with no title of its own would otherwise get Highcharts' default
     title: {
-        align: "left",
-        margin: 24,
-        style: {
-            color: "var(--skin-ink)",
-            fontFamily: "var(--skin-mono)",
-            fontSize: "11px",
-            fontWeight: "400",
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-        },
-    },
-    subtitle: {
-        align: "left",
-        style: {
-            color: "var(--skin-ink-muted)",
-            fontFamily: "var(--skin-mono)",
-            fontSize: "10px",
-            letterSpacing: "0.1em",
-        },
+        text: null,
     },
     // recessive axes: one ink baseline, hairline grid, mono labels
     xAxis: {
@@ -114,8 +98,7 @@ Highcharts.setOptions({
         borderRadius: 3,
         shadow: false,
     },
-    // under the plot: the theme's top-right corner shares the title's row, and a
-    // legend wider than two entries covers it. Each chart still sets `enabled`
+    // under the plot, set once for every paper chart; each chart still sets `enabled`
     legend: {
         layout: "horizontal",
         align: "center",

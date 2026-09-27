@@ -1,7 +1,6 @@
 @use "../abstracts/variables" as *;
-@use "tokens";
 
-// The sheet every paper page is drawn on, and the frame a chart sits in.
+// The sheet every paper page is drawn on.
 
 .paper-skin {
     // ---- the sheet -------------------------------------------------------
@@ -11,10 +10,4 @@
     font-family: $body;
     font-size: 0.82rem;
     line-height: 1.5;
-
-    // ---- chart panels ----------------------------------------------------
-    // every paper page draws one, so the frame is the skin's rather than an app's
-    [id^="chart-"][id$="-container"] {
-        @include tokens.panel;
-    }
 }

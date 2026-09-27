@@ -2498,6 +2498,15 @@ msgstr "Paskutinį kartą"
 msgid "Add income type"
 msgstr "Pridėti pajamų rūšį"
 
+msgid "Consumption by month"
+msgstr "Suvartota per mėnesį"
+
+msgid "Incomes by month"
+msgstr "Pajamos per mėnesį"
+
+msgid "Calendar"
+msgstr "Kalendorius"
+
 #~ msgctxt "book add button"
 #~ msgid "Book"
 #~ msgstr "Knygą"
