@@ -1,12 +1,8 @@
 function chartOverview(consumptionId, quantityId, containerId) {
-    if (Highcharts.seriesTypes.lollipop) {
-        Highcharts.seriesTypes.lollipop.prototype.alignDataLabel = Highcharts.Series.prototype.alignDataLabel;
-    }
+    const paper = paperTwoPanes();
 
     const consumption = JSON.parse(document.getElementById(consumptionId).textContent);
     const quantity = JSON.parse(document.getElementById(quantityId).textContent);
-
-    const blue = "var(--skin-data)";
 
     // fill the page as a hero chart: ~62% of the viewport, clamped so it never
     // gets cramped or absurdly tall
@@ -23,29 +19,11 @@ function chartOverview(consumptionId, quantityId, containerId) {
     const avgLabelY = (consumption.target - 50 <= consumption.avg && consumption.avg <= consumption.target) ? 15 : -5;
     const targetLabelY = (consumption.avg - 50 <= consumption.target && consumption.target <= consumption.avg) ? 15 : -5;
 
-    const maxQuantity = (quantity.data && quantity.data.length > 0) ? Math.max(...quantity.data) : 0;
-    const categoryMax = (consumption.categories && consumption.categories.length > 0) ? consumption.categories.length - 1 : undefined;
-
-    Highcharts.chart(containerId, {
-        chart: {
-            height: PAPER_CHART_HEIGHT.large,
-        },
-        legend: {
-            enabled: false,
-        },
-        xAxis: {
-            categories: consumption.categories,
-            type: "category",
-            tickmarkPlacement: "on",
-            min: 0.35,
-            max: categoryMax - 0.35,
-        },
+    Highcharts.chart(containerId, Highcharts.merge(paper.base, {
+        xAxis: paper.xAxis(consumption.categories),
         yAxis: [
-            {
+            Highcharts.merge(paper.paneTop, {
                 // TOP pane: average daily volume (ml)
-                min: 0,
-                top: "0%",
-                height: "70%",
                 title: {
                     text: consumption.text.alcohol,
                 },
@@ -68,8 +46,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         label: Object.assign(
                             paperRuleLabel(
                                 `${consumption.text.limit}: ${consumption.target.toFixed(consumption.decimals)}`,
-                                "var(--skin-harm)",
-                                "right"
+                                "var(--skin-harm)"
                             ),
                             // the two rules step apart when they nearly coincide
                             { y: targetLabelY - 8 }
@@ -84,34 +61,20 @@ function chartOverview(consumptionId, quantityId, containerId) {
                         label: Object.assign(
                             paperRuleLabel(
                                 `Avg: ${consumption.avg.toFixed(consumption.decimals)}`,
-                                avgTextColor,
-                                "right"
+                                avgTextColor
                             ),
                             { y: avgLabelY - 8 }
                         )
                     }
                 ],
-            },
-            {
+            }),
+            Highcharts.merge(paper.paneBottom, {
                 // LOW pane: monthly quantity (units)
-                min: 0,
-                max: maxQuantity > 0 ? maxQuantity : undefined,
-                endOnTick: false,
-                top: "78%",
-                height: "22%",
-                offset: 0,
                 title: {
                     text: quantity.text.quantity,
-                    style: { color: blue },
                 },
-                labels: {
-                    style: { color: blue },
-                },
-            }
+            }),
         ],
-        tooltip: {
-            shared: true,
-        },
         series: [
             {
                 // TOP: filled area, split-coloured at the limit
@@ -151,13 +114,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     y: -8,
                     crop: false,
                     overflow: "allow",
-                    style: {
-                        fontFamily: "var(--skin-mono)",
-                        fontSize: "10px",
-                        color: "var(--skin-ink)",
-                        fontWeight: "400",
-                        textOutline: "none",
-                    },
+                    style: paper.readingDataLabelStyle,
                     formatter: function () {
                         return this.y > 0
                             ? Highcharts.numberFormat(this.y, consumption.decimals)
@@ -172,45 +129,13 @@ function chartOverview(consumptionId, quantityId, containerId) {
                     pointFormat: `${consumption.text.alcohol}: <span style="color: {series.color}"><b>{point.y:,.${consumption.decimals}f} ${consumption.text.unit}</b></span><br>`,
                 }
             },
-            {
-                type: "lollipop",
-                yAxis: 1,
+            Highcharts.merge(paper.bottomBars, {
                 name: quantity.text.quantity,
                 data: quantity.data,
-                color: blue,
-                connectorWidth: 2,
-                connectorColor: blue,
-                showInLegend: false,
-                marker: {
-                    enabled: true,
-                    symbol: "circle",
-                    radius: 5,
-                    fillColor: blue,
-                    lineWidth: 0,
-                },
-                dataLabels: {
-                    enabled: true,
-                    align: "center",
-                    verticalAlign: "bottom",
-                    y: -8,
-                    x: 0,
-                    crop: false,
-                    overflow: "allow",
-                    style: {
-                        fontFamily: "var(--skin-mono)",
-                        fontSize: "10px",
-                        color: "var(--skin-ink-muted)",
-                        textOutline: "none",
-                        fontWeight: "400"
-                    },
-                    formatter: function () {
-                        return this.y > 0 ? Highcharts.numberFormat(this.y, 1) : "";
-                    },
-                },
                 tooltip: {
                     pointFormat: `${quantity.text.quantity}: <span style="color: {series.color}"><b>{point.y:.1f}</b></span><br>`,
                 }
-            }
+            }),
         ]
-    });
+    }));
 };

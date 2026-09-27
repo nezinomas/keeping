@@ -11,7 +11,7 @@
 
 
 {% block head %}
-    {% include 'highcharts.html' with lollipop=True %}
+    {% include 'highcharts.html' %}
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_paper.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_overview.js' %}"></script>
     <script nonce="{{ csp_nonce }}" src="{% static 'js/chart_drinks_trend.js' %}"></script>

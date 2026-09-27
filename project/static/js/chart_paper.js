@@ -9,19 +9,14 @@
 // of the cascade: Highcharts writes them into inline SVG styles inside the
 // wrapper, so `var()` resolves. One place defines the palette, in SCSS.
 //
-// A label for a rule across the plot — a Limit, a guideline, a Goal.
-//
-// It is drawn as HTML on a paper chip rather than as SVG text, because a bar or a
-// line that crosses the rule would otherwise be drawn over the label naming it:
-// the rule a mark is measured against has to stay readable exactly where marks
-// reach it.
-function paperRuleLabel(text, color, align) {
-    const toRight = align === "right";
-
+// A label for a rule across the plot — a Limit, a guideline, a Goal. Always on the
+// right, because the left corner holds the pane name; on a paper chip, so a mark
+// crossing the rule never covers it.
+function paperRuleLabel(text, color) {
     return {
         useHTML: true,
-        align: toRight ? "right" : "left",
-        x: toRight ? -6 : 6,
+        align: "right",
+        x: -6,
         y: -13,
         text: `<span style="background: var(--skin-paper); padding: 0 4px;`
             + ` color: ${color}; font-family: var(--skin-mono); font-size: 10px;`
@@ -32,6 +27,112 @@ function paperRuleLabel(text, color, align) {
 // The two chart heights. Standard is the theme's; a chart with two panes asks for large.
 // `var`, because a re-run page script would throw on a redeclared `const`.
 var PAPER_CHART_HEIGHT = { standard: 350, large: 420 };
+
+// The first and last category sit a fixed distance in from the plot edge, so a
+// chart of 21 years and one of 12 months keep the same margins at any width.
+var PAPER_EDGE_PX = 18;
+
+function paperFixEdges() {
+    const axis = this.xAxis[0];
+    const last = axis.categories.length - 1;
+    if (last < 1) {
+        return;
+    }
+
+    // a column series widens the range by half a category on each side itself
+    const pad = PAPER_EDGE_PX * last / (axis.len - 2 * PAPER_EDGE_PX);
+    const offset = axis.minPointOffset || 0;
+    const min = offset - pad;
+    const max = last + pad - offset;
+    if (Math.abs(axis.min - min) > 1e-6 || Math.abs(axis.max - max) > 1e-6) {
+        axis.setExtremes(min, max, true, false);
+    }
+}
+
+// A y-axis title laid flat above the plot, where a rotated one would not fit its
+// text. A chart wearing one merges `PAPER_PANE_TITLE_SPACE` into its `chart`: just
+// room for the name, or for a rule label at the top of the plot.
+var PAPER_PANE_TITLE = {
+    align: "high",
+    rotation: 0,
+    offset: 0,
+    reserveSpace: false,
+    textAlign: "left",
+    x: 0,
+    y: -18,
+    style: { whiteSpace: "nowrap", textOverflow: "clip" },
+};
+var PAPER_PANE_TITLE_SPACE = { spacingTop: 0, marginTop: 27 };
+
+// The parts of a two-pane chart: a reading on top, bars below. Pieces, not one
+// config, because `Highcharts.merge` replaces arrays instead of merging them.
+function paperTwoPanes() {
+    const blue = "var(--skin-data)";
+    const paneTitle = PAPER_PANE_TITLE;
+
+    return {
+        base: {
+            chart: Highcharts.merge(PAPER_PANE_TITLE_SPACE, {
+                height: PAPER_CHART_HEIGHT.large,
+                events: { render: paperFixEdges },
+            }),
+            legend: { enabled: false },
+            tooltip: { shared: true },
+        },
+        xAxis: (categories) => ({
+            categories: categories,
+            type: "category",
+            tickmarkPlacement: "on",
+        }),
+        paneTop: {
+            min: 0,
+            top: "0%",
+            height: "68%",
+            title: paneTitle,
+        },
+        paneBottom: {
+            min: 0,
+            endOnTick: false,
+            // headroom, so the tallest bar's label stays clear of the pane name
+            maxPadding: 0.3,
+            top: "80%",
+            height: "20%",
+            offset: 0,
+            labels: { style: { color: blue } },
+            title: Highcharts.merge(paneTitle, { style: { color: blue } }),
+        },
+        readingDataLabelStyle: {
+            fontFamily: "var(--skin-mono)",
+            fontSize: "10px",
+            color: "var(--skin-ink)",
+            fontWeight: "400",
+            textOutline: "none",
+        },
+        bottomBars: {
+            type: "column",
+            yAxis: 1,
+            color: blue,
+            grouping: false,
+            maxPointWidth: 28,
+            showInLegend: false,
+            dataLabels: {
+                enabled: true,
+                crop: false,
+                overflow: "allow",
+                style: {
+                    fontFamily: "var(--skin-mono)",
+                    fontSize: "10px",
+                    color: "var(--skin-ink-muted)",
+                    textOutline: "none",
+                    fontWeight: "400",
+                },
+                formatter: function () {
+                    return this.y > 0 ? Highcharts.numberFormat(this.y, 1) : "";
+                },
+            },
+        },
+    };
+}
 
 // `colors` is the ordinal ramp Year Comparison draws from — years are ordered,
 // so they take steps of one hue, palest year first, rather than a hue each.
