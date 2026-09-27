@@ -30,6 +30,13 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
+def test_index_heads_the_page_where_only_a_reader_hears_it(client_logged):
+    content = client_logged.get(reverse("drinks:index")).content.decode("utf-8")
+
+    assert content.count("<h1") == 1
+    assert f'<h1 class="visually-hidden">{_("Drinks")}</h1>' in content
+
+
 @pytest.mark.parametrize(
     "tab, expected",
     [

@@ -349,6 +349,18 @@ def test_index_200(client_logged):
     assert response.status_code == 200
 
 
+def test_index_heads_the_page_with_the_counter_where_only_a_reader_hears_it(
+    client_logged,
+):
+    obj = CountTypeFactory(title="Rūkymas")
+
+    url = reverse("counts:index", kwargs={"slug": obj.slug})
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert content.count("<h1") == 1
+    assert '<h1 class="visually-hidden">Rūkymas</h1>' in content
+
+
 def test_index_not_logged(client):
     obj = CountTypeFactory()
 
