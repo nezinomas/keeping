@@ -3,7 +3,6 @@ function chartDrinksCumulative(idData, idContainer) {
 
     Highcharts.chart(idContainer, {
         chart: {
-            height: "350px",
         },
         legend: {
             enabled: true,

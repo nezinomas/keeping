@@ -29,6 +29,10 @@ function paperRuleLabel(text, color, align) {
     };
 }
 
+// The two chart heights. Standard is the theme's; a chart with two panes asks for large.
+// `var`, because a re-run page script would throw on a redeclared `const`.
+var PAPER_CHART_HEIGHT = { standard: 350, large: 420 };
+
 // `colors` is the ordinal ramp Year Comparison draws from — years are ordered,
 // so they take steps of one hue, palest year first, rather than a hue each.
 Highcharts.setOptions({
@@ -42,6 +46,7 @@ Highcharts.setOptions({
     ],
     chart: {
         backgroundColor: "transparent",
+        height: PAPER_CHART_HEIGHT.standard,
         spacing: [12, 6, 10, 6],
         style: {
             fontFamily: "var(--skin-body)",
