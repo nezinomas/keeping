@@ -24,9 +24,8 @@ function chart_drinks_summary(idData, idContainer) {
             type: "category",
             tickmarkPlacement: "on",
         },
-        // two measures over the same years, so each axis wears its series'
-        // colour: the daily volume is the data hue, the year's pure alcohol the
-        // skin's second
+        // each axis wears its series' hue; the pure alcohol's takes the text step,
+        // because $second itself fails AA as text
         yAxis: [{
             labels: {
                 format: "{value:.0f}",
@@ -45,13 +44,13 @@ function chart_drinks_summary(idData, idContainer) {
             labels: {
                 format: "{value:.0f}",
                 style: {
-                    color: "var(--skin-second)",
+                    color: "var(--skin-second-ink)",
                 },
             },
             title: {
                 text: "",
                 style: {
-                    color: "var(--skin-second)",
+                    color: "var(--skin-second-ink)",
                 }
             },
         }],
@@ -94,7 +93,7 @@ function chart_drinks_summary(idData, idContainer) {
                 enabled: true,
                 format: "{point.y:.1f}",
                 y: 25,
-                color: "var(--skin-second)",
+                color: "var(--skin-second-ink)",
                 style: {
                     textOutline: 0,
                 },

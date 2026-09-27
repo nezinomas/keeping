@@ -69,6 +69,7 @@ function chartDrinksProfile(idData, idContainer) {
             // invisible as a tooltip bullet, and the metric is what the bullet
             // is there to identify — the span is already the group's heading
             dotColor: rateColor,
+            valueColor: rateColor,
         });
 
         series.push({
@@ -98,6 +99,8 @@ function chartDrinksProfile(idData, idContainer) {
             unit: chartData.text.intensity_unit,
             layerLabel: layer.label,
             dotColor: intensityColor,
+            // the bullet is a mark and keeps the hue; the value is text
+            valueColor: "var(--skin-second-ink)",
         });
     });
 
@@ -157,10 +160,10 @@ function chartDrinksProfile(idData, idContainer) {
                 // would leave it marking a level the columns no longer measure
                 title: {
                     text: chartData.text.intensity_unit,
-                    style: { color: intensityColor },
+                    style: { color: "var(--skin-second-ink)" },
                 },
                 labels: {
-                    style: { color: intensityColor },
+                    style: { color: "var(--skin-second-ink)" },
                 },
                 min: 0,
                 opposite: true,
@@ -225,7 +228,7 @@ function chartDrinksProfile(idData, idContainer) {
                     group.points.forEach(function (point) {
                         const options = point.series.userOptions;
                         out += `<br/><span style="color: ${options.dotColor}">●</span> `
-                            + `${options.metric}: <span style="color: ${options.dotColor}">`
+                            + `${options.metric}: <span style="color: ${options.valueColor}">`
                             + `<b>${point.y} ${options.unit}</b></span>`;
                     });
                 });
