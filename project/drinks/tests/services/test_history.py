@@ -160,7 +160,7 @@ def test_forecast_for_the_running_year(main_user):
 
 
 @time_machine.travel("2001-04-10")
-def test_a_past_year_carries_no_forecast(main_user):
+def test_only_the_calendar_year_carries_a_forecast(main_user):
     """Only 1999 has data; the implicit 2001 column still gets its own point."""
     qs = [{"year": 1999, "qty": 1, "stdav": 25}]
     actual = history.HistoryService(main_user, qs).forecast
@@ -169,7 +169,7 @@ def test_a_past_year_carries_no_forecast(main_user):
 
 
 @time_machine.travel("2001-04-10")
-def test_a_header_year_ahead_of_the_calendar_year_carries_no_forecast(main_user):
+def test_the_forecast_follows_the_calendar_year_not_the_header_year(main_user):
     main_user.year = 2002
 
     qs = [{"year": 2001, "qty": 1, "stdav": 10_000}]
