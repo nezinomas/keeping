@@ -5,9 +5,6 @@ function chartDrinksCumulative(idData, idContainer) {
         chart: {
             height: "350px",
         },
-        title: {
-            text: chartData.text.title
-        },
         legend: {
             enabled: true,
         },

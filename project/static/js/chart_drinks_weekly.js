@@ -6,9 +6,6 @@ function chartDrinksWeekly(idData, idContainer) {
             type: "column",
             height: "350px",
         },
-        title: {
-            text: chartData.text.title
-        },
         legend: {
             enabled: false,
         },

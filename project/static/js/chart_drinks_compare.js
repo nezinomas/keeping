@@ -28,9 +28,6 @@ function chartCompare(idData, idContainer) {
         chart: {
             height: "350px",
         },
-        title: {
-            text: chartData.title || ""
-        },
         legend: {
             enabled: true,
         },

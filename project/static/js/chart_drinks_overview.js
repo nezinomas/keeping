@@ -30,9 +30,6 @@ function chartOverview(consumptionId, quantityId, containerId) {
         chart: {
             height: "420px",
         },
-        title: {
-            text: ""
-        },
         legend: {
             enabled: false,
         },

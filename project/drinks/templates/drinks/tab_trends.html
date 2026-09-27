@@ -8,8 +8,13 @@
         <c-stat-cards :cards=cards />
     </div>
 
-    <div id="chart-trend-container"></div>
-    <div id="chart-cumulative-container"></div>
+    <c-panel id="panel-trend" title="{% translate 'Rolling average' %}">
+        <div id="chart-trend-container"></div>
+    </c-panel>
+
+    <c-panel title="{% translate 'Cumulative (year over year)' %}">
+        <div id="chart-cumulative-container"></div>
+    </c-panel>
 </main>
 
 {{chart_trend.as_dict|json_script:"chart-trend-data"}}

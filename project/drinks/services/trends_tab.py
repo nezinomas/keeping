@@ -84,7 +84,6 @@ class TrendsBuilder:
             target=self._target,
             decimals=self._stats.decimals,
             text={
-                "title": _("Rolling average"),
                 # the dropdown decides the unit, so the axes and the tooltip
                 # never claim ml for an amount read as Std Av
                 "unit": self._stats.unit,
@@ -102,7 +101,6 @@ class TrendsBuilder:
             last_year=[round(v, 1) for v in self._stats.cumulative_past_year],
             target=[round(v, 1) for v in self._stats.cumulative_target],
             text={
-                "title": _("Cumulative (year over year)"),
                 "unit": self._stats.total_unit,
                 "this_year": _("This year"),
                 "last_year": _("Last year"),

@@ -13,7 +13,6 @@ def test_build_returns_a_chart_view_model(main_user):
     actual = YearComparison.build(main_user, [1999])
 
     assert isinstance(actual, YearComparisonChartViewModel)
-    assert actual.title
     assert len(actual.categories) == 12
 
 
@@ -78,7 +77,7 @@ def test_as_dict_is_json_serializable(main_user):
 
     actual = YearComparison.build(main_user, [1999]).as_dict
 
-    assert set(actual) == {"title", "categories", "serries", "unit", "decimals"}
+    assert set(actual) == {"categories", "serries", "unit", "decimals"}
     assert json.dumps(actual)
 
 

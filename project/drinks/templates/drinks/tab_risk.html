@@ -8,8 +8,13 @@
         <c-stat-cards :cards=cards />
     </div>
 
-    <div id="chart-weekly-container"></div>
-    <div id="chart-heavy-container"></div>
+    <c-panel id="panel-weekly" title="{% translate 'Weekly units with risk bands' %}">
+        <div id="chart-weekly-container"></div>
+    </c-panel>
+
+    <c-panel id="panel-heavy" title="{% translate 'Heavy days per month' %}" subtitle="{{ chart_heavy.text.threshold_label }}: > {{ chart_heavy.heavy_threshold|floatformat:0 }} Std Av">
+        <div id="chart-heavy-container"></div>
+    </c-panel>
 </main>
 
 {{chart_weekly.as_dict|json_script:"chart-weekly-data"}}

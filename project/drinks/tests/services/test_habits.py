@@ -106,7 +106,6 @@ def test_chart_weekday_names_both_units_and_neither_claims_the_others():
 
     assert actual.text["share_unit"] == "%"
     assert actual.text["intensity_unit"] == "Std Av"
-    assert actual.text["title"] == _("Weekday profile")
     assert actual.text["share"] == _("Drinking-day rate")
     assert actual.text["intensity"] == _("Per drinking day")
     assert actual.text["threshold_label"] == _("Heavy day")
@@ -117,7 +116,6 @@ def test_chart_weekday_text_is_translated():
     # msgid has no entry and the catalogue is handing back the English
     actual = _builder().chart_weekday()
 
-    assert actual.text["title"] == "Savaitės dienų profilis"
     assert actual.text["share"] == "Vartojimo dienų dalis"
     assert actual.text["intensity"] == "Vienai vartojimo dienai"
     assert actual.categories[0] == "Pirmadienis"

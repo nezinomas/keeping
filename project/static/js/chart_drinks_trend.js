@@ -21,9 +21,6 @@ function chartTrend(idData, idContainer) {
             height: "350px",
             alignTicks: false,
         },
-        title: {
-            text: chartData.text.title
-        },
         legend: {
             enabled: true,
         },

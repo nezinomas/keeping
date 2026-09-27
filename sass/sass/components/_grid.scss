@@ -145,20 +145,16 @@
         grid-area: index-summary;
     }
 
-    > #chart-overview-container {
+    > #panel-overview {
         grid-area: chart-overview-container;
     }
 
-    > .heat-card {
+    > #panel-calendar {
         grid-area: calendar;
     }
 
     > #breakdown {
         grid-area: breakdown;
-        overflow: hidden;
-        background: #fff;
-        border: 1px solid $border-color-light;
-        border-radius: $modal-border-radius;
     }
 }
 
@@ -191,7 +187,7 @@
         grid-area: trend-summary;
     }
 
-    > #chart-trend-container {
+    > #panel-trend {
         grid-area: chart-trend-container;
     }
 }
@@ -213,7 +209,7 @@
         grid-area: habits-summary;
     }
 
-    > #chart-weekday-container {
+    > #panel-weekday {
         grid-area: chart-weekday-container;
     }
 
@@ -245,11 +241,11 @@
         grid-area: risk-summary;
     }
 
-    > #chart-weekly-container {
+    > #panel-weekly {
         grid-area: chart-weekly-container;
     }
 
-    > #chart-heavy-container {
+    > #panel-heavy {
         grid-area: chart-heavy-container;
     }
 }

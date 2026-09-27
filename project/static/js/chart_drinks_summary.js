@@ -11,9 +11,6 @@ function chart_drinks_summary(idData, idContainer) {
             // top of the years
             marginBottom: 100,
         },
-        title: {
-            text: chartData.text.title,
-        },
         legend: {
             enabled: true,
         },
