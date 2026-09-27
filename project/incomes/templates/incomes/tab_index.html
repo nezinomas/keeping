@@ -1,6 +1,10 @@
+{% load i18n %}
+
 <div class="stat-cards">
     <c-stat-cards :cards=cards />
 </div>
 
-<div id="chart-months-container"></div>
+<c-panel title="{% translate 'Incomes by month' %}">
+    <div id="chart-months-container"></div>
+</c-panel>
 {{ chart|json_script:"chart-months-data" }}
