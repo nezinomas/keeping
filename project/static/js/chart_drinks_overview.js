@@ -28,7 +28,7 @@ function chartOverview(consumptionId, quantityId, containerId) {
 
     Highcharts.chart(containerId, {
         chart: {
-            height: "420px",
+            height: PAPER_CHART_HEIGHT.large,
         },
         legend: {
             enabled: false,

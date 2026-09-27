@@ -4,7 +4,6 @@ function chartDrinksHeavyDays(idData, idContainer) {
     Highcharts.chart(idContainer, {
         chart: {
             type: "column",
-            height: "350px",
         },
         legend: {
             enabled: false,

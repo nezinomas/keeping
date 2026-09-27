@@ -12,7 +12,6 @@ function chartPeriodicity(idData, idContainer) {
     Highcharts.chart(idContainer, {
         chart: {
             type: "column",
-            height: "300px",
         },
         legend: {
             enabled: false,

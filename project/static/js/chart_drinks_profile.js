@@ -106,7 +106,6 @@ function chartDrinksProfile(idData, idContainer) {
 
     Highcharts.chart(idContainer, {
         chart: {
-            height: "350px",
             // each axis picks its own ticks. Aligning them across two axes is
             // there to make one set of gridlines fit both, and the intensity
             // axis draws none — all it does here is override the rate axis'
