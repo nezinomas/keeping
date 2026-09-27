@@ -1,17 +1,8 @@
-// The paper skin, chart half: what every chart on a page wearing `.paper-skin`
-// shares — the faces, the axes, the gridlines, the tooltip and the palette.
+// The paper skin's chart half, loaded only by pages wearing `.paper-skin`.
+// Colours are `--skin-*` tokens; `var()` resolves in Highcharts' inline SVG styles.
 //
-// The shared Highcharts theme belongs to every other app too, so none of this
-// can go there. It is scoped by loading: only the pages wearing the skin pull
-// this file in.
-//
-// The colours are the `--skin-*` tokens the wrapper defines, read straight out
-// of the cascade: Highcharts writes them into inline SVG styles inside the
-// wrapper, so `var()` resolves. One place defines the palette, in SCSS.
-//
-// A label for a rule across the plot — a Limit, a guideline, a Goal. Always on the
-// right, because the left corner holds the pane name; on a paper chip, so a mark
-// crossing the rule never covers it.
+// A rule's label: on the right, as the left corner holds the pane name; on a
+// paper chip, so a mark crossing the rule never covers it.
 function paperRuleLabel(text, color) {
     return {
         useHTML: true,
@@ -49,9 +40,8 @@ function paperFixEdges() {
     }
 }
 
-// A y-axis title laid flat above the plot, where a rotated one would not fit its
-// text. A chart wearing one merges `PAPER_PANE_TITLE_SPACE` into its `chart`: just
-// room for the name, or for a rule label at the top of the plot.
+// A y-axis title laid flat above the plot, where a rotated one would not fit.
+// Its chart merges in `PAPER_PANE_TITLE_SPACE`: room for the name or a rule label.
 var PAPER_PANE_TITLE = {
     align: "high",
     rotation: 0,
@@ -83,6 +73,8 @@ function paperTwoPanes() {
             categories: categories,
             type: "category",
             tickmarkPlacement: "on",
+            // the widened edges leave room for a tick past the last category
+            labels: { formatter() { return categories[this.pos] ?? ""; } },
         }),
         paneTop: {
             min: 0,
