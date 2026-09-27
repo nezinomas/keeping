@@ -23,6 +23,8 @@
 
 <div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
 
+<h1 class="visually-hidden">{{ object.title }}</h1>
+
 <c-subnav :tabs=tabs :active=tab />
 
 {% for count_tab, url in tabs %}

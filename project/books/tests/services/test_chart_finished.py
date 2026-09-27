@@ -66,7 +66,6 @@ def test_chart_context():
     assert "categories" in actual
     assert "data" in actual
     assert "targets" in actual
-    assert "chart_title" in actual
     # the chart takes its colours from the skin's tokens, so the context has no
     # colour to hand it — no JS ever read this key
     assert "chart_column_color" not in actual
@@ -100,11 +99,3 @@ def test_chart_context_data(finished, targets):
         {"y": 2, "target": 0},
         {"y": 3, "target": 33},
     ]
-
-
-def test_chart_context_chart_title(finished, targets):
-    data = SimpleNamespace(finished=finished, targets=targets)
-
-    actual = ChartFinished(data).context()
-
-    assert actual["chart_title"] == "Perskaitytos knygos"

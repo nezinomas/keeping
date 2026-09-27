@@ -4,10 +4,6 @@ function chartDrinksWeekly(idData, idContainer) {
     Highcharts.chart(idContainer, {
         chart: {
             type: "column",
-            height: "350px",
-        },
-        title: {
-            text: chartData.text.title
         },
         legend: {
             enabled: false,

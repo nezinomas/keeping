@@ -8,11 +8,13 @@
         <c-stat-cards :cards=cards />
     </div>
 
-    <div id="chart-weekday-container"></div>
+    <c-panel id="panel-weekday" title="{% translate 'Weekday profile' %}">
+        <div id="chart-weekday-container"></div>
+    </c-panel>
 
     <!-- the chart fetches itself, so the range pooled and the legend naming it
          are always the same reading. On load it draws the header year alone -->
-    <div id="typical-year">
+    <c-panel id="typical-year" title="{% translate 'Typical year' %}">
         <div id="chart-typical-year-container" hx-get="{% url 'drinks:typical_year' %}" hx-trigger="load"></div>
 
         <div class="pool-controls">
@@ -31,7 +33,7 @@
                  the header year alone. Outside the form, since it asks for no range -->
             <button type="button" class="button-secondary" hx-get="{% url 'drinks:typical_year' %}" hx-target="#chart-typical-year-container">{% translate 'Clear' %}</button>
         </div>
-    </div>
+    </c-panel>
 </main>
 
 {{chart_weekday.as_dict|json_script:"chart-weekday-data"}}

@@ -3,6 +3,8 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import resolve, reverse, reverse_lazy
 from django.utils.html import escape
 from django.utils.translation import gettext as _
@@ -28,6 +30,13 @@ def test_index_200(client_logged):
     response = client_logged.get(url)
 
     assert response.status_code == 200
+
+
+def test_index_heads_the_page_where_only_a_reader_hears_it(client_logged):
+    content = client_logged.get(reverse("drinks:index")).content.decode("utf-8")
+
+    assert content.count("<h1") == 1
+    assert f'<h1 class="visually-hidden">{_("Drinks")}</h1>' in content
 
 
 @pytest.mark.parametrize(
@@ -60,12 +69,12 @@ def test_tab_fragment_carries_the_title_so_htmx_can_swap_it(
     assert f"<title>{_('Drinks')} | {_(expected)}</title>" in response.content.decode()
 
 
-def test_index_loads_the_shared_chart_legend_defaults(client_logged):
-    # every Drinks chart reads its legend position from this one file, so the
-    # page dropping it would put every legend back in the theme's top corner
-    response = client_logged.get(reverse("drinks:index"))
+def test_index_takes_its_legend_position_from_the_paper_charts(client_logged):
+    # chart_paper.js places every paper legend, so Drinks keeps no file of its own
+    content = client_logged.get(reverse("drinks:index")).content.decode()
 
-    assert "js/chart_drinks_legend.js" in response.content.decode()
+    assert "js/chart_paper.js" in content
+    assert "js/chart_drinks_legend.js" not in content
 
 
 def test_index_wraps_every_tab_in_the_paper_skin(client_logged):
@@ -477,6 +486,47 @@ def test_tab_index_context(client_logged):
     assert "calendar" in response.context
 
 
+def test_tab_index_titles_its_panels(client_logged):
+    content = client_logged.get(reverse("drinks:tab_index")).content.decode()
+
+    assert f'<h2 class="panel__title">{_("Consumption by month")}</h2>' in content
+    assert f'<h2 class="panel__title">{_("Calendar")}</h2>' in content
+    assert f'<h2 class="panel__title">{_("Converted")}, {_("pcs")}</h2>' in content
+    assert (
+        '<p class="panel__subtitle">'
+        f"{_('The same amount of alcohol, converted to different drink types.')}"
+        "</p>" in content
+    )
+
+
+def test_tab_index_breakdown_caption_is_visually_hidden(client_logged):
+    # the Panel title carries the caption's text, so a sighted user reads it
+    # once; the table still names itself for a screen reader
+    content = client_logged.get(reverse("drinks:tab_index")).content.decode()
+
+    assert '<caption class="visually-hidden">' in content
+
+
+def _tab_queries(client, url):
+    with CaptureQueriesContext(connection) as queries:
+        client.get(url)
+    return len(queries)
+
+
+def test_tab_index_query_count_does_not_grow_with_the_drinks(client_logged):
+    url = reverse("drinks:tab_index")
+
+    for i in range(2):
+        DrinkFactory(date=date(1999, 1, i + 1))
+    two = _tab_queries(client_logged, url)
+
+    for i in range(2, 6):
+        DrinkFactory(date=date(1999, 1, i + 1))
+    six = _tab_queries(client_logged, url)
+
+    assert six == two
+
+
 def test_tab_index_daily_limit_edit_link_uses_target_update(client_logged):
     target = DrinkTargetFactory()
 
@@ -636,6 +686,13 @@ def test_tab_habits_context(client_logged):
     assert "cards" in response.context
 
 
+def test_tab_habits_titles_its_panels(client_logged):
+    content = client_logged.get(reverse("drinks:tab_habits")).content.decode()
+
+    assert f'<h2 class="panel__title">{_("Weekday profile")}</h2>' in content
+    assert f'<h2 class="panel__title">{_("Typical year")}</h2>' in content
+
+
 # -------------------------------------------------------------------------------------
 #                                                                 TypicalYearChart View
 # -------------------------------------------------------------------------------------
@@ -776,6 +833,15 @@ def test_tab_trends_context(client_logged):
     assert "cards" in response.context
 
 
+def test_tab_trends_titles_its_panels(client_logged):
+    content = client_logged.get(reverse("drinks:tab_trends")).content.decode()
+
+    assert f'<h2 class="panel__title">{_("Rolling average")}</h2>' in content
+    assert (
+        f'<h2 class="panel__title">{_("Cumulative (year over year)")}</h2>' in content
+    )
+
+
 # -------------------------------------------------------------------------------------
 #                                                                         TabRisk View
 # -------------------------------------------------------------------------------------
@@ -806,6 +872,21 @@ def test_tab_risk_context(client_logged):
     assert "chart_weekly" in response.context
     assert "chart_heavy" in response.context
     assert "cards" in response.context
+
+
+def test_tab_risk_titles_its_panels(client_logged):
+    content = client_logged.get(reverse("drinks:tab_risk")).content.decode()
+
+    assert (
+        f'<h2 class="panel__title">{_("Weekly units with risk bands")}</h2>' in content
+    )
+    assert f'<h2 class="panel__title">{_("Heavy days per month")}</h2>' in content
+
+
+def test_tab_risk_heavy_panel_leaves_the_threshold_to_its_chart(client_logged):
+    content = client_logged.get(reverse("drinks:tab_risk")).content.decode()
+
+    assert "panel__subtitle" not in content
 
 
 @time_machine.travel("1999-06-01")
@@ -928,6 +1009,14 @@ def test_tab_history_context(client_logged):
     assert "data_alcohol" in response.context["chart"]
 
 
+def test_tab_history_titles_its_panels(client_logged):
+    DrinkFactory()
+    content = client_logged.get(reverse("drinks:tab_history")).content.decode()
+
+    assert f'<h2 class="panel__title">{_("Drinks")}</h2>' in content
+    assert f'<h2 class="panel__title">{_("Year comparison")}</h2>' in content
+
+
 @time_machine.travel("1999-1-1")
 def test_tab_history_has_unified_compare_panel(client_logged):
     DrinkFactory()
@@ -1009,7 +1098,6 @@ def test_compare_data_chart(client_logged):
     actual = response.context["chart"]
 
     assert response.status_code == 200
-    assert actual.title  # chart carries a title for Highcharts to render
     assert actual.serries[0]["name"] == 1999
     assert round(actual.serries[0]["data"][0], 2) == 16.13
 

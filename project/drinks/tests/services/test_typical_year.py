@@ -194,7 +194,6 @@ def test_chart_labels_the_pooled_layer_with_the_span_it_pooled():
     actual = _chart(pooled_rows=[_total(2015, 1, 10, 1), _total(2025, 1, 10, 1)])
 
     assert actual.pooled.label == "Apjungti 2015–2025 m."
-    assert actual.text["title"] == _("Typical year")
 
 
 def test_chart_labels_a_layer_of_one_year_with_that_year_alone():

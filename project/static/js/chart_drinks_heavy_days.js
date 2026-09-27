@@ -1,17 +1,17 @@
 function chartDrinksHeavyDays(idData, idContainer) {
     const chartData = JSON.parse(document.getElementById(idData).textContent);
 
+    // a month up to the Low-risk guideline has not crossed it, so it takes the
+    // soft step; only a month over it wears full harm
+    const data = chartData.data.map((y) => ({
+        y: y,
+        color: y > chartData.low_risk ? "var(--skin-harm)" : "var(--skin-harm-soft)",
+    }));
+
     Highcharts.chart(idContainer, {
-        chart: {
+        chart: Highcharts.merge(PAPER_PANE_TITLE_SPACE, {
             type: "column",
-            height: "350px",
-        },
-        title: {
-            text: chartData.text.title
-        },
-        subtitle: {
-            text: `${chartData.text.threshold_label}: > ${chartData.heavy_threshold.toFixed()} Std Av`
-        },
+        }),
         legend: {
             enabled: false,
         },
@@ -20,20 +20,44 @@ function chartDrinksHeavyDays(idData, idContainer) {
             type: "category",
         },
         yAxis: {
-            title: {
-                text: chartData.text.unit
-            },
+            title: Highcharts.merge(PAPER_PANE_TITLE, {
+                text: chartData.text.definition,
+            }),
             min: 0,
             allowDecimals: false,
+            plotLines: [
+                {
+                    color: "var(--skin-harm-soft)",
+                    width: 1.5,
+                    dashStyle: "Dash",
+                    value: chartData.low_risk,
+                    zIndex: 5,
+                    // the soft harm step is a mark colour and fails AA as text
+                    label: paperRuleLabel(
+                        `${chartData.text.guideline}: ${chartData.low_risk.toFixed(0)}`,
+                        "var(--skin-ink-muted)"
+                    )
+                },
+                {
+                    color: "var(--skin-harm)",
+                    width: 1.5,
+                    dashStyle: "Dash",
+                    value: chartData.high_risk,
+                    zIndex: 5,
+                    label: paperRuleLabel(
+                        `${chartData.text.high_risk_guideline}: ${chartData.high_risk.toFixed(0)}`,
+                        "var(--skin-harm)"
+                    )
+                }
+            ]
         },
         tooltip: {
-            pointFormat: '{series.name}: <span style="color: {series.color}"><b>{point.y}</b></span><br/>'
+            // in ink: the soft harm step fails AA as text
+            pointFormat: '{series.name}: <b>{point.y}</b><br/>'
         },
         series: [{
             name: chartData.text.heavy,
-            data: chartData.data,
-            // every bar here is a count of Heavy days, so the whole series is
-            // harm — there is no reading on this chart that is not
+            data: data,
             color: "var(--skin-harm)",
             borderWidth: 0,
         }]

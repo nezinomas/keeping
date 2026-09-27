@@ -76,7 +76,6 @@ class HabitsBuilder:
             intensity=[round(point.intensity, 1) for point in profile],
             heavy_threshold=HEAVY_DAY_STDAV,
             text={
-                "title": _("Weekday profile"),
                 "share": _("Drinking-day rate"),
                 "share_unit": "%",
                 "intensity": _("Per drinking day"),

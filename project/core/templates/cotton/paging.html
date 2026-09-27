@@ -5,7 +5,7 @@
 <ul class="pagination">
     <!-- previous button -->
     {% if page_obj.has_previous %}
-        <li><a role="button" class="bi-chevron-double-left" title="{% translate 'Previous page' %}" hx-get="{{ url }}?page={{ page_obj.previous_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator"></a></li>
+        <li><a role="button" class="bi-chevron-double-left" title="{% translate 'Previous page' %}" hx-get="{{ url }}?page={{ page_obj.previous_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if scope %}&scope={{ scope }}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator"></a></li>
     {% else %}
         <li class="disabled"><i class="bi-chevron-double-left"></i></li>
     {% endif %}
@@ -23,7 +23,7 @@
             </li>
         {% else %}
             <li>
-                <a role="button" hx-get="{{ url }}?page={{ i|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">{{ i|title }}</a>
+                <a role="button" hx-get="{{ url }}?page={{ i|title }}{% if search %}&search={{ search }}{% endif %}{% if scope %}&scope={{ scope }}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator">{{ i|title }}</a>
             </li>
         {% endif %}
     {% endif %}
@@ -33,7 +33,7 @@
     <!-- next button -->
     {% if page_obj.has_next %}
         <li>
-            <a role="button" title="{% translate 'Next page' %}" hx-get="{{ url }}?page={{ page_obj.next_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if tab %}&tab={{tab}}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator"><i class="bi-chevron-double-right"></i></a>
+            <a role="button" title="{% translate 'Next page' %}" hx-get="{{ url }}?page={{ page_obj.next_page_number|title }}{% if search %}&search={{ search }}{% endif %}{% if scope %}&scope={{ scope }}{% endif %}" {% if target %}hx-target="{{target}}"{% endif %} hx-indicator="#indicator"><i class="bi-chevron-double-right"></i></a>
         </li>
     {% else %}
         <li class="disabled"><div><i class="bi-chevron-double-right"></i></div></li>

@@ -1,0 +1,10 @@
+{% load i18n %}
+
+<div class="stat-cards">
+    <c-stat-cards :cards=cards />
+</div>
+
+<c-panel title="{% translate 'Finished books' %}">
+    <div id="chart-finished-container"></div>
+</c-panel>
+{{ chart|json_script:"chart-finished-data" }}
