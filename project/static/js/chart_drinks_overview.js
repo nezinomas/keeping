@@ -4,11 +4,6 @@ function chartOverview(consumptionId, quantityId, containerId) {
     const consumption = JSON.parse(document.getElementById(consumptionId).textContent);
     const quantity = JSON.parse(document.getElementById(quantityId).textContent);
 
-    // fill the page as a hero chart: ~62% of the viewport, clamped so it never
-    // gets cramped or absurdly tall
-    const viewportH = window.innerHeight || 900;
-    const chartHeight = Math.min(760, Math.max(480, Math.round(viewportH * 0.62)));
-
     // the average is furniture: a level to read the months against, not a
     // verdict. It stays in ink whichever side of the Limit it falls, because the
     // area already turns above the Limit and the Stat Card already says which
