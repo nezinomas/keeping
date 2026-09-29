@@ -499,6 +499,19 @@ def test_tab_index_titles_its_panels(client_logged):
     )
 
 
+def test_tab_index_breakdown_is_a_table_panel(client_logged):
+    content = client_logged.get(reverse("drinks:tab_index")).content.decode()
+
+    assert '<section class="panel panel--table" id="breakdown">' in content
+
+
+@pytest.mark.parametrize("panel_id", ["panel-overview", "panel-calendar"])
+def test_tab_index_figure_panels_keep_their_frame(client_logged, panel_id):
+    content = client_logged.get(reverse("drinks:tab_index")).content.decode()
+
+    assert f'<section class="panel" id="{panel_id}">' in content
+
+
 def test_tab_index_breakdown_caption_is_visually_hidden(client_logged):
     # the Panel title carries the caption's text, so a sighted user reads it
     # once; the table still names itself for a screen reader

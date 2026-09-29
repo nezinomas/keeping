@@ -39,3 +39,20 @@ def test_an_id_attribute_lands_on_the_section():
     )
 
     assert '<section class="panel" id="chart-x-container">' in content
+
+
+def test_a_table_panel_carries_the_modifier_class():
+    content = _render('<c-panel table title="Suvartota">slot</c-panel>')
+
+    assert '<section class="panel panel--table"' in content
+
+
+def test_a_table_panel_keeps_its_title_subtitle_and_id():
+    content = _render(
+        '<c-panel table title="Suvartota" subtitle="Antraštė" id="breakdown">'
+        "slot</c-panel>"
+    )
+
+    assert '<section class="panel panel--table" id="breakdown">' in content
+    assert '<h2 class="panel__title">Suvartota</h2>' in content
+    assert '<p class="panel__subtitle">Antraštė</p>' in content

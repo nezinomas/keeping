@@ -8,6 +8,12 @@
     min-width: 0;
 }
 
+.paper-skin .panel--table {
+    padding: 0;
+    background: none;
+    border: 0;
+}
+
 .panel__title {
     @include tokens.label;
     color: $ink;
