@@ -2507,6 +2507,47 @@ msgstr "Pajamos per mėnesį"
 msgid "Calendar"
 msgstr "Kalendorius"
 
+msgctxt "plans card"
+msgid "This year"
+msgstr "Šiais metais"
+
+msgid "Monthly median"
+msgstr "Mėnesio mediana"
+
+msgctxt "plans card"
+msgid "Free"
+msgstr "Laisvos"
+
+msgid "Share of planned incomes"
+msgstr "Planuotų pajamų dalis"
+
+msgid "Including savings plans"
+msgstr "Įskaitant taupymo planus"
+
+msgid "Sum per day this month"
+msgstr "Suma dienai šį mėnesį"
+
+msgid "Day plan this month"
+msgstr "Dienos planas šį mėnesį"
+
+msgid "in the Expenses tab"
+msgstr "Išlaidų skirtuke"
+
+msgid "Add incomes plan"
+msgstr "Pridėti pajamų planą"
+
+msgid "Add expenses plan"
+msgstr "Pridėti išlaidų planą"
+
+msgid "Add necessary plan"
+msgstr "Pridėti būtinų išlaidų planą"
+
+msgid "Add savings plan"
+msgstr "Pridėti taupymo planą"
+
+msgid "Add day plan"
+msgstr "Pridėti dienos planą"
+
 #~ msgctxt "book add button"
 #~ msgid "Book"
 #~ msgstr "Knygą"
