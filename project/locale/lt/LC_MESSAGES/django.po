@@ -2518,6 +2518,18 @@ msgctxt "plans card"
 msgid "Free"
 msgstr "Laisvos"
 
+msgctxt "plans card"
+msgid "Per year"
+msgstr "Per metus"
+
+msgctxt "plans card"
+msgid "Necessary"
+msgstr "Būtinos"
+
+msgctxt "plans card"
+msgid "Everyday"
+msgstr "Kasdienės"
+
 msgid "Share of planned incomes"
 msgstr "Planuotų pajamų dalis"
 
