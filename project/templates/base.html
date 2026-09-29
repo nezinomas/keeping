@@ -58,7 +58,7 @@
         </div>
 
         <!-- Expenses -->
-        <div {% if '/expenses/' in request.path and not '/summary/' in request.path %}class="active"{% endif %}>
+        <div {% if '/expenses/' in request.path and not '/summary/' in request.path and not '/plans/' in request.path %}class="active"{% endif %}>
           <a href="{% url 'expenses:index' %}">{% translate 'Expenses' %}</a>
           <div class="dropdown">
             <button class="dropdown__btn"></button>
@@ -84,7 +84,7 @@
         </div>
 
         <!-- Savings -->
-        <div {% if '/savings/' in request.path and not '/summary/' in request.path %}class="active"{% endif %}>
+        <div {% if '/savings/' in request.path and not '/summary/' in request.path and not '/plans/' in request.path %}class="active"{% endif %}>
           <a href="{% url 'savings:index' %}">{% translate 'Savings' %}</a>
         </div>
 
@@ -125,7 +125,7 @@
         </div>
 
         <!-- Plans -->
-        <div {% if '/plans/' == request.path %}class="active"{% endif %}>
+        <div {% if '/plans/' in request.path %}class="active"{% endif %}>
           <a href="{% url 'plans:index' %}">{% translate 'Plans' %}</a>
         </div>
 

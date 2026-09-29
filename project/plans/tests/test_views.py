@@ -1,16 +1,18 @@
 import json
+import re
 
 import pytest
 import time_machine
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import resolve, reverse
 
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
 from ...savings.tests.factories import SavingTypeFactory
 from .. import models, views
-from ..services.model_services import (
-    IncomePlanModelService,
-)
+from ..services.model_services import IncomePlanModelService
+from ..tabs import TABS
 from .factories import (
     DayPlan,
     DayPlanFactory,
@@ -26,14 +28,32 @@ from .factories import (
 
 pytestmark = pytest.mark.django_db
 
+TAB_VIEWS = {
+    "incomes": views.TabIncomes,
+    "expenses": views.TabExpenses,
+    "savings": views.TabSavings,
+    "day": views.TabDay,
+}
+
+TAB_PANEL_TITLES = {
+    "incomes": ["Pajamos"],
+    "expenses": ["Išlaidos", "Papildomos būtinos išlaidos"],
+    "savings": ["Taupymas"],
+    "day": [
+        "Suma dienai",
+        "Kiek galiu išleisti per dieną",
+        "Patikra: ar telpa išlaidų planai",
+    ],
+}
+
 
 # -------------------------------------------------------------------------------------
-#                                                                            Index Plan
+#                                                                                  Tabs
 # -------------------------------------------------------------------------------------
 def test_index_func():
     view = resolve("/plans/")
 
-    assert views.Index == view.func.view_class
+    assert views.TabDay == view.func.view_class
 
 
 def test_index_200(client_logged):
@@ -51,49 +71,207 @@ def test_index_not_logged(client):
     assert response.status_code == 302
 
 
+def test_index_opens_the_day_tab(client_logged):
+    content = client_logged.get(reverse("plans:index")).content.decode()
+
+    assert "x-data=\"{ tab: 'day' }\"" in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_tab_url_is_served_by_its_own_view(tab):
+    view = resolve(tab.url)
+
+    assert TAB_VIEWS[tab.name] == view.func.view_class
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged, tab):
+    content = client_logged.get(tab.url).content.decode()
+
+    assert '<nav class="subnav">' in content
+    assert "paper.min.css" in content
+    assert 'class="paper-skin"' in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_a_tab_url_requested_by_htmx_returns_the_fragment_alone(client_logged, tab):
+    content = client_logged.get(
+        tab.url, headers={"HX-Request": "true"}
+    ).content.decode()
+
+    assert '<nav class="subnav">' not in content
+    assert "<title>" in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_only_the_open_tab_reloads_on_a_saved_plan(client_logged, tab):
+    content = client_logged.get(
+        tab.url, headers={"HX-Request": "true"}
+    ).content.decode()
+
+    listener = (
+        f'hx-get="{tab.url}" hx-target="#tab_content" hx-trigger="reload from:body"'
+    )
+    assert listener in content
+    assert content.count("reload from:body") == 1
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_a_tab_fragment_carries_only_its_own_panel_titles(client_logged, tab):
+    content = client_logged.get(
+        tab.url, headers={"HX-Request": "true"}
+    ).content.decode()
+
+    for title in TAB_PANEL_TITLES[tab.name]:
+        assert f'<h2 class="panel__title">{title}</h2>' in content
+
+    other_titles = {
+        title
+        for name, titles in TAB_PANEL_TITLES.items()
+        if name != tab.name
+        for title in titles
+        if title not in TAB_PANEL_TITLES[tab.name]
+    }
+    for title in other_titles:
+        assert f'<h2 class="panel__title">{title}</h2>' not in content
+
+
+def test_nav_offers_every_tab(client_logged):
+    content = client_logged.get(reverse("plans:index")).content.decode()
+
+    for tab in TABS:
+        assert f'hx-get="{tab.url}"' in content
+
+
 # -------------------------------------------------------------------------------------
-#                                                                           plans_stats
+#                                                                                 Cards
 # -------------------------------------------------------------------------------------
-def test_stats_func():
-    view = resolve("/plans/stats/")
+def test_incomes_tab_renders_its_cards_in_lithuanian(client_logged):
+    IncomePlanFactory(price=1000)
 
-    assert views.Stats == view.func.view_class
+    content = client_logged.get(reverse("plans:tab_incomes")).content.decode()
+
+    assert '<div class="trend-card__label">Per metus</div>' in content
+    assert '<div class="trend-card__label">Mėnesio mediana</div>' in content
+    assert '<div class="trend-card__label">Šiais metais</div>' not in content
 
 
-def test_stats_200(client_logged):
-    url = reverse("plans:stats")
-    response = client_logged.get(url)
+def test_savings_tab_renders_its_cards_in_lithuanian(client_logged):
+    SavingPlanFactory(price=1000)
 
-    assert response.status_code == 200
+    content = client_logged.get(reverse("plans:tab_savings")).content.decode()
+
+    assert '<div class="trend-card__label">Per metus</div>' in content
+    assert '<div class="trend-card__label">Planuotų pajamų dalis</div>' in content
+    assert '<div class="trend-card__label">Per mėnesį</div>' in content
+    assert '<div class="trend-card__label">Šiais metais</div>' not in content
+
+
+def test_expenses_tab_renders_its_cards_in_lithuanian(client_logged):
+    ExpensePlanFactory(price=1000)
+
+    content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
+
+    assert '<div class="trend-card__label">Per metus</div>' in content
+    assert '<div class="trend-card__label">Būtinos</div>' in content
+    assert '<div class="trend-card__label">Kasdienės</div>' in content
+    assert '<div class="trend-card__label">Per mėnesį</div>' in content
+    assert '<div class="trend-card__label">Šiais metais</div>' not in content
+    assert '<div class="trend-card__label">Laisvos</div>' not in content
+
+
+# -------------------------------------------------------------------------------------
+#                                                                            Bottom bar
+# -------------------------------------------------------------------------------------
+def test_the_copy_pill_is_on_every_tab(client_logged):
+    content = client_logged.get(reverse("plans:index")).content.decode()
+    link = reverse("plans:copy")
+
+    assert content.count(f'class="quick-add__pill" hx-get="{link}"') == 1
+    assert "Kopijuoti planus" in content
+
+
+def test_the_copy_pill_is_the_rightmost_pill(client_logged):
+    content = client_logged.get(reverse("plans:index")).content.decode()
+    bar = content.split('class="quick-add__bar"')[1]
+
+    assert bar.rfind("quick-add__pill") == bar.find(
+        f'quick-add__pill" hx-get="{reverse("plans:copy")}"'
+    )
+
+
+def test_the_expenses_bar_puts_the_necessary_pill_before_the_expense_pill(
+    client_logged,
+):
+    content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
+
+    assert content.index(reverse("plans:necessary_new")) < content.index(
+        reverse("plans:expense_new")
+    )
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_the_navbar_marks_plans_on_every_tab(client_logged, tab):
+    content = client_logged.get(tab.url).content.decode()
+
+    active = re.findall(r'<div class="active">\s*<a href="([^"]+)"', content)
+
+    assert active == [reverse("plans:index")]
+
+
+def test_the_expenses_bar_offers_both_add_pills(client_logged):
+    content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
+
+    necessary_link = reverse("plans:necessary_new")
+    expense_link = reverse("plans:expense_new")
+
+    assert (
+        f'x-show="tab === \'expenses\'" x-cloak class="quick-add__pill" '
+        f'hx-get="{necessary_link}"' in content
+    )
+    assert (
+        f'x-show="tab === \'expenses\'" x-cloak class="quick-add__pill" '
+        f'hx-get="{expense_link}"' in content
+    )
+    assert "Pridėti būtinų išlaidų planą" in content
+    assert "Pridėti išlaidų planą" in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_the_bottom_bar_stays_outside_the_swapped_tab(client_logged, tab):
+    content = client_logged.get(tab.url, headers={"HX-Request": "true"}).content
+
+    assert b"quick-add" not in content
+
+
+TAB_OWN_PILL = {
+    "incomes": ("plans:income_new", "Pridėti pajamų planą"),
+    "expenses": ("plans:expense_new", "Pridėti išlaidų planą"),
+    "savings": ("plans:saving_new", "Pridėti taupymo planą"),
+    "day": ("plans:day_new", "Pridėti dienos planą"),
+}
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_every_tab_offers_its_own_add_pill(client_logged, tab):
+    content = client_logged.get(tab.url).content.decode()
+    url_name, label = TAB_OWN_PILL[tab.name]
+    link = reverse(url_name)
+
+    assert (
+        f'x-show="tab === \'{tab.name}\'" x-cloak class="quick-add__pill" '
+        f'hx-get="{link}"' in content
+    )
+    assert label in content
 
 
 # -------------------------------------------------------------------------------------
 #                                                                        IncomePlan Lis
 # -------------------------------------------------------------------------------------
-def test_income_list_func():
-    view = resolve("/plans/incomes/")
-
-    assert views.IncomesLists == view.func.view_class
-
-
-def test_income_list_200(client_logged):
-    url = reverse("plans:income_list")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_income_list_302(client):
-    url = reverse("plans:income_list")
-    response = client.get(url)
-
-    assert response.status_code == 302
-
-
-def test_income_list_edit_delete_urls(client_logged, main_user):
+def test_income_tab_edit_delete_urls(client_logged, main_user):
     obj = IncomePlanFactory()
 
-    url = reverse("plans:income_list")
+    url = reverse("plans:tab_incomes")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -197,7 +375,7 @@ def test_income_new_returns_htmx_response(client_logged, main_user):
     assert trigger_header is not None, "HX-Trigger header is missing!"
 
     trigger_data = json.loads(trigger_header)
-    assert "reloadIncomes" in trigger_data
+    assert "reload" in trigger_data
 
 
 def test_income_load_update_load_form(client_logged):
@@ -283,7 +461,7 @@ def test_income_update_returns_htmx_response(client_logged, main_user):
     assert trigger_header is not None, "HX-Trigger header is missing!"
 
     trigger_data = json.loads(trigger_header)
-    assert "reloadIncomes" in trigger_data
+    assert "reload" in trigger_data
 
 
 def test_income_update_not_load_other_journal(client_logged, second_user):
@@ -302,7 +480,7 @@ def test_income_update_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_income_list_price_converted_in_template(client_logged):
+def test_income_tab_price_converted_in_template(client_logged):
     income_type = IncomeTypeFactory()
     IncomePlanFactory(income_type=income_type, month=1, price=2)
     IncomePlanFactory(income_type=income_type, month=2, price=2)
@@ -317,7 +495,7 @@ def test_income_list_price_converted_in_template(client_logged):
     IncomePlanFactory(income_type=income_type, month=11, price=2)
     IncomePlanFactory(income_type=income_type, month=12, price=2)
 
-    url = reverse("plans:income_list")
+    url = reverse("plans:tab_incomes")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -395,7 +573,7 @@ def test_incomes_delete_returns_htmx_response(client_logged):
     assert trigger_header is not None, "HX-Trigger header is missing!"
 
     trigger_data = json.loads(trigger_header)
-    assert "reloadIncomes" in trigger_data
+    assert "reload" in trigger_data
 
 
 def test_incomes_delete_other_journal_get_form(client_logged, second_user):
@@ -433,30 +611,10 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
 # -------------------------------------------------------------------------------------
 #                                                                        ExpensePlan Lis
 # -------------------------------------------------------------------------------------
-def test_expense_list_func():
-    view = resolve("/plans/expenses/")
-
-    assert views.ExpensesLists == view.func.view_class
-
-
-def test_expense_list_200(client_logged):
-    url = reverse("plans:expense_list")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_expense_list_302(client):
-    url = reverse("plans:expense_list")
-    response = client.get(url)
-
-    assert response.status_code == 302
-
-
-def test_expense_list_edit_delete_urls(client_logged, main_user):
+def test_expense_tab_edit_delete_urls(client_logged, main_user):
     obj = ExpensePlanFactory()
 
-    url = reverse("plans:expense_list")
+    url = reverse("plans:tab_expenses")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -560,7 +718,7 @@ def test_expense_new_returns_htmx_response(client_logged, main_user):
     assert trigger_header is not None, "HX-Trigger header is missing!"
 
     trigger_data = json.loads(trigger_header)
-    assert "reloadExpenses" in trigger_data
+    assert "reload" in trigger_data
 
 
 def test_expense_load_update_load_form(client_logged):
@@ -649,7 +807,7 @@ def test_expense_update_returns_htmx_response(client_logged, main_user):
     assert trigger_header is not None, "HX-Trigger header is missing!"
 
     trigger_data = json.loads(trigger_header)
-    assert "reloadExpenses" in trigger_data
+    assert "reload" in trigger_data
 
 
 def test_expense_update_not_load_other_journal(client_logged, second_user):
@@ -668,7 +826,7 @@ def test_expense_update_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_expense_list_price_converted_in_template(client_logged):
+def test_expense_tab_price_converted_in_template(client_logged):
     expense_type = ExpenseTypeFactory()
     ExpensePlanFactory(expense_type=expense_type, month=1, price=2)
     ExpensePlanFactory(expense_type=expense_type, month=2, price=2)
@@ -683,7 +841,7 @@ def test_expense_list_price_converted_in_template(client_logged):
     ExpensePlanFactory(expense_type=expense_type, month=11, price=2)
     ExpensePlanFactory(expense_type=expense_type, month=12, price=2)
 
-    url = reverse("plans:expense_list")
+    url = reverse("plans:tab_expenses")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -763,7 +921,7 @@ def test_expenses_delete_returns_htmx_response(client_logged):
     assert trigger_header is not None, "HX-Trigger header is missing!"
 
     trigger_data = json.loads(trigger_header)
-    assert "reloadExpenses" in trigger_data
+    assert "reload" in trigger_data
 
 
 def test_expenses_delete_other_journal_get_form(client_logged, second_user):
@@ -801,30 +959,10 @@ def test_expenses_delete_other_journal_post_form(client_logged, second_user):
 # -------------------------------------------------------------------------------------
 #                                                                        SavingPlan Lis
 # -------------------------------------------------------------------------------------
-def test_saving_list_func():
-    view = resolve("/plans/savings/")
-
-    assert views.SavingsLists == view.func.view_class
-
-
-def test_saving_list_200(client_logged):
-    url = reverse("plans:saving_list")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_saving_list_302(client):
-    url = reverse("plans:saving_list")
-    response = client.get(url)
-
-    assert response.status_code == 302
-
-
-def test_saving_list_edit_delete_urls(client_logged, main_user):
+def test_saving_tab_edit_delete_urls(client_logged, main_user):
     obj = SavingPlanFactory()
 
-    url = reverse("plans:saving_list")
+    url = reverse("plans:tab_savings")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -928,7 +1066,7 @@ def test_saving_new_returns_htmx_response(client_logged, main_user):
     assert trigger_header is not None, "HX-Trigger header is missing!"
 
     trigger_data = json.loads(trigger_header)
-    assert "reloadSavings" in trigger_data
+    assert "reload" in trigger_data
 
 
 def test_saving_load_update_load_form(client_logged):
@@ -1014,7 +1152,7 @@ def test_saving_update_returns_htmx_response(client_logged, main_user):
     assert trigger_header is not None, "HX-Trigger header is missing!"
 
     trigger_data = json.loads(trigger_header)
-    assert "reloadSavings" in trigger_data
+    assert "reload" in trigger_data
 
 
 def test_saving_update_not_load_other_journal(client_logged, second_user):
@@ -1033,7 +1171,7 @@ def test_saving_update_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_saving_list_price_converted_in_template(client_logged):
+def test_saving_tab_price_converted_in_template(client_logged):
     saving_type = SavingTypeFactory()
     SavingPlanFactory(saving_type=saving_type, month=1, price=2)
     SavingPlanFactory(saving_type=saving_type, month=2, price=2)
@@ -1048,7 +1186,7 @@ def test_saving_list_price_converted_in_template(client_logged):
     SavingPlanFactory(saving_type=saving_type, month=11, price=2)
     SavingPlanFactory(saving_type=saving_type, month=12, price=2)
 
-    url = reverse("plans:saving_list")
+    url = reverse("plans:tab_savings")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -1126,7 +1264,7 @@ def test_saving_delete_returns_htmx_response(client_logged):
     assert trigger_header is not None, "HX-Trigger header is missing!"
 
     trigger_data = json.loads(trigger_header)
-    assert "reloadSavings" in trigger_data
+    assert "reload" in trigger_data
 
 
 def test_saving_delete_other_journal_get_form(client_logged, second_user):
@@ -1164,30 +1302,31 @@ def test_saving_delete_other_journal_post_form(client_logged, second_user):
 # -------------------------------------------------------------------------------------
 #                                                                          DayPlan List
 # -------------------------------------------------------------------------------------
-def test_day_list_func():
-    view = resolve("/plans/day/")
+@time_machine.travel("2026-09-15")
+def test_day_tab_cards_read_the_current_month_in_the_selected_plan_year(
+    client_logged, main_user
+):
+    main_user.year = 2027
+    main_user.save()
+    DayPlanFactory(year=2026, month=9, price=9900)
+    DayPlanFactory(year=2027, month=8, price=5000)
+    DayPlanFactory(year=2027, month=9, price=3000)
+    for month in range(1, 13):
+        IncomePlanFactory(year=2027, month=month, price=90_000)
+    SavingPlanFactory(year=2027, month=9, price=30_000)
 
-    assert views.DayLists == view.func.view_class
-
-
-def test_day_list_200(client_logged):
-    url = reverse("plans:day_list")
+    url = reverse("plans:tab_day")
     response = client_logged.get(url)
+    cards = {c.title: c for c in response.context["cards"]}
 
-    assert response.status_code == 200
-
-
-def test_day_list_302(client):
-    url = reverse("plans:day_list")
-    response = client.get(url)
-
-    assert response.status_code == 302
+    assert cards["Suma dienai šį mėnesį"].value == "20,00"
+    assert cards["Dienos planas šį mėnesį"].value == "30,00"
 
 
-def test_day_list_edit_delete_urls(client_logged, main_user):
+def test_day_tab_edit_delete_urls(client_logged, main_user):
     DayPlanFactory()
 
-    url = reverse("plans:day_list")
+    url = reverse("plans:tab_day")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -1327,7 +1466,7 @@ def test_day_update_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_day_list_price_converted_in_template(client_logged):
+def test_day_tab_price_converted_in_template(client_logged):
     DayPlanFactory(month=1, price=5)
     DayPlanFactory(month=2, price=5)
     DayPlanFactory(month=3, price=5)
@@ -1341,12 +1480,104 @@ def test_day_list_price_converted_in_template(client_logged):
     DayPlanFactory(month=11, price=5)
     DayPlanFactory(month=12, price=5)
 
-    url = reverse("plans:day_list")
+    url = reverse("plans:tab_day")
     response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
+    content = response.content.decode("utf-8")
+    actual = content[
+        content.index('id="day-plans"') : content.index('id="calculations-spend"')
+    ]
 
     assert "0,05" in actual
     assert actual.count("0,05") == 12
+
+
+def test_day_tab_calculations_shows_the_chain_labels_not_the_old_numbering(
+    client_logged,
+):
+    url = reverse("plans:tab_day")
+    response = client_logged.get(url)
+    content = response.content.decode("utf-8")
+    actual = content[content.index('id="calculations-spend"') :]
+
+    expected = [
+        "Kiek galiu išleisti per dieną",
+        "Pajamos",
+        "Būtinos išlaidos ir taupymas",
+        "Būtinos išlaidos",
+        "Papildomos būtinos išlaidos",
+        "Taupymas",
+        "Laisvi pinigai",
+        "Suma dienai",
+        "Dienos planas",
+        "Likutis",
+        "Patikra: ar telpa išlaidų planai",
+        "Kasdienės išlaidos pagal planą",
+        "Visos išlaidos",
+        "Lieka po išlaidų planų",
+    ]
+    positions = [actual.index(f">{text}<") for text in expected]
+
+    assert positions == sorted(positions)
+
+    assert "1. Pajamos" not in actual
+    assert "iš lentelių viršuje" not in actual
+    assert '<h2 class="panel__title">Skaičiavimai</h2>' not in content
+    assert ">Pajamos − visos išlaidos<" not in content
+
+
+def test_day_tab_calculations_renders_two_panels_each_with_its_own_header(
+    client_logged,
+):
+    url = reverse("plans:tab_day")
+    response = client_logged.get(url)
+    content = response.content.decode("utf-8")
+
+    spend_start = content.index('id="calculations-spend"')
+    check_start = content.index('id="calculations-check"')
+    spend = content[spend_start:check_start]
+    check = content[check_start:]
+
+    assert spend.count("<thead") == 1
+    assert check.count("<thead") == 1
+
+
+def _calculation_rows(response):
+    return {
+        row.label: row
+        for block in response.context["calculations"]
+        for row in block.rows
+    }
+
+
+def test_day_tab_calculations_breakdown_reads_the_plans(client_logged):
+    ExpensePlanFactory(
+        price=10_000, expense_type=ExpenseTypeFactory(title="N", necessary=True)
+    )
+    NecessaryPlanFactory(price=5_000)
+    SavingPlanFactory(price=3_000)
+
+    response = client_logged.get(reverse("plans:tab_day"))
+    rows = _calculation_rows(response)
+
+    assert rows["Būtinos išlaidos"].values[0] == 10_000
+    assert rows["Papildomos būtinos išlaidos"].values[0] == 5_000
+    assert rows["Taupymas"].values[0] == 3_000
+
+
+def test_day_tab_calculations_marks_the_day_plan_cell_above_the_sum_per_day(
+    client_logged,
+):
+    DayPlanFactory(month=1, price=5_000)
+
+    response = client_logged.get(reverse("plans:tab_day"))
+    content = response.content.decode("utf-8")
+    actual = content[
+        content.index('id="calculations-spend"') : content.index(
+            'id="calculations-check"'
+        )
+    ]
+
+    assert actual.count("plans-table__over") == 1
 
 
 # -------------------------------------------------------------------------------------
@@ -1413,30 +1644,10 @@ def test_day_delete_other_journal_post_form(client_logged, second_user):
 # -------------------------------------------------------------------------------------
 #                                                                    NecessaryPlan List
 # -------------------------------------------------------------------------------------
-def test_necessary_list_func():
-    view = resolve("/plans/necessary/")
-
-    assert views.NecessaryLists == view.func.view_class
-
-
-def test_necessary_list_200(client_logged):
-    url = reverse("plans:necessary_list")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_necessary_list_302(client):
-    url = reverse("plans:necessary_list")
-    response = client.get(url)
-
-    assert response.status_code == 302
-
-
-def test_necessary_list_edit_delete_urls(client_logged, main_user):
+def test_necessary_tab_edit_delete_urls(client_logged, main_user):
     obj = NecessaryPlanFactory()
 
-    url = reverse("plans:necessary_list")
+    url = reverse("plans:tab_expenses")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -1611,7 +1822,7 @@ def test_necessary_update_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_necessary_list_price_converted_in_template(client_logged):
+def test_necessary_tab_price_converted_in_template(client_logged):
     ExpenseTypeFactory()
     NecessaryPlanFactory(month=1, price=5)
     NecessaryPlanFactory(month=2, price=5)
@@ -1626,7 +1837,7 @@ def test_necessary_list_price_converted_in_template(client_logged):
     NecessaryPlanFactory(month=11, price=5)
     NecessaryPlanFactory(month=12, price=5)
 
-    url = reverse("plans:necessary_list")
+    url = reverse("plans:tab_expenses")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
@@ -1783,4 +1994,105 @@ def test_copy_year_to_same_as_user_year(main_user, client_logged):
     response = client_logged.post(url, data)
 
     assert response.headers["HX-Trigger"]
-    assert "afterCopy" in response.headers["HX-Trigger"]
+    assert "reload" in response.headers["HX-Trigger"]
+
+
+# -------------------------------------------------------------------------------------
+#                                                                          Query counts
+# -------------------------------------------------------------------------------------
+def _tab_queries(client, tab):
+    with CaptureQueriesContext(connection) as queries:
+        client.get(tab.url, headers={"HX-Request": "true"})
+    return len(queries)
+
+
+def test_incomes_tab_query_count_does_not_grow_with_the_plans(client_logged):
+    tab = [t for t in TABS if t.name == "incomes"][0]
+
+    for i in range(2):
+        IncomePlanFactory(income_type=IncomeTypeFactory(title=f"I{i}"))
+    two = _tab_queries(client_logged, tab)
+
+    for i in range(2, 6):
+        IncomePlanFactory(income_type=IncomeTypeFactory(title=f"I{i}"))
+    six = _tab_queries(client_logged, tab)
+
+    assert six == two
+
+
+def test_expenses_tab_query_count_does_not_grow_with_the_expense_plans(client_logged):
+    tab = [t for t in TABS if t.name == "expenses"][0]
+
+    for i in range(2):
+        ExpensePlanFactory(expense_type=ExpenseTypeFactory(title=f"E{i}"))
+    two = _tab_queries(client_logged, tab)
+
+    for i in range(2, 6):
+        ExpensePlanFactory(expense_type=ExpenseTypeFactory(title=f"E{i}"))
+    six = _tab_queries(client_logged, tab)
+
+    assert six == two
+
+
+def test_expenses_tab_query_count_does_not_grow_with_the_necessary_plans(
+    client_logged,
+):
+    tab = [t for t in TABS if t.name == "expenses"][0]
+
+    for i in range(2):
+        NecessaryPlanFactory(expense_type=ExpenseTypeFactory(title=f"N{i}"))
+    two = _tab_queries(client_logged, tab)
+
+    for i in range(2, 6):
+        NecessaryPlanFactory(expense_type=ExpenseTypeFactory(title=f"N{i}"))
+    six = _tab_queries(client_logged, tab)
+
+    assert six == two
+
+
+def test_savings_tab_query_count_does_not_grow_with_the_plans(client_logged):
+    tab = [t for t in TABS if t.name == "savings"][0]
+
+    for i in range(2):
+        SavingPlanFactory(saving_type=SavingTypeFactory(title=f"S{i}"))
+    two = _tab_queries(client_logged, tab)
+
+    for i in range(2, 6):
+        SavingPlanFactory(saving_type=SavingTypeFactory(title=f"S{i}"))
+    six = _tab_queries(client_logged, tab)
+
+    assert six == two
+
+
+def _plans_of_every_type(numbers):
+    for i in numbers:
+        IncomePlanFactory(income_type=IncomeTypeFactory(title=f"I{i}"))
+        ExpensePlanFactory(expense_type=ExpenseTypeFactory(title=f"E{i}"))
+        NecessaryPlanFactory(expense_type=ExpenseTypeFactory(title=f"N{i}"))
+        SavingPlanFactory(saving_type=SavingTypeFactory(title=f"S{i}"))
+
+
+def test_day_tab_query_count_does_not_grow_with_the_plan_types(client_logged):
+    tab = [t for t in TABS if t.name == "day"][0]
+
+    _plans_of_every_type(range(2))
+    two = _tab_queries(client_logged, tab)
+
+    _plans_of_every_type(range(2, 6))
+    six = _tab_queries(client_logged, tab)
+
+    assert six == two
+
+
+def test_day_tab_query_count_does_not_grow_with_the_plans(client_logged):
+    tab = [t for t in TABS if t.name == "day"][0]
+
+    for month in range(1, 3):
+        DayPlanFactory(month=month)
+    two = _tab_queries(client_logged, tab)
+
+    for month in range(3, 7):
+        DayPlanFactory(month=month)
+    six = _tab_queries(client_logged, tab)
+
+    assert six == two
