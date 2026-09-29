@@ -161,6 +161,17 @@ def test_savings_tab_renders_its_cards_in_lithuanian(client_logged):
     assert "Per mėnesį" in content
 
 
+def test_expenses_tab_renders_its_cards_in_lithuanian(client_logged):
+    ExpensePlanFactory(price=1000)
+
+    content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
+
+    assert "Šiais metais" in content
+    assert "Būtinos išlaidos" in content
+    assert "Laisvos" in content
+    assert "Per mėnesį" in content
+
+
 # -------------------------------------------------------------------------------------
 #                                                                            Bottom bar
 # -------------------------------------------------------------------------------------
