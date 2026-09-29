@@ -90,6 +90,10 @@ def test_block_titles_in_order():
     ]
 
 
+def test_block_keys_in_order():
+    assert [block.key for block in _blocks()] == ["spend", "check"]
+
+
 def test_row_labels_in_order():
     blocks = _blocks()
 

@@ -11,7 +11,7 @@
 {% endwith %}
 
 {% for block in calculations %}
-<c-panel table id="calculations-{% if forloop.first %}spend{% else %}check{% endif %}" title="{{ block.title }}">
+<c-panel table id="calculations-{{ block.key }}" title="{{ block.title }}">
     <c-calculations-table :rows=block.rows />
 </c-panel>
 {% endfor %}
