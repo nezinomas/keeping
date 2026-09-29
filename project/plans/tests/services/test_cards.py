@@ -36,6 +36,10 @@ def _data(
     )
 
 
+def _card(cards, title):
+    return {card.title: card for card in cards}[title]
+
+
 def _euro(cents):
     return floatformat(int_cents_to_float(cents), "0g")
 
@@ -59,7 +63,7 @@ def test_income_cards_per_year_is_the_year_total():
     incomes = [1000] * 12
     data = _data(incomes=incomes)
 
-    card = {c.title: c for c in IncomeCards.build(data)}["Per metus"]
+    card = _card(IncomeCards.build(data), "Per metus")
 
     assert card.value == _euro(sum(incomes))
 
@@ -70,7 +74,7 @@ def test_income_cards_median_equals_calc_day_sum_row_one():
 
     expected = PlanCalculateDaySum(data).incomes_avg["1"]
 
-    card = {c.title: c for c in IncomeCards.build(data)}["Mėnesio mediana"]
+    card = _card(IncomeCards.build(data), "Mėnesio mediana")
 
     assert card.value == _euro(expected)
     # median (1000) must differ from mean, so the test proves it reads the median
@@ -101,7 +105,7 @@ def test_saving_cards_per_year_is_the_year_total():
     savings = [25_000] * 12
     data = _data(incomes=[100_000] * 12, savings=savings)
 
-    card = {c.title: c for c in SavingCards.build(data)}["Per metus"]
+    card = _card(SavingCards.build(data), "Per metus")
 
     assert card.value == _euro(sum(savings))
 
@@ -111,7 +115,7 @@ def test_saving_cards_share_of_planned_incomes():
     incomes = [1_200_000] + [0] * 11
     data = _data(incomes=incomes, savings=savings)
 
-    card = {c.title: c for c in SavingCards.build(data)}["Planuotų pajamų dalis"]
+    card = _card(SavingCards.build(data), "Planuotų pajamų dalis")
 
     assert card.value == "25"
     assert card.unit == "%"
@@ -120,7 +124,7 @@ def test_saving_cards_share_of_planned_incomes():
 def test_saving_cards_share_is_empty_without_income_plans():
     data = _data(incomes=ZERO_MONTHS, savings=[300_000] + [0] * 11)
 
-    card = {c.title: c for c in SavingCards.build(data)}["Planuotų pajamų dalis"]
+    card = _card(SavingCards.build(data), "Planuotų pajamų dalis")
 
     assert card.state == EMPTY
 
@@ -128,7 +132,7 @@ def test_saving_cards_share_is_empty_without_income_plans():
 def test_saving_cards_per_month_divides_the_year_total_by_twelve():
     data = _data(incomes=[1_200_000] * 12, savings=[1_000_000] + [0] * 11)
 
-    card = {c.title: c for c in SavingCards.build(data)}["Per mėnesį"]
+    card = _card(SavingCards.build(data), "Per mėnesį")
 
     assert card.value == "833"
 
@@ -145,55 +149,46 @@ def test_saving_cards_are_empty_when_no_saving_plans_even_with_incomes():
 # -------------------------------------------------------------------------------------
 #                                                                              Išlaidos
 # -------------------------------------------------------------------------------------
-def test_expense_cards_titles_in_order():
-    data = _data(
-        expenses_regular=[1000] * 12,
-        expenses_necessary=[500] * 12,
-        necessary=[200] * 12,
+EXPENSES_REGULAR = [1000] * 12
+EXPENSES_NECESSARY = [500] * 12
+NECESSARY = [200] * 12
+
+
+@pytest.fixture
+def mixed_expenses():
+    return _data(
+        expenses_regular=EXPENSES_REGULAR,
+        expenses_necessary=EXPENSES_NECESSARY,
+        necessary=NECESSARY,
         savings=[100] * 12,
     )
 
-    cards = {card.title: card for card in ExpenseCards.build(data)}
+
+def test_expense_cards_titles_in_order(mixed_expenses):
+    cards = {card.title: card for card in ExpenseCards.build(mixed_expenses)}
 
     assert list(cards) == ["Per metus", "Būtinos", "Kasdienės", "Per mėnesį"]
 
 
-def test_expense_cards_per_year_is_expense_and_necessary_plans():
-    expenses_regular = [1000] * 12
-    expenses_necessary = [500] * 12
-    necessary = [200] * 12
-    data = _data(
-        expenses_regular=expenses_regular,
-        expenses_necessary=expenses_necessary,
-        necessary=necessary,
-        savings=[100] * 12,
-    )
+def test_expense_cards_per_year_is_expense_and_necessary_plans(mixed_expenses):
+    card = _card(ExpenseCards.build(mixed_expenses), "Per metus")
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Per metus"]
-
-    expected = sum(expenses_regular) + sum(expenses_necessary) + sum(necessary)
+    expected = sum(EXPENSES_REGULAR) + sum(EXPENSES_NECESSARY) + sum(NECESSARY)
     assert card.value == _euro(expected)
 
 
-def test_expense_cards_necessary_is_necessary_expense_plans_and_necessary_plans():
-    expenses_necessary = [500] * 12
-    necessary = [200] * 12
-    data = _data(
-        expenses_regular=[1000] * 12,
-        expenses_necessary=expenses_necessary,
-        necessary=necessary,
-        savings=[100] * 12,
-    )
+def test_expense_cards_necessary_is_necessary_expense_plans_and_necessary_plans(
+    mixed_expenses,
+):
+    card = _card(ExpenseCards.build(mixed_expenses), "Būtinos")
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Būtinos"]
-
-    assert card.value == _euro(sum(expenses_necessary) + sum(necessary))
+    assert card.value == _euro(sum(EXPENSES_NECESSARY) + sum(NECESSARY))
 
 
 def test_expense_cards_necessary_is_empty_without_necessary_plans():
     data = _data(expenses_regular=[1000] * 12)
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Būtinos"]
+    card = _card(ExpenseCards.build(data), "Būtinos")
 
     assert card.state == EMPTY
 
@@ -231,37 +226,24 @@ def test_expense_cards_a_saving_plan_changes_no_card():
         assert raised[title].value == base[title].value
 
 
-def test_expense_cards_no_card_has_an_explanation():
-    data = _data(
-        expenses_regular=[1000] * 12,
-        expenses_necessary=[500] * 12,
-        necessary=[200] * 12,
-        savings=[100] * 12,
-    )
-
-    cards = ExpenseCards.build(data)
+def test_expense_cards_no_card_has_an_explanation(mixed_expenses):
+    cards = ExpenseCards.build(mixed_expenses)
 
     assert all(card.explanation == () for card in cards)
 
 
-def test_expense_cards_everyday_is_expense_plans_of_non_necessary_types():
-    expenses_regular = [1000] * 12
-    data = _data(
-        expenses_regular=expenses_regular,
-        expenses_necessary=[500] * 12,
-        necessary=[200] * 12,
-        savings=[100] * 12,
-    )
+def test_expense_cards_everyday_is_expense_plans_of_non_necessary_types(
+    mixed_expenses,
+):
+    card = _card(ExpenseCards.build(mixed_expenses), "Kasdienės")
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Kasdienės"]
-
-    assert card.value == _euro(sum(expenses_regular))
+    assert card.value == _euro(sum(EXPENSES_REGULAR))
 
 
 def test_expense_cards_per_month_pinned_to_a_literal():
     data = _data(expenses_regular=[1_000_000] + [0] * 11)
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Per mėnesį"]
+    card = _card(ExpenseCards.build(data), "Per mėnesį")
 
     assert card.value == "833"
 
@@ -283,7 +265,7 @@ def test_expense_cards_are_empty_without_expense_or_necessary_plans_even_with_sa
 def test_expense_cards_everyday_is_empty_without_expense_plans_of_non_necessary_types():
     data = _data(expenses_necessary=[500] * 12, necessary=[200] * 12)
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Kasdienės"]
+    card = _card(ExpenseCards.build(data), "Kasdienės")
 
     assert card.state == EMPTY
 
@@ -330,7 +312,7 @@ def test_day_cards_read_the_given_month_not_another():
     per_day[0] = 1000
     data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=per_day)
 
-    card = {c.title: c for c in DayCards.build(data, 6)}["Dienos planas šį mėnesį"]
+    card = _card(DayCards.build(data, 6), "Dienos planas šį mėnesį")
 
     assert card.value == _euro_cents(3000)
 
@@ -338,7 +320,7 @@ def test_day_cards_read_the_given_month_not_another():
 def test_day_cards_state_high_when_day_plan_is_above_sum_per_day():
     data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[3000] * 12)
 
-    card = {c.title: c for c in DayCards.build(data, 6)}["Dienos planas šį mėnesį"]
+    card = _card(DayCards.build(data, 6), "Dienos planas šį mėnesį")
 
     assert card.state == HIGH
 
@@ -346,7 +328,7 @@ def test_day_cards_state_high_when_day_plan_is_above_sum_per_day():
 def test_day_cards_state_neutral_when_day_plan_equals_sum_per_day():
     data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[2500] * 12)
 
-    card = {c.title: c for c in DayCards.build(data, 6)}["Dienos planas šį mėnesį"]
+    card = _card(DayCards.build(data, 6), "Dienos planas šį mėnesį")
 
     assert card.state == NEUTRAL
 
@@ -354,7 +336,7 @@ def test_day_cards_state_neutral_when_day_plan_equals_sum_per_day():
 def test_day_cards_day_plan_is_empty_without_a_day_plan_for_the_month():
     data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=ZERO_MONTHS)
 
-    card = {c.title: c for c in DayCards.build(data, 6)}["Dienos planas šį mėnesį"]
+    card = _card(DayCards.build(data, 6), "Dienos planas šį mėnesį")
 
     assert card.state == EMPTY
 
@@ -362,7 +344,7 @@ def test_day_cards_day_plan_is_empty_without_a_day_plan_for_the_month():
 def test_day_cards_sum_per_day_is_empty_without_income_plans():
     data = _data(incomes=ZERO_MONTHS, per_day=[3000] * 12)
 
-    card = {c.title: c for c in DayCards.build(data, 6)}["Suma dienai šį mėnesį"]
+    card = _card(DayCards.build(data, 6), "Suma dienai šį mėnesį")
 
     assert card.state == EMPTY
 
@@ -374,7 +356,7 @@ def test_day_cards_sum_per_day_shows_even_when_negative():
 
     expected = PlanCalculateDaySum(data).day_calced["6"]
 
-    card = {c.title: c for c in DayCards.build(data, 6)}["Suma dienai šį mėnesį"]
+    card = _card(DayCards.build(data, 6), "Suma dienai šį mėnesį")
 
     assert card.state != EMPTY
     assert card.value == _euro_cents(expected)
