@@ -16,17 +16,34 @@ from ...core.lib.stat_card import (
 )
 from ..lib.calc_day_sum import OVER, DataDto, PlanCalculateDaySum
 
+MONTHS = 12
+
 
 def _sum(rows: Sequence[dict]) -> int:
     return sum(row["amount"] for row in rows)
 
 
-def _euro(euro: float) -> str:
-    return floatformat(euro, "0g")
+def _whole_euros(cents: float) -> str:
+    return floatformat(int_cents_to_float(cents), "0g")
 
 
-def _euro_cents(cents: int) -> str:
+def _euros_and_cents(cents: int) -> str:
     return floatformat(int_cents_to_float(cents), "2g")
+
+
+def _amount_card(title: str, cents: float) -> Card:
+    if not cents:
+        return EmptyStatCard(title)
+
+    return StatCard(title=title, value=_whole_euros(cents))
+
+
+def _year_card(total: int) -> Card:
+    return _amount_card(pgettext("plans card", "Per year"), total)
+
+
+def _month_card(total: int) -> Card:
+    return _amount_card(_("Per month"), total / MONTHS)
 
 
 @dataclass(frozen=True)
@@ -38,22 +55,18 @@ class IncomeCards:
         return cls(data)._cards()
 
     def _cards(self) -> list[Card]:
-        per_year = pgettext("plans card", "Per year")
-        median = _("Monthly median")
-
         total = _sum(self.data.incomes)
+
+        return [_year_card(total), self._median(total)]
+
+    def _median(self, total: int) -> Card:
+        title = _("Monthly median")
         if not total:
-            return [EmptyStatCard(per_year), EmptyStatCard(median)]
+            return EmptyStatCard(title)
 
-        return [
-            StatCard(title=per_year, value=_euro(int_cents_to_float(total))),
-            self._median(median),
-        ]
-
-    def _median(self, title: str) -> Card:
         cents = PlanCalculateDaySum(self.data).incomes_avg["1"]
 
-        return StatCard(title=title, value=_euro(int_cents_to_float(cents)))
+        return StatCard(title=title, value=_whole_euros(cents))
 
 
 @dataclass(frozen=True)
@@ -65,27 +78,14 @@ class SavingCards:
         return cls(data)._cards()
 
     def _cards(self) -> list[Card]:
-        per_year = pgettext("plans card", "Per year")
-        share = _("Share of planned incomes")
-        per_month = _("Per month")
-
         total = _sum(self.data.savings)
-        if not total:
-            return [
-                EmptyStatCard(per_year),
-                EmptyStatCard(share),
-                EmptyStatCard(per_month),
-            ]
 
-        return [
-            StatCard(title=per_year, value=_euro(int_cents_to_float(total))),
-            self._share(share, total),
-            StatCard(title=per_month, value=_euro(int_cents_to_float(total) / 12)),
-        ]
+        return [_year_card(total), self._share(total), _month_card(total)]
 
-    def _share(self, title: str, total: int) -> Card:
+    def _share(self, total: int) -> Card:
+        title = _("Share of planned incomes")
         incomes = _sum(self.data.incomes)
-        if not incomes:
+        if not total or not incomes:
             return EmptyStatCard(title)
 
         return StatCard(
@@ -102,34 +102,16 @@ class ExpenseCards:
         return cls(data)._cards()
 
     def _cards(self) -> list[Card]:
-        per_year = pgettext("plans card", "Per year")
-        necessary = pgettext("plans card", "Necessary")
-        everyday = pgettext("plans card", "Everyday")
-        per_month = _("Per month")
-
         regular = _sum(self.data.expenses_regular)
-        necessary_cents = _sum(self.data.expenses_necessary) + _sum(self.data.necessary)
-        total = regular + necessary_cents
-        if not total:
-            return [
-                EmptyStatCard(per_year),
-                EmptyStatCard(necessary),
-                EmptyStatCard(everyday),
-                EmptyStatCard(per_month),
-            ]
+        necessary = _sum(self.data.expenses_necessary) + _sum(self.data.necessary)
+        total = regular + necessary
 
         return [
-            StatCard(title=per_year, value=_euro(int_cents_to_float(total))),
-            self._amount(necessary, necessary_cents),
-            self._amount(everyday, regular),
-            StatCard(title=per_month, value=_euro(int_cents_to_float(total) / 12)),
+            _year_card(total),
+            _amount_card(pgettext("plans card", "Necessary"), necessary),
+            _amount_card(pgettext("plans card", "Everyday"), regular),
+            _month_card(total),
         ]
-
-    def _amount(self, title: str, cents: int) -> Card:
-        if not cents:
-            return EmptyStatCard(title)
-
-        return StatCard(title=title, value=_euro(int_cents_to_float(cents)))
 
 
 @dataclass(frozen=True)
@@ -157,7 +139,7 @@ class DayCards:
         if not _sum(self.data.incomes):
             return EmptyStatCard(title)
 
-        return StatCard(title=title, value=_euro_cents(calc.day_calced[month]))
+        return StatCard(title=title, value=_euros_and_cents(calc.day_calced[month]))
 
     def _day_plan(self, title: str, calc: PlanCalculateDaySum, month: str) -> Card:
         cents = calc.day_input[month]
@@ -165,4 +147,4 @@ class DayCards:
             return EmptyStatCard(title)
 
         state = HIGH if calc.day_plan_states()[month] == OVER else NEUTRAL
-        return LevelStatCard(title=title, value=_euro_cents(cents), state=state)
+        return LevelStatCard(title=title, value=_euros_and_cents(cents), state=state)
