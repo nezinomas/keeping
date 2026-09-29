@@ -2596,6 +2596,9 @@ msgstr "= Būtinos išlaidos ir taupymas + Kasdienės išlaidos"
 msgid "Incomes − full expenses"
 msgstr "Pajamos − visos išlaidos"
 
+msgid "Left after the expense plans"
+msgstr "Lieka po išlaidų planų"
+
 msgid "= Incomes − Full expenses"
 msgstr "= Pajamos − Visos išlaidos"
 
