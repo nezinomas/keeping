@@ -1,57 +1,50 @@
 {% extends 'base.html' %}
 
+{% load static %}
 {% load i18n %}
+
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+
+{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
 
 
 {% block content %}
 
-{% translate 'Record' context 'record button' as record_button_title %}
+<div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
 
-<div class="grid-one-col plans-grid">
-    <!-- incomes plans -->
-    <div>
-        <h6>{% translate 'Incomes' %}</h6>
-        <div class="flex">
-            <c-new-button url="{% url 'plans:income_new' %}" title="{{ record_button_title }}" />
-            <c-new-button url="{% url 'plans:copy' %}" title="{% translate 'Copy plans' %}" css_class="plans-copy" />
-        </div>
-    </div>
-    <div hx-get="{% url 'plans:income_list' %}" hx-trigger="reloadIncomes from:body, afterCopy from:body">{{incomes_list|safe}}</div>
+<h1 class="visually-hidden">{% translate 'Plans' %}</h1>
 
-    <!-- expenses plans -->
-    <div>
-        <h6>{% translate 'Expenses' %}</h6>
-        <c-new-button url="{% url 'plans:expense_new' %}" title="{{ record_button_title }}" />
-    </div>
-    <div hx-get="{% url 'plans:expense_list' %}" hx-trigger="reloadExpenses from:body, afterCopy from:body">{{expenses_list|safe}}</div>
+<c-subnav :tabs=tabs :active=tab />
 
-    <!-- necessary expenses plans -->
-    <div>
-        <h6>{% translate 'Additional necessary expenses' %}</h6>
-        <c-new-button url="{% url 'plans:necessary_new' %}" title="{{ record_button_title }}" />
-    </div>
-    <div hx-get="{% url 'plans:necessary_list' %}" hx-trigger="reloadNecessary from:body, afterCopy from:body">{{necessary_list|safe}}</div>
+<main id="tab_content" class="grid-one-col" role="tabpanel" :aria-labelledby="'tab-' + tab">
+    {% include 'plans/includes/tab_reload.html' %}
+    {{ content }}
+</main>
 
-    <!-- savings plans -->
-    <div>
-        <h6>{% translate 'Savings' %}</h6>
-        <c-new-button url="{% url 'plans:saving_new' %}" title="{{ record_button_title }}" />
+<div class="quick-add">
+    <div class="quick-add__bar">
+        <button type="button" x-show="tab === 'expenses'" x-cloak class="quick-add__pill" hx-get="{% url 'plans:necessary_new' %}" hx-target="#mainModal">
+            {% translate 'Add necessary plan' %}
+        </button>
+        <button type="button" x-show="tab === 'expenses'" x-cloak class="quick-add__pill" hx-get="{% url 'plans:expense_new' %}" hx-target="#mainModal">
+            {% translate 'Add expenses plan' %}
+        </button>
+        <button type="button" x-show="tab === 'incomes'" x-cloak class="quick-add__pill" hx-get="{% url 'plans:income_new' %}" hx-target="#mainModal">
+            {% translate 'Add incomes plan' %}
+        </button>
+        <button type="button" x-show="tab === 'savings'" x-cloak class="quick-add__pill" hx-get="{% url 'plans:saving_new' %}" hx-target="#mainModal">
+            {% translate 'Add savings plan' %}
+        </button>
+        <button type="button" x-show="tab === 'day'" x-cloak class="quick-add__pill" hx-get="{% url 'plans:day_new' %}" hx-target="#mainModal">
+            {% translate 'Add day plan' %}
+        </button>
+        <button type="button" class="quick-add__pill" hx-get="{% url 'plans:copy' %}" hx-target="#mainModal">
+            {% translate 'Copy plans' %}
+        </button>
     </div>
-    <div hx-get="{% url 'plans:saving_list' %}" hx-trigger="reloadSavings from:body, afterCopy from:body">{{savings_list|safe}}</div>
-
-    <!-- day plans -->
-    <div>
-        <h6>{% translate 'Sum per day' %}</h6>
-        <c-new-button url="{% url 'plans:day_new' %}" title="{{ record_button_title }}" />
-    </div>
-    <div hx-get="{% url 'plans:day_list' %}" hx-trigger="reloadDay from:body, afterCopy from:body">{{day_list|safe}}</div>
-
-    <!-- stats plans -->
-    <div>
-        <h6>{% translate 'Calculations' %}</h6>
-        <div></div>
-    </div>
-    <div hx-get="{% url 'plans:stats' %}" hx-trigger="reloadIncomes from:body, reloadExpenses from:body, reloadSavings from:body, reloadDay from:body, reloadNecessary from:body, afterCopy from:body">{{plans_stats|safe}}</div>
+</div>
 
 </div>
 

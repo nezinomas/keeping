@@ -97,9 +97,9 @@ class DayPlanModelService(CommonMethodsMixin, DatedModelService):
 
 class NecessaryPlanModelService(CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
-        return models.NecessaryPlan.objects.select_related("journal").filter(
-            journal=self.user.journal
-        )
+        return models.NecessaryPlan.objects.select_related(
+            "journal", "expense_type"
+        ).filter(journal=self.user.journal)
 
     def pivot_table(self, year: int):
         return self.generic_pivot_table(
