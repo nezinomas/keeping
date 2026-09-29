@@ -140,6 +140,28 @@ def test_nav_offers_every_tab(client_logged):
 
 
 # -------------------------------------------------------------------------------------
+#                                                                                 Cards
+# -------------------------------------------------------------------------------------
+def test_incomes_tab_renders_its_cards_in_lithuanian(client_logged):
+    IncomePlanFactory(price=1000)
+
+    content = client_logged.get(reverse("plans:tab_incomes")).content.decode()
+
+    assert "Šiais metais" in content
+    assert "Mėnesio mediana" in content
+
+
+def test_savings_tab_renders_its_cards_in_lithuanian(client_logged):
+    SavingPlanFactory(price=1000)
+
+    content = client_logged.get(reverse("plans:tab_savings")).content.decode()
+
+    assert "Šiais metais" in content
+    assert "Planuotų pajamų dalis" in content
+    assert "Per mėnesį" in content
+
+
+# -------------------------------------------------------------------------------------
 #                                                                            Bottom bar
 # -------------------------------------------------------------------------------------
 def test_the_copy_pill_is_on_every_tab(client_logged):
