@@ -2548,6 +2548,57 @@ msgstr "Pridėti taupymo planą"
 msgid "Add day plan"
 msgstr "Pridėti dienos planą"
 
+msgid "How much can I spend per day"
+msgstr "Kiek galiu išleisti per dieną"
+
+msgid "median of the monthly income plans"
+msgstr "mėnesio pajamų planų mediana"
+
+msgid "expense plans of necessary types"
+msgstr "būtinų rūšių išlaidų planai"
+
+msgid "Necessary expenses and savings"
+msgstr "Būtinos išlaidos ir taupymas"
+
+msgid "= necessary + additional + savings"
+msgstr "= būtinos + papildomos + taupymas"
+
+msgid "Free money"
+msgstr "Laisvi pinigai"
+
+msgid "= Incomes − Necessary expenses and savings"
+msgstr "= Pajamos − Būtinos išlaidos ir taupymas"
+
+msgid "= Free money ÷ days in month"
+msgstr "= Laisvi pinigai ÷ dienų mėnesyje"
+
+msgid "Day plan"
+msgstr "Dienos planas"
+
+msgid "yours, from the Sum per day table"
+msgstr "jūsų Suma dienai lentelėje"
+
+msgid "= Free money − Day plan × days"
+msgstr "= Laisvi pinigai − Dienos planas × dienų"
+
+msgid "Check: do the expense plans fit"
+msgstr "Patikra: ar telpa išlaidų planai"
+
+msgid "Everyday expenses as planned"
+msgstr "Kasdienės išlaidos pagal planą"
+
+msgid "expense plans of other types"
+msgstr "ne būtinų rūšių išlaidų planai"
+
+msgid "= Necessary expenses and savings + Everyday expenses"
+msgstr "= Būtinos išlaidos ir taupymas + Kasdienės išlaidos"
+
+msgid "Incomes − full expenses"
+msgstr "Pajamos − visos išlaidos"
+
+msgid "= Incomes − Full expenses"
+msgstr "= Pajamos − Visos išlaidos"
+
 #~ msgctxt "book add button"
 #~ msgid "Book"
 #~ msgstr "Knygą"
