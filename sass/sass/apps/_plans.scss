@@ -1,15 +1,64 @@
 @use "../abstracts/variables" as *;
 
-// Plans App - Plan residual row and star indicator
-.plans-residual-row {
-    background-color: $table-current-day;
-    border-top:
-        $table-current-day-border-color 1px double;
-    border-bottom:
-        $table-current-day-border-color 1px double;
+.plans-star {
+    color: $ink-muted;
+    margin-left: .5rem;
 }
 
-.plans-star {
-    color: $primary;
-    margin-left: .5rem;
+.plans-table {
+    overflow-x: auto;
+}
+
+.paper-skin .plans-table .main {
+    table-layout: fixed;
+    min-width: 68rem;
+    // collapsed borders are drawn by the table, under the sticky cell's opaque fill
+    border-collapse: separate;
+    border-spacing: 0;
+
+    th.title-col,
+    tbody td:first-child {
+        width: 8rem;
+        position: sticky;
+        left: 0;
+        z-index: 1;
+    }
+
+    // opaque: it covers the cells that scroll under it
+    tbody tr > td:first-child {
+        background-color: $paper;
+    }
+
+    &.striped tbody tr:nth-child(even) > td:first-child {
+        background-color: $paper;
+        background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
+    }
+
+    &.hover tbody tr:hover > td:first-child {
+        background-color: $hair-soft;
+        background-image: none;
+    }
+}
+
+.plans-table__month-full {
+    display: none;
+}
+
+@media only screen and (min-width: 768px) {
+    .paper-skin .plans-table .main {
+        min-width: 72rem;
+
+        th.title-col,
+        tbody td:first-child {
+            width: 12rem;
+        }
+    }
+
+    .plans-table__month-full {
+        display: inline;
+    }
+
+    .plans-table__month-short {
+        display: none;
+    }
 }

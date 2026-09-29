@@ -1,5 +1,3 @@
-from types import SimpleNamespace
-
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
@@ -47,7 +45,6 @@ class TabViewMixin(CoreTabViewMixin):
 # -------------------------------------------------------------------------------------
 class TabIncomes(TabViewMixin, TemplateViewMixin):
     tab = PlanTab.resolve("incomes")
-    plan_type = "income"
 
     def get_context_data(self, **kwargs):
         user = self.request.user
@@ -90,7 +87,6 @@ class IncomesDelete(PlanDeleteMixin, DeleteViewMixin):
 # -------------------------------------------------------------------------------------
 class TabExpenses(TabViewMixin, TemplateViewMixin):
     tab = PlanTab.resolve("expenses")
-    plan_type = "expense"
 
     def get_context_data(self, **kwargs):
         user = self.request.user
@@ -98,7 +94,6 @@ class TabExpenses(TabViewMixin, TemplateViewMixin):
             **super().get_context_data(**kwargs),
             "expense_plans": ExpensePlanModelService(user).pivot_table(user.year),
             "necessary_plans": NecessaryPlanModelService(user).pivot_table(user.year),
-            "necessary_view": SimpleNamespace(plan_type="necessary"),
         }
 
 
@@ -135,7 +130,6 @@ class ExpensesDelete(PlanDeleteMixin, DeleteViewMixin):
 # -------------------------------------------------------------------------------------
 class TabSavings(TabViewMixin, TemplateViewMixin):
     tab = PlanTab.resolve("savings")
-    plan_type = "saving"
 
     def get_context_data(self, **kwargs):
         user = self.request.user
@@ -178,7 +172,6 @@ class SavingsDelete(PlanDeleteMixin, DeleteViewMixin):
 # -------------------------------------------------------------------------------------
 class TabDay(TabViewMixin, TemplateViewMixin):
     tab = PlanTab.resolve("day")
-    plan_type = "day"
 
     def get_context_data(self, **kwargs):
         user = self.request.user

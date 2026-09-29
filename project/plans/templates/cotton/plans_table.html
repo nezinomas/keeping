@@ -2,44 +2,41 @@
 {% load math %}
 {% load cell_format %}
 
+<div class="plans-table">
 <table class="main striped hover">
     <thead>
         <tr>
             <th class="text-left title-col">{% translate 'Title' %}</th>
-            <th>{% translate 'January' %}</th>
-            <th>{% translate 'February' %}</th>
-            <th>{% translate 'March' %}</th>
-            <th>{% translate 'April' %}</th>
-            <th>{% translate 'May' %}</th>
-            <th>{% translate 'June' %}</th>
-            <th>{% translate 'July' %}</th>
-            <th>{% translate 'August' %}</th>
-            <th>{% translate 'September' %}</th>
-            <th>{% translate 'October' %}</th>
-            <th>{% translate 'November' %}</th>
-            <th>{% translate 'December' %}</th>
+            <th><span class="plans-table__month-full">{% translate 'January' %}</span><span class="plans-table__month-short">{% translate 'jan' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'February' %}</span><span class="plans-table__month-short">{% translate 'feb' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'March' %}</span><span class="plans-table__month-short">{% translate 'mar' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'April' %}</span><span class="plans-table__month-short">{% translate 'apr' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'May' %}</span><span class="plans-table__month-short">{% translate 'may' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'June' %}</span><span class="plans-table__month-short">{% translate 'jun' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'July' %}</span><span class="plans-table__month-short">{% translate 'jul' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'August' %}</span><span class="plans-table__month-short">{% translate 'aug' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'September' %}</span><span class="plans-table__month-short">{% translate 'sep' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'October' %}</span><span class="plans-table__month-short">{% translate 'oct' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'November' %}</span><span class="plans-table__month-short">{% translate 'nov' %}</span></th>
+            <th><span class="plans-table__month-full">{% translate 'December' %}</span><span class="plans-table__month-short">{% translate 'dec' %}</span></th>
             <th class="edit-col"></th>
             <th class="delete-col"></th>
         </tr>
     </thead>
     <tbody>
-        {% translate "Residual" as translated_residual %}
-
         {% for object, months in object_list.items %}
 
-        {% with _('Residual') as residual %}
-        <tr {% if url_update %}hx-get="{{url_update}}" hx-target="#mainModal" hx-trigger="dblclick"{% endif %} {% if translated_residual in object.title %}class="plans-residual-row"{% endif %}>
-        {% endwith%}
+        <tr {% if url_update %}hx-get="{{url_update}}" hx-target="#mainModal" hx-trigger="dblclick"{% endif %}>
             <td class="text-left">
 
-                {% if view.plan_type == "necessary" %}
+                {% if kind == "necessary" %}
 
                     {{ object.1 }} ({{ object.0.title}})
 
                     {% if update %}{% url update year object.0.id object.1 as url_update %}{% endif %}
                     {% if delete %}{% url delete year object.0.id object.1 as url_delete %}{% endif %}
 
-                {% elif view.plan_type == "day" %}
+                {% elif kind == "day" %}
 
                     {{ object }}
 
@@ -55,7 +52,7 @@
 
                 {% endif %}
 
-                {% if object.necessary or view.plan_type == "necessary" or view.plan_type == "saving" %} <i class="bi bi-star plans-star"></i>{% endif %}
+                {% if object.necessary or kind == "necessary" or kind == "saving" %} <i class="bi bi-star plans-star"></i>{% endif %}
             </td>
             <td class="{{months.1|css_class_if_none}}">{{months.1|price|cellformat:"0,00"}}</td>
             <td class="{{months.2|css_class_if_none}}">{{months.2|price|cellformat:"0,00"}}</td>
@@ -81,3 +78,4 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
