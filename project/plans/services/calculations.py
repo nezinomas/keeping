@@ -24,6 +24,7 @@ class CalculationRow:
 
 @dataclass(frozen=True)
 class CalculationBlock:
+    key: str
     title: str
     rows: list[CalculationRow]
 
@@ -97,7 +98,9 @@ class Calculations:
             ),
         ]
 
-        return CalculationBlock(title=_("How much can I spend per day"), rows=rows)
+        return CalculationBlock(
+            key="spend", title=_("How much can I spend per day"), rows=rows
+        )
 
     def _check_block(self) -> CalculationBlock:
         day_sum = self.day_sum
@@ -120,4 +123,6 @@ class Calculations:
             ),
         ]
 
-        return CalculationBlock(title=_("Check: do the expense plans fit"), rows=rows)
+        return CalculationBlock(
+            key="check", title=_("Check: do the expense plans fit"), rows=rows
+        )
