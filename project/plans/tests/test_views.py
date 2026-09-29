@@ -1880,6 +1880,22 @@ def test_expenses_tab_query_count_does_not_grow_with_the_expense_plans(client_lo
     assert six == two
 
 
+def test_expenses_tab_query_count_does_not_grow_with_the_necessary_plans(
+    client_logged,
+):
+    tab = [t for t in TABS if t.name == "expenses"][0]
+
+    for i in range(2):
+        NecessaryPlanFactory(expense_type=ExpenseTypeFactory(title=f"N{i}"))
+    two = _tab_queries(client_logged, tab)
+
+    for i in range(2, 6):
+        NecessaryPlanFactory(expense_type=ExpenseTypeFactory(title=f"N{i}"))
+    six = _tab_queries(client_logged, tab)
+
+    assert six == two
+
+
 def test_savings_tab_query_count_does_not_grow_with_the_plans(client_logged):
     tab = [t for t in TABS if t.name == "savings"][0]
 
