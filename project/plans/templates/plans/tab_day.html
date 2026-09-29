@@ -2,7 +2,7 @@
 
 {% with object_list=day_plans %}
 <c-panel id="day-plans" title="{% translate 'Sum per day' %}">
-    <c-plans-table :year=request.user.year :items=object_list type="{% translate 'Daily' %}" update='plans:day_update' delete='plans:day_delete' />
+    <c-plans-table :year=request.user.year :items=object_list kind='day' type="{% translate 'Daily' %}" update='plans:day_update' delete='plans:day_delete' />
 </c-panel>
 {% endwith %}
 
