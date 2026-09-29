@@ -1483,6 +1483,73 @@ def test_day_tab_price_converted_in_template(client_logged):
     assert actual.count("0,05") == 12
 
 
+def test_day_tab_calculations_shows_the_chain_labels_not_the_old_numbering(
+    client_logged,
+):
+    url = reverse("plans:tab_day")
+    response = client_logged.get(url)
+    content = response.content.decode("utf-8")
+    actual = content[content.index('id="calculations"') :]
+
+    expected = [
+        "Kiek galiu išleisti per dieną",
+        "Pajamos",
+        "Būtinos išlaidos",
+        "Papildomos būtinos išlaidos",
+        "Taupymas",
+        "Būtinos išlaidos ir taupymas",
+        "Laisvi pinigai",
+        "Suma dienai",
+        "Dienos planas",
+        "Likutis",
+        "Patikra: ar telpa išlaidų planai",
+        "Kasdienės išlaidos pagal planą",
+        "Visos išlaidos",
+        "Pajamos − visos išlaidos",
+    ]
+    positions = [actual.index(f">{text}<") for text in expected]
+
+    assert positions == sorted(positions)
+
+    assert "1. Pajamos" not in actual
+    assert "iš lentelių viršuje" not in actual
+
+
+def _calculation_rows(response):
+    return {
+        row.label: row
+        for block in response.context["calculations"]
+        for row in block.rows
+    }
+
+
+def test_day_tab_calculations_breakdown_reads_the_plans(client_logged):
+    ExpensePlanFactory(
+        price=10_000, expense_type=ExpenseTypeFactory(title="N", necessary=True)
+    )
+    NecessaryPlanFactory(price=5_000)
+    SavingPlanFactory(price=3_000)
+
+    response = client_logged.get(reverse("plans:tab_day"))
+    rows = _calculation_rows(response)
+
+    assert rows["Būtinos išlaidos"].values[0] == 10_000
+    assert rows["Papildomos būtinos išlaidos"].values[0] == 5_000
+    assert rows["Taupymas"].values[0] == 3_000
+
+
+def test_day_tab_calculations_marks_the_day_plan_cell_above_the_sum_per_day(
+    client_logged,
+):
+    DayPlanFactory(month=1, price=5_000)
+
+    response = client_logged.get(reverse("plans:tab_day"))
+    content = response.content.decode("utf-8")
+    actual = content[content.index('id="calculations"') :]
+
+    assert actual.count("plans-table__over") == 1
+
+
 # -------------------------------------------------------------------------------------
 #                                                                        DayPlan delete
 # -------------------------------------------------------------------------------------
@@ -1962,6 +2029,26 @@ def test_savings_tab_query_count_does_not_grow_with_the_plans(client_logged):
 
     for i in range(2, 6):
         SavingPlanFactory(saving_type=SavingTypeFactory(title=f"S{i}"))
+    six = _tab_queries(client_logged, tab)
+
+    assert six == two
+
+
+def _plans_of_every_type(numbers):
+    for i in numbers:
+        IncomePlanFactory(income_type=IncomeTypeFactory(title=f"I{i}"))
+        ExpensePlanFactory(expense_type=ExpenseTypeFactory(title=f"E{i}"))
+        NecessaryPlanFactory(expense_type=ExpenseTypeFactory(title=f"N{i}"))
+        SavingPlanFactory(saving_type=SavingTypeFactory(title=f"S{i}"))
+
+
+def test_day_tab_query_count_does_not_grow_with_the_plan_types(client_logged):
+    tab = [t for t in TABS if t.name == "day"][0]
+
+    _plans_of_every_type(range(2))
+    two = _tab_queries(client_logged, tab)
+
+    _plans_of_every_type(range(2, 6))
     six = _tab_queries(client_logged, tab)
 
     assert six == two

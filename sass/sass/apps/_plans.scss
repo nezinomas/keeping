@@ -66,3 +66,39 @@
         display: none;
     }
 }
+
+.paper-skin .plans-table .calculations-table {
+    .calculations-table__words {
+        display: block;
+        font-size: 0.72rem;
+        color: $ink-muted;
+    }
+
+    tr.calculations-table__part td {
+        color: $ink-muted;
+    }
+
+    tr.calculations-table__part td:first-child {
+        padding-left: calc($gap + 1.5rem);
+    }
+
+    .calculations-table__block th {
+        padding-top: 1.25rem;
+        font-size: 0.68rem;
+        font-weight: 400;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: $ink;
+        text-align: left;
+    }
+
+    .calculations-table__block:first-child th {
+        padding-top: 0.5rem;
+    }
+
+    .calculations-table__title {
+        display: inline-block;
+        position: sticky;
+        left: $gap;
+    }
+}

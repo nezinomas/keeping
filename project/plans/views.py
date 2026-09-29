@@ -17,6 +17,7 @@ from ..core.mixins.views import (
 from . import forms
 from .lib.calc_day_sum import DataDto, PlanCalculateDaySum, PlanCollectData
 from .mixins.views import CssClassMixin, PlanDeleteMixin, PlanUpdateMixin
+from .services.calculations import Calculations
 from .services.cards import DayCards, ExpenseCards, IncomeCards, SavingCards
 from .services.model_services import (
     DayPlanModelService,
@@ -193,7 +194,7 @@ class TabDay(TabViewMixin, TemplateViewMixin):
         return {
             **super().get_context_data(**kwargs),
             "day_plans": DayPlanModelService(user).pivot_table(user.year),
-            "calculations": calc.plans_stats(),
+            "calculations": Calculations.build(calc),
             "cards": DayCards.build(data, month),
             "day_states": calc.day_plan_states(),
         }

@@ -10,8 +10,6 @@
 </c-panel>
 {% endwith %}
 
-{% with object_list=calculations %}
 <c-panel id="calculations" title="{% translate 'Calculations' %}">
-    <c-plans-table :year=request.user.year :items=object_list type='type' />
+    <c-calculations-table :blocks=calculations />
 </c-panel>
-{% endwith %}
