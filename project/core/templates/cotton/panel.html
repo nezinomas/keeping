@@ -1,6 +1,6 @@
-<c-vars title subtitle />
+<c-vars title subtitle table />
 
-<section class="panel" {{ attrs }}>
+<section class="panel{% if table %} panel--table{% endif %}" {{ attrs }}>
     <h2 class="panel__title">{{ title }}</h2>
     {% if subtitle %}<p class="panel__subtitle">{{ subtitle }}</p>{% endif %}
     {{ slot }}
