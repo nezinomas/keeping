@@ -194,6 +194,14 @@ def test_expenses_full(month, expect, data):
     assert actual == expect
 
 
+def test_expenses_full_row(data):
+    actual = PlanCalculateDaySum(data).get_row("expenses_full")
+
+    assert len(actual) == 12
+    assert round(actual["1"], 2) == 750
+    assert round(actual["2"], 2) == 900
+
+
 @pytest.mark.parametrize(
     "month, expect",
     [
@@ -206,6 +214,15 @@ def test_expenses_remains(month, expect, data):
     actual = PlanCalculateDaySum(data, month).get_row("expenses_remains")
 
     assert actual == expect
+
+
+def test_expenses_remains_row(data):
+    actual = PlanCalculateDaySum(data).get_row("expenses_remains")
+
+    assert len(actual) == 12
+    assert round(actual["1"], 2) == -300.0
+    assert round(actual["2"], 2) == -450.0
+    assert round(actual["3"], 2) == 450.0
 
 
 def test_day_input(data):
@@ -297,99 +314,18 @@ def test_additional_necessary_with_month(month, expect, data):
     assert round(actual, 2) == expect
 
 
-def test_plans_stats_dictionary(data):
-    actual = PlanCalculateDaySum(data).plans_stats()
+def test_incomes_avg(data):
+    actual = PlanCalculateDaySum(data).incomes_avg
 
-    assert len(actual) == 8
-
-
-def test_plans_stats_incomes_median(data):
-    actual = PlanCalculateDaySum(data).plans_stats()
-
-    key = "1. Pajamos (mediana)"
-    keys = actual.keys()
-
-    assert key in keys
-    assert round(actual[key]["1"], 2) == 450.0
-    assert round(actual[key]["2"], 2) == 450.0
+    assert round(actual["1"], 2) == 450.0
+    assert round(actual["2"], 2) == 450.0
 
 
-def test_plans_stats_expenses_necessary(data):
-    actual = PlanCalculateDaySum(data).plans_stats()
+def test_expenses_regular(data):
+    actual = PlanCalculateDaySum(data).expenses_regular
 
-    key = "2. Būtinos išlaidos"
-    keys = actual.keys()
-
-    assert key in keys
-    assert round(actual[key]["1"], 2) == 490
-    assert round(actual[key]["2"], 2) == 620
-
-
-def test_plans_stats_expenses_free(data):
-    actual = PlanCalculateDaySum(data).plans_stats()
-
-    key = "3. Lieka kasdienybei (1 - 2)"
-    keys = actual.keys()
-
-    assert key in keys
-    assert round(actual[key]["1"], 2) == -40.0
-    assert round(actual[key]["2"], 2) == -170.0
-
-
-def test_plans_stats_expenses_free2(data):
-    actual = PlanCalculateDaySum(data).plans_stats()
-
-    key = "4. Lieka kasdienybei (iš lentelių viršuje)"
-    keys = actual.keys()
-
-    assert key in keys
-    assert round(actual[key]["1"], 2) == 260
-    assert round(actual[key]["2"], 2) == 280
-
-
-def test_plans_stats_expenses_full(data):
-    actual = PlanCalculateDaySum(data).plans_stats()
-
-    key = "5. Visos išlaidos (1 + 4)"
-    keys = actual.keys()
-
-    assert key in keys
-    assert round(actual[key]["1"], 2) == 750
-    assert round(actual[key]["2"], 2) == 900
-
-
-def test_plans_stats_expenses_remains(data):
-    actual = PlanCalculateDaySum(data).plans_stats()
-
-    key = "6. Pajamos - Visos išlaidos (1 - 5)"
-    keys = actual.keys()
-
-    assert key in keys
-    assert round(actual[key]["1"], 2) == -300.0
-    assert round(actual[key]["2"], 2) == -450.0
-    assert round(actual[key]["3"], 2) == 450.0
-
-
-def test_plans_stats_day_sum(data):
-    actual = PlanCalculateDaySum(data).plans_stats()
-
-    key = "7. Suma dienai (3 / mėnesio dienų skaičius)"
-    keys = actual.keys()
-
-    assert key in keys
-    assert round(actual[key]["1"], 2) == -1.29
-    assert round(actual[key]["2"], 2) == -5.86
-
-
-def test_plans_stats_remains(data):
-    actual = PlanCalculateDaySum(data).plans_stats()
-
-    key = "8. Likutis (3 - 7 * mėnesio dienų skaičius)"
-    keys = actual.keys()
-
-    assert key in keys
-    assert round(actual[key]["1"], 2) == -815.0
-    assert round(actual[key]["2"], 2) == -924.0
+    assert round(actual["1"], 2) == 260
+    assert round(actual["2"], 2) == 280
 
 
 def test_properties_incomes(data):

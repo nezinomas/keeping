@@ -125,26 +125,25 @@ def test_part_rows_come_right_after_the_necessary_expenses_and_savings_row():
     ]
 
 
-def test_p18_guard_rows_match_plans_stats():
+def test_p18_guard_rows_match_the_day_sum_rows():
     day_sum = PlanCalculateDaySum(_p18_data())
     blocks = Calculations.build(day_sum)
     by_label = {row.label: row for row in _rows(blocks)}
-    old = list(day_sum.plans_stats().values())
 
     mapping = {
-        "Pajamos": old[0],
-        "Būtinos išlaidos ir taupymas": old[1],
-        "Laisvi pinigai": old[2],
-        "Kasdienės išlaidos pagal planą": old[3],
-        "Visos išlaidos": old[4],
-        "Lieka po išlaidų planų": old[5],
-        "Suma dienai": old[6],
-        "Likutis": old[7],
+        "Pajamos": day_sum.incomes_avg,
+        "Būtinos išlaidos ir taupymas": day_sum.expenses_necessary,
+        "Laisvi pinigai": day_sum.expenses_free,
+        "Kasdienės išlaidos pagal planą": day_sum.expenses_regular,
+        "Visos išlaidos": day_sum.expenses_full,
+        "Lieka po išlaidų planų": day_sum.expenses_remains,
+        "Suma dienai": day_sum.day_calced,
+        "Likutis": day_sum.remains,
     }
 
-    for label, old_row in mapping.items():
+    for label, row in mapping.items():
         for month in MONTHS:
-            assert by_label[label].values[int(month) - 1] == old_row[month], (
+            assert by_label[label].values[int(month) - 1] == row[month], (
                 label,
                 month,
             )
