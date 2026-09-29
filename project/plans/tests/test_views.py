@@ -151,8 +151,9 @@ def test_incomes_tab_renders_its_cards_in_lithuanian(client_logged):
 
     content = client_logged.get(reverse("plans:tab_incomes")).content.decode()
 
-    assert "Šiais metais" in content
-    assert "Mėnesio mediana" in content
+    assert '<div class="trend-card__label">Per metus</div>' in content
+    assert '<div class="trend-card__label">Mėnesio mediana</div>' in content
+    assert '<div class="trend-card__label">Šiais metais</div>' not in content
 
 
 def test_savings_tab_renders_its_cards_in_lithuanian(client_logged):
@@ -160,9 +161,10 @@ def test_savings_tab_renders_its_cards_in_lithuanian(client_logged):
 
     content = client_logged.get(reverse("plans:tab_savings")).content.decode()
 
-    assert "Šiais metais" in content
-    assert "Planuotų pajamų dalis" in content
-    assert "Per mėnesį" in content
+    assert '<div class="trend-card__label">Per metus</div>' in content
+    assert '<div class="trend-card__label">Planuotų pajamų dalis</div>' in content
+    assert '<div class="trend-card__label">Per mėnesį</div>' in content
+    assert '<div class="trend-card__label">Šiais metais</div>' not in content
 
 
 def test_expenses_tab_renders_its_cards_in_lithuanian(client_logged):
@@ -170,10 +172,12 @@ def test_expenses_tab_renders_its_cards_in_lithuanian(client_logged):
 
     content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
 
-    assert "Šiais metais" in content
-    assert "Būtinos išlaidos" in content
-    assert "Laisvos" in content
-    assert "Per mėnesį" in content
+    assert '<div class="trend-card__label">Per metus</div>' in content
+    assert '<div class="trend-card__label">Būtinos</div>' in content
+    assert '<div class="trend-card__label">Kasdienės</div>' in content
+    assert '<div class="trend-card__label">Per mėnesį</div>' in content
+    assert '<div class="trend-card__label">Šiais metais</div>' not in content
+    assert '<div class="trend-card__label">Laisvos</div>' not in content
 
 
 # -------------------------------------------------------------------------------------

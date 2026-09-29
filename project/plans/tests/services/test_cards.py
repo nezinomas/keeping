@@ -48,14 +48,14 @@ def test_income_cards_titles_in_order():
 
     cards = {card.title: card for card in IncomeCards.build(data)}
 
-    assert list(cards) == ["Šiais metais", "Mėnesio mediana"]
+    assert list(cards) == ["Per metus", "Mėnesio mediana"]
 
 
 def test_income_cards_this_year_is_the_year_total():
     incomes = [1000] * 12
     data = _data(incomes=incomes)
 
-    card = {c.title: c for c in IncomeCards.build(data)}["Šiais metais"]
+    card = {c.title: c for c in IncomeCards.build(data)}["Per metus"]
 
     assert card.value == _euro(sum(incomes))
 
@@ -90,14 +90,14 @@ def test_saving_cards_titles_in_order():
 
     cards = {card.title: card for card in SavingCards.build(data)}
 
-    assert list(cards) == ["Šiais metais", "Planuotų pajamų dalis", "Per mėnesį"]
+    assert list(cards) == ["Per metus", "Planuotų pajamų dalis", "Per mėnesį"]
 
 
 def test_saving_cards_this_year_is_the_year_total():
     savings = [25_000] * 12
     data = _data(incomes=[100_000] * 12, savings=savings)
 
-    card = {c.title: c for c in SavingCards.build(data)}["Šiais metais"]
+    card = {c.title: c for c in SavingCards.build(data)}["Per metus"]
 
     assert card.value == _euro(sum(savings))
 
@@ -151,10 +151,10 @@ def test_expense_cards_titles_in_order():
 
     cards = {card.title: card for card in ExpenseCards.build(data)}
 
-    assert list(cards) == ["Šiais metais", "Būtinos išlaidos", "Laisvos", "Per mėnesį"]
+    assert list(cards) == ["Per metus", "Būtinos", "Kasdienės", "Per mėnesį"]
 
 
-def test_expense_cards_this_year_is_expense_and_necessary_plans():
+def test_expense_cards_per_year_is_expense_and_necessary_plans():
     expenses_regular = [1000] * 12
     expenses_necessary = [500] * 12
     necessary = [200] * 12
@@ -165,13 +165,13 @@ def test_expense_cards_this_year_is_expense_and_necessary_plans():
         savings=[100] * 12,
     )
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Šiais metais"]
+    card = {c.title: c for c in ExpenseCards.build(data)}["Per metus"]
 
     expected = sum(expenses_regular) + sum(expenses_necessary) + sum(necessary)
     assert card.value == _euro(expected)
 
 
-def test_expense_cards_necessary_equals_calc_day_sum_row_two_summed():
+def test_expense_cards_necessary_is_the_two_necessary_part_rows_summed():
     data = _data(
         expenses_regular=[1000] * 12,
         expenses_necessary=[500] * 12,
@@ -179,14 +179,17 @@ def test_expense_cards_necessary_equals_calc_day_sum_row_two_summed():
         savings=[100] * 12,
     )
 
-    expected_cents = sum(PlanCalculateDaySum(data).expenses_necessary.values())
+    calc = PlanCalculateDaySum(data)
+    expected_cents = sum(calc.db_expenses_necessary.values()) + sum(
+        calc.necessary.values()
+    )
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Būtinos išlaidos"]
+    card = {c.title: c for c in ExpenseCards.build(data)}["Būtinos"]
 
     assert card.value == _euro(expected_cents)
 
 
-def test_expense_cards_saving_plan_raises_necessary_only():
+def test_expense_cards_a_saving_plan_changes_no_card():
     plans = {
         "expenses_regular": [100_000] * 12,
         "expenses_necessary": [50_000] * 12,
@@ -200,13 +203,12 @@ def test_expense_cards_saving_plan_raises_necessary_only():
         c.title: c for c in ExpenseCards.build(_data(**plans, savings=raised_savings))
     }
 
-    assert base["Būtinos išlaidos"].value == _euro(960_000)
-    assert raised["Būtinos išlaidos"].value == _euro(970_000)
-    for title in ("Šiais metais", "Laisvos", "Per mėnesį"):
+    assert base["Būtinos"].value == _euro(840_000)
+    for title in ("Per metus", "Būtinos", "Kasdienės", "Per mėnesį"):
         assert raised[title].value == base[title].value
 
 
-def test_expense_cards_necessary_explains_it_includes_savings_plans():
+def test_expense_cards_no_card_has_an_explanation():
     data = _data(
         expenses_regular=[1000] * 12,
         expenses_necessary=[500] * 12,
@@ -214,12 +216,12 @@ def test_expense_cards_necessary_explains_it_includes_savings_plans():
         savings=[100] * 12,
     )
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Būtinos išlaidos"]
+    cards = ExpenseCards.build(data)
 
-    assert card.explanation == ("Įskaitant taupymo planus",)
+    assert all(card.explanation == () for card in cards)
 
 
-def test_expense_cards_free_is_expense_plans_of_non_necessary_types():
+def test_expense_cards_everyday_is_expense_plans_of_non_necessary_types():
     expenses_regular = [1000] * 12
     data = _data(
         expenses_regular=expenses_regular,
@@ -228,7 +230,7 @@ def test_expense_cards_free_is_expense_plans_of_non_necessary_types():
         savings=[100] * 12,
     )
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Laisvos"]
+    card = {c.title: c for c in ExpenseCards.build(data)}["Kasdienės"]
 
     assert card.value == _euro(sum(expenses_regular))
 
@@ -255,12 +257,34 @@ def test_expense_cards_are_empty_without_expense_or_necessary_plans_even_with_sa
     assert all("0" not in c.value for c in cards)
 
 
-def test_expense_cards_free_is_empty_without_expense_plans_of_non_necessary_types():
+def test_expense_cards_everyday_is_empty_without_expense_plans_of_non_necessary_types():
     data = _data(expenses_necessary=[500] * 12, necessary=[200] * 12)
 
-    card = {c.title: c for c in ExpenseCards.build(data)}["Laisvos"]
+    card = {c.title: c for c in ExpenseCards.build(data)}["Kasdienės"]
 
     assert card.state == EMPTY
+
+
+def test_expense_cards_necessary_and_everyday_add_up_to_the_year():
+    expenses_regular = [1000] * 12
+    expenses_necessary = [500] * 12
+    necessary = [200] * 12
+    data = _data(
+        expenses_regular=expenses_regular,
+        expenses_necessary=expenses_necessary,
+        necessary=necessary,
+        savings=[100] * 12,
+    )
+
+    cards = {c.title: c for c in ExpenseCards.build(data)}
+
+    necessary_cents = sum(expenses_necessary) + sum(necessary)
+    everyday_cents = sum(expenses_regular)
+    year_cents = necessary_cents + everyday_cents
+
+    assert cards["Būtinos"].value == _euro(necessary_cents)
+    assert cards["Kasdienės"].value == _euro(everyday_cents)
+    assert cards["Per metus"].value == _euro(year_cents)
 
 
 # -------------------------------------------------------------------------------------
