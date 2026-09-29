@@ -95,17 +95,29 @@ def test_row_labels_in_order():
 
     assert [row.label for row in _rows(blocks)] == [
         "Pajamos",
+        "Būtinos išlaidos ir taupymas",
         "Būtinos išlaidos",
         "Papildomos būtinos išlaidos",
         "Taupymas",
-        "Būtinos išlaidos ir taupymas",
         "Laisvi pinigai",
         "Suma dienai",
         "Dienos planas",
         "Likutis",
         "Kasdienės išlaidos pagal planą",
         "Visos išlaidos",
-        "Pajamos − visos išlaidos",
+        "Lieka po išlaidų planų",
+    ]
+
+
+def test_part_rows_come_right_after_the_necessary_expenses_and_savings_row():
+    blocks = _blocks()
+    labels = [row.label for row in _rows(blocks)]
+    total_index = labels.index("Būtinos išlaidos ir taupymas")
+
+    assert labels[total_index + 1 : total_index + 4] == [
+        "Būtinos išlaidos",
+        "Papildomos būtinos išlaidos",
+        "Taupymas",
     ]
 
 
@@ -121,7 +133,7 @@ def test_p18_guard_rows_match_plans_stats():
         "Laisvi pinigai": old[2],
         "Kasdienės išlaidos pagal planą": old[3],
         "Visos išlaidos": old[4],
-        "Pajamos − visos išlaidos": old[5],
+        "Lieka po išlaidų planų": old[5],
         "Suma dienai": old[6],
         "Likutis": old[7],
     }

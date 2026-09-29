@@ -22,16 +22,13 @@
         </tr>
     </thead>
     <tbody>
-        {% for block in blocks %}
-        <tr class="calculations-table__block"><th class="text-left" colspan="13"><span class="calculations-table__title">{{ block.title }}</span></th></tr>
-        {% for row in block.rows %}
+        {% for row in rows %}
         <tr{% if row.part %} class="calculations-table__part"{% endif %}>
             <td class="text-left">{{ row.label }}{% if row.words %}<span class="calculations-table__words">{{ row.words }}</span>{% endif %}</td>
             {% for value, state in row.cells %}
             <td class="{{value|css_class_if_none}}{% if state == 'over' %} plans-table__over{% endif %}">{{value|price|cellformat:"0,00"}}</td>
             {% endfor %}
         </tr>
-        {% endfor %}
         {% endfor %}
     </tbody>
 </table>

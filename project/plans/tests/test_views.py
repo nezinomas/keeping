@@ -39,7 +39,11 @@ TAB_PANEL_TITLES = {
     "incomes": ["Pajamos"],
     "expenses": ["Išlaidos", "Papildomos būtinos išlaidos"],
     "savings": ["Taupymas"],
-    "day": ["Suma dienai", "Skaičiavimai"],
+    "day": [
+        "Suma dienai",
+        "Kiek galiu išleisti per dieną",
+        "Patikra: ar telpa išlaidų planai",
+    ],
 }
 
 
@@ -1476,7 +1480,7 @@ def test_day_tab_price_converted_in_template(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
     actual = content[
-        content.index('id="day-plans"') : content.index('id="calculations"')
+        content.index('id="day-plans"') : content.index('id="calculations-spend"')
     ]
 
     assert "0,05" in actual
@@ -1489,15 +1493,15 @@ def test_day_tab_calculations_shows_the_chain_labels_not_the_old_numbering(
     url = reverse("plans:tab_day")
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
-    actual = content[content.index('id="calculations"') :]
+    actual = content[content.index('id="calculations-spend"') :]
 
     expected = [
         "Kiek galiu išleisti per dieną",
         "Pajamos",
+        "Būtinos išlaidos ir taupymas",
         "Būtinos išlaidos",
         "Papildomos būtinos išlaidos",
         "Taupymas",
-        "Būtinos išlaidos ir taupymas",
         "Laisvi pinigai",
         "Suma dienai",
         "Dienos planas",
@@ -1505,7 +1509,7 @@ def test_day_tab_calculations_shows_the_chain_labels_not_the_old_numbering(
         "Patikra: ar telpa išlaidų planai",
         "Kasdienės išlaidos pagal planą",
         "Visos išlaidos",
-        "Pajamos − visos išlaidos",
+        "Lieka po išlaidų planų",
     ]
     positions = [actual.index(f">{text}<") for text in expected]
 
@@ -1513,6 +1517,24 @@ def test_day_tab_calculations_shows_the_chain_labels_not_the_old_numbering(
 
     assert "1. Pajamos" not in actual
     assert "iš lentelių viršuje" not in actual
+    assert '<h2 class="panel__title">Skaičiavimai</h2>' not in content
+    assert ">Pajamos − visos išlaidos<" not in content
+
+
+def test_day_tab_calculations_renders_two_panels_each_with_its_own_header(
+    client_logged,
+):
+    url = reverse("plans:tab_day")
+    response = client_logged.get(url)
+    content = response.content.decode("utf-8")
+
+    spend_start = content.index('id="calculations-spend"')
+    check_start = content.index('id="calculations-check"')
+    spend = content[spend_start:check_start]
+    check = content[check_start:]
+
+    assert spend.count("<thead") == 1
+    assert check.count("<thead") == 1
 
 
 def _calculation_rows(response):
@@ -1545,7 +1567,11 @@ def test_day_tab_calculations_marks_the_day_plan_cell_above_the_sum_per_day(
 
     response = client_logged.get(reverse("plans:tab_day"))
     content = response.content.decode("utf-8")
-    actual = content[content.index('id="calculations"') :]
+    actual = content[
+        content.index('id="calculations-spend"') : content.index(
+            'id="calculations-check"'
+        )
+    ]
 
     assert actual.count("plans-table__over") == 1
 
