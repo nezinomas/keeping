@@ -1,9 +1,13 @@
+import pytest
+from django.db import connection
 from django.template.defaultfilters import floatformat
+from django.test.utils import CaptureQueriesContext
 
 from ....core.lib.convert_price import int_cents_to_float
 from ....core.lib.stat_card import EMPTY, HIGH, NEUTRAL
-from ...lib.calc_day_sum import DataDto, PlanCalculateDaySum
+from ...lib.calc_day_sum import DataDto, PlanCalculateDaySum, PlanCollectData
 from ...services.cards import DayCards, ExpenseCards, IncomeCards, SavingCards
+from ..factories import ExpensePlanFactory, NecessaryPlanFactory
 
 ZERO_MONTHS = [0] * 12
 MONTH_LEN = [{"month": m, "amount": 30} for m in range(1, 13)]
@@ -51,7 +55,7 @@ def test_income_cards_titles_in_order():
     assert list(cards) == ["Per metus", "Mėnesio mediana"]
 
 
-def test_income_cards_this_year_is_the_year_total():
+def test_income_cards_per_year_is_the_year_total():
     incomes = [1000] * 12
     data = _data(incomes=incomes)
 
@@ -93,7 +97,7 @@ def test_saving_cards_titles_in_order():
     assert list(cards) == ["Per metus", "Planuotų pajamų dalis", "Per mėnesį"]
 
 
-def test_saving_cards_this_year_is_the_year_total():
+def test_saving_cards_per_year_is_the_year_total():
     savings = [25_000] * 12
     data = _data(incomes=[100_000] * 12, savings=savings)
 
@@ -171,22 +175,41 @@ def test_expense_cards_per_year_is_expense_and_necessary_plans():
     assert card.value == _euro(expected)
 
 
-def test_expense_cards_necessary_is_the_two_necessary_part_rows_summed():
+def test_expense_cards_necessary_is_necessary_expense_plans_and_necessary_plans():
+    expenses_necessary = [500] * 12
+    necessary = [200] * 12
     data = _data(
         expenses_regular=[1000] * 12,
-        expenses_necessary=[500] * 12,
-        necessary=[200] * 12,
+        expenses_necessary=expenses_necessary,
+        necessary=necessary,
         savings=[100] * 12,
-    )
-
-    calc = PlanCalculateDaySum(data)
-    expected_cents = sum(calc.db_expenses_necessary.values()) + sum(
-        calc.necessary.values()
     )
 
     card = {c.title: c for c in ExpenseCards.build(data)}["Būtinos"]
 
-    assert card.value == _euro(expected_cents)
+    assert card.value == _euro(sum(expenses_necessary) + sum(necessary))
+
+
+def test_expense_cards_necessary_is_empty_without_necessary_plans():
+    data = _data(expenses_regular=[1000] * 12)
+
+    card = {c.title: c for c in ExpenseCards.build(data)}["Būtinos"]
+
+    assert card.state == EMPTY
+
+
+@pytest.mark.django_db
+def test_expense_cards_read_no_income_saving_or_day_plans(main_user):
+    plan = ExpensePlanFactory()
+    NecessaryPlanFactory()
+    data = PlanCollectData(main_user, plan.year).get_data()
+
+    with CaptureQueriesContext(connection) as queries:
+        ExpenseCards.build(data)
+
+    sql = " ".join(query["sql"] for query in queries.captured_queries)
+    for table in ("plans_incomeplan", "plans_savingplan", "plans_dayplan"):
+        assert table not in sql
 
 
 def test_expense_cards_a_saving_plan_changes_no_card():

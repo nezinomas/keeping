@@ -2052,6 +2052,19 @@ def test_expenses_tab_query_count_does_not_grow_with_the_expense_plans(client_lo
     assert six == two
 
 
+def test_expenses_tab_reads_no_income_saving_or_day_plans(client_logged):
+    tab = [t for t in TABS if t.name == "expenses"][0]
+    ExpensePlanFactory()
+    NecessaryPlanFactory()
+
+    with CaptureQueriesContext(connection) as queries:
+        client_logged.get(tab.url, headers={"HX-Request": "true"})
+
+    sql = " ".join(query["sql"] for query in queries.captured_queries)
+    for table in ("plans_incomeplan", "plans_savingplan", "plans_dayplan"):
+        assert table not in sql
+
+
 def test_expenses_tab_query_count_does_not_grow_with_the_necessary_plans(
     client_logged,
 ):

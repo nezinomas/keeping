@@ -108,7 +108,8 @@ class ExpenseCards:
         per_month = _("Per month")
 
         regular = _sum(self.data.expenses_regular)
-        total = regular + _sum(self.data.expenses_necessary) + _sum(self.data.necessary)
+        necessary_cents = _sum(self.data.expenses_necessary) + _sum(self.data.necessary)
+        total = regular + necessary_cents
         if not total:
             return [
                 EmptyStatCard(per_year),
@@ -119,20 +120,14 @@ class ExpenseCards:
 
         return [
             StatCard(title=per_year, value=_euro(int_cents_to_float(total))),
-            self._necessary(necessary),
-            self._everyday(everyday, regular),
+            self._amount(necessary, necessary_cents),
+            self._amount(everyday, regular),
             StatCard(title=per_month, value=_euro(int_cents_to_float(total) / 12)),
         ]
 
-    def _everyday(self, title: str, regular: int) -> Card:
-        if not regular:
+    def _amount(self, title: str, cents: int) -> Card:
+        if not cents:
             return EmptyStatCard(title)
-
-        return StatCard(title=title, value=_euro(int_cents_to_float(regular)))
-
-    def _necessary(self, title: str) -> Card:
-        calc = PlanCalculateDaySum(self.data)
-        cents = sum(calc.db_expenses_necessary.values()) + sum(calc.necessary.values())
 
         return StatCard(title=title, value=_euro(int_cents_to_float(cents)))
 
