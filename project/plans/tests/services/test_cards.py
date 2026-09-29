@@ -3,7 +3,7 @@ from django.template.defaultfilters import floatformat
 from ....core.lib.convert_price import int_cents_to_float
 from ....core.lib.stat_card import EMPTY
 from ...lib.calc_day_sum import DataDto, PlanCalculateDaySum
-from ...services.cards import IncomeCards, SavingCards
+from ...services.cards import ExpenseCards, IncomeCards, SavingCards
 
 ZERO_MONTHS = [0] * 12
 MONTH_LEN = [{"month": m, "amount": 30} for m in range(1, 13)]
@@ -13,14 +13,20 @@ def _months(amounts):
     return [{"month": i + 1, "amount": amount} for i, amount in enumerate(amounts)]
 
 
-def _data(incomes=ZERO_MONTHS, savings=ZERO_MONTHS):
+def _data(
+    incomes=ZERO_MONTHS,
+    savings=ZERO_MONTHS,
+    expenses_regular=ZERO_MONTHS,
+    expenses_necessary=ZERO_MONTHS,
+    necessary=ZERO_MONTHS,
+):
     return DataDto(
         incomes=_months(incomes),
-        expenses_regular=[],
-        expenses_necessary=[],
+        expenses_regular=_months(expenses_regular),
+        expenses_necessary=_months(expenses_necessary),
         savings=_months(savings),
         per_day=[],
-        necessary=[],
+        necessary=_months(necessary),
         month_len=MONTH_LEN,
     )
 
@@ -125,3 +131,128 @@ def test_saving_cards_are_empty_when_no_saving_plans_even_with_incomes():
 
     assert [c.state for c in cards] == [EMPTY, EMPTY, EMPTY]
     assert all("0" not in c.value for c in cards)
+
+
+# -------------------------------------------------------------------------------------
+#                                                                              Išlaidos
+# -------------------------------------------------------------------------------------
+def test_expense_cards_titles_in_order():
+    data = _data(
+        expenses_regular=[1000] * 12,
+        expenses_necessary=[500] * 12,
+        necessary=[200] * 12,
+        savings=[100] * 12,
+    )
+
+    cards = {card.title: card for card in ExpenseCards.build(data)}
+
+    assert list(cards) == ["Šiais metais", "Būtinos išlaidos", "Laisvos", "Per mėnesį"]
+
+
+def test_expense_cards_this_year_is_expense_and_necessary_plans():
+    expenses_regular = [1000] * 12
+    expenses_necessary = [500] * 12
+    necessary = [200] * 12
+    data = _data(
+        expenses_regular=expenses_regular,
+        expenses_necessary=expenses_necessary,
+        necessary=necessary,
+        savings=[100] * 12,
+    )
+
+    card = {c.title: c for c in ExpenseCards.build(data)}["Šiais metais"]
+
+    expected = sum(expenses_regular) + sum(expenses_necessary) + sum(necessary)
+    assert card.value == _euro(expected)
+
+
+def test_expense_cards_necessary_equals_calc_day_sum_row_two_summed():
+    data = _data(
+        expenses_regular=[1000] * 12,
+        expenses_necessary=[500] * 12,
+        necessary=[200] * 12,
+        savings=[100] * 12,
+    )
+
+    expected_cents = sum(PlanCalculateDaySum(data).expenses_necessary.values())
+
+    card = {c.title: c for c in ExpenseCards.build(data)}["Būtinos išlaidos"]
+
+    assert card.value == _euro(expected_cents)
+
+
+def test_expense_cards_saving_plan_raises_necessary_only():
+    plans = {
+        "expenses_regular": [100_000] * 12,
+        "expenses_necessary": [50_000] * 12,
+        "necessary": [20_000] * 12,
+    }
+    savings = [10_000] * 12
+    raised_savings = [20_000] + [10_000] * 11
+
+    base = {c.title: c for c in ExpenseCards.build(_data(**plans, savings=savings))}
+    raised = {
+        c.title: c for c in ExpenseCards.build(_data(**plans, savings=raised_savings))
+    }
+
+    assert base["Būtinos išlaidos"].value == _euro(960_000)
+    assert raised["Būtinos išlaidos"].value == _euro(970_000)
+    for title in ("Šiais metais", "Laisvos", "Per mėnesį"):
+        assert raised[title].value == base[title].value
+
+
+def test_expense_cards_necessary_explains_it_includes_savings_plans():
+    data = _data(
+        expenses_regular=[1000] * 12,
+        expenses_necessary=[500] * 12,
+        necessary=[200] * 12,
+        savings=[100] * 12,
+    )
+
+    card = {c.title: c for c in ExpenseCards.build(data)}["Būtinos išlaidos"]
+
+    assert card.explanation == ("Įskaitant taupymo planus",)
+
+
+def test_expense_cards_free_is_expense_plans_of_non_necessary_types():
+    expenses_regular = [1000] * 12
+    data = _data(
+        expenses_regular=expenses_regular,
+        expenses_necessary=[500] * 12,
+        necessary=[200] * 12,
+        savings=[100] * 12,
+    )
+
+    card = {c.title: c for c in ExpenseCards.build(data)}["Laisvos"]
+
+    assert card.value == _euro(sum(expenses_regular))
+
+
+def test_expense_cards_per_month_pinned_to_a_literal():
+    data = _data(expenses_regular=[1_000_000] + [0] * 11)
+
+    card = {c.title: c for c in ExpenseCards.build(data)}["Per mėnesį"]
+
+    assert card.value == "833"
+
+
+def test_expense_cards_are_empty_without_expense_or_necessary_plans_even_with_savings():
+    data = _data(
+        expenses_regular=ZERO_MONTHS,
+        expenses_necessary=ZERO_MONTHS,
+        necessary=ZERO_MONTHS,
+        savings=[300_000] + [0] * 11,
+    )
+
+    cards = ExpenseCards.build(data)
+
+    assert [c.state for c in cards] == [EMPTY, EMPTY, EMPTY, EMPTY]
+    assert all("0" not in c.value for c in cards)
+
+
+def test_expense_cards_free_is_empty_without_expense_plans_of_non_necessary_types():
+    data = _data(expenses_necessary=[500] * 12, necessary=[200] * 12)
+
+    card = {c.title: c for c in ExpenseCards.build(data)}["Laisvos"]
+
+    assert card.state == EMPTY

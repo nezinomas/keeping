@@ -1,5 +1,9 @@
 {% load i18n %}
 
+<div class="stat-cards">
+    <c-stat-cards :cards=cards />
+</div>
+
 {% with object_list=expense_plans %}
 <c-panel id="expense-plans" title="{% translate 'Expenses' %}">
     <c-plans-table :year=request.user.year :items=object_list kind='expense' type='expense_type' update='plans:expense_update' delete='plans:expense_delete' />

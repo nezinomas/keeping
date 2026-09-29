@@ -80,3 +80,50 @@ class SavingCards:
         return StatCard(
             title=title, value=floatformat(total / incomes * 100, "0"), unit="%"
         )
+
+
+@dataclass(frozen=True)
+class ExpenseCards:
+    data: DataDto
+
+    @classmethod
+    def build(cls, data: DataDto) -> list[Card]:
+        return cls(data)._cards()
+
+    def _cards(self) -> list[Card]:
+        this_year = pgettext("plans card", "This year")
+        necessary = _("Necessary expenses")
+        free = pgettext("plans card", "Free")
+        per_month = _("Per month")
+
+        regular = _sum(self.data.expenses_regular)
+        total = regular + _sum(self.data.expenses_necessary) + _sum(self.data.necessary)
+        if not total:
+            return [
+                EmptyStatCard(this_year),
+                EmptyStatCard(necessary),
+                EmptyStatCard(free),
+                EmptyStatCard(per_month),
+            ]
+
+        return [
+            StatCard(title=this_year, value=_euro(int_cents_to_float(total))),
+            self._necessary(necessary),
+            self._free(free, regular),
+            StatCard(title=per_month, value=_euro(int_cents_to_float(total) / 12)),
+        ]
+
+    def _free(self, title: str, regular: int) -> Card:
+        if not regular:
+            return EmptyStatCard(title)
+
+        return StatCard(title=title, value=_euro(int_cents_to_float(regular)))
+
+    def _necessary(self, title: str) -> Card:
+        cents = sum(PlanCalculateDaySum(self.data).expenses_necessary.values())
+
+        return StatCard(
+            title=title,
+            value=_euro(int_cents_to_float(cents)),
+            explanation=(_("Including savings plans"),),
+        )
