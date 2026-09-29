@@ -46,6 +46,13 @@ TAB_PANEL_TITLES = {
     ],
 }
 
+TAB_TABLE_PANELS = {
+    "incomes": ["income-plans"],
+    "expenses": ["expense-plans", "necessary-plans"],
+    "savings": ["saving-plans"],
+    "day": ["day-plans", "calculations-spend", "calculations-check"],
+}
+
 
 # -------------------------------------------------------------------------------------
 #                                                                                  Tabs
@@ -134,6 +141,17 @@ def test_a_tab_fragment_carries_only_its_own_panel_titles(client_logged, tab):
     }
     for title in other_titles:
         assert f'<h2 class="panel__title">{title}</h2>' not in content
+
+
+@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
+def test_every_panel_on_a_tab_is_a_table_panel(client_logged, tab):
+    content = client_logged.get(
+        tab.url, headers={"HX-Request": "true"}
+    ).content.decode()
+
+    for panel_id in TAB_TABLE_PANELS[tab.name]:
+        assert f'<section class="panel panel--table" id="{panel_id}">' in content
+    assert '<section class="panel" ' not in content
 
 
 def test_nav_offers_every_tab(client_logged):

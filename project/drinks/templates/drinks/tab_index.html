@@ -16,7 +16,7 @@
         <c-calendar :calendar=calendar />
     </c-panel>
 
-    <c-panel id="breakdown" title="{% translate 'Converted' %}, {% translate 'pcs' %}" subtitle="{% translate 'The same amount of alcohol, converted to different drink types.' %}">
+    <c-panel table id="breakdown" title="{% translate 'Converted' %}, {% translate 'pcs' %}" subtitle="{% translate 'The same amount of alcohol, converted to different drink types.' %}">
         {% include 'drinks/includes/tbl_std_av.html' with ctx=tbl_std_av %}
 
         <details class="stdav-info">
