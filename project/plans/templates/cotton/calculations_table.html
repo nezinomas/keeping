@@ -1,4 +1,3 @@
-{% load i18n %}
 {% load math %}
 {% load cell_format %}
 
@@ -7,18 +6,7 @@
     <thead>
         <tr>
             <th class="text-left title-col"></th>
-            <th><span class="plans-table__month-full">{% translate 'January' %}</span><span class="plans-table__month-short">{% translate 'jan' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'February' %}</span><span class="plans-table__month-short">{% translate 'feb' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'March' %}</span><span class="plans-table__month-short">{% translate 'mar' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'April' %}</span><span class="plans-table__month-short">{% translate 'apr' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'May' %}</span><span class="plans-table__month-short">{% translate 'may' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'June' %}</span><span class="plans-table__month-short">{% translate 'jun' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'July' %}</span><span class="plans-table__month-short">{% translate 'jul' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'August' %}</span><span class="plans-table__month-short">{% translate 'aug' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'September' %}</span><span class="plans-table__month-short">{% translate 'sep' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'October' %}</span><span class="plans-table__month-short">{% translate 'oct' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'November' %}</span><span class="plans-table__month-short">{% translate 'nov' %}</span></th>
-            <th><span class="plans-table__month-full">{% translate 'December' %}</span><span class="plans-table__month-short">{% translate 'dec' %}</span></th>
+            <c-month-headers />
         </tr>
     </thead>
     <tbody>
