@@ -6,8 +6,15 @@ from django.utils.translation import gettext as _
 from django.utils.translation import pgettext
 
 from ...core.lib.convert_price import int_cents_to_float
-from ...core.lib.stat_card import Card, EmptyStatCard, StatCard
-from ..lib.calc_day_sum import DataDto, PlanCalculateDaySum
+from ...core.lib.stat_card import (
+    HIGH,
+    NEUTRAL,
+    Card,
+    EmptyStatCard,
+    LevelStatCard,
+    StatCard,
+)
+from ..lib.calc_day_sum import OVER, DataDto, PlanCalculateDaySum
 
 
 def _sum(rows: Sequence[dict]) -> int:
@@ -16,6 +23,10 @@ def _sum(rows: Sequence[dict]) -> int:
 
 def _euro(euro: float) -> str:
     return floatformat(euro, "0g")
+
+
+def _euro_cents(cents: int) -> str:
+    return floatformat(int_cents_to_float(cents), "2g")
 
 
 @dataclass(frozen=True)
@@ -127,3 +138,39 @@ class ExpenseCards:
             value=_euro(int_cents_to_float(cents)),
             explanation=(_("Including savings plans"),),
         )
+
+
+@dataclass(frozen=True)
+class DayCards:
+    data: DataDto
+    month: int
+
+    @classmethod
+    def build(cls, data: DataDto, month: int) -> list[Card]:
+        return cls(data, month)._cards()
+
+    def _cards(self) -> list[Card]:
+        sum_per_day = _("Sum per day this month")
+        day_plan = _("Day plan this month")
+
+        calc = PlanCalculateDaySum(self.data)
+        month = str(self.month)
+
+        return [
+            self._sum_per_day(sum_per_day, calc, month),
+            self._day_plan(day_plan, calc, month),
+        ]
+
+    def _sum_per_day(self, title: str, calc: PlanCalculateDaySum, month: str) -> Card:
+        if not _sum(self.data.incomes):
+            return EmptyStatCard(title)
+
+        return StatCard(title=title, value=_euro_cents(calc.day_calced[month]))
+
+    def _day_plan(self, title: str, calc: PlanCalculateDaySum, month: str) -> Card:
+        cents = calc.day_input[month]
+        if not cents:
+            return EmptyStatCard(title)
+
+        state = HIGH if calc.day_plan_states()[month] == OVER else NEUTRAL
+        return LevelStatCard(title=title, value=_euro_cents(cents), state=state)

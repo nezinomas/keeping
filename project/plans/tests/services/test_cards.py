@@ -1,9 +1,9 @@
 from django.template.defaultfilters import floatformat
 
 from ....core.lib.convert_price import int_cents_to_float
-from ....core.lib.stat_card import EMPTY
+from ....core.lib.stat_card import EMPTY, HIGH, NEUTRAL
 from ...lib.calc_day_sum import DataDto, PlanCalculateDaySum
-from ...services.cards import ExpenseCards, IncomeCards, SavingCards
+from ...services.cards import DayCards, ExpenseCards, IncomeCards, SavingCards
 
 ZERO_MONTHS = [0] * 12
 MONTH_LEN = [{"month": m, "amount": 30} for m in range(1, 13)]
@@ -19,13 +19,14 @@ def _data(
     expenses_regular=ZERO_MONTHS,
     expenses_necessary=ZERO_MONTHS,
     necessary=ZERO_MONTHS,
+    per_day=(),
 ):
     return DataDto(
         incomes=_months(incomes),
         expenses_regular=_months(expenses_regular),
         expenses_necessary=_months(expenses_necessary),
         savings=_months(savings),
-        per_day=[],
+        per_day=_months(per_day),
         necessary=_months(necessary),
         month_len=MONTH_LEN,
     )
@@ -33,6 +34,10 @@ def _data(
 
 def _euro(cents):
     return floatformat(int_cents_to_float(cents), "0g")
+
+
+def _euro_cents(cents):
+    return floatformat(int_cents_to_float(cents), "2g")
 
 
 # -------------------------------------------------------------------------------------
@@ -256,3 +261,83 @@ def test_expense_cards_free_is_empty_without_expense_plans_of_non_necessary_type
     card = {c.title: c for c in ExpenseCards.build(data)}["Laisvos"]
 
     assert card.state == EMPTY
+
+
+# -------------------------------------------------------------------------------------
+#                                                                          Suma dienai
+# -------------------------------------------------------------------------------------
+INCOMES_FOR_25_PER_DAY = [75_000] * 12
+
+
+def test_day_cards_titles_in_order():
+    data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[3000] * 12)
+
+    cards = {card.title: card for card in DayCards.build(data, 6)}
+
+    assert list(cards) == ["Suma dienai šį mėnesį", "Dienos planas šį mėnesį"]
+
+
+def test_day_cards_read_the_given_month_not_another():
+    per_day = [0] * 12
+    per_day[5] = 3000
+    per_day[0] = 1000
+    data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=per_day)
+
+    card = {c.title: c for c in DayCards.build(data, 6)}["Dienos planas šį mėnesį"]
+
+    assert card.value == _euro_cents(3000)
+
+
+def test_day_cards_state_high_when_day_plan_is_above_sum_per_day():
+    data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[3000] * 12)
+
+    card = {c.title: c for c in DayCards.build(data, 6)}["Dienos planas šį mėnesį"]
+
+    assert card.state == HIGH
+
+
+def test_day_cards_state_neutral_when_day_plan_equals_sum_per_day():
+    data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[2500] * 12)
+
+    card = {c.title: c for c in DayCards.build(data, 6)}["Dienos planas šį mėnesį"]
+
+    assert card.state == NEUTRAL
+
+
+def test_day_cards_day_plan_is_empty_without_a_day_plan_for_the_month():
+    data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=ZERO_MONTHS)
+
+    card = {c.title: c for c in DayCards.build(data, 6)}["Dienos planas šį mėnesį"]
+
+    assert card.state == EMPTY
+
+
+def test_day_cards_sum_per_day_is_empty_without_income_plans():
+    data = _data(incomes=ZERO_MONTHS, per_day=[3000] * 12)
+
+    card = {c.title: c for c in DayCards.build(data, 6)}["Suma dienai šį mėnesį"]
+
+    assert card.state == EMPTY
+
+
+def test_day_cards_sum_per_day_shows_even_when_negative():
+    data = _data(
+        incomes=[100] * 12, expenses_necessary=[100_000] * 12, per_day=[3000] * 12
+    )
+
+    expected = PlanCalculateDaySum(data).day_calced["6"]
+
+    card = {c.title: c for c in DayCards.build(data, 6)}["Suma dienai šį mėnesį"]
+
+    assert card.state != EMPTY
+    assert card.value == _euro_cents(expected)
+    assert expected < 0
+
+
+def test_day_cards_value_formatted_with_two_decimals():
+    data = _data(incomes=INCOMES_FOR_25_PER_DAY, per_day=[3000] * 12)
+
+    cards = {c.title: c for c in DayCards.build(data, 6)}
+
+    assert cards["Suma dienai šį mėnesį"].value == "25,00"
+    assert cards["Dienos planas šį mėnesį"].value == "30,00"

@@ -1294,6 +1294,27 @@ def test_saving_delete_other_journal_post_form(client_logged, second_user):
 # -------------------------------------------------------------------------------------
 #                                                                          DayPlan List
 # -------------------------------------------------------------------------------------
+@time_machine.travel("2026-09-15")
+def test_day_tab_cards_read_the_current_month_in_the_selected_plan_year(
+    client_logged, main_user
+):
+    main_user.year = 2027
+    main_user.save()
+    DayPlanFactory(year=2026, month=9, price=9900)
+    DayPlanFactory(year=2027, month=8, price=5000)
+    DayPlanFactory(year=2027, month=9, price=3000)
+    for month in range(1, 13):
+        IncomePlanFactory(year=2027, month=month, price=90_000)
+    SavingPlanFactory(year=2027, month=9, price=30_000)
+
+    url = reverse("plans:tab_day")
+    response = client_logged.get(url)
+    cards = {c.title: c for c in response.context["cards"]}
+
+    assert cards["Suma dienai šį mėnesį"].value == "20,00"
+    assert cards["Dienos planas šį mėnesį"].value == "30,00"
+
+
 def test_day_tab_edit_delete_urls(client_logged, main_user):
     DayPlanFactory()
 
@@ -1453,7 +1474,10 @@ def test_day_tab_price_converted_in_template(client_logged):
 
     url = reverse("plans:tab_day")
     response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
+    content = response.content.decode("utf-8")
+    actual = content[
+        content.index('id="day-plans"') : content.index('id="calculations"')
+    ]
 
     assert "0,05" in actual
     assert actual.count("0,05") == 12
