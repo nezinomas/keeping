@@ -164,38 +164,41 @@ def test_nav_offers_every_tab(client_logged):
 # -------------------------------------------------------------------------------------
 #                                                                                 Cards
 # -------------------------------------------------------------------------------------
-def test_incomes_tab_renders_its_cards_in_lithuanian(client_logged):
-    IncomePlanFactory(price=1000)
+@pytest.mark.parametrize(
+    "factory, url, present, absent",
+    [
+        (
+            IncomePlanFactory,
+            "plans:tab_incomes",
+            ["Per metus", "Mėnesio mediana"],
+            ["Šiais metais"],
+        ),
+        (
+            SavingPlanFactory,
+            "plans:tab_savings",
+            ["Per metus", "Planuotų pajamų dalis", "Per mėnesį"],
+            ["Šiais metais"],
+        ),
+        (
+            ExpensePlanFactory,
+            "plans:tab_expenses",
+            ["Per metus", "Būtinos", "Kasdienės", "Per mėnesį"],
+            ["Šiais metais", "Laisvos"],
+        ),
+    ],
+    ids=["incomes", "savings", "expenses"],
+)
+def test_tab_renders_its_cards_in_lithuanian(
+    factory, url, present, absent, client_logged
+):
+    factory(price=1000)
 
-    content = client_logged.get(reverse("plans:tab_incomes")).content.decode()
+    content = client_logged.get(reverse(url)).content.decode()
 
-    assert '<div class="trend-card__label">Per metus</div>' in content
-    assert '<div class="trend-card__label">Mėnesio mediana</div>' in content
-    assert '<div class="trend-card__label">Šiais metais</div>' not in content
-
-
-def test_savings_tab_renders_its_cards_in_lithuanian(client_logged):
-    SavingPlanFactory(price=1000)
-
-    content = client_logged.get(reverse("plans:tab_savings")).content.decode()
-
-    assert '<div class="trend-card__label">Per metus</div>' in content
-    assert '<div class="trend-card__label">Planuotų pajamų dalis</div>' in content
-    assert '<div class="trend-card__label">Per mėnesį</div>' in content
-    assert '<div class="trend-card__label">Šiais metais</div>' not in content
-
-
-def test_expenses_tab_renders_its_cards_in_lithuanian(client_logged):
-    ExpensePlanFactory(price=1000)
-
-    content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
-
-    assert '<div class="trend-card__label">Per metus</div>' in content
-    assert '<div class="trend-card__label">Būtinos</div>' in content
-    assert '<div class="trend-card__label">Kasdienės</div>' in content
-    assert '<div class="trend-card__label">Per mėnesį</div>' in content
-    assert '<div class="trend-card__label">Šiais metais</div>' not in content
-    assert '<div class="trend-card__label">Laisvos</div>' not in content
+    for label in present:
+        assert f'<div class="trend-card__label">{label}</div>' in content
+    for label in absent:
+        assert f'<div class="trend-card__label">{label}</div>' not in content
 
 
 # -------------------------------------------------------------------------------------
@@ -1484,6 +1487,15 @@ def test_day_update_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
+def _between(content, start_id, end_id=""):
+    start = content.index(f'id="{start_id}"')
+    end = len(content)
+    if end_id:
+        end = content.index(f'id="{end_id}"')
+
+    return content[start:end]
+
+
 def test_day_tab_price_converted_in_template(client_logged):
     DayPlanFactory(month=1, price=5)
     DayPlanFactory(month=2, price=5)
@@ -1501,9 +1513,7 @@ def test_day_tab_price_converted_in_template(client_logged):
     url = reverse("plans:tab_day")
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
-    actual = content[
-        content.index('id="day-plans"') : content.index('id="calculations-spend"')
-    ]
+    actual = _between(content, "day-plans", "calculations-spend")
 
     assert "0,05" in actual
     assert actual.count("0,05") == 12
@@ -1515,7 +1525,7 @@ def test_day_tab_calculations_shows_the_chain_labels_not_the_old_numbering(
     url = reverse("plans:tab_day")
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
-    actual = content[content.index('id="calculations-spend"') :]
+    actual = _between(content, "calculations-spend")
 
     expected = [
         "Kiek galiu išleisti per dieną",
@@ -1550,10 +1560,8 @@ def test_day_tab_calculations_renders_two_panels_each_with_its_own_header(
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    spend_start = content.index('id="calculations-spend"')
-    check_start = content.index('id="calculations-check"')
-    spend = content[spend_start:check_start]
-    check = content[check_start:]
+    spend = _between(content, "calculations-spend", "calculations-check")
+    check = _between(content, "calculations-check")
 
     assert spend.count("<thead") == 1
     assert check.count("<thead") == 1
@@ -1589,11 +1597,7 @@ def test_day_tab_calculations_marks_the_day_plan_cell_above_the_sum_per_day(
 
     response = client_logged.get(reverse("plans:tab_day"))
     content = response.content.decode("utf-8")
-    actual = content[
-        content.index('id="calculations-spend"') : content.index(
-            'id="calculations-check"'
-        )
-    ]
+    actual = _between(content, "calculations-spend", "calculations-check")
 
     assert actual.count("plans-table__over") == 1
 
