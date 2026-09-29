@@ -10,6 +10,8 @@
 </c-panel>
 {% endwith %}
 
-<c-panel id="calculations" title="{% translate 'Calculations' %}">
-    <c-calculations-table :blocks=calculations />
+{% for block in calculations %}
+<c-panel id="calculations-{% if forloop.first %}spend{% else %}check{% endif %}" title="{{ block.title }}">
+    <c-calculations-table :rows=block.rows />
 </c-panel>
+{% endfor %}

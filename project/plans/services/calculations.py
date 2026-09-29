@@ -63,6 +63,11 @@ class Calculations:
                 day_sum.incomes_avg,
             ),
             self._row(
+                _("Necessary expenses and savings"),
+                _("= necessary + additional + savings"),
+                day_sum.expenses_necessary,
+            ),
+            self._row(
                 _("Necessary expenses"),
                 _("expense plans of necessary types"),
                 day_sum.db_expenses_necessary,
@@ -72,11 +77,6 @@ class Calculations:
                 _("Additional necessary expenses"), "", day_sum.necessary, part=True
             ),
             self._row(_("Savings"), "", day_sum.savings, part=True),
-            self._row(
-                _("Necessary expenses and savings"),
-                _("= necessary + additional + savings"),
-                day_sum.expenses_necessary,
-            ),
             self._row(
                 _("Free money"),
                 _("= Incomes − Necessary expenses and savings"),
@@ -114,7 +114,7 @@ class Calculations:
                 day_sum.expenses_full,
             ),
             self._row(
-                _("Incomes − full expenses"),
+                _("Left after the expense plans"),
                 _("= Incomes − Full expenses"),
                 day_sum.expenses_remains,
             ),
