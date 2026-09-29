@@ -18,6 +18,9 @@ from ..services.model_services import (
 
 MONTH_NUMS = [str(i) for i in range(1, 13)]
 
+OVER = "over"
+WITHIN = "within"
+
 
 class InputRow(StrEnum):
     """Raw data categories provided by the SQL Database."""
@@ -139,6 +142,17 @@ class PlanCalculateDaySum:
             f"6. {_incomes} - {_full} (1 - 5)": self.expenses_remains,
             f"7. {_sum_per_day} (3 / {_days_in_month})": self.day_calced,
             f"8. {_residual} (3 - 7 * {_days_in_month})": self.remains,
+        }
+
+    def day_plan_states(self) -> dict[str, str]:
+        day_plan = self.day_input
+        sum_per_day = self.day_calced
+
+        return {
+            month: OVER
+            if day_plan[month] and day_plan[month] > sum_per_day[month]
+            else WITHIN
+            for month in MONTH_NUMS
         }
 
     def get_row(self, name: str) -> int | dict:

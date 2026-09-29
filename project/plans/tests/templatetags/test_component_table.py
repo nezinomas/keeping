@@ -147,3 +147,22 @@ def test_renders_none_state_correctly(table):
 
     expect = "<b>2026</b> metais įrašų nėra."
     assert expect in actual
+
+
+def test_renders_over_class_only_on_the_over_months(table):
+    context = {
+        "object_list": {"Dienos planas": {}},
+        "states": {"1": "over", "2": "within"},
+    }
+
+    actual = table(context)
+
+    assert actual.count("plans-table__over") == 1
+
+
+def test_renders_no_over_class_without_states(table):
+    context = {"object_list": {"Dienos planas": {}}}
+
+    actual = table(context)
+
+    assert "plans-table__over" not in actual

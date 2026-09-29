@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
@@ -15,7 +17,7 @@ from ..core.mixins.views import (
 from . import forms
 from .lib.calc_day_sum import DataDto, PlanCalculateDaySum, PlanCollectData
 from .mixins.views import CssClassMixin, PlanDeleteMixin, PlanUpdateMixin
-from .services.cards import ExpenseCards, IncomeCards, SavingCards
+from .services.cards import DayCards, ExpenseCards, IncomeCards, SavingCards
 from .services.model_services import (
     DayPlanModelService,
     ExpensePlanModelService,
@@ -183,11 +185,17 @@ class TabDay(TabViewMixin, TemplateViewMixin):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
+        data = self.plan_data()
+        calc = PlanCalculateDaySum(data)
+        # this month = today's month number, in whichever Plan year is selected
+        month = date.today().month
 
         return {
             **super().get_context_data(**kwargs),
             "day_plans": DayPlanModelService(user).pivot_table(user.year),
-            "calculations": PlanCalculateDaySum(self.plan_data()).plans_stats(),
+            "calculations": calc.plans_stats(),
+            "cards": DayCards.build(data, month),
+            "day_states": calc.day_plan_states(),
         }
 
 
