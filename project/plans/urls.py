@@ -6,12 +6,11 @@ from .apps import App_name
 app_name = App_name
 
 urlpatterns = [
-    path("", views.Index.as_view(), name="index"),
-    path("stats/", views.Stats.as_view(), name="stats"),
+    path("", views.TabDay.as_view(), name="index"),
     # ----------------------------------------------------------------------------------
     #                                                                      expenses plan
     # ----------------------------------------------------------------------------------
-    path("expenses/", views.ExpensesLists.as_view(), name="expense_list"),
+    path("expenses/", views.TabExpenses.as_view(), name="tab_expenses"),
     path("expenses/new/", views.ExpensesNew.as_view(), name="expense_new"),
     path(
         "expenses/update/<int:year>/<int:expense_type_id>/",
@@ -26,7 +25,7 @@ urlpatterns = [
     # ----------------------------------------------------------------------------------
     #                                                                        income plan
     # ----------------------------------------------------------------------------------
-    path("incomes/", views.IncomesLists.as_view(), name="income_list"),
+    path("incomes/", views.TabIncomes.as_view(), name="tab_incomes"),
     path("incomes/new/", views.IncomesNew.as_view(), name="income_new"),
     path(
         "incomes/update/<int:year>/<int:income_type_id>/",
@@ -41,7 +40,7 @@ urlpatterns = [
     # ----------------------------------------------------------------------------------
     #                                                                        saving plan
     # ----------------------------------------------------------------------------------
-    path("savings/", views.SavingsLists.as_view(), name="saving_list"),
+    path("savings/", views.TabSavings.as_view(), name="tab_savings"),
     path("savings/new/", views.SavingsNew.as_view(), name="saving_new"),
     path(
         "savings/update/<int:year>/<int:saving_type_id>/",
@@ -56,14 +55,13 @@ urlpatterns = [
     # ----------------------------------------------------------------------------------
     #                                                                           day plan
     # ----------------------------------------------------------------------------------
-    path("day/", views.DayLists.as_view(), name="day_list"),
+    path("day/", views.TabDay.as_view(), name="tab_day"),
     path("day/new/", views.DayNew.as_view(), name="day_new"),
     path("day/update/<int:year>/", views.DayUpdate.as_view(), name="day_update"),
     path("day/delete/<int:year>/", views.DayDelete.as_view(), name="day_delete"),
     # ----------------------------------------------------------------------------------
     #                                                                     necessary plan
     # ----------------------------------------------------------------------------------
-    path("necessary/", views.NecessaryLists.as_view(), name="necessary_list"),
     path("necessary/new/", views.NecessaryNew.as_view(), name="necessary_new"),
     path(
         "necessary/update/<int:year>/<int:expense_type_id>/<path:title>/",

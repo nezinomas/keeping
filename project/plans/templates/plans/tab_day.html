@@ -1,0 +1,13 @@
+{% load i18n %}
+
+{% with object_list=day_plans %}
+<c-panel id="day-plans" title="{% translate 'Sum per day' %}">
+    <c-plans-table :year=request.user.year :items=object_list type="{% translate 'Daily' %}" update='plans:day_update' delete='plans:day_delete' />
+</c-panel>
+{% endwith %}
+
+{% with object_list=calculations %}
+<c-panel id="calculations" title="{% translate 'Calculations' %}">
+    <c-plans-table :year=request.user.year :items=object_list type='type' />
+</c-panel>
+{% endwith %}
