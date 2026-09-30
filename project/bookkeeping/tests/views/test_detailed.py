@@ -459,3 +459,64 @@ def test_view_detailed_type_302(client):
     url = reverse("bookkeeping:detailed_type", kwargs={"type_slug": "expense-type"})
 
     assert client.get(url).status_code == 302
+
+
+# ----------------------------------------------------------------------------
+#                                                            Išlaidos: Cards
+# ----------------------------------------------------------------------------
+def _expenses_page(client):
+    return client.get(reverse("bookkeeping:detailed_expenses")).content.decode()
+
+
+@factory.django.mute_signals(post_save)
+def test_view_detailed_expenses_cards(client_logged):
+    _expense("a1", 30000, expense_type=ExpenseTypeFactory(title="A"))
+    _expense("b1", 70000, expense_type=ExpenseTypeFactory(title="B"))
+
+    content = _expenses_page(client_logged)
+
+    assert 'class="stat-cards"' in content
+    assert "Didžiausia rūšis" in content
+    assert "Didžiausia išlaida" in content
+    assert "700 € · 70% metų sumos" in content
+    assert "700 € · 70% · B" in content
+
+
+@factory.django.mute_signals(post_save)
+def test_view_detailed_expenses_panels_carry_their_share(client_logged):
+    _expense("a1", 30000, expense_type=ExpenseTypeFactory(title="A"))
+    _expense("b1", 70000, expense_type=ExpenseTypeFactory(title="B"))
+
+    content = _expenses_page(client_logged)
+
+    assert '<p class="panel__subtitle">30% metų sumos</p>' in content
+    assert '<p class="panel__subtitle">70% metų sumos</p>' in content
+
+
+@factory.django.mute_signals(post_save)
+def test_view_detailed_expenses_small_share_reads_less_than_one(client_logged):
+    _expense("a1", 10, expense_type=ExpenseTypeFactory(title="A"))
+    _expense("b1", 9990, expense_type=ExpenseTypeFactory(title="B"))
+
+    content = _expenses_page(client_logged)
+
+    assert '<p class="panel__subtitle">&lt; 1% metų sumos</p>' in content
+    assert ">0% metų sumos" not in content
+
+
+def test_view_detailed_no_expenses_shows_no_cards(client_logged):
+    content = _expenses_page(client_logged)
+
+    assert 'class="stat-cards"' not in content
+    assert "metais įrašų nėra." in content
+
+
+@pytest.mark.parametrize("tab", ["incomes", "savings"])
+@factory.django.mute_signals(post_save)
+def test_view_detailed_other_tabs_render_no_cards(client_logged, tab):
+    ADD_ROW[tab](1)
+
+    content = client_logged.get(reverse(f"bookkeeping:detailed_{tab}")).content.decode()
+
+    assert 'class="stat-cards"' not in content
+    assert "panel__subtitle" not in content

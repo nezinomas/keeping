@@ -1,5 +1,8 @@
+{% if cards %}
+<div class="stat-cards"><c-stat-cards :cards="cards" /></div>
+{% endif %}
 {% for table in tables %}
-<c-panel table id="detailed-{{ table.url_title }}" title="{{ table.title }}">
+<c-panel table id="detailed-{{ table.url_title }}" title="{{ table.title }}" subtitle="{{ table.subtitle }}">
     <div class="month-table" id="{{ table.table_id }}">
         <c-detailed-table :title=table.title :order=table.order :data=table.data :total=table.total :months=months :url=table.url :table_id=table.table_id />
     </div>
