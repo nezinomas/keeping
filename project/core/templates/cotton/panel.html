@@ -1,7 +1,7 @@
-<c-vars title subtitle table />
+<c-vars title subtitle hint table />
 
 <section class="panel{% if table %} panel--table{% endif %}" {{ attrs }}>
-    <h2 class="panel__title">{{ title }}</h2>
+    <h2 class="panel__title">{{ title }}{% if hint %} <span class="panel__hint tip right" tabindex="0" data-tip="{{ hint }}" aria-label="{{ hint }}"><i class="bi bi-question-circle"></i></span>{% endif %}</h2>
     {% if subtitle %}<p class="panel__subtitle">{{ subtitle }}</p>{% endif %}
     {{ slot }}
 </section>
