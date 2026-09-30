@@ -41,7 +41,6 @@ def test_renders_necessary_plan_tuple_format(table):
     actual = table(context)
 
     assert "Insurance (Car)" in actual
-    assert '<i class="bi bi-star plans-star"></i>' in actual
 
 
 def test_renders_necessary_plan_urls(table):
@@ -67,35 +66,6 @@ def test_renders_necessary_plan_urls(table):
 
     assert expect_update in actual
     assert expect_delete in actual
-
-
-def test_renders_saving_plan_star(table):
-    context = {
-        "kind": "saving",
-        "object_list": {"Emergency Fund": {}},
-    }
-
-    actual = table(context)
-
-    assert "Emergency Fund" in actual
-    assert '<i class="bi bi-star plans-star"></i>' in actual
-
-
-def test_renders_object_with_necessary_attribute(table):
-    class MockExpense:
-        necessary = True
-
-        def __str__(self):
-            return "Food"
-
-    context = {
-        "object_list": {MockExpense(): {}},
-    }
-
-    actual = table(context)
-
-    assert "Food" in actual
-    assert '<i class="bi bi-star plans-star"></i>' in actual
 
 
 def test_renders_no_residual_wash_for_string_title(table):

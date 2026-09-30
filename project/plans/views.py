@@ -101,7 +101,7 @@ class TabExpenses(TabViewMixin, TemplateViewMixin):
         user = self.request.user
         return {
             **super().get_context_data(**kwargs),
-            "expense_plans": ExpensePlanModelService(user).pivot_table(user.year),
+            "expense_plans": ExpensePlanModelService(user).pivot_tables(user.year),
             "necessary_plans": NecessaryPlanModelService(user).pivot_table(user.year),
             "cards": ExpenseCards.build(self.plan_data()),
         }

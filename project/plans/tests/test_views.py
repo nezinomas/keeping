@@ -37,7 +37,11 @@ TAB_VIEWS = {
 
 TAB_PANEL_TITLES = {
     "incomes": ["Pajamos"],
-    "expenses": ["Išlaidos", "Papildomos būtinos išlaidos"],
+    "expenses": [
+        "Būtinos išlaidos",
+        "Papildomos būtinos išlaidos",
+        "Kasdienės išlaidos",
+    ],
     "savings": ["Taupymas"],
     "day": [
         "Suma dienai",
@@ -48,7 +52,11 @@ TAB_PANEL_TITLES = {
 
 TAB_TABLE_PANELS = {
     "incomes": ["income-plans"],
-    "expenses": ["expense-plans", "necessary-plans"],
+    "expenses": [
+        "necessary-expense-plans",
+        "necessary-plans",
+        "everyday-expense-plans",
+    ],
     "savings": ["saving-plans"],
     "day": ["day-plans", "calculations-spend", "calculations-check"],
 }
@@ -130,7 +138,7 @@ def test_a_tab_fragment_carries_only_its_own_panel_titles(client_logged, tab):
     ).content.decode()
 
     for title in TAB_PANEL_TITLES[tab.name]:
-        assert f'<h2 class="panel__title">{title}</h2>' in content
+        assert re.search(rf'<h2 class="panel__title">{title}(</h2>| <span)', content)
 
     other_titles = {
         title
@@ -140,7 +148,9 @@ def test_a_tab_fragment_carries_only_its_own_panel_titles(client_logged, tab):
         if title not in TAB_PANEL_TITLES[tab.name]
     }
     for title in other_titles:
-        assert f'<h2 class="panel__title">{title}</h2>' not in content
+        assert not re.search(
+            rf'<h2 class="panel__title">{title}(</h2>| <span)', content
+        )
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -236,6 +246,37 @@ def test_the_navbar_marks_plans_on_every_tab(client_logged, tab):
     active = re.findall(r'<div class="active">\s*<a href="([^"]+)"', content)
 
     assert active == [reverse("plans:index")]
+
+
+def test_the_expenses_tab_orders_necessary_extra_necessary_then_everyday(
+    client_logged,
+):
+    content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
+
+    positions = [
+        content.index(f'id="{panel}"') for panel in TAB_TABLE_PANELS["expenses"]
+    ]
+    assert positions == sorted(positions)
+
+
+def test_the_expenses_tab_splits_the_expense_plans_by_necessity(client_logged):
+    ExpensePlanFactory(expense_type=ExpenseTypeFactory(title="Būstas", necessary=True))
+    ExpensePlanFactory(expense_type=ExpenseTypeFactory(title="Maistas"))
+
+    content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
+
+    necessary = content.index('id="necessary-expense-plans"')
+    everyday = content.index('id="everyday-expense-plans"')
+    assert necessary < content.index("Būstas") < everyday < content.index("Maistas")
+
+
+def test_the_necessary_expenses_panel_explains_where_necessity_is_set(client_logged):
+    content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
+
+    panel = content[content.index('id="necessary-expense-plans"') :]
+    panel = panel[: panel.index("</h2>")]
+    assert "bi-question-circle" in panel
+    assert "Išlaidų tipai, pažymėti kaip būtini" in panel
 
 
 def test_the_expenses_bar_offers_both_add_pills(client_logged):
