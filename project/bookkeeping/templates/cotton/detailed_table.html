@@ -56,7 +56,7 @@
     <tbody>
         {% for row in data %}
         <tr>
-            <td class="text-left">{{ row.title|safe }}</td>
+            <td class="text-left">{{ row.title }}</td>
 
             {% for num, month_name in months.items %}
                 {% with cell_value=row|get_item:num %}
