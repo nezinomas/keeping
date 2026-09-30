@@ -4,6 +4,13 @@ from types import SimpleNamespace
 import pytest
 from mock import MagicMock
 
+from ....expenses.tests.factories import (
+    ExpenseFactory,
+    ExpenseNameFactory,
+    ExpenseTypeFactory,
+)
+from ....incomes.tests.factories import IncomeFactory
+from ....savings.tests.factories import SavingFactory
 from ...services.detailed.builders import DetailedTableBuilder
 from ...services.detailed.dtos import DetailedDto
 from ...services.detailed.presenters import build_context, load_service
@@ -216,3 +223,40 @@ def test_load_service_unknown_category_not_found(mocker):
     result = load_service(user, category="non_existent_slug")
 
     assert result == []
+
+
+def _expense(type_title, name_title):
+    expense_type = ExpenseTypeFactory(title=type_title)
+    ExpenseFactory(
+        expense_type=expense_type,
+        expense_name=ExpenseNameFactory(title=name_title, parent=expense_type),
+    )
+
+
+def _titles(user):
+    return [context["title"] for context in load_service(user)]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_types_by_type_title(main_user):
+    _expense("Zeta", "Alpha")
+    _expense("Beta", "Omega")
+
+    assert _titles(main_user) == ["Išlaidos / Beta", "Išlaidos / Zeta"]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_types_in_code_point_order(main_user):
+    _expense("Šildymas", "Alpha")
+    _expense("Zeta", "Omega")
+
+    assert _titles(main_user) == ["Išlaidos / Zeta", "Išlaidos / Šildymas"]
+
+
+@pytest.mark.django_db
+def test_load_service_incomes_and_savings_before_expense_types(main_user):
+    _expense("Beta", "Alpha")
+    IncomeFactory()
+    SavingFactory()
+
+    assert _titles(main_user) == ["Pajamos", "Taupymas", "Išlaidos / Beta"]

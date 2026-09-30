@@ -36,7 +36,11 @@ class DetailedDataProvider:
             group_key = record.pop("type_title")
             grouped_data[group_key].append(record)
 
-        return {title: DetailedDto(data=data) for title, data in grouped_data.items()}
+        # in Python: MariaDB's utf8mb3_general_ci and SQLite's binary order disagree
+        return {
+            title: DetailedDto(data=data)
+            for title, data in sorted(grouped_data.items())
+        }
 
     def get_expense(self, category_slug: str) -> DetailedDto:
         """Fetches a single expense category filtered directly at the DB level."""
