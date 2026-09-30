@@ -599,6 +599,46 @@ def test_necessary_summed_by_month_no_data(main_user):
     assert not actual
 
 
+def test_day_summed_by_month_one_row_per_month(main_user):
+    DayPlanFactory(month=1, price=11)
+    DayPlanFactory(month=2, price=22)
+
+    actual = list(DayPlanModelService(main_user).summed_by_month(1999))
+
+    assert actual == [{"month": 1, "amount": 11}, {"month": 2, "amount": 22}]
+
+
+@pytest.mark.parametrize(
+    "service, table",
+    [
+        (IncomePlanModelService, "incomes_incometype"),
+        (SavingPlanModelService, "savings_savingtype"),
+        (NecessaryPlanModelService, "expenses_expensetype"),
+    ],
+)
+def test_summed_by_month_joins_no_type_table(main_user, service, table):
+    sql = str(service(main_user).summed_by_month(1999).query)
+
+    assert table not in sql
+
+
+@pytest.mark.parametrize("necessary", [False, True])
+def test_expense_summed_by_month_joins_the_type_it_filters_on(main_user, necessary):
+    sql = str(
+        ExpensePlanModelService(main_user)
+        .summed_by_month(1999, necessary=necessary)
+        .query
+    )
+
+    assert "expenses_expensetype" in sql
+
+
+def test_day_summed_by_month_joins_nothing(main_user):
+    sql = str(DayPlanModelService(main_user).summed_by_month(1999).query)
+
+    assert "JOIN" not in sql
+
+
 def test_necessary_items(main_user, second_user):
     NecessaryPlanFactory()
     NecessaryPlanFactory(year=1974)
