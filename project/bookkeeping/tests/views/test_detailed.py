@@ -4,7 +4,11 @@ from django.db.models.signals import post_save
 from django.urls import resolve, reverse
 
 from ....core.tests.utils import clean_content
-from ....expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
+from ....expenses.tests.factories import (
+    ExpenseFactory,
+    ExpenseNameFactory,
+    ExpenseTypeFactory,
+)
 from ....incomes.tests.factories import IncomeFactory
 from ....savings.tests.factories import SavingFactory
 from ... import views
@@ -43,6 +47,17 @@ def test_view_detailed_rendered_expenses(client_logged, expenses):
 
     assert "Expense Name" in content
     assert "Išlaidos / Expense Type" in content
+
+
+@factory.django.mute_signals(post_save)
+def test_view_detailed_escapes_expense_name(client_logged):
+    ExpenseFactory(expense_name=ExpenseNameFactory(title="A <b>B</b>"))
+
+    url = reverse("bookkeeping:detailed")
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert "A &lt;b&gt;B&lt;/b&gt;" in content
+    assert "<b>B</b>" not in content
 
 
 def test_view_detailed_no_expenses(client_logged):
