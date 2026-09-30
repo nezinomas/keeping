@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load i18n %}
+
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+
+{% block css %}<link rel="stylesheet" href="{% static 'css/paper.min.css' %}">{% endblock css %}
+
+
+{% block content %}
+
+<div class="paper-skin" x-data="{ tab: '{{ tab }}' }">
+
+<h1 class="visually-hidden">{% translate 'Detailed' %}</h1>
+
+<c-subnav :tabs=tabs :active=tab />
+
+<main id="tab_content" class="grid-one-col" role="tabpanel" :aria-labelledby="'tab-' + tab">
+    {{ content }}
+</main>
+
+</div>
+
+{% endblock content %}

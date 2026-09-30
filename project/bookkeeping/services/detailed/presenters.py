@@ -33,6 +33,7 @@ def build_context(
         "title": title,
         "url_title": url_title,
         "url": url,
+        "table_id": f"detailed-{url_title}-table",
         "data": ordered.rows,
         "total": builder.total_row,
         "order": ordered.active,
@@ -40,33 +41,38 @@ def build_context(
 
 
 def _incomes(provider: DetailedDataProvider) -> tuple:
-    url = reverse("bookkeeping:detailed_table", kwargs={"category": "income"})
-    return (_("Incomes"), "income", url, provider.get_incomes())
+    return (_("Incomes"), "income", "", provider.get_incomes())
 
 
 def _savings(provider: DetailedDataProvider) -> tuple:
-    url = reverse("bookkeeping:detailed_table", kwargs={"category": "saving"})
-    return (_("Savings"), "saving", url, provider.get_savings())
+    return (_("Savings"), "saving", "", provider.get_savings())
 
 
 def _expense_type(title: str, type_slug: str, dto: DetailedDto) -> tuple:
     url = reverse("bookkeeping:detailed_type", kwargs={"type_slug": type_slug})
-    return (f"{_('Expenses')} / {title}", type_slug, url, dto)
+    return (title, type_slug, url, dto)
+
+
+def _expense_types(type_slug: str, provider: DetailedDataProvider) -> list[tuple]:
+    if not type_slug:
+        return [
+            _expense_type(title, slugify(title), dto)
+            for title, dto in provider.get_expenses().items()
+            if dto.data
+        ]
+
+    expense_type = provider.get_expense_type(type_slug)
+    if not expense_type:
+        return []
+
+    dto = provider.get_expense(expense_type.slug)
+    return [_expense_type(expense_type.title, expense_type.slug, dto)]
 
 
 def _get_categories(
     category: str, type_slug: str, provider: DetailedDataProvider
 ) -> list[tuple[str, str, str, DetailedDto]]:
     match category:
-        case "all_data":
-            categories = [_incomes(provider), _savings(provider)]
-            categories.extend(
-                _expense_type(title, slugify(title), dto)
-                for title, dto in provider.get_expenses().items()
-                if dto.data
-            )
-            return categories
-
         case "income":
             return [_incomes(provider)]
 
@@ -74,19 +80,14 @@ def _get_categories(
             return [_savings(provider)]
 
         case "expenses":
-            expense_type = provider.get_expense_type(type_slug)
-            if not expense_type:
-                return []
-
-            dto = provider.get_expense(expense_type.slug)
-            return [_expense_type(expense_type.title, expense_type.slug, dto)]
+            return _expense_types(type_slug, provider)
 
         case _:
             return []
 
 
 def load_service(
-    user: User, category: str = "all_data", order: str = "", type_slug: str = ""
+    user: User, category: str, order: str = "", type_slug: str = ""
 ) -> list[dict]:
     provider = DetailedDataProvider(user)
     contexts = []

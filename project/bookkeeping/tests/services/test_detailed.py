@@ -226,7 +226,7 @@ def _expense(type_title, name_title):
 
 
 def _titles(user):
-    return [context["title"] for context in load_service(user)]
+    return [context["title"] for context in load_service(user, "expenses")]
 
 
 @pytest.mark.django_db
@@ -234,7 +234,7 @@ def test_load_service_expense_types_by_type_title(main_user):
     _expense("Zeta", "Alpha")
     _expense("Beta", "Omega")
 
-    assert _titles(main_user) == ["Išlaidos / Beta", "Išlaidos / Zeta"]
+    assert _titles(main_user) == ["Beta", "Zeta"]
 
 
 @pytest.mark.django_db
@@ -242,16 +242,35 @@ def test_load_service_expense_types_in_code_point_order(main_user):
     _expense("Šildymas", "Alpha")
     _expense("Zeta", "Omega")
 
-    assert _titles(main_user) == ["Išlaidos / Zeta", "Išlaidos / Šildymas"]
+    assert _titles(main_user) == ["Zeta", "Šildymas"]
 
 
 @pytest.mark.django_db
-def test_load_service_incomes_and_savings_before_expense_types(main_user):
+def test_load_service_expenses_are_the_types_alone(main_user):
     _expense("Beta", "Alpha")
     IncomeFactory()
     SavingFactory()
 
-    assert _titles(main_user) == ["Pajamos", "Taupymas", "Išlaidos / Beta"]
+    assert _titles(main_user) == ["Beta"]
+
+
+@pytest.mark.django_db
+def test_load_service_expenses_skip_a_type_without_rows(main_user):
+    _expense("Beta", "Alpha")
+    ExpenseTypeFactory(title="Empty")
+
+    assert _titles(main_user) == ["Beta"]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_type_carries_its_url_and_table_id(main_user):
+    _expense("Zeta Type", "Alpha")
+
+    (table,) = load_service(main_user, "expenses")
+
+    assert table["url"] == "/detailed/expenses/zeta-type/"
+    assert table["table_id"] == "detailed-zeta-type-table"
+    assert "target" not in table
 
 
 @pytest.mark.django_db
@@ -261,5 +280,22 @@ def test_load_service_type_slug_reads_its_own_type(main_user):
 
     (table,) = load_service(main_user, "expenses", type_slug="income")
 
-    assert table["title"] == "Išlaidos / Income"
+    assert table["title"] == "Income"
     assert [row["title"] for row in table["data"]] == ["Alpha"]
+
+
+@pytest.mark.django_db
+def test_load_service_type_slug_reads_that_type_only(main_user):
+    _expense("Beta", "Alpha")
+    _expense("Zeta", "Omega")
+
+    (table,) = load_service(main_user, "expenses", type_slug="zeta")
+
+    assert table["title"] == "Zeta"
+
+
+@pytest.mark.django_db
+def test_load_service_unknown_type_slug_is_empty(main_user):
+    _expense("Beta", "Alpha")
+
+    assert load_service(main_user, "expenses", type_slug="nonsense") == []

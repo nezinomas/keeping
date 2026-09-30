@@ -1,4 +1,4 @@
-from django.urls import path, re_path, register_converter
+from django.urls import path, register_converter
 
 from ..core import converters
 from . import views
@@ -32,17 +32,15 @@ urlpatterns = [
     path("bookkeeping/forecast/", views.Forecast.as_view(), name="forecast"),
     path("bookkeeping/no_incomes/", views.NoIncomes.as_view(), name="no_incomes"),
     path("bookkeeping/reload_index/", views.ReloadIndex.as_view(), name="reload_index"),
-    path("detailed/", views.Detailed.as_view(), name="detailed"),
+    path("detailed/", views.TabIncomes.as_view(), name="detailed"),
+    path("detailed/incomes/", views.TabIncomes.as_view(), name="detailed_incomes"),
+    path("detailed/savings/", views.TabSavings.as_view(), name="detailed_savings"),
+    path("detailed/expenses/", views.TabExpenses.as_view(), name="detailed_expenses"),
     path(
         "detailed/expenses/<slug:type_slug>/",
         views.DetailedTable.as_view(),
         {"category": "expenses"},
         name="detailed_type",
-    ),
-    re_path(
-        r"^detailed/(?P<category>income|saving)/$",
-        views.DetailedTable.as_view(),
-        name="detailed_table",
     ),
     path("summary/", views.Summary.as_view(), name="summary"),
     path("summary/savings/", views.SummarySavings.as_view(), name="summary_savings"),

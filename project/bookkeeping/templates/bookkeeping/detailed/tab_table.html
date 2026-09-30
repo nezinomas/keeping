@@ -1,0 +1,7 @@
+{% for table in tables %}
+<div class="month-table">
+    <c-detailed-table :title=table.title :order=table.order :data=table.data :total=table.total :months=months :url=tab_url target="#tab_content" />
+</div>
+{% empty %}
+{% include 'bookkeeping/detailed/notice.html' %}
+{% endfor %}
