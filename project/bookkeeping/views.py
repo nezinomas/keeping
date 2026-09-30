@@ -2,6 +2,7 @@ from datetime import date
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from project.bookkeeping.services.model_services import (
@@ -13,6 +14,7 @@ from project.bookkeeping.services.model_services import (
 from ..accounts.services.model_services import AccountModelService
 from ..core.lib.utils import rendered_content
 from ..core.mixins.formset import FormsetMixin
+from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     FormViewMixin,
@@ -23,6 +25,7 @@ from ..savings.services.model_services import SavingTypeModelService
 from . import forms, services
 from .lib import no_incomes
 from .mixins.month import MonthMixin
+from .tabs import DEFAULT_TAB, TABS, DetailedTab
 
 
 class ReloadIndexContextDataMixin:
@@ -162,14 +165,42 @@ class MonthChart(TemplateViewMixin):
     template_name = "bookkeeping/includes/month_chart.html"
 
 
-class Detailed(TemplateViewMixin):
-    template_name = "bookkeeping/detailed.html"
+class DetailedTabMixin(CoreTabViewMixin):
+    tab = DEFAULT_TAB
+    fragment_template = "bookkeeping/detailed/tab_fragment.html"
+    page_template = "bookkeeping/detailed/index.html"
+    category = ""
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs) | {
-            "object_list": services.detailed.load_service(user=self.request.user),
+        return {
+            **super().get_context_data(**kwargs),
+            "tab_url": self.tab.url,
             "months": services.detailed.MONTHS,
+            "tables": services.detailed.load_service(
+                self.request.user, self.category, self.request.GET.get("order", "")
+            ),
         }
+
+    def page_context(self) -> dict:
+        return {
+            "page_title": format_lazy("{} | {}", _("Detailed"), self.tab.title),
+            "tabs": [(tab, tab.url) for tab in TABS],
+        }
+
+
+class TabIncomes(DetailedTabMixin, TemplateViewMixin):
+    tab = DetailedTab.resolve("incomes")
+    category = "income"
+
+
+class TabSavings(DetailedTabMixin, TemplateViewMixin):
+    tab = DetailedTab.resolve("savings")
+    category = "saving"
+
+
+class TabExpenses(DetailedTabMixin, TemplateViewMixin):
+    tab = DetailedTab.resolve("expenses")
+    category = "expenses"
 
 
 class DetailedTable(TemplateViewMixin):

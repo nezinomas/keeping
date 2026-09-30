@@ -12,7 +12,7 @@
     border-spacing: 0;
 
     th.title-col,
-    tbody td:first-child {
+    :is(tbody, tfoot) td:first-child {
         width: 8rem;
         position: sticky;
         left: 0;
@@ -20,7 +20,7 @@
     }
 
     // opaque: it covers the cells that scroll under it
-    tbody tr > td:first-child {
+    :is(tbody, tfoot) tr > td:first-child {
         background-color: $paper;
     }
 
@@ -33,6 +33,12 @@
         background-color: $hair-soft;
         background-image: none;
     }
+
+    .month-table__total {
+        font-weight: 600;
+        color: $ink;
+        border-left: 1px solid $hair;
+    }
 }
 
 .month-table__month-full {
@@ -44,7 +50,7 @@
         min-width: 72rem;
 
         th.title-col,
-        tbody td:first-child {
+        :is(tbody, tfoot) td:first-child {
             width: 12rem;
         }
     }
