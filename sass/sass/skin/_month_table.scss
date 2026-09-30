@@ -1,0 +1,59 @@
+@use "../abstracts/variables" as *;
+
+.month-table {
+    overflow-x: auto;
+}
+
+.paper-skin .month-table .main {
+    table-layout: fixed;
+    min-width: 68rem;
+    // collapsed borders are drawn by the table, under the sticky cell's opaque fill
+    border-collapse: separate;
+    border-spacing: 0;
+
+    th.title-col,
+    tbody td:first-child {
+        width: 8rem;
+        position: sticky;
+        left: 0;
+        z-index: 1;
+    }
+
+    // opaque: it covers the cells that scroll under it
+    tbody tr > td:first-child {
+        background-color: $paper;
+    }
+
+    &.striped tbody tr:nth-child(even) > td:first-child {
+        background-color: $paper;
+        background-image: linear-gradient(rgba($ink, 0.035), rgba($ink, 0.035));
+    }
+
+    &.hover tbody tr:hover > td:first-child {
+        background-color: $hair-soft;
+        background-image: none;
+    }
+}
+
+.month-table__month-full {
+    display: none;
+}
+
+@media only screen and (min-width: 768px) {
+    .paper-skin .month-table .main {
+        min-width: 72rem;
+
+        th.title-col,
+        tbody td:first-child {
+            width: 12rem;
+        }
+    }
+
+    .month-table__month-full {
+        display: inline;
+    }
+
+    .month-table__month-short {
+        display: none;
+    }
+}
