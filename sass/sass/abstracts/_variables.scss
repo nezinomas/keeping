@@ -125,6 +125,9 @@ $second-ink: #8e57a5;
 // off $data, so neither pair collapses into one colour in greyscale
 $harm: #7d2733;
 $harm-soft: #c47f86;
+// an alert's ground: $harm's own hue kept clean, since an alpha of the deep
+// maroon on white greys out; $harm text on it is 8.66:1
+$harm-tint: #fdf2f3;
 
 // a receipt line still waiting for input: a highlighter stroke, not harm, good or data
 $attention: #e8c21a;
