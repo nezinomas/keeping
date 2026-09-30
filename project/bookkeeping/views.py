@@ -25,6 +25,7 @@ from ..savings.services.model_services import SavingTypeModelService
 from . import forms, services
 from .lib import no_incomes
 from .mixins.month import MonthMixin
+from .services.detailed.cards import ExpenseCards, with_subtitles
 from .tabs import DEFAULT_TAB, TABS, DetailedTab
 
 
@@ -201,6 +202,14 @@ class TabSavings(DetailedTabMixin, TemplateViewMixin):
 class TabExpenses(DetailedTabMixin, TemplateViewMixin):
     tab = DetailedTab.resolve("expenses")
     category = "expenses"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        return context | {
+            "cards": ExpenseCards.build(context["tables"]),
+            "tables": with_subtitles(context["tables"]),
+        }
 
 
 class DetailedTable(TemplateViewMixin):
