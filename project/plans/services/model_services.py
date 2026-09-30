@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from django.db.models import Count, F, Sum
+from django.db.models import F, Sum
 from django.utils.translation import gettext_lazy as _
 
 from ...core.services.model_services import DatedModelService
@@ -31,11 +31,11 @@ class CommonMethodsMixin:
 
         return dict(grouped)
 
-    def generic_summed_by_month(self, year, group_by):
+    def generic_summed_by_month(self, year):
         return (
             self.year(year)
-            .annotate(cnt=Count(group_by))
-            .values("cnt")
+            .order_by("month")
+            .values("month")
             .annotate(amount=Sum("price", default=0))
             .values("month", "amount")
         )
@@ -51,7 +51,7 @@ class IncomePlanModelService(CommonMethodsMixin, DatedModelService):
         return self.generic_pivot_table(year, lambda plan: plan.income_type)
 
     def summed_by_month(self, year):
-        return self.generic_summed_by_month(year, "income_type")
+        return self.generic_summed_by_month(year)
 
 
 class ExpensePlanModelService(CommonMethodsMixin, DatedModelService):
@@ -64,7 +64,7 @@ class ExpensePlanModelService(CommonMethodsMixin, DatedModelService):
         return self.generic_pivot_table(year, lambda plan: plan.expense_type)
 
     def summed_by_month(self, year, necessary=False):
-        return self.generic_summed_by_month(year, "expense_type").filter(
+        return self.generic_summed_by_month(year).filter(
             expense_type__necessary=necessary
         )
 
@@ -79,7 +79,7 @@ class SavingPlanModelService(CommonMethodsMixin, DatedModelService):
         return self.generic_pivot_table(year, lambda plan: plan.saving_type)
 
     def summed_by_month(self, year):
-        return self.generic_summed_by_month(year, "saving_type")
+        return self.generic_summed_by_month(year)
 
 
 class DayPlanModelService(CommonMethodsMixin, DatedModelService):
@@ -92,7 +92,7 @@ class DayPlanModelService(CommonMethodsMixin, DatedModelService):
         return self.generic_pivot_table(year, lambda x: _("Daily"))
 
     def summed_by_month(self, year):
-        return self.generic_summed_by_month(year, "year")
+        return self.generic_summed_by_month(year)
 
 
 class NecessaryPlanModelService(CommonMethodsMixin, DatedModelService):
@@ -107,7 +107,7 @@ class NecessaryPlanModelService(CommonMethodsMixin, DatedModelService):
         )
 
     def summed_by_month(self, year):
-        return self.generic_summed_by_month(year, ["expense_type", "title"])
+        return self.generic_summed_by_month(year)
 
 
 class PlanAggregatorService:
