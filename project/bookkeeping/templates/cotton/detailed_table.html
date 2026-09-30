@@ -5,51 +5,23 @@
 {% load cell_format %}
 
 {% if data %}
-<table class="main striped hover" id="tbl-{{url_title}}">
+<table class="main striped hover">
     <thead class="sortable-header-row">
         <tr>
-            <th class="text-left title-col">
-                {% if not order or order == "title" %}
-                    <span>{{title}}</span>
-                {% else %}
-                    <a role="button"
-                        hx-get="{% url 'bookkeeping:detailed_category' url_title 'title' %}"
-                        hx-target="#tbl-{{url_title}}"
-                        hx-indicator="#indicator">
-                        {{ title }}
-                    </a>
-                {% endif %}
-            </th>
-
-            {% for num, month_name in months.items %}
-                {% with "-"|add:num as ordering %}
-                <th>
-                    {% if order == ordering %}
-                        <span>{% translate month_name %}</span>
-                    {% else %}
-                        <a role="button"
-                            hx-get="{% url 'bookkeeping:detailed_category' url_title ordering %}"
-                            hx-target="#tbl-{{url_title}}"
-                            hx-indicator="#indicator">
-                            {% translate month_name %}
-                        </a>
-                    {% endif %}
-                </th>
-                {% endwith %}
-            {% endfor %}
-
-            <th class="left-thick-border">
-                {% if order == "-total_col" %}
-                    <span>{% translate 'Total' %}</span>
-                {% else %}
-                    <a role="button"
-                        hx-get="{% url 'bookkeeping:detailed_category' url_title '-total_col' %}"
-                        hx-target="#tbl-{{url_title}}"
-                        hx-indicator="#indicator">
-                        {% translate 'Total' %}
-                    </a>
-                {% endif %}
-            </th>
+            <c-sort-th key="title" :active=order :url=url target="#tbl-{{ url_title }}" class="text-left title-col">{{ title }}</c-sort-th>
+            <c-sort-th key="1" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'January' %}</c-sort-th>
+            <c-sort-th key="2" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'February' %}</c-sort-th>
+            <c-sort-th key="3" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'March' %}</c-sort-th>
+            <c-sort-th key="4" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'April' %}</c-sort-th>
+            <c-sort-th key="5" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'May' %}</c-sort-th>
+            <c-sort-th key="6" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'June' %}</c-sort-th>
+            <c-sort-th key="7" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'July' %}</c-sort-th>
+            <c-sort-th key="8" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'August' %}</c-sort-th>
+            <c-sort-th key="9" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'September' %}</c-sort-th>
+            <c-sort-th key="10" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'October' %}</c-sort-th>
+            <c-sort-th key="11" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'November' %}</c-sort-th>
+            <c-sort-th key="12" :active=order :url=url target="#tbl-{{ url_title }}">{% translate 'December' %}</c-sort-th>
+            <c-sort-th key="total_col" :active=order :url=url target="#tbl-{{ url_title }}" class="left-thick-border">{% translate 'Total' %}</c-sort-th>
         </tr>
     </thead>
 
@@ -58,7 +30,7 @@
         <tr>
             <td class="text-left">{{ row.title }}</td>
 
-            {% for num, month_name in months.items %}
+            {% for num in months %}
                 {% with cell_value=row|get_item:num %}
                     <td class="{{ cell_value|css_class_if_none }}">
                         {{ cell_value|price|cellformat:"0,00" }}
@@ -77,7 +49,7 @@
         <tr>
             <th class="text-left">{% translate 'Total' %}</th>
 
-            {% for num, month_name in months.items %}
+            {% for num in months %}
                 {% with cell_value=total|get_item:num %}
                     <th class="{{ cell_value|css_class_if_none }}">
                         {{ cell_value|price|cellformat:"0,00" }}

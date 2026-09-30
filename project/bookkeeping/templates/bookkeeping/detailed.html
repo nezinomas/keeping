@@ -11,10 +11,12 @@
 
     {% if object_list %}
         {% for row in object_list %}
-        <div>
+        <div id="tbl-{{ row.url_title }}">
             <c-detailed-table
                 :title=row.title
                 :url_title=row.url_title
+                :url=row.url
+                :order=row.order
                 :data=row.data
                 :total=row.total
             />
