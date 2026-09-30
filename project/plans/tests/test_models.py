@@ -639,6 +639,37 @@ def test_day_summed_by_month_joins_nothing(main_user):
     assert "JOIN" not in sql
 
 
+@pytest.mark.parametrize(
+    "service",
+    [
+        IncomePlanModelService,
+        ExpensePlanModelService,
+        SavingPlanModelService,
+        DayPlanModelService,
+        NecessaryPlanModelService,
+    ],
+)
+def test_plans_do_not_join_the_journal(main_user, service):
+    sql = str(service(main_user).items().query)
+
+    assert "journals_journal" not in sql
+
+
+@pytest.mark.parametrize(
+    "service, table",
+    [
+        (IncomePlanModelService, "incomes_incometype"),
+        (ExpensePlanModelService, "expenses_expensetype"),
+        (SavingPlanModelService, "savings_savingtype"),
+        (NecessaryPlanModelService, "expenses_expensetype"),
+    ],
+)
+def test_plans_select_their_type(main_user, service, table):
+    sql = str(service(main_user).items().query)
+
+    assert table in sql
+
+
 def test_necessary_items(main_user, second_user):
     NecessaryPlanFactory()
     NecessaryPlanFactory(year=1974)
