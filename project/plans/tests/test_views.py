@@ -221,13 +221,11 @@ def test_the_copy_pill_is_the_rightmost_pill(client_logged):
     )
 
 
-def test_the_expenses_bar_puts_the_necessary_pill_before_the_expense_pill(
-    client_logged,
-):
+def test_the_expenses_bar_puts_the_expense_pill_first(client_logged):
     content = client_logged.get(reverse("plans:tab_expenses")).content.decode()
 
-    assert content.index(reverse("plans:necessary_new")) < content.index(
-        reverse("plans:expense_new")
+    assert content.index(reverse("plans:expense_new")) < content.index(
+        reverse("plans:necessary_new")
     )
 
 
