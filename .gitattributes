@@ -1,0 +1,3 @@
+# sass writes LF; keep checkouts the same so a rebuild does not dirty the tree
+project/static/css/*.min.css text eol=lf
+project/static/css/*.min.css.map text eol=lf
