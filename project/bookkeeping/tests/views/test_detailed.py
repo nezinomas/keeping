@@ -483,6 +483,18 @@ def test_view_detailed_expenses_cards(client_logged):
 
 
 @factory.django.mute_signals(post_save)
+def test_view_detailed_expenses_bigger_type_first_and_named_largest(client_logged):
+    _expense("a1", 30000, expense_type=ExpenseTypeFactory(title="A"))
+    _expense("b1", 70000, expense_type=ExpenseTypeFactory(title="B"))
+
+    content = _expenses_page(client_logged)
+
+    first, second = _positions(content, 'id="detailed-b"', 'id="detailed-a"')
+    assert first < second
+    assert 'title="B">B</span>' in content
+
+
+@factory.django.mute_signals(post_save)
 def test_view_detailed_expenses_panels_carry_their_share(client_logged):
     _expense("a1", 30000, expense_type=ExpenseTypeFactory(title="A"))
     _expense("b1", 70000, expense_type=ExpenseTypeFactory(title="B"))

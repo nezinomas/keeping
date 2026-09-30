@@ -105,4 +105,4 @@ def load_service(
         ):
             contexts.append(context)
 
-    return contexts
+    return sorted(contexts, key=lambda table: table["total"]["total_col"], reverse=True)

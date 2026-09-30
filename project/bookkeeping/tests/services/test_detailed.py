@@ -176,11 +176,11 @@ def test_load_service_income_category(mocker):
     mock_build = mocker.patch(
         "project.bookkeeping.services.detailed.presenters.build_context"
     )
-    mock_build.return_value = {"mock": "context"}
+    mock_build.return_value = {"mock": "context", "total": {"total_col": 0}}
 
     result = load_service(user, category="income")
 
-    assert result == [{"mock": "context"}]
+    assert result == [mock_build.return_value]
     mock_provider.return_value.get_incomes.assert_called_once()
 
 
@@ -196,11 +196,11 @@ def test_load_service_saving_category(mocker):
     mock_build = mocker.patch(
         "project.bookkeeping.services.detailed.presenters.build_context"
     )
-    mock_build.return_value = {"mock": "context"}
+    mock_build.return_value = {"mock": "context", "total": {"total_col": 0}}
 
     result = load_service(user, category="saving")
 
-    assert result == [{"mock": "context"}]
+    assert result == [mock_build.return_value]
     mock_provider.return_value.get_savings.assert_called_once()
 
 
@@ -217,11 +217,12 @@ def test_load_service_unknown_category_not_found(mocker):
     assert result == []
 
 
-def _expense(type_title, name_title):
+def _expense(type_title, name_title, **fields):
     expense_type = ExpenseTypeFactory(title=type_title)
     ExpenseFactory(
         expense_type=expense_type,
         expense_name=ExpenseNameFactory(title=name_title, parent=expense_type),
+        **fields,
     )
 
 
@@ -243,6 +244,30 @@ def test_load_service_expense_types_in_code_point_order(main_user):
     _expense("Zeta", "Omega")
 
     assert _titles(main_user) == ["Zeta", "Šildymas"]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_types_by_total_biggest_first(main_user):
+    _expense("A", "Alpha", price=10000)
+    _expense("B", "Omega", price=30000)
+
+    assert _titles(main_user) == ["B", "A"]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_rows_keep_title_order_below_a_bigger_type(main_user):
+    expense_type = ExpenseTypeFactory(title="A")
+    for title, price in (("Beta", 10000), ("Alpha", 5000)):
+        ExpenseFactory(
+            price=price,
+            expense_type=expense_type,
+            expense_name=ExpenseNameFactory(title=title, parent=expense_type),
+        )
+    _expense("B", "Omega", price=30000)
+
+    _, table = load_service(main_user, "expenses")
+
+    assert [row["title"] for row in table["data"]] == ["Alpha", "Beta"]
 
 
 @pytest.mark.django_db
