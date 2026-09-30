@@ -41,7 +41,6 @@
 
                 {% endif %}
 
-                {% if object.necessary or kind == "necessary" or kind == "saving" %} <i class="bi bi-star plans-star"></i>{% endif %}
             </td>
             <td class="{{months.1|css_class_if_none}}{% if states.1 == 'over' %} plans-table__over{% endif %}">{{months.1|price|cellformat:"0,00"}}</td>
             <td class="{{months.2|css_class_if_none}}{% if states.2 == 'over' %} plans-table__over{% endif %}">{{months.2|price|cellformat:"0,00"}}</td>
