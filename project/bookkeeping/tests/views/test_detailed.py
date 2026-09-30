@@ -238,8 +238,8 @@ def test_view_detailed_income_headers_sort_through_the_tab(client_logged):
     content = client_logged.get(url).content.decode()
 
     assert f'hx-get="{url}?order=3" hx-target="#tab_content"' in content
-    assert f'hx-get="{url}?order=total_col" hx-target="#tab_content"' in content
-    assert f'hx-get="{url}?order=title"' not in content
+    assert f'hx-get="{url}?order=title" hx-target="#tab_content"' in content
+    assert f'hx-get="{url}?order=total_col"' not in content
 
 
 # ----------------------------------------------------------------------------
@@ -369,8 +369,8 @@ def test_view_detailed_headers_sort_their_own_table(client_logged):
 
     target = "#detailed-expense-type-table"
     assert f'hx-get="{url}?order=3" hx-target="{target}"' in content
-    assert f'hx-get="{url}?order=total_col" hx-target="{target}"' in content
-    assert f'hx-get="{url}?order=title"' not in content
+    assert f'hx-get="{url}?order=title" hx-target="{target}"' in content
+    assert f'hx-get="{url}?order=total_col"' not in content
 
 
 @factory.django.mute_signals(post_save)

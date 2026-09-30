@@ -16,7 +16,7 @@ ORDER = TableOrder(
         *(Column(month, descending=True) for month in MONTHS),
         Column("total_col", descending=True),
     ),
-    default="title",
+    default="total_col",
 )
 
 
