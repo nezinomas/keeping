@@ -2474,6 +2474,23 @@ msgstr "Metų suma, padalinta iš prabėgusių mėnesių"
 msgid "%(share)s%% of the year's total"
 msgstr "%(share)s%% metų sumos"
 
+msgid "Largest expense"
+msgstr "Didžiausia išlaida"
+
+#, python-format
+msgid "%(amount)s € · %(share)s%% of the year's total"
+msgstr "%(amount)s € · %(share)s%% metų sumos"
+
+#, python-format
+msgid "%(amount)s € · %(share)s%% · %(type)s"
+msgstr "%(amount)s € · %(share)s%% · %(type)s"
+
+msgid "The expense type with the biggest share of this year's expenses"
+msgstr "Išlaidų rūšis, kuriai tenka didžiausia metų išlaidų dalis"
+
+msgid "The expense with the biggest share of this year's expenses, across all types"
+msgstr "Išlaida, kuriai tenka didžiausia metų išlaidų dalis, iš visų rūšių"
+
 #, python-format
 msgid "Last year %(amount)s"
 msgstr "Pernai %(amount)s"

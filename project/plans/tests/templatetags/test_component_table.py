@@ -95,10 +95,10 @@ def test_renders_month_headers_full_and_short(table):
 
     actual = table(context)
 
-    assert '<span class="plans-table__month-full">Sausis</span>' in actual
-    assert '<span class="plans-table__month-short">sau</span>' in actual
-    assert '<span class="plans-table__month-full">Rugsėjis</span>' in actual
-    assert '<span class="plans-table__month-short">rugs</span>' in actual
+    assert '<span class="month-table__month-full">Sausis</span>' in actual
+    assert '<span class="month-table__month-short">sau</span>' in actual
+    assert '<span class="month-table__month-full">Rugsėjis</span>' in actual
+    assert '<span class="month-table__month-short">rugs</span>' in actual
 
 
 def test_renders_empty_state_correctly(table):

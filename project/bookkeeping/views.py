@@ -2,6 +2,7 @@ from datetime import date
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from project.bookkeeping.services.model_services import (
@@ -11,9 +12,9 @@ from project.bookkeeping.services.model_services import (
 )
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.date import monthnames_num
 from ..core.lib.utils import rendered_content
 from ..core.mixins.formset import FormsetMixin
+from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
     CreateViewMixin,
     FormViewMixin,
@@ -24,6 +25,8 @@ from ..savings.services.model_services import SavingTypeModelService
 from . import forms, services
 from .lib import no_incomes
 from .mixins.month import MonthMixin
+from .services.detailed.cards import ExpenseCards, with_subtitles
+from .tabs import DEFAULT_TAB, TABS, DetailedTab
 
 
 class ReloadIndexContextDataMixin:
@@ -163,34 +166,67 @@ class MonthChart(TemplateViewMixin):
     template_name = "bookkeeping/includes/month_chart.html"
 
 
-class Detailed(TemplateViewMixin):
-    def get_template_names(self):
-        if "category" in self.kwargs:
-            return ["cotton/detailed_table.html"]
-
-        return ["bookkeeping/detailed.html"]
+class DetailedTabMixin(CoreTabViewMixin):
+    tab = DEFAULT_TAB
+    fragment_template = "bookkeeping/detailed/tab_fragment.html"
+    page_template = "bookkeeping/detailed/index.html"
+    category = ""
 
     def get_context_data(self, **kwargs):
-        category = self.kwargs.get("category", "all_data")
-        order = self.kwargs.get("order", "")
-
-        service_data = services.detailed.load_service(
-            user=self.request.user, category=category, order=order
-        )
-
-        context = super().get_context_data(**kwargs)
-        context |= {
-            "order": order,
-            "months": monthnames_num(),
+        return {
+            **super().get_context_data(**kwargs),
+            "tab_url": self.tab.url,
+            "months": services.detailed.MONTHS,
+            "tables": services.detailed.load_service(
+                self.request.user, self.category, self.request.GET.get("order", "")
+            ),
         }
 
-        if not service_data:
-            return context
+    def page_context(self) -> dict:
+        return {
+            "page_title": format_lazy("{} | {}", _("Detailed"), self.tab.title),
+            "tabs": [(tab, tab.url) for tab in TABS],
+        }
 
-        if category == "all_data":
-            context["object_list"] = service_data
-        else:
-            context |= service_data[0]
+
+class TabIncomes(DetailedTabMixin, TemplateViewMixin):
+    tab = DetailedTab.resolve("incomes")
+    category = "income"
+
+
+class TabSavings(DetailedTabMixin, TemplateViewMixin):
+    tab = DetailedTab.resolve("savings")
+    category = "saving"
+
+
+class TabExpenses(DetailedTabMixin, TemplateViewMixin):
+    tab = DetailedTab.resolve("expenses")
+    category = "expenses"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        return context | {
+            "cards": ExpenseCards.build(context["tables"]),
+            "tables": with_subtitles(context["tables"]),
+        }
+
+
+class DetailedTable(TemplateViewMixin):
+    template_name = "cotton/detailed_table.html"
+
+    def get_context_data(self, **kwargs):
+        tables = services.detailed.load_service(
+            user=self.request.user,
+            category=self.kwargs["category"],
+            order=self.request.GET.get("order", ""),
+            type_slug=self.kwargs.get("type_slug", ""),
+        )
+        context = super().get_context_data(**kwargs)
+        context["months"] = services.detailed.MONTHS
+
+        if tables:
+            context |= tables[0]
 
         return context
 
