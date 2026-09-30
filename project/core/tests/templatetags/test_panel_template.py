@@ -56,3 +56,18 @@ def test_a_table_panel_keeps_its_title_subtitle_and_id():
     assert '<section class="panel panel--table" id="breakdown">' in content
     assert '<h2 class="panel__title">Suvartota</h2>' in content
     assert '<p class="panel__subtitle">Antraštė</p>' in content
+
+
+def test_a_hint_renders_a_question_tip_inside_the_title():
+    content = _render('<c-panel title="Būtinos" hint="Kodėl būtinos">slot</c-panel>')
+
+    assert '<h2 class="panel__title">Būtinos <span class="panel__hint tip' in content
+    assert 'data-tip="Kodėl būtinos"' in content
+    assert 'aria-label="Kodėl būtinos"' in content
+    assert '<i class="bi bi-question-circle"></i>' in content
+
+
+def test_no_hint_element_when_none_is_given():
+    content = _render('<c-panel title="Suvartota">slot</c-panel>')
+
+    assert "panel__hint" not in content

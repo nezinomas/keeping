@@ -1,4 +1,5 @@
 from collections import defaultdict
+from dataclasses import dataclass, field
 
 from django.db.models import F, Sum
 from django.utils.translation import gettext_lazy as _
@@ -54,6 +55,12 @@ class IncomePlanModelService(CommonMethodsMixin, DatedModelService):
         return self.generic_summed_by_month(year)
 
 
+@dataclass
+class ExpensePlanTables:
+    necessary: dict = field(default_factory=dict)
+    everyday: dict = field(default_factory=dict)
+
+
 class ExpensePlanModelService(CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
         return models.ExpensePlan.objects.select_related("expense_type").filter(
@@ -62,6 +69,13 @@ class ExpensePlanModelService(CommonMethodsMixin, DatedModelService):
 
     def pivot_table(self, year: int):
         return self.generic_pivot_table(year, lambda plan: plan.expense_type)
+
+    def pivot_tables(self, year: int) -> ExpensePlanTables:
+        tables = ExpensePlanTables()
+        for expense_type, months in self.pivot_table(year).items():
+            table = tables.necessary if expense_type.necessary else tables.everyday
+            table[expense_type] = months
+        return tables
 
     def summed_by_month(self, year, necessary=False):
         return self.generic_summed_by_month(year).filter(

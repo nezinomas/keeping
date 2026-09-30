@@ -99,6 +99,11 @@
             color: $ink-muted;
         }
 
+        // an empty or zero cell (the `css_class_if_none` filter): present, not read
+        .dash {
+            color: $ink-faint;
+        }
+
         .delete-col a {
             color: $harm;
         }

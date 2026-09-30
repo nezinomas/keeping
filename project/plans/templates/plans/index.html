@@ -25,11 +25,11 @@
 
 <div class="quick-add">
     <div class="quick-add__bar">
-        <button type="button" x-show="tab === 'expenses'" x-cloak class="quick-add__pill" hx-get="{% url 'plans:necessary_new' %}" hx-target="#mainModal">
-            {% translate 'Add necessary plan' %}
-        </button>
         <button type="button" x-show="tab === 'expenses'" x-cloak class="quick-add__pill" hx-get="{% url 'plans:expense_new' %}" hx-target="#mainModal">
             {% translate 'Add expenses plan' %}
+        </button>
+        <button type="button" x-show="tab === 'expenses'" x-cloak class="quick-add__pill" hx-get="{% url 'plans:necessary_new' %}" hx-target="#mainModal">
+            {% translate 'Add necessary plan' %}
         </button>
         <button type="button" x-show="tab === 'incomes'" x-cloak class="quick-add__pill" hx-get="{% url 'plans:income_new' %}" hx-target="#mainModal">
             {% translate 'Add incomes plan' %}
