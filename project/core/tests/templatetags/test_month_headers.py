@@ -25,7 +25,7 @@ def test_renders_twelve_th_cells():
 
 def test_each_th_holds_the_full_name_in_month_full():
     actual = re.findall(
-        r'<span class="plans-table__month-full">(.*?)</span>', _render()
+        r'<span class="month-table__month-full">(.*?)</span>', _render()
     )
 
     assert actual == FULL
@@ -33,7 +33,7 @@ def test_each_th_holds_the_full_name_in_month_full():
 
 def test_each_th_holds_a_short_name_in_month_short():
     actual = re.findall(
-        r'<span class="plans-table__month-short">(.*?)</span>', _render()
+        r'<span class="month-table__month-short">(.*?)</span>', _render()
     )
 
     assert actual == SHORT

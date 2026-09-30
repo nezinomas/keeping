@@ -8,12 +8,11 @@ from .dtos import DetailedDto
 
 
 class DetailedTableBuilder:
-    """Takes a DTO and constructs the Polars pivot table with dynamic sorting."""
+    """Takes a DTO and constructs the Polars pivot table."""
 
-    def __init__(self, dto: DetailedDto, year: int, order: str = ""):
+    def __init__(self, dto: DetailedDto, year: int):
         self.dto = dto
         self.year = year
-        self.order = order
 
     @cached_property
     def df(self) -> pl.DataFrame:
@@ -22,7 +21,7 @@ class DetailedTableBuilder:
 
         padded_data = self._pad_data_for_upsampling(list(self.dto.data))
 
-        df = (
+        return (
             pl.DataFrame(padded_data)
             .sort(["title", "date"])
             .upsample(
@@ -37,8 +36,6 @@ class DetailedTableBuilder:
             .fill_null(0)
             .with_columns(total_col=pl.sum_horizontal(pl.exclude("title")))
         )
-
-        return self._apply_sorting(df)
 
     def _pad_data_for_upsampling(self, data: list[dict]) -> list[dict]:
         # Map every title to a set of its existing months
@@ -57,19 +54,6 @@ class DetailedTableBuilder:
                 data.append(item | {"date": date(self.year, 12, 1)})
 
         return data
-
-    def _apply_sorting(self, df: pl.DataFrame) -> pl.DataFrame:
-        """Applies dynamic sorting based on the instance's order parameter."""
-        if not self.order:
-            return df
-
-        descending = self.order.startswith("-")
-        sort_col = self.order.lstrip("-")
-
-        if sort_col in df.columns:
-            return df.sort(sort_col, descending=descending)
-
-        return df
 
     @property
     def table(self) -> list[dict]:

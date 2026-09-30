@@ -4,6 +4,13 @@ from types import SimpleNamespace
 import pytest
 from mock import MagicMock
 
+from ....expenses.tests.factories import (
+    ExpenseFactory,
+    ExpenseNameFactory,
+    ExpenseTypeFactory,
+)
+from ....incomes.tests.factories import IncomeFactory
+from ....savings.tests.factories import SavingFactory
 from ...services.detailed.builders import DetailedTableBuilder
 from ...services.detailed.dtos import DetailedDto
 from ...services.detailed.presenters import build_context, load_service
@@ -116,37 +123,29 @@ def dummy_sort_dto():
 
 
 @pytest.mark.parametrize(
-    "order_param, expected_first, expected_last",
+    "order, expected_titles, expected_active",
     [
-        # 1. Sort by Title
-        ("title", "Alpha", "Charlie"),  # A, B, C
-        ("-title", "Charlie", "Alpha"),  # C, B, A
-        # 2. Sort by Total Column
-        ("total_col", "Alpha", "Bravo"),  # 60, 70, 100
-        ("-total_col", "Bravo", "Alpha"),  # 100, 70, 60
-        # 3. Sort by Month 1 (January)
-        ("1", "Alpha", "Bravo"),  # 10, 30, 100
-        ("-1", "Bravo", "Alpha"),  # 100, 30, 10
-        # 4. Sort by Month 2 (February)
-        ("2", "Bravo", "Alpha"),  # 0, 40, 50
-        ("-2", "Alpha", "Bravo"),  # 50, 40, 0
-        # 5. Invalid sort column (should silently ignore and preserve default order)
-        ("invalid_column", "Alpha", "Charlie"),
-        ("-invalid_col", "Alpha", "Charlie"),
-        ("", "Alpha", "Charlie"),  # Empty string
+        ("title", ["Alpha", "Bravo", "Charlie"], "title"),
+        ("1", ["Bravo", "Charlie", "Alpha"], "1"),
+        ("2", ["Alpha", "Charlie", "Bravo"], "2"),
+        ("total_col", ["Bravo", "Charlie", "Alpha"], "total_col"),
+        ("", ["Bravo", "Charlie", "Alpha"], "total_col"),
+        ("nonsense", ["Bravo", "Charlie", "Alpha"], "total_col"),
+        ("-1", ["Bravo", "Charlie", "Alpha"], "total_col"),
     ],
 )
-def test_detailed_table_builder_sorting(
-    dummy_sort_dto, order_param, expected_first, expected_last
+def test_load_service_sorts_by_order(
+    mocker, dummy_sort_dto, order, expected_titles, expected_active
 ):
-    """Proves the Polars DataFrame sorts dynamically based on the order string."""
-    builder = DetailedTableBuilder(dto=dummy_sort_dto, year=2026, order=order_param)
+    mock_provider = mocker.patch(
+        "project.bookkeeping.services.detailed.presenters.DetailedDataProvider"
+    )
+    mock_provider.return_value.get_incomes.return_value = dummy_sort_dto
 
-    table = builder.table
+    (table,) = load_service(MagicMock(year=2026), "income", order)
 
-    # We only need to check the first and last elements to prove the sort worked
-    assert table[0]["title"] == expected_first
-    assert table[-1]["title"] == expected_last
+    assert [row["title"] for row in table["data"]] == expected_titles
+    assert table["order"] == expected_active
 
 
 # -------------------------------------------------------------------------------------
@@ -177,11 +176,11 @@ def test_load_service_income_category(mocker):
     mock_build = mocker.patch(
         "project.bookkeeping.services.detailed.presenters.build_context"
     )
-    mock_build.return_value = {"mock": "context"}
+    mock_build.return_value = {"mock": "context", "total": {"total_col": 0}}
 
     result = load_service(user, category="income")
 
-    assert result == [{"mock": "context"}]
+    assert result == [mock_build.return_value]
     mock_provider.return_value.get_incomes.assert_called_once()
 
 
@@ -197,11 +196,11 @@ def test_load_service_saving_category(mocker):
     mock_build = mocker.patch(
         "project.bookkeeping.services.detailed.presenters.build_context"
     )
-    mock_build.return_value = {"mock": "context"}
+    mock_build.return_value = {"mock": "context", "total": {"total_col": 0}}
 
     result = load_service(user, category="saving")
 
-    assert result == [{"mock": "context"}]
+    assert result == [mock_build.return_value]
     mock_provider.return_value.get_savings.assert_called_once()
 
 
@@ -216,3 +215,127 @@ def test_load_service_unknown_category_not_found(mocker):
     result = load_service(user, category="non_existent_slug")
 
     assert result == []
+
+
+def _expense(type_title, name_title, **fields):
+    expense_type = ExpenseTypeFactory(title=type_title)
+    ExpenseFactory(
+        expense_type=expense_type,
+        expense_name=ExpenseNameFactory(title=name_title, parent=expense_type),
+        **fields,
+    )
+
+
+def _titles(user):
+    return [context["title"] for context in load_service(user, "expenses")]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_types_by_type_title(main_user):
+    _expense("Zeta", "Alpha")
+    _expense("Beta", "Omega")
+
+    assert _titles(main_user) == ["Beta", "Zeta"]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_types_in_code_point_order(main_user):
+    _expense("Šildymas", "Alpha")
+    _expense("Zeta", "Omega")
+
+    assert _titles(main_user) == ["Zeta", "Šildymas"]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_types_by_total_biggest_first(main_user):
+    _expense("A", "Alpha", price=10000)
+    _expense("B", "Omega", price=30000)
+
+    assert _titles(main_user) == ["B", "A"]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_rows_by_total_below_a_bigger_type(main_user):
+    expense_type = ExpenseTypeFactory(title="A")
+    for title, price in (("Beta", 10000), ("Alpha", 5000)):
+        ExpenseFactory(
+            price=price,
+            expense_type=expense_type,
+            expense_name=ExpenseNameFactory(title=title, parent=expense_type),
+        )
+    _expense("B", "Omega", price=30000)
+
+    _, table = load_service(main_user, "expenses")
+
+    assert [row["title"] for row in table["data"]] == ["Beta", "Alpha"]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_rows_of_equal_total_keep_title_order(main_user):
+    expense_type = ExpenseTypeFactory(title="A")
+    for title in ("Zulu", "Alpha"):
+        ExpenseFactory(
+            price=5000,
+            expense_type=expense_type,
+            expense_name=ExpenseNameFactory(title=title, parent=expense_type),
+        )
+
+    (table,) = load_service(main_user, "expenses")
+
+    assert [row["title"] for row in table["data"]] == ["Alpha", "Zulu"]
+
+
+@pytest.mark.django_db
+def test_load_service_expenses_are_the_types_alone(main_user):
+    _expense("Beta", "Alpha")
+    IncomeFactory()
+    SavingFactory()
+
+    assert _titles(main_user) == ["Beta"]
+
+
+@pytest.mark.django_db
+def test_load_service_expenses_skip_a_type_without_rows(main_user):
+    _expense("Beta", "Alpha")
+    ExpenseTypeFactory(title="Empty")
+
+    assert _titles(main_user) == ["Beta"]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_type_carries_its_url_and_table_id(main_user):
+    _expense("Zeta Type", "Alpha")
+
+    (table,) = load_service(main_user, "expenses")
+
+    assert table["url"] == "/detailed/expenses/zeta-type/"
+    assert table["table_id"] == "detailed-zeta-type-table"
+    assert "target" not in table
+
+
+@pytest.mark.django_db
+def test_load_service_type_slug_reads_its_own_type(main_user):
+    _expense("Income", "Alpha")
+    IncomeFactory()
+
+    (table,) = load_service(main_user, "expenses", type_slug="income")
+
+    assert table["title"] == "Income"
+    assert [row["title"] for row in table["data"]] == ["Alpha"]
+
+
+@pytest.mark.django_db
+def test_load_service_type_slug_reads_that_type_only(main_user):
+    _expense("Beta", "Alpha")
+    _expense("Zeta", "Omega")
+
+    (table,) = load_service(main_user, "expenses", type_slug="zeta")
+
+    assert table["title"] == "Zeta"
+
+
+@pytest.mark.django_db
+def test_load_service_unknown_type_slug_is_empty(main_user):
+    _expense("Beta", "Alpha")
+
+    assert load_service(main_user, "expenses", type_slug="nonsense") == []
