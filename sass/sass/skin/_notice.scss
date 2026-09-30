@@ -23,3 +23,23 @@
         color: $ink;
     }
 }
+
+// An alert: a sentence in the body face, since mono is for labels.
+.alert.alert-danger {
+    padding: calc($gap * 0.8) $gap;
+    border: 0;
+    border-left: 3px solid $harm;
+    background: $harm-tint;
+    font-family: $body;
+    font-size: 0.875rem;
+    letter-spacing: normal;
+    color: $harm;
+    text-align: left;
+
+    // the notice inks its <strong>; an alert's message is that <strong>
+    b,
+    strong {
+        font-weight: 500;
+        color: inherit;
+    }
+}

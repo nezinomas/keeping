@@ -4,8 +4,8 @@
     <c-stat-cards :cards=cards />
 </div>
 
-{% with object_list=expense_plans %}
-<c-panel table id="expense-plans" title="{% translate 'Expenses' %}">
+{% with object_list=expense_plans.necessary %}
+<c-panel table id="necessary-expense-plans" title="{% translate 'Necessary expenses' %}" hint="{% translate 'Expense types marked as necessary. Mark a type necessary in its form on the Expenses page.' %}">
     <c-plans-table :year=request.user.year :items=object_list kind='expense' type='expense_type' update='plans:expense_update' delete='plans:expense_delete' />
 </c-panel>
 {% endwith %}
@@ -13,5 +13,11 @@
 {% with object_list=necessary_plans %}
 <c-panel table id="necessary-plans" title="{% translate 'Additional necessary expenses' %}">
     <c-plans-table :year=request.user.year :items=object_list kind='necessary' type='title' expense_type update='plans:necessary_update' delete='plans:necessary_delete' />
+</c-panel>
+{% endwith %}
+
+{% with object_list=expense_plans.everyday %}
+<c-panel table id="everyday-expense-plans" title="{% translate 'Everyday expenses' %}">
+    <c-plans-table :year=request.user.year :items=object_list kind='expense' type='expense_type' update='plans:expense_update' delete='plans:expense_delete' />
 </c-panel>
 {% endwith %}

@@ -2695,3 +2695,13 @@ msgstr "= Pajamos − Visos išlaidos"
 
 #~ msgid "What does this mean?"
 #~ msgstr "Ką tai reiškia?"
+
+msgid "Everyday expenses"
+msgstr "Kasdienės išlaidos"
+
+msgid ""
+"Expense types marked as necessary. Mark a type necessary in its form on the "
+"Expenses page."
+msgstr ""
+"Išlaidų tipai, pažymėti kaip būtini. Tipas pažymimas būtinu jo formoje "
+"Išlaidų puslapyje."

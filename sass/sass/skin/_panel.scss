@@ -26,3 +26,23 @@
     color: $ink-muted;
     margin: -0.5rem 0 0.8rem;
 }
+
+// the tip inherits the title's mono caps; an explanation is a sentence
+.panel__hint {
+    color: $ink-muted;
+    cursor: help;
+    text-transform: none;
+    letter-spacing: normal;
+
+    &::before {
+        font-family: $body;
+        white-space: normal;
+        min-width: 18rem;
+    }
+
+    &:focus::before,
+    &:focus::after {
+        visibility: visible;
+        opacity: 1;
+    }
+}
