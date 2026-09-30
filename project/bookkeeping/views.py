@@ -11,7 +11,6 @@ from project.bookkeeping.services.model_services import (
 )
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.date import monthnames_num
 from ..core.lib.utils import rendered_content
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.views import (
@@ -164,33 +163,30 @@ class MonthChart(TemplateViewMixin):
 
 
 class Detailed(TemplateViewMixin):
-    def get_template_names(self):
-        if "category" in self.kwargs:
-            return ["cotton/detailed_table.html"]
-
-        return ["bookkeeping/detailed.html"]
+    template_name = "bookkeeping/detailed.html"
 
     def get_context_data(self, **kwargs):
-        category = self.kwargs.get("category", "all_data")
-        order = self.kwargs.get("order", "")
-
-        service_data = services.detailed.load_service(
-            user=self.request.user, category=category, order=order
-        )
-
-        context = super().get_context_data(**kwargs)
-        context |= {
-            "order": order,
-            "months": monthnames_num(),
+        return super().get_context_data(**kwargs) | {
+            "object_list": services.detailed.load_service(user=self.request.user),
+            "months": services.detailed.MONTHS,
         }
 
-        if not service_data:
-            return context
 
-        if category == "all_data":
-            context["object_list"] = service_data
-        else:
-            context |= service_data[0]
+class DetailedTable(TemplateViewMixin):
+    template_name = "cotton/detailed_table.html"
+
+    def get_context_data(self, **kwargs):
+        tables = services.detailed.load_service(
+            user=self.request.user,
+            category=self.kwargs["category"],
+            order=self.request.GET.get("order", ""),
+            type_slug=self.kwargs.get("type_slug", ""),
+        )
+        context = super().get_context_data(**kwargs)
+        context["months"] = services.detailed.MONTHS
+
+        if tables:
+            context |= tables[0]
 
         return context
 

@@ -123,37 +123,29 @@ def dummy_sort_dto():
 
 
 @pytest.mark.parametrize(
-    "order_param, expected_first, expected_last",
+    "order, expected_titles, expected_active",
     [
-        # 1. Sort by Title
-        ("title", "Alpha", "Charlie"),  # A, B, C
-        ("-title", "Charlie", "Alpha"),  # C, B, A
-        # 2. Sort by Total Column
-        ("total_col", "Alpha", "Bravo"),  # 60, 70, 100
-        ("-total_col", "Bravo", "Alpha"),  # 100, 70, 60
-        # 3. Sort by Month 1 (January)
-        ("1", "Alpha", "Bravo"),  # 10, 30, 100
-        ("-1", "Bravo", "Alpha"),  # 100, 30, 10
-        # 4. Sort by Month 2 (February)
-        ("2", "Bravo", "Alpha"),  # 0, 40, 50
-        ("-2", "Alpha", "Bravo"),  # 50, 40, 0
-        # 5. Invalid sort column (should silently ignore and preserve default order)
-        ("invalid_column", "Alpha", "Charlie"),
-        ("-invalid_col", "Alpha", "Charlie"),
-        ("", "Alpha", "Charlie"),  # Empty string
+        ("title", ["Alpha", "Bravo", "Charlie"], "title"),
+        ("1", ["Bravo", "Charlie", "Alpha"], "1"),
+        ("2", ["Alpha", "Charlie", "Bravo"], "2"),
+        ("total_col", ["Bravo", "Charlie", "Alpha"], "total_col"),
+        ("", ["Alpha", "Bravo", "Charlie"], "title"),
+        ("nonsense", ["Alpha", "Bravo", "Charlie"], "title"),
+        ("-1", ["Alpha", "Bravo", "Charlie"], "title"),
     ],
 )
-def test_detailed_table_builder_sorting(
-    dummy_sort_dto, order_param, expected_first, expected_last
+def test_load_service_sorts_by_order(
+    mocker, dummy_sort_dto, order, expected_titles, expected_active
 ):
-    """Proves the Polars DataFrame sorts dynamically based on the order string."""
-    builder = DetailedTableBuilder(dto=dummy_sort_dto, year=2026, order=order_param)
+    mock_provider = mocker.patch(
+        "project.bookkeeping.services.detailed.presenters.DetailedDataProvider"
+    )
+    mock_provider.return_value.get_incomes.return_value = dummy_sort_dto
 
-    table = builder.table
+    (table,) = load_service(MagicMock(year=2026), "income", order)
 
-    # We only need to check the first and last elements to prove the sort worked
-    assert table[0]["title"] == expected_first
-    assert table[-1]["title"] == expected_last
+    assert [row["title"] for row in table["data"]] == expected_titles
+    assert table["order"] == expected_active
 
 
 # -------------------------------------------------------------------------------------
@@ -260,3 +252,14 @@ def test_load_service_incomes_and_savings_before_expense_types(main_user):
     SavingFactory()
 
     assert _titles(main_user) == ["Pajamos", "Taupymas", "Išlaidos / Beta"]
+
+
+@pytest.mark.django_db
+def test_load_service_type_slug_reads_its_own_type(main_user):
+    _expense("Income", "Alpha")
+    IncomeFactory()
+
+    (table,) = load_service(main_user, "expenses", type_slug="income")
+
+    assert table["title"] == "Išlaidos / Income"
+    assert [row["title"] for row in table["data"]] == ["Alpha"]
