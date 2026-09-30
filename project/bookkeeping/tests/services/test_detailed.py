@@ -129,9 +129,9 @@ def dummy_sort_dto():
         ("1", ["Bravo", "Charlie", "Alpha"], "1"),
         ("2", ["Alpha", "Charlie", "Bravo"], "2"),
         ("total_col", ["Bravo", "Charlie", "Alpha"], "total_col"),
-        ("", ["Alpha", "Bravo", "Charlie"], "title"),
-        ("nonsense", ["Alpha", "Bravo", "Charlie"], "title"),
-        ("-1", ["Alpha", "Bravo", "Charlie"], "title"),
+        ("", ["Bravo", "Charlie", "Alpha"], "total_col"),
+        ("nonsense", ["Bravo", "Charlie", "Alpha"], "total_col"),
+        ("-1", ["Bravo", "Charlie", "Alpha"], "total_col"),
     ],
 )
 def test_load_service_sorts_by_order(
@@ -255,7 +255,7 @@ def test_load_service_expense_types_by_total_biggest_first(main_user):
 
 
 @pytest.mark.django_db
-def test_load_service_expense_rows_keep_title_order_below_a_bigger_type(main_user):
+def test_load_service_expense_rows_by_total_below_a_bigger_type(main_user):
     expense_type = ExpenseTypeFactory(title="A")
     for title, price in (("Beta", 10000), ("Alpha", 5000)):
         ExpenseFactory(
@@ -267,7 +267,22 @@ def test_load_service_expense_rows_keep_title_order_below_a_bigger_type(main_use
 
     _, table = load_service(main_user, "expenses")
 
-    assert [row["title"] for row in table["data"]] == ["Alpha", "Beta"]
+    assert [row["title"] for row in table["data"]] == ["Beta", "Alpha"]
+
+
+@pytest.mark.django_db
+def test_load_service_expense_rows_of_equal_total_keep_title_order(main_user):
+    expense_type = ExpenseTypeFactory(title="A")
+    for title in ("Zulu", "Alpha"):
+        ExpenseFactory(
+            price=5000,
+            expense_type=expense_type,
+            expense_name=ExpenseNameFactory(title=title, parent=expense_type),
+        )
+
+    (table,) = load_service(main_user, "expenses")
+
+    assert [row["title"] for row in table["data"]] == ["Alpha", "Zulu"]
 
 
 @pytest.mark.django_db
