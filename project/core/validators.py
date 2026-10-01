@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+from django.core.validators import MinLengthValidator, RegexValidator
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
@@ -11,9 +11,36 @@ validate_title_characters = RegexValidator(
 )
 
 
+def expanding_characters_in(value: str) -> list[str]:
+    return [
+        character for character in dict.fromkeys(value) if len(slugify(character)) > 1
+    ]
+
+
+def title_characters_in(value: str) -> str:
+    expanding = expanding_characters_in(value)
+    return "".join(
+        character
+        for character in value
+        if validate_title_characters.regex.match(character)
+        and character not in expanding
+    )
+
+
 def validate_title_slug(value: str) -> None:
     if not slugify(value):
         raise ValidationError(
             _("Title must contain at least one Latin letter or digit."),
             code="empty_slug",
         )
+
+    # slugify writes these as several letters, so the slug would outgrow its column
+    if characters := expanding_characters_in(value):
+        raise ValidationError(
+            _("Title cannot contain “%(characters)s”."),
+            code="expanding_characters",
+            params={"characters": ", ".join(characters)},
+        )
+
+
+TITLE_VALIDATORS = [MinLengthValidator(3), validate_title_slug]
