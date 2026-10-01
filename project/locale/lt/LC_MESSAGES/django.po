@@ -984,6 +984,10 @@ msgstr ""
 "Pavadinimas gali turėti tik raides, skaičius, tarpus, brūkšnelius ir "
 "pabraukimo simbolius."
 
+#: .\project\core\validators.py
+msgid "Title must contain at least one Latin letter or digit."
+msgstr "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+
 #: .\project\counts\forms.py:52 .\project\counts\views.py:194
 #: .\project\counts\views.py:202
 msgid "Count type"
