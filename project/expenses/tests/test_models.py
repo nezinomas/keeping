@@ -347,9 +347,27 @@ def test_month_name_sum(main_user):
     )
 
     expect = [
-        {"date": date(1999, 1, 1), "title": "N1", "type_title": "T1", "sum": 2},
-        {"date": date(1999, 1, 1), "title": "N1", "type_title": "T2", "sum": 3},
-        {"date": date(1999, 2, 1), "title": "N1", "type_title": "T1", "sum": 9},
+        {
+            "date": date(1999, 1, 1),
+            "title": "N1",
+            "type_title": "T1",
+            "type_slug": "t1",
+            "sum": 2,
+        },
+        {
+            "date": date(1999, 1, 1),
+            "title": "N1",
+            "type_title": "T2",
+            "type_slug": "t2",
+            "sum": 3,
+        },
+        {
+            "date": date(1999, 2, 1),
+            "title": "N1",
+            "type_title": "T1",
+            "type_slug": "t1",
+            "sum": 9,
+        },
     ]
 
     actual = ExpenseModelService(main_user).sum_by_month_and_name(1999)

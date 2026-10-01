@@ -111,10 +111,11 @@ class ExpenseModelService(SumMixin, DatedModelService):
                 sum=Sum("price"),
                 title=F("expense_name__title"),
                 type_title=F("expense_type__title"),
+                type_slug=F("expense_type__slug"),
                 date=F("month"),
             )
             .order_by("expense_name__title", "month")
-            .values("date", "sum", "title", "type_title")
+            .values("date", "sum", "title", "type_title", "type_slug")
         )
 
     def sum_by_day_and_type(self, year: int, month: int):
