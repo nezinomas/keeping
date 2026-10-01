@@ -480,6 +480,17 @@ def test_expense_name_title_empty_slug(main_user):
     ]
 
 
+def test_expense_name_title_expanding_character(main_user):
+    parent = ExpenseTypeFactory()
+    form = ExpenseNameForm(
+        user=main_user, data={"title": "Pienas ½ l", "parent": parent.pk}
+    )
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == ["Pavadinime negali būti „½“."]
+
+
 @pytest.mark.parametrize(
     "valid_for",
     [

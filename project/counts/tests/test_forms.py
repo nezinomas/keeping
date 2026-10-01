@@ -138,6 +138,14 @@ def test_count_type_title_empty_slug(main_user):
     ]
 
 
+def test_count_type_title_expanding_character(main_user):
+    form = CountTypeForm(user=main_user, data={"title": "Pienas ½ l"})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == ["Pavadinime negali būti „½“."]
+
+
 @pytest.mark.parametrize(
     "title",
     [
