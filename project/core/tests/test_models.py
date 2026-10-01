@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from .factories import TitleDummyFactory
+from .factories import OwnedTitleDummyFactory, TitleDummyFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -98,3 +98,54 @@ def test_title_abstract_blank_or_null(title):
         dummy.full_clean()
 
     assert "title" in exc.value.message_dict
+
+
+# ----------------------------------------------------------------------------
+#                                                         slug shared by owner
+# ----------------------------------------------------------------------------
+def test_title_abstract_slug_taken_by_owner():
+    existing = OwnedTitleDummyFactory(title="Būstas")
+    dummy = OwnedTitleDummyFactory.build(owner=existing.owner, title="Bustas")
+
+    with pytest.raises(ValidationError) as exc:
+        dummy.full_clean()
+
+    assert exc.value.message_dict["title"] == [
+        "Pavadinimas per daug panašus į jau esantį „Būstas“."
+    ]
+
+
+def test_title_abstract_same_slug_two_owners():
+    OwnedTitleDummyFactory(title="Būstas")
+    dummy = OwnedTitleDummyFactory.build(owner=TitleDummyFactory(), title="Bustas")
+
+    dummy.full_clean()
+
+
+def test_title_abstract_slug_own_title_is_valid():
+    dummy = OwnedTitleDummyFactory(title="Būstas")
+
+    dummy.full_clean()
+
+
+def test_title_abstract_slug_case_change_is_valid():
+    dummy = OwnedTitleDummyFactory(title="Bustas")
+    dummy.title = "BUSTAS"
+
+    dummy.full_clean()
+
+
+def test_title_abstract_identical_title_reported_once():
+    existing = OwnedTitleDummyFactory(title="Bustas")
+    dummy = OwnedTitleDummyFactory.build(owner=existing.owner, title="Bustas")
+
+    with pytest.raises(ValidationError) as exc:
+        dummy.full_clean()
+
+    assert len(exc.value.messages) == 1
+
+
+def test_title_abstract_without_owner_is_not_checked():
+    TitleDummyFactory(title="Būstas")
+
+    TitleDummyFactory.build(title="Bustas").full_clean()
