@@ -538,6 +538,15 @@ def test_expense_name_title_too_short(main_user):
     assert "title" in form.errors
 
 
+def test_expense_type_identical_title_names_the_existing_one(main_user):
+    ExpenseTypeFactory(title="Būstas")
+
+    form = ExpenseTypeForm(user=main_user, data={"title": "Būstas"})
+
+    assert not form.is_valid()
+    assert form.errors["title"] == ["„Būstas“ jau yra."]
+
+
 def test_expense_type_slug_taken(main_user):
     ExpenseTypeFactory(title="Būstas")
 
@@ -564,6 +573,18 @@ def test_expense_type_edit_keeping_its_slug_is_valid(title, main_user):
     form = ExpenseTypeForm(user=main_user, instance=expense_type, data={"title": title})
 
     assert form.is_valid()
+
+
+def test_expense_name_identical_title_names_the_existing_one(main_user):
+    parent = ExpenseTypeFactory(title="Maistas")
+    ExpenseNameFactory(title="Pienas", parent=parent)
+
+    form = ExpenseNameForm(
+        user=main_user, data={"title": "Pienas", "parent": parent.pk}
+    )
+
+    assert not form.is_valid()
+    assert form.errors["title"] == ["„Pienas“ jau yra."]
 
 
 def test_expense_name_slug_taken(main_user):

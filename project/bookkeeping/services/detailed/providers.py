@@ -27,19 +27,19 @@ class DetailedDataProvider:
             data=list(SavingModelService(self.user).sum_by_month_and_type(self.year))
         )
 
-    def get_expenses(self) -> dict[str, DetailedDto]:
-        """Returns a dictionary mapping expense categories to their respective DTOs."""
+    def get_expenses(self) -> dict[tuple[str, str], DetailedDto]:
+        """Maps each expense type's (title, slug) to its DTO."""
         qs = ExpenseModelService(self.user).sum_by_month_and_name(self.year)
 
         grouped_data = defaultdict(list)
         for record in qs:
-            group_key = record.pop("type_title")
+            group_key = (record.pop("type_title"), record.pop("type_slug"))
             grouped_data[group_key].append(record)
 
         # in Python: MariaDB's utf8mb3_general_ci and SQLite's binary order disagree
         return {
-            title: DetailedDto(data=data)
-            for title, data in sorted(grouped_data.items())
+            type_key: DetailedDto(data=data)
+            for type_key, data in sorted(grouped_data.items())
         }
 
     def get_expense(self, category_slug: str) -> DetailedDto:

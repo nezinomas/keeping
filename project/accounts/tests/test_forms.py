@@ -60,6 +60,15 @@ def test_account_blank_data(main_user):
     assert "order" in form.errors
 
 
+def test_account_identical_title_names_the_existing_one(main_user):
+    AccountFactory(title="Būstas")
+
+    form = AccountForm(user=main_user, data={"title": "Būstas"})
+
+    assert not form.is_valid()
+    assert form.errors["title"] == ["„Būstas“ jau yra."]
+
+
 def test_account_unique_name(main_user):
     account = AccountFactory(title="XXX")
 
