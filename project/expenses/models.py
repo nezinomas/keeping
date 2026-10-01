@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.models import TitleAbstract
-from ..core.validators import validate_title_slug
+from ..core.validators import TITLE_VALIDATORS
 from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
 from .keywords import normalise_keyword
@@ -32,7 +32,7 @@ class ExpenseName(TitleAbstract):
     title = models.CharField(
         max_length=254,
         blank=False,
-        validators=[MinLengthValidator(3), validate_title_slug],
+        validators=TITLE_VALIDATORS,
     )
     slug = models.SlugField(editable=False, max_length=title.max_length)
     valid_for = models.PositiveIntegerField(
