@@ -215,6 +215,19 @@ def test_expense_name_slug_unique_per_parent():
         ExpenseNameFactory(title="Bustas", parent=obj1.parent)
 
 
+def test_expense_name_longest_title_is_valid_with_its_slug():
+    obj = ExpenseNameFactory(title="a" * 254)
+
+    obj.full_clean()
+
+
+def test_expense_name_slug_as_long_as_title():
+    title = ExpenseName._meta.get_field("title")
+    slug = ExpenseName._meta.get_field("slug")
+
+    assert slug.max_length == title.max_length
+
+
 # ----------------------------------------------------------------------------
 #                                                                      Expense
 # ----------------------------------------------------------------------------
