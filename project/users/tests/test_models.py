@@ -38,3 +38,12 @@ def test_user_reversed():
 def test_user_related_queries(main_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         list(x.journal.title for x in UserModelService(main_user).objects)
+
+
+def test_signup_with_long_username_gives_journal_a_valid_title():
+    user = UserFactory(username="a" * 150, email="long@x.x")
+
+    max_length = user.journal._meta.get_field("title").max_length
+
+    user.journal.full_clean()
+    assert len(user.journal.title) <= max_length

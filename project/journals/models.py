@@ -3,6 +3,7 @@ from datetime import date
 from django.db import models
 
 from ..core.models import TitleAbstract
+from ..core.validators import title_characters_in
 
 
 class Journal(TitleAbstract):
@@ -13,3 +14,14 @@ class Journal(TitleAbstract):
 
     def __str__(self):
         return f"{self.title}"
+
+    @classmethod
+    def title_for(cls, username: str) -> str:
+        kept = title_characters_in(username)
+        suffix = " Journal"
+        room = cls._meta.get_field("title").max_length - len(suffix)
+
+        title = "Journal"
+        if kept:
+            title = f"{kept[:room]}{suffix}"
+        return title
