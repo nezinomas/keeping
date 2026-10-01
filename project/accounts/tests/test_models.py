@@ -1,4 +1,5 @@
 import pytest
+from django.db import IntegrityError
 from django.urls import reverse
 
 from ...journals.tests.factories import JournalFactory
@@ -125,6 +126,14 @@ def test_account_unique_for_journals():
 
     Account.objects.create(title="T1", journal=j1)
     Account.objects.create(title="T1", journal=j2)
+
+
+def test_account_slug_unique_per_journal():
+    j = JournalFactory()
+    AccountFactory(title="Būstas", journal=j)
+
+    with pytest.raises(IntegrityError):
+        AccountFactory(title="Bustas", journal=j)
 
 
 # ----------------------------------------------------------------------------

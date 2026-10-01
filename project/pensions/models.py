@@ -18,6 +18,11 @@ class PensionType(TitleAbstract):
     class Meta:
         unique_together = ["journal", "title"]
         ordering = ["title"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["journal", "slug"], name="pensions_pensiontype_unique_slug"
+            ),
+        ]
 
 
 class Pension(models.Model):

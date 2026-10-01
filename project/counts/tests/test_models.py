@@ -1,6 +1,7 @@
 from datetime import date
 
 import pytest
+from django.db import IntegrityError
 
 from ..models import Count, CountType
 from ..services.model_services import CountModelService, CountTypeModelService
@@ -213,3 +214,10 @@ def test_count_type_update():
 
     assert Count.objects.count() == 1
     assert Count.objects.first().count_type.title == "YYY"
+
+
+def test_count_type_slug_unique_per_user():
+    obj1 = CountTypeFactory(title="Būstas")
+
+    with pytest.raises(IntegrityError):
+        CountTypeFactory(title="Bustas", user=obj1.user)
