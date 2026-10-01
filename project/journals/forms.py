@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from ..expenses.services.model_services import ExpenseTypeModelService
+from .models import Journal
 
 
 class UnnecessaryForm(forms.Form):
@@ -48,7 +49,7 @@ class UnnecessaryForm(forms.Form):
 
 class SettingsForm(forms.Form):
     lang = forms.ChoiceField(choices=settings.LANGUAGES)
-    title = forms.CharField(required=True, min_length=3, max_length=254)
+    title = forms.CharField(validators=Journal._meta.get_field("title").validators)
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)

@@ -37,3 +37,10 @@ def test_journal_first_record_update_on_expense_save():
     actual = Journal.objects.first().first_record
 
     assert actual == date(1974, 1, 1)
+
+
+def test_journal_title_slug_not_checked_against_other_journals():
+    JournalFactory(title="Būstas")
+    journal = JournalFactory.build(title="Bustas")
+
+    journal.full_clean()

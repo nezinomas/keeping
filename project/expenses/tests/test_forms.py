@@ -419,6 +419,16 @@ def test_expense_type_title_too_short(main_user):
     assert "title" in form.errors
 
 
+def test_expense_type_title_empty_slug(main_user):
+    form = ExpenseTypeForm(user=main_user, data={"title": "..."})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]
+
+
 def test_expense_type_unique_name(main_user):
     ExpenseTypeFactory(title="XXX")
 
@@ -457,6 +467,17 @@ def test_expense_name_current_user_expense_types(main_user, second_user):
 
     assert "T1" in form
     assert "T2" not in form
+
+
+def test_expense_name_title_empty_slug(main_user):
+    parent = ExpenseTypeFactory()
+    form = ExpenseNameForm(user=main_user, data={"title": "...", "parent": parent.pk})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]
 
 
 @pytest.mark.parametrize(
@@ -515,3 +536,45 @@ def test_expense_name_title_too_short(main_user):
     assert not form.is_valid()
 
     assert "title" in form.errors
+
+
+def test_expense_type_slug_taken(main_user):
+    ExpenseTypeFactory(title="Būstas")
+
+    form = ExpenseTypeForm(user=main_user, data={"title": "Bustas"})
+
+    assert not form.is_valid()
+    assert form.errors["title"] == [
+        "Pavadinimas per daug panašus į jau esantį „Būstas“."
+    ]
+
+
+def test_expense_type_same_slug_in_second_journal_is_valid(main_user, second_user):
+    ExpenseTypeFactory(title="Būstas", journal=second_user.journal)
+
+    form = ExpenseTypeForm(user=main_user, data={"title": "Bustas"})
+
+    assert form.is_valid()
+
+
+@pytest.mark.parametrize("title", ["Būstas", "BŪSTAS"])
+def test_expense_type_edit_keeping_its_slug_is_valid(title, main_user):
+    expense_type = ExpenseTypeFactory(title="Būstas")
+
+    form = ExpenseTypeForm(user=main_user, instance=expense_type, data={"title": title})
+
+    assert form.is_valid()
+
+
+def test_expense_name_slug_taken(main_user):
+    parent = ExpenseTypeFactory(title="Maistas")
+    ExpenseNameFactory(title="Pienas", parent=parent)
+
+    form = ExpenseNameForm(
+        user=main_user, data={"title": "PIENAS ", "parent": parent.pk}
+    )
+
+    assert not form.is_valid()
+    assert form.errors["title"] == [
+        "Pavadinimas per daug panašus į jau esantį „Pienas“."
+    ]

@@ -132,6 +132,13 @@ def test_expense_type_unique_users(main_user, second_user):
     ExpenseType.objects.create(title="T1", journal=second_user.journal)
 
 
+def test_expense_type_slug_unique_per_journal():
+    obj1 = ExpenseTypeFactory(title="Būstas")
+
+    with pytest.raises(IntegrityError):
+        ExpenseTypeFactory(title="Bustas", journal=obj1.journal)
+
+
 # ----------------------------------------------------------------------------
 #                                                                 Expense Name
 # ----------------------------------------------------------------------------
@@ -199,6 +206,13 @@ def test_expense_name_no_dublicates():
 
     ExpenseName(title="N1", parent=p1).save()
     ExpenseName(title="N1", parent=p1).save()
+
+
+def test_expense_name_slug_unique_per_parent():
+    obj1 = ExpenseNameFactory(title="Būstas")
+
+    with pytest.raises(IntegrityError):
+        ExpenseNameFactory(title="Bustas", parent=obj1.parent)
 
 
 # ----------------------------------------------------------------------------

@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..core.models import TitleAbstract
+from ..core.validators import validate_title_slug
 from ..journals.models import Journal
 from .helpers.models_helper import upload_attachment
 from .keywords import normalise_keyword
@@ -20,11 +21,18 @@ class ExpenseType(TitleAbstract):
     class Meta:
         unique_together = ["journal", "title"]
         ordering = ["title"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["journal", "slug"], name="expenses_expensetype_unique_slug"
+            ),
+        ]
 
 
 class ExpenseName(TitleAbstract):
     title = models.CharField(
-        max_length=254, blank=False, validators=[MinLengthValidator(3)]
+        max_length=254,
+        blank=False,
+        validators=[MinLengthValidator(3), validate_title_slug],
     )
     valid_for = models.PositiveIntegerField(
         blank=True,
@@ -35,6 +43,11 @@ class ExpenseName(TitleAbstract):
     class Meta:
         unique_together = ("title", "parent")
         ordering = [F("valid_for").desc(nulls_first=True), "title"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["parent", "slug"], name="expenses_expensename_unique_slug"
+            ),
+        ]
 
 
 class Expense(models.Model):
