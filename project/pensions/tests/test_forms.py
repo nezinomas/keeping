@@ -289,3 +289,13 @@ def test_pension_fee_negative(main_user):
     assert not form.is_valid()
     assert "price" in form.errors
     assert "fee" in form.errors
+
+
+def test_pension_type_title_empty_slug(main_user):
+    form = PensionTypeForm(user=main_user, data={"title": "..."})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]

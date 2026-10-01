@@ -419,6 +419,16 @@ def test_expense_type_title_too_short(main_user):
     assert "title" in form.errors
 
 
+def test_expense_type_title_empty_slug(main_user):
+    form = ExpenseTypeForm(user=main_user, data={"title": "..."})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]
+
+
 def test_expense_type_unique_name(main_user):
     ExpenseTypeFactory(title="XXX")
 
@@ -457,6 +467,17 @@ def test_expense_name_current_user_expense_types(main_user, second_user):
 
     assert "T1" in form
     assert "T2" not in form
+
+
+def test_expense_name_title_empty_slug(main_user):
+    parent = ExpenseTypeFactory()
+    form = ExpenseNameForm(user=main_user, data={"title": "...", "parent": parent.pk})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]
 
 
 @pytest.mark.parametrize(

@@ -128,6 +128,16 @@ def test_count_type_blank_data(main_user):
     assert "title" in form.errors
 
 
+def test_count_type_title_empty_slug(main_user):
+    form = CountTypeForm(user=main_user, data={"title": "---"})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]
+
+
 @pytest.mark.parametrize(
     "title",
     [
