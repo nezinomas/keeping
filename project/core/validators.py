@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+from django.core.validators import MinLengthValidator, RegexValidator
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
@@ -31,3 +31,6 @@ def validate_title_slug(value: str) -> None:
             code="expanding_characters",
             params={"characters": ", ".join(characters)},
         )
+
+
+TITLE_VALIDATORS = [MinLengthValidator(3), validate_title_slug]
