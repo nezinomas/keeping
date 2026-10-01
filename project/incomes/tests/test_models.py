@@ -55,6 +55,13 @@ def test_income_type_unique_for_journals(main_user, second_user):
     IncomeType.objects.create(title="T", journal=second_user.journal)
 
 
+def test_income_type_slug_unique_per_journal():
+    obj1 = IncomeTypeFactory(title="Būstas")
+
+    with pytest.raises(IntegrityError):
+        IncomeTypeFactory(title="Bustas", journal=obj1.journal)
+
+
 # ----------------------------------------------------------------------------
 #                                                                       Income
 # ----------------------------------------------------------------------------

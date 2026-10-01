@@ -241,3 +241,13 @@ def test_income_price_null(main_user):
 
     assert not form.is_valid()
     assert "price" in form.errors
+
+
+def test_income_type_title_empty_slug(main_user):
+    form = IncomeTypeForm(user=main_user, data={"title": "...", "type": "salary"})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]

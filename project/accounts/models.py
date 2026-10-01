@@ -20,6 +20,11 @@ class Account(TitleAbstract):
     class Meta:
         unique_together = ["journal", "title"]
         ordering = ["order", "title"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["journal", "slug"], name="accounts_account_unique_slug"
+            ),
+        ]
 
     def get_absolute_url(self):
         return reverse_lazy("accounts:update", kwargs={"pk": self.pk})

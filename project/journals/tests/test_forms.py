@@ -165,3 +165,33 @@ def test_settings_form_save_title_invalid(title, main_user):
     form = SettingsForm(user=main_user, data={"title": title, "lang": "en"})
 
     assert not form.is_valid()
+
+
+def test_settings_title_empty_slug(main_user):
+    form = SettingsForm(user=main_user, data={"title": "...", "lang": "lt"})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]
+
+
+@pytest.mark.parametrize("title", ["x" * 101, "My@Journal"])
+def test_settings_form_title_follows_journal_title(title, main_user):
+    form = SettingsForm(user=main_user, data={"title": title, "lang": "en"})
+
+    assert not form.is_valid()
+
+    assert "title" in form.errors
+
+
+def test_settings_title_too_long_says_so_once(main_user):
+    form = SettingsForm(user=main_user, data={"title": "x" * 101, "lang": "en"})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 100 ženklų "
+        "(dabartinis ilgis 101)."
+    ]

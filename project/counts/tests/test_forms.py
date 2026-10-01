@@ -128,6 +128,16 @@ def test_count_type_blank_data(main_user):
     assert "title" in form.errors
 
 
+def test_count_type_title_empty_slug(main_user):
+    form = CountTypeForm(user=main_user, data={"title": "---"})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]
+
+
 @pytest.mark.parametrize(
     "title",
     [
@@ -174,3 +184,31 @@ def test_form_load_select_count_type(main_user):
     form = CountForm(user=main_user, counter_type="t1").as_p()
 
     assert '<option value="1" selected>T1</option>' in form
+
+
+def test_count_type_slug_taken(main_user):
+    CountTypeFactory(title="Būstas", user=main_user)
+
+    form = CountTypeForm(user=main_user, data={"title": "Bustas"})
+
+    assert not form.is_valid()
+    assert form.errors["title"] == [
+        "Pavadinimas per daug panašus į jau esantį „Būstas“."
+    ]
+
+
+def test_count_type_same_slug_for_second_user_is_valid(main_user, second_user):
+    CountTypeFactory(title="Būstas", user=second_user)
+
+    form = CountTypeForm(user=main_user, data={"title": "Bustas"})
+
+    assert form.is_valid()
+
+
+@pytest.mark.parametrize("title", ["Būstas", "BŪSTAS"])
+def test_count_type_edit_keeping_its_slug_is_valid(title, main_user):
+    count_type = CountTypeFactory(title="Būstas", user=main_user)
+
+    form = CountTypeForm(user=main_user, instance=count_type, data={"title": title})
+
+    assert form.is_valid()
