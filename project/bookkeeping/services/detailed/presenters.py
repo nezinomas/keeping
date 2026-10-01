@@ -1,5 +1,4 @@
 from django.urls import reverse
-from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
 from ....core.lib.table_order import Column, TableOrder
@@ -56,8 +55,8 @@ def _expense_type(title: str, type_slug: str, dto: DetailedDto) -> tuple:
 def _expense_types(type_slug: str, provider: DetailedDataProvider) -> list[tuple]:
     if not type_slug:
         return [
-            _expense_type(title, slugify(title), dto)
-            for title, dto in provider.get_expenses().items()
+            _expense_type(title, slug, dto)
+            for (title, slug), dto in provider.get_expenses().items()
             if dto.data
         ]
 

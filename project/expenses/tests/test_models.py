@@ -215,6 +215,19 @@ def test_expense_name_slug_unique_per_parent():
         ExpenseNameFactory(title="Bustas", parent=obj1.parent)
 
 
+def test_expense_name_longest_title_is_valid_with_its_slug():
+    obj = ExpenseNameFactory(title="a" * 254)
+
+    obj.full_clean()
+
+
+def test_expense_name_slug_as_long_as_title():
+    title = ExpenseName._meta.get_field("title")
+    slug = ExpenseName._meta.get_field("slug")
+
+    assert slug.max_length == title.max_length
+
+
 # ----------------------------------------------------------------------------
 #                                                                      Expense
 # ----------------------------------------------------------------------------
@@ -334,9 +347,27 @@ def test_month_name_sum(main_user):
     )
 
     expect = [
-        {"date": date(1999, 1, 1), "title": "N1", "type_title": "T1", "sum": 2},
-        {"date": date(1999, 1, 1), "title": "N1", "type_title": "T2", "sum": 3},
-        {"date": date(1999, 2, 1), "title": "N1", "type_title": "T1", "sum": 9},
+        {
+            "date": date(1999, 1, 1),
+            "title": "N1",
+            "type_title": "T1",
+            "type_slug": "t1",
+            "sum": 2,
+        },
+        {
+            "date": date(1999, 1, 1),
+            "title": "N1",
+            "type_title": "T2",
+            "type_slug": "t2",
+            "sum": 3,
+        },
+        {
+            "date": date(1999, 2, 1),
+            "title": "N1",
+            "type_title": "T1",
+            "type_slug": "t1",
+            "sum": 9,
+        },
     ]
 
     actual = ExpenseModelService(main_user).sum_by_month_and_name(1999)

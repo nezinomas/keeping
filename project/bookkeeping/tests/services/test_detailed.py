@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import pytest
 from mock import MagicMock
 
+from ....expenses.models import ExpenseType
 from ....expenses.tests.factories import (
     ExpenseFactory,
     ExpenseNameFactory,
@@ -311,6 +312,17 @@ def test_load_service_expense_type_carries_its_url_and_table_id(main_user):
     assert table["url"] == "/detailed/expenses/zeta-type/"
     assert table["table_id"] == "detailed-zeta-type-table"
     assert "target" not in table
+
+
+@pytest.mark.django_db
+def test_load_service_expense_type_url_reads_the_stored_slug(main_user):
+    _expense("Zeta Type", "Alpha")
+    ExpenseType.objects.update(slug="stored")
+
+    (table,) = load_service(main_user, "expenses")
+
+    assert table["url"] == "/detailed/expenses/stored/"
+    assert table["table_id"] == "detailed-stored-table"
 
 
 @pytest.mark.django_db

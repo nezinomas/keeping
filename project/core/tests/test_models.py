@@ -145,6 +145,16 @@ def test_title_abstract_identical_title_reported_once():
     assert len(exc.value.messages) == 1
 
 
+def test_title_abstract_identical_title_names_the_existing_one():
+    existing = OwnedTitleDummyFactory(title="Būstas")
+    dummy = OwnedTitleDummyFactory.build(owner=existing.owner, title="Būstas")
+
+    with pytest.raises(ValidationError) as exc:
+        dummy.full_clean()
+
+    assert exc.value.message_dict["title"] == ["„Būstas“ jau yra."]
+
+
 def test_title_abstract_without_owner_is_not_checked():
     TitleDummyFactory(title="Būstas")
 

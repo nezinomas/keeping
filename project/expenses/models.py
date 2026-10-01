@@ -34,6 +34,7 @@ class ExpenseName(TitleAbstract):
         blank=False,
         validators=[MinLengthValidator(3), validate_title_slug],
     )
+    slug = models.SlugField(editable=False, max_length=title.max_length)
     valid_for = models.PositiveIntegerField(
         blank=True,
         null=True,
