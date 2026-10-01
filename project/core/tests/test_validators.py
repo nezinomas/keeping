@@ -2,7 +2,7 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 
-from ..validators import validate_title_slug
+from ..validators import title_characters_in, validate_title_slug
 
 
 def test_title_slug_refuses_expanding_character():
@@ -46,3 +46,15 @@ def test_title_slug_empty_slug_message_unchanged():
     assert exc.value.messages == [
         "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
     ]
+
+
+@pytest.mark.parametrize(
+    "value, expect",
+    [
+        ("jonas+test@mail.lt", "jonastestmail.lt"),
+        ("Būstas ½ ﬃ-x_y", "Būstas  -x_y"),
+        ("@+@", ""),
+    ],
+)
+def test_title_characters_in(value, expect):
+    assert title_characters_in(value) == expect

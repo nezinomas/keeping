@@ -17,6 +17,16 @@ def expanding_characters_in(value: str) -> list[str]:
     ]
 
 
+def title_characters_in(value: str) -> str:
+    expanding = expanding_characters_in(value)
+    return "".join(
+        character
+        for character in value
+        if validate_title_characters.regex.match(character)
+        and character not in expanding
+    )
+
+
 def validate_title_slug(value: str) -> None:
     if not slugify(value):
         raise ValidationError(
