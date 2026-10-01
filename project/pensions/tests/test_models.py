@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.db import IntegrityError
 
 from ..models import Pension, PensionBalance, PensionType
 from ..services.model_services import (
@@ -42,6 +43,13 @@ def test_pension_type_unique_for_journal():
 def test_pension_type_unique_for_journals(main_user, second_user):
     PensionType.objects.create(title="T1", journal=main_user.journal)
     PensionType.objects.create(title="T1", journal=second_user.journal)
+
+
+def test_pension_type_slug_unique_per_journal():
+    obj1 = PensionTypeFactory(title="Būstas")
+
+    with pytest.raises(IntegrityError):
+        PensionTypeFactory(title="Bustas", journal=obj1.journal)
 
 
 # ----------------------------------------------------------------------------

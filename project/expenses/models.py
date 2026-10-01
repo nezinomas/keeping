@@ -21,6 +21,11 @@ class ExpenseType(TitleAbstract):
     class Meta:
         unique_together = ["journal", "title"]
         ordering = ["title"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["journal", "slug"], name="expenses_expensetype_unique_slug"
+            ),
+        ]
 
 
 class ExpenseName(TitleAbstract):
@@ -38,6 +43,11 @@ class ExpenseName(TitleAbstract):
     class Meta:
         unique_together = ("title", "parent")
         ordering = [F("valid_for").desc(nulls_first=True), "title"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["parent", "slug"], name="expenses_expensename_unique_slug"
+            ),
+        ]
 
 
 class Expense(models.Model):
