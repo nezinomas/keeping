@@ -344,6 +344,7 @@ def test_view_detailed_no_expenses(client_logged):
     assert response.status_code == 200
     assert "Išlaidos / " not in content
     assert '<div class="alert">' in content
+    assert "metais įrašų nėra." in content
 
 
 def test_view_detailed_no_expenses_with_types(client_logged):
@@ -462,28 +463,24 @@ def test_view_detailed_type_302(client):
 
 
 # ----------------------------------------------------------------------------
-#                                                            Išlaidos: Cards
+#                                                                   Išlaidos
 # ----------------------------------------------------------------------------
 def _expenses_page(client):
     return client.get(reverse("bookkeeping:detailed_expenses")).content.decode()
 
 
 @factory.django.mute_signals(post_save)
-def test_view_detailed_expenses_cards(client_logged):
+def test_view_detailed_expenses_render_no_cards(client_logged):
     _expense("a1", 30000, expense_type=ExpenseTypeFactory(title="A"))
     _expense("b1", 70000, expense_type=ExpenseTypeFactory(title="B"))
 
     content = _expenses_page(client_logged)
 
-    assert 'class="stat-cards"' in content
-    assert "Didžiausia rūšis" in content
-    assert "Didžiausia išlaida" in content
-    assert "700 € · 70% metų sumos" in content
-    assert "700 € · 70% · B" in content
+    assert 'class="stat-cards"' not in content
 
 
 @factory.django.mute_signals(post_save)
-def test_view_detailed_expenses_bigger_type_first_and_named_largest(client_logged):
+def test_view_detailed_expenses_bigger_type_first(client_logged):
     _expense("a1", 30000, expense_type=ExpenseTypeFactory(title="A"))
     _expense("b1", 70000, expense_type=ExpenseTypeFactory(title="B"))
 
@@ -491,7 +488,6 @@ def test_view_detailed_expenses_bigger_type_first_and_named_largest(client_logge
 
     first, second = _positions(content, 'id="detailed-b"', 'id="detailed-a"')
     assert first < second
-    assert 'title="B">B</span>' in content
 
 
 @factory.django.mute_signals(post_save)
@@ -516,19 +512,11 @@ def test_view_detailed_expenses_small_share_reads_less_than_one(client_logged):
     assert ">0% metų sumos" not in content
 
 
-def test_view_detailed_no_expenses_shows_no_cards(client_logged):
-    content = _expenses_page(client_logged)
-
-    assert 'class="stat-cards"' not in content
-    assert "metais įrašų nėra." in content
-
-
 @pytest.mark.parametrize("tab", ["incomes", "savings"])
 @factory.django.mute_signals(post_save)
-def test_view_detailed_other_tabs_render_no_cards(client_logged, tab):
+def test_view_detailed_other_tabs_render_no_shares(client_logged, tab):
     ADD_ROW[tab](1)
 
     content = client_logged.get(reverse(f"bookkeeping:detailed_{tab}")).content.decode()
 
-    assert 'class="stat-cards"' not in content
     assert "panel__subtitle" not in content
