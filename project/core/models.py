@@ -2,7 +2,7 @@ from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.text import slugify
 
-from .validators import validate_title_characters
+from .validators import validate_title_characters, validate_title_slug
 
 
 class TitleAbstract(models.Model):
@@ -12,7 +12,11 @@ class TitleAbstract(models.Model):
     title = models.CharField(
         max_length=100,
         blank=False,
-        validators=[MinLengthValidator(3), validate_title_characters],
+        validators=[
+            MinLengthValidator(3),
+            validate_title_characters,
+            validate_title_slug,
+        ],
     )
     slug = models.SlugField(
         editable=False,

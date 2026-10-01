@@ -296,3 +296,13 @@ def test_account_closed_in_current_year_account_worth(main_user):
 
     assert "S1" in str(form["account"])
     assert "S2" in str(form["account"])
+
+
+def test_account_title_empty_slug(main_user):
+    form = AccountForm(user=main_user, data={"title": "..."})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]

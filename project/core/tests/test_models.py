@@ -72,6 +72,18 @@ def test_title_abstract_invalid_characters(title):
     assert "title" in exc.value.message_dict
 
 
+@pytest.mark.parametrize("title", ["...", "---", "___", "Мясо"])
+def test_title_abstract_empty_slug(title):
+    dummy = TitleDummyFactory.build(title=title)
+
+    with pytest.raises(ValidationError) as exc:
+        dummy.full_clean()
+
+    assert exc.value.message_dict["title"] == [
+        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
+    ]
+
+
 @pytest.mark.parametrize(
     "title",
     [
