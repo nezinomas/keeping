@@ -992,6 +992,10 @@ msgstr "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
 msgid "Title is too close to “%(title)s”, which already exists."
 msgstr "Pavadinimas per daug panašus į jau esantį „%(title)s“."
 
+#: .\project\core\models.py
+msgid "“%(title)s” already exists."
+msgstr "„%(title)s“ jau yra."
+
 #: .\project\counts\forms.py:52 .\project\counts\views.py:194
 #: .\project\counts\views.py:202
 msgid "Count type"
