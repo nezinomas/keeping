@@ -186,6 +186,15 @@ def test_form_load_select_count_type(main_user):
     assert '<option value="1" selected>T1</option>' in form
 
 
+def test_count_type_identical_title_names_the_existing_one(main_user):
+    CountTypeFactory(title="Būstas", user=main_user)
+
+    form = CountTypeForm(user=main_user, data={"title": "Būstas"})
+
+    assert not form.is_valid()
+    assert form.errors["title"] == ["„Būstas“ jau yra."]
+
+
 def test_count_type_slug_taken(main_user):
     CountTypeFactory(title="Būstas", user=main_user)
 

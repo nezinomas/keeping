@@ -73,6 +73,15 @@ def test_pension_type_title_too_short(main_user):
     assert "title" in form.errors
 
 
+def test_pension_type_identical_title_names_the_existing_one(main_user):
+    PensionTypeFactory(title="Būstas")
+
+    form = PensionTypeForm(user=main_user, data={"title": "Būstas"})
+
+    assert not form.is_valid()
+    assert form.errors["title"] == ["„Būstas“ jau yra."]
+
+
 def test_pensiong_type_unique_name(main_user):
     PensionTypeFactory(title="XXX")
 

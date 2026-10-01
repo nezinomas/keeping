@@ -37,16 +37,20 @@ class TitleAbstract(models.Model):
             .exclude(pk=self.pk)
             .first()
         )
-        # compared in Python: MariaDB's collation would match Būstas to Bustas
-        if not taken or taken.title == self.title:
+        if not taken:
             return
+
+        message = _("Title is too close to “%(title)s”, which already exists.")
+        code = "slug_taken"
+        # compared in Python: MariaDB's collation would match Būstas to Bustas
+        if taken.title == self.title:
+            message = _("“%(title)s” already exists.")
+            code = "title_taken"
 
         raise ValidationError(
             {
                 "title": ValidationError(
-                    _("Title is too close to “%(title)s”, which already exists."),
-                    code="slug_taken",
-                    params={"title": taken.title},
+                    message, code=code, params={"title": taken.title}
                 )
             }
         )
