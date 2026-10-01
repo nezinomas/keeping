@@ -1,6 +1,8 @@
 import pytest
+from django.apps import apps
 from django.core.exceptions import ValidationError
 
+from ..models import TitleAbstract
 from .factories import OwnedTitleDummyFactory, TitleDummyFactory
 
 pytestmark = pytest.mark.django_db
@@ -159,3 +161,15 @@ def test_title_abstract_without_owner_is_not_checked():
     TitleDummyFactory(title="Būstas")
 
     TitleDummyFactory.build(title="Bustas").full_clean()
+
+
+@pytest.mark.parametrize(
+    "model",
+    [model for model in apps.get_models() if issubclass(model, TitleAbstract)],
+    ids=lambda model: model.__name__,
+)
+def test_title_abstract_slug_column_holds_its_title(model):
+    title = model._meta.get_field("title")
+    slug = model._meta.get_field("slug")
+
+    assert slug.max_length >= title.max_length
