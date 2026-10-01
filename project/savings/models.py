@@ -1,28 +1,21 @@
-from django.core.validators import (
-    MaxValueValidator,
-    MinLengthValidator,
-    MinValueValidator,
-)
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
+from ..core.models import TitleAbstract
+from ..core.validators import TITLE_VALIDATORS
 from ..journals.models import Journal
 
 
-class SavingType(models.Model):
+class SavingType(TitleAbstract):
     class Types(models.TextChoices):
         SHARES = "shares", _("Shares")
         FUNDS = "funds", _("Funds")
         PENSIONS = "pensions", _("Pensions")
 
-    title = models.CharField(
-        max_length=50, blank=False, validators=[MinLengthValidator(3)]
-    )
-    slug = models.SlugField(
-        editable=False,
-        max_length=50,
-    )
+    title = models.CharField(max_length=50, blank=False, validators=TITLE_VALIDATORS)
+    slug = models.SlugField(editable=False, max_length=title.max_length)
     created = models.DateTimeField(auto_now_add=True)
     closed = models.PositiveIntegerField(
         blank=True,
@@ -40,9 +33,11 @@ class SavingType(models.Model):
     class Meta:
         unique_together = ["journal", "title"]
         ordering = ["type", "title"]
-
-    def __str__(self):
-        return str(self.title)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["journal", "slug"], name="savings_savingtype_unique_slug"
+            ),
+        ]
 
 
 class Saving(models.Model):

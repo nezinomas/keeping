@@ -177,6 +177,14 @@ def test_settings_title_empty_slug(main_user):
     ]
 
 
+def test_settings_title_expanding_character(main_user):
+    form = SettingsForm(user=main_user, data={"title": "Pienas ½ l", "lang": "lt"})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == ["Pavadinime negali būti „½“."]
+
+
 @pytest.mark.parametrize("title", ["x" * 101, "My@Journal"])
 def test_settings_form_title_follows_journal_title(title, main_user):
     form = SettingsForm(user=main_user, data={"title": title, "lang": "en"})
