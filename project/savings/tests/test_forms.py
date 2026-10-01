@@ -155,6 +155,69 @@ def test_saving_type_unique_name(main_user):
     assert not form.is_valid()
 
 
+def test_saving_type_title_taken(main_user):
+    SavingType.objects.create(title="Finbee", journal=main_user.journal)
+
+    form = SavingTypeForm(user=main_user, data={"title": "Finbee", "type": "funds"})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == ["„Finbee“ jau yra."]
+
+
+def test_saving_type_title_slug_taken(main_user):
+    SavingType.objects.create(title="Būstas", journal=main_user.journal)
+
+    form = SavingTypeForm(user=main_user, data={"title": "Bustas", "type": "funds"})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [
+        "Pavadinimas per daug panašus į jau esantį „Būstas“."
+    ]
+
+
+def test_saving_type_title_taken_in_other_journal(main_user, second_user):
+    SavingType.objects.create(title="Finbee", journal=second_user.journal)
+
+    form = SavingTypeForm(user=main_user, data={"title": "Finbee", "type": "funds"})
+
+    assert form.is_valid()
+
+
+def test_saving_type_edit_keeps_own_title(main_user):
+    obj = SavingType.objects.create(title="Finbee", journal=main_user.journal)
+
+    form = SavingTypeForm(
+        user=main_user, instance=obj, data={"title": "Finbee", "type": "funds"}
+    )
+
+    assert form.is_valid()
+
+
+def test_saving_type_title_without_character_rule(main_user):
+    form = SavingTypeForm(
+        user=main_user, data={"title": "Artea Ambicingas Index 16+", "type": "funds"}
+    )
+
+    assert form.is_valid()
+
+
+@pytest.mark.parametrize(
+    "title, message",
+    [
+        ("Fondas ½", "Pavadinime negali būti „½“."),
+        ("€€€", "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."),
+    ],
+)
+def test_saving_type_title_slug_rules(main_user, title, message):
+    form = SavingTypeForm(user=main_user, data={"title": title, "type": "funds"})
+
+    assert not form.is_valid()
+
+    assert form.errors["title"] == [message]
+
+
 # ----------------------------------------------------------------------------
 #                                                                       Saving
 # ----------------------------------------------------------------------------

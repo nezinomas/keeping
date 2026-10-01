@@ -1,8 +1,11 @@
 from datetime import date
+from importlib import import_module
 
 import factory
 import pytest
 import time_machine
+from django.apps import apps
+from django.db import IntegrityError
 from django.db.models.signals import post_delete, post_save
 
 from ...accounts.models import AccountBalance
@@ -22,6 +25,10 @@ from ..services.model_services import (
 )
 
 pytestmark = pytest.mark.django_db
+
+slug_migration = import_module(
+    "project.savings.migrations.0017_savingtype_savings_savingtype_unique_slug"
+)
 
 
 @pytest.fixture(name="savings_extra")
@@ -135,6 +142,31 @@ def test_saving_type_unique_for_journal(main_user):
 def test_saving_type_unique_for_journals(main_user, second_user):
     SavingType.objects.create(title="T1", journal=main_user.journal)
     SavingType.objects.create(title="T1", journal=second_user.journal)
+
+
+def test_saving_type_save_writes_slug(main_user):
+    actual = SavingType.objects.create(title="Finbee", journal=main_user.journal)
+
+    assert actual.slug == "finbee"
+
+
+def test_saving_type_slug_unique_for_journal(main_user):
+    SavingType.objects.create(title="Būstas", journal=main_user.journal)
+
+    with pytest.raises(IntegrityError):
+        SavingType.objects.create(title="Bustas", journal=main_user.journal)
+
+
+def test_saving_type_migration_fills_every_slug(main_user):
+    SavingType.objects.create(title="Finbee", journal=main_user.journal)
+    SavingType.objects.create(title="VGWL - Vanguard", journal=main_user.journal)
+    SavingType.objects.filter(title="Finbee").update(slug="")
+    SavingType.objects.exclude(title="Finbee").update(slug="vgwl")
+
+    slug_migration.fill_slugs(apps, None)
+
+    actual = list(SavingType.objects.order_by("title").values_list("slug", flat=True))
+    assert actual == ["finbee", "vgwl-vanguard"]
 
 
 # ----------------------------------------------------------------------------
