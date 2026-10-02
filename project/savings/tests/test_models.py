@@ -58,6 +58,20 @@ def test_saving_type_str():
     assert str(i) == "1999-01-01: Savings"
 
 
+def test_saving_type_fee_source_defaults_to_investment():
+    actual = SavingTypeFactory()
+
+    actual.refresh_from_db()
+    assert actual.fee_source == SavingType.FeeSource.INVESTMENT
+
+
+def test_saving_type_fee_source_can_be_the_account():
+    actual = SavingTypeFactory(fee_source=SavingType.FeeSource.ACCOUNT)
+
+    actual.refresh_from_db()
+    assert actual.fee_source == "account"
+
+
 @factory.django.mute_signals(post_save)
 def test_saving_type_items_user(main_user, second_user):
     SavingTypeFactory(title="T1")

@@ -14,6 +14,10 @@ class SavingType(TitleAbstract):
         FUNDS = "funds", _("Funds")
         PENSIONS = "pensions", _("Pensions")
 
+    class FeeSource(models.TextChoices):
+        INVESTMENT = "investment", _("from the investment")
+        ACCOUNT = "account", _("from the account")
+
     title = models.CharField(max_length=50, blank=False, validators=TITLE_VALIDATORS)
     slug = models.SlugField(editable=False, max_length=title.max_length)
     created = models.DateTimeField(auto_now_add=True)
@@ -28,6 +32,11 @@ class SavingType(TitleAbstract):
         max_length=12,
         choices=Types.choices,
         default=Types.FUNDS,
+    )
+    fee_source = models.CharField(
+        max_length=12,
+        choices=FeeSource.choices,
+        default=FeeSource.INVESTMENT,
     )
 
     class Meta:

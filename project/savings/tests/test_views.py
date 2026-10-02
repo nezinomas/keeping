@@ -362,6 +362,7 @@ def test_type_save(client_logged):
     data = {
         "title": "TTT",
         "type": "funds",
+        "fee_source": "investment",
     }
 
     url = reverse("savings:type_new")
@@ -377,6 +378,7 @@ def test_type_save_with_closed(client_logged):
         "title": "TTT",
         "closed": "2000",
         "type": "shares",
+        "fee_source": "investment",
     }
 
     url = reverse("savings:type_new")
@@ -416,6 +418,7 @@ def test_type_update(client_logged):
     data = {
         "title": "TTT",
         "type": "funds",
+        "fee_source": "investment",
     }
     url = reverse("savings:type_update", kwargs={"pk": saving.pk})
 
@@ -425,6 +428,19 @@ def test_type_update(client_logged):
     assert "TTT" in actual
 
 
+def test_type_update_saves_fee_source(client_logged):
+    saving = SavingTypeFactory()
+
+    data = {"title": "TTT", "type": "funds", "fee_source": "account"}
+    url = reverse("savings:type_update", kwargs={"pk": saving.pk})
+
+    client_logged.post(url, data, follow=True)
+
+    saving.refresh_from_db()
+    assert saving.title == "TTT"
+    assert saving.fee_source == "account"
+
+
 def test_type_update_return_list_with_closed(client_logged):
     SavingTypeFactory(title="YYY", closed="1111")
     saving = SavingTypeFactory(title="XXX")
@@ -432,6 +448,7 @@ def test_type_update_return_list_with_closed(client_logged):
     data = {
         "title": "TTT",
         "type": "funds",
+        "fee_source": "investment",
     }
     url = reverse("savings:type_update", kwargs={"pk": saving.pk})
 
@@ -462,6 +479,7 @@ def test_type_update_with_closed(client_logged):
         "title": "TTT",
         "closed": "2000",
         "type": "pensions",
+        "fee_source": "investment",
     }
     url = reverse("savings:type_update", kwargs={"pk": saving.pk})
 
