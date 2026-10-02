@@ -5,6 +5,7 @@ import pytz
 from django.urls import resolve, reverse
 
 from ....incomes.tests.factories import IncomeFactory
+from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ... import views
 from ..factories import SavingWorthFactory
@@ -57,6 +58,20 @@ def test_percentage_from_incomes(client_logged):
     actual = response.content.decode("utf-8")
 
     assert "Pajamų dalis pervedama taupymui: <b>200,0</b>%" in actual
+
+
+@pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
+def test_percentage_from_incomes_reads_the_invested_price(client_logged, fee_source):
+    IncomeFactory(price=10000)
+    SavingFactory(
+        price=2000,
+        fee=500,
+        saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
+    )
+
+    actual = client_logged.get(reverse("bookkeeping:savings")).content.decode()
+
+    assert "Pajamų dalis pervedama taupymui: <b>20,0</b>%" in actual
 
 
 def test_percentage_from_incomes_green_alert(client_logged):

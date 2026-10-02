@@ -11,6 +11,7 @@ INDEX_COLUMNS = (
     "expenses",
     "savings",
     "savings_close",
+    "savings_account_fee",
     "borrow",
     "borrow_return",
     "lend",
