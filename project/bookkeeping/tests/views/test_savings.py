@@ -2,6 +2,8 @@ from datetime import datetime
 
 import pytest
 import pytz
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import resolve, reverse
 
 from ....incomes.tests.factories import IncomeFactory
@@ -9,6 +11,7 @@ from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ... import views
 from ..factories import SavingWorthFactory
+from ..helper import fund_with_a_sell, row_cells
 
 pytestmark = pytest.mark.django_db
 
@@ -141,3 +144,38 @@ def test_regenerate_buttons(client_logged):
 
     assert f'hx-get="{url}?type=savings"' in content
     assert "Bus atnaujinti tik šios lentelės balansai." in content
+
+
+def test_closed_fund_with_a_sell_shows_its_profit_but_no_worth(client_logged):
+    fund_with_a_sell("Closed", 100000, 60000, closed=1999)
+
+    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
+    cells = row_cells(content, "Closed")
+
+    assert cells[8:10] == ["-", "-"]
+    assert cells[10] == "-400,00"
+    assert cells[11] == "-40,00%"
+
+
+@pytest.mark.parametrize("sold", [True, False])
+def test_open_fund_with_no_worth_shows_dashes(client_logged, sold):
+    if sold:
+        fund_with_a_sell("Open", 100000, 60000)
+    else:
+        SavingFactory(saving_type=SavingTypeFactory(title="Open"), price=100000)
+
+    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
+
+    assert row_cells(content, "Open")[8:] == ["-"] * 4
+
+
+def test_savings_queries_do_not_grow_with_closed_funds(client_logged):
+    def queries_with(funds):
+        while SavingType.objects.count() < funds:
+            i = SavingType.objects.count()
+            fund_with_a_sell(f"Fund {i}", 100000, 60000, closed=1999 if i % 2 else None)
+        with CaptureQueriesContext(connection) as ctx:
+            client_logged.get(reverse("bookkeeping:savings"))
+        return len(ctx)
+
+    assert queries_with(2) == queries_with(6)

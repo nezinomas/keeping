@@ -1,4 +1,13 @@
 import contextlib
+import re
+from datetime import date, datetime
+
+import pytz
+
+from ...accounts.tests.factories import AccountFactory
+from ...savings.tests.factories import SavingFactory, SavingTypeFactory
+from ...transactions.tests.factories import SavingCloseFactory
+from .factories import SavingWorthFactory
 
 
 def assert_(expected, actual):  # sourcery skip: raise-specific-error
@@ -22,3 +31,25 @@ def filter_fixture(data, leave_keys):
 
     for key in rm_keys:
         data.pop(key)
+
+
+def fund_with_a_sell(title, bought, sold, *, fee=0, kind="funds", closed=None):
+    """Bought in 1999, sold in part or whole that June, worth 0 at the year end."""
+    fund = SavingTypeFactory(title=title, type=kind, closed=closed)
+    SavingFactory(saving_type=fund, price=bought, fee=fee, date=date(1999, 1, 1))
+    SavingCloseFactory(
+        from_account=fund,
+        to_account=AccountFactory(title="Bank"),
+        price=sold,
+        fee=0,
+        date=date(1999, 6, 1),
+    )
+    SavingWorthFactory(
+        saving_type=fund, price=0, date=datetime(1999, 12, 31, 12, tzinfo=pytz.utc)
+    )
+    return fund
+
+
+def row_cells(content, title):
+    row = re.search(rf"<tr>\s*<td[^>]*>{title}</td>(.*?)</tr>", content, re.S)
+    return [c.strip() for c in re.findall(r"<td[^>]*>(.*?)</td>", row.group(1), re.S)]
