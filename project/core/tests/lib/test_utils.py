@@ -203,3 +203,30 @@ def test_http_htmx_response_without_trigger():
 )
 def test_int_or_zero(value, expected):
     assert utils.int_or_zero(value) == expected
+
+
+def test_total_row_profit_proc_takes_the_switched_money_off_the_base():
+    data = [
+        SimpleNamespace(incomes=100000, profit_sum=30000),
+        SimpleNamespace(incomes=130000, profit_sum=10000),
+    ]
+
+    actual = utils.total_row(
+        data, fields=["incomes", "profit_sum", "profit_proc"], switched_within=130000
+    )
+
+    assert actual["incomes"] == 230000
+    assert actual["profit_proc"] == pytest.approx(40.0)
+
+
+@pytest.mark.parametrize("switched_within", [100000, 150000])
+def test_total_row_profit_proc_is_zero_when_the_base_is_used_up(switched_within):
+    data = [SimpleNamespace(incomes=100000, profit_sum=30000)]
+
+    actual = utils.total_row(
+        data,
+        fields=["incomes", "profit_sum", "profit_proc"],
+        switched_within=switched_within,
+    )
+
+    assert actual["profit_proc"] == 0.0

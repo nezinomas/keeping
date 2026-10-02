@@ -6,10 +6,14 @@ from django.utils.translation import gettext as _
 
 from ...core.lib import utils
 from ...incomes.services.model_services import IncomeModelService
+from ...savings.models import SavingType
 from ...savings.services.model_services import (
     SavingBalanceModelService,
     SavingModelService,
 )
+from ...transactions.services.model_services import SavingChangeModelService
+
+FUND_TYPES = [t for t in SavingType.Types.values if t != SavingType.Types.PENSIONS]
 
 
 @dataclass
@@ -17,6 +21,7 @@ class SavingsDto:
     savings: list[Any]
     savings_total: int
     incomes_total: int
+    switched_within: int
 
 
 class SavingsService:
@@ -36,14 +41,16 @@ class SavingsService:
             .aggregate(Sum("price", default=0))["price__sum"]
         )
         savings = list(
-            SavingBalanceModelService(self._user)
-            .year(self._year)
-            .exclude(saving_type__type="pensions")
+            SavingBalanceModelService(self._user).year(self._year, types=FUND_TYPES)
+        )
+        switched_within = SavingChangeModelService(self._user).switched_within(
+            self._year, FUND_TYPES
         )
         return SavingsDto(
             savings=savings,
             savings_total=savings_total,
             incomes_total=incomes_total,
+            switched_within=switched_within,
         )
 
 
@@ -72,7 +79,9 @@ class SavingsPresenter:
             "object_list": self._dto.savings,
             "incomes_total": self._dto.incomes_total,
             "savings_total": self._dto.savings_total,
-            "total_row": utils.total_row(self._dto.savings, self._FIELDS),
+            "total_row": utils.total_row(
+                self._dto.savings, self._FIELDS, self._dto.switched_within
+            ),
         }
 
 
