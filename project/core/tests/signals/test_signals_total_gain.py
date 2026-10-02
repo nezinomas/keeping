@@ -147,6 +147,72 @@ def test_open_partly_sold_fund_without_a_worth_reads_what_was_taken_out():
 
 
 # ----------------------------------------------------------------------------
+#                                                      closing a type re-syncs
+# ----------------------------------------------------------------------------
+def test_closing_the_type_after_the_sell_zeroes_the_worth():
+    fund = SavingTypeFactory(title="Fund")
+    _buy(fund, 100000, fee=1000)
+    _sell(fund, 110000)
+    _worth(fund, 110000)
+
+    fund.closed = YEAR
+    fund.save()
+
+    actual = _balance(fund)
+    assert actual.market_value == 0
+    assert actual.profit_sum == 110000 - 100000 - 1000
+
+
+def _sold_last_year_by_a_sell(fund):
+    _buy(fund, 100000, when=date(YEAR - 1, 1, 1))
+    _sell(fund, 110000, when=date(YEAR - 1, 6, 1))
+
+
+def _sold_last_year_by_a_switch(fund):
+    _buy(fund, 100000, when=date(YEAR - 1, 1, 1))
+    SavingChangeFactory(
+        from_account=fund,
+        to_account=SavingTypeFactory(title="Other"),
+        price=110000,
+        fee=0,
+        date=date(YEAR - 1, 6, 1),
+    )
+
+
+@pytest.mark.parametrize(
+    "take_out",
+    [_sold_last_year_by_a_sell, _sold_last_year_by_a_switch],
+    ids=lambda take_out: take_out.__name__.removeprefix("_sold_last_year_by_a_"),
+)
+def test_fund_sold_last_year_reads_no_worth_in_its_close_year(take_out):
+    fund = SavingTypeFactory(title="Fund", closed=YEAR)
+    take_out(fund)
+    _worth(fund, 110000)
+
+    actual = _balance(fund)
+    assert actual.market_value == 0
+    assert actual.profit_sum == 10000
+
+
+def test_closing_a_pension_type_drops_its_later_rows():
+    pension = PensionTypeFactory(title="Pension")
+    for year in (YEAR, YEAR + 1):
+        PensionFactory(pension_type=pension, price=10000, fee=0, date=date(year, 1, 1))
+        PensionWorthFactory(
+            pension_type=pension, price=11000, date=_worth_date(year=year)
+        )
+    assert PensionBalance.objects.filter(pension_type=pension, year=YEAR + 1).exists()
+
+    pension.closed = YEAR
+    pension.save()
+
+    years = PensionBalance.objects.filter(pension_type=pension).values_list(
+        "year", flat=True
+    )
+    assert max(years) == YEAR
+
+
+# ----------------------------------------------------------------------------
 #                                        a row with nothing taken out is as before
 # ----------------------------------------------------------------------------
 def _no_worth():
@@ -252,6 +318,39 @@ def _resync_queries(main_user):
         signals_service.sync_savings(instance=None, user=main_user)
     assert SavingBalance.objects.exists()
     return len(context)
+
+
+def _save_queries(type_):
+    with CaptureQueriesContext(connection) as context:
+        type_.save()
+    return len(context)
+
+
+def test_saving_a_saving_type_query_count_does_not_grow_with_the_types():
+    funds = [_fund_with_worth(f"T{i}") for i in range(2)]
+    few = _save_queries(funds[0])
+
+    funds += [_fund_with_worth(f"T{i}") for i in range(2, 6)]
+    many = _save_queries(funds[0])
+
+    assert many == few
+
+
+def _pension_with_worth(title):
+    pension = PensionTypeFactory(title=title)
+    PensionFactory(pension_type=pension, price=10000, fee=0, date=date(YEAR, 1, 1))
+    PensionWorthFactory(pension_type=pension, price=11000, date=_worth_date())
+    return pension
+
+
+def test_saving_a_pension_type_query_count_does_not_grow_with_the_types():
+    pensions = [_pension_with_worth(f"P{i}") for i in range(2)]
+    few = _save_queries(pensions[0])
+
+    pensions += [_pension_with_worth(f"P{i}") for i in range(2, 6)]
+    many = _save_queries(pensions[0])
+
+    assert many == few
 
 
 def test_resync_query_count_does_not_grow_with_the_types(main_user):

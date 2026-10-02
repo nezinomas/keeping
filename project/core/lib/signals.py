@@ -214,7 +214,7 @@ class Savings(SignalBase):
     def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return (
             df.pipe(self._fill_missing_past_future_rows)
-            .pipe(self._empty_in_close_year_with_a_sell)
+            .pipe(self._zero_worth_in_close_year_after_a_sell)
             .with_columns(
                 per_year_incomes=pl.col("incomes"),
                 per_year_fee=pl.col("fee"),
@@ -254,9 +254,9 @@ class Savings(SignalBase):
             .sort(["category_id", "year"])
         )
 
-    def _empty_in_close_year_with_a_sell(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        # a worth after the closing sell is money already counted in sold;
-        # sold is still the year's own here, before the cumulative sum
+    def _zero_worth_in_close_year_after_a_sell(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        # a worth after a sell is money already counted in sold; sold is still
+        # the year's own here, so the running total is taken for this check only
         return (
             df.join(
                 self._closed_years(),
@@ -266,7 +266,11 @@ class Savings(SignalBase):
             )
             .with_columns(
                 market_value=pl.when(
-                    (pl.col("year") == pl.col("closed")) & (pl.col("sold") > 0)
+                    (pl.col("year") == pl.col("closed"))
+                    & (
+                        pl.col("sold").cum_sum().over("category_id", order_by="year")
+                        > 0
+                    )
                 )
                 .then(0)
                 .otherwise(pl.col("market_value"))
