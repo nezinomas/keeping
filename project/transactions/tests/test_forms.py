@@ -3,6 +3,7 @@ from typing import Callable, NamedTuple
 
 import pytest
 import time_machine
+from django.db.models.signals import post_save
 
 from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
@@ -707,3 +708,133 @@ def test_sell_and_switch_forms_leave_balances_a_re_sync_agrees_with(
     assert MOVES[move].received(receiver).incomes == 500
     assert SavingType.objects.get(pk=fund.pk).closed == (1999 if close else None)
     assert _balances() == after_form
+
+
+# ----------------------------------------------------------------------------
+#                                      the fund is saved only when its year moves
+# ----------------------------------------------------------------------------
+class _TypeSaves:
+    def __init__(self):
+        self.count = 0
+
+    def __call__(self, **kwargs):
+        self.count += 1
+
+
+@pytest.fixture
+def type_saves():
+    saves = _TypeSaves()
+    post_save.connect(saves, sender=SavingType, weak=False)
+    yield saves
+    post_save.disconnect(saves, sender=SavingType)
+
+
+def _move_data(fund, receiver, day, close):
+    return {
+        "date": day,
+        "from_account": fund.pk,
+        "to_account": receiver.pk,
+        "price": "5",
+        "fee": "0.5",
+        "close": close,
+    }
+
+
+def _receiver(move, other):
+    return other if move == "switch" else AccountFactory(title="Bank")
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_unticked_close_does_not_save_an_open_fund(main_user, move, type_saves):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    type_saves.count = 0
+
+    form = MOVES[move].form(
+        user=main_user, data=_move_data(fund, receiver, "1999-01-01", False)
+    )
+    assert form.is_valid()
+    form.save()
+
+    assert type_saves.count == 0
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_with_close_ticked_moves_the_close_year(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    form = MOVES[move].form(
+        user=main_user, data=_move_data(fund, receiver, "1999-01-01", True)
+    )
+    assert form.is_valid()
+    row = form.save()
+    assert SavingType.objects.get(pk=fund.pk).closed == 1999
+
+    edit = MOVES[move].form(
+        user=main_user,
+        instance=row,
+        data=_move_data(fund, receiver, "2000-01-01", True),
+    )
+    assert edit.is_valid()
+    edit.save()
+
+    assert SavingType.objects.get(pk=fund.pk).closed == 2000
+
+
+def _saved_move(main_user, move, fund, receiver, day, close, instance=None):
+    form = MOVES[move].form(
+        user=main_user,
+        instance=instance,
+        data=_move_data(fund, receiver, day, close),
+    )
+    assert form.is_valid()
+    return form.save()
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_of_an_earlier_sell_keeps_the_close_year(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    earlier = _saved_move(main_user, move, fund, receiver, "1999-01-01", False)
+    _saved_move(main_user, move, fund, receiver, "2000-01-01", True)
+
+    _saved_move(main_user, move, fund, receiver, "1999-01-02", True, earlier)
+
+    assert SavingType.objects.get(pk=fund.pk).closed == 2000
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_new_sell_before_the_close_year_keeps_it(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    _saved_move(main_user, move, fund, receiver, "2000-01-01", True)
+
+    _saved_move(main_user, move, fund, receiver, "1999-01-01", True)
+
+    assert SavingType.objects.get(pk=fund.pk).closed == 2000
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_with_close_unticked_reopens_the_fund(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    form = MOVES[move].form(
+        user=main_user, data=_move_data(fund, receiver, "1999-01-01", True)
+    )
+    assert form.is_valid()
+    row = form.save()
+
+    edit = MOVES[move].form(
+        user=main_user,
+        instance=row,
+        data=_move_data(fund, receiver, "1999-01-01", False),
+    )
+    assert edit.is_valid()
+    edit.save()
+
+    assert SavingType.objects.get(pk=fund.pk).closed is None
