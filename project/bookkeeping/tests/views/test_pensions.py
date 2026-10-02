@@ -2,12 +2,16 @@ from datetime import datetime
 
 import pytest
 import pytz
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import resolve, reverse
 
-from ....pensions.tests.factories import PensionFactory
+from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
+from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ... import views
 from ..factories import PensionWorthFactory
+from ..helper import fund_with_a_sell, row_cells
 
 pytestmark = pytest.mark.django_db
 
@@ -95,3 +99,47 @@ def test_regenerate_buttons(client_logged):
 
     assert f'hx-get="{url}?type=pensions"' in content
     assert "Bus atnaujinti tik šios lentelės balansai." in content
+
+
+def _pension_type_with_a_sell(title, closed=None):
+    return fund_with_a_sell(
+        title, 2596753, 3459722, fee=20000, kind="pensions", closed=closed
+    )
+
+
+def test_closed_pension_type_with_a_sell_shows_its_profit(client_logged):
+    _pension_type_with_a_sell("INVL", closed=1999)
+
+    content = client_logged.get(reverse("bookkeeping:pensions")).content.decode()
+    cells = row_cells(content, "INVL")
+
+    assert cells[8:10] == ["-", "-"]
+    assert cells[10] == "8.429,69"
+    assert cells[11] == "32,46%"
+
+
+@pytest.mark.parametrize("sold", [True, False])
+def test_open_pension_type_with_no_worth_shows_dashes(client_logged, sold):
+    if sold:
+        _pension_type_with_a_sell("Open")
+    else:
+        SavingFactory(
+            saving_type=SavingTypeFactory(title="Open", type="pensions"), price=100000
+        )
+
+    content = client_logged.get(reverse("bookkeeping:pensions")).content.decode()
+
+    assert row_cells(content, "Open")[8:] == ["-"] * 4
+
+
+def test_pensions_queries_do_not_grow_with_closed_types(client_logged):
+    def queries_with(types):
+        while SavingType.objects.count() < types:
+            i = SavingType.objects.count()
+            _pension_type_with_a_sell(f"Fund {i}", closed=1999 if i % 2 else None)
+            PensionFactory(pension_type=PensionTypeFactory(title=f"P {i}"))
+        with CaptureQueriesContext(connection) as ctx:
+            client_logged.get(reverse("bookkeeping:pensions"))
+        return len(ctx)
+
+    assert queries_with(2) == queries_with(6)
