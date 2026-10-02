@@ -114,10 +114,8 @@ class BalanceSynchronizer:
         if df.is_empty():
             return
 
-        category_ids = df["category_id"].unique().to_list()
-        years = df["year"].unique().to_list()
         self.model_service_class(self.user).objects.filter(
-            **{f"{self.fk_field}__in": category_ids, "year__in": years}
+            id__in=df["id"].to_list()
         ).delete()
 
     def _insert_records(self, data: pl.LazyFrame) -> None:
