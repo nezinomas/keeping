@@ -67,7 +67,36 @@ class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["to_account"].label = _("To account")
 
 
-class SavingCloseForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
+class CloseFromAccountMixin:
+    """Closes or reopens the from-fund with the form's `close` checkbox."""
+
+    def _sync_from_account_close(self):
+        fund = SavingType.objects.get(pk=self.instance.from_account.pk)
+        closed = self._close_year(fund.closed)
+        if fund.closed == closed:
+            return  # a type save re-syncs savings; skip it when nothing changed
+
+        fund.closed = closed
+        fund.save()
+
+    def _close_year(self, current):
+        if not self.cleaned_data.get("close"):
+            return None
+
+        year = self.instance.date.year
+        if current is None or year > current or self._closed_the_fund(current):
+            return year
+
+        # the box comes ticked on every row of a closed fund; an earlier row keeps it
+        return current
+
+    def _closed_the_fund(self, current) -> bool:
+        return bool(self.instance.pk) and self.initial["date"].year == current
+
+
+class SavingCloseForm(
+    CloseFromAccountMixin, ConvertPriceMixin, YearBetweenMixin, forms.ModelForm
+):
     price = CommaFloatField(min_value=0.01)
     fee = CommaFloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
@@ -110,20 +139,13 @@ class SavingCloseForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         )
 
     def save(self, *args, **kwargs):
-        # update saving type if close checkbox is selected
-        close = self.cleaned_data.get("close")
-
-        obj = SavingType.objects.get(pk=self.instance.from_account.pk)
-        if obj.closed and close:
-            return super().save()
-
-        obj.closed = self.instance.date.year if close else None
-        obj.save()
-
+        self._sync_from_account_close()
         return super().save(*args, **kwargs)
 
 
-class SavingChangeForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
+class SavingChangeForm(
+    CloseFromAccountMixin, ConvertPriceMixin, YearBetweenMixin, forms.ModelForm
+):
     price = CommaFloatField(min_value=0.01)
     fee = CommaFloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
@@ -187,14 +209,5 @@ class SavingChangeForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         )
 
     def save(self, *args, **kwargs):
-        # update related model if close checkbox selected
-        close = self.cleaned_data.get("close")
-
-        obj = SavingType.objects.get(pk=self.instance.from_account.pk)
-        if obj.closed and close:
-            return super().save()
-
-        obj.closed = self.instance.date.year if close else None
-        obj.save()
-
+        self._sync_from_account_close()
         return super().save(*args, **kwargs)
