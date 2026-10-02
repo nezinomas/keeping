@@ -4,19 +4,26 @@ from django.utils.translation import gettext as _
 
 from ...core.lib import utils
 from ...pensions.services.model_services import PensionBalanceModelService
+from ...savings.models import SavingType
 from ...savings.services.model_services import SavingBalanceModelService
+from ...transactions.services.model_services import SavingChangeModelService
+
+PENSION_TYPES = [SavingType.Types.PENSIONS]
 
 
 def get_data(user, year) -> list:
     pensions = PensionBalanceModelService(user).year(year)
-    savings_as_pensions = (
-        SavingBalanceModelService(user).year(year).filter(saving_type__type="pensions")
+    savings_as_pensions = SavingBalanceModelService(user).year(
+        year, types=PENSION_TYPES
     )
     return list(it.chain(savings_as_pensions, pensions))
 
 
 def load_service(user, year: int) -> dict:
     data = get_data(user, year)
+    switched_within = SavingChangeModelService(user).switched_within(
+        year, PENSION_TYPES
+    )
     fields = [
         "past_amount",
         "past_fee",
@@ -35,5 +42,5 @@ def load_service(user, year: int) -> dict:
         "title": _("Pensions"),
         "type": "pensions",
         "object_list": data,
-        "total_row": utils.total_row(data, fields),
+        "total_row": utils.total_row(data, fields, switched_within),
     }

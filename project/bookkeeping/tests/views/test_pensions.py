@@ -1,17 +1,21 @@
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 import pytz
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 from django.urls import resolve, reverse
 
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
-from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
+from ....transactions.tests.factories import SavingChangeFactory
 from ... import views
 from ..factories import PensionWorthFactory
-from ..helper import fund_with_a_sell, row_cells
+from ..helper import (
+    fund_with_a_sell,
+    row_cells,
+    switch_a_into_b,
+    total_cells,
+    view_queries,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -133,13 +137,48 @@ def test_open_pension_type_with_no_worth_shows_dashes(client_logged, sold):
 
 
 def test_pensions_queries_do_not_grow_with_closed_types(client_logged):
-    def queries_with(types):
-        while SavingType.objects.count() < types:
-            i = SavingType.objects.count()
-            _pension_type_with_a_sell(f"Fund {i}", closed=1999 if i % 2 else None)
-            PensionFactory(pension_type=PensionTypeFactory(title=f"P {i}"))
-        with CaptureQueriesContext(connection) as ctx:
-            client_logged.get(reverse("bookkeeping:pensions"))
-        return len(ctx)
+    def build(i):
+        _pension_type_with_a_sell(f"Fund {i}", closed=1999 if i % 2 else None)
+        PensionFactory(pension_type=PensionTypeFactory(title=f"P {i}"))
 
-    assert queries_with(2) == queries_with(6)
+    queries = [
+        view_queries(client_logged, "bookkeeping:pensions", build, n) for n in (2, 6)
+    ]
+
+    assert queries[0] == queries[1]
+
+
+def test_total_counts_the_switched_money_once(client_logged):
+    switch_a_into_b(kind="pensions")
+
+    content = client_logged.get(reverse("bookkeeping:pensions")).content.decode()
+    cells = total_cells(content)
+
+    assert cells[5] == "2.300,00"
+    assert cells[-1] == "40,00%"
+
+
+def test_total_ignores_a_switch_between_funds(client_logged):
+    switch_a_into_b(kind="funds")
+    PensionFactory(price=100000)
+    PensionWorthFactory(price=130000)
+
+    content = client_logged.get(reverse("bookkeeping:pensions")).content.decode()
+
+    assert total_cells(content)[5] == "1.000,00"
+    assert total_cells(content)[-1] == row_cells(content, "PensionType")[-1]
+
+
+def test_pensions_queries_do_not_grow_with_switches(client_logged):
+    def build(i):
+        a = _pension_type_with_a_sell(f"A {i}")
+        b = SavingTypeFactory(title=f"B {i}", type="pensions")
+        SavingChangeFactory(
+            from_account=a, to_account=b, price=1000, fee=0, date=date(1999, 7, 1)
+        )
+
+    queries = [
+        view_queries(client_logged, "bookkeeping:pensions", build, n) for n in (2, 6)
+    ]
+
+    assert queries[0] == queries[1]
