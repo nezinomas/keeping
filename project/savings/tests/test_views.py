@@ -508,3 +508,19 @@ def test_type_list_view_has_all(client_logged):
 
     assert "S1" in actual
     assert "S2" in actual
+
+
+def test_type_new_and_update_with_the_receiver_connected(client_logged):
+    account = AccountFactory(title="IB")
+    data = {"title": "VALL", "type": "funds", "fee_source": "investment"}
+
+    response = client_logged.post(reverse("savings:type_new"), data, follow=True)
+    assert response.status_code == 200
+    saving_type = models.SavingType.objects.get(title="VALL")
+    SavingFactory(account=account, saving_type=saving_type, price=200, fee=3)
+
+    url = reverse("savings:type_update", kwargs={"pk": saving_type.pk})
+    response = client_logged.post(url, data | {"fee_source": "account"}, follow=True)
+
+    assert response.status_code == 200
+    assert account.accounts_balance.get(year=1999).expenses == 203
