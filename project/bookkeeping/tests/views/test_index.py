@@ -1,8 +1,12 @@
+import re
+
 import pytest
 from django.urls import resolve, reverse
 
+from ....incomes.tests.factories import IncomeFactory
 from ....pensions.tests.factories import PensionFactory
-from ....savings.tests.factories import SavingFactory
+from ....savings.models import SavingType
+from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ... import views
 
 pytestmark = pytest.mark.django_db
@@ -44,6 +48,38 @@ def test_view_index_context(client_logged):
     assert "pensions" in response.context
     assert "wealth" in response.context
     assert "no_incomes" in response.context
+
+
+@pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
+def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
+    client_logged, fee_source
+):
+    IncomeFactory(price=100000)
+    SavingFactory(
+        price=20000,
+        fee=300,
+        saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
+    )
+
+    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
+    checked = re.findall(r'class="[^"]*\bcheck">([^<]+)</th>', content)
+
+    assert len(checked) == 2
+    assert checked[0] == checked[1]
+
+
+@pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
+def test_view_index_savings_column_shows_the_invested_price(client_logged, fee_source):
+    SavingFactory(
+        price=20000,
+        fee=300,
+        saving_type=SavingTypeFactory(title="Fund", fee_source=fee_source),
+    )
+
+    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
+    january = re.findall(r'<td class="left-thick-border[^"]*">([^<]+)</td>', content)
+
+    assert january[0] == "200,00"
 
 
 def test_view_index_regenerate_buttons(client_logged):

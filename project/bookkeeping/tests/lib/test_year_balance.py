@@ -285,3 +285,14 @@ def test_avg_expenses_not_current_year(data):
     actual = YearBalance(data=data, amount_start=None).avg_expenses
 
     assert actual == 2
+
+
+def test_balance_money_flow_subtracts_account_charged_savings_fees(data, amount_start):
+    without_fee = YearBalance(data=data, amount_start=amount_start).money_flow
+
+    fee = [4] + [0] * (len(data.data) - 1)
+    data.data = data.data.with_columns(savings_account_fee=pl.Series(fee))
+    actual = YearBalance(data=data, amount_start=amount_start)
+
+    assert actual.money_flow == [flow - 4 for flow in without_fee]
+    assert actual.amount_end == without_fee[-1] - 4

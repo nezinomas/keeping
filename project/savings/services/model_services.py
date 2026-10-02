@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from typing import Optional
 
 from dateutil.relativedelta import relativedelta
-from django.db.models import Count, F, Q, Sum, Value
+from django.db.models import Case, Count, F, IntegerField, Q, Sum, Value, When
 from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
 from ...core.mixins.sum import SumMixin
@@ -45,6 +45,25 @@ class SavingModelService(SumMixin, DatedModelService):
     def sum_by_month(self, year: int, month: Optional[int] = None):
         return self.month_sum(self.objects, year, month).annotate(
             title=Value("savings")
+        )
+
+    def cash_flow_by_month(self, year: int):
+        """The savings series and the account fees on top of it, in one query."""
+        return (
+            self.sum_by_month(year)
+            .order_by()
+            .union(self.account_fees_by_month(year).order_by(), all=True)
+            .order_by("date")
+        )
+
+    def account_fees_by_month(self, year: int):
+        """Fees the accounts paid on top of the invested price, for the cash flow."""
+        qs = self.objects.filter(
+            saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT,
+            fee__isnull=False,
+        )
+        return self.month_sum(qs, year, sum_column="fee").annotate(
+            title=Value("savings_account_fee")
         )
 
     def sum_by_month_and_type(self, year: int):
@@ -107,9 +126,21 @@ class SavingModelService(SumMixin, DatedModelService):
         return (
             self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
-            .annotate(expenses=Sum("price"))
+            .annotate(expenses=Sum(self._cash_out()))
             .values("year", "expenses", category_id=F("account__pk"))
             .order_by("year", "category_id")
+        )
+
+    @staticmethod
+    def _cash_out():
+        """What a purchase takes from its account."""
+        return Case(
+            When(
+                saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT,
+                then=Coalesce("price", 0) + Coalesce("fee", 0),
+            ),
+            default=F("price"),
+            output_field=IntegerField(),
         )
 
 

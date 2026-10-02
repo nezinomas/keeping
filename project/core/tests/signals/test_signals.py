@@ -1,7 +1,10 @@
-from datetime import datetime
+from datetime import date, datetime
+from typing import NamedTuple
 
 import polars as pl
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from ....accounts.services.model_services import AccountBalanceModelService
@@ -10,6 +13,7 @@ from ....accounts.tests.factories import (
     AccountBalanceFactory,
     AccountFactory,
 )
+from ....incomes.tests.factories import IncomeFactory
 from ....pensions.services.model_services import PensionBalanceModelService
 from ....pensions.tests.factories import (
     PensionBalance,
@@ -20,9 +24,10 @@ from ....savings.services.model_services import SavingBalanceModelService
 from ....savings.tests.factories import (
     SavingBalance,
     SavingBalanceFactory,
+    SavingFactory,
     SavingTypeFactory,
 )
-from ...lib.db_sync import BalanceSynchronizer
+from ...lib.db_sync import ACCOUNT_FIELDS, SAVING_FIELDS, BalanceSynchronizer
 
 pytestmark = pytest.mark.django_db
 
@@ -583,3 +588,120 @@ def test_pension_empty_dataframe_deletes_all(main_user):
     BalanceSynchronizer(PensionBalanceModelService, main_user, df)
 
     assert PensionBalance.objects.count() == 0
+
+
+class Balances(NamedTuple):
+    service: type
+    factory: type
+    owner_factory: type
+    owner_field: str
+    fields: list
+
+
+BALANCES = {
+    "account": Balances(
+        AccountBalanceModelService,
+        AccountBalanceFactory,
+        AccountFactory,
+        "account",
+        ACCOUNT_FIELDS,
+    ),
+    "saving": Balances(
+        SavingBalanceModelService,
+        SavingBalanceFactory,
+        SavingTypeFactory,
+        "saving_type",
+        SAVING_FIELDS,
+    ),
+    "pension": Balances(
+        PensionBalanceModelService,
+        PensionBalanceFactory,
+        PensionTypeFactory,
+        "pension_type",
+        SAVING_FIELDS,
+    ),
+}
+
+
+def _owners_with_balances(kind, count):
+    b = BALANCES[kind]
+    owners = [b.owner_factory(title=f"Owner {i}") for i in range(count)]
+    for owner in owners:
+        for year in (1999, 2000):
+            b.factory(**{b.owner_field: owner, "year": year})
+    return owners
+
+
+def _balance_rows(kind, user):
+    b = BALANCES[kind]
+    owner_id = f"{b.owner_field}_id"
+    return {
+        (row.pop(owner_id), row.pop("year")): row
+        for row in b.service(user).objects.values(owner_id, "year", *b.fields)
+    }
+
+
+def _frame(rows, keep):
+    return pl.DataFrame(
+        [{"category_id": key[0], "year": key[1], **rows[key]} for key in keep]
+    ).lazy()
+
+
+@pytest.mark.parametrize("kind", BALANCES)
+def test_sync_deletes_only_the_rows_it_drops(main_user, kind):
+    a, b = _owners_with_balances(kind, 2)
+    keep = {(a.pk, 2000), (b.pk, 1999)}
+    before = _balance_rows(kind, main_user)
+
+    BalanceSynchronizer(BALANCES[kind].service, main_user, _frame(before, keep))
+
+    assert _balance_rows(kind, main_user) == {key: before[key] for key in keep}
+
+
+@pytest.mark.parametrize("kind", BALANCES)
+def test_sync_delete_query_count_does_not_grow(main_user, kind):
+    service = BALANCES[kind].service
+
+    def queries_deleting(count):
+        service(main_user).objects.all().delete()
+        keep = {(owner.pk, 2000) for owner in _owners_with_balances(kind, count)}
+        frame = _frame(_balance_rows(kind, main_user), keep)
+        with CaptureQueriesContext(connection) as queries:
+            BalanceSynchronizer(service, main_user, frame)
+        return len(queries)
+
+    assert queries_deleting(2) == queries_deleting(6)
+
+
+def _years(model, **owner):
+    return sorted(model.objects.filter(**owner).values_list("year", flat=True))
+
+
+def test_moving_the_last_purchase_back_a_year_drops_the_old_next_year():
+    account = AccountFactory(title="IB")
+    saving_type = SavingTypeFactory(title="VALL")
+    saving = SavingFactory(
+        account=account, saving_type=saving_type, date=date(2027, 1, 1)
+    )
+    assert _years(AccountBalance, account=account) == [2027, 2028]
+    assert _years(SavingBalance, saving_type=saving_type) == [2027, 2028]
+
+    saving.date = date(2026, 1, 1)
+    saving.save()
+
+    assert _years(AccountBalance, account=account) == [2026, 2027]
+    assert _years(SavingBalance, saving_type=saving_type) == [2026, 2027]
+
+
+def test_removing_the_latest_year_keeps_every_other_owners_rows():
+    seb = AccountFactory(title="SEB")
+    ib = AccountFactory(title="IB")
+    IncomeFactory(account=seb, price=100, date=date(1999, 1, 1))
+    later = IncomeFactory(account=ib, price=50, date=date(2000, 1, 1))
+    assert _years(AccountBalance, account=seb) == [1999, 2000, 2001]
+
+    later.delete()
+
+    assert _years(AccountBalance, account=seb) == [1999, 2000]
+    assert _years(AccountBalance, account=ib) == []
+    assert AccountBalance.objects.get(account=seb, year=2000).balance == 100

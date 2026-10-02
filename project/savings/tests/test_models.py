@@ -5,8 +5,9 @@ import factory
 import pytest
 import time_machine
 from django.apps import apps
-from django.db import IntegrityError
+from django.db import IntegrityError, connection
 from django.db.models.signals import post_delete, post_save
+from django.test.utils import CaptureQueriesContext
 
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
@@ -56,6 +57,20 @@ def test_saving_type_str():
     i = SavingFactory.build()
 
     assert str(i) == "1999-01-01: Savings"
+
+
+def test_saving_type_fee_source_defaults_to_investment():
+    actual = SavingTypeFactory()
+
+    actual.refresh_from_db()
+    assert actual.fee_source == SavingType.FeeSource.INVESTMENT
+
+
+def test_saving_type_fee_source_can_be_the_account():
+    actual = SavingTypeFactory(fee_source=SavingType.FeeSource.ACCOUNT)
+
+    actual.refresh_from_db()
+    assert actual.fee_source == "account"
 
 
 @factory.django.mute_signals(post_save)
@@ -883,3 +898,148 @@ def test_saving_balance_sorting(main_user):
     assert actual[2].saving_type == s1
     assert actual[3].year == 2000
     assert actual[3].saving_type == s2
+
+
+# ----------------------------------------------------------------------------
+#                                         Savings sums: what left the accounts
+# ----------------------------------------------------------------------------
+SAVINGS_SUMS = {
+    "sum_by_year": lambda s: list(s.sum_by_year()),
+    "sum_by_month": lambda s: list(s.sum_by_month(1999)),
+    "sum_by_day": lambda s: list(s.sum_by_day(1999, 1)),
+    "sum_by_month_and_type": lambda s: list(s.sum_by_month_and_type(1999)),
+    "sum_by_day_and_type": lambda s: list(s.sum_by_day_and_type(1999, 1)),
+    "last_months": lambda s: [s.last_months(6)],
+}
+
+
+def _rows(user, name):
+    return SAVINGS_SUMS[name](SavingModelService(user))
+
+
+def _single_sum(user, name):
+    rows = _rows(user, name)
+    assert len(rows) == 1
+    return rows[0]["sum"]
+
+
+def _fee_purchase(fee_source, price, fee, title="Fund"):
+    SavingFactory(
+        price=price,
+        fee=fee,
+        saving_type=SavingTypeFactory(title=title, fee_source=fee_source),
+    )
+
+
+@time_machine.travel("1999-06-01")
+@factory.django.mute_signals(post_save)
+@pytest.mark.parametrize("name", SAVINGS_SUMS)
+@pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
+def test_savings_sums_show_the_invested_price(main_user, name, fee_source):
+    _fee_purchase(fee_source, 20000, 300)
+
+    assert _single_sum(main_user, name) == 20000
+
+
+@time_machine.travel("1999-06-01")
+@factory.django.mute_signals(post_save)
+@pytest.mark.parametrize("name", SAVINGS_SUMS)
+@pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
+def test_savings_sums_of_a_fee_only_row_are_unchanged(main_user, name, fee_source):
+    _fee_purchase(fee_source, None, 100)
+
+    expect = 0 if name == "last_months" else None
+    assert _single_sum(main_user, name) == expect
+
+
+@factory.django.mute_signals(post_save)
+@pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
+def test_incomes_ignore_the_fee_source(main_user, fee_source):
+    _fee_purchase(fee_source, 20000, 300)
+
+    actual = list(SavingModelService(main_user).incomes())
+
+    assert [(r["incomes"], r["fee"]) for r in actual] == [(20000, 300)]
+
+
+@factory.django.mute_signals(post_save)
+def test_account_fees_by_month_sums_only_account_charged_fees(main_user):
+    _fee_purchase(SavingType.FeeSource.ACCOUNT, 20000, 300, title="VALL")
+    _fee_purchase(SavingType.FeeSource.ACCOUNT, None, 128, title="VALL")
+    _fee_purchase(SavingType.FeeSource.ACCOUNT, 500, None, title="IB")
+    _fee_purchase(SavingType.FeeSource.INVESTMENT, 1000, 100, title="Finbee")
+
+    actual = list(SavingModelService(main_user).account_fees_by_month(1999))
+
+    assert actual == [
+        {"date": date(1999, 1, 1), "sum": 428, "title": "savings_account_fee"}
+    ]
+
+
+@factory.django.mute_signals(post_save)
+def test_account_fees_by_month_is_empty_without_account_charged_fees(main_user):
+    _fee_purchase(SavingType.FeeSource.INVESTMENT, 1000, 100)
+
+    assert not list(SavingModelService(main_user).account_fees_by_month(1999))
+
+
+@factory.django.mute_signals(post_save)
+def test_account_fees_by_month_reads_only_its_year(main_user):
+    SavingFactory(
+        date=date(2000, 1, 1),
+        fee=300,
+        saving_type=SavingTypeFactory(fee_source=SavingType.FeeSource.ACCOUNT),
+    )
+
+    assert not list(SavingModelService(main_user).account_fees_by_month(1999))
+
+
+@factory.django.mute_signals(post_save)
+def test_cash_flow_by_month_holds_both_series_in_one_query(main_user):
+    _fee_purchase(SavingType.FeeSource.ACCOUNT, 20000, 300, title="VALL")
+    _fee_purchase(SavingType.FeeSource.INVESTMENT, 1000, 100, title="Finbee")
+
+    with CaptureQueriesContext(connection) as ctx:
+        actual = list(SavingModelService(main_user).cash_flow_by_month(1999))
+
+    assert len(ctx) == 1
+    assert sorted((row["title"], row["sum"]) for row in actual) == [
+        ("savings", 21000),
+        ("savings_account_fee", 300),
+    ]
+
+
+SUMS_UNDER_A_QUERY_GUARD = SAVINGS_SUMS | {
+    "account_fees_by_month": lambda s: list(s.account_fees_by_month(1999)),
+}
+
+
+def _purchases_of_both_fee_sources(start, stop):
+    sources = [SavingType.FeeSource.ACCOUNT, SavingType.FeeSource.INVESTMENT]
+    for i in range(start, stop):
+        SavingFactory(
+            price=150,
+            fee=5,
+            saving_type=SavingTypeFactory(title=f"T{i}", fee_source=sources[i % 2]),
+        )
+
+
+def _queries_and_total(user, name):
+    with CaptureQueriesContext(connection) as ctx:
+        rows = SUMS_UNDER_A_QUERY_GUARD[name](SavingModelService(user))
+    return len(ctx), sum(row["sum"] for row in rows)
+
+
+@time_machine.travel("1999-06-01")
+@factory.django.mute_signals(post_save)
+@pytest.mark.parametrize("name", SUMS_UNDER_A_QUERY_GUARD)
+def test_sum_query_count_does_not_grow_and_every_fund_is_counted(main_user, name):
+    per_fund, per_account_fund = (0, 5) if name == "account_fees_by_month" else (150, 0)
+    _purchases_of_both_fee_sources(0, 2)
+    two, total = _queries_and_total(main_user, name)
+    assert total == 2 * per_fund + 1 * per_account_fund
+
+    _purchases_of_both_fee_sources(2, 6)
+    six, total = _queries_and_total(main_user, name)
+    assert total == 6 * per_fund + 3 * per_account_fund
+    assert six == two
