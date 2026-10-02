@@ -34,6 +34,17 @@ def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
     signals_service.sync_accounts(instance)
 
 
+# A type's fee source decides what its purchases debit. Its first FK is the journal
+# itself, so the user is read here; without one, sync_accounts would guess and fail.
+@receiver(post_save, sender=saving.SavingType)
+def saving_type_signal(sender: object, instance: saving.SavingType, *args, **kwargs):
+    user = instance.journal.users.first()
+    if not user:
+        return
+
+    signals_service.sync_accounts(instance, user)
+
+
 # -------------------------------------------------------------------------------------
 #                                                                       Savings Signals
 # -------------------------------------------------------------------------------------

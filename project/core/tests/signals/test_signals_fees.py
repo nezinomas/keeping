@@ -9,10 +9,12 @@ from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping.tests.factories import SavingWorthFactory
 from ....incomes.tests.factories import IncomeFactory
+from ....journals.tests.factories import JournalFactory
 from ....savings.models import SavingBalance, SavingType
 from ....savings.services.model_services import SavingModelService
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
+from ...lib.db_sync import SAVING_FIELDS
 from ...services import signals_service
 
 pytestmark = pytest.mark.django_db
@@ -183,6 +185,108 @@ def test_saving_a_saving_type_leaves_every_balance_unchanged():
 
 
 # ----------------------------------------------------------------------------
+#                                                 fee charged to the account
+# ----------------------------------------------------------------------------
+def test_account_charged_fee_is_debited_with_the_price():
+    account = AccountFactory(title="IB")
+    vall = SavingTypeFactory(title="VALL", fee_source=SavingType.FeeSource.ACCOUNT)
+
+    SavingFactory(account=account, saving_type=vall, price=200, fee=3)
+
+    assert _account_balance(account).expenses == 203
+
+
+def test_account_charged_fee_only_purchase_debits_its_fee():
+    account = AccountFactory(title="IB")
+    vall = SavingTypeFactory(title="VALL", fee_source=SavingType.FeeSource.ACCOUNT)
+
+    SavingFactory(account=account, saving_type=vall, price=None, fee=100)
+
+    assert _account_balance(account).expenses == 100
+
+
+def test_one_account_paying_both_fee_sources():
+    account = AccountFactory(title="IB")
+    vall = SavingTypeFactory(title="VALL", fee_source=SavingType.FeeSource.ACCOUNT)
+    fund = SavingTypeFactory(title="Fund")
+
+    SavingFactory(account=account, saving_type=vall, price=200, fee=3)
+    SavingFactory(account=account, saving_type=fund, price=600, fee=1)
+    SavingFactory(account=account, saving_type=vall, price=None, fee=2)
+
+    assert _account_balance(account).expenses == 805
+
+
+def test_fee_source_does_not_change_the_saving_balance():
+    balances = {}
+    for title, fee_source in (
+        ("A", SavingType.FeeSource.INVESTMENT),
+        ("B", SavingType.FeeSource.ACCOUNT),
+    ):
+        saving_type = SavingTypeFactory(title=title, fee_source=fee_source)
+        SavingFactory(saving_type=saving_type, price=200, fee=3)
+        SavingFactory(saving_type=saving_type, price=None, fee=1)
+        SavingWorthFactory(saving_type=saving_type, price=210, date=WORTH_DATE)
+        balances[title] = (
+            SavingBalance.objects.filter(saving_type=saving_type)
+            .order_by("year")
+            .values(*[f for f in SAVING_FIELDS if f != "latest_check"])
+        )
+
+    assert len(balances["A"]) == 2
+    assert list(balances["A"]) == list(balances["B"])
+
+
+def test_switching_a_types_fee_source_re_syncs_its_account():
+    account = AccountFactory(title="IB")
+    vall = SavingTypeFactory(title="VALL")
+    SavingFactory(account=account, saving_type=vall, price=200, fee=3)
+    assert _account_balance(account).expenses == 200
+
+    vall.fee_source = SavingType.FeeSource.ACCOUNT
+    vall.save()
+
+    actual = _account_balance(account)
+    assert actual.expenses == 203
+    assert actual.balance == -203
+    assert actual.delta == 203
+
+
+def test_saving_a_type_whose_journal_has_no_user_syncs_nothing():
+    lonely = JournalFactory(title="Lonely")
+    account = AccountFactory(title="Lonely account", journal=lonely)
+    vall = SavingTypeFactory(title="Lonely VALL", journal=lonely)
+    SavingFactory(account=account, saving_type=vall, price=200, fee=3)
+
+    vall.fee_source = SavingType.FeeSource.ACCOUNT
+    vall.save()
+
+    assert not AccountBalance.objects.filter(account=account).exists()
+
+
+def test_switching_a_type_re_syncs_only_its_own_journal(main_user, second_user, mocker):
+    theirs = AccountFactory(title="Theirs", journal=second_user.journal)
+    their_type = SavingTypeFactory(
+        title="Their VALL",
+        journal=second_user.journal,
+        fee_source=SavingType.FeeSource.ACCOUNT,
+    )
+    SavingFactory(account=theirs, saving_type=their_type, price=900, fee=9)
+    mine = SavingTypeFactory(title="My VALL")
+    SavingFactory(account=AccountFactory(title="Mine"), saving_type=mine)
+    assert _account_balance(theirs).expenses == 909
+    # a re-sync of their journal would put 909 back
+    AccountBalance.objects.filter(account=theirs).update(expenses=1)
+    sync = mocker.spy(signals_service, "sync_accounts")
+
+    mine.fee_source = SavingType.FeeSource.ACCOUNT
+    mine.save()
+
+    assert [call.args[1] for call in sync.call_args_list] == [main_user]
+    assert _account_balance(theirs).expenses == 1
+
+
+# ----------------------------------------------------------------------------
 #                                         a fresh re-sync agrees with signals
 # ----------------------------------------------------------------------------
 def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
@@ -210,22 +314,37 @@ def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
 # ----------------------------------------------------------------------------
 #                                                                 query counts
 # ----------------------------------------------------------------------------
-def _expenses_queries(user, count):
+def _purchases_of_both_fee_sources(count):
     for i in range(count):
+        fee_source = (
+            SavingType.FeeSource.ACCOUNT if i % 2 else SavingType.FeeSource.INVESTMENT
+        )
         SavingFactory(
             account=AccountFactory(title=f"A{i}"),
-            saving_type=SavingTypeFactory(title=f"S{i}"),
+            saving_type=SavingTypeFactory(title=f"S{i}", fee_source=fee_source),
             fee=i,
         )
 
-    with CaptureQueriesContext(connection) as queries:
-        list(SavingModelService(user).expenses())
 
+def _queries(run):
+    with CaptureQueriesContext(connection) as queries:
+        run()
     return len(queries)
 
 
-def test_purchase_expenses_query_count_does_not_grow(main_user):
-    two = _expenses_queries(main_user, 2)
+@pytest.mark.parametrize(
+    "run",
+    [
+        lambda user: list(SavingModelService(user).expenses()),
+        lambda user: signals_service.sync_accounts(instance=None, user=user),
+    ],
+    ids=["expenses", "re-sync"],
+)
+def test_query_count_does_not_grow_with_both_fee_sources(main_user, run):
+    _purchases_of_both_fee_sources(2)
+    two = _queries(lambda: run(main_user))
     SavingType.objects.all().delete()
 
-    assert _expenses_queries(main_user, 6) == two
+    _purchases_of_both_fee_sources(6)
+
+    assert _queries(lambda: run(main_user)) == two

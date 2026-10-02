@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from typing import Optional
 
 from dateutil.relativedelta import relativedelta
-from django.db.models import Count, F, Q, Sum, Value
+from django.db.models import Case, Count, F, IntegerField, Q, Sum, Value, When
 from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
 from ...core.mixins.sum import SumMixin
@@ -107,9 +107,20 @@ class SavingModelService(SumMixin, DatedModelService):
         return (
             self.objects.annotate(year=ExtractYear(F("date")))
             .values("year", "account__title")
-            .annotate(expenses=Sum("price"))
+            .annotate(expenses=Sum(Coalesce("price", 0) + self._fee_from_account()))
             .values("year", "expenses", category_id=F("account__pk"))
             .order_by("year", "category_id")
+        )
+
+    @staticmethod
+    def _fee_from_account():
+        return Case(
+            When(
+                saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT,
+                then=Coalesce("fee", 0),
+            ),
+            default=Value(0),
+            output_field=IntegerField(),
         )
 
 
