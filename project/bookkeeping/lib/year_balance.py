@@ -17,6 +17,7 @@ class YearBalance(BalanceBase):
             expenses,
             savings,
             savings_close,
+            savings_account_fee (optional),
             borrow,
             borrow_return,
             lend,
@@ -97,6 +98,10 @@ class YearBalance(BalanceBase):
         if self.is_empty(df):
             return df
 
+        account_fee = pl.lit(0)
+        if "savings_account_fee" in df.columns:
+            account_fee = pl.col("savings_account_fee")
+
         def add_amount_start_to_money_flow_first_cell(df):
             df[0, "money_flow"] = df[0, "money_flow"] + self.amount_start
             return df
@@ -113,6 +118,7 @@ class YearBalance(BalanceBase):
                     + pl.col("borrow")
                     + pl.col("lend_return")
                     - pl.col("savings")
+                    - account_fee
                     - pl.col("borrow_return")
                     - pl.col("lend")
                 )
