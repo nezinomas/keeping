@@ -2722,3 +2722,12 @@ msgid ""
 msgstr ""
 "Išlaidų tipai, pažymėti kaip būtini. Tipas pažymimas būtinu jo formoje "
 "Išlaidų puslapyje."
+
+msgid "Fee charged"
+msgstr "Mokestis nuskaitomas"
+
+msgid "from the investment"
+msgstr "iš investicijos"
+
+msgid "from the account"
+msgstr "iš sąskaitos"

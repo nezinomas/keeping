@@ -1,11 +1,14 @@
 from datetime import date
+from typing import Callable, NamedTuple
 
 import pytest
 import time_machine
 
+from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
-from ...savings.models import SavingType
-from ...savings.tests.factories import SavingTypeFactory
+from ...core.services import signals_service
+from ...savings.models import SavingBalance, SavingType
+from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...users.tests.factories import UserFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 
@@ -627,3 +630,80 @@ def test_saving_close_save_and_close_saving_account(main_user):
     actual = SavingType.objects.get(title=a_from.title)
 
     assert actual.closed == 1999
+
+
+# ----------------------------------------------------------------------------
+#                                        sells and switches save the fund too
+# ----------------------------------------------------------------------------
+def _balances():
+    return (
+        sorted(
+            AccountBalance.objects.values_list(
+                "account__title", "year", "expenses", "incomes", "balance"
+            )
+        ),
+        sorted(
+            SavingBalance.objects.values_list(
+                "saving_type__title", "year", "incomes", "fee", "sold", "sold_fee"
+            )
+        ),
+    )
+
+
+def _purchase(fee_source):
+    bank = AccountFactory(title="Bank")
+    fund = SavingTypeFactory(title="Fund", fee_source=fee_source)
+    SavingFactory(account=bank, saving_type=fund, price=1000, fee=10)
+    return bank, fund
+
+
+class _Move(NamedTuple):
+    form: type
+    receiver: Callable
+    received: Callable
+
+
+MOVES = {
+    "sell": _Move(
+        SavingCloseForm,
+        lambda bank, other: bank,
+        lambda bank: AccountBalance.objects.get(account=bank, year=1999),
+    ),
+    "switch": _Move(
+        SavingChangeForm,
+        lambda bank, other: other,
+        lambda other: SavingBalance.objects.get(saving_type=other, year=1999),
+    ),
+}
+
+
+@pytest.mark.parametrize("close", [False, True])
+@pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
+@pytest.mark.parametrize("move", MOVES)
+def test_sell_and_switch_forms_leave_balances_a_re_sync_agrees_with(
+    main_user, move, fee_source, close
+):
+    bank, fund = _purchase(fee_source)
+    receiver = MOVES[move].receiver(bank, SavingTypeFactory(title="Other"))
+    data = {
+        "date": "1999-01-01",
+        "from_account": fund.pk,
+        "to_account": receiver.pk,
+        "price": "5",
+        "fee": "0.5",
+        "close": close,
+    }
+
+    form = MOVES[move].form(user=main_user, data=data)
+    assert form.is_valid()
+    form.save()
+    after_form = _balances()
+
+    signals_service.sync_accounts(instance=None, user=main_user)
+    signals_service.sync_savings(instance=None, user=main_user)
+
+    debit = 1010 if fee_source == SavingType.FeeSource.ACCOUNT else 1000
+    assert AccountBalance.objects.get(account=bank, year=1999).expenses == debit
+    assert MOVES[move].received(receiver).incomes == 500
+    assert SavingType.objects.get(pk=fund.pk).closed == (1999 if close else None)
+    assert _balances() == after_form

@@ -15,8 +15,8 @@ from ...savings.services.model_services import (
 @dataclass
 class SavingsDto:
     savings: list[Any]
-    savings_total: float
-    incomes_total: float
+    savings_total: int
+    incomes_total: int
 
 
 class SavingsService:

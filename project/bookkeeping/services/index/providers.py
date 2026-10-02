@@ -37,7 +37,7 @@ class IndexDataProvider:
             it.chain(
                 IncomeModelService(self.user).sum_by_month(self.year),
                 ExpenseModelService(self.user).sum_by_month(self.year),
-                SavingModelService(self.user).sum_by_month(self.year),
+                SavingModelService(self.user).cash_flow_by_month(self.year),
                 SavingCloseModelService(self.user).sum_by_month(self.year),
                 self._get_debt_monthly("lend"),
                 self._get_debt_monthly("borrow"),

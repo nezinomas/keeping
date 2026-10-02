@@ -14,7 +14,7 @@ from .services.model_services import SavingTypeModelService
 class SavingTypeForm(forms.ModelForm):
     class Meta:
         model = SavingType
-        fields = ["journal", "title", "type", "closed"]
+        fields = ["journal", "title", "type", "fee_source", "closed"]
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
@@ -30,6 +30,7 @@ class SavingTypeForm(forms.ModelForm):
         self.fields["title"].label = _("Fund")
         self.fields["closed"].label = _("Closed")
         self.fields["type"].label = _("Type")
+        self.fields["fee_source"].label = _("Fee charged")
 
 
 class SavingForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
