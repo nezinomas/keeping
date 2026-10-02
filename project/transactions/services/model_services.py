@@ -1,3 +1,8 @@
+from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import date
+from typing import NamedTuple
+
 from django.db.models import F, Sum, Value
 from django.db.models.functions import ExtractYear
 
@@ -105,3 +110,72 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
         Calculates and returns the total price for each year
         """
         return self.base_expenses(fee=True)
+
+    def switched_within(self, year: int, types: list[str]) -> int:
+        """
+        Money switched up to `year` into funds of `types` still on the table
+        that started in one, however many closed funds it passed through, in cents.
+        """
+        rows = self.objects.filter(
+            date__year__lte=year,
+            from_account__type__in=types,
+            to_account__type__in=types,
+        ).values_list(
+            "pk",
+            "date",
+            "from_account_id",
+            "to_account_id",
+            "from_account__closed",
+            "to_account__closed",
+            "price",
+        )
+        return SwitchedWithin.total([Switch(*row) for row in rows], year)
+
+
+class Switch(NamedTuple):
+    pk: int
+    date: date
+    source: int
+    target: int
+    source_closed: int | None
+    target_closed: int | None
+    price: int
+
+
+@dataclass
+class SwitchedWithin:
+    """Walks switches in date order, tracking per fund the money that started on
+    the table and sits in it."""
+
+    year: int
+    started: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
+    taken_off: int = 0
+
+    @classmethod
+    def total(cls, switches: list[Switch], year: int) -> int:
+        walk = cls(year)
+        for switch in sorted(switches, key=walk.order):
+            walk.add(switch)
+        return walk.taken_off
+
+    def on_table(self, closed: int | None) -> bool:
+        return closed is None or closed >= self.year
+
+    def order(self, switch: Switch) -> tuple:
+        # within a day, money reaches a closed fund before it can leave it
+        return (
+            switch.date,
+            self.on_table(switch.target_closed),
+            not self.on_table(switch.source_closed),
+            switch.pk,
+        )
+
+    def add(self, switch: Switch) -> None:
+        moved = switch.price
+        if not self.on_table(switch.source_closed):
+            # Each unit of closed money moves on once, so the pool is drawn down.
+            moved = min(switch.price, self.started[switch.source])
+            self.started[switch.source] -= moved
+        self.started[switch.target] += moved
+        if self.on_table(switch.target_closed):
+            self.taken_off += moved
