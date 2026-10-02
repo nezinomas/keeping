@@ -42,6 +42,7 @@ def test_saving_type_valid_data(main_user, closed):
             "title": "Title",
             "closed": closed,
             "type": "funds",
+            "fee_source": "investment",
         },
     )
 
@@ -55,14 +56,45 @@ def test_saving_type_valid_data(main_user, closed):
     assert data.journal.users.first().username == "bob"
 
 
+def test_saving_type_fee_source_field(main_user):
+    form = SavingTypeForm(user=main_user).as_p()
+
+    assert '<select name="fee_source"' in form
+    assert "Mokestis nuskaitomas" in form
+    assert '<option value="investment" selected>iš investicijos</option>' in form
+    assert '<option value="account">iš sąskaitos</option>' in form
+
+
+@pytest.mark.parametrize("fee_source", ["investment", "account"])
+def test_saving_type_saves_fee_source(main_user, fee_source):
+    form = SavingTypeForm(
+        user=main_user,
+        data={"title": "Title", "type": "funds", "fee_source": fee_source},
+    )
+
+    assert form.is_valid()
+    assert form.save().fee_source == fee_source
+
+
+def test_saving_type_rejects_unknown_fee_source(main_user):
+    form = SavingTypeForm(
+        user=main_user,
+        data={"title": "Title", "type": "funds", "fee_source": "bank"},
+    )
+
+    assert not form.is_valid()
+    assert "fee_source" in form.errors
+
+
 def test_saving_type_blank_data(main_user):
     form = SavingTypeForm(user=main_user, data={})
 
     assert not form.is_valid()
 
-    assert len(form.errors) == 2
+    assert len(form.errors) == 3
     assert "title" in form.errors
     assert "type" in form.errors
+    assert "fee_source" in form.errors
 
 
 def test_saving_type_title_null(main_user):
@@ -77,7 +109,12 @@ def test_saving_type_title_max_symbols(main_user):
     title = "a" * 50
     form = SavingTypeForm(
         user=main_user,
-        data={"title": title, "journal": JournalFactory(), "type": "funds"},
+        data={
+            "title": title,
+            "journal": JournalFactory(),
+            "type": "funds",
+            "fee_source": "investment",
+        },
     )
 
     assert form.is_valid()
@@ -180,7 +217,10 @@ def test_saving_type_title_slug_taken(main_user):
 def test_saving_type_title_taken_in_other_journal(main_user, second_user):
     SavingType.objects.create(title="Finbee", journal=second_user.journal)
 
-    form = SavingTypeForm(user=main_user, data={"title": "Finbee", "type": "funds"})
+    form = SavingTypeForm(
+        user=main_user,
+        data={"title": "Finbee", "type": "funds", "fee_source": "investment"},
+    )
 
     assert form.is_valid()
 
@@ -189,7 +229,9 @@ def test_saving_type_edit_keeps_own_title(main_user):
     obj = SavingType.objects.create(title="Finbee", journal=main_user.journal)
 
     form = SavingTypeForm(
-        user=main_user, instance=obj, data={"title": "Finbee", "type": "funds"}
+        user=main_user,
+        instance=obj,
+        data={"title": "Finbee", "type": "funds", "fee_source": "investment"},
     )
 
     assert form.is_valid()
@@ -197,7 +239,12 @@ def test_saving_type_edit_keeps_own_title(main_user):
 
 def test_saving_type_title_without_character_rule(main_user):
     form = SavingTypeForm(
-        user=main_user, data={"title": "Artea Ambicingas Index 16+", "type": "funds"}
+        user=main_user,
+        data={
+            "title": "Artea Ambicingas Index 16+",
+            "type": "funds",
+            "fee_source": "investment",
+        },
     )
 
     assert form.is_valid()
