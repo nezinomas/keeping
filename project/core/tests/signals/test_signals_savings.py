@@ -128,8 +128,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[2]["sold_fee"] == 6
     assert actual[2]["incomes"] == 120
     assert actual[2]["market_value"] == 75
-    assert actual[2]["profit_sum"] == -49
-    assert round(actual[2]["profit_proc"], 2) == -40.83
+    assert actual[2]["profit_sum"] == 1
+    assert round(actual[2]["profit_proc"], 2) == 0.83
     assert actual[2]["latest_check"] == datetime(1999, 1, 1)
 
     assert actual[3]["category_id"] == 1
@@ -143,8 +143,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[3]["sold_fee"] == 10
     assert actual[3]["incomes"] == 320
     assert actual[3]["market_value"] == 300
-    assert actual[3]["profit_sum"] == -28
-    assert round(actual[3]["profit_proc"], 2) == -8.75
+    assert actual[3]["profit_sum"] == 122
+    assert round(actual[3]["profit_proc"], 2) == 38.12
     assert actual[3]["latest_check"] == datetime(2000, 1, 2)
 
     assert actual[4]["category_id"] == 1
@@ -158,8 +158,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[4]["sold_fee"] == 10
     assert actual[4]["incomes"] == 320
     assert actual[4]["market_value"] == 300
-    assert actual[4]["profit_sum"] == -28
-    assert round(actual[4]["profit_proc"], 2) == -8.75
+    assert actual[4]["profit_sum"] == 122
+    assert round(actual[4]["profit_proc"], 2) == 38.12
     assert actual[4]["latest_check"] == datetime(2000, 1, 2)
 
     assert actual[5]["category_id"] == 2
@@ -188,8 +188,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[6]["sold_fee"] == 2
     assert actual[6]["incomes"] == 330
     assert actual[6]["market_value"] == 250
-    assert actual[6]["profit_sum"] == -94
-    assert round(actual[6]["profit_proc"], 2) == -28.48
+    assert actual[6]["profit_sum"] == 16
+    assert round(actual[6]["profit_proc"], 2) == 4.85
     assert actual[6]["latest_check"] == datetime(2000, 1, 4)
 
     assert actual[7]["category_id"] == 2
@@ -203,8 +203,8 @@ def test_table(incomes, expenses, have, types):
     assert actual[7]["sold_fee"] == 2
     assert actual[7]["incomes"] == 330
     assert actual[7]["market_value"] == 250
-    assert actual[7]["profit_sum"] == -94
-    assert round(actual[7]["profit_proc"], 2) == -28.48
+    assert actual[7]["profit_sum"] == 16
+    assert round(actual[7]["profit_proc"], 2) == 4.85
     assert actual[7]["latest_check"] == datetime(2000, 1, 4)
 
 
@@ -479,8 +479,8 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[0]["sold_fee"] == 6
     assert actual[0]["incomes"] == 100
     assert actual[0]["market_value"] == 0
-    assert actual[0]["profit_sum"] == -102
-    assert actual[0]["profit_proc"] == 0
+    assert actual[0]["profit_sum"] == -52
+    assert actual[0]["profit_proc"] == -52
     assert not actual[0]["latest_check"]
 
     assert actual[1]["category_id"] == 1
@@ -494,8 +494,8 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[1]["sold_fee"] == 10
     assert actual[1]["incomes"] == 300
     assert actual[1]["market_value"] == 0
-    assert actual[1]["profit_sum"] == -306
-    assert actual[1]["profit_proc"] == 0
+    assert actual[1]["profit_sum"] == -156
+    assert actual[1]["profit_proc"] == -52
     assert not actual[1]["latest_check"]
 
     assert actual[2]["category_id"] == 1
@@ -509,8 +509,8 @@ def test_table_have_empty(incomes, expenses, types):
     assert actual[2]["sold_fee"] == 10
     assert actual[2]["incomes"] == 300
     assert actual[2]["market_value"] == 0
-    assert actual[2]["profit_sum"] == -306
-    assert actual[2]["profit_proc"] == 0
+    assert actual[2]["profit_sum"] == -156
+    assert actual[2]["profit_proc"] == -52
     assert not actual[2]["latest_check"]
 
 
@@ -529,7 +529,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[0]["sold_fee"] == 6
     assert actual[0]["incomes"] == 0
     assert actual[0]["market_value"] == 0
-    assert actual[0]["profit_sum"] == 0
+    assert actual[0]["profit_sum"] == 50
     assert actual[0]["profit_proc"] == 0
     assert not actual[0]["latest_check"]
 
@@ -544,7 +544,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[1]["sold_fee"] == 10
     assert actual[1]["incomes"] == 0
     assert actual[1]["market_value"] == 0
-    assert actual[1]["profit_sum"] == 0
+    assert actual[1]["profit_sum"] == 150
     assert actual[1]["profit_proc"] == 0
     assert not actual[1]["latest_check"]
 
@@ -559,7 +559,7 @@ def test_table_incomes_empty(expenses, types):
     assert actual[2]["sold_fee"] == 10
     assert actual[2]["incomes"] == 0
     assert actual[2]["market_value"] == 0
-    assert actual[2]["profit_sum"] == 0
+    assert actual[2]["profit_sum"] == 150
     assert actual[2]["profit_proc"] == 0
     assert not actual[2]["latest_check"]
 
@@ -662,3 +662,48 @@ def test_table_only_have(have, types):
     assert actual[2]["profit_sum"] == 300
     assert round(actual[2]["profit_proc"], 2) == 0
     assert actual[2]["latest_check"] == datetime(2000, 1, 2)
+
+
+def test_table_close_year_with_a_sell_reads_no_worth():
+    types = [SimpleNamespace(pk=1, closed=2000)]
+    incomes = [{"year": 1999, "incomes": 1000, "fee": 10, "category_id": 1}]
+    expenses = [{"year": 2000, "expenses": 600, "fee": 20, "category_id": 1}]
+    have = [
+        {"category_id": 1, "year": 1999, "have": 1200, "latest_check": None},
+        {"category_id": 1, "year": 2000, "have": 500, "latest_check": None},
+    ]
+    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
+    actual = Savings(data).df.collect().to_dicts()
+
+    assert [row["year"] for row in actual] == [1999, 2000]
+
+    assert actual[0]["market_value"] == 1200
+    assert actual[0]["sold"] == 0
+    assert actual[0]["profit_sum"] == 190
+    assert actual[0]["profit_proc"] == 19
+
+    assert actual[1]["market_value"] == 0
+    assert actual[1]["sold"] == 600
+    assert actual[1]["sold_fee"] == 20
+    assert actual[1]["incomes"] == 1000
+    assert actual[1]["fee"] == 10
+    assert actual[1]["profit_sum"] == -410
+    assert actual[1]["profit_proc"] == -41
+
+
+def test_table_close_year_without_sale_keeps_worth():
+    types = [SimpleNamespace(pk=1, closed=2000)]
+    incomes = [{"year": 1999, "incomes": 1000, "fee": 10, "category_id": 1}]
+    have = [
+        {"category_id": 1, "year": 1999, "have": 1200, "latest_check": None},
+        {"category_id": 1, "year": 2000, "have": 1300, "latest_check": None},
+    ]
+    data = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
+    actual = Savings(data).df.collect().to_dicts()
+
+    assert [row["year"] for row in actual] == [1999, 2000]
+
+    assert actual[1]["market_value"] == 1300
+    assert actual[1]["sold"] == 0
+    assert actual[1]["profit_sum"] == 290
+    assert actual[1]["profit_proc"] == 29
