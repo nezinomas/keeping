@@ -1,6 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from ..core.mixins.shows_profit import ShowsProfitMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 
@@ -39,7 +40,9 @@ class Pension(models.Model):
         return f"{(self.date)}: {self.pension_type}"
 
 
-class PensionBalance(models.Model):
+class PensionBalance(ShowsProfitMixin, models.Model):
+    fund_field = "pension_type"
+
     pension_type = models.ForeignKey(
         PensionType, on_delete=models.CASCADE, related_name="pensions_balance"
     )
@@ -58,6 +61,7 @@ class PensionBalance(models.Model):
     market_value = models.IntegerField(default=0)
     profit_sum = models.IntegerField(default=0)
     profit_proc = models.FloatField(default=0.0)
+    sold_since_check = models.IntegerField(default=0)
 
     class Meta:
         ordering = ["year", "pension_type__pk"]

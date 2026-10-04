@@ -62,6 +62,10 @@ SAVINGS_CONF = {
         lambda user: SavingCloseModelService(user).expenses(),
         lambda user: SavingChangeModelService(user).expenses(),
     ),
+    "moves": (
+        lambda user: SavingCloseModelService(user).moves(),
+        lambda user: SavingChangeModelService(user).moves(),
+    ),
     "have": (lambda user: SavingWorthModelService(user).have(),),
     "types": (lambda user: SavingTypeModelService(user).all(),),
 }

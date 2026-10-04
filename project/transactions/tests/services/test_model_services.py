@@ -13,7 +13,7 @@ from ...services.model_services import (
     SavingCloseModelService,
     TransactionModelService,
 )
-from ..factories import SavingChangeFactory
+from ..factories import SavingChangeFactory, SavingCloseFactory
 
 FUNDS = ["funds", "shares"]
 
@@ -209,3 +209,106 @@ def test_switched_within_same_day_does_not_hang_on_entry_order(main_user):
     _move(a, b, 50000, date(1998, 6, 1))
 
     assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 50000
+
+
+# ----------------------------------------------------------------------------
+#                                                           moves out of a fund
+# ----------------------------------------------------------------------------
+@pytest.mark.django_db
+def test_saving_change_moves_one_row_per_move_out(main_user):
+    fund = SavingTypeFactory(title="Fund")
+    other = SavingTypeFactory(title="Other")
+    for day, price in ((1, 100), (1, 200), (2, 300)):
+        SavingChangeFactory(
+            from_account=fund,
+            to_account=other,
+            price=price,
+            fee=0,
+            date=date(1999, 6, day),
+        )
+
+    actual = sorted(
+        SavingChangeModelService(main_user).moves(), key=lambda x: x["price"]
+    )
+
+    assert actual == [
+        {"category_id": fund.pk, "date": date(1999, 6, 1), "price": 100},
+        {"category_id": fund.pk, "date": date(1999, 6, 1), "price": 200},
+        {"category_id": fund.pk, "date": date(1999, 6, 2), "price": 300},
+    ]
+
+
+@pytest.mark.django_db
+def test_saving_close_moves_one_row_per_move_out(main_user):
+    fund = SavingTypeFactory(title="Fund")
+    SavingCloseFactory(from_account=fund, price=500, fee=10, date=date(1999, 6, 1))
+
+    actual = list(SavingCloseModelService(main_user).moves())
+
+    assert actual == [{"category_id": fund.pk, "date": date(1999, 6, 1), "price": 500}]
+
+
+@pytest.mark.django_db
+def test_moves_query_count_does_not_grow(main_user):
+    def queries():
+        with CaptureQueriesContext(connection) as context:
+            list(SavingChangeModelService(main_user).moves())
+            list(SavingCloseModelService(main_user).moves())
+        return len(context)
+
+    for _ in range(2):
+        SavingChangeFactory(price=1, fee=0, date=date(1999, 6, 1))
+    few = queries()
+    for _ in range(4):
+        SavingChangeFactory(price=1, fee=0, date=date(1999, 6, 1))
+    many = queries()
+
+    assert many == few
+
+
+# ----------------------------------------------------------------------------
+#                                          funds whose row shows no profit
+# ----------------------------------------------------------------------------
+@pytest.mark.django_db
+def test_switched_within_leaves_out_a_hidden_source(main_user):
+    a, b = _fund("A"), _fund("B")
+    _move(a, b, 130000)
+
+    actual = SavingChangeModelService(main_user).switched_within(
+        1999, FUNDS, hidden=frozenset({a.pk})
+    )
+
+    assert actual == 0
+
+
+@pytest.mark.django_db
+def test_switched_within_leaves_out_a_hidden_target(main_user):
+    a, b = _fund("A"), _fund("B")
+    _move(a, b, 130000)
+
+    actual = SavingChangeModelService(main_user).switched_within(
+        1999, FUNDS, hidden=frozenset({b.pk})
+    )
+
+    assert actual == 0
+
+
+@pytest.mark.django_db
+def test_switched_within_follows_a_chain_through_a_hidden_fund(main_user):
+    a, b, c = _fund("A"), _fund("B"), _fund("C")
+    _move(a, b, 50000)
+    _move(b, c, 50000, date(1998, 7, 1))
+
+    actual = SavingChangeModelService(main_user).switched_within(
+        1999, FUNDS, hidden=frozenset({b.pk})
+    )
+
+    assert actual == 50000
+
+
+@pytest.mark.django_db
+def test_switched_within_hidden_defaults_to_no_fund(main_user):
+    a, b = _fund("A"), _fund("B")
+    _move(a, b, 130000)
+
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 130000

@@ -251,6 +251,7 @@ def test_saving_insert_new_records_empty_db(main_user):
             "market_value": [90],
             "profit_sum": [100],
             "profit_proc": [110],
+            "sold_since_check": [0],
         }
     ).lazy()
 
@@ -292,6 +293,7 @@ def test_saving_insert_new_records(main_user):
             "market_value": [90],
             "profit_sum": [100],
             "profit_proc": [110],
+            "sold_since_check": [0],
         }
     ).lazy()
 
@@ -333,6 +335,7 @@ def test_saving_delete_records(main_user):
             "market_value": [],
             "profit_sum": [],
             "profit_proc": [],
+            "sold_since_check": [],
         }
     ).lazy()
 
@@ -360,6 +363,7 @@ def test_saving_update_existing_records(main_user):
             "market_value": [90],
             "profit_sum": [100],
             "profit_proc": [110],
+            "sold_since_check": [0],
         }
     ).lazy()
 
@@ -403,6 +407,7 @@ def test_saving_empty_dataframe_deletes_all(main_user):
             "market_value": [],
             "profit_sum": [],
             "profit_proc": [],
+            "sold_since_check": [],
         }
     ).lazy()
 
@@ -430,6 +435,7 @@ def test_pension_insert_new_records_empty_db(main_user):
             "market_value": [90],
             "profit_sum": [100],
             "profit_proc": [110],
+            "sold_since_check": [0],
         }
     ).lazy()
 
@@ -471,6 +477,7 @@ def test_pension_insert_new_records(main_user):
             "market_value": [90],
             "profit_sum": [100],
             "profit_proc": [110],
+            "sold_since_check": [0],
         }
     ).lazy()
 
@@ -512,6 +519,7 @@ def test_pension_delete_records(main_user):
             "market_value": [],
             "profit_sum": [],
             "profit_proc": [],
+            "sold_since_check": [],
         }
     ).lazy()
 
@@ -539,6 +547,7 @@ def test_pension_update_existing_records(main_user):
             "market_value": [90],
             "profit_sum": [100],
             "profit_proc": [110],
+            "sold_since_check": [0],
         }
     ).lazy()
 
@@ -582,6 +591,7 @@ def test_pension_empty_dataframe_deletes_all(main_user):
             "market_value": [],
             "profit_sum": [],
             "profit_proc": [],
+            "sold_since_check": [],
         }
     ).lazy()
 
