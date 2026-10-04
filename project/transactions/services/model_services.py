@@ -90,7 +90,7 @@ class SavingCloseModelService(SumMixin, CommonMethodsMixin, DatedModelService):
             to_account__journal=self.user.journal,
         )
 
-    def sum_by_month(self, year, month=None):
+    def sum_by_month(self, year, month=0):
         return self.month_sum(self.objects, year=year, month=month).annotate(
             title=Value("savings_close")
         )

@@ -10,7 +10,7 @@ class SumMixin:
         return qs.filter(**{f"{field}__month": month}) if month else qs
 
     def year_sum(
-        self, qs, year=None, sum_annotation="sum", groupby="id", sum_column="price"
+        self, qs, year=0, sum_annotation="sum", groupby="id", sum_column="price"
     ):
         qs = self.year_filter(qs, year)
         return (
@@ -29,7 +29,7 @@ class SumMixin:
         self,
         qs,
         year,
-        month=None,
+        month=0,
         sum_annotation="sum",
         sum_column="price",
         groupby="id",
@@ -51,7 +51,7 @@ class SumMixin:
         self,
         qs,
         year,
-        month=None,
+        month=0,
         sum_annotation="sum",
         sum_column="price",
         groupby="id",
