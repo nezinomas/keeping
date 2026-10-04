@@ -1,8 +1,13 @@
 from django.db import models
+from django.utils.formats import number_format
 
 from ..accounts.models import Account
-from ..core.templatetags.math import price
+from ..core.lib.convert_price import int_cents_to_float
 from ..savings.models import SavingType
+
+
+def money(cents: int) -> str:
+    return number_format(int_cents_to_float(cents), 2, force_grouping=True)
 
 
 class Transaction(models.Model):
@@ -24,7 +29,7 @@ class Transaction(models.Model):
 
     def __str__(self):
         _from = f"{self.date} {self.from_account}"
-        _to = f"{self.to_account}: {price(self.price):.2f}".replace(".", ",")
+        _to = f"{self.to_account}: {money(self.price)}"
         return f"{_from} -> {_to}"
 
 
@@ -48,7 +53,7 @@ class SavingClose(models.Model):
 
     def __str__(self):
         _from = f"{self.date} {self.from_account}"
-        _to = f"{self.to_account}: {price(self.price):.2f}".replace(".", ",")
+        _to = f"{self.to_account}: {money(self.price)}"
         return f"{_from} -> {_to}"
 
 
@@ -72,5 +77,5 @@ class SavingChange(models.Model):
 
     def __str__(self):
         _from = f"{self.date} {self.from_account}"
-        _to = f"{self.to_account}: {price(self.price):.2f}".replace(".", ",")
+        _to = f"{self.to_account}: {money(self.price)}"
         return f"{_from} -> {_to}"
