@@ -1,7 +1,6 @@
 from django.db import models
 
 from ..accounts.models import Account
-from ..core.templatetags.cell_format import cellformat
 from ..core.templatetags.math import price
 from ..savings.models import SavingType
 
@@ -25,7 +24,7 @@ class Transaction(models.Model):
 
     def __str__(self):
         _from = f"{self.date} {self.from_account}"
-        _to = f"{self.to_account}: {cellformat(price(self.price))}"
+        _to = f"{self.to_account}: {price(self.price):.2f}".replace(".", ",")
         return f"{_from} -> {_to}"
 
 
@@ -52,7 +51,7 @@ class SavingClose(models.Model):
 
     def __str__(self):
         _from = f"{self.date} {self.from_account}"
-        _to = f"{self.to_account}: {cellformat(price(self.price))}"
+        _to = f"{self.to_account}: {price(self.price):.2f}".replace(".", ",")
         return f"{_from} -> {_to}"
 
 
@@ -79,5 +78,5 @@ class SavingChange(models.Model):
 
     def __str__(self):
         _from = f"{self.date} {self.from_account}"
-        _to = f"{self.to_account}: {cellformat(price(self.price))}"
+        _to = f"{self.to_account}: {price(self.price):.2f}".replace(".", ",")
         return f"{_from} -> {_to}"
