@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from types import SimpleNamespace
 
@@ -723,3 +724,40 @@ def test_table_close_year_without_sale_keeps_worth():
     assert actual[1]["sold"] == 0
     assert actual[1]["profit_sum"] == 290
     assert actual[1]["profit_proc"] == 29
+
+
+def test_table_does_not_depend_on_the_input_row_order():
+    incomes = [
+        {"year": year, "incomes": 10 * year % 7 + 1, "fee": 1, "category_id": pk}
+        for pk in (1, 2, 3)
+        for year in (1996, 1997, 1999, 2002)
+    ]
+    expenses = [
+        {"year": 1999, "expenses": 3, "fee": 1, "category_id": 2},
+        {"year": 2002, "expenses": 4, "fee": 0, "category_id": 3},
+    ]
+    have = [
+        {"category_id": pk, "year": year, "have": pk * year % 50, "latest_check": dt}
+        for pk in (1, 2, 3)
+        for year, dt in ((1997, datetime(1997, 3, 1)), (2000, datetime(2000, 5, 1)))
+    ]
+    moves = [
+        {"category_id": 2, "date": datetime(1999, 6, 1).date(), "price": 3},
+        {"category_id": 3, "date": datetime(2002, 6, 1).date(), "price": 4},
+    ]
+    types = [SimpleNamespace(pk=pk, closed=None) for pk in (1, 2, 3)]
+
+    def table(rng=None):
+        lists = [list(x) for x in (incomes, expenses, have, moves, types)]
+        for x in lists:
+            if rng:
+                rng.shuffle(x)
+        inc, exp, hv, mv, tp = lists
+        data = SimpleNamespace(moves=mv, incomes=inc, expenses=exp, have=hv, types=tp)
+        return Savings(data).df.collect().to_dicts()
+
+    expected = table()
+    rng = random.Random(1)
+
+    for _ in range(20):
+        assert table(rng) == expected
