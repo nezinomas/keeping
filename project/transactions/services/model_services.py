@@ -6,7 +6,7 @@ from functools import cache
 from types import MappingProxyType
 from typing import NamedTuple
 
-from django.db.models import F, Sum, Value
+from django.db.models import F, Q, Sum, Value
 from django.db.models.functions import Coalesce, ExtractYear
 
 from ...core.mixins.sum import SumMixin
@@ -143,20 +143,23 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
         years = sorted(set(years))
         if not years:
             return {}
-        rows = self.objects.filter(
-            date__year__lte=years[-1],
-            from_account__type__in=types,
-            to_account__type__in=types,
-        ).values_list(
-            "pk",
-            "date",
-            "from_account_id",
-            "to_account_id",
-            "from_account__closed",
-            "to_account__closed",
-            "price",
+        # a switch from another type is outside money the walk must still count
+        rows = (
+            self.objects.filter(date__year__lte=years[-1])
+            .filter(Q(from_account__type__in=types) | Q(to_account__type__in=types))
+            .values_list(
+                "pk",
+                "date",
+                "from_account_id",
+                "to_account_id",
+                "from_account__closed",
+                "to_account__closed",
+                "price",
+                "from_account__type",
+                "to_account__type",
+            )
         )
-        switches = [Switch(*row) for row in rows]
+        switches = [Switch(*row[:7], row[7] in types, row[8] in types) for row in rows]
         purchases = self._purchases_loader(switches, years[-1])
         return {
             year: SwitchedWithin.total(
@@ -205,6 +208,8 @@ class Switch(NamedTuple):
     source_closed: int | None
     target_closed: int | None
     price: int
+    source_in_group: bool
+    target_in_group: bool
 
 
 @dataclass
@@ -236,16 +241,27 @@ class SwitchedWithin:
         return walk.taken_off
 
     def source_off_table(self, switch: Switch) -> bool:
-        return not self.on_table(switch.source, switch.source_closed)
+        return not self.on_table(
+            switch.source, switch.source_closed, switch.source_in_group
+        )
 
-    def on_table(self, fund: int, closed: int | None) -> bool:
-        return fund not in self.hidden and (closed is None or closed >= self.year)
+    def target_on_table(self, switch: Switch) -> bool:
+        return self.on_table(
+            switch.target, switch.target_closed, switch.target_in_group
+        )
+
+    def on_table(self, fund: int, closed: int | None, in_group: bool) -> bool:
+        return (
+            in_group
+            and fund not in self.hidden
+            and (closed is None or closed >= self.year)
+        )
 
     def order(self, switch: Switch) -> tuple:
         # within a day, money reaches a closed fund before it can leave it
         return (
             switch.date,
-            self.on_table(switch.target, switch.target_closed),
+            self.target_on_table(switch),
             self.source_off_table(switch),
             switch.pk,
         )
@@ -257,14 +273,21 @@ class SwitchedWithin:
         moved = switch.price
         if self.source_off_table(switch):
             moved = self.table_share(switch.source, switch.price)
+        self.draw_down(switch.source, switch.price)
         self.from_table[switch.target] += moved
         self.paid_in[switch.target] += switch.price
-        if self.on_table(switch.target, switch.target_closed):
+        if self.target_on_table(switch):
             self.taken_off += moved
 
-    def table_share(self, fund: int, price: int) -> int:
+    def draw_down(self, fund: int, price: int) -> None:
+        # the walk knows no worth, so what stays keeps the fund's ratio
+        left = max(self.paid_in[fund] - price, 0)
+        self.from_table[fund] = self.table_share(fund, left)
+        self.paid_in[fund] = left
+
+    def table_share(self, fund: int, amount: int) -> int:
         # what leaves an off-table fund, gain included, splits as its money came in
         if not self.paid_in[fund]:
             return 0
-        share, rest = divmod(price * self.from_table[fund], self.paid_in[fund])
+        share, rest = divmod(amount * self.from_table[fund], self.paid_in[fund])
         return share + (2 * rest >= self.paid_in[fund])
