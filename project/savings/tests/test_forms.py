@@ -56,6 +56,24 @@ def test_saving_type_valid_data(main_user, closed):
     assert data.journal.users.first().username == "bob"
 
 
+@pytest.mark.parametrize("closed", [1999, None])
+def test_saving_type_with_no_close_year_saves_open(main_user, closed):
+    fund = SavingTypeFactory(closed=closed)
+    form = SavingTypeForm(
+        user=main_user,
+        instance=fund,
+        data={
+            "title": "Title",
+            "closed": "",
+            "type": "funds",
+            "fee_source": "investment",
+        },
+    )
+
+    assert form.is_valid()
+    assert form.save().closed is None
+
+
 def test_saving_type_fee_source_field(main_user):
     form = SavingTypeForm(user=main_user).as_p()
 
