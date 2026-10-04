@@ -36,10 +36,7 @@ class SavingClose(models.Model):
     to_account = models.ForeignKey(
         Account, on_delete=models.PROTECT, related_name="savings_close_to"
     )
-    fee = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-    )
+    fee = models.PositiveIntegerField(default=0)
     price = models.PositiveIntegerField()
 
     class Meta:
@@ -63,10 +60,7 @@ class SavingChange(models.Model):
     to_account = models.ForeignKey(
         SavingType, on_delete=models.PROTECT, related_name="savings_change_to"
     )
-    fee = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-    )
+    fee = models.PositiveIntegerField(default=0)
     price = models.PositiveIntegerField()
 
     class Meta:
