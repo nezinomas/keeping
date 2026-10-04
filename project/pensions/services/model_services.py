@@ -55,10 +55,16 @@ class PensionBalanceModelService(DatedModelService):
         return self.objects.all()
 
     def sum_by_year(self):
+        """Per year, summed over the rows that show a profit."""
         return (
-            self.objects.annotate(y=F("year"))
-            .values("y")
-            .annotate(incomes=Sum("incomes"), profit=Sum("profit_sum"), fee=Sum("fee"))
+            self.objects.filter(models.PensionBalance.shows_profit_q())
+            .values("year")
+            .annotate(
+                incomes=Sum("incomes"),
+                profit=Sum("profit_sum"),
+                total=Sum("market_value"),
+                fee=Sum("fee"),
+            )
             .order_by("year")
-            .values("year", "incomes", "profit", "fee")
+            .values("year", "incomes", "profit", "total", "fee")
         )

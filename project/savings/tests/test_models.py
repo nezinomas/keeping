@@ -12,6 +12,7 @@ from django.test.utils import CaptureQueriesContext
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
 from ...accounts.tests.factories import AccountFactory
+from ...bookkeeping.tests.factories import SavingWorthFactory
 from ...incomes.tests.factories import IncomeFactory
 from ...savings.tests.factories import (
     SavingBalanceFactory,
@@ -827,12 +828,20 @@ def test_sum_by_type_funds(main_user):
 
     SavingFactory(saving_type=f, price=1, fee=1)
     SavingFactory(saving_type=f, price=10, fee=1)
+    SavingWorthFactory(saving_type=f, price=20)
 
     actual = list(SavingBalanceModelService(main_user).sum_by_type())
 
     assert actual == [
-        {"year": 1999, "incomes": 11, "profit": -13, "fee": 2, "type": "funds"},
-        {"year": 2000, "incomes": 11, "profit": -13, "fee": 2, "type": "funds"},
+        {
+            "year": year,
+            "incomes": 11,
+            "profit": 7,
+            "total": 20,
+            "fee": 2,
+            "type": "funds",
+        }
+        for year in (1999, 2000)
     ]
 
 
@@ -842,12 +851,20 @@ def test_sum_by_type_shares(main_user):
 
     SavingFactory(saving_type=f, price=1, fee=1)
     SavingFactory(saving_type=f, price=10, fee=1)
+    SavingWorthFactory(saving_type=f, price=20)
 
     actual = list(SavingBalanceModelService(main_user).sum_by_type())
 
     assert actual == [
-        {"year": 1999, "incomes": 11, "profit": -13, "fee": 2, "type": "shares"},
-        {"year": 2000, "incomes": 11, "profit": -13, "fee": 2, "type": "shares"},
+        {
+            "year": year,
+            "incomes": 11,
+            "profit": 7,
+            "total": 20,
+            "fee": 2,
+            "type": "shares",
+        }
+        for year in (1999, 2000)
     ]
 
 
@@ -857,12 +874,20 @@ def test_sum_by_type_pensions(main_user):
 
     SavingFactory(saving_type=f, price=1, fee=1)
     SavingFactory(saving_type=f, price=10, fee=1)
+    SavingWorthFactory(saving_type=f, price=20)
 
     actual = list(SavingBalanceModelService(main_user).sum_by_type())
 
     assert actual == [
-        {"year": 1999, "incomes": 11, "profit": -13, "fee": 2, "type": "pensions"},
-        {"year": 2000, "incomes": 11, "profit": -13, "fee": 2, "type": "pensions"},
+        {
+            "year": year,
+            "incomes": 11,
+            "profit": 7,
+            "total": 20,
+            "fee": 2,
+            "type": "pensions",
+        }
+        for year in (1999, 2000)
     ]
 
 

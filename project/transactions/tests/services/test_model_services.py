@@ -386,3 +386,61 @@ def test_switched_within_hidden_defaults_to_no_fund(main_user):
     _move(a, b, 130000)
 
     assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 130000
+
+
+# ----------------------------------------------------------------------------
+#                                          several years from one switch query
+# ----------------------------------------------------------------------------
+def _years_scene():
+    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
+    _buy(b, 20000)
+    _move(a, b, 40000)
+    _move(b, c, 70000, date(1998, 7, 1))
+    _move(a, c, 10000, date(1999, 3, 1))
+    return a, b, c
+
+
+@pytest.mark.django_db
+def test_switched_within_years_reads_each_year_as_switched_within_does(main_user):
+    _years_scene()
+    service = SavingChangeModelService(main_user)
+
+    actual = service.switched_within_years([1998, 1999], FUNDS)
+
+    assert actual == {
+        1998: service.switched_within(1998, FUNDS),
+        1999: service.switched_within(1999, FUNDS),
+    }
+    assert actual == {1998: 110000, 1999: 56667}
+
+
+@pytest.mark.django_db
+def test_switched_within_years_hides_funds_per_year(main_user):
+    a, b, c = _years_scene()
+    service = SavingChangeModelService(main_user)
+
+    actual = service.switched_within_years(
+        [1998, 1999], FUNDS, hidden_by_year={1999: frozenset({c.pk})}
+    )
+
+    assert actual[1998] == 110000
+    assert actual[1999] == service.switched_within(1999, FUNDS, hidden={c.pk})
+
+
+@pytest.mark.django_db
+def test_switched_within_years_query_count_does_not_grow_with_the_years(main_user):
+    a, b, c = _fund("A"), _fund("B", closed=1990), _fund("C")
+
+    def queries_with(years):
+        while SavingChange.objects.count() < 2 * years:
+            year = 1990 + SavingChange.objects.count() // 2
+            _buy(b, 1000, date(year, 1, 1))
+            _move(a, b, 1000, date(year, 2, 1))
+            _move(b, c, 1000, date(year, 3, 1))
+        with CaptureQueriesContext(connection) as ctx:
+            SavingChangeModelService(main_user).switched_within_years(
+                list(range(1990, 1990 + years)), FUNDS
+            )
+        return len(ctx)
+
+    assert queries_with(2) == queries_with(6)

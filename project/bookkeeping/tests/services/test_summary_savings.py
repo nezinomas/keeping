@@ -13,18 +13,18 @@ from ...services.summary_savings import load_service, make_chart
 @pytest.fixture(name="data1")
 def fixture_data1():
     return [
-        {"year": 1999, "incomes": 0, "profit": 0},
-        {"year": 2000, "incomes": 1, "profit": 1},
-        {"year": 2001, "incomes": 2, "profit": 2},
+        {"year": 1999, "incomes": 0, "profit": 0, "total": 0},
+        {"year": 2000, "incomes": 1, "profit": 1, "total": 2},
+        {"year": 2001, "incomes": 2, "profit": 2, "total": 4},
     ]
 
 
 @pytest.fixture(name="data2")
 def fixture_data2():
     return [
-        {"year": 1999, "incomes": 0, "profit": 0},
-        {"year": 2000, "incomes": 4, "profit": 4},
-        {"year": 2001, "incomes": 5, "profit": 5},
+        {"year": 1999, "incomes": 0, "profit": 0, "total": 0},
+        {"year": 2000, "incomes": 4, "profit": 4, "total": 8},
+        {"year": 2001, "incomes": 5, "profit": 5, "total": 10},
     ]
 
 
@@ -55,6 +55,7 @@ data_stragety = st.lists(
             "year": st.integers(min_value=1974, max_value=2050),
             "incomes": st.integers(min_value=0, max_value=1_000_000),
             "profit": st.integers(min_value=-1_000, max_value=1_000),
+            "total": st.integers(min_value=0, max_value=1_000_000),
         }
     ),
     max_size=15,
@@ -123,11 +124,21 @@ def test_chart_data_6():
     assert not actual["total"]
 
 
+def test_chart_keeps_a_year_whose_shown_rows_paid_nothing_in():
+    actual = make_chart(
+        "x", [{"year": 1999, "incomes": 0, "profit": 37000, "total": 37000}]
+    )
+
+    assert actual["categories"] == [1999]
+    assert actual["total"] == [37000]
+    assert actual["proc"] == [0.0]
+
+
 @pytest.mark.django_db
 def test_chart_data_db1(main_user):
-    SavingBalanceFactory(year=1999, incomes=0, profit_sum=0)
-    SavingBalanceFactory(year=2000, incomes=1, profit_sum=1)
-    SavingBalanceFactory(year=2001, incomes=2, profit_sum=2)
+    SavingBalanceFactory(year=1999, incomes=0, profit_sum=0, market_value=0)
+    SavingBalanceFactory(year=2000, incomes=1, profit_sum=1, market_value=2)
+    SavingBalanceFactory(year=2001, incomes=2, profit_sum=2, market_value=4)
 
     qs = SavingBalanceModelService(main_user).sum_by_type()
 
