@@ -270,6 +270,43 @@ def test_switched_within_takes_the_table_share_of_a_hidden_fund(main_user):
 
 
 @pytest.mark.django_db
+def test_switched_within_starts_over_in_a_fund_emptied_and_filled_again(main_user):
+    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
+    _move(a, b, 40000)
+    _move(b, c, 40000, date(1998, 7, 1))
+    _buy(b, 40000, date(1998, 8, 1))
+    _move(b, c, 40000, date(1998, 9, 1))
+
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 40000
+
+
+@pytest.mark.django_db
+def test_switched_within_starts_over_after_outside_money_left(main_user):
+    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
+    _buy(b, 40000)
+    _move(b, c, 40000, date(1998, 7, 1))
+    _move(a, b, 40000, date(1998, 8, 1))
+    _move(b, c, 40000, date(1998, 9, 1))
+
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 40000
+
+
+@pytest.mark.django_db
+def test_switched_within_reads_money_from_another_type_as_outside(main_user):
+    a, b, c = _fund("A"), _fund("B"), _fund("C")
+    shares = SavingTypeFactory(title="S", type="shares")
+    _move(a, b, 10000)
+    _move(shares, b, 10000)
+    _move(b, c, 20000, date(1998, 7, 1))
+
+    actual = SavingChangeModelService(main_user).switched_within(
+        1999, ["funds"], hidden=frozenset({b.pk})
+    )
+
+    assert actual == 10000
+
+
+@pytest.mark.django_db
 def test_switched_within_through_a_closed_fund_query_count_does_not_grow(main_user):
     a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
 

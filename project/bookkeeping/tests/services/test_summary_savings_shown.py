@@ -154,3 +154,27 @@ def test_the_chart_queries_do_not_grow_with_the_years(main_user):
     six = _queries(main_user, 6)
 
     assert two == six
+
+
+def test_money_from_another_type_is_outside_the_funds_chart(main_user):
+    a, b, c = (SavingTypeFactory(title=t, type="funds") for t in "ABC")
+    shares = SavingTypeFactory(title="S", type="shares")
+    _buy(a, 30000)
+    _buy(shares, 10000)
+    for source, target, price, month in [
+        (a, b, 10000, 6),
+        (shares, b, 10000, 6),
+        (b, c, 20000, 7),
+    ]:
+        SavingChangeFactory(
+            from_account=source,
+            to_account=target,
+            price=price,
+            fee=0,
+            date=date(YEAR, month, 1),
+        )
+    _worth(a, 20000)
+    _worth(c, 22000)
+
+    assert _figures(_chart(main_user))["proc"] == 5.0
+    assert _figures(_chart(main_user, "funds_shares"))["proc"] == 5.0
