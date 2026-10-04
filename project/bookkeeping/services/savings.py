@@ -16,6 +16,11 @@ from ...transactions.services.model_services import SavingChangeModelService
 FUND_TYPES = [t for t in SavingType.Types.values if t != SavingType.Types.PENSIONS]
 
 
+def hidden_funds(rows) -> frozenset[int]:
+    """Ids of the funds whose row shows no profit."""
+    return frozenset(row.saving_type_id for row in rows if not row.shows_profit)
+
+
 @dataclass
 class SavingsDto:
     savings: list[Any]
@@ -44,7 +49,7 @@ class SavingsService:
             SavingBalanceModelService(self._user).year(self._year, types=FUND_TYPES)
         )
         switched_within = SavingChangeModelService(self._user).switched_within(
-            self._year, FUND_TYPES
+            self._year, FUND_TYPES, hidden=hidden_funds(savings)
         )
         return SavingsDto(
             savings=savings,
@@ -79,7 +84,7 @@ class SavingsPresenter:
             "object_list": self._dto.savings,
             "incomes_total": self._dto.incomes_total,
             "savings_total": self._dto.savings_total,
-            "total_row": utils.total_row(
+            "total_row": utils.funds_total_row(
                 self._dto.savings, self._FIELDS, self._dto.switched_within
             ),
         }

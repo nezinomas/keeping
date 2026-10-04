@@ -155,7 +155,7 @@ def test_total_counts_the_switched_money_once(client_logged):
     cells = total_cells(content)
 
     assert cells[5] == "2.300,00"
-    assert cells[-1] == "40,00%"
+    assert cells[-1] == "7,69%"
 
 
 def test_total_ignores_a_switch_between_funds(client_logged):

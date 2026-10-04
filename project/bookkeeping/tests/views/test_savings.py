@@ -194,7 +194,7 @@ def test_total_counts_the_switched_money_once(client_logged, kind):
     cells = total_cells(content)
 
     assert cells[5] == "2.300,00"
-    assert cells[-1] == "40,00%"
+    assert cells[-1] == "7,69%"
 
 
 def test_total_keeps_the_base_of_a_source_closed_before_the_year(client_logged):
