@@ -138,6 +138,9 @@ class SavingCloseForm(
             f"{_('Close')} <b>{_('From account')}</b>"
         )
 
+    def clean_fee(self):
+        return self.cleaned_data.get("fee") or 0
+
 
 class SavingChangeForm(
     CloseFromAccountMixin, ConvertPriceMixin, YearBetweenMixin, forms.ModelForm
@@ -203,3 +206,6 @@ class SavingChangeForm(
         self.fields["close"].label = mark_safe(
             f"{_('Close')} <b>{_('From account')}</b>"
         )
+
+    def clean_fee(self):
+        return self.cleaned_data.get("fee") or 0
