@@ -10,13 +10,13 @@ import polars as pl
 from django.utils.translation import gettext as _
 
 from ...pensions.services.model_services import PensionBalanceModelService
-from ...savings.models import SavingBalance
+from ...savings.models import SavingBalance, SavingType
 from ...savings.services.model_services import SavingBalanceModelService
 from ...transactions.services.model_services import SavingChangeModelService
 
 NO_SWITCHES = MappingProxyType({})
 # pensions II are a separate model with no switches
-SWITCHABLE = {"funds", "shares", "pensions"}
+SWITCHABLE = set(SavingType.Types.values)
 
 
 @dataclass
