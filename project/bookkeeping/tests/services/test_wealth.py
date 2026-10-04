@@ -30,6 +30,14 @@ def test_provider_empty_db(main_user):
     assert obj.pension_balance == 0
 
 
+def test_provider_empty_year_is_the_database_default_not_a_float(main_user):
+    obj = WealthDataProvider(main_user, 1999).get_wealth_data()
+
+    assert type(obj.account_balance) is int
+    assert type(obj.saving_balance) is int
+    assert type(obj.pension_balance) is int
+
+
 def test_provider_account_balance(main_user):
     AccountBalanceFactory()
     AccountBalanceFactory()
@@ -104,3 +112,49 @@ def test_provider_fund_without_a_close_counts_its_worth(main_user):
     obj = WealthDataProvider(main_user, 1999).get_wealth_data()
 
     assert obj.saving_balance == 95000
+
+
+def _stale_fund_bought_in_1999(kind="funds"):
+    fund = SavingTypeFactory(title="Fund", type=kind)
+    SavingFactory(saving_type=fund, price=100000, fee=0, date=date(1999, 1, 1))
+    SavingWorthFactory(
+        saving_type=fund,
+        price=100000,
+        date=datetime(1999, 3, 1, 12, tzinfo=ZoneInfo("Europe/Vilnius")),
+    )
+    SavingCloseFactory(from_account=fund, price=40000, fee=0, date=date(1999, 6, 1))
+    return fund
+
+
+def test_provider_counts_a_fund_with_a_stale_worth_as_zero(main_user):
+    _stale_fund_bought_in_1999()
+
+    obj = WealthDataProvider(main_user, 1999).get_wealth_data()
+
+    assert obj.saving_balance == 0
+
+
+def test_provider_counts_a_stale_pension_type_as_zero(main_user):
+    _stale_fund_bought_in_1999(kind="pensions")
+
+    obj = WealthDataProvider(main_user, 1999).get_wealth_data()
+
+    assert obj.saving_balance == 0
+
+
+def test_provider_counts_a_pension_balance_with_a_stale_worth_as_zero(main_user):
+    PensionBalanceFactory(market_value=100, sold_since_check=40)
+    PensionBalanceFactory(market_value=25)
+
+    obj = WealthDataProvider(main_user, 1999).get_wealth_data()
+
+    assert obj.pension_balance == 25
+
+
+def test_provider_counts_a_fresh_worth_after_the_sell(main_user):
+    fund = _stale_fund_bought_in_1999()
+    SavingWorthFactory(saving_type=fund, price=60000, date=WORTH_DATE)
+
+    obj = WealthDataProvider(main_user, 1999).get_wealth_data()
+
+    assert obj.saving_balance == 60000

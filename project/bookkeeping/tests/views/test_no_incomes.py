@@ -1,14 +1,21 @@
 import json
+from datetime import date, datetime
 from pathlib import Path
 
 import pytest
+import pytz
+from django.db.models import Sum
 from django.template import Context, Template
 from django.urls import resolve, reverse
 
+from ....accounts.models import AccountBalance
 from ....expenses.tests.factories import ExpenseTypeFactory
 from ....journals.tests.factories import JournalFactory
-from ....savings.tests.factories import SavingTypeFactory
+from ....savings.tests.factories import SavingFactory, SavingTypeFactory
+from ....transactions.tests.factories import SavingCloseFactory
 from ... import views
+from ...lib import no_incomes
+from ..factories import SavingWorthFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -84,3 +91,28 @@ def test_template_month_value():
     # month
     assert "33,0" in actual
     assert "44,0" in actual
+
+
+def _stale_fund(kind):
+    fund = SavingTypeFactory(title="Stale", type=kind)
+    SavingFactory(saving_type=fund, price=100000, fee=0, date=date(1999, 1, 1))
+    SavingWorthFactory(
+        saving_type=fund,
+        price=100000,
+        date=datetime(1999, 3, 1, 12, tzinfo=pytz.utc),
+    )
+    SavingCloseFactory(from_account=fund, price=40000, fee=0, date=date(1999, 6, 1))
+
+
+@pytest.mark.parametrize("kind", ["funds", "pensions"])
+def test_a_stale_worth_counts_as_zero(main_user, kind):
+    _stale_fund(kind)
+
+    account_sum = AccountBalance.objects.filter(year=1999).aggregate(
+        Sum("balance", default=0)
+    )["balance__sum"]
+
+    actual = no_incomes.load_service(main_user, 1999)["no_incomes"][0]
+
+    assert actual["money_fund"] == account_sum
+    assert actual["money_fund_pension"] == account_sum

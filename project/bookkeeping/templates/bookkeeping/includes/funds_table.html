@@ -39,8 +39,7 @@
         {% for item in object_list %}
         <tr>
             {% if item.saving_type_id %}{% firstof 'saving_type' as obj_type %}{% else %}{% firstof 'pension_type' as obj_type %}{% endif %}
-            {% with fund=item|get_obj_attr:obj_type %}
-            <td class="text-left right-thin-border">{{ fund }}</td>
+            <td class="text-left right-thin-border">{{ item|get_obj_attr:obj_type }}</td>
             <td class="{{item.past_amount|css_class_if_none}}">{{item.past_amount|price|cellformat}}</td>
             <td class="right-thin-border {{item.past_fee|css_class_if_none}}">{{item.past_fee|price|cellformat}}</td>
             <td class="{{item.per_year_incomes|css_class_if_none}}">{{item.per_year_incomes|price|cellformat}}</td>
@@ -56,14 +55,13 @@
             <td class="dash">-</td>
             <td class="right-thick-border dash">-</td>
             {% endif %}
-            {% if item.market_value or fund.closed == item.year and item.sold %}
+            {% if item.shows_profit %}
             <td class="{{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_sum|price|cellformat}}</td>
             <td class="{{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_proc|cellformat}}%</td>
             {% else %}
             <td class="dash">-</td>
             <td class="dash">-</td>
             {% endif %}
-            {% endwith %}
         </tr>
         {% endfor %}
     </tbody>
