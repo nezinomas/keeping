@@ -9,6 +9,7 @@ from ..incomes import models as income
 from ..pensions import models as pension
 from ..savings import models as saving
 from ..transactions import models as transaction
+from ..transactions.services.close_year import FundCloseYear
 from .services import signals_service
 
 
@@ -59,6 +60,12 @@ def saving_type_signal(sender: object, instance: saving.SavingType, *args, **kwa
 @receiver(post_save, sender=bookkeeping.SavingWorth)
 def savings_signal(sender: object, instance: models.Model, *args, **kwargs):
     signals_service.sync_savings(instance)
+
+
+@receiver(post_delete, sender=transaction.SavingClose)
+@receiver(post_delete, sender=transaction.SavingChange)
+def fund_close_year_signal(sender: object, instance: models.Model, *args, **kwargs):
+    FundCloseYear.follow(instance.from_account_id)
 
 
 # -------------------------------------------------------------------------------------

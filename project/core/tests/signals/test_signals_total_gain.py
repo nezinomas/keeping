@@ -9,7 +9,7 @@ from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping.tests.factories import PensionWorthFactory, SavingWorthFactory
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
-from ....savings.models import SavingBalance
+from ....savings.models import SavingBalance, SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
 from ...services import signals_service
@@ -210,6 +210,64 @@ def test_closing_a_pension_type_drops_its_later_rows():
         "year", flat=True
     )
     assert max(years) == YEAR
+
+
+# ----------------------------------------------------------------------------
+#                                 deleting a move re-derives the fund's close year
+# ----------------------------------------------------------------------------
+def _switch(saving_type, price, when):
+    return SavingChangeFactory(
+        from_account=saving_type,
+        to_account=SavingTypeFactory(title="Other"),
+        price=price,
+        fee=0,
+        date=when,
+    )
+
+
+MOVE_OUT = {
+    "sell": lambda fund, when: _sell(fund, 10000, when=when),
+    "switch": lambda fund, when: _switch(fund, 10000, when),
+}
+
+
+def _closed(fund):
+    return SavingType.objects.get(pk=fund.pk).closed
+
+
+@pytest.mark.parametrize("move", MOVE_OUT)
+def test_deleting_the_closing_move_closes_the_fund_at_the_move_before(move):
+    fund = SavingTypeFactory(title="Fund", closed=YEAR + 1)
+    _buy(fund, 100000)
+    MOVE_OUT[move](fund, date(YEAR, 6, 1))
+    closing = MOVE_OUT[move](fund, date(YEAR + 1, 6, 1))
+
+    closing.delete()
+
+    assert _closed(fund) == YEAR
+
+
+@pytest.mark.parametrize("move", MOVE_OUT)
+def test_deleting_the_only_move_reopens_the_fund(move):
+    fund = SavingTypeFactory(title="Fund", closed=YEAR)
+    _buy(fund, 100000)
+    closing = MOVE_OUT[move](fund, date(YEAR, 6, 1))
+
+    closing.delete()
+
+    assert _closed(fund) is None
+
+
+@pytest.mark.parametrize("move", MOVE_OUT)
+def test_deleting_a_move_leaves_an_open_fund_open(move):
+    fund = SavingTypeFactory(title="Fund")
+    _buy(fund, 100000)
+    MOVE_OUT[move](fund, date(YEAR, 6, 1))
+    later = MOVE_OUT[move](fund, date(YEAR + 1, 6, 1))
+
+    later.delete()
+
+    assert _closed(fund) is None
 
 
 # ----------------------------------------------------------------------------

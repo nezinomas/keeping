@@ -12,7 +12,8 @@ from ..core.mixins.forms import YearBetweenMixin
 from ..savings.services.model_services import (
     SavingTypeModelService,
 )
-from .models import SavingChange, SavingClose, SavingType, Transaction
+from .models import SavingChange, SavingClose, Transaction
+from .services.close_year import CloseBox, FundCloseYear
 
 
 class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
@@ -70,28 +71,27 @@ class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
 class CloseFromAccountMixin:
     """Closes or reopens the from-fund with the form's `close` checkbox."""
 
-    def _sync_from_account_close(self):
-        fund = SavingType.objects.get(pk=self.instance.from_account.pk)
-        closed = self._close_year(fund.closed)
-        if fund.closed == closed:
-            return  # a type save re-syncs savings; skip it when nothing changed
+    def save(self, *args, **kwargs):
+        previous_fund, previous_date = self._previous_move()
+        row = super().save(*args, **kwargs)
 
-        fund.closed = closed
-        fund.save()
+        dates = (row.date,)
+        if previous_fund == row.from_account_id:
+            dates += (previous_date,)
 
-    def _close_year(self, current):
-        if not self.cleaned_data.get("close"):
-            return None
+        box = CloseBox(self.cleaned_data["close"], dates)
+        FundCloseYear.follow(row.from_account_id, box)
+        if previous_fund != row.from_account_id:
+            FundCloseYear.follow(previous_fund)
 
-        year = self.instance.date.year
-        if current is None or year > current or self._closed_the_fund(current):
-            return year
+        return row
 
-        # the box comes ticked on every row of a closed fund; an earlier row keeps it
-        return current
+    def _previous_move(self):
+        # a new move has no previous one; is_valid() already set its fund and date
+        if not self.instance.pk:
+            return self.instance.from_account_id, self.instance.date
 
-    def _closed_the_fund(self, current) -> bool:
-        return bool(self.instance.pk) and self.initial["date"].year == current
+        return self.initial["from_account"], self.initial["date"]
 
 
 class SavingCloseForm(
@@ -137,10 +137,6 @@ class SavingCloseForm(
         self.fields["close"].label = mark_safe(
             f"{_('Close')} <b>{_('From account')}</b>"
         )
-
-    def save(self, *args, **kwargs):
-        self._sync_from_account_close()
-        return super().save(*args, **kwargs)
 
 
 class SavingChangeForm(
@@ -207,7 +203,3 @@ class SavingChangeForm(
         self.fields["close"].label = mark_safe(
             f"{_('Close')} <b>{_('From account')}</b>"
         )
-
-    def save(self, *args, **kwargs):
-        self._sync_from_account_close()
-        return super().save(*args, **kwargs)
