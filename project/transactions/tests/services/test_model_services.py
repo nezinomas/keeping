@@ -6,7 +6,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
 from ....savings.models import SavingType
-from ....savings.tests.factories import SavingTypeFactory
+from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...models import SavingChange
 from ...services.model_services import (
     SavingChangeModelService,
@@ -172,12 +172,12 @@ def test_switched_within_follows_a_chain_through_a_closed_fund(main_user):
 
 
 @pytest.mark.django_db
-def test_switched_within_caps_at_what_the_closed_fund_received(main_user):
+def test_switched_within_passes_on_a_closed_funds_gain(main_user):
     a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
     _move(a, b, 30000)
     _move(b, c, 50000, date(1998, 7, 1))
 
-    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 30000
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 50000
 
 
 @pytest.mark.django_db
@@ -192,14 +192,14 @@ def test_switched_within_follows_a_two_deep_chain(main_user):
 
 
 @pytest.mark.django_db
-def test_switched_within_counts_a_closed_funds_money_once(main_user):
+def test_switched_within_passes_on_all_a_closed_fund_holds(main_user):
     a, b = _fund("A"), _fund("B", closed=1998)
     c, d = _fund("C"), _fund("D")
     _move(a, b, 50000)
     _move(b, c, 30000, date(1998, 7, 1))
     _move(b, d, 30000, date(1998, 8, 1))
 
-    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 50000
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 60000
 
 
 @pytest.mark.django_db
@@ -209,6 +209,80 @@ def test_switched_within_same_day_does_not_hang_on_entry_order(main_user):
     _move(a, b, 50000, date(1998, 6, 1))
 
     assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 50000
+
+
+def _buy(fund, price, date_=date(1998, 6, 1)):
+    return SavingFactory(saving_type=fund, price=price, fee=0, date=date_)
+
+
+@pytest.mark.django_db
+def test_switched_within_takes_the_table_share_of_a_closed_fund(main_user):
+    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
+    _buy(b, 20000)
+    _move(a, b, 40000)
+    _move(b, c, 70000, date(1998, 7, 1))
+
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 46667
+
+
+@pytest.mark.django_db
+def test_switched_within_leaves_out_a_purchase_after_the_switch(main_user):
+    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
+    _move(a, b, 40000)
+    _move(b, c, 50000, date(1998, 7, 1))
+    _buy(b, 20000, date(1998, 8, 1))
+
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 50000
+
+
+@pytest.mark.django_db
+def test_switched_within_counts_a_purchase_on_the_switch_day(main_user):
+    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
+    _move(a, b, 40000)
+    _buy(b, 40000, date(1998, 7, 1))
+    _move(b, c, 80000, date(1998, 7, 1))
+
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 40000
+
+
+@pytest.mark.django_db
+def test_switched_within_reads_a_purchase_without_a_price_as_zero(main_user):
+    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
+    _move(a, b, 40000)
+    SavingFactory(saving_type=b, price=None, fee=0, date=date(1998, 6, 1))
+    _move(b, c, 50000, date(1998, 7, 1))
+
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 50000
+
+
+@pytest.mark.django_db
+def test_switched_within_takes_the_table_share_of_a_hidden_fund(main_user):
+    a, b, c = _fund("A"), _fund("B"), _fund("C")
+    _buy(b, 20000)
+    _move(a, b, 40000)
+    _move(b, c, 70000, date(1998, 7, 1))
+
+    actual = SavingChangeModelService(main_user).switched_within(
+        1999, FUNDS, hidden=frozenset({b.pk})
+    )
+
+    assert actual == 46667
+
+
+@pytest.mark.django_db
+def test_switched_within_through_a_closed_fund_query_count_does_not_grow(main_user):
+    a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
+
+    def queries_with(rows):
+        while SavingChange.objects.count() < rows:
+            _buy(b, 1000)
+            _move(a, b, 1000)
+            _move(b, c, 1000, date(1998, 7, 1))
+        with CaptureQueriesContext(connection) as ctx:
+            SavingChangeModelService(main_user).switched_within(1999, FUNDS)
+        return len(ctx)
+
+    assert queries_with(2) == queries_with(6)
 
 
 # ----------------------------------------------------------------------------

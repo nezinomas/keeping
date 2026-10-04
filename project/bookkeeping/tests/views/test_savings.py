@@ -232,6 +232,27 @@ def test_total_counts_money_switched_through_a_closed_fund_once(client_logged):
     assert total_cells(content)[-1] == "10,00%"
 
 
+def test_total_takes_off_the_gain_a_closed_fund_passes_on(client_logged):
+    a = SavingTypeFactory(title="A", closed=1998)
+    b = SavingTypeFactory(title="B")
+    c = SavingTypeFactory(title="C")
+    SavingFactory(saving_type=c, price=100000, fee=0, date=date(1998, 1, 1))
+    for source, target, price in ((c, a, 40000), (a, b, 50000)):
+        SavingChangeFactory(
+            from_account=source,
+            to_account=target,
+            price=price,
+            fee=0,
+            date=date(1998, 6, 1),
+        )
+    worth_in_1999(c, 70000)
+    worth_in_1999(b, 55000)
+
+    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
+
+    assert total_cells(content)[-1] == "15,00%"
+
+
 def test_total_without_switches_reads_the_plain_percentage(client_logged):
     fund = SavingTypeFactory(title="A")
     SavingFactory(saving_type=fund, price=100000, fee=0, date=date(1999, 1, 1))

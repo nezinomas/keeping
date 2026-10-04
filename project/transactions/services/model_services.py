@@ -1,13 +1,15 @@
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date
 from typing import NamedTuple
 
 from django.db.models import F, Sum, Value
-from django.db.models.functions import ExtractYear
+from django.db.models.functions import Coalesce, ExtractYear
 
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import DatedModelService
+from ...savings.models import Saving
 from .. import models
 
 
@@ -102,6 +104,12 @@ class SavingCloseModelService(SumMixin, CommonMethodsMixin, DatedModelService):
         return self.base_expenses(fee=True)
 
 
+class Purchase(NamedTuple):
+    date: date
+    fund: int
+    price: int
+
+
 class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
     def get_queryset(self):
         return models.SavingChange.objects.select_related(
@@ -139,7 +147,25 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
             "to_account__closed",
             "price",
         )
-        return SwitchedWithin.total([Switch(*row) for row in rows], year, hidden)
+        return SwitchedWithin.total(
+            [Switch(*row) for row in rows],
+            year,
+            hidden,
+            purchases_of=lambda funds: self._purchases(funds, year),
+        )
+
+    @staticmethod
+    def _purchases(funds: set[int], year: int) -> list[Purchase]:
+        if not funds:
+            return []
+        rows = (
+            Saving.objects.filter(saving_type_id__in=funds, date__year__lte=year)
+            .values("date", "saving_type_id")
+            .annotate(total=Coalesce(Sum("price"), 0))
+            .order_by()
+            .values_list("date", "saving_type_id", "total")
+        )
+        return [Purchase(*row) for row in rows]
 
 
 class Switch(NamedTuple):
@@ -154,22 +180,34 @@ class Switch(NamedTuple):
 
 @dataclass
 class SwitchedWithin:
-    """Walks switches in date order, tracking per fund the money that started on
-    the table and sits in it."""
+    """Walks purchases and switches in date order, tracking per fund the money that
+    came in from the table and all the money that came in."""
 
     year: int
     hidden: frozenset[int] = frozenset()
-    started: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
+    from_table: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
+    paid_in: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
     taken_off: int = 0
 
     @classmethod
     def total(
-        cls, switches: list[Switch], year: int, hidden: frozenset[int] = frozenset()
+        cls,
+        switches: list[Switch],
+        year: int,
+        hidden: frozenset[int],
+        purchases_of: Callable[[set[int]], list[Purchase]],
     ) -> int:
         walk = cls(year, hidden)
-        for switch in sorted(switches, key=walk.order):
-            walk.add(switch)
+        sources = {s.source for s in switches if walk.source_off_table(s)}
+        # a purchase's (date,) sorts before every switch of its day
+        events = [((p.date,), walk.buy, p) for p in purchases_of(sources)]
+        events += [(walk.order(s), walk.add, s) for s in switches]
+        for _, handle, event in sorted(events, key=lambda x: x[0]):
+            handle(event)
         return walk.taken_off
+
+    def source_off_table(self, switch: Switch) -> bool:
+        return not self.on_table(switch.source, switch.source_closed)
 
     def on_table(self, fund: int, closed: int | None) -> bool:
         return fund not in self.hidden and (closed is None or closed >= self.year)
@@ -179,16 +217,25 @@ class SwitchedWithin:
         return (
             switch.date,
             self.on_table(switch.target, switch.target_closed),
-            not self.on_table(switch.source, switch.source_closed),
+            self.source_off_table(switch),
             switch.pk,
         )
 
+    def buy(self, purchase: Purchase) -> None:
+        self.paid_in[purchase.fund] += purchase.price
+
     def add(self, switch: Switch) -> None:
         moved = switch.price
-        if not self.on_table(switch.source, switch.source_closed):
-            # Each unit of closed money moves on once, so the pool is drawn down.
-            moved = min(switch.price, self.started[switch.source])
-            self.started[switch.source] -= moved
-        self.started[switch.target] += moved
+        if self.source_off_table(switch):
+            moved = self.table_share(switch.source, switch.price)
+        self.from_table[switch.target] += moved
+        self.paid_in[switch.target] += switch.price
         if self.on_table(switch.target, switch.target_closed):
             self.taken_off += moved
+
+    def table_share(self, fund: int, price: int) -> int:
+        # what leaves an off-table fund, gain included, splits as its money came in
+        if not self.paid_in[fund]:
+            return 0
+        share, rest = divmod(price * self.from_table[fund], self.paid_in[fund])
+        return share + (2 * rest >= self.paid_in[fund])
