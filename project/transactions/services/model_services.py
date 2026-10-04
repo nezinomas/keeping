@@ -130,7 +130,7 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
     ) -> int:
         """Money switched up to `year` into funds of `types` on the table that started
         in one, through any closed or `hidden` (no profit shown) funds, in cents."""
-        by_year = self.switched_within_years([year], types, {year: frozenset(hidden)})
+        by_year = self.switched_within_years([year], types, {year: hidden})
         return by_year[year]
 
     def switched_within_years(
@@ -187,8 +187,6 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
 
     @staticmethod
     def _purchases(funds: set[int], year: int) -> list[Purchase]:
-        if not funds:
-            return []
         rows = (
             Saving.objects.filter(saving_type_id__in=funds, date__year__lte=year)
             .values("date", "saving_type_id")
