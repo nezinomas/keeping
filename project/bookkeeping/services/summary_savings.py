@@ -107,15 +107,16 @@ def chart_keys_map():
     ]
 
 
-def get_data(user, saving_types: list = None):
-    if saving_types is None:
-        saving_types = ["funds", "shares", "pensions"]
+def get_data(user, saving_types: list | None = None):
+    types = ["funds", "shares", "pensions"]
+    if saving_types is not None:
+        types = saving_types
 
     data = {
         saving_type: list(
             SavingBalanceModelService(user).sum_by_type().filter(type=saving_type)
         )
-        for saving_type in saving_types
+        for saving_type in types
     }
     data["pensions2"] = list(PensionBalanceModelService(user).sum_by_year())
 
