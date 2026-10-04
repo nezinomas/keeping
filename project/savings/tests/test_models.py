@@ -1043,3 +1043,39 @@ def test_sum_query_count_does_not_grow_and_every_fund_is_counted(main_user, name
     six, total = _queries_and_total(main_user, name)
     assert total == 6 * per_fund + 3 * per_account_fund
     assert six == two
+
+
+# ----------------------------------------------------------------------------
+#                                                     SavingBalance.shows_profit
+# ----------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "market_value, sold_since_check, expected",
+    [(100, 0, True), (100, 40, False), (0, 0, False), (0, 40, False)],
+)
+def test_saving_balance_shows_profit_for_a_fresh_worth(
+    market_value, sold_since_check, expected
+):
+    obj = SavingBalanceFactory.build(
+        market_value=market_value, sold_since_check=sold_since_check
+    )
+
+    assert obj.shows_profit is expected
+
+
+@pytest.mark.parametrize("sold, expected", [(10, True), (0, False)])
+def test_saving_balance_shows_profit_in_the_close_year_with_a_sell(sold, expected):
+    fund = SavingTypeFactory.build(closed=1999)
+    obj = SavingBalanceFactory.build(
+        saving_type=fund, year=1999, market_value=0, sold=sold
+    )
+
+    assert obj.shows_profit is expected
+
+
+def test_saving_balance_shows_no_profit_for_a_sell_after_the_close_year():
+    fund = SavingTypeFactory.build(closed=1998)
+    obj = SavingBalanceFactory.build(
+        saving_type=fund, year=1999, market_value=0, sold=10
+    )
+
+    assert obj.shows_profit is False

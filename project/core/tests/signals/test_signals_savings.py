@@ -84,7 +84,9 @@ def test_table(incomes, expenses, have, types):
             {"year": 1997, "incomes": 5, "fee": 1, "category_id": 1},
         ]
     )
-    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
+    data = SimpleNamespace(
+        moves=[], incomes=incomes, expenses=expenses, have=have, types=types
+    )
     actual = Savings(data).df.collect().to_dicts()
 
     assert actual[0]["category_id"] == 1
@@ -219,7 +221,7 @@ def test_table_filtered_closed_categories():
         SimpleNamespace(pk=1, closed=1999),
         SimpleNamespace(pk=2, closed=None),
     ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
+    data = SimpleNamespace(moves=[], incomes=incomes, expenses=[], have=[], types=types)
     actual = Savings(data).df.collect()
 
     assert actual["category_id"].to_list() == [1, 2, 2, 2]
@@ -227,7 +229,9 @@ def test_table_filtered_closed_categories():
 
 
 def test_year_category_id_set(incomes, expenses, have, types):
-    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
+    data = SimpleNamespace(
+        moves=[], incomes=incomes, expenses=expenses, have=have, types=types
+    )
     actual = Savings(data).df.collect().to_dicts()
 
     actual == {
@@ -254,7 +258,9 @@ def test_copy_market_value_and_latest_from_previous_year(types):
         {"year": 1999, "incomes": 20, "fee": 2, "category_id": 1},
         {"year": 1998, "incomes": 50, "fee": 5, "category_id": 2},
     ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
+    data = SimpleNamespace(
+        moves=[], incomes=incomes, expenses=[], have=have, types=types
+    )
     actual = Savings(data).df.collect().to_dicts()
 
     assert actual[0]["category_id"] == 1
@@ -354,7 +360,7 @@ def test_table_with_types(types):
         {"year": 1998, "incomes": 20, "fee": 2, "category_id": 2},
         {"year": 1999, "incomes": 30, "fee": 3, "category_id": 1},
     ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
+    data = SimpleNamespace(moves=[], incomes=incomes, expenses=[], have=[], types=types)
     actual = Savings(data).df.collect().to_dicts()
 
     assert actual[0]["category_id"] == 1
@@ -410,7 +416,7 @@ def test_table_type_without_record(types):
         {"year": 1998, "incomes": 20, "fee": 2, "category_id": 2},
         {"year": 1999, "incomes": 30, "fee": 3, "category_id": 1},
     ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
+    data = SimpleNamespace(moves=[], incomes=incomes, expenses=[], have=[], types=types)
     actual = Savings(data).df.collect().to_dicts()
 
     assert actual[3]["category_id"] == 2
@@ -440,7 +446,7 @@ def test_table_old_type(types):
         {"year": 1998, "incomes": 20, "fee": 2, "category_id": 2},
         {"year": 1999, "incomes": 30, "fee": 3, "category_id": 1},
     ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=[], types=types)
+    data = SimpleNamespace(moves=[], incomes=incomes, expenses=[], have=[], types=types)
     actual = Savings(data).df.collect().to_dicts()
 
     assert actual[3]["category_id"] == 2
@@ -464,7 +470,7 @@ def test_table_old_type(types):
 
 def test_table_have_empty(incomes, expenses, types):
     data = SimpleNamespace(
-        incomes=incomes[:4], expenses=expenses[:4], have=[], types=types
+        moves=[], incomes=incomes[:4], expenses=expenses[:4], have=[], types=types
     )
     actual = Savings(data).df.collect().to_dicts()
 
@@ -515,7 +521,9 @@ def test_table_have_empty(incomes, expenses, types):
 
 
 def test_table_incomes_empty(expenses, types):
-    data = SimpleNamespace(incomes=[], expenses=expenses[:4], have=[], types=types)
+    data = SimpleNamespace(
+        moves=[], incomes=[], expenses=expenses[:4], have=[], types=types
+    )
     actual = Savings(data).df.collect().to_dicts()
 
     assert actual[0]["category_id"] == 1
@@ -565,7 +573,9 @@ def test_table_incomes_empty(expenses, types):
 
 
 def test_table_expenses_empty(incomes, types):
-    data = SimpleNamespace(incomes=incomes[:4], expenses=[], have=[], types=types)
+    data = SimpleNamespace(
+        moves=[], incomes=incomes[:4], expenses=[], have=[], types=types
+    )
     actual = Savings(data).df.collect().to_dicts()
 
     assert actual[0]["category_id"] == 1
@@ -615,7 +625,9 @@ def test_table_expenses_empty(incomes, types):
 
 
 def test_table_only_have(have, types):
-    data = SimpleNamespace(incomes=[], expenses=[], have=have[:2], types=types)
+    data = SimpleNamespace(
+        moves=[], incomes=[], expenses=[], have=have[:2], types=types
+    )
     actual = Savings(data).df.collect().to_dicts()
 
     assert actual[0]["category_id"] == 1
@@ -672,7 +684,9 @@ def test_table_close_year_with_a_sell_reads_no_worth():
         {"category_id": 1, "year": 1999, "have": 1200, "latest_check": None},
         {"category_id": 1, "year": 2000, "have": 500, "latest_check": None},
     ]
-    data = SimpleNamespace(incomes=incomes, expenses=expenses, have=have, types=types)
+    data = SimpleNamespace(
+        moves=[], incomes=incomes, expenses=expenses, have=have, types=types
+    )
     actual = Savings(data).df.collect().to_dicts()
 
     assert [row["year"] for row in actual] == [1999, 2000]
@@ -698,7 +712,9 @@ def test_table_close_year_without_sale_keeps_worth():
         {"category_id": 1, "year": 1999, "have": 1200, "latest_check": None},
         {"category_id": 1, "year": 2000, "have": 1300, "latest_check": None},
     ]
-    data = SimpleNamespace(incomes=incomes, expenses=[], have=have, types=types)
+    data = SimpleNamespace(
+        moves=[], incomes=incomes, expenses=[], have=have, types=types
+    )
     actual = Savings(data).df.collect().to_dicts()
 
     assert [row["year"] for row in actual] == [1999, 2000]

@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
+from ..core.mixins.shows_profit import ShowsProfitMixin
 from ..core.models import TitleAbstract
 from ..core.validators import TITLE_VALIDATORS
 from ..journals.models import Journal
@@ -73,7 +74,9 @@ class Saving(models.Model):
         return f"{self.date}: {self.saving_type}"
 
 
-class SavingBalance(models.Model):
+class SavingBalance(ShowsProfitMixin, models.Model):
+    fund_field = "saving_type"
+
     saving_type = models.ForeignKey(
         SavingType, on_delete=models.CASCADE, related_name="savings_balance"
     )
@@ -92,6 +95,7 @@ class SavingBalance(models.Model):
     market_value = models.IntegerField(default=0)
     profit_sum = models.IntegerField(default=0)
     profit_proc = models.FloatField(default=0.0)
+    sold_since_check = models.IntegerField(default=0)
 
     class Meta:
         ordering = ["year", "saving_type__pk"]

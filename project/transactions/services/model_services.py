@@ -31,6 +31,13 @@ class CommonMethodsMixin:
             .order_by("year", "category_id")
         )
 
+    def moves(self):
+        """
+        Used only in the post_save signal.
+        One row per move out of a fund, with the money `expenses` counts as sold
+        """
+        return self.objects.values("date", "price", category_id=F("from_account__pk"))
+
     def base_expenses(self, fee=False):
         """
         Used only in the post_save signal.
@@ -111,10 +118,13 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
         """
         return self.base_expenses(fee=True)
 
-    def switched_within(self, year: int, types: list[str]) -> int:
+    def switched_within(
+        self, year: int, types: list[str], hidden: frozenset[int] = frozenset()
+    ) -> int:
         """
         Money switched up to `year` into funds of `types` still on the table
         that started in one, however many closed funds it passed through, in cents.
+        A fund in `hidden` (its row shows no profit) is off the table like a closed one.
         """
         rows = self.objects.filter(
             date__year__lte=year,
@@ -129,7 +139,7 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
             "to_account__closed",
             "price",
         )
-        return SwitchedWithin.total([Switch(*row) for row in rows], year)
+        return SwitchedWithin.total([Switch(*row) for row in rows], year, hidden)
 
 
 class Switch(NamedTuple):
@@ -148,34 +158,37 @@ class SwitchedWithin:
     the table and sits in it."""
 
     year: int
+    hidden: frozenset[int] = frozenset()
     started: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
     taken_off: int = 0
 
     @classmethod
-    def total(cls, switches: list[Switch], year: int) -> int:
-        walk = cls(year)
+    def total(
+        cls, switches: list[Switch], year: int, hidden: frozenset[int] = frozenset()
+    ) -> int:
+        walk = cls(year, hidden)
         for switch in sorted(switches, key=walk.order):
             walk.add(switch)
         return walk.taken_off
 
-    def on_table(self, closed: int | None) -> bool:
-        return closed is None or closed >= self.year
+    def on_table(self, fund: int, closed: int | None) -> bool:
+        return fund not in self.hidden and (closed is None or closed >= self.year)
 
     def order(self, switch: Switch) -> tuple:
         # within a day, money reaches a closed fund before it can leave it
         return (
             switch.date,
-            self.on_table(switch.target_closed),
-            not self.on_table(switch.source_closed),
+            self.on_table(switch.target, switch.target_closed),
+            not self.on_table(switch.source, switch.source_closed),
             switch.pk,
         )
 
     def add(self, switch: Switch) -> None:
         moved = switch.price
-        if not self.on_table(switch.source_closed):
+        if not self.on_table(switch.source, switch.source_closed):
             # Each unit of closed money moves on once, so the pool is drawn down.
             moved = min(switch.price, self.started[switch.source])
             self.started[switch.source] -= moved
         self.started[switch.target] += moved
-        if self.on_table(switch.target_closed):
+        if self.on_table(switch.target, switch.target_closed):
             self.taken_off += moved
