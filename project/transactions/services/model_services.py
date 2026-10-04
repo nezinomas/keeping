@@ -36,10 +36,7 @@ class CommonMethodsMixin:
         )
 
     def moves(self):
-        """
-        Used only in the post_save signal.
-        One row per move out of a fund, with the money `expenses` counts as sold
-        """
+        """One row per move out of a fund, with the money `expenses` counts as sold."""
         return self.objects.values("date", "price", category_id=F("from_account__pk"))
 
     def base_expenses(self, fee=False):
@@ -131,11 +128,8 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
     def switched_within(
         self, year: int, types: list[str], hidden: frozenset[int] = frozenset()
     ) -> int:
-        """
-        Money switched up to `year` into funds of `types` still on the table
-        that started in one, however many closed funds it passed through, in cents.
-        A fund in `hidden` (its row shows no profit) is off the table like a closed one.
-        """
+        """Money switched up to `year` into funds of `types` on the table that started
+        in one, through any closed or `hidden` (no profit shown) funds, in cents."""
         by_year = self.switched_within_years([year], types, {year: frozenset(hidden)})
         return by_year[year]
 
