@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -10,6 +10,7 @@ class MonthDataDTO:
     savings: list[dict]
     plans_data: dict
     targets: dict
+    account_fees: list[dict] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

@@ -62,6 +62,10 @@ class MonthContextPresenter:
         }
 
     @cached_property
+    def account_fees(self) -> int:
+        return sum(row["sum"] for row in self.dto.account_fees)
+
+    @cached_property
     def tables(self) -> dict:
         return {
             "main_table": self.month_table.table,
@@ -77,7 +81,10 @@ class MonthContextPresenter:
             saving=self.totals["saving"],
             per_day=self.totals["avg_per_day"],
             balance=(
-                self.totals["income"] - self.totals["expense"] - self.totals["saving"]
+                self.totals["income"]
+                - self.totals["expense"]
+                - self.totals["saving"]
+                - self.account_fees
             ),
         )
 

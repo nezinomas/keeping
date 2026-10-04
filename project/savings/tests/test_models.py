@@ -284,6 +284,11 @@ def test_saving_months_sum(main_user, savings):
     assert expect == actual
 
 
+def test_saving_months_sum_takes_no_month(main_user):
+    with pytest.raises(TypeError):
+        SavingModelService(main_user).sum_by_month(1999, 1)
+
+
 def test_saving_items_query_count(main_user, django_assert_max_num_queries):
     with django_assert_max_num_queries(1):
         SavingModelService(main_user).items().values()
@@ -1043,6 +1048,64 @@ def test_sum_query_count_does_not_grow_and_every_fund_is_counted(main_user, name
     six, total = _queries_and_total(main_user, name)
     assert total == 6 * per_fund + 3 * per_account_fund
     assert six == two
+
+
+@factory.django.mute_signals(post_save)
+def test_account_fees_by_day_sums_only_account_charged_fees(main_user):
+    _fee_purchase(SavingType.FeeSource.ACCOUNT, 20000, 300, title="VALL")
+    _fee_purchase(SavingType.FeeSource.ACCOUNT, 500, 128, title="IB")
+    _fee_purchase(SavingType.FeeSource.INVESTMENT, 1000, 100, title="Finbee")
+
+    actual = list(SavingModelService(main_user).account_fees_by_day(1999, 1))
+
+    assert actual == [
+        {"date": date(1999, 1, 1), "sum": 428, "title": "savings_account_fee"}
+    ]
+
+
+@factory.django.mute_signals(post_save)
+def test_account_fees_by_day_reads_only_its_month(main_user):
+    SavingFactory(
+        date=date(1999, 2, 1),
+        fee=300,
+        saving_type=SavingTypeFactory(fee_source=SavingType.FeeSource.ACCOUNT),
+    )
+
+    assert not list(SavingModelService(main_user).account_fees_by_day(1999, 1))
+
+
+@time_machine.travel("1999-06-01")
+@factory.django.mute_signals(post_save)
+def test_spent_last_months_adds_only_account_charged_fees(main_user):
+    SavingFactory(
+        date=date(1998, 11, 30),
+        price=1000,
+        fee=1,
+        saving_type=SavingTypeFactory(fee_source=SavingType.FeeSource.ACCOUNT),
+    )
+    SavingFactory(
+        date=date(1999, 1, 1),
+        price=200,
+        fee=7,
+        saving_type=SavingTypeFactory(fee_source=SavingType.FeeSource.ACCOUNT),
+    )
+    SavingFactory(
+        date=date(1999, 1, 1),
+        price=300,
+        fee=100,
+        saving_type=SavingTypeFactory(
+            title="Finbee", fee_source=SavingType.FeeSource.INVESTMENT
+        ),
+    )
+
+    actual = SavingModelService(main_user).spent_last_months(6)
+
+    assert actual["sum"] == 507
+
+
+@time_machine.travel("1999-06-01")
+def test_spent_last_months_is_zero_without_savings(main_user):
+    assert SavingModelService(main_user).spent_last_months(6)["sum"] == 0
 
 
 # ----------------------------------------------------------------------------
