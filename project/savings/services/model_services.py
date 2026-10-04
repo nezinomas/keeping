@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import Case, Count, F, IntegerField, Q, Sum, Value, When
@@ -42,10 +41,8 @@ class SavingModelService(SumMixin, DatedModelService):
     def sum_by_year(self):
         return self.year_sum(self.objects)
 
-    def sum_by_month(self, year: int, month: Optional[int] = None):
-        return self.month_sum(self.objects, year, month).annotate(
-            title=Value("savings")
-        )
+    def sum_by_month(self, year: int):
+        return self.month_sum(self.objects, year).annotate(title=Value("savings"))
 
     def cash_flow_by_month(self, year: int):
         """The savings series and the account fees on top of it, in one query."""
@@ -58,13 +55,35 @@ class SavingModelService(SumMixin, DatedModelService):
 
     def account_fees_by_month(self, year: int):
         """Fees the accounts paid on top of the invested price, for the cash flow."""
-        qs = self.objects.filter(
+        return self.month_sum(self._account_charged(), year, sum_column="fee").annotate(
+            title=Value("savings_account_fee")
+        )
+
+    def account_fees_by_day(self, year: int, month: int):
+        return self.day_sum(
+            self._account_charged(), year, month, sum_column="fee"
+        ).annotate(title=Value("savings_account_fee"))
+
+    def spent_last_months(self, months: int = 6):
+        """`last_months` with the account-charged fees, which leave on top of it."""
+        charged = Q(saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT)
+        return self._in_last_months(self.objects, months).aggregate(
+            sum=Coalesce(Sum("price"), 0) + Coalesce(Sum("fee", filter=charged), 0)
+        )
+
+    def _account_charged(self):
+        return self.objects.filter(
             saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT,
             fee__isnull=False,
         )
-        return self.month_sum(qs, year, sum_column="fee").annotate(
-            title=Value("savings_account_fee")
-        )
+
+    def _in_last_months(self, qs, months: int):
+        start = date.today().replace(day=1) - timedelta(days=1)
+
+        # back months to past; if months=6 then end=2019-08-01
+        end = (start + timedelta(days=1)) - relativedelta(months=months)
+
+        return qs.filter(date__range=(end, start))
 
     def sum_by_month_and_type(self, year: int):
         return (
@@ -96,12 +115,7 @@ class SavingModelService(SumMixin, DatedModelService):
         the sum from 2019-08-01 to 2020-01-31.
         - If there are no savings in that period, it will return 0.
         """
-        start = date.today().replace(day=1) - timedelta(days=1)
-
-        # back months to past; if months=6 then end=2019-08-01
-        end = (start + timedelta(days=1)) - relativedelta(months=months)
-
-        return self.objects.filter(date__range=(end, start)).aggregate(
+        return self._in_last_months(self.objects, months).aggregate(
             sum=Coalesce(Sum("price"), 0)
         )
 

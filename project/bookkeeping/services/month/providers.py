@@ -43,6 +43,9 @@ class MonthDataProvider:
             savings=list(
                 SavingModelService(self.user).sum_by_day(self.year, self.month)
             ),
+            account_fees=list(
+                SavingModelService(self.user).account_fees_by_day(self.year, self.month)
+            ),
             plans_data=PlanCollectData(self.user, self.year).get_data(),
             targets=PlanAggregatorService(self.user).get_monthly_plan_targets(
                 self.year, self.month

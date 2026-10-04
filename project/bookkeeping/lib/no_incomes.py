@@ -113,7 +113,7 @@ def load_service(user: User, year: int, months: int = 6) -> dict:
     savings_data = {}
     if user.journal.unnecessary_savings:
         unnecessary_titles.append(str(_("Savings")))
-        savings_data = SavingModelService(user).last_months(months=months)
+        savings_data = SavingModelService(user).spent_last_months(months=months)
 
     # 3. Build Pure Data Object
     data_payload = Data(
