@@ -4,6 +4,7 @@ import pytest
 import time_machine
 from django.db import IntegrityError
 
+from ...bookkeeping.tests.factories import PensionWorthFactory
 from ..models import Pension, PensionBalance, PensionType
 from ..services.model_services import (
     PensionBalanceModelService,
@@ -327,12 +328,13 @@ def test_pension_balance_queries(main_user, django_assert_num_queries):
 def test_sum_by_year(main_user):
     PensionFactory(price=1, fee=0)
     PensionFactory(price=2, fee=0)
+    PensionWorthFactory(pension_type=PensionType.objects.get(), price=5)
 
     actual = list(PensionBalanceModelService(main_user).sum_by_year())
 
     assert actual == [
-        {"year": 1999, "incomes": 3, "profit": -3, "fee": 0},
-        {"year": 2000, "incomes": 3, "profit": -3, "fee": 0},
+        {"year": year, "incomes": 3, "profit": 2, "total": 5, "fee": 0}
+        for year in (1999, 2000)
     ]
 
 

@@ -1,7 +1,9 @@
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import date
+from functools import cache
+from types import MappingProxyType
 from typing import NamedTuple
 
 from django.db.models import F, Sum, Value
@@ -134,8 +136,21 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
         that started in one, however many closed funds it passed through, in cents.
         A fund in `hidden` (its row shows no profit) is off the table like a closed one.
         """
+        by_year = self.switched_within_years([year], types, {year: frozenset(hidden)})
+        return by_year[year]
+
+    def switched_within_years(
+        self,
+        years: Iterable[int],
+        types: list[str],
+        hidden_by_year: Mapping[int, frozenset[int]] = MappingProxyType({}),
+    ) -> dict[int, int]:
+        """`switched_within` for each of `years`, from one switch query."""
+        years = sorted(set(years))
+        if not years:
+            return {}
         rows = self.objects.filter(
-            date__year__lte=year,
+            date__year__lte=years[-1],
             from_account__type__in=types,
             to_account__type__in=types,
         ).values_list(
@@ -147,12 +162,34 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
             "to_account__closed",
             "price",
         )
-        return SwitchedWithin.total(
-            [Switch(*row) for row in rows],
-            year,
-            hidden,
-            purchases_of=lambda funds: self._purchases(funds, year),
-        )
+        switches = [Switch(*row) for row in rows]
+        purchases = self._purchases_loader(switches, years[-1])
+        return {
+            year: SwitchedWithin.total(
+                [s for s in switches if s.date.year <= year],
+                year,
+                hidden_by_year.get(year, frozenset()),
+                purchases_of=lambda funds, year=year: [
+                    p for p in purchases(funds) if p.date.year <= year
+                ],
+            )
+            for year in years
+        }
+
+    @classmethod
+    def _purchases_loader(
+        cls, switches: "list[Switch]", year: int
+    ) -> Callable[[set[int]], list[Purchase]]:
+        """Reads the purchases of every switch source once, when a walk first asks."""
+        sources = {s.source for s in switches}
+        load = cache(lambda: cls._purchases(sources, year))
+
+        def purchases(funds: set[int]) -> list[Purchase]:
+            if not funds:
+                return []
+            return [p for p in load() if p.fund in funds]
+
+        return purchases
 
     @staticmethod
     def _purchases(funds: set[int], year: int) -> list[Purchase]:

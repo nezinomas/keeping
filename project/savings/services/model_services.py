@@ -176,17 +176,18 @@ class SavingBalanceModelService(DatedModelService):
         return qs.order_by("saving_type__type", "saving_type__title")
 
     def sum_by_type(self):
+        """Per year and type, summed over the rows that show a profit."""
         return (
-            self.objects.annotate(cnt=Count("saving_type"))
-            .values("saving_type__type")
-            .annotate(y=F("year"))
-            .values("y")
-            .filter(
-                Q(saving_type__closed__isnull=True) | Q(saving_type__closed__gt=F("y"))
+            self.objects.filter(models.SavingBalance.shows_profit_q())
+            .values("year", type=F("saving_type__type"))
+            .annotate(
+                incomes=Sum("incomes"),
+                profit=Sum("profit_sum"),
+                total=Sum("market_value"),
+                fee=Sum("fee"),
             )
-            .annotate(incomes=Sum("incomes"), profit=Sum("profit_sum"), fee=Sum("fee"))
             .order_by("year")
-            .values("year", "incomes", "profit", "fee", type=F("saving_type__type"))
+            .values("year", "incomes", "profit", "total", "fee", "type")
         )
 
     def sum_by_year(self):
