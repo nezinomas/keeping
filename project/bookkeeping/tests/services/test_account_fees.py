@@ -93,7 +93,7 @@ def test_forecast_end_balance_subtracts_account_fees_only(main_user, fee_source,
 @time_machine.travel("1999-01-15")
 def test_forecast_counts_a_fee_paid_with_no_price(main_user):
     IncomeFactory(price=1000)
-    _purchase(ACCOUNT, price=None)
+    _purchase(ACCOUNT, price=0)
 
     actual = forecast_load_service(main_user)
 

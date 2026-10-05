@@ -147,7 +147,7 @@ def test_savings_load_update_form_field_values(client_logged):
 
 
 def test_savings_load_update_form_field_values_fee_none(client_logged):
-    obj = SavingFactory(price=1, fee=None)
+    obj = SavingFactory(price=1, fee=0)
 
     url = reverse("savings:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
@@ -159,6 +159,23 @@ def test_savings_load_update_form_field_values_fee_none(client_logged):
     assert form.instance.account.title == "Account1"
     assert form.instance.saving_type.title == "Savings"
     assert form.instance.remark == "remark"
+
+
+@pytest.mark.parametrize("field", ["price", "fee"])
+def test_savings_update_form_shows_a_stored_zero_as_empty(client_logged, field):
+    obj = SavingFactory(**{"price": 1, "fee": 1, field: 0})
+
+    url = reverse("savings:update", kwargs={"pk": obj.pk})
+    response = client_logged.get(url)
+
+    assert response.context["form"][field].value() == ""
+
+
+@pytest.mark.parametrize("field", ["price", "fee"])
+def test_savings_new_form_shows_an_empty_field_not_zero(client_logged, field):
+    response = client_logged.get(reverse("savings:new"))
+
+    assert response.context["form"][field].value() == ""
 
 
 @time_machine.travel("2011-1-1")

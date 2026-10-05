@@ -18,8 +18,7 @@ class MonthlyDataFormatter:
         arr = [0] * 12
         for row in data:
             if date := row.get("date"):
-                # a fee paid with no price sums the price column to None
-                arr[date.month - 1] += row.get("sum") or 0
+                arr[date.month - 1] += row.get("sum")
         return arr
 
     @staticmethod

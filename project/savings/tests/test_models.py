@@ -188,6 +188,18 @@ def test_saving_type_migration_fills_every_slug(main_user):
 # ----------------------------------------------------------------------------
 #                                                                       Saving
 # ----------------------------------------------------------------------------
+def test_saving_without_price_or_fee_stores_zero():
+    saving = Saving.objects.create(
+        date=date(1999, 1, 1),
+        account=AccountFactory(),
+        saving_type=SavingTypeFactory(),
+    )
+
+    saving.refresh_from_db()
+    assert saving.price == 0
+    assert saving.fee == 0
+
+
 def test_saving_str():
     actual = SavingTypeFactory.build()
 
@@ -700,6 +712,24 @@ def test_savings_expenses(main_user, savings):
     assert actual[3]["expenses"] == 225
 
 
+@factory.django.mute_signals(post_save)
+@pytest.mark.parametrize(
+    "fee_source, expect",
+    [(SavingType.FeeSource.INVESTMENT, 0), (SavingType.FeeSource.ACCOUNT, 100)],
+)
+def test_a_fee_only_purchase_expenses_and_incomes(main_user, fee_source, expect):
+    Saving.objects.create(
+        date=date(1999, 1, 1),
+        fee=100,
+        account=AccountFactory(),
+        saving_type=SavingTypeFactory(fee_source=fee_source),
+    )
+    service = SavingModelService(main_user)
+
+    assert [r["expenses"] for r in service.expenses()] == [expect]
+    assert [r["incomes"] for r in service.incomes()] == [0]
+
+
 # ----------------------------------------------------------------------------
 #                                                               SavingBalance
 # ----------------------------------------------------------------------------
@@ -975,11 +1005,10 @@ def test_savings_sums_show_the_invested_price(main_user, name, fee_source):
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize("name", SAVINGS_SUMS)
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
-def test_savings_sums_of_a_fee_only_row_are_unchanged(main_user, name, fee_source):
-    _fee_purchase(fee_source, None, 100)
+def test_savings_sums_of_a_fee_only_row_are_zero(main_user, name, fee_source):
+    _fee_purchase(fee_source, 0, 100)
 
-    expect = 0 if name == "last_months" else None
-    assert _single_sum(main_user, name) == expect
+    assert _single_sum(main_user, name) == 0
 
 
 @factory.django.mute_signals(post_save)
@@ -995,8 +1024,8 @@ def test_incomes_ignore_the_fee_source(main_user, fee_source):
 @factory.django.mute_signals(post_save)
 def test_account_fees_by_month_sums_only_account_charged_fees(main_user):
     _fee_purchase(SavingType.FeeSource.ACCOUNT, 20000, 300, title="VALL")
-    _fee_purchase(SavingType.FeeSource.ACCOUNT, None, 128, title="VALL")
-    _fee_purchase(SavingType.FeeSource.ACCOUNT, 500, None, title="IB")
+    _fee_purchase(SavingType.FeeSource.ACCOUNT, 0, 128, title="VALL")
+    _fee_purchase(SavingType.FeeSource.ACCOUNT, 500, 0, title="IB")
     _fee_purchase(SavingType.FeeSource.INVESTMENT, 1000, 100, title="Finbee")
 
     actual = list(SavingModelService(main_user).account_fees_by_month(1999))
@@ -1004,6 +1033,15 @@ def test_account_fees_by_month_sums_only_account_charged_fees(main_user):
     assert actual == [
         {"date": date(1999, 1, 1), "sum": 428, "title": "savings_account_fee"}
     ]
+
+
+@factory.django.mute_signals(post_save)
+def test_account_fees_ignore_a_zero_fee(main_user):
+    _fee_purchase(SavingType.FeeSource.ACCOUNT, 500, 0)
+    service = SavingModelService(main_user)
+
+    assert not list(service.account_fees_by_month(1999))
+    assert not list(service.account_fees_by_day(1999, 1))
 
 
 @factory.django.mute_signals(post_save)

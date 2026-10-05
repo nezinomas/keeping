@@ -44,7 +44,7 @@ def test_fee_only_purchase_leaves_the_account_untouched():
     account = AccountFactory(title="SEB")
     IncomeFactory(account=account, price=1000)
 
-    SavingFactory(account=account, price=None, fee=100)
+    SavingFactory(account=account, price=0, fee=100)
 
     actual = _account_balance(account)
     assert actual.expenses == 0
@@ -54,7 +54,7 @@ def test_fee_only_purchase_leaves_the_account_untouched():
 def test_fee_only_purchase_counts_its_fee_in_the_saving():
     saving_type = SavingTypeFactory(title="Finbee")
 
-    SavingFactory(saving_type=saving_type, price=None, fee=100)
+    SavingFactory(saving_type=saving_type, price=0, fee=100)
 
     actual = _saving_balance(saving_type)
     assert actual.incomes == 0
@@ -64,8 +64,8 @@ def test_fee_only_purchase_counts_its_fee_in_the_saving():
 def test_account_is_debited_prices_only_beside_fee_only_purchases():
     account = AccountFactory(title="SEB")
 
-    SavingFactory(account=account, price=20000, fee=None)
-    SavingFactory(account=account, price=None, fee=100)
+    SavingFactory(account=account, price=20000, fee=0)
+    SavingFactory(account=account, price=0, fee=100)
     SavingFactory(account=account, price=0, fee=100)
     SavingFactory(account=account, price=10000, fee=100)
 
@@ -129,9 +129,9 @@ def test_finbee_fee_only_rows_paid_from_two_accounts():
     IncomeFactory(account=seb, price=5000)
     IncomeFactory(account=revolut, price=5000)
 
-    SavingFactory(account=seb, saving_type=finbee, price=1000, fee=None)
-    SavingFactory(account=seb, saving_type=finbee, price=None, fee=100)
-    SavingFactory(account=revolut, saving_type=finbee, price=None, fee=100)
+    SavingFactory(account=seb, saving_type=finbee, price=1000, fee=0)
+    SavingFactory(account=seb, saving_type=finbee, price=0, fee=100)
+    SavingFactory(account=revolut, saving_type=finbee, price=0, fee=100)
     SavingWorthFactory(saving_type=finbee, price=1200, date=WORTH_DATE)
 
     assert _account_balance(seb).balance == 4000
@@ -200,7 +200,7 @@ def test_account_charged_fee_only_purchase_debits_its_fee():
     account = AccountFactory(title="IB")
     vall = SavingTypeFactory(title="VALL", fee_source=SavingType.FeeSource.ACCOUNT)
 
-    SavingFactory(account=account, saving_type=vall, price=None, fee=100)
+    SavingFactory(account=account, saving_type=vall, price=0, fee=100)
 
     assert _account_balance(account).expenses == 100
 
@@ -212,7 +212,7 @@ def test_one_account_paying_both_fee_sources():
 
     SavingFactory(account=account, saving_type=vall, price=200, fee=3)
     SavingFactory(account=account, saving_type=fund, price=600, fee=1)
-    SavingFactory(account=account, saving_type=vall, price=None, fee=2)
+    SavingFactory(account=account, saving_type=vall, price=0, fee=2)
 
     assert _account_balance(account).expenses == 805
 
@@ -225,7 +225,7 @@ def test_fee_source_does_not_change_the_saving_balance():
     ):
         saving_type = SavingTypeFactory(title=title, fee_source=fee_source)
         SavingFactory(saving_type=saving_type, price=200, fee=3)
-        SavingFactory(saving_type=saving_type, price=None, fee=1)
+        SavingFactory(saving_type=saving_type, price=0, fee=1)
         SavingWorthFactory(saving_type=saving_type, price=210, date=WORTH_DATE)
         balances[title] = (
             SavingBalance.objects.filter(saving_type=saving_type)
@@ -297,7 +297,7 @@ def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
     IncomeFactory(account=seb, price=5000, date=date(1998, 1, 1))
     IncomeFactory(account=ib, price=5000)
     SavingFactory(account=seb, saving_type=finbee, price=1000, date=date(1998, 1, 1))
-    SavingFactory(account=seb, saving_type=finbee, price=None, fee=100)
+    SavingFactory(account=seb, saving_type=finbee, price=0, fee=100)
     SavingFactory(account=ib, saving_type=fund, price=200, fee=3)
     SavingWorthFactory(saving_type=fund, price=310, date=WORTH_DATE)
     # last, so a signal it fails to send is not covered by a later one

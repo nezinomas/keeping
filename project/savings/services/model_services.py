@@ -74,7 +74,7 @@ class SavingModelService(SumMixin, DatedModelService):
     def _account_charged(self):
         return self.objects.filter(
             saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT,
-            fee__isnull=False,
+            fee__gt=0,
         )
 
     def _in_last_months(self, qs, months: int):
@@ -151,7 +151,7 @@ class SavingModelService(SumMixin, DatedModelService):
         return Case(
             When(
                 saving_type__fee_source=models.SavingType.FeeSource.ACCOUNT,
-                then=Coalesce("price", 0) + Coalesce("fee", 0),
+                then=F("price") + F("fee"),
             ),
             default=F("price"),
             output_field=IntegerField(),

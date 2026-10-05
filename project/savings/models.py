@@ -52,11 +52,8 @@ class SavingType(TitleAbstract):
 
 class Saving(models.Model):
     date = models.DateField()
-    price = models.PositiveIntegerField(null=True, blank=True)
-    fee = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-    )
+    price = models.PositiveIntegerField(default=0, blank=True)
+    fee = models.PositiveIntegerField(default=0, blank=True)
     remark = models.TextField(max_length=1000, blank=True)
     saving_type = models.ForeignKey(SavingType, on_delete=models.CASCADE)
     account = models.ForeignKey(
