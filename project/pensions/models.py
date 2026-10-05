@@ -28,8 +28,8 @@ class PensionType(TitleAbstract):
 
 class Pension(models.Model):
     date = models.DateField()
-    price = models.PositiveIntegerField(null=True, blank=True)
-    fee = models.PositiveIntegerField(null=True, blank=True)
+    price = models.PositiveIntegerField(default=0, blank=True)
+    fee = models.PositiveIntegerField(default=0, blank=True)
     remark = models.TextField(max_length=1000, blank=True)
     pension_type = models.ForeignKey(PensionType, on_delete=models.CASCADE)
 
