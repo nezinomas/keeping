@@ -74,6 +74,17 @@ def test_pension_object():
     assert actual.pension_type.title == "PensionType"
 
 
+def test_pension_price_and_fee_default_to_zero():
+    t = PensionTypeFactory()
+
+    p = Pension.objects.create(date=date(1999, 1, 1), pension_type=t)
+
+    actual = Pension.objects.get(pk=p.pk)
+
+    assert actual.price == 0
+    assert actual.fee == 0
+
+
 def test_pension_related(main_user, second_user):
     t1 = PensionTypeFactory(title="T1")
     t2 = PensionTypeFactory(title="T2", journal=second_user.journal)

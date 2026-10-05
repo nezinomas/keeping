@@ -190,6 +190,48 @@ def test_pension_valid_data_no_price(main_user):
     assert data.pension_type.title == t.title
 
 
+def test_pension_empty_fee_saves_zero(main_user):
+    t = PensionTypeFactory()
+
+    form = PensionForm(
+        user=main_user,
+        data={
+            "date": "2000-01-01",
+            "price": "0.01",
+            "fee": "",
+            "pension_type": t.pk,
+        },
+    )
+    assert form.is_valid()
+
+    data = form.save()
+    data.refresh_from_db()
+
+    assert data.price == 1
+    assert data.fee == 0
+
+
+def test_pension_empty_price_saves_zero(main_user):
+    t = PensionTypeFactory()
+
+    form = PensionForm(
+        user=main_user,
+        data={
+            "date": "2000-01-01",
+            "price": "",
+            "fee": "0.01",
+            "pension_type": t.pk,
+        },
+    )
+    assert form.is_valid()
+
+    data = form.save()
+    data.refresh_from_db()
+
+    assert data.price == 0
+    assert data.fee == 1
+
+
 def test_pension_valid_data_no_fee(main_user):
     t = PensionTypeFactory()
 
