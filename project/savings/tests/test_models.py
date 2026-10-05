@@ -1171,9 +1171,7 @@ def test_spent_last_months_is_zero_without_savings(main_user):
     assert SavingModelService(main_user).spent_last_months(6)["sum"] == 0
 
 
-# ----------------------------------------------------------------------------
-#                                                     SavingBalance.shows_profit
-# ----------------------------------------------------------------------------
+# SavingBalance.shows_profit
 @pytest.mark.parametrize(
     "market_value, sold_since_check, expected",
     [(100, 0, True), (100, 40, False), (0, 0, False), (0, 40, False)],

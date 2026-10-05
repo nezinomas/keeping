@@ -370,9 +370,7 @@ def test_pension_balance_sorting(main_user):
     assert actual[3].pension_type == p2
 
 
-# ----------------------------------------------------------------------------
-#                                                   PensionBalance.shows_profit
-# ----------------------------------------------------------------------------
+# PensionBalance.shows_profit
 @pytest.mark.parametrize("market_value, expected", [(100, True), (0, False)])
 def test_pension_balance_shows_profit_follows_the_market_value(market_value, expected):
     obj = PensionBalanceFactory.build(market_value=market_value)
