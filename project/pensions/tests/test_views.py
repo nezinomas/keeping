@@ -114,7 +114,7 @@ def test_pensions_load_update_form_field_values(client_logged):
 
 
 def test_pensions_load_update_form_field_values_no_fee(client_logged):
-    obj = PensionFactory(price=1, fee=None)
+    obj = PensionFactory(price=1, fee=0)
 
     url = reverse("pensions:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
@@ -128,7 +128,7 @@ def test_pensions_load_update_form_field_values_no_fee(client_logged):
 
 
 def test_pensions_load_update_form_field_values_no_price(client_logged):
-    obj = PensionFactory(price=None, fee=1)
+    obj = PensionFactory(price=0, fee=1)
 
     url = reverse("pensions:update", kwargs={"pk": obj.pk})
     response = client_logged.get(url)
@@ -139,6 +139,29 @@ def test_pensions_load_update_form_field_values_no_price(client_logged):
     assert form.instance.fee == 0.01
     assert form.instance.pension_type.title == "PensionType"
     assert form.instance.remark == "remark"
+
+
+def test_pensions_update_form_shows_a_stored_zero_fee_as_empty(client_logged):
+    obj = PensionFactory(price=1, fee=0)
+
+    url = reverse("pensions:update", kwargs={"pk": obj.pk})
+    response = client_logged.get(url)
+    form = response.context["form"]
+
+    assert 'name="fee"' in str(form["fee"])
+    assert 'value="' not in str(form["fee"])
+    assert 'value="0.01"' in str(form["price"])
+
+
+def test_pensions_update_form_shows_a_stored_zero_price_as_empty(client_logged):
+    obj = PensionFactory(price=0, fee=1)
+
+    url = reverse("pensions:update", kwargs={"pk": obj.pk})
+    response = client_logged.get(url)
+    form = response.context["form"]
+
+    assert 'value="' not in str(form["price"])
+    assert 'value="0.01"' in str(form["fee"])
 
 
 def test_pensions_update_to_another_year(client_logged):

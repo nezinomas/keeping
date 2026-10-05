@@ -100,7 +100,7 @@
         }
     }
 
-    .table-danger {
+    [data-sign="loss"] {
         &.day-warning {
             background-color: $warning-bg;
             color: $warning-text;

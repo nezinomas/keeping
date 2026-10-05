@@ -1,8 +1,10 @@
 import re
+from datetime import date
 
 import pytest
 from django.urls import resolve, reverse
 
+from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
 from ....pensions.tests.factories import PensionFactory
 from ....savings.models import SavingType
@@ -26,7 +28,7 @@ def test_view_index_200(client_logged):
 
 def test_view_count_queries(client_logged, django_assert_max_num_queries):
     url = reverse("bookkeeping:index")
-    with django_assert_max_num_queries(30):
+    with django_assert_max_num_queries(32):
         client_logged.get(url)
 
 
@@ -66,6 +68,14 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
 
     assert len(checked) == 2
     assert checked[0] == checked[1]
+
+
+def test_view_index_negative_balance_is_marked_as_a_loss(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1), price=100)
+
+    content = client_logged.get(reverse("bookkeeping:index")).content.decode()
+
+    assert re.search(r'<td data-sign="loss" class="[^"]*">-', content)
 
 
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)

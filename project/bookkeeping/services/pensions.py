@@ -1,22 +1,29 @@
-import itertools as it
-
 from django.utils.translation import gettext as _
 
 from ...core.lib import utils
 from ...pensions.services.model_services import PensionBalanceModelService
+from ...savings.models import SavingType
 from ...savings.services.model_services import SavingBalanceModelService
+from ...transactions.services.model_services import SavingChangeModelService
+from .savings import hidden_funds
+
+PENSION_TYPES = [SavingType.Types.PENSIONS]
 
 
-def get_data(user, year) -> list:
-    pensions = PensionBalanceModelService(user).year(year)
-    savings_as_pensions = (
-        SavingBalanceModelService(user).year(year).filter(saving_type__type="pensions")
+def get_data(user, year) -> tuple[list, list]:
+    """The savings-as-pensions rows and the pension rows."""
+    savings_as_pensions = list(
+        SavingBalanceModelService(user).year_of_types(year, PENSION_TYPES)
     )
-    return list(it.chain(savings_as_pensions, pensions))
+    return savings_as_pensions, list(PensionBalanceModelService(user).year(year))
 
 
 def load_service(user, year: int) -> dict:
-    data = get_data(user, year)
+    savings_as_pensions, pensions = get_data(user, year)
+    data = savings_as_pensions + pensions
+    switched_within = SavingChangeModelService(user).switched_within(
+        year, PENSION_TYPES, hidden=hidden_funds(savings_as_pensions)
+    )
     fields = [
         "past_amount",
         "past_fee",
@@ -35,5 +42,5 @@ def load_service(user, year: int) -> dict:
         "title": _("Pensions"),
         "type": "pensions",
         "object_list": data,
-        "total_row": utils.total_row(data, fields),
+        "total_row": utils.funds_total_row(data, fields, switched_within),
     }

@@ -56,6 +56,24 @@ def test_saving_type_valid_data(main_user, closed):
     assert data.journal.users.first().username == "bob"
 
 
+@pytest.mark.parametrize("closed", [1999, None])
+def test_saving_type_with_no_close_year_saves_open(main_user, closed):
+    fund = SavingTypeFactory(closed=closed)
+    form = SavingTypeForm(
+        user=main_user,
+        instance=fund,
+        data={
+            "title": "Title",
+            "closed": "",
+            "type": "funds",
+            "fee_source": "investment",
+        },
+    )
+
+    assert form.is_valid()
+    assert form.save().closed is None
+
+
 def test_saving_type_fee_source_field(main_user):
     form = SavingTypeForm(user=main_user).as_p()
 
@@ -403,6 +421,52 @@ def test_saving_valid_data_with_no_fee(main_user):
     assert data.remark == "remark"
     assert data.account.title == a.title
     assert data.saving_type.title == t.title
+
+
+@pytest.mark.parametrize("empty", ["", None])
+@time_machine.travel("1999-1-1")
+def test_saving_empty_fee_saves_zero(main_user, empty):
+    form = SavingForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "price": 0.01,
+            "fee": empty,
+            "account": AccountFactory().pk,
+            "saving_type": SavingTypeFactory().pk,
+        },
+    )
+
+    assert form.is_valid()
+
+    actual = form.save()
+
+    actual.refresh_from_db()
+    assert actual.price == 1
+    assert actual.fee == 0
+
+
+@pytest.mark.parametrize("empty", ["", None])
+@time_machine.travel("1999-1-1")
+def test_saving_empty_price_beside_a_fee_saves_zero(main_user, empty):
+    form = SavingForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "price": empty,
+            "fee": 0.01,
+            "account": AccountFactory().pk,
+            "saving_type": SavingTypeFactory().pk,
+        },
+    )
+
+    assert form.is_valid()
+
+    actual = form.save()
+
+    actual.refresh_from_db()
+    assert actual.price == 0
+    assert actual.fee == 1
 
 
 @time_machine.travel("1999-1-1")

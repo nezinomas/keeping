@@ -240,8 +240,7 @@ class SummarySavings(TemplateViewMixin):
     template_name = "bookkeeping/summary_savings.html"
 
     def get_context_data(self, **kwargs):
-        data = services.summary_savings.get_data(self.request.user)
-        context = services.summary_savings.load_service(data)
+        context = services.summary_savings.load(self.request.user)
         return super().get_context_data(**kwargs) | context
 
 

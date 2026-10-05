@@ -18,7 +18,7 @@ class MonthlyDataFormatter:
         arr = [0] * 12
         for row in data:
             if date := row.get("date"):
-                arr[date.month - 1] = row.get("sum")
+                arr[date.month - 1] += row.get("sum")
         return arr
 
     @staticmethod
@@ -38,7 +38,7 @@ class ForecastDataProvider:
     def get_forecast_data(self) -> ForecastDataDTO:
         incomes_qs = IncomeModelService(self.user).sum_by_month(self.year)
         expenses_qs = ExpenseModelService(self.user).sum_by_month(self.year)
-        savings_qs = SavingModelService(self.user).sum_by_month(self.year)
+        savings_qs = SavingModelService(self.user).cash_flow_by_month(self.year)
         savings_close_qs = SavingCloseModelService(self.user).sum_by_month(self.year)
 
         planned_qs = (

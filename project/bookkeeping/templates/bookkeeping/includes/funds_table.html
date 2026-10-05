@@ -51,11 +51,14 @@
             {% if item.market_value %}
             <td>{{ item.latest_check|date:"Y-m-d"|default_if_none:_('No record of account amount') }}</td>
             <td class="right-thick-border {{item.market_value|css_class_if_none}}">{{item.market_value|price|cellformat}}</td>
-            <td class="{{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_sum|price|cellformat}}</td>
-            <td class="{{item.profit_sum|positive_negative}} {{item.profit_sum|css_class_if_none}}">{{item.profit_proc|cellformat}}%</td>
             {% else %}
             <td class="dash">-</td>
             <td class="right-thick-border dash">-</td>
+            {% endif %}
+            {% if item.shows_profit %}
+            <td data-sign="{{item.profit_sum|sign}}" class="{{item.profit_sum|css_class_if_none}}">{{item.profit_sum|price|cellformat}}</td>
+            <td data-sign="{{item.profit_sum|sign}}" class="{{item.profit_sum|css_class_if_none}}">{{item.profit_proc|cellformat}}%</td>
+            {% else %}
             <td class="dash">-</td>
             <td class="dash">-</td>
             {% endif %}
@@ -74,8 +77,8 @@
             <th class="{{total_row.sold|css_class_if_none}}">{{total_row.sold|price|cellformat}}</th>
             <th class="right-thin-border {{total_row.sold_fee|css_class_if_none}}">{{total_row.sold_fee|price|cellformat}}</th>
             <th colspan="2" class="right-thick-border {{total_row.market_value|css_class_if_none}}">{{total_row.market_value|price|cellformat}}</th>
-            <th class="{{total_row.profit_sum|positive_negative}} {{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_sum|price|cellformat}}</th>
-            <th class="{{total_row.profit_sum|positive_negative}} {{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_proc|cellformat}}%</th>
+            <th data-sign="{{total_row.profit_sum|sign}}" class="{{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_sum|price|cellformat}}</th>
+            <th data-sign="{{total_row.profit_sum|sign}}" class="{{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_proc|cellformat}}%</th>
         </tr>
     </tfoot>
 </table>

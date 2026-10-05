@@ -1,6 +1,7 @@
-from django.db.models import Sum
+from django.db.models import Q, Sum
 
 from ....accounts.services.model_services import AccountBalanceModelService
+from ....core.mixins.shows_profit import FRESH_WORTH
 from ....core.services.model_services import DatedModelService
 from ....pensions.services.model_services import PensionBalanceModelService
 from ....savings.services.model_services import SavingBalanceModelService
@@ -19,15 +20,16 @@ class WealthDataProvider:
                 "balance", AccountBalanceModelService(self.user)
             ),
             saving_balance=self._get_balance(
-                "market_value", SavingBalanceModelService(self.user)
+                "market_value", SavingBalanceModelService(self.user), FRESH_WORTH
             ),
             pension_balance=self._get_balance(
-                "market_value", PensionBalanceModelService(self.user)
+                "market_value", PensionBalanceModelService(self.user), FRESH_WORTH
             ),
         )
 
-    def _get_balance(self, field_name: str, service: DatedModelService) -> float:
-        return (
-            service.year(self.year).aggregate(Sum(field_name))[f"{field_name}__sum"]
-            or 0.0
-        )
+    def _get_balance(
+        self, field_name: str, service: DatedModelService, only: Q = Q()
+    ) -> float:
+        return service.year(self.year).aggregate(
+            total=Sum(field_name, filter=only, default=0)
+        )["total"]

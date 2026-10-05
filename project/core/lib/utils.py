@@ -26,39 +26,32 @@ def get_safe_redirect(request, url, fallback="/"):
 
 
 def total_row(data, fields: list[str]) -> dict:
-    # Fields to subtract when sold is truthy
-    subtract_fields = {"incomes", "profit_sum"}
-
-    # Initialize result dictionary
     row = {field: 0 for field in fields}
 
-    # Process each object
     for obj in data:
-        # Get all field values in one pass
         values = obj.__dict__
-        sold = values.get("sold", 0)
-
-        # Update sums for all fields
         for field in fields:
-            if field in subtract_fields and sold:
-                continue
-
-            value = values.get(field, 0)
-            row[field] += value
-
-    # Update profit_proc if applicable
-    if "profit_proc" in fields and row.get("market_value"):
-        row["profit_proc"] = calculate_percents(row)
+            row[field] += values.get(field, 0)
 
     return row
 
 
-def calculate_percents(data):
-    incomes = data.get("incomes", 0)
-    fee = data.get("fee", 0)
-    market_value = data.get("market_value", 0)
+def funds_total_row(data, fields: list[str], switched_within: int = 0) -> dict:
+    """The funds tables' Total row: profit and % read only the rows showing one."""
+    row = total_row(data, [f for f in fields if f != "profit_proc"])
+    shown = [obj for obj in data if obj.shows_profit]
+    shown_row = total_row(shown, ["incomes", "profit_sum"])
+    row["profit_sum"] = shown_row["profit_sum"]
+    row["profit_proc"] = profit_percent(shown_row, switched_within)
+    return row
 
-    return ((market_value - fee) / incomes * 100) - 100 if incomes else 0
+
+def profit_percent(row: dict, switched_within: int = 0) -> float:
+    base = row.get("incomes", 0) - switched_within
+    if base <= 0:
+        return 0.0
+
+    return row.get("profit_sum", 0) / base * 100
 
 
 @lru_cache(maxsize=1)

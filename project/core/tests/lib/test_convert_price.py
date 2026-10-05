@@ -1,9 +1,11 @@
 from types import SimpleNamespace
 
 import pytest
+from django import forms
 
 from ...lib.convert_price import (
     ConvertPriceMixin,
+    PriceNeverEmptyFormMixin,
     float_to_int_cents,
     int_cents_to_float,
 )
@@ -144,3 +146,43 @@ def test_covert_to_cents_mixin_merges_fields(mocker):
     assert result["price"] == 100
     assert result["fee"] == 200
     assert result["new_field"] == 300
+
+
+class _PriceForm(PriceNeverEmptyFormMixin, forms.Form):
+    price = forms.IntegerField(required=False)
+    fee = forms.IntegerField(required=False)
+
+
+@pytest.mark.parametrize("empty", ["", None])
+def test_price_never_empty_saves_an_empty_field_as_zero(empty):
+    form = _PriceForm(data={"price": empty, "fee": 5})
+
+    assert form.is_valid()
+    assert form.cleaned_data == {"price": 0, "fee": 5}
+
+
+def test_price_never_empty_shows_a_stored_zero_as_empty():
+    form = _PriceForm(initial={"price": 0, "fee": 7})
+
+    assert form["price"].value() == ""
+    assert form["fee"].value() == 7
+
+
+def test_price_never_empty_shows_a_missing_value_as_empty():
+    form = _PriceForm()
+
+    assert form["price"].value() == ""
+    assert form["fee"].value() == ""
+
+
+@pytest.mark.parametrize("price, fee", [("", ""), (None, None), (0, 0), ("", 0)])
+def test_price_never_empty_rejects_both_empty(price, fee):
+    form = _PriceForm(data={"price": price, "fee": fee})
+
+    assert not form.is_valid()
+    assert set(form.errors) == {"price", "fee"}
+
+
+def test_price_never_empty_accepts_one_of_the_two():
+    assert _PriceForm(data={"price": "", "fee": 1}).is_valid()
+    assert _PriceForm(data={"price": 1, "fee": ""}).is_valid()

@@ -3,6 +3,8 @@ from typing import Callable, NamedTuple
 
 import pytest
 import time_machine
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
@@ -707,3 +709,313 @@ def test_sell_and_switch_forms_leave_balances_a_re_sync_agrees_with(
     assert MOVES[move].received(receiver).incomes == 500
     assert SavingType.objects.get(pk=fund.pk).closed == (1999 if close else None)
     assert _balances() == after_form
+
+
+# the fund is written only when its year moves
+def _fund_updates(queries):
+    return [q for q in queries if q["sql"].startswith('UPDATE "savings_savingtype"')]
+
+
+def _move_data(fund, receiver, day, close):
+    return {
+        "date": day,
+        "from_account": fund.pk,
+        "to_account": receiver.pk,
+        "price": "5",
+        "fee": "0.5",
+        "close": close,
+    }
+
+
+def _receiver(move, other):
+    return other if move == "switch" else AccountFactory(title="Bank")
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_unticked_close_does_not_write_an_open_fund(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    form = MOVES[move].form(
+        user=main_user, data=_move_data(fund, receiver, "1999-01-01", False)
+    )
+    assert form.is_valid()
+
+    with CaptureQueriesContext(connection) as queries:
+        form.save()
+
+    assert _fund_updates(queries.captured_queries) == []
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_with_close_ticked_moves_the_close_year(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    form = MOVES[move].form(
+        user=main_user, data=_move_data(fund, receiver, "1999-01-01", True)
+    )
+    assert form.is_valid()
+    row = form.save()
+    assert SavingType.objects.get(pk=fund.pk).closed == 1999
+
+    edit = MOVES[move].form(
+        user=main_user,
+        instance=row,
+        data=_move_data(fund, receiver, "2000-01-01", True),
+    )
+    assert edit.is_valid()
+    edit.save()
+
+    assert SavingType.objects.get(pk=fund.pk).closed == 2000
+
+
+def _saved_move(main_user, move, fund, receiver, day, close, instance=None):
+    form = MOVES[move].form(
+        user=main_user,
+        instance=instance,
+        data=_move_data(fund, receiver, day, close),
+    )
+    assert form.is_valid()
+    return form.save()
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_of_an_earlier_sell_keeps_the_close_year(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    earlier = _saved_move(main_user, move, fund, receiver, "1999-01-01", False)
+    _saved_move(main_user, move, fund, receiver, "2000-01-01", True)
+
+    _saved_move(main_user, move, fund, receiver, "1999-01-02", True, earlier)
+
+    assert SavingType.objects.get(pk=fund.pk).closed == 2000
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_new_sell_before_the_close_year_keeps_it(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    _saved_move(main_user, move, fund, receiver, "2000-01-01", True)
+
+    _saved_move(main_user, move, fund, receiver, "1999-01-01", True)
+
+    assert SavingType.objects.get(pk=fund.pk).closed == 2000
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_with_close_unticked_reopens_the_fund(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    form = MOVES[move].form(
+        user=main_user, data=_move_data(fund, receiver, "1999-01-01", True)
+    )
+    assert form.is_valid()
+    row = form.save()
+
+    edit = MOVES[move].form(
+        user=main_user,
+        instance=row,
+        data=_move_data(fund, receiver, "1999-01-01", False),
+    )
+    assert edit.is_valid()
+    edit.save()
+
+    assert SavingType.objects.get(pk=fund.pk).closed is None
+
+
+# a fund's close year follows its last move
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_earlier_move_of_the_close_year_edited_back_keeps_the_close_year(
+    main_user, move
+):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    earlier = _saved_move(main_user, move, fund, receiver, "2000-03-01", False)
+    _saved_move(main_user, move, fund, receiver, "2000-12-01", True)
+
+    _saved_move(main_user, move, fund, receiver, "1999-03-01", True, earlier)
+
+    fund.refresh_from_db()
+    assert fund.closed == 2000
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_new_unticked_move_before_the_last_keeps_the_fund_closed(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    _saved_move(main_user, move, fund, receiver, "1999-12-01", True)
+
+    _saved_move(main_user, move, fund, receiver, "1999-06-01", False)
+
+    fund.refresh_from_db()
+    assert fund.closed == 1999
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_new_unticked_move_after_the_last_reopens_the_fund(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    _saved_move(main_user, move, fund, receiver, "1999-06-01", True)
+
+    _saved_move(main_user, move, fund, receiver, "1999-12-01", False)
+
+    fund.refresh_from_db()
+    assert fund.closed is None
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_closing_move_moved_to_another_fund_reopens_the_first(main_user, move):
+    first = SavingTypeFactory(title="First")
+    second = SavingTypeFactory(title="Second")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    row = _saved_move(main_user, move, first, receiver, "1999-12-01", True)
+
+    _saved_move(main_user, move, second, receiver, "1999-12-01", True, row)
+
+    first.refresh_from_db()
+    assert first.closed is None
+    second.refresh_from_db()
+    assert second.closed == 1999
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_move_moved_away_leaves_the_first_closed_at_its_last_move(main_user, move):
+    first = SavingTypeFactory(title="First")
+    second = SavingTypeFactory(title="Second")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    _saved_move(main_user, move, first, receiver, "1999-06-01", False)
+    row = _saved_move(main_user, move, first, receiver, "2000-12-01", True)
+
+    _saved_move(main_user, move, second, receiver, "2000-12-01", False, row)
+
+    first.refresh_from_db()
+    assert first.closed == 1999
+    second.refresh_from_db()
+    assert second.closed is None
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_of_an_earlier_move_does_not_write_a_closed_fund(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    earlier = _saved_move(main_user, move, fund, receiver, "1999-03-01", False)
+    _saved_move(main_user, move, fund, receiver, "1999-12-01", True)
+
+    with CaptureQueriesContext(connection) as queries:
+        _saved_move(main_user, move, fund, receiver, "1999-04-01", True, earlier)
+
+    assert _fund_updates(queries.captured_queries) == []
+    fund.refresh_from_db()
+    assert fund.closed == 1999
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_closing_move_writes_the_fund_once(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+
+    with CaptureQueriesContext(connection) as queries:
+        _saved_move(main_user, move, fund, receiver, "1999-12-01", True)
+
+    assert len(_fund_updates(queries.captured_queries)) == 1
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_closing_move_edited_earlier_and_unticked_reopens_the_fund(
+    main_user, move
+):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    _saved_move(main_user, move, fund, receiver, "2000-09-01", False)
+    closing = _saved_move(main_user, move, fund, receiver, "2000-12-01", True)
+
+    _saved_move(main_user, move, fund, receiver, "2000-06-01", False, closing)
+
+    fund.refresh_from_db()
+    assert fund.closed is None
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_earlier_move_edited_and_unticked_keeps_the_fund_closed(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    earlier = _saved_move(main_user, move, fund, receiver, "2000-09-01", False)
+    _saved_move(main_user, move, fund, receiver, "2000-12-01", True)
+
+    _saved_move(main_user, move, fund, receiver, "2000-06-01", False, earlier)
+
+    fund.refresh_from_db()
+    assert fund.closed == 2000
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_unticked_earlier_move_leaves_an_open_fund_open(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
+
+    _saved_move(main_user, move, fund, receiver, "2000-06-01", False)
+
+    fund.refresh_from_db()
+    assert fund.closed is None
+
+
+# a stored fee of 0 is read as nothing entered
+def _fee_less_move(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    data = _move_data(fund, receiver, "1999-01-01", False) | {"fee": ""}
+    form = MOVES[move].form(user=main_user, data=data)
+    assert form.is_valid()
+    return form.save(), data
+
+
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_shows_a_stored_zero_fee_as_an_empty_field(main_user, move):
+    row, _data = _fee_less_move(main_user, move)
+
+    form = MOVES[move].form(user=main_user, instance=row)
+
+    assert " value=" not in form["fee"].as_widget()
+
+
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_posts_its_own_empty_fee_back_and_saves_zero(main_user, move):
+    row, data = _fee_less_move(main_user, move)
+    shown = MOVES[move].form(user=main_user, instance=row)
+
+    edit = MOVES[move].form(
+        user=main_user, instance=row, data=data | {"fee": shown["fee"].value()}
+    )
+
+    assert edit.is_valid(), edit.errors
+    assert edit.save().fee == 0
+
+
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_shows_a_stored_fee_as_it_is(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    form = MOVES[move].form(
+        user=main_user, data=_move_data(fund, receiver, "1999-01-01", False)
+    )
+    assert form.is_valid()
+    row = form.save()
+
+    edit = MOVES[move].form(user=main_user, instance=row)
+
+    assert edit["fee"].value() == row.fee

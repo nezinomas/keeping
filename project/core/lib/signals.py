@@ -10,6 +10,7 @@ class GetData:
     def __init__(self, user: User, conf: dict):
         self.incomes = list(self._get_data(user, conf.get("incomes")))
         self.expenses = list(self._get_data(user, conf.get("expenses")))
+        self.moves = list(self._get_data(user, conf.get("moves")))
         self.have = list(self._get_data(user, conf.get("have")))
         self.types = list(self._get_data(user, conf.get("types")))
 
@@ -64,6 +65,17 @@ class SignalBase(ABC):
         }
         return pl.LazyFrame(have, schema=schema)
 
+    def _make_moves(self, moves: list[dict]) -> pl.LazyFrame:
+        schema = {"category_id": pl.UInt16, "date": pl.Date, "price": pl.Int32}
+        return pl.LazyFrame(moves, schema=schema).with_columns(
+            year=pl.col("date").dt.year().cast(pl.UInt16)
+        )
+
+    def _closed_years(self) -> pl.LazyFrame:
+        return pl.from_dicts(
+            [{"category_id": x.pk, "closed": x.closed} for x in self._types]
+        ).lazy()
+
     def _create_year_grid(self, df: pl.LazyFrame) -> pl.LazyFrame:
         # Get min_year per category_id
         years_ranges = df.group_by("category_id").agg(min_year=pl.col("year").min())
@@ -74,17 +86,12 @@ class SignalBase(ABC):
 
         years_df = pl.LazyFrame({"year": range(global_min_year, global_max_year + 2)})
 
-        #  lazyframe of categories with closed dates
-        closed = pl.from_dicts(
-            [{"category_id": x.pk, "closed": x.closed} for x in self._types]
-        ).lazy()
-
         return (
             years_ranges.join(years_df, how="cross")
             .filter(pl.col("year") >= pl.col("min_year"))
             .select(["category_id", "year"])
             .join(df, on=["category_id", "year"], how="left")
-            .join(closed, on="category_id", how="inner")
+            .join(self._closed_years(), on="category_id", how="inner")
             .filter(
                 (pl.col("closed").is_null())  # Keep rows where closed is null
                 | (pl.col("year") <= pl.col("closed"))  # or year < closed
@@ -181,6 +188,7 @@ class Savings(SignalBase):
         _df = self._join_df(_in, _ex, _hv)
 
         self._types = data.types
+        self._moves = self._make_moves(data.moves)
 
         try:
             self._table = self.make_table(_df)
@@ -214,6 +222,8 @@ class Savings(SignalBase):
     def make_table(self, df: pl.LazyFrame) -> pl.LazyFrame:
         return (
             df.pipe(self._fill_missing_past_future_rows)
+            .pipe(self._add_sold_since_check)
+            .pipe(self._zero_worth_in_close_year_after_a_sell)
             .with_columns(
                 per_year_incomes=pl.col("incomes"),
                 per_year_fee=pl.col("fee"),
@@ -233,20 +243,64 @@ class Savings(SignalBase):
                 fee=(pl.col("past_fee") + pl.col("per_year_fee")),
             )
             .with_columns(
-                profit_sum=(pl.col("market_value") - pl.col("incomes") - pl.col("fee")),
+                profit_sum=(
+                    pl.col("market_value")
+                    + pl.col("sold")
+                    - pl.col("incomes")
+                    - pl.col("fee")
+                )
+            )
+            .with_columns(
                 profit_proc=(
-                    pl.when(pl.col("market_value") == 0)
-                    .then(0)
-                    .when(pl.col("incomes") == 0)
-                    .then(0)  # Handle zero incomes to avoid division by zero
-                    .otherwise(
-                        ((pl.col("market_value") - pl.col("fee")) / pl.col("incomes"))
-                        * 100
-                        - 100
+                    pl.when(
+                        (pl.col("incomes") == 0)
+                        | ((pl.col("market_value") == 0) & (pl.col("sold") == 0))
                     )
+                    .then(0)
+                    .otherwise(pl.col("profit_sum") / pl.col("incomes") * 100)
                 ).round(2),
             )
             .sort(["category_id", "year"])
+        )
+
+    def _add_sold_since_check(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        # a move carries only a date, so one on the worth's own day counts as after it
+        stale = (
+            df.select("category_id", "year", "latest_check")
+            .join(self._moves, on="category_id", suffix="_move")
+            .filter(
+                (pl.col("year_move") <= pl.col("year"))
+                & (pl.col("date") >= pl.col("latest_check").dt.date())
+            )
+            .group_by("category_id", "year")
+            .agg(sold_since_check=pl.col("price").sum())
+        )
+        return df.join(
+            stale, on=["category_id", "year"], how="left", maintain_order="left"
+        ).with_columns(pl.col("sold_since_check").fill_null(0).cast(pl.Int32))
+
+    def _zero_worth_in_close_year_after_a_sell(self, df: pl.LazyFrame) -> pl.LazyFrame:
+        # a worth after a sell is money already counted in sold; sold is still
+        # the year's own here, so the running total is taken for this check only
+        sold_in_close_year = (pl.col("year") == pl.col("closed")) & (
+            pl.col("sold").cum_sum().over("category_id", order_by="year") > 0
+        )
+        return (
+            df.join(
+                self._closed_years(),
+                on="category_id",
+                how="left",
+                maintain_order="left",
+            )
+            .with_columns(
+                market_value=pl.when(sold_in_close_year)
+                .then(0)
+                .otherwise(pl.col("market_value")),
+                sold_since_check=pl.when(sold_in_close_year)
+                .then(0)
+                .otherwise(pl.col("sold_since_check")),
+            )
+            .drop("closed")
         )
 
     def _join_df(

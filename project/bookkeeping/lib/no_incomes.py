@@ -6,6 +6,7 @@ from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 
 from ...accounts.services.model_services import AccountBalanceModelService
+from ...core.mixins.shows_profit import FRESH_WORTH
 from ...expenses.services.model_services import (
     ExpenseModelService,
     ExpenseTypeModelService,
@@ -112,7 +113,7 @@ def load_service(user: User, year: int, months: int = 6) -> dict:
     savings_data = {}
     if user.journal.unnecessary_savings:
         unnecessary_titles.append(str(_("Savings")))
-        savings_data = SavingModelService(user).last_months(months=months)
+        savings_data = SavingModelService(user).spent_last_months(months=months)
 
     # 3. Build Pure Data Object
     data_payload = Data(
@@ -125,13 +126,17 @@ def load_service(user: User, year: int, months: int = 6) -> dict:
             SavingBalanceModelService(user)
             .items()
             .filter(year=year, saving_type__type__in=["shares", "funds"])
-            .aggregate(Sum("market_value", default=0))["market_value__sum"]
+            .aggregate(worth=Sum("market_value", filter=FRESH_WORTH, default=0))[
+                "worth"
+            ]
         ),
         pension_sum=(
             SavingBalanceModelService(user)
             .items()
             .filter(year=year, saving_type__type="pensions")
-            .aggregate(Sum("market_value", default=0))["market_value__sum"]
+            .aggregate(worth=Sum("market_value", filter=FRESH_WORTH, default=0))[
+                "worth"
+            ]
         ),
         expenses=list(ExpenseModelService(user).last_months(months=months)),
         savings=savings_data,

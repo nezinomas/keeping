@@ -25,7 +25,7 @@
             <td class="{{item.expenses|css_class_if_none}}">{{item.expenses|price|cellformat}}</td>
             <td class="{{item.balance|css_class_if_none}}">{{item.balance|price|cellformat}}</td>
             <td class="left-thick-border {{item.have|css_class_if_none}}">{{item.have|price|cellformat}}</td>
-            <td class="{{item.delta|positive_negative}}">{{item.delta|price|cellformat:"ok"}}</td>
+            <td data-sign="{{item.delta|sign}}">{{item.delta|price|cellformat:"ok"}}</td>
 
         </tr>
         {% endfor %}
@@ -38,7 +38,7 @@
             <th class="{{total_row.expenses|css_class_if_none}}">{{total_row.expenses|price|cellformat}}</th>
             <th class="{{total_row.balance|css_class_if_none}} check">{{total_row.balance|price|cellformat}}</th>
             <th class="left-thick-border {{total_row.have|css_class_if_none}}">{{total_row.have|price|cellformat}}</th>
-            <th class="{{total_row.delta|positive_negative}}">{{total_row.delta|price|cellformat}}</th>
+            <th data-sign="{{total_row.delta|sign}}">{{total_row.delta|price|cellformat}}</th>
         </tr>
     </tfoot>
 </table>

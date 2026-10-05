@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.convert_price import ConvertPriceMixin, PriceNeverEmptyFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
@@ -33,7 +33,9 @@ class SavingTypeForm(forms.ModelForm):
         self.fields["fee_source"].label = _("Fee charged")
 
 
-class SavingForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
+class SavingForm(
+    ConvertPriceMixin, PriceNeverEmptyFormMixin, YearBetweenMixin, forms.ModelForm
+):
     price = CommaFloatField(min_value=0, required=False)
     fee = CommaFloatField(min_value=0, required=False)
 
@@ -67,17 +69,3 @@ class SavingForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["fee"].label = _("Fees")
         self.fields["remark"].label = _("Remark")
         self.fields["saving_type"].label = _("Fund")
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        fee = cleaned_data.get("fee")
-        price = cleaned_data.get("price")
-
-        if not price and not fee:
-            _msg = _("The `Sum` and `Fee` fields cannot both be empty.")
-
-            self.add_error("price", _msg)
-            self.add_error("fee", _msg)
-
-        return cleaned_data
