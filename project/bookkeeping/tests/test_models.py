@@ -2,6 +2,8 @@ from datetime import datetime as dt
 from zoneinfo import ZoneInfo
 
 import pytest
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 
 from ...accounts.models import AccountBalance
 from ...accounts.services.model_services import AccountBalanceModelService
@@ -227,3 +229,22 @@ def test_pension_worth_have(main_user):
     assert actual[1]["year"] == 2000
     assert actual[1]["category_id"] == 1
     assert actual[1]["have"] == 4
+
+
+WORTH_FACTORIES = [AccountWorthFactory, SavingWorthFactory, PensionWorthFactory]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("factory", WORTH_FACTORIES)
+def test_worth_price_is_never_null(factory):
+    with pytest.raises(IntegrityError), transaction.atomic():
+        factory(price=None)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("factory", WORTH_FACTORIES)
+def test_worth_price_is_required(factory):
+    worth = factory.build(price=None)
+
+    with pytest.raises(ValidationError):
+        worth._meta.get_field("price").clean(None, worth)
