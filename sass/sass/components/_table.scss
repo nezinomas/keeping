@@ -102,11 +102,11 @@
         color: $table-dash-color;
     }
 
-    .table-success {
+    [data-sign="gain"] {
         background-color: $positive-bg;
     }
 
-    .table-danger {
+    [data-sign="loss"] {
         background-color: $negative-bg;
     }
 
@@ -168,11 +168,11 @@
         tr:nth-child(even)>td {
             background-color: rgba(0, 0, 0, 0.03);
 
-            &.table-success {
+            &[data-sign="gain"] {
                 background-color: color.adjust($positive-bg, $lightness: -2%, $space: hsl);
             }
 
-            &.table-danger {
+            &[data-sign="loss"] {
                 background-color: color.adjust($negative-bg, $lightness: -2%, $space: hsl);
 
                 &.day-negative {

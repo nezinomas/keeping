@@ -4,6 +4,7 @@ import pytest
 import time_machine
 from django.db import IntegrityError
 
+from ...bookkeeping.tests.factories import PensionWorthFactory
 from ..models import Pension, PensionBalance, PensionType
 from ..services.model_services import (
     PensionBalanceModelService,
@@ -71,6 +72,17 @@ def test_pension_object():
     assert actual.fee == 1
     assert actual.remark == "remark"
     assert actual.pension_type.title == "PensionType"
+
+
+def test_pension_price_and_fee_default_to_zero():
+    t = PensionTypeFactory()
+
+    p = Pension.objects.create(date=date(1999, 1, 1), pension_type=t)
+
+    actual = Pension.objects.get(pk=p.pk)
+
+    assert actual.price == 0
+    assert actual.fee == 0
 
 
 def test_pension_related(main_user, second_user):
@@ -327,12 +339,13 @@ def test_pension_balance_queries(main_user, django_assert_num_queries):
 def test_sum_by_year(main_user):
     PensionFactory(price=1, fee=0)
     PensionFactory(price=2, fee=0)
+    PensionWorthFactory(pension_type=PensionType.objects.get(), price=5)
 
     actual = list(PensionBalanceModelService(main_user).sum_by_year())
 
     assert actual == [
-        {"year": 1999, "incomes": 3, "profit": -3, "fee": 0},
-        {"year": 2000, "incomes": 3, "profit": -3, "fee": 0},
+        {"year": year, "incomes": 3, "profit": 2, "total": 5, "fee": 0}
+        for year in (1999, 2000)
     ]
 
 
@@ -355,3 +368,11 @@ def test_pension_balance_sorting(main_user):
     assert actual[2].pension_type == p1
     assert actual[3].year == 2000
     assert actual[3].pension_type == p2
+
+
+# PensionBalance.shows_profit
+@pytest.mark.parametrize("market_value, expected", [(100, True), (0, False)])
+def test_pension_balance_shows_profit_follows_the_market_value(market_value, expected):
+    obj = PensionBalanceFactory.build(market_value=market_value)
+
+    assert obj.shows_profit is expected

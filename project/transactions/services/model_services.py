@@ -1,8 +1,17 @@
+from collections import defaultdict
+from collections.abc import Callable, Iterable, Mapping
+from dataclasses import dataclass, field
+from datetime import date
+from functools import cache
+from types import MappingProxyType
+from typing import NamedTuple
+
 from django.db.models import F, Sum, Value
 from django.db.models.functions import ExtractYear
 
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import DatedModelService
+from ...savings.models import Saving
 from .. import models
 
 
@@ -25,6 +34,10 @@ class CommonMethodsMixin:
             .values("year", "incomes", category_id=F("to_account__pk"))
             .order_by("year", "category_id")
         )
+
+    def moves(self):
+        """One row per move out of a fund, with the money `expenses` counts as sold."""
+        return self.objects.values("date", "price", category_id=F("from_account__pk"))
 
     def base_expenses(self, fee=False):
         """
@@ -77,7 +90,7 @@ class SavingCloseModelService(SumMixin, CommonMethodsMixin, DatedModelService):
             to_account__journal=self.user.journal,
         )
 
-    def sum_by_month(self, year, month=None):
+    def sum_by_month(self, year, month=0):
         return self.month_sum(self.objects, year=year, month=month).annotate(
             title=Value("savings_close")
         )
@@ -88,6 +101,12 @@ class SavingCloseModelService(SumMixin, CommonMethodsMixin, DatedModelService):
         Calculates and returns the total price for each year
         """
         return self.base_expenses(fee=True)
+
+
+class Purchase(NamedTuple):
+    date: date
+    fund: int
+    price: int
 
 
 class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
@@ -105,3 +124,164 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
         Calculates and returns the total price for each year
         """
         return self.base_expenses(fee=True)
+
+    def switched_within(
+        self, year: int, types: list[str], hidden: frozenset[int] = frozenset()
+    ) -> int:
+        """Money switched up to `year` into funds of `types` on the table that started
+        in one, through any closed or `hidden` (no profit shown) funds, in cents."""
+        by_year = self.switched_within_years([year], types, {year: hidden})
+        return by_year[year]
+
+    def switched_within_years(
+        self,
+        years: Iterable[int],
+        types: list[str],
+        hidden_by_year: Mapping[int, frozenset[int]] = MappingProxyType({}),
+    ) -> dict[int, int]:
+        """`switched_within` for each of `years`, from one switch query."""
+        years = sorted(set(years))
+        if not years:
+            return {}
+        # every switch, so money hopping between funds of other types stays traced
+        rows = self.objects.filter(date__year__lte=years[-1]).values_list(
+            "pk",
+            "date",
+            "from_account_id",
+            "to_account_id",
+            "from_account__closed",
+            "to_account__closed",
+            "price",
+            "from_account__type",
+            "to_account__type",
+        )
+        switches = [Switch(*row[:7], row[7] in types, row[8] in types) for row in rows]
+        purchases = self._purchases_loader(switches, years[-1])
+        return {
+            year: SwitchedWithin.total(
+                [s for s in switches if s.date.year <= year],
+                year,
+                hidden_by_year.get(year, frozenset()),
+                purchases_of=purchases,
+            )
+            for year in years
+        }
+
+    @classmethod
+    def _purchases_loader(
+        cls, switches: "list[Switch]", year: int
+    ) -> Callable[[set[int]], list[Purchase]]:
+        """Reads the purchases of every switch source once, when a walk first asks."""
+        sources = {s.source for s in switches}
+        load = cache(lambda: cls._purchases(sources, year))
+
+        def purchases(funds: set[int]) -> list[Purchase]:
+            if not funds:
+                return []
+            return [p for p in load() if p.fund in funds]
+
+        return purchases
+
+    @staticmethod
+    def _purchases(funds: set[int], year: int) -> list[Purchase]:
+        rows = (
+            Saving.objects.filter(saving_type_id__in=funds, date__year__lte=year)
+            .values("date", "saving_type_id")
+            .annotate(total=Sum("price"))
+            .order_by()
+            .values_list("date", "saving_type_id", "total")
+        )
+        return [Purchase(*row) for row in rows]
+
+
+class Switch(NamedTuple):
+    pk: int
+    date: date
+    source: int
+    target: int
+    source_closed: int | None
+    target_closed: int | None
+    price: int
+    source_in_group: bool
+    target_in_group: bool
+
+
+@dataclass
+class SwitchedWithin:
+    """Walks purchases and switches in date order, tracking per fund the money that
+    came in from the table and all the money that came in."""
+
+    year: int
+    hidden: frozenset[int] = frozenset()
+    from_table: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
+    paid_in: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
+    taken_off: int = 0
+
+    @classmethod
+    def total(
+        cls,
+        switches: list[Switch],
+        year: int,
+        hidden: frozenset[int],
+        purchases_of: Callable[[set[int]], list[Purchase]],
+    ) -> int:
+        walk = cls(year, hidden)
+        sources = {s.source for s in switches if walk.source_off_table(s)}
+        # a purchase's (date,) sorts before every switch of its day
+        events = [((p.date,), walk.buy, p) for p in purchases_of(sources)]
+        events += [(walk.order(s), walk.add, s) for s in switches]
+        for _, handle, event in sorted(events, key=lambda x: x[0]):
+            handle(event)
+        return walk.taken_off
+
+    def source_off_table(self, switch: Switch) -> bool:
+        return not self.on_table(
+            switch.source, switch.source_closed, switch.source_in_group
+        )
+
+    def target_on_table(self, switch: Switch) -> bool:
+        return self.on_table(
+            switch.target, switch.target_closed, switch.target_in_group
+        )
+
+    def on_table(self, fund: int, closed: int | None, in_group: bool) -> bool:
+        return (
+            in_group
+            and fund not in self.hidden
+            and (closed is None or closed >= self.year)
+        )
+
+    def order(self, switch: Switch) -> tuple:
+        # within a day, money reaches a closed fund before it can leave it
+        return (
+            switch.date,
+            self.target_on_table(switch),
+            self.source_off_table(switch),
+            switch.pk,
+        )
+
+    def buy(self, purchase: Purchase) -> None:
+        self.paid_in[purchase.fund] += purchase.price
+
+    def add(self, switch: Switch) -> None:
+        moved = switch.price
+        if self.source_off_table(switch):
+            moved = self.table_share(switch.source, switch.price)
+        self.draw_down(switch.source, switch.price)
+        self.from_table[switch.target] += moved
+        self.paid_in[switch.target] += switch.price
+        if self.target_on_table(switch):
+            self.taken_off += moved
+
+    def draw_down(self, fund: int, price: int) -> None:
+        # the walk knows no worth, so what stays keeps the fund's ratio
+        left = max(self.paid_in[fund] - price, 0)
+        self.from_table[fund] = self.table_share(fund, left)
+        self.paid_in[fund] = left
+
+    def table_share(self, fund: int, amount: int) -> int:
+        # what leaves an off-table fund, gain included, splits as its money came in
+        if not self.paid_in[fund]:
+            return 0
+        share, rest = divmod(amount * self.from_table[fund], self.paid_in[fund])
+        return share + (2 * rest >= self.paid_in[fund])

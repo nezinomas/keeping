@@ -1,5 +1,7 @@
 import calendar
 
+from django.utils.translation import gettext as _
+
 
 def float_to_int_cents(value: float) -> int:
     """
@@ -47,6 +49,45 @@ class ConvertPriceMixin:
             cleaned_data[field_name] = float_to_int_cents(val)
 
         return cleaned_data
+
+
+class NeverEmptyFormMixin:
+    """NOT NULL columns named in `_never_empty`: an empty field saves 0, and a stored
+    0 is shown as an empty field, since the user reads it as nothing entered."""
+
+    _never_empty: tuple[str, ...] = ()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for name in self._never_empty:
+            self.initial[name] = self.initial.get(name) or ""
+
+    def clean(self):
+        cleaned_data = super().clean()
+        self._reject_empty(cleaned_data)
+
+        for name in self._never_empty:
+            cleaned_data[name] = cleaned_data.get(name) or 0
+
+        return cleaned_data
+
+    def _reject_empty(self, cleaned_data: dict) -> None:
+        return
+
+
+class PriceNeverEmptyFormMixin(NeverEmptyFormMixin):
+    """Price and fee never empty, and not both empty at once."""
+
+    _never_empty = ("price", "fee")
+
+    def _reject_empty(self, cleaned_data: dict) -> None:
+        if any(cleaned_data.get(name) for name in self._never_empty):
+            return
+
+        _msg = _("The `Sum` and `Fee` fields cannot both be empty.")
+        for name in self._never_empty:
+            self.add_error(name, _msg)
 
 
 class PlanConvertPriceMixin(ConvertPriceMixin):

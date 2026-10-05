@@ -26,40 +26,14 @@ def css_class_if_none(value, default: str = "dash"):
 
 
 @register.filter
-def negative(value):
+def sign(value):
     try:
         value = float(value)
-    except ValueError:
-        return str()
-
-    return "table-danger" if value < 0 else str()
-
-
-@register.filter
-def positive(value):
-    try:
-        value = float(value)
-    except ValueError:
-        return str()
-
-    return "table-success" if value >= 0 else str()
-
-
-@register.filter
-def positive_negative(value):
-    try:
-        value = float(value)
-    except ValueError:
-        return str()
-    return "table-success" if value >= 0 else "table-danger"
-
-
-@register.filter
-def compare(value: str, args: str) -> str:
-    try:
-        _value = float(value)
-        _compare = float(args)
     except (TypeError, ValueError):
-        return str()
+        return ""
 
-    return "table-success" if _value >= _compare else "table-danger"
+    state = "gain"
+    if value < 0:
+        state = "loss"
+
+    return state

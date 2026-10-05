@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.convert_price import ConvertPriceMixin, NeverEmptyFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
@@ -12,7 +12,8 @@ from ..core.mixins.forms import YearBetweenMixin
 from ..savings.services.model_services import (
     SavingTypeModelService,
 )
-from .models import SavingChange, SavingClose, SavingType, Transaction
+from .models import SavingChange, SavingClose, Transaction
+from .services.close_year import CloseBox
 
 
 class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
@@ -67,7 +68,37 @@ class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["to_account"].label = _("To account")
 
 
-class SavingCloseForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
+class CloseFromAccountMixin:
+    """Closes or reopens the from-fund with the form's `close` checkbox."""
+
+    def save(self, *args, **kwargs):
+        previous_fund, previous_date = self._previous_move()
+
+        dates = (self.instance.date,)
+        if previous_fund == self.instance.from_account_id:
+            dates += (previous_date,)
+
+        self.instance.close_rule = CloseBox(self.cleaned_data["close"], dates)
+
+        return super().save(*args, **kwargs)
+
+    def _previous_move(self):
+        # a new move has no previous one; is_valid() already set its fund and date
+        if not self.instance.pk:
+            return self.instance.from_account_id, self.instance.date
+
+        return self.initial["from_account"], self.initial["date"]
+
+
+class SavingCloseForm(
+    NeverEmptyFormMixin,
+    CloseFromAccountMixin,
+    ConvertPriceMixin,
+    YearBetweenMixin,
+    forms.ModelForm,
+):
+    _never_empty = ("fee",)
+
     price = CommaFloatField(min_value=0.01)
     fee = CommaFloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
@@ -109,21 +140,16 @@ class SavingCloseForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
             f"{_('Close')} <b>{_('From account')}</b>"
         )
 
-    def save(self, *args, **kwargs):
-        # update saving type if close checkbox is selected
-        close = self.cleaned_data.get("close")
 
-        obj = SavingType.objects.get(pk=self.instance.from_account.pk)
-        if obj.closed and close:
-            return super().save()
+class SavingChangeForm(
+    NeverEmptyFormMixin,
+    CloseFromAccountMixin,
+    ConvertPriceMixin,
+    YearBetweenMixin,
+    forms.ModelForm,
+):
+    _never_empty = ("fee",)
 
-        obj.closed = self.instance.date.year if close else None
-        obj.save()
-
-        return super().save(*args, **kwargs)
-
-
-class SavingChangeForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
     price = CommaFloatField(min_value=0.01)
     fee = CommaFloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
@@ -185,16 +211,3 @@ class SavingChangeForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["close"].label = mark_safe(
             f"{_('Close')} <b>{_('From account')}</b>"
         )
-
-    def save(self, *args, **kwargs):
-        # update related model if close checkbox selected
-        close = self.cleaned_data.get("close")
-
-        obj = SavingType.objects.get(pk=self.instance.from_account.pk)
-        if obj.closed and close:
-            return super().save()
-
-        obj.closed = self.instance.date.year if close else None
-        obj.save()
-
-        return super().save(*args, **kwargs)

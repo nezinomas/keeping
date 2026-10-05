@@ -7,7 +7,7 @@ from ..savings.models import SavingType
 
 class SavingWorth(models.Model):
     date = models.DateTimeField()
-    price = models.PositiveIntegerField(null=True, blank=True)
+    price = models.PositiveIntegerField()
     saving_type = models.ForeignKey(
         to=SavingType, on_delete=models.CASCADE, related_name="savings_worth"
     )
@@ -22,7 +22,7 @@ class SavingWorth(models.Model):
 
 class AccountWorth(models.Model):
     date = models.DateTimeField()
-    price = models.PositiveIntegerField(null=True, blank=True)
+    price = models.PositiveIntegerField()
     account = models.ForeignKey(
         to=Account, on_delete=models.CASCADE, related_name="accounts_worth"
     )
@@ -37,7 +37,7 @@ class AccountWorth(models.Model):
 
 class PensionWorth(models.Model):
     date = models.DateTimeField()
-    price = models.PositiveIntegerField(null=True, blank=True)
+    price = models.PositiveIntegerField()
     pension_type = models.ForeignKey(
         to=PensionType, on_delete=models.CASCADE, related_name="pensions_worth"
     )

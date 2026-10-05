@@ -3,7 +3,7 @@ from datetime import datetime
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.convert_price import ConvertPriceMixin, PriceNeverEmptyFormMixin
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
@@ -11,7 +11,9 @@ from .models import Pension, PensionType
 from .services.model_services import PensionTypeModelService
 
 
-class PensionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
+class PensionForm(
+    ConvertPriceMixin, PriceNeverEmptyFormMixin, YearBetweenMixin, forms.ModelForm
+):
     price = CommaFloatField(required=False, min_value=0)
     fee = CommaFloatField(required=False, min_value=0)
 
@@ -43,19 +45,6 @@ class PensionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["fee"].label = _("Fee")
         self.fields["remark"].label = _("Remark")
         self.fields["pension_type"].label = _("Fund")
-
-    def clean(self):
-        cleaned_data = super().clean()
-        price = cleaned_data.get("price")
-        fee = cleaned_data.get("fee")
-
-        if not price and not fee:
-            _msg = _("The `Sum` and `Fee` fields cannot both be empty.")
-
-            self.add_error("price", _msg)
-            self.add_error("fee", _msg)
-
-        return cleaned_data
 
 
 class PensionTypeForm(forms.ModelForm):

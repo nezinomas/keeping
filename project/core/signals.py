@@ -9,7 +9,12 @@ from ..incomes import models as income
 from ..pensions import models as pension
 from ..savings import models as saving
 from ..transactions import models as transaction
+from ..transactions.services.close_year import FundCloseYear
 from .services import signals_service
+
+
+def _journal_users(instance: models.Model) -> list:
+    return list(instance.journal.users.order_by("pk")[:1])
 
 
 # -------------------------------------------------------------------------------------
@@ -34,15 +39,13 @@ def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
     signals_service.sync_accounts(instance)
 
 
-# A type's fee source decides what its purchases debit. Its first FK is the journal
-# itself, so the user is read here; without one, sync_accounts would guess and fail.
+# A type's fee source and close year change its balances. Its first FK is the
+# journal, so its first user is read here; a sync without one would guess and fail.
 @receiver(post_save, sender=saving.SavingType)
 def saving_type_signal(sender: object, instance: saving.SavingType, *args, **kwargs):
-    user = instance.journal.users.first()
-    if not user:
-        return
-
-    signals_service.sync_accounts(instance, user)
+    for user in _journal_users(instance):
+        signals_service.sync_accounts(instance, user)
+        signals_service.sync_savings(instance, user)
 
 
 # -------------------------------------------------------------------------------------
@@ -50,12 +53,22 @@ def saving_type_signal(sender: object, instance: saving.SavingType, *args, **kwa
 # -------------------------------------------------------------------------------------
 @receiver(post_save, sender=saving.Saving)
 @receiver(post_delete, sender=saving.Saving)
+@receiver(post_save, sender=bookkeeping.SavingWorth)
+def savings_signal(sender: object, instance: models.Model, *args, **kwargs):
+    signals_service.sync_savings(instance)
+
+
 @receiver(post_save, sender=transaction.SavingClose)
 @receiver(post_delete, sender=transaction.SavingClose)
 @receiver(post_save, sender=transaction.SavingChange)
 @receiver(post_delete, sender=transaction.SavingChange)
-@receiver(post_save, sender=bookkeeping.SavingWorth)
-def savings_signal(sender: object, instance: models.Model, *args, **kwargs):
+def move_signal(sender: object, instance: models.Model, *args, **kwargs):
+    # the close year first: the savings sync reads it
+    FundCloseYear.follow(instance.from_account_id, instance.close_rule)
+    for fund_pk in instance.left_funds:
+        FundCloseYear.follow(fund_pk)
+    instance.settle()
+
     signals_service.sync_savings(instance)
 
 
@@ -67,6 +80,13 @@ def savings_signal(sender: object, instance: models.Model, *args, **kwargs):
 @receiver(post_save, sender=bookkeeping.PensionWorth)
 def pensions_signal(sender: object, instance: models.Model, *args, **kwargs):
     signals_service.sync_pensions(instance)
+
+
+# Closing a type drops its later rows, so the sync runs on the type itself.
+@receiver(post_save, sender=pension.PensionType)
+def pension_type_signal(sender: object, instance: pension.PensionType, *args, **kwargs):
+    for user in _journal_users(instance):
+        signals_service.sync_pensions(instance, user)
 
 
 # -------------------------------------------------------------------------------------

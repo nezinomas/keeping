@@ -50,8 +50,10 @@ def test_info_table_highlight(info_table):
 
     actual = info_table(ctx)
 
-    assert '<td class="table-success"> 0,01</td>' in actual
-    assert '<td class="table-danger"> -0,02</td>' in actual
+    assert '<td data-sign="gain"> 0,01</td>' in actual
+    assert '<td data-sign="loss"> -0,02</td>' in actual
+    assert "table-success" not in actual
+    assert "table-danger" not in actual
 
 
 def test_info_table_for_calculate_debt_remains(info_table):

@@ -451,6 +451,20 @@ def test_saving_close_str():
     assert str(s) == "1999-01-01 Savings From -> Account To: 0,10"
 
 
+@pytest.mark.parametrize(
+    "factory, receiver",
+    [
+        (TransactionFactory, AccountFactory),
+        (SavingCloseFactory, AccountFactory),
+        (SavingChangeFactory, SavingTypeFactory),
+    ],
+)
+def test_str_groups_thousands_and_keeps_the_title(factory, receiver):
+    move = factory.build(price=123456, to_account=receiver.build(title="Ex. Bank"))
+
+    assert str(move).endswith(" -> Ex. Bank: 1.234,56")
+
+
 def test_saving_close_related(main_user, second_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2", journal=second_user.journal)

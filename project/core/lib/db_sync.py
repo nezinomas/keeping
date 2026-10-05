@@ -31,6 +31,7 @@ SAVING_FIELDS = [
     "market_value",
     "profit_sum",
     "profit_proc",
+    "sold_since_check",
 ]
 
 
