@@ -6,7 +6,7 @@ from functools import cache
 from types import MappingProxyType
 from typing import NamedTuple
 
-from django.db.models import F, Q, Sum, Value
+from django.db.models import F, Sum, Value
 from django.db.models.functions import ExtractYear
 
 from ...core.mixins.sum import SumMixin
@@ -143,21 +143,17 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
         years = sorted(set(years))
         if not years:
             return {}
-        # a switch from another type is outside money the walk must still count
-        rows = (
-            self.objects.filter(date__year__lte=years[-1])
-            .filter(Q(from_account__type__in=types) | Q(to_account__type__in=types))
-            .values_list(
-                "pk",
-                "date",
-                "from_account_id",
-                "to_account_id",
-                "from_account__closed",
-                "to_account__closed",
-                "price",
-                "from_account__type",
-                "to_account__type",
-            )
+        # every switch, so money hopping between funds of other types stays traced
+        rows = self.objects.filter(date__year__lte=years[-1]).values_list(
+            "pk",
+            "date",
+            "from_account_id",
+            "to_account_id",
+            "from_account__closed",
+            "to_account__closed",
+            "price",
+            "from_account__type",
+            "to_account__type",
         )
         switches = [Switch(*row[:7], row[7] in types, row[8] in types) for row in rows]
         purchases = self._purchases_loader(switches, years[-1])
@@ -166,9 +162,7 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
                 [s for s in switches if s.date.year <= year],
                 year,
                 hidden_by_year.get(year, frozenset()),
-                purchases_of=lambda funds, year=year: [
-                    p for p in purchases(funds) if p.date.year <= year
-                ],
+                purchases_of=purchases,
             )
             for year in years
         }

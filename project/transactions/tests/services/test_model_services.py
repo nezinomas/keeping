@@ -246,7 +246,7 @@ def test_switched_within_counts_a_purchase_on_the_switch_day(main_user):
 
 
 @pytest.mark.django_db
-def test_switched_within_reads_a_purchase_without_a_price_as_zero(main_user):
+def test_switched_within_ignores_a_zero_price_purchase(main_user):
     a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
     _move(a, b, 40000)
     SavingFactory(saving_type=b, price=0, fee=0, date=date(1998, 6, 1))
@@ -307,6 +307,28 @@ def test_switched_within_reads_money_from_another_type_as_outside(main_user):
 
 
 @pytest.mark.django_db
+def test_switched_within_follows_money_through_two_funds_of_another_type(main_user):
+    x, y = _fund("X"), _fund("Y")
+    p = SavingTypeFactory(title="P", type="pensions")
+    q = SavingTypeFactory(title="Q", type="pensions")
+    _move(x, p, 100000, date(1998, 1, 1))
+    _move(p, q, 100000, date(1998, 2, 1))
+    _move(q, y, 100000, date(1998, 3, 1))
+
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 100000
+
+
+@pytest.mark.django_db
+def test_switched_within_follows_money_through_a_fund_of_another_type(main_user):
+    x, y = _fund("X"), _fund("Y")
+    p = SavingTypeFactory(title="P", type="pensions")
+    _move(x, p, 100000, date(1998, 1, 1))
+    _move(p, y, 100000, date(1998, 2, 1))
+
+    assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 100000
+
+
+@pytest.mark.django_db
 def test_switched_within_through_a_closed_fund_query_count_does_not_grow(main_user):
     a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
 
@@ -322,9 +344,7 @@ def test_switched_within_through_a_closed_fund_query_count_does_not_grow(main_us
     assert queries_with(2) == queries_with(6)
 
 
-# ----------------------------------------------------------------------------
-#                                                           moves out of a fund
-# ----------------------------------------------------------------------------
+# moves out of a fund
 @pytest.mark.django_db
 def test_saving_change_moves_one_row_per_move_out(main_user):
     fund = SavingTypeFactory(title="Fund")
@@ -377,9 +397,7 @@ def test_moves_query_count_does_not_grow(main_user):
     assert many == few
 
 
-# ----------------------------------------------------------------------------
-#                                          funds whose row shows no profit
-# ----------------------------------------------------------------------------
+# funds whose row shows no profit
 @pytest.mark.django_db
 def test_switched_within_leaves_out_a_hidden_source(main_user):
     a, b = _fund("A"), _fund("B")
@@ -425,9 +443,7 @@ def test_switched_within_hidden_defaults_to_no_fund(main_user):
     assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 130000
 
 
-# ----------------------------------------------------------------------------
-#                                          several years from one switch query
-# ----------------------------------------------------------------------------
+# several years from one switch query
 def _years_scene():
     a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
     _buy(b, 20000)
