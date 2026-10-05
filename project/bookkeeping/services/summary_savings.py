@@ -160,11 +160,8 @@ def update_context(context, chart, chart_pointer):
         context.add_chart(chart_pointer, chart, records)
 
 
-def load_service(data, maps=None, switched: Mapping = NO_SWITCHES):
+def load_service(data, maps, switched: Mapping = NO_SWITCHES):
     context = Context()
-
-    if not maps:
-        maps = chart_keys_map()
 
     for i in maps:
         data_args = [data[x] for x in i.keys]
@@ -178,4 +175,4 @@ def load_service(data, maps=None, switched: Mapping = NO_SWITCHES):
 
 def load(user) -> dict:
     data = get_data(user)
-    return load_service(data, switched=switched_by_group(user, data))
+    return load_service(data, chart_keys_map(), switched=switched_by_group(user, data))
