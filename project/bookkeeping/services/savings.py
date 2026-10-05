@@ -46,7 +46,7 @@ class SavingsService:
             .aggregate(Sum("price", default=0))["price__sum"]
         )
         savings = list(
-            SavingBalanceModelService(self._user).year(self._year, types=FUND_TYPES)
+            SavingBalanceModelService(self._user).year_of_types(self._year, FUND_TYPES)
         )
         switched_within = SavingChangeModelService(self._user).switched_within(
             self._year, FUND_TYPES, hidden=hidden_funds(savings)

@@ -13,7 +13,7 @@ PENSION_TYPES = [SavingType.Types.PENSIONS]
 def get_data(user, year) -> tuple[list, list]:
     """The savings-as-pensions rows and the pension rows."""
     savings_as_pensions = list(
-        SavingBalanceModelService(user).year(year, types=PENSION_TYPES)
+        SavingBalanceModelService(user).year_of_types(year, PENSION_TYPES)
     )
     return savings_as_pensions, list(PensionBalanceModelService(user).year(year))
 
