@@ -7,7 +7,7 @@ from types import MappingProxyType
 from typing import NamedTuple
 
 from django.db.models import F, Q, Sum, Value
-from django.db.models.functions import Coalesce, ExtractYear
+from django.db.models.functions import ExtractYear
 
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import DatedModelService
@@ -193,7 +193,7 @@ class SavingChangeModelService(CommonMethodsMixin, DatedModelService):
         rows = (
             Saving.objects.filter(saving_type_id__in=funds, date__year__lte=year)
             .values("date", "saving_type_id")
-            .annotate(total=Coalesce(Sum("price"), 0))
+            .annotate(total=Sum("price"))
             .order_by()
             .values_list("date", "saving_type_id", "total")
         )

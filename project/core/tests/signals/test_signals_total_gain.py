@@ -288,13 +288,13 @@ def _worth_below_cost():
 
 def _fee_only_without_worth():
     fund = SavingTypeFactory(title="Fund")
-    SavingFactory(saving_type=fund, price=None, fee=100, date=date(YEAR, 1, 1))
+    SavingFactory(saving_type=fund, price=0, fee=100, date=date(YEAR, 1, 1))
     return fund, {YEAR: (-100, 0.0)}
 
 
 def _fee_only_with_worth():
     fund = SavingTypeFactory(title="Fund")
-    SavingFactory(saving_type=fund, price=None, fee=100, date=date(YEAR, 1, 1))
+    SavingFactory(saving_type=fund, price=0, fee=100, date=date(YEAR, 1, 1))
     _worth(fund, 500)
     return fund, {YEAR: (400, 0.0)}
 

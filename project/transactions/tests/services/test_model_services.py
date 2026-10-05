@@ -249,7 +249,7 @@ def test_switched_within_counts_a_purchase_on_the_switch_day(main_user):
 def test_switched_within_reads_a_purchase_without_a_price_as_zero(main_user):
     a, b, c = _fund("A"), _fund("B", closed=1998), _fund("C")
     _move(a, b, 40000)
-    SavingFactory(saving_type=b, price=None, fee=0, date=date(1998, 6, 1))
+    SavingFactory(saving_type=b, price=0, fee=0, date=date(1998, 6, 1))
     _move(b, c, 50000, date(1998, 7, 1))
 
     assert SavingChangeModelService(main_user).switched_within(1999, FUNDS) == 50000

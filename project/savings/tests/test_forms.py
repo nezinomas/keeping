@@ -423,6 +423,52 @@ def test_saving_valid_data_with_no_fee(main_user):
     assert data.saving_type.title == t.title
 
 
+@pytest.mark.parametrize("empty", ["", None])
+@time_machine.travel("1999-1-1")
+def test_saving_empty_fee_saves_zero(main_user, empty):
+    form = SavingForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "price": 0.01,
+            "fee": empty,
+            "account": AccountFactory().pk,
+            "saving_type": SavingTypeFactory().pk,
+        },
+    )
+
+    assert form.is_valid()
+
+    actual = form.save()
+
+    actual.refresh_from_db()
+    assert actual.price == 1
+    assert actual.fee == 0
+
+
+@pytest.mark.parametrize("empty", ["", None])
+@time_machine.travel("1999-1-1")
+def test_saving_empty_price_beside_a_fee_saves_zero(main_user, empty):
+    form = SavingForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "price": empty,
+            "fee": 0.01,
+            "account": AccountFactory().pk,
+            "saving_type": SavingTypeFactory().pk,
+        },
+    )
+
+    assert form.is_valid()
+
+    actual = form.save()
+
+    actual.refresh_from_db()
+    assert actual.price == 0
+    assert actual.fee == 1
+
+
 @time_machine.travel("1999-1-1")
 def test_saving_price_and_fee_accept_a_decimal_comma(main_user):
     a = AccountFactory()
