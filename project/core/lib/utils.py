@@ -25,16 +25,13 @@ def get_safe_redirect(request, url, fallback="/"):
     return fallback
 
 
-def total_row(data, fields: list[str], switched_within: int = 0) -> dict:
+def total_row(data, fields: list[str]) -> dict:
     row = {field: 0 for field in fields}
 
     for obj in data:
         values = obj.__dict__
         for field in fields:
             row[field] += values.get(field, 0)
-
-    if "profit_proc" in fields:
-        row["profit_proc"] = profit_percent(row, switched_within)
 
     return row
 

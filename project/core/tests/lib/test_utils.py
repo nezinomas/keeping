@@ -42,59 +42,6 @@ def test_total_row_with_sold():
     assert actual == {"incomes": 150, "profit_sum": 300, "sold": 100}
 
 
-def test_total_row_profit_proc_with_sold_row():
-    data = [
-        SimpleNamespace(
-            incomes=1000, fee=10, sold=0, market_value=1200, profit_sum=190
-        ),
-        SimpleNamespace(
-            incomes=2596753,
-            fee=20000,
-            sold=3459722,
-            market_value=500,
-            profit_sum=843469,
-        ),
-    ]
-
-    actual = utils.total_row(data, fields=_PROFIT_FIELDS)
-
-    assert actual["profit_proc"] == pytest.approx(843659 / 2597753 * 100)
-
-
-def test_total_row_profit_proc_closed_rows_only():
-    data = [
-        SimpleNamespace(
-            incomes=2596753,
-            fee=20000,
-            sold=3459722,
-            market_value=0,
-            profit_sum=842969,
-            profit_proc=32.46,
-        ),
-        SimpleNamespace(
-            incomes=10600,
-            fee=0,
-            sold=3656,
-            market_value=0,
-            profit_sum=-6944,
-            profit_proc=-65.51,
-        ),
-    ]
-
-    actual = utils.total_row(data, fields=_PROFIT_FIELDS)
-
-    assert actual["market_value"] == 0
-    assert actual["profit_proc"] == pytest.approx(836025 / 2607353 * 100)
-
-
-def test_total_row_profit_proc_no_incomes():
-    data = [SimpleNamespace(incomes=0, fee=0, market_value=50, profit_sum=50)]
-
-    actual = utils.total_row(data, fields=_PROFIT_FIELDS)
-
-    assert actual["profit_proc"] == 0
-
-
 def test_get_safe_redirect_no_url(rf):
     """Should return fallback if URL is None/empty."""
     request = rf.get("/")
@@ -205,33 +152,6 @@ def test_int_or_zero(value, expected):
     assert utils.int_or_zero(value) == expected
 
 
-def test_total_row_profit_proc_takes_the_switched_money_off_the_base():
-    data = [
-        SimpleNamespace(incomes=100000, profit_sum=30000),
-        SimpleNamespace(incomes=130000, profit_sum=10000),
-    ]
-
-    actual = utils.total_row(
-        data, fields=["incomes", "profit_sum", "profit_proc"], switched_within=130000
-    )
-
-    assert actual["incomes"] == 230000
-    assert actual["profit_proc"] == pytest.approx(40.0)
-
-
-@pytest.mark.parametrize("switched_within", [100000, 150000])
-def test_total_row_profit_proc_is_zero_when_the_base_is_used_up(switched_within):
-    data = [SimpleNamespace(incomes=100000, profit_sum=30000)]
-
-    actual = utils.total_row(
-        data,
-        fields=["incomes", "profit_sum", "profit_proc"],
-        switched_within=switched_within,
-    )
-
-    assert actual["profit_proc"] == 0.0
-
-
 def _fund_row(shows_profit, **values):
     return SimpleNamespace(shows_profit=shows_profit, **values)
 
@@ -269,6 +189,17 @@ def test_funds_total_row_takes_the_switched_money_off_the_shown_base():
     actual = utils.funds_total_row(data, fields=_PROFIT_FIELDS, switched_within=100000)
 
     assert actual["profit_proc"] == pytest.approx(10000 / 130000 * 100)
+
+
+@pytest.mark.parametrize("switched_within", [100000, 150000])
+def test_funds_total_row_profit_is_zero_when_the_base_is_used_up(switched_within):
+    data = [_fund_row(True, incomes=100000, fee=0, market_value=0, profit_sum=30000)]
+
+    actual = utils.funds_total_row(
+        data, fields=_PROFIT_FIELDS, switched_within=switched_within
+    )
+
+    assert actual["profit_proc"] == 0.0
 
 
 def test_funds_total_row_no_row_shows_a_profit():
