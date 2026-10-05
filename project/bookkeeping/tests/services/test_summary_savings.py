@@ -7,7 +7,7 @@ from hypothesis import strategies as st
 
 from ....savings.services.model_services import SavingBalanceModelService
 from ....savings.tests.factories import SavingBalanceFactory
-from ...services.summary_savings import load_service, make_chart
+from ...services.summary_savings import chart_keys_map, load_service, make_chart
 
 
 @pytest.fixture(name="data1")
@@ -150,22 +150,27 @@ def test_chart_data_db1(main_user):
     assert actual["total"] == [2, 4]
 
 
+def test_load_service_requires_the_chart_keys(load_data_full):
+    with pytest.raises(TypeError):
+        load_service(load_data_full)  # pylint: disable=no-value-for-parameter
+
+
 def test_load_service_records_full(load_data_full):
-    actual = load_service(load_data_full)
+    actual = load_service(load_data_full, chart_keys_map())
     expect = 12
 
     assert actual["records"] == expect
 
 
 def test_load_service_records_funds(load_data_funds):
-    actual = load_service(load_data_funds)
+    actual = load_service(load_data_funds, chart_keys_map())
     expect = 6
 
     assert actual["records"] == expect
 
 
 def test_load_service_template_variables_full(load_data_full):
-    actual = load_service(load_data_full)
+    actual = load_service(load_data_full, chart_keys_map())
     expect = [
         "funds",
         "shares",
@@ -180,7 +185,7 @@ def test_load_service_template_variables_full(load_data_full):
 
 
 def test_load_service_template_variables_funds(load_data_funds):
-    actual = load_service(load_data_funds)
+    actual = load_service(load_data_funds, chart_keys_map())
     expect = [
         "funds",
         "funds_shares",
@@ -204,4 +209,4 @@ def test_load_service_template_variables_funds(load_data_funds):
 @settings(max_examples=30)
 @factory.django.mute_signals(post_save)
 def test_load_service_with_hypothesis(data):
-    load_service(data)
+    load_service(data, chart_keys_map())
