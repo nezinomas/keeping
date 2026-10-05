@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.convert_price import ConvertPriceMixin, NeverEmptyFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
@@ -95,8 +95,14 @@ class CloseFromAccountMixin:
 
 
 class SavingCloseForm(
-    CloseFromAccountMixin, ConvertPriceMixin, YearBetweenMixin, forms.ModelForm
+    NeverEmptyFormMixin,
+    CloseFromAccountMixin,
+    ConvertPriceMixin,
+    YearBetweenMixin,
+    forms.ModelForm,
 ):
+    _never_empty = ("fee",)
+
     price = CommaFloatField(min_value=0.01)
     fee = CommaFloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
@@ -138,13 +144,16 @@ class SavingCloseForm(
             f"{_('Close')} <b>{_('From account')}</b>"
         )
 
-    def clean_fee(self):
-        return self.cleaned_data.get("fee") or 0
-
 
 class SavingChangeForm(
-    CloseFromAccountMixin, ConvertPriceMixin, YearBetweenMixin, forms.ModelForm
+    NeverEmptyFormMixin,
+    CloseFromAccountMixin,
+    ConvertPriceMixin,
+    YearBetweenMixin,
+    forms.ModelForm,
 ):
+    _never_empty = ("fee",)
+
     price = CommaFloatField(min_value=0.01)
     fee = CommaFloatField(min_value=0.01, required=False)
     close = forms.BooleanField(required=False)
@@ -206,6 +215,3 @@ class SavingChangeForm(
         self.fields["close"].label = mark_safe(
             f"{_('Close')} <b>{_('From account')}</b>"
         )
-
-    def clean_fee(self):
-        return self.cleaned_data.get("fee") or 0
