@@ -970,3 +970,50 @@ def test_form_unticked_earlier_move_leaves_an_open_fund_open(main_user, move):
     _saved_move(main_user, move, fund, receiver, "2000-06-01", False)
 
     assert _closed(fund) is None
+
+
+# a stored fee of 0 is read as nothing entered
+def _fee_less_move(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    data = _move_data(fund, receiver, "1999-01-01", False) | {"fee": ""}
+    form = MOVES[move].form(user=main_user, data=data)
+    assert form.is_valid()
+    return form.save(), data
+
+
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_shows_a_stored_zero_fee_as_an_empty_field(main_user, move):
+    row, _data = _fee_less_move(main_user, move)
+
+    form = MOVES[move].form(user=main_user, instance=row)
+
+    assert " value=" not in form["fee"].as_widget()
+
+
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_posts_its_own_empty_fee_back_and_saves_zero(main_user, move):
+    row, data = _fee_less_move(main_user, move)
+    shown = MOVES[move].form(user=main_user, instance=row)
+
+    edit = MOVES[move].form(
+        user=main_user, instance=row, data=data | {"fee": shown["fee"].value()}
+    )
+
+    assert edit.is_valid(), edit.errors
+    assert edit.save().fee == 0
+
+
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_shows_a_stored_fee_as_it_is(main_user, move):
+    fund = SavingTypeFactory(title="Fund")
+    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+    form = MOVES[move].form(
+        user=main_user, data=_move_data(fund, receiver, "1999-01-01", False)
+    )
+    assert form.is_valid()
+    row = form.save()
+
+    edit = MOVES[move].form(user=main_user, instance=row)
+
+    assert edit["fee"].value() == row.fee
