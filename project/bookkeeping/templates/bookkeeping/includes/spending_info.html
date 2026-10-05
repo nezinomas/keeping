@@ -13,35 +13,35 @@
         </tr>
     </thead>
     <tbody>
-        <tr class="{{ctx.delta.income|positive_negative}}">
+        <tr data-sign="{{ctx.delta.income|sign}}">
             <td class="text-left cell-padding">{% translate "Incomes" %}</td>
             <td>{{ctx.plan.income|price|cellformat}}</td>
             <td>{{ctx.fact.income|price|cellformat:"0,00"}}</td>
             <td>{{ctx.delta.income|price|cellformat:"0,00"}}</td>
         </tr>
 
-        <tr class={{ctx.delta.expense|positive_negative}}>
+        <tr data-sign="{{ctx.delta.expense|sign}}">
             <td class="text-left cell-padding">{% translate "Expenses" %}</td>
             <td>{{ctx.plan.expense|price|cellformat:"0,00"}}</td>
             <td>{{ctx.fact.expense|price|cellformat:"0,00"}}</td>
             <td>{{ctx.delta.expense|price|cellformat:"0,00"}}</td>
         </tr>
 
-        <tr class={{ctx.delta.saving|positive_negative}}>
+        <tr data-sign="{{ctx.delta.saving|sign}}">
             <td class="text-left cell-padding">{% translate "Savings" %}</td>
             <td>{{ctx.plan.saving|price|cellformat:"0,00"}}</td>
             <td>{{ctx.fact.saving|price|cellformat:"0,00"}}</td>
             <td>{{ctx.delta.saving|price|cellformat:"0,00"}}</td>
         </tr>
 
-        <tr class="{{ctx.delta.per_day|positive_negative}}">
+        <tr data-sign="{{ctx.delta.per_day|sign}}">
             <td class="text-left cell-padding">{% translate "Per day" %}</td>
             <td>{{ctx.plan.per_day|price|cellformat:"0,00"}}</td>
             <td>{{ctx.fact.per_day|price|cellformat:"0,00"}}</td>
             <td>{{ctx.delta.per_day|price|cellformat:"0,00"}}</td>
         </tr>
 
-        <tr class="{{ctx.delta.balance|positive_negative}}">
+        <tr data-sign="{{ctx.delta.balance|sign}}">
             <td class="text-left cell-padding">{% translate "Balance" %}</td>
             <td>{{ctx.plan.balance|price|cellformat:"0,00"}}</td>
             <td>{{ctx.fact.balance|price|cellformat:"0,00"}}</td>
