@@ -74,15 +74,15 @@ def test_a_worth_dated_after_the_move_out_clears_it():
     assert actual.shows_profit is True
 
 
-def test_a_move_out_on_the_worths_own_day_is_not_stale():
+def test_a_move_out_on_the_worths_own_day_is_stale():
     fund = SavingTypeFactory(title="Fund")
     _buy(fund, 100000)
+    _worth(fund, 100000, month=6, day=1)
     _sell(fund, 40000, when=date(YEAR, 6, 1))
-    _worth(fund, 60000, month=6, day=1)
 
     actual = _balance(fund)
-    assert actual.sold_since_check == 0
-    assert actual.shows_profit is True
+    assert actual.sold_since_check == 40000
+    assert actual.shows_profit is False
 
 
 def test_a_move_out_before_the_worth_is_not_stale():

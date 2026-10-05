@@ -264,13 +264,13 @@ class Savings(SignalBase):
         )
 
     def _add_sold_since_check(self, df: pl.LazyFrame) -> pl.LazyFrame:
-        # money taken out on a later day than the row's latest worth, up to its year
+        # a move carries only a date, so one on the worth's own day counts as after it
         stale = (
             df.select("category_id", "year", "latest_check")
             .join(self._moves, on="category_id", suffix="_move")
             .filter(
                 (pl.col("year_move") <= pl.col("year"))
-                & (pl.col("date") > pl.col("latest_check").dt.date())
+                & (pl.col("date") >= pl.col("latest_check").dt.date())
             )
             .group_by("category_id", "year")
             .agg(sold_since_check=pl.col("price").sum())
