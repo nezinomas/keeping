@@ -1,9 +1,12 @@
+import re
 from datetime import datetime
 
 import pytest
 import pytz
 from django.urls import resolve, reverse
 
+from ....accounts.tests.factories import AccountFactory
+from ....incomes.tests.factories import IncomeFactory
 from ....savings.tests.factories import SavingFactory
 from ... import views
 from .. import factories
@@ -40,6 +43,17 @@ def test_latest_check(client_logged):
     items = response.context["items"]
 
     assert items[0].latest_check == datetime(1999, 1, 1, 1, 3, 4, tzinfo=pytz.utc)
+
+
+def test_negative_delta_is_marked_as_a_loss(client_logged):
+    account = AccountFactory()
+    IncomeFactory(account=account, price=1000)
+    factories.AccountWorthFactory(account=account, price=500)
+
+    url = reverse("bookkeeping:accounts")
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert re.search(r'<td data-sign="loss">-', content)
 
 
 def test_regenerate_buttons(client_logged):

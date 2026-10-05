@@ -1,9 +1,11 @@
+import re
 from datetime import date
 
 import pytest
 from django.urls import resolve, reverse
 
 from ....expenses.tests.factories import ExpenseFactory
+from ....plans.tests.factories import DayPlanFactory
 from ... import views
 
 pytestmark = pytest.mark.django_db
@@ -37,6 +39,47 @@ def test_view_month_import_button_after_expenses_button(client_logged):
     assert f'href="{import_url}"' in text
     assert "Importuoti čekį" in text
     assert text.index(expenses_url) < text.index(import_url)
+
+
+def test_view_month_day_over_budget_is_marked_as_a_loss(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1), price=100)
+
+    url = reverse("bookkeeping:month")
+    text = client_logged.get(url, {"month": 1}).content.decode()
+
+    assert re.search(r'<td data-sign="loss" class="day-warning[ "]', text)
+    assert "table-danger" not in text
+
+
+def test_view_month_day_cells_within_budget_carry_no_sign(client_logged):
+    DayPlanFactory(year=1999, month=1, price=1000000)
+    ExpenseFactory(date=date(1999, 1, 1), price=1)
+
+    url = reverse("bookkeeping:month")
+    text = client_logged.get(url, {"month": 1}).content.decode()
+    cells = re.findall(r'<td([^>]*)class="day-(?:warning|negative)[ "]', text)
+
+    assert cells
+    assert all("data-sign" not in attrs for attrs in cells)
+
+
+def test_view_month_negative_cumulative_balance_is_marked_as_a_loss(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1), price=100)
+
+    url = reverse("bookkeeping:month")
+    text = client_logged.get(url, {"month": 1}).content.decode()
+
+    assert re.search(r'<td data-sign="loss" class="day-negative[ "]', text)
+
+
+def test_view_month_plan_table_rows_carry_their_sign(client_logged):
+    ExpenseFactory(date=date(1999, 1, 1), price=100)
+
+    url = reverse("bookkeeping:month")
+    text = client_logged.get(url, {"month": 1}).content.decode()
+    signs = re.findall(r'<tr data-sign="(\w*)">', text)
+
+    assert signs[:3] == ["gain", "loss", "gain"]
 
 
 @pytest.mark.parametrize(

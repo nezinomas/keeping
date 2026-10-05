@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime
 
 import pytest
@@ -161,6 +162,18 @@ def test_closed_fund_with_a_sell_shows_its_profit_but_no_worth(client_logged):
     assert cells[8:10] == ["-", "-"]
     assert cells[10] == "-400,00"
     assert cells[11] == "-40,00%"
+
+
+def test_fund_with_a_loss_marks_its_profit_cells_as_a_loss(client_logged):
+    fund_with_a_sell("Closed", 100000, 60000, closed=1999)
+
+    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
+    row = re.search(r"<tr>\s*<td[^>]*>Closed</td>(.*?)</tr>", content, re.S).group(1)
+    lost = re.findall(r'<td[^>]*data-sign="loss"[^>]*>(.*?)</td>', row, re.S)
+
+    assert lost == ["-400,00", "-40,00%"]
+    assert "table-success" not in content
+    assert "table-danger" not in content
 
 
 @pytest.mark.parametrize("sold", [True, False])
