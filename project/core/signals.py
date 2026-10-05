@@ -53,19 +53,23 @@ def saving_type_signal(sender: object, instance: saving.SavingType, *args, **kwa
 # -------------------------------------------------------------------------------------
 @receiver(post_save, sender=saving.Saving)
 @receiver(post_delete, sender=saving.Saving)
-@receiver(post_save, sender=transaction.SavingClose)
-@receiver(post_delete, sender=transaction.SavingClose)
-@receiver(post_save, sender=transaction.SavingChange)
-@receiver(post_delete, sender=transaction.SavingChange)
 @receiver(post_save, sender=bookkeeping.SavingWorth)
 def savings_signal(sender: object, instance: models.Model, *args, **kwargs):
     signals_service.sync_savings(instance)
 
 
+@receiver(post_save, sender=transaction.SavingClose)
 @receiver(post_delete, sender=transaction.SavingClose)
+@receiver(post_save, sender=transaction.SavingChange)
 @receiver(post_delete, sender=transaction.SavingChange)
-def fund_close_year_signal(sender: object, instance: models.Model, *args, **kwargs):
-    FundCloseYear.follow(instance.from_account_id)
+def move_signal(sender: object, instance: models.Model, *args, **kwargs):
+    # the close year first: the savings sync reads it
+    FundCloseYear.follow(instance.from_account_id, instance.close_rule)
+    for fund_pk in instance.left_funds:
+        FundCloseYear.follow(fund_pk)
+    instance.settle()
+
+    signals_service.sync_savings(instance)
 
 
 # -------------------------------------------------------------------------------------
