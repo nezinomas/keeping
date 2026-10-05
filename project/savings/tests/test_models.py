@@ -827,7 +827,7 @@ def test_saving_balance_filter_by_one_type(main_user):
     SavingFactory(saving_type=SavingTypeFactory(title="1", type="x"))
     SavingFactory(saving_type=SavingTypeFactory(title="2", type="z"))
 
-    actual = SavingBalanceModelService(main_user).year(1999, ["x"])
+    actual = SavingBalanceModelService(main_user).year_of_types(1999, ["x"])
 
     assert actual.count() == 1
 
@@ -844,12 +844,26 @@ def test_saving_balance_filter_by_few_types(main_user):
     SavingFactory(saving_type=SavingTypeFactory(title="2", type="y"))
     SavingFactory(saving_type=SavingTypeFactory(title="3", type="z"))
 
-    actual = SavingBalanceModelService(main_user).year(1999, ["x", "y"])
+    actual = SavingBalanceModelService(main_user).year_of_types(1999, ["x", "y"])
 
     assert actual.count() == 2
 
     assert actual[0].saving_type.title == "1"
     assert actual[1].saving_type.title == "2"
+
+
+def test_saving_balance_year_takes_no_types(main_user):
+    with pytest.raises(TypeError):
+        SavingBalanceModelService(main_user).year(1999, ["x"])
+
+
+def test_saving_balance_year_keeps_every_type(main_user):
+    SavingFactory(saving_type=SavingTypeFactory(title="1", type="x"))
+    SavingFactory(saving_type=SavingTypeFactory(title="2", type="z"))
+
+    actual = SavingBalanceModelService(main_user).year(1999)
+
+    assert [a.saving_type.title for a in actual] == ["1", "2"]
 
 
 @time_machine.travel("1999-1-1")

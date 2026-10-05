@@ -167,12 +167,16 @@ class SavingBalanceModelService(DatedModelService):
     def items(self):
         return self.objects
 
-    def year(self, year: int, types=None):
-        qs = self.objects.filter(year=year)
+    def year(self, year: int):
+        return self._year_ordered(self.objects.filter(year=year))
 
-        if types:
-            qs = qs.filter(saving_type__type__in=types)
+    def year_of_types(self, year: int, types):
+        return self._year_ordered(
+            self.objects.filter(year=year, saving_type__type__in=types)
+        )
 
+    @staticmethod
+    def _year_ordered(qs):
         return qs.order_by("saving_type__type", "saving_type__title")
 
     def sum_by_type(self):
