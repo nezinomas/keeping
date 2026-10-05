@@ -13,7 +13,7 @@ from ..savings.services.model_services import (
     SavingTypeModelService,
 )
 from .models import SavingChange, SavingClose, Transaction
-from .services.close_year import CloseBox, FundCloseYear
+from .services.close_year import CloseBox
 
 
 class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
@@ -73,18 +73,14 @@ class CloseFromAccountMixin:
 
     def save(self, *args, **kwargs):
         previous_fund, previous_date = self._previous_move()
-        row = super().save(*args, **kwargs)
 
-        dates = (row.date,)
-        if previous_fund == row.from_account_id:
+        dates = (self.instance.date,)
+        if previous_fund == self.instance.from_account_id:
             dates += (previous_date,)
 
-        box = CloseBox(self.cleaned_data["close"], dates)
-        FundCloseYear.follow(row.from_account_id, box)
-        if previous_fund != row.from_account_id:
-            FundCloseYear.follow(previous_fund)
+        self.instance.close_rule = CloseBox(self.cleaned_data["close"], dates)
 
-        return row
+        return super().save(*args, **kwargs)
 
     def _previous_move(self):
         # a new move has no previous one; is_valid() already set its fund and date

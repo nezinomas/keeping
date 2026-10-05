@@ -50,10 +50,10 @@ class FundCloseYear:
 
         closed = cls(fund)._year(close)
         if fund.closed == closed:
-            return  # a type save re-syncs savings; skip it when nothing changed
+            return
 
-        fund.closed = closed
-        fund.save()
+        # no type save: the move's receiver syncs savings once, after this
+        SavingType.objects.filter(pk=fund_pk).update(closed=closed)
 
     def _year(self, close: KeepClose | CloseBox) -> int | None:
         moves = [day for day in (self.fund.last_sell, self.fund.last_switch) if day]

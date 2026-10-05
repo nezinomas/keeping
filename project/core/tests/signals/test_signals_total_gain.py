@@ -185,8 +185,10 @@ def _sold_last_year_by_a_switch(fund):
     ids=lambda take_out: take_out.__name__.removeprefix("_sold_last_year_by_a_"),
 )
 def test_fund_sold_last_year_reads_no_worth_in_its_close_year(take_out):
-    fund = SavingTypeFactory(title="Fund", closed=YEAR)
+    fund = SavingTypeFactory(title="Fund")
     take_out(fund)
+    fund.closed = YEAR
+    fund.save()
     _worth(fund, 110000)
 
     actual = _balance(fund)

@@ -78,14 +78,16 @@ def _switch(
     source_closed=None,
 ):
     n = SavingType.objects.count()
-    return SavingChangeFactory(
+    change = SavingChangeFactory(
         price=price,
         date=date_,
-        from_account=SavingTypeFactory(
-            title=f"From {n}", type=source, closed=source_closed
-        ),
+        from_account=SavingTypeFactory(title=f"From {n}", type=source),
         to_account=SavingTypeFactory(title=f"To {n}", type=target),
     )
+    if source_closed:
+        change.from_account.closed = source_closed
+        change.from_account.save()
+    return change
 
 
 @pytest.mark.django_db
