@@ -51,9 +51,7 @@ def fixturesavings_extra():
     )
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Saving Type
-# ----------------------------------------------------------------------------
+# Saving Type
 def test_saving_type_str():
     i = SavingFactory.build()
 
@@ -185,9 +183,7 @@ def test_saving_type_migration_fills_every_slug(main_user):
     assert actual == ["finbee", "vgwl-vanguard"]
 
 
-# ----------------------------------------------------------------------------
-#                                                                       Saving
-# ----------------------------------------------------------------------------
+# Saving
 def test_saving_without_price_or_fee_stores_zero():
     saving = Saving.objects.create(
         date=date(1999, 1, 1),
@@ -730,9 +726,7 @@ def test_a_fee_only_purchase_expenses_and_incomes(main_user, fee_source, expect)
     assert [r["incomes"] for r in service.incomes()] == [0]
 
 
-# ----------------------------------------------------------------------------
-#                                                               SavingBalance
-# ----------------------------------------------------------------------------
+# SavingBalance
 def test_saving_balance_init():
     actual = SavingBalanceFactory.build()
 
@@ -974,9 +968,7 @@ def test_saving_balance_sorting(main_user):
     assert actual[3].saving_type == s2
 
 
-# ----------------------------------------------------------------------------
-#                                         Savings sums: what left the accounts
-# ----------------------------------------------------------------------------
+# Savings sums: what left the accounts
 SAVINGS_SUMS = {
     "sum_by_year": lambda s: list(s.sum_by_year()),
     "sum_by_month": lambda s: list(s.sum_by_month(1999)),

@@ -17,9 +17,7 @@ from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Transaction
-# ----------------------------------------------------------------------------
+# Transaction
 def test_transaction_init(main_user):
     TransactionForm(user=main_user)
 
@@ -156,9 +154,7 @@ def test_transaction_price_null(main_user):
     assert "price" in form.errors
 
 
-# ----------------------------------------------------------------------------
-#                                                                Saving Change
-# ----------------------------------------------------------------------------
+# Saving Change
 def test_saving_change_init(main_user):
     SavingChangeForm(user=main_user)
 
@@ -399,9 +395,7 @@ def test_saving_change_save_and_close_from_account(main_user):
     assert actual.closed == 1999
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Saving Close
-# ----------------------------------------------------------------------------
+# Saving Close
 def test_saving_close_init(main_user):
     SavingCloseForm(user=main_user)
 
@@ -634,9 +628,7 @@ def test_saving_close_save_and_close_saving_account(main_user):
     assert actual.closed == 1999
 
 
-# ----------------------------------------------------------------------------
-#                                        sells and switches save the fund too
-# ----------------------------------------------------------------------------
+# sells and switches save the fund too
 def _balances():
     return (
         sorted(

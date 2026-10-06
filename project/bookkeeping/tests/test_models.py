@@ -22,9 +22,7 @@ from .factories import AccountWorthFactory, PensionWorthFactory, SavingWorthFact
 pytestmark = pytest.mark.django_db
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          AccountWorth
-# -------------------------------------------------------------------------------------
+# AccountWorth
 def test_account_worth_str():
     actual = AccountWorthFactory()
 
@@ -87,9 +85,7 @@ def test_account_worth_have(main_user):
     assert actual[1]["have"] == 4
 
 
-# -------------------------------------------------------------------------------------
-#                                                                           SavingWorth
-# -------------------------------------------------------------------------------------
+# SavingWorth
 def test_saving_worth_str():
     model = SavingWorthFactory()
 
@@ -161,9 +157,7 @@ def test_saving_worth_have(main_user):
     assert actual[1]["have"] == 4
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          PensionWorth
-# -------------------------------------------------------------------------------------
+# PensionWorth
 def test_pension_worth_str():
     model = PensionWorthFactory()
 
