@@ -4,7 +4,7 @@ from django.utils.formats import number_format
 from ..accounts.models import Account
 from ..core.lib.convert_price import int_cents_to_float
 from ..savings.models import SavingType
-from .services.close_year import KEEP, CloseBox, KeepClose
+from .close_rules import KEEP, CloseBox, KeepClose
 
 
 def money(cents: int) -> str:
