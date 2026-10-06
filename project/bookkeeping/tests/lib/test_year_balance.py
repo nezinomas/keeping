@@ -5,6 +5,7 @@ import polars as pl
 import pytest
 import time_machine
 
+from ...lib.make_dataframe import YearMonths
 from ...lib.year_balance import YearBalance
 
 
@@ -49,7 +50,7 @@ def fixture_data():
         }
         for i in range(3, 13)
     )
-    return SimpleNamespace(year=1999, data=pl.DataFrame(arr))
+    return SimpleNamespace(date_range=YearMonths(1999), data=pl.DataFrame(arr))
 
 
 @pytest.fixture(name="amount_start")
