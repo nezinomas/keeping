@@ -9,7 +9,6 @@ from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping.tests.factories import SavingWorthFactory
 from ....incomes.tests.factories import IncomeFactory
-from ....journals.tests.factories import JournalFactory
 from ....savings.models import SavingBalance, SavingType
 from ....savings.services.model_services import SavingModelService
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
@@ -252,18 +251,6 @@ def test_switching_a_types_fee_source_re_syncs_its_account():
     assert actual.delta == 203
 
 
-def test_saving_a_type_whose_journal_has_no_user_syncs_nothing():
-    lonely = JournalFactory(title="Lonely")
-    account = AccountFactory(title="Lonely account", journal=lonely)
-    vall = SavingTypeFactory(title="Lonely VALL", journal=lonely)
-    SavingFactory(account=account, saving_type=vall, price=200, fee=3)
-
-    vall.fee_source = SavingType.FeeSource.ACCOUNT
-    vall.save()
-
-    assert not AccountBalance.objects.filter(account=account).exists()
-
-
 def test_switching_a_type_re_syncs_only_its_own_journal(main_user, second_user, mocker):
     theirs = AccountFactory(title="Theirs", journal=second_user.journal)
     their_type = SavingTypeFactory(
@@ -282,7 +269,7 @@ def test_switching_a_type_re_syncs_only_its_own_journal(main_user, second_user, 
     mine.fee_source = SavingType.FeeSource.ACCOUNT
     mine.save()
 
-    assert [call.args[1] for call in sync.call_args_list] == [main_user]
+    assert [call.args[0] for call in sync.call_args_list] == [main_user]
     assert _account_balance(theirs).expenses == 1
 
 
@@ -304,8 +291,8 @@ def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
     SavingChangeFactory(from_account=finbee, to_account=fund, price=100, fee=5)
     accounts, savings = _table(AccountBalance), _table(SavingBalance)
 
-    signals_service.sync_accounts(instance=None, user=main_user)
-    signals_service.sync_savings(instance=None, user=main_user)
+    signals_service.sync_accounts(user=main_user)
+    signals_service.sync_savings(user=main_user)
 
     assert _table(AccountBalance) == accounts
     assert _table(SavingBalance) == savings
@@ -336,7 +323,7 @@ def _queries(run):
     "run",
     [
         lambda user: list(SavingModelService(user).expenses()),
-        lambda user: signals_service.sync_accounts(instance=None, user=user),
+        lambda user: signals_service.sync_accounts(user=user),
     ],
     ids=["expenses", "re-sync"],
 )

@@ -1,29 +1,35 @@
-from typing import Optional
-
 from django.db import models
 
 from ...accounts.services.model_services import (
     AccountBalanceModelService,
     AccountModelService,
 )
+from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...bookkeeping.services.model_services import (
     AccountWorthModelService,
     PensionWorthModelService,
     SavingWorthModelService,
 )
+from ...debts.models import DebtReturn
 from ...debts.services.model_services import DebtModelService, DebtReturnModelService
+from ...expenses.models import Expense
 from ...expenses.services.model_services import ExpenseModelService
+from ...incomes.models import Income
 from ...incomes.services.model_services import IncomeModelService
+from ...journals.models import Journal
+from ...pensions.models import Pension
 from ...pensions.services.model_services import (
     PensionBalanceModelService,
     PensionModelService,
     PensionTypeModelService,
 )
+from ...savings.models import Saving
 from ...savings.services.model_services import (
     SavingBalanceModelService,
     SavingModelService,
     SavingTypeModelService,
 )
+from ...transactions.models import SavingChange, SavingClose, Transaction
 from ...transactions.services.model_services import (
     SavingChangeModelService,
     SavingCloseModelService,
@@ -78,45 +84,46 @@ PENSIONS_CONF = {
 }
 
 
-def sync_accounts(instance: models.Model, user: Optional[User] = None):
-    _sync_data(instance, user, ACCOUNTS_CONF, Accounts, AccountBalanceModelService)
+JOURNAL_FK = {
+    Income: "account",
+    Expense: "expense_type",
+    Saving: "saving_type",
+    Transaction: "from_account",
+    SavingClose: "from_account",
+    SavingChange: "from_account",
+    DebtReturn: "account",
+    AccountWorth: "account",
+    SavingWorth: "saving_type",
+    PensionWorth: "pension_type",
+    Pension: "pension_type",
+}
 
 
-def sync_savings(instance: models.Model, user: Optional[User] = None):
-    _sync_data(instance, user, SAVINGS_CONF, Savings, SavingBalanceModelService)
+def sync_accounts(user: User):
+    _sync_data(user, ACCOUNTS_CONF, Accounts, AccountBalanceModelService)
 
 
-def sync_pensions(instance: models.Model, user: Optional[User] = None):
-    _sync_data(instance, user, PENSIONS_CONF, Savings, PensionBalanceModelService)
+def sync_savings(user: User):
+    _sync_data(user, SAVINGS_CONF, Savings, SavingBalanceModelService)
 
 
-def _sync_data(
-    instance: models.Model,
-    user: Optional[User],
-    conf: dict,
-    signal_cls,
-    sync_model_service,
-):
-    user = user or _get_user_from_instance(instance)
-    if not user:
-        return
+def sync_pensions(user: User):
+    _sync_data(user, PENSIONS_CONF, Savings, PensionBalanceModelService)
 
+
+def _sync_data(user: User, conf: dict, signal_cls, sync_model_service):
     data = signal_cls(GetData(user, conf))
     BalanceSynchronizer(sync_model_service, user, data.df)
 
 
-def _get_user_from_instance(instance: models.Model) -> Optional[User]:
-    """Return the user via the first FK field."""
-    try:
-        # Get first FK field name
-        fk_field = next(
-            f.name
-            for f in instance._meta.get_fields()
-            if f.many_to_one and not f.auto_created
-        )
-        # Follow FK → related object → journal -> first user
-        related = getattr(instance, fk_field)
-        journal = getattr(related, "journal", None)
-        return journal.users.first()
-    except StopIteration:
-        return None
+def journal_user(instance: models.Model) -> User:
+    """The first user of the instance's journal."""
+    return _journal_of(instance).users.earliest("pk")
+
+
+def _journal_of(instance: models.Model) -> Journal:
+    """The instance's own journal, else the journal of the FK it hangs from."""
+    if hasattr(instance, "journal_id"):
+        return instance.journal
+
+    return getattr(instance, JOURNAL_FK[type(instance)]).journal

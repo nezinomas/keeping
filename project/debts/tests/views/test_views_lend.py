@@ -308,7 +308,10 @@ def test_lend_delete(client_logged):
 
 
 def test_lend_delete_other_journal_get_form(client_logged, second_user):
-    obj = factories.LendFactory(name="yyy", journal=second_user.journal)
+    account = AccountFactory(journal=second_user.journal, title="a2")
+    obj = factories.LendFactory(
+        name="yyy", journal=second_user.journal, account=account
+    )
 
     url = reverse("debts:delete", kwargs={"pk": obj.pk, "debt_type": "lend"})
     response = client_logged.get(url)
@@ -317,7 +320,10 @@ def test_lend_delete_other_journal_get_form(client_logged, second_user):
 
 
 def test_lend_delete_other_journal_post_form(client_logged, second_user):
-    obj = factories.LendFactory(name="yyy", journal=second_user.journal)
+    account = AccountFactory(journal=second_user.journal, title="a2")
+    obj = factories.LendFactory(
+        name="yyy", journal=second_user.journal, account=account
+    )
 
     url = reverse("debts:delete", kwargs={"pk": obj.pk, "debt_type": "lend"})
     client_logged.post(url, follow=True)

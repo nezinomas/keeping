@@ -189,7 +189,11 @@ def test_debt_blank_data(main_user):
 
 
 def test_debt_same_name_for_diff_journal(main_user, second_user):
-    factories.LendFactory(name="XXX", journal=second_user.journal)
+    factories.LendFactory(
+        name="XXX",
+        journal=second_user.journal,
+        account=AccountFactory(journal=second_user.journal, title="a2"),
+    )
 
     form = forms.DebtForm(
         user=main_user,
