@@ -7,6 +7,9 @@ register = template.Library()
 
 @register.filter
 def price(value: int) -> float:
+    if value is None:
+        return 0.0
+
     try:
         return int_cents_to_float(value)
     except TypeError:

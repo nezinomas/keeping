@@ -14,7 +14,7 @@
         <tr{% if row.part %} class="calculations-table__part"{% endif %}>
             <td class="text-left">{{ row.label }}{% if row.words %}<span class="calculations-table__words">{{ row.words }}</span>{% endif %}</td>
             {% for value, state in row.cells %}
-            <td class="{{value|css_class_if_none}}{% if state == 'over' %} plans-table__over{% endif %}">{{value|price|cellformat:"0,00"}}</td>
+            <td class="{% if state == 'over' %} plans-table__over{% endif %}" data-cell="{{value|cell_state}}">{{value|price|cellformat:"0,00"}}</td>
             {% endfor %}
         </tr>
         {% endfor %}

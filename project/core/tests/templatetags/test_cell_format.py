@@ -1,6 +1,6 @@
 import pytest
 
-from ...templatetags.cell_format import cellformat, sign
+from ...templatetags.cell_format import cell_state, cellformat, sign
 
 
 @pytest.mark.parametrize(
@@ -56,3 +56,22 @@ def test_cellformat(value, default, expect):
     actual = cellformat(value, default)
 
     assert actual == expect
+
+
+@pytest.mark.parametrize(
+    "value, expect",
+    [
+        (None, "empty"),
+        ("None", "empty"),
+        (0, "empty"),
+        (0.0, "empty"),
+        ("", "empty"),
+        ([], "empty"),
+        (1, ""),
+        (-1, ""),
+        (0.5, ""),
+        ("abc", ""),
+    ],
+)
+def test_cell_state(value, expect):
+    assert cell_state(value) == expect
