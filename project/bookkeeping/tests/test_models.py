@@ -248,3 +248,19 @@ def test_worth_price_is_required(factory):
 
     with pytest.raises(ValidationError):
         worth._meta.get_field("price").clean(None, worth)
+
+
+@pytest.mark.parametrize(
+    "factory, field, fund_factory",
+    [
+        (AccountWorthFactory, "account", AccountFactory),
+        (SavingWorthFactory, "saving_type", SavingTypeFactory),
+        (PensionWorthFactory, "pension_type", PensionTypeFactory),
+    ],
+)
+def test_worth_journal_is_its_funds(second_user, factory, field, fund_factory):
+    journal = second_user.journal
+
+    obj = factory.build(**{field: fund_factory(journal=journal)})
+
+    assert obj.journal == journal

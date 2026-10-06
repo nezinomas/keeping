@@ -539,3 +539,11 @@ def test_income_updates_journal_first_record():
     IncomeFactory(date=date(1974, 2, 2))
 
     assert Journal.objects.first().first_record == date(1974, 2, 2)
+
+
+def test_income_journal_is_its_accounts(second_user):
+    journal = second_user.journal
+
+    obj = IncomeFactory.build(account=AccountFactory(journal=journal))
+
+    assert obj.journal == journal

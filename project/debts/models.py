@@ -61,3 +61,7 @@ class DebtReturn(models.Model):
             text = f"{_('Borrow return')} {convert_price(price)}"
 
         return text
+
+    @property
+    def journal(self):
+        return self.account.journal

@@ -1012,3 +1012,11 @@ def test_expense_keyword_full_clean_checks_length_after_normalising(main_user, k
         obj.full_clean()
 
     assert "keyword" in e.value.message_dict
+
+
+def test_expense_journal_is_its_types(second_user):
+    journal = second_user.journal
+
+    obj = ExpenseFactory.build(expense_type=ExpenseTypeFactory(journal=journal))
+
+    assert obj.journal == journal

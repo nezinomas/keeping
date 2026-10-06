@@ -79,6 +79,10 @@ class Expense(models.Model):
     def __str__(self):
         return f"{(self.date)}/{self.expense_type}/{self.expense_name}"
 
+    @property
+    def journal(self):
+        return self.expense_type.journal
+
 
 class ExpenseKeyword(models.Model):
     journal = models.ForeignKey(

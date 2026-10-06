@@ -70,6 +70,10 @@ class Saving(models.Model):
     def __str__(self):
         return f"{self.date}: {self.saving_type}"
 
+    @property
+    def journal(self):
+        return self.saving_type.journal
+
 
 class SavingBalance(ShowsProfitMixin, models.Model):
     fund_field = "saving_type"

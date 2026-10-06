@@ -4,32 +4,24 @@ from ...accounts.services.model_services import (
     AccountBalanceModelService,
     AccountModelService,
 )
-from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ...bookkeeping.services.model_services import (
     AccountWorthModelService,
     PensionWorthModelService,
     SavingWorthModelService,
 )
-from ...debts.models import DebtReturn
 from ...debts.services.model_services import DebtModelService, DebtReturnModelService
-from ...expenses.models import Expense
 from ...expenses.services.model_services import ExpenseModelService
-from ...incomes.models import Income
 from ...incomes.services.model_services import IncomeModelService
-from ...journals.models import Journal
-from ...pensions.models import Pension
 from ...pensions.services.model_services import (
     PensionBalanceModelService,
     PensionModelService,
     PensionTypeModelService,
 )
-from ...savings.models import Saving
 from ...savings.services.model_services import (
     SavingBalanceModelService,
     SavingModelService,
     SavingTypeModelService,
 )
-from ...transactions.models import SavingChange, SavingClose, Transaction
 from ...transactions.services.model_services import (
     SavingChangeModelService,
     SavingCloseModelService,
@@ -84,21 +76,6 @@ PENSIONS_CONF = {
 }
 
 
-JOURNAL_FK = {
-    Income: "account",
-    Expense: "expense_type",
-    Saving: "saving_type",
-    Transaction: "from_account",
-    SavingClose: "from_account",
-    SavingChange: "from_account",
-    DebtReturn: "account",
-    AccountWorth: "account",
-    SavingWorth: "saving_type",
-    PensionWorth: "pension_type",
-    Pension: "pension_type",
-}
-
-
 def sync_accounts(user: User):
     _sync_data(user, ACCOUNTS_CONF, Accounts, AccountBalanceModelService)
 
@@ -118,12 +95,4 @@ def _sync_data(user: User, conf: dict, signal_cls, sync_model_service):
 
 def journal_user(instance: models.Model) -> User:
     """The first user of the instance's journal."""
-    return _journal_of(instance).users.earliest("pk")
-
-
-def _journal_of(instance: models.Model) -> Journal:
-    """The instance's own journal, else the journal of the FK it hangs from."""
-    if hasattr(instance, "journal_id"):
-        return instance.journal
-
-    return getattr(instance, JOURNAL_FK[type(instance)]).journal
+    return instance.journal.users.earliest("pk")

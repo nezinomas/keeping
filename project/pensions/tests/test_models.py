@@ -376,3 +376,11 @@ def test_pension_balance_shows_profit_follows_the_market_value(market_value, exp
     obj = PensionBalanceFactory.build(market_value=market_value)
 
     assert obj.shows_profit is expected
+
+
+def test_pension_journal_is_its_types(second_user):
+    journal = second_user.journal
+
+    obj = PensionFactory.build(pension_type=PensionTypeFactory(journal=journal))
+
+    assert obj.journal == journal
