@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 from django.urls import reverse
 
-from ....core.tests.signals.test_signals_total_gain import YEAR, _buy, _sell, _worth
+from ....core.tests.signals.helpers import YEAR, buy, sell, worth
 from ....savings.tests.factories import SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ....users.models import User
@@ -14,9 +14,9 @@ pytestmark = pytest.mark.django_db
 
 def _stale_fund(title="Stale", kind="funds"):
     fund = SavingTypeFactory(title=title, type=kind)
-    _buy(fund, 100000)
-    _worth(fund, 100000, month=3, day=1)
-    _sell(fund, 40000)
+    buy(fund, 100000)
+    worth(fund, 100000, month=3, day=1)
+    sell(fund, 40000)
     return fund
 
 
@@ -48,7 +48,7 @@ def test_a_stale_worth_shows_dashes_the_next_year_too(client_logged):
 
 def test_a_worth_dated_after_the_sell_shows_the_profit(client_logged):
     fund = _stale_fund()
-    _worth(fund, 70000)
+    worth(fund, 70000)
 
     cells = row_cells(_page(client_logged), "Stale")
 
@@ -62,10 +62,10 @@ def test_a_worth_dated_after_the_sell_shows_the_profit(client_logged):
 def test_the_total_profit_sums_only_the_rows_that_show_one(client_logged, name, kind):
     a = SavingTypeFactory(title="A", type=kind)
     b = SavingTypeFactory(title="B", type=kind)
-    _buy(a, 100000)
-    _worth(a, 110000)
-    _buy(b, 50000)
-    _sell(b, 10000)
+    buy(a, 100000)
+    worth(a, 110000)
+    buy(b, 50000)
+    sell(b, 10000)
 
     cells = total_cells(_page(client_logged, name))
 
@@ -78,12 +78,12 @@ def test_a_switch_out_of_a_stale_fund_leaves_the_base_of_the_fund_that_shows(
 ):
     a = SavingTypeFactory(title="A")
     b = SavingTypeFactory(title="B")
-    _buy(a, 100000)
-    _worth(a, 130000, month=3, day=1)
+    buy(a, 100000)
+    worth(a, 130000, month=3, day=1)
     SavingChangeFactory(
         from_account=a, to_account=b, price=130000, fee=0, date=date(YEAR, 6, 1)
     )
-    _worth(b, 140000)
+    worth(b, 140000)
 
     cells = total_cells(_page(client_logged))
 

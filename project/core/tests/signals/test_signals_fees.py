@@ -2,8 +2,6 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 import pytest
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 
 from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
@@ -15,6 +13,7 @@ from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ...lib.db_sync import SAVING_FIELDS
 from ...services import signals_service
+from .helpers import balance, count_queries
 
 pytestmark = pytest.mark.django_db
 
@@ -25,10 +24,6 @@ def _account_balance(account):
     return AccountBalance.objects.get(account=account, year=1999)
 
 
-def _saving_balance(saving_type):
-    return SavingBalance.objects.get(saving_type=saving_type, year=1999)
-
-
 def _table(model):
     return sorted(
         tuple(sorted((k, v) for k, v in row.items() if k != "id"))
@@ -36,9 +31,7 @@ def _table(model):
     )
 
 
-# ----------------------------------------------------------------------------
-#                                                   purchase -> account balance
-# ----------------------------------------------------------------------------
+# purchase -> account balance
 def test_fee_only_purchase_leaves_the_account_untouched():
     account = AccountFactory(title="SEB")
     IncomeFactory(account=account, price=1000)
@@ -55,7 +48,7 @@ def test_fee_only_purchase_counts_its_fee_in_the_saving():
 
     SavingFactory(saving_type=saving_type, price=0, fee=100)
 
-    actual = _saving_balance(saving_type)
+    actual = balance(saving_type)
     assert actual.incomes == 0
     assert actual.fee == 100
 
@@ -84,16 +77,14 @@ def test_one_account_paying_two_saving_types_is_debited_both_prices():
     assert _account_balance(account).expenses == 800
 
 
-# ----------------------------------------------------------------------------
-#                                                       profit, end to end
-# ----------------------------------------------------------------------------
+# profit, end to end
 def test_profit_subtracts_the_fee_once():
     saving_type = SavingTypeFactory(title="Fund")
     SavingFactory(saving_type=saving_type, price=200, fee=3)
 
     SavingWorthFactory(saving_type=saving_type, price=210, date=WORTH_DATE)
 
-    actual = _saving_balance(saving_type)
+    actual = balance(saving_type)
     assert actual.incomes == 200
     assert actual.fee == 3
     assert actual.market_value == 210
@@ -114,7 +105,7 @@ def test_fee_entered_inside_the_price_is_subtracted_again_from_profit():
     assert account.expenses == 80428
     assert account.balance == 4572
 
-    saving = _saving_balance(vall)
+    saving = balance(vall)
     assert saving.incomes == 80428
     assert saving.fee == 428
     assert saving.profit_sum == -756
@@ -136,16 +127,14 @@ def test_finbee_fee_only_rows_paid_from_two_accounts():
     assert _account_balance(seb).balance == 4000
     assert _account_balance(revolut).balance == 5000
 
-    saving = _saving_balance(finbee)
+    saving = balance(finbee)
     assert saving.incomes == 1000
     assert saving.fee == 200
     assert saving.profit_sum == 0
     assert saving.profit_proc == 0.0
 
 
-# ----------------------------------------------------------------------------
-#                                                   switches, journals, types
-# ----------------------------------------------------------------------------
+# switches, journals, types
 def test_switch_with_a_fee_touches_no_account():
     SavingChangeFactory(price=100, fee=5)
 
@@ -183,9 +172,7 @@ def test_saving_a_saving_type_leaves_every_balance_unchanged():
     assert _table(SavingBalance) == savings
 
 
-# ----------------------------------------------------------------------------
-#                                                 fee charged to the account
-# ----------------------------------------------------------------------------
+# fee charged to the account
 def test_account_charged_fee_is_debited_with_the_price():
     account = AccountFactory(title="IB")
     vall = SavingTypeFactory(title="VALL", fee_source=SavingType.FeeSource.ACCOUNT)
@@ -273,9 +260,7 @@ def test_switching_a_type_re_syncs_only_its_own_journal(main_user, second_user, 
     assert _account_balance(theirs).expenses == 1
 
 
-# ----------------------------------------------------------------------------
-#                                         a fresh re-sync agrees with signals
-# ----------------------------------------------------------------------------
+# a fresh re-sync agrees with signals
 def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
     seb = AccountFactory(title="SEB")
     ib = AccountFactory(title="IB")
@@ -298,9 +283,7 @@ def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
     assert _table(SavingBalance) == savings
 
 
-# ----------------------------------------------------------------------------
-#                                                                 query counts
-# ----------------------------------------------------------------------------
+# query counts
 def _purchases_of_both_fee_sources(count):
     for i in range(count):
         fee_source = (
@@ -313,12 +296,6 @@ def _purchases_of_both_fee_sources(count):
         )
 
 
-def _queries(run):
-    with CaptureQueriesContext(connection) as queries:
-        run()
-    return len(queries)
-
-
 @pytest.mark.parametrize(
     "run",
     [
@@ -329,9 +306,9 @@ def _queries(run):
 )
 def test_query_count_does_not_grow_with_both_fee_sources(main_user, run):
     _purchases_of_both_fee_sources(2)
-    two = _queries(lambda: run(main_user))
+    two = count_queries(lambda: run(main_user))
     SavingType.objects.all().delete()
 
     _purchases_of_both_fee_sources(6)
 
-    assert _queries(lambda: run(main_user)) == two
+    assert count_queries(lambda: run(main_user)) == two

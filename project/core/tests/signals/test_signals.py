@@ -3,8 +3,6 @@ from typing import NamedTuple
 
 import polars as pl
 import pytest
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from ....accounts.services.model_services import AccountBalanceModelService
@@ -28,6 +26,7 @@ from ....savings.tests.factories import (
     SavingTypeFactory,
 )
 from ...lib.db_sync import ACCOUNT_FIELDS, SAVING_FIELDS, BalanceSynchronizer
+from .helpers import count_queries
 
 pytestmark = pytest.mark.django_db
 
@@ -676,9 +675,7 @@ def test_sync_delete_query_count_does_not_grow(main_user, kind):
         service(main_user).objects.all().delete()
         keep = {(owner.pk, 2000) for owner in _owners_with_balances(kind, count)}
         frame = _frame(_balance_rows(kind, main_user), keep)
-        with CaptureQueriesContext(connection) as queries:
-            BalanceSynchronizer(service, main_user, frame)
-        return len(queries)
+        return count_queries(lambda: BalanceSynchronizer(service, main_user, frame))
 
     assert queries_deleting(2) == queries_deleting(6)
 
