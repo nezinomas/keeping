@@ -29,7 +29,7 @@ class WealthDataProvider:
 
     def _get_balance(
         self, field_name: str, service: DatedModelService, only: Q = Q()
-    ) -> float:
+    ) -> int:
         return service.year(self.year).aggregate(
             total=Sum(field_name, filter=only, default=0)
         )["total"]

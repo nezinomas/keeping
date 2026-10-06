@@ -1,6 +1,5 @@
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Union
 
 from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
@@ -24,7 +23,7 @@ class Data:
     fund_sum: float
     pension_sum: float
     expenses: list
-    savings: Union[dict, None]
+    savings: dict
     unnecessary: list
 
 
@@ -41,7 +40,7 @@ class NoIncomes:
         return self.data.unnecessary
 
     @property
-    def summary(self) -> List[Dict]:
+    def summary(self) -> list[dict]:
         money_fund = self.data.account_sum + self.data.fund_sum
         money_fund_pension = money_fund + self.data.pension_sum
         reduced_expenses = self.avg_expenses - self.cut_sum
@@ -62,7 +61,7 @@ class NoIncomes:
             ),
         )
 
-    def _generate_dict(self, *entries) -> List[Dict]:
+    def _generate_dict(self, *entries) -> list[dict]:
         return [
             {
                 "title": title,
@@ -85,7 +84,7 @@ class NoIncomes:
             if expense.get("title") in self.data.unnecessary:
                 cut_sum += val
 
-        savings_val = self.data.savings.get("sum", 0) if self.data.savings else 0
+        savings_val = self.data.savings.get("sum", 0)
 
         self.avg_expenses = (expenses_sum + savings_val) / self.months
         self.cut_sum = (cut_sum + savings_val) / self.months
