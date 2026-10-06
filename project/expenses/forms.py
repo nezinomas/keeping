@@ -77,6 +77,7 @@ class ExpenseNameChoicesMixin:
 
 class ExpenseForm(ExpenseNameChoicesMixin, ConvertPriceMixin, forms.ModelForm):
     price = CommaFloatField(min_value=0.01)
+    quantity = forms.IntegerField(min_value=1, initial=1)
     total_sum = forms.CharField(
         required=False, widget=forms.TextInput(attrs={"inputmode": "decimal"})
     )
