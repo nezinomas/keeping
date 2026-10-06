@@ -12,3 +12,4 @@ class JournalFactory(DjangoModelFactory):
 
     title = "bob Journal"
     first_record = date(1999, 1, 1)
+    lang = "lt"

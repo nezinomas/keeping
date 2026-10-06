@@ -123,6 +123,9 @@ def test_settings_form_languages(main_user):
 
 
 def test_settings_form_lang_initial(main_user):
+    main_user.journal.lang = "en"
+    main_user.journal.save()
+
     form = SettingsForm(user=main_user).as_p()
 
     assert '<option value="en" selected>Anglų</option>' in form
