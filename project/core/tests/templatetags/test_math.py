@@ -13,7 +13,7 @@ numbers_strategy = st.one_of(
 @pytest.mark.parametrize(
     "value, expect",
     [
-        (None, None),
+        (None, 0.0),
         ("-", "-"),
     ],
 )

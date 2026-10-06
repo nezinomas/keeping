@@ -24,7 +24,7 @@
             <td class="text-left">{{ object.pension_type }}</td>
             <td class="text-left" colspan="2">{{ object.remark }}</td>
             <td>{{object.price|price|cellformat}}</td>
-            <td class="{{object.fee|css_class_if_none}}">{{object.fee|price|cellformat}}</td>
+            <td data-cell="{{object.fee|cell_state}}">{{object.fee|price|cellformat}}</td>
             <c-td-edit :url=url_update />
             <c-td-delete :url=url_delete />
         </tr>
