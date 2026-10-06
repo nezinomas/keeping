@@ -44,6 +44,19 @@ def _user_settings(user):
         user.save()
 
 
+def _set_language_cookie(response, lang):
+    response.set_cookie(
+        settings.LANGUAGE_COOKIE_NAME,
+        lang,
+        max_age=settings.LANGUAGE_COOKIE_AGE,
+        path=settings.LANGUAGE_COOKIE_PATH,
+        domain=settings.LANGUAGE_COOKIE_DOMAIN,
+        secure=settings.LANGUAGE_COOKIE_SECURE,
+        httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
+        samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+    )
+
+
 class Login(auth_views.LoginView):
     template_name = "users/login.html"
 
@@ -66,7 +79,7 @@ class Login(auth_views.LoginView):
         activate(lang)
 
         response = HttpResponseRedirect(self.get_success_url())
-        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
+        _set_language_cookie(response, lang)
 
         return response
 
@@ -340,12 +353,6 @@ class SettingsJournal(FormViewMixin):
         lang = form.cleaned_data.get("lang")
         activate(lang)
 
-        response.set_cookie(
-            key=settings.LANGUAGE_COOKIE_NAME,
-            value=lang,
-            httponly=True,
-            secure=True,
-            samesite="Strict",
-        )
+        _set_language_cookie(response, lang)
 
         return response

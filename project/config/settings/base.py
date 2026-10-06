@@ -77,6 +77,7 @@ LANGUAGES = [
     ("lt", _("Lithuanian")),
 ]
 LOCALE_PATHS = [SITE_ROOT / "locale"]
+LANGUAGE_COOKIE_AGE = 365 * 24 * 60 * 60
 
 
 TIME_ZONE = "UTC"
@@ -114,6 +115,7 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "project.users.middleware.JournalLanguageMiddleware",
     "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
