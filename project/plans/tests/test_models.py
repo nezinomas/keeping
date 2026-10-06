@@ -1,5 +1,6 @@
 import pytest
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.db.models.signals import post_save
 from django.utils.translation import gettext as _
 from factory.django import mute_signals
@@ -17,6 +18,7 @@ from ..services.model_services import (
     SavingPlanModelService,
 )
 from .factories import (
+    PLAN_KINDS,
     DayPlanFactory,
     ExpensePlanFactory,
     IncomePlanFactory,
@@ -726,3 +728,10 @@ def test_necessary_pivot_table_no_data(main_user):
     actual = NecessaryPlanModelService(main_user).pivot_table(1999)
 
     assert actual == {}
+
+
+@pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
+@pytest.mark.parametrize("column", ["price", "month"])
+def test_plan_row_cannot_store_null(kind, column):
+    with pytest.raises(IntegrityError), transaction.atomic():
+        kind.factory(**{column: None})

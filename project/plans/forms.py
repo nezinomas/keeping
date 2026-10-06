@@ -139,9 +139,11 @@ class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
 
         months = monthnames()
         for row in rows:
-            month_name = months[row.month - 1]
+            # a stored 0 would fail the month field's min_value=0.01 on re-save
+            if not row.price:
+                continue
 
-            self.initial[month_name] = int_cents_to_float(row.price)
+            self.initial[months[row.month - 1]] = int_cents_to_float(row.price)
 
     def _set_field_readonly(self, field_name):
         self.fields[field_name].disabled = True

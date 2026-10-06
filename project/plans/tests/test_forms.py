@@ -14,6 +14,7 @@ from ..forms import (
 )
 from ..services.model_services import IncomePlanModelService
 from ..tests.factories import (
+    PLAN_KINDS,
     DayPlan,
     DayPlanFactory,
     ExpensePlan,
@@ -1349,3 +1350,36 @@ def test_plan_edit_ignores_a_posted_journal(
     assert set(model.objects.values_list("journal", flat=True)) == {
         main_user.journal.pk
     }
+
+
+@pytest.fixture(params=PLAN_KINDS, ids=lambda k: k.model.__name__)
+def zero_month_plan(request, main_user):
+    kind = request.param
+    jan = kind.factory(journal=main_user.journal, month=1, price=15_000)
+    copied = {f: getattr(jan, f) for f in kind.grouping}
+    kind.factory(journal=main_user.journal, month=2, price=0, **copied)
+    return kind, jan
+
+
+def test_edit_shows_a_stored_zero_month_as_empty_field(main_user, zero_month_plan):
+    kind, jan = zero_month_plan
+
+    form = kind.form(instance=jan, user=main_user)
+
+    assert "value=" not in str(form["february"])
+    assert 'value="150.0"' in str(form["january"])
+
+
+def test_resave_with_the_zero_month_still_empty_deletes_its_row(
+    main_user, zero_month_plan
+):
+    kind, jan = zero_month_plan
+    grouping = {f: jan.serializable_value(f) for f in kind.grouping}
+    data = {"year": 1999, **grouping, "january": 150.00, "february": ""}
+
+    form = kind.form(data=data, instance=jan, user=main_user)
+    assert form.is_valid(), form.errors
+    form.save()
+
+    assert kind.model.objects.filter(month=2).exists() is False
+    assert kind.model.objects.get(month=1).price == 15_000
