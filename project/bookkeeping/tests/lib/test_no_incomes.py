@@ -21,6 +21,14 @@ def fixture_data():
     )
 
 
+def test_no_incomes_empty_savings_leave_expenses_alone(no_incomes_data):
+    no_incomes_data.unnecessary = ["Z"]
+    obj = NoIncomes(no_incomes_data, 1)
+
+    assert obj.avg_expenses == 7
+    assert obj.cut_sum == 4
+
+
 @pytest.mark.parametrize(
     "savings, unnecessary, months, expect",
     [
