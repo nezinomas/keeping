@@ -245,3 +245,46 @@ def test_debt_cant_close(main_user):
     assert len(form.errors) == 1
     assert "closed" in form.errors
     assert form.errors["closed"] == ["Negalite uždaryti dar negražintos skolos."]
+
+
+def _debt_data(account, second_user):
+    return {
+        "journal": second_user.journal.pk,
+        "date": "1999-01-01",
+        "name": "Name",
+        "price": "0.01",
+        "account": account.pk,
+        "closed": False,
+        "remark": "Rm",
+    }
+
+
+def test_debt_create_ignores_a_posted_journal(main_user, second_user):
+    a = AccountFactory(title="Mine", journal=main_user.journal)
+
+    form = forms.DebtForm(
+        user=main_user, debt_type="lend", data=_debt_data(a, second_user)
+    )
+
+    assert form.is_valid()
+
+    assert form.save().journal == main_user.journal
+
+
+def test_debt_edit_ignores_a_posted_journal(main_user, second_user):
+    a = AccountFactory(title="Mine", journal=main_user.journal)
+    obj = factories.LendFactory(journal=main_user.journal, account=a)
+
+    form = forms.DebtForm(
+        user=main_user,
+        debt_type="lend",
+        instance=obj,
+        data=_debt_data(a, second_user),
+    )
+
+    assert form.is_valid()
+
+    form.save()
+    obj.refresh_from_db()
+
+    assert obj.journal == main_user.journal

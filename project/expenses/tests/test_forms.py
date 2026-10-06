@@ -610,3 +610,31 @@ def test_expense_name_slug_taken(main_user):
     assert form.errors["title"] == [
         "Pavadinimas per daug panašus į jau esantį „Pienas“."
     ]
+
+
+def test_expense_type_create_ignores_a_posted_journal(main_user, second_user):
+    form = ExpenseTypeForm(
+        user=main_user,
+        data={"journal": second_user.journal.pk, "title": "Title", "necessary": True},
+    )
+
+    assert form.is_valid()
+
+    assert form.save().journal == main_user.journal
+
+
+def test_expense_type_edit_ignores_a_posted_journal(main_user, second_user):
+    obj = ExpenseTypeFactory(title="Mine", journal=main_user.journal)
+
+    form = ExpenseTypeForm(
+        user=main_user,
+        instance=obj,
+        data={"journal": second_user.journal.pk, "title": "Mine", "necessary": True},
+    )
+
+    assert form.is_valid()
+
+    form.save()
+    obj.refresh_from_db()
+
+    assert obj.journal == main_user.journal
