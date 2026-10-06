@@ -1,9 +1,18 @@
+from typing import NamedTuple
+
 import factory
 
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
 from ...journals.tests.factories import JournalFactory
 from ...savings.tests.factories import SavingTypeFactory
+from ..forms import (
+    DayPlanForm,
+    ExpensePlanForm,
+    IncomePlanForm,
+    NecessaryPlanForm,
+    SavingPlanForm,
+)
 from ..models import DayPlan, ExpensePlan, IncomePlan, NecessaryPlan, SavingPlan
 
 
@@ -60,3 +69,22 @@ class NecessaryPlanFactory(factory.django.DjangoModelFactory):
     title = "other"
     month = 1
     price = 1
+
+
+class PlanKind(NamedTuple):
+    factory: type
+    form: type
+    grouping: tuple[str, ...]
+
+    @property
+    def model(self):
+        return self.factory._meta.model
+
+
+PLAN_KINDS = [
+    PlanKind(IncomePlanFactory, IncomePlanForm, ("income_type",)),
+    PlanKind(ExpensePlanFactory, ExpensePlanForm, ("expense_type",)),
+    PlanKind(SavingPlanFactory, SavingPlanForm, ("saving_type",)),
+    PlanKind(DayPlanFactory, DayPlanForm, ()),
+    PlanKind(NecessaryPlanFactory, NecessaryPlanForm, ("expense_type", "title")),
+]
