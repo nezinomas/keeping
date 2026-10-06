@@ -1019,3 +1019,60 @@ def test_form_edit_shows_a_stored_fee_as_it_is(main_user, move):
     edit = MOVES[move].form(user=main_user, instance=row)
 
     assert edit["fee"].value() == row.fee
+
+
+# A posted id of another journal is rejected
+@pytest.mark.parametrize("field", ["from_account", "to_account"])
+def test_transaction_rejects_an_account_of_another_journal(
+    main_user, second_user, field
+):
+    data = {
+        "date": "1999-01-01",
+        "from_account": AccountFactory(title="Mine1", journal=main_user.journal).pk,
+        "to_account": AccountFactory(title="Mine2", journal=main_user.journal).pk,
+        "price": "0.01",
+    }
+    data[field] = AccountFactory(title="Theirs", journal=second_user.journal).pk
+
+    form = TransactionForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert field in form.errors
+
+
+@pytest.mark.parametrize("field", ["from_account", "to_account"])
+def test_saving_change_rejects_a_fund_of_another_journal(main_user, second_user, field):
+    data = {
+        "date": "1999-01-01",
+        "from_account": SavingTypeFactory(title="Mine1", journal=main_user.journal).pk,
+        "to_account": SavingTypeFactory(title="Mine2", journal=main_user.journal).pk,
+        "price": "0.01",
+    }
+    data[field] = SavingTypeFactory(title="Theirs", journal=second_user.journal).pk
+
+    form = SavingChangeForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert field in form.errors
+
+
+@pytest.mark.parametrize("field", ["from_account", "to_account"])
+def test_saving_close_rejects_a_fund_or_account_of_another_journal(
+    main_user, second_user, field
+):
+    data = {
+        "date": "1999-01-01",
+        "from_account": SavingTypeFactory(title="Mine", journal=main_user.journal).pk,
+        "to_account": AccountFactory(title="Mine", journal=main_user.journal).pk,
+        "price": "0.01",
+    }
+    foreign = {
+        "from_account": SavingTypeFactory(title="Theirs", journal=second_user.journal),
+        "to_account": AccountFactory(title="Theirs", journal=second_user.journal),
+    }
+    data[field] = foreign[field].pk
+
+    form = SavingCloseForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert field in form.errors

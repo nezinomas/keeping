@@ -350,3 +350,31 @@ def test_pension_type_title_empty_slug(main_user):
     assert form.errors["title"] == [
         "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
     ]
+
+
+def test_pension_type_create_ignores_a_posted_journal(main_user, second_user):
+    form = PensionTypeForm(
+        user=main_user,
+        data={"journal": second_user.journal.pk, "title": "Title"},
+    )
+
+    assert form.is_valid()
+
+    assert form.save().journal == main_user.journal
+
+
+def test_pension_type_edit_ignores_a_posted_journal(main_user, second_user):
+    obj = PensionTypeFactory(title="Mine", journal=main_user.journal)
+
+    form = PensionTypeForm(
+        user=main_user,
+        instance=obj,
+        data={"journal": second_user.journal.pk, "title": "Mine"},
+    )
+
+    assert form.is_valid()
+
+    form.save()
+    obj.refresh_from_db()
+
+    assert obj.journal == main_user.journal

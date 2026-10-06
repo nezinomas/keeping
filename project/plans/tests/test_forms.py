@@ -1260,3 +1260,92 @@ def test_copy_data(main_user):
     assert copied_data.count() == 2
     assert copied_data.get(month=1).price == 100
     assert copied_data.get(month=3).price == 300
+
+
+# A posted journal never moves a plan to another journal
+PLAN_FORMS = [
+    (
+        IncomePlanForm,
+        IncomePlan,
+        IncomePlanFactory,
+        IncomeTypeFactory,
+        "income_type",
+        {},
+    ),
+    (
+        ExpensePlanForm,
+        ExpensePlan,
+        ExpensePlanFactory,
+        ExpenseTypeFactory,
+        "expense_type",
+        {},
+    ),
+    (
+        SavingPlanForm,
+        SavingPlan,
+        SavingPlanFactory,
+        SavingTypeFactory,
+        "saving_type",
+        {},
+    ),
+    (
+        NecessaryPlanForm,
+        NecessaryPlan,
+        NecessaryPlanFactory,
+        ExpenseTypeFactory,
+        "expense_type",
+        {"title": "Rent"},
+    ),
+    (DayPlanForm, DayPlan, DayPlanFactory, None, "", {}),
+]
+
+
+def _plan_data(main_user, second_user, type_factory, type_field, extra):
+    data = {"journal": second_user.journal.pk, "year": 1999, "january": 1.5, **extra}
+
+    if type_factory:
+        data[type_field] = type_factory(title="Mine", journal=main_user.journal).pk
+
+    return data
+
+
+@pytest.mark.parametrize(
+    "form_class, model, factory, type_factory, type_field, extra", PLAN_FORMS
+)
+def test_plan_create_ignores_a_posted_journal(
+    main_user, second_user, form_class, model, factory, type_factory, type_field, extra
+):
+    data = _plan_data(main_user, second_user, type_factory, type_field, extra)
+
+    form = form_class(user=main_user, data=data)
+
+    assert form.is_valid()
+
+    form.save()
+
+    assert model.objects.count() == 1
+    assert model.objects.get().journal == main_user.journal
+
+
+@pytest.mark.parametrize(
+    "form_class, model, factory, type_factory, type_field, extra", PLAN_FORMS
+)
+def test_plan_edit_ignores_a_posted_journal(
+    main_user, second_user, form_class, model, factory, type_factory, type_field, extra
+):
+    data = _plan_data(main_user, second_user, type_factory, type_field, extra)
+
+    kwargs = {"journal": main_user.journal, **extra}
+    if type_field:
+        kwargs[type_field] = type_factory(title="Mine", journal=main_user.journal)
+    obj = factory(**kwargs)
+
+    form = form_class(user=main_user, instance=obj, data=data)
+
+    assert form.is_valid()
+
+    form.save()
+
+    assert set(model.objects.values_list("journal", flat=True)) == {
+        main_user.journal.pk
+    }
