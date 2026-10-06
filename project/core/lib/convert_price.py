@@ -16,7 +16,7 @@ def float_to_int_cents(value: float) -> int:
 
 
 def int_cents_to_float(value: int) -> float:
-    return value if value is None else value / 100
+    return value / 100
 
 
 class ConvertPriceMixin:

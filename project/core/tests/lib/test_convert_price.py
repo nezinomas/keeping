@@ -41,6 +41,11 @@ def test_int_cents_to_float_conversion(cents_int, expected_float):
     assert int_cents_to_float(cents_int) == expected_float
 
 
+def test_int_cents_to_float_takes_an_int_only():
+    with pytest.raises(TypeError):
+        int_cents_to_float(None)
+
+
 class DummyClassForConvertPriceMixin:
     def get_object(self):
         pass
