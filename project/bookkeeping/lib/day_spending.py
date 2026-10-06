@@ -15,8 +15,8 @@ class DaySpending(BalanceBase):
     ):
         super().__init__(expense.data)
 
-        self._year = expense.year
-        self._month = expense.month
+        self._year = expense.date_range.year
+        self._month = expense.date_range.month
         self._per_day = per_day
         self._free = free
         self._necessary = necessary or []

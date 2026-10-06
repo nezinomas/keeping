@@ -6,6 +6,7 @@ import pytest
 import time_machine
 
 from ...lib.day_spending import DaySpending
+from ...lib.make_dataframe import MonthDays
 
 
 @pytest.fixture(name="df")
@@ -24,7 +25,7 @@ def fixture_df():
     ]
     exc = pl.DataFrame(exc)
 
-    return SimpleNamespace(year=1999, month=1, data=exp, exceptions=exc)
+    return SimpleNamespace(date_range=MonthDays(1999, 1), data=exp, exceptions=exc)
 
 
 @pytest.fixture(name="necessary")
@@ -136,7 +137,9 @@ def test_spending_first_day_all_empty(df):
 def test_spending_balance_expenses_empty():
     obj = DaySpending(
         expense=SimpleNamespace(
-            year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()
+            date_range=MonthDays(1999, 1),
+            data=pl.DataFrame(),
+            exceptions=pl.DataFrame(),
         ),
         necessary=[],
         per_day=0,
@@ -157,7 +160,9 @@ def test_spending_balance_expenses_empty():
 def test_average_month_two_days(df_for_average_calculation):
     o = DaySpending(
         expense=SimpleNamespace(
-            year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()
+            date_range=MonthDays(1999, 1),
+            data=pl.DataFrame(),
+            exceptions=pl.DataFrame(),
         ),
         necessary=[],
         per_day=0,
@@ -174,7 +179,9 @@ def test_average_month_two_days(df_for_average_calculation):
 def test_average_month_last_day(df_for_average_calculation):
     o = DaySpending(
         expense=SimpleNamespace(
-            year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()
+            date_range=MonthDays(1999, 1),
+            data=pl.DataFrame(),
+            exceptions=pl.DataFrame(),
         ),
         necessary=[],
         per_day=0,
@@ -191,7 +198,9 @@ def test_average_month_last_day(df_for_average_calculation):
 def test_average_month_other_year(df_for_average_calculation):
     o = DaySpending(
         expense=SimpleNamespace(
-            year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()
+            date_range=MonthDays(1999, 1),
+            data=pl.DataFrame(),
+            exceptions=pl.DataFrame(),
         ),
         necessary=[],
         per_day=0,
@@ -207,7 +216,9 @@ def test_average_month_other_year(df_for_average_calculation):
 def test_average_month_empty_dataframe():
     o = DaySpending(
         expense=SimpleNamespace(
-            year=1999, month=1, data=pl.DataFrame(), exceptions=pl.DataFrame()
+            date_range=MonthDays(1999, 1),
+            data=pl.DataFrame(),
+            exceptions=pl.DataFrame(),
         ),
         necessary=[],
         per_day=0,

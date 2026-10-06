@@ -1,29 +1,40 @@
 import calendar
+from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import date
 
 import polars as pl
 
 
-class DateRangeProvider:
-    @staticmethod
-    def get_dates(year: int, month: int | None = None) -> pl.DataFrame:
-        if month:
-            days = calendar.monthrange(year, month)[1]
-            dates = [date(year, month, d) for d in range(1, days + 1)]
-        else:
-            dates = [date(year, m, 1) for m in range(1, 13)]
+def _date_frame(dates: list[date]) -> pl.DataFrame:
+    return pl.DataFrame({"date": dates}).with_columns(pl.col("date").cast(pl.Date))
 
-        return pl.DataFrame({"date": dates}).with_columns(pl.col("date").cast(pl.Date))
+
+@dataclass(frozen=True)
+class YearMonths:
+    year: int
+
+    def dates(self) -> pl.DataFrame:
+        return _date_frame([date(self.year, m, 1) for m in range(1, 13)])
+
+
+@dataclass(frozen=True)
+class MonthDays:
+    year: int
+    month: int
+
+    def dates(self) -> pl.DataFrame:
+        days = calendar.monthrange(self.year, self.month)[1]
+        return _date_frame([date(self.year, self.month, d) for d in range(1, days + 1)])
 
 
 class DataFrameSchemaFormatter:
     """Handles enforcing required columns and sorting them alphabetically."""
 
-    def __init__(self, required_columns: list[str] | None = None):
-        self.required_columns = required_columns or []
+    def __init__(self, required_columns: Sequence[str] = ()):
+        self.required_columns = tuple(required_columns)
 
     def format(self, df: pl.DataFrame) -> pl.DataFrame:
-        # 1. Add any missing columns as 0
         missing_cols = [
             pl.lit(0).cast(pl.Int32).alias(col)
             for col in self.required_columns
@@ -33,7 +44,6 @@ class DataFrameSchemaFormatter:
         if missing_cols:
             df = df.with_columns(missing_cols)
 
-        # 2. Sort columns alphabetically, keeping 'date' first
         data_cols = sorted([col for col in df.columns if col != "date"])
         return df.select(["date", *data_cols])
 
@@ -41,16 +51,12 @@ class DataFrameSchemaFormatter:
 class TimeSeriesPivotBuilder:
     """Transforms raw dictionary data into a padded, clean Polars pivot table."""
 
-    def __init__(
-        self, year: int, month: int | None = None, columns: list[str] | None = None
-    ):
-        self.year = year
-        self.month = month
-        self.date_provider = DateRangeProvider()
+    def __init__(self, date_range: YearMonths | MonthDays, columns: Sequence[str] = ()):
+        self.date_range = date_range
         self.formatter = DataFrameSchemaFormatter(columns)
 
     def build(self, raw_data: list[dict], value_column: str) -> pl.DataFrame:
-        expected_dates_df = self.date_provider.get_dates(self.year, self.month)
+        expected_dates_df = self.date_range.dates()
 
         if not raw_data:
             return self.formatter.format(expected_dates_df)
@@ -62,7 +68,6 @@ class TimeSeriesPivotBuilder:
         if value_column not in df.columns:
             return self.formatter.format(expected_dates_df)
 
-        # Aggregate and Pivot directly
         pivoted_df = (
             df.group_by(["date", "title"])
             .agg(pl.col(value_column).sum().cast(pl.Int32))
@@ -74,7 +79,6 @@ class TimeSeriesPivotBuilder:
             )
         )
 
-        # "Pad" the missing dates via a LEFT JOIN
         padded_df = expected_dates_df.join(pivoted_df, on="date", how="left").fill_null(
             0
         )
@@ -85,17 +89,26 @@ class TimeSeriesPivotBuilder:
 class MakeDataFrame:
     def __init__(
         self,
-        year: int,
+        date_range: YearMonths | MonthDays,
         data: list[dict],
-        columns: list[str] | None = None,
-        month: int | None = None,
+        columns: Sequence[str] = (),
     ):
-        self.year = year
-        self.month = month
-        self._columns = columns
+        self.date_range = date_range
         self._data = data
 
-        self._builder = TimeSeriesPivotBuilder(year, month, columns)
+        self._builder = TimeSeriesPivotBuilder(date_range, columns)
+
+    @classmethod
+    def for_year(
+        cls, year: int, data: list[dict], columns: Sequence[str] = ()
+    ) -> "MakeDataFrame":
+        return cls(YearMonths(year), data, columns)
+
+    @classmethod
+    def for_month(
+        cls, year: int, month: int, data: list[dict], columns: Sequence[str] = ()
+    ) -> "MakeDataFrame":
+        return cls(MonthDays(year, month), data, columns)
 
     @property
     def data(self) -> pl.DataFrame:
