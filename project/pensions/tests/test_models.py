@@ -16,9 +16,7 @@ from .factories import PensionBalanceFactory, PensionFactory, PensionTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  PensionType
-# ----------------------------------------------------------------------------
+# PensionType
 def test_pension_type_str():
     p = PensionTypeFactory.build()
 
@@ -53,9 +51,7 @@ def test_pension_type_slug_unique_per_journal():
         PensionTypeFactory(title="Bustas", journal=obj1.journal)
 
 
-# ----------------------------------------------------------------------------
-#                                                                      Pension
-# ----------------------------------------------------------------------------
+# Pension
 def test_pension_str():
     p = PensionFactory.build()
 
@@ -273,9 +269,7 @@ def test_pension_update_post_save_count_queries(django_assert_max_num_queries):
     assert actual.incomes == 2
 
 
-# ----------------------------------------------------------------------------
-#                                                               PensionBalance
-# ----------------------------------------------------------------------------
+# PensionBalance
 def test_pension_balance_init():
     actual = PensionBalanceFactory.build()
 

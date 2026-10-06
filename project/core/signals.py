@@ -13,9 +13,7 @@ from ..transactions.services.close_year import FundCloseYear
 from .services import signals_service
 
 
-# -------------------------------------------------------------------------------------
-#                                                                      Accounts Signals
-# -------------------------------------------------------------------------------------
+# Accounts Signals
 @receiver(post_save, sender=income.Income)
 @receiver(post_delete, sender=income.Income)
 @receiver(post_save, sender=expense.Expense)
@@ -43,9 +41,7 @@ def saving_type_signal(sender: object, instance: saving.SavingType, *args, **kwa
     signals_service.sync_savings(user)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       Savings Signals
-# -------------------------------------------------------------------------------------
+# Savings Signals
 @receiver(post_save, sender=saving.Saving)
 @receiver(post_delete, sender=saving.Saving)
 @receiver(post_save, sender=bookkeeping.SavingWorth)
@@ -67,9 +63,7 @@ def move_signal(sender: object, instance: models.Model, *args, **kwargs):
     signals_service.sync_savings(signals_service.journal_user(instance))
 
 
-# -------------------------------------------------------------------------------------
-#                                                                      Pensions Signals
-# -------------------------------------------------------------------------------------
+# Pensions Signals
 @receiver(post_save, sender=pension.Pension)
 @receiver(post_delete, sender=pension.Pension)
 @receiver(post_save, sender=bookkeeping.PensionWorth)
@@ -83,9 +77,7 @@ def pension_type_signal(sender: object, instance: pension.PensionType, *args, **
     signals_service.sync_pensions(signals_service.journal_user(instance))
 
 
-# -------------------------------------------------------------------------------------
-#                                                     Update Journal first_record field
-# -------------------------------------------------------------------------------------
+# Update Journal first_record field
 @receiver(post_save, sender=income.Income)
 @receiver(post_save, sender=expense.Expense)
 def update_journal_first_record(sender, instance, created, **kwargs):

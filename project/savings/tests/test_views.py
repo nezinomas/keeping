@@ -283,9 +283,7 @@ def test_savings_list_price_converted_with_thousands(client_logged):
     assert "1.000,00" in actual
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         Saving Delete
-# -------------------------------------------------------------------------------------
+# Saving Delete
 def test_view_saving_delete_func():
     view = resolve("/savings/delete/1/")
 
@@ -355,9 +353,7 @@ def test_savings_delete_other_journal_post_form(client_logged, second_user):
     assert Saving.objects.all().count() == 1
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Saving Type
-# ----------------------------------------------------------------------------
+# Saving Type
 def test_type_load_form_200(client_logged):
     url = reverse("savings:type_new")
 

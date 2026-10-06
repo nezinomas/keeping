@@ -13,9 +13,7 @@ from .factories import SavingTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Saving Type
-# ----------------------------------------------------------------------------
+# Saving Type
 def test_saving_type_init(main_user):
     SavingTypeForm(user=main_user)
 
@@ -283,9 +281,7 @@ def test_saving_type_title_slug_rules(main_user, title, message):
     assert form.errors["title"] == [message]
 
 
-# ----------------------------------------------------------------------------
-#                                                                       Saving
-# ----------------------------------------------------------------------------
+# Saving
 def test_saving_init(main_user):
     SavingForm(user=main_user)
 

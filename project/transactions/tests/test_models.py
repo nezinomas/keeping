@@ -22,9 +22,7 @@ from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFacto
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Transaction
-# ----------------------------------------------------------------------------
+# Transaction
 def test_transaction_str():
     t = TransactionFactory.build()
 
@@ -442,9 +440,7 @@ def test_transaction_balance_expenses(main_user, transactions):
     assert actual[3]["category_id"] == 2
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Saving Close
-# ----------------------------------------------------------------------------
+# Saving Close
 def test_saving_close_str():
     s = SavingCloseFactory.build()
 
@@ -840,9 +836,7 @@ def test_saving_close_balance_expenses(main_user, savings_close):
     assert actual[1]["category_id"] == 1
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Saving Change
-# ----------------------------------------------------------------------------
+# Saving Change
 def test_savings_change_str():
     s = SavingChangeFactory.build()
 

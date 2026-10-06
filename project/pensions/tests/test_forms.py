@@ -9,9 +9,7 @@ from .factories import PensionTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  PensionType
-# ----------------------------------------------------------------------------
+# PensionType
 def test_pension_type_init(main_user):
     PensionTypeForm(user=main_user)
 
@@ -95,9 +93,7 @@ def test_pensiong_type_unique_name(main_user):
     assert not form.is_valid()
 
 
-# ----------------------------------------------------------------------------
-#                                                                      Pension
-# ----------------------------------------------------------------------------
+# Pension
 def test_pension_init(main_user):
     PensionForm(user=main_user)
 
