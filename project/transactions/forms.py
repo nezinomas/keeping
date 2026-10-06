@@ -12,8 +12,8 @@ from ..core.mixins.forms import YearBetweenMixin
 from ..savings.services.model_services import (
     SavingTypeModelService,
 )
+from .close_rules import CloseBox
 from .models import SavingChange, SavingClose, Transaction
-from .services.close_year import CloseBox
 
 
 class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
