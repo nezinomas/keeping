@@ -1217,3 +1217,11 @@ def test_saving_balance_shows_no_profit_for_a_sell_after_the_close_year():
     )
 
     assert obj.shows_profit is False
+
+
+def test_saving_journal_is_its_types(second_user):
+    journal = second_user.journal
+
+    obj = SavingFactory.build(saving_type=SavingTypeFactory(journal=journal))
+
+    assert obj.journal == journal

@@ -39,6 +39,10 @@ class Pension(models.Model):
     def __str__(self):
         return f"{(self.date)}: {self.pension_type}"
 
+    @property
+    def journal(self):
+        return self.pension_type.journal
+
 
 class PensionBalance(ShowsProfitMixin, models.Model):
     fund_field = "pension_type"

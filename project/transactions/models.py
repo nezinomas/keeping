@@ -33,6 +33,10 @@ class Transaction(models.Model):
         _to = f"{self.to_account}: {money(self.price)}"
         return f"{_from} -> {_to}"
 
+    @property
+    def journal(self):
+        return self.from_account.journal
+
 
 class FundMove:
     """A move out of a fund; the receiver reads `close_rule` (the form's word) once
@@ -82,6 +86,10 @@ class SavingClose(FundMove, models.Model):
         _to = f"{self.to_account}: {money(self.price)}"
         return f"{_from} -> {_to}"
 
+    @property
+    def journal(self):
+        return self.from_account.journal
+
 
 class SavingChange(FundMove, models.Model):
     date = models.DateField()
@@ -105,3 +113,7 @@ class SavingChange(FundMove, models.Model):
         _from = f"{self.date} {self.from_account}"
         _to = f"{self.to_account}: {money(self.price)}"
         return f"{_from} -> {_to}"
+
+    @property
+    def journal(self):
+        return self.from_account.journal
