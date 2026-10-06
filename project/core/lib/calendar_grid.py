@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 
 from .day_stats import Stats
 from .translation import month_names
@@ -60,11 +61,10 @@ class CalendarGrid:
     @classmethod
     def build(
         cls,
-        year: int,
-        daily_data: list[dict] | None = None,
+        boundary: YearBoundary,
+        daily_data: Sequence[dict] = (),
         latest_past_date: date | None = None,
-        today: date | None = None,
-        quantity_title: str | None = None,
+        quantity_title: str = _lazy("Quantity"),
         empty_title: str = "",
         unit: str = "",
         # no thresholds means presence, not a scale nobody configured
@@ -74,10 +74,7 @@ class CalendarGrid:
         low_title: str = "",
         high_title: str = "",
     ) -> CalendarYearViewModel:
-        boundary = YearBoundary.for_year(year, today)
         today = boundary.today
-        daily_data = daily_data or []
-        quantity_title = quantity_title or _("Quantity")
 
         val_by_date = {row["date"]: row.get(value_key, 0.0) for row in daily_data}
         qty_by_date = {
@@ -87,7 +84,7 @@ class CalendarGrid:
         gap_by_date = {}
         if daily_data:
             gap_by_date = Stats(
-                year=year, data=daily_data, past_latest=latest_past_date
+                data=daily_data, past_latest=latest_past_date
             ).gap_by_date()
 
         today_gap = 0

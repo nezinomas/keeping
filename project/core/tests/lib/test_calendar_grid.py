@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.utils import translation
 from django.utils.translation import gettext as _
 
 from ...lib.calendar_grid import (
@@ -10,6 +11,7 @@ from ...lib.calendar_grid import (
     CalendarMonthViewModel,
     CalendarYearViewModel,
 )
+from ...lib.year_boundary import YearBoundary
 
 pytestmark = pytest.mark.django_db
 
@@ -18,7 +20,7 @@ THRESHOLDS = (2.0, 4.0, 6.0)
 
 @time_machine.travel("1999-06-15")
 def test_calendar_grid_empty_data():
-    grid = CalendarGrid.build(1999)
+    grid = CalendarGrid.build(YearBoundary.for_year(1999))
 
     assert isinstance(grid, CalendarYearViewModel)
     assert len(grid.months) == 12
@@ -35,9 +37,8 @@ def test_calendar_grid_levels_and_labels():
         {"date": date(1999, 1, 4), "stdav": 7.0, "qty": 2.8},
     ]
     grid = CalendarGrid.build(
-        1999,
+        YearBoundary(1999, date(1999, 12, 31)),
         daily_data=daily,
-        today=date(1999, 12, 31),
         thresholds=THRESHOLDS,
         value_key="stdav",
     )
@@ -56,7 +57,7 @@ def test_calendar_grid_levels_and_labels():
 def test_calendar_grid_custom_quantity_title():
     daily = [{"date": date(1999, 1, 1), "qty": 5.0}]
     grid = CalendarGrid.build(
-        1999, daily_data=daily, today=date(1999, 12, 31), quantity_title="Count"
+        YearBoundary(1999, date(1999, 12, 31)), daily_data=daily, quantity_title="Count"
     )
 
     jan_days = grid.months[0].days
@@ -65,7 +66,7 @@ def test_calendar_grid_custom_quantity_title():
 
 @time_machine.travel("1999-06-15")
 def test_build_empty_returns_full_year():
-    grid = CalendarGrid.build(1999, daily_data=[])
+    grid = CalendarGrid.build(YearBoundary.for_year(1999), daily_data=[])
 
     assert isinstance(grid, CalendarYearViewModel)
     assert len(grid.months) == 12
@@ -78,7 +79,7 @@ def test_build_empty_returns_full_year():
 
 
 def test_build_month_metadata():
-    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 12, 31))
+    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 12, 31)), daily_data=[])
 
     jan = grid.months[0]
     assert jan.number == 1
@@ -102,9 +103,8 @@ def test_build_all_levels_and_labels():
 
     days = (
         CalendarGrid.build(
-            1999,
+            YearBoundary(1999, date(1999, 12, 31)),
             daily_data=daily,
-            today=date(1999, 12, 31),
             thresholds=THRESHOLDS,
             value_key="stdav",
             empty_title=_("No drink"),
@@ -129,10 +129,9 @@ def test_build_gaps_with_latest_past_date():
         {"date": date(1999, 1, 15), "stdav": 2.0, "qty": 1.0},
     ]
     grid = CalendarGrid.build(
-        1999,
+        YearBoundary(1999, date(1999, 12, 31)),
         daily_data=daily,
         latest_past_date=date(1999, 1, 5),
-        today=date(1999, 12, 31),
     )
 
     jan_days = grid.months[0].days
@@ -148,7 +147,7 @@ def test_build_gaps_with_latest_past_date():
 
 
 def test_build_today_and_future_flags():
-    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 6, 15))
+    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 6, 15)), daily_data=[])
 
     june = grid.months[5].days
     assert june[14].is_today is True
@@ -159,7 +158,7 @@ def test_build_today_and_future_flags():
 
 def test_build_today_without_record_shows_date_and_gap():
     daily = [{"date": date(1999, 6, 5), "stdav": 1.0, "qty": 0.5}]
-    grid = CalendarGrid.build(1999, daily_data=daily, today=date(1999, 6, 15))
+    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 6, 15)), daily_data=daily)
 
     june_days = grid.months[5].days
     today_day = june_days[14]
@@ -173,10 +172,9 @@ def test_build_today_without_record_shows_date_and_gap():
 
 def test_build_today_without_record_uses_latest_past_date():
     grid = CalendarGrid.build(
-        1999,
+        YearBoundary(1999, date(1999, 1, 10)),
         daily_data=[],
         latest_past_date=date(1998, 12, 1),
-        today=date(1999, 1, 10),
     )
 
     jan_days = grid.months[0].days
@@ -190,34 +188,34 @@ def test_build_today_without_record_uses_latest_past_date():
 
 
 def test_build_other_year_has_no_future_days():
-    grid = CalendarGrid.build(1998, daily_data=[], today=date(1999, 6, 15))
+    grid = CalendarGrid.build(YearBoundary(1998, date(1999, 6, 15)), daily_data=[])
 
     assert all(not d.is_future for m in grid.months for d in m.days)
 
 
 def test_a_dry_day_is_labelled_rather_than_left_blank():
     grid = CalendarGrid.build(
-        1999, daily_data=[], today=date(1999, 12, 31), empty_title=_("No drink")
+        YearBoundary(1999, date(1999, 12, 31)), daily_data=[], empty_title=_("No drink")
     )
 
     assert grid.months[0].days[0].label == f"1999-01-01\n{_('No drink')}"
 
 
 def test_an_empty_day_with_no_word_for_empty_is_labelled_with_its_date_alone():
-    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 12, 31))
+    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 12, 31)), daily_data=[])
 
     assert grid.months[0].days[0].label == "1999-01-01"
 
 
 def test_a_future_day_carries_no_label():
-    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 6, 15))
+    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 6, 15)), daily_data=[])
 
     assert grid.months[5].days[15].label == ""
 
 
 def test_a_days_speech_is_its_label_on_one_line():
     daily = [{"date": date(1999, 1, 1), "stdav": 1.0, "qty": 0.4}]
-    grid = CalendarGrid.build(1999, daily_data=daily, today=date(1999, 12, 31))
+    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 12, 31)), daily_data=daily)
 
     qty_str = _("Quantity")
     gap_str = _("Gap")
@@ -228,23 +226,22 @@ def test_a_days_speech_is_its_label_on_one_line():
 
 def test_legend_bounds_name_every_level():
     grid = CalendarGrid.build(
-        1999, daily_data=[], today=date(1999, 12, 31), thresholds=THRESHOLDS
+        YearBoundary(1999, date(1999, 12, 31)), daily_data=[], thresholds=THRESHOLDS
     )
 
     assert grid.legend.bounds == ("0", "<2", "2-4", "4-6", "≥6")
 
 
 def test_without_thresholds_the_legend_has_two_steps():
-    grid = CalendarGrid.build(1999, daily_data=[], today=date(1999, 12, 31))
+    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 12, 31)), daily_data=[])
 
     assert grid.legend.bounds == ("0", "≥1")
 
 
 def test_legend_carries_the_words_at_either_end_of_the_scale():
     grid = CalendarGrid.build(
-        1999,
+        YearBoundary(1999, date(1999, 12, 31)),
         daily_data=[],
-        today=date(1999, 12, 31),
         low_title="nothing",
         high_title="plenty",
     )
@@ -255,7 +252,7 @@ def test_legend_carries_the_words_at_either_end_of_the_scale():
 
 def test_legend_carries_the_unit_the_levels_are_read_in():
     grid = CalendarGrid.build(
-        1999, daily_data=[], today=date(1999, 12, 31), unit="Std Av"
+        YearBoundary(1999, date(1999, 12, 31)), daily_data=[], unit="Std Av"
     )
 
     assert grid.legend.unit == "Std Av"
@@ -267,12 +264,24 @@ def test_without_thresholds_every_day_with_a_value_is_one_level():
         {"date": date(1999, 1, 2), "qty": 99.0},
         {"date": date(1999, 1, 3), "qty": 0.0},
     ]
-    grid = CalendarGrid.build(1999, daily_data=daily, today=date(1999, 12, 31))
+    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 12, 31)), daily_data=daily)
 
     assert [d.level for d in grid.months[0].days[:3]] == [1, 1, 0]
 
 
 def test_build_a_year_not_started_yet_has_no_future_days():
-    grid = CalendarGrid.build(2000, daily_data=[], today=date(1999, 6, 15))
+    grid = CalendarGrid.build(YearBoundary(2000, date(1999, 6, 15)), daily_data=[])
 
     assert all(not d.is_future for m in grid.months for d in m.days)
+
+
+def test_the_default_quantity_title_reads_in_the_active_language():
+    daily = [{"date": date(1999, 1, 1), "qty": 5.0}]
+    boundary = YearBoundary(1999, date(1999, 12, 31))
+
+    lithuanian = CalendarGrid.build(boundary, daily).months[0].days[0].label
+    with translation.override("en"):
+        english = CalendarGrid.build(boundary, daily).months[0].days[0].label
+
+    assert "Kiekis: 5.0" in lithuanian
+    assert "Quantity: 5.0" in english
