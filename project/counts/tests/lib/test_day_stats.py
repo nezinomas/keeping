@@ -26,6 +26,6 @@ def fixture_data_db():
 def test_stats_months_aggregation_from_db(main_user, data_db):
     year = 1999
     qs = CountModelService(main_user).sum_by_day(year=year, count_type="count-type")
-    actual = Stats(year=year, data=qs).months_stats()
+    actual = Stats(data=qs).months_stats()
     expect = [3.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
     assert actual == expect
