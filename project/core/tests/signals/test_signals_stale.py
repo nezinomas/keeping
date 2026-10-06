@@ -170,7 +170,7 @@ def test_resync_query_count_with_moves_does_not_grow_with_the_funds(main_user):
     def queries():
         SavingBalance.objects.all().delete()
         with CaptureQueriesContext(connection) as context:
-            signals_service.sync_savings(instance=None, user=main_user)
+            signals_service.sync_savings(user=main_user)
         return len(context)
 
     _funds_with_moves(0, 2)

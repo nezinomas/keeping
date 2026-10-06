@@ -375,7 +375,7 @@ def _close_with_a_sell_after_a_switch_in(closed, other):
 def _resync_queries(main_user):
     SavingBalance.objects.all().delete()
     with CaptureQueriesContext(connection) as context:
-        signals_service.sync_savings(instance=None, user=main_user)
+        signals_service.sync_savings(user=main_user)
     assert SavingBalance.objects.exists()
     return len(context)
 

@@ -29,7 +29,7 @@ class RegenerateBalances(TemplateViewMixin):
             hx_trigger_name += _type.title()
 
         for _type in _types:
-            getattr(signals_service, f"sync_{_type}")(instance=None, user=request.user)
+            getattr(signals_service, f"sync_{_type}")(request.user)
 
         return http_htmx_response(hx_trigger_name)
 

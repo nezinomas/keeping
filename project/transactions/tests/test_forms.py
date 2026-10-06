@@ -701,8 +701,8 @@ def test_sell_and_switch_forms_leave_balances_a_re_sync_agrees_with(
     form.save()
     after_form = _balances()
 
-    signals_service.sync_accounts(instance=None, user=main_user)
-    signals_service.sync_savings(instance=None, user=main_user)
+    signals_service.sync_accounts(user=main_user)
+    signals_service.sync_savings(user=main_user)
 
     debit = 1010 if fee_source == SavingType.FeeSource.ACCOUNT else 1000
     assert AccountBalance.objects.get(account=bank, year=1999).expenses == debit
