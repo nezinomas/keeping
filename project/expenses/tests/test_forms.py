@@ -164,6 +164,34 @@ def test_expense_price_accepts_a_decimal_comma(main_user):
     assert form.save().price == 1210
 
 
+def test_expense_form_quantity_starts_at_one(main_user):
+    form = ExpenseForm(user=main_user)
+
+    assert form["quantity"].value() == 1
+
+
+@pytest.mark.parametrize("quantity, valid", [(0, False), (-1, False), (1, True)])
+def test_expense_form_quantity_is_at_least_one(main_user, quantity, valid):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(parent=t)
+
+    form = ExpenseForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "price": 0.01,
+            "quantity": quantity,
+            "expense_type": t.pk,
+            "expense_name": n.pk,
+            "account": a.pk,
+        },
+    )
+
+    assert form.is_valid() == valid
+    assert ("quantity" in form.errors) == (not valid)
+
+
 def test_expenses_form_blank_data(main_user):
     form = ExpenseForm(user=main_user, data={})
 
