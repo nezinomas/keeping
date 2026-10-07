@@ -5,24 +5,25 @@ register = template.Library()
 
 @register.filter
 def get_item(dictionary, key):
-    return dictionary.get(key, 0) if dictionary else None
+    return (dictionary or {}).get(key, 0)
 
 
 @register.filter
 def get_obj_attr(obj, attr):
-    _attr = None
+    value = attr
     try:
-        _attr = getattr(obj, attr)
+        value = getattr(obj, attr)
     except (AttributeError, TypeError):
-        _attr = attr
-    return _attr
+        pass
+    return value
 
 
 @register.filter
 def get_list_val(arr: list, key: int):
+    val = 0
     try:
         val = arr[key]
     except (KeyError, IndexError, TypeError):
-        val = None
+        pass
 
     return val

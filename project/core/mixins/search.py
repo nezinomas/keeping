@@ -1,5 +1,6 @@
 from django.core.exceptions import FieldError
 from django.db.models import Count, F, Sum
+from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -50,7 +51,7 @@ class SearchMixin:
                     "count",
                     "sum_price",
                     "sum_quantity",
-                    average=F("sum_price") / F("sum_quantity"),
+                    average=Coalesce(F("sum_price") / F("sum_quantity"), 0),
                 )
             )
         except (AttributeError, FieldError):
