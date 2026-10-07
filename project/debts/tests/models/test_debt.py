@@ -2,6 +2,7 @@ from datetime import date as dt
 
 import factory
 import pytest
+from django.db import IntegrityError, transaction
 from django.db.models.signals import post_save
 
 from ....accounts.services.model_services import AccountBalanceModelService
@@ -31,6 +32,11 @@ def test_debt_fields():
     assert Debt._meta.get_field("account")
     assert Debt._meta.get_field("journal")
     assert Debt._meta.get_field("remark")
+
+
+def test_debt_returned_is_never_null():
+    with pytest.raises(IntegrityError), transaction.atomic():
+        LendFactory(returned=None)
 
 
 def test_lend_related(main_user, second_user):

@@ -20,10 +20,7 @@ class Debt(models.Model):
     )
     name = models.CharField(max_length=100, validators=[MinLengthValidator(3)])
     price = models.PositiveIntegerField()
-    returned = models.PositiveIntegerField(
-        null=True,
-        default=0,
-    )
+    returned = models.PositiveIntegerField(default=0)
     closed = models.BooleanField(default=False)
     remark = models.TextField(max_length=500, blank=True)
     account = models.ForeignKey(
