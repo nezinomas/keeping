@@ -1,11 +1,15 @@
-from datetime import date, datetime
-from zoneinfo import ZoneInfo
+from datetime import date
 
 import pytest
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 
-from ....core.tests.signals.helpers import YEAR, buy, sell, worth
+from ....core.tests.signals.helpers import (
+    YEAR,
+    buy,
+    sell,
+    worth,
+    worth_date,
+)
+from ....core.tests.utils import count_queries
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingTypeFactory
@@ -106,7 +110,7 @@ def test_pensions_ii_counts_only_the_rows_that_show_a_profit(main_user):
     PensionWorthFactory(
         pension_type=shown,
         price=12000,
-        date=datetime(YEAR, 12, 31, 12, tzinfo=ZoneInfo("Europe/Vilnius")),
+        date=worth_date(),
     )
 
     assert _figures(_chart(main_user, "pensions2")) == {
@@ -144,9 +148,7 @@ def _grow(years):
 
 def _queries(user, years):
     _grow(years)
-    with CaptureQueriesContext(connection) as ctx:
-        _chart(user)
-    return len(ctx)
+    return count_queries(lambda: _chart(user))
 
 
 def test_the_chart_queries_do_not_grow_with_the_years(main_user):
