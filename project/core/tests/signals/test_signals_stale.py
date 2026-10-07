@@ -2,12 +2,12 @@ from datetime import date
 
 import pytest
 
+from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import PensionWorthFactory
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingBalance
 from ....savings.tests.factories import SavingTypeFactory
-from ...services import signals_service
 from ..utils import count_queries
 from .helpers import (
     YEAR,
@@ -158,7 +158,7 @@ def _funds_with_moves(first, count):
 def test_resync_query_count_with_moves_does_not_grow_with_the_funds(main_user):
     def queries():
         SavingBalance.objects.all().delete()
-        return count_queries(lambda: signals_service.sync_savings(user=main_user))
+        return count_queries(lambda: balance_sources.sync_savings(user=main_user))
 
     _funds_with_moves(0, 2)
     few = queries()

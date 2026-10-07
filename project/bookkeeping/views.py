@@ -22,7 +22,7 @@ from ..core.mixins.views import (
 )
 from ..pensions.services.model_services import PensionTypeModelService
 from ..savings.services.model_services import SavingTypeModelService
-from . import forms, services
+from . import balance_sources, forms, services
 from .lib import no_incomes
 from .mixins.month import MonthMixin
 from .services.detailed.shares import with_subtitles
@@ -84,6 +84,7 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     modal_form_title = _("Worth of accounts")
     url = reverse_lazy("bookkeeping:accounts_worth_new")
     hx_trigger_django = "afterAccountWorthNew"
+    balance_sync = staticmethod(balance_sources.sync_accounts)
 
 
 class Savings(TemplateViewMixin):
@@ -102,6 +103,7 @@ class SavingsWorthNew(FormsetMixin, CreateViewMixin):
     modal_form_title = _("Worth of savings")
     url = reverse_lazy("bookkeeping:savings_worth_new")
     hx_trigger_django = "afterSavingWorthNew"
+    balance_sync = staticmethod(balance_sources.sync_savings)
 
 
 class Pensions(TemplateViewMixin):
@@ -121,6 +123,7 @@ class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     modal_form_title = _("Worth of pensions")
     url = reverse_lazy("bookkeeping:pensions_worth_new")
     hx_trigger_django = "afterPensionWorthNew"
+    balance_sync = staticmethod(balance_sources.sync_pensions)
 
 
 class Wealth(TemplateViewMixin):

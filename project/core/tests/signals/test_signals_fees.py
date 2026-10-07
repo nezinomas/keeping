@@ -4,6 +4,7 @@ import pytest
 
 from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
+from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import SavingWorthFactory
 from ....incomes.tests.factories import IncomeFactory
 from ....savings.models import SavingBalance, SavingType
@@ -11,7 +12,6 @@ from ....savings.services.model_services import SavingModelService
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ...lib.db_sync import SAVING_FIELDS
-from ...services import signals_service
 from ...tests.utils import count_queries
 from .helpers import balance, worth_date
 
@@ -249,7 +249,7 @@ def test_switching_a_type_re_syncs_only_its_own_journal(main_user, second_user, 
     assert _account_balance(theirs).expenses == 909
     # a re-sync of their journal would put 909 back
     AccountBalance.objects.filter(account=theirs).update(expenses=1)
-    sync = mocker.spy(signals_service, "sync_accounts")
+    sync = mocker.spy(balance_sources, "sync_accounts")
 
     mine.fee_source = SavingType.FeeSource.ACCOUNT
     mine.save()
@@ -274,8 +274,8 @@ def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
     SavingChangeFactory(from_account=finbee, to_account=fund, price=100, fee=5)
     accounts, savings = _table(AccountBalance), _table(SavingBalance)
 
-    signals_service.sync_accounts(user=main_user)
-    signals_service.sync_savings(user=main_user)
+    balance_sources.sync_accounts(user=main_user)
+    balance_sources.sync_savings(user=main_user)
 
     assert _table(AccountBalance) == accounts
     assert _table(SavingBalance) == savings
@@ -298,7 +298,7 @@ def _purchases_of_both_fee_sources(count):
     "run",
     [
         lambda user: list(SavingModelService(user).expenses()),
-        lambda user: signals_service.sync_accounts(user=user),
+        lambda user: balance_sources.sync_accounts(user=user),
     ],
     ids=["expenses", "re-sync"],
 )

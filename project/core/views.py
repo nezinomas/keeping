@@ -1,11 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 
+from ..bookkeeping import balance_sources
 from .lib.date import years
 from .lib.utils import get_safe_redirect, http_htmx_response
 from .mixins.views import TemplateViewMixin
-from .services import signals_service
-from .services.signals_service import BalanceKind
 
 
 @login_required()
@@ -20,15 +19,20 @@ def set_year(request, year):
 
 class RegenerateBalances(TemplateViewMixin):
     def get(self, request, *args, **kwargs):
-        kinds = list(BalanceKind)
+        balances = {
+            "accounts": (balance_sources.sync_accounts, "afterSignalAccounts"),
+            "savings": (balance_sources.sync_savings, "afterSignalSavings"),
+            "pensions": (balance_sources.sync_pensions, "afterSignalPensions"),
+        }
+        syncs = [sync for sync, _ in balances.values()]
         hx_trigger_name = "afterSignal"
 
-        if request.GET.get("type") in kinds:
-            kinds = [BalanceKind(request.GET["type"])]
-            hx_trigger_name = kinds[0].trigger
+        if (kind := request.GET.get("type")) in balances:
+            sync, hx_trigger_name = balances[kind]
+            syncs = [sync]
 
-        for kind in kinds:
-            signals_service.sync(kind, request.user)
+        for sync in syncs:
+            sync(request.user)
 
         return http_htmx_response(hx_trigger_name)
 

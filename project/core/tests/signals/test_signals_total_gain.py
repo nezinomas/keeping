@@ -2,13 +2,13 @@ from datetime import date
 
 import pytest
 
+from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import PensionWorthFactory
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingBalance, SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
-from ...services import signals_service
 from ...tests.utils import count_queries
 from .helpers import (
     YEAR,
@@ -339,7 +339,7 @@ def _close_with_a_sell_after_a_switch_in(closed, other):
 
 def _resync_queries(main_user):
     SavingBalance.objects.all().delete()
-    count = count_queries(lambda: signals_service.sync_savings(user=main_user))
+    count = count_queries(lambda: balance_sources.sync_savings(user=main_user))
     assert SavingBalance.objects.exists()
     return count
 

@@ -3,8 +3,6 @@ from django.core.exceptions import ImproperlyConfigured
 from mock import ANY, Mock
 
 from ...mixins.formset import BaseTypeFormSet, FormsetMixin
-from ...services import signals_service
-from ...services.signals_service import BalanceKind
 from ..utils import setup_view
 
 
@@ -338,9 +336,11 @@ def test_post_saves_valid_prices_and_triggers_signals(mocker):
     mock_bulk_create = mocker.patch.object(dummy_service.objects, "bulk_create")
     view.service_class = mocker.Mock(return_value=dummy_service)
 
-    mocker.patch.object(DummyModel, "balance_kind", BalanceKind.SAVINGS, create=True)
-    mock_sync = mocker.patch.object(signals_service, "sync")
-    mocker.patch.object(signals_service, "journal_user", return_value="journal_user")
+    mock_sync = mocker.Mock()
+    mocker.patch.object(TestView, "balance_sync", mock_sync, create=True)
+    mocker.patch(
+        "project.core.mixins.formset.journal_user", return_value="journal_user"
+    )
 
     # Execute
     view.post(mocker.Mock())
@@ -353,7 +353,7 @@ def test_post_saves_valid_prices_and_triggers_signals(mocker):
     assert created_objects_list[0].kwargs == {"price": 100, "account": "A1"}
 
     # 2. Prove the view's kind was synced once, for the journal's user
-    mock_sync.assert_called_once_with(BalanceKind.SAVINGS, "journal_user")
+    mock_sync.assert_called_once_with("journal_user")
 
 
 # ==========================================

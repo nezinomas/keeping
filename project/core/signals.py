@@ -1,7 +1,8 @@
 from django.db import models
 from django.db.models.signals import post_delete, post_save
 
-from .services import signals_service
+from ..bookkeeping import balance_sources
+from .services.signals_service import journal_user
 
 
 def connect_save_and_delete(receiver, *senders):
@@ -11,15 +12,15 @@ def connect_save_and_delete(receiver, *senders):
 
 
 def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
-    signals_service.sync_accounts(signals_service.journal_user(instance))
+    balance_sources.sync_accounts(journal_user(instance))
 
 
 def savings_signal(sender: object, instance: models.Model, *args, **kwargs):
-    signals_service.sync_savings(signals_service.journal_user(instance))
+    balance_sources.sync_savings(journal_user(instance))
 
 
 def pensions_signal(sender: object, instance: models.Model, *args, **kwargs):
-    signals_service.sync_pensions(signals_service.journal_user(instance))
+    balance_sources.sync_pensions(journal_user(instance))
 
 
 def update_journal_first_record(sender, instance, created, **kwargs):

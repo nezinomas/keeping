@@ -6,7 +6,7 @@ from django.test.utils import CaptureQueriesContext
 
 from ....accounts.services.model_services import AccountBalanceModelService
 from ....accounts.tests.factories import AccountFactory
-from ....core.services import signals_service as signals_service_module
+from ....bookkeeping import balance_sources
 from ...models import Expense, ExpenseKeyword
 from ...receipts.reader import ReceiptReader
 from ...receipts.receipt import ReceiptLine
@@ -533,7 +533,7 @@ def test_receipt_import_rolls_back_a_repointed_keyword_on_failure(main_user, moc
 
 
 def test_receipt_import_of_no_lines_saves_nothing_and_skips_the_sync(main_user, mocker):
-    sync = mocker.patch("project.core.signals.signals_service.sync_accounts")
+    sync = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
 
     expenses = ReceiptImport.save(
         lines=(),
@@ -557,8 +557,8 @@ def test_receipt_import_syncs_balance_once_and_updates_journal_first_record(
     account = AccountFactory(journal=journal)
 
     sync = mocker.patch(
-        "project.core.signals.signals_service.sync_accounts",
-        wraps=signals_service_module.sync_accounts,
+        "project.bookkeeping.balance_sources.sync_accounts",
+        wraps=balance_sources.sync_accounts,
     )
 
     lines = (

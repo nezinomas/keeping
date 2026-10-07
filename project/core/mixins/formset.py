@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from functools import partial
 
 from django.core.exceptions import ImproperlyConfigured
@@ -6,7 +7,8 @@ from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
 
 from ...core.lib.utils import http_htmx_response
-from ...core.services import signals_service
+from ...core.services.signals_service import journal_user
+from ...users.models import User
 
 
 class BaseTypeFormSet(BaseModelFormSet):
@@ -43,6 +45,7 @@ class FormsetMixin:
     template_name = "core/generic_formset.html"
     service_class = None
     category_service_class = None
+    balance_sync: Callable[[User], None]
 
     @cached_property
     def service_instance(self):
@@ -96,9 +99,7 @@ class FormsetMixin:
             if form.cleaned_data.get("price") is not None
         ]:
             self.service_instance.objects.bulk_create(objects)
-            signals_service.sync(
-                self.model_class.balance_kind, signals_service.journal_user(objects[0])
-            )
+            self.balance_sync(journal_user(objects[0]))
 
         return http_htmx_response(self.get_hx_trigger_django())
 
