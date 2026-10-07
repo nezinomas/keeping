@@ -21,9 +21,7 @@ small_gif = (
 )
 
 
-# ----------------------------------------------------------------------------
-#                                                                      Expense
-# ----------------------------------------------------------------------------
+# Expense
 def test_expense_form_init(main_user):
     ExpenseForm(user=main_user, data={})
 
@@ -305,9 +303,7 @@ def test_exepense_form_necessary_type_and_exception(main_user):
     }
 
 
-# ----------------------------------------------------------------------------
-#                                                    ExpenseNameChoicesMixin
-# ----------------------------------------------------------------------------
+# ExpenseNameChoicesMixin
 def test_expense_name_choices_mixin_hx_get_default(main_user):
     form = ExpenseForm(user=main_user).as_p()
 
@@ -386,9 +382,7 @@ def test_expense_name_choices_mixin_posted_type_overrides_initial(main_user):
     assert list(form.fields["expense_name"].queryset) == [n2]
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Expense Type
-# ----------------------------------------------------------------------------
+# Expense Type
 def test_expense_type_init(main_user):
     ExpenseTypeForm(user=main_user)
 
@@ -480,9 +474,7 @@ def test_form_expense_type_and_second_user(main_user, second_user):
     assert '<option value="2">T2</option>' not in form
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Expense Name
-# ----------------------------------------------------------------------------
+# Expense Name
 def test_expense_name_init(main_user):
     ExpenseNameForm(user=main_user)
 

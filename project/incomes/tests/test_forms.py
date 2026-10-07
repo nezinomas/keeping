@@ -11,9 +11,7 @@ from .factories import IncomeTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Income Type
-# ----------------------------------------------------------------------------
+# Income Type
 def test_income_type_init(main_user):
     IncomeTypeForm(user=main_user)
 
@@ -111,9 +109,7 @@ def test_form_income_type_and_second_user(main_user, second_user):
     assert '<option value="2">T2</option>' not in form
 
 
-# ----------------------------------------------------------------------------
-#                                                                       Income
-# ----------------------------------------------------------------------------
+# Income
 def test_income_init(main_user):
     IncomeForm(user=main_user)
 
