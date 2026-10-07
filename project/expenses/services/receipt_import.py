@@ -6,7 +6,7 @@ from django.db import transaction
 
 from ...core.signals import accounts_signal, update_journal_first_record
 from ..keywords import normalise_keyword
-from ..models import Expense, ExpenseKeyword
+from ..models import DEFAULT_QUANTITY, Expense, ExpenseKeyword
 from ..receipts.receipt import ReceiptLine
 
 if TYPE_CHECKING:
@@ -66,8 +66,8 @@ class ExpenseGroups:
     ) -> ExpenseGroup:
         price = sum(row.line.price for row in rows)
         quantity = sum(row.line.amount for row in rows if not row.line.is_deposit)
-        if quantity == 0:
-            quantity = 1
+        if not quantity:
+            quantity = DEFAULT_QUANTITY
 
         return ExpenseGroup(expense_name=expense_name, price=price, quantity=quantity)
 
