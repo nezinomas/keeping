@@ -62,9 +62,7 @@ TAB_TABLE_PANELS = {
 }
 
 
-# -------------------------------------------------------------------------------------
-#                                                                                  Tabs
-# -------------------------------------------------------------------------------------
+# Tabs
 def test_index_func():
     view = resolve("/plans/")
 
@@ -171,9 +169,7 @@ def test_nav_offers_every_tab(client_logged):
         assert f'hx-get="{tab.url}"' in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                                                 Cards
-# -------------------------------------------------------------------------------------
+# Cards
 @pytest.mark.parametrize(
     "factory, url, present, absent",
     [
@@ -211,9 +207,7 @@ def test_tab_renders_its_cards_in_lithuanian(
         assert f'<div class="trend-card__label">{label}</div>' not in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                                            Bottom bar
-# -------------------------------------------------------------------------------------
+# Bottom bar
 def test_the_copy_pill_is_on_every_tab(client_logged):
     content = client_logged.get(reverse("plans:index")).content.decode()
     link = reverse("plans:copy")
@@ -325,9 +319,7 @@ def test_every_tab_offers_its_own_add_pill(client_logged, tab):
     assert label in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        IncomePlan Lis
-# -------------------------------------------------------------------------------------
+# IncomePlan Lis
 def test_income_tab_edit_delete_urls(client_logged, main_user):
     obj = IncomePlanFactory()
 
@@ -347,9 +339,7 @@ def test_income_tab_edit_delete_urls(client_logged, main_user):
     assert delete in actual
 
 
-# -------------------------------------------------------------------------------------
-#                                                              IncomePlan create/update
-# -------------------------------------------------------------------------------------
+# IncomePlan create/update
 def test_income_new_func():
     view = resolve("/plans/incomes/new/")
 
@@ -563,9 +553,7 @@ def test_income_tab_price_converted_in_template(client_logged):
     assert actual.count("0,02") == 12
 
 
-# -------------------------------------------------------------------------------------
-#                                                                     IncomePlan delete
-# -------------------------------------------------------------------------------------
+# IncomePlan delete
 
 
 def test_incomes_delete_func():
@@ -668,9 +656,7 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
     assert IncomePlan.objects.all().count() == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        ExpensePlan Lis
-# -------------------------------------------------------------------------------------
+# ExpensePlan Lis
 def test_expense_tab_edit_delete_urls(client_logged, main_user):
     obj = ExpensePlanFactory()
 
@@ -690,9 +676,7 @@ def test_expense_tab_edit_delete_urls(client_logged, main_user):
     assert delete in actual
 
 
-# -------------------------------------------------------------------------------------
-#                                                              ExpensePlan create/update
-# -------------------------------------------------------------------------------------
+# ExpensePlan create/update
 def test_expense_new_func():
     view = resolve("/plans/expenses/new/")
 
@@ -909,9 +893,7 @@ def test_expense_tab_price_converted_in_template(client_logged):
     assert actual.count("0,02") == 12
 
 
-# -------------------------------------------------------------------------------------
-#                                                                     ExpensePlan delete
-# -------------------------------------------------------------------------------------
+# ExpensePlan delete
 
 
 def test_expenses_delete_func():
@@ -1016,9 +998,7 @@ def test_expenses_delete_other_journal_post_form(client_logged, second_user):
     assert ExpensePlan.objects.all().count() == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        SavingPlan Lis
-# -------------------------------------------------------------------------------------
+# SavingPlan Lis
 def test_saving_tab_edit_delete_urls(client_logged, main_user):
     obj = SavingPlanFactory()
 
@@ -1038,9 +1018,7 @@ def test_saving_tab_edit_delete_urls(client_logged, main_user):
     assert delete in actual
 
 
-# -------------------------------------------------------------------------------------
-#                                                              SavingPlan create/update
-# -------------------------------------------------------------------------------------
+# SavingPlan create/update
 def test_saving_new_func():
     view = resolve("/plans/savings/new/")
 
@@ -1254,9 +1232,7 @@ def test_saving_tab_price_converted_in_template(client_logged):
     assert actual.count("0,02") == 12
 
 
-# -------------------------------------------------------------------------------------
-#                                                                     SavingPlan delete
-# -------------------------------------------------------------------------------------
+# SavingPlan delete
 
 
 def test_saving_delete_func():
@@ -1359,9 +1335,7 @@ def test_saving_delete_other_journal_post_form(client_logged, second_user):
     assert SavingPlan.objects.all().count() == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          DayPlan List
-# -------------------------------------------------------------------------------------
+# DayPlan List
 @time_machine.travel("2026-09-15")
 def test_day_tab_cards_read_the_current_month_in_the_selected_plan_year(
     client_logged, main_user
@@ -1402,9 +1376,7 @@ def test_day_tab_edit_delete_urls(client_logged, main_user):
     assert delete in actual
 
 
-# -------------------------------------------------------------------------------------
-#                                                                 DayPlan create/update
-# -------------------------------------------------------------------------------------
+# DayPlan create/update
 def test_day_new_func():
     view = resolve("/plans/day/new/")
 
@@ -1641,9 +1613,7 @@ def test_day_tab_calculations_marks_the_day_plan_cell_above_the_sum_per_day(
     assert actual.count("plans-table__over") == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        DayPlan delete
-# -------------------------------------------------------------------------------------
+# DayPlan delete
 def test_day_delete_func():
     view = resolve("/plans/day/delete/1/")
 
@@ -1702,9 +1672,7 @@ def test_day_delete_other_journal_post_form(client_logged, second_user):
     assert DayPlan.objects.all().count() == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                    NecessaryPlan List
-# -------------------------------------------------------------------------------------
+# NecessaryPlan List
 def test_necessary_tab_edit_delete_urls(client_logged, main_user):
     obj = NecessaryPlanFactory()
 
@@ -1732,9 +1700,7 @@ def test_necessary_tab_edit_delete_urls(client_logged, main_user):
     assert delete in actual
 
 
-# -------------------------------------------------------------------------------------
-#                                                           NecessaryPlan create/update
-# -------------------------------------------------------------------------------------
+# NecessaryPlan create/update
 def test_necessary_new_func():
     view = resolve("/plans/necessary/new/")
 
@@ -1906,9 +1872,7 @@ def test_necessary_tab_price_converted_in_template(client_logged):
     assert actual.count("0,05") == 12
 
 
-# -------------------------------------------------------------------------------------
-#                                                                  NecessaryPlan delete
-# -------------------------------------------------------------------------------------
+# NecessaryPlan delete
 def test_necessary_delete_func():
     view = resolve("/plans/necessary/delete/1234/13/title/")
 
@@ -2006,9 +1970,7 @@ def test_necessary_delete_other_journal_post_form(client_logged, second_user):
     assert NecessaryPlan.objects.all().count() == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                            Copy Plans
-# -------------------------------------------------------------------------------------
+# Copy Plans
 def test_copy_func():
     view = resolve("/plans/copy/")
 
@@ -2058,9 +2020,7 @@ def test_copy_year_to_same_as_user_year(main_user, client_logged):
     assert "reload" in response.headers["HX-Trigger"]
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Query counts
-# -------------------------------------------------------------------------------------
+# Query counts
 def _tab_queries(client, tab):
     with CaptureQueriesContext(connection) as queries:
         client.get(tab.url, headers={"HX-Request": "true"})

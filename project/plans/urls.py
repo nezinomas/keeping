@@ -7,9 +7,6 @@ app_name = App_name
 
 urlpatterns = [
     path("", views.TabDay.as_view(), name="index"),
-    # ----------------------------------------------------------------------------------
-    #                                                                      expenses plan
-    # ----------------------------------------------------------------------------------
     path("expenses/", views.TabExpenses.as_view(), name="tab_expenses"),
     path("expenses/new/", views.ExpensesNew.as_view(), name="expense_new"),
     path(
@@ -22,9 +19,6 @@ urlpatterns = [
         views.ExpensesDelete.as_view(),
         name="expense_delete",
     ),
-    # ----------------------------------------------------------------------------------
-    #                                                                        income plan
-    # ----------------------------------------------------------------------------------
     path("incomes/", views.TabIncomes.as_view(), name="tab_incomes"),
     path("incomes/new/", views.IncomesNew.as_view(), name="income_new"),
     path(
@@ -37,9 +31,6 @@ urlpatterns = [
         views.IncomesDelete.as_view(),
         name="income_delete",
     ),
-    # ----------------------------------------------------------------------------------
-    #                                                                        saving plan
-    # ----------------------------------------------------------------------------------
     path("savings/", views.TabSavings.as_view(), name="tab_savings"),
     path("savings/new/", views.SavingsNew.as_view(), name="saving_new"),
     path(
@@ -52,16 +43,10 @@ urlpatterns = [
         views.SavingsDelete.as_view(),
         name="saving_delete",
     ),
-    # ----------------------------------------------------------------------------------
-    #                                                                           day plan
-    # ----------------------------------------------------------------------------------
     path("day/", views.TabDay.as_view(), name="tab_day"),
     path("day/new/", views.DayNew.as_view(), name="day_new"),
     path("day/update/<int:year>/", views.DayUpdate.as_view(), name="day_update"),
     path("day/delete/<int:year>/", views.DayDelete.as_view(), name="day_delete"),
-    # ----------------------------------------------------------------------------------
-    #                                                                     necessary plan
-    # ----------------------------------------------------------------------------------
     path("necessary/new/", views.NecessaryNew.as_view(), name="necessary_new"),
     path(
         "necessary/update/<int:year>/<int:expense_type_id>/<path:title>/",
@@ -73,8 +58,5 @@ urlpatterns = [
         views.NecessaryDelete.as_view(),
         name="necessary_delete",
     ),
-    # ----------------------------------------------------------------------------------
-    #                                                                         copy plans
-    # ----------------------------------------------------------------------------------
     path("copy/", views.CopyPlans.as_view(), name="copy"),
 ]

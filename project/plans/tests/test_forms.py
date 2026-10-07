@@ -4,6 +4,7 @@ from django.forms import HiddenInput
 from django.utils.translation import gettext as _
 
 from ...core.lib.translation import month_names
+from ...core.tests.utils import count_queries
 from ..forms import (
     CopyPlanForm,
     DayPlanForm,
@@ -48,9 +49,7 @@ MONTHS = [
 ]
 
 
-# -------------------------------------------------------------------------------------
-#                                                                      Income Plan Form
-# -------------------------------------------------------------------------------------
+# Income Plan Form
 
 
 def test_income_does_not_render_user_select(main_user):
@@ -270,9 +269,7 @@ def test_income_plan_form_prevents_cross_category_pollution(main_user):
     assert form.initial.get("february") is None, "Cross-category pollution detected!"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                      Expense Plan Form
-# -------------------------------------------------------------------------------------
+# Expense Plan Form
 
 
 def test_expense_does_not_render_user_select(main_user):
@@ -479,9 +476,7 @@ def test_expense_plan_form_prevents_cross_category_pollution(main_user):
     assert form.initial.get("february") is None, "Cross-category pollution detected!"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                      Saving Plan Form
-# -------------------------------------------------------------------------------------
+# Saving Plan Form
 
 
 def test_saving_does_not_render_user_select(main_user):
@@ -687,9 +682,7 @@ def test_saving_plan_form_prevents_cross_category_pollution(main_user):
     assert form.initial.get("february") is None, "Cross-category pollution detected!"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                   Necessary Plan Form
-# -------------------------------------------------------------------------------------
+# Necessary Plan Form
 
 
 def test_necessary_does_not_render_user_select(main_user):
@@ -1000,9 +993,7 @@ def test_necessary_plan_form_prevents_cross_category_pollution(main_user):
     assert form.initial.get("february") is None, "Cross-category pollution detected!"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         Day Plan Form
-# -------------------------------------------------------------------------------------
+# Day Plan Form
 
 
 def test_day_does_not_render_user_select(main_user):
@@ -1142,9 +1133,7 @@ def test_day_updates_and_deletes_rows(main_user):
     assert DayPlan.objects.get(month=3).price == 30000  # Created as 30000
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       Copy Plans Form
-# -------------------------------------------------------------------------------------
+# Copy Plans Form
 
 
 @time_machine.travel("1999-06-01")
@@ -1264,90 +1253,55 @@ def test_copy_data(main_user):
 
 
 # A posted journal never moves a plan to another journal
-PLAN_FORMS = [
-    (
-        IncomePlanForm,
-        IncomePlan,
-        IncomePlanFactory,
-        IncomeTypeFactory,
-        "income_type",
-        {},
-    ),
-    (
-        ExpensePlanForm,
-        ExpensePlan,
-        ExpensePlanFactory,
-        ExpenseTypeFactory,
-        "expense_type",
-        {},
-    ),
-    (
-        SavingPlanForm,
-        SavingPlan,
-        SavingPlanFactory,
-        SavingTypeFactory,
-        "saving_type",
-        {},
-    ),
-    (
-        NecessaryPlanForm,
-        NecessaryPlan,
-        NecessaryPlanFactory,
-        ExpenseTypeFactory,
-        "expense_type",
-        {"title": "Rent"},
-    ),
-    (DayPlanForm, DayPlan, DayPlanFactory, None, "", {}),
-]
+def _owned_types(kind, journal):
+    return {
+        field: type_factory(title="Mine", journal=journal)
+        for field, type_factory in kind.type_factories.items()
+    }
 
 
-def _plan_data(main_user, second_user, type_factory, type_field, extra):
-    data = {"journal": second_user.journal.pk, "year": 1999, "january": 1.5, **extra}
+def _plan_data(kind, main_user, second_user):
+    types = {f: t.pk for f, t in _owned_types(kind, main_user.journal).items()}
+    return {
+        "journal": second_user.journal.pk,
+        "year": 1999,
+        "january": 1.5,
+        **kind.extra,
+        **types,
+    }
 
-    if type_factory:
-        data[type_field] = type_factory(title="Mine", journal=main_user.journal).pk
 
-    return data
+@pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
+def test_plan_create_ignores_a_posted_journal(main_user, second_user, kind):
+    data = _plan_data(kind, main_user, second_user)
 
-
-@pytest.mark.parametrize(
-    "form_class, model, factory, type_factory, type_field, extra", PLAN_FORMS
-)
-def test_plan_create_ignores_a_posted_journal(
-    main_user, second_user, form_class, model, factory, type_factory, type_field, extra
-):
-    data = _plan_data(main_user, second_user, type_factory, type_field, extra)
-
-    form = form_class(user=main_user, data=data)
+    form = kind.form(user=main_user, data=data)
 
     assert form.is_valid()
 
     form.save()
 
-    assert model.objects.count() == 1
-    assert model.objects.get().journal == main_user.journal
+    assert kind.model.objects.count() == 1
+    assert kind.model.objects.get().journal == main_user.journal
 
 
-@pytest.mark.parametrize(
-    "form_class, model, factory, type_factory, type_field, extra", PLAN_FORMS
-)
-def test_plan_edit_ignores_a_posted_journal(
-    main_user, second_user, form_class, model, factory, type_factory, type_field, extra
-):
-    data = _plan_data(main_user, second_user, type_factory, type_field, extra)
+@pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
+def test_plan_edit_ignores_a_posted_journal(main_user, second_user, kind):
+    data = _plan_data(kind, main_user, second_user)
 
-    kwargs = {"journal": main_user.journal, **extra}
-    if type_field:
-        kwargs[type_field] = type_factory(title="Mine", journal=main_user.journal)
-    obj = factory(**kwargs)
+    obj = kind.factory(
+        journal=main_user.journal,
+        **kind.extra,
+        **_owned_types(kind, main_user.journal),
+    )
 
-    form = form_class(user=main_user, instance=obj, data=data)
+    form = kind.form(user=main_user, instance=obj, data=data)
 
     assert form.is_valid()
 
     form.save()
 
-    assert set(model.objects.values_list("journal", flat=True)) == {
+    assert set(kind.model.objects.values_list("journal", flat=True)) == {
         main_user.journal.pk
     }
 
@@ -1383,3 +1337,57 @@ def test_resave_with_the_zero_month_still_empty_deletes_its_row(
 
     assert kind.model.objects.filter(month=2).exists() is False
     assert kind.model.objects.get(month=1).price == 15_000
+
+
+def _months(year, months):
+    return {"year": year, **{m: 2.5 for m in MONTHS[:months]}}
+
+
+def _free_grouping(main_user, kind, year):
+    owner = kind.factory(journal=main_user.journal, year=year - 1000)
+    grouping = _grouping_of(kind, owner)
+    owner.delete()
+    return grouping
+
+
+def _grouping_of(kind, instance):
+    return {f: instance.serializable_value(f) for f in kind.grouping}
+
+
+def _save_query_count(main_user, kind, data, **form_kwargs):
+    form = kind.form(user=main_user, data=data, **form_kwargs)
+    assert form.is_valid(), form.errors
+
+    return count_queries(form.save)
+
+
+@pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
+def test_save_create_query_count_does_not_grow_with_months(main_user, kind):
+    def count(year, months):
+        data = {**_months(year, months), **_free_grouping(main_user, kind, year)}
+        return _save_query_count(main_user, kind, data)
+
+    few = count(2001, 2)
+    many = count(2002, 12)
+
+    assert many == few
+
+
+@pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
+def test_save_update_query_count_does_not_grow_with_months(main_user, kind):
+    def stored(year, months):
+        first = kind.factory(journal=main_user.journal, year=year, month=1)
+        copied = {f: getattr(first, f) for f in kind.grouping}
+        for month in range(2, months + 1):
+            kind.factory(journal=main_user.journal, year=year, month=month, **copied)
+        return first
+
+    def count(year, months):
+        instance = stored(year, months)
+        data = {**_months(year, months), **_grouping_of(kind, instance)}
+        return _save_query_count(main_user, kind, data, instance=instance)
+
+    few = count(2001, 2)
+    many = count(2002, 12)
+
+    assert many == few

@@ -48,9 +48,7 @@ def _euro_cents(cents):
     return floatformat(int_cents_to_float(cents), "2g")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                               Pajamos
-# -------------------------------------------------------------------------------------
+# Pajamos
 def test_income_cards_titles_in_order():
     data = _data(incomes=[1000] * 12)
 
@@ -90,9 +88,7 @@ def test_income_cards_are_empty_when_no_income_plans():
     assert all("0" not in c.value for c in cards)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                              Taupymas
-# -------------------------------------------------------------------------------------
+# Taupymas
 def test_saving_cards_titles_in_order():
     data = _data(incomes=[100_000] * 12, savings=[25_000] * 12)
 
@@ -146,9 +142,7 @@ def test_saving_cards_are_empty_when_no_saving_plans_even_with_incomes():
     assert all("0" not in c.value for c in cards)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                              Išlaidos
-# -------------------------------------------------------------------------------------
+# Išlaidos
 EXPENSES_REGULAR = [1000] * 12
 EXPENSES_NECESSARY = [500] * 12
 NECESSARY = [200] * 12
@@ -292,9 +286,7 @@ def test_expense_cards_necessary_and_everyday_add_up_to_the_year():
     assert cards["Per metus"].value == _euro(year_cents)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Suma dienai
-# -------------------------------------------------------------------------------------
+# Suma dienai
 INCOMES_FOR_25_PER_DAY = [75_000] * 12
 
 
