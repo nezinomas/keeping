@@ -38,6 +38,18 @@ def test_formset(client_logged):
     assert '<option value="1" selected>Account1</option>' in actual
 
 
+def test_formset_has_one_empty_price_per_account(client_logged):
+    AccountFactory(title="A1")
+    AccountFactory(title="A2")
+
+    url = reverse("bookkeeping:accounts_worth_new")
+    response = client_logged.get(url)
+
+    prices = response.context["formset"].forms
+    assert len(prices) == 2
+    assert [form["price"].value() for form in prices] == [None, None]
+
+
 def test_formset_new(client_logged):
     i = AccountFactory()
     data = {
