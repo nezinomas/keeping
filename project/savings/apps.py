@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.db.models.signals import post_save
 
 
 class SavingsConfig(AppConfig):
@@ -10,12 +11,22 @@ class SavingsConfig(AppConfig):
             register_balance,
             register_sources,
         )
-        from ..core.signals import accounts_signal, savings_signal  # noqa: F401
+        from ..core.signals import (
+            accounts_signal,
+            connect_save_and_delete,
+            savings_signal,
+        )
+        from .models import Saving, SavingType
         from .services.model_services import (
             SavingBalanceModelService,
             SavingModelService,
             SavingTypeModelService,
         )
+        from .signals import saving_type_signal
+
+        connect_save_and_delete(accounts_signal, Saving)
+        connect_save_and_delete(savings_signal, Saving)
+        post_save.connect(saving_type_signal, sender=SavingType)
 
         accounts, savings = BalanceKind.ACCOUNTS, BalanceKind.SAVINGS
         register_sources(

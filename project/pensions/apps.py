@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.db.models.signals import post_save
 
 
 class PensionsConfig(AppConfig):
@@ -10,12 +11,17 @@ class PensionsConfig(AppConfig):
             register_balance,
             register_sources,
         )
-        from ..core.signals import pensions_signal  # noqa: F401
+        from ..core.signals import connect_save_and_delete, pensions_signal
+        from .models import Pension, PensionType
         from .services.model_services import (
             PensionBalanceModelService,
             PensionModelService,
             PensionTypeModelService,
         )
+        from .signals import pension_type_signal
+
+        connect_save_and_delete(pensions_signal, Pension)
+        post_save.connect(pension_type_signal, sender=PensionType)
 
         pensions = BalanceKind.PENSIONS
         register_sources(
