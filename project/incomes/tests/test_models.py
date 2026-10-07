@@ -18,9 +18,7 @@ from .factories import IncomeFactory, IncomeTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Income Type
-# ----------------------------------------------------------------------------
+# Income Type
 def test_income_type_str():
     i = IncomeTypeFactory.build()
 
@@ -62,9 +60,7 @@ def test_income_type_slug_unique_per_journal():
         IncomeTypeFactory(title="Bustas", journal=obj1.journal)
 
 
-# ----------------------------------------------------------------------------
-#                                                                       Income
-# ----------------------------------------------------------------------------
+# Income
 def test_income_str():
     i = IncomeFactory.build()
 

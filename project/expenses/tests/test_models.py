@@ -43,9 +43,7 @@ def expenses_more():
     )
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Expense Type
-# ----------------------------------------------------------------------------
+# Expense Type
 def test_expense_type_str():
     e = ExpenseTypeFactory.build()
 
@@ -139,9 +137,7 @@ def test_expense_type_slug_unique_per_journal():
         ExpenseTypeFactory(title="Bustas", journal=obj1.journal)
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Expense Name
-# ----------------------------------------------------------------------------
+# Expense Name
 def test_expenese_name_str():
     e = ExpenseNameFactory.build()
 
@@ -228,9 +224,7 @@ def test_expense_name_slug_as_long_as_title():
     assert slug.max_length == title.max_length
 
 
-# ----------------------------------------------------------------------------
-#                                                                      Expense
-# ----------------------------------------------------------------------------
+# Expense
 def test_expense_str():
     e = ExpenseFactory.build()
 
@@ -460,9 +454,7 @@ def test_expense_updates_journal_first_record():
     assert Journal.objects.first().first_record == date(1974, 2, 2)
 
 
-# ----------------------------------------------------------------------------
-#                                                         Expense post signals
-# ----------------------------------------------------------------------------
+# Expense post signals
 def test_expense_new_post_save(main_user):
     ExpenseFactory(price=1)
 
@@ -892,9 +884,7 @@ def test_expenses_list_dynamic_locale_en(main_user):
     assert actual[0]["price_str"] == "12.50"
 
 
-# ----------------------------------------------------------------------------
-#                                                              Expense Keyword
-# ----------------------------------------------------------------------------
+# Expense Keyword
 def test_expense_keyword_str():
     e = ExpenseKeywordFactory.build(keyword="jogurt")
 
