@@ -1,22 +1,22 @@
+import importlib
+
 import pytest
 from django.conf import settings
 from django.test import override_settings
 from django.urls import reverse
 
+from ....journals.tests.helpers import set_journal_lang
+
 pytestmark = pytest.mark.django_db
 
-ONE_YEAR = 365 * 24 * 60 * 60
 COOKIE_FLAGS = ("max-age", "secure", "httponly", "samesite", "path", "domain")
 HARDENED = {
+    "LANGUAGE_COOKIE_AGE": 123,
     "LANGUAGE_COOKIE_SECURE": True,
     "LANGUAGE_COOKIE_HTTPONLY": True,
     "LANGUAGE_COOKIE_SAMESITE": "Strict",
+    "LANGUAGE_COOKIE_DOMAIN": "example.com",
 }
-
-
-def _set_journal_lang(user, lang):
-    user.journal.lang = lang
-    user.journal.save()
 
 
 def _language_cookie(response):
@@ -37,10 +37,10 @@ def _save_settings(client, lang):
 
 
 # Language cookie
-def test_login_language_cookie_lives_a_year(client):
+def test_login_language_cookie_lives_as_long_as_configured(client):
     response = _login(client)
 
-    assert _language_cookie(response)["max-age"] == ONE_YEAR
+    assert _language_cookie(response)["max-age"] == settings.LANGUAGE_COOKIE_AGE
 
 
 @override_settings(**HARDENED)
@@ -49,8 +49,36 @@ def test_login_and_settings_write_the_same_language_cookie(main_user, client):
     saved = _save_settings(client, "lt")
 
     assert _flags(_language_cookie(login)) == _flags(_language_cookie(saved))
-    assert _language_cookie(login)["max-age"] == ONE_YEAR
-    assert _language_cookie(login)["samesite"] == "Strict"
+    assert _flags(_language_cookie(login)) == {
+        "max-age": settings.LANGUAGE_COOKIE_AGE,
+        "secure": settings.LANGUAGE_COOKIE_SECURE,
+        "httponly": settings.LANGUAGE_COOKIE_HTTPONLY,
+        "samesite": settings.LANGUAGE_COOKIE_SAMESITE,
+        "path": settings.LANGUAGE_COOKIE_PATH,
+        "domain": "example.com",
+    }
+
+
+def test_language_cookie_without_a_domain_has_an_empty_one(client):
+    assert _language_cookie(_login(client))["domain"] == ""
+
+
+def test_production_hardens_the_language_cookie():
+    production = importlib.import_module("project.config.settings.production")
+    hardened = {
+        name: getattr(production, name)
+        for name in (
+            "LANGUAGE_COOKIE_SECURE",
+            "LANGUAGE_COOKIE_HTTPONLY",
+            "LANGUAGE_COOKIE_SAMESITE",
+        )
+    }
+
+    assert hardened == {
+        "LANGUAGE_COOKIE_SECURE": True,
+        "LANGUAGE_COOKIE_HTTPONLY": True,
+        "LANGUAGE_COOKIE_SAMESITE": "Strict",
+    }
 
 
 # Journal language
@@ -61,7 +89,7 @@ def test_login_and_settings_write_the_same_language_cookie(main_user, client):
 def test_journal_language_beats_accept_language(
     main_user, client_logged, journal_lang, accept
 ):
-    _set_journal_lang(main_user, journal_lang)
+    set_journal_lang(main_user, journal_lang)
 
     response = client_logged.get(
         reverse("bookkeeping:index"), HTTP_ACCEPT_LANGUAGE=accept
@@ -78,7 +106,7 @@ def test_journal_language_beats_accept_language(
 def test_journal_language_translates_the_page(
     main_user, client_logged, journal_lang, label
 ):
-    _set_journal_lang(main_user, journal_lang)
+    set_journal_lang(main_user, journal_lang)
 
     response = client_logged.get(
         reverse("users:settings_journal"), HTTP_ACCEPT_LANGUAGE="de"
@@ -92,7 +120,7 @@ def test_journal_language_translates_the_page(
 def test_saved_language_applies_to_the_next_request(
     main_user, client_logged, old, new, keep_cookie
 ):
-    _set_journal_lang(main_user, old)
+    set_journal_lang(main_user, old)
     _save_settings(client_logged, new)
     if not keep_cookie:
         del client_logged.cookies[settings.LANGUAGE_COOKIE_NAME]

@@ -18,16 +18,9 @@ class Savings(Browser):
         self.browser.get(f"{self.live_server_url}/savings/")
         self.wait_until_idle()
 
-        # click Add Savings button (translated as 'Record' or 'Įrašas')
-        buttons = self.browser.find_elements(By.TAG_NAME, "button")
-        record_btn = None
-        for b in buttons:
-            if "Record" in b.text or "Įrašas" in b.text:
-                record_btn = b
-                break
-
-        if record_btn:
-            record_btn.click()
+        self.browser.find_element(
+            By.XPATH, '//button[normalize-space()="Įrašą"]'
+        ).click()
 
         self.wait_until_idle()
 
