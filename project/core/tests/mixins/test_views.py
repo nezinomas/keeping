@@ -42,7 +42,12 @@ def test_search_mixin_with_sql():
 
     actual = Dummy().search_statistic(sql)
 
-    assert actual == {"count": 2, "sum_price": 224, "sum_quantity": 26, "average": 8.0}
+    assert actual == {
+        "count": 2,
+        "sum_price": 224,
+        "sum_quantity": 26,
+        "average": pytest.approx(224 / 26),
+    }
 
 
 @pytest.mark.django_db
