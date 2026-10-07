@@ -94,5 +94,4 @@ def _sync_data(user: User, conf: dict, signal_cls, sync_model_service):
 
 
 def journal_user(instance: models.Model) -> User:
-    """The first user of the instance's journal."""
     return instance.journal.users.earliest("pk")
