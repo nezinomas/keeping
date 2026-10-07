@@ -83,9 +83,9 @@ def test_view_regenerate_balances_all_year(client_logged, main_user):
 
 
 def test_view_regenerate_balances_func_called(mocker, fake_request):
-    account = mocker.patch("project.core.services.signals_service.sync_accounts")
-    saving = mocker.patch("project.core.services.signals_service.sync_savings")
-    pension = mocker.patch("project.core.services.signals_service.sync_pensions")
+    account = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
+    saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
+    pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
 
     class Dummy(views.RegenerateBalances):
         pass
@@ -104,9 +104,9 @@ def test_view_regenerate_account_balances(mocker, rf):
     request.user = UserFactory.build()
     request.user.journal = JournalFactory.build()
 
-    account = mocker.patch("project.core.services.signals_service.sync_accounts")
-    saving = mocker.patch("project.core.services.signals_service.sync_savings")
-    pension = mocker.patch("project.core.services.signals_service.sync_pensions")
+    account = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
+    saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
+    pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
 
     class Dummy(views.RegenerateBalances):
         pass
@@ -124,9 +124,9 @@ def test_view_regenerate_saving_balances(mocker, rf):
     request.user = UserFactory.build()
     request.user.journal = JournalFactory.build()
 
-    account = mocker.patch("project.core.services.signals_service.sync_accounts")
-    saving = mocker.patch("project.core.services.signals_service.sync_savings")
-    pension = mocker.patch("project.core.services.signals_service.sync_pensions")
+    account = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
+    saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
+    pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
 
     class Dummy(views.RegenerateBalances):
         pass
@@ -144,9 +144,9 @@ def test_view_regenerate_pension_balances(mocker, rf):
     request.user = UserFactory.build()
     request.user.journal = JournalFactory.build()
 
-    account = mocker.patch("project.core.services.signals_service.sync_accounts")
-    saving = mocker.patch("project.core.services.signals_service.sync_savings")
-    pension = mocker.patch("project.core.services.signals_service.sync_pensions")
+    account = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
+    saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
+    pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
 
     class Dummy(views.RegenerateBalances):
         pass
@@ -171,9 +171,9 @@ def test_view_regenerate_sends_the_trigger_of_its_kind(kind, trigger, mocker, rf
     request = rf.get(f"/fake/?type={kind}")
     request.user = UserFactory.build()
     request.user.journal = JournalFactory.build()
-    mocker.patch("project.core.services.signals_service.sync_accounts")
-    mocker.patch("project.core.services.signals_service.sync_savings")
-    mocker.patch("project.core.services.signals_service.sync_pensions")
+    mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
+    mocker.patch("project.bookkeeping.balance_sources.sync_savings")
+    mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
 
     response = setup_view(views.RegenerateBalances(), request).get(request)
 
@@ -185,7 +185,7 @@ def test_view_regenerate_unknown_type_syncs_all_and_sends_after_signal(mocker, r
     request.user = UserFactory.build()
     request.user.journal = JournalFactory.build()
     syncs = [
-        mocker.patch(f"project.core.services.signals_service.sync_{kind}")
+        mocker.patch(f"project.bookkeeping.balance_sources.sync_{kind}")
         for kind in ("accounts", "savings", "pensions")
     ]
 

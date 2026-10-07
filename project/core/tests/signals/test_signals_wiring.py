@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 
+from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import (
     AccountWorthFactory,
     PensionWorthFactory,
@@ -23,7 +24,6 @@ from ....transactions.tests.factories import (
     SavingCloseFactory,
     TransactionFactory,
 )
-from ...services import signals_service
 
 # Calls a save or delete reaches, in order; update_debt_model saves its Debt,
 # which syncs the accounts once more.
@@ -61,9 +61,9 @@ def listen(mocker):
 
     def install():
         parent = mocker.Mock()
-        mocker.patch.object(signals_service, "sync_accounts", parent.accounts)
-        mocker.patch.object(signals_service, "sync_savings", parent.savings)
-        mocker.patch.object(signals_service, "sync_pensions", parent.pensions)
+        mocker.patch.object(balance_sources, "sync_accounts", parent.accounts)
+        mocker.patch.object(balance_sources, "sync_savings", parent.savings)
+        mocker.patch.object(balance_sources, "sync_pensions", parent.pensions)
         mocker.patch.object(FundCloseYear, "follow", parent.close_year)
         mocker.patch.object(Journal, "save", parent.first_record)
         parent.debt.return_value = 0
@@ -109,7 +109,7 @@ def test_delete_reaches_receivers_in_order(name, listen):
 
 @pytest.mark.django_db
 def test_income_save_syncs_accounts(main_user, mocker):
-    accounts = mocker.spy(signals_service, "sync_accounts")
+    accounts = mocker.spy(balance_sources, "sync_accounts")
 
     IncomeFactory()
 
@@ -118,7 +118,7 @@ def test_income_save_syncs_accounts(main_user, mocker):
 
 @pytest.mark.django_db
 def test_saving_save_syncs_savings(main_user, mocker):
-    savings = mocker.spy(signals_service, "sync_savings")
+    savings = mocker.spy(balance_sources, "sync_savings")
 
     SavingFactory()
 
@@ -127,7 +127,7 @@ def test_saving_save_syncs_savings(main_user, mocker):
 
 @pytest.mark.django_db
 def test_pension_save_syncs_pensions(main_user, mocker):
-    pensions = mocker.spy(signals_service, "sync_pensions")
+    pensions = mocker.spy(balance_sources, "sync_pensions")
 
     PensionFactory()
 

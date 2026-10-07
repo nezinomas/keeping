@@ -1,16 +1,16 @@
 import pytest
 
+from ....bookkeeping import balance_sources
 from ....pensions.tests.factories import PensionTypeFactory
 from ....savings.tests.factories import SavingTypeFactory
-from ...services import signals_service
 
 pytestmark = pytest.mark.django_db
 
 
 def test_saving_type_save_syncs_accounts_once_and_savings_once(main_user, mocker):
     fund = SavingTypeFactory(title="Fund")
-    accounts = mocker.spy(signals_service, "sync_accounts")
-    savings = mocker.spy(signals_service, "sync_savings")
+    accounts = mocker.spy(balance_sources, "sync_accounts")
+    savings = mocker.spy(balance_sources, "sync_savings")
 
     fund.save()
 
@@ -20,7 +20,7 @@ def test_saving_type_save_syncs_accounts_once_and_savings_once(main_user, mocker
 
 def test_pension_type_save_syncs_pensions_once(main_user, mocker):
     pension_type = PensionTypeFactory(title="Pension")
-    pensions = mocker.spy(signals_service, "sync_pensions")
+    pensions = mocker.spy(balance_sources, "sync_pensions")
 
     pension_type.save()
 
