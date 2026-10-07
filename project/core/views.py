@@ -5,6 +5,7 @@ from .lib.date import years
 from .lib.utils import get_safe_redirect, http_htmx_response
 from .mixins.views import TemplateViewMixin
 from .services import signals_service
+from .services.signals_service import BalanceKind
 
 
 @login_required()
@@ -18,18 +19,16 @@ def set_year(request, year):
 
 
 class RegenerateBalances(TemplateViewMixin):
-    # @timer(7)
     def get(self, request, *args, **kwargs):
-        _type = request.GET.get("type")
-        _types = ["accounts", "savings", "pensions"]
-
+        kinds = list(BalanceKind)
         hx_trigger_name = "afterSignal"
-        if _type and _type in _types:
-            _types = [_type]
-            hx_trigger_name += _type.title()
 
-        for _type in _types:
-            getattr(signals_service, f"sync_{_type}")(request.user)
+        if request.GET.get("type") in kinds:
+            kinds = [BalanceKind(request.GET["type"])]
+            hx_trigger_name = kinds[0].trigger
+
+        for kind in kinds:
+            signals_service.sync(kind, request.user)
 
         return http_htmx_response(hx_trigger_name)
 

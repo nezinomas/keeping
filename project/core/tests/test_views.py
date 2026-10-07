@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 import pytest
@@ -156,6 +157,42 @@ def test_view_regenerate_pension_balances(mocker, rf):
     assert account.call_count == 0
     assert saving.call_count == 0
     assert pension.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "kind, trigger",
+    [
+        ("accounts", "afterSignalAccounts"),
+        ("savings", "afterSignalSavings"),
+        ("pensions", "afterSignalPensions"),
+    ],
+)
+def test_view_regenerate_sends_the_trigger_of_its_kind(kind, trigger, mocker, rf):
+    request = rf.get(f"/fake/?type={kind}")
+    request.user = UserFactory.build()
+    request.user.journal = JournalFactory.build()
+    mocker.patch("project.core.services.signals_service.sync_accounts")
+    mocker.patch("project.core.services.signals_service.sync_savings")
+    mocker.patch("project.core.services.signals_service.sync_pensions")
+
+    response = setup_view(views.RegenerateBalances(), request).get(request)
+
+    assert json.loads(response.headers["HX-Trigger"]) == {trigger: {}}
+
+
+def test_view_regenerate_unknown_type_syncs_all_and_sends_after_signal(mocker, rf):
+    request = rf.get("/fake/?type=xxx")
+    request.user = UserFactory.build()
+    request.user.journal = JournalFactory.build()
+    syncs = [
+        mocker.patch(f"project.core.services.signals_service.sync_{kind}")
+        for kind in ("accounts", "savings", "pensions")
+    ]
+
+    response = setup_view(views.RegenerateBalances(), request).get(request)
+
+    assert [x.call_count for x in syncs] == [1, 1, 1]
+    assert json.loads(response.headers["HX-Trigger"]) == {"afterSignal": {}}
 
 
 def test_view_regenerate_no_errors(client_logged):
