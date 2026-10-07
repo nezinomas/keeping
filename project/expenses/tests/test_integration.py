@@ -24,7 +24,7 @@ class Expenses(Browser):
 
         # click Add Expenses button
         self.browser.find_element(
-            By.XPATH, '//button[normalize-space()="Expenses"]'
+            By.XPATH, '//button[normalize-space()="Išlaidas"]'
         ).click()
         self.wait_until_idle()
 
@@ -144,7 +144,7 @@ class Expenses(Browser):
 
         # click Add Expenses button
         self.browser.find_element(
-            By.XPATH, '//button[normalize-space()="Expenses"]'
+            By.XPATH, '//button[normalize-space()="Išlaidas"]'
         ).click()
         self.wait_until_idle()
 
@@ -204,7 +204,7 @@ class Expenses(Browser):
 
         # click Add Expenses button
         self.browser.find_element(
-            By.XPATH, '//button[normalize-space()="Expenses"]'
+            By.XPATH, '//button[normalize-space()="Išlaidas"]'
         ).click()
         self.wait_until_idle()
 
@@ -222,9 +222,9 @@ class Expenses(Browser):
         e3 = get_error("id_price")
 
         # Assertions (using 'in' is safer than '==' to avoid trailing whitespace issues)
-        assert "This field is required." in e1.text
-        assert "This field is required." in e2.text
-        assert "Ensure this value is greater than or equal to 0.01." in e3.text
+        assert "Šis laukas yra privalomas." in e1.text
+        assert "Šis laukas yra privalomas." in e2.text
+        assert "Įsitikinkite, kad reikšmė yra didesnė arba lygi 0.01." in e3.text
 
     @time_machine.travel("1999-1-1 10:11:12")
     def test_update_one_expense_price(self):

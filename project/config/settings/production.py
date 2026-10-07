@@ -1,3 +1,5 @@
+import copy
+
 from django.utils.csp import CSP
 
 from .base import *
@@ -12,6 +14,7 @@ ALLOWED_HOSTS = ENV["ALLOWED_HOSTS"]
 INSTALLED_APPS += []
 
 
+TEMPLATES = copy.deepcopy(TEMPLATES)
 TEMPLATES[0]["APP_DIRS"] = True
 TEMPLATES[0]["OPTIONS"]["loaders"] = [
     (
