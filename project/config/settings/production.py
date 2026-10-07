@@ -15,7 +15,7 @@ INSTALLED_APPS += []
 
 
 TEMPLATES = copy.deepcopy(TEMPLATES)
-TEMPLATES[0]["APP_DIRS"] = True
+TEMPLATES[0]["APP_DIRS"] = False  # Django refuses APP_DIRS together with loaders
 TEMPLATES[0]["OPTIONS"]["loaders"] = [
     (
         "django.template.loaders.cached.Loader",
