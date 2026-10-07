@@ -4,7 +4,6 @@ from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.convert_price import PlanConvertPriceMixin
 from ..core.lib.utils import http_htmx_response
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
@@ -48,9 +47,6 @@ class TabViewMixin(CoreTabViewMixin):
         return PlanCollectData(user, user.year).get_data()
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Income Plans
-# -------------------------------------------------------------------------------------
 class TabIncomes(TabViewMixin, TemplateViewMixin):
     tab = PlanTab.resolve("incomes")
 
@@ -72,9 +68,7 @@ class IncomesNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Incomes plans")
 
 
-class IncomesUpdate(
-    CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin
-):
+class IncomesUpdate(CssClassMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = IncomePlanModelService
     form_class = forms.IncomePlanForm
     hx_trigger_django = "reload"
@@ -91,9 +85,6 @@ class IncomesDelete(PlanDeleteMixin, DeleteViewMixin):
     success_url = reverse_lazy("plans:tab_incomes")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         Expense Plans
-# -------------------------------------------------------------------------------------
 class TabExpenses(TabViewMixin, TemplateViewMixin):
     tab = PlanTab.resolve("expenses")
 
@@ -116,9 +107,7 @@ class ExpensesNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:tab_expenses")
 
 
-class ExpensesUpdate(
-    CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin
-):
+class ExpensesUpdate(CssClassMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = ExpensePlanModelService
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reload"
@@ -135,9 +124,6 @@ class ExpensesDelete(PlanDeleteMixin, DeleteViewMixin):
     success_url = reverse_lazy("plans:tab_expenses")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Saving Plans
-# -------------------------------------------------------------------------------------
 class TabSavings(TabViewMixin, TemplateViewMixin):
     tab = PlanTab.resolve("savings")
 
@@ -159,9 +145,7 @@ class SavingsNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Savings plans")
 
 
-class SavingsUpdate(
-    CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin
-):
+class SavingsUpdate(CssClassMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = SavingPlanModelService
     form_class = forms.SavingPlanForm
     hx_trigger_django = "reload"
@@ -178,9 +162,6 @@ class SavingsDelete(PlanDeleteMixin, DeleteViewMixin):
     success_url = reverse_lazy("plans:tab_savings")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                             Day Plans
-# -------------------------------------------------------------------------------------
 class TabDay(TabViewMixin, TemplateViewMixin):
     tab = PlanTab.resolve("day")
 
@@ -209,7 +190,7 @@ class DayNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Day plans")
 
 
-class DayUpdate(CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin):
+class DayUpdate(CssClassMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = DayPlanModelService
     form_class = forms.DayPlanForm
     hx_trigger_django = "reload"
@@ -226,9 +207,6 @@ class DayDelete(PlanDeleteMixin, DeleteViewMixin):
     success_url = reverse_lazy("plans:tab_day")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       Necessary Plans
-# -------------------------------------------------------------------------------------
 class NecessaryNew(CssClassMixin, CreateViewMixin):
     service_class = NecessaryPlanModelService
     form_class = forms.NecessaryPlanForm
@@ -238,9 +216,7 @@ class NecessaryNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:tab_expenses")
 
 
-class NecessaryUpdate(
-    CssClassMixin, PlanConvertPriceMixin, PlanUpdateMixin, UpdateViewMixin
-):
+class NecessaryUpdate(CssClassMixin, PlanUpdateMixin, UpdateViewMixin):
     service_class = NecessaryPlanModelService
     form_class = forms.NecessaryPlanForm
     hx_trigger_django = "reload"
@@ -257,9 +233,6 @@ class NecessaryDelete(PlanDeleteMixin, DeleteViewMixin):
     success_url = reverse_lazy("plans:tab_expenses")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                            Copy Plans
-# -------------------------------------------------------------------------------------
 class CopyPlans(FormViewMixin):
     form_class = forms.CopyPlanForm
     success_url = reverse_lazy("plans:index")

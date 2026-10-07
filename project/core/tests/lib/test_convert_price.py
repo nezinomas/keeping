@@ -4,8 +4,9 @@ import pytest
 from django import forms
 
 from ...lib.convert_price import (
-    ConvertPriceMixin,
     PriceNeverEmptyFormMixin,
+    PriceToCentsFormMixin,
+    PriceToFloatViewMixin,
     float_to_int_cents,
     int_cents_to_float,
 )
@@ -20,11 +21,15 @@ from ...lib.convert_price import (
         (466.73, 46673),  # Known binary noise case
         (0.0, 0),  # Zero case
         (0.019, 1),  # Truncation verification
-        (None, 0),
     ],
 )
 def test_float_to_int_conversion(price_float, expected_int):
     assert float_to_int_cents(price_float) == expected_int
+
+
+def test_float_to_int_cents_takes_a_number_only():
+    with pytest.raises(TypeError):
+        float_to_int_cents(None)
 
 
 @pytest.mark.parametrize(
@@ -46,12 +51,38 @@ def test_int_cents_to_float_takes_an_int_only():
         int_cents_to_float(None)
 
 
-class DummyClassForConvertPriceMixin:
+class DummyBase:
+    form_class = None
+
     def get_object(self):
         pass
 
+    def get_form_class(self):
+        return self.form_class
+
     def clean(self):
         pass
+
+
+def _view(mocker, obj, fields=("price", "fee")):
+    mocker.patch.object(DummyBase, "get_object", return_value=obj)
+
+    class DummyForm:
+        price_fields = fields
+
+    class DummyView(PriceToFloatViewMixin, DummyBase):
+        form_class = DummyForm
+
+    return DummyView()
+
+
+def _form(mocker, data, fields=("price", "fee")):
+    mocker.patch.object(DummyBase, "clean", return_value=data)
+
+    class DummyForm(PriceToCentsFormMixin, DummyBase):
+        price_fields = fields
+
+    return DummyForm()
 
 
 @pytest.mark.parametrize(
@@ -59,57 +90,65 @@ class DummyClassForConvertPriceMixin:
     [
         (466973, 4669.73),
         (100, 1.0),
-        (0, 0),  # Note: 0 remains 0 if using the walrus operator check
+        (0, 0),
     ],
 )
-def test_covert_to_price_mixin_has_fields(mocker, cents, expected_float):
-    mock_obj = SimpleNamespace(price=cents, fee=cents)
-    mocker.patch.object(
-        DummyClassForConvertPriceMixin, "get_object", return_value=mock_obj
-    )
-
-    class DummyClass(ConvertPriceMixin, DummyClassForConvertPriceMixin):
-        pass
-
-    view = DummyClass()
-    result = view.get_object()
+def test_view_mixin_converts_declared_fields(mocker, cents, expected_float):
+    result = _view(mocker, SimpleNamespace(price=cents, fee=cents)).get_object()
 
     assert result.price == expected_float
     assert result.fee == expected_float
 
 
-def test_covert_to_price_mixin_missing_fields(mocker):
-    mock_obj = SimpleNamespace(price=1000)
-    mocker.patch.object(
-        DummyClassForConvertPriceMixin, "get_object", return_value=mock_obj
-    )
-
-    class DummyClass(ConvertPriceMixin, DummyClassForConvertPriceMixin):
-        pass
-
-    view = DummyClass()
-    result = view.get_object()
-
-    assert result.price == 10.0  # Converted
-    assert not hasattr(result, "fee")  # Still doesn't exist, didn't crash
-
-
-def test_covert_to_price_mixin_merges_fields(mocker):
-    class DummyClass(ConvertPriceMixin, DummyClassForConvertPriceMixin):
-        price_fields = ["new_field"]
-
-    mock_obj = SimpleNamespace(price=1000, fee=2000, new_field=3000)
-    mocker.patch.object(
-        DummyClassForConvertPriceMixin, "get_object", return_value=mock_obj
-    )
-
-    view = DummyClass()
-    result = view.get_object()
-
-    assert result.new_field == 30.0
+def test_view_mixin_converts_only_declared_fields(mocker):
+    result = _view(mocker, SimpleNamespace(price=1000, fee=2000), ("price",))
+    result = result.get_object()
 
     assert result.price == 10.0
-    assert result.fee == 20.0
+    assert result.fee == 2000
+
+
+def test_view_mixin_converts_any_declared_name(mocker):
+    obj = SimpleNamespace(price=1000, fee=2000, new_field=3000)
+
+    result = _view(mocker, obj, ("new_field",)).get_object()
+
+    assert result.new_field == 30.0
+    assert result.price == 1000
+
+
+def test_view_mixin_raises_for_a_declared_field_the_object_lacks(mocker):
+    view = _view(mocker, SimpleNamespace(price=1000), ("price", "fee"))
+
+    with pytest.raises(AttributeError):
+        view.get_object()
+
+
+def test_view_mixin_reads_price_fields_from_the_form_class(mocker):
+    mocker.patch.object(
+        DummyBase, "get_object", return_value=SimpleNamespace(price=1000)
+    )
+
+    class DummyForm:
+        price_fields = ("price",)
+
+    class DummyView(PriceToFloatViewMixin, DummyBase):
+        form_class = DummyForm
+
+    assert DummyView().get_object().price == 10.0
+
+
+def test_view_mixin_without_price_fields_on_the_form_raises(mocker):
+    mocker.patch.object(DummyBase, "get_object", return_value=SimpleNamespace())
+
+    class DummyForm:
+        pass
+
+    class DummyView(PriceToFloatViewMixin, DummyBase):
+        form_class = DummyForm
+
+    with pytest.raises(AttributeError):
+        DummyView().get_object()
 
 
 @pytest.mark.parametrize(
@@ -124,33 +163,39 @@ def test_covert_to_price_mixin_merges_fields(mocker):
         (None, None),
     ],
 )
-def test_convert_to_cents_mixin_has_fields(mocker, price, expected_int):
-    mock_obj = {"price": price, "fee": price}
-    mocker.patch.object(DummyClassForConvertPriceMixin, "clean", return_value=mock_obj)
-
-    class DummyClass(ConvertPriceMixin, DummyClassForConvertPriceMixin):
-        pass
-
-    view = DummyClass()
-    result = view.clean()
+def test_form_mixin_converts_declared_fields(mocker, price, expected_int):
+    result = _form(mocker, {"price": price, "fee": price}).clean()
 
     assert result["price"] == expected_int
     assert result["fee"] == expected_int
 
 
-def test_covert_to_cents_mixin_merges_fields(mocker):
-    class DummyClass(ConvertPriceMixin, DummyClassForConvertPriceMixin):
-        price_fields = ["new_field"]
+def test_form_mixin_converts_only_declared_fields(mocker):
+    result = _form(mocker, {"price": 1, "fee": 2}, ("price",)).clean()
 
-    mock_obj = {"price": 1, "fee": 2, "new_field": 3}
-    mocker.patch.object(DummyClassForConvertPriceMixin, "clean", return_value=mock_obj)
+    assert result == {"price": 100, "fee": 2}
 
-    view = DummyClass()
-    result = view.clean()
 
-    assert result["price"] == 100
-    assert result["fee"] == 200
-    assert result["new_field"] == 300
+def test_form_mixin_converts_any_declared_name(mocker):
+    result = _form(mocker, {"price": 1, "new_field": 3}, ("new_field",)).clean()
+
+    assert result == {"price": 1, "new_field": 300}
+
+
+def test_form_mixin_skips_a_declared_field_that_is_absent(mocker):
+    result = _form(mocker, {"price": 1}).clean()
+
+    assert result == {"price": 100}
+
+
+def test_form_mixin_without_price_fields_raises(mocker):
+    mocker.patch.object(DummyBase, "clean", return_value={"price": 1})
+
+    class DummyForm(PriceToCentsFormMixin, DummyBase):
+        pass
+
+    with pytest.raises(AttributeError):
+        DummyForm().clean()
 
 
 class _PriceForm(PriceNeverEmptyFormMixin, forms.Form):

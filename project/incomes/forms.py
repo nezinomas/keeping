@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
@@ -11,7 +11,8 @@ from ..incomes.services.model_services import IncomeTypeModelService
 from .models import Income, IncomeType
 
 
-class IncomeForm(ConvertPriceMixin, forms.ModelForm):
+class IncomeForm(PriceToCentsFormMixin, forms.ModelForm):
+    price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
 
     class Meta:

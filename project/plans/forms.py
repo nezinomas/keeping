@@ -4,7 +4,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from ..core.lib.convert_price import PlanConvertPriceMixin, int_cents_to_float
+from ..core.lib.convert_price import PriceToCentsFormMixin, int_cents_to_float
 from ..core.lib.date import monthnames, set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import YearPickerWidget
@@ -38,7 +38,9 @@ COPY_PLAN_MAP = {
 }
 
 
-class CommonPlanFormMixin(PlanConvertPriceMixin, forms.ModelForm):
+class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
+    price_fields = tuple(monthnames())
+
     january = CommaFloatField(**MONTH_FIELD_KWARGS)
     february = CommaFloatField(**MONTH_FIELD_KWARGS)
     march = CommaFloatField(**MONTH_FIELD_KWARGS)
