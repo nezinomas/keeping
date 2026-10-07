@@ -4,6 +4,7 @@ from django.dispatch import receiver
 
 from ..core.services.signals_service import journal_user
 from ..debts import models as debt
+from ..debts.services.model_services import DebtReturnModelService
 from ..expenses import models as expense
 from ..incomes import models as income
 from ..pensions import models as pension
@@ -31,6 +32,21 @@ from . import models as bookkeeping
 @receiver(post_save, sender=bookkeeping.AccountWorth)
 def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
     balance_sources.sync_accounts(journal_user(instance))
+
+
+@receiver(post_save, sender=debt.DebtReturn)
+@receiver(post_delete, sender=debt.DebtReturn)
+def update_debt_model(sender: object, instance: models.Model, *args, **kwargs):
+    user = journal_user(instance.debt)
+    debt_type = instance.debt.debt_type
+
+    total_return = DebtReturnModelService(user, debt_type).total_returned_for_debt(
+        instance
+    )
+
+    debt_row = debt.Debt.objects.get(pk=instance.debt.pk)
+    debt_row.returned = total_return
+    debt_row.save(update_fields=["returned"])
 
 
 # A type's fee source and close year change its balances.
