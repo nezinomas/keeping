@@ -26,7 +26,7 @@ from ....savings.tests.factories import (
     SavingTypeFactory,
 )
 from ...lib.db_sync import ACCOUNT_FIELDS, SAVING_FIELDS, BalanceSynchronizer
-from .helpers import count_queries
+from ..utils import count_queries
 
 pytestmark = pytest.mark.django_db
 

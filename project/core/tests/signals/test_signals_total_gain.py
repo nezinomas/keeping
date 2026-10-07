@@ -9,11 +9,11 @@ from ....savings.models import SavingBalance, SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ...services import signals_service
+from ...tests.utils import count_queries
 from .helpers import (
     YEAR,
     balance,
     buy,
-    count_queries,
     sell,
     switch_out,
     worth,

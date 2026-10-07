@@ -1,5 +1,4 @@
-from datetime import date, datetime
-from zoneinfo import ZoneInfo
+from datetime import date
 
 import pytest
 
@@ -13,11 +12,10 @@ from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ...lib.db_sync import SAVING_FIELDS
 from ...services import signals_service
-from .helpers import balance, count_queries
+from ...tests.utils import count_queries
+from .helpers import balance, worth_date
 
 pytestmark = pytest.mark.django_db
-
-WORTH_DATE = datetime(1999, 12, 31, 12, tzinfo=ZoneInfo("Europe/Vilnius"))
 
 
 def _account_balance(account):
@@ -82,7 +80,7 @@ def test_profit_subtracts_the_fee_once():
     saving_type = SavingTypeFactory(title="Fund")
     SavingFactory(saving_type=saving_type, price=200, fee=3)
 
-    SavingWorthFactory(saving_type=saving_type, price=210, date=WORTH_DATE)
+    SavingWorthFactory(saving_type=saving_type, price=210, date=worth_date())
 
     actual = balance(saving_type)
     assert actual.incomes == 200
@@ -99,7 +97,7 @@ def test_fee_entered_inside_the_price_is_subtracted_again_from_profit():
 
     SavingFactory(account=ib, saving_type=vall, price=20300, fee=300)
     SavingFactory(account=ib, saving_type=vall, price=60128, fee=128)
-    SavingWorthFactory(saving_type=vall, price=80100, date=WORTH_DATE)
+    SavingWorthFactory(saving_type=vall, price=80100, date=worth_date())
 
     account = _account_balance(ib)
     assert account.expenses == 80428
@@ -122,7 +120,7 @@ def test_finbee_fee_only_rows_paid_from_two_accounts():
     SavingFactory(account=seb, saving_type=finbee, price=1000, fee=0)
     SavingFactory(account=seb, saving_type=finbee, price=0, fee=100)
     SavingFactory(account=revolut, saving_type=finbee, price=0, fee=100)
-    SavingWorthFactory(saving_type=finbee, price=1200, date=WORTH_DATE)
+    SavingWorthFactory(saving_type=finbee, price=1200, date=worth_date())
 
     assert _account_balance(seb).balance == 4000
     assert _account_balance(revolut).balance == 5000
@@ -162,7 +160,7 @@ def test_saving_a_saving_type_leaves_every_balance_unchanged():
     account = AccountFactory(title="IB")
     saving_type = SavingTypeFactory(title="VALL")
     SavingFactory(account=account, saving_type=saving_type, price=200, fee=3)
-    SavingWorthFactory(saving_type=saving_type, price=210, date=WORTH_DATE)
+    SavingWorthFactory(saving_type=saving_type, price=210, date=worth_date())
     accounts, savings = _table(AccountBalance), _table(SavingBalance)
 
     saving_type.title = "VALL renamed"
@@ -212,7 +210,7 @@ def test_fee_source_does_not_change_the_saving_balance():
         saving_type = SavingTypeFactory(title=title, fee_source=fee_source)
         SavingFactory(saving_type=saving_type, price=200, fee=3)
         SavingFactory(saving_type=saving_type, price=0, fee=1)
-        SavingWorthFactory(saving_type=saving_type, price=210, date=WORTH_DATE)
+        SavingWorthFactory(saving_type=saving_type, price=210, date=worth_date())
         balances[title] = (
             SavingBalance.objects.filter(saving_type=saving_type)
             .order_by("year")
@@ -271,7 +269,7 @@ def test_resync_reproduces_the_rows_the_signals_wrote(main_user):
     SavingFactory(account=seb, saving_type=finbee, price=1000, date=date(1998, 1, 1))
     SavingFactory(account=seb, saving_type=finbee, price=0, fee=100)
     SavingFactory(account=ib, saving_type=fund, price=200, fee=3)
-    SavingWorthFactory(saving_type=fund, price=310, date=WORTH_DATE)
+    SavingWorthFactory(saving_type=fund, price=310, date=worth_date())
     # last, so a signal it fails to send is not covered by a later one
     SavingChangeFactory(from_account=finbee, to_account=fund, price=100, fee=5)
     accounts, savings = _table(AccountBalance), _table(SavingBalance)

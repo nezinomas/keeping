@@ -8,11 +8,11 @@ from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingBalance
 from ....savings.tests.factories import SavingTypeFactory
 from ...services import signals_service
+from ..utils import count_queries
 from .helpers import (
     YEAR,
     balance,
     buy,
-    count_queries,
     sell,
     switch_out,
     worth,

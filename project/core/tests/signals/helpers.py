@@ -1,9 +1,6 @@
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
-
 from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping.tests.factories import SavingWorthFactory
 from ....savings.models import SavingBalance
@@ -53,9 +50,3 @@ def switch_out(fund, price, when):
         fee=0,
         date=when,
     )
-
-
-def count_queries(run):
-    with CaptureQueriesContext(connection) as queries:
-        run()
-    return len(queries)
