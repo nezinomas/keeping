@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from django.db import transaction
 
-from ...core.signals import accounts_signal, update_journal_first_record
+from ...bookkeeping.signals import accounts_signal, update_journal_first_record
 from ..keywords import normalise_keyword
 from ..models import DEFAULT_QUANTITY, Expense, ExpenseKeyword
 from ..receipts.receipt import ReceiptLine
