@@ -77,11 +77,10 @@ def pension_type_signal(sender: object, instance: pension.PensionType, *args, **
     signals_service.sync_pensions(signals_service.journal_user(instance))
 
 
-# Update Journal first_record field
 @receiver(post_save, sender=income.Income)
 @receiver(post_save, sender=expense.Expense)
 def update_journal_first_record(sender, instance, created, **kwargs):
-    journal = instance.account.journal
+    journal = instance.journal
 
     if journal.first_record > instance.date:
         journal.first_record = instance.date

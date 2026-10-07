@@ -55,6 +55,10 @@ class FundMove:
         return instance
 
     @property
+    def journal(self):
+        return self.from_account.journal
+
+    @property
     def left_funds(self) -> tuple[int, ...]:
         return tuple(f for f in self._loaded_funds if f != self.from_account_id)
 
@@ -86,10 +90,6 @@ class SavingClose(FundMove, models.Model):
         _to = f"{self.to_account}: {money(self.price)}"
         return f"{_from} -> {_to}"
 
-    @property
-    def journal(self):
-        return self.from_account.journal
-
 
 class SavingChange(FundMove, models.Model):
     date = models.DateField()
@@ -113,7 +113,3 @@ class SavingChange(FundMove, models.Model):
         _from = f"{self.date} {self.from_account}"
         _to = f"{self.to_account}: {money(self.price)}"
         return f"{_from} -> {_to}"
-
-    @property
-    def journal(self):
-        return self.from_account.journal

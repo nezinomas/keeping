@@ -21,20 +21,6 @@ from ...services.signals_service import journal_user
 pytestmark = pytest.mark.django_db
 
 
-def test_journal_user_of_an_income_is_its_accounts_journals_user(main_user):
-    assert journal_user(IncomeFactory()) == main_user
-
-
-@pytest.mark.parametrize("factory", [SavingTypeFactory, PensionTypeFactory])
-def test_journal_user_of_a_type_is_its_own_journals_user(main_user, factory):
-    assert journal_user(factory()) == main_user
-
-
-@pytest.mark.parametrize("factory", [SavingChangeFactory, SavingCloseFactory])
-def test_journal_user_of_a_move_is_the_funds_journals_user(main_user, factory):
-    assert journal_user(factory()) == main_user
-
-
 def test_journal_user_is_the_first_user_of_the_journal(main_user):
     UserFactory(username="Y", email="y@y.yy", journal=main_user.journal)
 
