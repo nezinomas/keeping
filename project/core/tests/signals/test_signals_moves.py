@@ -4,8 +4,8 @@ import time_machine
 from ....accounts.tests.factories import AccountFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingTypeFactory
+from ....transactions.close_rules import KEEP
 from ....transactions.forms import SavingChangeForm, SavingCloseForm
-from ....transactions.services.close_year import KEEP
 from ....transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
 from ...services import signals_service
 
