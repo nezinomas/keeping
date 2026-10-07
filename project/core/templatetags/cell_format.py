@@ -21,7 +21,7 @@ def cellformat(value, default: str = "-"):
 @register.filter
 def cell_state(value):
     state = "empty"
-    if value and value != "None":
+    if value:
         state = ""
 
     return state

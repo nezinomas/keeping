@@ -62,7 +62,6 @@ def test_cellformat(value, default, expect):
     "value, expect",
     [
         (None, "empty"),
-        ("None", "empty"),
         (0, "empty"),
         (0.0, "empty"),
         ("", "empty"),

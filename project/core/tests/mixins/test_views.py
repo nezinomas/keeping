@@ -43,3 +43,17 @@ def test_search_mixin_with_sql():
     actual = Dummy().search_statistic(sql)
 
     assert actual == {"count": 2, "sum_price": 224, "sum_quantity": 26, "average": 8.0}
+
+
+@pytest.mark.django_db
+def test_search_mixin_zero_quantity_average_is_zero():
+    ExpenseFactory(quantity=0)
+    ExpenseFactory(quantity=0)
+
+    class Dummy(views.SearchViewMixin):
+        search_method = "search_expenses"
+
+    actual = Dummy().search_statistic(Expense.objects.all())
+
+    assert actual["sum_quantity"] == 0
+    assert actual["average"] == 0
