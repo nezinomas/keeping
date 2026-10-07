@@ -87,15 +87,10 @@ class CalendarGrid:
                 data=daily_data, past_latest=latest_past_date
             ).gap_by_date()
 
-        today_gap = 0
-        latest_recorded = None
-        if daily_data:
-            past_dates = [row["date"] for row in daily_data if row["date"] <= today]
-            if past_dates:
-                latest_recorded = max(past_dates)
-        if not latest_recorded:
-            latest_recorded = latest_past_date
+        past_dates = [row["date"] for row in daily_data if row["date"] <= today]
+        latest_recorded = max(past_dates, default=latest_past_date)
 
+        today_gap = 0
         if latest_recorded and today >= latest_recorded:
             today_gap = (today - latest_recorded).days
 

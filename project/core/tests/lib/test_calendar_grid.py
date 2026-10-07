@@ -187,6 +187,25 @@ def test_build_today_without_record_uses_latest_past_date():
     assert today_day.label == f"1999-01-10\n{gap_str}: 40d."
 
 
+def test_build_today_with_only_future_records_uses_latest_past_date():
+    grid = CalendarGrid.build(
+        YearBoundary(1999, date(1999, 1, 10)),
+        daily_data=[{"date": date(1999, 3, 1), "stdav": 1.0, "qty": 0.5}],
+        latest_past_date=date(1998, 12, 1),
+    )
+
+    today_day = grid.months[0].days[9]
+    assert today_day.gap == 40
+
+
+def test_build_today_with_no_record_anywhere_has_no_gap():
+    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 1, 10)), daily_data=[])
+
+    today_day = grid.months[0].days[9]
+    assert today_day.gap == 0
+    assert today_day.label == f"1999-01-10\n{_('Gap')}: 0d."
+
+
 def test_build_other_year_has_no_future_days():
     grid = CalendarGrid.build(YearBoundary(1998, date(1999, 6, 15)), daily_data=[])
 

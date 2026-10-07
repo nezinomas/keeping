@@ -20,9 +20,7 @@ def fixture_data():
     ]
 
 
-# -------------------------------------------------------------------------------------
 # Static / Metadata Methods
-# -------------------------------------------------------------------------------------
 
 
 def test_stats_months_list():
@@ -39,9 +37,7 @@ def test_stats_weekdays_list():
     assert actual[6] == "Sekmadienis"
 
 
-# -------------------------------------------------------------------------------------
 # Basic Statistics
-# -------------------------------------------------------------------------------------
 
 
 def test_stats_prepare_dataframe_renames_quantity():
@@ -119,9 +115,7 @@ def test_stats_totals_by_year_empty():
     assert Stats(data=[]).totals_by_year() == {}
 
 
-# -------------------------------------------------------------------------------------
 # Gap Analysis
-# -------------------------------------------------------------------------------------
 
 
 def test_stats_gap_by_date_measures_each_record_from_the_one_before(data):
