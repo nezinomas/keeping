@@ -12,7 +12,7 @@ from project.bookkeeping.services.model_services import (
 )
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.utils import rendered_content
+from ..core.lib.utils import http_htmx_response, rendered_content
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
@@ -65,6 +65,26 @@ class Index(ReloadIndexContextDataMixin, TemplateViewMixin):
 
 class ReloadIndex(ReloadIndexContextDataMixin, TemplateViewMixin):
     template_name = "bookkeeping/includes/reload_index.html"
+
+
+class RegenerateBalances(TemplateViewMixin):
+    def get(self, request, *args, **kwargs):
+        balances = {
+            "accounts": (balance_sources.sync_accounts, "afterSignalAccounts"),
+            "savings": (balance_sources.sync_savings, "afterSignalSavings"),
+            "pensions": (balance_sources.sync_pensions, "afterSignalPensions"),
+        }
+        syncs = [sync for sync, _ in balances.values()]
+        hx_trigger_name = "afterSignal"
+
+        if (kind := request.GET.get("type")) in balances:
+            sync, hx_trigger_name = balances[kind]
+            syncs = [sync]
+
+        for sync in syncs:
+            sync(request.user)
+
+        return http_htmx_response(hx_trigger_name)
 
 
 class Accounts(TemplateViewMixin):
