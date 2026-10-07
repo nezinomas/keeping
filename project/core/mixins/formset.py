@@ -1,7 +1,6 @@
 from collections.abc import Callable
 from functools import partial
 
-from django.core.exceptions import ImproperlyConfigured
 from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
@@ -43,18 +42,12 @@ class BaseTypeFormSet(BaseModelFormSet):
 
 class FormsetMixin:
     template_name = "core/generic_formset.html"
-    service_class = None
-    category_service_class = None
+    service_class: type
+    category_service_class: type
     balance_sync: Callable[[User], None]
 
     @cached_property
     def service_instance(self):
-        if self.service_class is None:
-            txt = f"{self.__class__.__module__}.{self.__class__.__name__}"
-            raise ImproperlyConfigured(
-                f"[{txt}] is missing a data source. Please define 'service_class'."
-            )
-
         return self.service_class(self.request.user)
 
     @cached_property

@@ -1,5 +1,4 @@
 import pytest
-from django.core.exceptions import ImproperlyConfigured
 from mock import ANY, Mock
 
 from ...mixins.formset import BaseTypeFormSet, FormsetMixin
@@ -108,17 +107,6 @@ class TestView(FormsetMixin, DummyBaseView):
 # ==========================================
 # 2. PROPERTY TESTS (Configuration)
 # ==========================================
-
-
-def test_missing_service_class_raises_error(mocker):
-    """If a developer forgets service_class, the property should crash loudly."""
-    view = TestView()
-    view.request = mocker.Mock()
-
-    with pytest.raises(ImproperlyConfigured) as exc_info:
-        _ = view.service_instance
-
-    assert "missing a data source" in str(exc_info.value)
 
 
 def test_lazy_properties_instantiate_correctly(mocker):
@@ -345,14 +333,12 @@ def test_post_saves_valid_prices_and_triggers_signals(mocker):
     # Execute
     view.post(mocker.Mock())
 
-    # 1. Prove bulk_create was called exactly once, with exactly one object (form1)
     assert mock_bulk_create.call_count == 1
     created_objects_list = mock_bulk_create.call_args[0][0]
     assert len(created_objects_list) == 1
     assert isinstance(created_objects_list[0], DummyModel)
     assert created_objects_list[0].kwargs == {"price": 100, "account": "A1"}
 
-    # 2. Prove the view's kind was synced once, for the journal's user
     mock_sync.assert_called_once_with("journal_user")
 
 
