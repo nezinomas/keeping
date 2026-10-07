@@ -465,3 +465,11 @@ def test_debt_return_total_returned_for_debt(main_user):
     actual = DebtReturnModelService(main_user, "lend").total_returned_for_debt(rtn)
 
     assert actual == 3
+
+
+def test_debt_return_journal_is_its_accounts(second_user):
+    journal = second_user.journal
+
+    obj = BorrowReturnFactory.build(account=AccountFactory(journal=journal))
+
+    assert obj.journal == journal

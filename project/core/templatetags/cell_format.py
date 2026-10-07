@@ -19,10 +19,12 @@ def cellformat(value, default: str = "-"):
 
 
 @register.filter
-def css_class_if_none(value, default: str = "dash"):
-    value = None if value == "None" else value
+def cell_state(value):
+    state = "empty"
+    if value:
+        state = ""
 
-    return "" if value else default
+    return state
 
 
 @register.filter

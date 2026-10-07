@@ -2,7 +2,7 @@ import polars as pl
 
 from ...core.lib.date import current_day
 from .balance_base import BalanceBase
-from .make_dataframe import MakeDataFrame
+from .make_dataframe import MakeDataFrame, MonthDays
 
 
 class DaySpending(BalanceBase):
@@ -13,13 +13,16 @@ class DaySpending(BalanceBase):
         free: float,
         per_day: float,
     ):
+        if not isinstance(expense.date_range, MonthDays):
+            raise TypeError("DaySpending needs a month frame, not a year frame")
+
         super().__init__(expense.data)
 
-        self._year = expense.year
-        self._month = expense.month
+        self._year = expense.date_range.year
+        self._month = expense.date_range.month
         self._per_day = per_day
         self._free = free
-        self._necessary = necessary or []
+        self._necessary = necessary
         self._spending = self._calculate_spending(expense.data, expense.exceptions)
 
     @property

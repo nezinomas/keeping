@@ -2,24 +2,19 @@ from django.db import models
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from ..bookkeeping import models as bookkeeping
+from ..core.services.signals_service import journal_user
 from ..debts import models as debt
+from ..debts.services.model_services import DebtReturnModelService
 from ..expenses import models as expense
 from ..incomes import models as income
 from ..pensions import models as pension
 from ..savings import models as saving
 from ..transactions import models as transaction
 from ..transactions.services.close_year import FundCloseYear
-from .services import signals_service
+from . import balance_sources
+from . import models as bookkeeping
 
 
-def _journal_users(instance: models.Model) -> list:
-    return list(instance.journal.users.order_by("pk")[:1])
-
-
-# -------------------------------------------------------------------------------------
-#                                                                      Accounts Signals
-# -------------------------------------------------------------------------------------
 @receiver(post_save, sender=income.Income)
 @receiver(post_delete, sender=income.Income)
 @receiver(post_save, sender=expense.Expense)
@@ -36,26 +31,37 @@ def _journal_users(instance: models.Model) -> list:
 @receiver(post_delete, sender=debt.DebtReturn)
 @receiver(post_save, sender=bookkeeping.AccountWorth)
 def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
-    signals_service.sync_accounts(instance)
+    balance_sources.sync_accounts(journal_user(instance))
 
 
-# A type's fee source and close year change its balances. Its first FK is the
-# journal, so its first user is read here; a sync without one would guess and fail.
+@receiver(post_save, sender=debt.DebtReturn)
+@receiver(post_delete, sender=debt.DebtReturn)
+def update_debt_model(sender: object, instance: models.Model, *args, **kwargs):
+    user = journal_user(instance.debt)
+    debt_type = instance.debt.debt_type
+
+    total_return = DebtReturnModelService(user, debt_type).total_returned_for_debt(
+        instance
+    )
+
+    debt_row = debt.Debt.objects.get(pk=instance.debt.pk)
+    debt_row.returned = total_return
+    debt_row.save(update_fields=["returned"])
+
+
+# A type's fee source and close year change its balances.
 @receiver(post_save, sender=saving.SavingType)
 def saving_type_signal(sender: object, instance: saving.SavingType, *args, **kwargs):
-    for user in _journal_users(instance):
-        signals_service.sync_accounts(instance, user)
-        signals_service.sync_savings(instance, user)
+    user = journal_user(instance)
+    balance_sources.sync_accounts(user)
+    balance_sources.sync_savings(user)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       Savings Signals
-# -------------------------------------------------------------------------------------
 @receiver(post_save, sender=saving.Saving)
 @receiver(post_delete, sender=saving.Saving)
 @receiver(post_save, sender=bookkeeping.SavingWorth)
 def savings_signal(sender: object, instance: models.Model, *args, **kwargs):
-    signals_service.sync_savings(instance)
+    balance_sources.sync_savings(journal_user(instance))
 
 
 @receiver(post_save, sender=transaction.SavingClose)
@@ -69,33 +75,26 @@ def move_signal(sender: object, instance: models.Model, *args, **kwargs):
         FundCloseYear.follow(fund_pk)
     instance.settle()
 
-    signals_service.sync_savings(instance)
+    balance_sources.sync_savings(journal_user(instance))
 
 
-# -------------------------------------------------------------------------------------
-#                                                                      Pensions Signals
-# -------------------------------------------------------------------------------------
 @receiver(post_save, sender=pension.Pension)
 @receiver(post_delete, sender=pension.Pension)
 @receiver(post_save, sender=bookkeeping.PensionWorth)
 def pensions_signal(sender: object, instance: models.Model, *args, **kwargs):
-    signals_service.sync_pensions(instance)
+    balance_sources.sync_pensions(journal_user(instance))
 
 
 # Closing a type drops its later rows, so the sync runs on the type itself.
 @receiver(post_save, sender=pension.PensionType)
 def pension_type_signal(sender: object, instance: pension.PensionType, *args, **kwargs):
-    for user in _journal_users(instance):
-        signals_service.sync_pensions(instance, user)
+    balance_sources.sync_pensions(journal_user(instance))
 
 
-# -------------------------------------------------------------------------------------
-#                                                     Update Journal first_record field
-# -------------------------------------------------------------------------------------
 @receiver(post_save, sender=income.Income)
 @receiver(post_save, sender=expense.Expense)
 def update_journal_first_record(sender, instance, created, **kwargs):
-    journal = instance.account.journal
+    journal = instance.journal
 
     if journal.first_record > instance.date:
         journal.first_record = instance.date

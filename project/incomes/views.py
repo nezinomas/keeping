@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.convert_price import PriceToFloatViewMixin
 from ..core.lib.year_boundary import YearBoundary
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
@@ -108,7 +108,7 @@ class New(CreateViewMixin):
     modal_form_title = _("Incomes")
 
 
-class Update(ConvertPriceMixin, UpdateViewMixin):
+class Update(PriceToFloatViewMixin, UpdateViewMixin):
     service_class = IncomeModelService
     form_class = forms.IncomeForm
     success_url = reverse_lazy("incomes:tab_data")

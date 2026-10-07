@@ -10,6 +10,9 @@ register_converter(converters.DateConverter, "date")
 
 urlpatterns = [
     path("", views.Index.as_view(), name="index"),
+    path(
+        "set/balances/", views.RegenerateBalances.as_view(), name="regenerate_balances"
+    ),
     path("bookkeeping/accounts/", views.Accounts.as_view(), name="accounts"),
     path(
         "bookkeeping/accounts_worth/new/",

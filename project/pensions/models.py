@@ -1,6 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from ..core.lib.db_sync import SAVING_FIELDS
 from ..core.mixins.shows_profit import ShowsProfitMixin
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
@@ -39,9 +40,14 @@ class Pension(models.Model):
     def __str__(self):
         return f"{(self.date)}: {self.pension_type}"
 
+    @property
+    def journal(self):
+        return self.pension_type.journal
+
 
 class PensionBalance(ShowsProfitMixin, models.Model):
     fund_field = "pension_type"
+    sync_fields = SAVING_FIELDS
 
     pension_type = models.ForeignKey(
         PensionType, on_delete=models.CASCADE, related_name="pensions_balance"

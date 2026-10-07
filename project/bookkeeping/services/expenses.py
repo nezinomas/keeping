@@ -68,5 +68,5 @@ class ExpenseService:
 
 def load_service(user):
     data = ExpenseServiceData(user)
-    df = MakeDataFrame(user.year, data.expenses, data.expense_types)
+    df = MakeDataFrame.for_year(user.year, data.expenses, data.expense_types)
     return ExpenseService(BalanceBase(df.data))

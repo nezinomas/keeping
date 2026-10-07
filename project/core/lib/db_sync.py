@@ -4,8 +4,6 @@ import polars as pl
 from django.db import transaction as django_transaction
 from django.utils import timezone
 
-from ...pensions import models as pension
-from ...savings import models as saving
 from ...users.models import User
 
 ACCOUNT_FIELDS = [
@@ -44,18 +42,9 @@ class BalanceSynchronizer:
 
         service = model_service_class(self.user)
 
-        match service.objects.model:
-            case saving.SavingBalance:
-                self.fk_field = "saving_type_id"
-                self.fields = SAVING_FIELDS
-
-            case pension.PensionBalance:
-                self.fk_field = "pension_type_id"
-                self.fields = SAVING_FIELDS
-
-            case _:
-                self.fk_field = "account_id"
-                self.fields = ACCOUNT_FIELDS
+        model = service.objects.model
+        self.fk_field = model._meta.get_field(model.fund_field).attname
+        self.fields = model.sync_fields
 
         self.df = df
         self.df_db = self._get_existing_records()

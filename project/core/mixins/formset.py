@@ -1,34 +1,21 @@
+from collections.abc import Callable
 from functools import partial
 
-from django.core.exceptions import ImproperlyConfigured
 from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
 
-from ...bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
-from ...core import signals
 from ...core.lib.utils import http_htmx_response
-
-SIGNALS = {
-    AccountWorth: signals.accounts_signal,
-    SavingWorth: signals.savings_signal,
-    PensionWorth: signals.pensions_signal,
-}
+from ...core.services.signals_service import journal_user
+from ...users.models import User
 
 
 class BaseTypeFormSet(BaseModelFormSet):
-    def _get_relation_field_name(self) -> str:
-        """Extracts the relational field name to validate against."""
-        for field in self.model._meta.get_fields():
-            if field.many_to_one:
-                return field.name
-        raise ValueError(f"No many-to-one field found on {self.model.__name__}")
-
     def clean(self):
         if any(self.errors):
             return
 
-        relation_name = self._get_relation_field_name()
+        relation_name = self.model.fund_field
         seen_items = {}  # Maps the account value directly to the form instance
         duplicate_msg = _("The same accounts are selected.")
 
@@ -55,17 +42,12 @@ class BaseTypeFormSet(BaseModelFormSet):
 
 class FormsetMixin:
     template_name = "core/generic_formset.html"
-    service_class = None
-    category_service_class = None
+    service_class: type
+    category_service_class: type
+    balance_sync: Callable[[User], None]
 
     @cached_property
     def service_instance(self):
-        if self.service_class is None:
-            txt = f"{self.__class__.__module__}.{self.__class__.__name__}"
-            raise ImproperlyConfigured(
-                f"[{txt}] is missing a data source. Please define 'service_class'."
-            )
-
         return self.service_class(self.request.user)
 
     @cached_property
@@ -74,19 +56,10 @@ class FormsetMixin:
         return self.service_instance.objects.model
 
     def formset_initial(self):
-        return_list = []
-
-        foreign_key = [
-            f.name for f in self.model_class._meta.get_fields() if f.many_to_one
-        ]
-
-        if not foreign_key:
-            return return_list
-
+        fund_field = self.model_class.fund_field
         items = self.category_service_class(self.request.user).items()
 
-        return_list.extend({"price": None, foreign_key[0]: item} for item in items)
-        return return_list
+        return [{fund_field: item} for item in items]
 
     def get_formset(self, post=None, **kwargs):
         factory_blueprint = partial(
@@ -119,9 +92,7 @@ class FormsetMixin:
             if form.cleaned_data.get("price") is not None
         ]:
             self.service_instance.objects.bulk_create(objects)
-
-            if signal := SIGNALS.get(self.model_class):
-                signal(sender=self.model_class, instance=next(iter(objects)))
+            self.balance_sync(journal_user(objects[0]))
 
         return http_htmx_response(self.get_hx_trigger_django())
 

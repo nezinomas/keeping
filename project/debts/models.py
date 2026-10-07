@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.templatetags.math import price as convert_price
+from ..core.lib.convert_price import int_cents_to_float
 from ..journals.models import Journal
 
 
@@ -20,10 +20,7 @@ class Debt(models.Model):
     )
     name = models.CharField(max_length=100, validators=[MinLengthValidator(3)])
     price = models.PositiveIntegerField()
-    returned = models.PositiveIntegerField(
-        null=True,
-        default=0,
-    )
+    returned = models.PositiveIntegerField(default=0)
     closed = models.BooleanField(default=False)
     remark = models.TextField(max_length=500, blank=True)
     account = models.ForeignKey(
@@ -54,10 +51,14 @@ class DebtReturn(models.Model):
         price = round(self.price, 1)
 
         text = ""
-        if self.debt.debt_type == "lend":
-            text = f"{_('Lend return')} {convert_price(price)}"
+        if self.debt.debt_type == Debt.DebtType.LEND:
+            text = f"{_('Lend return')} {int_cents_to_float(price)}"
 
-        if self.debt.debt_type == "borrow":
-            text = f"{_('Borrow return')} {convert_price(price)}"
+        if self.debt.debt_type == Debt.DebtType.BORROW:
+            text = f"{_('Borrow return')} {int_cents_to_float(price)}"
 
         return text
+
+    @property
+    def journal(self):
+        return self.account.journal

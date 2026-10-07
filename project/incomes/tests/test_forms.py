@@ -11,9 +11,7 @@ from .factories import IncomeTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Income Type
-# ----------------------------------------------------------------------------
+# Income Type
 def test_income_type_init(main_user):
     IncomeTypeForm(user=main_user)
 
@@ -111,9 +109,7 @@ def test_form_income_type_and_second_user(main_user, second_user):
     assert '<option value="2">T2</option>' not in form
 
 
-# ----------------------------------------------------------------------------
-#                                                                       Income
-# ----------------------------------------------------------------------------
+# Income
 def test_income_init(main_user):
     IncomeForm(user=main_user)
 
@@ -260,3 +256,31 @@ def test_income_type_title_empty_slug(main_user):
     assert form.errors["title"] == [
         "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
     ]
+
+
+def test_income_type_create_ignores_a_posted_journal(main_user, second_user):
+    form = IncomeTypeForm(
+        user=main_user,
+        data={"journal": second_user.journal.pk, "title": "Title", "type": "salary"},
+    )
+
+    assert form.is_valid()
+
+    assert form.save().journal == main_user.journal
+
+
+def test_income_type_edit_ignores_a_posted_journal(main_user, second_user):
+    obj = IncomeTypeFactory(title="Mine", journal=main_user.journal)
+
+    form = IncomeTypeForm(
+        user=main_user,
+        instance=obj,
+        data={"journal": second_user.journal.pk, "title": "Mine", "type": "salary"},
+    )
+
+    assert form.is_valid()
+
+    form.save()
+    obj.refresh_from_db()
+
+    assert obj.journal == main_user.journal

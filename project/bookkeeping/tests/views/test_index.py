@@ -64,7 +64,9 @@ def test_view_index_year_end_cash_flow_equals_the_accounts_balance(
     )
 
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
-    checked = re.findall(r'class="[^"]*\bcheck">([^<]+)</th>', content)
+    checked = re.findall(
+        r'<th[^>]*class="[^"]*\bcheck\b[^"]*"[^>]*>([^<]+)</th>', content
+    )
 
     assert len(checked) == 2
     assert checked[0] == checked[1]
@@ -75,7 +77,7 @@ def test_view_index_negative_balance_is_marked_as_a_loss(client_logged):
 
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
 
-    assert re.search(r'<td data-sign="loss" class="[^"]*">-', content)
+    assert re.search(r'<td data-sign="loss"[^>]*>-', content)
 
 
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
@@ -87,7 +89,9 @@ def test_view_index_savings_column_shows_the_invested_price(client_logged, fee_s
     )
 
     content = client_logged.get(reverse("bookkeeping:index")).content.decode()
-    january = re.findall(r'<td class="left-thick-border[^"]*">([^<]+)</td>', content)
+    january = re.findall(
+        r'<td class="left-thick-border[^"]*"[^>]*>([^<]+)</td>', content
+    )
 
     assert january[0] == "200,00"
 
@@ -100,7 +104,7 @@ def test_view_index_regenerate_buttons(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    url = reverse("core:regenerate_balances")
+    url = reverse("bookkeeping:regenerate_balances")
 
     assert f'hx-get="{url}"' in content
     assert "Bus atnaujinti visų metų balansai." in content

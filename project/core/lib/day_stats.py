@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from functools import cached_property
@@ -17,11 +18,9 @@ class GapSpan:
 class Stats:
     def __init__(
         self,
-        year: int | None = None,
-        data: list[dict[date, float]] | None = None,
+        data: Sequence[dict[date, float]],
         past_latest: date | None = None,
     ):
-        self._year = year
         self._past_latest = past_latest
         self._data = data
         self._now_date = datetime.now().date()
@@ -132,17 +131,10 @@ class Stats:
         return empty_df.join(self._df, on="date", how="left").fill_null(0)
 
     def _prepare_data_frame(self, data) -> pl.DataFrame:
-        data = data if isinstance(data, list) else list(data)
-        history_df = pl.DataFrame(data or [])
+        history_df = pl.DataFrame(list(data))
 
         if history_df.is_empty():
             return history_df
-
-        if "quantity" in history_df.columns:
-            history_df = history_df.rename({"quantity": "qty"})
-
-        if self._year:
-            history_df = history_df.filter(pl.col("date").dt.year() == self._year)
 
         return history_df.sort("date")
 

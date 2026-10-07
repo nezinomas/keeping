@@ -16,8 +16,8 @@ class IncomePlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
-    month = models.PositiveIntegerField(null=True, blank=True)
-    price = models.PositiveIntegerField(null=True, blank=True)
+    month = models.PositiveIntegerField()
+    price = models.PositiveIntegerField()
     income_type = models.ForeignKey(IncomeType, on_delete=models.CASCADE)
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="income_plans"
@@ -35,8 +35,8 @@ class ExpensePlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
-    month = models.PositiveIntegerField(null=True, blank=True)
-    price = models.PositiveIntegerField(null=True, blank=True)
+    month = models.PositiveIntegerField()
+    price = models.PositiveIntegerField()
     expense_type = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="expense_plans"
@@ -54,8 +54,8 @@ class SavingPlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)]
     )
-    month = models.PositiveIntegerField(null=True, blank=True)
-    price = models.PositiveIntegerField(null=True, blank=True)
+    month = models.PositiveIntegerField()
+    price = models.PositiveIntegerField()
     saving_type = models.ForeignKey(SavingType, on_delete=models.CASCADE)
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="saving_plans"
@@ -73,8 +73,8 @@ class DayPlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
-    month = models.PositiveIntegerField(null=True, blank=True)
-    price = models.PositiveIntegerField(null=True, blank=True)
+    month = models.PositiveIntegerField()
+    price = models.PositiveIntegerField()
     journal = models.ForeignKey(
         Journal, on_delete=models.CASCADE, related_name="day_plans"
     )
@@ -91,8 +91,8 @@ class NecessaryPlan(models.Model):
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(1974), MaxValueValidator(2050)],
     )
-    month = models.PositiveIntegerField(null=True, blank=True)
-    price = models.PositiveIntegerField(null=True, blank=True)
+    month = models.PositiveIntegerField()
+    price = models.PositiveIntegerField()
     title = models.CharField(
         max_length=100, validators=[MinLengthValidator(3), validate_title_characters]
     )

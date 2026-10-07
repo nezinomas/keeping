@@ -2,11 +2,19 @@ import functools
 import time
 from statistics import stdev
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 
 def clean_content(rendered):
     return str(rendered).replace("\n", "").replace("\t", "").replace("  ", "")
+
+
+def count_queries(run):
+    with CaptureQueriesContext(connection) as queries:
+        run()
+    return len(queries)
 
 
 def change_profile_year(client, year=1):

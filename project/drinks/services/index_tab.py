@@ -99,7 +99,7 @@ class IndexTab:
             "tbl_std_av": builder.tbl_std_av(),
             "cards": builder.get_cards(),
             "calendar": CalendarGrid.build(
-                year=year,
+                boundary,
                 daily_data=records.daily_rows,
                 latest_past_date=records.last_recorded_date_before,
                 unit="Std Av",

@@ -8,7 +8,7 @@ from ..accounts.services.model_services import (
     AccountModelService,
 )
 from ..core.lib import date as core_date
-from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
 from ..expenses.services.model_services import ExpenseTypeModelService
@@ -48,7 +48,8 @@ class DateFieldMixin:
         )
 
 
-class SavingWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
+class SavingWorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
+    price_fields = ("price",)
     price = CommaFloatField(min_value=0, required=False)
 
     class Meta:
@@ -78,7 +79,8 @@ class SavingWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
         return clean_date_and_closed("saving_type", cleaned, self.add_error)
 
 
-class AccountWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
+class AccountWorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
+    price_fields = ("price",)
     price = CommaFloatField(min_value=0, required=False)
 
     class Meta:
@@ -108,7 +110,8 @@ class AccountWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
         return clean_date_and_closed("account", cleaned, self.add_error)
 
 
-class PensionWorthForm(ConvertPriceMixin, DateFieldMixin, forms.ModelForm):
+class PensionWorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
+    price_fields = ("price",)
     price = CommaFloatField(min_value=0, required=False)
 
     class Meta:

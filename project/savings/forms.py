@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertPriceMixin, PriceNeverEmptyFormMixin
+from ..core.lib.convert_price import PriceNeverEmptyFormMixin, PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
@@ -34,8 +34,9 @@ class SavingTypeForm(forms.ModelForm):
 
 
 class SavingForm(
-    ConvertPriceMixin, PriceNeverEmptyFormMixin, YearBetweenMixin, forms.ModelForm
+    PriceToCentsFormMixin, PriceNeverEmptyFormMixin, YearBetweenMixin, forms.ModelForm
 ):
+    price_fields = ("price", "fee")
     price = CommaFloatField(min_value=0, required=False)
     fee = CommaFloatField(min_value=0, required=False)
 

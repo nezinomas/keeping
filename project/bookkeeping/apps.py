@@ -7,4 +7,4 @@ class BookkeepingConfig(AppConfig):
     name = f"project.{App_name}"
 
     def ready(self):
-        pass
+        from . import signals  # noqa: F401

@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts import views as accounts_views
-from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.convert_price import PriceToFloatViewMixin
 from ..core.lib.utils import rendered_content
 from ..core.mixins.views import (
     CreateViewMixin,
@@ -73,7 +73,7 @@ class New(CreateViewMixin):
     modal_form_title = _("Transaction")
 
 
-class Update(ConvertPriceMixin, UpdateViewMixin):
+class Update(PriceToFloatViewMixin, UpdateViewMixin):
     service_class = TransactionModelService
     form_class = forms.TransactionForm
     hx_trigger_django = "afterTransaction"
@@ -107,7 +107,7 @@ class SavingsCloseNew(CreateViewMixin):
     modal_form_title = _("Fund &rArr; Account")
 
 
-class SavingsCloseUpdate(ConvertPriceMixin, UpdateViewMixin):
+class SavingsCloseUpdate(PriceToFloatViewMixin, UpdateViewMixin):
     service_class = SavingCloseModelService
     form_class = forms.SavingCloseForm
     hx_trigger_django = "afterClose"
@@ -145,7 +145,7 @@ class SavingsChangeNew(CreateViewMixin):
     modal_form_title = _("Fund &hArr; Fund")
 
 
-class SavingsChangeUpdate(ConvertPriceMixin, UpdateViewMixin):
+class SavingsChangeUpdate(PriceToFloatViewMixin, UpdateViewMixin):
     service_class = SavingChangeModelService
     form_class = forms.SavingChangeForm
     hx_trigger_django = "afterChange"

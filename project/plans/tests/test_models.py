@@ -1,5 +1,6 @@
 import pytest
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.db.models.signals import post_save
 from django.utils.translation import gettext as _
 from factory.django import mute_signals
@@ -17,6 +18,7 @@ from ..services.model_services import (
     SavingPlanModelService,
 )
 from .factories import (
+    PLAN_KINDS,
     DayPlanFactory,
     ExpensePlanFactory,
     IncomePlanFactory,
@@ -33,9 +35,7 @@ def mute_my_signals():
         yield
 
 
-# ----------------------------------------------------------------------------
-#                                                                Common method
-# ----------------------------------------------------------------------------
+# Common method
 def test_targets_fills_zeros_for_empty_plans(main_user):
     ExpenseTypeFactory(title="T1")
     ExpenseTypeFactory(title="T2")
@@ -101,9 +101,7 @@ def test_targets_ignore_unknown_expense_types(main_user, mocker):
     assert actual == expect
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Income Plan
-# ----------------------------------------------------------------------------
+# Income Plan
 def test_income_str():
     actual = IncomePlanFactory.build(year=2000)
 
@@ -198,9 +196,7 @@ def test_income_no_dublicates():
     IncomePlan(year=2000, month=1, income_type=type_).save()
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Expense Plan
-# ----------------------------------------------------------------------------
+# Expense Plan
 def test_expense_str():
     actual = ExpensePlanFactory.build(year=2000)
 
@@ -319,9 +315,7 @@ def test_expense_items_query_count(main_user, django_assert_max_num_queries):
         list(ExpensePlanModelService(main_user).items())
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Saving Plan
-# ----------------------------------------------------------------------------
+# Saving Plan
 def test_saving_str():
     actual = SavingPlanFactory.build(year=2000)
 
@@ -410,9 +404,7 @@ def test_saving_pivot_table(main_user):
     assert actual == {s2: {12: 5}, s1: {1: 1, 2: 2}}
 
 
-# ----------------------------------------------------------------------------
-#                                                                     Day Plan
-# ----------------------------------------------------------------------------
+# Day Plan
 def test_day_str():
     actual = DayPlanFactory.build(year=2000)
 
@@ -491,9 +483,7 @@ def test_day_no_dublicates(main_user):
     DayPlanFactory(year=2000, month=1, journal=main_user.journal)
 
 
-# ----------------------------------------------------------------------------
-#                                                               Necessary Plan
-# ----------------------------------------------------------------------------
+# Necessary Plan
 def test_necessary_str():
     actual = NecessaryPlanFactory.build(year=2000, title="N")
 
@@ -726,3 +716,10 @@ def test_necessary_pivot_table_no_data(main_user):
     actual = NecessaryPlanModelService(main_user).pivot_table(1999)
 
     assert actual == {}
+
+
+@pytest.mark.parametrize("kind", PLAN_KINDS, ids=lambda k: k.model.__name__)
+@pytest.mark.parametrize("column", ["price", "month"])
+def test_plan_row_cannot_store_null(kind, column):
+    with pytest.raises(IntegrityError), transaction.atomic():
+        kind.factory(**{column: None})

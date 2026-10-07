@@ -2,12 +2,12 @@ import pytest
 import time_machine
 
 from ....accounts.tests.factories import AccountFactory
+from ....bookkeeping import balance_sources
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingTypeFactory
+from ....transactions.close_rules import KEEP
 from ....transactions.forms import SavingChangeForm, SavingCloseForm
-from ....transactions.services.close_year import KEEP
 from ....transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
-from ...services import signals_service
 
 pytestmark = pytest.mark.django_db
 
@@ -59,8 +59,8 @@ def _ticked_form(main_user, move):
 @pytest.mark.parametrize("move, accounts", [("sell", 1), ("switch", 0)])
 def test_form_move_that_closes_the_fund_syncs_once(main_user, mocker, move, accounts):
     fund, form = _ticked_form(main_user, move)
-    savings = mocker.spy(signals_service, "sync_savings")
-    balances = mocker.spy(signals_service, "sync_accounts")
+    savings = mocker.spy(balance_sources, "sync_savings")
+    balances = mocker.spy(balance_sources, "sync_accounts")
 
     form.save()
 
@@ -77,7 +77,7 @@ def test_deleting_the_closing_move_syncs_once_and_reopens_the_fund(
 ):
     fund, form = _ticked_form(main_user, move)
     row = form.save()
-    savings = mocker.spy(signals_service, "sync_savings")
+    savings = mocker.spy(balance_sources, "sync_savings")
 
     row.delete()
 

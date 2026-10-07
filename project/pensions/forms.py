@@ -3,7 +3,7 @@ from datetime import datetime
 from django import forms
 from django.utils.translation import gettext as _
 
-from ..core.lib.convert_price import ConvertPriceMixin, PriceNeverEmptyFormMixin
+from ..core.lib.convert_price import PriceNeverEmptyFormMixin, PriceToCentsFormMixin
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
 from ..core.mixins.forms import YearBetweenMixin
@@ -12,8 +12,9 @@ from .services.model_services import PensionTypeModelService
 
 
 class PensionForm(
-    ConvertPriceMixin, PriceNeverEmptyFormMixin, YearBetweenMixin, forms.ModelForm
+    PriceToCentsFormMixin, PriceNeverEmptyFormMixin, YearBetweenMixin, forms.ModelForm
 ):
+    price_fields = ("price", "fee")
     price = CommaFloatField(required=False, min_value=0)
     fee = CommaFloatField(required=False, min_value=0)
 

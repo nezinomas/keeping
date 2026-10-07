@@ -12,7 +12,7 @@ from project.bookkeeping.services.model_services import (
 )
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.utils import rendered_content
+from ..core.lib.utils import http_htmx_response, rendered_content
 from ..core.mixins.formset import FormsetMixin
 from ..core.mixins.tabs import TabViewMixin as CoreTabViewMixin
 from ..core.mixins.views import (
@@ -22,7 +22,7 @@ from ..core.mixins.views import (
 )
 from ..pensions.services.model_services import PensionTypeModelService
 from ..savings.services.model_services import SavingTypeModelService
-from . import forms, services
+from . import balance_sources, forms, services
 from .lib import no_incomes
 from .mixins.month import MonthMixin
 from .services.detailed.shares import with_subtitles
@@ -67,6 +67,26 @@ class ReloadIndex(ReloadIndexContextDataMixin, TemplateViewMixin):
     template_name = "bookkeeping/includes/reload_index.html"
 
 
+class RegenerateBalances(TemplateViewMixin):
+    def get(self, request, *args, **kwargs):
+        balances = {
+            "accounts": (balance_sources.sync_accounts, "afterSignalAccounts"),
+            "savings": (balance_sources.sync_savings, "afterSignalSavings"),
+            "pensions": (balance_sources.sync_pensions, "afterSignalPensions"),
+        }
+        syncs = [sync for sync, _ in balances.values()]
+        hx_trigger_name = "afterSignal"
+
+        if (kind := request.GET.get("type")) in balances:
+            sync, hx_trigger_name = balances[kind]
+            syncs = [sync]
+
+        for sync in syncs:
+            sync(request.user)
+
+        return http_htmx_response(hx_trigger_name)
+
+
 class Accounts(TemplateViewMixin):
     template_name = "bookkeeping/includes/account_worth_list.html"
 
@@ -84,6 +104,7 @@ class AccountsWorthNew(FormsetMixin, CreateViewMixin):
     modal_form_title = _("Worth of accounts")
     url = reverse_lazy("bookkeeping:accounts_worth_new")
     hx_trigger_django = "afterAccountWorthNew"
+    balance_sync = staticmethod(balance_sources.sync_accounts)
 
 
 class Savings(TemplateViewMixin):
@@ -102,6 +123,7 @@ class SavingsWorthNew(FormsetMixin, CreateViewMixin):
     modal_form_title = _("Worth of savings")
     url = reverse_lazy("bookkeeping:savings_worth_new")
     hx_trigger_django = "afterSavingWorthNew"
+    balance_sync = staticmethod(balance_sources.sync_savings)
 
 
 class Pensions(TemplateViewMixin):
@@ -121,6 +143,7 @@ class PensionsWorthNew(FormsetMixin, CreateViewMixin):
     modal_form_title = _("Worth of pensions")
     url = reverse_lazy("bookkeeping:pensions_worth_new")
     hx_trigger_django = "afterPensionWorthNew"
+    balance_sync = staticmethod(balance_sources.sync_pensions)
 
 
 class Wealth(TemplateViewMixin):

@@ -11,9 +11,7 @@ from ... import views
 pytestmark = pytest.mark.django_db
 
 
-# -------------------------------------------------------------------------------------
-#                                                                                 Month
-# -------------------------------------------------------------------------------------
+# Month
 def test_view_month_func():
     view = resolve("/month/")
 
@@ -96,9 +94,7 @@ def test_view_month_200_set_user_month_value(month, expect, client_logged):
     assert response.wsgi_request.user.month == expect
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        Month Day List
-# -------------------------------------------------------------------------------------
+# Month Day List
 def test_view_expand_day_expenses_func():
     view = resolve("/month/1111-2-3/")
 
@@ -148,9 +144,7 @@ def test_view_expand_day_expenses_ajax(client_logged):
     assert "Expense Name" in actual
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          Month Charts
-# -------------------------------------------------------------------------------------
+# Month Charts
 def test_view_month_chart_func():
     view = resolve("/month/chart_type")
 

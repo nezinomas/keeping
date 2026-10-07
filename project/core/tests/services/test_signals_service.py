@@ -1,94 +1,68 @@
 import pytest
-from mock import Mock
 
+from ....bookkeeping.tests.factories import (
+    AccountWorthFactory,
+    PensionWorthFactory,
+    SavingWorthFactory,
+)
+from ....debts.tests.factories import BorrowFactory, BorrowReturnFactory
+from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
-from ...services.signals_service import (
-    _get_user_from_instance,
-    sync_accounts,
-    sync_pensions,
-    sync_savings,
+from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
+from ....savings.tests.factories import SavingFactory, SavingTypeFactory
+from ....transactions.tests.factories import (
+    SavingChangeFactory,
+    SavingCloseFactory,
+    TransactionFactory,
 )
+from ....users.tests.factories import UserFactory
+from ...services import signals_service
+from ...services.signals_service import journal_user, sync
+
+pytestmark = pytest.mark.django_db
+
+
+def test_journal_user_is_the_first_user_of_the_journal(main_user):
+    UserFactory(username="Y", email="y@y.yy", journal=main_user.journal)
+
+    assert journal_user(SavingTypeFactory()) == main_user
 
 
 @pytest.mark.parametrize(
-    "method_name",
+    "factory",
     [
-        (sync_accounts),
-        (sync_savings),
-        (sync_pensions),
+        IncomeFactory,
+        ExpenseFactory,
+        SavingFactory,
+        TransactionFactory,
+        SavingCloseFactory,
+        SavingChangeFactory,
+        BorrowFactory,
+        BorrowReturnFactory,
+        AccountWorthFactory,
+        SavingWorthFactory,
+        PensionWorthFactory,
+        PensionFactory,
+        SavingTypeFactory,
+        PensionTypeFactory,
     ],
 )
-def test_sync_accounts_returns_early_if_no_user(method_name):
-    instance = Mock()
-    instance._meta.get_fields.return_value = []
-
-    result = method_name(instance)
-
-    assert result is None  # returns early
+def test_journal_user_of_every_synced_model_is_the_journals_user(main_user, factory):
+    assert journal_user(factory()) == main_user
 
 
-@pytest.mark.parametrize(
-    "method_name",
-    [
-        (sync_accounts),
-        (sync_savings),
-        (sync_pensions),
-    ],
-)
-def test_sync_accounts_uses_provided_user(method_name, main_user):
-    instance = Mock()
+def test_sync_hands_the_synchronizer_the_service_the_user_and_the_tables_df(
+    main_user, mocker, monkeypatch
+):
+    get_data = mocker.Mock()
+    synchronizer = mocker.Mock()
+    table = mocker.Mock()
+    monkeypatch.setattr(signals_service, "GetData", get_data)
+    monkeypatch.setattr(signals_service, "BalanceSynchronizer", synchronizer)
+    conf, service = {"incomes": ()}, mocker.Mock()
 
-    with pytest.raises(AttributeError):
-        method_name(instance, user=main_user)
-    # No error = user was used, not _get_user_from_instance
+    sync(main_user, conf, table, service)
 
-
-def test__get_user_from_instance_returns_none_if_no_fk():
-    instance = Mock()
-    instance._meta.get_fields.return_value = []
-
-    result = _get_user_from_instance(instance)
-
-    assert result is None
-
-
-def test__get_user_from_instance_returns_none_if_related_has_no_journal():
-    instance = Mock()
-    field = Mock()
-    field.name = "account"
-    field.many_to_one = True
-    instance._meta.get_fields.return_value = [field]
-
-    related = Mock()
-    related.journal = None
-    instance.account = related
-
-    result = _get_user_from_instance(instance)
-
-    assert result is None
-
-
-def test__get_user_from_instance_returns_none_if_journal_has_no_users():
-    instance = Mock()
-    field = Mock(
-        name="account",
-        many_to_one=True,
-    )
-    instance._meta.get_fields.return_value = [field]
-
-    journal = Mock()
-    journal.users.first.return_value = None
-    related = Mock(journal=journal)
-    instance.account = related
-
-    result = _get_user_from_instance(instance)
-
-    assert result is None
-
-
-@pytest.mark.django_db
-def test__get_user_from_instance_returns_user_successfully(main_user):
-    instance = IncomeFactory()
-    result = _get_user_from_instance(instance)
-
-    assert result == main_user
+    get_data.assert_called_once_with(main_user, conf)
+    table.assert_called_once_with(get_data.return_value)
+    synchronizer.assert_called_once_with(service, main_user, table.return_value.df)

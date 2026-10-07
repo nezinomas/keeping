@@ -38,20 +38,20 @@
             </td>
             {% for cat in ctx.expense_types %}
               {% with table|get_item:cat as val%}
-              <td class="{{val|css_class_if_none}}">{{val|price|cellformat}}</td>{%endwith%}
+              <td data-cell="{{val|cell_state}}">{{val|price|cellformat}}</td>{%endwith%}
             {% endfor %}
 
             <!-- total expenses -->
-            {% with table|get_item:"total" as val%}<td class="total-col {{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
+            {% with table|get_item:"total" as val%}<td class="total-col" data-cell="{{val|cell_state}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- savings -->
-            {% with table|get_item:"savings" as val%}<td class="{{val|css_class_if_none}}">{{val|price|cellformat}}</td>{% endwith %}
+            {% with table|get_item:"savings" as val%}<td data-cell="{{val|cell_state}}">{{val|price|cellformat}}</td>{% endwith %}
 
             <!-- spending -->
             <td class="text-left empty-col">{{spending.date|date:'l'}}</td>
-            {% with spending.day as val%}<td{% if val|sign == "loss" %} data-sign="loss"{% endif %} class="day-warning {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
+            {% with spending.day as val%}<td{% if val|sign == "loss" %} data-sign="loss"{% endif %} class="day-warning" data-cell="{{val|cell_state}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
 
-            {% with spending.full as val%}<td{% if val|sign == "loss" %} data-sign="loss"{% endif %} class="day-negative {{val|css_class_if_none}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
+            {% with spending.full as val%}<td{% if val|sign == "loss" %} data-sign="loss"{% endif %} class="day-negative" data-cell="{{val|cell_state}}">{{val|price|cellformat:"0,00"}}</td>{% endwith %}
 
         </tr>{% endwith %}{% endwith %}
         {% endfor %}
@@ -60,15 +60,15 @@
         <tr>
             <th class="text-left">&#8721;</th>
             {% for cat in ctx.expense_types %}
-                {% with ctx.total_row|get_item:cat as val%}<th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>{% endwith %}
+                {% with ctx.total_row|get_item:cat as val%}<th data-cell="{{val|cell_state}}">{{val|price|cellformat}}</th>{% endwith %}
             {% endfor %}
 
             <!-- total expenses -->
-            {% with ctx.total_row|get_item:"total" as val%}<th class="{{val|css_class_if_none}} total-col">{{val|price|cellformat}}</th>{% endwith %}
+            {% with ctx.total_row|get_item:"total" as val%}<th class="total-col" data-cell="{{val|cell_state}}">{{val|price|cellformat}}</th>{% endwith %}
 
 
             <!-- savings -->
-            {% with ctx.total_row|get_item:"savings" as val%}<th class="{{val|css_class_if_none}}">{{val|price|cellformat}}</th>{% endwith %}
+            {% with ctx.total_row|get_item:"savings" as val%}<th data-cell="{{val|cell_state}}">{{val|price|cellformat}}</th>{% endwith %}
 
             <th class="empty-col"></th>
             <th></th>

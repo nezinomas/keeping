@@ -13,9 +13,7 @@ from .factories import SavingTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Saving Type
-# ----------------------------------------------------------------------------
+# Saving Type
 def test_saving_type_init(main_user):
     SavingTypeForm(user=main_user)
 
@@ -283,9 +281,7 @@ def test_saving_type_title_slug_rules(main_user, title, message):
     assert form.errors["title"] == [message]
 
 
-# ----------------------------------------------------------------------------
-#                                                                       Saving
-# ----------------------------------------------------------------------------
+# Saving
 def test_saving_init(main_user):
     SavingForm(user=main_user)
 
@@ -545,3 +541,60 @@ def test_saving_price_null_and_fee_null(main_user):
 
     assert not form.is_valid()
     assert "price" in form.errors
+
+
+def _saving_type_data(second_user, title):
+    return {
+        "journal": second_user.journal.pk,
+        "title": title,
+        "closed": "",
+        "type": "funds",
+        "fee_source": "investment",
+    }
+
+
+def test_saving_type_create_ignores_a_posted_journal(main_user, second_user):
+    form = SavingTypeForm(user=main_user, data=_saving_type_data(second_user, "Title"))
+
+    assert form.is_valid()
+
+    assert form.save().journal == main_user.journal
+
+
+def test_saving_type_edit_ignores_a_posted_journal(main_user, second_user):
+    obj = SavingTypeFactory(title="Mine", journal=main_user.journal)
+
+    form = SavingTypeForm(
+        user=main_user,
+        instance=obj,
+        data=_saving_type_data(second_user, "Mine"),
+    )
+
+    assert form.is_valid()
+
+    form.save()
+    obj.refresh_from_db()
+
+    assert obj.journal == main_user.journal
+
+
+@pytest.mark.parametrize("field", ["account", "saving_type"])
+def test_saving_rejects_a_fund_or_account_of_another_journal(
+    main_user, second_user, field
+):
+    data = {
+        "date": "1999-01-01",
+        "price": 0.01,
+        "account": AccountFactory(title="Mine", journal=main_user.journal).pk,
+        "saving_type": SavingTypeFactory(title="Mine", journal=main_user.journal).pk,
+    }
+    foreign = {
+        "account": AccountFactory(title="Theirs", journal=second_user.journal),
+        "saving_type": SavingTypeFactory(title="Theirs", journal=second_user.journal),
+    }
+    data[field] = foreign[field].pk
+
+    form = SavingForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert field in form.errors

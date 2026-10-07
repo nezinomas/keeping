@@ -2,6 +2,7 @@ from datetime import date as dt
 
 import factory
 import pytest
+from django.db import IntegrityError, transaction
 from django.db.models.signals import post_save
 
 from ....accounts.services.model_services import AccountBalanceModelService
@@ -33,9 +34,17 @@ def test_debt_fields():
     assert Debt._meta.get_field("remark")
 
 
+def test_debt_returned_is_never_null():
+    with pytest.raises(IntegrityError), transaction.atomic():
+        LendFactory(returned=None)
+
+
 def test_lend_related(main_user, second_user):
     o = LendFactory()
-    LendFactory(journal=second_user.journal)
+    LendFactory(
+        journal=second_user.journal,
+        account=AccountFactory(journal=second_user.journal, title="a2"),
+    )
 
     actual = DebtModelService(main_user, "lend").objects
 
@@ -434,7 +443,11 @@ def test_borrow_post_delete_with_updt():
 
 def test_debt_unique_users(second_user):
     LendFactory(name="T1")
-    LendFactory(name="T1", journal=second_user.journal)
+    LendFactory(
+        name="T1",
+        journal=second_user.journal,
+        account=AccountFactory(journal=second_user.journal, title="a2"),
+    )
 
 
 @factory.django.mute_signals(post_save)

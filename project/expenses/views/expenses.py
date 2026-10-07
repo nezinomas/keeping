@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from ...core.lib.convert_price import ConvertPriceMixin
+from ...core.lib.convert_price import PriceToFloatViewMixin
 from ...core.lib.utils import add_fast_urls, get_action_buttons_html, int_or_zero
 from ...core.mixins.views import (
     CreateViewMixin,
@@ -79,7 +79,7 @@ class New(CreateViewMixin):
     template_name = "expenses/expense_form.html"
 
 
-class Update(ConvertPriceMixin, UpdateViewMixin):
+class Update(PriceToFloatViewMixin, UpdateViewMixin):
     service_class = ExpenseModelService
     form_class = forms.ExpenseForm
     success_url = reverse_lazy("expenses:list")
