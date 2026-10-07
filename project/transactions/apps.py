@@ -6,12 +6,17 @@ class TransactionsConfig(AppConfig):
 
     def ready(self):
         from ..core.services.signals_service import BalanceKind, register_sources
-        from ..core.signals import accounts_signal, savings_signal  # noqa: F401
+        from ..core.signals import accounts_signal, connect_save_and_delete
+        from .models import SavingChange, SavingClose, Transaction
         from .services.model_services import (
             SavingChangeModelService,
             SavingCloseModelService,
             TransactionModelService,
         )
+        from .signals import move_signal
+
+        connect_save_and_delete(accounts_signal, Transaction, SavingClose)
+        connect_save_and_delete(move_signal, SavingClose, SavingChange)
 
         accounts, savings = BalanceKind.ACCOUNTS, BalanceKind.SAVINGS
         register_sources(
