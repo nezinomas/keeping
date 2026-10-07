@@ -51,11 +51,14 @@ class ExpenseName(TitleAbstract):
         ]
 
 
+DEFAULT_QUANTITY = 1
+
+
 class Expense(models.Model):
     date = models.DateField()
     price = models.PositiveIntegerField()
     quantity = models.IntegerField(
-        default=1,
+        default=DEFAULT_QUANTITY,
     )
     expense_type = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
     expense_name = models.ForeignKey(ExpenseName, on_delete=models.CASCADE)
