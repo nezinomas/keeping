@@ -51,10 +51,10 @@ class DebtReturn(models.Model):
         price = round(self.price, 1)
 
         text = ""
-        if self.debt.debt_type == "lend":
+        if self.debt.debt_type == Debt.DebtType.LEND:
             text = f"{_('Lend return')} {int_cents_to_float(price)}"
 
-        if self.debt.debt_type == "borrow":
+        if self.debt.debt_type == Debt.DebtType.BORROW:
             text = f"{_('Borrow return')} {int_cents_to_float(price)}"
 
         return text
