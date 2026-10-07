@@ -158,8 +158,8 @@ def test_amount_start(data):
     assert actual == 10
 
 
-def test_amount_start_none(data):
-    actual = YearBalance(data=data, amount_start=None).amount_start
+def test_amount_start_zero(data):
+    actual = YearBalance(data=data, amount_start=0).amount_start
 
     assert actual == 0
 
@@ -184,7 +184,7 @@ def test_amount_balance(data, amount_start):
 
 
 def test_balance_income_data(data, expect):
-    actual = YearBalance(data=data, amount_start=None).income_data
+    actual = YearBalance(data=data, amount_start=0).income_data
 
     expect = [x["incomes"] for x in expect]
 
@@ -192,7 +192,7 @@ def test_balance_income_data(data, expect):
 
 
 def test_balance_expense_data(data, expect):
-    actual = YearBalance(data=data, amount_start=None).expense_data
+    actual = YearBalance(data=data, amount_start=0).expense_data
 
     expect = [x["expenses"] for x in expect]
 
@@ -200,7 +200,7 @@ def test_balance_expense_data(data, expect):
 
 
 def test_balance_borrow_data(data, expect):
-    actual = YearBalance(data=data, amount_start=None).borrow_data
+    actual = YearBalance(data=data, amount_start=0).borrow_data
 
     expect = [x["borrow"] for x in expect]
 
@@ -208,7 +208,7 @@ def test_balance_borrow_data(data, expect):
 
 
 def test_balance_borrow_return_data(data, expect):
-    actual = YearBalance(data=data, amount_start=None).borrow_return_data
+    actual = YearBalance(data=data, amount_start=0).borrow_return_data
 
     expect = [x["borrow_return"] for x in expect]
 
@@ -216,7 +216,7 @@ def test_balance_borrow_return_data(data, expect):
 
 
 def test_balance_lend_data(data, expect):
-    actual = YearBalance(data=data, amount_start=None).lend_data
+    actual = YearBalance(data=data, amount_start=0).lend_data
 
     expect = [x["lend"] for x in expect]
 
@@ -224,7 +224,7 @@ def test_balance_lend_data(data, expect):
 
 
 def test_balance_lend_return_data(data, expect):
-    actual = YearBalance(data=data, amount_start=None).lend_return_data
+    actual = YearBalance(data=data, amount_start=0).lend_return_data
 
     expect = [x["lend_return"] for x in expect]
 
@@ -240,7 +240,7 @@ def test_balance_money_flow(data, amount_start, expect):
 
 
 def test_avg_incomes(data):
-    actual = YearBalance(data=data, amount_start=None).avg_incomes
+    actual = YearBalance(data=data, amount_start=0).avg_incomes
 
     assert actual == 90
 
@@ -248,20 +248,20 @@ def test_avg_incomes(data):
 def test_avg_incomes_none(data):
     data.data = data.data.with_columns(pl.col("incomes") * 0)
 
-    actual = YearBalance(data=data, amount_start=None).avg_incomes
+    actual = YearBalance(data=data, amount_start=0).avg_incomes
 
     assert actual == 0
 
 
 def test_avg_expenses(data):
-    actual = YearBalance(data=data, amount_start=None).avg_expenses
+    actual = YearBalance(data=data, amount_start=0).avg_expenses
 
     assert actual == 15
 
 
 def test_avg_expenses_none(data):
     data.data = data.data.with_columns(pl.col("expenses") * 0)
-    actual = YearBalance(data=data, amount_start=None).avg_expenses
+    actual = YearBalance(data=data, amount_start=0).avg_expenses
 
     assert actual == 0
 
@@ -272,7 +272,7 @@ def test_avg_expenses_current_year(data):
     data.data[1, "expenses"] = 2
     data.data[2, "expenses"] = 3
 
-    actual = YearBalance(data=data, amount_start=None).avg_expenses
+    actual = YearBalance(data=data, amount_start=0).avg_expenses
 
     assert actual == 1.5
 
@@ -283,7 +283,7 @@ def test_avg_expenses_not_current_year(data):
     data.data[1, "expenses"] = 2
     data.data[2, "expenses"] = 3
 
-    actual = YearBalance(data=data, amount_start=None).avg_expenses
+    actual = YearBalance(data=data, amount_start=0).avg_expenses
 
     assert actual == 2
 
