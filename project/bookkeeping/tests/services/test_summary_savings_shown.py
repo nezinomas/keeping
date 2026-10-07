@@ -2,13 +2,6 @@ from datetime import date
 
 import pytest
 
-from ....core.tests.signals.helpers import (
-    YEAR,
-    buy,
-    sell,
-    worth,
-    worth_date,
-)
 from ....core.tests.utils import count_queries
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingType
@@ -16,6 +9,13 @@ from ....savings.tests.factories import SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ...services import savings, summary_savings
 from ..factories import PensionWorthFactory
+from ..signals.helpers import (
+    YEAR,
+    buy,
+    sell,
+    worth,
+    worth_date,
+)
 
 pytestmark = pytest.mark.django_db
 

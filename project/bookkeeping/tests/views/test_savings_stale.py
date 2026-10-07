@@ -3,11 +3,11 @@ from datetime import date
 import pytest
 from django.urls import reverse
 
-from ....core.tests.signals.helpers import YEAR, buy, sell, worth
 from ....savings.tests.factories import SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ....users.models import User
 from ..helper import row_cells, total_cells, view_queries
+from ..signals.helpers import YEAR, buy, sell, worth
 
 pytestmark = pytest.mark.django_db
 

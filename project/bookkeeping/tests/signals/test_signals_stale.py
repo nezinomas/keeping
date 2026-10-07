@@ -4,11 +4,11 @@ import pytest
 
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import PensionWorthFactory
+from ....core.tests.utils import count_queries
 from ....pensions.models import PensionBalance
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingBalance
 from ....savings.tests.factories import SavingTypeFactory
-from ..utils import count_queries
 from .helpers import (
     YEAR,
     balance,

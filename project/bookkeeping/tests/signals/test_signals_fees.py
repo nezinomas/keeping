@@ -6,13 +6,13 @@ from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import SavingWorthFactory
+from ....core.lib.db_sync import SAVING_FIELDS
+from ....core.tests.utils import count_queries
 from ....incomes.tests.factories import IncomeFactory
 from ....savings.models import SavingBalance, SavingType
 from ....savings.services.model_services import SavingModelService
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
-from ...lib.db_sync import SAVING_FIELDS
-from ...tests.utils import count_queries
 from .helpers import balance, worth_date
 
 pytestmark = pytest.mark.django_db
