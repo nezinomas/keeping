@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
+from ..core.lib.db_sync import SAVING_FIELDS
 from ..core.mixins.shows_profit import ShowsProfitMixin
 from ..core.models import TitleAbstract
 from ..core.validators import TITLE_VALIDATORS
@@ -77,6 +78,7 @@ class Saving(models.Model):
 
 class SavingBalance(ShowsProfitMixin, models.Model):
     fund_field = "saving_type"
+    sync_fields = SAVING_FIELDS
 
     saving_type = models.ForeignKey(
         SavingType, on_delete=models.CASCADE, related_name="savings_balance"
