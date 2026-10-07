@@ -9,6 +9,7 @@ from ...accounts.tests.factories import AccountFactory
 from ...core.tests.utils import clean_content
 from ...savings.models import SavingType
 from ...savings.tests.factories import SavingTypeFactory
+from ...users.views import Login
 from .. import models, views
 from .factories import (
     SavingChange,
@@ -994,9 +995,6 @@ def test_load_saving_type_must_logged(client):
     response = client.get(url, follow=True)
 
     assert response.status_code == 200
-
-    from ...users.views import Login
-
     assert response.resolver_match.func.view_class is Login
 
 
