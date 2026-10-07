@@ -27,7 +27,7 @@
         <c-new-button url="{% url 'bookkeeping:accounts_worth_new' %}" title="{% translate 'Accounts fact' %}" />
         <c-new-button url="{% url 'bookkeeping:savings_worth_new' %}" title="{% translate 'Funds fact' %}" />
         <c-new-button url="{% url 'bookkeeping:pensions_worth_new' %}" title="{% translate 'Pensions fact' %}" />
-        <button class="button-secondary button-refresh" hx-get="{% url 'core:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span></button>
+        <button class="button-secondary button-refresh" hx-get="{% url 'bookkeeping:regenerate_balances' %}" hx-indicator="#indicator"><span class="tip top" data-tip="{% translate 'Balances for all years will be updated.' %}">{% translate 'Update balances' %}</span></button>
     </div>
 
     <div id="accounts-info">
