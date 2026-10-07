@@ -136,9 +136,6 @@ class Stats:
         if history_df.is_empty():
             return history_df
 
-        if "quantity" in history_df.columns:
-            history_df = history_df.rename({"quantity": "qty"})
-
         return history_df.sort("date")
 
     def _calculate_gaps(self) -> pl.DataFrame:

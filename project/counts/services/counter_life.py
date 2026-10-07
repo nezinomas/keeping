@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from datetime import date
 from functools import cached_property
 
+from django.db.models import F
+
 from ...core.lib.year_boundary import YearBoundary
 from ...users.models import User
 from ..lib.rhythm import Rhythm
@@ -27,7 +29,7 @@ class CounterLife:
             records=list(
                 CountModelService(user)
                 .items(count_type=count_type)
-                .values("date", "quantity")
+                .values("date", qty=F("quantity"))
             ),
             boundary=YearBoundary.for_year(user.year),
         )
@@ -40,7 +42,7 @@ class CounterLife:
     def year_total(self) -> float:
         return float(
             sum(
-                record["quantity"]
+                record["qty"]
                 for record in self.records
                 if record["date"].year == self.boundary.year
             )
@@ -50,7 +52,7 @@ class CounterLife:
     def totals_by_year(self) -> dict[int, float]:
         totals = Counter()
         for record in self.records:
-            totals[record["date"].year] += record["quantity"]
+            totals[record["date"].year] += record["qty"]
 
         return dict(sorted(totals.items()))
 

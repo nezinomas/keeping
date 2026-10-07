@@ -135,7 +135,7 @@ class Rhythm:
 
     @property
     def total_ever(self) -> float:
-        return float(sum(record["quantity"] for record in self.records))
+        return float(sum(record["qty"] for record in self.records))
 
     @property
     def rate(self) -> float:

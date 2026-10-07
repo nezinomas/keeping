@@ -4,7 +4,7 @@ from ...lib.rhythm import EmptyGap, Rhythm
 
 
 def _records(*dates, quantity=1.0):
-    return [{"date": d, "quantity": quantity} for d in dates]
+    return [{"date": d, "qty": quantity} for d in dates]
 
 
 def test_two_records_five_days_apart_make_one_gap_of_five():
@@ -89,8 +89,8 @@ def test_a_counter_with_no_records_has_no_gap():
 def test_total_ever_sums_every_quantity():
     rhythm = Rhythm(
         [
-            {"date": date(1998, 1, 1), "quantity": 2.0},
-            {"date": date(1999, 1, 1), "quantity": 3.0},
+            {"date": date(1998, 1, 1), "qty": 2.0},
+            {"date": date(1999, 1, 1), "qty": 3.0},
         ]
     )
 

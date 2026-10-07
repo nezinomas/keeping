@@ -40,13 +40,6 @@ def test_stats_weekdays_list():
 # Basic Statistics
 
 
-def test_stats_prepare_dataframe_renames_quantity():
-    data = [{"date": date(1999, 1, 1), "quantity": 1.0}]
-    stats = Stats(data=data)
-    assert "qty" in stats._df.columns
-    assert stats._df["qty"][0] == 1.0
-
-
 def test_stats_weekdays_aggregation(data):
     actual = Stats(data=in_year(data, 1999)).weekdays_stats()
     expect = [
