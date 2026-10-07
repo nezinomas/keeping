@@ -60,7 +60,7 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
 
         super().__init__(*args, **kwargs)
 
@@ -86,32 +86,51 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
         return cleaned_data
 
     def save(self):
-        year = self.cleaned_data["year"]
-        journal = self.user.journal
+        grouping = self._grouping_data()
+        existing = self._existing_rows(grouping)
+        created, changed, emptied = [], [], []
 
-        # Extract the values of the unique grouping fields
-        grouping_data = {f: self.cleaned_data[f] for f in self.Meta.grouping_fields}
+        for month, month_name in enumerate(monthnames(), start=1):
+            price = self.cleaned_data.get(month_name)
+
+            if not price:
+                if month in existing:
+                    emptied.append(existing[month].pk)
+                continue
+
+            if month not in existing:
+                created.append(self._new_row(month, price, grouping))
+                continue
+
+            row = existing[month]
+            if row.price != price:
+                row.price = price
+                changed.append(row)
+
+        model = self.Meta.model
         with transaction.atomic():
-            for month_idx, month_name in enumerate(monthnames(), start=1):
-                price = self.cleaned_data.get(month_name)
-
-                # Lookup criteria for this specific month row
-                lookup = {
-                    "year": year,
-                    "month": month_idx,
-                    "journal": journal,
-                    **grouping_data,
-                }
-
-                service = self.Meta.service_class(self.user)
-                if price is not None:
-                    service.objects.update_or_create(
-                        **lookup, defaults={"price": price}
-                    )
-                else:
-                    service.objects.filter(**lookup).delete()
+            model.objects.bulk_create(created)
+            model.objects.bulk_update(changed, ["price"])
+            model.objects.filter(pk__in=emptied).delete()
 
         return self.instance
+
+    def _grouping_data(self):
+        return {f: self.cleaned_data[f] for f in self.Meta.grouping_fields}
+
+    def _existing_rows(self, grouping):
+        service = self.Meta.service_class(self.user)
+        rows = service.objects.filter(year=self.cleaned_data["year"], **grouping)
+        return {row.month: row for row in rows}
+
+    def _new_row(self, month, price, grouping):
+        return self.Meta.model(
+            year=self.cleaned_data["year"],
+            month=month,
+            journal=self.user.journal,
+            price=price,
+            **grouping,
+        )
 
     def _translate_common_fields(self):
         self.fields["year"].label = _("Years")
@@ -194,9 +213,6 @@ class CommonPlanFormMixin(PriceToCentsFormMixin, forms.ModelForm):
         raise forms.ValidationError(errors_dict)
 
 
-# ----------------------------------------------------------------------------
-#                                                             Income Plan Form
-# ----------------------------------------------------------------------------
 class IncomePlanForm(CommonPlanFormMixin):
     class Meta(CommonPlanFormMixin.Meta):
         model = IncomePlan
@@ -217,9 +233,6 @@ class IncomePlanForm(CommonPlanFormMixin):
         self.fields["income_type"].label = _("Income type")
 
 
-# ----------------------------------------------------------------------------
-#                                                            Expense Plan Form
-# ----------------------------------------------------------------------------
 class ExpensePlanForm(CommonPlanFormMixin):
     class Meta(CommonPlanFormMixin.Meta):
         model = ExpensePlan
@@ -242,9 +255,6 @@ class ExpensePlanForm(CommonPlanFormMixin):
         self.fields["expense_type"].label = _("Expense type")
 
 
-# ----------------------------------------------------------------------------
-#                                                              Saving Plan Form
-# ----------------------------------------------------------------------------
 class SavingPlanForm(CommonPlanFormMixin):
     class Meta(CommonPlanFormMixin.Meta):
         model = SavingPlan
@@ -265,9 +275,6 @@ class SavingPlanForm(CommonPlanFormMixin):
         self.fields["saving_type"].label = _("Saving type")
 
 
-# ----------------------------------------------------------------------------
-#                                                                Day Plan Form
-# ----------------------------------------------------------------------------
 class DayPlanForm(CommonPlanFormMixin):
     class Meta(CommonPlanFormMixin.Meta):
         model = DayPlan
@@ -279,9 +286,6 @@ class DayPlanForm(CommonPlanFormMixin):
     field_order = ["year"] + monthnames()
 
 
-# ----------------------------------------------------------------------------
-#                                                          Necessary Plan Form
-# ----------------------------------------------------------------------------
 class NecessaryPlanForm(CommonPlanFormMixin):
     class Meta(CommonPlanFormMixin.Meta):
         model = NecessaryPlan
@@ -304,9 +308,6 @@ class NecessaryPlanForm(CommonPlanFormMixin):
         self.fields["expense_type"].label = _("Expense type")
 
 
-# ----------------------------------------------------------------------------
-#                                                               Copy Plan Form
-# ----------------------------------------------------------------------------
 class CopyPlanForm(forms.Form):
     year_from = forms.IntegerField(
         widget=YearPickerWidget(),
@@ -323,7 +324,7 @@ class CopyPlanForm(forms.Form):
     necessary = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
         self._setup_initial_values()

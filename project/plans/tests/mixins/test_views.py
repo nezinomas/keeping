@@ -9,9 +9,7 @@ from ...mixins.views import (
     PlanUpdateMixin,
 )
 
-# -------------------------------------------------------------------------------------
-#                                                                         CssClassMixin
-# -------------------------------------------------------------------------------------
+# CssClassMixin
 
 
 def test_css_class_mixin():
@@ -21,9 +19,7 @@ def test_css_class_mixin():
     assert DummyView().modal_body_css_class == "plans-form"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                     PlanQuerySetMixin
-# -------------------------------------------------------------------------------------
+# PlanQuerySetMixin
 
 
 def test_plan_queryset_mixin(mocker):
@@ -47,9 +43,7 @@ def test_plan_queryset_mixin(mocker):
     assert result == mock_queryset.filter.return_value
 
 
-# -------------------------------------------------------------------------------------
-#                                                    PlanUpdateMixin & PlanDeleteMixin
-# -------------------------------------------------------------------------------------
+# PlanUpdateMixin & PlanDeleteMixin
 
 
 @pytest.mark.parametrize("mixin", [PlanUpdateMixin, PlanDeleteMixin])
@@ -97,9 +91,7 @@ class TestObjectAndUrlMixins:
         assert str(view.url()) == "/plans/incomes/update/2026/5/"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                      PlanDeleteMixin
-# -------------------------------------------------------------------------------------
+# PlanDeleteMixin
 
 
 def test_plan_delete_mixin_post(mocker):

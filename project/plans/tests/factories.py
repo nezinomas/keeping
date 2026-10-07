@@ -75,6 +75,8 @@ class PlanKind(NamedTuple):
     factory: type
     form: type
     grouping: tuple[str, ...]
+    type_factories: dict  # grouping field -> factory of the row it points to
+    extra: dict  # plain grouping values, such as a title
 
     @property
     def model(self):
@@ -82,9 +84,33 @@ class PlanKind(NamedTuple):
 
 
 PLAN_KINDS = [
-    PlanKind(IncomePlanFactory, IncomePlanForm, ("income_type",)),
-    PlanKind(ExpensePlanFactory, ExpensePlanForm, ("expense_type",)),
-    PlanKind(SavingPlanFactory, SavingPlanForm, ("saving_type",)),
-    PlanKind(DayPlanFactory, DayPlanForm, ()),
-    PlanKind(NecessaryPlanFactory, NecessaryPlanForm, ("expense_type", "title")),
+    PlanKind(
+        IncomePlanFactory,
+        IncomePlanForm,
+        ("income_type",),
+        {"income_type": IncomeTypeFactory},
+        {},
+    ),
+    PlanKind(
+        ExpensePlanFactory,
+        ExpensePlanForm,
+        ("expense_type",),
+        {"expense_type": ExpenseTypeFactory},
+        {},
+    ),
+    PlanKind(
+        SavingPlanFactory,
+        SavingPlanForm,
+        ("saving_type",),
+        {"saving_type": SavingTypeFactory},
+        {},
+    ),
+    PlanKind(DayPlanFactory, DayPlanForm, (), {}, {}),
+    PlanKind(
+        NecessaryPlanFactory,
+        NecessaryPlanForm,
+        ("expense_type", "title"),
+        {"expense_type": ExpenseTypeFactory},
+        {"title": "Rent"},
+    ),
 ]
