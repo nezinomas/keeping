@@ -4,6 +4,7 @@ import pytest
 
 from project.bookkeeping.lib.make_dataframe import MakeDataFrame
 
+from ...lib.make_dataframe import MonthDays
 from ...services.month.builders import ChartBuilder, InfoBuilder, MonthTableBuilder
 from ...services.month.dtos import InfoState, MonthDataDTO
 from ...services.month.presenters import MonthContextPresenter
@@ -11,9 +12,7 @@ from ...services.month.presenters import MonthContextPresenter
 MONTH_SERVICE_PATH = "project.bookkeeping.services.month"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                              Fixtures
-# -------------------------------------------------------------------------------------
+# Fixtures
 @pytest.fixture
 def dummy_dto():
     """A static payload representing the data fetched from the DB."""
@@ -247,9 +246,7 @@ def test_info_builder_delta():
     }
 
 
-# -------------------------------------------------------------------------------------
-#                                                           MonthContextPresenter Tests
-# -------------------------------------------------------------------------------------
+# MonthContextPresenter Tests
 
 
 def test_presenter_init(dummy_dto):
@@ -310,10 +307,14 @@ def test_spending_property(mocker, dummy_dto):
     result = presenter.spending
 
     mock_day_spending.assert_called_once_with(
-        expense=mock_make_df.for_month.return_value,
+        expense=mock_make_df.return_value,
+        month=MonthDays(2026, 4),
         necessary=["Food"],
         per_day=15,
         free=200,
+    )
+    mock_make_df.assert_called_once_with(
+        MonthDays(2026, 4), dummy_dto.expenses, dummy_dto.expense_types
     )
     assert result == mock_day_spending.return_value
 
