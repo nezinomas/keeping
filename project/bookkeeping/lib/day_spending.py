@@ -9,15 +9,17 @@ class DaySpending(BalanceBase):
     def __init__(
         self,
         expense: MakeDataFrame,
-        month: MonthDays,
         necessary: list[str],
         free: float,
         per_day: float,
     ):
+        if not isinstance(expense.date_range, MonthDays):
+            raise TypeError("DaySpending needs a month frame, not a year frame")
+
         super().__init__(expense.data)
 
-        self._year = month.year
-        self._month = month.month
+        self._year = expense.date_range.year
+        self._month = expense.date_range.month
         self._per_day = per_day
         self._free = free
         self._necessary = necessary

@@ -5,7 +5,7 @@ from ....core.lib.date import current_day
 from ....plans.lib.calc_day_sum import PlanCalculateDaySum
 from ....users.models import User
 from ...lib.day_spending import DaySpending
-from ...lib.make_dataframe import MakeDataFrame, MonthDays
+from ...lib.make_dataframe import MakeDataFrame
 from .builders import ChartBuilder, InfoBuilder, MonthTableBuilder
 from .dtos import InfoState, MonthDataDTO
 from .providers import MonthDataProvider
@@ -36,13 +36,14 @@ class MonthContextPresenter:
 
     @cached_property
     def spending(self) -> DaySpending:
-        month = MonthDays(self.year, self.month)
-        expense_df_object = MakeDataFrame(
-            month, self.dto.expenses, self.dto.expense_types
+        expense_df_object = MakeDataFrame.for_month(
+            year=self.year,
+            month=self.month,
+            data=self.dto.expenses,
+            columns=self.dto.expense_types,
         )
         return DaySpending(
             expense=expense_df_object,
-            month=month,
             necessary=self.dto.necessary_expense_types,
             per_day=self.plans.day_input,
             free=self.plans.expenses_free,
