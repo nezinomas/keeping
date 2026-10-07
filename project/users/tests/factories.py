@@ -2,6 +2,7 @@ from datetime import datetime
 
 import factory
 import pytz
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
 
 from ...users.models import User
@@ -20,10 +21,13 @@ class UserFactory(factory.django.DjangoModelFactory):
     month = 12
     date_joined = datetime(1999, 1, 1, tzinfo=pytz.utc)
 
-    @factory.post_generation
-    def journal_lang(self, create, extracted, **kwargs):
-        if not create:
-            return
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        passed = "journal" in kwargs
+        user = super()._create(model_class, *args, **kwargs)
 
-        self.journal.lang = "lt"
-        self.journal.save()
+        if not passed:
+            user.journal.lang = settings.LANGUAGE_CODE
+            user.journal.save()
+
+        return user
