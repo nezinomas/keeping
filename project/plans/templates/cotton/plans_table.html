@@ -42,18 +42,18 @@
                 {% endif %}
 
             </td>
-            <td class="{{months.1|css_class_if_none}}{% if states.1 == 'over' %} plans-table__over{% endif %}">{{months.1|price|cellformat:"0,00"}}</td>
-            <td class="{{months.2|css_class_if_none}}{% if states.2 == 'over' %} plans-table__over{% endif %}">{{months.2|price|cellformat:"0,00"}}</td>
-            <td class="{{months.3|css_class_if_none}}{% if states.3 == 'over' %} plans-table__over{% endif %}">{{months.3|price|cellformat:"0,00"}}</td>
-            <td class="{{months.4|css_class_if_none}}{% if states.4 == 'over' %} plans-table__over{% endif %}">{{months.4|price|cellformat:"0,00"}}</td>
-            <td class="{{months.5|css_class_if_none}}{% if states.5 == 'over' %} plans-table__over{% endif %}">{{months.5|price|cellformat:"0,00"}}</td>
-            <td class="{{months.6|css_class_if_none}}{% if states.6 == 'over' %} plans-table__over{% endif %}">{{months.6|price|cellformat:"0,00"}}</td>
-            <td class="{{months.7|css_class_if_none}}{% if states.7 == 'over' %} plans-table__over{% endif %}">{{months.7|price|cellformat:"0,00"}}</td>
-            <td class="{{months.8|css_class_if_none}}{% if states.8 == 'over' %} plans-table__over{% endif %}">{{months.8|price|cellformat:"0,00"}}</td>
-            <td class="{{months.9|css_class_if_none}}{% if states.9 == 'over' %} plans-table__over{% endif %}">{{months.9|price|cellformat:"0,00"}}</td>
-            <td class="{{months.10|css_class_if_none}}{% if states.10 == 'over' %} plans-table__over{% endif %}">{{months.10|price|cellformat:"0,00"}}</td>
-            <td class="{{months.11|css_class_if_none}}{% if states.11 == 'over' %} plans-table__over{% endif %}">{{months.11|price|cellformat:"0,00"}}</td>
-            <td class="{{months.12|css_class_if_none}}{% if states.12 == 'over' %} plans-table__over{% endif %}">{{months.12|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.1 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.1|cell_state}}">{{months.1|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.2 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.2|cell_state}}">{{months.2|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.3 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.3|cell_state}}">{{months.3|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.4 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.4|cell_state}}">{{months.4|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.5 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.5|cell_state}}">{{months.5|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.6 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.6|cell_state}}">{{months.6|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.7 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.7|cell_state}}">{{months.7|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.8 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.8|cell_state}}">{{months.8|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.9 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.9|cell_state}}">{{months.9|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.10 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.10|cell_state}}">{{months.10|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.11 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.11|cell_state}}">{{months.11|price|cellformat:"0,00"}}</td>
+            <td class="{% if states.12 == 'over' %} plans-table__over{% endif %}" data-cell="{{months.12|cell_state}}">{{months.12|price|cellformat:"0,00"}}</td>
             <c-td-edit :url=url_update />
             <c-td-delete :url=url_delete />
         </tr>

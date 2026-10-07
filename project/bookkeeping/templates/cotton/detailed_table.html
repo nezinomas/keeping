@@ -33,7 +33,7 @@
 
             {% for num in months %}
                 {% with cell_value=row|get_item:num %}
-                    <td class="{{ cell_value|css_class_if_none }}">
+                    <td data-cell="{{cell_value|cell_state}}">
                         {{ cell_value|price|cellformat:"0,00" }}
                     </td>
                 {% endwith %}
@@ -50,7 +50,7 @@
 
             {% for num in months %}
                 {% with cell_value=total|get_item:num %}
-                    <td class="{{ cell_value|css_class_if_none }}">
+                    <td data-cell="{{cell_value|cell_state}}">
                         {{ cell_value|price|cellformat:"0,00" }}
                     </td>
                 {% endwith %}

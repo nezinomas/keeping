@@ -5,6 +5,7 @@ import pytest
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...journals.models import Journal
 from ..forms import SettingsForm, UnnecessaryForm
+from .helpers import set_journal_lang
 
 pytestmark = pytest.mark.django_db
 
@@ -101,9 +102,7 @@ def test_form_save_unchecked_expenses(main_user):
     assert not actual.unnecessary_savings
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         Settings Form
-# -------------------------------------------------------------------------------------
+# Settings Form
 def test_settings_form_init(main_user):
     SettingsForm(user=main_user)
 
@@ -123,6 +122,8 @@ def test_settings_form_languages(main_user):
 
 
 def test_settings_form_lang_initial(main_user):
+    set_journal_lang(main_user, "en")
+
     form = SettingsForm(user=main_user).as_p()
 
     assert '<option value="en" selected>Anglų</option>' in form

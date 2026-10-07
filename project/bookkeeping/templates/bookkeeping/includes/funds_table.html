@@ -40,27 +40,27 @@
         <tr>
             {% if item.saving_type_id %}{% firstof 'saving_type' as obj_type %}{% else %}{% firstof 'pension_type' as obj_type %}{% endif %}
             <td class="text-left right-thin-border">{{ item|get_obj_attr:obj_type }}</td>
-            <td class="{{item.past_amount|css_class_if_none}}">{{item.past_amount|price|cellformat}}</td>
-            <td class="right-thin-border {{item.past_fee|css_class_if_none}}">{{item.past_fee|price|cellformat}}</td>
-            <td class="{{item.per_year_incomes|css_class_if_none}}">{{item.per_year_incomes|price|cellformat}}</td>
-            <td class="right-thin-border {{item.per_year_fee|css_class_if_none}}">{{item.per_year_fee|price|cellformat}}</td>
-            <td class="{{item.incomes|css_class_if_none}}">{{item.incomes|price|cellformat}}</td>
-            <td class="{{item.fee|css_class_if_none}}">{{item.fee|price|cellformat}}</td>
-            <td class="{{item.sold|css_class_if_none}}">{{item.sold|price|cellformat}}</td>
-            <td class=" right-thin-border {{item.sold_fee|css_class_if_none}}">{{item.sold_fee|price|cellformat}}</td>
+            <td data-cell="{{item.past_amount|cell_state}}">{{item.past_amount|price|cellformat}}</td>
+            <td class="right-thin-border" data-cell="{{item.past_fee|cell_state}}">{{item.past_fee|price|cellformat}}</td>
+            <td data-cell="{{item.per_year_incomes|cell_state}}">{{item.per_year_incomes|price|cellformat}}</td>
+            <td class="right-thin-border" data-cell="{{item.per_year_fee|cell_state}}">{{item.per_year_fee|price|cellformat}}</td>
+            <td data-cell="{{item.incomes|cell_state}}">{{item.incomes|price|cellformat}}</td>
+            <td data-cell="{{item.fee|cell_state}}">{{item.fee|price|cellformat}}</td>
+            <td data-cell="{{item.sold|cell_state}}">{{item.sold|price|cellformat}}</td>
+            <td class="right-thin-border" data-cell="{{item.sold_fee|cell_state}}">{{item.sold_fee|price|cellformat}}</td>
             {% if item.market_value %}
             <td>{{ item.latest_check|date:"Y-m-d"|default_if_none:_('No record of account amount') }}</td>
-            <td class="right-thick-border {{item.market_value|css_class_if_none}}">{{item.market_value|price|cellformat}}</td>
+            <td class="right-thick-border" data-cell="{{item.market_value|cell_state}}">{{item.market_value|price|cellformat}}</td>
             {% else %}
-            <td class="dash">-</td>
-            <td class="right-thick-border dash">-</td>
+            <td data-cell="empty">-</td>
+            <td class="right-thick-border" data-cell="empty">-</td>
             {% endif %}
             {% if item.shows_profit %}
-            <td data-sign="{{item.profit_sum|sign}}" class="{{item.profit_sum|css_class_if_none}}">{{item.profit_sum|price|cellformat}}</td>
-            <td data-sign="{{item.profit_sum|sign}}" class="{{item.profit_sum|css_class_if_none}}">{{item.profit_proc|cellformat}}%</td>
+            <td data-sign="{{item.profit_sum|sign}}" data-cell="{{item.profit_sum|cell_state}}">{{item.profit_sum|price|cellformat}}</td>
+            <td data-sign="{{item.profit_sum|sign}}" data-cell="{{item.profit_sum|cell_state}}">{{item.profit_proc|cellformat}}%</td>
             {% else %}
-            <td class="dash">-</td>
-            <td class="dash">-</td>
+            <td data-cell="empty">-</td>
+            <td data-cell="empty">-</td>
             {% endif %}
         </tr>
         {% endfor %}
@@ -68,17 +68,17 @@
     <tfoot>
         <tr>
             <th class="funds-title-col-min-width text-left right-thin-border">{% translate 'Total' %}</th>
-            <th class="{{total_row.past_amount|css_class_if_none}}">{{total_row.past_amount|price|cellformat}}</th>
-            <th class="right-thin-border {{total_row.past_fee|css_class_if_none}}">{{total_row.past_fee|price|cellformat}}</th>
-            <th class="{{total_row.per_year_incomes|css_class_if_none}}">{{total_row.per_year_incomes|price|cellformat}}</th>
-            <th class="right-thin-border {{total_row.per_year_fee|css_class_if_none}}">{{total_row.per_year_fee|price|cellformat}}</th>
-            <th class="{{total_row.incomes|css_class_if_none}}">{{total_row.incomes|price|cellformat}}</th>
-            <th class="{{total_row.fee|css_class_if_none}}">{{total_row.fee|price|cellformat}}</th>
-            <th class="{{total_row.sold|css_class_if_none}}">{{total_row.sold|price|cellformat}}</th>
-            <th class="right-thin-border {{total_row.sold_fee|css_class_if_none}}">{{total_row.sold_fee|price|cellformat}}</th>
-            <th colspan="2" class="right-thick-border {{total_row.market_value|css_class_if_none}}">{{total_row.market_value|price|cellformat}}</th>
-            <th data-sign="{{total_row.profit_sum|sign}}" class="{{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_sum|price|cellformat}}</th>
-            <th data-sign="{{total_row.profit_sum|sign}}" class="{{total_row.profit_sum|css_class_if_none}}">{{total_row.profit_proc|cellformat}}%</th>
+            <th data-cell="{{total_row.past_amount|cell_state}}">{{total_row.past_amount|price|cellformat}}</th>
+            <th class="right-thin-border" data-cell="{{total_row.past_fee|cell_state}}">{{total_row.past_fee|price|cellformat}}</th>
+            <th data-cell="{{total_row.per_year_incomes|cell_state}}">{{total_row.per_year_incomes|price|cellformat}}</th>
+            <th class="right-thin-border" data-cell="{{total_row.per_year_fee|cell_state}}">{{total_row.per_year_fee|price|cellformat}}</th>
+            <th data-cell="{{total_row.incomes|cell_state}}">{{total_row.incomes|price|cellformat}}</th>
+            <th data-cell="{{total_row.fee|cell_state}}">{{total_row.fee|price|cellformat}}</th>
+            <th data-cell="{{total_row.sold|cell_state}}">{{total_row.sold|price|cellformat}}</th>
+            <th class="right-thin-border" data-cell="{{total_row.sold_fee|cell_state}}">{{total_row.sold_fee|price|cellformat}}</th>
+            <th colspan="2" class="right-thick-border" data-cell="{{total_row.market_value|cell_state}}">{{total_row.market_value|price|cellformat}}</th>
+            <th data-sign="{{total_row.profit_sum|sign}}" data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_sum|price|cellformat}}</th>
+            <th data-sign="{{total_row.profit_sum|sign}}" data-cell="{{total_row.profit_sum|cell_state}}">{{total_row.profit_proc|cellformat}}%</th>
         </tr>
     </tfoot>
 </table>

@@ -8,12 +8,12 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget, YearPickerWidget
 from ..core.lib.utils import int_or_zero
-from .models import Expense, ExpenseName, ExpenseType
+from .models import DEFAULT_QUANTITY, Expense, ExpenseName, ExpenseType
 from .services.model_services import (
     ExpenseNameModelService,
     ExpenseTypeModelService,
@@ -75,8 +75,10 @@ class ExpenseNameChoicesMixin:
         expense_type.widget.attrs["hx-trigger"] = "change"
 
 
-class ExpenseForm(ExpenseNameChoicesMixin, ConvertPriceMixin, forms.ModelForm):
+class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelForm):
+    price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
+    quantity = forms.IntegerField(min_value=1, initial=DEFAULT_QUANTITY)
     total_sum = forms.CharField(
         required=False, widget=forms.TextInput(attrs={"inputmode": "decimal"})
     )

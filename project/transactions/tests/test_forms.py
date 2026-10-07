@@ -8,7 +8,7 @@ from django.test.utils import CaptureQueriesContext
 
 from ...accounts.models import AccountBalance
 from ...accounts.tests.factories import AccountFactory
-from ...core.services import signals_service
+from ...bookkeeping import balance_sources
 from ...savings.models import SavingBalance, SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...users.tests.factories import UserFactory
@@ -17,9 +17,7 @@ from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Transaction
-# ----------------------------------------------------------------------------
+# Transaction
 def test_transaction_init(main_user):
     TransactionForm(user=main_user)
 
@@ -156,9 +154,7 @@ def test_transaction_price_null(main_user):
     assert "price" in form.errors
 
 
-# ----------------------------------------------------------------------------
-#                                                                Saving Change
-# ----------------------------------------------------------------------------
+# Saving Change
 def test_saving_change_init(main_user):
     SavingChangeForm(user=main_user)
 
@@ -399,9 +395,7 @@ def test_saving_change_save_and_close_from_account(main_user):
     assert actual.closed == 1999
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Saving Close
-# ----------------------------------------------------------------------------
+# Saving Close
 def test_saving_close_init(main_user):
     SavingCloseForm(user=main_user)
 
@@ -634,9 +628,7 @@ def test_saving_close_save_and_close_saving_account(main_user):
     assert actual.closed == 1999
 
 
-# ----------------------------------------------------------------------------
-#                                        sells and switches save the fund too
-# ----------------------------------------------------------------------------
+# sells and switches save the fund too
 def _balances():
     return (
         sorted(
@@ -701,8 +693,8 @@ def test_sell_and_switch_forms_leave_balances_a_re_sync_agrees_with(
     form.save()
     after_form = _balances()
 
-    signals_service.sync_accounts(instance=None, user=main_user)
-    signals_service.sync_savings(instance=None, user=main_user)
+    balance_sources.sync_accounts(user=main_user)
+    balance_sources.sync_savings(user=main_user)
 
     debit = 1010 if fee_source == SavingType.FeeSource.ACCOUNT else 1000
     assert AccountBalance.objects.get(account=bank, year=1999).expenses == debit
@@ -1019,3 +1011,60 @@ def test_form_edit_shows_a_stored_fee_as_it_is(main_user, move):
     edit = MOVES[move].form(user=main_user, instance=row)
 
     assert edit["fee"].value() == row.fee
+
+
+# A posted id of another journal is rejected
+@pytest.mark.parametrize("field", ["from_account", "to_account"])
+def test_transaction_rejects_an_account_of_another_journal(
+    main_user, second_user, field
+):
+    data = {
+        "date": "1999-01-01",
+        "from_account": AccountFactory(title="Mine1", journal=main_user.journal).pk,
+        "to_account": AccountFactory(title="Mine2", journal=main_user.journal).pk,
+        "price": "0.01",
+    }
+    data[field] = AccountFactory(title="Theirs", journal=second_user.journal).pk
+
+    form = TransactionForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert field in form.errors
+
+
+@pytest.mark.parametrize("field", ["from_account", "to_account"])
+def test_saving_change_rejects_a_fund_of_another_journal(main_user, second_user, field):
+    data = {
+        "date": "1999-01-01",
+        "from_account": SavingTypeFactory(title="Mine1", journal=main_user.journal).pk,
+        "to_account": SavingTypeFactory(title="Mine2", journal=main_user.journal).pk,
+        "price": "0.01",
+    }
+    data[field] = SavingTypeFactory(title="Theirs", journal=second_user.journal).pk
+
+    form = SavingChangeForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert field in form.errors
+
+
+@pytest.mark.parametrize("field", ["from_account", "to_account"])
+def test_saving_close_rejects_a_fund_or_account_of_another_journal(
+    main_user, second_user, field
+):
+    data = {
+        "date": "1999-01-01",
+        "from_account": SavingTypeFactory(title="Mine", journal=main_user.journal).pk,
+        "to_account": AccountFactory(title="Mine", journal=main_user.journal).pk,
+        "price": "0.01",
+    }
+    foreign = {
+        "from_account": SavingTypeFactory(title="Theirs", journal=second_user.journal),
+        "to_account": AccountFactory(title="Theirs", journal=second_user.journal),
+    }
+    data[field] = foreign[field].pk
+
+    form = SavingCloseForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert field in form.errors

@@ -11,7 +11,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls.base import reverse, reverse_lazy
-from django.utils.translation import activate
+from django.utils.translation import get_language
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView
 
@@ -44,6 +44,19 @@ def _user_settings(user):
         user.save()
 
 
+def _set_language_cookie(response, lang):
+    response.set_cookie(
+        settings.LANGUAGE_COOKIE_NAME,
+        lang,
+        max_age=settings.LANGUAGE_COOKIE_AGE,
+        path=settings.LANGUAGE_COOKIE_PATH,
+        domain=settings.LANGUAGE_COOKIE_DOMAIN,
+        secure=settings.LANGUAGE_COOKIE_SECURE,
+        httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
+        samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+    )
+
+
 class Login(auth_views.LoginView):
     template_name = "users/login.html"
 
@@ -61,12 +74,8 @@ class Login(auth_views.LoginView):
 
         _user_settings(user)
 
-        lang = user.journal.lang
-
-        activate(lang)
-
         response = HttpResponseRedirect(self.get_success_url())
-        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
+        _set_language_cookie(response, user.journal.lang)
 
         return response
 
@@ -100,14 +109,18 @@ class Signup(CreateView):
         return context
 
     def form_valid(self, form):
-        valid = super().form_valid(form)
+        response = super().form_valid(form)
 
-        if valid:
-            user = self.object
-            login(self.request, user)
-            _user_settings(user)
+        user = self.object
+        lang = get_language()
+        user.journal.lang = lang
+        user.journal.save(update_fields=["lang"])
 
-        return valid
+        login(self.request, user)
+        _user_settings(user)
+        _set_language_cookie(response, lang)
+
+        return response
 
 
 class PasswordReset(auth_views.PasswordResetView):
@@ -337,15 +350,6 @@ class SettingsJournal(FormViewMixin):
 
         response = HttpResponse(status=200, headers={"HX-Redirect": self.success_url})
 
-        lang = form.cleaned_data.get("lang")
-        activate(lang)
-
-        response.set_cookie(
-            key=settings.LANGUAGE_COOKIE_NAME,
-            value=lang,
-            httponly=True,
-            secure=True,
-            samesite="Strict",
-        )
+        _set_language_cookie(response, form.cleaned_data["lang"])
 
         return response

@@ -147,7 +147,7 @@ def test_regenerate_buttons(client_logged):
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    url = reverse("core:regenerate_balances")
+    url = reverse("bookkeeping:regenerate_balances")
 
     assert f'hx-get="{url}?type=savings"' in content
     assert "Bus atnaujinti tik šios lentelės balansai." in content
@@ -186,6 +186,18 @@ def test_open_fund_with_no_worth_shows_dashes(client_logged, sold):
     content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
 
     assert row_cells(content, "Open")[8:] == ["-"] * 4
+
+
+def test_open_fund_with_no_worth_marks_its_empty_cells(client_logged):
+    SavingFactory(saving_type=SavingTypeFactory(title="Open"), price=100000)
+
+    content = client_logged.get(reverse("bookkeeping:savings")).content.decode()
+    row = re.search(r"<tr>\s*<td[^>]*>Open</td>(.*?)</tr>", content, re.S).group(1)
+    cells = re.findall(r"<td([^>]*)>(.*?)</td>", row, re.S)
+
+    assert cells[4][1].strip() == "1.000,00"
+    assert 'data-cell="empty"' not in cells[4][0]
+    assert all('data-cell="empty"' in attrs for attrs, _ in cells[8:])
 
 
 def test_savings_queries_do_not_grow_with_closed_funds(client_logged):

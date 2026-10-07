@@ -2,7 +2,9 @@ from datetime import date, datetime
 
 import pytest
 import pytz
+from django.conf import settings
 from django.db.backends.signals import connection_created
+from django.utils import translation
 
 from .accounts.tests.factories import AccountFactory
 from .bookkeeping.tests.factories import (
@@ -39,6 +41,13 @@ def main_user(monkeypatch, request):
         user = UserFactory.build()
 
     return user
+
+
+@pytest.fixture(autouse=True)
+def reset_language():
+    yield
+
+    translation.activate(settings.LANGUAGE_CODE)
 
 
 @pytest.fixture()

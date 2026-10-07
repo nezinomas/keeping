@@ -23,8 +23,8 @@ class YearBalance(BalanceBase):
             lend,
             lend_return
         """
-        self.year = data.year
-        self._amount_start = amount_start or 0
+        self.year = data.date_range.year
+        self._amount_start = amount_start
         self._balance = self._calc_balance_and_money_flow(data.data)
 
         super().__init__(self._balance)

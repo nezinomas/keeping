@@ -21,9 +21,7 @@ small_gif = (
 )
 
 
-# ----------------------------------------------------------------------------
-#                                                                      Expense
-# ----------------------------------------------------------------------------
+# Expense
 def test_expense_form_init(main_user):
     ExpenseForm(user=main_user, data={})
 
@@ -164,6 +162,34 @@ def test_expense_price_accepts_a_decimal_comma(main_user):
     assert form.save().price == 1210
 
 
+def test_expense_form_quantity_starts_at_one(main_user):
+    form = ExpenseForm(user=main_user)
+
+    assert form["quantity"].value() == 1
+
+
+@pytest.mark.parametrize("quantity, valid", [(0, False), (-1, False), (1, True)])
+def test_expense_form_quantity_is_at_least_one(main_user, quantity, valid):
+    a = AccountFactory()
+    t = ExpenseTypeFactory()
+    n = ExpenseNameFactory(parent=t)
+
+    form = ExpenseForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "price": 0.01,
+            "quantity": quantity,
+            "expense_type": t.pk,
+            "expense_name": n.pk,
+            "account": a.pk,
+        },
+    )
+
+    assert form.is_valid() == valid
+    assert ("quantity" in form.errors) == (not valid)
+
+
 def test_expenses_form_blank_data(main_user):
     form = ExpenseForm(user=main_user, data={})
 
@@ -277,9 +303,7 @@ def test_exepense_form_necessary_type_and_exception(main_user):
     }
 
 
-# ----------------------------------------------------------------------------
-#                                                    ExpenseNameChoicesMixin
-# ----------------------------------------------------------------------------
+# ExpenseNameChoicesMixin
 def test_expense_name_choices_mixin_hx_get_default(main_user):
     form = ExpenseForm(user=main_user).as_p()
 
@@ -358,9 +382,7 @@ def test_expense_name_choices_mixin_posted_type_overrides_initial(main_user):
     assert list(form.fields["expense_name"].queryset) == [n2]
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Expense Type
-# ----------------------------------------------------------------------------
+# Expense Type
 def test_expense_type_init(main_user):
     ExpenseTypeForm(user=main_user)
 
@@ -452,9 +474,7 @@ def test_form_expense_type_and_second_user(main_user, second_user):
     assert '<option value="2">T2</option>' not in form
 
 
-# ----------------------------------------------------------------------------
-#                                                                 Expense Name
-# ----------------------------------------------------------------------------
+# Expense Name
 def test_expense_name_init(main_user):
     ExpenseNameForm(user=main_user)
 
@@ -610,3 +630,31 @@ def test_expense_name_slug_taken(main_user):
     assert form.errors["title"] == [
         "Pavadinimas per daug panašus į jau esantį „Pienas“."
     ]
+
+
+def test_expense_type_create_ignores_a_posted_journal(main_user, second_user):
+    form = ExpenseTypeForm(
+        user=main_user,
+        data={"journal": second_user.journal.pk, "title": "Title", "necessary": True},
+    )
+
+    assert form.is_valid()
+
+    assert form.save().journal == main_user.journal
+
+
+def test_expense_type_edit_ignores_a_posted_journal(main_user, second_user):
+    obj = ExpenseTypeFactory(title="Mine", journal=main_user.journal)
+
+    form = ExpenseTypeForm(
+        user=main_user,
+        instance=obj,
+        data={"journal": second_user.journal.pk, "title": "Mine", "necessary": True},
+    )
+
+    assert form.is_valid()
+
+    form.save()
+    obj.refresh_from_db()
+
+    assert obj.journal == main_user.journal

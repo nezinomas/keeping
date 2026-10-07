@@ -4,7 +4,7 @@ from django.utils.formats import number_format
 from ..accounts.models import Account
 from ..core.lib.convert_price import int_cents_to_float
 from ..savings.models import SavingType
-from .services.close_year import KEEP, CloseBox, KeepClose
+from .close_rules import KEEP, CloseBox, KeepClose
 
 
 def money(cents: int) -> str:
@@ -33,6 +33,10 @@ class Transaction(models.Model):
         _to = f"{self.to_account}: {money(self.price)}"
         return f"{_from} -> {_to}"
 
+    @property
+    def journal(self):
+        return self.from_account.journal
+
 
 class FundMove:
     """A move out of a fund; the receiver reads `close_rule` (the form's word) once
@@ -49,6 +53,10 @@ class FundMove:
             instance._loaded_funds = (instance.from_account_id,)
 
         return instance
+
+    @property
+    def journal(self):
+        return self.from_account.journal
 
     @property
     def left_funds(self) -> tuple[int, ...]:

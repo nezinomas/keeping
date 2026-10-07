@@ -1,3 +1,5 @@
+import copy
+
 from django.utils.csp import CSP
 
 from .base import *
@@ -12,7 +14,8 @@ ALLOWED_HOSTS = ENV["ALLOWED_HOSTS"]
 INSTALLED_APPS += []
 
 
-TEMPLATES[0]["APP_DIRS"] = True
+TEMPLATES = copy.deepcopy(TEMPLATES)
+TEMPLATES[0]["APP_DIRS"] = False  # Django refuses APP_DIRS together with loaders
 TEMPLATES[0]["OPTIONS"]["loaders"] = [
     (
         "django.template.loaders.cached.Loader",
@@ -67,6 +70,10 @@ SESSION_COOKIE_SAMESITE = "Strict"
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Strict"
+
+LANGUAGE_COOKIE_SECURE = True
+LANGUAGE_COOKIE_HTTPONLY = True
+LANGUAGE_COOKIE_SAMESITE = "Strict"
 
 X_FRAME_OPTIONS = "DENY"
 

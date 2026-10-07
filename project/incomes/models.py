@@ -48,3 +48,7 @@ class Income(models.Model):
 
     def __str__(self):
         return f"{self.date}: {self.income_type}"
+
+    @property
+    def journal(self):
+        return self.account.journal

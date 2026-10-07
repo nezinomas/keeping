@@ -11,9 +11,7 @@ from ...services.month.presenters import MonthContextPresenter
 MONTH_SERVICE_PATH = "project.bookkeeping.services.month"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                              Fixtures
-# -------------------------------------------------------------------------------------
+# Fixtures
 @pytest.fixture
 def dummy_dto():
     """A static payload representing the data fetched from the DB."""
@@ -170,7 +168,9 @@ def fixture_df_expense():
     data = [{"date": date(1999, 3, 2), "title": "A", "sum": 4, "exception_sum": 0}]
     columns = ["A", "B"]
 
-    return MakeDataFrame(year=year, month=month, data=data, columns=columns).data
+    return MakeDataFrame.for_month(
+        year=year, month=month, data=data, columns=columns
+    ).data
 
 
 @pytest.fixture(name="df_saving")
@@ -179,7 +179,7 @@ def fixture_df_saving():
     month = 3
     data = [{"date": date(1999, 3, 3), "sum": 2, "title": "savings"}]
 
-    return MakeDataFrame(year=year, month=month, data=data).data
+    return MakeDataFrame.for_month(year=year, month=month, data=data).data
 
 
 def test_main_table(df_expense, df_saving):
@@ -245,9 +245,7 @@ def test_info_builder_delta():
     }
 
 
-# -------------------------------------------------------------------------------------
-#                                                           MonthContextPresenter Tests
-# -------------------------------------------------------------------------------------
+# MonthContextPresenter Tests
 
 
 def test_presenter_init(dummy_dto):
@@ -271,7 +269,7 @@ def test_month_table_property(mocker, dummy_dto):
     _ = presenter.month_table  # Trigger the cached property
 
     # Ensure DataFrames were generated for both expenses and savings
-    assert mock_make_df.call_count == 2
+    assert mock_make_df.for_month.call_count == 2
     mock_table_builder.assert_called_once()
 
 
@@ -308,10 +306,16 @@ def test_spending_property(mocker, dummy_dto):
     result = presenter.spending
 
     mock_day_spending.assert_called_once_with(
-        expense=mock_make_df.return_value,
+        expense=mock_make_df.for_month.return_value,
         necessary=["Food"],
         per_day=15,
         free=200,
+    )
+    mock_make_df.for_month.assert_called_once_with(
+        year=2026,
+        month=4,
+        data=dummy_dto.expenses,
+        columns=dummy_dto.expense_types,
     )
     assert result == mock_day_spending.return_value
 

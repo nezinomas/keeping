@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 
 from ..accounts.models import Account
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertPriceMixin, int_cents_to_float
+from ..core.lib.convert_price import PriceToCentsFormMixin, int_cents_to_float
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField, PreloadedModelChoiceField
 from ..core.lib.form_widgets import DatePickerWidget
@@ -86,7 +86,8 @@ class ReviewReceiptForm(_JournalAccountChoicesMixin, forms.Form):
         }
 
 
-class ReviewLineForm(ExpenseNameChoicesMixin, ConvertPriceMixin, forms.Form):
+class ReviewLineForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.Form):
+    price_fields = ("price",)
     title = forms.CharField(required=False)
     amount = forms.IntegerField(required=False)
     price = CommaFloatField(required=False)

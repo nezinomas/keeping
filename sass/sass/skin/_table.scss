@@ -99,8 +99,8 @@
             color: $ink-muted;
         }
 
-        // an empty or zero cell (the `css_class_if_none` filter): present, not read
-        .dash {
+        // an empty or zero cell (the `cell_state` filter): present, not read
+        [data-cell="empty"] {
             color: $ink-faint;
         }
 

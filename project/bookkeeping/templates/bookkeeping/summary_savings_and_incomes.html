@@ -28,19 +28,19 @@
                 <tr>
                     <td class="text-left">{{chart_data.text.incomes}}</td>
                     {% for obj in chart_data.incomes %}
-                    <td class="{{obj|css_class_if_none}}">{{obj|price|cellformat}}</td>
+                    <td data-cell="{{obj|cell_state}}">{{obj|price|cellformat}}</td>
                     {% endfor %}
                 </tr>
                 <tr>
                     <td class="text-left">{{chart_data.text.savings}}</td>
                     {% for obj in chart_data.savings %}
-                    <td class="{{obj|css_class_if_none}}">{{obj|price|cellformat}}</td>
+                    <td data-cell="{{obj|cell_state}}">{{obj|price|cellformat}}</td>
                     {% endfor %}
                 </tr>
                 <tr>
                     <td class="text-left">{{chart_data.text.percents}}</td>
                     {% for obj in chart_data.percents %}
-                    <td class="{{obj|css_class_if_none}}">{{obj|cellformat}}</td>
+                    <td data-cell="{{obj|cell_state}}">{{obj|cellformat}}</td>
                     {% endfor %}
                 </tr>
             </tbody>

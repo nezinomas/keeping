@@ -19,13 +19,13 @@ class MonthContextPresenter:
 
     @cached_property
     def month_table(self) -> MonthTableBuilder:
-        expense_df_object = MakeDataFrame(
+        expense_df_object = MakeDataFrame.for_month(
             year=self.year,
             month=self.month,
             data=self.dto.expenses,
             columns=self.dto.expense_types,
         )
-        saving_df_object = MakeDataFrame(
+        saving_df_object = MakeDataFrame.for_month(
             year=self.year, month=self.month, data=self.dto.savings
         )
         return MonthTableBuilder(expense_df_object.data, saving_df_object.data)
@@ -36,7 +36,7 @@ class MonthContextPresenter:
 
     @cached_property
     def spending(self) -> DaySpending:
-        expense_df_object = MakeDataFrame(
+        expense_df_object = MakeDataFrame.for_month(
             year=self.year,
             month=self.month,
             data=self.dto.expenses,

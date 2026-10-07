@@ -18,9 +18,7 @@ from .factories import IncomeFactory, IncomeTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                  Income Type
-# ----------------------------------------------------------------------------
+# Income Type
 def test_income_type_str():
     i = IncomeTypeFactory.build()
 
@@ -62,9 +60,7 @@ def test_income_type_slug_unique_per_journal():
         IncomeTypeFactory(title="Bustas", journal=obj1.journal)
 
 
-# ----------------------------------------------------------------------------
-#                                                                       Income
-# ----------------------------------------------------------------------------
+# Income
 def test_income_str():
     i = IncomeFactory.build()
 
@@ -539,3 +535,11 @@ def test_income_updates_journal_first_record():
     IncomeFactory(date=date(1974, 2, 2))
 
     assert Journal.objects.first().first_record == date(1974, 2, 2)
+
+
+def test_income_journal_is_its_accounts(second_user):
+    journal = second_user.journal
+
+    obj = IncomeFactory.build(account=AccountFactory(journal=journal))
+
+    assert obj.journal == journal

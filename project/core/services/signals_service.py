@@ -1,122 +1,14 @@
-from typing import Optional
-
 from django.db import models
 
-from ...accounts.services.model_services import (
-    AccountBalanceModelService,
-    AccountModelService,
-)
-from ...bookkeeping.services.model_services import (
-    AccountWorthModelService,
-    PensionWorthModelService,
-    SavingWorthModelService,
-)
-from ...debts.services.model_services import DebtModelService, DebtReturnModelService
-from ...expenses.services.model_services import ExpenseModelService
-from ...incomes.services.model_services import IncomeModelService
-from ...pensions.services.model_services import (
-    PensionBalanceModelService,
-    PensionModelService,
-    PensionTypeModelService,
-)
-from ...savings.services.model_services import (
-    SavingBalanceModelService,
-    SavingModelService,
-    SavingTypeModelService,
-)
-from ...transactions.services.model_services import (
-    SavingChangeModelService,
-    SavingCloseModelService,
-    TransactionModelService,
-)
 from ...users.models import User
 from ..lib.db_sync import BalanceSynchronizer
-from ..lib.signals import Accounts, GetData, Savings
-
-ACCOUNTS_CONF = {
-    "incomes": (
-        lambda user: IncomeModelService(user).incomes(),
-        lambda user: DebtModelService(user, "borrow").incomes(),
-        lambda user: DebtReturnModelService(user, "lend").incomes(),
-        lambda user: TransactionModelService(user).incomes(),
-        lambda user: SavingCloseModelService(user).incomes(),
-    ),
-    "expenses": (
-        lambda user: ExpenseModelService(user).expenses(),
-        lambda user: DebtModelService(user, "lend").expenses(),
-        lambda user: DebtReturnModelService(user, "borrow").expenses(),
-        lambda user: TransactionModelService(user).expenses(),
-        lambda user: SavingModelService(user).expenses(),
-    ),
-    "have": (lambda user: AccountWorthModelService(user).have(),),
-    "types": (lambda user: AccountModelService(user).all(),),
-}
+from ..lib.signals import GetData
 
 
-SAVINGS_CONF = {
-    "incomes": (
-        lambda user: SavingModelService(user).incomes(),
-        lambda user: SavingChangeModelService(user).incomes(),
-    ),
-    "expenses": (
-        lambda user: SavingCloseModelService(user).expenses(),
-        lambda user: SavingChangeModelService(user).expenses(),
-    ),
-    "moves": (
-        lambda user: SavingCloseModelService(user).moves(),
-        lambda user: SavingChangeModelService(user).moves(),
-    ),
-    "have": (lambda user: SavingWorthModelService(user).have(),),
-    "types": (lambda user: SavingTypeModelService(user).all(),),
-}
+def sync(user: User, conf: dict, table: type, balance_service: type) -> None:
+    data = table(GetData(user, conf))
+    BalanceSynchronizer(balance_service, user, data.df)
 
 
-PENSIONS_CONF = {
-    "incomes": (lambda user: PensionModelService(user).incomes(),),
-    "have": (lambda user: PensionWorthModelService(user).have(),),
-    "types": (lambda user: PensionTypeModelService(user).items(),),
-}
-
-
-def sync_accounts(instance: models.Model, user: Optional[User] = None):
-    _sync_data(instance, user, ACCOUNTS_CONF, Accounts, AccountBalanceModelService)
-
-
-def sync_savings(instance: models.Model, user: Optional[User] = None):
-    _sync_data(instance, user, SAVINGS_CONF, Savings, SavingBalanceModelService)
-
-
-def sync_pensions(instance: models.Model, user: Optional[User] = None):
-    _sync_data(instance, user, PENSIONS_CONF, Savings, PensionBalanceModelService)
-
-
-def _sync_data(
-    instance: models.Model,
-    user: Optional[User],
-    conf: dict,
-    signal_cls,
-    sync_model_service,
-):
-    user = user or _get_user_from_instance(instance)
-    if not user:
-        return
-
-    data = signal_cls(GetData(user, conf))
-    BalanceSynchronizer(sync_model_service, user, data.df)
-
-
-def _get_user_from_instance(instance: models.Model) -> Optional[User]:
-    """Return the user via the first FK field."""
-    try:
-        # Get first FK field name
-        fk_field = next(
-            f.name
-            for f in instance._meta.get_fields()
-            if f.many_to_one and not f.auto_created
-        )
-        # Follow FK → related object → journal -> first user
-        related = getattr(instance, fk_field)
-        journal = getattr(related, "journal", None)
-        return journal.users.first()
-    except StopIteration:
-        return None
+def journal_user(instance: models.Model) -> User:
+    return instance.journal.users.earliest("pk")

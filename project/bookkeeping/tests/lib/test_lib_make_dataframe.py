@@ -5,9 +5,10 @@ import pytest
 
 from ...lib.make_dataframe import (
     DataFrameSchemaFormatter,
-    DateRangeProvider,
     MakeDataFrame,
+    MonthDays,
     TimeSeriesPivotBuilder,
+    YearMonths,
 )
 
 
@@ -36,8 +37,8 @@ def fixture_columns():
     return ["T1", "T2", "T0"]
 
 
-def test_date_range_provider_year():
-    actual = DateRangeProvider.get_dates(1999)
+def test_year_months():
+    actual = YearMonths(1999).dates()
     assert actual.shape == (12, 1)
     assert actual.columns == ["date"]
     assert actual[0, "date"] == date(1999, 1, 1)
@@ -54,10 +55,8 @@ def test_date_range_provider_year():
         (2000, 2, 29, date(2000, 2, 29)),  # Leap year February
     ],
 )
-def test_date_range_provider_month_variations(
-    year, month, expected_days, expected_last_date
-):
-    actual = DateRangeProvider.get_dates(year, month)
+def test_month_days_variations(year, month, expected_days, expected_last_date):
+    actual = MonthDays(year, month).dates()
     assert actual.shape == (expected_days, 1)
     assert actual[0, "date"] == date(year, month, 1)
     assert actual[-1, "date"] == expected_last_date
@@ -93,7 +92,7 @@ def test_schema_formatter_handles_empty_dataframe():
 
 
 def test_pivot_builder_standard_data(month_data, columns):
-    builder = TimeSeriesPivotBuilder(year=1999, columns=columns)
+    builder = TimeSeriesPivotBuilder(YearMonths(1999), columns=columns)
     actual = builder.build(month_data, value_column="sum")
 
     assert actual.shape == (12, 4)
@@ -104,7 +103,7 @@ def test_pivot_builder_standard_data(month_data, columns):
 
 
 def test_pivot_builder_empty_data_returns_zeroed_spine(columns):
-    builder = TimeSeriesPivotBuilder(year=1999, columns=columns)
+    builder = TimeSeriesPivotBuilder(YearMonths(1999), columns=columns)
     actual = builder.build([], value_column="sum")
 
     assert actual.shape == (12, 4)
@@ -114,7 +113,7 @@ def test_pivot_builder_empty_data_returns_zeroed_spine(columns):
 
 def test_pivot_builder_missing_value_column_returns_zeroed_spine():
     data = [{"date": date(1999, 1, 1), "title": "T1", "sum": 5}]
-    builder = TimeSeriesPivotBuilder(year=1999, columns=["T1"])
+    builder = TimeSeriesPivotBuilder(YearMonths(1999), columns=["T1"])
 
     actual = builder.build(data, value_column="exception_sum")
 
@@ -123,7 +122,7 @@ def test_pivot_builder_missing_value_column_returns_zeroed_spine():
 
 
 def test_facade_month_expenses(month_data, columns):
-    actual = MakeDataFrame(year=1999, data=month_data, columns=columns).data
+    actual = MakeDataFrame.for_year(year=1999, data=month_data, columns=columns).data
     assert actual.shape == (12, 4)
     assert actual.columns == ["date", "T0", "T1", "T2"]
     assert actual[0, "T1"] == 7
@@ -131,59 +130,78 @@ def test_facade_month_expenses(month_data, columns):
 
 def test_facade_month_expenses_partial_data():
     data = [{"date": date(1999, 2, 1), "title": "X", "sum": 5}]
-    actual = MakeDataFrame(year=1999, data=data).data
+    actual = MakeDataFrame.for_year(year=1999, data=data).data
     assert actual.shape == (12, 2)
     assert actual.columns == ["date", "X"]
 
 
 def test_facade_month_no_data_expenses(columns):
-    actual = MakeDataFrame(year=1999, data=[], columns=columns).data
+    actual = MakeDataFrame.for_year(year=1999, data=[], columns=columns).data
     assert actual.select(pl.sum_horizontal(pl.exclude("date")).sum()).item() == 0
 
 
-@pytest.mark.parametrize("data, columns", [([], []), (None, None)])
-def test_facade_month_no_data_and_no_columns_expenses(data, columns):
-    actual = MakeDataFrame(year=1999, data=data, columns=columns).data
+def test_facade_month_no_data_and_no_columns_expenses():
+    actual = MakeDataFrame.for_year(year=1999, data=[], columns=[]).data
     assert actual.shape == (12, 1)
     assert actual.columns == ["date"]
 
 
 def test_facade_month_exceptions(month_data, columns):
-    actual = MakeDataFrame(year=1999, data=month_data, columns=columns).exceptions
+    actual = MakeDataFrame.for_year(
+        year=1999, data=month_data, columns=columns
+    ).exceptions
     assert actual.shape == (12, 2)
     assert actual.columns == ["date", "sum"]
     assert actual[0, "sum"] == 3
 
 
-@pytest.mark.parametrize("data", [([]), (None)])
-def test_facade_month_no_data_exceptions(data, columns):
-    actual = MakeDataFrame(year=1999, data=data, columns=columns).exceptions
+def test_facade_month_no_data_exceptions(columns):
+    actual = MakeDataFrame.for_year(year=1999, data=[], columns=columns).exceptions
     assert actual.shape == (12, 2)
     assert actual.columns == ["date", "sum"]
     assert actual.select(pl.col("sum").sum()).item() == 0
 
 
 def test_facade_day_expenses(day_data, columns):
-    actual = MakeDataFrame(year=1999, month=1, data=day_data, columns=columns).data
+    actual = MakeDataFrame.for_month(
+        year=1999, month=1, data=day_data, columns=columns
+    ).data
     assert actual.shape == (31, 4)
     assert actual[0, "T1"] == 5
     assert actual[29, "T1"] == 3
 
 
-@pytest.mark.parametrize("data", [([]), (None)])
-def test_facade_day_no_data_exceptions(data, columns):
-    actual = MakeDataFrame(year=1999, month=1, data=data, columns=columns).exceptions
+def test_facade_day_no_data_exceptions(columns):
+    actual = MakeDataFrame.for_month(
+        year=1999, month=1, data=[], columns=columns
+    ).exceptions
     assert actual.shape == (31, 2)
     assert actual.columns == ["date", "sum"]
     assert actual.select(pl.col("sum").sum()).item() == 0
 
 
 def test_facade_expenses_and_exceptions_same_size(month_data, columns):
-    actual = MakeDataFrame(year=1999, month=1, data=month_data, columns=columns)
+    actual = MakeDataFrame.for_month(
+        year=1999, month=1, data=month_data, columns=columns
+    )
     assert actual.exceptions.shape[0] == actual.data.shape[0]
 
 
 def test_facade_preserves_public_attributes():
-    actual = MakeDataFrame(year=1999, month=5, data=[], columns=["T1"])
-    assert actual.year == 1999
-    assert actual.month == 5
+    actual = MakeDataFrame.for_month(year=1999, month=5, data=[], columns=["T1"])
+    assert actual.date_range.year == 1999
+    assert actual.date_range.month == 5
+
+
+def test_schema_formatter_default_is_no_required_columns():
+    assert DataFrameSchemaFormatter().required_columns == ()
+
+
+def test_pivot_builder_columns_default_is_no_required_columns():
+    actual = TimeSeriesPivotBuilder(YearMonths(1999)).build([], value_column="sum")
+    assert actual.columns == ["date"]
+
+
+def test_facade_month_columns_default_is_no_required_columns():
+    actual = MakeDataFrame.for_month(year=1999, month=2, data=[]).data
+    assert actual.shape == (28, 1)

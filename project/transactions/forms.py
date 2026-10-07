@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertPriceMixin, NeverEmptyFormMixin
+from ..core.lib.convert_price import NeverEmptyFormMixin, PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
@@ -12,11 +12,12 @@ from ..core.mixins.forms import YearBetweenMixin
 from ..savings.services.model_services import (
     SavingTypeModelService,
 )
+from .close_rules import CloseBox
 from .models import SavingChange, SavingClose, Transaction
-from .services.close_year import CloseBox
 
 
-class TransactionForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
+class TransactionForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
+    price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
 
     class Meta:
@@ -93,10 +94,11 @@ class CloseFromAccountMixin:
 class SavingCloseForm(
     NeverEmptyFormMixin,
     CloseFromAccountMixin,
-    ConvertPriceMixin,
+    PriceToCentsFormMixin,
     YearBetweenMixin,
     forms.ModelForm,
 ):
+    price_fields = ("price", "fee")
     _never_empty = ("fee",)
 
     price = CommaFloatField(min_value=0.01)
@@ -144,10 +146,11 @@ class SavingCloseForm(
 class SavingChangeForm(
     NeverEmptyFormMixin,
     CloseFromAccountMixin,
-    ConvertPriceMixin,
+    PriceToCentsFormMixin,
     YearBetweenMixin,
     forms.ModelForm,
 ):
+    price_fields = ("price", "fee")
     _never_empty = ("fee",)
 
     price = CommaFloatField(min_value=0.01)

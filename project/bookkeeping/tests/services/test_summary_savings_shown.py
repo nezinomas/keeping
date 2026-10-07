@@ -1,17 +1,21 @@
-from datetime import date, datetime
-from zoneinfo import ZoneInfo
+from datetime import date
 
 import pytest
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 
-from ....core.tests.signals.test_signals_total_gain import YEAR, _buy, _sell, _worth
+from ....core.tests.utils import count_queries
 from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
 from ...services import savings, summary_savings
 from ..factories import PensionWorthFactory
+from ..signals.helpers import (
+    YEAR,
+    buy,
+    sell,
+    worth,
+    worth_date,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -32,8 +36,8 @@ def _figures(chart, year=YEAR):
 
 def test_a_year_without_a_sell_or_switch_reads_as_it_did(main_user):
     fund = SavingTypeFactory(title="Fund")
-    _buy(fund, 100000)
-    _worth(fund, 120000)
+    buy(fund, 100000)
+    worth(fund, 120000)
 
     assert _figures(_chart(main_user)) == {
         "total": 120000,
@@ -45,9 +49,9 @@ def test_a_year_without_a_sell_or_switch_reads_as_it_did(main_user):
 
 def test_the_viso_holds_what_is_left_after_a_sell(main_user):
     fund = SavingTypeFactory(title="Fund")
-    _buy(fund, 100000)
-    _sell(fund, 40000)
-    _worth(fund, 70000)
+    buy(fund, 100000)
+    sell(fund, 40000)
+    worth(fund, 70000)
 
     assert _figures(_chart(main_user)) == {
         "total": 70000,
@@ -59,12 +63,12 @@ def test_the_viso_holds_what_is_left_after_a_sell(main_user):
 
 def test_a_stale_worth_stays_out_of_all_three_figures(main_user):
     stale = SavingTypeFactory(title="Stale")
-    _buy(stale, 100000)
-    _worth(stale, 100000, month=3, day=1)
-    _sell(stale, 40000)
+    buy(stale, 100000)
+    worth(stale, 100000, month=3, day=1)
+    sell(stale, 40000)
     fresh = SavingTypeFactory(title="Fresh")
-    _buy(fresh, 50000)
-    _worth(fresh, 60000)
+    buy(fresh, 50000)
+    worth(fresh, 60000)
 
     assert _figures(_chart(main_user)) == {
         "total": 60000,
@@ -76,12 +80,12 @@ def test_a_stale_worth_stays_out_of_all_three_figures(main_user):
 
 def _switch_scene():
     a, b = SavingTypeFactory(title="A"), SavingTypeFactory(title="B")
-    _buy(a, 100000)
+    buy(a, 100000)
     SavingChangeFactory(
         from_account=a, to_account=b, price=40000, fee=0, date=date(YEAR, 6, 1)
     )
-    _worth(a, 70000)
-    _worth(b, 45000)
+    worth(a, 70000)
+    worth(b, 45000)
 
 
 def test_a_year_with_a_switch_reads_the_funds_table_percent(main_user):
@@ -106,7 +110,7 @@ def test_pensions_ii_counts_only_the_rows_that_show_a_profit(main_user):
     PensionWorthFactory(
         pension_type=shown,
         price=12000,
-        date=datetime(YEAR, 12, 31, 12, tzinfo=ZoneInfo("Europe/Vilnius")),
+        date=worth_date(),
     )
 
     assert _figures(_chart(main_user, "pensions2")) == {
@@ -127,26 +131,24 @@ def _grow(years):
         closed = SavingTypeFactory(title=f"C{year}", closed=year)
         c = SavingTypeFactory(title=f"T{year}")
         stale = SavingTypeFactory(title=f"S{year}")
-        _buy(a, 100000, when=date(year, 1, 1))
-        _buy(closed, 20000, when=date(year, 1, 1))
+        buy(a, 100000, when=date(year, 1, 1))
+        buy(closed, 20000, when=date(year, 1, 1))
         SavingChangeFactory(
             from_account=a, to_account=closed, price=40000, date=date(year, 2, 1)
         )
         SavingChangeFactory(
             from_account=closed, to_account=c, price=70000, date=date(year, 3, 1)
         )
-        _worth(a, 70000, year=year)
-        _worth(c, 80000, year=year)
-        _buy(stale, 1000, when=date(year, 1, 1))
-        _worth(stale, 1000, month=3, day=1, year=year)
-        _sell(stale, 100, when=date(year, 6, 1))
+        worth(a, 70000, year=year)
+        worth(c, 80000, year=year)
+        buy(stale, 1000, when=date(year, 1, 1))
+        worth(stale, 1000, month=3, day=1, year=year)
+        sell(stale, 100, when=date(year, 6, 1))
 
 
 def _queries(user, years):
     _grow(years)
-    with CaptureQueriesContext(connection) as ctx:
-        _chart(user)
-    return len(ctx)
+    return count_queries(lambda: _chart(user))
 
 
 def test_the_chart_queries_do_not_grow_with_the_years(main_user):
@@ -159,8 +161,8 @@ def test_the_chart_queries_do_not_grow_with_the_years(main_user):
 def test_money_from_another_type_is_outside_the_funds_chart(main_user):
     a, b, c = (SavingTypeFactory(title=t, type="funds") for t in "ABC")
     shares = SavingTypeFactory(title="S", type="shares")
-    _buy(a, 30000)
-    _buy(shares, 10000)
+    buy(a, 30000)
+    buy(shares, 10000)
     for source, target, price, month in [
         (a, b, 10000, 6),
         (shares, b, 10000, 6),
@@ -173,8 +175,8 @@ def test_money_from_another_type_is_outside_the_funds_chart(main_user):
             fee=0,
             date=date(YEAR, month, 1),
         )
-    _worth(a, 20000)
-    _worth(c, 22000)
+    worth(a, 20000)
+    worth(c, 22000)
 
     assert _figures(_chart(main_user))["proc"] == 5.0
     assert _figures(_chart(main_user, "funds_shares"))["proc"] == 5.0

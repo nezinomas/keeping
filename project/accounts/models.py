@@ -2,6 +2,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse_lazy
 
+from ..core.lib.db_sync import ACCOUNT_FIELDS
 from ..core.models import TitleAbstract
 from ..journals.models import Journal
 
@@ -31,6 +32,9 @@ class Account(TitleAbstract):
 
 
 class AccountBalance(models.Model):
+    fund_field = "account"
+    sync_fields = ACCOUNT_FIELDS
+
     account = models.ForeignKey(
         Account, on_delete=models.CASCADE, related_name="accounts_balance"
     )

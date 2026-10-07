@@ -87,7 +87,7 @@ def load_service(user: User) -> IndexContextBuilder:
     provider = IndexDataProvider(user)
     dto = provider.get_data()
 
-    df = MakeDataFrame(year, dto.monthly_data, INDEX_COLUMNS)
+    df = MakeDataFrame.for_year(year, dto.monthly_data, INDEX_COLUMNS)
     balance = YearBalance(data=df, amount_start=dto.amount_start)
 
     return IndexContextBuilder(balance=balance, debts=dto.debts)

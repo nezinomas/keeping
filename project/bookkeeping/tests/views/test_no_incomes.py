@@ -20,9 +20,7 @@ from ..factories import SavingWorthFactory
 pytestmark = pytest.mark.django_db
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        NoIncomes View
-# -------------------------------------------------------------------------------------
+# NoIncomes View
 def test_view_func():
     view = resolve("/bookkeeping/no_incomes/")
 

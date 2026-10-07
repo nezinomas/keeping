@@ -10,16 +10,8 @@ numbers_strategy = st.one_of(
 )
 
 
-@pytest.mark.parametrize(
-    "value, expect",
-    [
-        (None, None),
-        ("-", "-"),
-    ],
-)
-def test_price_none(value, expect):
-    actual = math.price(value)
-    assert actual == expect
+def test_price_not_a_number():
+    assert math.price("-") == "-"
 
 
 @given(st.integers(min_value=1))

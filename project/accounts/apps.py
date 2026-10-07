@@ -4,4 +4,4 @@ App_name = "accounts"
 
 
 class AccountsConfig(AppConfig):
-    name = name = f"project.{App_name}"
+    name = f"project.{App_name}"
