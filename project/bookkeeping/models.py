@@ -1,11 +1,15 @@
 from django.db import models
 
 from ..accounts.models import Account
+from ..core.services.signals_service import BalanceKind
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 
 
 class SavingWorth(models.Model):
+    fund_field = "saving_type"
+    balance_kind = BalanceKind.SAVINGS
+
     date = models.DateTimeField()
     price = models.PositiveIntegerField()
     saving_type = models.ForeignKey(
@@ -25,6 +29,9 @@ class SavingWorth(models.Model):
 
 
 class AccountWorth(models.Model):
+    fund_field = "account"
+    balance_kind = BalanceKind.ACCOUNTS
+
     date = models.DateTimeField()
     price = models.PositiveIntegerField()
     account = models.ForeignKey(
@@ -44,6 +51,9 @@ class AccountWorth(models.Model):
 
 
 class PensionWorth(models.Model):
+    fund_field = "pension_type"
+    balance_kind = BalanceKind.PENSIONS
+
     date = models.DateTimeField()
     price = models.PositiveIntegerField()
     pension_type = models.ForeignKey(
