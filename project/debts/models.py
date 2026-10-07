@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from ..accounts.models import Account
-from ..core.templatetags.math import price as convert_price
+from ..core.lib.convert_price import int_cents_to_float
 from ..journals.models import Journal
 
 
@@ -52,10 +52,10 @@ class DebtReturn(models.Model):
 
         text = ""
         if self.debt.debt_type == "lend":
-            text = f"{_('Lend return')} {convert_price(price)}"
+            text = f"{_('Lend return')} {int_cents_to_float(price)}"
 
         if self.debt.debt_type == "borrow":
-            text = f"{_('Borrow return')} {convert_price(price)}"
+            text = f"{_('Borrow return')} {int_cents_to_float(price)}"
 
         return text
 

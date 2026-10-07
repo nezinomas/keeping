@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import ConvertPriceMixin
+from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
@@ -13,7 +13,8 @@ from . import models
 from .services.model_services import DebtModelService, DebtReturnModelService
 
 
-class DebtForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
+class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
+    price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
 
     class Meta:
@@ -102,7 +103,8 @@ class DebtForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
         return cleaned_data
 
 
-class DebtReturnForm(ConvertPriceMixin, YearBetweenMixin, forms.ModelForm):
+class DebtReturnForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
+    price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
 
     class Meta:
