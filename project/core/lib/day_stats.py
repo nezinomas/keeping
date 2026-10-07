@@ -131,8 +131,7 @@ class Stats:
         return empty_df.join(self._df, on="date", how="left").fill_null(0)
 
     def _prepare_data_frame(self, data) -> pl.DataFrame:
-        data = data if isinstance(data, list) else list(data)
-        history_df = pl.DataFrame(data or [])
+        history_df = pl.DataFrame(list(data))
 
         if history_df.is_empty():
             return history_df
