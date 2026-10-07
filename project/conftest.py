@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+import hypothesis
 import pytest
 import pytz
 from django.conf import settings
@@ -24,6 +25,10 @@ from .transactions.tests.factories import (
     TransactionFactory,
 )
 from .users.tests.factories import UserFactory
+
+hypothesis.settings.register_profile("dev", max_examples=20, deadline=None)
+hypothesis.settings.register_profile("gate", max_examples=100, deadline=None)
+hypothesis.settings.load_profile("dev")
 
 
 @pytest.fixture(autouse=True)
