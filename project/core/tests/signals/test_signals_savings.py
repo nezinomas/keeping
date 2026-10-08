@@ -3,23 +3,22 @@ from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from ...lib.signals import Savings
+from .strategies import rows
 
 
 @pytest.fixture(name="incomes")
 def fixture_incomes():
     return [
-        # id: 1, year: 2000
         {"year": 2000, "incomes": 100, "fee": 2, "category_id": 1},
         {"year": 2000, "incomes": 100, "fee": 2, "category_id": 1},
-        # id: 1, year: 1999
         {"year": 1999, "incomes": 50, "fee": 1, "category_id": 1},
         {"year": 1999, "incomes": 50, "fee": 1, "category_id": 1},
-        # id: 2, year: 1999
         {"year": 1999, "incomes": 55, "fee": 3, "category_id": 2},
         {"year": 1999, "incomes": 55, "fee": 3, "category_id": 2},
-        # id: 2, year: 2000
         {"year": 2000, "incomes": 110, "fee": 4, "category_id": 2},
         {"year": 2000, "incomes": 110, "fee": 4, "category_id": 2},
     ]
@@ -28,13 +27,10 @@ def fixture_incomes():
 @pytest.fixture(name="expenses")
 def fixture_expenses():
     return [
-        # id: 1, year: 2000
         {"year": 2000, "expenses": 50, "fee": 2, "category_id": 1},
         {"year": 2000, "expenses": 50, "fee": 2, "category_id": 1},
-        # id: 1, year: 1999
         {"year": 1999, "expenses": 25, "fee": 3, "category_id": 1},
         {"year": 1999, "expenses": 25, "fee": 3, "category_id": 1},
-        # id: 2, year: 2000
         {"year": 2000, "expenses": 55, "fee": 1, "category_id": 2},
         {"year": 2000, "expenses": 55, "fee": 1, "category_id": 2},
     ]
@@ -761,3 +757,39 @@ def test_table_does_not_depend_on_the_input_row_order():
 
     for _ in range(20):
         assert table(rng) == expected
+
+
+@given(
+    st.lists(rows("incomes", fee=st.integers(0, 1000)), min_size=1, max_size=12),
+    st.lists(rows("expenses", fee=st.just(0)), max_size=12),
+    st.lists(
+        rows("have", latest_check=st.just(datetime(1995, 1, 1))),
+        max_size=6,
+        unique_by=lambda x: (x["category_id"], x["year"]),
+    ),
+)
+def test_table_profit_is_worth_plus_sold_minus_incomes_and_fee(incomes, expenses, have):
+    types = [SimpleNamespace(pk=pk, closed=None) for pk in (1, 2, 3)]
+    data = SimpleNamespace(
+        moves=[], incomes=incomes, expenses=expenses, have=have, types=types
+    )
+    actual = Savings(data).df.collect().to_dicts()
+
+    def until(source, column, row):
+        return sum(
+            x[column]
+            for x in source
+            if x["category_id"] == row["category_id"] and x["year"] <= row["year"]
+        )
+
+    assert actual
+    for row in actual:
+        checked = [x for x in have if x["category_id"] == row["category_id"]]
+        checked = [x for x in checked if x["year"] <= row["year"]]
+        worth = max(checked, key=lambda x: x["year"])["have"] if checked else 0
+
+        assert row["incomes"] == until(incomes, "incomes", row)
+        assert row["fee"] == until(incomes, "fee", row)
+        assert row["sold"] == until(expenses, "expenses", row)
+        assert row["market_value"] == worth
+        assert row["profit_sum"] == worth + row["sold"] - row["incomes"] - row["fee"]
