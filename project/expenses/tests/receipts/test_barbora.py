@@ -1,6 +1,7 @@
 import re
 
 import pdfplumber
+import pytest
 
 from ...receipts.layouts import BARBORA
 from ...receipts.table_parser import TableReceiptParser
@@ -22,7 +23,7 @@ def _receipt():
         return TableReceiptParser(BARBORA).parse(document)
 
 
-def test_barbora_parses_29_lines_in_pdf_order():
+def test_barbora_parses_29_lines():
     receipt = _receipt()
 
     assert len(receipt.lines) == 29
@@ -58,18 +59,19 @@ def test_barbora_titles_have_no_ean_digits_or_ellipsis():
         assert re.search(r"\d{5,}", line.title) is None
 
 
-def test_barbora_line_2_weighed_product():
+@pytest.mark.parametrize(
+    "index,amount,price",
+    [
+        pytest.param(1, 1, 280, id="line_2_weighed_product"),
+        pytest.param(19, 6, 690, id="line_20_piece_product"),
+        pytest.param(28, 1, 269, id="line_29_packaging_fee"),
+    ],
+)
+def test_barbora_line_amount_and_price(index, amount, price):
     receipt = _receipt()
 
-    assert receipt.lines[1].amount == 1
-    assert receipt.lines[1].price == 280
-
-
-def test_barbora_line_20_piece_product():
-    receipt = _receipt()
-
-    assert receipt.lines[19].amount == 6
-    assert receipt.lines[19].price == 690
+    assert receipt.lines[index].amount == amount
+    assert receipt.lines[index].price == price
 
 
 def test_barbora_only_lines_11_and_17_are_deposit_lines():
@@ -80,13 +82,6 @@ def test_barbora_only_lines_11_and_17_are_deposit_lines():
     assert deposit_indexes == [10, 16]
     assert receipt.lines[10].price == 40
     assert receipt.lines[16].price == 30
-
-
-def test_barbora_line_29_packaging_fee():
-    receipt = _receipt()
-
-    assert receipt.lines[28].amount == 1
-    assert receipt.lines[28].price == 269
 
 
 def test_barbora_summary_rows_are_not_lines():

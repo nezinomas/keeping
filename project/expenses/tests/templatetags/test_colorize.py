@@ -1,13 +1,16 @@
+import pytest
+
 from ...templatetags.colorize import bg_color
 
 
-def test_value_exists():
-    actual = bg_color(1)
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        pytest.param(1, "food", id="known_type"),
+        pytest.param("x", "", id="unknown_value"),
+    ],
+)
+def test_bg_color(value, expected):
+    actual = bg_color(value)
 
-    assert "food" == actual
-
-
-def test_value_not_exists():
-    actual = bg_color("x")
-
-    assert "" == actual
+    assert actual == expected
