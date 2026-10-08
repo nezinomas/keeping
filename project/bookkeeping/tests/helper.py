@@ -1,4 +1,5 @@
 import contextlib
+import json
 import re
 from datetime import date, datetime
 
@@ -57,6 +58,11 @@ def fund_with_a_sell(title, bought, sold, *, fee=0, kind="funds", closed=None):
 def row_cells(content, title):
     row = re.search(rf"<tr>\s*<td[^>]*>{title}</td>(.*?)</tr>", content, re.S)
     return [c.strip() for c in re.findall(r"<td[^>]*>(.*?)</td>", row.group(1), re.S)]
+
+
+def script_json(content, script_id):
+    found = re.search(rf'<script id="{script_id}"[^>]*>(.*?)</script>', content, re.S)
+    return json.loads(found.group(1))
 
 
 def worth_in_1999(fund, price, month=12):

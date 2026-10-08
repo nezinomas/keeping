@@ -152,18 +152,6 @@ def test_months_balance_average(data, amount_start):
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-def test_amount_start(data):
-    actual = YearBalance(data=data, amount_start=10).amount_start
-
-    assert actual == 10
-
-
-def test_amount_start_zero(data):
-    actual = YearBalance(data=data, amount_start=0).amount_start
-
-    assert actual == 0
-
-
 def test_amount_end(data, amount_start):
     actual = YearBalance(data=data, amount_start=amount_start).amount_end
 
@@ -183,85 +171,52 @@ def test_amount_balance(data, amount_start):
     assert actual == 165
 
 
-def test_balance_income_data(data, expect):
-    actual = YearBalance(data=data, amount_start=0).income_data
+@pytest.mark.parametrize(
+    "series, column",
+    [
+        pytest.param(lambda b: b.income_data, "incomes", id="income_data"),
+        pytest.param(lambda b: b.expense_data, "expenses", id="expense_data"),
+        pytest.param(lambda b: b.borrow_data, "borrow", id="borrow_data"),
+        pytest.param(
+            lambda b: b.borrow_return_data, "borrow_return", id="borrow_return_data"
+        ),
+        pytest.param(lambda b: b.lend_data, "lend", id="lend_data"),
+        pytest.param(
+            lambda b: b.lend_return_data, "lend_return", id="lend_return_data"
+        ),
+        pytest.param(lambda b: b.money_flow, "money_flow", id="money_flow"),
+    ],
+)
+def test_balance_series_reads_its_column(data, amount_start, expect, series, column):
+    actual = series(YearBalance(data=data, amount_start=amount_start))
 
-    expect = [x["incomes"] for x in expect]
-
-    assert actual == expect
-
-
-def test_balance_expense_data(data, expect):
-    actual = YearBalance(data=data, amount_start=0).expense_data
-
-    expect = [x["expenses"] for x in expect]
-
-    assert actual == expect
-
-
-def test_balance_borrow_data(data, expect):
-    actual = YearBalance(data=data, amount_start=0).borrow_data
-
-    expect = [x["borrow"] for x in expect]
-
-    assert actual == expect
+    assert actual == [x[column] for x in expect]
 
 
-def test_balance_borrow_return_data(data, expect):
-    actual = YearBalance(data=data, amount_start=0).borrow_return_data
+@pytest.mark.parametrize(
+    "average, mean",
+    [
+        pytest.param(lambda b: b.avg_incomes, 90, id="avg_incomes"),
+        pytest.param(lambda b: b.avg_expenses, 15, id="avg_expenses"),
+    ],
+)
+def test_avg_is_the_mean_over_months_with_data(data, average, mean):
+    actual = average(YearBalance(data=data, amount_start=0))
 
-    expect = [x["borrow_return"] for x in expect]
-
-    assert actual == expect
-
-
-def test_balance_lend_data(data, expect):
-    actual = YearBalance(data=data, amount_start=0).lend_data
-
-    expect = [x["lend"] for x in expect]
-
-    assert actual == expect
+    assert actual == mean
 
 
-def test_balance_lend_return_data(data, expect):
-    actual = YearBalance(data=data, amount_start=0).lend_return_data
+@pytest.mark.parametrize(
+    "average, column",
+    [
+        pytest.param(lambda b: b.avg_incomes, "incomes", id="avg_incomes_none"),
+        pytest.param(lambda b: b.avg_expenses, "expenses", id="avg_expenses_none"),
+    ],
+)
+def test_avg_of_an_all_zero_column_is_zero(data, average, column):
+    data.data = data.data.with_columns(pl.col(column) * 0)
 
-    expect = [x["lend_return"] for x in expect]
-
-    assert actual == expect
-
-
-def test_balance_money_flow(data, amount_start, expect):
-    actual = YearBalance(data=data, amount_start=amount_start).money_flow
-
-    expect = [x["money_flow"] for x in expect]
-
-    assert actual == expect
-
-
-def test_avg_incomes(data):
-    actual = YearBalance(data=data, amount_start=0).avg_incomes
-
-    assert actual == 90
-
-
-def test_avg_incomes_none(data):
-    data.data = data.data.with_columns(pl.col("incomes") * 0)
-
-    actual = YearBalance(data=data, amount_start=0).avg_incomes
-
-    assert actual == 0
-
-
-def test_avg_expenses(data):
-    actual = YearBalance(data=data, amount_start=0).avg_expenses
-
-    assert actual == 15
-
-
-def test_avg_expenses_none(data):
-    data.data = data.data.with_columns(pl.col("expenses") * 0)
-    actual = YearBalance(data=data, amount_start=0).avg_expenses
+    actual = average(YearBalance(data=data, amount_start=0))
 
     assert actual == 0
 

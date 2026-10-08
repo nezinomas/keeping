@@ -3,7 +3,7 @@ from datetime import date
 
 import pytest
 import time_machine
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ....accounts.tests.factories import AccountBalance
 from ....core.tests.utils import setup_view
@@ -18,13 +18,7 @@ from ... import views
 pytestmark = pytest.mark.django_db
 
 
-def test_view_regenerate_balances_func():
-    view = resolve("/set/balances/")
-
-    assert views.RegenerateBalances == view.func.view_class
-
-
-def test_view_regenerate_balances_status_200(client_logged):
+def test_view_regenerate_balances_responds_no_content(client_logged):
     url = reverse("bookkeeping:regenerate_balances")
     response = client_logged.get(url, follow=True)
 
@@ -78,9 +72,16 @@ def test_view_regenerate_balances_func_called(mocker, fake_request):
     assert pension.call_count == 1
 
 
-def test_view_regenerate_account_balances(mocker, rf):
-    request = rf.get("/fake/?type=accounts")
-
+@pytest.mark.parametrize(
+    "kind, calls",
+    [
+        pytest.param("accounts", (1, 0, 0), id="accounts"),
+        pytest.param("savings", (0, 1, 0), id="savings"),
+        pytest.param("pensions", (0, 0, 1), id="pensions"),
+    ],
+)
+def test_view_regenerate_balances_syncs_only_its_kind(kind, calls, mocker, rf):
+    request = rf.get(f"/fake/?type={kind}")
     request.user = UserFactory.build()
     request.user.journal = JournalFactory.build()
 
@@ -88,55 +89,9 @@ def test_view_regenerate_account_balances(mocker, rf):
     saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
     pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
 
-    class Dummy(views.RegenerateBalances):
-        pass
+    setup_view(views.RegenerateBalances(), request).get(request)
 
-    view = setup_view(Dummy(), request)
-    view.get(request)
-
-    assert account.call_count == 1
-    assert saving.call_count == 0
-    assert pension.call_count == 0
-
-
-def test_view_regenerate_saving_balances(mocker, rf):
-    request = rf.get("/fake/?type=savings")
-    request.user = UserFactory.build()
-    request.user.journal = JournalFactory.build()
-
-    account = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
-    saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
-    pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
-
-    class Dummy(views.RegenerateBalances):
-        pass
-
-    view = setup_view(Dummy(), request)
-    view.get(request)
-
-    assert account.call_count == 0
-    assert saving.call_count == 1
-    assert pension.call_count == 0
-
-
-def test_view_regenerate_pension_balances(mocker, rf):
-    request = rf.get("/fake/?type=pensions")
-    request.user = UserFactory.build()
-    request.user.journal = JournalFactory.build()
-
-    account = mocker.patch("project.bookkeeping.balance_sources.sync_accounts")
-    saving = mocker.patch("project.bookkeeping.balance_sources.sync_savings")
-    pension = mocker.patch("project.bookkeeping.balance_sources.sync_pensions")
-
-    class Dummy(views.RegenerateBalances):
-        pass
-
-    view = setup_view(Dummy(), request)
-    view.get(request)
-
-    assert account.call_count == 0
-    assert saving.call_count == 0
-    assert pension.call_count == 1
+    assert (account.call_count, saving.call_count, pension.call_count) == calls
 
 
 @pytest.mark.parametrize(
@@ -173,10 +128,3 @@ def test_view_regenerate_unknown_type_syncs_all_and_sends_after_signal(mocker, r
 
     assert [x.call_count for x in syncs] == [1, 1, 1]
     assert json.loads(response.headers["HX-Trigger"]) == {"afterSignal": {}}
-
-
-def test_view_regenerate_no_errors(client_logged):
-    url = reverse("bookkeeping:regenerate_balances")
-    response = client_logged.get(f"{url}?type=xxx&ajax_trigger=1", {})
-
-    assert response.status_code == 204

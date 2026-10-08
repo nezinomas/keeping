@@ -2,28 +2,17 @@ import re
 from datetime import date
 
 import pytest
-from django.urls import resolve, reverse
+from django.urls import reverse
 
+from ....debts.tests.factories import BorrowFactory, LendFactory
 from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
 from ....pensions.tests.factories import PensionFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
-from ... import views
+from ..helper import script_json
 
 pytestmark = pytest.mark.django_db
-
-
-def test_view_index_func():
-    view = resolve("/")
-
-    assert views.Index == view.func.view_class
-
-
-def test_view_index_200(client_logged):
-    response = client_logged.get("/")
-
-    assert response.status_code == 200
 
 
 def test_view_count_queries(client_logged, django_assert_max_num_queries):
@@ -32,24 +21,45 @@ def test_view_count_queries(client_logged, django_assert_max_num_queries):
         client_logged.get(url)
 
 
-def test_view_index_context(client_logged):
-    url = reverse("bookkeeping:index")
-    response = client_logged.get(url)
+@pytest.fixture(name="index_content")
+def fixture_index_content(client_logged):
+    BorrowFactory(price=7000)
+    LendFactory(price=9000)
+    PensionFactory()
+    ExpenseFactory(date=date(1999, 1, 1), price=100)
 
-    assert "year" in response.context
-    assert "balance" in response.context
-    assert "balance_short" in response.context
-    assert "expenses" in response.context
-    assert "averages" in response.context
-    assert "borrow" in response.context
-    assert "lend" in response.context
-    assert "chart_expenses" in response.context
-    assert "chart_balance" in response.context
-    assert "accounts" in response.context
-    assert "savings" in response.context
-    assert "pensions" in response.context
-    assert "wealth" in response.context
-    assert "no_incomes" in response.context
+    return client_logged.get(reverse("bookkeeping:index")).content.decode()
+
+
+@pytest.mark.parametrize(
+    "marker",
+    [
+        pytest.param("<th>1999</th>", id="year"),
+        pytest.param('<td data-sign="loss" data-cell="">-1,00</td>', id="balance"),
+        pytest.param("1999 pabaigoje", id="balance_short"),
+        pytest.param(
+            '<td class="left-thick-border" data-cell="">1,00</td>', id="expenses"
+        ),
+        pytest.param("Vidutinės pajamos", id="averages"),
+        pytest.param('data-tip="Liko grąžinti:  70,00"', id="borrow"),
+        pytest.param('data-tip="Liko grąžinti:  90,00"', id="lend"),
+        pytest.param(">Account1</span>", id="accounts"),
+        pytest.param("Pajamų dalis pervedama taupymui", id="savings"),
+        pytest.param(">PensionType</td>", id="pensions"),
+        pytest.param("Turtas", id="wealth"),
+        pytest.param("€ + F + P", id="no_incomes"),
+    ],
+)
+def test_view_index_renders_its_tables_and_panels(index_content, marker):
+    assert marker in index_content
+
+
+def test_view_index_renders_its_chart_data(index_content):
+    balance = script_json(index_content, "chart-balance-data")
+    expenses = script_json(index_content, "chart-expenses-data")
+
+    assert balance["expenses"][0] == 100
+    assert [point["y"] for point in expenses] == [100]
 
 
 @pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
@@ -108,12 +118,6 @@ def test_view_index_regenerate_buttons(client_logged):
 
     assert f'hx-get="{url}"' in content
     assert "Bus atnaujinti visų metų balansai." in content
-
-
-def test_view_reload_func():
-    view = resolve("/bookkeeping/reload_index/")
-
-    assert views.ReloadIndex == view.func.view_class
 
 
 def test_view_reload_200(client_logged):

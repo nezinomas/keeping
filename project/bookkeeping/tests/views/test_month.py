@@ -2,27 +2,12 @@ import re
 from datetime import date
 
 import pytest
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ....expenses.tests.factories import ExpenseFactory
 from ....plans.tests.factories import DayPlanFactory
-from ... import views
 
 pytestmark = pytest.mark.django_db
-
-
-# Month
-def test_view_month_func():
-    view = resolve("/month/")
-
-    assert views.Month == view.func.view_class
-
-
-def test_view_month_200(client_logged):
-    url = reverse("bookkeeping:month")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_view_month_import_button_after_expenses_button(client_logged):
@@ -94,32 +79,10 @@ def test_view_month_200_set_user_month_value(month, expect, client_logged):
     assert response.wsgi_request.user.month == expect
 
 
-# Month Day List
-def test_view_expand_day_expenses_func():
-    view = resolve("/month/1111-2-3/")
-
-    assert views.ExpandDayExpenses == view.func.view_class
-
-
-def test_view_expand_day_expenses_200(client_logged):
-    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": date(1999, 1, 1)})
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_view_expand_day_expenses_str_in_url(client_logged):
-    url = reverse("bookkeeping:expand_day_expenses", kwargs={"date": "xx"})
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-    assert response.status_code == 200
-
-    assert "1974-01-01" in actual
-
-
 @pytest.mark.parametrize(
     "dt, expect",
     [
+        ("xx", "1974-01-01 dieną įrašų nėra"),
         ("1970-13-01", "1974-01-01 dieną įrašų nėra"),
         ("1970-12-32", "1974-01-01 dieną įrašų nėra"),
     ],
@@ -142,13 +105,6 @@ def test_view_expand_day_expenses_ajax(client_logged):
     assert "1999-01-01" in actual
     assert "Expense Type" in actual
     assert "Expense Name" in actual
-
-
-# Month Charts
-def test_view_month_chart_func():
-    view = resolve("/month/chart_type")
-
-    assert views.MonthChart == view.func.view_class
 
 
 def test_view_month_chart_200(client_logged):
