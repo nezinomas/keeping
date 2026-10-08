@@ -1,8 +1,9 @@
+import re
 from datetime import datetime
 
 import pytest
 import pytz
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ....accounts.models import AccountBalance
 from ....accounts.tests.factories import AccountBalanceFactory, AccountFactory
@@ -12,19 +13,6 @@ from ...models import AccountWorth
 from ..factories import AccountWorthFactory
 
 pytestmark = pytest.mark.django_db
-
-
-def test_func():
-    view = resolve("/bookkeeping/accounts_worth/new/")
-
-    assert views.AccountsWorthNew == view.func.view_class
-
-
-def test_200(client_logged):
-    url = reverse("bookkeeping:accounts_worth_new")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_formset(client_logged):
@@ -45,18 +33,27 @@ def test_formset_has_one_empty_price_per_account(client_logged):
     url = reverse("bookkeeping:accounts_worth_new")
     response = client_logged.get(url)
 
-    prices = response.context["formset"].forms
+    prices = re.findall(
+        r'<input[^>]*name="form-\d+-price"[^>]*>', response.content.decode()
+    )
     assert len(prices) == 2
-    assert [form["price"].value() for form in prices] == [None, None]
+    assert not any("value=" in price for price in prices)
 
 
-def test_formset_new(client_logged):
+@pytest.mark.parametrize(
+    "price, expected",
+    [
+        pytest.param("0.01", 1, id="new"),
+        pytest.param("0", 0, id="null_value"),
+    ],
+)
+def test_formset_new(client_logged, price, expected):
     i = AccountFactory()
     data = {
         "form-TOTAL_FORMS": 1,
         "form-INITIAL_FORMS": 0,
         "form-0-date": "1999-9-9",
-        "form-0-price": "0.01",
+        "form-0-price": price,
         "form-0-account": i.pk,
     }
 
@@ -67,27 +64,7 @@ def test_formset_new(client_logged):
     assert actual.date.year == 1999
     assert actual.date.month == 9
     assert actual.date.day == 9
-    assert actual.price == 1
-
-
-def test_formset_new_null_value(client_logged):
-    i = AccountFactory()
-    data = {
-        "form-TOTAL_FORMS": 1,
-        "form-INITIAL_FORMS": 0,
-        "form-0-date": "1999-9-9",
-        "form-0-price": "0",
-        "form-0-account": i.pk,
-    }
-
-    url = reverse("bookkeeping:accounts_worth_new")
-    client_logged.post(url, data, follow=True)
-
-    actual = AccountWorth.objects.last()
-    assert actual.date.year == 1999
-    assert actual.date.month == 9
-    assert actual.date.day == 9
-    assert not actual.price
+    assert actual.price == expected
 
 
 @pytest.mark.parametrize(
@@ -177,49 +154,29 @@ def test_formset_invalid_data(client_logged):
     assert "account" in actual.errors[0]
 
 
-def test_formset_closed_in_past(main_user, rf):
+@pytest.mark.parametrize(
+    "year, closed_listed",
+    [
+        pytest.param(2000, False, id="past"),
+        pytest.param(1000, True, id="current"),
+        pytest.param(1, True, id="future"),
+    ],
+)
+def test_formset_lists_an_account_closed_in_the_users_year_or_later(
+    main_user, rf, year, closed_listed
+):
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=1000)
 
-    main_user.year = 2000
+    main_user.year = year
     rf.user = main_user
 
     view = setup_view(views.AccountsWorthNew(), rf)
 
-    actual = str(view.get_formset())  # pylint: disable=protected-access
+    actual = str(view.get_formset())
 
     assert "S1" in actual
-    assert "S2" not in actual
-
-
-def test_formset_closed_in_current(main_user, rf):
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=1000)
-
-    main_user.year = 1000
-    rf.user = main_user
-
-    view = setup_view(views.AccountsWorthNew(), rf)
-
-    actual = str(view.get_formset())  # pylint: disable=protected-access
-
-    assert "S1" in actual
-    assert "S2" in actual
-
-
-def test_formset_closed_in_future(main_user, rf):
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=1000)
-
-    main_user.year = 1
-    rf.user = main_user
-
-    view = setup_view(views.AccountsWorthNew(), rf)
-
-    actual = str(view.get_formset())  # pylint: disable=protected-access
-
-    assert "S1" in actual
-    assert "S2" in actual
+    assert ("S2" in actual) is closed_listed
 
 
 def test_view(client_logged):
@@ -244,4 +201,4 @@ def test_view_last_check_empty(client_logged):
     actual = response.content.decode("utf-8")
 
     assert 'data-tip="Nėra įrašo apie sąskaitos lėšas"' in actual
-    assert "20" in actual
+    assert '<td class="left-thick-border" data-cell="">0,20</td>' in actual

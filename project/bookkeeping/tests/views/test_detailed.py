@@ -52,9 +52,6 @@ def _positions(content, *titles):
     return [content.index(title) for title in titles]
 
 
-# ----------------------------------------------------------------------------
-#                                                                         urls
-# ----------------------------------------------------------------------------
 @pytest.mark.parametrize(
     "path, view",
     [
@@ -87,15 +84,6 @@ def test_view_detailed_old_and_unknown_urls_404(client_logged, path):
 def test_view_detailed_table_url_is_gone():
     with pytest.raises(NoReverseMatch):
         reverse("bookkeeping:detailed_table", kwargs={"category": "income"})
-
-
-# ----------------------------------------------------------------------------
-#                                                                         tabs
-# ----------------------------------------------------------------------------
-def test_view_detailed_200(client_logged):
-    response = client_logged.get(reverse("bookkeeping:detailed"))
-
-    assert response.status_code == 200
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -158,31 +146,17 @@ def test_view_detailed_page_has_no_quick_add(client_logged):
     assert "quick-add" not in content
 
 
-# ----------------------------------------------------------------------------
-#                                                                     Pajamos
-# ----------------------------------------------------------------------------
-@factory.django.mute_signals(post_save)
-def test_view_detailed_with_incomes(client_logged):
-    IncomeFactory()
-
-    url = reverse("bookkeeping:detailed")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-    content = clean_content(response.content.decode("utf-8"))
-
-    assert "Pajamos" in content
-    assert "Income Type" in content
-
-
 @factory.django.mute_signals(post_save)
 def test_view_detailed_opens_on_incomes(client_logged):
     IncomeFactory()
     SavingFactory()
 
-    content = client_logged.get(reverse("bookkeeping:detailed")).content.decode()
+    response = client_logged.get(reverse("bookkeeping:detailed"))
+    content = response.content.decode()
 
+    assert response.status_code == 200
+    assert "Pajamos" in clean_content(content)
+    assert "Income Type" in clean_content(content)
     assert "Income Type" in content
     assert content.count("<table") == 1
 
@@ -218,7 +192,7 @@ def test_view_detailed_no_incomes(client_logged):
 
 @factory.django.mute_signals(post_save)
 def test_view_detailed_income_sorted_by_march(client_logged):
-    IncomeFactory(income_type=IncomeTypeFactory(title="Aaa"), price=1)
+    IncomeFactory(income_type=IncomeTypeFactory(title="Aaa"), price=20)
     IncomeFactory(
         income_type=IncomeTypeFactory(title="Bbb"), price=9, date=date(1999, 3, 1)
     )
@@ -242,9 +216,6 @@ def test_view_detailed_income_headers_sort_through_the_tab(client_logged):
     assert f'hx-get="{url}?order=total_col"' not in content
 
 
-# ----------------------------------------------------------------------------
-#                                                                     Taupymas
-# ----------------------------------------------------------------------------
 @factory.django.mute_signals(post_save)
 def test_view_detailed_with_savings(client_logged):
     SavingFactory()
@@ -279,9 +250,6 @@ def test_view_detailed_saving_headers_sort_through_the_tab(client_logged):
     assert f'hx-get="{url}?order=3" hx-target="#tab_content"' in content
 
 
-# ----------------------------------------------------------------------------
-#                                                                     Išlaidos
-# ----------------------------------------------------------------------------
 @factory.django.mute_signals(post_save)
 def test_view_detailed_rendered_expenses(client_logged, expenses):
     response = client_logged.get(reverse("bookkeeping:detailed_expenses"))
@@ -390,31 +358,20 @@ def test_view_detailed_sort_target_sits_inside_the_panel(client_logged):
     assert panel < wrapper < content.index("<table")
 
 
-# ----------------------------------------------------------------------------
-#                                                                   Type table
-# ----------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "order, aaa_price, month",
+    [
+        pytest.param("total_col", 1, 1, id="total"),
+        pytest.param("3", 20, 3, id="march"),
+    ],
+)
 @factory.django.mute_signals(post_save)
-def test_view_detailed_type_sorted_by_total(client_logged):
-    _expense("Aaa", 1)
-    _expense("Bbb", 9)
+def test_view_detailed_type_sorted_by_column(client_logged, order, aaa_price, month):
+    _expense("Aaa", aaa_price)
+    _expense("Bbb", 9, month=month)
     url = reverse("bookkeeping:detailed_type", kwargs={"type_slug": "expense-type"})
 
-    response = client_logged.get(f"{url}?order=total_col", headers=HTMX)
-    content = response.content.decode("utf-8")
-
-    assert response.status_code == 200
-    assert content.count("<table") == 1
-    first, second = _positions(content, "Bbb", "Aaa")
-    assert first < second
-
-
-@factory.django.mute_signals(post_save)
-def test_view_detailed_type_sorted_by_march(client_logged):
-    _expense("Aaa", 1)
-    _expense("Bbb", 9, month=3)
-    url = reverse("bookkeeping:detailed_type", kwargs={"type_slug": "expense-type"})
-
-    response = client_logged.get(f"{url}?order=3", headers=HTMX)
+    response = client_logged.get(f"{url}?order={order}", headers=HTMX)
     content = response.content.decode("utf-8")
 
     assert response.status_code == 200
@@ -462,9 +419,6 @@ def test_view_detailed_type_302(client):
     assert client.get(url).status_code == 302
 
 
-# ----------------------------------------------------------------------------
-#                                                                   Išlaidos
-# ----------------------------------------------------------------------------
 def _expenses_page(client):
     return client.get(reverse("bookkeeping:detailed_expenses")).content.decode()
 

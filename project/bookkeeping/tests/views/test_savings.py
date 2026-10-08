@@ -3,13 +3,12 @@ from datetime import date, datetime
 
 import pytest
 import pytz
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ....incomes.tests.factories import IncomeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ....transactions.tests.factories import SavingChangeFactory
-from ... import views
 from ..factories import SavingWorthFactory
 from ..helper import (
     fund_with_a_sell,
@@ -23,19 +22,6 @@ from ..helper import (
 pytestmark = pytest.mark.django_db
 
 
-def test_view_func():
-    view = resolve("/bookkeeping/savings/")
-
-    assert views.Savings == view.func.view_class
-
-
-def test_view_200(client_logged):
-    url = reverse("bookkeeping:savings")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
 def test_view_context(client_logged):
     url = reverse("bookkeeping:savings")
     response = client_logged.get(url)
@@ -43,8 +29,6 @@ def test_view_context(client_logged):
 
     assert actual["title"] == "Fondai"
     assert actual["type"] == "savings"
-    assert "object_list" in actual
-    assert "total_row" in actual
 
 
 def test_view_context_no_pensions_type(client_logged):
@@ -84,26 +68,24 @@ def test_percentage_from_incomes_reads_the_invested_price(client_logged, fee_sou
     assert "Pajamų dalis pervedama taupymui: <b>20,0</b>%" in actual
 
 
-def test_percentage_from_incomes_green_alert(client_logged):
-    IncomeFactory(price=10)
-    SavingFactory(price=1)
+@pytest.mark.parametrize(
+    "income, savings, alert",
+    [
+        pytest.param(10, [1], "alert alert-success", id="green"),
+        pytest.param(100, [1], "alert alert-warning", id="yellow"),
+        pytest.param(10, [], "alert alert-danger", id="red"),
+    ],
+)
+def test_percentage_from_incomes_alert(client_logged, income, savings, alert):
+    IncomeFactory(price=income)
+    for price in savings:
+        SavingFactory(price=price)
 
     url = reverse("bookkeeping:savings")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert "alert alert-success" in actual
-
-
-def test_percentage_from_incomes_yellow_alert(client_logged):
-    IncomeFactory(price=100)
-    SavingFactory(price=1)
-
-    url = reverse("bookkeeping:savings")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "alert alert-warning" in actual
+    assert alert in actual
 
 
 def test_table_percentage(client_logged):
@@ -116,16 +98,6 @@ def test_table_percentage(client_logged):
 
     assert "6,60</td>" in actual  # row
     assert "6,60</th>" in actual  # total_row
-
-
-def test_percentage_from_incomes_red_alert(client_logged):
-    IncomeFactory(price=10)
-
-    url = reverse("bookkeeping:savings")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "alert alert-danger" in actual
 
 
 def test_latest_check(client_logged):

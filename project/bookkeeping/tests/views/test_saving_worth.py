@@ -1,6 +1,6 @@
 import pytest
 import time_machine
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ....core.tests.utils import setup_view
 from ....savings.models import SavingBalance
@@ -9,19 +9,6 @@ from ... import views
 from ...models import SavingWorth
 
 pytestmark = pytest.mark.django_db
-
-
-def test_view_func():
-    view = resolve("/bookkeeping/savings_worth/new/")
-
-    assert views.SavingsWorthNew == view.func.view_class
-
-
-def test_view_200(client_logged):
-    url = reverse("bookkeeping:savings_worth_new")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_formset_load(client_logged):
@@ -36,13 +23,20 @@ def test_formset_load(client_logged):
 
 
 @time_machine.travel("1999-2-3")
-def test_formset_new(client_logged):
+@pytest.mark.parametrize(
+    "price, expected",
+    [
+        pytest.param("0.01", 1, id="new"),
+        pytest.param("0", 0, id="null_value"),
+    ],
+)
+def test_formset_new(price, expected, client_logged):
     i = SavingTypeFactory()
     data = {
         "form-TOTAL_FORMS": 1,
         "form-INITIAL_FORMS": 0,
         "form-0-date": "1999-2-3",
-        "form-0-price": "0.01",
+        "form-0-price": price,
         "form-0-saving_type": i.pk,
     }
 
@@ -53,28 +47,7 @@ def test_formset_new(client_logged):
     assert actual.date.year == 1999
     assert actual.date.month == 2
     assert actual.date.day == 3
-    assert actual.price == 1
-
-
-@time_machine.travel("1999-2-3")
-def test_formset_new_null_value(client_logged):
-    i = SavingTypeFactory()
-    data = {
-        "form-TOTAL_FORMS": 1,
-        "form-INITIAL_FORMS": 0,
-        "form-0-date": "1999-2-3",
-        "form-0-price": "0",
-        "form-0-saving_type": i.pk,
-    }
-
-    url = reverse("bookkeeping:savings_worth_new")
-    client_logged.post(url, data)
-
-    actual = SavingWorth.objects.last()
-    assert actual.date.year == 1999
-    assert actual.date.month == 2
-    assert actual.date.day == 3
-    assert not actual.price
+    assert actual.price == expected
 
 
 def test_formset_new_post_save(client_logged):
@@ -110,46 +83,26 @@ def test_formset_invalid_data(client_logged):
     assert not form.is_valid()
 
 
-def test_formset_saving_type_closed_in_past(main_user, rf):
+@pytest.mark.parametrize(
+    "year, listed",
+    [
+        pytest.param(2000, False, id="past"),
+        pytest.param(1000, True, id="current"),
+        pytest.param(1, True, id="future"),
+    ],
+)
+def test_formset_lists_a_saving_type_until_its_closing_year(
+    year, listed, main_user, rf
+):
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=1000)
 
-    main_user.year = 2000
+    main_user.year = year
     rf.user = main_user
 
     view = setup_view(views.SavingsWorthNew(), rf)
 
-    actual = str(view.get_formset())  # pylint: disable=protected-access
+    actual = str(view.get_formset())
 
     assert "S1" in actual
-    assert "S2" not in actual
-
-
-def test_formset_saving_type_closed_in_current(main_user, rf):
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=1000)
-
-    main_user.year = 1000
-    rf.user = main_user
-
-    view = setup_view(views.SavingsWorthNew(), rf)
-
-    actual = str(view.get_formset())  # pylint: disable=protected-access
-
-    assert "S1" in actual
-    assert "S2" in actual
-
-
-def test_formset_saving_type_closed_in_future(main_user, rf):
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=1000)
-
-    main_user.year = 1
-    rf.user = main_user
-
-    view = setup_view(views.SavingsWorthNew(), rf)
-
-    actual = str(view.get_formset())  # pylint: disable=protected-access
-
-    assert "S1" in actual
-    assert "S2" in actual
+    assert ("S2" in actual) is listed

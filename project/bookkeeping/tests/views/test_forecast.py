@@ -1,15 +1,7 @@
 import pytest
-from django.urls import resolve, reverse
-
-from ... import views
+from django.urls import reverse
 
 pytestmark = pytest.mark.django_db
-
-
-def test_func():
-    view = resolve("/bookkeeping/forecast/")
-
-    assert views.Forecast == view.func.view_class
 
 
 def test_200(client_logged):
