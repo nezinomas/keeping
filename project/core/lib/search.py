@@ -124,7 +124,7 @@ def _filter_short_search_words(search_dict):
     return search_dict
 
 
-def _make_search_dict(search_str):
+def parse_search(search_str):
     _str = _sanitize_search_str(search_str)
 
     try:
@@ -149,7 +149,7 @@ def _get_value(search_dict, key, default_value):
 
 
 def _generic_search(query, search_str, category_list, date_field="date"):
-    search_dict, search_type = _make_search_dict(search_str)
+    search_dict, search_type = parse_search(search_str)
 
     if not any(search_dict.values()):
         return query.none()

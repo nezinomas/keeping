@@ -3,6 +3,8 @@ from datetime import date
 import factory
 import pytest
 from django.db.models.signals import post_save
+from hypothesis import assume, example, given
+from hypothesis import strategies as st
 
 from ....books.tests.factories import BookFactory
 from ....expenses.tests.factories import (
@@ -13,19 +15,52 @@ from ....expenses.tests.factories import (
 from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
 from ...lib import search
 
+NOTHING = {"category": None, "year": None, "month": None, "remark": None}
 
-def test_sanitize_search_str():
-    _search = "~!@#$%^&*()_+-=[]{}|;:,./<>?\\ x1"
-    actual = search._sanitize_search_str(_search)
+# a word never starts with a dash, or it would be read as a flag
+WORD = st.from_regex(r"[a-z_][a-z_.-]{0,5}", fullmatch=True)
+WORDS = st.lists(WORD, min_size=1, max_size=4)
+DATE_TOKEN_PARTS = st.tuples(
+    st.integers(1000, 9999),
+    st.none() | st.integers(1, 12),
+    st.sampled_from([".", "-"]),
+    st.none() | st.integers(1, 28),
+).map(lambda d: (d[0], d[1], d[2], d[3] if d[1] else None))
 
-    assert actual == "_-. x1"
+
+def long_enough(words):
+    return [word for word in words if len(word) > 2]
 
 
-def test_sanitize_search_str_empty():
-    _search = None
-    actual = search._sanitize_search_str(_search)
+def date_token(year, month, separator, day):
+    token = f"{year}"
+    if month:
+        token += f"{separator}{month:02d}"
+    if day:
+        token += f"{separator}{day:02d}"
+    return token
 
-    assert not actual
+
+@pytest.mark.parametrize(
+    "search_str, expect, search_type",
+    [
+        pytest.param(
+            "~!@#$%^&*()_+-=[]{}|;:,./<>?\\ x1",
+            {**NOTHING, "category": ["_-."], "remark": ["_-."]},
+            "no_args",
+            id="symbols_removed",
+        ),
+        pytest.param(
+            "-r ab1~! c!d2",
+            {**NOTHING, "remark": ["ab1", "cd2"]},
+            "with_args",
+            id="digits_and_spaces_kept",
+        ),
+        pytest.param(None, NOTHING, "no_args", id="nothing_given"),
+    ],
+)
+def test_parse_search_keeps_word_characters_only(search_str, expect, search_type):
+    assert search.parse_search(search_str) == (expect, search_type)
 
 
 @pytest.mark.parametrize(
@@ -39,163 +74,103 @@ def test_get_from_dictionary(dictionary, key, default_value, expect):
     assert search._get_value(dictionary, key, default_value) == expect
 
 
-@pytest.mark.parametrize(
-    "_search, expect",
-    [
-        ("-c x", {"category": ["x"], "year": None, "month": None, "remark": None}),
-        (
-            "-category x",
-            {"category": ["x"], "year": None, "month": None, "remark": None},
-        ),
-        (
-            "-c x y",
-            {"category": ["x", "y"], "year": None, "month": None, "remark": None},
-        ),
-        ("-y 1", {"category": None, "year": 1, "month": None, "remark": None}),
-        ("-year 1", {"category": None, "year": 1, "month": None, "remark": None}),
-        ("-m 1", {"category": None, "year": None, "month": 1, "remark": None}),
-        (
-            "-month 1",
-            {"category": None, "year": None, "month": 1, "remark": None},
-        ),
-        (
-            "-r xxx yyy",
-            {"category": None, "year": None, "month": None, "remark": ["xxx", "yyy"]},
-        ),
-        (
-            "-remark xxx",
-            {"category": None, "year": None, "month": None, "remark": ["xxx"]},
-        ),
-        (
-            "-c x -y 1 -m 2 -r xxx",
-            {"category": ["x"], "year": 1, "month": 2, "remark": ["xxx"]},
-        ),
-        (
-            "-category x y -year 1 -month 2 -remark xxx",
-            {"category": ["x", "y"], "year": 1, "month": 2, "remark": ["xxx"]},
-        ),
-        pytest.param(
-            "xxx 1111",
-            {"category": None, "year": None, "month": None, "remark": None},
-            marks=pytest.mark.xfail(raises=SystemExit),
-        ),
-    ],
+FLAG_NAMES = {
+    "category": ("-c", "-category"),
+    "year": ("-y", "-year"),
+    "month": ("-m", "-month"),
+    "remark": ("-r", "-remark"),
+}
+
+
+@given(
+    category=st.none() | WORDS,
+    year=st.none() | st.integers(0, 9999),
+    month=st.none() | st.integers(0, 99),
+    remark=st.none() | WORDS,
+    long_names=st.booleans(),
 )
-def test_parse_search_with_args(_search, expect):
-    assert expect == search._parse_search_with_args(_search)
-
-
-@pytest.mark.parametrize(
-    "_search, expect",
-    [
-        ("xxx", {"category": ["xxx"], "year": None, "month": None, "remark": ["xxx"]}),
-        (
-            "xxx yyy",
-            {
-                "category": ["xxx", "yyy"],
-                "year": None,
-                "month": None,
-                "remark": ["xxx", "yyy"],
-            },
-        ),
-        ("2000", {"category": None, "year": 2000, "month": None, "remark": None}),
-        ("2000.01", {"category": None, "year": 2000, "month": 1, "remark": None}),
-        ("2000.01.02", {"category": None, "year": 2000, "month": 1, "remark": None}),
-        ("2000-01", {"category": None, "year": 2000, "month": 1, "remark": None}),
-        ("2000-01", {"category": None, "year": 2000, "month": 1, "remark": None}),
-        ("2000-01-02", {"category": None, "year": 2000, "month": 1, "remark": None}),
-        (
-            "xxx 2000-01-02 yyy",
-            {
-                "category": ["xxx", "yyy"],
-                "year": 2000,
-                "month": 1,
-                "remark": ["xxx", "yyy"],
-            },
-        ),
-        (
-            "xxx 2000.01.02 yyy",
-            {
-                "category": ["xxx", "yyy"],
-                "year": 2000,
-                "month": 1,
-                "remark": ["xxx", "yyy"],
-            },
-        ),
-        (
-            "xxx 2000.01.02 yyy 1111.11",
-            {
-                "category": ["xxx", "yyy"],
-                "year": 2000,
-                "month": 1,
-                "remark": ["xxx", "yyy"],
-            },
-        ),
-        (
-            "type_a",
-            {"category": ["type_a"], "year": None, "month": None, "remark": ["type_a"]},
-        ),
-        (
-            "type-a",
-            {"category": ["type-a"], "year": None, "month": None, "remark": ["type-a"]},
-        ),
-        (
-            "type.a",
-            {"category": ["type.a"], "year": None, "month": None, "remark": ["type.a"]},
-        ),
-        (
-            "type.a 2000.01 3000.02",
-            {"category": ["type.a"], "year": 2000, "month": 1, "remark": ["type.a"]},
-        ),
-    ],
+@example(category=["x"], year=None, month=None, remark=None, long_names=False)
+@example(category=["xxx"], year=None, month=None, remark=None, long_names=False)
+@example(category=["x"], year=None, month=None, remark=None, long_names=True)
+@example(category=["xxx"], year=None, month=None, remark=None, long_names=True)
+@example(category=["x", "y"], year=None, month=None, remark=None, long_names=False)
+@example(category=["xxx", "yyy"], year=None, month=None, remark=None, long_names=False)
+@example(category=None, year=1, month=None, remark=None, long_names=False)
+@example(category=None, year=1, month=None, remark=None, long_names=True)
+@example(category=None, year=None, month=1, remark=None, long_names=False)
+@example(category=None, year=None, month=1, remark=None, long_names=True)
+@example(category=None, year=None, month=None, remark=["xxx", "yyy"], long_names=False)
+@example(category=None, year=None, month=None, remark=["xxx"], long_names=True)
+@example(category=["x"], year=1, month=2, remark=["xxx"], long_names=False)
+@example(category=["xxx"], year=1, month=2, remark=["xxx"], long_names=False)
+@example(category=["x", "y"], year=1, month=2, remark=["xxx"], long_names=True)
+@example(category=["xxx", "yyy"], year=1, month=2, remark=["xxx"], long_names=True)
+@example(
+    category=["xx", "yyy"], year=2000, month=1, remark=["xx", "yyy"], long_names=False
 )
-def test_parse_search_no_args(_search, expect):
-    assert expect == search._parse_search_no_args(_search)
-
-
-@pytest.mark.parametrize(
-    "search_dict, expect",
-    [
-        (
-            {
-                "category": ["xx", "yyy"],
-                "year": 2000,
-                "month": 1,
-                "remark": ["xx", "yyy"],
-            },
-            {"category": ["yyy"], "year": 2000, "month": 1, "remark": ["yyy"]},
-        ),
-        (
-            {
-                "category": ["xxx", "yyy"],
-                "year": 2000,
-                "month": 1,
-                "remark": ["xxx", "yyy"],
-            },
-            {
-                "category": ["xxx", "yyy"],
-                "year": 2000,
-                "month": 1,
-                "remark": ["xxx", "yyy"],
-            },
-        ),
-        (
-            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": None},
-            {"category": ["xxx", "yyy"], "year": 2000, "month": 1, "remark": None},
-        ),
-        (
-            {"category": None, "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
-            {"category": None, "year": 2000, "month": 1, "remark": ["xxx", "yyy"]},
-        ),
-    ],
+@example(
+    category=["xxx", "yyy"],
+    year=2000,
+    month=1,
+    remark=["xxx", "yyy"],
+    long_names=False,
 )
-def test_filter_short_search_words(search_dict, expect):
-    assert expect == search._filter_short_search_words(search_dict)
+@example(category=["xxx", "yyy"], year=2000, month=1, remark=None, long_names=False)
+@example(category=None, year=2000, month=1, remark=["xxx", "yyy"], long_names=False)
+def test_parse_search_with_args(category, year, month, remark, long_names):
+    given_ = {"category": category, "year": year, "month": month, "remark": remark}
+    text = " ".join(
+        f"{FLAG_NAMES[key][long_names]} "
+        + (" ".join(value) if isinstance(value, list) else str(value))
+        for key, value in given_.items()
+        if value is not None
+    )
+    expect = {
+        key: long_enough(value) if isinstance(value, list) else value
+        for key, value in given_.items()
+    }
+
+    assert search.parse_search(text) == (expect, "with_args")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                               Expense
-# -------------------------------------------------------------------------------------
+@given(
+    before=st.lists(WORD, max_size=3),
+    after=st.lists(WORD, max_size=3),
+    first=st.none() | DATE_TOKEN_PARTS,
+    later=st.none() | DATE_TOKEN_PARTS,
+)
+@example(before=["xxx"], after=[], first=None, later=None)
+@example(before=["xxx", "yyy"], after=[], first=None, later=None)
+@example(before=["xxx"], after=[], first=(1111, None, ".", None), later=None)
+@example(before=[], after=[], first=(2000, None, ".", None), later=None)
+@example(before=[], after=[], first=(2000, 1, ".", None), later=None)
+@example(before=[], after=[], first=(2000, 1, ".", 2), later=None)
+@example(before=[], after=[], first=(2000, 1, "-", None), later=None)
+@example(before=[], after=[], first=(2000, 1, "-", 2), later=None)
+@example(before=["xxx"], after=["yyy"], first=(2000, 1, "-", 2), later=None)
+@example(before=["xxx"], after=["yyy"], first=(2000, 1, ".", 2), later=None)
+@example(
+    before=["xxx"], after=["yyy"], first=(2000, 1, ".", 2), later=(1111, 11, ".", None)
+)
+@example(before=["type_a"], after=[], first=None, later=None)
+@example(before=["type-a"], after=[], first=None, later=None)
+@example(before=["type.a"], after=[], first=None, later=None)
+@example(
+    before=["type.a"], after=[], first=(2000, 1, ".", None), later=(3000, 2, ".", None)
+)
+@example(before=["ab", "abc"], after=[], first=None, later=None)
+@example(before=["ab"], after=[], first=(2000, 1, ".", None), later=None)
+def test_parse_search_no_args(before, after, first, later):
+    dates = [date_token(*d) for d in (first, later) if d]
+    assume(before + after + dates)
+    text = " ".join(before + dates[:1] + after + dates[1:])
+    words = long_enough(before + after) if before + after else None
+    year, month, *_ = first or later or (None, None)
+    expect = {"category": words, "year": year, "month": month, "remark": words}
+
+    assert search.parse_search(text) == (expect, "no_args")
+
+
 @pytest.mark.django_db
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
@@ -348,9 +323,6 @@ def test_expense_search_ordering(main_user):
     assert q[1]["date"] == date(1000, 1, 1)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                                Income
-# -------------------------------------------------------------------------------------
 @pytest.mark.django_db
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
@@ -402,9 +374,6 @@ def test_incomes_search_ordering(main_user):
     assert q[1]["date"] == date(1000, 1, 1)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                                  Book
-# -------------------------------------------------------------------------------------
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     "_search, author, title, remark",
@@ -426,7 +395,8 @@ def test_incomes_search_ordering(main_user):
         ("-r remark", "Author", "Book Title", "Remark"),
         ("1999.1 auth", "Author", "Book Title", "Remark"),
         ("1999-1 auth", "Author", "Book Title", "Remark"),
-        ("-r 1999 -m 1 -c auth", "Author", "Book Title", "Remark"),
+        ("-r 1999 -m 1 -c auth", None, None, None),
+        ("-y 1999 -m 1 -c auth", "Author", "Book Title", "Remark"),
         ("1999.1 titl", "Author", "Book Title", "Remark"),
         ("1999-1 titl", "Author", "Book Title", "Remark"),
         ("-y 1999 -m 1 -c titl", "Author", "Book Title", "Remark"),
@@ -436,13 +406,15 @@ def test_books_search(main_user, _search, author, title, remark):
     BookFactory()
     BookFactory(started=date(3333, 1, 1), author="A", title="T", remark="ZZZ")
 
-    if q := search.search_books(main_user, _search):
-        q = q[0]
+    actual = [
+        (row["started"], row["author"], row["title"], row["remark"])
+        for row in search.search_books(main_user, _search)
+    ]
 
-        assert q["started"] == date(1999, 1, 1)
-        assert q["author"] == author
-        assert q["title"] == title
-        assert q["remark"] == remark
+    expect = []
+    if author:
+        expect = [(date(1999, 1, 1), author, title, remark)]
+    assert actual == expect
 
 
 @pytest.mark.django_db
