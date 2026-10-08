@@ -1,12 +1,22 @@
+import pytest
+
 from ...receipts.reader import ReceiptReader
 from .pdfs import FIXTURES
 
 
-def test_barbora_promotion_reads_38_lines_that_agree():
-    receipt = ReceiptReader.read(FIXTURES / "barbora_promotion.pdf")
+@pytest.mark.parametrize(
+    "name,count,total",
+    [
+        pytest.param("barbora_promotion", 38, 10111, id="promotion_38_lines"),
+        pytest.param("barbora_substitute", 38, 10215, id="substitute_38_lines"),
+        pytest.param("barbora_two_pages", 47, 11789, id="two_pages_47_lines"),
+    ],
+)
+def test_barbora_shape_reads_its_lines_and_they_agree(name, count, total):
+    receipt = ReceiptReader.read(FIXTURES / f"{name}.pdf")
 
-    assert len(receipt.lines) == 38
-    assert receipt.total == 10111
+    assert len(receipt.lines) == count
+    assert receipt.total == total
     assert receipt.agrees
 
 
@@ -27,14 +37,6 @@ def test_barbora_promotion_gives_the_price_to_the_row_below():
     assert not any(title.startswith("4 grūdų trapučiai") for title in titles)
 
 
-def test_barbora_substitute_reads_38_lines_that_agree():
-    receipt = ReceiptReader.read(FIXTURES / "barbora_substitute.pdf")
-
-    assert len(receipt.lines) == 38
-    assert receipt.total == 10215
-    assert receipt.agrees
-
-
 def test_barbora_substitute_drops_the_original_and_keeps_the_substitute():
     receipt = ReceiptReader.read(FIXTURES / "barbora_substitute.pdf")
 
@@ -46,14 +48,6 @@ def test_barbora_substitute_drops_the_original_and_keeps_the_substitute():
     assert line.price == 139
     assert line.amount == 1
     assert not any(title.startswith("Gūžinės salotos") for title in titles)
-
-
-def test_barbora_two_pages_reads_47_lines_that_agree():
-    receipt = ReceiptReader.read(FIXTURES / "barbora_two_pages.pdf")
-
-    assert len(receipt.lines) == 47
-    assert receipt.total == 11789
-    assert receipt.agrees
 
 
 def test_barbora_two_pages_continues_the_product_table_onto_the_second_page():

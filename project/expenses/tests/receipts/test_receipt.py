@@ -1,8 +1,15 @@
+from dataclasses import FrozenInstanceError
+
+import pytest
+
 from ...receipts.receipt import Receipt, ReceiptLine
 
 
 def test_receipt_line_is_frozen():
     line = ReceiptLine(title="Bananai", amount=1, price=218, is_deposit=False)
+
+    with pytest.raises(FrozenInstanceError):
+        line.price = 1
 
     assert line.title == "Bananai"
     assert line.amount == 1
@@ -20,29 +27,25 @@ def test_lines_total_sums_line_prices():
     assert receipt.lines_total == 300
 
 
-def test_agrees_when_lines_total_matches_total():
-    lines = (ReceiptLine(title="A", amount=1, price=7135, is_deposit=False),)
-    receipt = Receipt(lines=lines, total=7135)
-
-    assert receipt.agrees is True
-
-
-def test_agrees_false_when_lines_total_is_one_cent_off_and_no_exception():
-    lines = (ReceiptLine(title="A", amount=1, price=7134, is_deposit=False),)
-    receipt = Receipt(lines=lines, total=7135)
-
-    assert receipt.agrees is False
-
-
-def test_agrees_with_shop_money():
-    lines = (
-        ReceiptLine(title="A", amount=1, price=979, is_deposit=False),
-        ReceiptLine(title="B", amount=1, price=578, is_deposit=False),
+@pytest.mark.parametrize(
+    "prices,total,shop_money,expected",
+    [
+        pytest.param((7135,), 7135, 0, True, id="matches_total"),
+        pytest.param((7134,), 7135, 0, False, id="one_cent_off"),
+        pytest.param((979, 578), 1451, 106, True, id="shop_money_makes_up_the_gap"),
+    ],
+)
+def test_agrees_compares_lines_total_less_shop_money_with_total(
+    prices, total, shop_money, expected
+):
+    lines = tuple(
+        ReceiptLine(title="A", amount=1, price=price, is_deposit=False)
+        for price in prices
     )
-    receipt = Receipt(lines=lines, total=1451, shop_money=106)
+    receipt = Receipt(lines=lines, total=total, shop_money=shop_money)
 
-    assert receipt.lines_total == 1557
-    assert receipt.agrees is True
+    assert receipt.lines_total == sum(prices)
+    assert receipt.agrees is expected
 
 
 def test_shop_money_defaults_to_zero():

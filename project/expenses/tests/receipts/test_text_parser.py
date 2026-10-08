@@ -58,7 +58,7 @@ def test_text_receipt_parser_reads_lines_in_order(tmp_path):
     ]
 
 
-def test_text_receipt_parser_joins_a_title_split_across_two_lines(tmp_path):
+def test_text_receipt_parser_joins_a_split_title_and_folds_its_deal_discount(tmp_path):
     receipt = _receipt(tmp_path, BASE_LINES)
 
     assert receipt.lines[1].title == "Farmhouse cheese wedge"
@@ -69,12 +69,6 @@ def test_text_receipt_parser_reads_an_amount_line_for_the_line_above(tmp_path):
     receipt = _receipt(tmp_path, BASE_LINES)
 
     assert receipt.lines[0].amount == 3
-
-
-def test_text_receipt_parser_folds_an_item_discount_into_the_line_above(tmp_path):
-    receipt = _receipt(tmp_path, BASE_LINES)
-
-    assert receipt.lines[1].price == 200
 
 
 def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
@@ -94,22 +88,112 @@ def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
     assert receipt.lines[0].price == 100
 
 
-def test_text_receipt_parser_raises_on_second_prefix_discount_with_no_line_above(
-    tmp_path,
-):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Markdown -0,20 A",
-        "-----",
-        "Total due 1,00",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
+@pytest.mark.parametrize(
+    "lines",
+    [
+        pytest.param(
+            ["CORNER SHOP LTD", "Bread 1,20 A", "-----", "Total due 1,20"],
+            id="no_lines_start_marker",
+        ),
+        pytest.param(
+            ["CORNER SHOP LTD", "Items:", "Bread 1,20 A", "Total due 1,20"],
+            id="no_lines_end_marker",
+        ),
+        pytest.param(
+            ["CORNER SHOP LTD", "Items:", "Bread 1,20 A", "-----"],
+            id="no_total_line",
+        ),
+        pytest.param(
+            [
+                "CORNER SHOP LTD",
+                "Items:",
+                "Deal on: something -0,50 A",
+                "-----",
+                "Total due 1,00",
+            ],
+            id="deal_prefix_discount_with_no_line_above",
+        ),
+        pytest.param(
+            [
+                "CORNER SHOP LTD",
+                "Items:",
+                "Markdown -0,20 A",
+                "-----",
+                "Total due 1,00",
+            ],
+            id="markdown_prefix_discount_with_no_line_above",
+        ),
+        pytest.param(
+            [
+                "CORNER SHOP LTD",
+                "Items:",
+                "Bread 1,20 A",
+                "-----",
+                "Total due soon",
+            ],
+            id="total_without_money",
+        ),
+        pytest.param(
+            ["CORNER SHOP LTD", "Items:", "0,40 x 3 vnt.", "-----", "Total due 1,00"],
+            id="amount_line_with_no_line_above",
+        ),
+        pytest.param(
+            ["CORNER SHOP LTD", "Items:", "Bread", "-----", "Total due 1,00"],
+            id="title_without_a_price",
+        ),
+        pytest.param(
+            ["CORNER SHOP LTD", "Items:", "Milk 1,20 C", "-----", "Total due 1,20"],
+            id="unknown_vat_letter_on_a_line",
+        ),
+        pytest.param(
+            [
+                "CORNER SHOP LTD",
+                "Items:",
+                "Bread 1,20 A",
+                "Deal on: bread",
+                "-----",
+                "Total due 1,20",
+            ],
+            id="discount_without_a_price",
+        ),
+        pytest.param(
+            [
+                "CORNER SHOP LTD",
+                "Items:",
+                "Bread",
+                "0,40 x 3 vnt.",
+                "-----",
+                "Total due 1,00",
+            ],
+            id="title_then_an_amount_line",
+        ),
+        pytest.param(
+            [
+                "CORNER SHOP LTD",
+                "Items:",
+                "Bread",
+                "Deal on: Bread -0,10 A",
+                "-----",
+                "Total due 1,00",
+            ],
+            id="title_then_a_discount_line",
+        ),
+        pytest.param(
+            [
+                "CORNER SHOP LTD",
+                "Items:",
+                "Bread 1,20 A",
+                "Deal on: Bread -0,10 C",
+                "-----",
+                "Total due 1,10",
+            ],
+            id="unknown_vat_letter_in_a_discount",
+        ),
+    ],
+)
+def test_text_receipt_parser_raises_on_a_receipt_it_cannot_read(tmp_path, lines):
+    with pytest.raises(UnreadableReceiptTextError):
+        _receipt(tmp_path, lines)
 
 
 def test_text_receipt_parser_defaults_amount_to_one_piece(tmp_path):
@@ -117,12 +201,6 @@ def test_text_receipt_parser_defaults_amount_to_one_piece(tmp_path):
 
     assert receipt.lines[2].title == "Butter"
     assert receipt.lines[2].amount == 1
-
-
-def test_text_receipt_parser_ignores_lines_outside_the_region(tmp_path):
-    receipt = _receipt(tmp_path, BASE_LINES)
-
-    assert len(receipt.lines) == 3
 
 
 def test_text_receipt_parser_reads_the_total(tmp_path):
@@ -152,55 +230,6 @@ def test_text_receipt_parser_defaults_shop_money_to_zero_when_absent(tmp_path):
     assert receipt.agrees
 
 
-def test_text_receipt_parser_raises_on_discount_with_no_line_above(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Deal on: something -0,50 A",
-        "-----",
-        "Total due 1,00",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
-def test_text_receipt_parser_raises_on_discount_without_a_price(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Bread 1,20 A",
-        "Deal on: bread",
-        "-----",
-        "Total due 1,20",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
-def test_text_receipt_parser_raises_on_total_without_money(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Bread 1,20 A",
-        "-----",
-        "Total due soon",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
 class _TextPage:
     def __init__(self, text):
         self._text = text
@@ -222,150 +251,6 @@ def test_text_receipt_parser_skips_blank_lines_between_items():
     receipt = TextReceiptParser(LAYOUT).parse(document)
 
     assert [line.title for line in receipt.lines] == ["Bread", "Butter"]
-
-
-def test_text_receipt_parser_raises_on_amount_line_with_no_line_above(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "0,40 x 3 vnt.",
-        "-----",
-        "Total due 1,00",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
-def test_text_receipt_parser_raises_on_a_title_left_without_a_price(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Bread",
-        "-----",
-        "Total due 1,00",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
-def test_text_receipt_parser_raises_on_a_title_followed_by_an_amount_line(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Bread",
-        "0,40 x 3 vnt.",
-        "-----",
-        "Total due 1,00",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
-def test_text_receipt_parser_raises_on_a_title_followed_by_a_discount_line(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Bread",
-        "Deal on: Bread -0,10 A",
-        "-----",
-        "Total due 1,00",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
-def test_text_receipt_parser_raises_on_unknown_vat_letter(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Milk 1,20 C",
-        "-----",
-        "Total due 1,20",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
-def test_text_receipt_parser_raises_on_unknown_vat_letter_in_a_discount(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Bread 1,20 A",
-        "Deal on: Bread -0,10 C",
-        "-----",
-        "Total due 1,10",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
-def test_text_receipt_parser_raises_when_no_lines_start(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Bread 1,20 A",
-        "-----",
-        "Total due 1,20",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
-def test_text_receipt_parser_raises_when_no_lines_end(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Bread 1,20 A",
-        "Total due 1,20",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
-
-
-def test_text_receipt_parser_raises_when_no_total_line(tmp_path):
-    lines = [
-        "CORNER SHOP LTD",
-        "Items:",
-        "Bread 1,20 A",
-        "-----",
-    ]
-
-    with (
-        pdfplumber.open(text_pdf(tmp_path / "r.pdf", lines)) as document,
-        pytest.raises(UnreadableReceiptTextError),
-    ):
-        TextReceiptParser(LAYOUT).parse(document)
 
 
 def test_text_receipt_parser_reads_a_title_holding_the_separator(tmp_path):
