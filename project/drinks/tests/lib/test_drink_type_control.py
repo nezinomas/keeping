@@ -12,12 +12,16 @@ def test_selected_is_the_given_drink_type(drink_type):
     assert DrinkTypeSelector(drink_type).selected == drink_type
 
 
-def test_label_is_translated():
-    assert DrinkTypeSelector("beer").label == "Alus"
-
-
-def test_std_av_label_is_not_translated():
-    assert DrinkTypeSelector("stdav").label == "Std Av"
+@pytest.mark.parametrize(
+    "drink_type, expected",
+    [
+        pytest.param("beer", "Alus", id="label_is_translated"),
+        pytest.param("stdav", "Std Av", id="std_av_label_is_not_translated"),
+        pytest.param("wine", "Vynas", id="needs_only_a_drink_type"),
+    ],
+)
+def test_label_names_the_drink_type(drink_type, expected):
+    assert DrinkTypeSelector(drink_type).label == expected
 
 
 def test_options_hold_every_drink_type():
@@ -33,14 +37,7 @@ def test_options_are_a_list_not_an_iterator():
     assert list(selector.options) == list(selector.options)
 
 
-def test_needs_only_a_drink_type():
-    """No request, no user — a tab can render for any drink type."""
-    assert DrinkTypeSelector("wine").label == "Vynas"
-
-
-# -------------------------------------------------------------------------------------
-#                                                                            fixed
-# -------------------------------------------------------------------------------------
+# fixed
 
 
 def test_a_fixed_switcher_names_std_av():
@@ -60,9 +57,7 @@ def test_a_fixed_switcher_cannot_be_given_a_drink_type():
         FixedDrinkTypeSelector("wine")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                          absent
-# -------------------------------------------------------------------------------------
+# absent
 
 
 def test_an_absent_switcher_reads_no_amount():
@@ -73,9 +68,7 @@ def test_an_absent_switcher_reads_no_amount():
     assert absent.options == ()
 
 
-# -------------------------------------------------------------------------------------
-#                                                                     one contract
-# -------------------------------------------------------------------------------------
+# one contract
 
 
 @pytest.mark.parametrize(

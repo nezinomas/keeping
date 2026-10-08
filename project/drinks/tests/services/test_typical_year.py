@@ -33,9 +33,7 @@ def _chart(year_rows=(), pooled_rows=(), today=date(2022, 6, 1)):
     ).chart()
 
 
-# -------------------------------------------------------------------------------------
-#                                                             TypicalYearProfile.pool
-# -------------------------------------------------------------------------------------
+# TypicalYearProfile.pool
 def test_pool_is_always_twelve_months_january_first():
     actual = _profile([_total(2020, 5, 10, 1)])
 
@@ -133,9 +131,7 @@ def test_pool_today_defaults_to_the_day_it_runs_on():
     assert actual.points[6].calendar_days == 15
 
 
-# -------------------------------------------------------------------------------------
-#                                                              TypicalYearBuilder.chart
-# -------------------------------------------------------------------------------------
+# TypicalYearBuilder.chart
 def test_chart_view_model():
     actual = _chart(year_rows=[_total(2020, 1, 40, 4)])
 
@@ -259,9 +255,7 @@ def test_chart_as_dict_carries_the_layers_it_draws_and_no_python_only_span():
     ]
 
 
-# -------------------------------------------------------------------------------------
-#                                                                   PooledRange.resolve
-# -------------------------------------------------------------------------------------
+# PooledRange.resolve
 def test_resolve_without_a_qty_pools_nothing():
     assert isinstance(PooledRange.resolve(2025), NoPooledRange)
 
@@ -274,21 +268,22 @@ def test_resolve_of_zero_pools_every_year_on_record():
     assert (actual.year_from, actual.year_to) == (0, 0)
 
 
-def test_resolve_of_a_count_ends_the_span_on_the_header_year():
-    actual = PooledRange.resolve(2025, 3)
+@pytest.mark.parametrize(
+    "qty, expected",
+    [
+        pytest.param(
+            3, (2023, 2025), id="resolve_of_a_count_ends_the_span_on_the_header_year"
+        ),
+        pytest.param(1, (2025, 2025), id="resolve_of_one_pools_the_header_year_alone"),
+    ],
+)
+def test_resolve_of_a_count_spans_back_from_the_header_year(qty, expected):
+    actual = PooledRange.resolve(2025, qty)
 
-    assert (actual.year_from, actual.year_to) == (2023, 2025)
+    assert (actual.year_from, actual.year_to) == expected
 
 
-def test_resolve_of_one_pools_the_header_year_alone():
-    actual = PooledRange.resolve(2025, 1)
-
-    assert (actual.year_from, actual.year_to) == (2025, 2025)
-
-
-# -------------------------------------------------------------------------------------
-#                                                                     TypicalYear.build
-# -------------------------------------------------------------------------------------
+# TypicalYear.build
 @time_machine.travel("2026-07-15")
 def test_build_always_draws_the_header_year(main_user):
     DrinkFactory(date=date(2015, 1, 5), stdav=5)
