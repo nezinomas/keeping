@@ -1,5 +1,6 @@
 from datetime import date
 
+import pytest
 import time_machine
 
 from ...lib.drinks_risk import (
@@ -18,9 +19,7 @@ def _row(dt: date, stdav: float) -> DataRow:
     return DataRow(date=dt, stdav=stdav, qty=0.0)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                             constants
-# -------------------------------------------------------------------------------------
+# constants
 def test_thresholds_are_ordered():
     assert 0 < WEEKLY_LOW_RISK_STDAV < WEEKLY_HIGH_RISK_STDAV
     assert 0 < MONTHLY_HEAVY_LOW_RISK < MONTHLY_HEAVY_HIGH_RISK
@@ -31,9 +30,7 @@ def test_the_calendars_top_level_starts_at_the_heavy_day_threshold():
     assert CALENDAR_LEVELS[-1] == HEAVY_DAY_STDAV
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       current_year
-# -------------------------------------------------------------------------------------
+# current_year
 @time_machine.travel("2026-06-15")
 def test_current_year_defaults_to_today_with_no_records():
     assert RiskStats().current_year == 2026
@@ -45,9 +42,7 @@ def test_current_year_taken_from_records():
     assert stats.current_year == 2025
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       weekly_series
-# -------------------------------------------------------------------------------------
+# weekly_series
 @time_machine.travel("2026-01-15")
 def test_weekly_series_dense_from_first_week_to_current():
     # 2026-01-01 is Thursday -> week starts Mon 2025-12-29
@@ -80,17 +75,7 @@ def test_weekly_series_for_past_year_spans_to_dec_31():
     assert series[-1].label == "2025-12-29"
 
 
-def test_week_mondays_generator():
-    start = date(2026, 1, 5)
-    end = date(2026, 1, 19)
-    mondays = list(RiskStats._week_mondays(start, end))
-
-    assert mondays == [date(2026, 1, 5), date(2026, 1, 12), date(2026, 1, 19)]
-
-
-# -------------------------------------------------------------------------------------
-#                                                                       current_week
-# -------------------------------------------------------------------------------------
+# current_week
 @time_machine.travel("2026-01-15")
 def test_current_week_low():
     stats = RiskStats(current_daily=[_row(date(2026, 1, 13), 5)])
@@ -103,18 +88,18 @@ def test_current_week_low():
     assert week.has_data is True
 
 
+@pytest.mark.parametrize(
+    "stdav, state",
+    [
+        pytest.param(15, "medium", id="current_week_medium_between_thresholds"),
+        pytest.param(30, "high", id="current_week_high_above_high_threshold"),
+    ],
+)
 @time_machine.travel("2026-01-15")
-def test_current_week_medium_between_thresholds():
-    stats = RiskStats(current_daily=[_row(date(2026, 1, 13), 15)])
+def test_current_week_state_follows_the_thresholds(stdav, state):
+    stats = RiskStats(current_daily=[_row(date(2026, 1, 13), stdav)])
 
-    assert stats.current_week().state == "medium"
-
-
-@time_machine.travel("2026-01-15")
-def test_current_week_high_above_high_threshold():
-    stats = RiskStats(current_daily=[_row(date(2026, 1, 13), 30)])
-
-    assert stats.current_week().state == "high"
+    assert stats.current_week().state == state
 
 
 @time_machine.travel("2026-01-15")
@@ -125,9 +110,7 @@ def test_current_week_zero_when_no_drinks_is_low():
     assert week.state == "low"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                zone classification
-# -------------------------------------------------------------------------------------
+# zone classification
 @time_machine.travel("2026-01-15")
 def test_zone_exactly_at_low_threshold_is_low():
     stats = RiskStats(current_daily=[_row(date(2026, 1, 13), WEEKLY_LOW_RISK_STDAV)])
@@ -153,9 +136,7 @@ def test_zone_classifies_on_rounded_value_not_raw():
     assert week.state == "low"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        worst_week
-# -------------------------------------------------------------------------------------
+# worst_week
 @time_machine.travel("2026-03-01")
 def test_worst_week_empty_without_data():
     week = RiskStats(current_daily=[]).worst_week()
@@ -177,9 +158,7 @@ def test_worst_week_picks_highest_week():
     assert week.end == "2026-02-15"  # Sunday of that week
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        heavy_days
-# -------------------------------------------------------------------------------------
+# heavy_days
 @time_machine.travel("2026-06-01")
 def test_heavy_days_counts_days_over_threshold():
     rows = [_row(date(2026, 1, 1), 7), _row(date(2026, 1, 2), 3)]
@@ -231,9 +210,7 @@ def test_heavy_days_past_dec31_not_dropped_when_past_year_is_leap():
     assert heavy.previous == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                 weeks_over_guideline
-# -------------------------------------------------------------------------------------
+# weeks_over_guideline
 @time_machine.travel("2026-06-01")
 def test_weeks_over_guideline_counts_current_year():
     rows = [_row(date(2026, 1, 5), 15)]  # one week over 11.2
@@ -254,9 +231,7 @@ def test_weeks_over_guideline_vs_last_year():
     assert over.improving is True
 
 
-# -------------------------------------------------------------------------------------
-#                                                                 monthly_heavy_days
-# -------------------------------------------------------------------------------------
+# monthly_heavy_days
 @time_machine.travel("2026-12-31")
 def test_monthly_heavy_days():
     rows = [

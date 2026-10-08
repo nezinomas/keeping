@@ -160,9 +160,7 @@ def test_dry_days_view_model_has_data():
     assert empty_model.has_data is False
 
 
-# -------------------------------------------------------------------------------------
-#                                                          IndexBuilder.get_cards
-# -------------------------------------------------------------------------------------
+# IndexBuilder.get_cards
 def test_get_cards_order(main_user, drink_converter):
     # six, the Daily limit last. A seventh should have to argue with this test
     cards = _card_builder(drink_converter, total_quantity=100.0, avg=300.0).get_cards()
@@ -178,9 +176,7 @@ def test_get_cards_order(main_user, drink_converter):
     assert all(isinstance(c, Card) for c in cards)
 
 
-# -------------------------------------------------------------------------------------
-#                                                    IndexBuilder.get_cards: Daily limit
-# -------------------------------------------------------------------------------------
+# IndexBuilder.get_cards: Daily limit
 def test_card_limit_with_target(main_user, drink_converter):
     card = _card_builder(drink_converter, target=500.0, target_id=7).get_cards()[5]
 
@@ -235,14 +231,6 @@ def test_card_dry_days_empty(main_user, drink_converter):
     assert card.note == _("No data")
 
 
-def test_card_std_drinks_with_data(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=100.0).get_cards()[2]
-
-    assert card.state == "neutral"
-    assert card.value == "250"  # 100 units * 2.5 std av per beer
-    assert card.note == _("Std Av this year")
-
-
 def test_card_std_drinks_notes_last_year(main_user, drink_converter):
     card = _card_builder(
         drink_converter, total_quantity=100.0, past_quantity=80.0
@@ -265,35 +253,54 @@ def test_card_std_drinks_less_than_last_year_is_improving(main_user, drink_conve
     assert card.improving is True
 
 
-def test_card_std_drinks_empty(main_user, drink_converter):
-    card = _card_builder(drink_converter, total_quantity=0.0).get_cards()[2]
+@pytest.mark.parametrize(
+    "quantity, state, value, note",
+    [
+        pytest.param(
+            100.0,
+            "neutral",
+            "250",  # 100 units * 2.5 std av per beer
+            _("Std Av this year"),
+            id="card_std_drinks_with_data",
+        ),
+        pytest.param(0.0, "empty", "", _("No data"), id="card_std_drinks_empty"),
+    ],
+)
+def test_card_std_drinks_reads_the_year_total(
+    main_user, drink_converter, quantity, state, value, note
+):
+    card = _card_builder(drink_converter, total_quantity=quantity).get_cards()[2]
 
-    assert card.state == "empty"
-    assert card.value == ""
-    assert card.note == _("No data")
+    assert card.state == state
+    assert card.value == value
+    assert card.note == note
 
 
-def test_card_avg_per_day_over_limit(main_user, drink_converter):
+@pytest.mark.parametrize(
+    "target, state, note",
+    [
+        pytest.param(
+            250.0, "high", f"50 {_('over the limit')}", id="card_avg_per_day_over_limit"
+        ),
+        pytest.param(
+            400.0,
+            "low",
+            f"100 {_('under the limit')}",
+            id="card_avg_per_day_under_limit",
+        ),
+    ],
+)
+def test_card_avg_per_day_reads_against_the_limit(
+    main_user, drink_converter, target, state, note
+):
     card = _card_builder(
-        drink_converter, total_quantity=100.0, avg=300.0, target=250.0
+        drink_converter, total_quantity=100.0, avg=300.0, target=target
     ).get_cards()[3]
 
-    assert card.state == "high"
+    assert card.state == state
     assert card.value == "300"
     assert card.unit == "ml"
-    assert card.note == f"50 {_('over the limit')}"
-    assert card.explanation == (f"ml {_('per calendar day')}",)
-
-
-def test_card_avg_per_day_under_limit(main_user, drink_converter):
-    card = _card_builder(
-        drink_converter, total_quantity=100.0, avg=300.0, target=400.0
-    ).get_cards()[3]
-
-    assert card.state == "low"
-    assert card.value == "300"
-    assert card.unit == "ml"
-    assert card.note == f"100 {_('under the limit')}"
+    assert card.note == note
     assert card.explanation == (f"ml {_('per calendar day')}",)
 
 
@@ -444,9 +451,7 @@ def test_card_pure_alcohol_empty(main_user, drink_converter):
     assert card.note == _("No data")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                    Drinking days card
-# -------------------------------------------------------------------------------------
+# Drinking days card
 def test_card_drinking_days_with_data(main_user, drink_converter):
     # 4 drinking days out of the 10 elapsed, against 2 last year
     current = [_row(date(1999, 1, i), 3) for i in range(1, 5)]
@@ -544,9 +549,7 @@ def test_card_drinking_days_empty(main_user, drink_converter):
     assert card.note == _("No data")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         IndexTab.build
-# -------------------------------------------------------------------------------------
+# IndexTab.build
 @time_machine.travel("1999-06-01")
 def test_index_tab_build_returns_expected_keys(main_user):
     DrinkFactory(date=date(1999, 1, 10), stdav=2.5)
