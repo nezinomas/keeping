@@ -87,69 +87,49 @@ def test_dry_days(past, current, expect, main_user, drink_converter):
 
 
 @time_machine.travel("2019-10-10")
-def test_std_av(main_user, drink_converter):
-    actual = IndexBuilder(
-        converter=drink_converter, drink_stats=DrinkStats(drink_converter)
-    )._build_conversion_rows(2019, 273.5)
+@pytest.mark.parametrize(
+    "year, expect",
+    [
+        pytest.param(
+            2019,
+            [
+                ("Alus, 0.5L", 273.5, 0.97, 6.67, 27.35),
+                ("Vynas, 0.75L", 85.47, 0.3, 2.08, 8.55),
+                ("Degtinė, 1L", 17.09, 0.06, 0.42, 1.71),
+                ("Std Av", 683.75, 2.42, 16.68, 68.38),
+            ],
+            id="std_av",
+        ),
+        pytest.param(
+            1999,
+            [
+                ("Alus, 0.5L", 273.5, 0.75, 5.26, 22.79),
+                ("Vynas, 0.75L", 85.47, 0.23, 1.64, 7.12),
+                ("Degtinė, 1L", 17.09, 0.05, 0.33, 1.42),
+                ("Std Av", 683.75, 1.87, 13.15, 56.98),
+            ],
+            id="std_av_past_recods",
+        ),
+    ],
+)
+def test_tbl_std_av_reads_the_year_in_every_drink_type(drink_converter, year, expect):
+    builder = IndexBuilder(
+        converter=drink_converter,
+        drink_stats=_stats(drink_converter, total_quantity=273.5, year=year),
+    )
 
-    assert len(actual) == 4
+    actual = [
+        (
+            row.title,
+            round(row.total, 2),
+            round(row.per_day, 2),
+            round(row.per_week, 2),
+            round(row.per_month, 2),
+        )
+        for row in builder.tbl_std_av().items
+    ]
 
-    assert actual[0].title == "Alus, 0.5L"
-    assert round(actual[0].total, 2) == 273.5
-    assert round(actual[0].per_day, 2) == 0.97
-    assert round(actual[0].per_week, 2) == 6.67
-    assert round(actual[0].per_month, 2) == 27.35
-
-    assert actual[1].title == "Vynas, 0.75L"
-    assert round(actual[1].total, 2) == 85.47
-    assert round(actual[1].per_day, 2) == 0.3
-    assert round(actual[1].per_week, 2) == 2.08
-    assert round(actual[1].per_month, 2) == 8.55
-
-    assert actual[2].title == "Degtinė, 1L"
-    assert round(actual[2].total, 2) == 17.09
-    assert round(actual[2].per_day, 2) == 0.06
-    assert round(actual[2].per_week, 2) == 0.42
-    assert round(actual[2].per_month, 2) == 1.71
-
-    assert actual[3].title == "Std Av"
-    assert round(actual[3].total, 2) == 683.75
-    assert round(actual[3].per_day, 2) == 2.42
-    assert round(actual[3].per_week, 2) == 16.68
-    assert round(actual[3].per_month, 2) == 68.38
-
-
-@time_machine.travel("2019-10-10")
-def test_std_av_past_recods(main_user, drink_converter):
-    actual = IndexBuilder(
-        converter=drink_converter, drink_stats=DrinkStats(drink_converter)
-    )._build_conversion_rows(1999, 273.5)
-
-    assert len(actual) == 4
-
-    assert actual[0].title == "Alus, 0.5L"
-    assert round(actual[0].total, 2) == 273.5
-    assert round(actual[0].per_day, 2) == 0.75
-    assert round(actual[0].per_week, 2) == 5.26
-    assert round(actual[0].per_month, 2) == 22.79
-
-    assert actual[1].title == "Vynas, 0.75L"
-    assert round(actual[1].total, 2) == 85.47
-    assert round(actual[1].per_day, 2) == 0.23
-    assert round(actual[1].per_week, 2) == 1.64
-    assert round(actual[1].per_month, 2) == 7.12
-
-    assert actual[2].title == "Degtinė, 1L"
-    assert round(actual[2].total, 2) == 17.09
-    assert round(actual[2].per_day, 2) == 0.05
-    assert round(actual[2].per_week, 2) == 0.33
-    assert round(actual[2].per_month, 2) == 1.42
-
-    assert actual[3].title == "Std Av"
-    assert round(actual[3].total, 2) == 683.75
-    assert round(actual[3].per_day, 2) == 1.87
-    assert round(actual[3].per_week, 2) == 13.15
-    assert round(actual[3].per_month, 2) == 56.98
+    assert actual == expect
 
 
 def test_dry_days_view_model_has_data():
