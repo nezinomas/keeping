@@ -52,8 +52,6 @@ def test_int_cents_to_float_takes_an_int_only():
 
 
 class DummyBase:
-    form_class = None
-
     def get_object(self):
         pass
 
@@ -100,21 +98,27 @@ def test_view_mixin_converts_declared_fields(mocker, cents, expected_float):
     assert result.fee == expected_float
 
 
-def test_view_mixin_converts_only_declared_fields(mocker):
-    result = _view(mocker, SimpleNamespace(price=1000, fee=2000), ("price",))
-    result = result.get_object()
+@pytest.mark.parametrize(
+    "obj, fields, expect",
+    [
+        pytest.param(
+            {"price": 1000, "fee": 2000},
+            ("price",),
+            {"price": 10.0, "fee": 2000},
+            id="only_declared_fields",
+        ),
+        pytest.param(
+            {"price": 1000, "fee": 2000, "new_field": 3000},
+            ("new_field",),
+            {"price": 1000, "fee": 2000, "new_field": 30.0},
+            id="any_declared_name",
+        ),
+    ],
+)
+def test_view_mixin_converts_only_the_declared_fields(mocker, obj, fields, expect):
+    result = _view(mocker, SimpleNamespace(**obj), fields).get_object()
 
-    assert result.price == 10.0
-    assert result.fee == 2000
-
-
-def test_view_mixin_converts_any_declared_name(mocker):
-    obj = SimpleNamespace(price=1000, fee=2000, new_field=3000)
-
-    result = _view(mocker, obj, ("new_field",)).get_object()
-
-    assert result.new_field == 30.0
-    assert result.price == 1000
+    assert vars(result) == expect
 
 
 def test_view_mixin_raises_for_a_declared_field_the_object_lacks(mocker):
@@ -170,16 +174,25 @@ def test_form_mixin_converts_declared_fields(mocker, price, expected_int):
     assert result["fee"] == expected_int
 
 
-def test_form_mixin_converts_only_declared_fields(mocker):
-    result = _form(mocker, {"price": 1, "fee": 2}, ("price",)).clean()
-
-    assert result == {"price": 100, "fee": 2}
-
-
-def test_form_mixin_converts_any_declared_name(mocker):
-    result = _form(mocker, {"price": 1, "new_field": 3}, ("new_field",)).clean()
-
-    assert result == {"price": 1, "new_field": 300}
+@pytest.mark.parametrize(
+    "data, fields, expect",
+    [
+        pytest.param(
+            {"price": 1, "fee": 2},
+            ("price",),
+            {"price": 100, "fee": 2},
+            id="only_declared_fields",
+        ),
+        pytest.param(
+            {"price": 1, "new_field": 3},
+            ("new_field",),
+            {"price": 1, "new_field": 300},
+            id="any_declared_name",
+        ),
+    ],
+)
+def test_form_mixin_converts_only_the_declared_fields(mocker, data, fields, expect):
+    assert _form(mocker, data, fields).clean() == expect
 
 
 def test_form_mixin_skips_a_declared_field_that_is_absent(mocker):

@@ -3,6 +3,7 @@ from datetime import date, datetime
 import pytest
 import pytz
 import time_machine
+from django.utils.translation import gettext as _
 
 from ....users.tests.factories import UserFactory
 from ...lib import date as lib_date
@@ -76,16 +77,12 @@ def test_monthnames():
     assert actual[11] == "december"
 
 
-def test_monthlen_leap_not():
-    actual = lib_date.monthlen(1999, "february")
-
-    assert actual == 28
-
-
-def test_monthlen_leap():
-    actual = lib_date.monthlen(2000, "february")
-
-    assert actual == 29
+@pytest.mark.parametrize(
+    "year, expect",
+    [pytest.param(1999, 28, id="leap_not"), pytest.param(2000, 29, id="leap")],
+)
+def test_monthlen_of_february_follows_the_leap_year(year, expect):
+    assert lib_date.monthlen(year, "february") == expect
 
 
 def test_monthlen_wrong_input():
@@ -130,5 +127,9 @@ def test_ydays(year, expect):
 def test_monthnames_abbr():
     actual = lib_date.monthnames_abbr()
 
-    assert isinstance(actual, dict)
-    assert "jan" in actual
+    assert list(actual) == [
+        "jan", "feb", "mar", "apr", "may", "jun",
+        "jul", "aug", "sep", "oct", "nov", "dec",
+    ]  # fmt: skip
+    assert actual["jan"] == _("January")
+    assert actual["dec"] == _("December")

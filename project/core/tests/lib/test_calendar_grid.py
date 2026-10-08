@@ -156,60 +156,51 @@ def test_build_today_and_future_flags():
     assert all(not d.is_future for d in grid.months[0].days)
 
 
-def test_build_today_without_record_shows_date_and_gap():
-    daily = [{"date": date(1999, 6, 5), "stdav": 1.0, "qty": 0.5}]
-    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 6, 15)), daily_data=daily)
-
-    june_days = grid.months[5].days
-    today_day = june_days[14]
-
-    gap_str = _("Gap")
-    assert today_day.is_today is True
-    assert today_day.level == 0
-    assert today_day.gap == 10
-    assert today_day.label == f"1999-06-15\n{gap_str}: 10d."
-
-
-def test_build_today_without_record_uses_latest_past_date():
+@pytest.mark.parametrize(
+    "today, daily, latest_past_date, gap",
+    [
+        pytest.param(
+            date(1999, 6, 15),
+            [{"date": date(1999, 6, 5), "stdav": 1.0, "qty": 0.5}],
+            None,
+            10,
+            id="without_record",
+        ),
+        pytest.param(
+            date(1999, 1, 10),
+            [],
+            date(1998, 12, 1),
+            40,
+            id="latest_past_date",
+        ),
+        pytest.param(
+            date(1999, 1, 10),
+            [{"date": date(1999, 3, 1), "stdav": 1.0, "qty": 0.5}],
+            date(1998, 12, 1),
+            40,
+            id="only_future_records",
+        ),
+        pytest.param(
+            date(1999, 1, 10),
+            [],
+            None,
+            0,
+            id="no_record_anywhere",
+        ),
+    ],
+)
+def test_build_today_shows_its_date_and_the_gap_since_the_last_record(
+    today, daily, latest_past_date, gap
+):
     grid = CalendarGrid.build(
-        YearBoundary(1999, date(1999, 1, 10)),
-        daily_data=[],
-        latest_past_date=date(1998, 12, 1),
+        YearBoundary(1999, today), daily_data=daily, latest_past_date=latest_past_date
     )
 
-    jan_days = grid.months[0].days
-    today_day = jan_days[9]
-
-    gap_str = _("Gap")
+    today_day = grid.months[today.month - 1].days[today.day - 1]
     assert today_day.is_today is True
     assert today_day.level == 0
-    assert today_day.gap == 40
-    assert today_day.label == f"1999-01-10\n{gap_str}: 40d."
-
-
-def test_build_today_with_only_future_records_uses_latest_past_date():
-    grid = CalendarGrid.build(
-        YearBoundary(1999, date(1999, 1, 10)),
-        daily_data=[{"date": date(1999, 3, 1), "stdav": 1.0, "qty": 0.5}],
-        latest_past_date=date(1998, 12, 1),
-    )
-
-    today_day = grid.months[0].days[9]
-    assert today_day.gap == 40
-
-
-def test_build_today_with_no_record_anywhere_has_no_gap():
-    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 1, 10)), daily_data=[])
-
-    today_day = grid.months[0].days[9]
-    assert today_day.gap == 0
-    assert today_day.label == f"1999-01-10\n{_('Gap')}: 0d."
-
-
-def test_build_other_year_has_no_future_days():
-    grid = CalendarGrid.build(YearBoundary(1998, date(1999, 6, 15)), daily_data=[])
-
-    assert all(not d.is_future for m in grid.months for d in m.days)
+    assert today_day.gap == gap
+    assert today_day.label == f"{today.isoformat()}\n{_('Gap')}: {gap}d."
 
 
 def test_a_dry_day_is_labelled_rather_than_left_blank():
@@ -243,18 +234,23 @@ def test_a_days_speech_is_its_label_on_one_line():
     )
 
 
-def test_legend_bounds_name_every_level():
+@pytest.mark.parametrize(
+    "thresholds, expect",
+    [
+        pytest.param(
+            THRESHOLDS,
+            ("0", "<2", "2-4", "4-6", "≥6"),
+            id="every_level",
+        ),
+        pytest.param((), ("0", "≥1"), id="without_thresholds"),
+    ],
+)
+def test_legend_bounds_follow_the_thresholds(thresholds, expect):
     grid = CalendarGrid.build(
-        YearBoundary(1999, date(1999, 12, 31)), daily_data=[], thresholds=THRESHOLDS
+        YearBoundary(1999, date(1999, 12, 31)), daily_data=[], thresholds=thresholds
     )
 
-    assert grid.legend.bounds == ("0", "<2", "2-4", "4-6", "≥6")
-
-
-def test_without_thresholds_the_legend_has_two_steps():
-    grid = CalendarGrid.build(YearBoundary(1999, date(1999, 12, 31)), daily_data=[])
-
-    assert grid.legend.bounds == ("0", "≥1")
+    assert grid.legend.bounds == expect
 
 
 def test_legend_carries_the_words_at_either_end_of_the_scale():
@@ -288,8 +284,11 @@ def test_without_thresholds_every_day_with_a_value_is_one_level():
     assert [d.level for d in grid.months[0].days[:3]] == [1, 1, 0]
 
 
-def test_build_a_year_not_started_yet_has_no_future_days():
-    grid = CalendarGrid.build(YearBoundary(2000, date(1999, 6, 15)), daily_data=[])
+@pytest.mark.parametrize(
+    "year", [pytest.param(1998, id="other_year"), pytest.param(2000, id="not_started")]
+)
+def test_a_year_other_than_the_running_one_has_no_future_days(year):
+    grid = CalendarGrid.build(YearBoundary(year, date(1999, 6, 15)), daily_data=[])
 
     assert all(not d.is_future for m in grid.months for d in m.days)
 
