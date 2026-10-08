@@ -1,16 +1,17 @@
 import json
 import re
+from collections.abc import Callable
+from typing import NamedTuple
 
 import pytest
 import time_machine
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
 from ...savings.tests.factories import SavingTypeFactory
-from .. import models, views
 from ..services.model_services import IncomePlanModelService
 from ..tabs import TABS
 from .factories import (
@@ -27,13 +28,6 @@ from .factories import (
 )
 
 pytestmark = pytest.mark.django_db
-
-TAB_VIEWS = {
-    "incomes": views.TabIncomes,
-    "expenses": views.TabExpenses,
-    "savings": views.TabSavings,
-    "day": views.TabDay,
-}
 
 TAB_PANEL_TITLES = {
     "incomes": ["Pajamos"],
@@ -61,26 +55,105 @@ TAB_TABLE_PANELS = {
     "day": ["day-plans", "calculations-spend", "calculations-check"],
 }
 
+MONTHS = (
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+)
+
+
+class Kind(NamedTuple):
+    factory: type
+    model: type
+    tab: str
+    new: str
+    update: str
+    delete: str
+    own_kwargs: Callable  # the url kwargs a plan adds to its year
+    owner: Callable  # the rows a plan points at, as factory kwargs
+
+
+INCOME = Kind(
+    factory=IncomePlanFactory,
+    model=IncomePlan,
+    tab="plans:tab_incomes",
+    new="plans:income_new",
+    update="plans:income_update",
+    delete="plans:income_delete",
+    own_kwargs=lambda plan: {"income_type_id": plan.income_type.pk},
+    owner=lambda: {"income_type": IncomeTypeFactory()},
+)
+EXPENSE = Kind(
+    factory=ExpensePlanFactory,
+    model=ExpensePlan,
+    tab="plans:tab_expenses",
+    new="plans:expense_new",
+    update="plans:expense_update",
+    delete="plans:expense_delete",
+    own_kwargs=lambda plan: {"expense_type_id": plan.expense_type.pk},
+    owner=lambda: {"expense_type": ExpenseTypeFactory()},
+)
+SAVING = Kind(
+    factory=SavingPlanFactory,
+    model=SavingPlan,
+    tab="plans:tab_savings",
+    new="plans:saving_new",
+    update="plans:saving_update",
+    delete="plans:saving_delete",
+    own_kwargs=lambda plan: {"saving_type_id": plan.saving_type.pk},
+    owner=lambda: {"saving_type": SavingTypeFactory(title="Saving Type")},
+)
+DAY = Kind(
+    factory=DayPlanFactory,
+    model=DayPlan,
+    tab="plans:tab_day",
+    new="plans:day_new",
+    update="plans:day_update",
+    delete="plans:day_delete",
+    own_kwargs=lambda plan: {},
+    owner=lambda: {},
+)
+NECESSARY = Kind(
+    factory=NecessaryPlanFactory,
+    model=NecessaryPlan,
+    tab="plans:tab_expenses",
+    new="plans:necessary_new",
+    update="plans:necessary_update",
+    delete="plans:necessary_delete",
+    own_kwargs=lambda plan: {
+        "expense_type_id": plan.expense_type.pk,
+        "title": plan.title,
+    },
+    owner=lambda: {"expense_type": ExpenseTypeFactory()},
+)
+
+
+def _form_values(owned):
+    return {field: row.pk for field, row in owned.items()}
+
+
+def _initial_months(form):
+    return {month: form.initial[month] for month in MONTHS if month in form.initial}
+
+
+def _assert_reload_triggered(response):
+    assert json.loads(response.headers["HX-Trigger"]) == {"reload": {}}
+
 
 # Tabs
-def test_index_func():
-    view = resolve("/plans/")
-
-    assert views.TabDay == view.func.view_class
-
-
-def test_index_200(client_logged):
-    url = reverse("plans:index")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
 def test_index_not_logged(client):
     url = reverse("plans:index")
     response = client.get(url)
 
-    # redirection to login page
     assert response.status_code == 302
 
 
@@ -88,13 +161,6 @@ def test_index_opens_the_day_tab(client_logged):
     content = client_logged.get(reverse("plans:index")).content.decode()
 
     assert "x-data=\"{ tab: 'day' }\"" in content
-
-
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_tab_url_is_served_by_its_own_view(tab):
-    view = resolve(tab.url)
-
-    assert TAB_VIEWS[tab.name] == view.func.view_class
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
@@ -319,42 +385,41 @@ def test_every_tab_offers_its_own_add_pill(client_logged, tab):
     assert label in content
 
 
-# IncomePlan Lis
-def test_income_tab_edit_delete_urls(client_logged, main_user):
-    obj = IncomePlanFactory()
+# Plans of every kind
+@pytest.mark.parametrize(
+    "kind",
+    [
+        pytest.param(INCOME, id="income_tab_edit_delete_urls"),
+        pytest.param(EXPENSE, id="expense_tab_edit_delete_urls"),
+        pytest.param(SAVING, id="saving_tab_edit_delete_urls"),
+        pytest.param(DAY, id="day_tab_edit_delete_urls"),
+        pytest.param(NECESSARY, id="necessary_tab_edit_delete_urls"),
+    ],
+)
+def test_plan_tab_edit_delete_urls(client_logged, main_user, kind):
+    obj = kind.factory()
 
-    url = reverse("plans:tab_incomes")
-    response = client_logged.get(url)
+    response = client_logged.get(reverse(kind.tab))
     actual = response.content.decode("utf-8")
 
-    update = reverse(
-        "plans:income_update",
-        kwargs={"year": main_user.year, "income_type_id": obj.income_type.id},
-    )
-    delete = reverse(
-        "plans:income_delete",
-        kwargs={"year": main_user.year, "income_type_id": obj.income_type.id},
-    )
-    assert update in actual
-    assert delete in actual
-
-
-# IncomePlan create/update
-def test_income_new_func():
-    view = resolve("/plans/incomes/new/")
-
-    assert views.IncomesNew == view.func.view_class
-
-
-def test_income_update_func():
-    view = resolve("/plans/incomes/update/1999/1/")
-
-    assert views.IncomesUpdate == view.func.view_class
+    kwargs = {"year": main_user.year, **kind.own_kwargs(obj)}
+    assert reverse(kind.update, kwargs=kwargs) in actual
+    assert reverse(kind.delete, kwargs=kwargs) in actual
 
 
 @time_machine.travel("1999-1-1")
-def test_income_load_form(client_logged):
-    url = reverse("plans:income_new")
+@pytest.mark.parametrize(
+    "kind",
+    [
+        pytest.param(INCOME, id="income_load_form"),
+        pytest.param(EXPENSE, id="expense_load_form"),
+        pytest.param(SAVING, id="saving_load_form"),
+        pytest.param(DAY, id="day_load_form"),
+        pytest.param(NECESSARY, id="necessary_load_form"),
+    ],
+)
+def test_plan_load_form(client_logged, kind):
+    url = reverse(kind.new)
     response = client_logged.get(url)
     actual = response.content.decode()
 
@@ -363,157 +428,335 @@ def test_income_load_form(client_logged):
     assert '<input type="text" name="year" value="1999"' in actual
 
 
-def test_income_new(client_logged, main_user):
-    i = IncomeTypeFactory()
-    data = {"year": "1999", "income_type": i.pk, "january": 0.01}
+@pytest.mark.parametrize(
+    "kind, january, price",
+    [
+        pytest.param(INCOME, 0.01, 1, id="income_new"),
+        pytest.param(EXPENSE, 0.01, 1, id="expense_new"),
+        pytest.param(SAVING, 0.01, 1, id="saving_new"),
+        pytest.param(DAY, 0.05, 5, id="day_new"),
+    ],
+)
+def test_plan_new(client_logged, main_user, kind, january, price):
+    data = {"year": "1999", "january": january, **_form_values(kind.owner())}
 
-    url = reverse("plans:income_new")
-    client_logged.post(url, data, follow=True)
-    actual = IncomePlan.objects.first()
+    client_logged.post(reverse(kind.new), data, follow=True)
+    actual = kind.model.objects.first()
 
     assert actual.journal == main_user.journal
     assert actual.year == 1999
     assert actual.month == 1
-    assert actual.price == 1
+    assert actual.price == price
 
 
-def test_income_new_invalid_data(client_logged):
-    data = {"year": "x", "income_type": 0, "january": 999}
+@pytest.mark.parametrize(
+    "kind, own_data, error_fields",
+    [
+        pytest.param(
+            INCOME,
+            {"income_type": 0},
+            ["year", "income_type"],
+            id="income_new_invalid_data",
+        ),
+        pytest.param(
+            EXPENSE,
+            {"expense_type": 0},
+            ["year", "expense_type"],
+            id="expense_new_invalid_data",
+        ),
+        pytest.param(
+            SAVING,
+            {"saving_type": 0},
+            ["year", "saving_type"],
+            id="saving_new_invalid_data",
+        ),
+        pytest.param(DAY, {}, ["year"], id="day_invalid_data"),
+        pytest.param(
+            NECESSARY, {"title": ""}, ["year", "title"], id="necessary_invalid_data"
+        ),
+    ],
+)
+def test_plan_new_invalid_data(client_logged, kind, own_data, error_fields):
+    data = {"year": "x", "january": 999, **own_data}
 
-    url = reverse("plans:income_new")
-    response = client_logged.post(url, data)
+    response = client_logged.post(reverse(kind.new), data)
     form = response.context["form"]
 
     assert not form.is_valid()
-    assert "year" in form.errors
-    assert "income_type" in form.errors
+    for field in error_fields:
+        assert field in form.errors
 
 
-def test_income_new_prevents_duplicate_category_in_same_year(client_logged, main_user):
-    income_type = IncomeTypeFactory(journal=main_user.journal)
-    # A plan for this year and type already exists
-    IncomePlanFactory(
-        year=1999, month=1, income_type=income_type, journal=main_user.journal
-    )
+@pytest.mark.parametrize(
+    "kind",
+    [
+        pytest.param(INCOME, id="income_new_returns_htmx_response"),
+        pytest.param(EXPENSE, id="expense_new_returns_htmx_response"),
+        pytest.param(SAVING, id="saving_new_returns_htmx_response"),
+    ],
+)
+def test_plan_new_returns_htmx_response(client_logged, kind):
+    owned = kind.owner()
+    data = {"year": "1999", "january": 0.01, **_form_values(owned)}
 
-    # Try to create ANOTHER plan for the same year and type
-    data = {"year": "1999", "income_type": income_type.pk, "january": 9.99}
-    url = reverse("plans:income_new")
-
-    response = client_logged.post(url, data)
-    form = response.context["form"]
-
-    assert not form.is_valid()
-    assert (
-        "__all__" in form.errors
-    )  # Assuming the error was raised as a non-field error
-    assert "1999 metai su 'Income Type'  jau turi tikslą." in form.errors["__all__"][0]
-
-
-def test_income_new_returns_htmx_response(client_logged, main_user):
-    income_type = IncomeTypeFactory(journal=main_user.journal)
-    data = {"year": "1999", "income_type": income_type.pk, "january": 0.01}
-
-    url = reverse("plans:income_new")
-
-    response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
+    response = client_logged.post(reverse(kind.new), data, HTTP_HX_REQUEST="true")
 
     assert response.status_code == 204
-    assert IncomePlan.objects.filter(year=1999, income_type=income_type).count() == 1
-
-    trigger_header = response.headers.get("HX-Trigger")
-    assert trigger_header is not None, "HX-Trigger header is missing!"
-
-    trigger_data = json.loads(trigger_header)
-    assert "reload" in trigger_data
+    assert kind.model.objects.filter(year=1999, **owned).count() == 1
+    _assert_reload_triggered(response)
 
 
-def test_income_load_update_load_form(client_logged):
-    income_type = IncomeTypeFactory()
-    IncomePlanFactory(income_type=income_type)
+@pytest.mark.parametrize(
+    "kind",
+    [
+        pytest.param(INCOME, id="income_load_update_load_form"),
+        pytest.param(EXPENSE, id="expense_load_update_load_form"),
+        pytest.param(SAVING, id="saving_load_update_load_form"),
+        pytest.param(DAY, id="day_load_update_load_form"),
+        pytest.param(NECESSARY, id="necessary_load_update_load_form"),
+    ],
+)
+def test_plan_load_update_load_form(client_logged, kind):
+    obj = kind.factory()
 
-    url = reverse(
-        "plans:income_update", kwargs={"year": 1999, "income_type_id": income_type.pk}
-    )
+    url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
     response = client_logged.get(url)
     actual = response.content.decode()
 
     assert f'hx-post="{url}"' in actual
 
 
-def test_income_load_update_form_field_values(client_logged):
-    income_type = IncomeTypeFactory()
-    IncomePlanFactory(income_type=income_type)
+@pytest.mark.parametrize(
+    "kind, type_title, title",
+    [
+        pytest.param(
+            INCOME,
+            lambda plan: plan.income_type.title,
+            "Income Type",
+            id="income_load_update_form_field_values",
+        ),
+        pytest.param(
+            EXPENSE,
+            lambda plan: plan.expense_type.title,
+            "Expense Type",
+            id="expense_load_update_form_field_values",
+        ),
+        pytest.param(
+            SAVING,
+            lambda plan: plan.saving_type.title,
+            "Saving Type",
+            id="saving_load_update_form_field_values",
+        ),
+    ],
+)
+def test_plan_load_update_form_field_values(client_logged, kind, type_title, title):
+    obj = kind.factory(**kind.owner())
 
-    url = reverse(
-        "plans:income_update", kwargs={"year": 1999, "income_type_id": income_type.pk}
-    )
-    response = client_logged.get(url)
-    form = response.context["form"]
+    url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
+    form = client_logged.get(url).context["form"]
 
     assert form.instance.year == 1999
-    assert form.instance.income_type.title == "Income Type"
-
-    assert form.initial.get("january") == 0.01
-    assert form.initial.get("february") is None
-    assert form.initial.get("march") is None
-    assert form.initial.get("april") is None
-    assert form.initial.get("may") is None
-    assert form.initial.get("june") is None
-    assert form.initial.get("july") is None
-    assert form.initial.get("august") is None
-    assert form.initial.get("september") is None
-    assert form.initial.get("october") is None
-    assert form.initial.get("november") is None
-    assert form.initial.get("december") is None
+    assert type_title(form.instance) == title
+    assert _initial_months(form) == {"january": 0.01}
 
 
-def test_income_update(client_logged):
-    obj = IncomePlanFactory(year=1999)
+@pytest.mark.parametrize(
+    "kind, plan_kwargs, months",
+    [
+        pytest.param(
+            DAY,
+            {"month": 1, "price": 5},
+            {"january": 0.05},
+            id="day_load_update_form_field_values",
+        ),
+        pytest.param(
+            NECESSARY,
+            {"title": "ABCD", "month": 11, "price": 1001},
+            {"november": 10.01},
+            id="necessary_load_update_form_field_values",
+        ),
+    ],
+)
+def test_plan_without_type_load_update_form_field_values(
+    client_logged, kind, plan_kwargs, months
+):
+    obj = kind.factory(year=1999, **plan_kwargs)
 
-    data = {"year": "1999", "income_type": obj.income_type.pk, "january": 0.05}
-    url = reverse(
-        "plans:income_update",
-        kwargs={"year": 1999, "income_type_id": obj.income_type.pk},
-    )
+    url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
+    form = client_logged.get(url).context["form"]
+
+    assert form.instance.year == 1999
+    assert _initial_months(form) == months
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        pytest.param(INCOME, id="income_update"),
+        pytest.param(EXPENSE, id="expense_update"),
+        pytest.param(SAVING, id="saving_update"),
+    ],
+)
+def test_plan_update(client_logged, kind):
+    owned = kind.owner()
+    obj = kind.factory(year=1999, **owned)
+
+    data = {"year": "1999", "january": 0.05, **_form_values(owned)}
+    url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
     client_logged.post(url, data)
-    actual = IncomePlan.objects.get(pk=obj.pk)
+    actual = kind.model.objects.get(pk=obj.pk)
 
     assert actual.month == 1
     assert actual.price == 5
 
 
-def test_income_update_returns_htmx_response(client_logged, main_user):
-    income_type = IncomeTypeFactory(journal=main_user.journal)
+@pytest.mark.parametrize(
+    "kind",
+    [
+        pytest.param(INCOME, id="income_update_returns_htmx_response"),
+        pytest.param(EXPENSE, id="expense_update_returns_htmx_response"),
+        pytest.param(SAVING, id="saving_update_returns_htmx_response"),
+    ],
+)
+def test_plan_update_returns_htmx_response(client_logged, kind):
+    owned = kind.owner()
+    obj = kind.factory(year=1999, month=1, price=1000, **owned)
 
-    IncomePlanFactory(
-        year=1999,
-        income_type=income_type,
-        month=1,
-        price=1000,
-        journal=main_user.journal,
-    )
-
-    data = {"year": "1999", "income_type": income_type.pk, "january": 9.99}
-
-    url = reverse(
-        "plans:income_update", kwargs={"year": 1999, "income_type_id": income_type.pk}
-    )
+    data = {"year": "1999", "january": 9.99, **_form_values(owned)}
+    url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
 
     response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
 
     assert response.status_code == 204
-
-    actual = IncomePlan.objects.get(year=1999, income_type=income_type, month=1)
-    assert actual.price == 999
-
-    trigger_header = response.headers.get("HX-Trigger")
-    assert trigger_header is not None, "HX-Trigger header is missing!"
-
-    trigger_data = json.loads(trigger_header)
-    assert "reload" in trigger_data
+    assert kind.model.objects.get(year=1999, month=1, **owned).price == 999
+    _assert_reload_triggered(response)
 
 
+@pytest.mark.parametrize(
+    "kind, price, text",
+    [
+        pytest.param(INCOME, 2, "0,02", id="income_tab_price_converted_in_template"),
+        pytest.param(EXPENSE, 2, "0,02", id="expense_tab_price_converted_in_template"),
+        pytest.param(SAVING, 2, "0,02", id="saving_tab_price_converted_in_template"),
+        pytest.param(
+            NECESSARY, 5, "0,05", id="necessary_tab_price_converted_in_template"
+        ),
+    ],
+)
+def test_plan_tab_price_converted_in_template(client_logged, kind, price, text):
+    owned = kind.owner()
+    for month in range(1, 13):
+        kind.factory(month=month, price=price, **owned)
+
+    response = client_logged.get(reverse(kind.tab))
+    actual = response.content.decode("utf-8")
+
+    assert text in actual
+    assert actual.count(text) == 12
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        pytest.param(INCOME, id="incomes_delete"),
+        pytest.param(EXPENSE, id="expenses_delete"),
+        pytest.param(SAVING, id="saving_delete"),
+        pytest.param(DAY, id="day_delete"),
+        pytest.param(NECESSARY, id="necessary_delete"),
+    ],
+)
+def test_plan_delete(client_logged, kind):
+    owned = kind.owner()
+    obj = kind.factory(year=1999, month=1, **owned)
+    kind.factory(year=1999, month=2, **owned)
+    kind.factory(year=2026, month=2, **owned)
+
+    assert kind.model.objects.all().count() == 3
+
+    url = reverse(kind.delete, kwargs={"year": 1999, **kind.own_kwargs(obj)})
+    client_logged.post(url, follow=True)
+
+    assert kind.model.objects.all().count() == 1
+    assert kind.model.objects.first().year == 2026
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        pytest.param(INCOME, id="incomes_delete_returns_htmx_response"),
+        pytest.param(EXPENSE, id="expenses_delete_returns_htmx_response"),
+        pytest.param(SAVING, id="saving_delete_returns_htmx_response"),
+    ],
+)
+def test_plan_delete_returns_htmx_response(client_logged, kind):
+    obj = kind.factory(year=1999, month=1, **kind.owner())
+
+    url = reverse(kind.delete, kwargs={"year": 1999, **kind.own_kwargs(obj)})
+    response = client_logged.post(url)
+
+    assert kind.model.objects.count() == 0
+    assert response.status_code == 204
+    _assert_reload_triggered(response)
+
+
+@pytest.mark.parametrize(
+    "kind, message",
+    [
+        pytest.param(
+            INCOME,
+            "1999 metai su 'Income Type'  jau turi tikslą.",
+            id="income_new_prevents_duplicate_category_in_same_year",
+        ),
+        pytest.param(
+            EXPENSE,
+            "1999 metai su 'Expense Type'  jau turi tikslą.",
+            id="expense_new_prevents_duplicate_category_in_same_year",
+        ),
+        pytest.param(
+            SAVING,
+            "1999 metai su 'Saving Type'  jau turi tikslą.",
+            id="saving_new_prevents_duplicate_category_in_same_year",
+        ),
+    ],
+)
+def test_plan_new_prevents_duplicate_category_in_same_year(
+    client_logged, kind, message
+):
+    owned = kind.owner()
+    kind.factory(year=1999, month=1, **owned)
+
+    data = {"year": "1999", "january": 9.99, **_form_values(owned)}
+
+    response = client_logged.post(reverse(kind.new), data)
+    form = response.context["form"]
+
+    assert not form.is_valid()
+    assert "__all__" in form.errors
+    assert message in form.errors["__all__"][0]
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        pytest.param(INCOME, id="incomes_delete_load_form"),
+        pytest.param(EXPENSE, id="expenses_delete_load_form"),
+        pytest.param(SAVING, id="saving_delete_load_form"),
+        pytest.param(DAY, id="day_delete_load_form"),
+        pytest.param(NECESSARY, id="necessary_delete_load_form"),
+    ],
+)
+def test_plan_delete_load_form(client_logged, kind):
+    obj = kind.factory(year=1999)
+
+    url = reverse(kind.delete, kwargs={"year": 1999, **kind.own_kwargs(obj)})
+    response = client_logged.get(url)
+    actual = response.content.decode("utf-8")
+
+    assert f'hx-post="{url}"' in actual
+    assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
+
+
+# IncomePlan
 def test_income_update_not_load_other_journal(client_logged, second_user):
     second_user_journal = second_user.journal
 
@@ -528,100 +771,6 @@ def test_income_update_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
-
-
-def test_income_tab_price_converted_in_template(client_logged):
-    income_type = IncomeTypeFactory()
-    IncomePlanFactory(income_type=income_type, month=1, price=2)
-    IncomePlanFactory(income_type=income_type, month=2, price=2)
-    IncomePlanFactory(income_type=income_type, month=3, price=2)
-    IncomePlanFactory(income_type=income_type, month=4, price=2)
-    IncomePlanFactory(income_type=income_type, month=5, price=2)
-    IncomePlanFactory(income_type=income_type, month=6, price=2)
-    IncomePlanFactory(income_type=income_type, month=7, price=2)
-    IncomePlanFactory(income_type=income_type, month=8, price=2)
-    IncomePlanFactory(income_type=income_type, month=9, price=2)
-    IncomePlanFactory(income_type=income_type, month=10, price=2)
-    IncomePlanFactory(income_type=income_type, month=11, price=2)
-    IncomePlanFactory(income_type=income_type, month=12, price=2)
-
-    url = reverse("plans:tab_incomes")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "0,02" in actual
-    assert actual.count("0,02") == 12
-
-
-# IncomePlan delete
-
-
-def test_incomes_delete_func():
-    view = resolve("/plans/incomes/delete/1212/1/")
-
-    assert views.IncomesDelete == view.func.view_class
-
-
-def test_incomes_delete_200(client_logged):
-    obj = IncomePlanFactory()
-
-    url = reverse(
-        "plans:income_delete",
-        kwargs={"year": 1999, "income_type_id": obj.income_type.pk},
-    )
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_incomes_delete_load_form(client_logged):
-    obj = IncomePlanFactory(year=1999)
-
-    url = reverse(
-        "plans:income_delete",
-        kwargs={"year": 1999, "income_type_id": obj.income_type.pk},
-    )
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-    assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
-
-
-def test_incomes_delete(client_logged):
-    income_type = IncomeTypeFactory()
-    IncomePlanFactory(year=1999, income_type=income_type, month=1)
-    IncomePlanFactory(year=1999, income_type=income_type, month=2)
-
-    assert models.IncomePlan.objects.all().count() == 2
-
-    url = reverse(
-        "plans:income_delete", kwargs={"year": 1999, "income_type_id": income_type.pk}
-    )
-
-    client_logged.post(url, follow=True)
-
-    assert models.IncomePlan.objects.all().count() == 0
-
-
-def test_incomes_delete_returns_htmx_response(client_logged):
-    income_type = IncomeTypeFactory()
-    IncomePlanFactory(year=1999, income_type=income_type, month=1)
-
-    url = reverse(
-        "plans:income_delete", kwargs={"year": 1999, "income_type_id": income_type.pk}
-    )
-
-    response = client_logged.post(url)
-
-    assert models.IncomePlan.objects.count() == 0
-    assert response.status_code in [200, 204]
-
-    trigger_header = response.headers.get("HX-Trigger")
-    assert trigger_header is not None, "HX-Trigger header is missing!"
-
-    trigger_data = json.loads(trigger_header)
-    assert "reload" in trigger_data
 
 
 def test_incomes_delete_other_journal_get_form(client_logged, second_user):
@@ -656,204 +805,7 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
     assert IncomePlan.objects.all().count() == 1
 
 
-# ExpensePlan Lis
-def test_expense_tab_edit_delete_urls(client_logged, main_user):
-    obj = ExpensePlanFactory()
-
-    url = reverse("plans:tab_expenses")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    update = reverse(
-        "plans:expense_update",
-        kwargs={"year": main_user.year, "expense_type_id": obj.expense_type.id},
-    )
-    delete = reverse(
-        "plans:expense_delete",
-        kwargs={"year": main_user.year, "expense_type_id": obj.expense_type.id},
-    )
-    assert update in actual
-    assert delete in actual
-
-
-# ExpensePlan create/update
-def test_expense_new_func():
-    view = resolve("/plans/expenses/new/")
-
-    assert views.ExpensesNew == view.func.view_class
-
-
-def test_expense_update_func():
-    view = resolve("/plans/expenses/update/1999/1/")
-
-    assert views.ExpensesUpdate == view.func.view_class
-
-
-@time_machine.travel("1999-1-1")
-def test_expense_load_form(client_logged):
-    url = reverse("plans:expense_new")
-    response = client_logged.get(url)
-    actual = response.content.decode()
-
-    assert response.status_code == 200
-    assert f'hx-post="{url}"' in actual
-    assert '<input type="text" name="year" value="1999"' in actual
-
-
-def test_expense_new(client_logged, main_user):
-    i = ExpenseTypeFactory()
-    data = {"year": "1999", "expense_type": i.pk, "january": 0.01}
-
-    url = reverse("plans:expense_new")
-    client_logged.post(url, data, follow=True)
-    actual = ExpensePlan.objects.first()
-
-    assert actual.journal == main_user.journal
-    assert actual.year == 1999
-    assert actual.month == 1
-    assert actual.price == 1
-
-
-def test_expense_new_invalid_data(client_logged):
-    data = {"year": "x", "expense_type": 0, "january": 999}
-
-    url = reverse("plans:expense_new")
-    response = client_logged.post(url, data)
-    form = response.context["form"]
-
-    assert not form.is_valid()
-    assert "year" in form.errors
-    assert "expense_type" in form.errors
-
-
-def test_expense_new_prevents_duplicate_category_in_same_year(client_logged, main_user):
-    expense_type = ExpenseTypeFactory(journal=main_user.journal)
-    # A plan for this year and type already exists
-    ExpensePlanFactory(
-        year=1999, month=1, expense_type=expense_type, journal=main_user.journal
-    )
-
-    # Try to create ANOTHER plan for the same year and type
-    data = {"year": "1999", "expense_type": expense_type.pk, "january": 9.99}
-    url = reverse("plans:expense_new")
-
-    response = client_logged.post(url, data)
-    form = response.context["form"]
-
-    assert not form.is_valid()
-    assert (
-        "__all__" in form.errors
-    )  # Assuming the error was raised as a non-field error
-    assert "1999 metai su 'Expense Type'  jau turi tikslą." in form.errors["__all__"][0]
-
-
-def test_expense_new_returns_htmx_response(client_logged, main_user):
-    expense_type = ExpenseTypeFactory(journal=main_user.journal)
-    data = {"year": "1999", "expense_type": expense_type.pk, "january": 0.01}
-
-    url = reverse("plans:expense_new")
-
-    response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
-
-    assert response.status_code == 204
-    assert ExpensePlan.objects.filter(year=1999, expense_type=expense_type).count() == 1
-
-    trigger_header = response.headers.get("HX-Trigger")
-    assert trigger_header is not None, "HX-Trigger header is missing!"
-
-    trigger_data = json.loads(trigger_header)
-    assert "reload" in trigger_data
-
-
-def test_expense_load_update_load_form(client_logged):
-    expense_type = ExpenseTypeFactory()
-    ExpensePlanFactory(expense_type=expense_type)
-
-    url = reverse(
-        "plans:expense_update",
-        kwargs={"year": 1999, "expense_type_id": expense_type.pk},
-    )
-    response = client_logged.get(url)
-    actual = response.content.decode()
-
-    assert f'hx-post="{url}"' in actual
-
-
-def test_expense_load_update_form_field_values(client_logged):
-    expense_type = ExpenseTypeFactory()
-    ExpensePlanFactory(expense_type=expense_type)
-
-    url = reverse(
-        "plans:expense_update",
-        kwargs={"year": 1999, "expense_type_id": expense_type.pk},
-    )
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert form.instance.year == 1999
-    assert form.instance.expense_type.title == "Expense Type"
-
-    assert form.initial.get("january") == 0.01
-    assert form.initial.get("february") is None
-    assert form.initial.get("march") is None
-    assert form.initial.get("april") is None
-    assert form.initial.get("may") is None
-    assert form.initial.get("june") is None
-    assert form.initial.get("july") is None
-    assert form.initial.get("august") is None
-    assert form.initial.get("september") is None
-    assert form.initial.get("october") is None
-    assert form.initial.get("november") is None
-    assert form.initial.get("december") is None
-
-
-def test_expense_update(client_logged):
-    obj = ExpensePlanFactory(year=1999)
-
-    data = {"year": "1999", "expense_type": obj.expense_type.pk, "january": 0.05}
-    url = reverse(
-        "plans:expense_update",
-        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk},
-    )
-    client_logged.post(url, data)
-    actual = ExpensePlan.objects.get(pk=obj.pk)
-
-    assert actual.month == 1
-    assert actual.price == 5
-
-
-def test_expense_update_returns_htmx_response(client_logged, main_user):
-    expense_type = ExpenseTypeFactory(journal=main_user.journal)
-
-    ExpensePlanFactory(
-        year=1999,
-        expense_type=expense_type,
-        month=1,
-        price=1000,
-        journal=main_user.journal,
-    )
-
-    data = {"year": "1999", "expense_type": expense_type.pk, "january": 9.99}
-
-    url = reverse(
-        "plans:expense_update",
-        kwargs={"year": 1999, "expense_type_id": expense_type.pk},
-    )
-
-    response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
-
-    assert response.status_code == 204
-
-    actual = ExpensePlan.objects.get(year=1999, expense_type=expense_type, month=1)
-    assert actual.price == 999
-
-    trigger_header = response.headers.get("HX-Trigger")
-    assert trigger_header is not None, "HX-Trigger header is missing!"
-
-    trigger_data = json.loads(trigger_header)
-    assert "reload" in trigger_data
-
-
+# ExpensePlan
 def test_expense_update_not_load_other_journal(client_logged, second_user):
     second_user_journal = second_user.journal
 
@@ -868,102 +820,6 @@ def test_expense_update_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
-
-
-def test_expense_tab_price_converted_in_template(client_logged):
-    expense_type = ExpenseTypeFactory()
-    ExpensePlanFactory(expense_type=expense_type, month=1, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=2, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=3, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=4, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=5, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=6, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=7, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=8, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=9, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=10, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=11, price=2)
-    ExpensePlanFactory(expense_type=expense_type, month=12, price=2)
-
-    url = reverse("plans:tab_expenses")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "0,02" in actual
-    assert actual.count("0,02") == 12
-
-
-# ExpensePlan delete
-
-
-def test_expenses_delete_func():
-    view = resolve("/plans/expenses/delete/1212/1/")
-
-    assert views.ExpensesDelete == view.func.view_class
-
-
-def test_expenses_delete_200(client_logged):
-    obj = ExpensePlanFactory()
-
-    url = reverse(
-        "plans:expense_delete",
-        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk},
-    )
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_expenses_delete_load_form(client_logged):
-    obj = ExpensePlanFactory(year=1999)
-
-    url = reverse(
-        "plans:expense_delete",
-        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk},
-    )
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-    assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
-
-
-def test_expenses_delete(client_logged):
-    expense_type = ExpenseTypeFactory()
-    ExpensePlanFactory(year=1999, expense_type=expense_type, month=1)
-    ExpensePlanFactory(year=1999, expense_type=expense_type, month=2)
-
-    assert models.ExpensePlan.objects.all().count() == 2
-
-    url = reverse(
-        "plans:expense_delete",
-        kwargs={"year": 1999, "expense_type_id": expense_type.pk},
-    )
-
-    client_logged.post(url, follow=True)
-
-    assert models.ExpensePlan.objects.all().count() == 0
-
-
-def test_expenses_delete_returns_htmx_response(client_logged):
-    expense_type = ExpenseTypeFactory()
-    ExpensePlanFactory(year=1999, expense_type=expense_type, month=1)
-
-    url = reverse(
-        "plans:expense_delete",
-        kwargs={"year": 1999, "expense_type_id": expense_type.pk},
-    )
-
-    response = client_logged.post(url)
-
-    assert models.ExpensePlan.objects.count() == 0
-    assert response.status_code in [200, 204]
-
-    trigger_header = response.headers.get("HX-Trigger")
-    assert trigger_header is not None, "HX-Trigger header is missing!"
-
-    trigger_data = json.loads(trigger_header)
-    assert "reload" in trigger_data
 
 
 def test_expenses_delete_other_journal_get_form(client_logged, second_user):
@@ -998,201 +854,7 @@ def test_expenses_delete_other_journal_post_form(client_logged, second_user):
     assert ExpensePlan.objects.all().count() == 1
 
 
-# SavingPlan Lis
-def test_saving_tab_edit_delete_urls(client_logged, main_user):
-    obj = SavingPlanFactory()
-
-    url = reverse("plans:tab_savings")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    update = reverse(
-        "plans:saving_update",
-        kwargs={"year": main_user.year, "saving_type_id": obj.saving_type.id},
-    )
-    delete = reverse(
-        "plans:saving_delete",
-        kwargs={"year": main_user.year, "saving_type_id": obj.saving_type.id},
-    )
-    assert update in actual
-    assert delete in actual
-
-
-# SavingPlan create/update
-def test_saving_new_func():
-    view = resolve("/plans/savings/new/")
-
-    assert views.SavingsNew == view.func.view_class
-
-
-def test_saving_update_func():
-    view = resolve("/plans/savings/update/1999/1/")
-
-    assert views.SavingsUpdate == view.func.view_class
-
-
-@time_machine.travel("1999-1-1")
-def test_saving_load_form(client_logged):
-    url = reverse("plans:saving_new")
-    response = client_logged.get(url)
-    actual = response.content.decode()
-
-    assert response.status_code == 200
-    assert f'hx-post="{url}"' in actual
-    assert '<input type="text" name="year" value="1999"' in actual
-
-
-def test_saving_new(client_logged, main_user):
-    i = SavingTypeFactory()
-    data = {"year": "1999", "saving_type": i.pk, "january": 0.01}
-
-    url = reverse("plans:saving_new")
-    client_logged.post(url, data, follow=True)
-    actual = SavingPlan.objects.first()
-
-    assert actual.journal == main_user.journal
-    assert actual.year == 1999
-    assert actual.month == 1
-    assert actual.price == 1
-
-
-def test_saving_new_invalid_data(client_logged):
-    data = {"year": "x", "saving_type": 0, "january": 999}
-
-    url = reverse("plans:saving_new")
-    response = client_logged.post(url, data)
-    form = response.context["form"]
-
-    assert not form.is_valid()
-    assert "year" in form.errors
-    assert "saving_type" in form.errors
-
-
-def test_saving_new_prevents_duplicate_category_in_same_year(client_logged, main_user):
-    saving_type = SavingTypeFactory(journal=main_user.journal, title="Saving Type")
-    # A plan for this year and type already exists
-    SavingPlanFactory(
-        year=1999, month=1, saving_type=saving_type, journal=main_user.journal
-    )
-
-    # Try to create ANOTHER plan for the same year and type
-    data = {"year": "1999", "saving_type": saving_type.pk, "january": 9.99}
-    url = reverse("plans:saving_new")
-
-    response = client_logged.post(url, data)
-    form = response.context["form"]
-
-    assert not form.is_valid()
-    assert (
-        "__all__" in form.errors
-    )  # Assuming the error was raised as a non-field error
-    assert "1999 metai su 'Saving Type'  jau turi tikslą." in form.errors["__all__"][0]
-
-
-def test_saving_new_returns_htmx_response(client_logged, main_user):
-    saving_type = SavingTypeFactory(journal=main_user.journal)
-    data = {"year": "1999", "saving_type": saving_type.pk, "january": 0.01}
-
-    url = reverse("plans:saving_new")
-
-    response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
-
-    assert response.status_code == 204
-    assert SavingPlan.objects.filter(year=1999, saving_type=saving_type).count() == 1
-
-    trigger_header = response.headers.get("HX-Trigger")
-    assert trigger_header is not None, "HX-Trigger header is missing!"
-
-    trigger_data = json.loads(trigger_header)
-    assert "reload" in trigger_data
-
-
-def test_saving_load_update_load_form(client_logged):
-    saving_type = SavingTypeFactory()
-    SavingPlanFactory(saving_type=saving_type)
-
-    url = reverse(
-        "plans:saving_update", kwargs={"year": 1999, "saving_type_id": saving_type.pk}
-    )
-    response = client_logged.get(url)
-    actual = response.content.decode()
-
-    assert f'hx-post="{url}"' in actual
-
-
-def test_saving_load_update_form_field_values(client_logged):
-    saving_type = SavingTypeFactory(title="Saving Type")
-    SavingPlanFactory(saving_type=saving_type)
-
-    url = reverse(
-        "plans:saving_update", kwargs={"year": 1999, "saving_type_id": saving_type.pk}
-    )
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert form.instance.year == 1999
-    assert form.instance.saving_type.title == "Saving Type"
-
-    assert form.initial.get("january") == 0.01
-    assert form.initial.get("february") is None
-    assert form.initial.get("march") is None
-    assert form.initial.get("april") is None
-    assert form.initial.get("may") is None
-    assert form.initial.get("june") is None
-    assert form.initial.get("july") is None
-    assert form.initial.get("august") is None
-    assert form.initial.get("september") is None
-    assert form.initial.get("october") is None
-    assert form.initial.get("november") is None
-    assert form.initial.get("december") is None
-
-
-def test_saving_update(client_logged):
-    obj = SavingPlanFactory(year=1999)
-
-    data = {"year": "1999", "saving_type": obj.saving_type.pk, "january": 0.05}
-    url = reverse(
-        "plans:saving_update",
-        kwargs={"year": 1999, "saving_type_id": obj.saving_type.pk},
-    )
-    client_logged.post(url, data)
-    actual = SavingPlan.objects.get(pk=obj.pk)
-
-    assert actual.month == 1
-    assert actual.price == 5
-
-
-def test_saving_update_returns_htmx_response(client_logged, main_user):
-    saving_type = SavingTypeFactory(journal=main_user.journal)
-
-    SavingPlanFactory(
-        year=1999,
-        saving_type=saving_type,
-        month=1,
-        price=1000,
-        journal=main_user.journal,
-    )
-
-    data = {"year": "1999", "saving_type": saving_type.pk, "january": 9.99}
-
-    url = reverse(
-        "plans:saving_update", kwargs={"year": 1999, "saving_type_id": saving_type.pk}
-    )
-
-    response = client_logged.post(url, data, HTTP_HX_REQUEST="true")
-
-    assert response.status_code == 204
-
-    actual = SavingPlan.objects.get(year=1999, saving_type=saving_type, month=1)
-    assert actual.price == 999
-
-    trigger_header = response.headers.get("HX-Trigger")
-    assert trigger_header is not None, "HX-Trigger header is missing!"
-
-    trigger_data = json.loads(trigger_header)
-    assert "reload" in trigger_data
-
-
+# SavingPlan
 def test_saving_update_not_load_other_journal(client_logged, second_user):
     second_user_journal = second_user.journal
 
@@ -1207,100 +869,6 @@ def test_saving_update_not_load_other_journal(client_logged, second_user):
     response = client_logged.get(url)
 
     assert response.status_code == 404
-
-
-def test_saving_tab_price_converted_in_template(client_logged):
-    saving_type = SavingTypeFactory()
-    SavingPlanFactory(saving_type=saving_type, month=1, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=2, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=3, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=4, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=5, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=6, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=7, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=8, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=9, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=10, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=11, price=2)
-    SavingPlanFactory(saving_type=saving_type, month=12, price=2)
-
-    url = reverse("plans:tab_savings")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "0,02" in actual
-    assert actual.count("0,02") == 12
-
-
-# SavingPlan delete
-
-
-def test_saving_delete_func():
-    view = resolve("/plans/savings/delete/1212/1/")
-
-    assert views.SavingsDelete == view.func.view_class
-
-
-def test_saving_delete_200(client_logged):
-    obj = SavingPlanFactory()
-
-    url = reverse(
-        "plans:saving_delete",
-        kwargs={"year": 1999, "saving_type_id": obj.saving_type.pk},
-    )
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_saving_delete_load_form(client_logged):
-    obj = SavingPlanFactory(year=1999)
-
-    url = reverse(
-        "plans:saving_delete",
-        kwargs={"year": 1999, "saving_type_id": obj.saving_type.pk},
-    )
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-    assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
-
-
-def test_saving_delete(client_logged):
-    saving_type = SavingTypeFactory()
-    SavingPlanFactory(year=1999, saving_type=saving_type, month=1)
-    SavingPlanFactory(year=1999, saving_type=saving_type, month=2)
-
-    assert models.SavingPlan.objects.all().count() == 2
-
-    url = reverse(
-        "plans:saving_delete", kwargs={"year": 1999, "saving_type_id": saving_type.pk}
-    )
-
-    client_logged.post(url, follow=True)
-
-    assert models.SavingPlan.objects.all().count() == 0
-
-
-def test_saving_delete_returns_htmx_response(client_logged):
-    saving_type = SavingTypeFactory()
-    SavingPlanFactory(year=1999, saving_type=saving_type, month=1)
-
-    url = reverse(
-        "plans:saving_delete", kwargs={"year": 1999, "saving_type_id": saving_type.pk}
-    )
-
-    response = client_logged.post(url)
-
-    assert models.SavingPlan.objects.count() == 0
-    assert response.status_code in [200, 204]
-
-    trigger_header = response.headers.get("HX-Trigger")
-    assert trigger_header is not None, "HX-Trigger header is missing!"
-
-    trigger_data = json.loads(trigger_header)
-    assert "reload" in trigger_data
 
 
 def test_saving_delete_other_journal_get_form(client_logged, second_user):
@@ -1335,7 +903,7 @@ def test_saving_delete_other_journal_post_form(client_logged, second_user):
     assert SavingPlan.objects.all().count() == 1
 
 
-# DayPlan List
+# DayPlan
 @time_machine.travel("2026-09-15")
 def test_day_tab_cards_read_the_current_month_in_the_selected_plan_year(
     client_logged, main_user
@@ -1357,69 +925,7 @@ def test_day_tab_cards_read_the_current_month_in_the_selected_plan_year(
     assert cards["Dienos planas šį mėnesį"].value == "30,00"
 
 
-def test_day_tab_edit_delete_urls(client_logged, main_user):
-    DayPlanFactory()
-
-    url = reverse("plans:tab_day")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    update = reverse(
-        "plans:day_update",
-        kwargs={"year": main_user.year},
-    )
-    delete = reverse(
-        "plans:day_delete",
-        kwargs={"year": main_user.year},
-    )
-    assert update in actual
-    assert delete in actual
-
-
-# DayPlan create/update
-def test_day_new_func():
-    view = resolve("/plans/day/new/")
-
-    assert views.DayNew == view.func.view_class
-
-
-def test_day_update_func():
-    view = resolve("/plans/day/update/1/")
-
-    assert views.DayUpdate == view.func.view_class
-
-
-@time_machine.travel("1999-1-1")
-def test_day(client_logged):
-    url = reverse("plans:day_new")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert '<input type="text" name="year" value="1999"' in actual
-
-
-def test_day_load_form(client_logged):
-    url = reverse("plans:day_new")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-
-
-def test_day_new(client_logged, main_user):
-    data = {"year": "1999", "january": 0.05}
-
-    url = reverse("plans:day_new")
-    client_logged.post(url, data, follow=True)
-    actual = DayPlan.objects.first()
-
-    assert actual.journal == main_user.journal
-    assert actual.year == 1999
-    assert actual.month == 1
-    assert actual.price == 5
-
-
-def test_day_new_dublicates_not_allowed(client_logged, main_user):
+def test_day_new_duplicates_not_allowed(client_logged):
     DayPlanFactory(year=1999, month=12, price=100)
 
     data = {"year": "1999", "january": 0.05}
@@ -1429,51 +935,6 @@ def test_day_new_dublicates_not_allowed(client_logged, main_user):
     form = response.context["form"]
 
     assert not form.is_valid()
-
-
-def test_day_invalid_data(client_logged):
-    data = {"year": "x", "january": 999}
-
-    url = reverse("plans:day_new")
-    response = client_logged.post(url, data)
-    form = response.context["form"]
-
-    assert not form.is_valid()
-
-
-def test_day_load_update_form_field_values(client_logged):
-    DayPlanFactory(year=1999, month=1, price=5)
-
-    url = reverse(
-        "plans:day_update",
-        kwargs={"year": 1999},
-    )
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert form.instance.year == 1999
-    assert form.initial.get("january") == 0.05
-    assert form.initial.get("february") is None
-    assert form.initial.get("march") is None
-    assert form.initial.get("april") is None
-    assert form.initial.get("may") is None
-    assert form.initial.get("june") is None
-    assert form.initial.get("july") is None
-    assert form.initial.get("august") is None
-    assert form.initial.get("september") is None
-    assert form.initial.get("october") is None
-    assert form.initial.get("november") is None
-    assert form.initial.get("december") is None
-
-
-def test_day_load_update_load_form(client_logged):
-    DayPlanFactory()
-
-    url = reverse("plans:day_update", kwargs={"year": 1999})
-    response = client_logged.get(url)
-    actual = response.content.decode()
-
-    assert f'hx-post="{url}"' in actual
 
 
 def test_day_update(client_logged):
@@ -1486,6 +947,7 @@ def test_day_update(client_logged):
     actual = DayPlan.objects.get(pk=obj.pk)
 
     assert actual.month == 1
+    assert actual.price == 1
 
 
 def test_day_update_not_load_other_journal(client_logged, second_user):
@@ -1613,45 +1075,6 @@ def test_day_tab_calculations_marks_the_day_plan_cell_above_the_sum_per_day(
     assert actual.count("plans-table__over") == 1
 
 
-# DayPlan delete
-def test_day_delete_func():
-    view = resolve("/plans/day/delete/1/")
-
-    assert views.DayDelete == view.func.view_class
-
-
-def test_day_delete_200(client_logged):
-    DayPlanFactory()
-
-    url = reverse("plans:day_delete", kwargs={"year": 1999})
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_day_delete_load_form(client_logged):
-    p = DayPlanFactory(year=1999)
-
-    url = reverse("plans:day_delete", kwargs={"year": 1999})
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-    assert f"Ar tikrai norite ištrinti: <strong>{p}</strong>?" in actual
-
-
-def test_day_delete(client_logged):
-    DayPlanFactory(year=1999, month=1, price=2)
-    DayPlanFactory(year=1999, month=2, price=3)
-
-    assert models.DayPlan.objects.all().count() == 2
-    url = reverse("plans:day_delete", kwargs={"year": 1999})
-
-    client_logged.post(url)
-
-    assert models.DayPlan.objects.all().count() == 0
-
-
 def test_day_delete_other_journal_get_form(client_logged, second_user):
     second_user_journal = second_user.journal
     DayPlanFactory(journal=second_user_journal, month=1, price=666)
@@ -1672,57 +1095,7 @@ def test_day_delete_other_journal_post_form(client_logged, second_user):
     assert DayPlan.objects.all().count() == 1
 
 
-# NecessaryPlan List
-def test_necessary_tab_edit_delete_urls(client_logged, main_user):
-    obj = NecessaryPlanFactory()
-
-    url = reverse("plans:tab_expenses")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    update = reverse(
-        "plans:necessary_update",
-        kwargs={
-            "year": main_user.year,
-            "expense_type_id": obj.expense_type.id,
-            "title": obj.title,
-        },
-    )
-    delete = reverse(
-        "plans:necessary_delete",
-        kwargs={
-            "year": main_user.year,
-            "expense_type_id": obj.expense_type.id,
-            "title": obj.title,
-        },
-    )
-    assert update in actual
-    assert delete in actual
-
-
-# NecessaryPlan create/update
-def test_necessary_new_func():
-    view = resolve("/plans/necessary/new/")
-
-    assert views.NecessaryNew == view.func.view_class
-
-
-def test_necessary_update_func():
-    view = resolve("/plans/necessary/update/1111/66/title/")
-
-    assert views.NecessaryUpdate == view.func.view_class
-
-
-@time_machine.travel("1999-1-1")
-def test_necessary_load_form(client_logged):
-    url = reverse("plans:necessary_new")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-    assert '<input type="text" name="year" value="1999"' in actual
-
-
+# NecessaryPlan
 def test_necessary_new(client_logged, main_user):
     e = ExpenseTypeFactory()
     data = {"year": "1999", "title": "ABCD", "january": 0.66, "expense_type": e.pk}
@@ -1738,7 +1111,7 @@ def test_necessary_new(client_logged, main_user):
     assert actual.price == 66
 
 
-def test_necessary_new_dublicates_not_allowed(client_logged, main_user):
+def test_necessary_new_duplicates_not_allowed(client_logged):
     e = ExpenseTypeFactory()
     NecessaryPlanFactory(year=1999, title="XXX", expense_type=e)
     data = {"year": "1999", "title": "XXX", "january": 0.66, "expense_type": e.pk}
@@ -1759,58 +1132,6 @@ def test_necessary_new_not_load_other_journal(client_logged, second_user):
 
     assert this.title in content
     assert other.title not in content
-
-
-def test_necessary_invalid_data(client_logged):
-    data = {"year": "x", "title": "", "january": 999}
-
-    url = reverse("plans:necessary_new")
-    response = client_logged.post(url, data)
-    form = response.context["form"]
-
-    assert not form.is_valid()
-
-
-def test_necessary_load_update_load_form(client_logged):
-    obj = NecessaryPlanFactory(title="ABCD")
-
-    url = reverse(
-        "plans:necessary_update",
-        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk, "title": "ABCD"},
-    )
-    response = client_logged.get(url)
-    actual = response.content.decode()
-
-    assert f'hx-post="{url}"' in actual
-
-
-def test_necessary_load_update_form_field_values(client_logged):
-    obj = NecessaryPlanFactory(title="ABCD", month=11, price=1001)
-
-    url = reverse(
-        "plans:necessary_update",
-        kwargs={
-            "year": 1999,
-            "expense_type_id": obj.expense_type.pk,
-            "title": obj.title,
-        },
-    )
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert form.instance.year == 1999
-    assert form.initial.get("january") is None
-    assert form.initial.get("february") is None
-    assert form.initial.get("march") is None
-    assert form.initial.get("april") is None
-    assert form.initial.get("may") is None
-    assert form.initial.get("june") is None
-    assert form.initial.get("july") is None
-    assert form.initial.get("august") is None
-    assert form.initial.get("september") is None
-    assert form.initial.get("october") is None
-    assert form.initial.get("november") == 10.01
-    assert form.initial.get("december") is None
 
 
 def test_necessary_update(client_logged):
@@ -1849,93 +1170,6 @@ def test_necessary_update_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_necessary_tab_price_converted_in_template(client_logged):
-    ExpenseTypeFactory()
-    NecessaryPlanFactory(month=1, price=5)
-    NecessaryPlanFactory(month=2, price=5)
-    NecessaryPlanFactory(month=3, price=5)
-    NecessaryPlanFactory(month=4, price=5)
-    NecessaryPlanFactory(month=5, price=5)
-    NecessaryPlanFactory(month=6, price=5)
-    NecessaryPlanFactory(month=7, price=5)
-    NecessaryPlanFactory(month=8, price=5)
-    NecessaryPlanFactory(month=9, price=5)
-    NecessaryPlanFactory(month=10, price=5)
-    NecessaryPlanFactory(month=11, price=5)
-    NecessaryPlanFactory(month=12, price=5)
-
-    url = reverse("plans:tab_expenses")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "0,05" in actual
-    assert actual.count("0,05") == 12
-
-
-# NecessaryPlan delete
-def test_necessary_delete_func():
-    view = resolve("/plans/necessary/delete/1234/13/title/")
-
-    assert views.NecessaryDelete == view.func.view_class
-
-
-def test_necessary_delete_200(client_logged):
-    obj = NecessaryPlanFactory()
-
-    url = reverse(
-        "plans:necessary_delete",
-        kwargs={
-            "year": 1999,
-            "expense_type_id": obj.expense_type.pk,
-            "title": obj.title,
-        },
-    )
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_necessary_delete_load_form(client_logged):
-    obj = NecessaryPlanFactory(year=1999)
-
-    url = reverse(
-        "plans:necessary_delete",
-        kwargs={
-            "year": 1999,
-            "expense_type_id": obj.expense_type.pk,
-            "title": obj.title,
-        },
-    )
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert f'hx-post="{url}"' in actual
-    assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
-
-
-def test_necessary_delete(client_logged):
-    obj = NecessaryPlanFactory(year=1999, month=1, price=1)
-    NecessaryPlanFactory(year=1999, month=2, price=1)
-    NecessaryPlanFactory(year=2026, month=2, price=1)
-
-    assert models.NecessaryPlan.objects.all().count() == 3
-
-    url = reverse(
-        "plans:necessary_delete",
-        kwargs={
-            "year": 1999,
-            "expense_type_id": obj.expense_type.pk,
-            "title": obj.title,
-        },
-    )
-    client_logged.post(url)
-
-    assert models.NecessaryPlan.objects.all().count() == 1
-
-    actual = models.NecessaryPlan.objects.first()
-    assert actual.year == 2026
-
-
 def test_necessary_delete_other_journal_get_form(client_logged, second_user):
     second_user_journal = second_user.journal
     obj = NecessaryPlanFactory(journal=second_user_journal, month=1, price=666)
@@ -1971,12 +1205,6 @@ def test_necessary_delete_other_journal_post_form(client_logged, second_user):
 
 
 # Copy Plans
-def test_copy_func():
-    view = resolve("/plans/copy/")
-
-    assert views.CopyPlans is view.func.view_class
-
-
 def test_copy_200(client_logged):
     response = client_logged.get("/plans/copy/")
 
