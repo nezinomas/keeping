@@ -1,10 +1,26 @@
 import pytest
+from hypothesis import example, given
+from hypothesis import strategies as st
 
-from ...lib.calc_day_sum import PlanCalculateDaySum, PlanCollectData
+from ...lib.calc_day_sum import CalcRow, InputRow, PlanCalculateDaySum, PlanCollectData
+
+MONTH_LEN = [
+    {"month": 1, "amount": 31},
+    {"month": 2, "amount": 29},
+    {"month": 3, "amount": 31},
+    {"month": 4, "amount": 30},
+    {"month": 5, "amount": 31},
+    {"month": 6, "amount": 30},
+    {"month": 7, "amount": 31},
+    {"month": 8, "amount": 31},
+    {"month": 9, "amount": 30},
+    {"month": 10, "amount": 31},
+    {"month": 11, "amount": 30},
+    {"month": 12, "amount": 31},
+]
 
 
-@pytest.fixture(name="data")
-def fixture_data():
+def make_data():
     obj = type("PlanCollectData", (object,), {})
     obj.incomes = [
         {"month": 1, "amount": 900},
@@ -45,22 +61,14 @@ def fixture_data():
         {"month": 2, "amount": 100},
     ]
 
-    obj.month_len = [
-        {"month": 1, "amount": 31},
-        {"month": 2, "amount": 29},
-        {"month": 3, "amount": 31},
-        {"month": 4, "amount": 30},
-        {"month": 5, "amount": 31},
-        {"month": 6, "amount": 30},
-        {"month": 7, "amount": 31},
-        {"month": 8, "amount": 31},
-        {"month": 9, "amount": 30},
-        {"month": 10, "amount": 31},
-        {"month": 11, "amount": 30},
-        {"month": 12, "amount": 31},
-    ]
+    obj.month_len = MONTH_LEN
 
     return obj
+
+
+@pytest.fixture(name="data")
+def fixture_data():
+    return make_data()
 
 
 @pytest.fixture(name="data_empty")
@@ -75,43 +83,15 @@ def fixture_data_empty():
             "savings": [],
             "per_day": [],
             "necessary": [],
-            "month_len": [
-                {"month": 1, "amount": 31},
-                {"month": 2, "amount": 29},
-                {"month": 3, "amount": 31},
-                {"month": 4, "amount": 30},
-                {"month": 5, "amount": 31},
-                {"month": 6, "amount": 30},
-                {"month": 7, "amount": 31},
-                {"month": 8, "amount": 31},
-                {"month": 9, "amount": 30},
-                {"month": 10, "amount": 31},
-                {"month": 11, "amount": 30},
-                {"month": 12, "amount": 31},
-            ],
+            "month_len": MONTH_LEN,
         },
     )
 
 
-def test_filter_df_wrong_type(data):
+def test_get_row_of_an_unknown_name_is_an_empty_dict(data):
     actual = PlanCalculateDaySum(data).get_row("xxx")
 
     assert actual == {}
-
-
-def test_incomes(data):
-    actual = PlanCalculateDaySum(data).get_row("incomes")
-
-    assert len(actual) == 12
-    assert actual["1"] == 900
-    assert actual["2"] == 1000
-    assert actual["12"] == 450
-
-
-def test_incomes_with_month(data):
-    actual = PlanCalculateDaySum(data, 1).get_row("incomes")
-
-    assert actual == 900
 
 
 def test_incomes_no_data(data_empty):
@@ -121,150 +101,84 @@ def test_incomes_no_data(data_empty):
     assert actual["12"] == 0
 
 
-def test_savings(data):
-    actual = PlanCalculateDaySum(data).get_row("savings")
+# Pinned values of the one fixture dataset; day_calced is held to the cent.
+CENT = 0.005
+TWELVE_MONTHS = [
+    pytest.param("incomes", {1: 900, 2: 1000, 12: 450}, id="incomes"),
+    pytest.param("incomes_avg", {1: 450, 2: 450}, id="incomes_avg"),
+    pytest.param("savings", {1: 190, 2: 200}, id="savings"),
+    pytest.param("expenses_regular", {1: 260, 2: 280}, id="expenses_regular"),
+    pytest.param("expenses_necessary", {1: 490, 2: 620, 3: 0}, id="expenses_necessary"),
+    pytest.param("expenses_free", {1: -40, 2: -170, 3: 450}, id="expenses_free"),
+    pytest.param("expenses_full", {1: 750, 2: 900, 3: 0}, id="expenses_full_row"),
+    pytest.param(
+        "expenses_remains", {1: -300, 2: -450, 3: 450}, id="expenses_remains_row"
+    ),
+    pytest.param("day_input", {1: 25, 2: 26}, id="day_input"),
+    pytest.param(
+        "day_calced",
+        {
+            1: pytest.approx(-1.29, abs=CENT),
+            2: pytest.approx(-5.86, abs=CENT),
+            3: pytest.approx(14.52, abs=CENT),
+            4: pytest.approx(15.00, abs=CENT),
+            5: pytest.approx(14.52, abs=CENT),
+            6: pytest.approx(15.00, abs=CENT),
+        },
+        id="day_calced",
+    ),
+    pytest.param("remains", {1: -815, 2: -924, 3: 450}, id="remains"),
+    pytest.param("necessary", {1: 0, 2: 100, 3: 0}, id="additional_necessary"),
+    pytest.param("month_len", {1: 31}, id="properties_month_len"),
+]
+
+
+@pytest.mark.parametrize("row, cells", TWELVE_MONTHS)
+def test_row_of_twelve_months(row, cells, data):
+    actual = PlanCalculateDaySum(data).get_row(row)
 
     assert len(actual) == 12
-    assert actual["1"] == 190
-    assert actual["2"] == 200
+    for month, expect in cells.items():
+        assert actual[str(month)] == expect
 
 
-def test_savings_with_month(data):
-    data.month = 1
-    actual = PlanCalculateDaySum(data, 1).get_row("savings")
+@example(row="incomes", month=1)
+@example(row="savings", month=1)
+@example(row="expenses_free", month=1)
+@example(row="expenses_free", month=2)
+@example(row="expenses_free", month=3)
+@example(row="expenses_remains", month=1)
+@example(row="expenses_remains", month=2)
+@example(row="expenses_remains", month=3)
+@example(row="expenses_necessary", month=1)
+@example(row="expenses_necessary", month=2)
+@example(row="expenses_necessary", month=3)
+@example(row="expenses_full", month=1)
+@example(row="expenses_full", month=2)
+@example(row="expenses_full", month=3)
+@example(row="day_calced", month=1)
+@example(row="day_calced", month=2)
+@example(row="day_calced", month=3)
+@example(row="day_calced", month=4)
+@example(row="day_calced", month=5)
+@example(row="day_calced", month=6)
+@example(row="remains", month=1)
+@example(row="remains", month=2)
+@example(row="remains", month=3)
+@example(row="necessary", month=1)
+@example(row="necessary", month=2)
+@example(row="necessary", month=3)
+@example(row="incomes_avg", month=1)
+@example(row="expenses_regular", month=1)
+@example(row="day_input", month=1)
+@example(row="month_len", month=1)
+@given(row=st.sampled_from([*InputRow, *CalcRow]), month=st.integers(1, 12))
+def test_row_of_one_month_is_its_cell_of_twelve(row, month):
+    data = make_data()
 
-    assert actual == 190
+    actual = PlanCalculateDaySum(data, month).get_row(row)
 
-
-def test_expenses_free(data):
-    actual = PlanCalculateDaySum(data).get_row("expenses_free")
-
-    assert len(actual) == 12
-    assert actual["1"] == -40.0
-    assert actual["2"] == -170.0
-
-
-@pytest.mark.parametrize(
-    "month, expect",
-    [
-        (1, -40.0),
-        (2, -170.0),
-        (3, 450.0),
-    ],
-)
-def test_expenses_free_with_month(month, expect, data):
-    actual = PlanCalculateDaySum(data, month).get_row("expenses_free")
-
-    assert actual == expect
-
-
-def test_expenses_necessary(data):
-    actual = PlanCalculateDaySum(data).get_row("expenses_necessary")
-
-    assert len(actual) == 12
-    assert round(actual["1"], 2) == 490
-    assert round(actual["2"], 2) == 620
-
-
-@pytest.mark.parametrize(
-    "month, expect",
-    [
-        (1, 490),
-        (2, 620),
-        (3, 0),
-    ],
-)
-def test_expenses_necessary_with_month(month, expect, data):
-    actual = PlanCalculateDaySum(data, month).get_row("expenses_necessary")
-
-    assert actual == expect
-
-
-@pytest.mark.parametrize(
-    "month, expect",
-    [
-        (1, 750),
-        (2, 900),
-        (3, 0),
-    ],
-)
-def test_expenses_full(month, expect, data):
-    actual = PlanCalculateDaySum(data, month).get_row("expenses_full")
-
-    assert actual == expect
-
-
-def test_expenses_full_row(data):
-    actual = PlanCalculateDaySum(data).get_row("expenses_full")
-
-    assert len(actual) == 12
-    assert round(actual["1"], 2) == 750
-    assert round(actual["2"], 2) == 900
-
-
-@pytest.mark.parametrize(
-    "month, expect",
-    [
-        (1, -300.0),
-        (2, -450.0),
-        (3, 450.0),
-    ],
-)
-def test_expenses_remains(month, expect, data):
-    actual = PlanCalculateDaySum(data, month).get_row("expenses_remains")
-
-    assert actual == expect
-
-
-def test_expenses_remains_row(data):
-    actual = PlanCalculateDaySum(data).get_row("expenses_remains")
-
-    assert len(actual) == 12
-    assert round(actual["1"], 2) == -300.0
-    assert round(actual["2"], 2) == -450.0
-    assert round(actual["3"], 2) == 450.0
-
-
-def test_day_input(data):
-    actual = PlanCalculateDaySum(data).get_row("day_input")
-
-    assert len(actual) == 12
-    assert round(actual["1"], 2) == 25
-    assert round(actual["2"], 2) == 26
-
-
-def test_day_calced(data):
-    actual = PlanCalculateDaySum(data).get_row("day_calced")
-
-    assert round(actual["1"], 2) == -1.29
-    assert round(actual["2"], 2) == -5.86
-    assert round(actual["3"], 2) == 14.52
-    assert round(actual["4"], 2) == 15.00
-
-
-@pytest.mark.parametrize(
-    "month, expect",
-    [
-        (1, -1.29),
-        (2, -5.86),
-        (3, 14.52),
-        (4, 15.00),
-        (5, 14.52),
-        (6, 15.00),
-    ],
-)
-def test_day_calced_with_month(month, expect, data):
-    actual = PlanCalculateDaySum(data, month).get_row("day_calced")
-
-    assert round(actual, 2) == expect
-
-
-def test_remains(data):
-    actual = PlanCalculateDaySum(data).get_row("remains")
-
-    assert len(actual) == 12
-    assert round(actual["1"], 2) == -815.0
-    assert round(actual["2"], 2) == -924.0
+    assert actual == PlanCalculateDaySum(data).get_row(row)[str(month)]
 
 
 def test_remains_only_necessary_expenses(data):
@@ -279,129 +193,42 @@ def test_remains_only_necessary_expenses(data):
 
 
 @pytest.mark.parametrize(
-    "month, expect",
+    "name",
     [
-        (1, -815.0),
-        (2, -924.0),
-        (3, 450.0),
+        pytest.param(name, id=f"properties_{name}")
+        for name in (
+            "incomes",
+            "incomes_avg",
+            "savings",
+            "expenses_necessary",
+            "expenses_free",
+            "expenses_regular",
+            "expenses_remains",
+            "day_calced",
+            "day_input",
+            "remains",
+            "month_len",
+        )
     ],
 )
-def test_remains_with_month(month, expect, data):
-    actual = PlanCalculateDaySum(data, month).get_row("remains")
-
-    assert round(actual, 2) == expect
-
-
-def test_additional_necessary(data):
-    actual = PlanCalculateDaySum(data).get_row("necessary")
-
-    assert len(actual) == 12
-    assert round(actual["1"], 2) == 0
-    assert round(actual["2"], 2) == 100
-
-
-@pytest.mark.parametrize(
-    "month, expect",
-    [
-        (1, 0),
-        (2, 100),
-        (3, 0),
-    ],
-)
-def test_additional_necessary_with_month(month, expect, data):
-    actual = PlanCalculateDaySum(data, month).get_row("necessary")
-
-    assert round(actual, 2) == expect
-
-
-def test_incomes_avg(data):
-    actual = PlanCalculateDaySum(data).incomes_avg
-
-    assert round(actual["1"], 2) == 450.0
-    assert round(actual["2"], 2) == 450.0
-
-
-def test_expenses_regular(data):
-    actual = PlanCalculateDaySum(data).expenses_regular
-
-    assert round(actual["1"], 2) == 260
-    assert round(actual["2"], 2) == 280
-
-
-def test_properties_incomes(data):
+def test_attribute_is_the_row_of_its_name(name, data):
     obj = PlanCalculateDaySum(data, 1)
-    assert obj.incomes == 900
+
+    assert getattr(obj, name) == obj.get_row(name)
 
 
-def test_properties_incomes_avg(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert obj.incomes_avg == 450
+def test_attribute_of_an_unknown_name_raises(data):
+    with pytest.raises(AttributeError):
+        _ = PlanCalculateDaySum(data, 1).X
 
 
-def test_properties_savings(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert obj.savings == 190
-
-
-def test_properties_expenses_necessary(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert obj.expenses_necessary == 490
-
-
-def test_properties_expenses_free(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert obj.expenses_free == -40
-
-
-def test_properties_expenses_regular(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert obj.expenses_regular == 260
-
-
-def test_properties_expenses_remains(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert obj.expenses_remains == -300
-
-
-def test_properties_day_calced(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert round(obj.day_calced, 2) == -1.29
-
-
-def test_properties_day_input(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert obj.day_input == 25
-
-
-def test_properties_remains(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert obj.remains == -815
-
-
-def test_properties_month_len(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert obj.month_len == 31
-
-
-@pytest.mark.xfail
-def test_properties_no_exists(data):
-    obj = PlanCalculateDaySum(data, 1)
-    assert obj.X
-
-
-def test_calculated_flag_prevents_recalculation(data_empty, mocker):
-    obj = PlanCalculateDaySum(data_empty)
-    spy = mocker.spy(obj, "_create_df")
-
-    assert obj._calculated is False
-
+def test_rows_are_calculated_once(data):
+    obj = PlanCalculateDaySum(data)
     _ = obj.month_len
 
-    _ = obj.incomes_avg
-    _ = obj.expenses_free
+    data.incomes = []
 
-    assert obj._calculated is True
-    assert spy.call_count == 1
+    assert obj.incomes_avg["1"] == 450
 
 
 @pytest.fixture
@@ -426,19 +253,4 @@ def test_plan_collect_data_formats_month_len_as_tall_list(mock_db_services, mock
     obj = PlanCollectData(user=mock_user, year=test_year).get_data()
     actual_month_len = obj.month_len
 
-    assert len(actual_month_len) == 12, "There should be exactly 12 months"
-
-    assert actual_month_len == [
-        {"month": 1, "amount": 31},
-        {"month": 2, "amount": 29},
-        {"month": 3, "amount": 31},
-        {"month": 4, "amount": 30},
-        {"month": 5, "amount": 31},
-        {"month": 6, "amount": 30},
-        {"month": 7, "amount": 31},
-        {"month": 8, "amount": 31},
-        {"month": 9, "amount": 30},
-        {"month": 10, "amount": 31},
-        {"month": 11, "amount": 30},
-        {"month": 12, "amount": 31},
-    ]
+    assert actual_month_len == MONTH_LEN
