@@ -14,7 +14,6 @@ from ....accounts.tests.factories import (
 from ....incomes.tests.factories import IncomeFactory
 from ....pensions.services.model_services import PensionBalanceModelService
 from ....pensions.tests.factories import (
-    PensionBalance,
     PensionBalanceFactory,
     PensionTypeFactory,
 )
@@ -29,65 +28,6 @@ from ...lib.db_sync import ACCOUNT_FIELDS, SAVING_FIELDS, BalanceSynchronizer
 from ..utils import count_queries
 
 pytestmark = pytest.mark.django_db
-
-
-def test_account_insert_new_records(main_user):
-    obj = AccountBalanceFactory()
-
-    df = pl.DataFrame(
-        {
-            "category_id": [obj.account.pk],
-            "year": [2024],
-            "incomes": [2000],
-            "expenses": [1000],
-            "have": [1000],
-            "latest_check": [datetime(2024, 1, 1)],
-            "balance": [1000],
-            "past": [0],
-            "delta": [0],
-        }
-    ).lazy()
-
-    BalanceSynchronizer(AccountBalanceModelService, main_user, df)
-
-    assert AccountBalance.objects.count() == 1
-    record = AccountBalance.objects.get(account=obj.account, year=2024)
-    assert record.incomes == 2000
-    assert record.expenses == 1000
-    assert record.have == 1000
-    assert record.latest_check == timezone.make_aware(datetime(2024, 1, 1))
-    assert record.balance == 1000
-    assert record.past == 0
-    assert record.delta == 0
-
-
-def test_account_update_existing_records(main_user):
-    obj = AccountBalanceFactory()
-    df = pl.DataFrame(
-        {
-            "category_id": [obj.account.pk],
-            "year": [1999],
-            "incomes": [2000],
-            "expenses": [1000],
-            "have": [1000],
-            "latest_check": [datetime(2023, 1, 2)],
-            "balance": [1000],
-            "past": [1],
-            "delta": [1],
-        }
-    ).lazy()
-
-    BalanceSynchronizer(AccountBalanceModelService, main_user, df)
-
-    assert AccountBalance.objects.count() == 1
-    record = AccountBalance.objects.get(account=obj.account, year=1999)
-    assert record.incomes == 2000
-    assert record.expenses == 1000
-    assert record.have == 1000
-    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 2))
-    assert record.balance == 1000
-    assert record.past == 1
-    assert record.delta == 1
 
 
 def test_account_mixed_operations(main_user):
@@ -143,174 +83,6 @@ def test_account_null_latest_check(main_user):
     record = AccountBalance.objects.get(account=account, year=2023)
     assert record.latest_check is None
     assert record.incomes == 1000
-
-
-def test_saving_insert_new_records(main_user):
-    obj = SavingBalanceFactory()
-
-    df = pl.DataFrame(
-        {
-            "category_id": [obj.saving_type.pk],
-            "year": [2023],
-            "latest_check": [datetime(2023, 1, 1)],
-            "past_amount": [10],
-            "past_fee": [20],
-            "fee": [30],
-            "per_year_incomes": [40],
-            "per_year_fee": [50],
-            "sold": [60],
-            "sold_fee": [70],
-            "incomes": [80],
-            "market_value": [90],
-            "profit_sum": [100],
-            "profit_proc": [110],
-            "sold_since_check": [0],
-        }
-    ).lazy()
-
-    BalanceSynchronizer(SavingBalanceModelService, main_user, df)
-
-    assert SavingBalance.objects.count() == 1
-
-    record = SavingBalance.objects.get(saving_type=obj.saving_type, year=2023)
-    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 1))
-    assert record.past_amount == 10
-    assert record.past_fee == 20
-    assert record.fee == 30
-    assert record.per_year_incomes == 40
-    assert record.per_year_fee == 50
-    assert record.sold == 60
-    assert record.sold_fee == 70
-    assert record.incomes == 80
-    assert record.market_value == 90
-    assert record.profit_sum == 100
-    assert record.profit_proc == 110
-
-
-def test_saving_update_existing_records(main_user):
-    obj = SavingBalanceFactory()
-
-    df = pl.DataFrame(
-        {
-            "category_id": [obj.saving_type.pk],
-            "year": [1999],
-            "latest_check": [datetime(2023, 1, 1)],
-            "past_amount": [10],
-            "past_fee": [20],
-            "fee": [30],
-            "per_year_incomes": [40],
-            "per_year_fee": [50],
-            "sold": [60],
-            "sold_fee": [70],
-            "incomes": [80],
-            "market_value": [90],
-            "profit_sum": [100],
-            "profit_proc": [110],
-            "sold_since_check": [0],
-        }
-    ).lazy()
-
-    BalanceSynchronizer(SavingBalanceModelService, main_user, df)
-
-    assert SavingBalance.objects.count() == 1
-
-    record = SavingBalance.objects.get(saving_type=obj.saving_type, year=1999)
-    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 1))
-    assert record.past_amount == 10
-    assert record.past_fee == 20
-    assert record.fee == 30
-    assert record.per_year_incomes == 40
-    assert record.per_year_fee == 50
-    assert record.sold == 60
-    assert record.sold_fee == 70
-    assert record.incomes == 80
-    assert record.market_value == 90
-    assert record.profit_sum == 100
-    assert record.profit_proc == 110
-
-
-def test_pension_insert_new_records(main_user):
-    obj = PensionBalanceFactory()
-
-    df = pl.DataFrame(
-        {
-            "category_id": [obj.pension_type.pk],
-            "year": [2023],
-            "latest_check": [datetime(2023, 1, 1)],
-            "past_amount": [10],
-            "past_fee": [20],
-            "fee": [30],
-            "per_year_incomes": [40],
-            "per_year_fee": [50],
-            "sold": [60],
-            "sold_fee": [70],
-            "incomes": [80],
-            "market_value": [90],
-            "profit_sum": [100],
-            "profit_proc": [110],
-            "sold_since_check": [0],
-        }
-    ).lazy()
-
-    BalanceSynchronizer(PensionBalanceModelService, main_user, df)
-
-    assert PensionBalance.objects.count() == 1
-
-    record = PensionBalance.objects.get(pension_type=obj.pension_type, year=2023)
-    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 1))
-    assert record.past_amount == 10
-    assert record.past_fee == 20
-    assert record.fee == 30
-    assert record.per_year_incomes == 40
-    assert record.per_year_fee == 50
-    assert record.sold == 60
-    assert record.sold_fee == 70
-    assert record.incomes == 80
-    assert record.market_value == 90
-    assert record.profit_sum == 100
-    assert record.profit_proc == 110
-
-
-def test_pension_update_existing_records(main_user):
-    obj = PensionBalanceFactory()
-
-    df = pl.DataFrame(
-        {
-            "category_id": [obj.pension_type.pk],
-            "year": [1999],
-            "latest_check": [datetime(2023, 1, 1)],
-            "past_amount": [10],
-            "past_fee": [20],
-            "fee": [30],
-            "per_year_incomes": [40],
-            "per_year_fee": [50],
-            "sold": [60],
-            "sold_fee": [70],
-            "incomes": [80],
-            "market_value": [90],
-            "profit_sum": [100],
-            "profit_proc": [110],
-            "sold_since_check": [0],
-        }
-    ).lazy()
-
-    BalanceSynchronizer(PensionBalanceModelService, main_user, df)
-
-    assert PensionBalance.objects.count() == 1
-
-    record = PensionBalance.objects.get(pension_type=obj.pension_type, year=1999)
-    assert record.latest_check == timezone.make_aware(datetime(2023, 1, 1))
-    assert record.past_amount == 10
-    assert record.past_fee == 20
-    assert record.fee == 30
-    assert record.per_year_incomes == 40
-    assert record.per_year_fee == 50
-    assert record.sold == 60
-    assert record.sold_fee == 70
-    assert record.incomes == 80
-    assert record.market_value == 90
-    assert record.profit_sum == 100
-    assert record.profit_proc == 110
 
 
 class Balances(NamedTuple):
@@ -419,6 +191,50 @@ def test_sync_inserts_a_row_into_an_empty_db(main_user, kind):
     assert _balance_rows(kind, main_user) == {
         (owner.pk, 2023): values
         | {"latest_check": timezone.make_aware(datetime(2023, 1, 1))}
+    }
+
+
+ACCOUNT_WRITTEN = ACCOUNT_VALUES | {
+    "incomes": 2000,
+    "expenses": 1000,
+    "have": 1000,
+    "balance": 1000,
+}
+
+
+@pytest.mark.parametrize(
+    "kind, year, values",
+    [
+        pytest.param(
+            "account",
+            2024,
+            ACCOUNT_WRITTEN | {"latest_check": datetime(2024, 1, 1)},
+            id="account_new_year",
+        ),
+        pytest.param(
+            "account",
+            1999,
+            ACCOUNT_WRITTEN
+            | {"latest_check": datetime(2023, 1, 2), "past": 1, "delta": 1},
+            id="account_same_year",
+        ),
+        pytest.param("saving", 2023, SAVING_VALUES, id="saving_new_year"),
+        pytest.param("saving", 1999, SAVING_VALUES, id="saving_same_year"),
+        pytest.param("pension", 2023, SAVING_VALUES, id="pension_new_year"),
+        pytest.param("pension", 1999, SAVING_VALUES, id="pension_same_year"),
+    ],
+)
+def test_sync_writes_the_frame_over_the_1999_row(main_user, kind, year, values):
+    b = BALANCES[kind]
+    owner = b.owner_factory()
+    b.factory(**{b.owner_field: owner, "year": 1999})
+    frame = _frame({(owner.pk, year): values}, [(owner.pk, year)])
+
+    BalanceSynchronizer(b.service, main_user, frame)
+
+    assert _balance_rows(kind, main_user) == {
+        (owner.pk, year): values
+        | {"latest_check": timezone.make_aware(values["latest_check"])}
     }
 
 
