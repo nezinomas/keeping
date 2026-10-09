@@ -16,10 +16,10 @@ from .factories import Income, IncomeFactory, IncomeTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-def _update_data(income, date="1999-12-31"):
+def _update_data(income, on="1999-12-31"):
     return {
         "price": "150",
-        "date": date,
+        "date": on,
         "remark": "Pastaba",
         "account": income.account.pk,
         "income_type": income.income_type.pk,
@@ -57,7 +57,7 @@ def test_income_save(client_logged):
     assert "Income Type" in actual
 
 
-def test_income_save_status_code(client_logged):
+def test_income_save_htmx_answers_204_and_stores_the_row(client_logged):
     a = AccountFactory()
     i = IncomeTypeFactory()
 
@@ -67,19 +67,39 @@ def test_income_save_status_code(client_logged):
 
     response = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
 
+    actual = models.Income.objects.get()
     assert response.status_code == 204
+    assert actual.date == date(1999, 1, 1)
+    assert actual.price == 111 * 100
+    assert actual.account == a
+    assert actual.income_type == i
 
 
-def test_income_save_invalid_data(client_logged):
-    data = {"date": "x", "price": "x", "account": "x", "income_type": "x"}
+@pytest.mark.parametrize(
+    "name, data, model, error",
+    [
+        (
+            "incomes:new",
+            {"date": "x", "price": "x", "account": "x", "income_type": "x"},
+            models.Income,
+            "Įveskite skaičių.",
+        ),
+        (
+            "incomes:type_new",
+            {"title": ""},
+            models.IncomeType,
+            "Šis laukas yra privalomas.",
+        ),
+    ],
+    ids=["income", "type"],
+)
+def test_invalid_data_shows_the_error_and_saves_nothing(
+    client_logged, name, data, model, error
+):
+    response = client_logged.post(reverse(name), data)
 
-    url = reverse("incomes:new")
-
-    response = client_logged.post(url, data)
-
-    actual = response.context["form"]
-
-    assert not actual.is_valid()
+    assert error in response.content.decode()
+    assert model.objects.count() == 0
 
 
 def test_income_load_update_form(client_logged):
@@ -132,7 +152,7 @@ def test_income_update(client_logged):
     assert actual.remark == "Pastaba"
 
 
-def test_income_update_status_code(client_logged):
+def test_income_update_htmx_response(client_logged):
     income = IncomeFactory()
 
     url = reverse("incomes:update", kwargs={"pk": income.pk})
@@ -141,16 +161,6 @@ def test_income_update_status_code(client_logged):
     )
 
     assert request.status_code == 204
-
-
-def test_income_update_htmx_trigger_value(client_logged):
-    income = IncomeFactory()
-
-    url = reverse("incomes:update", kwargs={"pk": income.pk})
-    request = client_logged.post(
-        url, _update_data(income), **{"HTTP_HX-Request": "true"}
-    )
-
     assert request.headers["HX-Trigger"] == '{"reload": {}}'
 
 
@@ -294,18 +304,6 @@ def test_type_save_htmx_trigger_value(client_logged):
     assert response.headers["HX-Trigger"] == '{"reload": {}}'
 
 
-def test_type_save_invalid_data(client_logged):
-    data = {"title": ""}
-
-    url = reverse("incomes:type_new")
-
-    response = client_logged.post(url, data)
-
-    form = response.context.get("form")
-
-    assert not form.is_valid()
-
-
 def test_type_update_load_form(client_logged):
     income = IncomeTypeFactory()
 
@@ -360,31 +358,22 @@ def test_search_found(client_logged):
     assert "remark" in actual
 
 
-def test_search_pagination_first_page(client_logged):
+@pytest.mark.parametrize(
+    "query, expected",
+    [({"search": "1999 type"}, 50), ({"page": 2, "search": "type"}, 1)],
+    ids=["first_page", "second_page"],
+)
+def test_search_pagination(client_logged, query, expected):
     a = AccountFactory()
     t = IncomeTypeFactory()
     i = IncomeFactory.build_batch(51, account=a, income_type=t)
     Income.objects.bulk_create(i)
 
     url = reverse("incomes:search")
-    response = client_logged.get(url, {"search": "1999 type"})
+    response = client_logged.get(url, query)
     actual = response.content.decode("utf-8")
 
-    assert actual.count("Income Type") == 50
-
-
-def test_search_pagination_second_page(client_logged):
-    a = AccountFactory()
-    t = IncomeTypeFactory()
-    i = IncomeFactory.build_batch(51, account=a, income_type=t)
-    Income.objects.bulk_create(i)
-
-    url = reverse("incomes:search")
-
-    response = client_logged.get(url, {"page": 2, "search": "type"})
-    actual = response.content.decode("utf-8")
-
-    assert actual.count("Income Type") == 1
+    assert actual.count("Income Type") == expected
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
