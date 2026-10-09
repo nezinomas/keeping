@@ -4,13 +4,6 @@ from ..forms import InviteForm, SignUpForm
 from .factories import UserFactory
 
 
-# -------------------------------------------------------------------------------------
-#                                                                           Signup Form
-# -------------------------------------------------------------------------------------
-def test_signup_form_init():
-    SignUpForm()
-
-
 def test_signup_form_inputs():
     form = SignUpForm()
 
@@ -37,13 +30,6 @@ def test_signup_unique_email():
     assert "email" in form.errors
 
 
-# -------------------------------------------------------------------------------------
-#                                                                           Invite Form
-# -------------------------------------------------------------------------------------
-def test_invite_form_init():
-    InviteForm()
-
-
 def test_invite_form_inputs():
     form = InviteForm()
 
@@ -53,20 +39,18 @@ def test_invite_form_inputs():
     assert expected == actual
 
 
-def test_invite_form_same_as_admin_email(main_user):
-    form = InviteForm(user=main_user, data={"email": "bob@bob.com"})
-
-    assert not form.is_valid()
-    assert "email" in form.errors
-
-    assert form.errors["email"][0] == "Įvedėte savo Email."
-
-
 @pytest.mark.django_db
-def test_invite_form_email_exists(main_user, second_user):
-    form = InviteForm(user=main_user, data={"email": "x@x.xx"})
+@pytest.mark.parametrize(
+    "email, message",
+    [
+        ("bob@bob.com", "Įvedėte savo Email."),
+        ("x@x.xx", "Vartotojas su šiuo Email jau egzistuoja."),
+    ],
+    ids=["same_as_admin_email", "email_exists"],
+)
+def test_invite_form_refuses_an_email(main_user, second_user, email, message):
+    form = InviteForm(user=main_user, data={"email": email})
 
     assert not form.is_valid()
     assert "email" in form.errors
-
-    assert form.errors["email"][0] == "Vartotojas su šiuo Email jau egzistuoja."
+    assert form.errors["email"][0] == message

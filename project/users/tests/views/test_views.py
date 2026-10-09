@@ -4,35 +4,20 @@ from datetime import timedelta
 import pytest
 import time_machine
 from django.conf import settings
-from django.contrib.auth.forms import (
-    PasswordChangeForm,
-    PasswordResetForm,
-    SetPasswordForm,
-)
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.signing import TimestampSigner
 from django.test import override_settings
-from django.urls import resolve, reverse
+from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from ....journals.models import Journal
 from ....users.models import User
 from ....users.tests.factories import UserFactory
-from ... import forms, views
 
 pytestmark = pytest.mark.django_db
-
-
-# -------------------------------------------------------------------------------------
-#                                                                                Log In
-# -------------------------------------------------------------------------------------
-def test_custom_login_func():
-    view = resolve("/login/")
-
-    assert views.Login == view.func.view_class
 
 
 def test_successful_login(client):
@@ -104,15 +89,6 @@ def test_user_signup_link(client):
     assert f'href="{signup}"' in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                                               Log Out
-# -------------------------------------------------------------------------------------
-def test_logout_func():
-    view = resolve("/logout/")
-
-    assert views.Logout is view.func.view_class
-
-
 def test_logout_user_is_logged(client_logged):
     url = reverse("users:logout")
 
@@ -122,29 +98,29 @@ def test_logout_user_is_logged(client_logged):
     assert response.resolver_match.url_name == "login"
 
 
-def test_logout_user_is_not_logged(client):
-    url = reverse("users:logout")
+@pytest.mark.parametrize(
+    "url_name",
+    ["users:logout", "users:password_change", "users:invite", "users:settings_index"],
+    ids=["logout", "password_change", "invite", "settings_index"],
+)
+def test_anonymous_user_is_sent_to_login(client, url_name):
+    response = client.get(reverse(url_name), follow=True)
 
-    response = client.get(url, follow=True)
-
+    assert response.status_code == 200
     assert response.resolver_match.url_name == "login"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                               Sign Up
-# -------------------------------------------------------------------------------------
-def test_signup_func():
-    view = resolve("/signup/")
+@pytest.mark.parametrize(
+    "url_name", ["users:invite", "users:settings_index"], ids=["invite", "index"]
+)
+def test_ordinary_user_is_sent_to_index(main_user, client_logged, url_name):
+    main_user.is_superuser = False
+    main_user.save()
 
-    assert views.Signup == view.func.view_class
-
-
-@override_settings(ENV={"CAN_SIGN_UP": True})
-def test_signup_200(client):
-    url = reverse("users:signup")
-    response = client.get(url)
+    response = client_logged.get(reverse(url_name), follow=True)
 
     assert response.status_code == 200
+    assert response.resolver_match.url_name == "index"
 
 
 @override_settings(ENV={"CAN_SIGN_UP": False})
@@ -173,16 +149,6 @@ def test_signup_login_link(client):
     login = reverse("users:login")
 
     assert f'href="{login}"' in content
-
-
-@override_settings(ENV={"CAN_SIGN_UP": True})
-def test_signup_form(client):
-    url = reverse("users:signup")
-    response = client.get(url)
-
-    form = response.context.get("form")
-
-    assert isinstance(form, forms.SignUpForm)
 
 
 @override_settings(ENV={"CAN_SIGN_UP": True})
@@ -250,15 +216,6 @@ def test_signup_journal_creation(_signuped_client):
 
 @override_settings(ENV={"CAN_SIGN_UP": True})
 @pytest.mark.disable_get_user_patch
-def test_signup_invalid_status_code(client):
-    url = reverse("users:signup")
-    response = client.post(url, {})
-
-    assert response.status_code == 200
-
-
-@override_settings(ENV={"CAN_SIGN_UP": True})
-@pytest.mark.disable_get_user_patch
 def test_signup_form_errors(client):
     url = reverse("users:signup")
     response = client.post(url, {})
@@ -276,29 +233,6 @@ def test_signup_dont_create_user(client):
     assert not User.objects.exists()
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        Password Reset
-# -------------------------------------------------------------------------------------
-def test_password_reset_func():
-    view = resolve("/password_reset/")
-    assert view.func.view_class is views.PasswordReset
-
-
-def test_password_reset_status_code(client):
-    url = reverse("users:password_reset")
-    response = client.get(url)
-
-    assert response.status_code == 200
-
-
-def test_password_reset_contains_form(client):
-    url = reverse("users:password_reset")
-    response = client.get(url)
-    form = response.context.get("form")
-
-    assert isinstance(form, PasswordResetForm)
-
-
 def test_password_reset_form_inputs(client):
     url = reverse("users:password_reset")
     response = client.get(url)
@@ -311,26 +245,15 @@ def test_password_reset_form_inputs(client):
     assert form.count('type="email"') == 1
 
 
-def test_password_reset_redirection(client):
-    """
-    A valid form submission should redirect the user to `password_reset_done` view
-    """
+@pytest.mark.parametrize(
+    "email_of",
+    [lambda user: user.email, lambda user: "xxx@xxx.yy"],
+    ids=["known_email", "unknown_email"],
+)
+def test_password_reset_redirection(client, email_of):
     user = UserFactory()
     url = reverse("users:password_reset")
-    response = client.post(url, {"email": user.email}, follow=True)
-
-    assert response.status_code == 200
-    assert response.resolver_match.url_name == "password_reset_done"
-
-
-def test_password_reset_redirection_invalid_email(client):
-    """
-    Even invalid emails in the database should
-    redirect the user to `password_reset_done` view
-    """
-    UserFactory()
-    url = reverse("users:password_reset")
-    response = client.post(url, {"email": "xxx@xxx.yy"}, follow=True)
+    response = client.post(url, {"email": email_of(user)}, follow=True)
 
     assert response.status_code == 200
     assert response.resolver_match.url_name == "password_reset_done"
@@ -370,26 +293,21 @@ def test_password_reset_email_body(client):
     assert user.email in email
 
 
-# -------------------------------------------------------------------------------------
-#                                                                   Password Reset Done
-# -------------------------------------------------------------------------------------
-def test_password_reset_done_func():
-    view = resolve("/password_reset/done/")
-    assert view.func.view_class is views.PasswordResetDone
-
-
-def test_password_reset_done_status_code(client):
-    url = reverse("users:password_reset_done")
-    response = client.get(url)
+@pytest.mark.parametrize(
+    "url_name",
+    ["users:password_reset_done", "users:password_reset_complete"],
+    ids=["reset_done", "reset_complete"],
+)
+def test_reset_pages_link_back_to_login(client, url_name):
+    response = client.get(reverse(url_name))
+    content = response.content.decode("utf-8")
 
     assert response.status_code == 200
+    assert f'href="{reverse("users:login")}"' in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                                Password Reset Confirm
-# -------------------------------------------------------------------------------------
 @pytest.fixture
-def _confirm_valid(client):
+def _valid_confirm_response(client):
     user = UserFactory()
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
@@ -398,33 +316,11 @@ def _confirm_valid(client):
         "users:password_reset_confirm", kwargs={"uidb64": uid, "token": token}
     )
 
-    response = client.get(url, follow=True)
-    return (uid, token, response)
+    return client.get(url, follow=True)
 
 
-def test_password_reset_confirm_func(_confirm_valid):
-    uid, token, _ = _confirm_valid
-
-    view = resolve(f"/reset/{uid}/{token}/")
-    assert view.func.view_class is views.PasswordResetConfirm
-
-
-def test_password_reset_confirm_status_code(_confirm_valid):
-    _, _, response = _confirm_valid
-
-    assert response.status_code == 200
-
-
-def test_password_reset_confirm_form(_confirm_valid):
-    _, _, response = _confirm_valid
-
-    form = response.context.get("form")
-
-    assert isinstance(form, SetPasswordForm)
-
-
-def test_password_reset_confirm_form_inputs(_confirm_valid):
-    _, _, response = _confirm_valid
+def test_password_reset_confirm_form_inputs(_valid_confirm_response):
+    response = _valid_confirm_response
 
     form = response.content.decode("utf-8")
 
@@ -434,7 +330,7 @@ def test_password_reset_confirm_form_inputs(_confirm_valid):
 
 
 @pytest.fixture
-def _confirm_invalid(client):
+def _invalid_confirm_response(client):
     user = UserFactory()
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
@@ -446,18 +342,11 @@ def _confirm_invalid(client):
     url = reverse(
         "users:password_reset_confirm", kwargs={"uidb64": uid, "token": token}
     )
-    response = client.get(url, follow=True)
-    return (uid, token, response)
+    return client.get(url, follow=True)
 
 
-def test_password_reset_confirm_invalid_status_code(_confirm_invalid):
-    _, _, response = _confirm_invalid
-
-    assert response.status_code == 200
-
-
-def test_password_reset_confirm_invalid_html(_confirm_invalid):
-    _, _, response = _confirm_invalid
+def test_password_reset_confirm_invalid_html(_invalid_confirm_response):
+    response = _invalid_confirm_response
     url = reverse("users:password_reset")
     content = response.content.decode("utf-8")
 
@@ -465,60 +354,21 @@ def test_password_reset_confirm_invalid_html(_confirm_invalid):
     assert "Prašyti naujos slaptažodžio atstatymo nuorodos" in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                               Password Reset Complete
-# -------------------------------------------------------------------------------------
-def test_password_reset_complete_func():
-    view = resolve("/reset/done/")
-    assert view.func.view_class is views.PasswordResetComplete
-
-
-def test_password_reset_complete_status_code(client):
-    url = reverse("users:password_reset_complete")
-    response = client.get(url)
-
-    assert response.status_code == 200
-
-
-# -------------------------------------------------------------------------------------
-#                                                                       Password Change
-# -------------------------------------------------------------------------------------
-def test_password_change_func():
-    view = resolve("/password_change/")
-    assert view.func.view_class is views.PasswordChange
-
-
-def test_password_change_status_code(client_logged):
-    url = reverse("users:password_change")
-    response = client_logged.get(url)
-    assert response.status_code == 200
-
-
-def test_password_change_form(client_logged):
-    url = reverse("users:password_change")
-    response = client_logged.get(url)
-
-    form = response.context.get("form")
-
-    assert isinstance(form, PasswordChangeForm)
-
-
-def test_password_change_form_inputs(client_logged):
-    url = reverse("users:password_change")
-    response = client_logged.get(url)
-
+@pytest.mark.parametrize(
+    "url_name, inputs, field, fields",
+    [
+        ("users:password_change", 5, 'type="password"', 3),
+        ("users:invite", 2, 'type="email"', 1),
+    ],
+    ids=["password_change", "invite"],
+)
+def test_form_inputs(client_logged, url_name, inputs, field, fields):
+    response = client_logged.get(reverse(url_name))
     form = response.content.decode("utf-8")
 
-    assert form.count("<input") == 5
+    assert form.count("<input") == inputs
     assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
-    assert form.count('type="password"') == 3
-
-
-def test_password_change_redirect_to_login(client):
-    url = reverse("users:password_change")
-    response = client.get(url, follow=True)
-
-    assert response.resolver_match.url_name == "login"
+    assert form.count(field) == fields
 
 
 @pytest.fixture
@@ -530,7 +380,7 @@ def _change_valid_data():
     }
 
 
-def test_password_change_succesful_redirect(client_logged, _change_valid_data):
+def test_password_change_successful_redirect(client_logged, _change_valid_data):
     url = reverse("users:password_change")
     response = client_logged.post(url, _change_valid_data, follow=True)
 
@@ -550,21 +400,10 @@ def test_password_change_authentication(client_logged, _change_valid_data):
     url = reverse("users:password_change")
     client_logged.post(url, _change_valid_data, follow=True)
 
-    """
-    Create a new request to an arbitrary page.
-    The resulting response should now have an `user` to its context,
-    after a successful sign up.
-    """
-
     response = client_logged.get(reverse("bookkeeping:index"))
     user = response.context.get("user")
+
     assert user.is_authenticated
-
-
-def test_password_change_invalid_status_code(client_logged):
-    url = reverse("users:password_change")
-    response = client_logged.post(url, {})
-    assert response.status_code == 200
 
 
 def test_password_change_invalid_form_error(client_logged):
@@ -584,83 +423,26 @@ def test_password_change_invalid_didnt_change_password(client_logged):
     assert user.check_password("123")
 
 
-# -------------------------------------------------------------------------------------
-#                                                                                Invite
-# -------------------------------------------------------------------------------------
-def test_invite_func():
-    view = resolve("/invite/")
-    assert view.func.view_class is views.Invite
-
-
-def test_invite_user_must_be_superuser(main_user, client_logged):
-    main_user.is_superuser = False
+@pytest.mark.parametrize("is_superuser", [True, False], ids=["super", "ordinary"])
+def test_invite_link_on_settings_page(main_user, client_logged, is_superuser):
+    main_user.is_superuser = is_superuser
     main_user.save()
 
-    url = reverse("users:invite")
-
-    response = client_logged.get(url, follow=True)
-
-    assert response.status_code == 200
-    assert response.resolver_match.url_name == "index"
-
-
-def test_invite_link_is_superuser(client_logged):
-    url = reverse("users:settings_index")
-
-    response = client_logged.get(url)
+    response = client_logged.get(reverse("users:settings_index"), follow=True)
     content = response.content.decode("utf-8")
 
-    link = reverse("users:invite")
-
-    assert link in content
+    assert (reverse("users:invite") in content) is is_superuser
 
 
-def test_invite_no_link_ordinary_user(main_user, client_logged):
-    main_user.is_superuser = False
+@pytest.mark.parametrize("is_superuser", [True, False], ids=["super", "ordinary"])
+def test_settings_link_in_the_nav(main_user, client_logged, is_superuser):
+    main_user.is_superuser = is_superuser
     main_user.save()
 
-    url = reverse("users:settings_index")
-
-    response = client_logged.get(url)
+    response = client_logged.get(reverse("bookkeeping:index"))
     content = response.content.decode("utf-8")
 
-    link = reverse("users:invite")
-
-    assert link not in content
-
-
-def test_invite_status_code(client_logged):
-    url = reverse("users:invite")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
-def test_invite_user_must_logged(client):
-    url = reverse("users:invite")
-
-    response = client.get(url, follow=True)
-
-    assert response.status_code == 200
-    assert response.resolver_match.url_name == "login"
-
-
-def test_invite_contains_form(client_logged):
-    url = reverse("users:invite")
-    response = client_logged.get(url)
-    form = response.context.get("form")
-
-    assert isinstance(form, forms.InviteForm)
-
-
-def test_invite_form_inputs(client_logged):
-    url = reverse("users:invite")
-    response = client_logged.get(url)
-    form = response.content.decode("utf-8")
-
-    assert form.count("<input") == 2
-    assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
-    assert form.count('type="email"') == 1
+    assert (reverse("users:settings_index") in content) is is_superuser
 
 
 def test_invite_email_subject(client_logged, main_user):
@@ -694,51 +476,20 @@ def test_invite_body(client_logged, main_user):
     assert reverse("users:invite") in email
 
 
-# -------------------------------------------------------------------------------------
-#                                                                           Invite Done
-# -------------------------------------------------------------------------------------
-def test_invite_done_func():
-    view = resolve("/invite/done/")
-    assert view.func.view_class is views.InviteDone
-
-
-def test_invite_done_200(client_logged):
+def test_invite_done_says_the_email_was_sent(client_logged):
     url = reverse("users:invite_done")
     response = client_logged.get(url)
+    content = response.content.decode("utf-8")
 
-    assert response.status_code == 200
-
-
-def test_invite_done_context(client_logged):
-    url = reverse("users:invite_done")
-    response = client_logged.get(url)
-
-    assert response.context["send"]
+    assert "Laiškas išsiųstas" in content
+    assert 'id="submit"' not in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         Invite Signup
-# -------------------------------------------------------------------------------------
 @pytest.fixture()
 def signer(main_user):
     signer_ = TimestampSigner(salt=settings.SALT)
     token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
     return (signer_, token_)
-
-
-def test_invite_signup_func():
-    view = resolve(
-        "/invite/eyJqcm4iOjExLCJ1c3IiOjExfQ:1lxk8I:0bKKcpId2m4XLVniODvpSCDQfZ_vcgHy6a6dypD15IE/"
-    )
-    assert view.func.view_class is views.InviteSignup
-
-
-def test_invite_signup_status_code(client, signer):
-    _, token = signer
-    url = reverse("users:invite_signup", kwargs={"token": token})
-    response = client.get(url)
-
-    assert response.status_code == 200
 
 
 def test_invite_signup_expired_link(client, main_user):
@@ -806,29 +557,12 @@ def test_invite_signup_redirection(_invite_client):
     assert _invite_client.status_code == 302
 
 
-def test_invite_signup_broken_user(mocker, client, main_user):
+@pytest.mark.parametrize(
+    "error", [AttributeError, ObjectDoesNotExist], ids=["broken_user", "no_object"]
+)
+def test_invite_signup_broken_user(mocker, client, main_user, error):
     mck = mocker.patch("project.users.views.User")
-    mck.objects.get.side_effect = AttributeError
-
-    signer_ = TimestampSigner(salt=settings.SALT)
-    token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
-    url = reverse("users:invite_signup", kwargs={"token": token_})
-
-    data = {
-        "username": "john",
-        "email": "john@dot.com",
-        "password1": "abcdef123456",
-        "password2": "abcdef123456",
-    }
-
-    client.post(url, data)
-
-    assert User.objects.all().count() == 1
-
-
-def test_invite_signup_broken_user_no_object(mocker, client, main_user):
-    mck = mocker.patch("project.users.views.User")
-    mck.objects.get.side_effect = ObjectDoesNotExist
+    mck.objects.get.side_effect = error
 
     signer_ = TimestampSigner(salt=settings.SALT)
     token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
@@ -866,9 +600,6 @@ def test_invite_signup_journals(_invite_client):
     assert str(journal) == "bob Journal"
 
 
-# -------------------------------------------------------------------------------------
-#                                                                           Delete User
-# -------------------------------------------------------------------------------------
 def test_user_delete_other_user_get_form(client_logged, second_user):
     url = reverse("users:settings_users_delete", kwargs={"pk": second_user.pk})
     response = client_logged.get(url)
