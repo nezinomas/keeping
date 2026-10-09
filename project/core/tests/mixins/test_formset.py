@@ -1,5 +1,7 @@
 import pytest
+from django.db import connection
 from django.forms.models import modelformset_factory
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from mock import Mock
 
@@ -43,23 +45,7 @@ def bound_formset(view, rows, can_delete=False):
 def posted_view(rf, main_user, rows):
     request = rf.post("/", post_data(rows))
     request.user = main_user
-    view = setup_view(views.AccountsWorthNew(), request)
-    view.object = None
-    return view
-
-
-class DummyField:
-    def __init__(self, name, many_to_one):
-        self.name = name
-        self.many_to_one = many_to_one
-
-
-class DummyMeta:
-    def __init__(self, fields):
-        self._fields = fields
-
-    def get_fields(self):
-        return self._fields
+    return setup_view(views.AccountsWorthNew(), request)
 
 
 class DummyTypesService:
@@ -84,17 +70,38 @@ class StubFormsetView(FormsetMixin):
     pass
 
 
-def test_formset_initial_reads_fund_field_from_the_service_model(fake_request):
+@pytest.mark.parametrize(
+    "category_service, fund_field, expect",
+    [
+        pytest.param(
+            OnePensionService, "pension_type", [{"pension_type": "P1"}], id="one_item"
+        ),
+        pytest.param(NoItemsService, "account", [], id="no_items"),
+        pytest.param(
+            DummyTypesService,
+            "account",
+            [{"account": "Account1"}, {"account": "Account2"}],
+            id="account",
+        ),
+        pytest.param(
+            DummyTypesService,
+            "saving_type",
+            [{"saving_type": "Account1"}, {"saving_type": "Account2"}],
+            id="saving_type",
+        ),
+    ],
+)
+def test_formset_initial_keys_each_item_by_the_service_models_fund_field(
+    fake_request, category_service, fund_field, expect
+):
     service_instance = Mock()
-    service_instance.objects.model = Mock(fund_field="pension_type")
+    service_instance.objects.model = Mock(fund_field=fund_field)
 
     view = setup_view(StubFormsetView(), fake_request)
-    view.category_service_class = OnePensionService
+    view.category_service_class = category_service
     view.service_class = Mock(return_value=service_instance)
 
-    actual = view.formset_initial()
-
-    assert actual == [{"pension_type": "P1"}]
+    assert view.formset_initial() == expect
 
 
 @pytest.mark.django_db
@@ -104,50 +111,6 @@ def test_lazy_properties_are_built_once_for_the_request_user(rf, main_user):
     assert view.service_instance is view.service_instance
     assert view.service_instance.user == main_user
     assert view.model_class is AccountWorth
-
-
-def test_formset_initial_is_empty_when_the_category_service_has_no_items(mocker):
-    view = StubFormsetView()
-    view.category_service_class = NoItemsService
-    view.request = mocker.Mock()
-
-    mocker.patch.object(StubFormsetView, "model_class", create=True)
-    view.model_class.fund_field = "account"
-
-    assert view.formset_initial() == []
-
-
-def test_formset_initial_populates_via_category_service_class(mocker):
-    view = StubFormsetView()
-    view.category_service_class = DummyTypesService
-    view.request = mocker.Mock()
-
-    mocker.patch.object(StubFormsetView, "model_class", create=True)
-    view.model_class.fund_field = "account"
-
-    actual = view.formset_initial()
-
-    assert len(actual) == 2
-    assert actual[0] == {"account": "Account1"}
-    assert actual[1] == {"account": "Account2"}
-
-
-def test_formset_initial_keys_each_item_by_the_models_fund_field(mocker):
-    view = StubFormsetView()
-    view.category_service_class = DummyTypesService
-    view.request = mocker.Mock()
-
-    other_fk = DummyField("journal", True)
-    mocker.patch.object(StubFormsetView, "model_class", create=True)
-    view.model_class._meta = DummyMeta([other_fk, DummyField("saving_type", True)])
-    view.model_class.fund_field = "saving_type"
-
-    actual = view.formset_initial()
-
-    assert actual == [
-        {"saving_type": "Account1"},
-        {"saving_type": "Account2"},
-    ]
 
 
 @pytest.mark.django_db
@@ -212,7 +175,7 @@ def test_post_skips_empty_prices_and_does_not_save(rf, main_user):
 
 
 @pytest.mark.django_db
-def test_post_saves_valid_prices_and_triggers_signals(rf, main_user, mocker):
+def test_post_saves_only_the_rows_with_a_price(rf, main_user):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
     view = posted_view(
@@ -223,7 +186,6 @@ def test_post_saves_valid_prices_and_triggers_signals(rf, main_user, mocker):
             {"date": "1999-9-9", "price": "", "account": a2.pk},
         ],
     )
-    mock_sync = mocker.patch.object(views.AccountsWorthNew, "balance_sync")
 
     response = view.post(view.request)
 
@@ -231,7 +193,36 @@ def test_post_saves_valid_prices_and_triggers_signals(rf, main_user, mocker):
     assert (actual.account, actual.price) == (a1, 10000)
     assert actual.date.strftime("%Y-%m-%d") == "1999-09-09"
     assert response["HX-Trigger"] == '{"afterAccountWorthNew": {}}'
+
+
+@pytest.mark.django_db
+def test_post_syncs_the_balances_of_the_saved_rows_user(rf, main_user, mocker):
+    a1 = AccountFactory(title="A1")
+    view = posted_view(
+        rf, main_user, [{"date": "1999-9-9", "price": "100", "account": a1.pk}]
+    )
+    mock_sync = mocker.patch.object(views.AccountsWorthNew, "balance_sync")
+
+    view.post(view.request)
+
     mock_sync.assert_called_once_with(main_user)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "count", [pytest.param(2, id="two"), pytest.param(6, id="six")]
+)
+def test_post_writes_all_rows_in_one_insert(client_logged, count):
+    accounts = [AccountFactory(title=f"A{i}") for i in range(count)]
+    rows = [{"date": "1999-9-9", "price": "5", "account": a.pk} for a in accounts]
+
+    with CaptureQueriesContext(connection) as queries:
+        client_logged.post(reverse("bookkeeping:accounts_worth_new"), post_data(rows))
+
+    table = AccountWorth._meta.db_table
+    inserts = [q for q in queries if q["sql"].startswith(f'INSERT INTO "{table}"')]
+    assert len(inserts) == 1
+    assert AccountWorth.objects.count() == count
 
 
 @pytest.mark.django_db
@@ -292,19 +283,15 @@ def test_clean_without_a_fund_field_raises(mocker, isolated_formset):
         isolated_formset.clean()
 
 
-def test_clean_reads_no_fund_field_when_a_form_already_has_errors(
-    mocker, isolated_formset
-):
-    # spec=[] makes any fund_field read raise AttributeError, so a bare call proves it
-    isolated_formset.model = mocker.Mock(spec=[])
-    mocker.patch.object(
-        BaseTypeFormSet,
-        "errors",
-        new_callable=mocker.PropertyMock,
-        return_value=["Some error"],
-    )
+@pytest.mark.django_db
+def test_clean_does_not_tag_duplicates_when_a_form_already_has_errors(rf, main_user):
+    row = {"date": "1999-9-9", "price": "5", "account": AccountFactory().pk}
+    view = worth_view(rf, main_user)
 
-    isolated_formset.clean()
+    actual = bound_formset(view, [row, row, row | {"price": "x"}])
+
+    assert not actual.is_valid()
+    assert [set(form.errors) for form in actual.forms] == [set(), set(), {"price"}]
 
 
 @pytest.mark.django_db
