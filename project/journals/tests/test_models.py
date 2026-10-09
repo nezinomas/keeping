@@ -6,13 +6,11 @@ from ...expenses.tests.factories import ExpenseFactory
 from ...users.tests.factories import UserFactory
 from ..models import Journal
 from .factories import JournalFactory
+from .helpers import validation_errors
 
 pytestmark = pytest.mark.django_db
 
 
-# -------------------------------------------------------------------------------------
-#                                                                               Journal
-# -------------------------------------------------------------------------------------
 def test_journal_str():
     actual = JournalFactory.build()
 
@@ -43,7 +41,7 @@ def test_journal_title_slug_not_checked_against_other_journals():
     JournalFactory(title="Būstas")
     journal = JournalFactory.build(title="Bustas")
 
-    journal.full_clean()
+    assert validation_errors(journal) == {}
 
 
 @pytest.mark.parametrize(
@@ -62,7 +60,7 @@ def test_journal_title_for_username(username, expect):
 def test_journal_title_for_username_passes_title_rules():
     journal = Journal(title=Journal.title_for("jonas+test@mail.lt"))
 
-    journal.full_clean()
+    assert validation_errors(journal) == {}
 
 
 def test_journal_title_for_long_username_fits_title():
