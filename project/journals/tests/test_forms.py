@@ -10,10 +10,6 @@ from .helpers import set_journal_lang
 pytestmark = pytest.mark.django_db
 
 
-def test_form_init(main_user):
-    UnnecessaryForm(user=main_user)
-
-
 def test_form_fields(main_user):
     ExpenseTypeFactory(title="X")
     ExpenseTypeFactory(title="Y")
@@ -59,7 +55,7 @@ def test_form_save_checked_all(main_user):
     e1 = ExpenseTypeFactory(title="X")
     e2 = ExpenseTypeFactory(title="Y")
     form = UnnecessaryForm(
-        user=main_user, data={"savings": True, "choices": {e1.pk: True, e2: True}}
+        user=main_user, data={"savings": True, "choices": {e1.pk: True, e2.pk: True}}
     )
 
     assert form.is_valid()
@@ -67,7 +63,7 @@ def test_form_save_checked_all(main_user):
     form.save()
 
     actual = Journal.objects.first()
-    assert actual.unnecessary_expenses == "[1, 2]"
+    assert actual.unnecessary_expenses == json.dumps([e1.pk, e2.pk])
     assert actual.unnecessary_savings
 
 
@@ -102,11 +98,6 @@ def test_form_save_unchecked_expenses(main_user):
     assert not actual.unnecessary_savings
 
 
-# Settings Form
-def test_settings_form_init(main_user):
-    SettingsForm(user=main_user)
-
-
 def test_settings_form_fields(main_user):
     form = SettingsForm(user=main_user).as_p()
 
@@ -117,7 +108,6 @@ def test_settings_form_fields(main_user):
 def test_settings_form_languages(main_user):
     form = SettingsForm(user=main_user).as_p()
 
-    # 2 languages so far: lt, en
     assert form.count("<option value=") == 2
 
 
@@ -161,32 +151,11 @@ def test_settings_form_save_lang_invalid(main_user):
     assert not form.is_valid()
 
 
-@pytest.mark.parametrize("title", ["xx", "x" * 255])
-def test_settings_form_save_title_invalid(title, main_user):
-    form = SettingsForm(user=main_user, data={"title": title, "lang": "en"})
-
-    assert not form.is_valid()
-
-
-def test_settings_title_empty_slug(main_user):
-    form = SettingsForm(user=main_user, data={"title": "...", "lang": "lt"})
-
-    assert not form.is_valid()
-
-    assert form.errors["title"] == [
-        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
-    ]
-
-
-def test_settings_title_expanding_character(main_user):
-    form = SettingsForm(user=main_user, data={"title": "Pienas ½ l", "lang": "lt"})
-
-    assert not form.is_valid()
-
-    assert form.errors["title"] == ["Pavadinime negali būti „½“."]
-
-
-@pytest.mark.parametrize("title", ["x" * 101, "My@Journal"])
+@pytest.mark.parametrize(
+    "title",
+    ["xx", "x" * 255, "x" * 101, "My@Journal"],
+    ids=["too_short", "255_chars", "101_chars", "bad_char"],
+)
 def test_settings_form_title_follows_journal_title(title, main_user):
     form = SettingsForm(user=main_user, data={"title": title, "lang": "en"})
 
@@ -195,12 +164,27 @@ def test_settings_form_title_follows_journal_title(title, main_user):
     assert "title" in form.errors
 
 
-def test_settings_title_too_long_says_so_once(main_user):
-    form = SettingsForm(user=main_user, data={"title": "x" * 101, "lang": "en"})
+@pytest.mark.parametrize(
+    "title, lang, message",
+    [
+        (
+            "...",
+            "lt",
+            "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo.",
+        ),
+        ("Pienas ½ l", "lt", "Pavadinime negali būti „½“."),
+        (
+            "x" * 101,
+            "en",
+            "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 100 ženklų "
+            "(dabartinis ilgis 101).",
+        ),
+    ],
+    ids=["empty_slug", "expanding_character", "too_long_says_so_once"],
+)
+def test_settings_title_error_message(title, lang, message, main_user):
+    form = SettingsForm(user=main_user, data={"title": title, "lang": lang})
 
     assert not form.is_valid()
 
-    assert form.errors["title"] == [
-        "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 100 ženklų "
-        "(dabartinis ilgis 101)."
-    ]
+    assert form.errors["title"] == [message]
