@@ -1,26 +1,18 @@
-from datetime import date, datetime
+from datetime import date
 
 import hypothesis
 import pytest
-import pytz
 from django.conf import settings
 from django.db.backends.signals import connection_created
 from django.utils import translation
 
 from .accounts.tests.factories import AccountFactory
-from .bookkeeping.tests.factories import (
-    AccountWorthFactory,
-    PensionWorthFactory,
-    SavingWorthFactory,
-)
-from .debts.tests.factories import LendFactory, LendReturnFactory
 from .expenses.tests.factories import ExpenseFactory
 from .incomes.tests.factories import IncomeFactory
 from .journals.tests.factories import JournalFactory
 from .pensions.tests.factories import PensionFactory, PensionTypeFactory
 from .savings.tests.factories import SavingFactory, SavingTypeFactory
 from .transactions.tests.factories import (
-    SavingChangeFactory,
     SavingCloseFactory,
     TransactionFactory,
 )
@@ -275,27 +267,6 @@ def savings_close():
 
 
 @pytest.fixture()
-def savings_change():
-    s1 = SavingTypeFactory(title="Saving1")
-    s2 = SavingTypeFactory(title="Saving2")
-
-    SavingChangeFactory(
-        date=date(1999, 1, 1),
-        price=125,
-        fee=5,
-        to_account=s2,
-        from_account=s1,
-    )
-    SavingChangeFactory(
-        date=date(1970, 1, 1),
-        price=225,
-        fee=15,
-        to_account=s2,
-        from_account=s1,
-    )
-
-
-@pytest.fixture()
 def pensions():
     p = PensionTypeFactory(title="Pension1")
 
@@ -323,86 +294,3 @@ def pensions():
         date=date(1999, 1, 1),
         pension_type=p,
     )
-
-
-@pytest.fixture()
-def accounts_worth():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
-
-    AccountWorthFactory(
-        date=datetime(1970, 1, 1, tzinfo=pytz.utc),
-        price=10,
-        account=a1,
-    )
-    AccountWorthFactory(
-        date=datetime(1970, 1, 1, tzinfo=pytz.utc),
-        price=20,
-        account=a2,
-    )
-
-    AccountWorthFactory(
-        date=datetime(1999, 1, 2, tzinfo=pytz.utc),
-        price=3,
-        account=a1,
-    )
-    AccountWorthFactory(
-        date=datetime(1999, 1, 1, tzinfo=pytz.utc),
-        price=8,
-        account=a2,
-    )
-
-
-@pytest.fixture()
-def savings_worth():
-    s1 = SavingTypeFactory(title="Saving1")
-    s2 = SavingTypeFactory(title="Saving2")
-
-    SavingWorthFactory(
-        date=datetime(1970, 1, 1, tzinfo=pytz.utc),
-        price=10,
-        saving_type=s1,
-    )
-
-    SavingWorthFactory(
-        date=datetime(1999, 1, 2, tzinfo=pytz.utc),
-        price=15,
-        saving_type=s1,
-    )
-    SavingWorthFactory(
-        date=datetime(1999, 1, 1, tzinfo=pytz.utc),
-        price=6,
-        saving_type=s2,
-    )
-
-
-@pytest.fixture()
-def pensions_worth():
-    PensionWorthFactory(date=datetime(1974, 1, 1, tzinfo=pytz.utc), price=6)
-    PensionWorthFactory(price=25)
-
-
-@pytest.fixture
-def lend_fixture():
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2")
-
-    LendFactory(date=date(1999, 1, 2), price=1, account=a1)
-    LendFactory(date=date(1999, 2, 3), price=2, account=a1)
-    LendFactory(date=date(1999, 3, 4), price=3, account=a2)
-
-    LendFactory(date=date(1974, 1, 2), price=4, account=a1)
-    LendFactory(date=date(1974, 2, 3), price=5, account=a1)
-
-
-@pytest.fixture
-def lend_return_fixture():
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2")
-
-    LendReturnFactory(date=date(1999, 1, 2), price=5, account=a1)
-    LendReturnFactory(date=date(1999, 2, 3), price=15, account=a1)
-    LendReturnFactory(date=date(1999, 3, 4), price=16, account=a2)
-
-    LendReturnFactory(date=date(1974, 1, 2), price=35, account=a1)
-    LendReturnFactory(date=date(1974, 2, 3), price=45, account=a1)
