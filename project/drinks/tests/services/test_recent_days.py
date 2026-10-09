@@ -58,18 +58,25 @@ def test_first_two_days_are_named_today_and_yesterday():
     assert labels(actual)[:2] == ["Šiandien", "Vakar"]
 
 
-def test_older_days_are_named_by_their_weekday():
-    # 1999-01-15 is a Friday
-    actual = RecentDaySelector.for_day(date(1999, 1, 15))
+@pytest.mark.parametrize(
+    "day, expect",
+    [
+        pytest.param(
+            date(1999, 1, 15),
+            ["Trečiadienis", "Antradienis", "Pirmadienis"],
+            id="friday",
+        ),
+        pytest.param(
+            date(1999, 3, 3),
+            ["Pirmadienis", "Sekmadienis", "Šeštadienis"],
+            id="wednesday_reaches_a_weekend",
+        ),
+    ],
+)
+def test_older_days_are_named_by_their_weekday(day, expect):
+    actual = RecentDaySelector.for_day(day)
 
-    assert labels(actual)[2:] == ["Trečiadienis", "Antradienis", "Pirmadienis"]
-
-
-def test_older_days_can_be_weekend_days():
-    # 1999-03-03 is a Wednesday, so the oldest day is a Saturday
-    actual = RecentDaySelector.for_day(date(1999, 3, 3))
-
-    assert labels(actual)[2:] == ["Pirmadienis", "Sekmadienis", "Šeštadienis"]
+    assert labels(actual)[2:] == expect
 
 
 def test_options_are_a_list_not_an_iterator():
