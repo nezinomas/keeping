@@ -1,6 +1,7 @@
 import pytest
 from mock import MagicMock
 
+from ....accounts.tests.factories import AccountBalanceFactory, AccountFactory
 from ....core.lib.translation import month_names
 from ...services.index.dtos import IndexDataDTO
 from ...services.index.presenters import IndexContextBuilder
@@ -38,17 +39,6 @@ def test_chart_balance_context(mock_year_balance):
     assert actual["expenses_title"] == "Išlaidos"
 
 
-def test_borrow_context():
-    obj = IndexContextBuilder(
-        balance=MagicMock(), debts={"borrow": {"debt": 99, "debt_return": 66}}
-    )
-    actual = obj.borrow_context()
-
-    assert "Pasiskolinta" in actual["title"]
-    assert "Grąžinau" in actual["title"]
-    assert actual["data"] == [99, 66]
-
-
 @pytest.mark.parametrize(
     "kind, context",
     [
@@ -69,15 +59,53 @@ def test_debt_context_without_debt_is_empty(kind, context, debt):
     assert context(obj) == {}
 
 
-def test_lend_context():
+@pytest.mark.parametrize(
+    "kind, context, titles, debt, debt_return",
+    [
+        pytest.param(
+            "borrow",
+            IndexContextBuilder.borrow_context,
+            ("Pasiskolinta", "Grąžinau"),
+            99,
+            66,
+            id="borrow_part_returned",
+        ),
+        pytest.param(
+            "borrow",
+            IndexContextBuilder.borrow_context,
+            ("Pasiskolinta", "Grąžinau"),
+            300,
+            300,
+            id="borrow_fully_repaid",
+        ),
+        pytest.param(
+            "lend",
+            IndexContextBuilder.lend_context,
+            ("Paskolinta", "Grąžino"),
+            9,
+            3,
+            id="lend_part_returned",
+        ),
+        pytest.param(
+            "lend",
+            IndexContextBuilder.lend_context,
+            ("Paskolinta", "Grąžino"),
+            300,
+            300,
+            id="lend_fully_repaid",
+        ),
+    ],
+)
+def test_debt_context(kind, context, titles, debt, debt_return):
     obj = IndexContextBuilder(
-        balance=MagicMock(), debts={"lend": {"debt": 9, "debt_return": 3}}
+        balance=MagicMock(),
+        debts={kind: {"debt": debt, "debt_return": debt_return}},
     )
-    actual = obj.lend_context()
+    actual = context(obj)
 
-    assert "Paskolinta" in actual["title"]
-    assert "Grąžino" in actual["title"]
-    assert actual["data"] == [9, 3]
+    for title in titles:
+        assert title in actual["title"]
+    assert actual["data"] == [debt, debt_return]
 
 
 def test_index_data_dto():
@@ -94,24 +122,26 @@ def test_index_data_dto():
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "past_sum, expect",
+    "past_by_year, expect",
     [
-        pytest.param(5000, 5000, id="a_sum"),
-        pytest.param(None, 0, id="no_sum"),
+        pytest.param({2026: [3000, 2000], 2025: [700]}, 5000, id="a_sum"),
+        pytest.param({2025: [700]}, 0, id="no_sum"),
     ],
 )
-def test_index_data_provider_amount_start(mocker, main_user, past_sum, expect):
+def test_index_data_provider_amount_start(main_user, past_by_year, expect):
     main_user.year = 2026
-    mock_balance_service = mocker.patch(
-        f"{MODULE_PATH}.providers.AccountBalanceModelService"
-    )
-    mock_year = mock_balance_service.return_value.year.return_value
-    mock_year.aggregate.return_value = {"past__sum": past_sum}
+    for year, pasts in past_by_year.items():
+        for past in pasts:
+            AccountBalanceFactory(
+                account=AccountFactory(title=f"{year}-{past}"),
+                year=year,
+                past=past,
+                balance=past + 111,
+            )
 
     actual = IndexDataProvider(main_user).get_data().amount_start
 
     assert actual == expect
-    mock_balance_service.return_value.year.assert_called_once_with(2026)
 
 
 @pytest.mark.django_db
@@ -162,4 +192,4 @@ def test_index_context_builder_averages_context(mock_year_balance):
     actual = builder.averages_context()
 
     assert actual["data"] == [50, 10]
-    assert len(actual["title"]) == 2
+    assert actual["title"] == ["Vidutinės pajamos", "Vidutinės išlaidos"]

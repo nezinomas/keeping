@@ -107,11 +107,19 @@ def test_view_expand_day_expenses_ajax(client_logged):
     assert "Expense Name" in actual
 
 
-def test_view_month_chart_200(client_logged):
-    url = reverse("bookkeeping:month_chart", kwargs={"chart_type": "xxx"})
-    response = client_logged.get(url)
+@pytest.mark.parametrize(
+    "chart_type, script",
+    [
+        pytest.param("targets", "chart_month_targets.js", id="targets"),
+        pytest.param("expenses", "chart_month_expenses.js", id="expenses"),
+        pytest.param("xxx", "chart_month_expenses.js", id="unknown_is_expenses"),
+    ],
+)
+def test_view_month_chart_loads_its_script(client_logged, chart_type, script):
+    url = reverse("bookkeeping:month_chart", kwargs={"chart_type": chart_type})
+    content = client_logged.get(url).content.decode("utf-8")
 
-    assert response.status_code == 200
+    assert f'src="/static/js/{script}"' in content
 
 
 def test_view_month_chart_302(client):
