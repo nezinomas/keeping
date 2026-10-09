@@ -19,18 +19,18 @@ def _history(user):
     return HistoryCards.build(CounterLife.read(user, "count-type"))
 
 
-# -------------------------------------------------------------------------------------
-#                                                                              Overview
-# -------------------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "build, titles",
+    [
+        pytest.param(_overview, ["Šiais metais", "Iš viso", "Tarpas"], id="overview"),
+        pytest.param(_history, ["Iš viso", "Metų", "Vidutiniai metai"], id="history"),
+    ],
+)
 @time_machine.travel(datetime(1999, 7, 12))
-def test_overview_has_three_cards_in_order(main_user):
+def test_has_three_cards_in_order(main_user, build, titles):
     CountTypeFactory()
 
-    assert [card.title for card in _overview(main_user)] == [
-        "Šiais metais",
-        "Iš viso",
-        "Tarpas",
-    ]
+    assert [card.title for card in build(main_user)] == titles
 
 
 @time_machine.travel(datetime(1999, 7, 12))
@@ -81,11 +81,18 @@ def test_overview_year_and_total_carry_no_explanation(main_user):
     assert year.note == ""
 
 
+@pytest.mark.parametrize(
+    "build",
+    [
+        pytest.param(_overview, id="overview"),
+        pytest.param(_history, id="history"),
+    ],
+)
 @time_machine.travel(datetime(1999, 7, 12))
-def test_overview_of_a_counter_with_no_records_is_empty(main_user):
+def test_a_counter_with_no_records_has_empty_cards(main_user, build):
     CountTypeFactory()
 
-    assert [card.state for card in _overview(main_user)] == [EMPTY] * 3
+    assert [card.state for card in build(main_user)] == [EMPTY] * 3
 
 
 @time_machine.travel(datetime(1999, 7, 12))
@@ -110,11 +117,18 @@ def test_overview_gap_is_empty_on_a_finished_year(main_user):
     assert gap.note == "įprastai 10 d."
 
 
+@pytest.mark.parametrize(
+    "build",
+    [
+        pytest.param(_overview, id="overview"),
+        pytest.param(_history, id="history"),
+    ],
+)
 @time_machine.travel(datetime(1999, 7, 12))
-def test_overview_cards_carry_no_tone_no_unit_and_no_pencil(main_user):
+def test_cards_carry_no_tone_no_unit_and_no_pencil(main_user, build):
     CountFactory()
 
-    for card in _overview(main_user):
+    for card in build(main_user):
         assert card.state in (NEUTRAL, EMPTY)
         assert card.unit == ""
         assert card.edit_url == ""
@@ -127,20 +141,6 @@ def test_overview_reads_the_counter_in_one_query(main_user, django_assert_num_qu
 
     with django_assert_num_queries(1):
         _overview(main_user)
-
-
-# -------------------------------------------------------------------------------------
-#                                                                               History
-# -------------------------------------------------------------------------------------
-@time_machine.travel(datetime(1999, 7, 12))
-def test_history_has_three_cards_in_order(main_user):
-    CountTypeFactory()
-
-    assert [card.title for card in _history(main_user)] == [
-        "Iš viso",
-        "Metų",
-        "Vidutiniai metai",
-    ]
 
 
 @time_machine.travel(datetime(1999, 7, 12))
@@ -204,24 +204,6 @@ def test_history_median_year_is_empty_when_no_year_has_finished(main_user):
     CountFactory(date=date(1999, 1, 1))
 
     assert _history(main_user)[2].state == EMPTY
-
-
-@time_machine.travel(datetime(1999, 7, 12))
-def test_history_of_a_counter_with_no_records_is_empty(main_user):
-    CountTypeFactory()
-
-    assert [card.state for card in _history(main_user)] == [EMPTY] * 3
-
-
-@time_machine.travel(datetime(1999, 7, 12))
-def test_history_cards_carry_no_tone_no_unit_and_no_pencil(main_user):
-    CountFactory()
-
-    for card in _history(main_user):
-        assert card.state in (NEUTRAL, EMPTY)
-        assert card.unit == ""
-        assert card.edit_url == ""
-        assert not card.show_icon
 
 
 @time_machine.travel(datetime(1999, 7, 12))

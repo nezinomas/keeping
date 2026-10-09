@@ -10,9 +10,6 @@ from .factories import CountFactory, CountTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# -------------------------------------------------------------------------------------
-#                                                                                 Count
-# --------------------------------------------------------------------------------------
 @pytest.fixture(name="counters")
 def fixture_counters(second_user):
     CountFactory(date=date(1999, 1, 1), quantity=1.0)
@@ -20,12 +17,10 @@ def fixture_counters(second_user):
     CountFactory(date=date(1999, 2, 1), quantity=2.0)
     CountFactory(date=date(1999, 2, 1), quantity=1.0)
 
-    # second CountType for same user
     CountFactory(
         date=date(1999, 1, 1), quantity=1, count_type=CountTypeFactory(title="Z")
     )
 
-    # second user
     CountFactory(
         date=date(1999, 2, 1),
         quantity=100.0,
@@ -84,20 +79,19 @@ def test_count_year_with_count_type(main_user, different_users):
     assert actual[0].user.username == "bob"
 
 
-def test_count_quantity_float():
-    p = CountFactory(quantity=0.5)
+@pytest.mark.parametrize(
+    "quantity, expected",
+    [
+        pytest.param(0.5, "1999-01-01: 0.5", id="float"),
+        pytest.param(5, "1999-01-01: 5.0", id="int"),
+    ],
+)
+def test_count_quantity(quantity, expected):
+    p = CountFactory(quantity=quantity)
 
     p.full_clean()
 
-    assert str(p) == "1999-01-01: 0.5"
-
-
-def test_count_quantity_int():
-    p = CountFactory(quantity=5)
-
-    p.full_clean()
-
-    assert str(p) == "1999-01-01: 5.0"
+    assert str(p) == expected
 
 
 def test_count_order(main_user):
@@ -131,24 +125,24 @@ def test_count_days_quantity_sum_for_january(main_user, counters):
     assert expect == pytest.approx(actual, rel=1e-2)
 
 
-# -------------------------------------------------------------------------------------
-#                                                                            Count Type
-# -------------------------------------------------------------------------------------
 def test_count_type_str():
     obj = CountTypeFactory.build()
 
     assert str(obj) == "Count Type"
 
 
-@pytest.mark.xfail
-def test_count_type_unique_for_user():
-    CountType.objects.create(title="T")
-    CountType.objects.create(title="T")
+def test_count_type_unique_for_user(main_user):
+    CountType.objects.create(title="T", user=main_user)
+
+    with pytest.raises(IntegrityError):
+        CountType.objects.create(title="T", user=main_user)
 
 
 def test_count_type_unique_for_users(main_user, second_user):
     CountType.objects.create(title="T", user=main_user)
     CountType.objects.create(title="T", user=second_user)
+
+    assert CountType.objects.count() == 2
 
 
 def test_count_type_related(main_user, second_user):

@@ -1,5 +1,7 @@
 from datetime import date, timedelta
 
+import pytest
+
 from ...lib.rhythm import EmptyGap, Rhythm
 
 
@@ -7,22 +9,18 @@ def _records(*dates, quantity=1.0):
     return [{"date": d, "qty": quantity} for d in dates]
 
 
-def test_two_records_five_days_apart_make_one_gap_of_five():
-    rhythm = Rhythm(_records(date(1999, 1, 1), date(1999, 1, 6)))
+@pytest.mark.parametrize(
+    "second, expected",
+    [
+        pytest.param(date(1999, 1, 6), 5, id="five_days_apart"),
+        pytest.param(date(1999, 1, 2), 1, id="consecutive_days"),
+        pytest.param(date(1999, 1, 1), 0, id="one_day"),
+    ],
+)
+def test_two_records_make_one_gap_of_the_days_between_them(second, expected):
+    rhythm = Rhythm(_records(date(1999, 1, 1), second))
 
-    assert [gap.days for gap in rhythm.gaps] == [5]
-
-
-def test_records_on_consecutive_days_make_a_gap_of_one():
-    rhythm = Rhythm(_records(date(1999, 1, 1), date(1999, 1, 2)))
-
-    assert [gap.days for gap in rhythm.gaps] == [1]
-
-
-def test_two_records_on_one_day_make_a_gap_of_zero():
-    rhythm = Rhythm(_records(date(1999, 1, 1), date(1999, 1, 1)))
-
-    assert [gap.days for gap in rhythm.gaps] == [0]
+    assert [gap.days for gap in rhythm.gaps] == [expected]
 
 
 def test_a_gap_is_bounded_by_the_records_at_its_ends():
@@ -121,9 +119,6 @@ def test_current_gap_of_a_counter_with_no_records_is_zero():
     assert Rhythm([], today=date(1999, 1, 11)).current_gap == 0
 
 
-# -------------------------------------------------------------------------------------
-#                                                            Read against a Counter year
-# -------------------------------------------------------------------------------------
 def test_the_first_gap_of_a_year_reaches_back_to_the_year_before():
     rhythm = Rhythm(
         _records(date(1998, 12, 22), date(1999, 1, 1), date(1999, 1, 3)), year=1999

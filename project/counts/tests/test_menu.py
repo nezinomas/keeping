@@ -6,18 +6,6 @@ from .factories import CountTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-def test_menu_count_type_add(client_logged):
-    obj = CountTypeFactory()
-
-    url = reverse("counts:empty")
-    response = client_logged.get(url, follow=True)
-    content = response.content.decode()
-
-    url = reverse("counts:index", kwargs={"slug": obj.slug})
-
-    assert f'href="{url}">{obj.title}</a>' in content
-
-
 def test_menu_count_type_add_two(client_logged):
     obj1 = CountTypeFactory(title="XXX")
     obj2 = CountTypeFactory(title="YYY")

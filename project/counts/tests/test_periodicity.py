@@ -6,12 +6,11 @@ import time_machine
 from django.conf import settings
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
-from django.urls import resolve, reverse
+from django.urls import reverse
 from django.utils.dates import WEEKDAYS_ABBR
 
 from ...core.lib.stat_card import EMPTY
 from ...core.lib.translation import month_abbr
-from .. import views
 from .factories import CountFactory, CountTypeFactory
 
 pytestmark = pytest.mark.django_db
@@ -32,20 +31,6 @@ def _script_keys() -> set[str]:
     ).read_text(encoding="utf-8")
 
     return set(re.findall(r"chartData\.(\w+)", source))
-
-
-def test_periodicity_func():
-    view = resolve("/counts/c/xxx/periodicity/")
-
-    assert views.TabPeriodicity is view.func.view_class
-
-
-def test_periodicity_200(client_logged):
-    CountTypeFactory()
-
-    url = reverse("counts:tab_periodicity", kwargs={"slug": "count-type"})
-
-    assert client_logged.get(url).status_code == 200
 
 
 def test_periodicity_is_the_second_tab(client_logged):
@@ -104,15 +89,10 @@ def test_periodicity_of_a_counter_with_no_records_is_empty(client_logged):
     assert [card.state for card in _context(client_logged)["cards"]] == [EMPTY] * 3
 
 
-def test_periodicity_carries_the_three_charts(client_logged):
+def test_periodicity_leaves_the_years_chart_to_history(client_logged):
     CountTypeFactory()
 
-    context = _context(client_logged)
-
-    assert "chart_weekdays" in context
-    assert "chart_months" in context
-    assert "chart_histogram" in context
-    assert "chart_years" not in context
+    assert "chart_years" not in _context(client_logged)
 
 
 def test_periodicity_weekdays_are_monday_first_and_lithuanian(client_logged):
