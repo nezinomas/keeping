@@ -251,17 +251,25 @@ def test_parse_search_no_args(before, after, first, later):
                 {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
             ],
         ),
-        (
+        pytest.param(
             "-c žvaigž",
             [
                 {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
             ],
+            marks=pytest.mark.xfail(
+                strict=True,
+                reason="SQLite icontains folds ASCII only; MariaDB collation folds",
+            ),
         ),
-        (
+        pytest.param(
             "-c ąžuo",
             [
                 {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
             ],
+            marks=pytest.mark.xfail(
+                strict=True,
+                reason="SQLite icontains folds ASCII only; MariaDB collation folds",
+            ),
         ),
         (
             "-r ąčęėįšųūž",
@@ -305,104 +313,104 @@ def test_expense_search(main_user, _search, expect):
 
     q = search.search_expenses(main_user, _search)
 
-    for i in range(len(q)):
-        assert q[i]["expense_type__title"] == expect[i]["type"]
-        assert q[i]["expense_name__title"] == expect[i]["name"]
-        assert q[i]["remark"] == expect[i]["remark"]
-
-
-@pytest.mark.django_db
-@factory.django.mute_signals(post_save)
-def test_expense_search_ordering(main_user):
-    ExpenseFactory(date=date(1000, 1, 1))
-    ExpenseFactory()
-
-    q = search.search_expenses(main_user, "remark")
-
-    assert q[0]["date"] == date(1999, 1, 1)
-    assert q[1]["date"] == date(1000, 1, 1)
+    for row, expected in zip(q, expect, strict=True):
+        assert row["expense_type__title"] == expected["type"]
+        assert row["expense_name__title"] == expected["name"]
+        assert row["remark"] == expected["remark"]
 
 
 @pytest.mark.django_db
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
-    "_search, cnt, income_type",
+    "factory_class, search_func, date_field",
     [
-        ("1999", 1, "Income Type"),
-        ("-y 1999", 1, "Income Type"),
-        ("1999.1", 1, "Income Type"),
-        ("1999-1", 1, "Income Type"),
-        ("-y 1999 -m 1", 1, "Income Type"),
-        ("2000", 0, None),
-        ("-y 2000", 0, None),
-        ("a", 0, None),
-        ("ab", 0, None),
-        ("type", 1, "Income Type"),
-        ("-c type", 1, "Income Type"),
-        ("remark", 1, "Income Type"),
-        ("-r remark", 1, "Income Type"),
-        ("1999.1 type", 1, "Income Type"),
-        ("1999-1 type", 1, "Income Type"),
-        ("-y 1999 -m 1 -c type", 1, "Income Type"),
+        pytest.param(ExpenseFactory, search.search_expenses, "date", id="expense"),
+        pytest.param(IncomeFactory, search.search_incomes, "date", id="income"),
+        pytest.param(BookFactory, search.search_books, "started", id="book"),
     ],
 )
-def test_incomes_search(main_user, _search, cnt, income_type):
+def test_search_orders_newest_first(main_user, factory_class, search_func, date_field):
+    factory_class(**{date_field: date(1000, 1, 1)})
+    factory_class()
+
+    q = search_func(main_user, "remark")
+
+    assert q[0][date_field] == date(1999, 1, 1)
+    assert q[1][date_field] == date(1000, 1, 1)
+
+
+FOUND = ["Income Type"]
+
+
+@pytest.mark.django_db
+@factory.django.mute_signals(post_save)
+@pytest.mark.parametrize(
+    "_search, income_types",
+    [
+        ("1999", FOUND),
+        ("-y 1999", FOUND),
+        ("1999.1", FOUND),
+        ("1999-1", FOUND),
+        ("-y 1999 -m 1", FOUND),
+        ("2000", []),
+        ("-y 2000", []),
+        ("a", []),
+        ("ab", []),
+        ("type", FOUND),
+        ("-c type", FOUND),
+        ("remark", FOUND),
+        ("-r remark", FOUND),
+        ("1999.1 type", FOUND),
+        ("1999-1 type", FOUND),
+        ("-y 1999 -m 1 -c type", FOUND),
+    ],
+)
+def test_incomes_search(main_user, _search, income_types):
     IncomeFactory()
     IncomeFactory(
         date=date(3333, 1, 1), income_type=IncomeTypeFactory(title="Y"), remark="ZZZ"
     )
 
-    q = search.search_incomes(main_user, _search)
-    assert q.count() == cnt
+    actual = [
+        (row["date"], row["income_type__title"])
+        for row in search.search_incomes(main_user, _search)
+    ]
 
-    if q:
-        q = q[0]
-
-        assert q["date"] == date(1999, 1, 1)
-        assert q["income_type__title"] == income_type
+    assert actual == [(date(1999, 1, 1), title) for title in income_types]
 
 
-@pytest.mark.django_db
-@factory.django.mute_signals(post_save)
-def test_incomes_search_ordering(main_user):
-    IncomeFactory(date=date(1000, 1, 1))
-    IncomeFactory()
-
-    q = search.search_incomes(main_user, "remark")
-
-    assert q[0]["date"] == date(1999, 1, 1)
-    assert q[1]["date"] == date(1000, 1, 1)
+BOOK = ("Author", "Book Title", "Remark")
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "_search, author, title, remark",
+    "_search, books",
     [
-        ("1999", "Author", "Book Title", "Remark"),
-        ("-y1999", "Author", "Book Title", "Remark"),
-        ("1999.1", "Author", "Book Title", "Remark"),
-        ("1999-1", "Author", "Book Title", "Remark"),
-        ("-y 1999 -m 1", "Author", "Book Title", "Remark"),
-        ("2000", None, None, None),
-        ("-y 2000", None, None, None),
-        ("a", None, None, None),
-        ("ab", None, None, None),
-        ("auth", "Author", "Book Title", "Remark"),
-        ("-c auth", "Author", "Book Title", "Remark"),
-        ("titl", "Author", "Book Title", "Remark"),
-        ("-c titl", "Author", "Book Title", "Remark"),
-        ("remark", "Author", "Book Title", "Remark"),
-        ("-r remark", "Author", "Book Title", "Remark"),
-        ("1999.1 auth", "Author", "Book Title", "Remark"),
-        ("1999-1 auth", "Author", "Book Title", "Remark"),
-        ("-r 1999 -m 1 -c auth", None, None, None),
-        ("-y 1999 -m 1 -c auth", "Author", "Book Title", "Remark"),
-        ("1999.1 titl", "Author", "Book Title", "Remark"),
-        ("1999-1 titl", "Author", "Book Title", "Remark"),
-        ("-y 1999 -m 1 -c titl", "Author", "Book Title", "Remark"),
+        ("1999", [BOOK]),
+        ("-y1999", [BOOK]),
+        ("1999.1", [BOOK]),
+        ("1999-1", [BOOK]),
+        ("-y 1999 -m 1", [BOOK]),
+        ("2000", []),
+        ("-y 2000", []),
+        ("a", []),
+        ("ab", []),
+        ("auth", [BOOK]),
+        ("-c auth", [BOOK]),
+        ("titl", [BOOK]),
+        ("-c titl", [BOOK]),
+        ("remark", [BOOK]),
+        ("-r remark", [BOOK]),
+        ("1999.1 auth", [BOOK]),
+        ("1999-1 auth", [BOOK]),
+        ("-r 1999 -m 1 -c auth", []),
+        ("-y 1999 -m 1 -c auth", [BOOK]),
+        ("1999.1 titl", [BOOK]),
+        ("1999-1 titl", [BOOK]),
+        ("-y 1999 -m 1 -c titl", [BOOK]),
     ],
 )
-def test_books_search(main_user, _search, author, title, remark):
+def test_books_search(main_user, _search, books):
     BookFactory()
     BookFactory(started=date(3333, 1, 1), author="A", title="T", remark="ZZZ")
 
@@ -411,18 +419,4 @@ def test_books_search(main_user, _search, author, title, remark):
         for row in search.search_books(main_user, _search)
     ]
 
-    expect = []
-    if author:
-        expect = [(date(1999, 1, 1), author, title, remark)]
-    assert actual == expect
-
-
-@pytest.mark.django_db
-def test_books_search_ordering(main_user):
-    BookFactory(started=date(1000, 1, 1))
-    BookFactory()
-
-    q = search.search_books(main_user, "remark")
-
-    assert q[0]["started"] == date(1999, 1, 1)
-    assert q[1]["started"] == date(1000, 1, 1)
+    assert actual == [(date(1999, 1, 1), *book) for book in books]
