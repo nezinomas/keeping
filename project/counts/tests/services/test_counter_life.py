@@ -26,4 +26,4 @@ def test_records_reach_stats_as_qty(main_user):
 
     stats = Stats(data=CounterLife.read(main_user, "count-type").records)
 
-    assert stats._df["qty"][0] == 3.0
+    assert stats.year_total() == 3.0

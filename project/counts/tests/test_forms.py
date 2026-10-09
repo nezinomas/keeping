@@ -1,22 +1,12 @@
-import tempfile
 from datetime import date
 
 import pytest
 import time_machine
-from django.test import override_settings
 
-from ...users.tests.factories import UserFactory
 from ..forms import CountForm, CountTypeForm
 from .factories import CountTypeFactory
 
 pytestmark = pytest.mark.django_db
-
-
-# -------------------------------------------------------------------------------------
-#                                                                                 Count
-# -------------------------------------------------------------------------------------
-def test_form_init(main_user):
-    CountForm(user=main_user)
 
 
 def test_form_init_fields(main_user):
@@ -30,15 +20,12 @@ def test_form_init_fields(main_user):
 
 @time_machine.travel("1974-01-01")
 def test_form_year_initial_value(main_user):
-    UserFactory()
-
     form = CountForm(user=main_user).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
     assert '<input type="number" name="quantity" value="1"' in form
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_form_valid_data(main_user):
     obj = CountTypeFactory(title="Xxx")
 
@@ -57,7 +44,6 @@ def test_form_valid_data(main_user):
     assert data.count_type.slug == "xxx"
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 @time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
 def test_form_invalid_date(year, main_user):
@@ -93,13 +79,6 @@ def test_form_no_count_type(main_user):
     assert "Šis laukas yra privalomas." in form.errors["count_type"]
 
 
-# -------------------------------------------------------------------------------------
-#                                                                            Count Type
-# -------------------------------------------------------------------------------------
-def test_count_type_init():
-    CountTypeForm()
-
-
 def test_count_type_init_fields():
     form = CountTypeForm().as_p()
 
@@ -107,7 +86,6 @@ def test_count_type_init_fields():
     assert '<select name="user"' not in form
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_count_type_valid_data(main_user):
     form = CountTypeForm(user=main_user, data={"title": "XXXXX"})
 
@@ -128,22 +106,43 @@ def test_count_type_blank_data(main_user):
     assert "title" in form.errors
 
 
-def test_count_type_title_empty_slug(main_user):
-    form = CountTypeForm(user=main_user, data={"title": "---"})
+@pytest.mark.parametrize(
+    "existing, title, errors",
+    [
+        pytest.param(
+            [],
+            "---",
+            ["Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."],
+            id="empty_slug",
+        ),
+        pytest.param(
+            [],
+            "Pienas ½ l",
+            ["Pavadinime negali būti „½“."],
+            id="expanding_character",
+        ),
+        pytest.param(
+            ["Būstas"],
+            "Būstas",
+            ["„Būstas“ jau yra."],
+            id="identical_title_names_the_existing_one",
+        ),
+        pytest.param(
+            ["Būstas"],
+            "Bustas",
+            ["Pavadinimas per daug panašus į jau esantį „Būstas“."],
+            id="slug_taken",
+        ),
+    ],
+)
+def test_count_type_title_rejected(existing, title, errors, main_user):
+    for existing_title in existing:
+        CountTypeFactory(title=existing_title, user=main_user)
+
+    form = CountTypeForm(user=main_user, data={"title": title})
 
     assert not form.is_valid()
-
-    assert form.errors["title"] == [
-        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
-    ]
-
-
-def test_count_type_title_expanding_character(main_user):
-    form = CountTypeForm(user=main_user, data={"title": "Pienas ½ l"})
-
-    assert not form.is_valid()
-
-    assert form.errors["title"] == ["Pavadinime negali būti „½“."]
+    assert form.errors["title"] == errors
 
 
 @pytest.mark.parametrize(
@@ -173,45 +172,23 @@ def test_count_type_title_no_longer_collides_with_a_route(title, main_user):
     assert form.is_valid()
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_form_count_type_and_second_user(main_user, second_user):
-    CountTypeFactory(title="T1")
-    CountTypeFactory(title="T2", user=second_user)
+    own = CountTypeFactory(title="T1")
+    other = CountTypeFactory(title="T2", user=second_user)
 
     form = CountForm(user=main_user, data={}).as_p()
 
-    assert '<option value="1">T1</option>' in form
-    assert '<option value="2">T2</option>' not in form
+    assert f'<option value="{own.pk}">T1</option>' in form
+    assert f'<option value="{other.pk}">T2</option>' not in form
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 def test_form_load_select_count_type(main_user):
-    CountTypeFactory(title="T1")
+    selected = CountTypeFactory(title="T1")
     CountTypeFactory(title="T2")
 
     form = CountForm(user=main_user, counter_type="t1").as_p()
 
-    assert '<option value="1" selected>T1</option>' in form
-
-
-def test_count_type_identical_title_names_the_existing_one(main_user):
-    CountTypeFactory(title="Būstas", user=main_user)
-
-    form = CountTypeForm(user=main_user, data={"title": "Būstas"})
-
-    assert not form.is_valid()
-    assert form.errors["title"] == ["„Būstas“ jau yra."]
-
-
-def test_count_type_slug_taken(main_user):
-    CountTypeFactory(title="Būstas", user=main_user)
-
-    form = CountTypeForm(user=main_user, data={"title": "Bustas"})
-
-    assert not form.is_valid()
-    assert form.errors["title"] == [
-        "Pavadinimas per daug panašus į jau esantį „Būstas“."
-    ]
+    assert f'<option value="{selected.pk}" selected>T1</option>' in form
 
 
 def test_count_type_same_slug_for_second_user_is_valid(main_user, second_user):
