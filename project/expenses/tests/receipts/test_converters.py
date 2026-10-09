@@ -66,6 +66,23 @@ ALMOST_MONEY = st.one_of(
 NOT_MONEY = st.one_of(
     st.text(alphabet="€-,.x 0123456789abc", max_size=8), ALMOST_MONEY
 ).filter(lambda text: MONEY_GRAMMAR.fullmatch(text) is None)
+MONEY_TEXT = st.builds("{}{},{:02d}".format, MONEY_PREFIXES, WHOLE, st.integers(0, 99))
+# an amount that is not "0": fractional pieces, an unknown unit, no unit, no number
+UNREADABLE_AMOUNT = st.one_of(
+    st.builds(
+        "{},{} vnt.".format,
+        WHOLE,
+        st.text(alphabet="0123456789", min_size=1, max_size=3),
+    ),
+    st.builds(
+        "{} {}{}".format,
+        WHOLE,
+        st.sampled_from(["pcs", "m", "l", "g"]),
+        st.sampled_from(["", "."]),
+    ),
+    st.text(alphabet="0123456789,", max_size=5).filter(lambda text: text != "0"),
+    st.text(alphabet="abc .", max_size=6),
+)
 PIECES = st.integers(min_value=1, max_value=10**4).map(
     lambda count: (f"{count} vnt.", count)
 )
@@ -118,7 +135,13 @@ def test_amount_reads_pieces_and_weight(case):
     assert amount(text, DEFAULT_UNIT_WORDS) == expected
 
 
-@pytest.mark.parametrize("text", ["1,5 vnt.", "3 pcs", "", "abc", "0,0", "00"])
+@given(text=UNREADABLE_AMOUNT)
+@example(text="1,5 vnt.")
+@example(text="3 pcs")
+@example(text="")
+@example(text="abc")
+@example(text="0,0")
+@example(text="00")
 def test_amount_raises_on_unreadable_text(text):
     with pytest.raises(UnreadableReceiptTextError):
         amount(text, DEFAULT_UNIT_WORDS)
@@ -150,16 +173,19 @@ def test_is_deposit(title, expected):
     assert is_deposit(title, ("UŽSTATAS",)) is expected
 
 
-@pytest.mark.parametrize(
-    "text,expected",
-    [
-        pytest.param("2,49", True, id="plain"),
-        pytest.param("€2,49", True, id="euro"),
-        pytest.param("-0,16", True, id="negative"),
-        pytest.param("Pack 3", False, id="words_and_a_digit"),
-        pytest.param("3", False, id="bare_digit"),
-        pytest.param("", False, id="empty"),
-    ],
+@given(
+    case=st.one_of(
+        MONEY_TEXT.map(lambda text: (text, True)),
+        NOT_MONEY.map(lambda text: (text, False)),
+    )
 )
-def test_is_money(text, expected):
+@example(case=("2,49", True))
+@example(case=("€2,49", True))
+@example(case=("-0,16", True))
+@example(case=("Pack 3", False))
+@example(case=("3", False))
+@example(case=("", False))
+def test_is_money(case):
+    text, expected = case
+
     assert is_money(text) is expected
