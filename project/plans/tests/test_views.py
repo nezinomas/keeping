@@ -8,6 +8,7 @@ import time_machine
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from django.utils.html import escape
 
 from ...expenses.tests.factories import ExpenseTypeFactory
 from ...incomes.tests.factories import IncomeTypeFactory
@@ -90,7 +91,7 @@ INCOME = Kind(
     update="plans:income_update",
     delete="plans:income_delete",
     own_kwargs=lambda plan: {"income_type_id": plan.income_type.pk},
-    owner=lambda: {"income_type": IncomeTypeFactory()},
+    owner=lambda **kwargs: {"income_type": IncomeTypeFactory(**kwargs)},
 )
 EXPENSE = Kind(
     factory=ExpensePlanFactory,
@@ -100,7 +101,7 @@ EXPENSE = Kind(
     update="plans:expense_update",
     delete="plans:expense_delete",
     own_kwargs=lambda plan: {"expense_type_id": plan.expense_type.pk},
-    owner=lambda: {"expense_type": ExpenseTypeFactory()},
+    owner=lambda **kwargs: {"expense_type": ExpenseTypeFactory(**kwargs)},
 )
 SAVING = Kind(
     factory=SavingPlanFactory,
@@ -110,7 +111,9 @@ SAVING = Kind(
     update="plans:saving_update",
     delete="plans:saving_delete",
     own_kwargs=lambda plan: {"saving_type_id": plan.saving_type.pk},
-    owner=lambda: {"saving_type": SavingTypeFactory(title="Saving Type")},
+    owner=lambda **kwargs: {
+        "saving_type": SavingTypeFactory(title="Saving Type", **kwargs)
+    },
 )
 DAY = Kind(
     factory=DayPlanFactory,
@@ -120,7 +123,7 @@ DAY = Kind(
     update="plans:day_update",
     delete="plans:day_delete",
     own_kwargs=lambda plan: {},
-    owner=lambda: {},
+    owner=lambda **kwargs: {},
 )
 NECESSARY = Kind(
     factory=NecessaryPlanFactory,
@@ -133,7 +136,7 @@ NECESSARY = Kind(
         "expense_type_id": plan.expense_type.pk,
         "title": plan.title,
     },
-    owner=lambda: {"expense_type": ExpenseTypeFactory()},
+    owner=lambda **kwargs: {"expense_type": ExpenseTypeFactory(**kwargs)},
 )
 
 
@@ -141,8 +144,18 @@ def _form_values(owned):
     return {field: row.pk for field, row in owned.items()}
 
 
-def _initial_months(form):
-    return {month: form.initial[month] for month in MONTHS if month in form.initial}
+def _rendered_year(content):
+    return re.search(r'<input type="text" name="year" value="(\d+)"', content).group(1)
+
+
+def _rendered_months(content):
+    inputs = re.findall(r'<input type="text" name="(\w+)"( value="([^"]*)")?', content)
+    return {name: value for name, _, value in inputs if name in MONTHS and value}
+
+
+def _rendered_selected(content, field):
+    select = content.split(f'<select name="{field}"')[1].split("</select>")[0]
+    return re.search(r"<option [^>]*selected>([^<]*)</option>", select).group(1)
 
 
 def _assert_reload_triggered(response):
@@ -479,12 +492,10 @@ def test_plan_new(client_logged, main_user, kind, january, price):
 def test_plan_new_invalid_data(client_logged, kind, own_data, error_fields):
     data = {"year": "x", "january": 999, **own_data}
 
-    response = client_logged.post(reverse(kind.new), data)
-    form = response.context["form"]
+    content = client_logged.post(reverse(kind.new), data).content.decode()
 
-    assert not form.is_valid()
-    for field in error_fields:
-        assert field in form.errors
+    invalid = re.findall(r'<(?:input|select)[^>]*name="(\w+)"[^>]*is-invalid', content)
+    assert set(error_fields) <= set(invalid)
 
 
 @pytest.mark.parametrize(
@@ -527,37 +538,37 @@ def test_plan_load_update_load_form(client_logged, kind):
 
 
 @pytest.mark.parametrize(
-    "kind, type_title, title",
+    "kind, field, title",
     [
         pytest.param(
             INCOME,
-            lambda plan: plan.income_type.title,
+            "income_type",
             "Income Type",
             id="income_load_update_form_field_values",
         ),
         pytest.param(
             EXPENSE,
-            lambda plan: plan.expense_type.title,
+            "expense_type",
             "Expense Type",
             id="expense_load_update_form_field_values",
         ),
         pytest.param(
             SAVING,
-            lambda plan: plan.saving_type.title,
+            "saving_type",
             "Saving Type",
             id="saving_load_update_form_field_values",
         ),
     ],
 )
-def test_plan_load_update_form_field_values(client_logged, kind, type_title, title):
+def test_plan_load_update_form_field_values(client_logged, kind, field, title):
     obj = kind.factory(**kind.owner())
 
     url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
-    form = client_logged.get(url).context["form"]
+    content = client_logged.get(url).content.decode()
 
-    assert form.instance.year == 1999
-    assert type_title(form.instance) == title
-    assert _initial_months(form) == {"january": 0.01}
+    assert _rendered_year(content) == "1999"
+    assert _rendered_selected(content, field) == title
+    assert _rendered_months(content) == {"january": "0.01"}
 
 
 @pytest.mark.parametrize(
@@ -566,13 +577,13 @@ def test_plan_load_update_form_field_values(client_logged, kind, type_title, tit
         pytest.param(
             DAY,
             {"month": 1, "price": 5},
-            {"january": 0.05},
+            {"january": "0.05"},
             id="day_load_update_form_field_values",
         ),
         pytest.param(
             NECESSARY,
             {"title": "ABCD", "month": 11, "price": 1001},
-            {"november": 10.01},
+            {"november": "10.01"},
             id="necessary_load_update_form_field_values",
         ),
     ],
@@ -583,10 +594,10 @@ def test_plan_without_type_load_update_form_field_values(
     obj = kind.factory(year=1999, **plan_kwargs)
 
     url = reverse(kind.update, kwargs={"year": 1999, **kind.own_kwargs(obj)})
-    form = client_logged.get(url).context["form"]
+    content = client_logged.get(url).content.decode()
 
-    assert form.instance.year == 1999
-    assert _initial_months(form) == months
+    assert _rendered_year(content) == "1999"
+    assert _rendered_months(content) == months
 
 
 @pytest.mark.parametrize(
@@ -727,12 +738,9 @@ def test_plan_new_prevents_duplicate_category_in_same_year(
 
     data = {"year": "1999", "january": 9.99, **_form_values(owned)}
 
-    response = client_logged.post(reverse(kind.new), data)
-    form = response.context["form"]
+    content = client_logged.post(reverse(kind.new), data).content.decode()
 
-    assert not form.is_valid()
-    assert "__all__" in form.errors
-    assert message in form.errors["__all__"][0]
+    assert escape(message) in content
 
 
 @pytest.mark.parametrize(
@@ -756,151 +764,54 @@ def test_plan_delete_load_form(client_logged, kind):
     assert f"Ar tikrai norite ištrinti: <strong>{obj}</strong>?" in actual
 
 
-# IncomePlan
-def test_income_update_not_load_other_journal(client_logged, second_user):
-    second_user_journal = second_user.journal
-
-    t = IncomeTypeFactory(title="yyy", journal=second_user_journal)
-    obj = IncomePlanFactory(
-        income_type=t, journal=second_user_journal, month=1, price=666
+# Plans of another journal
+def _other_journal_plan(kind, second_user):
+    journal = second_user.journal
+    return kind.factory(
+        journal=journal, month=1, price=666, **kind.owner(journal=journal)
     )
 
-    url = reverse(
-        "plans:income_update", kwargs={"year": 1999, "income_type_id": obj.pk}
-    )
+
+def _other_journal_url(kind, name, second_user):
+    obj = _other_journal_plan(kind, second_user)
+    return reverse(name, kwargs={"year": 1999, **kind.own_kwargs(obj)})
+
+
+ALL_KINDS = [
+    pytest.param(INCOME, id="income"),
+    pytest.param(EXPENSE, id="expense"),
+    pytest.param(SAVING, id="saving"),
+    pytest.param(DAY, id="day"),
+    pytest.param(NECESSARY, id="necessary"),
+]
+
+
+@pytest.mark.parametrize("kind", ALL_KINDS)
+def test_plan_update_not_load_other_journal(client_logged, second_user, kind):
+    url = _other_journal_url(kind, kind.update, second_user)
+
     response = client_logged.get(url)
 
     assert response.status_code == 404
 
 
-def test_incomes_delete_other_journal_get_form(client_logged, second_user):
-    second_user_journal = second_user.journal
-    income_type = IncomeTypeFactory(title="yyy", journal=second_user_journal)
-    obj = IncomePlanFactory(
-        income_type=income_type, journal=second_user_journal, month=1, price=666
-    )
+@pytest.mark.parametrize("kind", ALL_KINDS)
+def test_plan_delete_other_journal_get_form(client_logged, second_user, kind):
+    url = _other_journal_url(kind, kind.delete, second_user)
 
-    url = reverse(
-        "plans:income_delete",
-        kwargs={"year": 1999, "income_type_id": obj.income_type.pk},
-    )
     response = client_logged.get(url)
 
     assert response.status_code == 404
 
 
-def test_incomes_delete_other_journal_post_form(client_logged, second_user):
-    second_user_journal = second_user.journal
-    income_type = IncomeTypeFactory(title="yyy", journal=second_user_journal)
-    obj = IncomePlanFactory(
-        income_type=income_type, journal=second_user_journal, month=1, price=666
-    )
+@pytest.mark.parametrize("kind", ALL_KINDS)
+def test_plan_delete_other_journal_post_form(client_logged, second_user, kind):
+    url = _other_journal_url(kind, kind.delete, second_user)
 
-    url = reverse(
-        "plans:income_delete",
-        kwargs={"year": 1999, "income_type_id": obj.income_type.pk},
-    )
-    client_logged.post(url)
-
-    assert IncomePlan.objects.all().count() == 1
-
-
-# ExpensePlan
-def test_expense_update_not_load_other_journal(client_logged, second_user):
-    second_user_journal = second_user.journal
-
-    t = ExpenseTypeFactory(title="yyy", journal=second_user_journal)
-    obj = ExpensePlanFactory(
-        expense_type=t, journal=second_user_journal, month=1, price=666
-    )
-
-    url = reverse(
-        "plans:expense_update", kwargs={"year": 1999, "expense_type_id": obj.pk}
-    )
-    response = client_logged.get(url)
+    response = client_logged.post(url)
 
     assert response.status_code == 404
-
-
-def test_expenses_delete_other_journal_get_form(client_logged, second_user):
-    second_user_journal = second_user.journal
-    expense_type = ExpenseTypeFactory(title="yyy", journal=second_user_journal)
-    obj = ExpensePlanFactory(
-        expense_type=expense_type, journal=second_user_journal, month=1, price=666
-    )
-
-    url = reverse(
-        "plans:expense_delete",
-        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk},
-    )
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
-def test_expenses_delete_other_journal_post_form(client_logged, second_user):
-    second_user_journal = second_user.journal
-    expense_type = ExpenseTypeFactory(title="yyy", journal=second_user_journal)
-    obj = ExpensePlanFactory(
-        expense_type=expense_type, journal=second_user_journal, month=1, price=666
-    )
-
-    url = reverse(
-        "plans:expense_delete",
-        kwargs={"year": 1999, "expense_type_id": obj.expense_type.pk},
-    )
-    client_logged.post(url)
-
-    assert ExpensePlan.objects.all().count() == 1
-
-
-# SavingPlan
-def test_saving_update_not_load_other_journal(client_logged, second_user):
-    second_user_journal = second_user.journal
-
-    t = SavingTypeFactory(title="yyy", journal=second_user_journal)
-    obj = SavingPlanFactory(
-        saving_type=t, journal=second_user_journal, month=1, price=666
-    )
-
-    url = reverse(
-        "plans:saving_update", kwargs={"year": 1999, "saving_type_id": obj.pk}
-    )
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
-def test_saving_delete_other_journal_get_form(client_logged, second_user):
-    second_user_journal = second_user.journal
-    saving_type = SavingTypeFactory(title="yyy", journal=second_user_journal)
-    obj = SavingPlanFactory(
-        saving_type=saving_type, journal=second_user_journal, month=1, price=666
-    )
-
-    url = reverse(
-        "plans:saving_delete",
-        kwargs={"year": 1999, "saving_type_id": obj.saving_type.pk},
-    )
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
-def test_saving_delete_other_journal_post_form(client_logged, second_user):
-    second_user_journal = second_user.journal
-    saving_type = SavingTypeFactory(title="yyy", journal=second_user_journal)
-    obj = SavingPlanFactory(
-        saving_type=saving_type, journal=second_user_journal, month=1, price=666
-    )
-
-    url = reverse(
-        "plans:saving_delete",
-        kwargs={"year": 1999, "saving_type_id": obj.saving_type.pk},
-    )
-    client_logged.post(url)
-
-    assert SavingPlan.objects.all().count() == 1
+    assert kind.model.objects.all().count() == 1
 
 
 # DayPlan
@@ -917,12 +828,15 @@ def test_day_tab_cards_read_the_current_month_in_the_selected_plan_year(
         IncomePlanFactory(year=2027, month=month, price=90_000)
     SavingPlanFactory(year=2027, month=9, price=30_000)
 
-    url = reverse("plans:tab_day")
-    response = client_logged.get(url)
-    cards = {c.title: c for c in response.context["cards"]}
+    content = client_logged.get(reverse("plans:tab_day")).content.decode()
 
-    assert cards["Suma dienai šį mėnesį"].value == "20,00"
-    assert cards["Dienos planas šį mėnesį"].value == "30,00"
+    assert _card_figure(content, "Suma dienai šį mėnesį") == "20,00"
+    assert _card_figure(content, "Dienos planas šį mėnesį") == "30,00"
+
+
+def _card_figure(content, title):
+    card = content.split(f'<div class="trend-card__label">{title}</div>')[1]
+    return re.search(r'trend-card__figure" title="[^"]*">([^<]*)<', card).group(1)
 
 
 def test_day_new_duplicates_not_allowed(client_logged):
@@ -930,11 +844,9 @@ def test_day_new_duplicates_not_allowed(client_logged):
 
     data = {"year": "1999", "january": 0.05}
 
-    url = reverse("plans:day_new")
-    response = client_logged.post(url, data)
-    form = response.context["form"]
+    content = client_logged.post(reverse("plans:day_new"), data).content.decode()
 
-    assert not form.is_valid()
+    assert "1999 metai jau turi tikslą." in content
 
 
 def test_day_update(client_logged):
@@ -950,16 +862,6 @@ def test_day_update(client_logged):
     assert actual.price == 1
 
 
-def test_day_update_not_load_other_journal(client_logged, second_user):
-    second_user_journal = second_user.journal
-    DayPlanFactory(journal=second_user_journal, month=1, price=666)
-
-    url = reverse("plans:day_update", kwargs={"year": 1999})
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
 def _between(content, start_id, end_id=""):
     start = content.index(f'id="{start_id}"')
     end = len(content)
@@ -970,18 +872,8 @@ def _between(content, start_id, end_id=""):
 
 
 def test_day_tab_price_converted_in_template(client_logged):
-    DayPlanFactory(month=1, price=5)
-    DayPlanFactory(month=2, price=5)
-    DayPlanFactory(month=3, price=5)
-    DayPlanFactory(month=4, price=5)
-    DayPlanFactory(month=5, price=5)
-    DayPlanFactory(month=6, price=5)
-    DayPlanFactory(month=7, price=5)
-    DayPlanFactory(month=8, price=5)
-    DayPlanFactory(month=9, price=5)
-    DayPlanFactory(month=10, price=5)
-    DayPlanFactory(month=11, price=5)
-    DayPlanFactory(month=12, price=5)
+    for month in range(1, 13):
+        DayPlanFactory(month=month, price=5)
 
     url = reverse("plans:tab_day")
     response = client_logged.get(url)
@@ -1040,12 +932,9 @@ def test_day_tab_calculations_renders_two_panels_each_with_its_own_header(
     assert check.count("<thead") == 1
 
 
-def _calculation_rows(response):
-    return {
-        row.label: row
-        for block in response.context["calculations"]
-        for row in block.rows
-    }
+def _first_month_cell(content, label):
+    row = rf'<td class="text-left">{label}(?:<span[^>]*>.*?</span>)?</td>\s*'
+    return re.search(row + r"<td[^>]*>([^<]*)</td>", content).group(1)
 
 
 def test_day_tab_calculations_breakdown_reads_the_plans(client_logged):
@@ -1055,12 +944,11 @@ def test_day_tab_calculations_breakdown_reads_the_plans(client_logged):
     NecessaryPlanFactory(price=5_000)
     SavingPlanFactory(price=3_000)
 
-    response = client_logged.get(reverse("plans:tab_day"))
-    rows = _calculation_rows(response)
+    content = client_logged.get(reverse("plans:tab_day")).content.decode()
 
-    assert rows["Būtinos išlaidos"].values[0] == 10_000
-    assert rows["Papildomos būtinos išlaidos"].values[0] == 5_000
-    assert rows["Taupymas"].values[0] == 3_000
+    assert _first_month_cell(content, "Būtinos išlaidos") == "100,00"
+    assert _first_month_cell(content, "Papildomos būtinos išlaidos") == "50,00"
+    assert _first_month_cell(content, "Taupymas") == "30,00"
 
 
 def test_day_tab_calculations_marks_the_day_plan_cell_above_the_sum_per_day(
@@ -1073,26 +961,6 @@ def test_day_tab_calculations_marks_the_day_plan_cell_above_the_sum_per_day(
     actual = _between(content, "calculations-spend", "calculations-check")
 
     assert actual.count("plans-table__over") == 1
-
-
-def test_day_delete_other_journal_get_form(client_logged, second_user):
-    second_user_journal = second_user.journal
-    DayPlanFactory(journal=second_user_journal, month=1, price=666)
-
-    url = reverse("plans:day_delete", kwargs={"year": 1999})
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
-def test_day_delete_other_journal_post_form(client_logged, second_user):
-    second_user_journal = second_user.journal
-    DayPlanFactory(journal=second_user_journal, month=1, price=666)
-
-    url = reverse("plans:day_delete", kwargs={"year": 1999})
-    client_logged.post(url)
-
-    assert DayPlan.objects.all().count() == 1
 
 
 # NecessaryPlan
@@ -1116,11 +984,9 @@ def test_necessary_new_duplicates_not_allowed(client_logged):
     NecessaryPlanFactory(year=1999, title="XXX", expense_type=e)
     data = {"year": "1999", "title": "XXX", "january": 0.66, "expense_type": e.pk}
 
-    url = reverse("plans:necessary_new")
-    response = client_logged.post(url, data)
-    form = response.context["form"]
+    content = client_logged.post(reverse("plans:necessary_new"), data).content.decode()
 
-    assert not form.is_valid()
+    assert escape("1999 metai su 'Expense Type ir XXX'  jau turi tikslą.") in content
 
 
 def test_necessary_new_not_load_other_journal(client_logged, second_user):
@@ -1153,62 +1019,23 @@ def test_necessary_update(client_logged):
     assert actual.price == 1
 
 
-def test_necessary_update_not_load_other_journal(client_logged, second_user):
-    second_journal = second_user.journal
-    obj = NecessaryPlanFactory(journal=second_journal, month=1, price=666)
-
-    url = reverse(
-        "plans:necessary_update",
-        kwargs={
-            "year": 1999,
-            "expense_type_id": obj.expense_type.pk,
-            "title": obj.title,
-        },
-    )
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
-def test_necessary_delete_other_journal_get_form(client_logged, second_user):
-    second_user_journal = second_user.journal
-    obj = NecessaryPlanFactory(journal=second_user_journal, month=1, price=666)
-
-    url = reverse(
-        "plans:necessary_delete",
-        kwargs={
-            "year": 1999,
-            "expense_type_id": obj.expense_type.pk,
-            "title": obj.title,
-        },
-    )
-    response = client_logged.get(url)
-
-    assert response.status_code == 404
-
-
-def test_necessary_delete_other_journal_post_form(client_logged, second_user):
-    second_user_journal = second_user.journal
-    obj = NecessaryPlanFactory(journal=second_user_journal, month=1, price=666)
-
-    url = reverse(
-        "plans:necessary_delete",
-        kwargs={
-            "year": 1999,
-            "expense_type_id": obj.expense_type.pk,
-            "title": obj.title,
-        },
-    )
-    client_logged.post(url)
-
-    assert NecessaryPlan.objects.all().count() == 1
-
-
 # Copy Plans
-def test_copy_200(client_logged):
-    response = client_logged.get("/plans/copy/")
+def test_copy_load_form(client_logged):
+    url = reverse("plans:copy")
 
-    assert response.status_code == 200
+    content = client_logged.get(url).content.decode()
+
+    assert f'hx-post="{url}"' in content
+    for name in (
+        "year_from",
+        "year_to",
+        "income",
+        "expense",
+        "saving",
+        "day",
+        "necessary",
+    ):
+        assert f'name="{name}"' in content
 
 
 def test_copy_success(main_user, client_logged):
@@ -1226,11 +1053,10 @@ def test_copy_success(main_user, client_logged):
 def test_copy_fails(client_logged):
     data = {"year_from": "1999", "year_to": "2000", "income": True}
 
-    url = reverse("plans:copy")
-    response = client_logged.post(url, data)
-    form = response.context["form"]
+    content = client_logged.post(reverse("plans:copy"), data).content.decode()
 
-    assert not form.is_valid()
+    assert "Nėra ką kopijuoti." in content
+    assert not IncomePlan.objects.exists()
 
 
 def test_copy_year_to_same_as_user_year(main_user, client_logged):
@@ -1244,8 +1070,7 @@ def test_copy_year_to_same_as_user_year(main_user, client_logged):
     url = reverse("plans:copy")
     response = client_logged.post(url, data)
 
-    assert response.headers["HX-Trigger"]
-    assert "reload" in response.headers["HX-Trigger"]
+    _assert_reload_triggered(response)
 
 
 # Query counts
@@ -1255,29 +1080,56 @@ def _tab_queries(client, tab):
     return len(queries)
 
 
-def test_incomes_tab_query_count_does_not_grow_with_the_plans(client_logged):
-    tab = [t for t in TABS if t.name == "incomes"][0]
-
-    for i in range(2):
+def _income_plans(numbers):
+    for i in numbers:
         IncomePlanFactory(income_type=IncomeTypeFactory(title=f"I{i}"))
+
+
+def _expense_plans(numbers):
+    for i in numbers:
+        ExpensePlanFactory(expense_type=ExpenseTypeFactory(title=f"E{i}"))
+
+
+def _necessary_plans(numbers):
+    for i in numbers:
+        NecessaryPlanFactory(expense_type=ExpenseTypeFactory(title=f"N{i}"))
+
+
+def _saving_plans(numbers):
+    for i in numbers:
+        SavingPlanFactory(saving_type=SavingTypeFactory(title=f"S{i}"))
+
+
+def _day_plans(numbers):
+    for i in numbers:
+        DayPlanFactory(month=i + 1)
+
+
+def _plans_of_every_type(numbers):
+    _income_plans(numbers)
+    _expense_plans(numbers)
+    _necessary_plans(numbers)
+    _saving_plans(numbers)
+
+
+@pytest.mark.parametrize(
+    "tab_name, build",
+    [
+        pytest.param("incomes", _income_plans, id="incomes_tab_plans"),
+        pytest.param("expenses", _expense_plans, id="expenses_tab_expense_plans"),
+        pytest.param("expenses", _necessary_plans, id="expenses_tab_necessary_plans"),
+        pytest.param("savings", _saving_plans, id="savings_tab_plans"),
+        pytest.param("day", _plans_of_every_type, id="day_tab_plan_types"),
+        pytest.param("day", _day_plans, id="day_tab_plans"),
+    ],
+)
+def test_tab_query_count_does_not_grow_with_the_plans(client_logged, tab_name, build):
+    tab = [t for t in TABS if t.name == tab_name][0]
+
+    build(range(2))
     two = _tab_queries(client_logged, tab)
 
-    for i in range(2, 6):
-        IncomePlanFactory(income_type=IncomeTypeFactory(title=f"I{i}"))
-    six = _tab_queries(client_logged, tab)
-
-    assert six == two
-
-
-def test_expenses_tab_query_count_does_not_grow_with_the_expense_plans(client_logged):
-    tab = [t for t in TABS if t.name == "expenses"][0]
-
-    for i in range(2):
-        ExpensePlanFactory(expense_type=ExpenseTypeFactory(title=f"E{i}"))
-    two = _tab_queries(client_logged, tab)
-
-    for i in range(2, 6):
-        ExpensePlanFactory(expense_type=ExpenseTypeFactory(title=f"E{i}"))
+    build(range(2, 6))
     six = _tab_queries(client_logged, tab)
 
     assert six == two
@@ -1294,67 +1146,3 @@ def test_expenses_tab_reads_no_income_saving_or_day_plans(client_logged):
     sql = " ".join(query["sql"] for query in queries.captured_queries)
     for table in ("plans_incomeplan", "plans_savingplan", "plans_dayplan"):
         assert table not in sql
-
-
-def test_expenses_tab_query_count_does_not_grow_with_the_necessary_plans(
-    client_logged,
-):
-    tab = [t for t in TABS if t.name == "expenses"][0]
-
-    for i in range(2):
-        NecessaryPlanFactory(expense_type=ExpenseTypeFactory(title=f"N{i}"))
-    two = _tab_queries(client_logged, tab)
-
-    for i in range(2, 6):
-        NecessaryPlanFactory(expense_type=ExpenseTypeFactory(title=f"N{i}"))
-    six = _tab_queries(client_logged, tab)
-
-    assert six == two
-
-
-def test_savings_tab_query_count_does_not_grow_with_the_plans(client_logged):
-    tab = [t for t in TABS if t.name == "savings"][0]
-
-    for i in range(2):
-        SavingPlanFactory(saving_type=SavingTypeFactory(title=f"S{i}"))
-    two = _tab_queries(client_logged, tab)
-
-    for i in range(2, 6):
-        SavingPlanFactory(saving_type=SavingTypeFactory(title=f"S{i}"))
-    six = _tab_queries(client_logged, tab)
-
-    assert six == two
-
-
-def _plans_of_every_type(numbers):
-    for i in numbers:
-        IncomePlanFactory(income_type=IncomeTypeFactory(title=f"I{i}"))
-        ExpensePlanFactory(expense_type=ExpenseTypeFactory(title=f"E{i}"))
-        NecessaryPlanFactory(expense_type=ExpenseTypeFactory(title=f"N{i}"))
-        SavingPlanFactory(saving_type=SavingTypeFactory(title=f"S{i}"))
-
-
-def test_day_tab_query_count_does_not_grow_with_the_plan_types(client_logged):
-    tab = [t for t in TABS if t.name == "day"][0]
-
-    _plans_of_every_type(range(2))
-    two = _tab_queries(client_logged, tab)
-
-    _plans_of_every_type(range(2, 6))
-    six = _tab_queries(client_logged, tab)
-
-    assert six == two
-
-
-def test_day_tab_query_count_does_not_grow_with_the_plans(client_logged):
-    tab = [t for t in TABS if t.name == "day"][0]
-
-    for month in range(1, 3):
-        DayPlanFactory(month=month)
-    two = _tab_queries(client_logged, tab)
-
-    for month in range(3, 7):
-        DayPlanFactory(month=month)
-    six = _tab_queries(client_logged, tab)
-
-    assert six == two
