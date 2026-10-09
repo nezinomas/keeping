@@ -749,17 +749,6 @@ def test_typical_year_valid_post_pools_the_asked_range(client_logged):
     assert "HX-Retarget" not in response
 
 
-def test_typical_year_invalid_retargets_form(client_logged):
-    url = reverse("drinks:typical_year")
-    response = client_logged.post(url, {"year_from": "2005", "year_to": "1999"})
-    content = response.content.decode()
-
-    assert response["HX-Retarget"] == "#typical-year-form"
-    assert response["HX-Reswap"] == "outerHTML"
-    assert 'aria-invalid="true"' in content
-    assert "chart-typical-year-data" not in content
-
-
 # TabRisk View
 def test_tab_risk_heavy_panel_leaves_the_threshold_to_its_chart(client_logged):
     content = client_logged.get(reverse("drinks:tab_risk")).content.decode()
@@ -945,16 +934,35 @@ def test_comparetwo_valid_post_renders_the_pair(client_logged):
     assert "HX-Retarget" not in response
 
 
-def test_comparetwo_invalid_retargets_form(client_logged):
-    url = reverse("drinks:compare_two")
-    response = client_logged.post(url, {"year1": "1999", "year2": "2000"})
+@pytest.mark.parametrize(
+    "url_name, data, form, chart",
+    [
+        pytest.param(
+            "drinks:compare_two",
+            {"year1": "1999", "year2": "2000"},
+            "#compare-form",
+            "chart-history-data",
+            id="compare_two",
+        ),
+        pytest.param(
+            "drinks:typical_year",
+            {"year_from": "2005", "year_to": "1999"},
+            "#typical-year-form",
+            "chart-typical-year-data",
+            id="typical_year",
+        ),
+    ],
+)
+def test_invalid_form_retargets_itself_and_leaves_the_chart(
+    client_logged, url_name, data, form, chart
+):
+    response = client_logged.post(reverse(url_name), data)
     content = response.content.decode()
 
-    # an invalid submit re-renders the form in place, leaving the chart untouched
-    assert response["HX-Retarget"] == "#compare-form"
+    assert response["HX-Retarget"] == form
     assert response["HX-Reswap"] == "outerHTML"
     assert 'aria-invalid="true"' in content
-    assert "chart-history-data" not in content
+    assert chart not in content
 
 
 # Create/Update
