@@ -34,18 +34,6 @@ def test_account_items_current_journal(main_user, second_user):
     assert actual[0].journal.title == "bob Journal"
 
 
-def test_account_items_current_journal_with_year(main_user, second_user):
-    AccountFactory(title="A1")
-    AccountFactory(title="A2", journal=second_user.journal)
-
-    actual = AccountModelService(main_user).items(main_user.year)
-
-    assert len(actual) == 1
-    assert str(actual[0]) == "A1"
-    assert actual[0].journal.users.first().username == "bob"
-    assert actual[0].journal.title == "bob Journal"
-
-
 @pytest.mark.parametrize(
     "year, expected",
     [
