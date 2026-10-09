@@ -1,5 +1,7 @@
 from datetime import date
 
+import pytest
+
 from ...services.type_rows import TypesTable
 
 TYPES = [
@@ -29,18 +31,19 @@ def _titles(order):
     return [row.title for row in _table(order=order).rows]
 
 
-def test_rows_run_by_title_by_default():
-    assert _titles("") == ["Alga", "Dividendai", "Freelance", "Kita"]
-
-
-def test_figures_sort_biggest_first_with_empty_rows_last():
-    assert _titles("this_year") == ["Alga", "Freelance", "Dividendai", "Kita"]
-    assert _titles("share") == ["Alga", "Freelance", "Dividendai", "Kita"]
-    assert _titles("last_year") == ["Alga", "Dividendai", "Freelance", "Kita"]
-
-
-def test_the_last_income_sorts_newest_first():
-    assert _titles("last_income") == ["Alga", "Freelance", "Dividendai", "Kita"]
+@pytest.mark.parametrize(
+    "order, expected",
+    [
+        ("", ["Alga", "Dividendai", "Freelance", "Kita"]),
+        ("this_year", ["Alga", "Freelance", "Dividendai", "Kita"]),
+        ("share", ["Alga", "Freelance", "Dividendai", "Kita"]),
+        ("last_year", ["Alga", "Dividendai", "Freelance", "Kita"]),
+        ("last_income", ["Alga", "Freelance", "Dividendai", "Kita"]),
+    ],
+    ids=["by_title_by_default", "this_year", "share", "last_year", "last_income"],
+)
+def test_rows_sort_by_the_asked_column(order, expected):
+    assert _titles(order) == expected
 
 
 def test_the_table_names_its_active_column():
