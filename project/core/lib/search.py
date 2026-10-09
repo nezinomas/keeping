@@ -12,9 +12,6 @@ from ...incomes.services.model_services import IncomeModelService
 SEARCH_DICT = {"category": None, "year": None, "month": None, "remark": None}
 
 
-# -------------------------------------------------------------------------------------
-#                                                                        Public Methods
-# -------------------------------------------------------------------------------------
 def search_expenses(user, search_str):
     category_list = ["expense_type__title", "expense_name__title"]
 
@@ -59,9 +56,21 @@ def search_books(user, search_str):
     )
 
 
-# -------------------------------------------------------------------------------------
-#                                                                       Private Methods
-# -------------------------------------------------------------------------------------
+def parse_search(search_str):
+    _str = _sanitize_search_str(search_str)
+
+    try:
+        search_dict = _parse_search_with_args(_str)
+        search_type = "with_args"
+    except (AttributeError, SystemExit):
+        search_dict = _parse_search_no_args(_str)
+        search_type = "no_args"
+
+    search_dict = _filter_short_search_words(search_dict)
+
+    return search_dict, search_type
+
+
 def _sanitize_search_str(search_str):
     if search_str:
         search_str = re.sub(r"[^\w\d\.\- ]", "", search_str)
@@ -122,21 +131,6 @@ def _filter_short_search_words(search_dict):
         search_dict[key] = filter_words(search_dict[key])
 
     return search_dict
-
-
-def parse_search(search_str):
-    _str = _sanitize_search_str(search_str)
-
-    try:
-        search_dict = _parse_search_with_args(_str)
-        search_type = "with_args"
-    except (AttributeError, SystemExit):
-        search_dict = _parse_search_no_args(_str)
-        search_type = "no_args"
-
-    search_dict = _filter_short_search_words(search_dict)
-
-    return search_dict, search_type
 
 
 def _get_value(search_dict, key, default_value):
