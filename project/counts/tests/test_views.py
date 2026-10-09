@@ -53,10 +53,12 @@ def test_view_new_get_hx_trigger_django(client_logged, tab, expected):
     assert response.context["view"].get_hx_trigger_django() == expected
 
 
-def test_view_update_get_hx_trigger_django(client_logged):
+@pytest.mark.parametrize("url_name", ["counts:update", "counts:delete"])
+@time_machine.travel(datetime(2000, 1, 1))
+def test_view_update_and_delete_get_hx_trigger_django(client_logged, url_name):
     x = CountFactory()
 
-    url = reverse("counts:update", kwargs={"pk": x.pk})
+    url = reverse(url_name, kwargs={"pk": x.pk})
     response = client_logged.get(url)
 
     assert response.context["view"].get_hx_trigger_django() == "reloadData"
@@ -178,16 +180,6 @@ def test_view_update_not_load_other_user(client_logged, second_user):
 
     assert str(obj.quantity) not in form
     assert str(obj.date) not in form
-
-
-@time_machine.travel(datetime(2000, 1, 1))
-def test_view_delete_get_hx_trigger_django(client_logged):
-    x = CountFactory()
-
-    url = reverse("counts:delete", kwargs={"pk": x.pk})
-    response = client_logged.get(url)
-
-    assert response.context["view"].get_hx_trigger_django() == "reloadData"
 
 
 def test_view_delete_load_form(client_logged):
