@@ -11,10 +11,6 @@ from .factories import AccountFactory
 pytestmark = pytest.mark.django_db
 
 
-def test_account_init(main_user):
-    AccountForm(user=main_user)
-
-
 def test_account_form_has_fields(main_user):
     form = AccountForm(user=main_user).as_p()
 
@@ -26,10 +22,7 @@ def test_account_form_has_fields(main_user):
 
 @pytest.mark.parametrize(
     "closed",
-    [
-        ("2000"),
-        (2000),
-    ],
+    ["2000", 2000],
 )
 def test_account_valid_data(main_user, closed):
     form = AccountForm(
@@ -69,242 +62,54 @@ def test_account_identical_title_names_the_existing_one(main_user):
     assert form.errors["title"] == ["„Būstas“ jau yra."]
 
 
-def test_account_unique_name(main_user):
-    account = AccountFactory(title="XXX")
-
-    form = AccountForm(
-        user=main_user,
-        data={
-            "title": account.title,
-        },
-    )
-
-    assert not form.is_valid()
-
-
-def test_account_closed_in_past_incomes(main_user):
-    main_user.year = 3000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = IncomeForm(user=main_user, data={})
-
-    assert "S1" in str(form["account"])
-    assert "S2" not in str(form["account"])
-
-
-def test_account_closed_in_future_incomes(main_user):
-    main_user.year = 1000
+@pytest.mark.parametrize(
+    "form_class, field",
+    [
+        (IncomeForm, "account"),
+        (ExpenseForm, "account"),
+        (TransactionForm, "from_account"),
+        (SavingCloseForm, "to_account"),
+        (SavingForm, "account"),
+        (AccountWorthForm, "account"),
+    ],
+    ids=["incomes", "expenses", "transactions", "saving_close", "saving", "worth"],
+)
+@pytest.mark.parametrize(
+    "year, closed_listed",
+    [
+        (3000, False),
+        (1000, True),
+        (2000, True),
+    ],
+    ids=["after_closed", "before_closed", "closed_year"],
+)
+def test_account_closed_in_year(main_user, form_class, field, year, closed_listed):
+    main_user.year = year
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
 
-    form = IncomeForm(user=main_user, data={})
+    actual = str(form_class(user=main_user, data={})[field])
 
-    assert "S1" in str(form["account"])
-    assert "S2" in str(form["account"])
-
-
-def test_account_closed_in_current_year_incomes(main_user):
-    main_user.year = 2000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = IncomeForm(user=main_user, data={})
-
-    assert "S1" in str(form["account"])
-    assert "S2" in str(form["account"])
+    assert "S1" in actual
+    assert ("S2" in actual) is closed_listed
 
 
-def test_account_closed_in_past_expenses(main_user):
-    main_user.year = 3000
+@pytest.mark.parametrize(
+    "year",
+    [3000, 1000, 2000],
+    ids=["after_closed", "before_closed", "closed_year"],
+)
+def test_transaction_to_account_lists_no_account(main_user, year):
+    main_user.year = year
 
     AccountFactory(title="S1")
     AccountFactory(title="S2", closed=2000)
 
-    form = ExpenseForm(user=main_user, data={})
+    actual = str(TransactionForm(user=main_user, data={})["to_account"])
 
-    assert "S1" in str(form["account"])
-    assert "S2" not in str(form["account"])
-
-
-def test_account_closed_in_future_expenses(main_user):
-    main_user.year = 1000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = ExpenseForm(user=main_user, data={})
-
-    assert "S1" in str(form["account"])
-    assert "S2" in str(form["account"])
-
-
-def test_account_closed_in_current_year_expenses(main_user):
-    main_user.year = 2000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = ExpenseForm(user=main_user, data={})
-
-    assert "S1" in str(form["account"])
-    assert "S2" in str(form["account"])
-
-
-def test_account_closed_in_past_transactions(main_user):
-    main_user.year = 3000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = TransactionForm(user=main_user, data={})
-
-    assert "S1" in str(form["from_account"])
-    assert "S2" not in str(form["from_account"])
-
-    assert "S1" not in str(form["to_account"])
-    assert "S2" not in str(form["to_account"])
-
-
-def test_account_closed_in_future_transactions(main_user):
-    main_user.year = 1000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = TransactionForm(user=main_user, data={})
-
-    assert "S1" in str(form["from_account"])
-    assert "S2" in str(form["from_account"])
-
-    assert "S1" not in str(form["to_account"])
-    assert "S2" not in str(form["to_account"])
-
-
-def test_account_closed_in_current_year_transactions(main_user):
-    main_user.year = 2000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = TransactionForm(user=main_user, data={})
-
-    assert "S1" in str(form["from_account"])
-    assert "S2" in str(form["from_account"])
-
-    assert "S1" not in str(form["to_account"])
-    assert "S2" not in str(form["to_account"])
-
-
-def test_account_closed_in_past_saving_close(main_user):
-    main_user.year = 3000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = SavingCloseForm(user=main_user, data={})
-
-    assert "S1" in str(form["to_account"])
-    assert "S2" not in str(form["to_account"])
-
-
-def test_account_closed_in_future_saving_close(main_user):
-    main_user.year = 1000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = SavingCloseForm(user=main_user, data={})
-
-    assert "S1" in str(form["to_account"])
-    assert "S2" in str(form["to_account"])
-
-
-def test_account_closed_in_current_year_saving_close(main_user):
-    main_user.year = 2000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = SavingCloseForm(user=main_user, data={})
-
-    assert "S1" in str(form["to_account"])
-    assert "S2" in str(form["to_account"])
-
-
-def test_account_closed_in_past_saving(main_user):
-    main_user.year = 3000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = SavingForm(user=main_user, data={})
-
-    assert "S1" in str(form["account"])
-    assert "S2" not in str(form["account"])
-
-
-def test_account_closed_in_future_saving(main_user):
-    main_user.year = 1000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = SavingForm(user=main_user, data={})
-
-    assert "S1" in str(form["account"])
-    assert "S2" in str(form["account"])
-
-
-def test_account_closed_in_current_year_saving(main_user):
-    main_user.year = 2000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = SavingForm(user=main_user, data={})
-
-    assert "S1" in str(form["account"])
-    assert "S2" in str(form["account"])
-
-
-def test_account_closed_in_past_account_worth(main_user):
-    main_user.year = 3000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = AccountWorthForm(user=main_user, data={})
-
-    assert "S1" in str(form["account"])
-    assert "S2" not in str(form["account"])
-
-
-def test_account_closed_in_future_account_worth(main_user):
-    main_user.year = 1000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = AccountWorthForm(user=main_user, data={})
-
-    assert "S1" in str(form["account"])
-    assert "S2" in str(form["account"])
-
-
-def test_account_closed_in_current_year_account_worth(main_user):
-    main_user.year = 2000
-
-    AccountFactory(title="S1")
-    AccountFactory(title="S2", closed=2000)
-
-    form = AccountWorthForm(user=main_user, data={})
-
-    assert "S1" in str(form["account"])
-    assert "S2" in str(form["account"])
+    assert "S1" not in actual
+    assert "S2" not in actual
 
 
 def test_account_title_empty_slug(main_user):
