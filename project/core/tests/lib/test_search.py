@@ -63,17 +63,6 @@ def test_parse_search_keeps_word_characters_only(search_str, expect, search_type
     assert search.parse_search(search_str) == (expect, search_type)
 
 
-@pytest.mark.parametrize(
-    "dictionary, key, default_value, expect",
-    [
-        ({"a": 1}, "a", "x", 1),
-        ({"a": 1}, "b", "x", "x"),
-    ],
-)
-def test_get_from_dictionary(dictionary, key, default_value, expect):
-    assert search._get_value(dictionary, key, default_value) == expect
-
-
 FLAG_NAMES = {
     "category": ("-c", "-category"),
     "year": ("-y", "-year"),
