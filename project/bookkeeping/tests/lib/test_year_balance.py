@@ -221,26 +221,22 @@ def test_avg_of_an_all_zero_column_is_zero(data, average, column):
     assert actual == 0
 
 
-@time_machine.travel("1999-2-1")
-def test_avg_expenses_current_year(data):
+@pytest.mark.parametrize(
+    "now, expect",
+    [
+        pytest.param("1999-2-1", 1.5, id="current_year"),
+        pytest.param("2000-2-1", 2, id="not_current_year"),
+    ],
+)
+def test_avg_expenses_counts_months_up_to_today(data, now, expect):
     data.data[0, "expenses"] = 1
     data.data[1, "expenses"] = 2
     data.data[2, "expenses"] = 3
 
-    actual = YearBalance(data=data, amount_start=0).avg_expenses
+    with time_machine.travel(now):
+        actual = YearBalance(data=data, amount_start=0).avg_expenses
 
-    assert actual == 1.5
-
-
-@time_machine.travel("2000-2-1")
-def test_avg_expenses_not_current_year(data):
-    data.data[0, "expenses"] = 1
-    data.data[1, "expenses"] = 2
-    data.data[2, "expenses"] = 3
-
-    actual = YearBalance(data=data, amount_start=0).avg_expenses
-
-    assert actual == 2
+    assert actual == expect
 
 
 def test_balance_money_flow_subtracts_account_charged_savings_fees(data, amount_start):
