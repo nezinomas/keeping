@@ -231,7 +231,7 @@ def test_year_category_id_set(incomes, expenses, have, types):
     )
     actual = Savings(data).df.collect().to_dicts()
 
-    actual == {
+    assert {(row["year"], row["category_id"]) for row in actual} == {
         (1999, 1),
         (2000, 1),
         (2001, 1),
@@ -434,6 +434,8 @@ def test_table_type_without_record(types):
     assert actual[4]["per_year_incomes"] == 0
     assert actual[4]["per_year_fee"] == 0
 
+    assert [row for row in actual if row["category_id"] == 666] == []
+
 
 def test_table_old_type(types):
     types.append(SimpleNamespace(pk=666, closed=1999))
@@ -463,6 +465,13 @@ def test_table_old_type(types):
     assert actual[4]["past_fee"] == 2
     assert actual[4]["per_year_incomes"] == 0
     assert actual[4]["per_year_fee"] == 0
+
+    old = [row for row in actual if row["category_id"] == 666]
+    assert [row["year"] for row in old] == list(range(1974, 2000))
+    assert (old[0]["incomes"], old[0]["fee"]) == (10, 1)
+    assert (old[0]["past_amount"], old[0]["per_year_incomes"]) == (0, 10)
+    assert (old[-1]["past_amount"], old[-1]["past_fee"]) == (10, 1)
+    assert (old[-1]["per_year_incomes"], old[-1]["per_year_fee"]) == (0, 0)
 
 
 def test_table_have_empty(incomes, expenses, types):
@@ -743,20 +752,19 @@ def test_table_does_not_depend_on_the_input_row_order():
     ]
     types = [SimpleNamespace(pk=pk, closed=None) for pk in (1, 2, 3)]
 
-    def table(rng=None):
+    def table(shuffle):
         lists = [list(x) for x in (incomes, expenses, have, moves, types)]
         for x in lists:
-            if rng:
-                rng.shuffle(x)
+            shuffle(x)
         inc, exp, hv, mv, tp = lists
         data = SimpleNamespace(moves=mv, incomes=inc, expenses=exp, have=hv, types=tp)
         return Savings(data).df.collect().to_dicts()
 
-    expected = table()
+    expected = table(lambda items: None)
     rng = random.Random(1)
 
     for _ in range(20):
-        assert table(rng) == expected
+        assert table(rng.shuffle) == expected
 
 
 @given(
