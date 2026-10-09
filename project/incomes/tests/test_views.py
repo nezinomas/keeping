@@ -6,65 +6,24 @@ import pytest
 import time_machine
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
-from django.urls import resolve, reverse
+from django.urls import reverse
 
 from ...accounts.tests.factories import AccountFactory
-from .. import models, views
+from .. import models
 from ..tabs import TABS
 from .factories import Income, IncomeFactory, IncomeTypeFactory
 
 pytestmark = pytest.mark.django_db
 
 
-# ----------------------------------------------------------------------------
-#                                                                      Incomes
-# ----------------------------------------------------------------------------
-def test_incomes_index_func():
-    view = resolve("/incomes/")
-
-    assert views.TabIndex == view.func.view_class
-
-
-def test_incomes_lists_func():
-    view = resolve("/incomes/lists/")
-
-    assert views.Lists == view.func.view_class
-
-
-def test_incomes_data_func():
-    view = resolve("/incomes/data/")
-
-    assert views.TabData == view.func.view_class
-
-
-def test_incomes_new_func():
-    view = resolve("/incomes/new/")
-
-    assert views.New == view.func.view_class
-
-
-def test_incomes_update_func():
-    view = resolve("/incomes/update/1/")
-
-    assert views.Update == view.func.view_class
-
-
-def test_types_tab_func():
-    view = resolve("/incomes/types/")
-
-    assert views.TabTypes == view.func.view_class
-
-
-def test_types_new_func():
-    view = resolve("/incomes/type/new/")
-
-    assert views.TypeNew == view.func.view_class
-
-
-def test_types_update_func():
-    view = resolve("/incomes/type/update/1/")
-
-    assert views.TypeUpdate == view.func.view_class
+def _update_data(income, date="1999-12-31"):
+    return {
+        "price": "150",
+        "date": date,
+        "remark": "Pastaba",
+        "account": income.account.pk,
+        "income_type": income.income_type.pk,
+    }
 
 
 @time_machine.travel("2000-01-01")
@@ -134,8 +93,8 @@ def test_income_load_update_form(client_logged):
     assert f'hx-post="{url}"' in actual
     assert '<input type="text" name="date" value="1999-01-01"' in actual
     assert '<input type="text" name="price" value="77.77"' in actual
-    assert '<option value="1" selected>Account1</option>' in actual
-    assert '<option value="1" selected>Income Type</option>' in actual
+    assert f'<option value="{i.account.pk}" selected>Account1</option>' in actual
+    assert f'<option value="{i.income_type.pk}" selected>Income Type</option>' in actual
     assert "remark" in actual
 
 
@@ -154,15 +113,8 @@ def test_income_not_load_other_journal(client_logged, second_user):
 def test_income_update_to_another_year(client_logged):
     income = IncomeFactory()
 
-    data = {
-        "price": "150",
-        "date": "2010-12-31",
-        "remark": "Pastaba",
-        "account": 1,
-        "income_type": 1,
-    }
     url = reverse("incomes:update", kwargs={"pk": income.pk})
-    client_logged.post(url, data, follow=True)
+    client_logged.post(url, _update_data(income, "2010-12-31"), follow=True)
 
     actual = models.Income.objects.get(pk=income.pk)
     assert actual.date == date(2010, 12, 31)
@@ -171,15 +123,8 @@ def test_income_update_to_another_year(client_logged):
 def test_income_update(client_logged):
     income = IncomeFactory()
 
-    data = {
-        "price": "150",
-        "date": "1999-12-31",
-        "remark": "Pastaba",
-        "account": 1,
-        "income_type": 1,
-    }
     url = reverse("incomes:update", kwargs={"pk": income.pk})
-    client_logged.post(url, data, follow=True)
+    client_logged.post(url, _update_data(income), follow=True)
 
     actual = models.Income.objects.get(pk=income.pk)
     assert actual.date == date(1999, 12, 31)
@@ -190,15 +135,10 @@ def test_income_update(client_logged):
 def test_income_update_status_code(client_logged):
     income = IncomeFactory()
 
-    data = {
-        "price": "150",
-        "date": "1999-12-31",
-        "remark": "Pastaba",
-        "account": 1,
-        "income_type": 1,
-    }
     url = reverse("incomes:update", kwargs={"pk": income.pk})
-    request = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
+    request = client_logged.post(
+        url, _update_data(income), **{"HTTP_HX-Request": "true"}
+    )
 
     assert request.status_code == 204
 
@@ -206,15 +146,10 @@ def test_income_update_status_code(client_logged):
 def test_income_update_htmx_trigger_value(client_logged):
     income = IncomeFactory()
 
-    data = {
-        "price": "150",
-        "date": "1999-12-31",
-        "remark": "Pastaba",
-        "account": 1,
-        "income_type": 1,
-    }
     url = reverse("incomes:update", kwargs={"pk": income.pk})
-    request = client_logged.post(url, data, **{"HTTP_HX-Request": "true"})
+    request = client_logged.post(
+        url, _update_data(income), **{"HTTP_HX-Request": "true"}
+    )
 
     assert request.headers["HX-Trigger"] == '{"reload": {}}'
 
@@ -224,15 +159,8 @@ def test_income_update_past_record(main_user, client_logged):
     main_user.year = 2000
     i = IncomeFactory(date=date(1974, 12, 12))
 
-    data = {
-        "price": "150",
-        "date": "1997-12-12",
-        "remark": "Pastaba",
-        "account": 1,
-        "income_type": 1,
-    }
     url = reverse("incomes:update", kwargs={"pk": i.pk})
-    client_logged.post(url, data, follow=True)
+    client_logged.post(url, _update_data(i, "1997-12-12"), follow=True)
 
     actual = models.Income.objects.get(pk=i.pk)
     assert actual.date == date(1997, 12, 12)
@@ -287,25 +215,6 @@ def test_list_and_search_render_the_same_type_and_account_cells(
     assert '<td class="text-left">Kasa</td>' in content
 
 
-# -------------------------------------------------------------------------------------
-#                                                                         Income Delete
-# -------------------------------------------------------------------------------------
-def test_view_incomes_delete_func():
-    view = resolve("/incomes/delete/1/")
-
-    assert views.Delete is view.func.view_class
-
-
-def test_view_incomes_delete_200(client_logged):
-    p = IncomeFactory()
-
-    url = reverse("incomes:delete", kwargs={"pk": p.pk})
-
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
 def test_view_incomes_delete_load_form(client_logged):
     p = IncomeFactory()
 
@@ -350,17 +259,6 @@ def test_incomes_delete_other_journal_post_form(client_logged, second_user):
     client_logged.post(url)
 
     assert Income.objects.all().count() == 1
-
-
-# ----------------------------------------------------------------------------
-#                                                                 Income Type
-# ----------------------------------------------------------------------------
-def test_type_load_form_200(client_logged):
-    url = reverse("incomes:type_new")
-
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_type_load_form(client_logged):
@@ -441,28 +339,6 @@ def test_income_type_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_view_index_200(client_logged):
-    response = client_logged.get("/incomes/")
-
-    assert response.status_code == 200
-
-
-# -------------------------------------------------------------------------------------
-#                                                                        Incomes Search
-# -------------------------------------------------------------------------------------
-def test_search_func():
-    view = resolve("/incomes/search/")
-
-    assert views.Search == view.func.view_class
-
-
-def test_search_get_200(client_logged):
-    url = reverse("incomes:search")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
-
-
 def test_search_not_found(client_logged):
     IncomeFactory()
 
@@ -511,9 +387,6 @@ def test_search_pagination_second_page(client_logged):
     assert actual.count("Income Type") == 1
 
 
-# -------------------------------------------------------------------------------------
-#                                                                                 Tabs
-# -------------------------------------------------------------------------------------
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
 def test_a_tab_url_visited_plainly_returns_the_whole_page(client_logged, tab):
     content = client_logged.get(tab.url).content.decode()

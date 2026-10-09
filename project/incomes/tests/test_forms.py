@@ -11,11 +11,6 @@ from .factories import IncomeTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# Income Type
-def test_income_type_init(main_user):
-    IncomeTypeForm(user=main_user)
-
-
 def test_income_type_init_fields(main_user):
     form = IncomeTypeForm(user=main_user).as_p()
 
@@ -53,24 +48,13 @@ def test_income_type_blank_data(main_user):
     assert "type" in form.errors
 
 
-def test_income_type_title_null(main_user):
-    form = IncomeTypeForm(user=main_user, data={"title": None})
-
-    assert not form.is_valid()
-
-    assert "title" in form.errors
-
-
-def test_income_type_title_too_long(main_user):
-    form = IncomeTypeForm(user=main_user, data={"title": "a" * 255})
-
-    assert not form.is_valid()
-
-    assert "title" in form.errors
-
-
-def test_income_type_title_too_short(main_user):
-    form = IncomeTypeForm(user=main_user, data={"title": "aa"})
+@pytest.mark.parametrize(
+    "title",
+    [None, "a" * 255, "aa"],
+    ids=["null", "too_long", "too_short"],
+)
+def test_income_type_title_rejected(main_user, title):
+    form = IncomeTypeForm(user=main_user, data={"title": title})
 
     assert not form.is_valid()
 
@@ -86,32 +70,14 @@ def test_income_type_identical_title_names_the_existing_one(main_user):
     assert form.errors["title"] == ["„Būstas“ jau yra."]
 
 
-def test_income_type_unique_name(main_user):
-    IncomeTypeFactory(title="XXX")
-
-    form = IncomeTypeForm(
-        user=main_user,
-        data={
-            "title": "XXX",
-        },
-    )
-
-    assert not form.is_valid()
-
-
 def test_form_income_type_and_second_user(main_user, second_user):
-    IncomeTypeFactory(title="T1", journal=main_user.journal)
-    IncomeTypeFactory(title="T2", journal=second_user.journal)
+    t1 = IncomeTypeFactory(title="T1", journal=main_user.journal)
+    t2 = IncomeTypeFactory(title="T2", journal=second_user.journal)
 
     form = IncomeForm(user=main_user).as_p()
 
-    assert '<option value="1">T1</option>' in form
-    assert '<option value="2">T2</option>' not in form
-
-
-# Income
-def test_income_init(main_user):
-    IncomeForm(user=main_user)
+    assert f'<option value="{t1.pk}">T1</option>' in form
+    assert f'<option value="{t2.pk}">T2</option>' not in form
 
 
 @time_machine.travel("1974-01-01")
@@ -124,8 +90,8 @@ def test_income_year_initial_value(main_user):
 
 
 def test_income_current_user_types(main_user, second_user):
-    IncomeTypeFactory(title="T1")  # user bob, current user
-    IncomeTypeFactory(title="T2", journal=second_user.journal)  # user X
+    IncomeTypeFactory(title="T1")
+    IncomeTypeFactory(title="T2", journal=second_user.journal)
 
     form = IncomeForm(user=main_user).as_p()
 
@@ -134,8 +100,8 @@ def test_income_current_user_types(main_user, second_user):
 
 
 def test_income_current_user_accounts(main_user, second_user):
-    AccountFactory(title="A1")  # user bob, current user
-    AccountFactory(title="A2", journal=second_user.journal)  # user X
+    AccountFactory(title="A1")
+    AccountFactory(title="A2", journal=second_user.journal)
 
     form = IncomeForm(user=main_user).as_p()
 
@@ -143,7 +109,7 @@ def test_income_current_user_accounts(main_user, second_user):
     assert "A2" not in form
 
 
-def test_expense_select_first_account(main_user, second_user):
+def test_income_select_first_account(main_user, second_user):
     a2 = AccountFactory(title="A2")
     AccountFactory(title="A1", journal=second_user.journal)
 
