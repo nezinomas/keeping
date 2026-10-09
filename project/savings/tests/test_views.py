@@ -207,27 +207,25 @@ def test_savings_not_load_other_journal(client_logged, second_user):
     assert response.status_code == 404
 
 
-def test_savings_list_price_converted(client_logged):
-    SavingFactory(price=7777, fee=8888)
-
-    url = reverse("savings:list")
-    response = client_logged.get(url)
-    actual = response.content.decode("utf-8")
-
-    assert "77,77" in actual
-    assert "88,88" in actual
-
-
+@pytest.mark.parametrize(
+    "price, fee, shown_price, shown_fee",
+    [
+        pytest.param(7777, 8888, "77,77", "88,88", id="cents"),
+        pytest.param(100_000_000, 100_000, "1.000.000,00", "1.000,00", id="thousands"),
+    ],
+)
 @time_machine.travel("1999-1-1")
-def test_savings_list_price_converted_with_thousands(client_logged):
-    SavingFactory(price=100_000_000, fee=100_000)
+def test_savings_list_price_converted(
+    client_logged, price, fee, shown_price, shown_fee
+):
+    SavingFactory(price=price, fee=fee)
 
     url = reverse("savings:list")
     response = client_logged.get(url)
     actual = response.content.decode("utf-8")
 
-    assert "1.000.000,00" in actual
-    assert "1.000,00" in actual
+    assert shown_price in actual
+    assert shown_fee in actual
 
 
 def test_view_saving_delete_load_form(client_logged):
