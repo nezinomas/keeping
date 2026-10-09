@@ -81,28 +81,16 @@ def test_debt_list_with_data(client_logged, debt_type, other_factory, label, rem
     assert "6.666,66" not in content
 
 
+@pytest.mark.parametrize("url_name", ["debts:update", "debts:delete"])
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_list_edit_button(client_logged, debt_type):
+def test_debt_list_links_each_row_button(client_logged, debt_type, url_name):
     obj = DEBT_FACTORIES[debt_type]()
 
     url = reverse("debts:list", kwargs={"debt_type": debt_type})
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    link = reverse("debts:update", kwargs={"pk": obj.pk, "debt_type": debt_type})
-
-    assert f'<a role="button" hx-get="{link}"' in content
-
-
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_list_delete_button(client_logged, debt_type):
-    obj = DEBT_FACTORIES[debt_type]()
-
-    url = reverse("debts:list", kwargs={"debt_type": debt_type})
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-
-    link = reverse("debts:delete", kwargs={"pk": obj.pk, "debt_type": debt_type})
+    link = reverse(url_name, kwargs={"pk": obj.pk, "debt_type": debt_type})
 
     assert f'<a role="button" hx-get="{link}"' in content
 
