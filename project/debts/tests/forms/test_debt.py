@@ -12,10 +12,6 @@ from .. import factories
 pytestmark = pytest.mark.django_db
 
 
-def test_debt_init(main_user):
-    forms.DebtForm(user=main_user, debt_type="lend")
-
-
 def test_debt_init_fields(main_user):
     form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
 
@@ -30,16 +26,17 @@ def test_debt_init_fields(main_user):
     assert '<input type="number" name="returned"' not in form
 
 
-def test_debt_name_field_label_for_lend(main_user):
-    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
+@pytest.mark.parametrize(
+    "debt_type, label",
+    [
+        pytest.param("lend", "Paskolos gavėjas", id="lend"),
+        pytest.param("borrow", "Paskolos davėjas", id="borrow"),
+    ],
+)
+def test_debt_name_field_label(main_user, debt_type, label):
+    form = forms.DebtForm(user=main_user, debt_type=debt_type).as_p()
 
-    assert '<label for="id_name">Paskolos gavėjas:</label>' in form
-
-
-def test_debt_name_field_label_for_borrow(main_user):
-    form = forms.DebtForm(user=main_user, debt_type="borrow").as_p()
-
-    assert '<label for="id_name">Paskolos davėjas:</label>' in form
+    assert f'<label for="id_name">{label}:</label>' in form
 
 
 @time_machine.travel("1974-01-01")
@@ -52,8 +49,8 @@ def test_debt_initial_values(main_user):
 
 
 def test_debt_current_user_accounts(main_user, second_user):
-    AccountFactory(title="A1")  # user bob, current user
-    AccountFactory(title="A2", journal=second_user.journal)  # user X
+    AccountFactory(title="A1")
+    AccountFactory(title="A2", journal=second_user.journal)
 
     form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
 
@@ -72,30 +69,16 @@ def test_debt_select_first_account(main_user, second_user):
     assert expect in form
 
 
-def test_debt_name_too_short(main_user):
+@pytest.mark.parametrize(
+    "name", [pytest.param("AA", id="too_short"), pytest.param("A" * 101, id="too_long")]
+)
+def test_debt_name_length_rejected(main_user, name):
     form = forms.DebtForm(
         user=main_user,
         debt_type="lend",
         data={
             "date": "1974-01-01",
-            "name": "AA",
-            "price": "1",
-            "account": AccountFactory(),
-        },
-    )
-
-    assert not form.is_valid()
-
-    assert "name" in form.errors
-
-
-def test_debt_name_too_long(main_user):
-    form = forms.DebtForm(
-        user=main_user,
-        debt_type="lend",
-        data={
-            "date": "1974-01-01",
-            "name": "A" * 101,
+            "name": name,
             "price": "1",
             "account": AccountFactory(),
         },

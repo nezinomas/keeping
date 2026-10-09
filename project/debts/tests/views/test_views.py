@@ -1,27 +1,11 @@
 import re
 
 import pytest
-from django.urls import resolve, reverse
+from django.urls import reverse
 
-from ... import views
+from .. import factories
 
 pytestmark = pytest.mark.django_db
-
-
-# -------------------------------------------------------------------------------------
-#                                                                           Debts Index
-# -------------------------------------------------------------------------------------
-def test_debts_index_func():
-    view = resolve("/debts/")
-
-    assert views.Index == view.func.view_class
-
-
-def test_debts_index_200(client_logged):
-    url = reverse("debts:index")
-    response = client_logged.get(url)
-
-    assert response.status_code == 200
 
 
 def test_debts_index_not_logged(client):
@@ -31,64 +15,37 @@ def test_debts_index_not_logged(client):
     assert response.status_code == 302
 
 
-def test_debts_index_context(client_logged):
+def test_debts_index_renders_its_four_lists(client_logged):
+    factories.BorrowReturnFactory()
+    factories.LendReturnFactory()
+
     url = reverse("debts:index")
     response = client_logged.get(url)
-    context = response.context
+    content = response.content.decode()
 
-    assert "borrow" in context
-    assert "borrow_return" in context
-    assert "lend" in context
-    assert "lend_return" in context
+    assert "Borrow Remark" in content
+    assert "Borrow Return Remark" in content
+    assert "Lend Remark" in content
+    assert "Lend Return Remark" in content
 
 
-def test_debts_index_borrow_add_button(client_logged):
+@pytest.mark.parametrize(
+    "url_name, debt_type, label",
+    [
+        pytest.param("debts:new", "borrow", "Skolą", id="borrow"),
+        pytest.param("debts:return_new", "borrow", "Sumą", id="borrow_return"),
+        pytest.param("debts:new", "lend", "Skolą", id="lend"),
+        pytest.param("debts:return_new", "lend", "Sumą", id="lend_return"),
+    ],
+)
+def test_debts_index_add_button(client_logged, url_name, debt_type, label):
     url = reverse("debts:index")
     response = client_logged.get(url)
 
     content = response.content.decode()
 
-    link = reverse("debts:new", kwargs={"debt_type": "borrow"})
+    link = reverse(url_name, kwargs={"debt_type": debt_type})
     pattern = re.compile(rf'<button.*?hx-get="{link}".*?>(.*?)<\/button>')
     res = re.findall(pattern, content)
 
-    assert res[0] == "Skolą"
-
-
-def test_debts_index_borrow_return_add_button(client_logged):
-    url = reverse("debts:index")
-    response = client_logged.get(url)
-
-    content = response.content.decode()
-
-    link = reverse("debts:return_new", kwargs={"debt_type": "borrow"})
-    pattern = re.compile(rf'<button.*?hx-get="{link}".*>(.*?)<\/button>')
-    res = re.findall(pattern, content)
-
-    assert res[0] == "Sumą"
-
-
-def test_debts_index_lend_add_button(client_logged):
-    url = reverse("debts:index")
-    response = client_logged.get(url)
-
-    content = response.content.decode()
-
-    link = reverse("debts:new", kwargs={"debt_type": "lend"})
-    pattern = re.compile(rf'<button.*?hx-get="{link}".*?>(.*?)<\/button>')
-    res = re.findall(pattern, content)
-
-    assert res[0] == "Skolą"
-
-
-def test_debts_index_lend_return_add_button(client_logged):
-    url = reverse("debts:index")
-    response = client_logged.get(url)
-
-    content = response.content.decode()
-
-    link = reverse("debts:return_new", kwargs={"debt_type": "lend"})
-    pattern = re.compile(rf'<button.*?hx-get="{link}".*?>(.*?)<\/button>')
-    res = re.findall(pattern, content)
-
-    assert res[0] == "Sumą"
+    assert res[0] == label
