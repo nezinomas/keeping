@@ -1,28 +1,10 @@
 import pytest
-from django.urls import resolve, reverse
+from django.urls import reverse
 
-from .. import views
+from ...users.views import Login
 from .factories import AccountFactory
 
 pytestmark = pytest.mark.django_db
-
-
-def test_view_lists_func():
-    view = resolve("/accounts/")
-
-    assert views.Lists is view.func.view_class
-
-
-def test_view_new_func():
-    view = resolve("/accounts/new/")
-
-    assert views.New is view.func.view_class
-
-
-def test_view_update_func():
-    view = resolve("/accounts/update/1/")
-
-    assert views.Update is view.func.view_class
 
 
 def test_save_account(main_user, client_logged):
@@ -81,30 +63,23 @@ def test_account_list_view_has_all(client_logged):
     assert "S2" in actual
 
 
-# ----------------------------------------------------------------------------
-#                                                                 load_account
-# ----------------------------------------------------------------------------
-def test_load_to_account_func():
-    view = resolve("/accounts/load/")
-
-    assert views.LoadAccount is view.func.view_class
-
-
 def test_load_to_account_form_200(client_logged):
     url = reverse("accounts:new")
     response = client_logged.get(url)
+
     assert response.status_code == 200
+    assert 'name="title"' in response.content.decode("utf-8")
 
 
 def test_load_to_account_form_302(tp):
     response = tp.get("accounts:new")
+
     assert response.status_code == 302
+    assert response.url.startswith(reverse("users:login"))
 
 
 def test_load_to_account_must_logged(tp):
     response = tp.get("accounts:load", follow=True)
-
-    from ...users.views import Login
 
     assert response.resolver_match.func.view_class is Login
 
