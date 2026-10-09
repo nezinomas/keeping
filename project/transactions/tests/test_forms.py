@@ -17,11 +17,6 @@ from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 pytestmark = pytest.mark.django_db
 
 
-# Transaction
-def test_transaction_init(main_user):
-    TransactionForm(user=main_user)
-
-
 def test_transaction_init_fields(main_user):
     form = TransactionForm(user=main_user).as_p()
 
@@ -56,8 +51,8 @@ def test_transaction_current_user_accounts_selected_parent(main_user, second_use
 
     form = TransactionForm(user=main_user, data={"from_account": a1.pk}).as_p()
 
-    assert '<option value="1" selected>A1</option>' in form
-    assert '<option value="1">A1</option>' not in form
+    assert f'<option value="{a1.pk}" selected>A1</option>' in form
+    assert f'<option value="{a1.pk}">A1</option>' not in form
 
 
 def test_transaction_valid_data(main_user):
@@ -154,11 +149,6 @@ def test_transaction_price_null(main_user):
     assert "price" in form.errors
 
 
-# Saving Change
-def test_saving_change_init(main_user):
-    SavingChangeForm(user=main_user)
-
-
 def test_saving_change_fields(main_user):
     form = SavingChangeForm(user=main_user).as_p()
 
@@ -195,8 +185,8 @@ def test_saving_change_current_user_accounts_selected_parent(main_user, second_u
 
     form = SavingChangeForm(user=main_user, data={"from_account": s1.pk}).as_p()
 
-    assert '<option value="1" selected>S1</option>' in form
-    assert '<option value="1">S1</option>' not in form
+    assert f'<option value="{s1.pk}" selected>S1</option>' in form
+    assert f'<option value="{s1.pk}">S1</option>' not in form
 
 
 def test_saving_change_valid_data(main_user):
@@ -340,23 +330,11 @@ def test_saving_change_form_type_closed_in_past(main_user):
     assert "S2" not in str(form["to_account"])
 
 
-def test_saving_change_form_type_closed_in_future(main_user):
-    main_user.year = 1000
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingChangeForm(user=main_user, data={})
-
-    assert "S1" in str(form["from_account"])
-    assert "S2" in str(form["from_account"])
-
-    assert "S1" not in str(form["to_account"])
-    assert "S2" not in str(form["to_account"])
-
-
-def test_saving_change_form_type_closed_in_current_year(main_user):
-    main_user.year = 2000
+@pytest.mark.parametrize(
+    "year", [pytest.param(1000, id="future"), pytest.param(2000, id="current_year")]
+)
+def test_saving_change_form_type_closed_in_future_or_current_year(main_user, year):
+    main_user.year = year
 
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
@@ -393,11 +371,6 @@ def test_saving_change_save_and_close_from_account(main_user):
     actual = SavingType.objects.get(title=a_from.title)
 
     assert actual.closed == 1999
-
-
-# Saving Close
-def test_saving_close_init(main_user):
-    SavingCloseForm(user=main_user)
 
 
 def test_saving_close_fields(main_user):
@@ -516,7 +489,7 @@ def test_saving_close_valid_data_no_fee(main_user):
 
 @time_machine.travel("1999-2-2")
 @pytest.mark.parametrize("year", [1998, 2001])
-def test_saving_close_in_valid_date(year, main_user):
+def test_saving_close_invalid_date(year, main_user):
     a_from = SavingTypeFactory()
     a_to = AccountFactory(title="Account2")
 
@@ -578,20 +551,11 @@ def test_saving_close_form_type_closed_in_past(main_user):
     assert "S2" not in str(form["from_account"])
 
 
-def test_saving_close_form_type_closed_in_future(main_user):
-    main_user.year = 1000
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingCloseForm(user=main_user, data={})
-
-    assert "S1" in str(form["from_account"])
-    assert "S2" in str(form["from_account"])
-
-
-def test_saving_close_form_type_closed_in_current_year(main_user):
-    main_user.year = 2000
+@pytest.mark.parametrize(
+    "year", [pytest.param(1000, id="future"), pytest.param(2000, id="current_year")]
+)
+def test_saving_close_form_type_closed_in_future_or_current_year(main_user, year):
+    main_user.year = year
 
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
@@ -671,11 +635,20 @@ MOVES = {
 }
 
 
-@pytest.mark.parametrize("close", [False, True])
-@pytest.mark.parametrize("fee_source", SavingType.FeeSource.values)
+@pytest.mark.parametrize(
+    "close, closed",
+    [pytest.param(False, None, id="kept_open"), pytest.param(True, 1999, id="closed")],
+)
+@pytest.mark.parametrize(
+    "fee_source, debit",
+    [
+        pytest.param(SavingType.FeeSource.INVESTMENT, 1000, id="investment"),
+        pytest.param(SavingType.FeeSource.ACCOUNT, 1010, id="account"),
+    ],
+)
 @pytest.mark.parametrize("move", MOVES)
 def test_sell_and_switch_forms_leave_balances_a_re_sync_agrees_with(
-    main_user, move, fee_source, close
+    main_user, move, fee_source, debit, close, closed
 ):
     bank, fund = _purchase(fee_source)
     receiver = MOVES[move].receiver(bank, SavingTypeFactory(title="Other"))
@@ -696,10 +669,9 @@ def test_sell_and_switch_forms_leave_balances_a_re_sync_agrees_with(
     balance_sources.sync_accounts(user=main_user)
     balance_sources.sync_savings(user=main_user)
 
-    debit = 1010 if fee_source == SavingType.FeeSource.ACCOUNT else 1000
     assert AccountBalance.objects.get(account=bank, year=1999).expenses == debit
     assert MOVES[move].received(receiver).incomes == 500
-    assert SavingType.objects.get(pk=fund.pk).closed == (1999 if close else None)
+    assert SavingType.objects.get(pk=fund.pk).closed == closed
     assert _balances() == after_form
 
 
@@ -822,15 +794,22 @@ def test_form_edit_with_close_unticked_reopens_the_fund(main_user, move):
 # a fund's close year follows its last move
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_earlier_move_of_the_close_year_edited_back_keeps_the_close_year(
-    main_user, move
+@pytest.mark.parametrize(
+    "earlier_day, edited_day, edited_close",
+    [
+        pytest.param("2000-03-01", "1999-03-01", True, id="edited_back"),
+        pytest.param("2000-09-01", "2000-06-01", False, id="unticked"),
+    ],
+)
+def test_form_earlier_move_edited_keeps_the_fund_closed_in_its_last_year(
+    main_user, move, earlier_day, edited_day, edited_close
 ):
     fund = SavingTypeFactory(title="Fund")
     receiver = _receiver(move, SavingTypeFactory(title="Other"))
-    earlier = _saved_move(main_user, move, fund, receiver, "2000-03-01", False)
+    earlier = _saved_move(main_user, move, fund, receiver, earlier_day, False)
     _saved_move(main_user, move, fund, receiver, "2000-12-01", True)
 
-    _saved_move(main_user, move, fund, receiver, "1999-03-01", True, earlier)
+    _saved_move(main_user, move, fund, receiver, edited_day, edited_close, earlier)
 
     fund.refresh_from_db()
     assert fund.closed == 2000
@@ -937,20 +916,6 @@ def test_form_closing_move_edited_earlier_and_unticked_reopens_the_fund(
 
     fund.refresh_from_db()
     assert fund.closed is None
-
-
-@time_machine.travel("1999-1-1")
-@pytest.mark.parametrize("move", MOVES)
-def test_form_earlier_move_edited_and_unticked_keeps_the_fund_closed(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
-    earlier = _saved_move(main_user, move, fund, receiver, "2000-09-01", False)
-    _saved_move(main_user, move, fund, receiver, "2000-12-01", True)
-
-    _saved_move(main_user, move, fund, receiver, "2000-06-01", False, earlier)
-
-    fund.refresh_from_db()
-    assert fund.closed == 2000
 
 
 @time_machine.travel("1999-1-1")
