@@ -65,28 +65,16 @@ def test_debt_return_list_with_data(
     assert other_price not in content
 
 
+@pytest.mark.parametrize("url_name", ["debts:return_update", "debts:return_delete"])
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_list_edit_button(client_logged, debt_type):
+def test_debt_return_list_links_each_row_button(client_logged, debt_type, url_name):
     obj = RETURN_FACTORIES[debt_type]()
 
     url = reverse("debts:return_list", kwargs={"debt_type": debt_type})
     response = client_logged.get(url)
     content = response.content.decode("utf-8")
 
-    link = reverse("debts:return_update", kwargs={"pk": obj.pk, "debt_type": debt_type})
-
-    assert f'<a role="button" hx-get="{link}"' in content
-
-
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_list_delete_button(client_logged, debt_type):
-    obj = RETURN_FACTORIES[debt_type]()
-
-    url = reverse("debts:return_list", kwargs={"debt_type": debt_type})
-    response = client_logged.get(url)
-    content = response.content.decode("utf-8")
-
-    link = reverse("debts:return_delete", kwargs={"pk": obj.pk, "debt_type": debt_type})
+    link = reverse(url_name, kwargs={"pk": obj.pk, "debt_type": debt_type})
 
     assert f'<a role="button" hx-get="{link}"' in content
 
