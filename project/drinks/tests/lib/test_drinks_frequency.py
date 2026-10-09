@@ -24,39 +24,48 @@ def test_current_year_taken_from_records():
     assert stats.current_year == 2025
 
 
-def test_is_current_year_while_the_year_runs():
-    rows = [_row(date(2026, 1, 5), 3)]
+@pytest.mark.parametrize(
+    "year, expected",
+    [
+        pytest.param(2026, True, id="while_the_year_runs"),
+        pytest.param(2025, False, id="once_the_year_is_over"),
+    ],
+)
+def test_is_current_year(year, expected):
+    rows = [_row(date(year, 1, 5), 3)]
 
-    assert FrequencyStats(current_daily=rows, today=date(2026, 6, 15)).is_current_year
+    stats = FrequencyStats(current_daily=rows, today=date(2026, 6, 15))
 
-
-def test_is_current_year_is_false_once_the_year_is_over():
-    rows = [_row(date(2025, 1, 5), 3)]
-
-    assert not FrequencyStats(
-        current_daily=rows, today=date(2026, 6, 15)
-    ).is_current_year
+    assert stats.is_current_year is expected
 
 
 # drinking_days
-def test_drinking_days_counts_distinct_dates_not_rows():
-    rows = [
-        _row(date(2025, 1, 5), 3),
-        _row(date(2025, 1, 5), 4),  # same day, second record
-        _row(date(2025, 1, 6), 2),
-    ]
+@pytest.mark.parametrize(
+    "rows, today, expected",
+    [
+        pytest.param(
+            [
+                _row(date(2025, 1, 5), 3),
+                _row(date(2025, 1, 5), 4),  # same day, second record
+                _row(date(2025, 1, 6), 2),
+            ],
+            date(2025, 6, 1),
+            2,
+            id="distinct_dates_not_rows",
+        ),
+        pytest.param([], date(2025, 6, 1), 0, id="no_records_is_zero"),
+        pytest.param(
+            [_row(date(2025, 12, 31), 5)],
+            date(2026, 6, 1),
+            1,
+            id="the_last_day_of_the_year",
+        ),
+    ],
+)
+def test_drinking_days(rows, today, expected):
+    stats = FrequencyStats(current_daily=rows, today=today)
 
-    assert FrequencyStats(current_daily=rows, today=date(2025, 6, 1)).drinking_days == 2
-
-
-def test_drinking_days_no_records_is_zero():
-    assert FrequencyStats(today=date(2025, 6, 1)).drinking_days == 0
-
-
-def test_drinking_days_counts_the_last_day_of_the_year():
-    rows = [_row(date(2025, 12, 31), 5)]
-
-    assert FrequencyStats(current_daily=rows, today=date(2026, 6, 1)).drinking_days == 1
+    assert stats.drinking_days == expected
 
 
 # dry_days
@@ -75,26 +84,24 @@ def test_drinking_days_counts_the_last_day_of_the_year():
             10 - 2,
             id="dry_days_current_year_uses_day_of_year",
         ),
+        pytest.param(
+            [_row(date(2024, 1, 5), 3)],
+            date(2026, 6, 15),
+            366 - 1,
+            id="past_leap_year",
+        ),
+        pytest.param(
+            [_row(date(2026, 1, i), 3) for i in range(1, 11)],
+            date(2026, 1, 5),
+            0,
+            id="never_negative",
+        ),
     ],
 )
 def test_dry_days_count_the_days_elapsed(rows, today, expected):
     stats = FrequencyStats(current_daily=rows, today=today)
 
     assert stats.dry_days == expected
-
-
-def test_dry_days_past_leap_year_uses_366():
-    rows = [_row(date(2024, 1, 5), 3)]
-    stats = FrequencyStats(current_daily=rows, today=date(2026, 6, 15))
-
-    assert stats.dry_days == 366 - 1
-
-
-def test_dry_days_never_negative():
-    rows = [_row(date(2026, 1, i), 3) for i in range(1, 11)]
-    stats = FrequencyStats(current_daily=rows, today=date(2026, 1, 5))
-
-    assert stats.dry_days == 0
 
 
 # dry_share / drinking_day_share
@@ -114,26 +121,30 @@ def test_shares_on_an_empty_year_are_zero():
 
 
 # intensity
-def test_intensity_is_total_over_drinking_days():
-    rows = [_row(date(2026, 1, 5), 7), _row(date(2026, 1, 8), 3)]
+@pytest.mark.parametrize(
+    "rows, expected",
+    [
+        pytest.param(
+            [_row(date(2026, 1, 5), 7), _row(date(2026, 1, 8), 3)],
+            5.0,
+            id="total_over_drinking_days",
+        ),
+        pytest.param(
+            [
+                _row(date(2026, 1, 5), 4),
+                _row(date(2026, 1, 5), 6),
+                _row(date(2026, 1, 8), 2),
+            ],
+            6.0,
+            id="drinking_days_not_rows",
+        ),
+        pytest.param([], 0.0, id="no_records_is_zero"),
+    ],
+)
+def test_intensity(rows, expected):
     stats = FrequencyStats(current_daily=rows, today=date(2026, 6, 15))
 
-    assert stats.intensity == 5.0
-
-
-def test_intensity_divides_by_drinking_days_not_rows():
-    rows = [
-        _row(date(2026, 1, 5), 4),
-        _row(date(2026, 1, 5), 6),
-        _row(date(2026, 1, 8), 2),
-    ]
-    stats = FrequencyStats(current_daily=rows, today=date(2026, 6, 15))
-
-    assert stats.intensity == 6.0
-
-
-def test_intensity_with_no_records_is_zero():
-    assert FrequencyStats(today=date(2026, 6, 15)).intensity == 0.0
+    assert stats.intensity == expected
 
 
 def test_intensity_is_unchanged_by_the_order_of_the_days():
@@ -201,22 +212,20 @@ def test_compare_frequency_without_a_prior_year_is_empty():
     assert actual.improving is False
 
 
-def test_compare_frequency_clips_the_prior_year_on_month_and_day():
-    current = [_row(date(2026, 1, 5), 3)]
-    past = [
-        _row(date(2025, 1, 5), 3),  # before the cutoff
-        _row(date(2025, 3, 1), 3),  # the cutoff itself
-        _row(date(2025, 6, 20), 3),  # after it
-    ]
-
-    actual = FrequencyStats(current, past, today=date(2026, 3, 1)).compare_frequency()
-
-    assert actual.previous == 2
-
-
 @pytest.mark.parametrize(
-    "current, past, today",
+    "current, past, today, expected",
     [
+        pytest.param(
+            [_row(date(2026, 1, 5), 3)],
+            [
+                _row(date(2025, 1, 5), 3),  # before the cutoff
+                _row(date(2025, 3, 1), 3),  # the cutoff itself
+                _row(date(2025, 6, 20), 3),  # after it
+            ],
+            date(2026, 3, 1),
+            2,
+            id="month_and_day",
+        ),
         pytest.param(
             [_row(date(2025, 1, 5), 3)],
             [
@@ -224,7 +233,8 @@ def test_compare_frequency_clips_the_prior_year_on_month_and_day():
                 _row(date(2024, 3, 2), 3),  # dropped
             ],
             date(2025, 3, 1),
-            id="compare_frequency_clips_a_leap_day_in_the_prior_year",
+            1,
+            id="leap_day_in_the_prior_year",
         ),
         pytest.param(
             [_row(date(2024, 1, 5), 3)],
@@ -233,14 +243,15 @@ def test_compare_frequency_clips_the_prior_year_on_month_and_day():
                 _row(date(2023, 3, 5), 3),  # dropped
             ],
             date(2024, 2, 29),
-            id="compare_frequency_clips_the_prior_year_of_a_leap_year",
+            1,
+            id="prior_year_of_a_leap_year",
         ),
     ],
 )
-def test_compare_frequency_clips_the_prior_year_around_a_leap_day(current, past, today):
+def test_compare_frequency_clips_the_prior_year(current, past, today, expected):
     actual = FrequencyStats(current, past, today=today).compare_frequency()
 
-    assert actual.previous == 1
+    assert actual.previous == expected
 
 
 # compare_intensity
