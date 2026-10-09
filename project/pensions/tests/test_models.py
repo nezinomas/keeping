@@ -16,7 +16,6 @@ from .factories import PensionBalanceFactory, PensionFactory, PensionTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# PensionType
 def test_pension_type_str():
     p = PensionTypeFactory.build()
 
@@ -33,15 +32,18 @@ def test_pension_type_items_user(main_user, second_user):
     assert actual[0].title == "T1"
 
 
-@pytest.mark.xfail
-def test_pension_type_unique_for_journal():
-    PensionType.objects.create(title="T1")
-    PensionType.objects.create(title="T1")
+def test_pension_type_unique_for_journal(main_user):
+    PensionType.objects.create(title="T1", journal=main_user.journal)
+
+    with pytest.raises(IntegrityError):
+        PensionType.objects.create(title="T1", journal=main_user.journal)
 
 
 def test_pension_type_unique_for_journals(main_user, second_user):
     PensionType.objects.create(title="T1", journal=main_user.journal)
     PensionType.objects.create(title="T1", journal=second_user.journal)
+
+    assert PensionType.objects.filter(title="T1").count() == 2
 
 
 def test_pension_type_slug_unique_per_journal():
@@ -51,7 +53,6 @@ def test_pension_type_slug_unique_per_journal():
         PensionTypeFactory(title="Bustas", journal=obj1.journal)
 
 
-# Pension
 def test_pension_str():
     p = PensionFactory.build()
 
@@ -269,7 +270,6 @@ def test_pension_update_post_save_count_queries(django_assert_max_num_queries):
     assert actual.incomes == 2
 
 
-# PensionBalance
 def test_pension_balance_init():
     actual = PensionBalanceFactory.build()
 
@@ -296,7 +296,7 @@ def test_pension_balance_related_for_user(main_user, second_user):
     PensionFactory(pension_type=p1)
     PensionFactory(pension_type=p2)
 
-    # Two records for second_user, and two for main_user
+    # each type gets two balance rows, so the second journal's two are filtered out
     assert PensionBalance.objects.count() == 4
 
     actual = PensionBalanceModelService(main_user).objects
@@ -307,7 +307,6 @@ def test_pension_balance_related_for_user(main_user, second_user):
     assert actual[0].pension_type.journal.users.first().username == "bob"
 
 
-@pytest.mark.django_db
 def test_pension_balance_items(main_user):
     PensionBalanceFactory(year=1998)
     PensionBalanceFactory(year=1999)
@@ -364,7 +363,6 @@ def test_pension_balance_sorting(main_user):
     assert actual[3].pension_type == p2
 
 
-# PensionBalance.shows_profit
 @pytest.mark.parametrize("market_value, expected", [(100, True), (0, False)])
 def test_pension_balance_shows_profit_follows_the_market_value(market_value, expected):
     obj = PensionBalanceFactory.build(market_value=market_value)

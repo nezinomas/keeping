@@ -9,11 +9,6 @@ from .factories import PensionTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# PensionType
-def test_pension_type_init(main_user):
-    PensionTypeForm(user=main_user)
-
-
 def test_pension_type_init_fields(main_user):
     form = PensionTypeForm(user=main_user).as_p()
 
@@ -38,37 +33,17 @@ def test_pension_type_valid_data(main_user):
     assert data.journal.users.first().username == "bob"
 
 
-def test_pension_type_blank_data(main_user):
-    form = PensionTypeForm(user=main_user, data={})
+@pytest.mark.parametrize(
+    "data",
+    [{}, {"title": None}, {"title": "a" * 255}, {"title": "aa"}],
+    ids=["blank", "null", "too_long", "too_short"],
+)
+def test_pension_type_invalid_title(main_user, data):
+    form = PensionTypeForm(user=main_user, data=data)
 
     assert not form.is_valid()
 
-    assert len(form.errors) == 1
-    assert "title" in form.errors
-
-
-def test_pension_type_title_null(main_user):
-    form = PensionTypeForm(user=main_user, data={"title": None})
-
-    assert not form.is_valid()
-
-    assert "title" in form.errors
-
-
-def test_pension_type_title_too_long(main_user):
-    form = PensionTypeForm(user=main_user, data={"title": "a" * 255})
-
-    assert not form.is_valid()
-
-    assert "title" in form.errors
-
-
-def test_pension_type_title_too_short(main_user):
-    form = PensionTypeForm(user=main_user, data={"title": "aa"})
-
-    assert not form.is_valid()
-
-    assert "title" in form.errors
+    assert list(form.errors) == ["title"]
 
 
 def test_pension_type_identical_title_names_the_existing_one(main_user):
@@ -78,24 +53,6 @@ def test_pension_type_identical_title_names_the_existing_one(main_user):
 
     assert not form.is_valid()
     assert form.errors["title"] == ["„Būstas“ jau yra."]
-
-
-def test_pensiong_type_unique_name(main_user):
-    PensionTypeFactory(title="XXX")
-
-    form = PensionTypeForm(
-        user=main_user,
-        data={
-            "title": "XXX",
-        },
-    )
-
-    assert not form.is_valid()
-
-
-# Pension
-def test_pension_init(main_user):
-    PensionForm(user=main_user)
 
 
 def test_pension_init_fields(main_user):
@@ -108,9 +65,9 @@ def test_pension_init_fields(main_user):
     assert '<textarea name="remark"' in form
 
 
-def test_saving_current_user_types(main_user, second_user):
-    PensionTypeFactory(title="T1")  # user bob, current user
-    PensionTypeFactory(title="T2", journal=second_user.journal)  # user X
+def test_pension_form_lists_only_current_user_types(main_user, second_user):
+    PensionTypeFactory(title="T1")
+    PensionTypeFactory(title="T2", journal=second_user.journal)
 
     form = PensionForm(user=main_user).as_p()
 
@@ -118,7 +75,7 @@ def test_saving_current_user_types(main_user, second_user):
     assert "T2" not in form
 
 
-def test_pension_valid_data(main_user):
+def test_pension_save_stores_cents(main_user):
     t = PensionTypeFactory()
 
     form = PensionForm(
@@ -134,10 +91,45 @@ def test_pension_valid_data(main_user):
     assert form.is_valid()
 
     data = form.save()
+    data.refresh_from_db()
 
     assert data.date == date(2000, 1, 1)
     assert data.price == 1
     assert data.fee == 1
+    assert data.remark == "remark"
+    assert data.pension_type.title == t.title
+
+
+@pytest.mark.parametrize(
+    "posted, price, fee",
+    [
+        ({"price": 0.01}, 1, 0),
+        ({"fee": 0.01}, 0, 1),
+        ({"price": "0.01", "fee": ""}, 1, 0),
+        ({"price": "", "fee": "0.01"}, 0, 1),
+    ],
+    ids=["no_fee", "no_price", "empty_fee", "empty_price"],
+)
+def test_pension_blank_price_or_fee_saves_zero(main_user, posted, price, fee):
+    t = PensionTypeFactory()
+
+    form = PensionForm(
+        user=main_user,
+        data={
+            "date": "2000-01-01",
+            "remark": "remark",
+            "pension_type": t.pk,
+            **posted,
+        },
+    )
+    assert form.is_valid()
+
+    data = form.save()
+    data.refresh_from_db()
+
+    assert data.date == date(2000, 1, 1)
+    assert data.price == price
+    assert data.fee == fee
     assert data.remark == "remark"
     assert data.pension_type.title == t.title
 
@@ -161,94 +153,6 @@ def test_pension_price_and_fee_accept_a_decimal_comma(main_user):
 
     assert data.price == 1210
     assert data.fee == 55
-
-
-def test_pension_valid_data_no_price(main_user):
-    t = PensionTypeFactory()
-
-    form = PensionForm(
-        user=main_user,
-        data={
-            "date": "2000-01-01",
-            "fee": 0.01,
-            "remark": "remark",
-            "pension_type": t.pk,
-        },
-    )
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == date(2000, 1, 1)
-    assert not data.price
-    assert data.fee == 1
-    assert data.remark == "remark"
-    assert data.pension_type.title == t.title
-
-
-def test_pension_empty_fee_saves_zero(main_user):
-    t = PensionTypeFactory()
-
-    form = PensionForm(
-        user=main_user,
-        data={
-            "date": "2000-01-01",
-            "price": "0.01",
-            "fee": "",
-            "pension_type": t.pk,
-        },
-    )
-    assert form.is_valid()
-
-    data = form.save()
-    data.refresh_from_db()
-
-    assert data.price == 1
-    assert data.fee == 0
-
-
-def test_pension_empty_price_saves_zero(main_user):
-    t = PensionTypeFactory()
-
-    form = PensionForm(
-        user=main_user,
-        data={
-            "date": "2000-01-01",
-            "price": "",
-            "fee": "0.01",
-            "pension_type": t.pk,
-        },
-    )
-    assert form.is_valid()
-
-    data = form.save()
-    data.refresh_from_db()
-
-    assert data.price == 0
-    assert data.fee == 1
-
-
-def test_pension_valid_data_no_fee(main_user):
-    t = PensionTypeFactory()
-
-    form = PensionForm(
-        user=main_user,
-        data={
-            "date": "2000-01-01",
-            "price": 0.01,
-            "remark": "remark",
-            "pension_type": t.pk,
-        },
-    )
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == date(2000, 1, 1)
-    assert data.price == 1
-    assert not data.fee
-    assert data.remark == "remark"
-    assert data.pension_type.title == t.title
 
 
 @time_machine.travel("1999-2-2")
@@ -283,53 +187,21 @@ def test_pension_blank_data(main_user):
     assert "pension_type" in form.errors
 
 
-def test_pension_price_and_fee_null(main_user):
+@pytest.mark.parametrize(
+    "posted",
+    [{"price": "0", "fee": "0"}, {"price": "-10"}, {"fee": "-10"}],
+    ids=["zero", "negative_price", "negative_fee"],
+)
+def test_pension_price_and_fee_need_a_positive_one(main_user, posted):
     t = PensionTypeFactory()
 
     form = PensionForm(
         user=main_user,
         data={
             "date": "2000-01-01",
-            "price": "0",
-            "fee": "0",
             "remark": "remark",
             "pension_type": t.pk,
-        },
-    )
-
-    assert not form.is_valid()
-    assert "price" in form.errors
-    assert "fee" in form.errors
-
-
-def test_pension_price_negative(main_user):
-    t = PensionTypeFactory()
-
-    form = PensionForm(
-        user=main_user,
-        data={
-            "date": "2000-01-01",
-            "price": "-10",
-            "remark": "remark",
-            "pension_type": t.pk,
-        },
-    )
-
-    assert not form.is_valid()
-    assert "price" in form.errors
-    assert "fee" in form.errors
-
-
-def test_pension_fee_negative(main_user):
-    t = PensionTypeFactory()
-
-    form = PensionForm(
-        user=main_user,
-        data={
-            "date": "2000-01-01",
-            "fee": "-10",
-            "remark": "remark",
-            "pension_type": t.pk,
+            **posted,
         },
     )
 
