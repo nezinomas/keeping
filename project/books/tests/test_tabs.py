@@ -4,10 +4,19 @@ from django.urls import reverse
 from ..tabs import DEFAULT_TAB, TABS, BookTab
 
 
-@pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
-def test_tab_derives_its_url_and_template(tab):
-    assert tab.url == reverse(f"books:tab_{tab.name}")
-    assert tab.template_name == f"books/tab_{tab.name}.html"
+@pytest.mark.parametrize(
+    ("name", "url_name", "template"),
+    [
+        ("index", "books:tab_index", "books/tab_index.html"),
+        ("data", "books:tab_data", "books/tab_data.html"),
+    ],
+    ids=["index", "data"],
+)
+def test_tab_derives_its_url_and_template(name, url_name, template):
+    tab = BookTab.resolve(name)
+
+    assert tab.url == reverse(url_name)
+    assert tab.template_name == template
 
 
 @pytest.mark.parametrize("tab", TABS, ids=lambda tab: tab.name)
