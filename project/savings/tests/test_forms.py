@@ -13,9 +13,11 @@ from .factories import SavingTypeFactory
 pytestmark = pytest.mark.django_db
 
 
-# Saving Type
 def test_saving_type_init(main_user):
-    SavingTypeForm(user=main_user)
+    form = SavingTypeForm(user=main_user)
+
+    assert form.fields["journal"].initial == main_user.journal
+    assert form.fields["journal"].disabled
 
 
 def test_saving_type_init_fields(main_user):
@@ -113,8 +115,13 @@ def test_saving_type_blank_data(main_user):
     assert "fee_source" in form.errors
 
 
-def test_saving_type_title_null(main_user):
-    form = SavingTypeForm(user=main_user, data={"title": None})
+@pytest.mark.parametrize(
+    "title",
+    [None, "aa", "a" * 255],
+    ids=["null", "too_short", "too_long"],
+)
+def test_saving_type_title_rejected(main_user, title):
+    form = SavingTypeForm(user=main_user, data={"title": title})
 
     assert not form.is_valid()
 
@@ -140,24 +147,13 @@ def test_saving_type_title_max_symbols(main_user):
     assert SavingType.objects.first().title == title
 
 
-def test_saving_type_title_too_long(main_user):
-    form = SavingTypeForm(user=main_user, data={"title": "a" * 255})
-
-    assert not form.is_valid()
-
-    assert "title" in form.errors
-
-
-def test_saving_type_title_too_short(main_user):
-    form = SavingTypeForm(user=main_user, data={"title": "aa"})
-
-    assert not form.is_valid()
-
-    assert "title" in form.errors
-
-
-def test_saving_type_closed_in_past(main_user):
-    main_user.year = 3000
+@pytest.mark.parametrize(
+    "user_year, closed_listed",
+    [(3000, False), (1000, True), (2000, True)],
+    ids=["after_closed", "before_closed", "closed_year"],
+)
+def test_saving_type_closed(main_user, user_year, closed_listed):
+    main_user.year = user_year
     main_user.save()
 
     SavingTypeFactory(title="S1")
@@ -166,46 +162,7 @@ def test_saving_type_closed_in_past(main_user):
     form = SavingForm(user=main_user, data={})
 
     assert "S1" in str(form["saving_type"])
-    assert "S2" not in str(form["saving_type"])
-
-
-def test_saving_type_closed_in_future(main_user):
-    main_user.year = 1000
-    main_user.save()
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingForm(user=main_user, data={})
-
-    assert "S1" in str(form["saving_type"])
-    assert "S2" in str(form["saving_type"])
-
-
-def test_saving_type_closed_in_current_year(main_user):
-    main_user.year = 2000
-    main_user.save()
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingForm(user=main_user, data={})
-
-    assert "S1" in str(form["saving_type"])
-    assert "S2" in str(form["saving_type"])
-
-
-def test_saving_type_unique_name(main_user):
-    SavingTypeFactory(title="XXX")
-
-    form = SavingTypeForm(
-        user=main_user,
-        data={
-            "title": "XXX",
-        },
-    )
-
-    assert not form.is_valid()
+    assert ("S2" in str(form["saving_type"])) is closed_listed
 
 
 def test_saving_type_title_taken(main_user):
@@ -279,11 +236,6 @@ def test_saving_type_title_slug_rules(main_user, title, message):
     assert not form.is_valid()
 
     assert form.errors["title"] == [message]
-
-
-# Saving
-def test_saving_init(main_user):
-    SavingForm(user=main_user)
 
 
 @time_machine.travel("1974-01-01")
