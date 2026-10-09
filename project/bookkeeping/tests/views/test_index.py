@@ -4,10 +4,12 @@ from datetime import date
 import pytest
 from django.urls import reverse
 
+from ....accounts.tests.factories import AccountFactory
+from ....core.tests.utils import count_queries
 from ....debts.tests.factories import BorrowFactory, LendFactory
-from ....expenses.tests.factories import ExpenseFactory
-from ....incomes.tests.factories import IncomeFactory
-from ....pensions.tests.factories import PensionFactory
+from ....expenses.tests.factories import ExpenseFactory, ExpenseTypeFactory
+from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
+from ....pensions.tests.factories import PensionFactory, PensionTypeFactory
 from ....savings.models import SavingType
 from ....savings.tests.factories import SavingFactory, SavingTypeFactory
 from ..helper import script_json
@@ -15,10 +17,29 @@ from ..helper import script_json
 pytestmark = pytest.mark.django_db
 
 
-def test_view_count_queries(client_logged, django_assert_max_num_queries):
+def _add_items(first, last):
+    for i in range(first, last):
+        IncomeFactory(income_type=IncomeTypeFactory(title=f"Type {i}"))
+        ExpenseFactory(expense_type=ExpenseTypeFactory(title=f"Type {i}"))
+        SavingFactory(saving_type=SavingTypeFactory(title=f"Type {i}"))
+        PensionFactory(pension_type=PensionTypeFactory(title=f"Type {i}"))
+        AccountFactory(title=f"Account {i}")
+        BorrowFactory(name=f"Name {i}")
+        LendFactory(name=f"Name {i}")
+
+
+def test_view_index_query_count_does_not_grow(client_logged):
     url = reverse("bookkeeping:index")
-    with django_assert_max_num_queries(32):
-        client_logged.get(url)
+
+    def queries():
+        return count_queries(lambda: client_logged.get(url))
+
+    _add_items(0, 2)
+    two = queries()
+    _add_items(2, 6)
+    six = queries()
+
+    assert two == six
 
 
 @pytest.fixture(name="index_content")
@@ -120,11 +141,21 @@ def test_view_index_regenerate_buttons(client_logged):
     assert "Bus atnaujinti visų metų balansai." in content
 
 
-def test_view_reload_200(client_logged):
+def test_view_reload_swaps_the_index_blocks(client_logged):
     url = reverse("bookkeeping:reload_index")
-    response = client_logged.get(url)
+    content = client_logged.get(url).content.decode("utf-8")
 
-    assert response.status_code == 200
+    assert 'hx-swap-oob="innerHTML:#table-balance"' in content
+    assert 'hx-swap-oob="innerHTML:#table-expenses"' in content
+    assert 'hx-swap-oob="innerHTML:#chart-balance-data"' in content
+    assert 'hx-swap-oob="innerHTML:#chart-expenses-data"' in content
+
+
+def test_view_reload_renders_the_year_header(client_logged):
+    url = reverse("bookkeeping:reload_index")
+    content = client_logged.get(url).content.decode("utf-8")
+
+    assert "<th>1999</th>" in content
 
 
 def test_view_reload_anonymous(client):

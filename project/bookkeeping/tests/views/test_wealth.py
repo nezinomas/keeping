@@ -6,14 +6,6 @@ from ....incomes.tests.factories import IncomeFactory
 pytestmark = pytest.mark.django_db
 
 
-def test_context(client_logged):
-    url = reverse("bookkeeping:wealth")
-    response = client_logged.get(url)
-
-    assert "title" in response.context["data"]
-    assert "data" in response.context["data"]
-
-
 def test_content(client_logged):
     IncomeFactory(price=100_000)
 

@@ -1,4 +1,3 @@
-import contextlib
 import json
 import re
 from datetime import date, datetime
@@ -13,29 +12,6 @@ from ...savings.models import SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
 from .factories import SavingWorthFactory
-
-
-def assert_(expected, actual):  # sourcery skip: raise-specific-error
-    for saving_type, arr in expected.items():
-        for _k, expected_val in expected[saving_type].items():
-            try:
-                actual_val = actual[saving_type][_k]
-            except KeyError as e:
-                raise Exception(f"No '{_k}' key in {actual[saving_type]}.") from e
-
-            with contextlib.suppress(Exception):
-                actual_val = round(float(actual_val), 2)
-
-            msg = f"{saving_type}->{_k}. Expected={expected_val} Actual={actual_val}"
-
-            assert expected_val == actual_val, msg
-
-
-def filter_fixture(data, leave_keys):
-    rm_keys = set(data.keys()) - set(leave_keys)
-
-    for key in rm_keys:
-        data.pop(key)
 
 
 def fund_with_a_sell(title, bought, sold, *, fee=0, kind="funds", closed=None):
