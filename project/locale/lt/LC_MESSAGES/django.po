@@ -1192,6 +1192,10 @@ msgstr "Negalite uždaryti dar negražintos skolos."
 msgid "The amount due exceeds the debt."
 msgstr "Mokėtina suma viršija skolą."
 
+#: .\project\debts\forms.py:104
+msgid "The debt can't be less than what has been returned."
+msgstr "Skola negali būti mažesnė nei grąžinta suma."
+
 #: .\project\debts\forms.py:185
 msgid "The date preceding the debt's date."
 msgstr "Data yra ankstesnė nei skolos data."

@@ -99,8 +99,7 @@ class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         # can't update to smaller price
         if self.instance.pk and price < self.instance.returned:
             self.add_error(
-                "price",
-                _("The amount due exceeds the debt."),
+                "price", _("The debt can't be less than what has been returned.")
             )
 
         return cleaned_data

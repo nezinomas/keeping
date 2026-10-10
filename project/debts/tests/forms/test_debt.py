@@ -244,7 +244,11 @@ def test_debt_edit_with_an_invalid_price_is_a_field_error(main_user, price):
     "price, errors",
     [
         pytest.param("50", {}, id="equal_to_returned"),
-        pytest.param("49.99", {"price": ["Mokėtina suma viršija skolą."]}, id="below"),
+        pytest.param(
+            "49.99",
+            {"price": ["Skola negali būti mažesnė nei grąžinta suma."]},
+            id="below",
+        ),
     ],
 )
 def test_debt_price_not_below_what_is_returned(main_user, price, errors):
