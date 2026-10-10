@@ -164,7 +164,7 @@ def test_debt_return_only_not_closed(main_user, debt_type):
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
 def test_debt_return_price_higher(main_user, debt_type):
     a = AccountFactory()
-    b = DEBT_FACTORIES[debt_type](price=1)
+    b = DEBT_FACTORIES[debt_type](price=10000)
 
     form = forms.DebtReturnForm(
         user=main_user,
@@ -172,7 +172,7 @@ def test_debt_return_price_higher(main_user, debt_type):
         data={
             "date": "1999-1-1",
             "debt": b.pk,
-            "price": "2",
+            "price": "150",
             "account": a.pk,
         },
     )
