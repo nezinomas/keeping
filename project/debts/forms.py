@@ -12,6 +12,10 @@ from . import models
 from .services.model_services import DebtModelService, DebtReturnModelService
 
 
+def _other_party_label(debt_type):
+    return {"lend": _("Borrower"), "borrow": _("Lender")}.get(debt_type, _("Debtor"))
+
+
 class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
@@ -23,16 +27,14 @@ class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "account", "name", "price", "remark", "closed"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         self.debt_type = kwargs.pop("debt_type")
 
         super().__init__(*args, **kwargs)
 
-        # Set debt_type for new instance
         if not self.instance.pk:
             self.instance.debt_type = self.debt_type
 
-        # remark textarea settings
         self.fields["remark"].widget.attrs["rows"] = 3
 
         self.date_field_settings()
@@ -57,15 +59,8 @@ class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         self.fields["account"].queryset = accounts
 
     def translations(self):
-        _name = _("Debtor")
-
-        if self.debt_type == "lend":
-            _name = _("Borrower")
-        elif self.debt_type == "borrow":
-            _name = _("Lender")
-
         self.fields["date"].label = _("Date")
-        self.fields["name"].label = _name
+        self.fields["name"].label = _other_party_label(self.debt_type)
         self.fields["account"].label = _("Account")
         self.fields["price"].label = _("Sum")
         self.fields["remark"].label = _("Remark")
@@ -78,13 +73,11 @@ class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         closed = cleaned_data.get("closed")
         price = cleaned_data.get("price")
 
-        # can't update name
         if not closed and name != self.instance.name:
             qs = DebtModelService(self.user, self.debt_type).items().filter(name=name)
             if qs.exists():
                 self.add_error("name", _("The name of the lender must be unique."))
 
-        # can't close not returned debt
         _msg_cant_close = _("You can't close a debt that hasn't been returned.")
         if not self.instance.pk and closed:
             self.add_error("closed", _msg_cant_close)
@@ -96,7 +89,6 @@ class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         if self.instance.pk and closed and self.instance.returned != price:
             self.add_error("closed", _msg_cant_close)
 
-        # can't update to smaller price
         if self.instance.pk and price < self.instance.returned:
             self.add_error(
                 "price", _("The debt can't be less than what has been returned.")
@@ -116,11 +108,10 @@ class DebtReturnForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "account", "debt", "price", "remark"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
-        self.debt_type = kwargs.pop("debt_type", None)
+        self.user = kwargs.pop("user")
+        self.debt_type = kwargs.pop("debt_type")
         super().__init__(*args, **kwargs)
 
-        # Remark textarea settings
         self.fields["remark"].widget.attrs["rows"] = 3
 
         self.date_field_settings()
@@ -144,17 +135,9 @@ class DebtReturnForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         ).open_items()
 
     def translations(self):
-        _name = _("Debtor")
-
-        if self.debt_type == "lend":
-            _name = _("Borrower")
-
-        if self.debt_type == "borrow":
-            _name = _("Lender")
-
         self.fields["date"].label = _("Date")
         self.fields["account"].label = _("Account")
-        self.fields["debt"].label = _name
+        self.fields["debt"].label = _other_party_label(self.debt_type)
         self.fields["price"].label = _("Sum")
         self.fields["remark"].label = _("Remark")
 
