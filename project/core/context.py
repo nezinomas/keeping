@@ -28,16 +28,5 @@ def context_months(request):
     return {"context_months": lib_date.year_month_list(request.user.year)}
 
 
-def context_counts_menu(context):
-    qs = []
-
-    with contextlib.suppress(AttributeError, ValueError):
-        from ..counts.services.model_services import CountTypeModelService
-
-        qs = CountTypeModelService(context.user).objects
-
-    return {"counts_menu": qs}
-
-
 def csp_nonce(request):
     return {"csp_nonce": getattr(request, "_csp_nonce", "")}

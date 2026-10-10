@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 import time_machine
 
-from ..context import context_counts_menu, context_months, yday, years
+from ..context import context_months, yday, years
 
 pytestmark = pytest.mark.django_db
 
@@ -66,21 +66,3 @@ def test_context_months_are_the_users_year(main_user, rf):
     actual = context_months(request)
 
     assert actual == {"context_months": [date(1999, m, 1) for m in range(1, 13)]}
-
-
-def test_context_counts_menu(main_user, rf):
-    from ...counts.tests.factories import CountTypeFactory
-
-    CountTypeFactory(title="XXX", user=main_user)
-
-    rf.user = main_user
-    actual = context_counts_menu(rf)
-
-    assert len(actual["counts_menu"]) == 1
-    assert actual["counts_menu"][0].title == "XXX"
-
-
-def test_context_counts_menu_no_user(rf):
-    actual = context_counts_menu(rf)
-
-    assert actual["counts_menu"] == []

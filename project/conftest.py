@@ -9,7 +9,6 @@ from django.utils import translation
 from .accounts.tests.factories import AccountFactory
 from .expenses.tests.factories import ExpenseFactory
 from .incomes.tests.factories import IncomeFactory
-from .journals.tests.factories import JournalFactory
 from .pensions.tests.factories import PensionFactory, PensionTypeFactory
 from .savings.tests.factories import SavingFactory, SavingTypeFactory
 from .transactions.tests.factories import (
@@ -62,10 +61,9 @@ def second_user(request):
 
 
 @pytest.fixture()
-def fake_request(rf):
+def fake_request(rf, db):
     request = rf.get("/fake/")
-    request.user = UserFactory.build()
-    request.user.journal = JournalFactory.build()
+    request.user = UserFactory()
 
     return request
 
