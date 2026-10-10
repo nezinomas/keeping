@@ -397,7 +397,7 @@ def test_debt_return_total_returned_for_debt(main_user, prices, expect):
         LendReturnFactory(debt=debt, price=price)
 
     service = DebtReturnModelService(main_user, "lend")
-    actual = service.total_returned_for_debt(DebtReturn(debt=debt))
+    actual = service.total_returned_for_debt(debt)
 
     assert actual == expect
 

@@ -41,7 +41,7 @@ def update_debt_model(sender: object, instance: models.Model, *args, **kwargs):
     debt_type = instance.debt.debt_type
 
     total_return = DebtReturnModelService(user, debt_type).total_returned_for_debt(
-        instance
+        instance.debt
     )
 
     debt_row = debt.Debt.objects.get(pk=instance.debt.pk)
