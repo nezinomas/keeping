@@ -220,7 +220,7 @@ def test_debt_update_price_smaller_then_returned(client_logged, debt_type):
     form = response.context["form"]
 
     assert not form.is_valid()
-    assert "Mokėtina suma viršija skolą." in form.as_p()
+    assert "Skola negali būti mažesnė nei grąžinta suma." in form.as_p()
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
