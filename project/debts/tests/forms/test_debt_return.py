@@ -204,3 +204,25 @@ def test_debt_return_date_earlier(main_user, day, errors):
     )
 
     assert form.errors == errors
+
+
+@pytest.mark.parametrize("field", ["account", "debt"])
+def test_debt_return_rejects_an_account_or_debt_of_another_journal(
+    main_user, second_user, field
+):
+    data = {
+        "date": "1999-12-02",
+        "price": 0.01,
+        "account": AccountFactory(title="Mine", journal=main_user.journal).pk,
+        "debt": factories.LendFactory(journal=main_user.journal, price=200000).pk,
+    }
+    foreign = {
+        "account": AccountFactory(title="Theirs", journal=second_user.journal),
+        "debt": factories.LendFactory(journal=second_user.journal, price=200000),
+    }
+    data[field] = foreign[field].pk
+
+    form = forms.DebtReturnForm(user=main_user, debt_type="lend", data=data)
+
+    assert not form.is_valid()
+    assert field in form.errors

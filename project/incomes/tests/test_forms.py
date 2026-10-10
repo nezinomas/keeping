@@ -255,3 +255,25 @@ def test_income_type_edit_ignores_a_posted_journal(main_user, second_user):
     obj.refresh_from_db()
 
     assert obj.journal == main_user.journal
+
+
+@pytest.mark.parametrize("field", ["account", "income_type"])
+def test_income_rejects_an_account_or_type_of_another_journal(
+    main_user, second_user, field
+):
+    data = {
+        "date": "1999-01-01",
+        "price": 0.01,
+        "account": AccountFactory(title="Mine", journal=main_user.journal).pk,
+        "income_type": IncomeTypeFactory(title="Mine", journal=main_user.journal).pk,
+    }
+    foreign = {
+        "account": AccountFactory(title="Theirs", journal=second_user.journal),
+        "income_type": IncomeTypeFactory(title="Theirs", journal=second_user.journal),
+    }
+    data[field] = foreign[field].pk
+
+    form = IncomeForm(user=main_user, data=data)
+
+    assert not form.is_valid()
+    assert field in form.errors

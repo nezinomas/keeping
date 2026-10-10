@@ -7,7 +7,7 @@ from mock import Mock
 
 from ....accounts.tests.factories import AccountFactory
 from ....bookkeeping import views
-from ....bookkeeping.models import AccountWorth
+from ....bookkeeping.models import AccountWorth, PensionWorth, SavingWorth
 from ....bookkeeping.tests.factories import AccountWorthFactory
 from ....pensions.tests.factories import PensionTypeFactory
 from ....savings.tests.factories import SavingTypeFactory
@@ -295,6 +295,45 @@ def test_worth_form_lists_the_users_funds(
     assert ">Open</option>" in actual
     assert (">Closed</option>" in actual) is closed_listed
     assert ">Foreign</option>" not in actual
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "url, factory, fund_field, model",
+    [
+        pytest.param(
+            "bookkeeping:accounts_worth_new",
+            AccountFactory,
+            "account",
+            AccountWorth,
+            id="account",
+        ),
+        pytest.param(
+            "bookkeeping:savings_worth_new",
+            SavingTypeFactory,
+            "saving_type",
+            SavingWorth,
+            id="saving_type",
+        ),
+        pytest.param(
+            "bookkeeping:pensions_worth_new",
+            PensionTypeFactory,
+            "pension_type",
+            PensionWorth,
+            id="pension",
+        ),
+    ],
+)
+def test_worth_form_rejects_a_fund_of_another_journal(
+    client_logged, second_user, url, factory, fund_field, model
+):
+    foreign = factory(title="Foreign", journal=second_user.journal)
+    data = post_data([{"date": "1999-2-3", "price": "0.01", fund_field: foreign.pk}])
+
+    actual = client_logged.post(reverse(url), data).content.decode("utf-8")
+
+    assert f'aria-describedby="id_form-0-{fund_field}_error"' in actual
+    assert not model.objects.exists()
 
 
 @pytest.mark.django_db
