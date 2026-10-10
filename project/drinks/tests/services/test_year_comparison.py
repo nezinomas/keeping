@@ -2,6 +2,7 @@ import json
 from datetime import date
 
 import pytest
+import time_machine
 
 from ...services.year_comparison import YearComparison, YearComparisonChartViewModel
 from ..factories import DrinkFactory
@@ -81,12 +82,19 @@ def test_as_dict_is_json_serializable(main_user):
     assert json.dumps(actual)
 
 
-def test_series_data_covers_twelve_months(main_user):
-    DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
+@pytest.mark.parametrize(
+    "today, months",
+    [
+        pytest.param("1999-06-15", 6, id="running_year_ends_in_june"),
+        pytest.param("2000-03-01", 12, id="finished_year_runs_to_december"),
+    ],
+)
+def test_series_data_ends_at_the_month_reached(main_user, today, months):
+    with time_machine.travel(today):
+        DrinkFactory(date=date(1999, 1, 1), stdav=2.5)
+        actual = YearComparison.build(main_user, [1999])
 
-    actual = YearComparison.build(main_user, [1999])
-
-    assert len(actual.serries[0]["data"]) == 12
+    assert len(actual.serries[0]["data"]) == months
 
 
 # YearComparison.for_pair

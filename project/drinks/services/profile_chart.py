@@ -16,13 +16,12 @@ class ProfileLayer:
     no series, and a chart draws only the layers that have data — so nothing
     downstream has to ask whether a layer is there before reading it.
 
-    Inside a series a null does appear, and means one thing only: a category the
-    span never reached, which the chart draws as a gap. A running year's
-    December plotted as 0.0 would read as a month without a Drink instead.
+    A series ends at the last category the span reached: a running year's
+    December plotted as 0.0 would read as a month without a Drink.
     """
 
-    drinking_day_share: list[float | None] = field(default_factory=list)
-    intensity: list[float | None] = field(default_factory=list)
+    drinking_day_share: list[float] = field(default_factory=list)
+    intensity: list[float] = field(default_factory=list)
     label: str = ""
 
     @property

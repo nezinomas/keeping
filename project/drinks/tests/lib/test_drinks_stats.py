@@ -61,25 +61,23 @@ def test_monthly_stats_no_data(drink_converter):
     assert stats.avg_daily_volume == [0.0] * 12
 
 
-def test_monthly_stats_stop_at_the_year_boundary():
+@pytest.mark.parametrize(
+    "today, months",
+    [
+        pytest.param(date(1999, 8, 9), 8, id="running_year_ends_in_august"),
+        pytest.param(date(2005, 3, 1), 12, id="finished_year_runs_to_december"),
+    ],
+)
+def test_monthly_stats_end_at_the_month_reached(today, months):
     data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
 
-    stats = DrinkStats(DrinkConverter("beer"), data, today=date(1999, 8, 9)).monthly
+    stats = DrinkStats(DrinkConverter("beer"), data, today=today).monthly
 
     assert stats.avg_daily_volume[7] == 0.0  # August has begun
-    assert stats.avg_daily_volume[8:] == [None] * 4
-    assert stats.total_quantity[8:] == [None] * 4
-    assert stats.total_volume[8:] == [None] * 4
-
-
-def test_monthly_stats_run_to_december_once_the_year_is_over():
-    data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
-
-    stats = DrinkStats(DrinkConverter("beer"), data, today=date(2005, 3, 1)).monthly
-
-    assert None not in stats.avg_daily_volume
-    assert None not in stats.total_quantity
-    assert None not in stats.total_volume
+    assert len(stats.avg_daily_volume) == months
+    assert len(stats.total_quantity) == months
+    assert len(stats.total_volume) == months
+    assert len(stats.total_stdav) == months
 
 
 def test_monthly_stats_carry_the_std_av_they_summed():

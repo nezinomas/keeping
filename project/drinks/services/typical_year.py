@@ -2,6 +2,7 @@ import calendar
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
+from itertools import takewhile
 
 from django.utils.translation import gettext as _
 
@@ -62,6 +63,12 @@ class TypicalYearProfile:
     @property
     def has_data(self) -> bool:
         return bool(self.year_to)
+
+    @property
+    def reached_points(self) -> list[MonthPoint]:
+        """The months some pooled year has reached: only the running year stops
+        early, so the months none reached are always the last ones."""
+        return list(takewhile(lambda point: point.calendar_days, self.points))
 
     @classmethod
     def pool(
@@ -280,24 +287,15 @@ class TypicalYearBuilder:
         if not profile.has_data:
             return ProfileLayer()
 
-        points = profile.points
+        points = profile.reached_points
 
         return ProfileLayer(
             drinking_day_share=[
-                cls._value(point, point.drinking_day_share * 100) for point in points
+                round(point.drinking_day_share * 100, 1) for point in points
             ],
-            intensity=[cls._value(point, point.intensity) for point in points],
+            intensity=[round(point.intensity, 1) for point in points],
             label=cls._label(profile),
         )
-
-    @staticmethod
-    def _value(point: MonthPoint, value: float) -> float | None:
-        """A month no pooled year has reached has no reading, and a null is the
-        only way to break a line — 0.0 would read as a Drink-free December."""
-        if not point.calendar_days:
-            return None
-
-        return round(value, 1)
 
     @staticmethod
     def _label(profile: TypicalYearProfile) -> str:
