@@ -561,3 +561,47 @@ def test_expense_type_edit_ignores_a_posted_journal(main_user, second_user):
     obj.refresh_from_db()
 
     assert obj.journal == main_user.journal
+
+
+@pytest.mark.parametrize("field", ["account", "expense_type", "expense_name"])
+def test_expense_rejects_an_account_type_or_name_of_another_journal(
+    main_user, second_user, field
+):
+    mine_type = ExpenseTypeFactory(title="Mine", journal=main_user.journal)
+    theirs_type = ExpenseTypeFactory(title="Theirs", journal=second_user.journal)
+    data = {
+        "date": "1999-01-01",
+        "price": 0.01,
+        "quantity": 1,
+        "account": AccountFactory(title="Mine", journal=main_user.journal).pk,
+        "expense_type": mine_type.pk,
+        "expense_name": ExpenseNameFactory(title="Mine", parent=mine_type).pk,
+    }
+    theirs_name = ExpenseNameFactory(title="Theirs", parent=theirs_type)
+    # a foreign name comes with its own type, or the parent filter rejects it first
+    foreign = {
+        "account": {
+            "account": AccountFactory(title="Theirs", journal=second_user.journal).pk
+        },
+        "expense_type": {"expense_type": theirs_type.pk},
+        "expense_name": {
+            "expense_type": theirs_type.pk,
+            "expense_name": theirs_name.pk,
+        },
+    }
+
+    form = ExpenseForm(user=main_user, data=data | foreign[field])
+
+    assert not form.is_valid()
+    assert field in form.errors
+
+
+def test_expense_name_rejects_a_type_of_another_journal(main_user, second_user):
+    theirs = ExpenseTypeFactory(title="Theirs", journal=second_user.journal)
+
+    form = ExpenseNameForm(
+        user=main_user, data={"parent": theirs.pk, "title": "Name", "valid_for": ""}
+    )
+
+    assert not form.is_valid()
+    assert "parent" in form.errors

@@ -246,3 +246,19 @@ def test_pension_type_edit_ignores_a_posted_journal(main_user, second_user):
     obj.refresh_from_db()
 
     assert obj.journal == main_user.journal
+
+
+def test_pension_rejects_a_type_of_another_journal(main_user, second_user):
+    form = PensionForm(
+        user=main_user,
+        data={
+            "date": "1999-01-01",
+            "price": 0.01,
+            "pension_type": PensionTypeFactory(
+                title="Theirs", journal=second_user.journal
+            ).pk,
+        },
+    )
+
+    assert not form.is_valid()
+    assert "pension_type" in form.errors
