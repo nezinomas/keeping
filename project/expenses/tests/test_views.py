@@ -743,8 +743,7 @@ def test_search_statistic_not_found(client_logged):
 
     url = reverse("expenses:search")
     response = client_logged.get(url, {"page": 2, "search": "xxx"})
+    actual = response.content.decode("utf-8")
 
-    assert not response.context["sum_price"]
-    assert not response.context["sum_quantity"]
-    assert not response.context["average"]
-    assert response.context["count"] == 0
+    assert "Nieko nerasta" in actual
+    assert "search-statistic" not in actual
