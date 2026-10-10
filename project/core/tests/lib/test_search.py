@@ -1,4 +1,5 @@
 from datetime import date
+from operator import and_, or_
 
 import factory
 import pytest
@@ -6,13 +7,12 @@ from django.db.models.signals import post_save
 from hypothesis import assume, example, given
 from hypothesis import strategies as st
 
+from ....books.services.search import search_books
 from ....books.tests.factories import BookFactory
-from ....expenses.tests.factories import (
-    ExpenseFactory,
-    ExpenseNameFactory,
-    ExpenseTypeFactory,
-)
-from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
+from ....expenses.services.search import search_expenses
+from ....expenses.tests.factories import ExpenseFactory
+from ....incomes.services.search import search_incomes
+from ....incomes.tests.factories import IncomeFactory
 from ...lib import search
 
 NOTHING = {"category": [], "year": 0, "month": 0, "remark": []}
@@ -42,25 +42,24 @@ def date_token(year, month, separator, day):
 
 
 @pytest.mark.parametrize(
-    "search_str, expect, search_type",
+    "search_str, expect, combine",
     [
         pytest.param(
             "~!@#$%^&*()_+-=[]{}|;:,./<>?\\ x1",
             {**NOTHING, "category": ["_-."], "remark": ["_-."]},
-            "no_args",
+            or_,
             id="symbols_removed",
         ),
         pytest.param(
             "-r ab1~! c!d2",
             {**NOTHING, "remark": ["ab1", "cd2"]},
-            "with_args",
+            and_,
             id="digits_and_spaces_kept",
         ),
-        pytest.param("", NOTHING, "with_args", id="nothing_given"),
     ],
 )
-def test_parse_search_keeps_word_characters_only(search_str, expect, search_type):
-    assert search.parse_search(search_str) == (expect, search_type)
+def test_parse_search_keeps_word_characters_only(search_str, expect, combine):
+    assert search.parse_search(search_str) == (expect, combine)
 
 
 FLAG_NAMES = {
@@ -78,6 +77,7 @@ FLAG_NAMES = {
     remark=st.none() | WORDS,
     long_names=st.booleans(),
 )
+@example(category=None, year=None, month=None, remark=None, long_names=False)
 @example(category=["x"], year=None, month=None, remark=None, long_names=False)
 @example(category=["xxx"], year=None, month=None, remark=None, long_names=False)
 @example(category=["x"], year=None, month=None, remark=None, long_names=True)
@@ -120,7 +120,7 @@ def test_parse_search_with_args(category, year, month, remark, long_names):
         if value is not None
     }
 
-    assert search.parse_search(text) == (expect, "with_args")
+    assert search.parse_search(text) == (expect, and_)
 
 
 @given(
@@ -158,155 +158,7 @@ def test_parse_search_no_args(before, after, first, later):
     year, month, *_ = first or later or (0, 0)
     expect = {"category": words, "year": year, "month": month or 0, "remark": words}
 
-    assert search.parse_search(text) == (expect, "no_args")
-
-
-@pytest.mark.django_db
-@factory.django.mute_signals(post_save)
-@pytest.mark.parametrize(
-    "_search, expect",
-    [
-        (
-            "1999",
-            [
-                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
-                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
-            ],
-        ),
-        (
-            "-y 1999",
-            [
-                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
-                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
-            ],
-        ),
-        ("1999.1", [{"type": "Type_A", "name": "Name_A", "remark": "XXX"}]),
-        ("1999-1", [{"type": "Type_A", "name": "Name_A", "remark": "XXX"}]),
-        ("-y 1999 -m 1", [{"type": "Type_A", "name": "Name_A", "remark": "XXX"}]),
-        ("3000", []),
-        ("a", []),
-        ("ab", []),
-        (
-            "type_a",
-            [
-                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
-                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
-            ],
-        ),
-        (
-            "-c type_a",
-            [
-                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
-                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
-            ],
-        ),
-        (
-            "type_a name_b",
-            [
-                {"type": "Type_B", "name": "Name_B", "remark": "WWW"},
-                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
-                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
-            ],
-        ),
-        (
-            "-c type_a name_b",
-            [
-                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
-            ],
-        ),
-        (
-            "type_a xxx",
-            [
-                {"type": "Type_A", "name": "Name_B", "remark": "YYY"},
-                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
-            ],
-        ),
-        ("-c type_a -r xxx", [{"type": "Type_A", "name": "Name_A", "remark": "XXX"}]),
-        ("-c type_a name_a -r www", []),
-        (
-            "-c type_a name_a -r xxx",
-            [
-                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
-            ],
-        ),
-        (
-            "1999 name_a",
-            [
-                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
-            ],
-        ),
-        (
-            "-y 1999 -c name_a",
-            [
-                {"type": "Type_A", "name": "Name_A", "remark": "XXX"},
-            ],
-        ),
-        pytest.param(
-            "-c žvaigž",
-            [
-                {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
-            ],
-            marks=pytest.mark.xfail(
-                strict=True,
-                reason="SQLite icontains folds ASCII only; MariaDB collation folds",
-            ),
-        ),
-        pytest.param(
-            "-c ąžuo",
-            [
-                {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
-            ],
-            marks=pytest.mark.xfail(
-                strict=True,
-                reason="SQLite icontains folds ASCII only; MariaDB collation folds",
-            ),
-        ),
-        (
-            "-r ąčęėįšųūž",
-            [
-                {"type": "Žvaigždė", "name": "Ąžuolas", "remark": "ąčęėįšųūž"},
-            ],
-        ),
-    ],
-)
-def test_expense_search(main_user, _search, expect):
-    ExpenseFactory(
-        date=date(1999, 1, 1),
-        expense_type=ExpenseTypeFactory(title="Type_A"),
-        expense_name=ExpenseNameFactory(title="Name_A"),
-        remark="XXX",
-    )
-    ExpenseFactory(
-        date=date(1999, 2, 1),
-        expense_type=ExpenseTypeFactory(title="Type_A"),
-        expense_name=ExpenseNameFactory(title="Name_B"),
-        remark="YYY",
-    )
-    ExpenseFactory(
-        date=date(2000, 1, 1),
-        expense_type=ExpenseTypeFactory(title="Type_B"),
-        expense_name=ExpenseNameFactory(title="Name_A"),
-        remark="ZZZ",
-    )
-    ExpenseFactory(
-        date=date(2000, 2, 1),
-        expense_type=ExpenseTypeFactory(title="Type_B"),
-        expense_name=ExpenseNameFactory(title="Name_B"),
-        remark="WWW",
-    )
-    ExpenseFactory(
-        date=date(2001, 2, 1),
-        expense_type=ExpenseTypeFactory(title="Žvaigždė"),
-        expense_name=ExpenseNameFactory(title="Ąžuolas"),
-        remark="ąčęėįšųūž",
-    )
-
-    q = search.search_expenses(main_user, _search)
-
-    for row, expected in zip(q, expect, strict=True):
-        assert row["expense_type__title"] == expected["type"]
-        assert row["expense_name__title"] == expected["name"]
-        assert row["remark"] == expected["remark"]
+    assert search.parse_search(text) == (expect, or_)
 
 
 @pytest.mark.django_db
@@ -314,9 +166,9 @@ def test_expense_search(main_user, _search, expect):
 @pytest.mark.parametrize(
     "factory_class, search_func, date_field",
     [
-        pytest.param(ExpenseFactory, search.search_expenses, "date", id="expense"),
-        pytest.param(IncomeFactory, search.search_incomes, "date", id="income"),
-        pytest.param(BookFactory, search.search_books, "started", id="book"),
+        pytest.param(ExpenseFactory, search_expenses, "date", id="expense"),
+        pytest.param(IncomeFactory, search_incomes, "date", id="income"),
+        pytest.param(BookFactory, search_books, "started", id="book"),
     ],
 )
 def test_search_orders_newest_first(main_user, factory_class, search_func, date_field):
@@ -327,86 +179,3 @@ def test_search_orders_newest_first(main_user, factory_class, search_func, date_
 
     assert q[0][date_field] == date(1999, 1, 1)
     assert q[1][date_field] == date(1000, 1, 1)
-
-
-FOUND = ["Income Type"]
-
-
-@pytest.mark.django_db
-@factory.django.mute_signals(post_save)
-@pytest.mark.parametrize(
-    "_search, income_types",
-    [
-        ("1999", FOUND),
-        ("-y 1999", FOUND),
-        ("1999.1", FOUND),
-        ("1999-1", FOUND),
-        ("-y 1999 -m 1", FOUND),
-        ("2000", []),
-        ("-y 2000", []),
-        ("a", []),
-        ("ab", []),
-        ("type", FOUND),
-        ("-c type", FOUND),
-        ("remark", FOUND),
-        ("-r remark", FOUND),
-        ("1999.1 type", FOUND),
-        ("1999-1 type", FOUND),
-        ("-y 1999 -m 1 -c type", FOUND),
-    ],
-)
-def test_incomes_search(main_user, _search, income_types):
-    IncomeFactory()
-    IncomeFactory(
-        date=date(3333, 1, 1), income_type=IncomeTypeFactory(title="Y"), remark="ZZZ"
-    )
-
-    actual = [
-        (row["date"], row["income_type__title"])
-        for row in search.search_incomes(main_user, _search)
-    ]
-
-    assert actual == [(date(1999, 1, 1), title) for title in income_types]
-
-
-BOOK = ("Author", "Book Title", "Remark")
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "_search, books",
-    [
-        ("1999", [BOOK]),
-        ("-y1999", [BOOK]),
-        ("1999.1", [BOOK]),
-        ("1999-1", [BOOK]),
-        ("-y 1999 -m 1", [BOOK]),
-        ("2000", []),
-        ("-y 2000", []),
-        ("a", []),
-        ("ab", []),
-        ("auth", [BOOK]),
-        ("-c auth", [BOOK]),
-        ("titl", [BOOK]),
-        ("-c titl", [BOOK]),
-        ("remark", [BOOK]),
-        ("-r remark", [BOOK]),
-        ("1999.1 auth", [BOOK]),
-        ("1999-1 auth", [BOOK]),
-        ("-r 1999 -m 1 -c auth", []),
-        ("-y 1999 -m 1 -c auth", [BOOK]),
-        ("1999.1 titl", [BOOK]),
-        ("1999-1 titl", [BOOK]),
-        ("-y 1999 -m 1 -c titl", [BOOK]),
-    ],
-)
-def test_books_search(main_user, _search, books):
-    BookFactory()
-    BookFactory(started=date(3333, 1, 1), author="A", title="T", remark="ZZZ")
-
-    actual = [
-        (row["started"], row["author"], row["title"], row["remark"])
-        for row in search.search_books(main_user, _search)
-    ]
-
-    assert actual == [(date(1999, 1, 1), *book) for book in books]

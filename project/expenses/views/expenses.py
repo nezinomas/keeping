@@ -22,6 +22,7 @@ from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
 )
+from ..services.search import search_expenses, search_totals
 
 
 class GetMonthMixin:
@@ -96,7 +97,8 @@ class Delete(DeleteViewMixin):
 
 class Search(SearchViewMixin):
     template_name = "expenses/expense_list.html"
-    search_method = "search_expenses"
+    search_method = staticmethod(search_expenses)
+    search_totals = staticmethod(search_totals)
     per_page = 50
     use_fast_urls = True
 
