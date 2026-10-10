@@ -17,15 +17,6 @@ def test_year_month_list():
     assert actual[11] == date(1970, 12, 1)
 
 
-@time_machine.travel("1999-01-11")
-def test_year_month_list_year_none():
-    actual = lib_date.year_month_list(None)
-
-    assert len(actual) == 12
-    assert actual[0] == date(1999, 1, 1)
-    assert actual[11] == date(1999, 12, 1)
-
-
 @time_machine.travel("1970-01-11")
 @pytest.mark.parametrize(
     "year, month, return_past_day, expect",

@@ -58,12 +58,14 @@ def test_yday_anonymous_user(rf):
     assert actual == {"yday": 1, "ydays": 366}
 
 
-@time_machine.travel("1974-1-1")
-def test_context_months(rf):
-    actual = context_months(rf)
+@time_machine.travel("2000-1-1")
+def test_context_months_are_the_users_year(main_user, rf):
+    request = rf.get("/")
+    request.user = main_user
 
-    assert len(actual["context_months"]) == 12
-    assert actual["context_months"][0] == date(1974, 1, 1)
+    actual = context_months(request)
+
+    assert actual == {"context_months": [date(1999, m, 1) for m in range(1, 13)]}
 
 
 def test_context_counts_menu(main_user, rf):

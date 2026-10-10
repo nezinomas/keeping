@@ -21,8 +21,11 @@ def yday(request):
     return {"yday": _yday, "ydays": _ydays}
 
 
-def context_months(context):
-    return {"context_months": lib_date.year_month_list()}
+def context_months(request):
+    if not request.user.is_authenticated:
+        return {"context_months": []}
+
+    return {"context_months": lib_date.year_month_list(request.user.year)}
 
 
 def context_counts_menu(context):
