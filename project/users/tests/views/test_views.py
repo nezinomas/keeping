@@ -166,18 +166,18 @@ def test_signup_form_inputs(client):
     assert form.count('type="password"') == 2
 
 
+SIGNUP = {
+    "username": "john",
+    "email": "john@dot.com",
+    "password1": "abcdef123456",
+    "password2": "abcdef123456",
+}
+
+
 @pytest.fixture
 @override_settings(ENV={"CAN_SIGN_UP": True})
 def _signuped_client(client):
-    url = reverse("users:signup")
-    data = {
-        "username": "john",
-        "email": "john@dot.com",
-        "password1": "abcdef123456",
-        "password2": "abcdef123456",
-    }
-
-    return client.post(url, data)
+    return client.post(reverse("users:signup"), SIGNUP)
 
 
 @pytest.mark.disable_get_user_patch
@@ -537,20 +537,16 @@ def test_invite_signup_edited_token(client):
     )
 
 
+def _invite_url(user):
+    token = TimestampSigner(salt=settings.SALT).sign_object(
+        {"jrn": user.journal.pk, "usr": user.pk}
+    )
+    return reverse("users:invite_signup", kwargs={"token": token})
+
+
 @pytest.fixture
 def _invite_client(main_user, client):
-    signer_ = TimestampSigner(salt=settings.SALT)
-    token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
-    url = reverse("users:invite_signup", kwargs={"token": token_})
-
-    data = {
-        "username": "john",
-        "email": "john@dot.com",
-        "password1": "abcdef123456",
-        "password2": "abcdef123456",
-    }
-
-    return client.post(url, data)
+    return client.post(_invite_url(main_user), SIGNUP)
 
 
 def test_invite_signup_redirection(_invite_client):
@@ -564,18 +560,7 @@ def test_invite_signup_broken_user(mocker, client, main_user, error):
     mck = mocker.patch("project.users.views.User")
     mck.objects.get.side_effect = error
 
-    signer_ = TimestampSigner(salt=settings.SALT)
-    token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
-    url = reverse("users:invite_signup", kwargs={"token": token_})
-
-    data = {
-        "username": "john",
-        "email": "john@dot.com",
-        "password1": "abcdef123456",
-        "password2": "abcdef123456",
-    }
-
-    client.post(url, data)
+    client.post(_invite_url(main_user), SIGNUP)
 
     assert User.objects.all().count() == 1
 
@@ -612,3 +597,23 @@ def test_user_delete_other_user_post_form(client_logged, second_user):
     client_logged.post(url)
 
     assert User.objects.all().count() == 2
+
+
+@override_settings(ENV={"CAN_SIGN_UP": True})
+@pytest.mark.parametrize(
+    ("url", "journal_title"),
+    [
+        (lambda user: reverse("users:signup"), "john Journal"),
+        (_invite_url, "bob Journal"),
+    ],
+    ids=["signup", "invite_signup"],
+)
+def test_signup_ignores_a_posted_journal(
+    client, main_user, second_user, url, journal_title
+):
+    client.post(
+        url(main_user),
+        SIGNUP | {"journal": second_user.journal.pk},
+    )
+
+    assert User.objects.get(username="john").journal.title == journal_title
