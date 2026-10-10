@@ -22,21 +22,26 @@ hypothesis.settings.register_profile("gate", max_examples=100, deadline=None)
 hypothesis.settings.load_profile("dev")
 
 
-@pytest.fixture(autouse=True)
-def main_user(monkeypatch, request):
-    if "disable_get_user_patch" in request.keywords:
-        return None
+def _user(request, **kwargs):
+    if "django_db" not in request.keywords:
+        return UserFactory.build(**kwargs)
 
-    if "django_db" in request.keywords:
-        user = UserFactory()
-
-        jr = user.journal
-        jr.first_record = date(1999, 1, 1)
-        jr.save()
-    else:
-        user = UserFactory.build()
+    user = UserFactory(**kwargs)
+    user.journal.first_record = date(1999, 1, 1)
+    user.journal.save()
 
     return user
+
+
+@pytest.fixture()
+def main_user(request):
+    return _user(request)
+
+
+@pytest.fixture(autouse=True)
+def _main_user_unless_disabled(request):
+    if "disable_get_user_patch" not in request.keywords:
+        request.getfixturevalue("main_user")
 
 
 @pytest.fixture(autouse=True)
@@ -48,16 +53,7 @@ def reset_language():
 
 @pytest.fixture()
 def second_user(request):
-    if "django_db" in request.keywords:
-        user = UserFactory(username="X", email="x@x.xx")
-
-        jr = user.journal
-        jr.first_record = date(1999, 1, 1)
-        jr.save()
-    else:
-        user = UserFactory.build(username="X", email="x@x.xx")
-
-    return user
+    return _user(request, username="X", email="x@x.xx")
 
 
 @pytest.fixture()
@@ -74,32 +70,22 @@ def client_logged(client):
     return client
 
 
-def _sqlite_format(value, decimals, locale=None):
-    """
-    Python simulation of MariaDB's FORMAT(X, D, locale).
-    """
+def _sqlite_format(value, decimals, locale):
+    """SQLite has no FORMAT(X, D, locale); this stands in for MariaDB's."""
     if value is None:
         return None
     try:
-        val = float(value)
-        # 1. Format with standard English commas: "1,234.56"
-        formatted = f"{val:,.{int(decimals)}f}"
-
-        # 2. Swap dots and commas to mimic European style if locale is present
-        if locale:
-            return formatted.replace(",", "X").replace(".", ",").replace("X", ".")
-        return formatted
+        formatted = f"{float(value):,.{int(decimals)}f}"
     except (ValueError, TypeError):
         return str(value)
+
+    if locale:
+        return formatted.replace(",", "X").replace(".", ",").replace("X", ".")
+    return formatted
 
 
 @pytest.fixture(scope="session", autouse=True)
 def fix_sqlite_format_function():
-    """
-    Runs ONCE per test session.
-    Ensures that whenever a SQLite connection is created, it has the FORMAT function.
-    """
-
     def register_functions(sender, connection, **kwargs):
         if connection.vendor == "sqlite":
             connection.connection.create_function("FORMAT", 3, _sqlite_format)
