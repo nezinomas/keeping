@@ -109,10 +109,12 @@ class DebtReturnModelService(SumMixin, DatedModelService):
             .values("date", "sum", "title")
         )
 
-    def total_returned_for_debt(self, debt_return_instance):
-        return self.objects.filter(debt=debt_return_instance.debt).aggregate(
-            total=Coalesce(Sum("price"), 0)
-        )["total"]
+    def total_returned_for_debt(self, debt, leaving_out_pk=0):
+        return (
+            self.objects.filter(debt=debt)
+            .exclude(pk=leaving_out_pk)
+            .aggregate(total=Coalesce(Sum("price"), 0))["total"]
+        )
 
     def incomes(self):
         """

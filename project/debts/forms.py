@@ -1,7 +1,5 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from django.db.models import Sum
-from django.db.models.functions import Coalesce
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
@@ -168,13 +166,9 @@ class DebtReturnForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         if not debt:
             return price
 
-        returned = (
-            DebtReturnModelService(self.user, self.debt_type)
-            .items()
-            .filter(debt=debt)
-            .exclude(pk=self.instance.pk)
-            .aggregate(total=Coalesce(Sum("price"), 0))["total"]
-        )
+        returned = DebtReturnModelService(
+            self.user, self.debt_type
+        ).total_returned_for_debt(debt, leaving_out_pk=self.instance.pk or 0)
 
         # euros here: PriceToCentsFormMixin converts the field later, in clean()
         if float_to_int_cents(price) > debt.price - returned:
