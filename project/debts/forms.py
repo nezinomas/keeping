@@ -91,6 +91,10 @@ class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         if not self.instance.pk and closed:
             self.add_error("closed", _msg_cant_close)
 
+        # an invalid price already has its field error and nothing to compare
+        if "price" not in cleaned_data:
+            return cleaned_data
+
         if self.instance.pk and closed and self.instance.returned != price:
             self.add_error("closed", _msg_cant_close)
 
