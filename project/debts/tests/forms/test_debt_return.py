@@ -68,9 +68,16 @@ def test_debt_return_select_first_account(main_user, second_user):
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_valid_data(main_user, debt_type):
+@pytest.mark.parametrize(
+    "price, cents",
+    [
+        pytest.param("0.01", 1, id="point"),
+        pytest.param("12,1", 1210, id="decimal_comma"),
+    ],
+)
+def test_debt_return_valid_data(main_user, debt_type, price, cents):
     a = AccountFactory()
-    b = DEBT_FACTORIES[debt_type]()
+    b = DEBT_FACTORIES[debt_type](price=200000)
 
     form = forms.DebtReturnForm(
         user=main_user,
@@ -78,39 +85,20 @@ def test_debt_return_valid_data(main_user, debt_type):
         data={
             "date": "1999-12-02",
             "debt": b.pk,
-            "price": "0.01",
+            "price": price,
             "account": a.pk,
             "remark": "Rm",
         },
     )
 
-    assert form.is_valid()
+    assert form.is_valid(), form.errors
 
     e = form.save()
     assert e.date == date(1999, 12, 2)
     assert e.account == a
     assert e.debt == b
-    assert e.price == 1
+    assert e.price == cents
     assert e.remark == "Rm"
-
-
-def test_lend_return_price_accepts_a_decimal_comma(main_user):
-    a = AccountFactory()
-    b = factories.LendFactory(price=200000)
-
-    form = forms.DebtReturnForm(
-        user=main_user,
-        debt_type="lend",
-        data={
-            "date": "1999-12-02",
-            "debt": b.pk,
-            "price": "12,1",
-            "account": a.pk,
-        },
-    )
-
-    assert form.is_valid(), form.errors
-    assert form.save().price == 1210
 
 
 @time_machine.travel("1999-2-2")
