@@ -1,5 +1,5 @@
-from django.db.models import Count, F, FloatField, Sum
-from django.db.models.functions import Cast, Coalesce
+from django.db.models import Count, Sum
+from django.db.models.functions import Coalesce
 
 from ...core.lib.search import generic_search
 from .model_services import ExpenseModelService
@@ -15,22 +15,13 @@ def search_expenses(user, search_str):
 
 
 def search_totals(qs):
-    totals = (
-        qs.annotate(count=Count("id"))
-        .values("count")
-        .annotate(
-            sum_price=Sum("price"),
-            sum_quantity=Sum("quantity"),
-        )
-        .order_by("count")
-        .values(
-            "count",
-            "sum_price",
-            "sum_quantity",
-            average=Coalesce(
-                Cast(F("sum_price"), FloatField()) / F("sum_quantity"), 0.0
-            ),
-        )
+    totals = qs.aggregate(
+        count=Count("id"),
+        sum_price=Coalesce(Sum("price"), 0),
+        sum_quantity=Coalesce(Sum("quantity"), 0),
     )
+    totals["average"] = 0.0
+    if totals["sum_quantity"]:
+        totals["average"] = totals["sum_price"] / totals["sum_quantity"]
 
-    return totals[0] if totals else {}
+    return totals

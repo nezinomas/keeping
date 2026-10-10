@@ -158,26 +158,33 @@ def test_expense_search(main_user, _search, expect):
 
 
 @pytest.mark.django_db
-def test_search_totals():
-    ExpenseFactory()
-    ExpenseFactory()
+@pytest.mark.parametrize(
+    "quantities, expect",
+    [
+        pytest.param(
+            [13, 13],
+            {
+                "count": 2,
+                "sum_price": 224,
+                "sum_quantity": 26,
+                "average": pytest.approx(224 / 26),
+            },
+            id="rows",
+        ),
+        pytest.param(
+            [0, 0],
+            {"count": 2, "sum_price": 224, "sum_quantity": 0, "average": 0.0},
+            id="zero_quantity",
+        ),
+        pytest.param(
+            [],
+            {"count": 0, "sum_price": 0, "sum_quantity": 0, "average": 0.0},
+            id="no_rows",
+        ),
+    ],
+)
+def test_search_totals(quantities, expect):
+    for quantity in quantities:
+        ExpenseFactory(quantity=quantity)
 
-    actual = search_totals(Expense.objects.all())
-
-    assert actual == {
-        "count": 2,
-        "sum_price": 224,
-        "sum_quantity": 26,
-        "average": pytest.approx(224 / 26),
-    }
-
-
-@pytest.mark.django_db
-def test_search_totals_zero_quantity_average_is_zero():
-    ExpenseFactory(quantity=0)
-    ExpenseFactory(quantity=0)
-
-    actual = search_totals(Expense.objects.all())
-
-    assert actual["sum_quantity"] == 0
-    assert actual["average"] == 0
+    assert search_totals(Expense.objects.all()) == expect

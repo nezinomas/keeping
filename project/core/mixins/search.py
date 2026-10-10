@@ -5,12 +5,12 @@ from ...core.lib.utils import add_fast_urls, get_action_buttons_html
 from ..lib.paginator import CountlessPaginator
 
 
-def no_totals(qs):
-    return {}
+def count_only(qs):
+    return {"count": qs.count()}
 
 
 class SearchMixin:
-    search_totals = staticmethod(no_totals)
+    search_totals = staticmethod(count_only)
     use_fast_urls = False
 
     def get_context_data(self, **kwargs):
@@ -29,7 +29,7 @@ class SearchMixin:
         page = self.request.GET.get("page", 1)
         paginator = CountlessPaginator(
             query=sql,
-            total_records=stats.get("count") or sql.count(),
+            total_records=stats["count"],
             per_page=self.per_page,
         )
         page_range = paginator.get_elided_page_range(page)
