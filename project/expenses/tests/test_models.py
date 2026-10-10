@@ -178,19 +178,12 @@ def test_expense_name_year_lists_unlimited_names_before_the_years(main_user):
     assert actual[1].title == "N1"
 
 
-def test_expense_name_no_duplicates():
-    parent = ExpenseTypeFactory(title="P1")
-    ExpenseName(title="N1", parent=parent).save()
+@pytest.mark.parametrize(("first", "second"), [("N1", "N1"), ("Būstas", "Bustas")])
+def test_expense_name_slug_unique_per_parent(first, second):
+    obj1 = ExpenseNameFactory(title=first)
 
     with pytest.raises(IntegrityError):
-        ExpenseName(title="N1", parent=parent).save()
-
-
-def test_expense_name_slug_unique_per_parent():
-    obj1 = ExpenseNameFactory(title="Būstas")
-
-    with pytest.raises(IntegrityError):
-        ExpenseNameFactory(title="Bustas", parent=obj1.parent)
+        ExpenseName(title=second, parent=obj1.parent).save()
 
 
 def test_expense_name_longest_title_is_valid_with_its_slug():
