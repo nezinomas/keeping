@@ -16,12 +16,11 @@ class BaseTypeFormSet(BaseModelFormSet):
             return
 
         relation_name = self.model.fund_field
-        seen_items = {}  # Maps the account value directly to the form instance
+        seen_items = {}
         duplicate_msg = _("The same accounts are selected.")
 
         for form in self.forms:
-            # Skip forms that are empty, marked for deletion, or have no dropdown value
-            if not form.cleaned_data or form.cleaned_data.get("DELETE"):
+            if form.cleaned_data.get("DELETE"):
                 continue
 
             item_value = form.cleaned_data.get(relation_name)
