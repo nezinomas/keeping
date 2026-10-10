@@ -51,7 +51,7 @@ def load_index_service(life: CounterLife) -> dict:
         "calendar": CalendarGrid.build(
             life.boundary,
             daily_data=daily,
-            latest_past_date=life.past_latest,
+            earlier=life.earlier,
             empty_title=_("No records"),
             low_title=_("No records"),
             high_title=_("Record"),

@@ -6,7 +6,7 @@ from datetime import date
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from .day_stats import Stats
+from .day_stats import NoPastRecord, PastRecord, Stats
 from .translation import month_names
 from .year_boundary import YearBoundary
 
@@ -63,7 +63,7 @@ class CalendarGrid:
         cls,
         boundary: YearBoundary,
         daily_data: Sequence[dict] = (),
-        latest_past_date: date | None = None,
+        earlier: PastRecord | NoPastRecord = NoPastRecord(),
         quantity_title: str = _lazy("Quantity"),
         empty_title: str = "",
         unit: str = "",
@@ -83,16 +83,14 @@ class CalendarGrid:
 
         gap_by_date = {}
         if daily_data:
-            gap_by_date = Stats(
-                data=daily_data, past_latest=latest_past_date
-            ).gap_by_date()
+            gap_by_date = Stats(data=daily_data, earlier=earlier).gap_by_date()
 
         past_dates = [row["date"] for row in daily_data if row["date"] <= today]
-        latest_recorded = max(past_dates, default=latest_past_date)
+        latest = earlier
+        if past_dates:
+            latest = PastRecord(max(past_dates))
 
-        today_gap = 0
-        if latest_recorded and today >= latest_recorded:
-            today_gap = (today - latest_recorded).days
+        today_gap = latest.days_to(today)
 
         months = [
             cls._build_month(

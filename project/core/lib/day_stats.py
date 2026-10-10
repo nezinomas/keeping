@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 from functools import cached_property
 
 import polars as pl
@@ -15,15 +15,47 @@ class GapSpan:
     days: int
 
 
+@dataclass(frozen=True)
+class PastRecord:
+    """The Record on or before today that a Gap or Days dry reaches back to."""
+
+    date: date
+    has_record = True
+
+    def first_gap_start(self, first: date) -> date:
+        return self.date
+
+    def days_to(self, today: date) -> int:
+        return (today - self.date).days
+
+    def lead_span(self, first: date, days: int) -> list[GapSpan]:
+        return [GapSpan(self.date, first, days)]
+
+
+@dataclass(frozen=True)
+class NoPastRecord:
+    """No such Record: the first Gap measures from January 1st."""
+
+    has_record = False
+
+    def first_gap_start(self, first: date) -> date:
+        return date(first.year, 1, 1)
+
+    def days_to(self, today: date) -> int:
+        return 0
+
+    def lead_span(self, first: date, days: int) -> list[GapSpan]:
+        return []
+
+
 class Stats:
     def __init__(
         self,
         data: Sequence[dict[date, float]],
-        past_latest: date | None = None,
+        earlier: PastRecord | NoPastRecord = NoPastRecord(),
     ):
-        self._past_latest = past_latest
+        self._earlier = earlier
         self._data = data
-        self._now_date = datetime.now().date()
 
     @staticmethod
     def months() -> list[str]:
@@ -95,12 +127,7 @@ class Stats:
             for i in range(1, rows.height)
         ]
 
-        if self._past_latest:
-            spans.insert(
-                0, GapSpan(self._past_latest, rows[0, "date"], rows[0, "duration"])
-            )
-
-        return spans
+        return self._earlier.lead_span(rows[0, "date"], rows[0, "duration"]) + spans
 
     def _totals_by_year_df(self) -> pl.DataFrame:
         return (
@@ -143,8 +170,8 @@ class Stats:
             return self._df
 
         first_record_date = self._df[0, "date"]
-        past_record_date = self._past_latest or date(first_record_date.year, 1, 1)
-        first_gap_days = (first_record_date - past_record_date).days
+        gap_start = self._earlier.first_gap_start(first_record_date)
+        first_gap_days = (first_record_date - gap_start).days
 
         return (
             self._df.lazy()

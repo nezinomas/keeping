@@ -1,6 +1,6 @@
-from datetime import date
 from functools import cached_property
 
+from ...core.lib.day_stats import NoPastRecord, PastRecord
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DataRow
 from .model_services import DrinkModelService, DrinkTargetDTO, DrinkTargetModelService
@@ -43,12 +43,22 @@ class ConsumptionYear:
         return DrinkTargetModelService(self.user).get_target(self.year)
 
     @cached_property
-    def last_recorded_date(self) -> date | None:
-        return self._service.latest_date(self.year)
+    def earlier(self) -> PastRecord | NoPastRecord:
+        """The last Drink before the year, so its first Gap reaches back."""
+        latest = self._service.latest_date_before(self.year)
+        if latest is None:
+            return NoPastRecord()
+
+        return PastRecord(latest)
 
     @cached_property
-    def last_recorded_date_before(self) -> date | None:
-        return self._service.latest_date_before(self.year)
+    def latest(self) -> PastRecord | NoPastRecord:
+        """The last Drink of the year, else the last one before it."""
+        latest = self._service.latest_date(self.year)
+        if latest is None:
+            return self.earlier
+
+        return PastRecord(latest)
 
     @cached_property
     def previous(self) -> "ConsumptionYear":

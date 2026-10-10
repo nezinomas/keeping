@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from datetime import date as dt_date
-from datetime import datetime
 
 from django.template.defaultfilters import floatformat
 from django.urls import reverse
@@ -9,6 +8,7 @@ from django.utils.translation import gettext as _
 from ...core.lib import stat_card
 from ...core.lib.calendar_grid import CalendarGrid
 from ...core.lib.date import ydays, years
+from ...core.lib.day_stats import NoPastRecord, PastRecord
 from ...core.lib.stat_card import (
     Card,
     ComparisonStatCard,
@@ -45,12 +45,15 @@ class MonthlyChartViewModel(ChartViewModel):
 
 @dataclass(frozen=True)
 class DryDaysViewModel:
-    date: dt_date | None = None
-    delta: int = 0
+    date: dt_date
+    delta: int
 
-    @property
-    def has_data(self) -> bool:
-        return self.date is not None
+    has_data = True
+
+
+@dataclass(frozen=True)
+class NoDryDaysViewModel:
+    has_data = False
 
 
 @dataclass(frozen=True)
@@ -88,8 +91,8 @@ class IndexTab:
             ),
             target=target.qty,
             target_id=target.target_id,
-            latest_past_date=records.last_recorded_date_before,
-            latest_current_date=records.last_recorded_date,
+            latest=records.latest,
+            today=boundary.today,
         )
 
         return {
@@ -101,7 +104,7 @@ class IndexTab:
             "calendar": CalendarGrid.build(
                 boundary,
                 daily_data=records.daily_rows,
-                latest_past_date=records.last_recorded_date_before,
+                earlier=records.earlier,
                 unit="Std Av",
                 thresholds=CALENDAR_LEVELS,
                 value_key="stdav",
@@ -117,19 +120,17 @@ class IndexBuilder:
         self,
         converter: DrinkConverter,
         drink_stats: DrinkStats,
+        today: dt_date,
         previous_stats: DrinkStats | None = None,
         frequency_stats: FrequencyStats | None = None,
         target: float = 0.0,
         target_id: int = 0,
-        latest_past_date: dt_date | None = None,
-        latest_current_date: dt_date | None = None,
-        today: dt_date | None = None,
+        latest: PastRecord | NoPastRecord = NoPastRecord(),
     ):
         self._target = target
         self._target_id = target_id
-        self._latest_past_date = latest_past_date
-        self._latest_current_date = latest_current_date
-        self._today = today or datetime.now().date()
+        self._latest = latest
+        self._today = today
         self._drink_stats = drink_stats
         self._previous_stats = previous_stats or DrinkStats(converter)
         self._frequency_stats = frequency_stats or FrequencyStats()
@@ -158,12 +159,11 @@ class IndexBuilder:
             },
         )
 
-    def tbl_dry_days(self) -> DryDaysViewModel:
-        if latest := self._latest_current_date or self._latest_past_date:
-            delta = (self._today - latest).days
-            return DryDaysViewModel(date=latest, delta=delta)
+    def tbl_dry_days(self) -> DryDaysViewModel | NoDryDaysViewModel:
+        if not self._latest.has_record:
+            return NoDryDaysViewModel()
 
-        return DryDaysViewModel()
+        return DryDaysViewModel(self._latest.date, self._latest.days_to(self._today))
 
     def get_cards(self) -> list[Card]:
         return [
