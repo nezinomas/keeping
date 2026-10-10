@@ -54,12 +54,17 @@ def test_form_year_initial_value(main_user, form_class, expected):
     assert expected in form
 
 
-def test_book_valid_data(main_user):
+@pytest.mark.parametrize(
+    "ended",
+    ["1999-01-31", "1999-01-01"],
+    ids=["ended_after_started", "ended_on_started"],
+)
+def test_book_valid_data(main_user, ended):
     form = BookForm(
         user=main_user,
         data={
             "started": "1999-01-01",
-            "ended": "1999-01-31",
+            "ended": ended,
             "author": "Author",
             "title": "Title",
         },
@@ -70,7 +75,7 @@ def test_book_valid_data(main_user):
     data = form.save()
 
     assert data.started == date(1999, 1, 1)
-    assert data.ended == date(1999, 1, 31)
+    assert data.ended == date.fromisoformat(ended)
     assert data.author == "Author"
     assert data.title == "Title"
     assert data.user.username == "bob"
