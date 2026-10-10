@@ -25,9 +25,7 @@ from ....transactions.tests.factories import (
     TransactionFactory,
 )
 
-# Calls a save or delete reaches, in order; update_debt_model saves its Debt,
-# which syncs the accounts once more.
-DEBT_RETURN = ["accounts", "debt", "accounts"]
+# Calls a save or delete reaches, in order.
 WIRING = {
     "Income": (IncomeFactory, ["accounts", "first_record"], ["accounts"]),
     "Expense": (ExpenseFactory, ["accounts", "first_record"], ["accounts"]),
@@ -44,7 +42,7 @@ WIRING = {
         ["close_year", "savings"],
     ),
     "Debt": (BorrowFactory, ["accounts"], ["accounts"]),
-    "DebtReturn": (BorrowReturnFactory, DEBT_RETURN, DEBT_RETURN),
+    "DebtReturn": (BorrowReturnFactory, ["accounts", "debt"], ["accounts", "debt"]),
     "Pension": (PensionFactory, ["pensions"], ["pensions"]),
     "SavingType": (SavingTypeFactory, ["accounts", "savings"], []),
     "PensionType": (PensionTypeFactory, ["pensions"], []),

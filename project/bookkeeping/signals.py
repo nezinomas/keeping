@@ -44,9 +44,8 @@ def update_debt_model(sender: object, instance: models.Model, *args, **kwargs):
         instance.debt
     )
 
-    debt_row = debt.Debt.objects.get(pk=instance.debt.pk)
-    debt_row.returned = total_return
-    debt_row.save(update_fields=["returned"])
+    # update(), not save(): no account source reads `returned`, so no second sync
+    debt.Debt.objects.filter(pk=instance.debt.pk).update(returned=total_return)
 
 
 # A type's fee source and close year change its balances.
