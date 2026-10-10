@@ -230,6 +230,16 @@ def test_debt_cant_close(main_user):
     assert form.errors["closed"] == ["Negalite uždaryti dar negražintos skolos."]
 
 
+@pytest.mark.parametrize("price", ["abc", "0"])
+def test_debt_edit_with_an_invalid_price_is_a_field_error(main_user, price):
+    obj = factories.LendFactory(price=10000, returned=5000)
+    data = model_to_dict(obj) | {"price": price}
+
+    form = forms.DebtForm(user=main_user, debt_type="lend", instance=obj, data=data)
+
+    assert list(form.errors) == ["price"]
+
+
 @pytest.mark.parametrize(
     "price, errors",
     [
