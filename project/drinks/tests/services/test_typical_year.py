@@ -166,13 +166,13 @@ def test_chart_intensity_carries_the_std_av_unit_and_one_decimal():
     assert actual.text["share_unit"] == "%"
 
 
-def test_chart_leaves_a_gap_for_the_months_a_year_has_not_reached():
-    # August has not happened, so it is a gap in the series — plotting it as a
+def test_chart_ends_at_the_last_month_a_year_has_reached():
+    # August has not happened, so the series stops at July — plotting it as a
     # zero would draw the running year as five dry months
     actual = _chart(year_rows=[_total(2026, 7, 30, 3)], today=date(2026, 7, 15))
 
-    assert actual.year.drinking_day_share[7] is None
-    assert actual.year.intensity[7] is None
+    assert len(actual.year.drinking_day_share) == 7
+    assert len(actual.year.intensity) == 7
 
 
 def test_chart_plots_a_reached_month_without_records_as_a_zero():

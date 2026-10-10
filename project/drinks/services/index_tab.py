@@ -36,7 +36,7 @@ from .consumption_year import ConsumptionYear
 @dataclass(frozen=True)
 class MonthlyChartViewModel(ChartViewModel):
     categories: list[str]
-    data: list[float | None]
+    data: list[float]
     text: dict[str, str]
     target: float | None = None
     avg: float | None = None
