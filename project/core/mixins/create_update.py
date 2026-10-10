@@ -2,26 +2,24 @@ from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
 
 class CreateUpdateMixin:
-    hx_trigger_django = None
-    hx_trigger_form = None
-    hx_redirect = None
+    # fired on every save; the form's trigger fires once, when the modal closes
+    hx_trigger_django = ""
+    hx_trigger_form = ""
+    hx_redirect = ""
+    modal_form_title = ""
 
     def get_hx_trigger_django(self):
-        # triggers Htmx to reload container on Submit button click
-        # triggering happens many times
-        return self.hx_trigger_django or None
+        return self.hx_trigger_django
 
     def get_hx_trigger_form(self):
-        # triggers Htmx to reload container on Close button click
-        # triggering happens once
-        return self.hx_trigger_form or None
+        return self.hx_trigger_form
 
     def get_hx_redirect(self):
         return self.hx_redirect
 
     def get_context_data(self, **kwargs):
         context = {
-            "modal_form_title": getattr(self, "modal_form_title", None),
+            "modal_form_title": self.modal_form_title,
             "modal_body_css_class": getattr(self, "modal_body_css_class", ""),
             "form_action": self.form_action,
             "url": self.url,
@@ -35,13 +33,9 @@ class CreateUpdateMixin:
         if not self.request.htmx:
             return response
 
-        self.hx_redirect = self.get_hx_redirect()
+        if hx_redirect := self.get_hx_redirect():
+            return HttpResponseClientRedirect(hx_redirect)
 
-        if self.hx_redirect:
-            # close form and redirect to url with hx_trigger_django
-            return HttpResponseClientRedirect(self.hx_redirect)
-
-        # close form and reload container
         response.status_code = 204
         if trigger := self.get_hx_trigger_django():
             trigger_client_event(response=response, name=trigger, params={})

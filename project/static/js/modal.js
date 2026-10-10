@@ -63,7 +63,7 @@ class Modal {
         const triggerName = this.form?.dataset.hxTriggerForm;
         const dataInserted = this.form?.dataset.hxInserted;
 
-        if (triggerName && triggerName !== 'None' && dataInserted) {
+        if (triggerName && dataInserted) {
             htmx.trigger('body', triggerName, {});
         }
     }
