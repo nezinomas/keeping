@@ -288,6 +288,13 @@ def test_a_sparse_counters_repeated_length_stands_out_as_one_bar():
     assert tallest.count > 2 * runner_up
 
 
+def test_edges_that_round_to_one_another_leave_no_inverted_or_skipped_bin():
+    bins = Rhythm(_spaced([1, 2, 3])).gap_distribution
+
+    assert all(x.low <= x.high for x in bins)
+    assert [b.low for b in bins[1:]] == [a.high + 1 for a in bins[:-1]]
+
+
 def test_a_dense_counters_cluster_does_not_collapse_into_one_bin():
     bins = Rhythm(_spaced(DENSE)).gap_distribution
 
