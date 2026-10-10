@@ -48,7 +48,7 @@ class DebtModelService(DatedModelService):
 
     def sum_all(self):
         return self.open_items().aggregate(
-            debt=Sum("price"), debt_return=Sum("returned")
+            debt=Coalesce(Sum("price"), 0), debt_return=Coalesce(Sum("returned"), 0)
         )
 
     def incomes(self):

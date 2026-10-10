@@ -370,17 +370,23 @@ def test_debt_sum_all_months_ordering(main_user, second_user):
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_sum_all_not_closed(main_user):
+@pytest.mark.parametrize(
+    "open_debts, expect",
+    [
+        pytest.param(True, {"debt": 7, "debt_return": 4}, id="open_debts_summed"),
+        pytest.param(False, {"debt": 0, "debt_return": 0}, id="none_open"),
+    ],
+)
+def test_debt_sum_all_not_closed(main_user, open_debts, expect):
     LendFactory(date=dt(1999, 1, 1), price=12, closed=True)
-    LendFactory(date=dt(1999, 1, 1), price=2, returned=1)
-    LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
-    LendFactory(date=dt(1974, 1, 2), price=3, returned=2)
-
-    expect = {"debt": 7, "debt_return": 4}
+    if open_debts:
+        LendFactory(date=dt(1999, 1, 1), price=2, returned=1)
+        LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
+        LendFactory(date=dt(1974, 1, 2), price=3, returned=2)
 
     actual = DebtModelService(main_user, "lend").sum_all()
 
-    assert expect == actual
+    assert actual == expect
 
 
 @factory.django.mute_signals(post_save)
