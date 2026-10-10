@@ -19,7 +19,6 @@ class ExpenseType(TitleAbstract):
     necessary = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ["journal", "title"]
         ordering = ["title"]
         constraints = [
             models.UniqueConstraint(
@@ -42,7 +41,6 @@ class ExpenseName(TitleAbstract):
     parent = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("title", "parent")
         ordering = [F("valid_for").desc(nulls_first=True), "title"]
         constraints = [
             models.UniqueConstraint(

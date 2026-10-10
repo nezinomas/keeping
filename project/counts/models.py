@@ -10,7 +10,6 @@ class CountType(TitleAbstract):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ["user", "title"]
         ordering = ["title"]
         constraints = [
             models.UniqueConstraint(
