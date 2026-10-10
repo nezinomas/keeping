@@ -226,7 +226,24 @@ def test_expense_attachment_field(main_user):
     expense = ExpenseFactory(attachment=file_mock)
     pk = str(main_user.journal.pk)
 
-    assert str(expense.attachment) == f"{pk}/expense-type/1974.01_test1.jpg"
+    assert (
+        str(expense.attachment) == f"{pk}/{expense.expense_type.pk}/1974.01_test1.jpg"
+    )
+
+
+@override_storage()
+@time_machine.travel("1974-1-1")
+def test_expense_attachment_keeps_its_path_after_type_rename():
+    file_mock = mock.MagicMock(spec=File, name="FileMock")
+    file_mock.name = "test1.jpg"
+    expense = ExpenseFactory(attachment=file_mock)
+    stored = expense.attachment.name
+
+    expense.expense_type.title = "Renamed"
+    expense.expense_type.save()
+    expense.save()
+
+    assert Expense.objects.get(pk=expense.pk).attachment.name == stored
 
 
 @factory.django.mute_signals(post_save)

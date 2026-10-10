@@ -20,7 +20,7 @@ def test_upload_attachment(main_user):
 
     assert (
         actual
-        == Path(str(main_user.journal.pk)) / e.expense_type.slug / "1000.01_x.jpg"
+        == Path(str(main_user.journal.pk)) / str(e.expense_type.pk) / "1000.01_x.jpg"
     )
 
 
@@ -36,4 +36,5 @@ def test_upload_attachment_on_update(main_user):
 
     e.save()
 
-    assert e.attachment.name == f"{main_user.journal.pk}/expense-type/1999.01_x.jpg"
+    folder = f"{main_user.journal.pk}/{e.expense_type.pk}"
+    assert e.attachment.name == f"{folder}/1999.01_x.jpg"
