@@ -163,25 +163,30 @@ def test_income_price_accepts_a_decimal_comma(main_user):
     assert form.save().price == 1210
 
 
-@time_machine.travel("1999-1-1")
-def test_income_insert_only_one_year_to_future(main_user):
+@pytest.mark.parametrize(
+    ("posted", "errors"),
+    [
+        ("1999-12-31", {}),
+        ("2000-12-31", {}),
+        ("2001-01-01", {"date": ["Metai negali būti didesni nei 2000"]}),
+    ],
+)
+def test_income_insert_only_one_year_to_future(main_user, posted, errors):
     a = AccountFactory()
     t = IncomeTypeFactory()
 
-    form = IncomeForm(
-        user=main_user,
-        data={
-            "date": "2001-01-01",
-            "price": "1.0",
-            "remark": "remark",
-            "account": a.pk,
-            "income_type": t.pk,
-        },
-    )
-
-    assert not form.is_valid()
-    assert "date" in form.errors
-    assert "Metai negali būti didesni nei 2000" in form.errors["date"]
+    with time_machine.travel("1999-6-15"):
+        form = IncomeForm(
+            user=main_user,
+            data={
+                "date": posted,
+                "price": "1.0",
+                "remark": "remark",
+                "account": a.pk,
+                "income_type": t.pk,
+            },
+        )
+        assert form.errors == errors
 
 
 def test_income_blank_data(main_user):
