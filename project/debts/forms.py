@@ -1,10 +1,11 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
-from ..core.lib.convert_price import PriceToCentsFormMixin
+from ..core.lib.convert_price import PriceToCentsFormMixin, float_to_int_cents
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
 from ..core.lib.form_widgets import DatePickerWidget
@@ -163,17 +164,16 @@ class DebtReturnForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         if not debt:
             return price
 
-        qs = (
+        returned = (
             DebtReturnModelService(self.user, self.debt_type)
             .items()
             .filter(debt=debt)
             .exclude(pk=self.instance.pk)
-            .aggregate(Sum("price"))
+            .aggregate(total=Coalesce(Sum("price"), 0))["total"]
         )
 
-        price_sum = qs.get("price__sum") or 0
-
-        if price > (debt.price - price_sum):
+        # euros here: PriceToCentsFormMixin converts the field later, in clean()
+        if float_to_int_cents(price) > debt.price - returned:
             msg = _("The amount due exceeds the debt.")
             raise ValidationError(msg)
 
