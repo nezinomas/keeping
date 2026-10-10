@@ -70,26 +70,45 @@ def test_debt_select_first_account(main_user, second_user):
 
 
 @pytest.mark.parametrize(
-    "name", [pytest.param("AA", id="too_short"), pytest.param("A" * 101, id="too_long")]
+    "name, error",
+    [
+        pytest.param(
+            "AA",
+            "Įsitikinkite, kad reikšmė sudaryta iš nemažiau kaip 3 ženklų "
+            "(dabartinis ilgis 2).",
+            id="too_short",
+        ),
+        pytest.param(
+            "A" * 101,
+            "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 100 ženklų "
+            "(dabartinis ilgis 101).",
+            id="too_long",
+        ),
+    ],
 )
-def test_debt_name_length_rejected(main_user, name):
+def test_debt_name_length_rejected(main_user, name, error):
     form = forms.DebtForm(
         user=main_user,
         debt_type="lend",
         data={
-            "date": "1974-01-01",
+            "date": "1999-01-01",
             "name": name,
             "price": "1",
             "account": AccountFactory(),
         },
     )
 
-    assert not form.is_valid()
-
-    assert "name" in form.errors
+    assert form.errors == {"name": [error]}
 
 
-def test_debt_valid_data(main_user):
+@pytest.mark.parametrize(
+    "price, cents",
+    [
+        pytest.param("0.01", 1, id="point"),
+        pytest.param("12,1", 1210, id="decimal_comma"),
+    ],
+)
+def test_debt_valid_data(main_user, price, cents):
     a = AccountFactory()
 
     form = forms.DebtForm(
@@ -98,42 +117,23 @@ def test_debt_valid_data(main_user):
         data={
             "date": "1999-01-01",
             "name": "Name",
-            "price": "0.01",
+            "price": price,
             "account": a.pk,
             "closed": False,
             "remark": "Rm",
         },
     )
 
-    assert form.is_valid()
+    assert form.is_valid(), form.errors
 
     e = form.save()
 
     assert e.date == date(1999, 1, 1)
-    assert e.price == 1
+    assert e.price == cents
     assert e.returned == 0
     assert e.account == a
     assert e.remark == "Rm"
     assert not e.closed
-
-
-def test_debt_price_accepts_a_decimal_comma(main_user):
-    a = AccountFactory()
-
-    form = forms.DebtForm(
-        user=main_user,
-        debt_type="lend",
-        data={
-            "date": "1999-01-01",
-            "name": "Name",
-            "price": "12,1",
-            "account": a.pk,
-            "closed": False,
-        },
-    )
-
-    assert form.is_valid(), form.errors
-    assert form.save().price == 1210
 
 
 @time_machine.travel("1999-2-2")
