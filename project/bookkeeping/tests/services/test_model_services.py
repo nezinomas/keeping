@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 import pytest
 import time_machine
 
+from ....savings.services.model_services import SavingTypeModelService
 from ...forms import SavingWorthForm
 from ...services.model_services import CommonMethodsMixin, SavingWorthModelService
 from ..factories import SavingTypeFactory
@@ -38,6 +39,7 @@ def test_common_methods_mixin_promises_no_year():
 def test_a_worth_counts_in_the_year_it_was_picked_for(picked, clock, main_user):
     form = SavingWorthForm(
         user=main_user,
+        funds=SavingTypeModelService(main_user).items(),
         data={"date": picked, "price": "1", "saving_type": SavingTypeFactory().pk},
     )
     with time_machine.travel(clock, tick=False):

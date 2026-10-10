@@ -51,14 +51,19 @@ class FormsetMixin:
 
     @cached_property
     def model_class(self):
-        # Dynamically grabs the model right when self.model_class is requested
         return self.service_instance.objects.model
+
+    @cached_property
+    def funds(self):
+        return list(self.category_service_class(self.request.user).items())
+
+    def get_form_kwargs(self, **kwargs):
+        return super().get_form_kwargs(**kwargs) | {"funds": self.funds}
 
     def formset_initial(self):
         fund_field = self.model_class.fund_field
-        items = self.category_service_class(self.request.user).items()
 
-        return [{fund_field: item} for item in items]
+        return [{fund_field: item} for item in self.funds]
 
     def get_formset(self, post=None, **kwargs):
         factory_blueprint = partial(
@@ -72,7 +77,6 @@ class FormsetMixin:
             formset = factory_blueprint(extra=0)
             return formset(post, **kwargs)
 
-        # GET: Extra forms match data length, pass initial data and empty queryset
         initial_data = self.formset_initial()
         formset = factory_blueprint(extra=len(initial_data))
 

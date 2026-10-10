@@ -7,6 +7,7 @@ from ....accounts.tests.factories import AccountFactory
 from ....pensions.tests.factories import PensionTypeFactory
 from ...forms import AccountWorthForm, PensionWorthForm, SavingWorthForm
 from ..factories import SavingTypeFactory
+from ..helper import worth_form
 
 pytestmark = pytest.mark.django_db
 
@@ -25,20 +26,10 @@ WORTH_FORMS = pytest.mark.parametrize(
 
 @WORTH_FORMS
 def test_worth_form_fields(main_user, form_class, factory, field):
-    form = form_class(user=main_user).as_p()
+    form = worth_form(form_class, main_user).as_p()
 
     assert '<input type="text" name="price"' in form
     assert f'<select name="{field}"' in form
-
-
-def test_saving_worth_current_user_types(main_user, second_user):
-    SavingTypeFactory(title="T1")
-    SavingTypeFactory(title="T2", journal=second_user.journal)
-
-    form = SavingWorthForm(user=main_user).as_p()
-
-    assert "T1" in form
-    assert "T2" not in form
 
 
 @WORTH_FORMS
@@ -46,8 +37,9 @@ def test_saving_worth_current_user_types(main_user, second_user):
 def test_worth_form_valid_data(main_user, form_class, factory, field):
     related = factory()
 
-    form = form_class(
-        user=main_user,
+    form = worth_form(
+        form_class,
+        main_user,
         data={"date": "1999-1-2", "price": "0.01", field: related.pk},
     )
     assert form.is_valid()
@@ -66,8 +58,9 @@ def test_worth_form_price_accepts_a_decimal_comma(
 ):
     related = factory()
 
-    form = form_class(
-        user=main_user,
+    form = worth_form(
+        form_class,
+        main_user,
         data={"date": "1999-1-2", "price": "12,1", field: related.pk},
     )
 
@@ -80,8 +73,9 @@ def test_worth_form_price_accepts_a_decimal_comma(
 def test_worth_form_valid_data_reset(main_user, form_class, factory, field):
     related = factory()
 
-    form = form_class(
-        user=main_user,
+    form = worth_form(
+        form_class,
+        main_user,
         data={"date": "1999-1-2", "price": "0", field: related.pk},
     )
     assert form.is_valid()
@@ -93,7 +87,7 @@ def test_worth_form_valid_data_reset(main_user, form_class, factory, field):
 
 @WORTH_FORMS
 def test_worth_form_blank_data(main_user, form_class, factory, field):
-    form = form_class(user=main_user, data={})
+    form = worth_form(form_class, main_user, data={})
 
     assert not form.is_valid()
 
@@ -114,7 +108,7 @@ def test_saving_form_lists_a_type_until_its_closing_year(main_user, year, listed
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
 
-    form = SavingWorthForm(user=main_user)
+    form = worth_form(SavingWorthForm, main_user)
 
     assert "S1" in str(form["saving_type"])
     assert ("S2" in str(form["saving_type"])) is listed
@@ -131,8 +125,9 @@ def test_saving_form_lists_a_type_until_its_closing_year(main_user, year, listed
 def test_saving_worth_account_closed_date(closed, date, valid, main_user):
     a = SavingTypeFactory(closed=closed)
 
-    form = SavingWorthForm(
-        user=main_user,
+    form = worth_form(
+        SavingWorthForm,
+        main_user,
         data={
             "date": date,
             "price": "1.0",
@@ -148,16 +143,6 @@ def test_saving_worth_account_closed_date(closed, date, valid, main_user):
         assert form.errors["date"][0] == "Sąskaita uždaryta 1999."
 
 
-def test_account_worth_current_user_types(main_user, second_user):
-    AccountFactory(title="T1")
-    AccountFactory(title="T2", journal=second_user.journal)
-
-    form = AccountWorthForm(user=main_user).as_p()
-
-    assert "T1" in form
-    assert "T2" not in form
-
-
 @pytest.mark.parametrize(
     "closed, date, valid",
     [
@@ -169,8 +154,9 @@ def test_account_worth_current_user_types(main_user, second_user):
 def test_account_worth_account_closed_date(closed, date, valid, main_user):
     a = AccountFactory(closed=closed)
 
-    form = AccountWorthForm(
-        user=main_user,
+    form = worth_form(
+        AccountWorthForm,
+        main_user,
         data={
             "date": date,
             "price": "1.0",
@@ -184,13 +170,3 @@ def test_account_worth_account_closed_date(closed, date, valid, main_user):
         assert not form.is_valid()
         assert "date" in form.errors
         assert form.errors["date"][0] == "Sąskaita uždaryta 1999."
-
-
-def test_pension_worth_current_user_types(main_user, second_user):
-    PensionTypeFactory(title="T1")
-    PensionTypeFactory(title="T2", journal=second_user.journal)
-
-    form = PensionWorthForm(user=main_user).as_p()
-
-    assert "T1" in form
-    assert "T2" not in form

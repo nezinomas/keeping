@@ -1,6 +1,7 @@
 import pytest
 
 from ...bookkeeping.forms import AccountWorthForm
+from ...bookkeeping.tests.helper import worth_form
 from ...expenses.forms import ExpenseForm
 from ...incomes.forms import IncomeForm
 from ...savings.forms import SavingForm
@@ -9,6 +10,10 @@ from ..forms import AccountForm
 from .factories import AccountFactory
 
 pytestmark = pytest.mark.django_db
+
+
+def account_worth_form(user, **kwargs):
+    return worth_form(AccountWorthForm, user, **kwargs)
 
 
 def test_account_form_has_fields(main_user):
@@ -70,7 +75,7 @@ def test_account_identical_title_names_the_existing_one(main_user):
         (TransactionForm, "from_account"),
         (SavingCloseForm, "to_account"),
         (SavingForm, "account"),
-        (AccountWorthForm, "account"),
+        (account_worth_form, "account"),
     ],
     ids=["incomes", "expenses", "transactions", "saving_close", "saving", "worth"],
 )

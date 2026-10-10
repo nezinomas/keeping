@@ -11,7 +11,15 @@ from ...accounts.tests.factories import AccountFactory
 from ...savings.models import SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
 from ...transactions.tests.factories import SavingChangeFactory, SavingCloseFactory
+from .. import views
 from .factories import SavingWorthFactory
+
+WORTH_VIEWS = (views.AccountsWorthNew, views.SavingsWorthNew, views.PensionsWorthNew)
+
+
+def worth_form(form_class, user, **kwargs):
+    funds = {view.form_class: view.category_service_class for view in WORTH_VIEWS}
+    return form_class(user=user, funds=funds[form_class](user).items(), **kwargs)
 
 
 def fund_with_a_sell(title, bought, sold, *, fee=0, kind="funds", closed=None):
