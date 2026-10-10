@@ -799,6 +799,9 @@ def test_form_edit_with_close_unticked_reopens_the_fund(main_user, move):
     [
         pytest.param("2000-03-01", "1999-03-01", True, id="edited_back"),
         pytest.param("2000-09-01", "2000-06-01", False, id="unticked"),
+        pytest.param(
+            "1999-03-01", "1999-06-01", False, id="unticked_in_an_earlier_year"
+        ),
     ],
 )
 def test_form_earlier_move_edited_keeps_the_fund_closed_in_its_last_year(

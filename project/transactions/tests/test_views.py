@@ -596,16 +596,18 @@ def test_savings_change_load_update_form_field_values(client_logged):
     assert f'<option value="{obj.to_account.pk}" selected>Savings To</option>' in form
 
 
-def test_load_saving_type_closed_in_past(client_logged):
+def test_load_saving_type_lists_the_open_funds_except_the_source(client_logged):
     s1 = SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=1000)
+    s3 = SavingTypeFactory(title="S3")
 
     url = reverse("transactions:load_saving_type")
     response = client_logged.get(url, {"from_account": s1.pk})
     actual = response.content.decode("utf-8")
 
-    assert "S1" not in str(actual)
-    assert "S2" not in str(actual)
+    assert "S1" not in actual
+    assert "S2" not in actual
+    assert f'<option value="{s3.pk}">S3</option>' in actual
 
 
 def test_load_saving_type_for_current_user(client_logged, second_user):
