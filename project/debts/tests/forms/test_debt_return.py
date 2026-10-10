@@ -7,7 +7,7 @@ from ....accounts.tests.factories import AccountFactory
 from ....users.tests.factories import UserFactory
 from ... import forms
 from .. import factories
-from ..helpers import DEBT_FACTORIES, DEBT_TYPES
+from ..helpers import DEBT_FACTORIES, DEBT_TYPES, RETURN_FACTORIES
 
 pytestmark = pytest.mark.django_db
 
@@ -162,9 +162,20 @@ def test_debt_return_only_not_closed(main_user, debt_type):
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_return_price_higher(main_user, debt_type):
+@pytest.mark.parametrize(
+    "price, errors",
+    [
+        pytest.param("150", {"price": ["Mokėtina suma viršija skolą."]}, id="over"),
+        pytest.param(
+            "60.01", {"price": ["Mokėtina suma viršija skolą."]}, id="cent_over"
+        ),
+        pytest.param("60", {}, id="all_that_is_left"),
+    ],
+)
+def test_debt_return_price_higher(main_user, debt_type, price, errors):
     a = AccountFactory()
     b = DEBT_FACTORIES[debt_type](price=10000)
+    RETURN_FACTORIES[debt_type](debt=b, price=4000)
 
     form = forms.DebtReturnForm(
         user=main_user,
@@ -172,17 +183,24 @@ def test_debt_return_price_higher(main_user, debt_type):
         data={
             "date": "1999-1-1",
             "debt": b.pk,
-            "price": "150",
+            "price": price,
             "account": a.pk,
         },
     )
 
-    assert not form.is_valid()
-    assert "price" in form.errors
-    assert form.errors["price"] == ["Mokėtina suma viršija skolą."]
+    assert form.errors == errors
 
 
-def test_debt_return_date_earlier(main_user):
+@pytest.mark.parametrize(
+    "day, errors",
+    [
+        pytest.param(
+            "2000-12-31", {"date": ["Data yra ankstesnė nei skolos data."]}, id="before"
+        ),
+        pytest.param("2001-01-01", {}, id="the_debts_own_day"),
+    ],
+)
+def test_debt_return_date_earlier(main_user, day, errors):
     a = AccountFactory()
     b = factories.LendFactory(date=date(2001, 1, 1))
 
@@ -190,13 +208,11 @@ def test_debt_return_date_earlier(main_user):
         user=main_user,
         debt_type="lend",
         data={
-            "date": "2000-01-01",
+            "date": day,
             "debt": b.pk,
             "price": "1",
             "account": a.pk,
         },
     )
 
-    assert not form.is_valid()
-    assert "date" in form.errors
-    assert form.errors["date"] == ["Data yra ankstesnė nei skolos data."]
+    assert form.errors == errors

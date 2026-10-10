@@ -230,6 +230,22 @@ def test_debt_cant_close(main_user):
     assert form.errors["closed"] == ["Negalite uždaryti dar negražintos skolos."]
 
 
+@pytest.mark.parametrize(
+    "price, errors",
+    [
+        pytest.param("50", {}, id="equal_to_returned"),
+        pytest.param("49.99", {"price": ["Mokėtina suma viršija skolą."]}, id="below"),
+    ],
+)
+def test_debt_price_not_below_what_is_returned(main_user, price, errors):
+    obj = factories.LendFactory(price=10000, returned=5000)
+    data = model_to_dict(obj) | {"price": price}
+
+    form = forms.DebtForm(user=main_user, debt_type="lend", instance=obj, data=data)
+
+    assert form.errors == errors
+
+
 def _debt_data(account, second_user):
     return {
         "journal": second_user.journal.pk,
