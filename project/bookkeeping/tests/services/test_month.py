@@ -81,12 +81,11 @@ def test_build_targets_without_data():
         "fact": [],
         "factTitle": "Faktas",
         "max_category_len": 0,
-        "category_len": 0,
     }
 
 
 @pytest.mark.parametrize(
-    "targets, totals, categories, target, fact",
+    "targets, totals, categories, target, fact, max_category_len",
     [
         pytest.param(
             {"xxx": 6, "Taupymas": 9},
@@ -94,6 +93,7 @@ def test_build_targets_without_data():
             ["TAUPYMAS", "XXX"],
             [9, 6],
             [{"y": 99, "target": 9}, {"y": 6, "target": 6}],
+            8,
             id="upper_case_names",
         ),
         pytest.param(
@@ -102,6 +102,7 @@ def test_build_targets_without_data():
             ["T2", "T1"],
             [4, 3],
             [{"y": 5, "target": 4}, {"y": 2, "target": 3}],
+            2,
             id="sorted_by_total",
         ),
         pytest.param(
@@ -110,16 +111,27 @@ def test_build_targets_without_data():
             ["T2", "T1"],
             [0, 0],
             [{"y": 5, "target": 0}, {"y": 2, "target": 0}],
+            2,
             id="no_targets",
+        ),
+        pytest.param(
+            {},
+            {"savings": 5, "ab": 1},
+            ["TAUPYMAS", "AB"],
+            [0, 0],
+            [{"y": 5, "target": 0}, {"y": 1, "target": 0}],
+            8,
+            id="translated_savings_name",
         ),
     ],
 )
-def test_build_targets(targets, totals, categories, target, fact):
+def test_build_targets(targets, totals, categories, target, fact, max_category_len):
     actual = ChartBuilder(targets, totals).build_targets()
 
     assert actual["categories"] == categories
     assert actual["target"] == target
     assert actual["fact"] == fact
+    assert actual["max_category_len"] == max_category_len
 
 
 @pytest.fixture(name="df_expense")

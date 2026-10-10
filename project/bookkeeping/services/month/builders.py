@@ -51,7 +51,7 @@ class ChartBuilder:
     def build_targets(self) -> dict:
         data = self._sort_chart_data(self.totals)
 
-        categories, data_target, data_fact, category_len = [], [], [], []
+        categories, data_target, data_fact, name_lengths = [], [], [], []
 
         for entry in data:
             name = entry["name"]
@@ -63,7 +63,7 @@ class ChartBuilder:
             data_target.append(target)
             data_fact.append({"y": entry["y"], "target": target})
 
-            category_len.append(len(name))
+            name_lengths.append(len(name))
 
         return {
             "categories": categories,
@@ -71,8 +71,7 @@ class ChartBuilder:
             "targetTitle": _("Plan"),
             "fact": data_fact,
             "factTitle": _("Fact"),
-            "max_category_len": max(category_len, default=0),
-            "category_len": len(categories),
+            "max_category_len": max(name_lengths, default=0),
         }
 
     def _translate_saving_title(self, name):
