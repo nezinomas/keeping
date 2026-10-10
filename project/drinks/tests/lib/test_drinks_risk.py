@@ -211,12 +211,21 @@ def test_heavy_days_past_dec31_not_dropped_when_past_year_is_leap():
 
 
 # weeks_over_guideline
+@pytest.mark.parametrize(
+    "stdavs, expected",
+    [
+        pytest.param([15], 1, id="well_over"),
+        pytest.param([11.3], 1, id="just_over_the_guideline"),
+        pytest.param([WEEKLY_LOW_RISK_STDAV], 0, id="exactly_the_guideline"),
+        pytest.param([11.24], 0, id="rounds_down_to_the_guideline"),
+    ],
+)
 @time_machine.travel("2026-06-01")
-def test_weeks_over_guideline_counts_current_year():
-    rows = [_row(date(2026, 1, 5), 15)]  # one week over 11.2
+def test_weeks_over_guideline_counts_current_year(stdavs, expected):
+    rows = [_row(date(2026, 1, 5 + i), stdav) for i, stdav in enumerate(stdavs)]
     over = RiskStats(current_daily=rows).weeks_over_guideline()
 
-    assert over.current == 1
+    assert over.current == expected
     assert over.has_past is False
 
 
