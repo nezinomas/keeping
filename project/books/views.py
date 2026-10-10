@@ -17,6 +17,7 @@ from ..core.mixins.views import (
 from ..users.models import User
 from . import forms, services
 from .services.model_services import BookModelService, BookTargetModelService
+from .services.search import search_books
 from .tabs import DEFAULT_TAB, TABS, BookTab
 
 
@@ -133,8 +134,7 @@ class Delete(DeleteViewMixin):
 class Search(SearchViewMixin):
     template_name = "books/book_list.html"
     per_page = 50
-
-    search_method = "search_books"
+    search_method = staticmethod(search_books)
 
 
 class TargetNew(CreateViewMixin):
