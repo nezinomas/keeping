@@ -11,6 +11,7 @@ from ...lib.calendar_grid import (
     CalendarMonthViewModel,
     CalendarYearViewModel,
 )
+from ...lib.day_stats import NoPastRecord, PastRecord
 from ...lib.year_boundary import YearBoundary
 
 pytestmark = pytest.mark.django_db
@@ -123,7 +124,7 @@ def test_build_all_levels_and_labels():
     assert days[3].gap == 1
 
 
-def test_build_gaps_with_latest_past_date():
+def test_build_gaps_with_an_earlier_record():
     daily = [
         {"date": date(1999, 1, 10), "stdav": 1.0, "qty": 0.5},
         {"date": date(1999, 1, 15), "stdav": 2.0, "qty": 1.0},
@@ -131,7 +132,7 @@ def test_build_gaps_with_latest_past_date():
     grid = CalendarGrid.build(
         YearBoundary(1999, date(1999, 12, 31)),
         daily_data=daily,
-        latest_past_date=date(1999, 1, 5),
+        earlier=PastRecord(date(1999, 1, 5)),
     )
 
     jan_days = grid.months[0].days
@@ -157,43 +158,43 @@ def test_build_today_and_future_flags():
 
 
 @pytest.mark.parametrize(
-    "today, daily, latest_past_date, gap",
+    "today, daily, earlier, gap",
     [
         pytest.param(
             date(1999, 6, 15),
             [{"date": date(1999, 6, 5), "stdav": 1.0, "qty": 0.5}],
-            None,
+            NoPastRecord(),
             10,
             id="without_record",
         ),
         pytest.param(
             date(1999, 1, 10),
             [],
-            date(1998, 12, 1),
+            PastRecord(date(1998, 12, 1)),
             40,
-            id="latest_past_date",
+            id="earlier_record",
         ),
         pytest.param(
             date(1999, 1, 10),
             [{"date": date(1999, 3, 1), "stdav": 1.0, "qty": 0.5}],
-            date(1998, 12, 1),
+            PastRecord(date(1998, 12, 1)),
             40,
             id="only_future_records",
         ),
         pytest.param(
             date(1999, 1, 10),
             [],
-            None,
+            NoPastRecord(),
             0,
             id="no_record_anywhere",
         ),
     ],
 )
 def test_build_today_shows_its_date_and_the_gap_since_the_last_record(
-    today, daily, latest_past_date, gap
+    today, daily, earlier, gap
 ):
     grid = CalendarGrid.build(
-        YearBoundary(1999, today), daily_data=daily, latest_past_date=latest_past_date
+        YearBoundary(1999, today), daily_data=daily, earlier=earlier
     )
 
     today_day = grid.months[today.month - 1].days[today.day - 1]

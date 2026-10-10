@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 
+from ....core.lib.day_stats import NoPastRecord, PastRecord
 from ...lib.drinks_stats import DataRow
 from ...services.consumption_year import ConsumptionYear
 from ..factories import DrinkFactory, DrinkTargetFactory
@@ -68,24 +69,27 @@ def test_converter_follows_the_users_drink_type(main_user):
     assert actual.servings_to_stdav(1) == 8
 
 
-def test_last_recorded_date(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).last_recorded_date
-
-    assert actual == date(1999, 2, 10)
-
-
-def test_last_recorded_date_when_year_is_empty(main_user, _records):
-    assert ConsumptionYear(main_user, 2000).last_recorded_date is None
-
-
-def test_last_recorded_date_before(main_user, _records):
-    actual = ConsumptionYear(main_user, 1999).last_recorded_date_before
-
-    assert actual == date(1998, 12, 20)
+@pytest.mark.parametrize(
+    "year, expect",
+    [
+        pytest.param(1999, PastRecord(date(1999, 2, 10)), id="record_this_year"),
+        pytest.param(2000, PastRecord(date(1999, 2, 10)), id="one_before"),
+        pytest.param(1997, NoPastRecord(), id="none_at_all"),
+    ],
+)
+def test_latest(year, expect, main_user, _records):
+    assert ConsumptionYear(main_user, year).latest == expect
 
 
-def test_last_recorded_date_before_when_nothing_earlier(main_user, _records):
-    assert ConsumptionYear(main_user, 1998).last_recorded_date_before is None
+@pytest.mark.parametrize(
+    "year, expect",
+    [
+        pytest.param(1999, PastRecord(date(1998, 12, 20)), id="one_before"),
+        pytest.param(1998, NoPastRecord(), id="nothing_earlier"),
+    ],
+)
+def test_earlier(year, expect, main_user, _records):
+    assert ConsumptionYear(main_user, year).earlier == expect
 
 
 def test_previous_is_the_year_before(main_user, _records):

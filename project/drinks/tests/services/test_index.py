@@ -8,11 +8,17 @@ from django.utils.translation import gettext as _
 
 from ....core.lib import stat_card
 from ....core.lib.calendar_grid import CalendarYearViewModel
+from ....core.lib.day_stats import NoPastRecord, PastRecord
 from ....core.lib.stat_card import Card
 from ...lib.drinks_frequency import FrequencyStats
 from ...lib.drinks_options import DrinkConverter, stdav_to_alcohol
 from ...lib.drinks_stats import DataRow, DrinkStats
-from ...services.index_tab import DryDaysViewModel, IndexBuilder, IndexTab
+from ...services.index_tab import (
+    DryDaysViewModel,
+    IndexBuilder,
+    IndexTab,
+    NoDryDaysViewModel,
+)
 from ..factories import DrinkFactory, DrinkTargetFactory
 
 pytestmark = pytest.mark.django_db
@@ -54,6 +60,8 @@ def _card_builder(
     past_avg=0.0,
     **kwargs,
 ):
+    kwargs.setdefault("today", date.today())
+
     return IndexBuilder(
         converter=drink_converter,
         drink_stats=_stats(drink_converter, total_quantity, avg),
@@ -64,23 +72,19 @@ def _card_builder(
 
 
 @pytest.mark.parametrize(
-    "past, current, expect",
+    "latest, expect",
     [
-        (date(1998, 1, 1), None, DryDaysViewModel(date(1998, 1, 1), 367)),
-        (None, date(1999, 1, 1), DryDaysViewModel(date(1999, 1, 1), 2)),
-        (date(1998, 1, 1), date(1999, 1, 1), DryDaysViewModel(date(1999, 1, 1), 2)),
-        (None, None, DryDaysViewModel(None, 0)),
+        (PastRecord(date(1998, 1, 1)), DryDaysViewModel(date(1998, 1, 1), 367)),
+        (PastRecord(date(1999, 1, 1)), DryDaysViewModel(date(1999, 1, 1), 2)),
+        (NoPastRecord(), NoDryDaysViewModel()),
     ],
 )
-@time_machine.travel("1999-01-03")
-def test_dry_days(past, current, expect, main_user, drink_converter):
-    DrinkFactory()
-
+def test_dry_days(latest, expect, main_user, drink_converter):
     actual = IndexBuilder(
         converter=drink_converter,
         drink_stats=DrinkStats(drink_converter),
-        latest_past_date=past,
-        latest_current_date=current,
+        latest=latest,
+        today=date(1999, 1, 3),
     ).tbl_dry_days()
 
     assert actual == expect
@@ -116,6 +120,7 @@ def test_tbl_std_av_reads_the_year_in_every_drink_type(drink_converter, year, ex
     builder = IndexBuilder(
         converter=drink_converter,
         drink_stats=_stats(drink_converter, total_quantity=273.5, year=year),
+        today=date(2019, 10, 10),
     )
 
     actual = [
@@ -130,14 +135,6 @@ def test_tbl_std_av_reads_the_year_in_every_drink_type(drink_converter, year, ex
     ]
 
     assert actual == expect
-
-
-def test_dry_days_view_model_has_data():
-    model_with_data = DryDaysViewModel(date=date(2026, 5, 8), delta=10)
-    assert model_with_data.has_data is True
-
-    empty_model = DryDaysViewModel()
-    assert empty_model.has_data is False
 
 
 # IndexBuilder.get_cards
@@ -192,15 +189,21 @@ def test_card_limit_in_stdav_carries_no_unit(main_user):
     assert card.note == _("%(amount)s per year") % {"amount": "547,5 Std Av"}
 
 
-@time_machine.travel("1999-01-05")
-def test_card_dry_days_with_data(main_user, drink_converter):
+@pytest.mark.parametrize(
+    "latest, value, note",
+    [
+        pytest.param(PastRecord(date(1999, 1, 1)), "4", "1999-01-01", id="this_year"),
+        pytest.param(PastRecord(date(1998, 12, 20)), "16", "1998-12-20", id="before"),
+    ],
+)
+def test_card_dry_days_with_data(latest, value, note, main_user, drink_converter):
     card = _card_builder(
-        drink_converter, latest_current_date=date(1999, 1, 1)
+        drink_converter, latest=latest, today=date(1999, 1, 5)
     ).get_cards()[0]
 
     assert card.state == "neutral"
-    assert card.value == "4"
-    assert card.note == "1999-01-01"
+    assert card.value == value
+    assert card.note == note
 
 
 def test_card_dry_days_empty(main_user, drink_converter):

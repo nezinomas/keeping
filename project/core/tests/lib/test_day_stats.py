@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from ...lib.day_stats import GapSpan, Stats
+from ...lib.day_stats import GapSpan, PastRecord, Stats
 
 
 def in_year(rows, year):
@@ -104,13 +104,17 @@ def test_stats_gap_by_date_measures_each_record_from_the_one_before(data):
     assert actual[date(1999, 12, 3)] == 304
 
 
-def test_stats_gap_by_date_with_past_latest(data):
-    actual = Stats(data=in_year(data, 1999), past_latest=date(1998, 1, 1)).gap_by_date()
+def test_stats_gap_by_date_with_an_earlier_record(data):
+    actual = Stats(
+        data=in_year(data, 1999), earlier=PastRecord(date(1998, 1, 1))
+    ).gap_by_date()
     assert actual[date(1999, 1, 8)] == 372
 
 
-def test_stats_gap_spans_open_on_past_latest(data):
-    actual = Stats(data=in_year(data, 1999), past_latest=date(1998, 1, 1)).gap_spans()
+def test_stats_gap_spans_open_on_the_earlier_record(data):
+    actual = Stats(
+        data=in_year(data, 1999), earlier=PastRecord(date(1998, 1, 1))
+    ).gap_spans()
 
     assert actual[0] == GapSpan(date(1998, 1, 1), date(1999, 1, 8), 372)
     assert actual[1] == GapSpan(date(1999, 1, 8), date(1999, 1, 15), 7)
