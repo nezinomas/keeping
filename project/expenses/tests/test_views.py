@@ -672,11 +672,18 @@ def test_load_expense_name_other_journal_type_yields_no_names(
     assert response.context["object_list"].count() == 0
 
 
-def test_search_not_found(client_logged):
+@pytest.mark.parametrize(
+    "query",
+    [
+        pytest.param({"search": "xxx"}, id="no_match"),
+        pytest.param({}, id="no_search_given"),
+    ],
+)
+def test_search_not_found(client_logged, query):
     ExpenseFactory()
 
     url = reverse("expenses:search")
-    response = client_logged.get(url, {"search": "xxx"})
+    response = client_logged.get(url, query)
     actual = response.content.decode("utf-8")
 
     assert "Nieko nerasta" in actual

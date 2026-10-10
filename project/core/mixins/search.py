@@ -62,7 +62,7 @@ class SearchMixin:
         return q[0] if q else {}
 
     def search(self):
-        search_str = self.request.GET.get("search")
+        search_str = self.request.GET.get("search", "")
 
         sql = self.get_search_method()(self.request.user, search_str)
         stats = self.search_statistic(sql)

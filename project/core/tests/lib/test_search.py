@@ -15,7 +15,7 @@ from ....expenses.tests.factories import (
 from ....incomes.tests.factories import IncomeFactory, IncomeTypeFactory
 from ...lib import search
 
-NOTHING = {"category": None, "year": None, "month": None, "remark": None}
+NOTHING = {"category": [], "year": 0, "month": 0, "remark": []}
 
 # a word never starts with a dash, or it would be read as a flag
 WORD = st.from_regex(r"[a-z_][a-z_.-]{0,5}", fullmatch=True)
@@ -56,7 +56,7 @@ def date_token(year, month, separator, day):
             "with_args",
             id="digits_and_spaces_kept",
         ),
-        pytest.param(None, NOTHING, "no_args", id="nothing_given"),
+        pytest.param("", NOTHING, "with_args", id="nothing_given"),
     ],
 )
 def test_parse_search_keeps_word_characters_only(search_str, expect, search_type):
@@ -114,9 +114,10 @@ def test_parse_search_with_args(category, year, month, remark, long_names):
         for key, value in given_.items()
         if value is not None
     )
-    expect = {
+    expect = NOTHING | {
         key: long_enough(value) if isinstance(value, list) else value
         for key, value in given_.items()
+        if value is not None
     }
 
     assert search.parse_search(text) == (expect, "with_args")
@@ -153,9 +154,9 @@ def test_parse_search_no_args(before, after, first, later):
     dates = [date_token(*d) for d in (first, later) if d]
     assume(before + after + dates)
     text = " ".join(before + dates[:1] + after + dates[1:])
-    words = long_enough(before + after) if before + after else None
-    year, month, *_ = first or later or (None, None)
-    expect = {"category": words, "year": year, "month": month, "remark": words}
+    words = long_enough(before + after)
+    year, month, *_ = first or later or (0, 0)
+    expect = {"category": words, "year": year, "month": month or 0, "remark": words}
 
     assert search.parse_search(text) == (expect, "no_args")
 

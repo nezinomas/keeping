@@ -9,7 +9,9 @@ from ...books.services.model_services import BookModelService
 from ...expenses.services.model_services import ExpenseModelService
 from ...incomes.services.model_services import IncomeModelService
 
-SEARCH_DICT = {"category": None, "year": None, "month": None, "remark": None}
+
+def _empty_search():
+    return {"category": [], "year": 0, "month": 0, "remark": []}
 
 
 def search_expenses(user, search_str):
@@ -62,7 +64,7 @@ def parse_search(search_str):
     try:
         search_dict = _parse_search_with_args(_str)
         search_type = "with_args"
-    except (AttributeError, SystemExit):
+    except SystemExit:
         search_dict = _parse_search_no_args(_str)
         search_type = "no_args"
 
@@ -72,17 +74,11 @@ def parse_search(search_str):
 
 
 def _sanitize_search_str(search_str):
-    if search_str:
-        search_str = re.sub(r"[^\w\d\.\- ]", "", search_str)
-
-    return search_str
+    return re.sub(r"[^\w\d\.\- ]", "", search_str)
 
 
 def _parse_search_no_args(search_str):
-    rtn = SEARCH_DICT.copy()
-
-    if not search_str:
-        return rtn
+    rtn = _empty_search()
 
     if match := re.search(r"(\d{4})-{0,1}\.{0,1}(\d{0,2})", search_str):
         if match[1]:
@@ -113,11 +109,9 @@ def _parse_search_with_args(search_str):
     parser.add_argument("-year", "-y", type=int)
     parser.add_argument("-month", "-m", type=int)
     parser.add_argument("-remark", "-r", type=str, nargs="+")
+    parser.set_defaults(**_empty_search())
 
-    args = parser.parse_args(search_str.split())
-    args = vars(args)
-
-    return {key: args.get(key, SEARCH_DICT[key]) for key in SEARCH_DICT}
+    return vars(parser.parse_args(search_str.split()))
 
 
 def _filter_short_search_words(search_dict):
@@ -125,21 +119,9 @@ def _filter_short_search_words(search_dict):
         return [word for word in words if len(word) > 2]
 
     for key in ["category", "remark"]:
-        if search_dict[key] is None:
-            continue
-
         search_dict[key] = filter_words(search_dict[key])
 
     return search_dict
-
-
-def _get_value(search_dict, key, default_value):
-    try:
-        value = search_dict[key]
-    except KeyError:
-        return default_value
-
-    return value or default_value
 
 
 def _generic_search(query, search_str, category_list, date_field="date"):
@@ -162,7 +144,7 @@ def _generic_search(query, search_str, category_list, date_field="date"):
 
 def _apply_date_filters(query, search_dict, date_field):
     for key in ["year", "month"]:
-        if not search_dict.get(key):
+        if not search_dict[key]:
             continue
         query = query.filter(**{f"{date_field}__{key}": search_dict[key]})
     return query
@@ -177,12 +159,9 @@ def _build_category_filters(search_dict, category_list):
                 for category in category_list
             ),
         )
-        for search_word in _get_value(search_dict, "category", [])
+        for search_word in search_dict["category"]
     ]
 
 
 def _build_remark_filters(search_dict):
-    return [
-        Q(remark__icontains=search_word)
-        for search_word in _get_value(search_dict, "remark", [])
-    ]
+    return [Q(remark__icontains=search_word) for search_word in search_dict["remark"]]
