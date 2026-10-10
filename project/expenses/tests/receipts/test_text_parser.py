@@ -89,18 +89,21 @@ def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
 
 
 @pytest.mark.parametrize(
-    "lines",
+    ("lines", "names"),
     [
         pytest.param(
             ["CORNER SHOP LTD", "Bread 1,20 A", "-----", "Total due 1,20"],
+            "Items:",
             id="no_lines_start_marker",
         ),
         pytest.param(
             ["CORNER SHOP LTD", "Items:", "Bread 1,20 A", "Total due 1,20"],
+            "-----",
             id="no_lines_end_marker",
         ),
         pytest.param(
             ["CORNER SHOP LTD", "Items:", "Bread 1,20 A", "-----"],
+            "Total due",
             id="no_total_line",
         ),
         pytest.param(
@@ -111,6 +114,7 @@ def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
                 "-----",
                 "Total due 1,00",
             ],
+            "Deal on: something -0,50 A",
             id="deal_prefix_discount_with_no_line_above",
         ),
         pytest.param(
@@ -121,6 +125,7 @@ def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
                 "-----",
                 "Total due 1,00",
             ],
+            "Markdown -0,20 A",
             id="markdown_prefix_discount_with_no_line_above",
         ),
         pytest.param(
@@ -131,18 +136,22 @@ def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
                 "-----",
                 "Total due soon",
             ],
+            "Total due soon",
             id="total_without_money",
         ),
         pytest.param(
             ["CORNER SHOP LTD", "Items:", "0,40 x 3 vnt.", "-----", "Total due 1,00"],
+            "0,40 x 3 vnt.",
             id="amount_line_with_no_line_above",
         ),
         pytest.param(
             ["CORNER SHOP LTD", "Items:", "Bread", "-----", "Total due 1,00"],
+            "Bread",
             id="title_without_a_price",
         ),
         pytest.param(
             ["CORNER SHOP LTD", "Items:", "Milk 1,20 C", "-----", "Total due 1,20"],
+            "Milk 1,20 C",
             id="unknown_vat_letter_on_a_line",
         ),
         pytest.param(
@@ -154,6 +163,7 @@ def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
                 "-----",
                 "Total due 1,20",
             ],
+            "Deal on: bread",
             id="discount_without_a_price",
         ),
         pytest.param(
@@ -165,6 +175,7 @@ def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
                 "-----",
                 "Total due 1,00",
             ],
+            "0,40 x 3 vnt.",
             id="title_then_an_amount_line",
         ),
         pytest.param(
@@ -176,6 +187,7 @@ def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
                 "-----",
                 "Total due 1,00",
             ],
+            "Deal on: Bread -0,10 A",
             id="title_then_a_discount_line",
         ),
         pytest.param(
@@ -187,13 +199,16 @@ def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
                 "-----",
                 "Total due 1,10",
             ],
+            "Deal on: Bread -0,10 C",
             id="unknown_vat_letter_in_a_discount",
         ),
     ],
 )
-def test_text_receipt_parser_raises_on_a_receipt_it_cannot_read(tmp_path, lines):
-    with pytest.raises(UnreadableReceiptTextError):
+def test_text_receipt_parser_raises_on_a_receipt_it_cannot_read(tmp_path, lines, names):
+    with pytest.raises(UnreadableReceiptTextError) as error:
         _receipt(tmp_path, lines)
+
+    assert str(error.value) == names
 
 
 def test_text_receipt_parser_defaults_amount_to_one_piece(tmp_path):
