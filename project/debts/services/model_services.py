@@ -1,5 +1,5 @@
 from django.db.models import F, Q, Sum, Value
-from django.db.models.functions import ExtractYear, TruncMonth
+from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
 from ...core.mixins.sum import SumMixin
 from ...core.services.model_services import DatedModelService
@@ -110,10 +110,9 @@ class DebtReturnModelService(SumMixin, DatedModelService):
         )
 
     def total_returned_for_debt(self, debt_return_instance):
-        result = self.objects.filter(debt=debt_return_instance.debt).aggregate(
-            total=Sum("price")
-        )
-        return result.get("total") or 0
+        return self.objects.filter(debt=debt_return_instance.debt).aggregate(
+            total=Coalesce(Sum("price"), 0)
+        )["total"]
 
     def incomes(self):
         """

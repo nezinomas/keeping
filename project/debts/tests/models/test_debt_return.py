@@ -383,17 +383,23 @@ def test_debt_return_expenses(main_user):
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_return_total_returned_for_debt(main_user):
-    debt1 = LendFactory(name="A")
-    debt2 = LendFactory(name="Z")
+@pytest.mark.parametrize(
+    "prices, expect",
+    [
+        pytest.param([1, 2], 3, id="its_returns_summed"),
+        pytest.param([], 0, id="no_returns"),
+    ],
+)
+def test_debt_return_total_returned_for_debt(main_user, prices, expect):
+    debt = LendFactory(name="A")
+    LendReturnFactory(debt=LendFactory(name="Z"), price=5)
+    for price in prices:
+        LendReturnFactory(debt=debt, price=price)
 
-    rtn = LendReturnFactory(debt=debt1, price=1)
-    LendReturnFactory(debt=debt1, price=2)
-    LendReturnFactory(debt=debt2, price=5)
+    service = DebtReturnModelService(main_user, "lend")
+    actual = service.total_returned_for_debt(DebtReturn(debt=debt))
 
-    actual = DebtReturnModelService(main_user, "lend").total_returned_for_debt(rtn)
-
-    assert actual == 3
+    assert actual == expect
 
 
 def test_debt_return_journal_is_its_accounts(second_user):
