@@ -17,18 +17,10 @@ class CommonMethodsMixin:
         return self.objects
 
     def generic_pivot_table(self, year: int, key_func):
-        """
-        INTERNAL METHOD: Groups tall database rows into a nested dictionary.
-        `key_func` defines what object/value becomes the dictionary key.
-        """
-        # Rely on the model's Meta.ordering to sort the queryset properly
-        qs = self.year(year)
-
         grouped = defaultdict(dict)
-        for plan in qs:
-            # Dynamically extract the object/tuple using the provided function
-            group_key = key_func(plan)
-            grouped[group_key][plan.month] = plan.price
+        # Meta.ordering sets the order of the table's rows
+        for plan in self.year(year):
+            grouped[key_func(plan)][plan.month] = plan.price
 
         return dict(grouped)
 
