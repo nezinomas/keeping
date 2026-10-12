@@ -1,8 +1,8 @@
-from collections.abc import Callable
 from datetime import datetime, timezone
 
 from django import forms
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from ..accounts.models import Account
 from ..core.lib import date as core_date
@@ -13,22 +13,6 @@ from ..expenses.services.model_services import ExpenseTypeModelService
 from ..pensions.models import PensionType
 from ..savings.models import SavingType
 from .models import AccountWorth, PensionWorth, SavingWorth
-
-
-def clean_date_and_closed(account: str, cleaned: dict, add_error: Callable) -> dict:
-    dt = cleaned.get("date")
-    if not dt:
-        return cleaned
-
-    account = cleaned.get(account)
-    if not account or not account.closed:
-        return cleaned
-
-    if dt.year > account.closed:
-        add_error(
-            "date", _("Account was closed in %(year)s.") % ({"year": account.closed})
-        )
-    return cleaned
 
 
 class DateFieldMixin:
@@ -74,7 +58,22 @@ class WorthForm(PriceToCentsFormMixin, DateFieldMixin, forms.ModelForm):
         return cleaned
 
 
-class SavingWorthForm(WorthForm):
+class ClosedFundMixin:
+    def clean(self):
+        cleaned = super().clean()
+        dt = cleaned.get("date")
+        fund = cleaned.get(self.fund_field)
+        if not dt or not fund or not fund.closed:
+            return cleaned
+
+        if dt.year > fund.closed:
+            self.add_error("date", self.closed_message % {"year": fund.closed})
+        return cleaned
+
+
+class SavingWorthForm(ClosedFundMixin, WorthForm):
+    closed_message = gettext_lazy("Fund was closed in %(year)s.")
+    duplicate_message = gettext_lazy("The same funds are selected.")
     saving_type = PreloadedModelChoiceField(
         queryset=SavingType.objects.none(), label=""
     )
@@ -83,24 +82,19 @@ class SavingWorthForm(WorthForm):
     class Meta(WorthForm.Meta):
         model = SavingWorth
 
-    def clean(self):
-        cleaned = super().clean()
-        return clean_date_and_closed("saving_type", cleaned, self.add_error)
 
-
-class AccountWorthForm(WorthForm):
+class AccountWorthForm(ClosedFundMixin, WorthForm):
+    closed_message = gettext_lazy("Account was closed in %(year)s.")
+    duplicate_message = gettext_lazy("The same accounts are selected.")
     account = PreloadedModelChoiceField(queryset=Account.objects.none(), label="")
     field_order = ["date", "account", "price"]
 
     class Meta(WorthForm.Meta):
         model = AccountWorth
 
-    def clean(self):
-        cleaned = super().clean()
-        return clean_date_and_closed("account", cleaned, self.add_error)
-
 
 class PensionWorthForm(WorthForm):
+    duplicate_message = gettext_lazy("The same pensions are selected.")
     pension_type = PreloadedModelChoiceField(
         queryset=PensionType.objects.none(), label=""
     )
@@ -113,12 +107,11 @@ class PensionWorthForm(WorthForm):
 class SummaryExpensesForm(forms.Form):
     types = forms.MultipleChoiceField(required=False)
 
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+    def __init__(self, *args, user, **kwargs):
         super().__init__(*args, **kwargs)
 
         choices = []
-        for _type in ExpenseTypeModelService(self.user).objects:
+        for _type in ExpenseTypeModelService(user).objects:
             choices.append((_type.id, _type.title))
 
             choices.extend(
@@ -127,7 +120,6 @@ class SummaryExpensesForm(forms.Form):
             )
 
         self.fields["types"].choices = choices
-        self.fields["types"].label = None
 
     def clean(self):
         cleaned_data = super().clean()

@@ -77,29 +77,26 @@ def add_fast_urls(data: list[dict], app_name: str, pk_key: str = "id") -> list[d
 
     dummy_id = "0"
 
-    # 1. Ask Django's router for the template EXACTLY ONCE
     url_update = reverse(f"{app_name}:update", args=[dummy_id])
     url_delete = reverse(f"{app_name}:delete", args=[dummy_id])
 
-    # 2. Fast Python string replacement in memory
     return [
         {
             **row,
-            "url_update": url_update.replace(dummy_id, str(row.get(pk_key))),
-            "url_delete": url_delete.replace(dummy_id, str(row.get(pk_key))),
+            "url_update": url_update.replace(dummy_id, str(row[pk_key])),
+            "url_delete": url_delete.replace(dummy_id, str(row[pk_key])),
         }
         for row in data
     ]
 
 
 def rendered_content(request, view_class, **kwargs):
-    # update request kwargs
-    request.resolver_match.kwargs.update({**kwargs})
+    request.resolver_match.kwargs.update(kwargs)
 
     return view_class.as_view()(request, **kwargs).rendered_content
 
 
-def http_htmx_response(hx_trigger_name=None, status_code=204):
+def http_htmx_response(hx_trigger_name="", status_code=204):
     headers = {}
     if hx_trigger_name:
         # {} and not None: htmx 4 reads the detail off the header and throws on a

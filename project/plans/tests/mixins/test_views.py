@@ -2,22 +2,7 @@ import pytest
 from django.http import Http404
 from django.utils.translation import gettext as _
 
-from ...mixins.views import (
-    CssClassMixin,
-    PlanDeleteMixin,
-    PlanQuerySetMixin,
-    PlanUpdateMixin,
-)
-
-# CssClassMixin
-
-
-def test_css_class_mixin():
-    class DummyView(CssClassMixin):
-        pass
-
-    assert DummyView().modal_body_css_class == "plans-form"
-
+from ...mixins.views import PlanDeleteMixin, PlanQuerySetMixin, PlanUpdateMixin
 
 # PlanQuerySetMixin
 
@@ -71,14 +56,6 @@ class TestObjectAndUrlMixins:
 
         with pytest.raises(Http404, match=_("No plans found.")):
             view.get_object()
-
-    def test_url_without_object(self, mixin):
-        class DummyView(mixin):
-            object = None
-
-        view = DummyView()
-
-        assert view.url() is None
 
     def test_url_with_object(self, mixin):
         class DummyView(mixin):
