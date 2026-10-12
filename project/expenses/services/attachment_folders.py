@@ -2,6 +2,7 @@ import posixpath
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from django.core.exceptions import SuspiciousFileOperation
 from django.core.files.storage import default_storage
 from django.db import transaction
 
@@ -13,6 +14,7 @@ from ..models import Expense
 class AttachmentMoves:
     moved: list[tuple[str, str]] = field(default_factory=list)
     missing: list[str] = field(default_factory=list)
+    too_long: list[str] = field(default_factory=list)
     not_deleted: list[tuple[str, str]] = field(default_factory=list)
     not_removed: list[tuple[str, str]] = field(default_factory=list)
 
@@ -29,6 +31,7 @@ class AttachmentFolders:
         result = AttachmentMoves()
         changed = []
         copies = {}
+        too_long = set()
         pending, in_place = self._read()
 
         for old, rows in pending.items():
@@ -37,21 +40,26 @@ class AttachmentFolders:
                 continue
 
             for expense, folder in rows:
-                target = posixpath.join(folder, posixpath.basename(old))
-                if not self.dry_run:
-                    if (old, target) not in copies:
-                        copies[(old, target)] = self._copy(old, target)
-                    target = copies[(old, target)]
-                    expense.attachment = target
-                    changed.append(expense)
-                result.moved.append((old, target))
+                key = (old, posixpath.join(folder, posixpath.basename(old)))
+                if key not in copies.keys() | too_long:
+                    try:
+                        copies[key] = self._place(*key)
+                    except SuspiciousFileOperation:
+                        too_long.add(key)
+                if key in too_long:
+                    result.too_long.append(old)
+                    continue
+
+                expense.attachment = copies[key]
+                changed.append(expense)
+                result.moved.append((old, copies[key]))
 
         if self.dry_run:
             return result
 
         with transaction.atomic():
             Expense.objects.bulk_update(changed, ["attachment"])
-        olds = {old for old, _ in copies} - in_place
+        olds = {old for old, _ in copies} - in_place - {old for old, _ in too_long}
         result.not_deleted.extend(self._delete(olds))
         result.not_removed.extend(
             self._remove_emptied({posixpath.dirname(old) for old in olds})
@@ -72,10 +80,12 @@ class AttachmentFolders:
             pending.setdefault(old, []).append((expense, folder))
         return pending, in_place
 
-    @staticmethod
-    def _copy(old: str, new: str) -> str:
+    def _place(self, old: str, new: str) -> str:
+        max_length = Expense._meta.get_field("attachment").max_length
+        if self.dry_run:
+            return default_storage.get_available_name(new, max_length=max_length)
         with default_storage.open(old) as file:
-            return default_storage.save(new, file)
+            return default_storage.save(new, file, max_length=max_length)
 
     @staticmethod
     def _delete(olds: set[str]) -> list[tuple[str, str]]:

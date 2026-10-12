@@ -74,6 +74,52 @@ def test_taken_name_takes_the_storage_suffix(media):
     assert taken.read_bytes() == b"other"
 
 
+def _full_length(expense_type):
+    # the stored path fills the column, so the pk folder's name plus a suffix cannot
+    prefix = f"{expense_type.journal_id}/ab/"
+    max_length = Expense._meta.get_field("attachment").max_length
+    return f"1999.01_{'x' * (max_length - len(prefix) - 12)}.jpg"
+
+
+@pytest.mark.parametrize(
+    "args, total",
+    [((), "moved 0, missing 0"), (("--dry-run",), "dry run: moved 0, missing 0")],
+)
+def test_a_taken_name_too_long_for_a_suffix_is_listed_and_left(media, args, total):
+    expense_type = ExpenseTypeFactory()
+    name = _full_length(expense_type)
+    e = _legacy(media, "ab", name, expense_type=expense_type)
+    old = _stored(e)
+    (media / _pk_folder(e)).mkdir(parents=True)
+    (media / _pk_folder(e) / name).write_bytes(b"other")
+
+    lines = _run(*args)
+
+    assert len(old) == Expense._meta.get_field("attachment").max_length
+    assert lines == [f"not moved: {old} (name too long)", total]
+    assert _stored(e) == old
+    assert (media / old).read_bytes() == name.encode()
+
+
+def test_a_file_a_too_long_row_still_names_stays(media):
+    expense_type = ExpenseTypeFactory()
+    name = _full_length(expense_type)
+    left = _legacy(media, "ab", name, expense_type=expense_type)
+    moved = _legacy(
+        media,
+        "ab",
+        name,
+        expense_type=ExpenseTypeFactory(title="Other", journal=expense_type.journal),
+    )
+    (media / _pk_folder(left)).mkdir(parents=True)
+    (media / _pk_folder(left) / name).write_bytes(b"other")
+
+    _run()
+
+    assert (media / _stored(left)).read_bytes() == name.encode()
+    assert (media / _stored(moved)).read_bytes() == name.encode()
+
+
 def test_in_place_is_untouched_and_not_counted(media):
     e = ExpenseFactory()
     stored = f"{_pk_folder(e)}/1999.01_x.jpg"
