@@ -7,14 +7,11 @@ from .models import User
 
 
 class SignUpForm(UserCreationForm):
-    email = forms.CharField(max_length=254, required=True, widget=forms.EmailInput())
-
     class Meta:
         model = User
         fields = ("username", "email", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["email"].label = _("Email")
@@ -23,11 +20,8 @@ class SignUpForm(UserCreationForm):
 class InviteForm(forms.Form):
     email = forms.EmailField(max_length=254, required=True)
 
-    class Meta:
-        fields = "email"
-
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
         self.fields["email"].label = _("Email")

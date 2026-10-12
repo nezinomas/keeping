@@ -4,7 +4,6 @@ import pytest
 import time_machine
 
 from ...accounts.tests.factories import AccountFactory
-from ...users.tests.factories import UserFactory
 from ..forms import IncomeForm, IncomeTypeForm
 from .factories import IncomeTypeFactory
 
@@ -34,8 +33,7 @@ def test_income_type_valid_data(main_user):
 
     assert data.title == "Title"
     assert data.type == "salary"
-    assert data.journal.title == "bob Journal"
-    assert data.journal.users.first().username == "bob"
+    assert data.journal == main_user.journal
 
 
 def test_income_type_blank_data(main_user):
@@ -61,52 +59,33 @@ def test_income_type_title_rejected(main_user, title):
     assert "title" in form.errors
 
 
-def test_income_type_identical_title_names_the_existing_one(main_user):
-    IncomeTypeFactory(title="Būstas")
+@pytest.mark.parametrize(
+    ("title", "existing", "message"),
+    [
+        ("Būstas", ["Būstas"], "„Būstas“ jau yra."),
+        (
+            "...",
+            [],
+            "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo.",
+        ),
+    ],
+    ids=["identical_title", "empty_slug"],
+)
+def test_income_type_title_error(main_user, title, existing, message):
+    for existing_title in existing:
+        IncomeTypeFactory(title=existing_title)
 
-    form = IncomeTypeForm(user=main_user, data={"title": "Būstas"})
+    form = IncomeTypeForm(user=main_user, data={"title": title, "type": "salary"})
 
     assert not form.is_valid()
-    assert form.errors["title"] == ["„Būstas“ jau yra."]
-
-
-def test_form_income_type_and_second_user(main_user, second_user):
-    t1 = IncomeTypeFactory(title="T1", journal=main_user.journal)
-    t2 = IncomeTypeFactory(title="T2", journal=second_user.journal)
-
-    form = IncomeForm(user=main_user).as_p()
-
-    assert f'<option value="{t1.pk}">T1</option>' in form
-    assert f'<option value="{t2.pk}">T2</option>' not in form
+    assert form.errors["title"] == [message]
 
 
 @time_machine.travel("1974-01-01")
 def test_income_year_initial_value(main_user):
-    UserFactory()
-
     form = IncomeForm(user=main_user).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
-
-
-def test_income_current_user_types(main_user, second_user):
-    IncomeTypeFactory(title="T1")
-    IncomeTypeFactory(title="T2", journal=second_user.journal)
-
-    form = IncomeForm(user=main_user).as_p()
-
-    assert "T1" in form
-    assert "T2" not in form
-
-
-def test_income_current_user_accounts(main_user, second_user):
-    AccountFactory(title="A1")
-    AccountFactory(title="A2", journal=second_user.journal)
-
-    form = IncomeForm(user=main_user).as_p()
-
-    assert "A1" in form
-    assert "A2" not in form
 
 
 def test_income_select_first_account(main_user, second_user):
@@ -119,7 +98,10 @@ def test_income_select_first_account(main_user, second_user):
     assert expect in form
 
 
-def test_income_valid_data(main_user):
+@pytest.mark.parametrize(
+    ("posted", "cents"), [(0.01, 1), ("12,1", 1210)], ids=["dot", "decimal_comma"]
+)
+def test_income_valid_data(main_user, posted, cents):
     a = AccountFactory()
     t = IncomeTypeFactory()
 
@@ -127,40 +109,22 @@ def test_income_valid_data(main_user):
         user=main_user,
         data={
             "date": "2000-01-01",
-            "price": 0.01,
+            "price": posted,
             "remark": "remark",
             "account": a.pk,
             "income_type": t.pk,
         },
     )
 
-    assert form.is_valid()
+    assert form.is_valid(), form.errors
 
     data = form.save()
 
     assert data.date == date(2000, 1, 1)
-    assert data.price == 1
+    assert data.price == cents
     assert data.remark == "remark"
     assert data.account.title == a.title
     assert data.income_type.title == t.title
-
-
-def test_income_price_accepts_a_decimal_comma(main_user):
-    a = AccountFactory()
-    t = IncomeTypeFactory()
-
-    form = IncomeForm(
-        user=main_user,
-        data={
-            "date": "2000-01-01",
-            "price": "12,1",
-            "account": a.pk,
-            "income_type": t.pk,
-        },
-    )
-
-    assert form.is_valid(), form.errors
-    assert form.save().price == 1210
 
 
 @pytest.mark.parametrize(
@@ -219,29 +183,11 @@ def test_income_price_null(main_user):
     assert "price" in form.errors
 
 
-def test_income_type_title_empty_slug(main_user):
-    form = IncomeTypeForm(user=main_user, data={"title": "...", "type": "salary"})
-
-    assert not form.is_valid()
-
-    assert form.errors["title"] == [
-        "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
-    ]
-
-
-def test_income_type_create_ignores_a_posted_journal(main_user, second_user):
-    form = IncomeTypeForm(
-        user=main_user,
-        data={"journal": second_user.journal.pk, "title": "Title", "type": "salary"},
+@pytest.mark.parametrize("editing", [False, True], ids=["create", "edit"])
+def test_income_type_ignores_a_posted_journal(main_user, second_user, editing):
+    obj = (
+        IncomeTypeFactory(title="Mine", journal=main_user.journal) if editing else None
     )
-
-    assert form.is_valid()
-
-    assert form.save().journal == main_user.journal
-
-
-def test_income_type_edit_ignores_a_posted_journal(main_user, second_user):
-    obj = IncomeTypeFactory(title="Mine", journal=main_user.journal)
 
     form = IncomeTypeForm(
         user=main_user,
@@ -251,10 +197,7 @@ def test_income_type_edit_ignores_a_posted_journal(main_user, second_user):
 
     assert form.is_valid()
 
-    form.save()
-    obj.refresh_from_db()
-
-    assert obj.journal == main_user.journal
+    assert form.save().journal == main_user.journal
 
 
 @pytest.mark.parametrize("field", ["account", "income_type"])

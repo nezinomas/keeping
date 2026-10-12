@@ -17,7 +17,7 @@ class BookForm(forms.ModelForm):
     field_order = ["started", "ended", "author", "title", "remark"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
         self.fields["started"].widget = DatePickerWidget()
@@ -81,7 +81,7 @@ class BookTargetForm(forms.ModelForm):
     field_order = ["year", "quantity"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
         self.fields["user"].initial = self.user
