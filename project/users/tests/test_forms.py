@@ -30,8 +30,9 @@ def test_signup_unique_email():
     assert "email" in form.errors
 
 
-def test_invite_form_inputs():
-    form = InviteForm()
+@pytest.mark.django_db
+def test_invite_form_inputs(main_user):
+    form = InviteForm(user=main_user)
 
     expected = ["email"]
     actual = list(form.fields)
