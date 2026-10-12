@@ -22,22 +22,19 @@ class IncomeForm(PriceToCentsFormMixin, forms.ModelForm):
     field_order = ["date", "account", "income_type", "price", "remark"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
 
-        # form inputs settings
         self.fields["remark"].widget.attrs["rows"] = 3
 
         accounts = AccountModelService(self.user)
         incomes = IncomeTypeModelService(self.user)
 
-        # inital values
         self.fields["account"].initial = accounts.items().first()
         self.fields["date"].initial = set_date_with_user_year(self.user)
 
-        # overwrite ForeignKey expense_type queryset
         self.fields["income_type"].queryset = incomes.items()
         self.fields["account"].queryset = accounts.items()
 
@@ -71,10 +68,9 @@ class IncomeTypeForm(forms.ModelForm):
         fields = ["journal", "title", "type"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
+        user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
-        # user input
         self.fields["journal"].initial = user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()

@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.db.models import Q
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
@@ -14,6 +15,7 @@ class TitleAbstract(models.Model):
     title = models.CharField(
         max_length=100,
         blank=False,
+        # the order the migrations hold; another order is a migration
         validators=[
             MinLengthValidator(3),
             validate_title_characters,
@@ -33,7 +35,9 @@ class TitleAbstract(models.Model):
 
         taken = (
             type(self)
-            .objects.filter(slug=slugify(self.title), **owner_filter)
+            .objects.filter(
+                Q(slug=slugify(self.title)) | Q(title=self.title), **owner_filter
+            )
             .exclude(pk=self.pk)
             .first()
         )
@@ -56,12 +60,12 @@ class TitleAbstract(models.Model):
         )
 
     def _owner_filter(self):
-        for fields in self._meta.unique_together:
-            if "title" in fields:
+        for constraint in self._meta.constraints:
+            if "slug" in constraint.fields:
                 attnames = [
                     self._meta.get_field(name).attname
-                    for name in fields
-                    if name != "title"
+                    for name in constraint.fields
+                    if name != "slug"
                 ]
                 return {attname: getattr(self, attname) for attname in attnames}
         return {}

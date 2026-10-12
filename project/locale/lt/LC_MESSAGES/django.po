@@ -1159,10 +1159,6 @@ msgid ""
 msgstr ""
 "Ištrynus %(counter)s bus ištrinta ir %(count)s įrašų, sukurtų nuo %(year)s."
 
-#: .\project\debts\forms.py:59 .\project\debts\forms.py:142
-msgid "Debtor"
-msgstr "Skolininkas"
-
 #: .\project\debts\forms.py:62 .\project\debts\forms.py:145
 #: .\project\debts\templates\debts\debt_list.html:16
 #: .\project\debts\templates\debts\debtreturn_list.html:15
@@ -1180,10 +1176,6 @@ msgstr "Paskolos davėjas"
 msgid "Returned"
 msgstr "Gražinta"
 
-#: .\project\debts\forms.py:84
-msgid "The name of the lender must be unique."
-msgstr "Skolintojo vardas turi būti unikalus."
-
 #: .\project\debts\forms.py:87
 msgid "You can't close a debt that hasn't been returned."
 msgstr "Negalite uždaryti dar negražintos skolos."
@@ -1191,6 +1183,10 @@ msgstr "Negalite uždaryti dar negražintos skolos."
 #: .\project\debts\forms.py:98 .\project\debts\forms.py:174
 msgid "The amount due exceeds the debt."
 msgstr "Mokėtina suma viršija skolą."
+
+#: .\project\debts\forms.py:104
+msgid "The debt can't be less than what has been returned."
+msgstr "Skola negali būti mažesnė nei grąžinta suma."
 
 #: .\project\debts\forms.py:185
 msgid "The date preceding the debt's date."
@@ -2731,3 +2727,16 @@ msgstr "iš investicijos"
 
 msgid "from the account"
 msgstr "iš sąskaitos"
+
+#, python-format
+msgid "Fund was closed in %(year)s."
+msgstr "Fondas uždarytas %(year)s."
+
+msgid "The same funds are selected."
+msgstr "Pasirinkti vienodi fondai."
+
+msgid "The same pensions are selected."
+msgstr "Pasirinktos vienodos pensijos."
+
+msgid "The name must be unique."
+msgstr "Vardas turi būti unikalus."

@@ -1,39 +1,30 @@
-import contextlib
-from datetime import datetime
+from datetime import date
 
 from .lib import date as lib_date
 
 
 def years(request):
-    _years = lib_date.years(request.user)
+    if not request.user.is_authenticated:
+        return {"years": []}
 
-    return {"years": _years[::-1]}
+    return {"years": lib_date.years(request.user)[::-1]}
 
 
 def yday(request):
-    _year = datetime.now().year
+    year = date.today().year
+    if request.user.is_authenticated:
+        year = request.user.year
 
-    with contextlib.suppress(AttributeError):
-        _year = request.year
-
-    _yday, _ydays = lib_date.yday(_year)
+    _yday, _ydays = lib_date.yday(year)
 
     return {"yday": _yday, "ydays": _ydays}
 
 
-def context_months(context):
-    return {"context_months": lib_date.year_month_list()}
+def context_months(request):
+    if not request.user.is_authenticated:
+        return {"context_months": []}
 
-
-def context_counts_menu(context):
-    qs = []
-
-    with contextlib.suppress(AttributeError, ValueError):
-        from ..counts.services.model_services import CountTypeModelService
-
-        qs = CountTypeModelService(context.user).objects
-
-    return {"counts_menu": qs}
+    return {"context_months": lib_date.year_month_list(request.user.year)}
 
 
 def csp_nonce(request):

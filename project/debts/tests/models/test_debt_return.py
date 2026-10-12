@@ -29,14 +29,6 @@ def test_debt_return_str(debt_type, expected):
     assert str(v) == expected
 
 
-def test_debt_return_fields():
-    assert DebtReturn._meta.get_field("date")
-    assert DebtReturn._meta.get_field("price")
-    assert DebtReturn._meta.get_field("account")
-    assert DebtReturn._meta.get_field("debt")
-    assert DebtReturn._meta.get_field("remark")
-
-
 @factory.django.mute_signals(post_save)
 @pytest.mark.parametrize(
     "debt_type, expected",
@@ -131,41 +123,35 @@ def test_debt_return_post_save_new(main_user, debt_type, expected):
     assert_balance(actual[0], **expected)
 
 
-def test_lend_return_post_save_debt_return_value(main_user):
-    debt1 = LendFactory(name="A")
+@pytest.mark.parametrize(
+    "returned, prices, expect",
+    [
+        pytest.param(0, (10,), 10, id="one_return"),
+        pytest.param(50, (10,), 10, id="replaces_a_stale_value"),
+        pytest.param(0, (10, 11), 21, id="two_returns"),
+    ],
+)
+def test_lend_return_post_save_debt_return_value(main_user, returned, prices, expect):
     debt2 = LendFactory(name="Z")
+    debt1 = LendFactory(name="A", returned=returned)
 
-    LendReturnFactory(debt=debt1, price=10)
+    for price in prices:
+        LendReturnFactory(debt=debt1, price=price)
     LendReturnFactory(debt=debt2, price=20)
 
-    actual = Debt.objects.get(pk=debt1.pk)
-
-    assert actual.returned == 10
+    assert Debt.objects.get(pk=debt1.pk).returned == expect
 
 
-def test_lend_return_post_save_after_update_debt_return_value(main_user):
-    debt1 = LendFactory(name="A", returned=50)
-    debt2 = LendFactory(name="Z")
-
-    LendReturnFactory(debt=debt1, price=10)
-    LendReturnFactory(debt=debt2, price=20)
-
-    actual = Debt.objects.get(pk=debt1.pk)
-
-    assert actual.returned == 10
-
-
-def test_lend_return_post_save_two_records_debt_return_value(main_user):
+def test_lend_return_moved_to_another_debt_updates_both(main_user):
     debt1 = LendFactory(name="A")
     debt2 = LendFactory(name="Z")
+    debt_return = LendReturnFactory(debt=debt1, price=30)
 
-    LendReturnFactory(debt=debt1, price=10)
-    LendReturnFactory(debt=debt1, price=11)
-    LendReturnFactory(debt=debt2, price=22)
+    debt_return.debt = debt2
+    debt_return.save()
 
-    actual = Debt.objects.get(pk=debt1.pk)
-
-    assert actual.returned == 21
+    assert Debt.objects.get(pk=debt1.pk).returned == 0
+    assert Debt.objects.get(pk=debt2.pk).returned == 30
 
 
 def test_lend_return_post_delete_debt_return_value(main_user):
@@ -311,89 +297,73 @@ def test_debt_return_post_delete_with_updt(debt_type, before, after):
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_return_incomes(main_user):
+@pytest.mark.parametrize(
+    "factory_, other, debt_type, sums, key",
+    [
+        pytest.param(
+            LendReturnFactory,
+            BorrowReturnFactory,
+            "lend",
+            lambda s: s.incomes(),
+            "incomes",
+            id="incomes",
+        ),
+        pytest.param(
+            BorrowReturnFactory,
+            LendReturnFactory,
+            "borrow",
+            lambda s: s.expenses(),
+            "expenses",
+            id="expenses",
+        ),
+    ],
+)
+def test_debt_return_yearly_sums_per_account(
+    main_user, factory_, other, debt_type, sums, key
+):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
 
-    LendReturnFactory(date=dt(1970, 1, 1), account=a1, price=1)
-    LendReturnFactory(date=dt(1970, 1, 1), account=a1, price=2)
-    LendReturnFactory(date=dt(1970, 1, 1), account=a2, price=3)
-    LendReturnFactory(date=dt(1970, 1, 1), account=a2, price=4)
+    factory_(date=dt(1970, 1, 1), account=a1, price=1)
+    factory_(date=dt(1970, 1, 1), account=a1, price=2)
+    factory_(date=dt(1970, 1, 1), account=a2, price=3)
+    factory_(date=dt(1970, 1, 1), account=a2, price=4)
 
-    LendReturnFactory(date=dt(1999, 1, 1), account=a1, price=10)
-    LendReturnFactory(date=dt(1999, 1, 1), account=a1, price=20)
-    LendReturnFactory(date=dt(1999, 1, 1), account=a2, price=30)
-    LendReturnFactory(date=dt(1999, 1, 1), account=a2, price=40)
+    factory_(date=dt(1999, 1, 1), account=a1, price=10)
+    factory_(date=dt(1999, 1, 1), account=a1, price=20)
+    factory_(date=dt(1999, 1, 1), account=a2, price=30)
+    factory_(date=dt(1999, 1, 1), account=a2, price=40)
 
-    BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
+    other(date=dt(1999, 1, 1), account=a2, price=180)
 
-    actual = DebtReturnModelService(main_user, "lend").incomes()
+    actual = sums(DebtReturnModelService(main_user, debt_type))
 
-    assert actual[0]["year"] == 1970
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["incomes"] == 3
-
-    assert actual[1]["year"] == 1970
-    assert actual[1]["category_id"] == 2
-    assert actual[1]["incomes"] == 7
-
-    assert actual[2]["year"] == 1999
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["incomes"] == 30
-
-    assert actual[3]["year"] == 1999
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["incomes"] == 70
+    assert [(row["year"], row["category_id"], row[key]) for row in actual] == [
+        (1970, 1, 3),
+        (1970, 2, 7),
+        (1999, 1, 30),
+        (1999, 2, 70),
+    ]
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_return_expenses(main_user):
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2")
+@pytest.mark.parametrize(
+    "prices, expect",
+    [
+        pytest.param([1, 2], 3, id="its_returns_summed"),
+        pytest.param([], 0, id="no_returns"),
+    ],
+)
+def test_debt_return_total_returned_for_debt(main_user, prices, expect):
+    debt = LendFactory(name="A")
+    LendReturnFactory(debt=LendFactory(name="Z"), price=5)
+    for price in prices:
+        LendReturnFactory(debt=debt, price=price)
 
-    BorrowReturnFactory(date=dt(1970, 1, 1), account=a1, price=1)
-    BorrowReturnFactory(date=dt(1970, 1, 1), account=a1, price=2)
-    BorrowReturnFactory(date=dt(1970, 1, 1), account=a2, price=3)
-    BorrowReturnFactory(date=dt(1970, 1, 1), account=a2, price=4)
+    service = DebtReturnModelService(main_user, "lend")
+    actual = service.total_returned_for_debt(debt)
 
-    BorrowReturnFactory(date=dt(1999, 1, 1), account=a1, price=10)
-    BorrowReturnFactory(date=dt(1999, 1, 1), account=a1, price=20)
-    BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=30)
-    BorrowReturnFactory(date=dt(1999, 1, 1), account=a2, price=40)
-
-    LendReturnFactory(date=dt(1999, 1, 1), account=a2, price=180)
-
-    actual = DebtReturnModelService(main_user, "borrow").expenses()
-
-    assert actual[0]["year"] == 1970
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["expenses"] == 3
-
-    assert actual[1]["year"] == 1970
-    assert actual[1]["category_id"] == 2
-    assert actual[1]["expenses"] == 7
-
-    assert actual[2]["year"] == 1999
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["expenses"] == 30
-
-    assert actual[3]["year"] == 1999
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["expenses"] == 70
-
-
-@factory.django.mute_signals(post_save)
-def test_debt_return_total_returned_for_debt(main_user):
-    debt1 = LendFactory(name="A")
-    debt2 = LendFactory(name="Z")
-
-    rtn = LendReturnFactory(debt=debt1, price=1)
-    LendReturnFactory(debt=debt1, price=2)
-    LendReturnFactory(debt=debt2, price=5)
-
-    actual = DebtReturnModelService(main_user, "lend").total_returned_for_debt(rtn)
-
-    assert actual == 3
+    assert actual == expect
 
 
 def test_debt_return_journal_is_its_accounts(second_user):

@@ -36,6 +36,7 @@ def test_income_load_form(client_logged):
 
     assert response.status_code == 200
     assert f'hx-post="{url}"' in actual
+    assert 'data-hx-trigger-form="reload"' in actual
     assert "1999-01-01" in actual
 
 
@@ -278,6 +279,7 @@ def test_type_load_form(client_logged):
     actual = response.content.decode()
 
     assert f'hx-post="{url}"' in actual
+    assert 'data-hx-trigger-form=""' in actual
 
 
 def test_type_save(client_logged):

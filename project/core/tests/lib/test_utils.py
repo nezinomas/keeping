@@ -130,6 +130,13 @@ def test_add_fast_urls_custom_pk_key(mocker):
     assert actual[0]["url_delete"] == "/app/delete/42/"
 
 
+def test_add_fast_urls_raises_on_a_row_without_the_pk(mocker):
+    mocker.patch("project.core.lib.utils.reverse", return_value="/app/update/0/")
+
+    with pytest.raises(KeyError, match="id"):
+        utils.add_fast_urls(data=[{"title": "no id"}], app_name="app")
+
+
 def test_http_htmx_response_trigger_detail_is_an_object():
     """htmx 4 throws on a null event detail - the header must carry {}."""
     response = utils.http_htmx_response("reload")

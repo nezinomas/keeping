@@ -1,12 +1,11 @@
 from datetime import date
 
 import factory
-import mock
 import pytest
 import time_machine
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.files import File
+from django.core.files.base import ContentFile
 from django.db import IntegrityError, models, transaction
 from django.db.models.signals import post_save
 from override_storage import override_storage
@@ -178,32 +177,18 @@ def test_expense_name_year_lists_unlimited_names_before_the_years(main_user):
     assert actual[1].title == "N1"
 
 
-def test_expense_name_no_duplicates():
-    parent = ExpenseTypeFactory(title="P1")
-    ExpenseName(title="N1", parent=parent).save()
+@pytest.mark.parametrize(("first", "second"), [("N1", "N1"), ("Būstas", "Bustas")])
+def test_expense_name_slug_unique_per_parent(first, second):
+    obj1 = ExpenseNameFactory(title=first)
 
     with pytest.raises(IntegrityError):
-        ExpenseName(title="N1", parent=parent).save()
-
-
-def test_expense_name_slug_unique_per_parent():
-    obj1 = ExpenseNameFactory(title="Būstas")
-
-    with pytest.raises(IntegrityError):
-        ExpenseNameFactory(title="Bustas", parent=obj1.parent)
+        ExpenseName(title=second, parent=obj1.parent).save()
 
 
 def test_expense_name_longest_title_is_valid_with_its_slug():
     obj = ExpenseNameFactory(title="a" * 254)
 
     obj.full_clean()
-
-
-def test_expense_name_slug_as_long_as_title():
-    title = ExpenseName._meta.get_field("title")
-    slug = ExpenseName._meta.get_field("slug")
-
-    assert slug.max_length == title.max_length
 
 
 def test_expense_str():
@@ -227,13 +212,25 @@ def test_expense_fields_types():
 @override_storage()
 @time_machine.travel("1974-1-1")
 def test_expense_attachment_field(main_user):
-    file_mock = mock.MagicMock(spec=File, name="FileMock")
-    file_mock.name = "test1.jpg"
-
-    expense = ExpenseFactory(attachment=file_mock)
+    expense = ExpenseFactory(attachment=ContentFile(b"x", name="test1.jpg"))
     pk = str(main_user.journal.pk)
 
-    assert str(expense.attachment) == f"{pk}/expense-type/1974.01_test1.jpg"
+    assert (
+        str(expense.attachment) == f"{pk}/{expense.expense_type.pk}/1974.01_test1.jpg"
+    )
+
+
+@override_storage()
+@time_machine.travel("1974-1-1")
+def test_expense_attachment_keeps_its_path_after_type_rename():
+    expense = ExpenseFactory(attachment=ContentFile(b"x", name="test1.jpg"))
+    stored = expense.attachment.name
+
+    expense.expense_type.title = "Renamed"
+    expense.expense_type.save()
+    expense.save()
+
+    assert Expense.objects.get(pk=expense.pk).attachment.name == stored
 
 
 @factory.django.mute_signals(post_save)
@@ -823,11 +820,11 @@ def test_expense_keyword_clean_passes_for_own_journal_name(main_user):
     obj.clean()
 
 
-def test_expense_keyword_clean_fails_for_other_journal_name(main_user, second_user):
-    name = ExpenseNameFactory(parent=ExpenseTypeFactory(journal=second_user.journal))
-    obj = ExpenseKeywordFactory.build(journal=main_user.journal, expense_name=name)
+def test_expense_keyword_clean_asks_the_db_once(main_user, django_assert_num_queries):
+    name = ExpenseNameFactory(parent=ExpenseTypeFactory(journal=main_user.journal))
+    obj = ExpenseKeyword(journal=main_user.journal, expense_name_id=name.pk)
 
-    with pytest.raises(ValidationError):
+    with django_assert_num_queries(1):
         obj.clean()
 
 
@@ -846,21 +843,17 @@ def test_expense_keyword_keeps_its_name_among_same_titled_names(main_user):
     assert obj.expense_name.parent == buitines
 
 
-def test_expense_keyword_clean_fails_for_same_titled_name_of_other_journal(
-    main_user, second_user
+@pytest.mark.parametrize(
+    "own_titles", [(), ("Kita",)], ids=["plain", "same_titled_own_name"]
+)
+def test_expense_keyword_clean_refuses_a_name_of_another_journal(
+    main_user, second_user, own_titles
 ):
     own_type = ExpenseTypeFactory(title="Maistas", journal=main_user.journal)
+    for title in own_titles:
+        ExpenseNameFactory(title=title, parent=own_type)
     other_type = ExpenseTypeFactory(title="Buitinės", journal=second_user.journal)
-    ExpenseNameFactory(title="Kita", parent=own_type)
-    other = ExpenseNameFactory(title="Kita", parent=other_type)
-    obj = ExpenseKeywordFactory.build(journal=main_user.journal, expense_name=other)
-
-    with pytest.raises(ValidationError):
-        obj.clean()
-
-
-def test_expense_keyword_clean_other_journal_name_message(main_user, second_user):
-    name = ExpenseNameFactory(parent=ExpenseTypeFactory(journal=second_user.journal))
+    name = ExpenseNameFactory(title="Kita", parent=other_type)
     obj = ExpenseKeywordFactory.build(journal=main_user.journal, expense_name=name)
 
     with pytest.raises(ValidationError) as error:

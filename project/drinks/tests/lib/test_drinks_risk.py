@@ -2,6 +2,8 @@ from datetime import date
 
 import pytest
 import time_machine
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib.drinks_risk import (
     CALENDAR_LEVELS,
@@ -31,15 +33,16 @@ def test_the_calendars_top_level_starts_at_the_heavy_day_threshold():
 
 
 # current_year
+@pytest.mark.parametrize(
+    "rows, expect",
+    [
+        pytest.param([], 2026, id="defaults_to_today_with_no_records"),
+        pytest.param([_row(date(2025, 3, 1), 5)], 2025, id="taken_from_records"),
+    ],
+)
 @time_machine.travel("2026-06-15")
-def test_current_year_defaults_to_today_with_no_records():
-    assert RiskStats().current_year == 2026
-
-
-@time_machine.travel("2026-06-15")
-def test_current_year_taken_from_records():
-    stats = RiskStats(current_daily=[_row(date(2025, 3, 1), 5)])
-    assert stats.current_year == 2025
+def test_current_year(rows, expect):
+    assert RiskStats(current_daily=rows).current_year == expect
 
 
 # weekly_series
@@ -76,64 +79,32 @@ def test_weekly_series_for_past_year_spans_to_dec_31():
 
 
 # current_week
+@given(stdavs=st.lists(st.integers(0, 4000).map(lambda c: c / 100), max_size=1))
+@example(stdavs=[])
+@example(stdavs=[5])
+@example(stdavs=[15])
+@example(stdavs=[30])
+@example(stdavs=[WEEKLY_LOW_RISK_STDAV])
+@example(stdavs=[WEEKLY_HIGH_RISK_STDAV])
+# 11.24 shows as 11.2, the low threshold: classified on the shown value, so still low
+@example(stdavs=[11.24])
 @time_machine.travel("2026-01-15")
-def test_current_week_low():
-    stats = RiskStats(current_daily=[_row(date(2026, 1, 13), 5)])
-    week = stats.current_week()
+def test_current_week_state_follows_the_thresholds(stdavs):
+    shown = round(sum(stdavs), 1)
+    state = "low"
+    if shown > WEEKLY_LOW_RISK_STDAV:
+        state = "medium"
+    if shown > WEEKLY_HIGH_RISK_STDAV:
+        state = "high"
 
-    assert week.stdav == 5.0
-    assert week.state == "low"
+    rows = [_row(date(2026, 1, 13), stdav) for stdav in stdavs]
+    week = RiskStats(current_daily=rows).current_week()
+
+    assert week.stdav == shown
+    assert week.state == state
     assert week.label == "2026-01-12"
     assert week.end == "2026-01-18"
     assert week.has_data is True
-
-
-@pytest.mark.parametrize(
-    "stdav, state",
-    [
-        pytest.param(15, "medium", id="current_week_medium_between_thresholds"),
-        pytest.param(30, "high", id="current_week_high_above_high_threshold"),
-    ],
-)
-@time_machine.travel("2026-01-15")
-def test_current_week_state_follows_the_thresholds(stdav, state):
-    stats = RiskStats(current_daily=[_row(date(2026, 1, 13), stdav)])
-
-    assert stats.current_week().state == state
-
-
-@time_machine.travel("2026-01-15")
-def test_current_week_zero_when_no_drinks_is_low():
-    week = RiskStats(current_daily=[]).current_week()
-
-    assert week.stdav == 0.0
-    assert week.state == "low"
-
-
-# zone classification
-@time_machine.travel("2026-01-15")
-def test_zone_exactly_at_low_threshold_is_low():
-    stats = RiskStats(current_daily=[_row(date(2026, 1, 13), WEEKLY_LOW_RISK_STDAV)])
-
-    assert stats.current_week().state == "low"
-
-
-@time_machine.travel("2026-01-15")
-def test_zone_exactly_at_high_threshold_is_medium():
-    stats = RiskStats(current_daily=[_row(date(2026, 1, 13), WEEKLY_HIGH_RISK_STDAV)])
-
-    assert stats.current_week().state == "medium"
-
-
-@time_machine.travel("2026-01-15")
-def test_zone_classifies_on_rounded_value_not_raw():
-    # 11.24 rounds (display) to 11.2 == the low threshold -> must stay "low",
-    # even though the raw value is technically over it
-    stats = RiskStats(current_daily=[_row(date(2026, 1, 13), 11.24)])
-
-    week = stats.current_week()
-    assert week.stdav == 11.2
-    assert week.state == "low"
 
 
 # worst_week
@@ -168,55 +139,78 @@ def test_heavy_days_counts_days_over_threshold():
     assert heavy.has_past is False
 
 
+@pytest.mark.parametrize(
+    "current, past, previous, improving",
+    [
+        pytest.param(
+            [_row(date(2026, 1, 1), 7)],
+            [_row(date(2025, 1, 1), 7), _row(date(2025, 2, 1), 8)],
+            2,
+            True,
+            id="improving",
+        ),
+        pytest.param(
+            [_row(date(2026, 1, 1), 7), _row(date(2026, 2, 1), 8)],
+            [_row(date(2025, 1, 1), 7)],
+            1,
+            False,
+            id="worsening",
+        ),
+    ],
+)
 @time_machine.travel("2026-06-01")
-def test_heavy_days_improving_vs_last_year():
-    current = [_row(date(2026, 1, 1), 7)]
-    past = [_row(date(2025, 1, 1), 7), _row(date(2025, 2, 1), 8)]
+def test_heavy_days_against_last_year(current, past, previous, improving):
     heavy = RiskStats(current_daily=current, past_daily=past).heavy_days()
 
-    assert heavy.current == 1
-    assert heavy.previous == 2
-    assert heavy.improving is True
+    assert heavy.current == len(current)
+    assert heavy.previous == previous
+    assert heavy.improving is improving
     assert heavy.has_past is True
 
 
-@time_machine.travel("2026-06-01")
-def test_heavy_days_worsening_vs_last_year():
-    current = [_row(date(2026, 1, 1), 7), _row(date(2026, 2, 1), 8)]
-    past = [_row(date(2025, 1, 1), 7)]
-    heavy = RiskStats(current_daily=current, past_daily=past).heavy_days()
-
-    assert heavy.improving is False
-
-
-@time_machine.travel("2026-02-01")
-def test_heavy_days_past_clipped_by_day_of_year():
-    # today is day-of-year 32; last year's Dec 31 must not count
-    current = [_row(date(2026, 1, 1), 7)]
-    past = [_row(date(2025, 1, 1), 8), _row(date(2025, 12, 31), 9)]
-    heavy = RiskStats(current_daily=current, past_daily=past).heavy_days()
-
-    assert heavy.previous == 1
-
-
-@time_machine.travel("2026-06-01")
-def test_heavy_days_past_dec31_not_dropped_when_past_year_is_leap():
-    # 2024 was a leap year, so Dec 31 is day 366 there and 365 in 2025 - a naive
-    # day-of-year cutoff drops 2024-12-31
-    current = [_row(date(2025, 1, 1), 7)]
-    past = [_row(date(2024, 12, 31), 9)]
-    heavy = RiskStats(current_daily=current, past_daily=past).heavy_days()
+@pytest.mark.parametrize(
+    "today, current, past",
+    [
+        # today is day-of-year 32; last year's Dec 31 must not count
+        pytest.param(
+            "2026-02-01",
+            [_row(date(2026, 1, 1), 7)],
+            [_row(date(2025, 1, 1), 8), _row(date(2025, 12, 31), 9)],
+            id="clipped_by_day_of_year",
+        ),
+        # 2024 was a leap year, so Dec 31 is day 366 there and 365 in 2025 - a
+        # naive day-of-year cutoff drops 2024-12-31
+        pytest.param(
+            "2026-06-01",
+            [_row(date(2025, 1, 1), 7)],
+            [_row(date(2024, 12, 31), 9)],
+            id="dec31_not_dropped_when_past_year_is_leap",
+        ),
+    ],
+)
+def test_heavy_days_past_is_clipped_to_the_same_day_of_the_year(today, current, past):
+    with time_machine.travel(today):
+        heavy = RiskStats(current_daily=current, past_daily=past).heavy_days()
 
     assert heavy.previous == 1
 
 
 # weeks_over_guideline
+@pytest.mark.parametrize(
+    "stdav, expected",
+    [
+        pytest.param(15, 1, id="well_over"),
+        pytest.param(11.3, 1, id="just_over_the_guideline"),
+        pytest.param(WEEKLY_LOW_RISK_STDAV, 0, id="exactly_the_guideline"),
+        pytest.param(11.24, 0, id="rounds_down_to_the_guideline"),
+    ],
+)
 @time_machine.travel("2026-06-01")
-def test_weeks_over_guideline_counts_current_year():
-    rows = [_row(date(2026, 1, 5), 15)]  # one week over 11.2
+def test_weeks_over_guideline_counts_current_year(stdav, expected):
+    rows = [_row(date(2026, 1, 5), stdav)]
     over = RiskStats(current_daily=rows).weeks_over_guideline()
 
-    assert over.current == 1
+    assert over.current == expected
     assert over.has_past is False
 
 

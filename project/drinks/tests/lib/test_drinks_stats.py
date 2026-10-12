@@ -44,7 +44,7 @@ def test_monthly_stats(drink_type, stdav, qty, expect_qty, expect_vol):
     ]
 
     converter = DrinkConverter(drink_type)
-    obj = DrinkStats(converter, data)
+    obj = DrinkStats(converter, data, today=date(1999, 12, 31))
     stats = obj.monthly
 
     assert stats.total_quantity == expect_qty
@@ -61,25 +61,23 @@ def test_monthly_stats_no_data(drink_converter):
     assert stats.avg_daily_volume == [0.0] * 12
 
 
-def test_monthly_stats_stop_at_the_year_boundary():
+@pytest.mark.parametrize(
+    "today, months",
+    [
+        pytest.param(date(1999, 8, 9), 8, id="running_year_ends_in_august"),
+        pytest.param(date(2005, 3, 1), 12, id="finished_year_runs_to_december"),
+    ],
+)
+def test_monthly_stats_end_at_the_month_reached(today, months):
     data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
 
-    stats = DrinkStats(DrinkConverter("beer"), data, today=date(1999, 8, 9)).monthly
+    stats = DrinkStats(DrinkConverter("beer"), data, today=today).monthly
 
     assert stats.avg_daily_volume[7] == 0.0  # August has begun
-    assert stats.avg_daily_volume[8:] == [None] * 4
-    assert stats.total_quantity[8:] == [None] * 4
-    assert stats.total_volume[8:] == [None] * 4
-
-
-def test_monthly_stats_run_to_december_once_the_year_is_over():
-    data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
-
-    stats = DrinkStats(DrinkConverter("beer"), data, today=date(2005, 3, 1)).monthly
-
-    assert None not in stats.avg_daily_volume
-    assert None not in stats.total_quantity
-    assert None not in stats.total_volume
+    assert len(stats.avg_daily_volume) == months
+    assert len(stats.total_quantity) == months
+    assert len(stats.total_volume) == months
+    assert len(stats.total_stdav) == months
 
 
 def test_monthly_stats_carry_the_std_av_they_summed():
@@ -99,24 +97,12 @@ def test_yearly_std_av_is_summed_not_rebuilt_from_the_shown_quantity():
     assert stats.stdav == 0.1
 
 
-def test_yearly_stats_ignore_the_months_past_the_boundary():
-    data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
-
-    stats = DrinkStats(DrinkConverter("beer"), data, today=date(1999, 8, 9)).yearly
-
-    assert stats.total_quantity == 1.0
-    assert stats.stdav == 2.5
-
-
 def test_monthly_stats_shows_std_av_as_typed():
-    """Std Av is canonical, so it is shown as typed — not as the ml in it.
-
-    Converting would put the Overview chart 10x above the Drink Target drawn
-    across it, the way the Trends chart used to be.
-    """
+    """Std Av is shown as typed, not as the ml in it, or the Overview chart would
+    sit 10x above the Drink Target drawn across it."""
     data = [DataRow(date=date(1999, 1, 1), qty=5, stdav=5)]
 
-    stats = DrinkStats(DrinkConverter("stdav"), data).monthly
+    stats = DrinkStats(DrinkConverter("stdav"), data, today=date(1999, 12, 31)).monthly
 
     assert stats.total_volume[0] == 5.0
     assert stats.avg_daily_volume[0] == pytest.approx(5 / 31)
@@ -155,7 +141,7 @@ def test_yearly_stats(year, today, expect_avg_volume, expect_total_qty):
 
 
 def test_yearly_stats_no_data(drink_converter):
-    obj = DrinkStats(drink_converter)
+    obj = DrinkStats(drink_converter, today=date(1999, 12, 31))
     stats = obj.yearly
 
     assert stats.avg_daily_volume == 0.0
@@ -165,27 +151,32 @@ def test_yearly_stats_no_data(drink_converter):
     assert stats.pure_alcohol_liters == 0.0
 
 
-def test_yearly_stats_pure_alcohol(drink_converter):
+@pytest.mark.parametrize("today", [date(1999, 8, 9), date(1999, 12, 31)])
+def test_yearly_stats_pure_alcohol(drink_converter, today):
     data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
 
-    obj = DrinkStats(drink_converter, data, today=date(1999, 12, 31))
+    obj = DrinkStats(drink_converter, data, today=today)
 
+    assert obj.yearly.total_quantity == 1.0
     assert obj.yearly.stdav == 2.5
     assert obj.yearly.pure_alcohol_liters == 0.025
 
 
-def test_year_falls_back_to_today_when_empty(drink_converter):
-    obj = DrinkStats(drink_converter, today=date(2005, 3, 1))
-
-    assert obj.year == 2005
-
-
-def test_year_comes_from_the_data(drink_converter):
-    data = [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)]
-
+@pytest.mark.parametrize(
+    "data, expect_year",
+    [
+        pytest.param([], 2005, id="falls_back_to_today_when_empty"),
+        pytest.param(
+            [DataRow(date=date(1999, 1, 1), qty=1, stdav=2.5)],
+            1999,
+            id="comes_from_the_data",
+        ),
+    ],
+)
+def test_year(drink_converter, data, expect_year):
     obj = DrinkStats(drink_converter, data, today=date(2005, 3, 1))
 
-    assert obj.year == 1999
+    assert obj.year == expect_year
 
 
 # -------------------------------------------------------------------------------------

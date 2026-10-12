@@ -280,7 +280,7 @@ class SummaryExpenses(FormViewMixin):
     template_name = "bookkeeping/summary_expenses.html"
     success_url = reverse_lazy("bookkeeping:summary_expenses")
 
-    def form_valid(self, form, **kwargs):
+    def form_valid(self, form):
         form_data = form.cleaned_data.get("types")
         context = {
             "form": form,

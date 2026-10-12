@@ -1,11 +1,9 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 from functools import cached_property
 
 import polars as pl
-
-from .translation import month_names, weekday_names
 
 
 @dataclass(frozen=True)
@@ -15,23 +13,41 @@ class GapSpan:
     days: int
 
 
+@dataclass(frozen=True)
+class PastRecord:
+    """The Record on or before today that a Gap or Days dry reaches back to."""
+
+    date: date
+    has_record = True
+
+    def first_gap_start(self, first: date) -> date:
+        return self.date
+
+    def days_to(self, today: date) -> int:
+        return (today - self.date).days
+
+
+@dataclass(frozen=True)
+class NoPastRecord:
+    """No such Record: the first Gap measures from January 1st."""
+
+    has_record = False
+
+    def first_gap_start(self, first: date) -> date:
+        return date(first.year, 1, 1)
+
+    def days_to(self, today: date) -> int:
+        return 0
+
+
 class Stats:
     def __init__(
         self,
         data: Sequence[dict[date, float]],
-        past_latest: date | None = None,
+        earlier: PastRecord | NoPastRecord = NoPastRecord(),
     ):
-        self._past_latest = past_latest
+        self._earlier = earlier
         self._data = data
-        self._now_date = datetime.now().date()
-
-    @staticmethod
-    def months() -> list[str]:
-        return list(month_names().values())
-
-    @staticmethod
-    def weekdays() -> list[str]:
-        return list(weekday_names().values())
 
     def weekdays_stats(self) -> list[dict[str, float]]:
         if self._full_year_df.is_empty():
@@ -59,18 +75,6 @@ class Stats:
             .to_list()
         )
 
-    def year_total(self) -> float:
-        if self._df.is_empty():
-            return 0.0
-
-        return self._totals_by_year_df().to_dicts()[0].get("qty", 0.0)
-
-    def totals_by_year(self) -> dict[int, float]:
-        if self._df.is_empty():
-            return {}
-
-        return {row["year"]: row["qty"] for row in self._totals_by_year_df().to_dicts()}
-
     def gap_by_date(self) -> dict[date, int]:
         """Days since the record before, per record — where the first record of
         all measures from January 1st, having nothing to reach back to."""
@@ -82,34 +86,16 @@ class Stats:
         return {row["date"]: int(row["duration"]) for row in rows.to_dicts()}
 
     def gap_spans(self) -> list[GapSpan]:
-        """Every gap with a record at each end, oldest first — where
-        ``gap_by_date()`` measures the first record from January 1st when
-        nothing precedes it."""
+        """Every gap with a record at each end, oldest first."""
         rows = self._calculate_gaps()
 
         if rows.is_empty():
             return []
 
-        spans = [
+        return [
             GapSpan(rows[i - 1, "date"], rows[i, "date"], rows[i, "duration"])
             for i in range(1, rows.height)
         ]
-
-        if self._past_latest:
-            spans.insert(
-                0, GapSpan(self._past_latest, rows[0, "date"], rows[0, "duration"])
-            )
-
-        return spans
-
-    def _totals_by_year_df(self) -> pl.DataFrame:
-        return (
-            self._df.lazy()
-            .group_by(year=pl.col("date").dt.year())
-            .agg(qty=pl.col("qty").sum())
-            .sort("year")
-            .collect()
-        )
 
     @cached_property
     def _df(self) -> pl.DataFrame:
@@ -143,8 +129,8 @@ class Stats:
             return self._df
 
         first_record_date = self._df[0, "date"]
-        past_record_date = self._past_latest or date(first_record_date.year, 1, 1)
-        first_gap_days = (first_record_date - past_record_date).days
+        gap_start = self._earlier.first_gap_start(first_record_date)
+        first_gap_days = (first_record_date - gap_start).days
 
         return (
             self._df.lazy()

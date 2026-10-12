@@ -31,12 +31,6 @@ def test_a_gap_is_bounded_by_the_records_at_its_ends():
     assert gap.label == "1999-01-01 → 1999-01-06"
 
 
-def test_the_first_record_opens_no_gap_of_its_own():
-    rhythm = Rhythm(_records(date(1999, 3, 1), date(1999, 3, 8)))
-
-    assert len(rhythm.gaps) == 1
-
-
 def test_typical_gap_is_the_median_of_every_gap():
     rhythm = Rhythm(
         _records(
@@ -67,8 +61,15 @@ def test_the_current_gap_never_enters_the_typical_gap():
     assert rhythm.typical_gap.days == 2
 
 
-def test_a_counter_with_one_record_has_no_gap():
-    rhythm = Rhythm(_records(date(1999, 1, 1)))
+@pytest.mark.parametrize(
+    "records",
+    [
+        pytest.param(_records(date(1999, 1, 1)), id="one_record"),
+        pytest.param([], id="no_records"),
+    ],
+)
+def test_a_counter_with_fewer_than_two_records_has_no_gap(records):
+    rhythm = Rhythm(records)
 
     assert rhythm.gaps == []
     assert isinstance(rhythm.typical_gap, EmptyGap)
@@ -77,46 +78,48 @@ def test_a_counter_with_one_record_has_no_gap():
     assert rhythm.typical_gap.label == ""
 
 
-def test_a_counter_with_no_records_has_no_gap():
-    rhythm = Rhythm([])
-
-    assert rhythm.gaps == []
-    assert isinstance(rhythm.typical_gap, EmptyGap)
-
-
-def test_total_ever_sums_every_quantity():
-    rhythm = Rhythm(
-        [
-            {"date": date(1998, 1, 1), "qty": 2.0},
-            {"date": date(1999, 1, 1), "qty": 3.0},
-        ]
-    )
-
-    assert rhythm.total_ever == 5.0
-
-
-def test_total_ever_of_a_counter_with_no_records_is_zero():
-    assert Rhythm([]).total_ever == 0.0
+@pytest.mark.parametrize(
+    "records, expect",
+    [
+        pytest.param(
+            [
+                {"date": date(1998, 1, 1), "qty": 2.0},
+                {"date": date(1999, 1, 1), "qty": 3.0},
+            ],
+            5.0,
+            id="sums_every_quantity",
+        ),
+        pytest.param([], 0.0, id="no_records"),
+    ],
+)
+def test_total_ever(records, expect):
+    assert Rhythm(records).total_ever == expect
 
 
-def test_rate_divides_by_the_span_between_the_first_and_last_record():
-    rhythm = Rhythm(_records(date(1999, 1, 1), date(1999, 2, 1), date(1999, 4, 1)))
+@pytest.mark.parametrize(
+    "records, expect",
+    [
+        pytest.param(
+            _records(date(1999, 1, 1), date(1999, 2, 1), date(1999, 4, 1)),
+            12.2,
+            id="span_between_first_and_last",
+        ),
+        pytest.param(_records(date(1999, 1, 1)), 0.0, id="single_record"),
+    ],
+)
+def test_rate_divides_by_the_span_between_the_first_and_last_record(records, expect):
+    assert round(Rhythm(records).rate, 1) == expect
 
-    assert round(rhythm.rate, 1) == 12.2
 
-
-def test_rate_of_a_counter_with_a_single_record_is_zero():
-    assert Rhythm(_records(date(1999, 1, 1))).rate == 0.0
-
-
-def test_current_gap_counts_the_days_since_the_last_record():
-    rhythm = Rhythm(_records(date(1999, 1, 1)), today=date(1999, 1, 11))
-
-    assert rhythm.current_gap == 10
-
-
-def test_current_gap_of_a_counter_with_no_records_is_zero():
-    assert Rhythm([], today=date(1999, 1, 11)).current_gap == 0
+@pytest.mark.parametrize(
+    "records, expect",
+    [
+        pytest.param(_records(date(1999, 1, 1)), 10, id="days_since_the_last_record"),
+        pytest.param([], 0, id="no_records"),
+    ],
+)
+def test_current_gap(records, expect):
+    assert Rhythm(records, today=date(1999, 1, 11)).current_gap == expect
 
 
 def test_the_first_gap_of_a_year_reaches_back_to_the_year_before():
@@ -125,13 +128,6 @@ def test_the_first_gap_of_a_year_reaches_back_to_the_year_before():
     )
 
     assert [gap.days for gap in rhythm.year_gaps] == [10, 2]
-
-
-def test_a_single_record_in_a_year_gives_no_completed_gap():
-    rhythm = Rhythm(_records(date(1999, 5, 1)), year=1999)
-
-    assert rhythm.year_gaps == []
-    assert isinstance(rhythm.year_median_gap, EmptyGap)
 
 
 def test_the_current_gap_enters_neither_the_years_longest_nor_its_median():
@@ -146,12 +142,21 @@ def test_the_current_gap_enters_neither_the_years_longest_nor_its_median():
     assert rhythm.longest_gap.days == 2
 
 
-def test_an_empty_year_returns_the_empty_variants():
-    rhythm = Rhythm(_records(date(1998, 1, 1), date(1998, 1, 5)), year=1999)
+@pytest.mark.parametrize(
+    "records, year_records",
+    [
+        pytest.param(_records(date(1999, 5, 1)), 1, id="single_record_in_the_year"),
+        pytest.param(_records(date(1998, 1, 1), date(1998, 1, 5)), 0, id="empty_year"),
+    ],
+)
+def test_a_year_without_a_completed_gap_returns_the_empty_variants(
+    records, year_records
+):
+    rhythm = Rhythm(records, year=1999)
 
     assert rhythm.year_gaps == []
     assert isinstance(rhythm.year_median_gap, EmptyGap)
-    assert rhythm.year_records == 0
+    assert rhythm.year_records == year_records
 
 
 def test_the_years_median_and_the_typical_gap_read_different_sets():
@@ -251,12 +256,15 @@ def test_gaps_all_of_one_length_make_a_single_bin():
     assert [(x.low, x.high, x.count) for x in bins] == [(7, 7, 3)]
 
 
-def test_a_bin_holding_one_length_labels_that_length_alone():
-    assert Rhythm(_spaced([7, 7, 7])).gap_distribution[0].label == "7"
-
-
-def test_a_bin_spanning_lengths_labels_both_ends():
-    assert Rhythm(_spaced(SPARSE)).gap_distribution[0].label == "59–69"
+@pytest.mark.parametrize(
+    "gaps, label",
+    [
+        pytest.param([7, 7, 7], "7", id="one_length_alone"),
+        pytest.param(SPARSE, "59–69", id="both_ends"),
+    ],
+)
+def test_a_bin_labels_the_lengths_it_holds(gaps, label):
+    assert Rhythm(_spaced(gaps)).gap_distribution[0].label == label
 
 
 def test_every_gap_lands_in_exactly_one_bin():
@@ -286,6 +294,13 @@ def test_a_sparse_counters_repeated_length_stands_out_as_one_bar():
 
     assert tallest.low <= 63 <= tallest.high
     assert tallest.count > 2 * runner_up
+
+
+def test_edges_that_round_to_one_another_leave_no_inverted_or_skipped_bin():
+    bins = Rhythm(_spaced([1, 2, 3])).gap_distribution
+
+    assert all(x.low <= x.high for x in bins)
+    assert [b.low for b in bins[1:]] == [a.high + 1 for a in bins[:-1]]
 
 
 def test_a_dense_counters_cluster_does_not_collapse_into_one_bin():

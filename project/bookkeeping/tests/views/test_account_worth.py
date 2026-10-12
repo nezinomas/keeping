@@ -173,7 +173,7 @@ def test_formset_lists_an_account_closed_in_the_users_year_or_later(
 
     view = setup_view(views.AccountsWorthNew(), rf)
 
-    actual = str(view.get_formset())
+    actual = str(view.unbound_formset())
 
     assert "S1" in actual
     assert ("S2" in actual) is closed_listed

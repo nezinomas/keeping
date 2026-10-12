@@ -6,7 +6,7 @@ from datetime import date
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from .day_stats import Stats
+from .day_stats import NoPastRecord, PastRecord, Stats
 from .translation import month_names
 from .year_boundary import YearBoundary
 
@@ -57,13 +57,36 @@ def _calc_level(val: float, thresholds: Sequence[float]) -> int:
     return 1 + sum(1 for bound in thresholds if val >= bound)
 
 
+def _label(
+    day_date: date,
+    level: int,
+    qty: float,
+    gap: int,
+    quantity_title: str,
+    empty_title: str,
+    is_today: bool,
+    is_future: bool,
+) -> str:
+    stamp = f"{day_date:%Y-%m-%d}"
+    gap_title = _("Gap")
+
+    if level:
+        return f"{stamp}\n{quantity_title}: {qty:.1f}\n{gap_title}: {gap}d."
+    if is_future:
+        return ""
+    if is_today:
+        return f"{stamp}\n{gap_title}: {gap}d."
+
+    return "\n".join(filter(None, (stamp, empty_title)))
+
+
 class CalendarGrid:
     @classmethod
     def build(
         cls,
         boundary: YearBoundary,
         daily_data: Sequence[dict] = (),
-        latest_past_date: date | None = None,
+        earlier: PastRecord | NoPastRecord = NoPastRecord(),
         quantity_title: str = _lazy("Quantity"),
         empty_title: str = "",
         unit: str = "",
@@ -81,18 +104,14 @@ class CalendarGrid:
             row["date"]: row.get("qty", row.get(value_key, 0.0)) for row in daily_data
         }
 
-        gap_by_date = {}
-        if daily_data:
-            gap_by_date = Stats(
-                data=daily_data, past_latest=latest_past_date
-            ).gap_by_date()
+        gap_by_date = Stats(data=daily_data, earlier=earlier).gap_by_date()
 
         past_dates = [row["date"] for row in daily_data if row["date"] <= today]
-        latest_recorded = max(past_dates, default=latest_past_date)
+        latest = earlier
+        if past_dates:
+            latest = PastRecord(max(past_dates))
 
-        today_gap = 0
-        if latest_recorded and today >= latest_recorded:
-            today_gap = (today - latest_recorded).days
+        today_gap = latest.days_to(today)
 
         months = [
             cls._build_month(
@@ -121,6 +140,8 @@ class CalendarGrid:
         low_title: str,
         high_title: str,
     ) -> CalendarLegendViewModel:
+        bounds = ("0", "≥1")
+
         if thresholds:
             bounds = (
                 "0",
@@ -131,8 +152,6 @@ class CalendarGrid:
                 ),
                 f"≥{_fmt(thresholds[-1])}",
             )
-        else:
-            bounds = ("0", "≥1")
 
         return CalendarLegendViewModel(
             bounds=bounds,
@@ -197,24 +216,14 @@ class CalendarGrid:
         qty = qty_by_date.get(day_date, 0.0)
         gap = gap_by_date.get(day_date, 0)
         is_today = day_date == boundary.today
-
         is_future = day_date > boundary.end_date
 
-        if level == 0:
-            label = "\n".join(filter(None, (f"{day_date:%Y-%m-%d}", empty_title)))
-            if is_today:
-                gap_title = _("Gap")
-                label = f"{day_date:%Y-%m-%d}\n{gap_title}: {today_gap}d."
-                gap = today_gap
-            if is_future:
-                label = ""
-        else:
-            gap_title = _("Gap")
-            label = (
-                f"{day_date:%Y-%m-%d}\n"
-                f"{quantity_title}: {qty:.1f}\n"
-                f"{gap_title}: {gap}d."
-            )
+        if is_today and level == 0:
+            gap = today_gap
+
+        label = _label(
+            day_date, level, qty, gap, quantity_title, empty_title, is_today, is_future
+        )
 
         return CalendarDayViewModel(
             day=day_date.day,

@@ -25,14 +25,6 @@ class IndexService:
             "categories": [month_abbr(month) for month in range(1, 13)],
         }
 
-    def chart_years(self) -> dict:
-        year_totals = self._stats.totals_by_year()
-
-        return {
-            "data": list(year_totals.values()),
-            "categories": list(year_totals.keys()),
-        }
-
     def chart_histogram(self, bins: list[GapBin]) -> dict:
         return {
             "data": [x.count for x in bins],
@@ -51,7 +43,7 @@ def load_index_service(life: CounterLife) -> dict:
         "calendar": CalendarGrid.build(
             life.boundary,
             daily_data=daily,
-            latest_past_date=life.past_latest,
+            earlier=life.earlier,
             empty_title=_("No records"),
             low_title=_("No records"),
             high_title=_("Record"),
@@ -71,10 +63,11 @@ def load_periodicity_service(life: CounterLife) -> dict:
 
 
 def load_history_service(life: CounterLife) -> dict:
-    srv = IndexService(Stats(data=life.records))
-
     return {
         "records": len(life.records),
         "span": life.span,
-        "chart_years": srv.chart_years(),
+        "chart_years": {
+            "data": list(life.totals_by_year.values()),
+            "categories": list(life.totals_by_year),
+        },
     }

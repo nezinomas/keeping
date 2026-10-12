@@ -81,7 +81,9 @@
 
 <div class="alert alert-warning" hx-trigger="reload from:body" hx-get="{{request.get_full_path}}" hx-target="#data" hx-indicator="#indicator">
 {% if notice %}
-    {{ notice|safe }}
+    {{ notice }}
+{% elif notice_month %}
+    {% blocktranslate with month=notice_month %}There are no records for month <b>{{ month }}</b>.{% endblocktranslate %}
 {% else %}
     {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 {% endif %}

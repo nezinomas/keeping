@@ -20,10 +20,10 @@ def test_types_list_shows_the_title(client_logged):
 
 
 @time_machine.travel("2000-01-01")
-def test_pensions_load_form(admin_client):
+def test_pensions_load_form(client_logged):
     url = reverse("pensions:new")
 
-    response = admin_client.get(url)
+    response = client_logged.get(url)
     actual = response.content.decode()
 
     assert f'hx-post="{url}"' in actual
