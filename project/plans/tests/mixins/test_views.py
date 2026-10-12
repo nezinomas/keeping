@@ -2,7 +2,7 @@ import pytest
 from django.http import Http404
 from django.utils.translation import gettext as _
 
-from ...mixins.views import PlanDeleteMixin, PlanQuerySetMixin, PlanUpdateMixin
+from ...mixins.views import PlanDeleteMixin, PlanObjectMixin, PlanQuerySetMixin
 
 # PlanQuerySetMixin
 
@@ -28,10 +28,10 @@ def test_plan_queryset_mixin(mocker):
     assert result == mock_queryset.filter.return_value
 
 
-# PlanUpdateMixin & PlanDeleteMixin
+# PlanObjectMixin & PlanDeleteMixin
 
 
-@pytest.mark.parametrize("mixin", [PlanUpdateMixin, PlanDeleteMixin])
+@pytest.mark.parametrize("mixin", [PlanObjectMixin, PlanDeleteMixin])
 class TestObjectAndUrlMixins:
     def test_get_object_found(self, mocker, mixin):
         class DummyView(mixin):

@@ -2,6 +2,7 @@ from django_htmx.http import HttpResponseClientRedirect, trigger_client_event
 
 
 class HxResponseMixin:
+    hx_trigger_django = ""
     hx_redirect = ""
 
     def get_hx_trigger_django(self):

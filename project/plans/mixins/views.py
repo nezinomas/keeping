@@ -15,7 +15,7 @@ class PlanQuerySetMixin:
         return qs.filter(**self.kwargs)
 
 
-class PlanUpdateMixin(PlanQuerySetMixin):
+class PlanObjectMixin(PlanQuerySetMixin):
     def get_object(self, queryset=None):
         if obj := self.get_tall_queryset().first():
             return obj
@@ -26,17 +26,8 @@ class PlanUpdateMixin(PlanQuerySetMixin):
         return reverse_lazy(f"plans:{self.url_name}", kwargs=self.kwargs)
 
 
-class PlanDeleteMixin(PlanQuerySetMixin):
-    def get_object(self, queryset=None):
-        if obj := self.get_tall_queryset().first():
-            return obj
-
-        raise Http404(_("No plans found."))
-
+class PlanDeleteMixin(PlanObjectMixin):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         self.get_tall_queryset().delete()
         return response
-
-    def url(self):
-        return reverse_lazy(f"plans:{self.url_name}", kwargs=self.kwargs)
