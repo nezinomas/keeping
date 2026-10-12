@@ -243,7 +243,7 @@ def test_redirect_goes_to_the_first_counter_or_to_empty(
     assert response.resolver_match.func.view_class is view_class
 
 
-@pytest.mark.disable_get_user_patch
+@pytest.mark.no_main_user
 @pytest.mark.parametrize(
     "url_name, kwargs",
     [

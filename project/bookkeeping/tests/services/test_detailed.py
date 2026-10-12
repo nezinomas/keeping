@@ -1,8 +1,8 @@
 from datetime import date
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 import pytest
-from mock import MagicMock
 
 from ....expenses.models import ExpenseType
 from ....expenses.tests.factories import (

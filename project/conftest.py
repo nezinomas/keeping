@@ -40,7 +40,7 @@ def main_user(request):
 
 @pytest.fixture(autouse=True)
 def _main_user_unless_disabled(request):
-    if "disable_get_user_patch" not in request.keywords:
+    if "no_main_user" not in request.keywords:
         request.getfixturevalue("main_user")
 
 
@@ -65,8 +65,8 @@ def fake_request(rf, db):
 
 
 @pytest.fixture()
-def client_logged(client):
-    client.login(username="bob", password="123")
+def client_logged(client, main_user):
+    client.force_login(main_user)
     return client
 
 
@@ -97,10 +97,13 @@ def fix_sqlite_format_function():
     connection_created.disconnect(register_functions)
 
 
+def _two_accounts():
+    return AccountFactory(title="Account1"), AccountFactory(title="Account2")
+
+
 @pytest.fixture()
 def incomes():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
 
     IncomeFactory(price=525, date=date(1970, 1, 1), account=a1)
     IncomeFactory(price=225, date=date(1970, 1, 1), account=a2)
@@ -112,8 +115,7 @@ def incomes():
 
 @pytest.fixture()
 def expenses():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
 
     ExpenseFactory(date=date(1999, 1, 1), price=25, account=a1)
     ExpenseFactory(date=date(1999, 1, 1), price=25, account=a1)
@@ -125,8 +127,7 @@ def expenses():
 
 @pytest.fixture()
 def expenses_january():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
 
     ExpenseFactory(
         date=date(1999, 1, 1),
@@ -142,8 +143,7 @@ def expenses_january():
 
 @pytest.fixture()
 def transactions():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
 
     TransactionFactory(
         date=date(1999, 1, 1),
@@ -179,8 +179,7 @@ def transactions():
 
 @pytest.fixture()
 def savings():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
     s1 = SavingTypeFactory(title="Saving1")
     s2 = SavingTypeFactory(title="Saving2")
 
@@ -223,8 +222,7 @@ def savings():
 
 @pytest.fixture()
 def savings_close():
-    a1 = AccountFactory(title="Account1")
-    a2 = AccountFactory(title="Account2")
+    a1, a2 = _two_accounts()
     s1 = SavingTypeFactory(title="Saving1")
 
     SavingCloseFactory(
