@@ -1,4 +1,3 @@
-import contextlib
 from dataclasses import dataclass
 from datetime import date
 
@@ -58,17 +57,21 @@ class DrinkModelService(SumMixin, DatedModelService):
 
     def latest_date(self, through: date) -> date | None:
         """Date of the last record on or before `through`, else None."""
-        with contextlib.suppress(models.Drink.DoesNotExist):
-            return self.objects.filter(date__lte=through).latest().date
-
-        return None
+        return (
+            self.objects.filter(date__lte=through)
+            .order_by("-date")
+            .values_list("date", flat=True)
+            .first()
+        )
 
     def latest_date_before(self, year: int) -> date | None:
         """Date of the last record in any year before `year`."""
-        with contextlib.suppress(models.Drink.DoesNotExist):
-            return self.objects.filter(date__year__lt=year).latest().date
-
-        return None
+        return (
+            self.objects.filter(date__year__lt=year)
+            .order_by("-date")
+            .values_list("date", flat=True)
+            .first()
+        )
 
     def sum_by_year(self, year: int | None = None) -> QuerySet:
         """
