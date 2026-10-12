@@ -94,6 +94,21 @@ def test_expenses_list_filters_by_month(client_logged, today, dates, kwargs, exp
     assert sorted(row["date"] for row in actual) == expected
 
 
+@pytest.mark.parametrize(
+    "month, expected",
+    [
+        pytest.param(1, "<b>1</b> mėnesį įrašų nėra", id="month"),
+        pytest.param(13, "<b>1999</b> metais įrašų nėra", id="all_year"),
+        pytest.param(14, "<b>1999</b> metais įrašų nėra", id="above_all_year"),
+    ],
+)
+def test_expenses_list_empty_notice(client_logged, month, expected):
+    url = reverse("expenses:list", kwargs={"month": month})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert expected in actual
+
+
 def test_expenses_lists_302(client):
     url = reverse("expenses:list")
     response = client.get(url)

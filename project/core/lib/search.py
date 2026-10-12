@@ -17,7 +17,7 @@ def parse_search(search_str):
     try:
         search_dict = _parse_search_with_args(_str)
         combine = and_
-    except SystemExit:
+    except NotFlagsError:
         search_dict = _parse_search_no_args(_str)
         combine = or_
 
@@ -44,13 +44,17 @@ def _parse_search_no_args(search_str):
     return rtn
 
 
+class NotFlagsError(ValueError):
+    """The search text is plain words, not flags."""
+
+
 class SilentArgumentParser(argparse.ArgumentParser):
     def error(self, message):
-        raise SystemExit(message)
+        raise NotFlagsError(message)
 
 
 def _parse_search_with_args(search_str):
-    parser = SilentArgumentParser()
+    parser = SilentArgumentParser(add_help=False)
     parser.add_argument("-category", "-c", type=str, nargs="+")
     parser.add_argument("-year", "-y", type=int)
     parser.add_argument("-month", "-m", type=int)

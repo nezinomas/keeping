@@ -1,8 +1,12 @@
+from collections.abc import Callable
+
+from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from ...core.lib.utils import add_fast_urls, get_action_buttons_html
+from ...users.models import User
 from ..lib.paginator import CountlessPaginator
+from ..lib.utils import add_fast_urls, get_action_buttons_html
 
 
 def count_only(qs):
@@ -10,6 +14,8 @@ def count_only(qs):
 
 
 class SearchMixin:
+    search_method: Callable[[User, str], QuerySet]
+    per_page: int
     search_totals = staticmethod(count_only)
     use_fast_urls = False
 

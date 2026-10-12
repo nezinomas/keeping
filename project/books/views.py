@@ -76,15 +76,7 @@ class Lists(ListViewMixin):
         )
         page_range = paginator.get_elided_page_range(page=page)
 
-        # all records lists every year, so an empty one has no year to name
-        notice = _("No records")
-        if not self.scope:
-            notice = _("No records in <b>%(year)s</b>.") % {
-                "year": cast(User, self.request.user).year
-            }
-
         context = {
-            "notice": notice,
             "object_list": paginator.get_page(page),
             "url": reverse("books:list"),
             "scope": self.scope,
