@@ -8,7 +8,7 @@ from ....bookkeeping.tests.factories import (
     PensionWorthFactory,
     SavingWorthFactory,
 )
-from ....debts.services.model_services import DebtReturnModelService
+from ....debts.services.model_services import DebtModelService
 from ....debts.tests.factories import BorrowFactory, BorrowReturnFactory
 from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
@@ -64,10 +64,14 @@ def listen(mocker):
         mocker.patch.object(balance_sources, "sync_pensions", parent.pensions)
         mocker.patch.object(FundCloseYear, "follow", parent.close_year)
         mocker.patch.object(Journal, "save", parent.first_record)
-        parent.debt.return_value = 0
-        mocker.patch.object(
-            DebtReturnModelService, "total_returned_for_debt", parent.debt
+        # the real body runs, so a sync it triggers itself shows in the order
+        returned = mocker.patch.object(
+            DebtModelService,
+            "sync_returned",
+            autospec=True,
+            side_effect=DebtModelService.sync_returned,
         )
+        parent.attach_mock(returned, "debt")
 
         return lambda: [call[0] for call in parent.mock_calls]
 

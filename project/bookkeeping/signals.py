@@ -4,7 +4,7 @@ from django.dispatch import receiver
 
 from ..core.services.signals_service import journal_user
 from ..debts import models as debt
-from ..debts.services.model_services import DebtReturnModelService
+from ..debts.services.model_services import DebtModelService
 from ..expenses import models as expense
 from ..incomes import models as income
 from ..pensions import models as pension
@@ -37,15 +37,10 @@ def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
 @receiver(post_save, sender=debt.DebtReturn)
 @receiver(post_delete, sender=debt.DebtReturn)
 def update_debt_model(sender: object, instance: models.Model, *args, **kwargs):
-    user = journal_user(instance.debt)
-    debt_type = instance.debt.debt_type
-
-    total_return = DebtReturnModelService(user, debt_type).total_returned_for_debt(
-        instance.debt
-    )
-
-    # update(), not save(): no account source reads `returned`, so no second sync
-    debt.Debt.objects.filter(pk=instance.debt.pk).update(returned=total_return)
+    # every debt of the type: a return moved to another debt changes the one it left
+    DebtModelService(
+        journal_user(instance.debt), instance.debt.debt_type
+    ).sync_returned()
 
 
 # A type's fee source and close year change its balances.

@@ -1,4 +1,4 @@
-from django.db.models import F, Q, Sum, Value
+from django.db.models import F, OuterRef, Q, Subquery, Sum, Value
 from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 
 from ...core.mixins.sum import SumMixin
@@ -23,6 +23,16 @@ class DebtModelService(DatedModelService):
 
     def open_items(self):
         return self.objects.filter(closed=False)
+
+    def sync_returned(self):
+        returns = (
+            models.DebtReturn.objects.filter(debt=OuterRef("pk"))
+            .values("debt")
+            .annotate(total=Sum("price"))
+            .values("total")
+        )
+        # update(), not save(): no account source reads `returned`, so no second sync
+        self.objects.update(returned=Coalesce(Subquery(returns), 0))
 
     def year(self, year):
         return self.objects.filter(

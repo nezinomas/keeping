@@ -168,6 +168,18 @@ def test_lend_return_post_save_two_records_debt_return_value(main_user):
     assert actual.returned == 21
 
 
+def test_lend_return_moved_to_another_debt_updates_both(main_user):
+    debt1 = LendFactory(name="A")
+    debt2 = LendFactory(name="Z")
+    debt_return = LendReturnFactory(debt=debt1, price=30)
+
+    debt_return.debt = debt2
+    debt_return.save()
+
+    assert Debt.objects.get(pk=debt1.pk).returned == 0
+    assert Debt.objects.get(pk=debt2.pk).returned == 30
+
+
 def test_lend_return_post_delete_debt_return_value(main_user):
     debt1 = LendFactory(name="A")
     debt2 = LendFactory(name="Z")
