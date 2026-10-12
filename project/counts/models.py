@@ -17,9 +17,6 @@ class CountType(TitleAbstract):
             ),
         ]
 
-    def __str__(self):
-        return str(self.title)
-
 
 class Count(models.Model):
     date = models.DateField()

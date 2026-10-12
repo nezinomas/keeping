@@ -2,39 +2,59 @@ from datetime import date
 from pathlib import Path
 
 import pytest
-from django.core.files import File
-from mock import MagicMock
+import time_machine
+from django.core.files.base import ContentFile
 from override_storage import override_storage
 
 from ...helpers import models_helper as helper
-from ..factories import ExpenseFactory
+from ...models import Expense
+from ..factories import ExpenseFactory, ExpenseTypeFactory
 
 pytestmark = pytest.mark.django_db
 
+MAX_LENGTH = Expense._meta.get_field("attachment").max_length
 
-def test_upload_attachment(main_user):
-    e = ExpenseFactory(date=date(1000, 1, 1))
-    f = "x.jpg"
 
-    actual = helper.upload_attachment(e, f)
+@pytest.mark.parametrize(
+    ("saved", "month"),
+    [(False, "1974.03"), (True, "1000.01")],
+    ids=["new_is_filed_under_today", "saved_keeps_its_expense_date"],
+)
+def test_upload_attachment(main_user, saved, month):
+    e = ExpenseFactory.build(expense_type=ExpenseTypeFactory())
+    if saved:
+        e = ExpenseFactory(date=date(1000, 1, 1))
+
+    with time_machine.travel("1974-3-7"):
+        actual = helper.upload_attachment(e, "x.jpg")
 
     assert (
         actual
-        == Path(str(main_user.journal.pk)) / str(e.expense_type.pk) / "1000.01_x.jpg"
+        == Path(str(main_user.journal.pk)) / str(e.expense_type.pk) / f"{month}_x.jpg"
     )
 
 
 @override_storage()
-@pytest.mark.django_db
-def test_upload_attachment_on_update(main_user):
-    e = ExpenseFactory()
+@time_machine.travel("1974-1-1")
+def test_a_long_upload_name_is_shortened_to_fit_the_column(main_user):
+    name = "a" * (MAX_LENGTH - 5) + ".jpg"
 
-    file_mock = MagicMock(spec=File, name="FileMock")
-    file_mock.name = "x.jpg"
+    expense = ExpenseFactory(attachment=ContentFile(b"x", name=name))
 
-    e.attachment = file_mock
+    stored = expense.attachment.name
+    folder = f"{main_user.journal.pk}/{expense.expense_type.pk}"
+    assert len(stored) <= MAX_LENGTH
+    assert stored.startswith(f"{folder}/1974.01_aaa")
+    assert stored.endswith("a.jpg")
 
-    e.save()
 
-    folder = f"{main_user.journal.pk}/{e.expense_type.pk}"
-    assert e.attachment.name == f"{folder}/1999.01_x.jpg"
+@override_storage()
+@time_machine.travel("1974-1-1")
+def test_a_long_upload_name_taken_twice_still_fits_the_column(main_user):
+    name = "a" * (MAX_LENGTH - 5) + ".jpg"
+
+    first = ExpenseFactory(attachment=ContentFile(b"x", name=name))
+    second = ExpenseFactory(attachment=ContentFile(b"y", name=name))
+
+    assert first.attachment.name != second.attachment.name
+    assert len(second.attachment.name) <= MAX_LENGTH

@@ -48,27 +48,37 @@ def test_text_receipt_parser_satisfies_shop_parser_protocol():
     assert not parser.recognises("OTHER SHOP")
 
 
-def test_text_receipt_parser_reads_lines_in_order(tmp_path):
+@pytest.mark.parametrize(
+    ("read", "expected"),
+    [
+        pytest.param(
+            lambda receipt: [line.title for line in receipt.lines],
+            ["Bread", "Farmhouse cheese wedge", "Butter"],
+            id="titles_in_order_with_a_split_title_joined",
+        ),
+        pytest.param(
+            lambda receipt: receipt.lines[1].price,
+            200,
+            id="deal_discount_folded_into_the_split_title_line",
+        ),
+        pytest.param(
+            lambda receipt: receipt.lines[0].amount,
+            3,
+            id="amount_line_read_for_the_line_above",
+        ),
+        pytest.param(
+            lambda receipt: receipt.lines[2].amount,
+            1,
+            id="amount_defaults_to_one_piece",
+        ),
+        pytest.param(lambda receipt: receipt.total, 540, id="total"),
+        pytest.param(lambda receipt: receipt.shop_money, 30, id="shop_money"),
+    ],
+)
+def test_text_receipt_parser_reads_the_base_receipt(tmp_path, read, expected):
     receipt = _receipt(tmp_path, BASE_LINES)
 
-    assert [line.title for line in receipt.lines] == [
-        "Bread",
-        "Farmhouse cheese wedge",
-        "Butter",
-    ]
-
-
-def test_text_receipt_parser_joins_a_split_title_and_folds_its_deal_discount(tmp_path):
-    receipt = _receipt(tmp_path, BASE_LINES)
-
-    assert receipt.lines[1].title == "Farmhouse cheese wedge"
-    assert receipt.lines[1].price == 200
-
-
-def test_text_receipt_parser_reads_an_amount_line_for_the_line_above(tmp_path):
-    receipt = _receipt(tmp_path, BASE_LINES)
-
-    assert receipt.lines[0].amount == 3
+    assert read(receipt) == expected
 
 
 def test_text_receipt_parser_folds_a_second_discount_prefix_into_the_line_above(
@@ -211,25 +221,6 @@ def test_text_receipt_parser_raises_on_a_receipt_it_cannot_read(tmp_path, lines,
     assert str(error.value) == names
 
 
-def test_text_receipt_parser_defaults_amount_to_one_piece(tmp_path):
-    receipt = _receipt(tmp_path, BASE_LINES)
-
-    assert receipt.lines[2].title == "Butter"
-    assert receipt.lines[2].amount == 1
-
-
-def test_text_receipt_parser_reads_the_total(tmp_path):
-    receipt = _receipt(tmp_path, BASE_LINES)
-
-    assert receipt.total == 540
-
-
-def test_text_receipt_parser_reads_shop_money(tmp_path):
-    receipt = _receipt(tmp_path, BASE_LINES)
-
-    assert receipt.shop_money == 30
-
-
 def test_text_receipt_parser_defaults_shop_money_to_zero_when_absent(tmp_path):
     lines = [
         "CORNER SHOP LTD",
@@ -287,9 +278,11 @@ def test_text_receipt_parser_raises_when_the_lines_cross_a_page(tmp_path):
 
     with (
         pdfplumber.open(path) as document,
-        pytest.raises(UnreadableReceiptTextError),
+        pytest.raises(UnreadableReceiptTextError) as error,
     ):
         TextReceiptParser(LAYOUT).parse(document)
+
+    assert str(error.value) == "-----"
 
 
 def test_text_receipt_parser_reads_a_total_on_a_later_page(tmp_path):
