@@ -104,6 +104,7 @@ def test_debt_load_form(client_logged, debt_type):
 
     assert response.status_code == 200
     assert '<input type="text" name="date" value="1999-01-01"' in actual
+    assert f'hx-post="{url}"' in response.content.decode()
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
