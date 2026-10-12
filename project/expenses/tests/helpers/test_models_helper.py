@@ -48,6 +48,19 @@ def test_a_long_upload_name_is_shortened_to_fit_the_column(main_user):
     assert stored.endswith("a.jpg")
 
 
+@time_machine.travel("1974-1-1")
+def test_a_column_too_short_for_any_of_the_name_keeps_its_extension(monkeypatch):
+    expense = ExpenseFactory.build(expense_type=ExpenseTypeFactory())
+    field = Expense._meta.get_field("attachment")
+    # the folder and month prefix leave no room for the stem at all
+    short = len(str(helper.attachment_folder(expense.expense_type))) + 1 + 8 + 8 + 2
+    monkeypatch.setattr(field, "max_length", short)
+
+    stored = helper.upload_attachment(expense, "a" * 40 + ".jpg")
+
+    assert stored.name == "1974.01_.jpg"
+
+
 @override_storage()
 @time_machine.travel("1974-1-1")
 def test_a_long_upload_name_taken_twice_still_fits_the_column(main_user):

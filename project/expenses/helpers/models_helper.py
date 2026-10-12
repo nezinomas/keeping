@@ -23,6 +23,6 @@ def upload_attachment(instance, filename):
     name = filename
     if len(name) > room:
         suffix = Path(name).suffix
-        name = Path(name).stem[: room - len(suffix)] + suffix
+        name = Path(name).stem[: max(room - len(suffix), 0)] + suffix
 
     return folder / f"{prefix}{name}"
