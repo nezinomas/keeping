@@ -768,7 +768,9 @@ def test_history_of_a_counter_with_no_records_renders_its_empty_state(client_log
 
 def test_history_chart_years(client_logged):
     obj = CountTypeFactory()
-    CountFactory()
+    CountFactory(date=date(1998, 5, 1), quantity=2)
+    CountFactory(date=date(1999, 1, 1), quantity=1)
+    CountFactory(date=date(1999, 3, 1), quantity=3)
 
     url = reverse("counts:tab_history", kwargs={"slug": obj.slug})
     response = client_logged.get(url)
@@ -776,7 +778,10 @@ def test_history_chart_years(client_logged):
     content = response.content.decode("utf-8")
 
     assert '<div id="chart-years-container">' in content
-    assert 'id="chart-years-data"' in content
+    assert (
+        '<script id="chart-years-data" type="application/json">'
+        '{"data": [2.0, 4.0], "categories": [1998, 1999]}</script>'
+    ) in content
 
 
 def test_history_panel_is_titled_and_captions_the_span(client_logged):

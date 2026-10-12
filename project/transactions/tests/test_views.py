@@ -12,13 +12,7 @@ from ...savings.models import SavingType
 from ...savings.tests.factories import SavingTypeFactory
 from ...users.views import Login
 from .. import models
-from .factories import (
-    SavingChangeFactory,
-    SavingClose,
-    SavingCloseFactory,
-    Transaction,
-    TransactionFactory,
-)
+from .factories import SavingChangeFactory, SavingCloseFactory, TransactionFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -33,6 +27,7 @@ class Kind(NamedTuple):
     delete_url: str
     to_title: str
     delete_text: str
+    from_title: str
 
 
 KINDS = {
@@ -46,6 +41,7 @@ KINDS = {
         "transactions:delete",
         "Account2",
         "1999-01-01 Account1 -&gt; Account2: 2,00",
+        "Account1",
     ),
     "savings_close": Kind(
         SavingCloseFactory,
@@ -57,6 +53,7 @@ KINDS = {
         "transactions:savings_close_delete",
         "Account To",
         "1999-01-01 Savings From -&gt; Account To: 0,10",
+        "Savings From",
     ),
     "savings_change": Kind(
         SavingChangeFactory,
@@ -68,6 +65,7 @@ KINDS = {
         "transactions:savings_change_delete",
         "Savings To",
         "1999-01-01 Savings From -&gt; Savings To: 0,10",
+        "Savings From",
     ),
 }
 by_kind = pytest.mark.parametrize("kind", KINDS.values(), ids=KINDS.keys())
@@ -75,6 +73,21 @@ by_fund_move = pytest.mark.parametrize(
     "kind",
     [KINDS["savings_close"], KINDS["savings_change"]],
     ids=["savings_close", "savings_change"],
+)
+by_kind_follow = pytest.mark.parametrize(
+    "kind, follow",
+    [
+        pytest.param(KINDS["transactions"], True, id="transactions"),
+        pytest.param(KINDS["savings_close"], False, id="savings_close"),
+        pytest.param(KINDS["savings_change"], True, id="savings_change"),
+    ],
+)
+by_fund_move_follow = pytest.mark.parametrize(
+    "kind, follow",
+    [
+        pytest.param(KINDS["savings_close"], False, id="savings_close"),
+        pytest.param(KINDS["savings_change"], True, id="savings_change"),
+    ],
 )
 
 
@@ -109,25 +122,43 @@ def test_load_form(client_logged, kind):
     assert url in actual
 
 
-def test_transactions_save(client_logged):
-    a1 = AccountFactory()
-    a2 = AccountFactory(title="Account2")
-
+def _post_new(client_logged, kind, **extra):
+    a_from = kind.from_factory(title="From")
+    a_to = kind.to_factory(title="To")
     data = {
         "date": "1999-01-01",
         "price": "0.01",
-        "from_account": a1.pk,
-        "to_account": a2.pk,
-    }
+        "from_account": a_from.pk,
+        "to_account": a_to.pk,
+    } | extra
 
-    url = reverse("transactions:new")
-    client_logged.post(url, data)
-    actual = Transaction.objects.first()
+    client_logged.post(reverse(kind.new_url), data)
 
+    return kind.model.objects.get(), a_from, a_to
+
+
+def _assert_saved(actual, a_from, a_to):
     assert actual.date == date(1999, 1, 1)
     assert actual.price == 1
-    assert actual.from_account.title == "Account1"
-    assert actual.to_account.title == "Account2"
+    assert actual.from_account == a_from
+    assert actual.to_account == a_to
+
+
+@by_kind
+def test_save(client_logged, kind):
+    _assert_saved(*_post_new(client_logged, kind))
+
+
+@by_fund_move
+@pytest.mark.parametrize(
+    "posted, cents",
+    [pytest.param({"fee": "0.01"}, 1, id="fee"), pytest.param({}, 0, id="no_fee")],
+)
+def test_save_fee(client_logged, kind, posted, cents):
+    actual, a_from, a_to = _post_new(client_logged, kind, **posted)
+
+    _assert_saved(actual, a_from, a_to)
+    assert actual.fee == cents
 
 
 @pytest.mark.parametrize(
@@ -146,10 +177,9 @@ def test_save_invalid_data(client_logged, kind, follow):
         "to_account": 0,
     }
 
-    response = client_logged.post(reverse(kind.new_url), data, follow=follow)
-    form = response.context["form"]
+    client_logged.post(reverse(kind.new_url), data, follow=follow)
 
-    assert not form.is_valid()
+    assert kind.model.objects.count() == 0
 
 
 @pytest.mark.parametrize(
@@ -175,18 +205,47 @@ def test_load_update_form(client_logged, kind, kwargs):
     assert url in actual
 
 
-def test_transactions_load_update_form_field_values(client_logged):
-    obj = TransactionFactory(price=1)
+@pytest.mark.parametrize(
+    "kind, kwargs, more",
+    [
+        pytest.param(
+            KINDS["transactions"],
+            {"price": 1},
+            ('<option value="{to}">Account2</option>',),
+            id="transactions",
+        ),
+        pytest.param(
+            KINDS["savings_close"],
+            {"price": 1, "fee": 1},
+            ('name="fee" value="0.01"',),
+            id="savings_close",
+        ),
+        pytest.param(
+            KINDS["savings_change"],
+            {"price": 1, "fee": 1},
+            ('name="fee" value="0.01"', '<option value="{to}">Savings To</option>'),
+            id="savings_change",
+        ),
+    ],
+)
+def test_load_update_form_field_values(client_logged, kind, kwargs, more):
+    obj = kind.factory(**kwargs)
 
-    url = reverse("transactions:update", kwargs={"pk": obj.pk})
+    url = reverse(kind.update_url, kwargs={"pk": obj.pk})
     response = client_logged.get(url)
     form = response.context["form"].as_p()
 
     assert 'name="date" value="1999-01-01"' in form
     assert 'name="price" value="0.01"' in form
-    assert f'<option value="{obj.from_account.pk}" selected>Account1</option>' in form
-    assert f'<option value="{obj.to_account.pk}">Account2</option>' in form
-    assert f'<option value="{obj.to_account.pk}" selected>Account2</option>' in form
+    assert (
+        f'<option value="{obj.from_account.pk}" selected>{kind.from_title}</option>'
+        in form
+    )
+    assert (
+        f'<option value="{obj.to_account.pk}" selected>{kind.to_title}</option>' in form
+    )
+    for snippet in more:
+        assert snippet.format(to=obj.to_account.pk) in form
 
 
 @pytest.mark.parametrize(
@@ -211,24 +270,6 @@ def test_update_to_another_year(client_logged, kind, extra):
     actual = response.content.decode("utf-8")
 
     assert "2010-12-31" not in actual
-
-
-def test_transactions_update(client_logged):
-    tr = TransactionFactory()
-
-    data = {
-        "price": "150",
-        "date": "1999-12-31",
-        "from_account": tr.from_account.pk,
-        "to_account": tr.to_account.pk,
-    }
-    url = reverse("transactions:update", kwargs={"pk": tr.pk})
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode("utf-8")
-
-    assert "1999-12-31" in actual
-    assert "Account1" in actual
-    assert "Account2" in actual
 
 
 @pytest.mark.parametrize(
@@ -270,7 +311,6 @@ def _foreign_move(kind, journal):
 @by_kind
 def test_not_load_other_journal(client_logged, second_user, kind):
     obj = _foreign_move(kind, second_user.journal)
-    kind.factory()
 
     url = reverse(kind.update_url, kwargs={"pk": obj.pk})
     response = client_logged.get(url)
@@ -359,114 +399,50 @@ def test_delete_other_journal_post_form(client_logged, second_user, kind):
     assert kind.model.objects.count() == 1
 
 
-def test_savings_close_save(client_logged):
-    saving = SavingTypeFactory()
-    account = AccountFactory()
-
+def _post_update(client_logged, kind, follow, **extra):
+    obj = kind.factory()
     data = {
-        "date": "1999-01-01",
         "price": "0.01",
-        "fee": "0.01",
-        "from_account": saving.pk,
-        "to_account": account.pk,
-    }
-    url = reverse("transactions:savings_close_new")
-    client_logged.post(url, data)
-    actual = SavingClose.objects.first()
+        "date": "1999-12-31",
+        "from_account": obj.from_account.pk,
+        "to_account": obj.to_account.pk,
+    } | extra
 
-    assert actual.date == date(1999, 1, 1)
+    url = reverse(kind.update_url, kwargs={"pk": obj.pk})
+    response = client_logged.post(url, data, follow=follow)
+
+    return kind.model.objects.get(pk=obj.pk), response.content.decode("utf-8")
+
+
+def _assert_updated(actual, kind):
+    assert actual.date == date(1999, 12, 31)
     assert actual.price == 1
-    assert actual.fee == 1
-    assert actual.from_account == saving
-    assert actual.to_account == account
+    assert actual.to_account.title == kind.to_title
+    assert actual.from_account.title == kind.from_title
 
 
-def test_savings_close_save_no_fee(client_logged):
-    saving = SavingTypeFactory()
-    account = AccountFactory()
-
-    data = {
-        "date": "1999-01-01",
-        "price": "0.01",
-        "from_account": saving.pk,
-        "to_account": account.pk,
-    }
-    url = reverse("transactions:savings_close_new")
-    client_logged.post(url, data)
-    actual = SavingClose.objects.first()
-
-    assert actual.date == date(1999, 1, 1)
-    assert actual.price == 1
-    assert not actual.fee
-    assert actual.from_account == saving
-    assert actual.to_account == account
-
-
-def test_savings_close_load_update_form_field_values(client_logged):
-    obj = SavingCloseFactory(price=1, fee=1)
-
-    url = reverse("transactions:savings_close_update", kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
-    form = response.context["form"]
-
-    assert form.instance.date == date(1999, 1, 1)
-    assert form.instance.price == 0.01
-    assert form.instance.fee == 0.01
-
-    assert form.instance.from_account.title == "Savings From"
-    assert form.instance.to_account.title == "Account To"
-
-
-by_fund_move_follow = pytest.mark.parametrize(
-    "kind, follow",
-    [
-        pytest.param(KINDS["savings_close"], False, id="savings_close"),
-        pytest.param(KINDS["savings_change"], True, id="savings_change"),
-    ],
-)
-
-
-@by_fund_move_follow
+@by_kind_follow
 def test_update(client_logged, kind, follow):
-    obj = kind.factory()
+    actual, page = _post_update(client_logged, kind, follow)
 
-    data = {
-        "price": "0.01",
-        "date": "1999-12-31",
-        "fee": "0.01",
-        "from_account": obj.from_account.pk,
-        "to_account": obj.to_account.pk,
-    }
-    url = reverse(kind.update_url, kwargs={"pk": obj.pk})
-    client_logged.post(url, data, follow=follow)
-    actual = kind.model.objects.get(pk=obj.pk)
+    _assert_updated(actual, kind)
 
-    assert actual.date == date(1999, 12, 31)
-    assert actual.price == 1
-    assert actual.fee == 1
-    assert actual.to_account.title == kind.to_title
-    assert actual.from_account.title == "Savings From"
+    if follow:
+        assert "1999-12-31" in page
+        assert kind.from_title in page
+        assert kind.to_title in page
 
 
 @by_fund_move_follow
-def test_update_no_fee(client_logged, kind, follow):
-    obj = kind.factory()
+@pytest.mark.parametrize(
+    "posted, cents",
+    [pytest.param({"fee": "0.01"}, 1, id="fee"), pytest.param({}, 0, id="no_fee")],
+)
+def test_update_fee(client_logged, kind, follow, posted, cents):
+    actual, _page = _post_update(client_logged, kind, follow, **posted)
 
-    data = {
-        "price": "0.01",
-        "date": "1999-12-31",
-        "from_account": obj.from_account.pk,
-        "to_account": obj.to_account.pk,
-    }
-    url = reverse(kind.update_url, kwargs={"pk": obj.pk})
-    client_logged.post(url, data, follow=follow)
-    actual = kind.model.objects.get(pk=obj.pk)
-
-    assert actual.date == date(1999, 12, 31)
-    assert actual.price == 1
-    assert not actual.fee
-    assert actual.to_account.title == kind.to_title
-    assert actual.from_account.title == "Savings From"
+    _assert_updated(actual, kind)
+    assert actual.fee == cents
 
 
 @by_fund_move
@@ -497,9 +473,16 @@ def test_load_for_update_checkbox_initial_value(client_logged, kind):
 
 
 @by_fund_move
-@pytest.mark.parametrize("closed", [1999, None], ids=["closed", "open"])
+@pytest.mark.parametrize(
+    "closed, close, expect",
+    [
+        pytest.param(1999, True, 1999, id="closed_stays_closed"),
+        pytest.param(None, True, 1999, id="open_closes_in_the_moves_year"),
+        pytest.param(1999, False, None, id="unticked_reopens"),
+    ],
+)
 @time_machine.travel("2000-1-1")
-def test_update_in_future_checkbox_value(client_logged, kind, closed):
+def test_update_in_future_checkbox_value(client_logged, kind, closed, close, expect):
     a = SavingTypeFactory(closed=closed)
     obj = kind.factory(from_account=a)
 
@@ -509,57 +492,15 @@ def test_update_in_future_checkbox_value(client_logged, kind, closed):
         "fee": obj.fee,
         "from_account": obj.from_account.pk,
         "to_account": obj.to_account.pk,
-        "close": True,
+        "close": close,
     }
 
     url = reverse(kind.update_url, kwargs={"pk": obj.pk})
     client_logged.post(url, data)
     actual = SavingType.objects.get(pk=a.pk)
 
-    # closed must not change to 2000
-    assert actual.closed == 1999
-
-
-@by_fund_move
-@time_machine.travel("2000-1-1")
-def test_update_in_future_checkbox_value_uncheck(client_logged, kind):
-    a = SavingTypeFactory(closed=1999)
-    obj = kind.factory(from_account=a)
-
-    data = {
-        "date": obj.date,
-        "price": obj.price,
-        "fee": obj.fee,
-        "from_account": obj.from_account.pk,
-        "to_account": obj.to_account.pk,
-        "close": False,
-    }
-
-    url = reverse(kind.update_url, kwargs={"pk": obj.pk})
-    client_logged.post(url, data)
-    actual = SavingType.objects.get(pk=a.pk)
-
-    assert not actual.closed
-
-
-def test_savings_change_save(client_logged):
-    a1 = SavingTypeFactory()
-    a2 = SavingTypeFactory(title="Savings2")
-
-    data = {
-        "date": "1999-01-01",
-        "price": "1",
-        "from_account": a1.pk,
-        "to_account": a2.pk,
-    }
-    url = reverse("transactions:savings_change_new")
-    response = client_logged.post(url, data, follow=True)
-    actual = response.content.decode("utf-8")
-
-    assert "1999-01-01" in actual
-    assert "1" in actual
-    assert "Savings" in actual
-    assert "Savings2" in actual
+    # the fund closes in the move's year, not in the year it is edited
+    assert actual.closed == expect
 
 
 def test_savings_change_not_show_other_journal_types(client_logged, second_user):
@@ -578,28 +519,13 @@ def test_savings_change_not_show_other_journal_types(client_logged, second_user)
     assert "XXX" not in form.as_p()
 
 
-def test_savings_change_load_update_form_field_values(client_logged):
-    obj = SavingChangeFactory(price=1, fee=1)
-
-    url = reverse("transactions:savings_change_update", kwargs={"pk": obj.pk})
-    response = client_logged.get(url)
-    form = response.context["form"].as_p()
-
-    assert 'name="date" value="1999-01-01"' in form
-    assert 'name="price" value="0.01"' in form
-    assert 'name="fee" value="0.01"' in form
-
-    assert (
-        f'<option value="{obj.from_account.pk}" selected>Savings From</option>' in form
-    )
-    assert f'<option value="{obj.to_account.pk}">Savings To</option>' in form
-    assert f'<option value="{obj.to_account.pk}" selected>Savings To</option>' in form
-
-
-def test_load_saving_type_lists_the_open_funds_except_the_source(client_logged):
+def test_load_saving_type_lists_the_open_funds_except_the_source(
+    client_logged, second_user
+):
     s1 = SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=1000)
     s3 = SavingTypeFactory(title="S3")
+    SavingTypeFactory(title="S4", journal=second_user.journal)
 
     url = reverse("transactions:load_saving_type")
     response = client_logged.get(url, {"from_account": s1.pk})
@@ -607,27 +533,18 @@ def test_load_saving_type_lists_the_open_funds_except_the_source(client_logged):
 
     assert "S1" not in actual
     assert "S2" not in actual
+    assert "S4" not in actual
     assert f'<option value="{s3.pk}">S3</option>' in actual
 
 
-def test_load_saving_type_for_current_user(client_logged, second_user):
-    s1 = SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", journal=second_user.journal)
-
-    url = reverse("transactions:load_saving_type")
-    response = client_logged.get(url, {"from_account": s1.pk})
-    actual = response.content.decode("utf-8")
-
-    assert "S1" not in str(actual)
-    assert "S2" not in str(actual)
-
-
 def test_load_saving_type_empty_parent_pk(client_logged):
+    SavingTypeFactory(title="S1")
+
     url = reverse("transactions:load_saving_type")
     response = client_logged.get(url, {"from_account": ""})
 
     assert response.status_code == 200
-    assert response.context["object_list"] == []
+    assert "S1" not in response.content.decode("utf-8")
 
 
 def test_load_saving_type_must_logged(client):
