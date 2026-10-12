@@ -8,7 +8,7 @@ from ...core.lib.translation import weekday_names
 from ..lib.drinks_frequency import FrequencyStats
 from ..lib.drinks_risk import HEAVY_DAY_STDAV
 from .consumption_year import ConsumptionYear
-from .profile_chart import ProfileLayer, profile_chart_dict
+from .profile_chart import ProfileLayer, profile_chart_dict, profile_chart_text
 
 
 @dataclass(frozen=True)
@@ -21,12 +21,7 @@ class WeekdayChartViewModel:
 
     @property
     def layers(self) -> list[ProfileLayer]:
-        """One span, and the tab already names it — so no label.
-
-        The Typical year draws the same chart with two layers; this one has
-        nothing to read against, because a weekday only recurs within the year
-        the header selects.
-        """
+        """One span, and the tab already names it, so no label."""
         return [ProfileLayer(self.drinking_day_share, self.intensity)]
 
     @property
@@ -35,13 +30,7 @@ class WeekdayChartViewModel:
 
 
 class HabitsTab:
-    """Deep module for recurring shape — as opposed to level (Overview),
-    direction (Trends) or harm (Risk).
-
-    Which days a user drinks on, and how heavily when they do: two independent
-    behaviours that every year-wide average fuses back together. The tab reads
-    one year, the one the header selects, like every other tab.
-    """
+    """Recurring shape: which days a user drinks on, and how heavily when they do."""
 
     @classmethod
     def build(cls, user, year: int) -> dict:
@@ -64,26 +53,15 @@ class HabitsBuilder:
         self._stats = frequency_stats
 
     def chart_weekday(self) -> WeekdayChartViewModel:
-        profile = self._stats.weekday_profile()
+        layer = ProfileLayer.from_points(self._stats.weekday_profile())
 
         return WeekdayChartViewModel(
-            # weekday_names() is keyed Monday-first, the same order
-            # date.weekday() counts in and weekday_profile() returns
+            # Monday-first, the order date.weekday() counts in
             categories=list(weekday_names().values()),
-            drinking_day_share=[
-                round(point.drinking_day_share * 100, 1) for point in profile
-            ],
-            intensity=[round(point.intensity, 1) for point in profile],
+            drinking_day_share=layer.drinking_day_share,
+            intensity=layer.intensity,
             heavy_threshold=HEAVY_DAY_STDAV,
-            text={
-                "share": _("Drinking-day rate"),
-                "share_unit": "%",
-                "intensity": _("Per drinking day"),
-                # not display_unit: the axis carries a plot line defined in
-                # Std Av, and a converted series leaves it marking nothing
-                "intensity_unit": "Std Av",
-                "threshold_label": _("Heavy day"),
-            },
+            text=profile_chart_text(),
         )
 
     def get_cards(self) -> list[Card]:

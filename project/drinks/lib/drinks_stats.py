@@ -36,12 +36,7 @@ class YearlyStatsDTO:
 
 @dataclass(frozen=True)
 class YearOverYear:
-    """One figure this year beside the same figure last year, up to the same
-    month and day.
-
-    How it is shown is the caller's: a count whole, an amount to the decimals
-    its unit needs.
-    """
+    """One figure this year beside the same figure last year, up to the same day."""
 
     current: float
     previous: float
@@ -74,7 +69,8 @@ class DrinkStats:
         self,
         converter: DrinkConverter,
         data: Sequence[DataRow] = (),
-        today: date | None = None,
+        *,
+        today: date,
     ):
         self.converter = converter
         self.data = data
@@ -112,15 +108,6 @@ class DrinkStats:
 
     @cached_property
     def yearly(self) -> YearlyStatsDTO:
-        if not self.data:
-            return YearlyStatsDTO(
-                avg_daily_volume=0.0,
-                total_quantity=0.0,
-                stdav=0.0,
-                pure_alcohol_liters=0.0,
-                avg_daily_stdav=0.0,
-            )
-
         days_passed = self._year.days_elapsed
         total_volume = sum(self.monthly.total_volume)
         total_quantity = sum(self.monthly.total_quantity)

@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from dataclasses import dataclass, field
+from datetime import date
 
 from ...core.lib.translation import month_names
 from ..lib.chart_view_model import ChartViewModel
@@ -60,13 +61,14 @@ class YearComparison:
     @staticmethod
     def _series(user, years: Iterable[int]) -> list[dict]:
         series = []
+        today = date.today()
 
         for year in years:
             records = ConsumptionYear(user, int(year))
             if not records.monthly:
                 continue
 
-            stats = DrinkStats(records.converter, records.monthly)
+            stats = DrinkStats(records.converter, records.monthly, today=today)
             series.append({"name": year, "data": stats.monthly.avg_daily_volume})
 
         return series
