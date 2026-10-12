@@ -1,11 +1,10 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Q
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-from .validators import validate_title_characters, validate_title_slug
+from .validators import TITLE_VALIDATORS, validate_title_characters
 
 
 class TitleAbstract(models.Model):
@@ -15,11 +14,7 @@ class TitleAbstract(models.Model):
     title = models.CharField(
         max_length=100,
         blank=False,
-        validators=[
-            MinLengthValidator(3),
-            validate_title_characters,
-            validate_title_slug,
-        ],
+        validators=[*TITLE_VALIDATORS, validate_title_characters],
     )
     slug = models.SlugField(
         editable=False,

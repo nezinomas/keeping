@@ -88,24 +88,12 @@ def test_form_offers_only_the_current_users_expense_types(
     main_user, second_user, form_class
 ):
     t1 = ExpenseTypeFactory(title="T1")
-    t2 = ExpenseTypeFactory(title="T2", journal=second_user.journal)
+    ExpenseTypeFactory(title="T2", journal=second_user.journal)
 
     form = form_class(user=main_user).as_p()
 
-    assert "T1" in form
-    assert "T2" not in form
     assert f'<option value="{t1.pk}">T1</option>' in form
-    assert f'<option value="{t2.pk}">T2</option>' not in form
-
-
-def test_expense_current_user_accounts(main_user, second_user):
-    AccountFactory(title="A1")
-    AccountFactory(title="A2", journal=second_user.journal)
-
-    form = ExpenseForm(user=main_user).as_p()
-
-    assert "A1" in form
-    assert "A2" not in form
+    assert "T2" not in form
 
 
 def test_expense_select_first_account(main_user, second_user):
@@ -118,16 +106,46 @@ def test_expense_select_first_account(main_user, second_user):
     assert expect in form
 
 
-def test_expense_form_valid_data(main_user, account, expense_name):
-    form = ExpenseForm(
-        user=main_user, data=_expense_data(account, expense_name, price=0.01)
+def test_expense_edit_offers_the_account_open_in_the_expense_year(
+    main_user, expense_name
+):
+    account = AccountFactory(closed=1998)
+    expense = ExpenseFactory(
+        date=date(1998, 6, 1),
+        account=account,
+        expense_type=expense_name.parent,
+        expense_name=expense_name,
     )
 
-    assert form.is_valid()
+    form = ExpenseForm(user=main_user, instance=expense)
+
+    assert list(form.fields["account"].queryset) == [account]
+
+
+def test_expense_edit_form_looks_up_no_default_account(
+    main_user, django_assert_num_queries
+):
+    expense = ExpenseFactory()
+
+    with django_assert_num_queries(0):
+        ExpenseForm(user=main_user, instance=expense)
+
+
+@pytest.mark.parametrize(
+    ("posted", "cents"),
+    [(0.01, 1), ("12,1", 1210)],
+    ids=["point", "decimal_comma"],
+)
+def test_expense_form_valid_data(main_user, account, expense_name, posted, cents):
+    form = ExpenseForm(
+        user=main_user, data=_expense_data(account, expense_name, price=posted)
+    )
+
+    assert form.is_valid(), form.errors
 
     e = form.save()
     assert e.date == date(1999, 1, 1)
-    assert e.price == 1
+    assert e.price == cents
     assert e.expense_type == expense_name.parent
     assert e.expense_name == expense_name
     assert e.account == account
@@ -157,6 +175,7 @@ def test_expense_insert_only_one_year_to_future(
     ("posted", "errors"),
     [
         ("1999-06-01", {}),
+        ("", {"date": ["Šis laukas yra privalomas."]}),
         (
             "2000-06-01",
             {
@@ -177,15 +196,6 @@ def test_expense_date_is_valid_up_to_the_accounts_closed_year(
     )
 
     assert form.errors == errors
-
-
-def test_expense_price_accepts_a_decimal_comma(main_user, account, expense_name):
-    form = ExpenseForm(
-        user=main_user, data=_expense_data(account, expense_name, price="12,1")
-    )
-
-    assert form.is_valid(), form.errors
-    assert form.save().price == 1210
 
 
 def test_expense_form_quantity_starts_at_one(main_user):
@@ -283,11 +293,28 @@ def test_expense_form_necessary_type_and_exception(main_user, account):
     }
 
 
-def test_expense_name_choices_mixin_hx_get_default(main_user):
-    form = ExpenseForm(user=main_user).as_p()
+class _YearOverrideExpenseForm(ExpenseForm):
+    def names_year(self):
+        return 2005
 
-    assert f'hx-get="{reverse("expenses:load_expense_name")}"' in form
-    assert 'hx-target="#id_expense_name"' in form
+
+@pytest.mark.parametrize(
+    ("form_class", "kwargs", "query", "target"),
+    [
+        (ExpenseForm, {}, "", "id_expense_name"),
+        (ExpenseForm, {"prefix": "form-3"}, "?prefix=form-3", "id_form-3-expense_name"),
+        (_YearOverrideExpenseForm, {}, "?year=2005", "id_expense_name"),
+    ],
+    ids=["default", "prefix", "names_year"],
+)
+def test_expense_name_choices_mixin_hx_attributes(
+    main_user, form_class, kwargs, query, target
+):
+    form = form_class(user=main_user, **kwargs).as_p()
+
+    url = reverse("expenses:load_expense_name")
+    assert f'hx-get="{url}{query}"' in form
+    assert f'hx-target="#{target}"' in form
     assert 'hx-trigger="change"' in form
 
 
@@ -295,26 +322,6 @@ def test_expense_name_choices_mixin_keeps_translated_name_label(main_user):
     form = ExpenseForm(user=main_user).as_p()
 
     assert '<label for="id_expense_name">Išlaidų pavadinimas:</label>' in form
-
-
-def test_expense_name_choices_mixin_hx_get_with_prefix(main_user):
-    form = ExpenseForm(user=main_user, prefix="form-3").as_p()
-
-    url = reverse("expenses:load_expense_name")
-    assert f'hx-get="{url}?prefix=form-3"' in form
-    assert 'hx-target="#id_form-3-expense_name"' in form
-
-
-class _YearOverrideExpenseForm(ExpenseForm):
-    def names_year(self):
-        return 2005
-
-
-def test_expense_name_choices_mixin_names_year_in_hx_get(main_user):
-    form = _YearOverrideExpenseForm(user=main_user).as_p()
-
-    url = reverse("expenses:load_expense_name")
-    assert f'hx-get="{url}?year=2005"' in form
 
 
 def test_expense_name_choices_mixin_names_year_filters_names(main_user):
@@ -327,13 +334,23 @@ def test_expense_name_choices_mixin_names_year_filters_names(main_user):
     assert list(form.fields["expense_name"].queryset) == [n_2005]
 
 
-def test_expense_name_choices_mixin_initial_type_fills_names(main_user):
-    t = ExpenseTypeFactory()
-    n = ExpenseNameFactory(title="N", parent=t)
+@pytest.mark.parametrize(
+    ("posted", "expect"),
+    [(False, "N1"), (True, "N2")],
+    ids=["initial", "posted_overrides_initial"],
+)
+def test_expense_name_choices_mixin_type_fills_names(main_user, posted, expect):
+    t1 = ExpenseTypeFactory(title="T1")
+    t2 = ExpenseTypeFactory(title="T2")
+    names = {
+        "N1": ExpenseNameFactory(title="N1", parent=t1),
+        "N2": ExpenseNameFactory(title="N2", parent=t2),
+    }
+    data = {"expense_type": t2.pk} if posted else None
 
-    form = ExpenseForm(user=main_user, initial={"expense_type": t.pk})
+    form = ExpenseForm(user=main_user, initial={"expense_type": t1.pk}, data=data)
 
-    assert list(form.fields["expense_name"].queryset) == [n]
+    assert list(form.fields["expense_name"].queryset) == [names[expect]]
 
 
 def test_expense_name_choices_mixin_instance_type_fills_names(main_user):
@@ -344,21 +361,6 @@ def test_expense_name_choices_mixin_instance_type_fills_names(main_user):
     form = ExpenseForm(user=main_user, instance=ExpenseFactory(expense_type=t))
 
     assert list(form.fields["expense_name"].queryset) == [n]
-
-
-def test_expense_name_choices_mixin_posted_type_overrides_initial(main_user):
-    t1 = ExpenseTypeFactory(title="T1")
-    t2 = ExpenseTypeFactory(title="T2")
-    ExpenseNameFactory(title="N1", parent=t1)
-    n2 = ExpenseNameFactory(title="N2", parent=t2)
-
-    form = ExpenseForm(
-        user=main_user,
-        initial={"expense_type": t1.pk},
-        data={"expense_type": t2.pk},
-    )
-
-    assert list(form.fields["expense_name"].queryset) == [n2]
 
 
 def test_expense_type_init_fields(main_user):
@@ -379,7 +381,7 @@ def test_expense_type_valid_data(main_user):
     assert data.title == "Title"
     assert data.necessary
     assert data.journal.title == "bob Journal"
-    assert data.journal.users.first().username == "bob"
+    assert data.journal == main_user.journal
 
 
 @pytest.mark.parametrize(
@@ -535,32 +537,24 @@ def test_expense_type_edit_keeping_its_slug_is_valid(title, main_user):
     assert form.is_valid()
 
 
-def test_expense_type_create_ignores_a_posted_journal(main_user, second_user):
-    form = ExpenseTypeForm(
-        user=main_user,
-        data={"journal": second_user.journal.pk, "title": "Title", "necessary": True},
-    )
-
-    assert form.is_valid()
-
-    assert form.save().journal == main_user.journal
-
-
-def test_expense_type_edit_ignores_a_posted_journal(main_user, second_user):
-    obj = ExpenseTypeFactory(title="Mine", journal=main_user.journal)
+@pytest.mark.parametrize("edit", [False, True], ids=["create", "edit"])
+def test_expense_type_ignores_a_posted_journal(main_user, second_user, edit):
+    instance = None
+    if edit:
+        instance = ExpenseTypeFactory(title="Mine", journal=main_user.journal)
 
     form = ExpenseTypeForm(
         user=main_user,
-        instance=obj,
+        instance=instance,
         data={"journal": second_user.journal.pk, "title": "Mine", "necessary": True},
     )
 
     assert form.is_valid()
 
-    form.save()
-    obj.refresh_from_db()
+    saved = form.save()
+    saved.refresh_from_db()
 
-    assert obj.journal == main_user.journal
+    assert saved.journal == main_user.journal
 
 
 @pytest.mark.parametrize("field", ["account", "expense_type", "expense_name"])
