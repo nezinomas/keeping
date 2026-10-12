@@ -96,7 +96,7 @@ def rendered_content(request, view_class, **kwargs):
     return view_class.as_view()(request, **kwargs).rendered_content
 
 
-def http_htmx_response(hx_trigger_name="", status_code=204):
+def http_htmx_response(hx_trigger_name=""):
     headers = {}
     if hx_trigger_name:
         # {} and not None: htmx 4 reads the detail off the header and throws on a
@@ -106,7 +106,7 @@ def http_htmx_response(hx_trigger_name="", status_code=204):
         }
 
     return HttpResponse(
-        status=status_code,
+        status=204,
         headers=headers,
     )
 

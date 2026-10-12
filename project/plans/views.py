@@ -15,7 +15,7 @@ from ..core.mixins.views import (
 )
 from . import forms
 from .lib.calc_day_sum import DataDto, PlanCalculateDaySum, PlanCollectData
-from .mixins.views import PlanDeleteMixin, PlanFormMixin, PlanUpdateMixin
+from .mixins.views import PlanDeleteMixin, PlanFormMixin, PlanObjectMixin
 from .services.calculations import Calculations
 from .services.cards import DayCards, ExpenseCards, IncomeCards, SavingCards
 from .services.model_services import (
@@ -68,7 +68,7 @@ class IncomesNew(PlanFormMixin, CreateViewMixin):
     modal_form_title = _("Incomes plans")
 
 
-class IncomesUpdate(PlanFormMixin, PlanUpdateMixin, UpdateViewMixin):
+class IncomesUpdate(PlanFormMixin, PlanObjectMixin, UpdateViewMixin):
     service_class = IncomePlanModelService
     form_class = forms.IncomePlanForm
     hx_trigger_django = "reload"
@@ -107,7 +107,7 @@ class ExpensesNew(PlanFormMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:tab_expenses")
 
 
-class ExpensesUpdate(PlanFormMixin, PlanUpdateMixin, UpdateViewMixin):
+class ExpensesUpdate(PlanFormMixin, PlanObjectMixin, UpdateViewMixin):
     service_class = ExpensePlanModelService
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reload"
@@ -145,7 +145,7 @@ class SavingsNew(PlanFormMixin, CreateViewMixin):
     modal_form_title = _("Savings plans")
 
 
-class SavingsUpdate(PlanFormMixin, PlanUpdateMixin, UpdateViewMixin):
+class SavingsUpdate(PlanFormMixin, PlanObjectMixin, UpdateViewMixin):
     service_class = SavingPlanModelService
     form_class = forms.SavingPlanForm
     hx_trigger_django = "reload"
@@ -190,7 +190,7 @@ class DayNew(PlanFormMixin, CreateViewMixin):
     modal_form_title = _("Day plans")
 
 
-class DayUpdate(PlanFormMixin, PlanUpdateMixin, UpdateViewMixin):
+class DayUpdate(PlanFormMixin, PlanObjectMixin, UpdateViewMixin):
     service_class = DayPlanModelService
     form_class = forms.DayPlanForm
     hx_trigger_django = "reload"
@@ -216,7 +216,7 @@ class NecessaryNew(PlanFormMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:tab_expenses")
 
 
-class NecessaryUpdate(PlanFormMixin, PlanUpdateMixin, UpdateViewMixin):
+class NecessaryUpdate(PlanFormMixin, PlanObjectMixin, UpdateViewMixin):
     service_class = NecessaryPlanModelService
     form_class = forms.NecessaryPlanForm
     hx_trigger_django = "reload"
