@@ -9,9 +9,7 @@ from .dtos import InfoState
 
 
 class MonthTableBuilder:
-    """
-    Merges expenses and savings into a single Polars DataFrame representing the month
-    """
+    """Merges the month's expenses and savings into one DataFrame."""
 
     def __init__(self, expense_df: pl.DataFrame, saving_df: pl.DataFrame):
         self.df = self._build_table(expense_df, saving_df)
@@ -19,9 +17,9 @@ class MonthTableBuilder:
     def _build_table(
         self, expense_df: pl.DataFrame, saving_df: pl.DataFrame
     ) -> pl.DataFrame:
-        # If exists at least two columns (date + at least one expense type)
-        # create total column
-        if expense_df.shape[1] > 1:
+        has_expense_types = expense_df.shape[1] > 1
+
+        if has_expense_types:
             expense_df = expense_df.with_columns(
                 pl.sum_horizontal(pl.exclude("date")).alias("total")
             )
@@ -32,7 +30,7 @@ class MonthTableBuilder:
 
     @cached_property
     def table(self) -> list[dict]:
-        return [] if self.df.is_empty() else self.df.to_dicts()
+        return self.df.to_dicts()
 
     @cached_property
     def total_row(self) -> dict:

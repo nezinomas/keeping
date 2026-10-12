@@ -11,585 +11,197 @@ from ...accounts.tests.factories import AccountFactory
 from ...bookkeeping import balance_sources
 from ...savings.models import SavingBalance, SavingType
 from ...savings.tests.factories import SavingFactory, SavingTypeFactory
-from ...users.tests.factories import UserFactory
 from ..forms import SavingChangeForm, SavingCloseForm, TransactionForm
 
 pytestmark = pytest.mark.django_db
 
 
-def test_transaction_init_fields(main_user):
-    form = TransactionForm(user=main_user).as_p()
+class _Kind(NamedTuple):
+    form: type
+    source: Callable
+    target: Callable
+    fields: tuple
 
-    assert '<input type="text" name="date"' in form
-    assert '<input type="text" name="price"' in form
-    assert '<select name="from_account"' in form
-    assert '<select name="to_account"' in form
+
+_FIELDS = (
+    '<input type="text" name="date"',
+    '<select name="to_account"',
+    '<select name="from_account"',
+    '<input type="text" name="price"',
+)
+_FEE_FIELDS = ('<input type="text" name="fee"', '<input type="checkbox" name="close"')
+
+KINDS = {
+    "transaction": _Kind(TransactionForm, AccountFactory, AccountFactory, _FIELDS),
+    "saving_change": _Kind(
+        SavingChangeForm, SavingTypeFactory, SavingTypeFactory, _FIELDS + _FEE_FIELDS
+    ),
+    "saving_close": _Kind(
+        SavingCloseForm, SavingTypeFactory, AccountFactory, _FIELDS + _FEE_FIELDS
+    ),
+}
+FEE_KINDS = ["saving_change", "saving_close"]
+
+
+def _parents(kind, **kwargs):
+    return kind.source(title="From", **kwargs), kind.target(title="To", **kwargs)
+
+
+def _post(a_from, a_to, **fields):
+    return {
+        "date": "1999-01-01",
+        "from_account": a_from.pk,
+        "to_account": a_to.pk,
+    } | fields
+
+
+@pytest.mark.parametrize("name", KINDS)
+def test_form_fields(main_user, name):
+    form = KINDS[name].form(user=main_user).as_p()
+
+    for field in KINDS[name].fields:
+        assert field in form
 
 
 @time_machine.travel("1974-01-01")
-def test_transaction_year_initial_value(main_user):
-    UserFactory()
-
-    form = TransactionForm(user=main_user).as_p()
+@pytest.mark.parametrize("name", KINDS)
+def test_form_year_initial_value(main_user, name):
+    form = KINDS[name].form(user=main_user).as_p()
 
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_transaction_current_user_accounts(main_user, second_user):
-    AccountFactory(title="A1")  # user bob, current user
-    AccountFactory(title="A2", journal=second_user.journal)  # user X
+@pytest.mark.parametrize("name", ["transaction", "saving_change"])
+def test_form_selected_parent(main_user, second_user, name):
+    kind = KINDS[name]
+    a_from = kind.source(title="From")
+    kind.source(title="Theirs", journal=second_user.journal)
 
-    form = TransactionForm(user=main_user).as_p()
+    form = kind.form(user=main_user, data={"from_account": a_from.pk}).as_p()
 
-    assert "A1" in form
-    assert "A2" not in form
-
-
-def test_transaction_current_user_accounts_selected_parent(main_user, second_user):
-    a1 = AccountFactory(title="A1")  # user bob, current user
-    AccountFactory(title="A2", journal=second_user.journal)  # user X
-
-    form = TransactionForm(user=main_user, data={"from_account": a1.pk}).as_p()
-
-    assert f'<option value="{a1.pk}" selected>A1</option>' in form
-    assert f'<option value="{a1.pk}">A1</option>' not in form
+    assert f'<option value="{a_from.pk}" selected>From</option>' in form
+    assert f'<option value="{a_from.pk}">From</option>' not in form
 
 
-def test_transaction_valid_data(main_user):
-    a_from = AccountFactory()
-    a_to = AccountFactory(title="Account2")
+@pytest.mark.parametrize("posted, cents", [("0.01", 1), ("12,1", 1210)])
+@pytest.mark.parametrize("name", KINDS)
+def test_form_valid_data(main_user, name, posted, cents):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind)
 
-    form = TransactionForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "0.01",
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == date(1999, 1, 1)
-    assert data.price == 1
-    assert data.from_account == a_from
-    assert data.to_account == a_to
-
-
-@time_machine.travel("1999-1-1")
-def test_transaction_price_accepts_a_decimal_comma(main_user):
-    a_from = AccountFactory()
-    a_to = AccountFactory(title="Account2")
-
-    form = TransactionForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "12,1",
-        },
-    )
-
-    assert form.is_valid(), form.errors
-    assert form.save().price == 1210
-
-
-@time_machine.travel("1999-2-2")
-@pytest.mark.parametrize("year", [1998, 2001])
-def test_transaction_invalid_date(year, main_user):
-    a_from = AccountFactory()
-    a_to = AccountFactory(title="Account2")
-
-    form = TransactionForm(
-        user=main_user,
-        data={
-            "date": f"{year}-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "1.0",
-        },
-    )
-
-    assert not form.is_valid()
-    assert "date" in form.errors
-    assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
-
-
-def test_transaction_blank_data(main_user):
-    form = TransactionForm(user=main_user, data={})
-
-    assert not form.is_valid()
-
-    assert "date" in form.errors
-    assert "from_account" in form.errors
-    assert "to_account" in form.errors
-    assert "price" in form.errors
-
-
-def test_transaction_price_null(main_user):
-    a_from = AccountFactory()
-    a_to = AccountFactory(title="Account2")
-
-    form = TransactionForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "0",
-        },
-    )
-
-    assert not form.is_valid()
-
-    assert "price" in form.errors
-
-
-def test_saving_change_fields(main_user):
-    form = SavingChangeForm(user=main_user).as_p()
-
-    assert '<input type="text" name="date"' in form
-    assert '<select name="to_account"' in form
-    assert '<select name="from_account"' in form
-    assert '<input type="text" name="price"' in form
-    assert '<input type="text" name="fee"' in form
-    assert '<input type="checkbox" name="close"' in form
-
-
-@time_machine.travel("1974-01-01")
-def test_saving_change_year_initial_value(main_user):
-    UserFactory()
-
-    form = SavingChangeForm(user=main_user).as_p()
-
-    assert '<input type="text" name="date" value="1999-01-01"' in form
-
-
-def test_saving_change_current_user(main_user, second_user):
-    SavingTypeFactory(title="S1")  # user bob, current user
-    SavingTypeFactory(title="S2", journal=second_user.journal)  # user X
-
-    form = SavingChangeForm(user=main_user).as_p()
-
-    assert "S1" in form
-    assert "S2" not in form
-
-
-def test_saving_change_current_user_accounts_selected_parent(main_user, second_user):
-    s1 = SavingTypeFactory(title="S1")  # user bob, current user
-    SavingTypeFactory(title="S2", journal=second_user.journal)  # user X
-
-    form = SavingChangeForm(user=main_user, data={"from_account": s1.pk}).as_p()
-
-    assert f'<option value="{s1.pk}" selected>S1</option>' in form
-    assert f'<option value="{s1.pk}">S1</option>' not in form
-
-
-def test_saving_change_valid_data(main_user):
-    a_from = SavingTypeFactory()
-    a_to = SavingTypeFactory(title="Savings2")
-
-    form = SavingChangeForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "0.01",
-            "fee": "0.01",
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == date(1999, 1, 1)
-    assert data.price == 1
-    assert data.fee == 1
-    assert data.from_account == a_from
-    assert data.to_account == a_to
-
-
-def test_saving_change_price_and_fee_accept_a_decimal_comma(main_user):
-    a_from = SavingTypeFactory()
-    a_to = SavingTypeFactory(title="Savings2")
-
-    form = SavingChangeForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "12,1",
-            "fee": "0,55",
-        },
-    )
+    form = kind.form(user=main_user, data=_post(a_from, a_to, price=posted))
 
     assert form.is_valid(), form.errors
 
     data = form.save()
 
-    assert data.price == 1210
-    assert data.fee == 55
-
-
-def test_saving_change_valid_data_with_no_fee(main_user):
-    a_from = SavingTypeFactory()
-    a_to = SavingTypeFactory(title="Savings2")
-
-    form = SavingChangeForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "0.01",
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
     assert data.date == date(1999, 1, 1)
-    assert data.price == 1
-    assert not data.fee
+    assert data.price == cents
     assert data.from_account == a_from
     assert data.to_account == a_to
-
-
-@time_machine.travel("1999-2-2")
-@pytest.mark.parametrize("year", [1998, 2001])
-def test_saving_change_invalid_date(year, main_user):
-    a_from = SavingTypeFactory()
-    a_to = SavingTypeFactory(title="Savings2")
-
-    form = SavingChangeForm(
-        user=main_user,
-        data={
-            "date": f"{year}-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "1.0",
-            "fee": "0.25",
-        },
-    )
-
-    assert not form.is_valid()
-    assert "date" in form.errors
-    assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
-
-
-def test_saving_change_blank_data(main_user):
-    form = SavingChangeForm(user=main_user, data={})
-
-    assert not form.is_valid()
-
-    assert "date" in form.errors
-    assert "from_account" in form.errors
-    assert "to_account" in form.errors
-    assert "price" in form.errors
-
-
-def test_saving_change_price_null(main_user):
-    a_from = SavingTypeFactory()
-    a_to = SavingTypeFactory(title="Savings2")
-
-    form = SavingChangeForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "0",
-        },
-    )
-
-    assert not form.is_valid()
-
-    assert "price" in form.errors
-
-
-def test_saving_change_form_type_closed_in_past(main_user):
-    main_user.year = 3000
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingChangeForm(user=main_user, data={})
-
-    assert "S1" in str(form["from_account"])
-    assert "S2" not in str(form["from_account"])
-
-    assert "S1" not in str(form["to_account"])
-    assert "S2" not in str(form["to_account"])
 
 
 @pytest.mark.parametrize(
-    "year", [pytest.param(1000, id="future"), pytest.param(2000, id="current_year")]
+    "fields, cents",
+    [
+        pytest.param({"fee": "0.01"}, 1, id="fee"),
+        pytest.param({"fee": "0,55"}, 55, id="decimal_comma"),
+        pytest.param({}, 0, id="no_fee"),
+    ],
 )
-def test_saving_change_form_type_closed_in_future_or_current_year(main_user, year):
+@pytest.mark.parametrize("name", FEE_KINDS)
+def test_form_fee_is_stored_in_cents(main_user, name, fields, cents):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind)
+
+    form = kind.form(user=main_user, data=_post(a_from, a_to, price="0.01", **fields))
+
+    assert form.is_valid(), form.errors
+    assert form.save().fee == cents
+
+
+@time_machine.travel("1999-2-2")
+@pytest.mark.parametrize("year", [1998, 2001])
+@pytest.mark.parametrize("name", KINDS)
+def test_form_invalid_date(main_user, name, year):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind)
+
+    form = kind.form(
+        user=main_user,
+        data=_post(a_from, a_to, date=f"{year}-01-01", price="1.0"),
+    )
+
+    assert not form.is_valid()
+    assert "date" in form.errors
+    assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
+
+
+@pytest.mark.parametrize("name", KINDS)
+def test_form_blank_data(main_user, name):
+    form = KINDS[name].form(user=main_user, data={})
+
+    assert not form.is_valid()
+
+    assert "date" in form.errors
+    assert "from_account" in form.errors
+    assert "to_account" in form.errors
+    assert "price" in form.errors
+
+
+@pytest.mark.parametrize("name", KINDS)
+def test_form_price_null(main_user, name):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind)
+
+    form = kind.form(user=main_user, data=_post(a_from, a_to, price="0"))
+
+    assert not form.is_valid()
+
+    assert "price" in form.errors
+
+
+@pytest.mark.parametrize(
+    "year, closed_listed",
+    [
+        pytest.param(3000, False, id="closed_in_past"),
+        pytest.param(1000, True, id="closed_in_future"),
+        pytest.param(2000, True, id="closed_in_current_year"),
+    ],
+)
+@pytest.mark.parametrize("name", FEE_KINDS)
+def test_form_lists_a_fund_closed_only_up_to_the_year(
+    main_user, name, year, closed_listed
+):
     main_user.year = year
 
     SavingTypeFactory(title="S1")
     SavingTypeFactory(title="S2", closed=2000)
 
-    form = SavingChangeForm(user=main_user, data={})
+    form = KINDS[name].form(user=main_user, data={})
 
     assert "S1" in str(form["from_account"])
-    assert "S2" in str(form["from_account"])
+    assert ("S2" in str(form["from_account"])) is closed_listed
 
     assert "S1" not in str(form["to_account"])
     assert "S2" not in str(form["to_account"])
 
 
 @time_machine.travel("1999-1-1")
-def test_saving_change_save_and_close_from_account(main_user):
-    a_from = SavingTypeFactory(title="From")
-    a_to = SavingTypeFactory(title="To")
+@pytest.mark.parametrize("name", FEE_KINDS)
+def test_form_save_and_close_from_account(main_user, name):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind)
 
-    form = SavingChangeForm(
+    form = kind.form(
         user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "0.01",
-            "fee": "0.01",
-            "close": True,
-        },
+        data=_post(a_from, a_to, price="0.01", fee="0.01", close=True),
     )
     assert form.is_valid()
 
     form.save()
 
-    actual = SavingType.objects.get(title=a_from.title)
-
-    assert actual.closed == 1999
-
-
-def test_saving_close_fields(main_user):
-    form = SavingCloseForm(user=main_user).as_p()
-
-    assert '<input type="text" name="date"' in form
-    assert '<select name="to_account"' in form
-    assert '<select name="from_account"' in form
-    assert '<input type="text" name="price"' in form
-    assert '<input type="text" name="fee"' in form
-    assert '<input type="checkbox" name="close"' in form
-
-
-@time_machine.travel("1974-01-01")
-def test_saving_close_year_initial_value(main_user):
-    UserFactory()
-
-    form = SavingCloseForm(user=main_user).as_p()
-
-    assert '<input type="text" name="date" value="1999-01-01"' in form
-
-
-def test_saving_close_current_user_saving_types(main_user, second_user):
-    SavingTypeFactory(title="S1")  # user bob, current user
-    SavingTypeFactory(title="S2", journal=second_user.journal)  # user X
-
-    form = SavingCloseForm(user=main_user).as_p()
-
-    assert "S1" in form
-    assert "S2" not in form
-
-
-def test_saving_close_current_user_accounts(main_user, second_user):
-    AccountFactory(title="A1")  # user bob, current user
-    AccountFactory(title="A2", journal=second_user.journal)  # user X
-
-    form = SavingCloseForm(user=main_user).as_p()
-
-    assert "A1" in form
-    assert "A2" not in form
-
-
-def test_saving_close_valid_data(main_user):
-    a_from = SavingTypeFactory()
-    a_to = AccountFactory(title="Account2")
-
-    form = SavingCloseForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "0.01",
-            "fee": "0.01",
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == date(1999, 1, 1)
-    assert data.price == 1
-    assert data.fee == 1
-    assert data.from_account == a_from
-    assert data.to_account == a_to
-
-
-def test_saving_close_price_and_fee_accept_a_decimal_comma(main_user):
-    a_from = SavingTypeFactory()
-    a_to = AccountFactory(title="Account2")
-
-    form = SavingCloseForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "12,1",
-            "fee": "0,55",
-        },
-    )
-
-    assert form.is_valid(), form.errors
-
-    data = form.save()
-
-    assert data.price == 1210
-    assert data.fee == 55
-
-
-def test_saving_close_valid_data_no_fee(main_user):
-    a_from = SavingTypeFactory()
-    a_to = AccountFactory(title="Account2")
-
-    form = SavingCloseForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "0.01",
-        },
-    )
-
-    assert form.is_valid()
-
-    data = form.save()
-
-    assert data.date == date(1999, 1, 1)
-    assert data.price == 1
-    assert not data.fee
-    assert data.from_account == a_from
-    assert data.to_account == a_to
-
-
-@time_machine.travel("1999-2-2")
-@pytest.mark.parametrize("year", [1998, 2001])
-def test_saving_close_invalid_date(year, main_user):
-    a_from = SavingTypeFactory()
-    a_to = AccountFactory(title="Account2")
-
-    form = SavingCloseForm(
-        user=main_user,
-        data={
-            "date": f"{year}-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "1.0",
-            "fee": "0.25",
-        },
-    )
-
-    assert not form.is_valid()
-    assert "date" in form.errors
-    assert "Metai turi būti tarp 1999 ir 2000" in form.errors["date"]
-
-
-def test_saving_close_blank_data(main_user):
-    form = SavingCloseForm(user=main_user, data={})
-
-    assert not form.is_valid()
-
-    assert "date" in form.errors
-    assert "from_account" in form.errors
-    assert "to_account" in form.errors
-    assert "price" in form.errors
-
-
-def test_saving_close_price_null(main_user):
-    a_from = SavingTypeFactory()
-    a_to = AccountFactory(title="Account2")
-
-    form = SavingCloseForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "0",
-        },
-    )
-
-    assert not form.is_valid()
-
-    assert "price" in form.errors
-
-
-def test_saving_close_form_type_closed_in_past(main_user):
-    main_user.year = 3000
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingCloseForm(user=main_user, data={})
-
-    assert "S1" in str(form["from_account"])
-    assert "S2" not in str(form["from_account"])
-
-
-@pytest.mark.parametrize(
-    "year", [pytest.param(1000, id="future"), pytest.param(2000, id="current_year")]
-)
-def test_saving_close_form_type_closed_in_future_or_current_year(main_user, year):
-    main_user.year = year
-
-    SavingTypeFactory(title="S1")
-    SavingTypeFactory(title="S2", closed=2000)
-
-    form = SavingCloseForm(user=main_user, data={})
-
-    assert "S1" in str(form["from_account"])
-    assert "S2" in str(form["from_account"])
-
-
-@time_machine.travel("1999-1-1")
-def test_saving_close_save_and_close_saving_account(main_user):
-    a_from = SavingTypeFactory()
-    a_to = AccountFactory(title="Account2")
-
-    form = SavingCloseForm(
-        user=main_user,
-        data={
-            "date": "1999-01-01",
-            "from_account": a_from.pk,
-            "to_account": a_to.pk,
-            "price": "0.01",
-            "fee": "0.01",
-            "close": True,
-        },
-    )
-
-    assert form.is_valid()
-
-    form.save()
-
-    actual = SavingType.objects.get(title=a_from.title)
-
-    assert actual.closed == 1999
+    assert SavingType.objects.get(title=a_from.title).closed == 1999
 
 
 # sells and switches save the fund too
@@ -624,15 +236,25 @@ class _Move(NamedTuple):
 MOVES = {
     "sell": _Move(
         SavingCloseForm,
-        lambda bank, other: bank,
+        lambda: AccountFactory(title="Bank"),
         lambda bank: AccountBalance.objects.get(account=bank, year=1999),
     ),
     "switch": _Move(
         SavingChangeForm,
-        lambda bank, other: other,
+        lambda: SavingTypeFactory(title="Other"),
         lambda other: SavingBalance.objects.get(saving_type=other, year=1999),
     ),
 }
+
+
+@pytest.fixture(name="fund")
+def fixture_fund():
+    return SavingTypeFactory(title="Fund")
+
+
+@pytest.fixture(name="receiver")
+def fixture_receiver(move):
+    return MOVES[move].receiver()
 
 
 @pytest.mark.parametrize(
@@ -651,7 +273,7 @@ def test_sell_and_switch_forms_leave_balances_a_re_sync_agrees_with(
     main_user, move, fee_source, debit, close, closed
 ):
     bank, fund = _purchase(fee_source)
-    receiver = MOVES[move].receiver(bank, SavingTypeFactory(title="Other"))
+    receiver = MOVES[move].receiver()
     data = {
         "date": "1999-01-01",
         "from_account": fund.pk,
@@ -691,49 +313,6 @@ def _move_data(fund, receiver, day, close):
     }
 
 
-def _receiver(move, other):
-    return other if move == "switch" else AccountFactory(title="Bank")
-
-
-@time_machine.travel("1999-1-1")
-@pytest.mark.parametrize("move", MOVES)
-def test_form_unticked_close_does_not_write_an_open_fund(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
-    form = MOVES[move].form(
-        user=main_user, data=_move_data(fund, receiver, "1999-01-01", False)
-    )
-    assert form.is_valid()
-
-    with CaptureQueriesContext(connection) as queries:
-        form.save()
-
-    assert _fund_updates(queries.captured_queries) == []
-
-
-@time_machine.travel("1999-1-1")
-@pytest.mark.parametrize("move", MOVES)
-def test_form_edit_with_close_ticked_moves_the_close_year(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
-    form = MOVES[move].form(
-        user=main_user, data=_move_data(fund, receiver, "1999-01-01", True)
-    )
-    assert form.is_valid()
-    row = form.save()
-    assert SavingType.objects.get(pk=fund.pk).closed == 1999
-
-    edit = MOVES[move].form(
-        user=main_user,
-        instance=row,
-        data=_move_data(fund, receiver, "2000-01-01", True),
-    )
-    assert edit.is_valid()
-    edit.save()
-
-    assert SavingType.objects.get(pk=fund.pk).closed == 2000
-
-
 def _saved_move(main_user, move, fund, receiver, day, close, instance=None):
     form = MOVES[move].form(
         user=main_user,
@@ -746,9 +325,33 @@ def _saved_move(main_user, move, fund, receiver, day, close, instance=None):
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_edit_of_an_earlier_sell_keeps_the_close_year(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+def test_form_unticked_close_does_not_write_an_open_fund(
+    main_user, move, fund, receiver
+):
+    with CaptureQueriesContext(connection) as queries:
+        _saved_move(main_user, move, fund, receiver, "1999-01-01", False)
+
+    assert _fund_updates(queries.captured_queries) == []
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_with_close_ticked_moves_the_close_year(
+    main_user, move, fund, receiver
+):
+    row = _saved_move(main_user, move, fund, receiver, "1999-01-01", True)
+    assert SavingType.objects.get(pk=fund.pk).closed == 1999
+
+    _saved_move(main_user, move, fund, receiver, "2000-01-01", True, row)
+
+    assert SavingType.objects.get(pk=fund.pk).closed == 2000
+
+
+@time_machine.travel("1999-1-1")
+@pytest.mark.parametrize("move", MOVES)
+def test_form_edit_of_an_earlier_sell_keeps_the_close_year(
+    main_user, move, fund, receiver
+):
     earlier = _saved_move(main_user, move, fund, receiver, "1999-01-01", False)
     _saved_move(main_user, move, fund, receiver, "2000-01-01", True)
 
@@ -759,9 +362,7 @@ def test_form_edit_of_an_earlier_sell_keeps_the_close_year(main_user, move):
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_new_sell_before_the_close_year_keeps_it(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+def test_form_new_sell_before_the_close_year_keeps_it(main_user, move, fund, receiver):
     _saved_move(main_user, move, fund, receiver, "2000-01-01", True)
 
     _saved_move(main_user, move, fund, receiver, "1999-01-01", True)
@@ -771,22 +372,12 @@ def test_form_new_sell_before_the_close_year_keeps_it(main_user, move):
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_edit_with_close_unticked_reopens_the_fund(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
-    form = MOVES[move].form(
-        user=main_user, data=_move_data(fund, receiver, "1999-01-01", True)
-    )
-    assert form.is_valid()
-    row = form.save()
+def test_form_edit_with_close_unticked_reopens_the_fund(
+    main_user, move, fund, receiver
+):
+    row = _saved_move(main_user, move, fund, receiver, "1999-01-01", True)
 
-    edit = MOVES[move].form(
-        user=main_user,
-        instance=row,
-        data=_move_data(fund, receiver, "1999-01-01", False),
-    )
-    assert edit.is_valid()
-    edit.save()
+    _saved_move(main_user, move, fund, receiver, "1999-01-01", False, row)
 
     assert SavingType.objects.get(pk=fund.pk).closed is None
 
@@ -805,10 +396,8 @@ def test_form_edit_with_close_unticked_reopens_the_fund(main_user, move):
     ],
 )
 def test_form_earlier_move_edited_keeps_the_fund_closed_in_its_last_year(
-    main_user, move, earlier_day, edited_day, edited_close
+    main_user, move, fund, receiver, earlier_day, edited_day, edited_close
 ):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
     earlier = _saved_move(main_user, move, fund, receiver, earlier_day, False)
     _saved_move(main_user, move, fund, receiver, "2000-12-01", True)
 
@@ -820,9 +409,9 @@ def test_form_earlier_move_edited_keeps_the_fund_closed_in_its_last_year(
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_new_unticked_move_before_the_last_keeps_the_fund_closed(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+def test_form_new_unticked_move_before_the_last_keeps_the_fund_closed(
+    main_user, move, fund, receiver
+):
     _saved_move(main_user, move, fund, receiver, "1999-12-01", True)
 
     _saved_move(main_user, move, fund, receiver, "1999-06-01", False)
@@ -833,9 +422,9 @@ def test_form_new_unticked_move_before_the_last_keeps_the_fund_closed(main_user,
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_new_unticked_move_after_the_last_reopens_the_fund(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+def test_form_new_unticked_move_after_the_last_reopens_the_fund(
+    main_user, move, fund, receiver
+):
     _saved_move(main_user, move, fund, receiver, "1999-06-01", True)
 
     _saved_move(main_user, move, fund, receiver, "1999-12-01", False)
@@ -846,10 +435,11 @@ def test_form_new_unticked_move_after_the_last_reopens_the_fund(main_user, move)
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_closing_move_moved_to_another_fund_reopens_the_first(main_user, move):
+def test_form_closing_move_moved_to_another_fund_reopens_the_first(
+    main_user, move, receiver
+):
     first = SavingTypeFactory(title="First")
     second = SavingTypeFactory(title="Second")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
     row = _saved_move(main_user, move, first, receiver, "1999-12-01", True)
 
     _saved_move(main_user, move, second, receiver, "1999-12-01", True, row)
@@ -862,10 +452,11 @@ def test_form_closing_move_moved_to_another_fund_reopens_the_first(main_user, mo
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_move_moved_away_leaves_the_first_closed_at_its_last_move(main_user, move):
+def test_form_move_moved_away_leaves_the_first_closed_at_its_last_move(
+    main_user, move, receiver
+):
     first = SavingTypeFactory(title="First")
     second = SavingTypeFactory(title="Second")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
     _saved_move(main_user, move, first, receiver, "1999-06-01", False)
     row = _saved_move(main_user, move, first, receiver, "2000-12-01", True)
 
@@ -879,9 +470,9 @@ def test_form_move_moved_away_leaves_the_first_closed_at_its_last_move(main_user
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_edit_of_an_earlier_move_does_not_write_a_closed_fund(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+def test_form_edit_of_an_earlier_move_does_not_write_a_closed_fund(
+    main_user, move, fund, receiver
+):
     earlier = _saved_move(main_user, move, fund, receiver, "1999-03-01", False)
     _saved_move(main_user, move, fund, receiver, "1999-12-01", True)
 
@@ -895,10 +486,7 @@ def test_form_edit_of_an_earlier_move_does_not_write_a_closed_fund(main_user, mo
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_closing_move_writes_the_fund_once(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
-
+def test_form_closing_move_writes_the_fund_once(main_user, move, fund, receiver):
     with CaptureQueriesContext(connection) as queries:
         _saved_move(main_user, move, fund, receiver, "1999-12-01", True)
 
@@ -908,10 +496,8 @@ def test_form_closing_move_writes_the_fund_once(main_user, move):
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
 def test_form_closing_move_edited_earlier_and_unticked_reopens_the_fund(
-    main_user, move
+    main_user, move, fund, receiver
 ):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
     _saved_move(main_user, move, fund, receiver, "2000-09-01", False)
     closing = _saved_move(main_user, move, fund, receiver, "2000-12-01", True)
 
@@ -923,9 +509,9 @@ def test_form_closing_move_edited_earlier_and_unticked_reopens_the_fund(
 
 @time_machine.travel("1999-1-1")
 @pytest.mark.parametrize("move", MOVES)
-def test_form_unticked_earlier_move_leaves_an_open_fund_open(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+def test_form_unticked_earlier_move_leaves_an_open_fund_open(
+    main_user, move, fund, receiver
+):
     _saved_move(main_user, move, fund, receiver, "2000-12-01", False)
 
     _saved_move(main_user, move, fund, receiver, "2000-06-01", False)
@@ -935,9 +521,7 @@ def test_form_unticked_earlier_move_leaves_an_open_fund_open(main_user, move):
 
 
 # a stored fee of 0 is read as nothing entered
-def _fee_less_move(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
+def _fee_less_move(main_user, move, fund, receiver):
     data = _move_data(fund, receiver, "1999-01-01", False) | {"fee": ""}
     form = MOVES[move].form(user=main_user, data=data)
     assert form.is_valid()
@@ -945,8 +529,10 @@ def _fee_less_move(main_user, move):
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_edit_shows_a_stored_zero_fee_as_an_empty_field(main_user, move):
-    row, _data = _fee_less_move(main_user, move)
+def test_form_edit_shows_a_stored_zero_fee_as_an_empty_field(
+    main_user, move, fund, receiver
+):
+    row, _data = _fee_less_move(main_user, move, fund, receiver)
 
     form = MOVES[move].form(user=main_user, instance=row)
 
@@ -954,8 +540,10 @@ def test_form_edit_shows_a_stored_zero_fee_as_an_empty_field(main_user, move):
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_edit_posts_its_own_empty_fee_back_and_saves_zero(main_user, move):
-    row, data = _fee_less_move(main_user, move)
+def test_form_edit_posts_its_own_empty_fee_back_and_saves_zero(
+    main_user, move, fund, receiver
+):
+    row, data = _fee_less_move(main_user, move, fund, receiver)
     shown = MOVES[move].form(user=main_user, instance=row)
 
     edit = MOVES[move].form(
@@ -967,14 +555,8 @@ def test_form_edit_posts_its_own_empty_fee_back_and_saves_zero(main_user, move):
 
 
 @pytest.mark.parametrize("move", MOVES)
-def test_form_edit_shows_a_stored_fee_as_it_is(main_user, move):
-    fund = SavingTypeFactory(title="Fund")
-    receiver = _receiver(move, SavingTypeFactory(title="Other"))
-    form = MOVES[move].form(
-        user=main_user, data=_move_data(fund, receiver, "1999-01-01", False)
-    )
-    assert form.is_valid()
-    row = form.save()
+def test_form_edit_shows_a_stored_fee_as_it_is(main_user, move, fund, receiver):
+    row = _saved_move(main_user, move, fund, receiver, "1999-01-01", False)
 
     edit = MOVES[move].form(user=main_user, instance=row)
 
@@ -983,56 +565,15 @@ def test_form_edit_shows_a_stored_fee_as_it_is(main_user, move):
 
 # A posted id of another journal is rejected
 @pytest.mark.parametrize("field", ["from_account", "to_account"])
-def test_transaction_rejects_an_account_of_another_journal(
-    main_user, second_user, field
-):
-    data = {
-        "date": "1999-01-01",
-        "from_account": AccountFactory(title="Mine1", journal=main_user.journal).pk,
-        "to_account": AccountFactory(title="Mine2", journal=main_user.journal).pk,
-        "price": "0.01",
-    }
-    data[field] = AccountFactory(title="Theirs", journal=second_user.journal).pk
+@pytest.mark.parametrize("name", KINDS)
+def test_form_rejects_a_parent_of_another_journal(main_user, second_user, name, field):
+    kind = KINDS[name]
+    a_from, a_to = _parents(kind, journal=main_user.journal)
+    data = _post(a_from, a_to, price="0.01")
+    foreign = {"from_account": kind.source, "to_account": kind.target}[field]
+    data[field] = foreign(title="Theirs", journal=second_user.journal).pk
 
-    form = TransactionForm(user=main_user, data=data)
-
-    assert not form.is_valid()
-    assert field in form.errors
-
-
-@pytest.mark.parametrize("field", ["from_account", "to_account"])
-def test_saving_change_rejects_a_fund_of_another_journal(main_user, second_user, field):
-    data = {
-        "date": "1999-01-01",
-        "from_account": SavingTypeFactory(title="Mine1", journal=main_user.journal).pk,
-        "to_account": SavingTypeFactory(title="Mine2", journal=main_user.journal).pk,
-        "price": "0.01",
-    }
-    data[field] = SavingTypeFactory(title="Theirs", journal=second_user.journal).pk
-
-    form = SavingChangeForm(user=main_user, data=data)
-
-    assert not form.is_valid()
-    assert field in form.errors
-
-
-@pytest.mark.parametrize("field", ["from_account", "to_account"])
-def test_saving_close_rejects_a_fund_or_account_of_another_journal(
-    main_user, second_user, field
-):
-    data = {
-        "date": "1999-01-01",
-        "from_account": SavingTypeFactory(title="Mine", journal=main_user.journal).pk,
-        "to_account": AccountFactory(title="Mine", journal=main_user.journal).pk,
-        "price": "0.01",
-    }
-    foreign = {
-        "from_account": SavingTypeFactory(title="Theirs", journal=second_user.journal),
-        "to_account": AccountFactory(title="Theirs", journal=second_user.journal),
-    }
-    data[field] = foreign[field].pk
-
-    form = SavingCloseForm(user=main_user, data=data)
+    form = kind.form(user=main_user, data=data)
 
     assert not form.is_valid()
     assert field in form.errors

@@ -5,8 +5,6 @@ from functools import cached_property
 
 import polars as pl
 
-from .translation import month_names, weekday_names
-
 
 @dataclass(frozen=True)
 class GapSpan:
@@ -28,9 +26,6 @@ class PastRecord:
     def days_to(self, today: date) -> int:
         return (today - self.date).days
 
-    def lead_span(self, first: date, days: int) -> list[GapSpan]:
-        return [GapSpan(self.date, first, days)]
-
 
 @dataclass(frozen=True)
 class NoPastRecord:
@@ -44,9 +39,6 @@ class NoPastRecord:
     def days_to(self, today: date) -> int:
         return 0
 
-    def lead_span(self, first: date, days: int) -> list[GapSpan]:
-        return []
-
 
 class Stats:
     def __init__(
@@ -56,14 +48,6 @@ class Stats:
     ):
         self._earlier = earlier
         self._data = data
-
-    @staticmethod
-    def months() -> list[str]:
-        return list(month_names().values())
-
-    @staticmethod
-    def weekdays() -> list[str]:
-        return list(weekday_names().values())
 
     def weekdays_stats(self) -> list[dict[str, float]]:
         if self._full_year_df.is_empty():
@@ -91,18 +75,6 @@ class Stats:
             .to_list()
         )
 
-    def year_total(self) -> float:
-        if self._df.is_empty():
-            return 0.0
-
-        return self._totals_by_year_df().to_dicts()[0].get("qty", 0.0)
-
-    def totals_by_year(self) -> dict[int, float]:
-        if self._df.is_empty():
-            return {}
-
-        return {row["year"]: row["qty"] for row in self._totals_by_year_df().to_dicts()}
-
     def gap_by_date(self) -> dict[date, int]:
         """Days since the record before, per record — where the first record of
         all measures from January 1st, having nothing to reach back to."""
@@ -114,29 +86,16 @@ class Stats:
         return {row["date"]: int(row["duration"]) for row in rows.to_dicts()}
 
     def gap_spans(self) -> list[GapSpan]:
-        """Every gap with a record at each end, oldest first — where
-        ``gap_by_date()`` measures the first record from January 1st when
-        nothing precedes it."""
+        """Every gap with a record at each end, oldest first."""
         rows = self._calculate_gaps()
 
         if rows.is_empty():
             return []
 
-        spans = [
+        return [
             GapSpan(rows[i - 1, "date"], rows[i, "date"], rows[i, "duration"])
             for i in range(1, rows.height)
         ]
-
-        return self._earlier.lead_span(rows[0, "date"], rows[0, "duration"]) + spans
-
-    def _totals_by_year_df(self) -> pl.DataFrame:
-        return (
-            self._df.lazy()
-            .group_by(year=pl.col("date").dt.year())
-            .agg(qty=pl.col("qty").sum())
-            .sort("year")
-            .collect()
-        )
 
     @cached_property
     def _df(self) -> pl.DataFrame:
