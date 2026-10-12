@@ -56,10 +56,10 @@ class DrinkModelService(SumMixin, DatedModelService):
             self.objects.values_list("date__year", flat=True).order_by().distinct()
         )
 
-    def latest_date(self, year: int) -> date | None:
-        """Date of the last record in `year`, or None when the year is empty."""
+    def latest_date(self, through: date) -> date | None:
+        """Date of the last record on or before `through`, else None."""
         with contextlib.suppress(models.Drink.DoesNotExist):
-            return self.year(year).latest().date
+            return self.objects.filter(date__lte=through).latest().date
 
         return None
 
