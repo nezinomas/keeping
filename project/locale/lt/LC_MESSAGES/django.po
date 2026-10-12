@@ -2735,3 +2735,16 @@ msgstr "iš investicijos"
 
 msgid "from the account"
 msgstr "iš sąskaitos"
+
+#, python-format
+msgid "Fund was closed in %(year)s."
+msgstr "Fondas uždarytas %(year)s."
+
+msgid "The same funds are selected."
+msgstr "Pasirinkti vienodi fondai."
+
+msgid "The same pensions are selected."
+msgstr "Pasirinktos vienodos pensijos."
+
+msgid "The name must be unique."
+msgstr "Vardas turi būti unikalus."
