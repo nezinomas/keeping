@@ -17,7 +17,7 @@ def test_journal_str():
     assert str(actual) == "bob Journal"
 
 
-@pytest.mark.disable_get_user_patch
+@pytest.mark.no_main_user
 def test_journal_has_many_users():
     jr = JournalFactory(title="T")
 

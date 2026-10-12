@@ -30,7 +30,7 @@ def test_successful_login(client):
     assert response.context["user"].journal.title == "bob Journal"
 
 
-@pytest.mark.disable_get_user_patch
+@pytest.mark.no_main_user
 @time_machine.travel("2000-12-15")
 def test_user_year_month_values_fill_on_login_if_empty(client):
     UserFactory(year=None, month=None)
@@ -136,7 +136,7 @@ SIGNUP = {
 
 
 @override_settings(ENV={"CAN_SIGN_UP": True})
-@pytest.mark.disable_get_user_patch
+@pytest.mark.no_main_user
 def test_signup_user_authentication(client):
     client.post(reverse("users:signup"), SIGNUP)
 
@@ -148,7 +148,7 @@ def test_signup_user_authentication(client):
 
 
 @override_settings(ENV={"CAN_SIGN_UP": True})
-@pytest.mark.disable_get_user_patch
+@pytest.mark.no_main_user
 def test_signup_with_no_data_creates_no_user(client):
     response = client.post(reverse("users:signup"), {})
 

@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock
+
 import pytest
-from mock import MagicMock
 
 from ....accounts.tests.factories import AccountBalanceFactory, AccountFactory
 from ....core.lib.translation import month_names
