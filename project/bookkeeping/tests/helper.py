@@ -22,6 +22,13 @@ def worth_form(form_class, user, **kwargs):
     return form_class(user=user, funds=funds[form_class](user).items(), **kwargs)
 
 
+def post_data(rows):
+    data = {"form-TOTAL_FORMS": len(rows), "form-INITIAL_FORMS": 0}
+    for number, row in enumerate(rows):
+        data |= {f"form-{number}-{name}": value for name, value in row.items()}
+    return data
+
+
 def fund_with_a_sell(title, bought, sold, *, fee=0, kind="funds", closed=None):
     """Bought in 1999, sold in part or whole that June, worth 0 at the year end."""
     fund = SavingTypeFactory(title=title, type=kind, closed=closed)

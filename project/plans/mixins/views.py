@@ -3,8 +3,8 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 
-class CssClassMixin:
-    modal_body_css_class = "plans-form"
+class PlanFormMixin:
+    template_name = "plans/plan_form.html"
 
 
 class PlanQuerySetMixin:
@@ -23,9 +23,6 @@ class PlanUpdateMixin(PlanQuerySetMixin):
         raise Http404(_("No plans found."))
 
     def url(self):
-        if not self.object:
-            return None
-
         return reverse_lazy(f"plans:{self.url_name}", kwargs=self.kwargs)
 
 
@@ -42,7 +39,4 @@ class PlanDeleteMixin(PlanQuerySetMixin):
         return response
 
     def url(self):
-        if not self.object:
-            return None
-
         return reverse_lazy(f"plans:{self.url_name}", kwargs=self.kwargs)
