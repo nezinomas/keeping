@@ -49,7 +49,7 @@
 {% elif scope %}
     {% translate "No records" %}
 {% else %}
-    {% blocktranslate with year=request.user.year|title %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
+    {% blocktranslate with year=request.user.year %}No records in <b>{{ year }}</b>.{% endblocktranslate %}
 {% endif %}
 </div>
 

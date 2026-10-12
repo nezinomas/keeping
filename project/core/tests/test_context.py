@@ -25,7 +25,7 @@ def test_years_run_from_the_first_record_to_next_year(
     assert years(fake_request) == {"years": expect}
 
 
-def test_years_of_an_anonymous_user_are_none(rf):
+def test_years_of_an_anonymous_user_are_empty(rf):
     request = rf.get("/")
     request.user = AnonymousUser()
 
