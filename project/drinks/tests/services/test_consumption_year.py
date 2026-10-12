@@ -101,6 +101,7 @@ def test_latest(year, today, expect, main_user, _records):
     [
         pytest.param(1999, PastRecord(date(1998, 12, 20)), id="one_before"),
         pytest.param(1998, NoPastRecord(), id="nothing_earlier"),
+        pytest.param(2000, PastRecord(date(1999, 2, 10)), id="the_last_of_several"),
     ],
 )
 def test_earlier(year, expect, main_user, _records):
