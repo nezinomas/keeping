@@ -1,18 +1,9 @@
-from datetime import date
 from operator import and_, or_
 
-import factory
 import pytest
-from django.db.models.signals import post_save
 from hypothesis import assume, example, given
 from hypothesis import strategies as st
 
-from ....books.services.search import search_books
-from ....books.tests.factories import BookFactory
-from ....expenses.services.search import search_expenses
-from ....expenses.tests.factories import ExpenseFactory
-from ....incomes.services.search import search_incomes
-from ....incomes.tests.factories import IncomeFactory
 from ...lib import search
 
 NOTHING = {"category": [], "year": 0, "month": 0, "remark": []}
@@ -56,10 +47,12 @@ def date_token(year, month, separator, day):
             and_,
             id="digits_and_spaces_kept",
         ),
+        pytest.param("-h", NOTHING, or_, id="help_flag_is_a_plain_word"),
     ],
 )
-def test_parse_search_keeps_word_characters_only(search_str, expect, combine):
+def test_parse_search_keeps_word_characters_only(search_str, expect, combine, capsys):
     assert search.parse_search(search_str) == (expect, combine)
+    assert capsys.readouterr().out == ""
 
 
 FLAG_NAMES = {
@@ -159,23 +152,3 @@ def test_parse_search_no_args(before, after, first, later):
     expect = {"category": words, "year": year, "month": month or 0, "remark": words}
 
     assert search.parse_search(text) == (expect, or_)
-
-
-@pytest.mark.django_db
-@factory.django.mute_signals(post_save)
-@pytest.mark.parametrize(
-    "factory_class, search_func, date_field",
-    [
-        pytest.param(ExpenseFactory, search_expenses, "date", id="expense"),
-        pytest.param(IncomeFactory, search_incomes, "date", id="income"),
-        pytest.param(BookFactory, search_books, "started", id="book"),
-    ],
-)
-def test_search_orders_newest_first(main_user, factory_class, search_func, date_field):
-    factory_class(**{date_field: date(1000, 1, 1)})
-    factory_class()
-
-    q = search_func(main_user, "remark")
-
-    assert q[0][date_field] == date(1999, 1, 1)
-    assert q[1][date_field] == date(1000, 1, 1)

@@ -18,11 +18,11 @@ from ...core.mixins.views import (
 from ...users.models import User
 from .. import forms
 from ..apps import App_name
+from ..services import search
 from ..services.model_services import (
     ExpenseModelService,
     ExpenseNameModelService,
 )
-from ..services.search import search_expenses, search_totals
 
 
 class GetMonthMixin:
@@ -59,15 +59,11 @@ class Lists(GetMonthMixin, ListViewMixin):
     def get_context_data(self, **kwargs):
         month = self.get_month()
 
-        notice = _("There are no records for month <b>%(month)s</b>.") % {
-            "month": month
-        }
-        if month == 13 or not month:
-            notice = _("No records in <b>%(year)s</b>.") % {
-                "year": cast(User, self.request.user).year
-            }
+        notice_month = 0
+        if month in range(1, 13):
+            notice_month = month
 
-        context = {"notice": notice}
+        context = {"notice_month": notice_month}
         return super().get_context_data(**kwargs) | context | get_action_buttons_html()
 
 
@@ -97,8 +93,8 @@ class Delete(DeleteViewMixin):
 
 class Search(SearchViewMixin):
     template_name = "expenses/expense_list.html"
-    search_method = staticmethod(search_expenses)
-    search_totals = staticmethod(search_totals)
+    search_method = staticmethod(search.search_expenses)
+    search_totals = staticmethod(search.search_totals)
     per_page = 50
     use_fast_urls = True
 

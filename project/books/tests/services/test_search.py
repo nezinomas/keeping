@@ -46,3 +46,13 @@ def test_books_search(main_user, _search, books):
     ]
 
     assert actual == [(date(1999, 1, 1), *book) for book in books]
+
+
+@pytest.mark.django_db
+def test_books_search_orders_newest_first(main_user):
+    BookFactory(started=date(1000, 1, 1))
+    BookFactory()
+
+    actual = [row["started"] for row in search_books(main_user, "remark")]
+
+    assert actual == [date(1999, 1, 1), date(1000, 1, 1)]

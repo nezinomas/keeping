@@ -1,96 +1,53 @@
 import calendar
-import contextlib
 from datetime import date, datetime
-from typing import List, Tuple
 
 from ...users.models import User
-from .translation import month_names
 from .year_boundary import YearBoundary
-
-MOTHS_WITH_DAYS_GENERIC = {
-    "january": 31,
-    "february": 29,
-    "march": 31,
-    "april": 30,
-    "may": 31,
-    "june": 30,
-    "july": 31,
-    "august": 31,
-    "september": 30,
-    "october": 31,
-    "november": 30,
-    "december": 31,
-}
 
 
 def current_day(year: int, month: int, return_past_day: bool = True) -> int:
-    year = year or datetime.now().year
-    month = month or datetime.now().month
+    today = date.today()
 
-    _year = datetime.now().year
-    _month = datetime.now().month
-    _day = datetime.now().day
+    if today.year == year and today.month == month:
+        return today.day
 
-    if _year == year and _month == month:
-        return _day
+    if return_past_day:
+        return calendar.monthrange(year, month)[1]
 
-    return calendar.monthrange(year, month)[1] if return_past_day else None
+    return 0
 
 
-def year_month_list(year: int) -> List[date]:
+def year_month_list(year: int) -> list[date]:
     return [date(year, i, 1) for i in range(1, 13)]
 
 
-def monthname(month: int) -> str:
-    try:
-        _month = calendar.month_name[month]
-    except (TypeError, IndexError):
-        return "january"
-
-    return _month.lower()
-
-
-def monthnames() -> List[str]:
+def monthnames() -> list[str]:
     return [x.lower() for x in calendar.month_name[1:]]
 
 
-def monthnames_abbr():
-    return {key.lower()[:3]: val for key, val in month_names().items()}
-
-
-def monthlen(year: int, month_name: str) -> int:
-    if month_name not in monthnames():
-        return 31
-
-    month = datetime.strptime(month_name, "%B").month
-
-    return calendar.monthrange(year, month)[1]
-
-
-def years(user: User = None) -> List[int]:
+def years(user: User) -> list[int]:
     now = datetime.now().year
-    start = now
-
-    with contextlib.suppress(AttributeError):
-        start = user.journal.first_record.year
+    start = user.journal.first_record.year
 
     return list(range(start, now + 2))
 
 
 def set_date_with_user_year(user):
     now = datetime.now()
-    month = now.month
-    day = now.day
-    year = user.year
+    day = min(now.day, calendar.monthrange(user.year, now.month)[1])
 
-    return datetime(year, month, day)
+    return datetime(user.year, now.month, day)
 
 
-def yday(year: int) -> Tuple[int, int]:
+def yday(year: int) -> tuple[int, int]:
     """Days of the year gone by, and days it holds."""
     boundary = YearBoundary.for_year(year)
 
-    return (boundary.days_elapsed, ydays(boundary.year))
+    elapsed = 0
+    if year <= boundary.today.year:
+        elapsed = boundary.days_elapsed
+
+    return (elapsed, ydays(boundary.year))
 
 
 def ydays(year: int) -> int:
