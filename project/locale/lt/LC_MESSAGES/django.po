@@ -1159,10 +1159,6 @@ msgid ""
 msgstr ""
 "Ištrynus %(counter)s bus ištrinta ir %(count)s įrašų, sukurtų nuo %(year)s."
 
-#: .\project\debts\forms.py:59 .\project\debts\forms.py:142
-msgid "Debtor"
-msgstr "Skolininkas"
-
 #: .\project\debts\forms.py:62 .\project\debts\forms.py:145
 #: .\project\debts\templates\debts\debt_list.html:16
 #: .\project\debts\templates\debts\debtreturn_list.html:15
@@ -1179,10 +1175,6 @@ msgstr "Paskolos davėjas"
 #: .\project\debts\templates\debts\debt_list.html:20
 msgid "Returned"
 msgstr "Gražinta"
-
-#: .\project\debts\forms.py:84
-msgid "The name of the lender must be unique."
-msgstr "Skolintojo vardas turi būti unikalus."
 
 #: .\project\debts\forms.py:87
 msgid "You can't close a debt that hasn't been returned."
