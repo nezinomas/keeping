@@ -48,13 +48,13 @@ class NotFlagsError(ValueError):
     """The search text is plain words, not flags."""
 
 
-class SilentArgumentParser(argparse.ArgumentParser):
+class FlagsParser(argparse.ArgumentParser):
     def error(self, message):
         raise NotFlagsError(message)
 
 
 def _parse_search_with_args(search_str):
-    parser = SilentArgumentParser(add_help=False)
+    parser = FlagsParser(add_help=False)
     parser.add_argument("-category", "-c", type=str, nargs="+")
     parser.add_argument("-year", "-y", type=int)
     parser.add_argument("-month", "-m", type=int)
