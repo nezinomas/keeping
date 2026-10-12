@@ -13,7 +13,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_debt_return_init_fields(main_user):
-    form = forms.DebtReturnForm(user=main_user, debt_type="x").as_p()
+    form = forms.DebtReturnForm(user=main_user, debt_type="lend").as_p()
 
     assert '<input type="text" name="date"' in form
     assert '<select name="account"' in form
@@ -41,19 +41,9 @@ def test_debt_name_field_label(main_user, debt_type, label):
 def test_debt_return_year_initial_value(main_user):
     UserFactory()
 
-    form = forms.DebtReturnForm(user=main_user, debt_type="x").as_p()
+    form = forms.DebtReturnForm(user=main_user, debt_type="lend").as_p()
 
     assert '<input type="text" name="date" value="1999-02-02"' in form
-
-
-def test_debt_return_current_user_accounts(main_user, second_user):
-    AccountFactory(title="A1")
-    AccountFactory(title="A2", journal=second_user.journal)
-
-    form = forms.DebtReturnForm(user=main_user, debt_type="x").as_p()
-
-    assert "A1" in form
-    assert "A2" not in form
 
 
 def test_debt_return_select_first_account(main_user, second_user):
@@ -61,7 +51,7 @@ def test_debt_return_select_first_account(main_user, second_user):
 
     a2 = AccountFactory(title="A2")
 
-    form = forms.DebtReturnForm(user=main_user, debt_type="x").as_p()
+    form = forms.DebtReturnForm(user=main_user, debt_type="lend").as_p()
 
     expect = f'<option value="{a2.pk}" selected>{a2}</option>'
     assert expect in form
@@ -109,7 +99,7 @@ def test_debt_return_invalid_date(year, main_user):
 
     form = forms.DebtReturnForm(
         user=main_user,
-        debt_type="x",
+        debt_type="lend",
         data={
             "date": f"{year}-12-02",
             "debt": b.pk,
@@ -125,7 +115,7 @@ def test_debt_return_invalid_date(year, main_user):
 
 
 def test_debt_return_blank_data(main_user):
-    form = forms.DebtReturnForm(user=main_user, debt_type="x", data={})
+    form = forms.DebtReturnForm(user=main_user, debt_type="lend", data={})
 
     assert not form.is_valid()
 

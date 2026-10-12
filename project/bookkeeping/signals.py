@@ -27,8 +27,6 @@ from . import models as bookkeeping
 @receiver(post_delete, sender=transaction.SavingClose)
 @receiver(post_save, sender=debt.Debt)
 @receiver(post_delete, sender=debt.Debt)
-@receiver(post_save, sender=debt.DebtReturn)
-@receiver(post_delete, sender=debt.DebtReturn)
 @receiver(post_save, sender=bookkeeping.AccountWorth)
 def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
     balance_sources.sync_accounts(journal_user(instance))
@@ -36,11 +34,14 @@ def accounts_signal(sender: object, instance: models.Model, *args, **kwargs):
 
 @receiver(post_save, sender=debt.DebtReturn)
 @receiver(post_delete, sender=debt.DebtReturn)
-def update_debt_model(sender: object, instance: models.Model, *args, **kwargs):
+def debt_return_signal(sender: object, instance: debt.DebtReturn, **kwargs):
+    # deleting a Debt syncs the accounts once itself, whatever number of returns go
+    if isinstance(kwargs.get("origin"), debt.Debt):
+        return
+
+    balance_sources.sync_accounts(journal_user(instance))
     # every debt of the type: a return moved to another debt changes the one it left
-    DebtModelService(
-        journal_user(instance.debt), instance.debt.debt_type
-    ).sync_returned()
+    DebtModelService.sync_returned(instance.debt.journal_id, instance.debt.debt_type)
 
 
 # A type's fee source and close year change its balances.
@@ -87,7 +88,11 @@ def pension_type_signal(sender: object, instance: pension.PensionType, *args, **
 
 @receiver(post_save, sender=income.Income)
 @receiver(post_save, sender=expense.Expense)
-def update_journal_first_record(sender, instance, created, **kwargs):
+def update_journal_first_record(
+    sender: type[models.Model],
+    instance: income.Income | expense.Expense,
+    **kwargs,
+):
     journal = instance.journal
 
     if journal.first_record > instance.date:

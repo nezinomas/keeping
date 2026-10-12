@@ -13,10 +13,35 @@ from .services.model_services import DebtModelService, DebtReturnModelService
 
 
 def _other_party_label(debt_type):
-    return {"lend": _("Borrower"), "borrow": _("Lender")}.get(debt_type, _("Debtor"))
+    return {"lend": _("Borrower"), "borrow": _("Lender")}[debt_type]
 
 
-class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
+class DebtFormMixin(PriceToCentsFormMixin, YearBetweenMixin):
+    """The date, account and remark every debt form sets up the same way."""
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        self.debt_type = kwargs.pop("debt_type")
+
+        super().__init__(*args, **kwargs)
+
+        self.fields["remark"].widget.attrs["rows"] = 3
+
+        self.date_field_settings()
+        self.account_field_settings()
+
+    def date_field_settings(self):
+        self.fields["date"].widget = DatePickerWidget()
+        self.fields["date"].initial = set_date_with_user_year(self.user)
+
+    def account_field_settings(self):
+        accounts = AccountModelService(self.user).items()
+
+        self.fields["account"].initial = accounts.first()
+        self.fields["account"].queryset = accounts
+
+
+class DebtForm(DebtFormMixin, forms.ModelForm):
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
 
@@ -27,36 +52,19 @@ class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "account", "name", "price", "remark", "closed"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        self.debt_type = kwargs.pop("debt_type")
-
         super().__init__(*args, **kwargs)
 
         if not self.instance.pk:
             self.instance.debt_type = self.debt_type
 
-        self.fields["remark"].widget.attrs["rows"] = 3
-
-        self.date_field_settings()
         self.journal_field_settings()
-        self.account_field_settings()
 
         self.translations()
-
-    def date_field_settings(self):
-        self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
 
     def journal_field_settings(self):
         self.fields["journal"].initial = self.user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
-
-    def account_field_settings(self):
-        accounts = AccountModelService(self.user).items()
-
-        self.fields["account"].initial = accounts.first()
-        self.fields["account"].queryset = accounts
 
     def translations(self):
         self.fields["date"].label = _("Date")
@@ -73,10 +81,15 @@ class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         closed = cleaned_data.get("closed")
         price = cleaned_data.get("price")
 
-        if not closed and name != self.instance.name:
-            qs = DebtModelService(self.user, self.debt_type).items().filter(name=name)
-            if qs.exists():
-                self.add_error("name", _("The name of the lender must be unique."))
+        if (
+            not closed
+            and name != self.instance.name
+            and DebtModelService(self.user, self.debt_type)
+            .items()
+            .filter(name=name)
+            .exists()
+        ):
+            self.add_error("name", _("The name must be unique."))
 
         _msg_cant_close = _("You can't close a debt that hasn't been returned.")
         if not self.instance.pk and closed:
@@ -97,7 +110,7 @@ class DebtForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
         return cleaned_data
 
 
-class DebtReturnForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
+class DebtReturnForm(DebtFormMixin, forms.ModelForm):
     price_fields = ("price",)
     price = CommaFloatField(min_value=0.01)
 
@@ -108,26 +121,11 @@ class DebtReturnForm(PriceToCentsFormMixin, YearBetweenMixin, forms.ModelForm):
     field_order = ["date", "account", "debt", "price", "remark"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
-        self.debt_type = kwargs.pop("debt_type")
         super().__init__(*args, **kwargs)
 
-        self.fields["remark"].widget.attrs["rows"] = 3
-
-        self.date_field_settings()
-        self.account_field_settings()
         self.debt_field_settings()
 
         self.translations()
-
-    def date_field_settings(self):
-        self.fields["date"].widget = DatePickerWidget()
-        self.fields["date"].initial = set_date_with_user_year(self.user)
-
-    def account_field_settings(self):
-        accounts = AccountModelService(self.user).items()
-        self.fields["account"].initial = accounts.first()
-        self.fields["account"].queryset = accounts
 
     def debt_field_settings(self):
         self.fields["debt"].queryset = DebtModelService(
