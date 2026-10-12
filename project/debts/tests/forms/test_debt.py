@@ -48,16 +48,6 @@ def test_debt_initial_values(main_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_debt_current_user_accounts(main_user, second_user):
-    AccountFactory(title="A1")
-    AccountFactory(title="A2", journal=second_user.journal)
-
-    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
-
-    assert "A1" in form
-    assert "A2" not in form
-
-
 def test_debt_select_first_account(main_user, second_user):
     AccountFactory(title="A1", journal=second_user.journal)
 
@@ -67,29 +57,49 @@ def test_debt_select_first_account(main_user, second_user):
 
     expect = f'<option value="{a2.pk}" selected>{a2}</option>'
     assert expect in form
+    assert "A1" not in form
 
 
 @pytest.mark.parametrize(
-    "name", [pytest.param("AA", id="too_short"), pytest.param("A" * 101, id="too_long")]
+    "name, error",
+    [
+        pytest.param(
+            "AA",
+            "Įsitikinkite, kad reikšmė sudaryta iš nemažiau kaip 3 ženklų "
+            "(dabartinis ilgis 2).",
+            id="too_short",
+        ),
+        pytest.param(
+            "A" * 101,
+            "Įsitikinkite, kad reikšmė sudaryta iš nedaugiau kaip 100 ženklų "
+            "(dabartinis ilgis 101).",
+            id="too_long",
+        ),
+    ],
 )
-def test_debt_name_length_rejected(main_user, name):
+def test_debt_name_length_rejected(main_user, name, error):
     form = forms.DebtForm(
         user=main_user,
         debt_type="lend",
         data={
-            "date": "1974-01-01",
+            "date": "1999-01-01",
             "name": name,
             "price": "1",
             "account": AccountFactory(),
         },
     )
 
-    assert not form.is_valid()
-
-    assert "name" in form.errors
+    assert form.errors == {"name": [error]}
 
 
-def test_debt_valid_data(main_user):
+@pytest.mark.parametrize(
+    "price, cents",
+    [
+        pytest.param("0.01", 1, id="point"),
+        pytest.param("12,1", 1210, id="decimal_comma"),
+    ],
+)
+def test_debt_valid_data(main_user, price, cents):
     a = AccountFactory()
 
     form = forms.DebtForm(
@@ -98,42 +108,23 @@ def test_debt_valid_data(main_user):
         data={
             "date": "1999-01-01",
             "name": "Name",
-            "price": "0.01",
+            "price": price,
             "account": a.pk,
             "closed": False,
             "remark": "Rm",
         },
     )
 
-    assert form.is_valid()
+    assert form.is_valid(), form.errors
 
     e = form.save()
 
     assert e.date == date(1999, 1, 1)
-    assert e.price == 1
+    assert e.price == cents
     assert e.returned == 0
     assert e.account == a
     assert e.remark == "Rm"
     assert not e.closed
-
-
-def test_debt_price_accepts_a_decimal_comma(main_user):
-    a = AccountFactory()
-
-    form = forms.DebtForm(
-        user=main_user,
-        debt_type="lend",
-        data={
-            "date": "1999-01-01",
-            "name": "Name",
-            "price": "12,1",
-            "account": a.pk,
-            "closed": False,
-        },
-    )
-
-    assert form.is_valid(), form.errors
-    assert form.save().price == 1210
 
 
 @time_machine.travel("1999-2-2")
@@ -203,7 +194,7 @@ def test_debt_unique_name(main_user):
 
     assert not form.is_valid()
     assert "name" in form.errors
-    assert form.errors["name"] == ["Skolintojo vardas turi būti unikalus."]
+    assert form.errors["name"] == ["Vardas turi būti unikalus."]
 
 
 def test_debt_unique_name_unclose_with_same_name(main_user):
@@ -217,7 +208,7 @@ def test_debt_unique_name_unclose_with_same_name(main_user):
     assert form.is_bound
     assert not form.is_valid()
     assert "name" in form.errors
-    assert form.errors["name"] == ["Skolintojo vardas turi būti unikalus."]
+    assert form.errors["name"] == ["Vardas turi būti unikalus."]
 
 
 def test_debt_cant_close(main_user):
@@ -228,6 +219,36 @@ def test_debt_cant_close(main_user):
     assert len(form.errors) == 1
     assert "closed" in form.errors
     assert form.errors["closed"] == ["Negalite uždaryti dar negražintos skolos."]
+
+
+@pytest.mark.parametrize("price", ["abc", "0"])
+def test_debt_edit_with_an_invalid_price_is_a_field_error(main_user, price):
+    obj = factories.LendFactory(price=10000, returned=5000)
+    data = model_to_dict(obj) | {"price": price}
+
+    form = forms.DebtForm(user=main_user, debt_type="lend", instance=obj, data=data)
+
+    assert list(form.errors) == ["price"]
+
+
+@pytest.mark.parametrize(
+    "price, errors",
+    [
+        pytest.param("50", {}, id="equal_to_returned"),
+        pytest.param(
+            "49.99",
+            {"price": ["Skola negali būti mažesnė nei grąžinta suma."]},
+            id="below",
+        ),
+    ],
+)
+def test_debt_price_not_below_what_is_returned(main_user, price, errors):
+    obj = factories.LendFactory(price=10000, returned=5000)
+    data = model_to_dict(obj) | {"price": price}
+
+    form = forms.DebtForm(user=main_user, debt_type="lend", instance=obj, data=data)
+
+    assert form.errors == errors
 
 
 def _debt_data(account, second_user):
@@ -242,32 +263,31 @@ def _debt_data(account, second_user):
     }
 
 
-def test_debt_create_ignores_a_posted_journal(main_user, second_user):
+@pytest.mark.parametrize(
+    "instance_of",
+    [
+        pytest.param(lambda user, account: None, id="create"),
+        pytest.param(
+            lambda user, account: factories.LendFactory(
+                journal=user.journal, account=account
+            ),
+            id="edit",
+        ),
+    ],
+)
+def test_debt_ignores_a_posted_journal(main_user, second_user, instance_of):
     a = AccountFactory(title="Mine", journal=main_user.journal)
-
-    form = forms.DebtForm(
-        user=main_user, debt_type="lend", data=_debt_data(a, second_user)
-    )
-
-    assert form.is_valid()
-
-    assert form.save().journal == main_user.journal
-
-
-def test_debt_edit_ignores_a_posted_journal(main_user, second_user):
-    a = AccountFactory(title="Mine", journal=main_user.journal)
-    obj = factories.LendFactory(journal=main_user.journal, account=a)
 
     form = forms.DebtForm(
         user=main_user,
         debt_type="lend",
-        instance=obj,
+        instance=instance_of(main_user, a),
         data=_debt_data(a, second_user),
     )
 
     assert form.is_valid()
 
-    form.save()
-    obj.refresh_from_db()
+    saved = form.save()
+    saved.refresh_from_db()
 
-    assert obj.journal == main_user.journal
+    assert saved.journal == main_user.journal

@@ -3,7 +3,6 @@ from datetime import date
 import pytest
 import time_machine
 
-from ...users.tests.factories import UserFactory
 from ..forms import BookForm, BookTargetForm
 from .factories import BookTargetFactory
 
@@ -47,19 +46,22 @@ def test_form_init_fields(main_user, form_class, inputs):
     ids=["book_year", "book_target_year"],
 )
 def test_form_year_initial_value(main_user, form_class, expected):
-    UserFactory()
-
     form = form_class(user=main_user).as_p()
 
     assert expected in form
 
 
-def test_book_valid_data(main_user):
+@pytest.mark.parametrize(
+    "ended",
+    ["1999-01-31", "1999-01-01"],
+    ids=["ended_after_started", "ended_on_started"],
+)
+def test_book_valid_data(main_user, ended):
     form = BookForm(
         user=main_user,
         data={
             "started": "1999-01-01",
-            "ended": "1999-01-31",
+            "ended": ended,
             "author": "Author",
             "title": "Title",
         },
@@ -70,7 +72,7 @@ def test_book_valid_data(main_user):
     data = form.save()
 
     assert data.started == date(1999, 1, 1)
-    assert data.ended == date(1999, 1, 31)
+    assert data.ended == date.fromisoformat(ended)
     assert data.author == "Author"
     assert data.title == "Title"
     assert data.user.username == "bob"
@@ -106,7 +108,6 @@ def test_book_refuses_a_date(main_user, data, field, message):
     form = BookForm(user=main_user, data={"author": "Author", "title": "Title", **data})
 
     assert not form.is_valid()
-    assert field in form.errors
     assert message in form.errors[field]
 
 
@@ -154,13 +155,7 @@ def test_book_refuses_a_text_out_of_length(main_user, field, value):
     assert field in form.errors
 
 
-@pytest.mark.parametrize(
-    "year",
-    [
-        ("2000"),
-        (2000),
-    ],
-)
+@pytest.mark.parametrize("year", ["2000", 2000], ids=["text", "number"])
 def test_book_target_valid_data(year, main_user):
     form = BookTargetForm(user=main_user, data={"year": year, "quantity": 1.0})
 

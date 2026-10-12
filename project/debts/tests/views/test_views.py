@@ -3,6 +3,7 @@ import re
 import pytest
 from django.urls import reverse
 
+from ...models import Debt
 from .. import factories
 
 pytestmark = pytest.mark.django_db
@@ -49,3 +50,19 @@ def test_debts_index_add_button(client_logged, url_name, debt_type, label):
     res = re.findall(pattern, content)
 
     assert res[0] == label
+
+
+@pytest.mark.parametrize(
+    "method, path",
+    [
+        pytest.param("get", "/debts/x/lists/", id="list"),
+        pytest.param("get", "/debts/x/new/", id="new"),
+        pytest.param("post", "/debts/x/new/", id="create"),
+        pytest.param("get", "/debts/x/return/lists/", id="return_list"),
+    ],
+)
+def test_debts_url_of_an_unknown_type_is_404(client_logged, method, path):
+    response = getattr(client_logged, method)(path, {"name": "Name", "price": "1"})
+
+    assert response.status_code == 404
+    assert not Debt.objects.exists()

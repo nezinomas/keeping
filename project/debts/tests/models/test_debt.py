@@ -23,18 +23,6 @@ def test_debt_str():
     assert str(v) == "X"
 
 
-def test_debt_fields():
-    assert Debt._meta.get_field("date")
-    assert Debt._meta.get_field("debt_type")
-    assert Debt._meta.get_field("name")
-    assert Debt._meta.get_field("price")
-    assert Debt._meta.get_field("returned")
-    assert Debt._meta.get_field("closed")
-    assert Debt._meta.get_field("account")
-    assert Debt._meta.get_field("journal")
-    assert Debt._meta.get_field("remark")
-
-
 def test_debt_returned_is_never_null():
     with pytest.raises(IntegrityError), transaction.atomic():
         LendFactory(returned=None)
@@ -317,41 +305,40 @@ def test_debt_unique_users(second_user):
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_sum_all_months(main_user):
+@pytest.mark.parametrize(
+    "closed, extra, expect",
+    [
+        pytest.param(
+            False,
+            {"date": dt(1999, 1, 1), "closed": True},
+            [
+                {"date": dt(1999, 1, 1), "sum_debt": 3, "sum_return": 2},
+                {"date": dt(1999, 2, 1), "sum_debt": 5, "sum_return": 2},
+            ],
+            id="open_only",
+        ),
+        pytest.param(
+            True,
+            {"date": dt(1999, 1, 1), "price": 2, "returned": 2, "closed": True},
+            [
+                {"date": dt(1999, 1, 1), "sum_debt": 5, "sum_return": 4},
+                {"date": dt(1999, 2, 1), "sum_debt": 5, "sum_return": 2},
+            ],
+            id="with_closed",
+        ),
+    ],
+)
+def test_debt_sum_all_months(main_user, closed, extra, expect):
     LendFactory(date=dt(1999, 1, 1), price=1, returned=1)
     LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
     LendFactory(date=dt(1999, 2, 1), price=4, returned=1)
     LendFactory(date=dt(1999, 2, 2), price=1, returned=1)
-    LendFactory(date=dt(1999, 1, 1), closed=True)
+    LendFactory(**extra)
     LendFactory(date=dt(1974, 1, 1))
 
-    expect = [
-        {"date": dt(1999, 1, 1), "sum_debt": 3, "sum_return": 2, "title": "lend"},
-        {"date": dt(1999, 2, 1), "sum_debt": 5, "sum_return": 2, "title": "lend"},
-    ]
+    actual = list(DebtModelService(main_user, "lend").sum_by_month(1999, closed=closed))
 
-    actual = list(DebtModelService(main_user, "lend").sum_by_month(1999))
-
-    assert expect == actual
-
-
-@factory.django.mute_signals(post_save)
-def test_debt_sum_all_months_with_closed(main_user):
-    LendFactory(date=dt(1999, 1, 1), price=1, returned=1)
-    LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
-    LendFactory(date=dt(1999, 2, 1), price=4, returned=1)
-    LendFactory(date=dt(1999, 2, 2), price=1, returned=1)
-    LendFactory(date=dt(1999, 1, 1), price=2, returned=2, closed=True)
-    LendFactory(date=dt(1974, 1, 1))
-
-    expect = [
-        {"date": dt(1999, 1, 1), "sum_debt": 5, "sum_return": 4, "title": "lend"},
-        {"date": dt(1999, 2, 1), "sum_debt": 5, "sum_return": 2, "title": "lend"},
-    ]
-
-    actual = list(DebtModelService(main_user, "lend").sum_by_month(1999, closed=True))
-
-    assert expect == actual
+    assert actual == [row | {"title": "lend"} for row in expect]
 
 
 @factory.django.mute_signals(post_save)
@@ -370,86 +357,74 @@ def test_debt_sum_all_months_ordering(main_user, second_user):
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_sum_all_not_closed(main_user):
+@pytest.mark.parametrize(
+    "open_debts, expect",
+    [
+        pytest.param(
+            [
+                (dt(1999, 1, 1), 2, 1),
+                (dt(1999, 1, 2), 2, 1),
+                (dt(1974, 1, 2), 3, 2),
+            ],
+            {"debt": 7, "debt_return": 4},
+            id="open_debts_summed",
+        ),
+        pytest.param([], {"debt": 0, "debt_return": 0}, id="none_open"),
+    ],
+)
+def test_debt_sum_all_not_closed(main_user, open_debts, expect):
     LendFactory(date=dt(1999, 1, 1), price=12, closed=True)
-    LendFactory(date=dt(1999, 1, 1), price=2, returned=1)
-    LendFactory(date=dt(1999, 1, 2), price=2, returned=1)
-    LendFactory(date=dt(1974, 1, 2), price=3, returned=2)
-
-    expect = {"debt": 7, "debt_return": 4}
+    for date, price, returned in open_debts:
+        LendFactory(date=date, price=price, returned=returned)
 
     actual = DebtModelService(main_user, "lend").sum_all()
 
-    assert expect == actual
+    assert actual == expect
 
 
 @factory.django.mute_signals(post_save)
-def test_debt_incomes(main_user):
+@pytest.mark.parametrize(
+    "factory_, other, debt_type, sums, key",
+    [
+        pytest.param(
+            BorrowFactory,
+            LendFactory,
+            "borrow",
+            lambda s: s.incomes(),
+            "incomes",
+            id="incomes",
+        ),
+        pytest.param(
+            LendFactory,
+            BorrowFactory,
+            "lend",
+            lambda s: s.expenses(),
+            "expenses",
+            id="expenses",
+        ),
+    ],
+)
+def test_debt_yearly_sums_per_account(main_user, factory_, other, debt_type, sums, key):
     a1 = AccountFactory(title="A1")
     a2 = AccountFactory(title="A2")
 
-    BorrowFactory(date=dt(1970, 1, 1), account=a1, price=1)
-    BorrowFactory(date=dt(1970, 1, 1), account=a1, price=2)
-    BorrowFactory(date=dt(1970, 1, 1), account=a2, price=3)
-    BorrowFactory(date=dt(1970, 1, 1), account=a2, price=4)
+    factory_(date=dt(1970, 1, 1), account=a1, price=1)
+    factory_(date=dt(1970, 1, 1), account=a1, price=2)
+    factory_(date=dt(1970, 1, 1), account=a2, price=3)
+    factory_(date=dt(1970, 1, 1), account=a2, price=4)
 
-    BorrowFactory(date=dt(1999, 1, 1), account=a1, price=10)
-    BorrowFactory(date=dt(1999, 1, 1), account=a1, price=20)
-    BorrowFactory(date=dt(1999, 1, 1), account=a2, price=30)
-    BorrowFactory(date=dt(1999, 1, 1), account=a2, price=40)
+    factory_(date=dt(1999, 1, 1), account=a1, price=10)
+    factory_(date=dt(1999, 1, 1), account=a1, price=20)
+    factory_(date=dt(1999, 1, 1), account=a2, price=30)
+    factory_(date=dt(1999, 1, 1), account=a2, price=40)
 
-    LendFactory()
+    other()
 
-    actual = DebtModelService(main_user, "borrow").incomes()
+    actual = sums(DebtModelService(main_user, debt_type))
 
-    assert actual[0]["year"] == 1970
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["incomes"] == 3
-
-    assert actual[1]["year"] == 1970
-    assert actual[1]["category_id"] == 2
-    assert actual[1]["incomes"] == 7
-
-    assert actual[2]["year"] == 1999
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["incomes"] == 30
-
-    assert actual[3]["year"] == 1999
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["incomes"] == 70
-
-
-@factory.django.mute_signals(post_save)
-def test_debt_expenses(main_user):
-    a1 = AccountFactory(title="A1")
-    a2 = AccountFactory(title="A2")
-
-    LendFactory(date=dt(1970, 1, 1), account=a1, price=1)
-    LendFactory(date=dt(1970, 1, 1), account=a1, price=2)
-    LendFactory(date=dt(1970, 1, 1), account=a2, price=3)
-    LendFactory(date=dt(1970, 1, 1), account=a2, price=4)
-
-    LendFactory(date=dt(1999, 1, 1), account=a1, price=10)
-    LendFactory(date=dt(1999, 1, 1), account=a1, price=20)
-    LendFactory(date=dt(1999, 1, 1), account=a2, price=30)
-    LendFactory(date=dt(1999, 1, 1), account=a2, price=40)
-
-    BorrowFactory()
-
-    actual = DebtModelService(main_user, "lend").expenses()
-
-    assert actual[0]["year"] == 1970
-    assert actual[0]["category_id"] == 1
-    assert actual[0]["expenses"] == 3
-
-    assert actual[1]["year"] == 1970
-    assert actual[1]["category_id"] == 2
-    assert actual[1]["expenses"] == 7
-
-    assert actual[2]["year"] == 1999
-    assert actual[2]["category_id"] == 1
-    assert actual[2]["expenses"] == 30
-
-    assert actual[3]["year"] == 1999
-    assert actual[3]["category_id"] == 2
-    assert actual[3]["expenses"] == 70
+    assert [(row["year"], row["category_id"], row[key]) for row in actual] == [
+        (1970, 1, 3),
+        (1970, 2, 7),
+        (1999, 1, 30),
+        (1999, 2, 70),
+    ]

@@ -97,11 +97,15 @@ class TypicalYearChart(HtmxFormRetargetMixin, FormViewMixin):
 
     def get(self, request, *args, **kwargs):
         year = cast(int, cast(User, request.user).year)
-        chart = self._chart(services.PooledRange.resolve(year, self.kwargs.get("qty")))
+        pooled = services.NoPooledRange()
+        if "qty" in self.kwargs:
+            pooled = services.PooledRange.resolve(year, self.kwargs["qty"])
+
+        chart = self._chart(pooled)
 
         return self._render(chart, self.get_form(initial=self._initial(chart)))
 
-    def form_valid(self, form, **kwargs):
+    def form_valid(self, form):
         chart = self._chart(
             services.PooledRange(
                 form.cleaned_data["year_from"], form.cleaned_data["year_to"]
@@ -196,7 +200,7 @@ class CompareTwo(HtmxFormRetargetMixin, FormViewMixin):
     success_url = reverse_lazy("drinks:compare_two")
     retarget = "#compare-form"
 
-    def form_valid(self, form, **kwargs):
+    def form_valid(self, form):
         chart = services.YearComparison.for_pair(
             self.request.user,
             form.cleaned_data["year1"],

@@ -18,10 +18,11 @@ class DataRow:
 @dataclass(frozen=True)
 class MonthlyStatsDTO:
     # in the unit the selected drink type is shown in, not always ml
-    total_volume: list[float | None]
-    avg_daily_volume: list[float | None]
-    total_quantity: list[float | None]
-    total_stdav: list[float | None]
+    # one value per month the year has reached
+    total_volume: list[float]
+    avg_daily_volume: list[float]
+    total_quantity: list[float]
+    total_stdav: list[float]
 
 
 @dataclass(frozen=True)
@@ -35,12 +36,7 @@ class YearlyStatsDTO:
 
 @dataclass(frozen=True)
 class YearOverYear:
-    """One figure this year beside the same figure last year, up to the same
-    month and day.
-
-    How it is shown is the caller's: a count whole, an amount to the decimals
-    its unit needs.
-    """
+    """One figure this year beside the same figure last year, up to the same day."""
 
     current: float
     previous: float
@@ -73,7 +69,8 @@ class DrinkStats:
         self,
         converter: DrinkConverter,
         data: Sequence[DataRow] = (),
-        today: date | None = None,
+        *,
+        today: date,
     ):
         self.converter = converter
         self.data = data
@@ -98,35 +95,23 @@ class DrinkStats:
         ]
 
         return MonthlyStatsDTO(
-            total_volume=self._to_boundary(total_volume),
-            avg_daily_volume=self._to_boundary(avg_daily_volume),
-            total_quantity=self._to_boundary(monthly_qty),
-            total_stdav=self._to_boundary(monthly_stdav),
+            total_volume=self._to_month_reached(total_volume),
+            avg_daily_volume=self._to_month_reached(avg_daily_volume),
+            total_quantity=self._to_month_reached(monthly_qty),
+            total_stdav=self._to_month_reached(monthly_stdav),
         )
 
-    def _to_boundary(self, months: list[float]) -> list[float | None]:
+    def _to_month_reached(self, months: list[float]) -> list[float]:
         # a running year's December drawn as 0.0 cannot be told apart from a
-        # December with no Drink in it, and a null is the only way to break a line
-        reached = self._year.end_date.month
-
-        return [value if m <= reached else None for m, value in enumerate(months, 1)]
+        # December with no Drink in it, so the series ends at the month reached
+        return months[: self._year.end_date.month]
 
     @cached_property
     def yearly(self) -> YearlyStatsDTO:
-        if not self.data:
-            return YearlyStatsDTO(
-                avg_daily_volume=0.0,
-                total_quantity=0.0,
-                stdav=0.0,
-                pure_alcohol_liters=0.0,
-                avg_daily_stdav=0.0,
-            )
-
         days_passed = self._year.days_elapsed
-        month_limit = self._year.end_date.month
-        total_volume = sum(self.monthly.total_volume[:month_limit])
-        total_quantity = sum(self.monthly.total_quantity[:month_limit])
-        stdav = sum(self.monthly.total_stdav[:month_limit])
+        total_volume = sum(self.monthly.total_volume)
+        total_quantity = sum(self.monthly.total_quantity)
+        stdav = sum(self.monthly.total_stdav)
         pure_alcohol_liters = stdav_to_alcohol(stdav)
 
         return YearlyStatsDTO(

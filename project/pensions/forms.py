@@ -25,18 +25,15 @@ class PensionForm(
     field_order = ["date", "pension_type", "price", "fee", "remark"]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
         self.fields["date"].widget = DatePickerWidget()
 
-        # form inputs settings
         self.fields["remark"].widget.attrs["rows"] = 3
 
-        # inital values
         self.fields["date"].initial = datetime.now()
 
-        # overwrite ForeignKey saving_type queryset
         self.fields["pension_type"].queryset = PensionTypeModelService(
             self.user
         ).items()
@@ -54,10 +51,9 @@ class PensionTypeForm(forms.ModelForm):
         fields = ["journal", "title"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
+        user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
-        # journal input
         self.fields["journal"].initial = user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()

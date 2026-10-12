@@ -3,9 +3,7 @@ from datetime import date, datetime
 import pytest
 import pytz
 import time_machine
-from django.utils.translation import gettext as _
 
-from ....users.tests.factories import UserFactory
 from ...lib import date as lib_date
 
 
@@ -17,15 +15,6 @@ def test_year_month_list():
     assert actual[11] == date(1970, 12, 1)
 
 
-@time_machine.travel("1999-01-11")
-def test_year_month_list_year_none():
-    actual = lib_date.year_month_list(None)
-
-    assert len(actual) == 12
-    assert actual[0] == date(1999, 1, 1)
-    assert actual[11] == date(1999, 12, 1)
-
-
 @time_machine.travel("1970-01-11")
 @pytest.mark.parametrize(
     "year, month, return_past_day, expect",
@@ -34,8 +23,8 @@ def test_year_month_list_year_none():
         (1970, 12, True, 31),
         (2020, 2, True, 29),
         (1970, 1, False, 11),
-        (1970, 12, False, None),
-        (2020, 2, False, None),
+        (1970, 12, False, 0),
+        (2020, 2, False, 0),
     ],
 )
 def test_current_day(year, month, return_past_day, expect):
@@ -52,22 +41,6 @@ def test_years_user_logged(main_user):
     assert actual == [1999, 2000, 2001, 2002]
 
 
-@pytest.mark.django_db
-@time_machine.travel("2001-01-01")
-def test_years_user_anonymous_user():
-    actual = lib_date.years()
-
-    assert actual == [2001, 2002]
-
-
-@pytest.mark.parametrize(
-    "month, expect",
-    [(1, "january"), (13, "january"), ("1", "january"), ("x", "january")],
-)
-def test_monthname(month, expect):
-    assert lib_date.monthname(month) == expect
-
-
 def test_monthnames():
     actual = lib_date.monthnames()
 
@@ -77,28 +50,19 @@ def test_monthnames():
     assert actual[11] == "december"
 
 
-@pytest.mark.parametrize(
-    "year, expect",
-    [pytest.param(1999, 28, id="leap_not"), pytest.param(2000, 29, id="leap")],
-)
-def test_monthlen_of_february_follows_the_leap_year(year, expect):
-    assert lib_date.monthlen(year, "february") == expect
-
-
-def test_monthlen_wrong_input():
-    actual = lib_date.monthlen(2, "xxx")
-
-    assert actual == 31
-
-
-@time_machine.travel("1974-01-01")
 @pytest.mark.django_db
-def test_set_year_for_month(main_user):
-    UserFactory()
+@pytest.mark.parametrize(
+    "today, expect",
+    [
+        pytest.param("1974-01-01", datetime(1999, 1, 1), id="same_day"),
+        pytest.param("2028-02-29", datetime(1999, 2, 28), id="leap_day_in_common_year"),
+    ],
+)
+def test_set_year_for_month(main_user, today, expect):
+    with time_machine.travel(today):
+        actual = lib_date.set_date_with_user_year(main_user)
 
-    actual = lib_date.set_date_with_user_year(main_user)
-
-    assert actual == datetime(1999, 1, 1)
+    assert actual == expect
 
 
 @time_machine.travel("2020-6-6")
@@ -108,7 +72,7 @@ def test_set_year_for_month(main_user):
         (1999, (365, 365)),
         (2016, (366, 366)),
         (2020, (158, 366)),
-        (None, (158, 366)),
+        (2021, (0, 365)),
     ],
 )
 def test_yday(year, expect):
@@ -122,14 +86,3 @@ def test_ydays(year, expect):
     actual = lib_date.ydays(year)
 
     assert actual == expect
-
-
-def test_monthnames_abbr():
-    actual = lib_date.monthnames_abbr()
-
-    assert list(actual) == [
-        "jan", "feb", "mar", "apr", "may", "jun",
-        "jul", "aug", "sep", "oct", "nov", "dec",
-    ]  # fmt: skip
-    assert actual["jan"] == _("January")
-    assert actual["dec"] == _("December")

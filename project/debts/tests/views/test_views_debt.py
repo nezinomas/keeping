@@ -104,6 +104,7 @@ def test_debt_load_form(client_logged, debt_type):
 
     assert response.status_code == 200
     assert '<input type="text" name="date" value="1999-01-01"' in actual
+    assert f'hx-post="{url}"' in response.content.decode()
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
@@ -149,11 +150,19 @@ def test_debt_load_update_form(client_logged, debt_type, remark):
     assert form.instance.price == 0.01
     assert form.instance.account.title == "Account1"
     assert form.instance.remark == remark
+    assert f'hx-post="{url}"' in response.content.decode()
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_update(main_user, client_logged, debt_type):
-    e = DEBT_FACTORIES[debt_type]()
+@pytest.mark.parametrize(
+    "existing",
+    [
+        pytest.param({}, id="renamed"),
+        pytest.param({"name": "XXX"}, id="name_kept"),
+    ],
+)
+def test_debt_update(main_user, client_logged, debt_type, existing):
+    e = DEBT_FACTORIES[debt_type](**existing)
 
     data = {
         "name": "XXX",
@@ -170,30 +179,6 @@ def test_debt_update(main_user, client_logged, debt_type):
     assert actual.count() == 1
 
     actual = actual[0]
-    assert actual.name == "XXX"
-    assert actual.date == date(1999, 12, 31)
-    assert actual.price == 1
-    assert actual.account.title == "Account1"
-    assert actual.remark == "Pastaba"
-    assert not actual.closed
-
-
-@pytest.mark.parametrize("debt_type", DEBT_TYPES)
-def test_debt_update_not_closed(client_logged, debt_type):
-    e = DEBT_FACTORIES[debt_type](name="XXX")
-
-    data = {
-        "name": "XXX",
-        "price": "0.01",
-        "date": "1999-12-31",
-        "remark": "Pastaba",
-        "account": e.account.pk,
-        "closed": False,
-    }
-    url = reverse("debts:update", kwargs={"pk": e.pk, "debt_type": debt_type})
-    client_logged.post(url, data, follow=True)
-
-    actual = models.Debt.objects.get(pk=e.pk)
     assert actual.name == "XXX"
     assert actual.date == date(1999, 12, 31)
     assert actual.price == 1
@@ -220,7 +205,7 @@ def test_debt_update_price_smaller_then_returned(client_logged, debt_type):
     form = response.context["form"]
 
     assert not form.is_valid()
-    assert "Mokėtina suma viršija skolą." in form.as_p()
+    assert "Skola negali būti mažesnė nei grąžinta suma." in form.as_p()
 
 
 @pytest.mark.parametrize("debt_type", DEBT_TYPES)

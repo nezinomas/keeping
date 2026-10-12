@@ -50,6 +50,7 @@ def test_users_delete_load_form(main_user, client_logged):
     actual = response.content.decode()
 
     assert response.status_code == 200
+    assert f'hx-post="{url}"' in actual
     assert f"Ar tikrai norite ištrinti: <strong>{u1}</strong>?" in actual
 
 

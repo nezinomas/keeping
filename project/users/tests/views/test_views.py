@@ -6,7 +6,6 @@ import time_machine
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.signing import TimestampSigner
 from django.test import override_settings
 from django.urls import reverse
@@ -28,18 +27,10 @@ def test_successful_login(client):
 
     assert response.status_code == 200
     assert response.context["user"].is_authenticated
-
-
-def test_user_journal(client):
-    url = reverse("users:login")
-    credentials = {"username": "bob", "password": "123"}
-
-    response = client.post(url, credentials, follow=True)
-
     assert response.context["user"].journal.title == "bob Journal"
 
 
-@pytest.mark.disable_get_user_patch
+@pytest.mark.no_main_user
 @time_machine.travel("2000-12-15")
 def test_user_year_month_values_fill_on_login_if_empty(client):
     UserFactory(year=None, month=None)
@@ -56,37 +47,40 @@ def test_user_year_month_values_fill_on_login_if_empty(client):
     assert response.context["user"].month == 12
 
 
-def test_user_reset_link_if_form_has_errors(client):
-    url = reverse("users:login")
-    credentials = {"username": "xxx", "password": "xxx"}
-
-    response = client.post(url, credentials)
+@override_settings(ENV={"CAN_SIGN_UP": True})
+@pytest.mark.parametrize(
+    "visit, link, present",
+    [
+        (
+            lambda client: client.post(
+                reverse("users:login"), {"username": "xxx", "password": "xxx"}
+            ),
+            "users:password_reset",
+            True,
+        ),
+        (
+            lambda client: client.get(reverse("users:login")),
+            "users:password_reset",
+            False,
+        ),
+        (lambda client: client.get(reverse("users:login")), "users:signup", True),
+        (lambda client: client.get(reverse("users:signup")), "users:signup", False),
+        (lambda client: client.get(reverse("users:signup")), "users:login", True),
+    ],
+    ids=[
+        "login_errors_reset",
+        "login_no_reset",
+        "login_signup",
+        "signup_no_signup",
+        "signup_login",
+    ],
+)
+def test_page_links(client, visit, link, present):
+    response = visit(client)
+    content = response.content.decode("utf-8")
 
     assert response.status_code == 200
-
-    content = response.content.decode("utf-8")
-    reset = reverse("users:password_reset")
-
-    assert f'href="{reset}"' in content
-
-
-def test_user_no_reset_link(client):
-    url = reverse("users:login")
-    response = client.get(url)
-    content = response.content.decode("utf-8")
-    reset = reverse("users:password_reset")
-
-    assert f'href="{reset}"' not in content
-
-
-@override_settings(ENV={"CAN_SIGN_UP": True})
-def test_user_signup_link(client):
-    url = reverse("users:login")
-    response = client.get(url)
-    content = response.content.decode("utf-8")
-    signup = reverse("users:signup")
-
-    assert f'href="{signup}"' in content
+    assert (f'href="{reverse(link)}"' in content) is present
 
 
 def test_logout_user_is_logged(client_logged):
@@ -131,72 +125,21 @@ def test_signup_redirects_to_login(client):
     assert response.resolver_match.view_name == "users:login"
 
 
-@override_settings(ENV={"CAN_SIGN_UP": True})
-def test_signup_no_link(client):
-    url = reverse("users:signup")
-    response = client.get(url)
-    content = response.content.decode("utf-8")
-    signup = reverse("users:signup")
+REQUIRED = "Šis laukas yra privalomas."
 
-    assert f'href="{signup}"' not in content
-
-
-@override_settings(ENV={"CAN_SIGN_UP": True})
-def test_signup_login_link(client):
-    url = reverse("users:signup")
-    response = client.get(url)
-    content = response.content.decode("utf-8")
-    login = reverse("users:login")
-
-    assert f'href="{login}"' in content
+SIGNUP = {
+    "username": "john",
+    "email": "john@dot.com",
+    "password1": "abcdef123456",
+    "password2": "abcdef123456",
+}
 
 
 @override_settings(ENV={"CAN_SIGN_UP": True})
-def test_signup_form_inputs(client):
-    url = reverse("users:signup")
-    response = client.get(url)
+@pytest.mark.no_main_user
+def test_signup_user_authentication(client):
+    client.post(reverse("users:signup"), SIGNUP)
 
-    form = response.content.decode("utf-8")
-
-    assert form.count("<input") == 6
-    assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
-    assert form.count('type="hidden" name="next"') == 1
-    assert form.count('type="text"') == 1
-    assert form.count('type="email"') == 1
-    assert form.count('type="password"') == 2
-
-
-@pytest.fixture
-@override_settings(ENV={"CAN_SIGN_UP": True})
-def _signuped_client(client):
-    url = reverse("users:signup")
-    data = {
-        "username": "john",
-        "email": "john@dot.com",
-        "password1": "abcdef123456",
-        "password2": "abcdef123456",
-    }
-
-    return client.post(url, data)
-
-
-@pytest.mark.disable_get_user_patch
-def test_signup_redirection(_signuped_client):
-    assert _signuped_client.status_code == 302
-
-
-@pytest.mark.disable_get_user_patch
-def test_signup_user_creation(_signuped_client):
-    users = User.objects.all()
-    assert users.count() == 1
-
-    user = users.first()
-
-    assert user.is_superuser
-
-
-@pytest.mark.disable_get_user_patch
-def test_signup_user_authentication(client, _signuped_client):
     url = reverse("bookkeeping:index")
     response = client.get(url)
     user = response.context.get("user")
@@ -204,45 +147,13 @@ def test_signup_user_authentication(client, _signuped_client):
     assert user.is_authenticated
 
 
-@pytest.mark.disable_get_user_patch
-def test_signup_journal_creation(_signuped_client):
-    journals = Journal.objects.all()
-    assert journals.count() == 1
-
-    journal = journals[0]
-
-    assert str(journal) == "john Journal"
-
-
 @override_settings(ENV={"CAN_SIGN_UP": True})
-@pytest.mark.disable_get_user_patch
-def test_signup_form_errors(client):
-    url = reverse("users:signup")
-    response = client.post(url, {})
-    form = response.context.get("form")
+@pytest.mark.no_main_user
+def test_signup_with_no_data_creates_no_user(client):
+    response = client.post(reverse("users:signup"), {})
 
-    assert form.errors
-
-
-@override_settings(ENV={"CAN_SIGN_UP": True})
-@pytest.mark.disable_get_user_patch
-def test_signup_dont_create_user(client):
-    url = reverse("users:signup")
-    client.post(url, {})
-
+    assert REQUIRED in response.content.decode("utf-8")
     assert not User.objects.exists()
-
-
-def test_password_reset_form_inputs(client):
-    url = reverse("users:password_reset")
-    response = client.get(url)
-
-    form = response.content.decode("utf-8")
-
-    assert form.count("<input") == 3
-    assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
-    assert form.count('type="hidden" name="next"') == 1
-    assert form.count('type="email"') == 1
 
 
 @pytest.mark.parametrize(
@@ -306,27 +217,14 @@ def test_reset_pages_link_back_to_login(client, url_name):
     assert f'href="{reverse("users:login")}"' in content
 
 
-@pytest.fixture
-def _valid_confirm_response(client):
+def _confirm_url():
     user = UserFactory()
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
 
-    url = reverse(
+    return reverse(
         "users:password_reset_confirm", kwargs={"uidb64": uid, "token": token}
     )
-
-    return client.get(url, follow=True)
-
-
-def test_password_reset_confirm_form_inputs(_valid_confirm_response):
-    response = _valid_confirm_response
-
-    form = response.content.decode("utf-8")
-
-    assert form.count("<input") == 4
-    assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
-    assert form.count('type="password"') == 2
 
 
 @pytest.fixture
@@ -354,21 +252,55 @@ def test_password_reset_confirm_invalid_html(_invalid_confirm_response):
     assert "Prašyti naujos slaptažodžio atstatymo nuorodos" in content
 
 
-@pytest.mark.parametrize(
-    "url_name, inputs, field, fields",
-    [
-        ("users:password_change", 5, 'type="password"', 3),
-        ("users:invite", 2, 'type="email"', 1),
-    ],
-    ids=["password_change", "invite"],
-)
-def test_form_inputs(client_logged, url_name, inputs, field, fields):
-    response = client_logged.get(reverse(url_name))
-    form = response.content.decode("utf-8")
+CSRF = 'type="hidden" name="csrfmiddlewaretoken"'
+NEXT = 'type="hidden" name="next"'
 
-    assert form.count("<input") == inputs
-    assert form.count('type="hidden" name="csrfmiddlewaretoken"') == 1
-    assert form.count(field) == fields
+
+@override_settings(ENV={"CAN_SIGN_UP": True})
+@pytest.mark.parametrize(
+    "url, counts",
+    [
+        (
+            lambda: reverse("users:signup"),
+            {
+                "<input": 6,
+                CSRF: 1,
+                NEXT: 1,
+                'type="text"': 1,
+                'type="email"': 1,
+                'type="password"': 2,
+            },
+        ),
+        (
+            lambda: reverse("users:password_reset"),
+            {"<input": 3, CSRF: 1, NEXT: 1, 'type="email"': 1},
+        ),
+        (
+            _confirm_url,
+            {"<input": 4, CSRF: 1, 'type="password"': 2},
+        ),
+        (
+            lambda: reverse("users:password_change"),
+            {"<input": 5, CSRF: 1, 'type="password"': 3},
+        ),
+        (
+            lambda: reverse("users:invite"),
+            {"<input": 2, CSRF: 1, 'type="email"': 1},
+        ),
+    ],
+    ids=[
+        "signup",
+        "password_reset",
+        "password_reset_confirm",
+        "password_change",
+        "invite",
+    ],
+)
+def test_form_inputs(client_logged, url, counts):
+    form = client_logged.get(url(), follow=True).content.decode("utf-8")
+
+    for markup, expected in counts.items():
+        assert form.count(markup) == expected, markup
 
 
 @pytest.fixture
@@ -380,47 +312,28 @@ def _change_valid_data():
     }
 
 
-def test_password_change_successful_redirect(client_logged, _change_valid_data):
+def test_password_change_changes_the_password_and_keeps_the_login(
+    client_logged, main_user, _change_valid_data
+):
     url = reverse("users:password_change")
     response = client_logged.post(url, _change_valid_data, follow=True)
 
+    main_user.refresh_from_db()
+    index = client_logged.get(reverse("bookkeeping:index"))
+
     assert response.resolver_match.url_name == "password_change_done"
+    assert main_user.check_password("new_password")
+    assert index.context.get("user").is_authenticated
 
 
-def test_password_change_changed(client_logged, _change_valid_data):
-    url = reverse("users:password_change")
-    client_logged.post(url, _change_valid_data, follow=True)
-
-    user = User.objects.first()
-
-    assert user.check_password("new_password")
-
-
-def test_password_change_authentication(client_logged, _change_valid_data):
-    url = reverse("users:password_change")
-    client_logged.post(url, _change_valid_data, follow=True)
-
-    response = client_logged.get(reverse("bookkeeping:index"))
-    user = response.context.get("user")
-
-    assert user.is_authenticated
-
-
-def test_password_change_invalid_form_error(client_logged):
+def test_password_change_with_no_data_keeps_the_password(client_logged, main_user):
     url = reverse("users:password_change")
     response = client_logged.post(url, {})
-    form = response.context.get("form")
 
-    assert form.errors
+    main_user.refresh_from_db()
 
-
-def test_password_change_invalid_didnt_change_password(client_logged):
-    url = reverse("users:password_change")
-    client_logged.post(url, {})
-
-    user = User.objects.first()
-
-    assert user.check_password("123")
+    assert REQUIRED in response.content.decode("utf-8")
+    assert main_user.check_password("123")
 
 
 @pytest.mark.parametrize("is_superuser", [True, False], ids=["super", "ordinary"])
@@ -485,42 +398,34 @@ def test_invite_done_says_the_email_was_sent(client_logged):
     assert 'id="submit"' not in content
 
 
-@pytest.fixture()
-def signer(main_user):
-    signer_ = TimestampSigner(salt=settings.SALT)
-    token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
-    return (signer_, token_)
+INVITE_EXPIRED = (
+    "Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą."
+)
+
+
+def _invite_url(user):
+    token = TimestampSigner(salt=settings.SALT).sign_object(
+        {"jrn": user.journal.pk, "usr": user.pk}
+    )
+    return reverse("users:invite_signup", kwargs={"token": token})
 
 
 def test_invite_signup_expired_link(client, main_user):
     with time_machine.travel("1974-1-1 1:0:0"):
-        s_ = TimestampSigner(salt=settings.SALT)
-        token_ = s_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
+        url = _invite_url(main_user)
 
     with time_machine.travel("1974-1-4 1:0:1"):
-        url = reverse("users:invite_signup", kwargs={"token": token_})
-        response = client.get(url)
-        content = response.content.decode("utf-8")
+        content = client.get(url).content.decode("utf-8")
 
-        assert 'type="hidden" name="csrfmiddlewaretoken"' not in content
-        assert (
-            "Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą."  # noqa: E501
-            in content
-        )
+    assert 'type="hidden" name="csrfmiddlewaretoken"' not in content
+    assert INVITE_EXPIRED in content
 
 
-def test_invite_signup_valid_link(client, signer):
-    _, token_ = signer
-
-    url = reverse("users:invite_signup", kwargs={"token": token_})
-    response = client.get(url)
-    content = response.content.decode("utf-8")
+def test_invite_signup_valid_link(client, main_user):
+    content = client.get(_invite_url(main_user)).content.decode("utf-8")
 
     assert 'type="hidden" name="csrfmiddlewaretoken"' in content
-    assert (
-        "Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą."  # noqa: E501
-        not in content
-    )
+    assert INVITE_EXPIRED not in content
 
 
 def test_invite_signup_edited_token(client):
@@ -531,73 +436,64 @@ def test_invite_signup_edited_token(client):
     response = client.get(url)
     content = response.content.decode("utf-8")
 
-    assert (
-        "Atrodo, kad jūsų kvietimas nebegalioja. Paprašykite draugo atsiųsti naują nuorodą."  # noqa: E501
-        in content
-    )
-
-
-@pytest.fixture
-def _invite_client(main_user, client):
-    signer_ = TimestampSigner(salt=settings.SALT)
-    token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
-    url = reverse("users:invite_signup", kwargs={"token": token_})
-
-    data = {
-        "username": "john",
-        "email": "john@dot.com",
-        "password1": "abcdef123456",
-        "password2": "abcdef123456",
-    }
-
-    return client.post(url, data)
-
-
-def test_invite_signup_redirection(_invite_client):
-    assert _invite_client.status_code == 302
+    assert INVITE_EXPIRED in content
 
 
 @pytest.mark.parametrize(
-    "error", [AttributeError, ObjectDoesNotExist], ids=["broken_user", "no_object"]
+    "token",
+    [
+        lambda main_user, second_user: {
+            "jrn": second_user.journal.pk,
+            "usr": main_user.pk,
+        },
+        lambda main_user, second_user: {
+            "jrn": main_user.journal.pk,
+            "usr": main_user.pk + 100,
+        },
+    ],
+    ids=["another_journal", "unknown_user"],
 )
-def test_invite_signup_broken_user(mocker, client, main_user, error):
-    mck = mocker.patch("project.users.views.User")
-    mck.objects.get.side_effect = error
+def test_invite_signup_of_a_missing_inviter_creates_no_user(
+    client, main_user, second_user, token
+):
+    signed = TimestampSigner(salt=settings.SALT).sign_object(
+        token(main_user, second_user)
+    )
+    url = reverse("users:invite_signup", kwargs={"token": signed})
 
-    signer_ = TimestampSigner(salt=settings.SALT)
-    token_ = signer_.sign_object({"jrn": main_user.journal.pk, "usr": main_user.pk})
-    url = reverse("users:invite_signup", kwargs={"token": token_})
+    response = client.post(url, SIGNUP)
 
-    data = {
-        "username": "john",
-        "email": "john@dot.com",
-        "password1": "abcdef123456",
-        "password2": "abcdef123456",
-    }
-
-    client.post(url, data)
-
-    assert User.objects.all().count() == 1
+    assert response.url == reverse("users:login")
+    assert not User.objects.filter(username="john").exists()
 
 
-def test_invite_signup_user_creation(_invite_client):
-    users = User.objects.all()
-    assert users.count() == 2
+@override_settings(ENV={"CAN_SIGN_UP": True})
+@pytest.mark.parametrize(
+    ("url", "redirect", "is_superuser", "journal_title", "journals"),
+    [
+        (
+            lambda user: reverse("users:signup"),
+            "bookkeeping:index",
+            True,
+            "john Journal",
+            2,
+        ),
+        (_invite_url, "users:login", False, "bob Journal", 1),
+    ],
+    ids=["signup", "invite_signup"],
+)
+def test_signup_creates_the_user(
+    client, main_user, url, redirect, is_superuser, journal_title, journals
+):
+    response = client.post(url(main_user), SIGNUP)
 
-    user = users.last()
+    user = User.objects.get(username="john")
 
-    assert not user.is_superuser
-    assert user.username == "john"
-    assert user.journal.title == "bob Journal"
-
-
-def test_invite_signup_journals(_invite_client):
-    journals = Journal.objects.all()
-    assert journals.count() == 1
-
-    journal = journals[0]
-
-    assert str(journal) == "bob Journal"
+    assert response.url == reverse(redirect)
+    assert User.objects.count() == 2
+    assert user.is_superuser is is_superuser
+    assert user.journal.title == journal_title
+    assert Journal.objects.count() == journals
 
 
 def test_user_delete_other_user_get_form(client_logged, second_user):
@@ -612,3 +508,23 @@ def test_user_delete_other_user_post_form(client_logged, second_user):
     client_logged.post(url)
 
     assert User.objects.all().count() == 2
+
+
+@override_settings(ENV={"CAN_SIGN_UP": True})
+@pytest.mark.parametrize(
+    ("url", "journal_title"),
+    [
+        (lambda user: reverse("users:signup"), "john Journal"),
+        (_invite_url, "bob Journal"),
+    ],
+    ids=["signup", "invite_signup"],
+)
+def test_signup_ignores_a_posted_journal(
+    client, main_user, second_user, url, journal_title
+):
+    client.post(
+        url(main_user),
+        SIGNUP | {"journal": second_user.journal.pk},
+    )
+
+    assert User.objects.get(username="john").journal.title == journal_title

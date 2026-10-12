@@ -15,6 +15,10 @@ from .services.model_services import DebtModelService, DebtReturnModelService
 
 
 class AddDebtTypeMixin:
+    def url(self):
+        # the route's kwargs carry the debt type, and the pk where there is one
+        return reverse_lazy(f"debts:{self.url_name}", kwargs=self.kwargs)
+
     def get_form_kwargs(self, **kwargs):
         kwargs["debt_type"] = self.kwargs.get("debt_type")
         return super().get_form_kwargs(**kwargs)
@@ -73,16 +77,14 @@ class DebtLists(ListViewMixin):
 
 
 class DebtNew(AddDebtTypeMixin, DebtMixin, CreateViewMixin):
+    url_name = "new"
     service_class = DebtModelService
     form_class = forms.DebtForm
     modal_form_title = _("Debt")
 
-    def url(self):
-        debt_type = self.kwargs.get("debt_type")
-        return reverse_lazy("debts:new", kwargs={"debt_type": debt_type})
-
 
 class DebtUpdate(PriceToFloatViewMixin, AddDebtTypeMixin, DebtMixin, UpdateViewMixin):
+    url_name = "update"
     service_class = DebtModelService
     form_class = forms.DebtForm
     modal_form_title = _("Debt")
@@ -90,33 +92,14 @@ class DebtUpdate(PriceToFloatViewMixin, AddDebtTypeMixin, DebtMixin, UpdateViewM
     def get_queryset(self):
         return DebtModelService(self.request.user, self.kwargs["debt_type"]).objects
 
-    def url(self):
-        return (
-            reverse_lazy(
-                "debts:update",
-                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
-            )
-            if self.object
-            else None
-        )
-
 
 class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
+    url_name = "delete"
     service_class = DebtModelService
     modal_form_title = _("Delete debt")
 
     def get_queryset(self):
         return DebtModelService(self.request.user, self.kwargs["debt_type"]).objects
-
-    def url(self):
-        return (
-            reverse_lazy(
-                "debts:delete",
-                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
-            )
-            if self.object
-            else None
-        )
 
 
 class DebtReturnLists(ListViewMixin):
@@ -129,18 +112,16 @@ class DebtReturnLists(ListViewMixin):
 
 
 class DebtReturnNew(AddDebtTypeMixin, DebtReturnMixin, CreateViewMixin):
+    url_name = "return_new"
     service_class = DebtReturnModelService
     form_class = forms.DebtReturnForm
     modal_form_title = _("Debt repayment")
-
-    def url(self):
-        debt_type = self.kwargs.get("debt_type")
-        return reverse_lazy("debts:return_new", kwargs={"debt_type": debt_type})
 
 
 class DebtReturnUpdate(
     PriceToFloatViewMixin, AddDebtTypeMixin, DebtReturnMixin, UpdateViewMixin
 ):
+    url_name = "return_update"
     service_class = DebtReturnModelService
     form_class = forms.DebtReturnForm
     modal_form_title = _("Debt repayment")
@@ -150,18 +131,9 @@ class DebtReturnUpdate(
             self.request.user, self.kwargs["debt_type"]
         ).objects
 
-    def url(self):
-        return (
-            reverse_lazy(
-                "debts:return_update",
-                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
-            )
-            if self.object
-            else None
-        )
-
 
 class DebtReturnDelete(AddDebtTypeMixin, DebtReturnMixin, DeleteViewMixin):
+    url_name = "return_delete"
     service_class = DebtReturnModelService
     modal_form_title = _("Delete debt repayment")
 
@@ -169,13 +141,3 @@ class DebtReturnDelete(AddDebtTypeMixin, DebtReturnMixin, DeleteViewMixin):
         return DebtReturnModelService(
             self.request.user, self.kwargs["debt_type"]
         ).objects
-
-    def url(self):
-        return (
-            reverse_lazy(
-                "debts:return_delete",
-                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
-            )
-            if self.object
-            else None
-        )

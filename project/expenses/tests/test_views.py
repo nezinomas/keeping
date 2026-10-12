@@ -94,6 +94,21 @@ def test_expenses_list_filters_by_month(client_logged, today, dates, kwargs, exp
     assert sorted(row["date"] for row in actual) == expected
 
 
+@pytest.mark.parametrize(
+    "month, expected",
+    [
+        pytest.param(1, "<b>1</b> mėnesį įrašų nėra", id="month"),
+        pytest.param(13, "<b>1999</b> metais įrašų nėra", id="all_year"),
+        pytest.param(14, "<b>1999</b> metais įrašų nėra", id="above_all_year"),
+    ],
+)
+def test_expenses_list_empty_notice(client_logged, month, expected):
+    url = reverse("expenses:list", kwargs={"month": month})
+    actual = client_logged.get(url).content.decode("utf-8")
+
+    assert expected in actual
+
+
 def test_expenses_lists_302(client):
     url = reverse("expenses:list")
     response = client.get(url)
@@ -672,11 +687,18 @@ def test_load_expense_name_other_journal_type_yields_no_names(
     assert response.context["object_list"].count() == 0
 
 
-def test_search_not_found(client_logged):
+@pytest.mark.parametrize(
+    "query",
+    [
+        pytest.param({"search": "xxx"}, id="no_match"),
+        pytest.param({}, id="no_search_given"),
+    ],
+)
+def test_search_not_found(client_logged, query):
     ExpenseFactory()
 
     url = reverse("expenses:search")
-    response = client_logged.get(url, {"search": "xxx"})
+    response = client_logged.get(url, query)
     actual = response.content.decode("utf-8")
 
     assert "Nieko nerasta" in actual
@@ -736,8 +758,7 @@ def test_search_statistic_not_found(client_logged):
 
     url = reverse("expenses:search")
     response = client_logged.get(url, {"page": 2, "search": "xxx"})
+    actual = response.content.decode("utf-8")
 
-    assert not response.context["sum_price"]
-    assert not response.context["sum_quantity"]
-    assert not response.context["average"]
-    assert response.context["count"] == 0
+    assert "Nieko nerasta" in actual
+    assert "search-statistic" not in actual

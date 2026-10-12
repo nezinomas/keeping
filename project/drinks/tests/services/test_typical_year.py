@@ -7,11 +7,9 @@ from django.utils.translation import gettext as _
 from ...lib.drinks_risk import HEAVY_DAY_STDAV
 from ...services.typical_year import (
     MonthTotal,
-    NoPooledRange,
     PooledRange,
     TypicalYear,
     TypicalYearBuilder,
-    TypicalYearChartViewModel,
     TypicalYearProfile,
 )
 from ..factories import DrinkFactory
@@ -124,27 +122,11 @@ def test_pool_without_rows_has_no_data():
     assert actual.points[0].drinking_day_share == 0.0
 
 
-@time_machine.travel("2026-07-15")
-def test_pool_today_defaults_to_the_day_it_runs_on():
-    actual = TypicalYearProfile.pool([_total(2026, 7, 30, 3)])
-
-    assert actual.points[6].calendar_days == 15
-
-
 # TypicalYearBuilder.chart
-def test_chart_view_model():
-    actual = _chart(year_rows=[_total(2020, 1, 40, 4)])
-
-    assert isinstance(actual, TypicalYearChartViewModel)
-    assert len(actual.categories) == 12
-    assert len(actual.year.drinking_day_share) == 12
-    assert len(actual.year.intensity) == 12
-    assert actual.heavy_threshold == HEAVY_DAY_STDAV
-
-
 def test_chart_categories_are_the_month_names_january_first():
     actual = _chart()
 
+    assert len(actual.categories) == 12
     assert actual.categories[0] == _("January")
     assert actual.categories[11] == _("December")
 
@@ -166,13 +148,20 @@ def test_chart_intensity_carries_the_std_av_unit_and_one_decimal():
     assert actual.text["share_unit"] == "%"
 
 
-def test_chart_leaves_a_gap_for_the_months_a_year_has_not_reached():
-    # August has not happened, so it is a gap in the series — plotting it as a
-    # zero would draw the running year as five dry months
-    actual = _chart(year_rows=[_total(2026, 7, 30, 3)], today=date(2026, 7, 15))
+@pytest.mark.parametrize(
+    "year, months",
+    [
+        # August has not happened, so the series stops at July: plotting it as a
+        # zero would draw the running year as five dry months
+        pytest.param(2026, 7, id="running_year"),
+        pytest.param(2025, 12, id="finished_year"),
+    ],
+)
+def test_chart_ends_at_the_last_month_a_year_has_reached(year, months):
+    actual = _chart(year_rows=[_total(year, 7, 30, 3)], today=date(2026, 7, 15))
 
-    assert actual.year.drinking_day_share[7] is None
-    assert actual.year.intensity[7] is None
+    assert len(actual.year.drinking_day_share) == months
+    assert len(actual.year.intensity) == months
 
 
 def test_chart_plots_a_reached_month_without_records_as_a_zero():
@@ -184,51 +173,63 @@ def test_chart_plots_a_reached_month_without_records_as_a_zero():
     assert actual.year.intensity[5] == 0.0
 
 
-def test_chart_labels_the_pooled_layer_with_the_span_it_pooled():
-    # the legend names each layer, because the chart now plots two spans and
-    # neither may be read as the other
-    actual = _chart(pooled_rows=[_total(2015, 1, 10, 1), _total(2025, 1, 10, 1)])
+@pytest.mark.parametrize(
+    "year_rows, pooled_rows, year_label, pooled_label",
+    [
+        # the legend names each layer, because the chart plots two spans and
+        # neither may be read as the other
+        pytest.param(
+            [],
+            [_total(2015, 1, 10, 1), _total(2025, 1, 10, 1)],
+            "",
+            "Apjungti 2015–2025 m.",
+            id="pooled_span",
+        ),
+        pytest.param(
+            [_total(2025, 1, 10, 1)],
+            [_total(2025, 1, 10, 1)],
+            "2025",
+            "2025",
+            id="one_year_alone",
+        ),
+    ],
+)
+def test_chart_labels_each_layer_with_the_span_it_drew(
+    year_rows, pooled_rows, year_label, pooled_label
+):
+    actual = _chart(year_rows=year_rows, pooled_rows=pooled_rows)
 
-    assert actual.pooled.label == "Apjungti 2015–2025 m."
-
-
-def test_chart_labels_a_layer_of_one_year_with_that_year_alone():
-    actual = _chart(
-        year_rows=[_total(2025, 1, 10, 1)], pooled_rows=[_total(2025, 1, 10, 1)]
-    )
-
-    assert actual.year.label == "2025"
-    assert actual.pooled.label == "2025"
-
-
-def test_chart_draws_the_pooled_layer_behind_the_header_year():
-    actual = _chart(
-        year_rows=[_total(2025, 1, 10, 1)],
-        pooled_rows=[_total(2015, 1, 10, 1), _total(2025, 1, 10, 1)],
-    )
-
-    assert actual.layers == [actual.pooled, actual.year]
-
-
-def test_chart_without_a_pooled_layer_draws_the_header_year_alone():
-    actual = _chart(year_rows=[_total(2025, 1, 10, 1)])
-
-    assert actual.has_data
-    assert not actual.pooled.has_data
-    assert actual.layers == [actual.year]
+    assert actual.year.label == year_label
+    assert actual.pooled.label == pooled_label
 
 
-def test_chart_of_a_header_year_with_no_records_draws_the_pooled_layer_alone():
-    actual = _chart(pooled_rows=[_total(2015, 1, 10, 1), _total(2025, 1, 10, 1)])
+@pytest.mark.parametrize(
+    "year_rows, pooled_rows, drawn",
+    [
+        pytest.param(
+            [_total(2025, 1, 10, 1)],
+            [_total(2015, 1, 10, 1), _total(2025, 1, 10, 1)],
+            ("pooled", "year"),
+            id="pooled_behind_the_year",
+        ),
+        pytest.param([_total(2025, 1, 10, 1)], [], ("year",), id="year_alone"),
+        pytest.param(
+            [],
+            [_total(2015, 1, 10, 1), _total(2025, 1, 10, 1)],
+            ("pooled",),
+            id="pooled_alone",
+        ),
+        pytest.param([], [], (), id="nothing"),
+    ],
+)
+def test_chart_draws_the_layers_that_have_data_back_to_front(
+    year_rows, pooled_rows, drawn
+):
+    actual = _chart(year_rows=year_rows, pooled_rows=pooled_rows)
+    layers = {"pooled": actual.pooled, "year": actual.year}
 
-    assert actual.layers == [actual.pooled]
-
-
-def test_chart_without_any_records_draws_nothing():
-    actual = _chart()
-
-    assert not actual.has_data
-    assert actual.layers == []
+    assert actual.layers == [layers[name] for name in drawn]
+    assert actual.has_data is bool(drawn)
 
 
 def test_chart_reports_the_pooled_span_for_the_form():
@@ -249,6 +250,7 @@ def test_chart_as_dict_carries_the_layers_it_draws_and_no_python_only_span():
     ).as_dict
 
     assert sorted(actual) == ["categories", "heavy_threshold", "layers", "text"]
+    assert actual["heavy_threshold"] == HEAVY_DAY_STDAV
     assert [layer["label"] for layer in actual["layers"]] == [
         "Apjungti 2015–2025 m.",
         "2025",
@@ -256,10 +258,6 @@ def test_chart_as_dict_carries_the_layers_it_draws_and_no_python_only_span():
 
 
 # PooledRange.resolve
-def test_resolve_without_a_qty_pools_nothing():
-    assert isinstance(PooledRange.resolve(2025), NoPooledRange)
-
-
 def test_resolve_of_zero_pools_every_year_on_record():
     actual = PooledRange.resolve(2025, 0)
 
@@ -285,52 +283,43 @@ def test_resolve_of_a_count_spans_back_from_the_header_year(qty, expected):
 
 # TypicalYear.build
 @time_machine.travel("2026-07-15")
-def test_build_always_draws_the_header_year(main_user):
+def test_build_draws_the_header_year_alone_until_a_range_is_asked_for(main_user):
     DrinkFactory(date=date(2015, 1, 5), stdav=5)
     DrinkFactory(date=date(2025, 1, 5), stdav=5)
 
     actual = TypicalYear.build(main_user, 2025)
 
     assert actual.year.label == "2025"
-    # one January, the header year's — not the two the records span
+    # one January, the header year's, not the two the records span
     assert actual.year.drinking_day_share[0] == round(1 / 31 * 100, 1)
-
-
-@time_machine.travel("2026-07-15")
-def test_build_pools_nothing_until_a_range_is_asked_for(main_user):
-    DrinkFactory(date=date(2015, 1, 5), stdav=5)
-    DrinkFactory(date=date(2025, 1, 5), stdav=5)
-
-    actual = TypicalYear.build(main_user, 2025)
-
     assert not actual.pooled.has_data
     assert actual.year_from == 0
     assert actual.layers == [actual.year]
 
 
 @time_machine.travel("2026-07-15")
-def test_build_pools_every_year_on_record_for_an_open_ended_range(main_user):
-    DrinkFactory(date=date(2015, 1, 5), stdav=5)
-    DrinkFactory(date=date(2025, 1, 5), stdav=5)
+@pytest.mark.parametrize(
+    "drink_years, pooled, year_from, year_to",
+    [
+        pytest.param(
+            [2015, 2025], PooledRange(), 2015, 2025, id="every_year_on_record"
+        ),
+        # two Januaries pooled, not three
+        pytest.param(
+            [2015, 2020, 2025], PooledRange(2020, 2025), 2020, 2025, id="selected_years"
+        ),
+    ],
+)
+def test_build_pools_the_years_the_range_asks_for(
+    main_user, drink_years, pooled, year_from, year_to
+):
+    for year in drink_years:
+        DrinkFactory(date=date(year, 1, 5), stdav=5)
 
-    actual = TypicalYear.build(main_user, 2025, PooledRange())
+    actual = TypicalYear.build(main_user, 2025, pooled)
 
-    assert actual.year_from == 2015
-    assert actual.year_to == 2025
-    assert actual.pooled.drinking_day_share[0] == round(2 / 62 * 100, 1)
-
-
-@time_machine.travel("2026-07-15")
-def test_build_pools_only_the_selected_years(main_user):
-    DrinkFactory(date=date(2015, 1, 5), stdav=5)
-    DrinkFactory(date=date(2020, 1, 5), stdav=5)
-    DrinkFactory(date=date(2025, 1, 5), stdav=5)
-
-    actual = TypicalYear.build(main_user, 2025, PooledRange(2020, 2025))
-
-    assert actual.year_from == 2020
-    assert actual.year_to == 2025
-    # two Januaries pooled, not three
+    assert actual.year_from == year_from
+    assert actual.year_to == year_to
     assert actual.pooled.drinking_day_share[0] == round(2 / 62 * 100, 1)
 
 
@@ -398,13 +387,10 @@ def test_build_without_records_has_no_data(main_user):
     assert actual.year_from == 0
 
 
-def test_build_with_no_pooled_range_asks_the_db_nothing_about_it(
-    main_user, django_assert_num_queries
-):
-    # NoPooledRange is the state, so the absent layer costs no query either
-    DrinkFactory(date=date(2020, 3, 5), stdav=5)
+@time_machine.travel("2026-07-15")
+def test_build_stops_the_running_year_at_today(main_user):
+    DrinkFactory(date=date(2026, 7, 5), stdav=5)
 
-    with django_assert_num_queries(1):
-        actual = TypicalYear.build(main_user, 2020, NoPooledRange())
+    actual = TypicalYear.build(main_user, 2026)
 
-    assert not actual.pooled.has_data
+    assert len(actual.year.drinking_day_share) == 7

@@ -1,6 +1,5 @@
 import pytest
 
-from ...bookkeeping.forms import AccountWorthForm
 from ...expenses.forms import ExpenseForm
 from ...incomes.forms import IncomeForm
 from ...savings.forms import SavingForm
@@ -70,9 +69,8 @@ def test_account_identical_title_names_the_existing_one(main_user):
         (TransactionForm, "from_account"),
         (SavingCloseForm, "to_account"),
         (SavingForm, "account"),
-        (AccountWorthForm, "account"),
     ],
-    ids=["incomes", "expenses", "transactions", "saving_close", "saving", "worth"],
+    ids=["incomes", "expenses", "transactions", "saving_close", "saving"],
 )
 @pytest.mark.parametrize(
     "year, closed_listed",

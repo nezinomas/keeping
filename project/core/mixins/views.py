@@ -21,12 +21,11 @@ class CreateViewMixin(
 ):
     template_name = "core/generic_form.html"
     form_action = "insert"
-    url_name = None
+    url_name = "new"
 
     def url(self):
         app = self.request.resolver_match.app_name
-        url_name = self.url_name or "new"
-        return reverse_lazy(f"{app}:{url_name}")
+        return reverse_lazy(f"{app}:{self.url_name}")
 
 
 class UpdateViewMixin(
@@ -34,30 +33,20 @@ class UpdateViewMixin(
 ):
     template_name = "core/generic_form.html"
     form_action = "update"
-    url_name = None
+    url_name = "update"
 
     def url(self):
         app = self.request.resolver_match.app_name
-        url_name = self.url_name or "update"
-        return (
-            reverse_lazy(f"{app}:{url_name}", kwargs={"pk": self.object.pk})
-            if self.object
-            else None
-        )
+        return reverse_lazy(f"{app}:{self.url_name}", kwargs={"pk": self.object.pk})
 
 
 class DeleteViewMixin(AddUserToKwargsMixin, GetQuerysetMixin, DeleteMixin, DeleteView):
     template_name = "core/generic_delete_form.html"
-    url_name = None
+    url_name = "delete"
 
     def url(self):
         app = self.request.resolver_match.app_name
-        url_name = self.url_name or "delete"
-        return (
-            reverse_lazy(f"{app}:{url_name}", kwargs={"pk": self.object.pk})
-            if self.object
-            else None
-        )
+        return reverse_lazy(f"{app}:{self.url_name}", kwargs={"pk": self.object.pk})
 
 
 class RedirectViewMixin(RedirectView):

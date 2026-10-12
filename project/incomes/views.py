@@ -17,6 +17,7 @@ from . import forms
 from .services.cards import OverviewCards
 from .services.chart_months import ChartMonths
 from .services.model_services import IncomeModelService, IncomeTypeModelService
+from .services.search import search_incomes
 from .services.type_rows import TypesTable
 from .tabs import DEFAULT_TAB, TABS, IncomeTab
 
@@ -142,5 +143,5 @@ class TypeUpdate(UpdateViewMixin):
 
 class Search(SearchViewMixin):
     template_name = "incomes/income_list.html"
-    search_method = "search_incomes"
+    search_method = staticmethod(search_incomes)
     per_page = 50

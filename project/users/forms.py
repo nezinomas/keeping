@@ -7,14 +7,11 @@ from .models import User
 
 
 class SignUpForm(UserCreationForm):
-    email = forms.CharField(max_length=254, required=True, widget=forms.EmailInput())
-
     class Meta:
         model = User
         fields = ("username", "email", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         self.fields["email"].label = _("Email")
@@ -23,11 +20,8 @@ class SignUpForm(UserCreationForm):
 class InviteForm(forms.Form):
     email = forms.EmailField(max_length=254, required=True)
 
-    class Meta:
-        fields = "email"
-
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
         self.fields["email"].label = _("Email")
@@ -39,8 +33,7 @@ class InviteForm(forms.Form):
         if email == admin_email:
             raise ValidationError(_("You entered your own Email."))
 
-        emails = User.objects.exclude(email=admin_email).values_list("email", flat=True)
-        if email in emails:
+        if email in User.objects.values_list("email", flat=True):
             raise ValidationError(_("User with this Email already exists."))
 
         return email

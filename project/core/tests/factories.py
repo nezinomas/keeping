@@ -19,7 +19,11 @@ class OwnedTitleDummy(models.TitleAbstract):
     owner = django_models.ForeignKey(TitleDummy, on_delete=django_models.CASCADE)
 
     class Meta:
-        unique_together = ["owner", "title"]
+        constraints = [
+            django_models.UniqueConstraint(
+                fields=["owner", "slug"], name="owned_title_dummy_owner_slug"
+            )
+        ]
 
 
 class OwnedTitleDummyFactory(factory.django.DjangoModelFactory):

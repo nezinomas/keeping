@@ -130,6 +130,7 @@ def test_debt_return_load_update_form(client_logged, debt_type, remark):
     assert form.instance.price == 0.01
     assert form.instance.account.title == "Account1"
     assert form.instance.remark == remark
+    assert f'hx-post="{url}"' in response.content.decode()
 
 
 @pytest.mark.parametrize(

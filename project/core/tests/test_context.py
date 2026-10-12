@@ -2,35 +2,34 @@ from datetime import date
 
 import pytest
 import time_machine
+from django.contrib.auth.models import AnonymousUser
 
-from ..context import context_counts_menu, context_months, yday, years
+from ..context import context_months, yday, years
 
 pytestmark = pytest.mark.django_db
 
 
 @time_machine.travel("2006-01-01")
-def test_years(main_user, rf):
-    expect = {"years": [2007, 2006, 2005]}
+@pytest.mark.parametrize(
+    "first_record, expect",
+    [
+        (date(2005, 2, 3), [2007, 2006, 2005]),
+        (date(2004, 2, 3), [2007, 2006, 2005, 2004]),
+    ],
+)
+def test_years_run_from_the_first_record_to_next_year(
+    fake_request, first_record, expect
+):
+    fake_request.user.journal.first_record = first_record
 
-    main_user.journal.first_record = date(2005, 2, 3)
-    rf.user = main_user
-
-    actual = years(rf)
-
-    assert len(actual["years"]) == 3
-    assert expect == actual
+    assert years(fake_request) == {"years": expect}
 
 
-@time_machine.travel("2006-01-01")
-def test_year_first_record_from_journal(main_user, rf):
-    main_user.journal.first_record = date(2004, 2, 3)
+def test_years_of_an_anonymous_user_are_empty(rf):
+    request = rf.get("/")
+    request.user = AnonymousUser()
 
-    rf.user = main_user
-
-    actual = years(rf)
-    expect = [2007, 2006, 2005, 2004]
-
-    assert expect == actual["years"]
+    assert years(request) == {"years": []}
 
 
 @time_machine.travel("2020-6-6")
@@ -40,45 +39,20 @@ def test_year_first_record_from_journal(main_user, rf):
         (1999, {"yday": 365, "ydays": 365}),
         (2016, {"yday": 366, "ydays": 366}),
         (2020, {"yday": 158, "ydays": 366}),
+        (2021, {"yday": 0, "ydays": 365}),
     ],
 )
-def test_yday(main_user, year, expect, rf):
-    main_user.year = year
-    rf.user = main_user
+def test_yday_follows_the_users_year(fake_request, year, expect):
+    fake_request.user.year = year
 
-    actual = yday(rf.user)
-
-    assert actual == expect
+    assert yday(fake_request) == expect
 
 
-@time_machine.travel("2020-1-1")
-def test_yday_anonymous_user(rf):
-    actual = yday(rf)
+@time_machine.travel("2000-1-1")
+def test_context_months_are_the_users_year(main_user, rf):
+    request = rf.get("/")
+    request.user = main_user
 
-    assert actual == {"yday": 1, "ydays": 366}
+    actual = context_months(request)
 
-
-@time_machine.travel("1974-1-1")
-def test_context_months(rf):
-    actual = context_months(rf)
-
-    assert len(actual["context_months"]) == 12
-    assert actual["context_months"][0] == date(1974, 1, 1)
-
-
-def test_context_counts_menu(main_user, rf):
-    from ...counts.tests.factories import CountTypeFactory
-
-    CountTypeFactory(title="XXX", user=main_user)
-
-    rf.user = main_user
-    actual = context_counts_menu(rf)
-
-    assert len(actual["counts_menu"]) == 1
-    assert actual["counts_menu"][0].title == "XXX"
-
-
-def test_context_counts_menu_no_user(rf):
-    actual = context_counts_menu(rf)
-
-    assert actual["counts_menu"] == []
+    assert actual == {"context_months": [date(1999, m, 1) for m in range(1, 13)]}

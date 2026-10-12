@@ -1,17 +1,11 @@
 from django_htmx.http import HttpResponseClientRedirect
 
 from ..lib.utils import http_htmx_response
+from .create_update import HxResponseMixin
 
 
-class DeleteMixin:
+class DeleteMixin(HxResponseMixin):
     hx_trigger_django = "reload"
-    hx_redirect = None
-
-    def get_hx_trigger_django(self):
-        return self.hx_trigger_django
-
-    def get_hx_redirect(self):
-        return self.hx_redirect
 
     def get_context_data(self, **kwargs):
         context = {

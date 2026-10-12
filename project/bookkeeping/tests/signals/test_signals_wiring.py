@@ -1,6 +1,8 @@
 from datetime import date
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from ....bookkeeping import balance_sources
 from ....bookkeeping.tests.factories import (
@@ -8,7 +10,7 @@ from ....bookkeeping.tests.factories import (
     PensionWorthFactory,
     SavingWorthFactory,
 )
-from ....debts.services.model_services import DebtReturnModelService
+from ....debts.services.model_services import DebtModelService
 from ....debts.tests.factories import BorrowFactory, BorrowReturnFactory
 from ....expenses.tests.factories import ExpenseFactory
 from ....incomes.tests.factories import IncomeFactory
@@ -25,32 +27,39 @@ from ....transactions.tests.factories import (
     TransactionFactory,
 )
 
-# Calls a save or delete reaches, in order; update_debt_model saves its Debt,
-# which syncs the accounts once more.
-DEBT_RETURN = ["accounts", "debt", "accounts"]
+# Calls a save or delete reaches, in order; the edit puts the row before the
+# journal's first record.
+EARLIER = {"date": date(1998, 1, 1)}
 WIRING = {
-    "Income": (IncomeFactory, ["accounts", "first_record"], ["accounts"]),
-    "Expense": (ExpenseFactory, ["accounts", "first_record"], ["accounts"]),
-    "Saving": (SavingFactory, ["accounts", "savings"], ["accounts", "savings"]),
-    "Transaction": (TransactionFactory, ["accounts"], ["accounts"]),
+    "Income": (IncomeFactory, EARLIER, ["accounts", "first_record"], ["accounts"]),
+    "Expense": (ExpenseFactory, EARLIER, ["accounts", "first_record"], ["accounts"]),
+    "Saving": (SavingFactory, {}, ["accounts", "savings"], ["accounts", "savings"]),
+    "Transaction": (TransactionFactory, {}, ["accounts"], ["accounts"]),
     "SavingClose": (
         SavingCloseFactory,
+        {},
         ["accounts", "close_year", "savings"],
         ["accounts", "close_year", "savings"],
     ),
     "SavingChange": (
         SavingChangeFactory,
+        {},
         ["close_year", "savings"],
         ["close_year", "savings"],
     ),
-    "Debt": (BorrowFactory, ["accounts"], ["accounts"]),
-    "DebtReturn": (BorrowReturnFactory, DEBT_RETURN, DEBT_RETURN),
-    "Pension": (PensionFactory, ["pensions"], ["pensions"]),
-    "SavingType": (SavingTypeFactory, ["accounts", "savings"], []),
-    "PensionType": (PensionTypeFactory, ["pensions"], []),
-    "AccountWorth": (AccountWorthFactory, ["accounts"], []),
-    "SavingWorth": (SavingWorthFactory, ["savings"], []),
-    "PensionWorth": (PensionWorthFactory, ["pensions"], []),
+    "Debt": (BorrowFactory, {}, ["accounts"], ["accounts"]),
+    "DebtReturn": (
+        BorrowReturnFactory,
+        {},
+        ["accounts", "debt"],
+        ["accounts", "debt"],
+    ),
+    "Pension": (PensionFactory, {}, ["pensions"], ["pensions"]),
+    "SavingType": (SavingTypeFactory, {}, ["accounts", "savings"], []),
+    "PensionType": (PensionTypeFactory, {}, ["pensions"], []),
+    "AccountWorth": (AccountWorthFactory, {}, ["accounts"], []),
+    "SavingWorth": (SavingWorthFactory, {}, ["savings"], []),
+    "PensionWorth": (PensionWorthFactory, {}, ["pensions"], []),
 }
 
 
@@ -66,10 +75,14 @@ def listen(mocker):
         mocker.patch.object(balance_sources, "sync_pensions", parent.pensions)
         mocker.patch.object(FundCloseYear, "follow", parent.close_year)
         mocker.patch.object(Journal, "save", parent.first_record)
-        parent.debt.return_value = 0
-        mocker.patch.object(
-            DebtReturnModelService, "total_returned_for_debt", parent.debt
+        # the real body runs, so a sync it triggers itself shows in the order
+        returned = mocker.patch.object(
+            DebtModelService,
+            "sync_returned",
+            autospec=True,
+            side_effect=DebtModelService.sync_returned,
         )
+        parent.attach_mock(returned, "debt")
 
         return lambda: [call[0] for call in parent.mock_calls]
 
@@ -78,9 +91,10 @@ def listen(mocker):
 
 def created(name):
     """The row is made before the recorder listens, so only its own save counts."""
-    instance = WIRING[name][0]()
-    if name in ("Income", "Expense"):
-        instance.date = date(1998, 1, 1)  # before the journal's first record
+    factory, edits = WIRING[name][:2]
+    instance = factory()
+    for field, value in edits.items():
+        setattr(instance, field, value)
 
     return instance
 
@@ -93,7 +107,7 @@ def test_save_reaches_receivers_in_order(name, listen):
 
     instance.save()
 
-    assert reached() == WIRING[name][1]
+    assert reached() == WIRING[name][2]
 
 
 @pytest.mark.django_db
@@ -104,31 +118,27 @@ def test_delete_reaches_receivers_in_order(name, listen):
 
     instance.delete()
 
-    assert reached() == WIRING[name][2]
+    assert reached() == WIRING[name][3]
 
 
 @pytest.mark.django_db
-def test_income_save_syncs_accounts(main_user, mocker):
-    accounts = mocker.spy(balance_sources, "sync_accounts")
+def test_deleting_a_debt_syncs_the_accounts_once_for_all_its_returns(listen):
+    debt = BorrowFactory()
+    BorrowReturnFactory.create_batch(2, debt=debt)
+    reached = listen()
 
-    IncomeFactory()
+    debt.delete()
 
-    assert mocker.call(main_user) in accounts.call_args_list
-
-
-@pytest.mark.django_db
-def test_saving_save_syncs_savings(main_user, mocker):
-    savings = mocker.spy(balance_sources, "sync_savings")
-
-    SavingFactory()
-
-    assert mocker.call(main_user) in savings.call_args_list
+    assert reached() == ["accounts"]
 
 
 @pytest.mark.django_db
-def test_pension_save_syncs_pensions(main_user, mocker):
-    pensions = mocker.spy(balance_sources, "sync_pensions")
+def test_deleting_a_debt_costs_the_same_queries_for_2_and_6_returns():
+    def queries_to_delete(returns):
+        debt = BorrowFactory()
+        BorrowReturnFactory.create_batch(returns, debt=debt)
+        with CaptureQueriesContext(connection) as queries:
+            debt.delete()
+        return len(queries)
 
-    PensionFactory()
-
-    assert mocker.call(main_user) in pensions.call_args_list
+    assert queries_to_delete(2) == queries_to_delete(6)

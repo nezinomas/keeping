@@ -1,21 +1,14 @@
 from datetime import date
 from functools import cached_property
 
+from ...core.lib.day_stats import NoPastRecord, PastRecord
 from ..lib.drinks_options import DrinkConverter
 from ..lib.drinks_stats import DataRow
 from .model_services import DrinkModelService, DrinkTargetDTO, DrinkTargetModelService
 
 
 class ConsumptionYear:
-    """One user's year of drink records, in canonical Std Av units.
-
-    The seam the Index, Risk and Trends tab modules sit on. It owns the query
-    shape, the `DataRow` construction, the user's drink type, the year's target
-    and the reach back into the previous year — so a tab module never touches
-    the ORM or knows how a row becomes a `DataRow`.
-
-    Every reader is cached, so asking twice costs one query.
-    """
+    """One user's year of Drinks in canonical Std Av; every reader is cached."""
 
     def __init__(self, user, year: int):
         self.user = user
@@ -43,12 +36,23 @@ class ConsumptionYear:
         return DrinkTargetModelService(self.user).get_target(self.year)
 
     @cached_property
-    def last_recorded_date(self) -> date | None:
-        return self._service.latest_date(self.year)
+    def earlier(self) -> PastRecord | NoPastRecord:
+        """The last Drink before the year, so its first Gap reaches back."""
+        latest = self._service.latest_date_before(self.year)
+        if latest is None:
+            return NoPastRecord()
+
+        return PastRecord(latest)
 
     @cached_property
-    def last_recorded_date_before(self) -> date | None:
-        return self._service.latest_date_before(self.year)
+    def latest(self) -> PastRecord | NoPastRecord:
+        """The last Drink on or before today, none later than the year's end."""
+        through = min(date.today(), date(self.year, 12, 31))
+        latest = self._service.latest_date(through)
+        if latest is None:
+            return NoPastRecord()
+
+        return PastRecord(latest)
 
     @cached_property
     def previous(self) -> "ConsumptionYear":

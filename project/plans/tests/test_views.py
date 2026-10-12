@@ -438,6 +438,7 @@ def test_plan_load_form(client_logged, kind):
 
     assert response.status_code == 200
     assert f'hx-post="{url}"' in actual
+    assert 'class="modal-body plans-form"' in actual
     assert '<input type="text" name="year" value="1999"' in actual
 
 
@@ -535,6 +536,7 @@ def test_plan_load_update_load_form(client_logged, kind):
     actual = response.content.decode()
 
     assert f'hx-post="{url}"' in actual
+    assert 'class="modal-body plans-form"' in actual
 
 
 @pytest.mark.parametrize(

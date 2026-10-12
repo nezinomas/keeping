@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from datetime import date as dt_date
-from datetime import datetime
 
 from django.template.defaultfilters import floatformat
 from django.urls import reverse
@@ -8,7 +7,8 @@ from django.utils.translation import gettext as _
 
 from ...core.lib import stat_card
 from ...core.lib.calendar_grid import CalendarGrid
-from ...core.lib.date import ydays, years
+from ...core.lib.date import ydays
+from ...core.lib.day_stats import NoPastRecord, PastRecord
 from ...core.lib.stat_card import (
     Card,
     ComparisonStatCard,
@@ -34,23 +34,47 @@ from .consumption_year import ConsumptionYear
 
 
 @dataclass(frozen=True)
-class MonthlyChartViewModel(ChartViewModel):
+class QuantityChartViewModel(ChartViewModel):
     categories: list[str]
-    data: list[float | None]
+    data: list[float]
     text: dict[str, str]
-    target: float | None = None
-    avg: float | None = None
-    decimals: int = 0
+
+
+@dataclass(frozen=True)
+class DailyLimit:
+    amount: float
+    is_set: bool = True
+
+
+@dataclass(frozen=True)
+class NoDailyLimit:
+    """No Drink Target: the chart draws no limit line and no harm zone."""
+
+    amount: float = 0.0
+    is_set: bool = False
+
+
+@dataclass(frozen=True)
+class ConsumptionChartViewModel(ChartViewModel):
+    categories: list[str]
+    data: list[float]
+    text: dict[str, str]
+    limit: DailyLimit | NoDailyLimit
+    avg: float
+    decimals: int
 
 
 @dataclass(frozen=True)
 class DryDaysViewModel:
-    date: dt_date | None = None
-    delta: int = 0
+    date: dt_date
+    delta: int
 
-    @property
-    def has_data(self) -> bool:
-        return self.date is not None
+    has_data = True
+
+
+@dataclass(frozen=True)
+class NoDryDaysViewModel:
+    has_data = False
 
 
 @dataclass(frozen=True)
@@ -77,7 +101,9 @@ class IndexTab:
 
         builder = IndexBuilder(
             converter=records.converter,
-            drink_stats=DrinkStats(records.converter, records.monthly),
+            drink_stats=DrinkStats(
+                records.converter, records.monthly, today=boundary.today
+            ),
             previous_stats=DrinkStats(
                 records.converter,
                 records.previous.daily,
@@ -88,12 +114,11 @@ class IndexTab:
             ),
             target=target.qty,
             target_id=target.target_id,
-            latest_past_date=records.last_recorded_date_before,
-            latest_current_date=records.last_recorded_date,
+            latest=records.latest,
+            today=boundary.today,
         )
 
         return {
-            "all_years": len(years()),
             "chart_quantity": builder.chart_quantity(),
             "chart_consumption": builder.chart_consumption(),
             "tbl_std_av": builder.tbl_std_av(),
@@ -101,7 +126,7 @@ class IndexTab:
             "calendar": CalendarGrid.build(
                 boundary,
                 daily_data=records.daily_rows,
-                latest_past_date=records.last_recorded_date_before,
+                earlier=records.earlier,
                 unit="Std Av",
                 thresholds=CALENDAR_LEVELS,
                 value_key="stdav",
@@ -117,38 +142,39 @@ class IndexBuilder:
         self,
         converter: DrinkConverter,
         drink_stats: DrinkStats,
-        previous_stats: DrinkStats | None = None,
-        frequency_stats: FrequencyStats | None = None,
+        today: dt_date,
+        previous_stats: DrinkStats,
+        frequency_stats: FrequencyStats,
         target: float = 0.0,
         target_id: int = 0,
-        latest_past_date: dt_date | None = None,
-        latest_current_date: dt_date | None = None,
-        today: dt_date | None = None,
+        latest: PastRecord | NoPastRecord = NoPastRecord(),
     ):
         self._target = target
         self._target_id = target_id
-        self._latest_past_date = latest_past_date
-        self._latest_current_date = latest_current_date
-        self._today = today or datetime.now().date()
+        self._latest = latest
+        self._today = today
         self._drink_stats = drink_stats
-        self._previous_stats = previous_stats or DrinkStats(converter)
-        self._frequency_stats = frequency_stats or FrequencyStats()
+        self._previous_stats = previous_stats
+        self._frequency_stats = frequency_stats
         self._converter = converter
 
-    def chart_quantity(self) -> MonthlyChartViewModel:
-        return MonthlyChartViewModel(
+    def chart_quantity(self) -> QuantityChartViewModel:
+        return QuantityChartViewModel(
             categories=list(month_names().values()),
             data=self._drink_stats.monthly.total_quantity,
             text={"quantity": _("Quantity")},
         )
 
-    def chart_consumption(self) -> MonthlyChartViewModel:
+    def chart_consumption(self) -> ConsumptionChartViewModel:
         unit = self._converter.display_unit
+        limit = NoDailyLimit()
+        if self._target:
+            limit = DailyLimit(self._target)
 
-        return MonthlyChartViewModel(
+        return ConsumptionChartViewModel(
             categories=list(month_names().values()),
             data=self._drink_stats.monthly.avg_daily_volume,
-            target=self._target,
+            limit=limit,
             avg=self._drink_stats.yearly.avg_daily_volume,
             decimals=self._converter.display_decimals,
             text={
@@ -158,12 +184,11 @@ class IndexBuilder:
             },
         )
 
-    def tbl_dry_days(self) -> DryDaysViewModel:
-        if latest := self._latest_current_date or self._latest_past_date:
-            delta = (self._today - latest).days
-            return DryDaysViewModel(date=latest, delta=delta)
+    def tbl_dry_days(self) -> DryDaysViewModel | NoDryDaysViewModel:
+        if not self._latest.has_record:
+            return NoDryDaysViewModel()
 
-        return DryDaysViewModel()
+        return DryDaysViewModel(self._latest.date, self._latest.days_to(self._today))
 
     def get_cards(self) -> list[Card]:
         return [
@@ -279,16 +304,16 @@ class IndexBuilder:
         if comparison.has_past:
             explanation += (self._arrow_note(),)
 
-        if not self._target:
-            if not comparison.has_past:
-                return StatCard(
-                    title=title,
-                    value=value,
-                    unit=figure_unit,
-                    note=_("No limit set"),
-                    explanation=explanation,
-                )
+        if not self._target and not comparison.has_past:
+            return StatCard(
+                title=title,
+                value=value,
+                unit=figure_unit,
+                note=_("No limit set"),
+                explanation=explanation,
+            )
 
+        if not self._target:
             return ComparisonStatCard(
                 title,
                 improving=comparison.improving,
@@ -394,7 +419,7 @@ class IndexBuilder:
         )
 
     def _build_conversion_rows(
-        self, year: int | None, qty: float
+        self, year: int, qty: float
     ) -> list[ConversionRowViewModel]:
         if not qty:
             return []
@@ -427,7 +452,7 @@ class IndexBuilder:
             per_month=per_month,
         )
 
-    def _get_period_counts(self, year: int | None) -> tuple[int, int, int]:
+    def _get_period_counts(self, year: int) -> tuple[int, int, int]:
         boundary = YearBoundary.for_year(year, self._today)
 
         return (

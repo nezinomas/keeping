@@ -111,7 +111,7 @@ class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelFor
     ]
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
         self._initial_fields_values()
@@ -121,7 +121,6 @@ class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelFor
         self._set_htmx_attributes()
         self._translate_fields()
 
-        # form inputs settings
         self.fields["date"].widget = DatePickerWidget()
 
         self.fields["price"].widget = forms.TextInput(
@@ -130,18 +129,18 @@ class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelFor
         self.fields["remark"].widget.attrs["rows"] = 3
 
     def _initial_fields_values(self):
-        if not self.instance.pk:
-            self.fields["date"].initial = set_date_with_user_year(self.user)
-            self.fields["account"].initial = (
-                AccountModelService(self.user).items().first()
-            )
-            self.fields["price"].initial = "0.00"
+        if self.instance.pk:
+            return
+
+        self.fields["date"].initial = set_date_with_user_year(self.user)
+        self.fields["account"].initial = AccountModelService(self.user).items().first()
+        self.fields["price"].initial = "0.00"
 
     def _overwrite_account_query(self):
+        qs = AccountModelService(self.user).items()
+
         if self.instance.pk:
             qs = AccountModelService(self.user).items(self.instance.date.year)
-        else:
-            qs = AccountModelService(self.user).items()
 
         self.fields["account"].queryset = qs
 
@@ -206,18 +205,17 @@ class ExpenseForm(ExpenseNameChoicesMixin, PriceToCentsFormMixin, forms.ModelFor
         cleaned_data = super().clean()
 
         account = cleaned_data.get("account")
-        expense_date = cleaned_data.get("date")
 
-        if not account or not account.closed:
+        if not account or not account.closed or "date" not in cleaned_data:
             return cleaned_data
 
-        if expense_date.year > account.closed:
-            self.add_error(  # noqa: RET503
+        if cleaned_data["date"].year > account.closed:
+            self.add_error(
                 "date",
                 _(
                     "The date cannot be later than the account closure date. The account was closed in %(year)s."  # noqa: E501
                 )
-                % ({"year": f"{account.closed}"}),
+                % ({"year": account.closed}),
             )
 
         return cleaned_data
@@ -229,10 +227,9 @@ class ExpenseTypeForm(forms.ModelForm):
         fields = ["journal", "title", "necessary"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
+        user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
-        # journal input
         self.fields["journal"].initial = user.journal
         self.fields["journal"].disabled = True
         self.fields["journal"].widget = forms.HiddenInput()
@@ -253,13 +250,11 @@ class ExpenseNameForm(forms.ModelForm):
     field_order = ["parent", "title", "valid_for"]
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
+        user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
-        # overwrite ForeignKey parent queryset
         self.fields["parent"].queryset = ExpenseTypeModelService(user).items()
 
-        # field labels
         self.fields["parent"].label = _("Expense type")
         self.fields["title"].label = _("Expense name")
         self.fields["valid_for"].label = _("Valid for")

@@ -102,7 +102,7 @@ def test_formset_lists_a_saving_type_until_its_closing_year(
 
     view = setup_view(views.SavingsWorthNew(), rf)
 
-    actual = str(view.get_formset())
+    actual = str(view.unbound_formset())
 
     assert "S1" in actual
     assert ("S2" in actual) is listed

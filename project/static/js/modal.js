@@ -1,4 +1,3 @@
-// Constants for modal and container IDs
 const FORM_FIELDS = ['price', 'fee', 'quantity', 'title', 'remark', 'attachment'];
 const MODALS = {
     mainModal: null,
@@ -6,7 +5,6 @@ const MODALS = {
 };
 
 
-// Modal class to encapsulate modal behavior
 class Modal {
     constructor(id) {
         this.id = id;
@@ -54,7 +52,6 @@ class Modal {
             return;
         }
 
-        // Remove error messages and invalid classes
         this.form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
         this.form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
     }
@@ -63,7 +60,7 @@ class Modal {
         const triggerName = this.form?.dataset.hxTriggerForm;
         const dataInserted = this.form?.dataset.hxInserted;
 
-        if (triggerName && triggerName !== 'None' && dataInserted) {
+        if (triggerName && dataInserted) {
             htmx.trigger('body', triggerName, {});
         }
     }
@@ -76,7 +73,6 @@ class Modal {
 
 
 function initializeModals() {
-    // prevent default form submission
     document.addEventListener('submit', (event) => {
         if (event.target.matches('.modal-form')) {
             event.preventDefault();
@@ -84,7 +80,6 @@ function initializeModals() {
     });
 
 
-    // close modal on Close Buton
     document.addEventListener('click', (event) => {
         if (event.target.matches('.modal-close')) {
             const modalId = event.target.closest('.modal-dialog')?.id;
@@ -95,7 +90,6 @@ function initializeModals() {
     });
 
 
-    // close modal on ESC
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
             const visibleModals = document.querySelectorAll('.modal[style*="display: block"]');
@@ -109,7 +103,6 @@ function initializeModals() {
     });
 
 
-    // close modal on outside (e.g. containerModal) click
     document.addEventListener('click', function(event) {
         const modalId = event.target.querySelector('div[id]')?.id;
         if (modalId) {
@@ -118,12 +111,9 @@ function initializeModals() {
     });
 
 
-    // show modal on click button with hx-target="#mainModal"
     htmx.on('htmx:after:swap', (e) => {
-        // An empty response is a save/delete that just closed the modal in
-        // before:swap. htmx 2 skipped this event entirely when the swap was
-        // cancelled; htmx 4 still fires it, so without this the dialog reopens
-        // empty over the page.
+        // an empty response closed the modal in before:swap, but htmx 4 still
+        // fires this event for it and the dialog would reopen empty
         if (!e.detail.ctx?.text) {
             return;
         }
@@ -143,12 +133,10 @@ function initializeModals() {
     });
 
 
-    // reload modal form with error messages or reset fields and close modal form
     htmx.on('htmx:before:swap', (e) => {
         const targetId = e.detail.ctx?.target?.id;
         const responseText = e.detail.ctx?.text;
 
-        // Exit if the target is not mainModal or there's response content
         if (targetId !== "mainModal" || responseText) {
             return;
         }
@@ -161,12 +149,9 @@ function initializeModals() {
             MODALS.mainModal.hide();
         }
 
-        // no preventDefault(): a 204 already gets swap:"none" from htmx's own
-        // noSwap config, so there's nothing to cancel - and htmx 4 fires the
-        // server's HX-Trigger header only once the swap completes, so
-        // cancelling it here would also silently swallow that trigger
+        // no preventDefault(): htmx 4 fires the HX-Trigger header only once the
+        // swap completes, so cancelling a 204's swap would swallow that trigger
     });
 };
 
-// Initialize modals when the DOM is ready
 document.addEventListener('DOMContentLoaded', initializeModals);

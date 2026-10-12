@@ -19,7 +19,6 @@ class ExpenseType(TitleAbstract):
     necessary = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ["journal", "title"]
         ordering = ["title"]
         constraints = [
             models.UniqueConstraint(
@@ -42,7 +41,6 @@ class ExpenseName(TitleAbstract):
     parent = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("title", "parent")
         ordering = [F("valid_for").desc(nulls_first=True), "title"]
         constraints = [
             models.UniqueConstraint(
@@ -105,10 +103,11 @@ class ExpenseKeyword(models.Model):
         super().clean_fields(exclude)
 
     def clean(self):
-        if not self.expense_name_id:
-            return
+        foreign = ExpenseName.objects.filter(pk=self.expense_name_id).exclude(
+            parent__journal_id=self.journal_id
+        )
 
-        if self.expense_name.parent.journal_id != self.journal_id:
+        if foreign.exists():
             raise ValidationError(
                 {"expense_name": _("The expense name belongs to another journal.")}
             )

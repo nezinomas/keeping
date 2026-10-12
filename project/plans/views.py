@@ -15,7 +15,7 @@ from ..core.mixins.views import (
 )
 from . import forms
 from .lib.calc_day_sum import DataDto, PlanCalculateDaySum, PlanCollectData
-from .mixins.views import CssClassMixin, PlanDeleteMixin, PlanUpdateMixin
+from .mixins.views import PlanDeleteMixin, PlanFormMixin, PlanObjectMixin
 from .services.calculations import Calculations
 from .services.cards import DayCards, ExpenseCards, IncomeCards, SavingCards
 from .services.model_services import (
@@ -59,7 +59,7 @@ class TabIncomes(TabViewMixin, TemplateViewMixin):
         }
 
 
-class IncomesNew(CssClassMixin, CreateViewMixin):
+class IncomesNew(PlanFormMixin, CreateViewMixin):
     service_class = IncomePlanModelService
     form_class = forms.IncomePlanForm
     url_name = "income_new"
@@ -68,7 +68,7 @@ class IncomesNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Incomes plans")
 
 
-class IncomesUpdate(CssClassMixin, PlanUpdateMixin, UpdateViewMixin):
+class IncomesUpdate(PlanFormMixin, PlanObjectMixin, UpdateViewMixin):
     service_class = IncomePlanModelService
     form_class = forms.IncomePlanForm
     hx_trigger_django = "reload"
@@ -98,7 +98,7 @@ class TabExpenses(TabViewMixin, TemplateViewMixin):
         }
 
 
-class ExpensesNew(CssClassMixin, CreateViewMixin):
+class ExpensesNew(PlanFormMixin, CreateViewMixin):
     service_class = ExpensePlanModelService
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reload"
@@ -107,7 +107,7 @@ class ExpensesNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:tab_expenses")
 
 
-class ExpensesUpdate(CssClassMixin, PlanUpdateMixin, UpdateViewMixin):
+class ExpensesUpdate(PlanFormMixin, PlanObjectMixin, UpdateViewMixin):
     service_class = ExpensePlanModelService
     form_class = forms.ExpensePlanForm
     hx_trigger_django = "reload"
@@ -136,7 +136,7 @@ class TabSavings(TabViewMixin, TemplateViewMixin):
         }
 
 
-class SavingsNew(CssClassMixin, CreateViewMixin):
+class SavingsNew(PlanFormMixin, CreateViewMixin):
     service_class = SavingPlanModelService
     form_class = forms.SavingPlanForm
     url_name = "saving_new"
@@ -145,7 +145,7 @@ class SavingsNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Savings plans")
 
 
-class SavingsUpdate(CssClassMixin, PlanUpdateMixin, UpdateViewMixin):
+class SavingsUpdate(PlanFormMixin, PlanObjectMixin, UpdateViewMixin):
     service_class = SavingPlanModelService
     form_class = forms.SavingPlanForm
     hx_trigger_django = "reload"
@@ -181,7 +181,7 @@ class TabDay(TabViewMixin, TemplateViewMixin):
         }
 
 
-class DayNew(CssClassMixin, CreateViewMixin):
+class DayNew(PlanFormMixin, CreateViewMixin):
     service_class = DayPlanModelService
     form_class = forms.DayPlanForm
     url_name = "day_new"
@@ -190,7 +190,7 @@ class DayNew(CssClassMixin, CreateViewMixin):
     modal_form_title = _("Day plans")
 
 
-class DayUpdate(CssClassMixin, PlanUpdateMixin, UpdateViewMixin):
+class DayUpdate(PlanFormMixin, PlanObjectMixin, UpdateViewMixin):
     service_class = DayPlanModelService
     form_class = forms.DayPlanForm
     hx_trigger_django = "reload"
@@ -207,7 +207,7 @@ class DayDelete(PlanDeleteMixin, DeleteViewMixin):
     success_url = reverse_lazy("plans:tab_day")
 
 
-class NecessaryNew(CssClassMixin, CreateViewMixin):
+class NecessaryNew(PlanFormMixin, CreateViewMixin):
     service_class = NecessaryPlanModelService
     form_class = forms.NecessaryPlanForm
     url_name = "necessary_new"
@@ -216,7 +216,7 @@ class NecessaryNew(CssClassMixin, CreateViewMixin):
     success_url = reverse_lazy("plans:tab_expenses")
 
 
-class NecessaryUpdate(CssClassMixin, PlanUpdateMixin, UpdateViewMixin):
+class NecessaryUpdate(PlanFormMixin, PlanObjectMixin, UpdateViewMixin):
     service_class = NecessaryPlanModelService
     form_class = forms.NecessaryPlanForm
     hx_trigger_django = "reload"
@@ -247,7 +247,7 @@ class CopyPlans(FormViewMixin):
 
         return super().get_context_data(**kwargs) | context
 
-    def form_valid(self, form, **kwargs):
+    def form_valid(self, form):
         form.save()
 
         return http_htmx_response(self.hx_trigger_django)

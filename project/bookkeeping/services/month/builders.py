@@ -9,9 +9,7 @@ from .dtos import InfoState
 
 
 class MonthTableBuilder:
-    """
-    Merges expenses and savings into a single Polars DataFrame representing the month
-    """
+    """Merges the month's expenses and savings into one DataFrame."""
 
     def __init__(self, expense_df: pl.DataFrame, saving_df: pl.DataFrame):
         self.df = self._build_table(expense_df, saving_df)
@@ -19,9 +17,9 @@ class MonthTableBuilder:
     def _build_table(
         self, expense_df: pl.DataFrame, saving_df: pl.DataFrame
     ) -> pl.DataFrame:
-        # If exists at least two columns (date + at least one expense type)
-        # create total column
-        if expense_df.shape[1] > 1:
+        has_expense_types = expense_df.shape[1] > 1
+
+        if has_expense_types:
             expense_df = expense_df.with_columns(
                 pl.sum_horizontal(pl.exclude("date")).alias("total")
             )
@@ -32,7 +30,7 @@ class MonthTableBuilder:
 
     @cached_property
     def table(self) -> list[dict]:
-        return [] if self.df.is_empty() else self.df.to_dicts()
+        return self.df.to_dicts()
 
     @cached_property
     def total_row(self) -> dict:
@@ -51,7 +49,7 @@ class ChartBuilder:
     def build_targets(self) -> dict:
         data = self._sort_chart_data(self.totals)
 
-        categories, data_target, data_fact, category_len = [], [], [], []
+        categories, data_target, data_fact, name_lengths = [], [], [], []
 
         for entry in data:
             name = entry["name"]
@@ -63,7 +61,7 @@ class ChartBuilder:
             data_target.append(target)
             data_fact.append({"y": entry["y"], "target": target})
 
-            category_len.append(len(name))
+            name_lengths.append(len(name))
 
         return {
             "categories": categories,
@@ -71,8 +69,7 @@ class ChartBuilder:
             "targetTitle": _("Plan"),
             "fact": data_fact,
             "factTitle": _("Fact"),
-            "max_category_len": max(category_len, default=0),
-            "category_len": len(categories),
+            "max_category_len": max(name_lengths, default=0),
         }
 
     def _translate_saving_title(self, name):
