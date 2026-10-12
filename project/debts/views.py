@@ -91,13 +91,9 @@ class DebtUpdate(PriceToFloatViewMixin, AddDebtTypeMixin, DebtMixin, UpdateViewM
         return DebtModelService(self.request.user, self.kwargs["debt_type"]).objects
 
     def url(self):
-        return (
-            reverse_lazy(
-                "debts:update",
-                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
-            )
-            if self.object
-            else None
+        return reverse_lazy(
+            "debts:update",
+            kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
         )
 
 
@@ -109,13 +105,9 @@ class DebtDelete(AddDebtTypeMixin, DebtMixin, DeleteViewMixin):
         return DebtModelService(self.request.user, self.kwargs["debt_type"]).objects
 
     def url(self):
-        return (
-            reverse_lazy(
-                "debts:delete",
-                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
-            )
-            if self.object
-            else None
+        return reverse_lazy(
+            "debts:delete",
+            kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
         )
 
 
@@ -151,13 +143,9 @@ class DebtReturnUpdate(
         ).objects
 
     def url(self):
-        return (
-            reverse_lazy(
-                "debts:return_update",
-                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
-            )
-            if self.object
-            else None
+        return reverse_lazy(
+            "debts:return_update",
+            kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
         )
 
 
@@ -171,11 +159,7 @@ class DebtReturnDelete(AddDebtTypeMixin, DebtReturnMixin, DeleteViewMixin):
         ).objects
 
     def url(self):
-        return (
-            reverse_lazy(
-                "debts:return_delete",
-                kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
-            )
-            if self.object
-            else None
+        return reverse_lazy(
+            "debts:return_delete",
+            kwargs={"pk": self.object.pk, "debt_type": self.kwargs["debt_type"]},
         )

@@ -48,16 +48,6 @@ def test_debt_initial_values(main_user):
     assert '<input type="text" name="date" value="1999-01-01"' in form
 
 
-def test_debt_current_user_accounts(main_user, second_user):
-    AccountFactory(title="A1")
-    AccountFactory(title="A2", journal=second_user.journal)
-
-    form = forms.DebtForm(user=main_user, debt_type="lend").as_p()
-
-    assert "A1" in form
-    assert "A2" not in form
-
-
 def test_debt_select_first_account(main_user, second_user):
     AccountFactory(title="A1", journal=second_user.journal)
 
@@ -67,6 +57,7 @@ def test_debt_select_first_account(main_user, second_user):
 
     expect = f'<option value="{a2.pk}" selected>{a2}</option>'
     assert expect in form
+    assert "A1" not in form
 
 
 @pytest.mark.parametrize(
@@ -203,7 +194,7 @@ def test_debt_unique_name(main_user):
 
     assert not form.is_valid()
     assert "name" in form.errors
-    assert form.errors["name"] == ["Skolintojo vardas turi būti unikalus."]
+    assert form.errors["name"] == ["Vardas turi būti unikalus."]
 
 
 def test_debt_unique_name_unclose_with_same_name(main_user):
@@ -217,7 +208,7 @@ def test_debt_unique_name_unclose_with_same_name(main_user):
     assert form.is_bound
     assert not form.is_valid()
     assert "name" in form.errors
-    assert form.errors["name"] == ["Skolintojo vardas turi būti unikalus."]
+    assert form.errors["name"] == ["Vardas turi būti unikalus."]
 
 
 def test_debt_cant_close(main_user):
@@ -272,32 +263,31 @@ def _debt_data(account, second_user):
     }
 
 
-def test_debt_create_ignores_a_posted_journal(main_user, second_user):
+@pytest.mark.parametrize(
+    "instance_of",
+    [
+        pytest.param(lambda user, account: None, id="create"),
+        pytest.param(
+            lambda user, account: factories.LendFactory(
+                journal=user.journal, account=account
+            ),
+            id="edit",
+        ),
+    ],
+)
+def test_debt_ignores_a_posted_journal(main_user, second_user, instance_of):
     a = AccountFactory(title="Mine", journal=main_user.journal)
-
-    form = forms.DebtForm(
-        user=main_user, debt_type="lend", data=_debt_data(a, second_user)
-    )
-
-    assert form.is_valid()
-
-    assert form.save().journal == main_user.journal
-
-
-def test_debt_edit_ignores_a_posted_journal(main_user, second_user):
-    a = AccountFactory(title="Mine", journal=main_user.journal)
-    obj = factories.LendFactory(journal=main_user.journal, account=a)
 
     form = forms.DebtForm(
         user=main_user,
         debt_type="lend",
-        instance=obj,
+        instance=instance_of(main_user, a),
         data=_debt_data(a, second_user),
     )
 
     assert form.is_valid()
 
-    form.save()
-    obj.refresh_from_db()
+    saved = form.save()
+    saved.refresh_from_db()
 
-    assert obj.journal == main_user.journal
+    assert saved.journal == main_user.journal
