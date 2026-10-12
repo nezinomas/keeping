@@ -2,6 +2,8 @@ from datetime import date
 
 import pytest
 import time_machine
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from ...lib.drinks_risk import (
     CALENDAR_LEVELS,
@@ -77,36 +79,28 @@ def test_weekly_series_for_past_year_spans_to_dec_31():
 
 
 # current_week
-@pytest.mark.parametrize(
-    "stdavs, expect_stdav, state",
-    [
-        pytest.param([], 0.0, "low", id="zero_when_no_drinks_is_low"),
-        pytest.param([5], 5.0, "low", id="low"),
-        pytest.param([15], 15.0, "medium", id="medium_between_thresholds"),
-        pytest.param([30], 30.0, "high", id="high_above_high_threshold"),
-        pytest.param(
-            [WEEKLY_LOW_RISK_STDAV],
-            WEEKLY_LOW_RISK_STDAV,
-            "low",
-            id="exactly_at_low_threshold_is_low",
-        ),
-        pytest.param(
-            [WEEKLY_HIGH_RISK_STDAV],
-            WEEKLY_HIGH_RISK_STDAV,
-            "medium",
-            id="exactly_at_high_threshold_is_medium",
-        ),
-        # 11.24 rounds (display) to 11.2 == the low threshold -> must stay "low",
-        # even though the raw value is technically over it
-        pytest.param([11.24], 11.2, "low", id="classifies_on_rounded_value_not_raw"),
-    ],
-)
+@given(stdavs=st.lists(st.integers(0, 4000).map(lambda c: c / 100), max_size=1))
+@example(stdavs=[])
+@example(stdavs=[5])
+@example(stdavs=[15])
+@example(stdavs=[30])
+@example(stdavs=[WEEKLY_LOW_RISK_STDAV])
+@example(stdavs=[WEEKLY_HIGH_RISK_STDAV])
+# 11.24 shows as 11.2, the low threshold: classified on the shown value, so still low
+@example(stdavs=[11.24])
 @time_machine.travel("2026-01-15")
-def test_current_week_state_follows_the_thresholds(stdavs, expect_stdav, state):
+def test_current_week_state_follows_the_thresholds(stdavs):
+    shown = round(sum(stdavs), 1)
+    state = "low"
+    if shown > WEEKLY_LOW_RISK_STDAV:
+        state = "medium"
+    if shown > WEEKLY_HIGH_RISK_STDAV:
+        state = "high"
+
     rows = [_row(date(2026, 1, 13), stdav) for stdav in stdavs]
     week = RiskStats(current_daily=rows).current_week()
 
-    assert week.stdav == expect_stdav
+    assert week.stdav == shown
     assert week.state == state
     assert week.label == "2026-01-12"
     assert week.end == "2026-01-18"
