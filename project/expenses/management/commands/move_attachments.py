@@ -21,6 +21,8 @@ class Command(BaseCommand):
             self.stdout.write(f"{old} -> {new}")
         for old in result.missing:
             self.stdout.write(f"missing: {old}")
+        for old in result.too_long:
+            self.stdout.write(f"not moved: {old} (name too long)")
         for old, reason in result.not_deleted:
             self.stdout.write(f"not deleted: {old} ({reason})")
         for folder, reason in result.not_removed:
