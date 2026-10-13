@@ -12,13 +12,13 @@ from .consumption_year import ConsumptionYear
 @dataclass(frozen=True)
 class YearComparisonChartViewModel(ChartViewModel):
     categories: list[str]
-    serries: list[dict] = field(default_factory=list)
+    series: list[dict] = field(default_factory=list)
     unit: str = "ml"
     decimals: int = 0
 
     @property
     def has_data(self) -> bool:
-        return bool(self.serries)
+        return bool(self.series)
 
 
 class YearComparison:
@@ -59,7 +59,7 @@ class YearComparison:
 
         return YearComparisonChartViewModel(
             categories=list(month_names().values()),
-            serries=series,
+            series=series,
             unit=converter.display_unit,
             decimals=converter.display_decimals,
         )

@@ -53,11 +53,11 @@ def test_categories_no_data():
     assert actual == []
 
 
-def test_serries_data_types(types):
+def test_series_data_types(types):
     data = SimpleNamespace(data=types)
     obj = ChartSummaryExpensesService(data=data)
 
-    actual = obj.serries_data
+    actual = obj.series_data
     expect = [
         {"name": "X", "data": [5, 0, 15]},
         {"name": "Y", "data": [2, 12, 0]},
@@ -66,20 +66,20 @@ def test_serries_data_types(types):
     assert actual == expect
 
 
-def test_serries_data_types_empty():
+def test_series_data_types_empty():
     data = SimpleNamespace(data=[])
     obj = ChartSummaryExpensesService(data=data)
 
-    actual = obj.serries_data
+    actual = obj.series_data
 
     assert actual == []
 
 
-def test_serries_data_names(names):
+def test_series_data_names(names):
     data = SimpleNamespace(data=names)
     obj = ChartSummaryExpensesService(data=data)
 
-    actual = obj.serries_data
+    actual = obj.series_data
     expect = [
         {"name": "X / A", "data": [5, 0, 15]},
         {"name": "Y / B", "data": [2, 12, 0]},
@@ -88,11 +88,11 @@ def test_serries_data_names(names):
     assert actual == expect
 
 
-def test_serries_data_full(types, names):
+def test_series_data_full(types, names):
     data = SimpleNamespace(data=types + names)
     obj = ChartSummaryExpensesService(data=data)
 
-    actual = obj.serries_data
+    actual = obj.series_data
     expect = [
         {"name": "X", "data": [5, 0, 15]},
         {"name": "X / A", "data": [5, 0, 15]},
@@ -102,7 +102,7 @@ def test_serries_data_full(types, names):
     assert actual == expect
 
 
-def test_serries_total_column(types):
+def test_series_total_column(types):
     data = SimpleNamespace(data=types)
     obj = ChartSummaryExpensesService(data=data)
 
@@ -112,7 +112,7 @@ def test_serries_total_column(types):
     assert actual == expect
 
 
-def test_serries_total_row(types):
+def test_series_total_row(types):
     data = SimpleNamespace(data=types)
     obj = ChartSummaryExpensesService(data=data)
 
@@ -122,7 +122,7 @@ def test_serries_total_row(types):
     assert actual == expect
 
 
-def test_serries_total(types):
+def test_series_total(types):
     data = SimpleNamespace(data=types)
     obj = ChartSummaryExpensesService(data=data)
 
