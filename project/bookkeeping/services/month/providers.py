@@ -6,7 +6,12 @@ from ....expenses.services.model_services import (
 )
 from ....incomes.services.model_services import IncomeModelService
 from ....plans.lib.calc_day_sum import PlanCollectData
-from ....plans.services.model_services import PlanAggregatorService
+from ....plans.services.model_services import (
+    ExpensePlanModelService,
+    MonthTargets,
+    NecessaryPlanModelService,
+    SavingPlanModelService,
+)
 from ....savings.services.model_services import SavingModelService
 from ....users.models import User
 from .dtos import MonthDataDTO
@@ -19,6 +24,10 @@ class MonthDataProvider:
         self.month = user.month
 
     def get_data(self) -> MonthDataDTO:
+        expense_types = list(
+            ExpenseTypeModelService(self.user).objects.values_list("title", flat=True)
+        )
+
         return MonthDataDTO(
             incomes=(
                 IncomeModelService(self.user)
@@ -30,11 +39,7 @@ class MonthDataProvider:
                     self.year, self.month
                 )
             ),
-            expense_types=list(
-                ExpenseTypeModelService(self.user).objects.values_list(
-                    "title", flat=True
-                )
-            ),
+            expense_types=expense_types,
             necessary_expense_types=list(
                 ExpenseTypeModelService(self.user)
                 .objects.filter(necessary=True)
@@ -47,7 +52,11 @@ class MonthDataProvider:
                 SavingModelService(self.user).account_fees_by_day(self.year, self.month)
             ),
             plans_data=PlanCollectData(self.user, self.year).get_data(),
-            targets=PlanAggregatorService(self.user).get_monthly_plan_targets(
-                self.year, self.month
+            targets=MonthTargets.for_month(
+                type_titles=expense_types,
+                expense_plans=ExpensePlanModelService(self.user).year(self.year),
+                necessary_plans=NecessaryPlanModelService(self.user).year(self.year),
+                saving_plans=SavingPlanModelService(self.user).year(self.year),
+                month=self.month,
             ),
         )

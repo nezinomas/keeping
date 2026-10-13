@@ -425,6 +425,23 @@ def test_form_rejects_a_title_with_no_latin_letter_or_digit(main_user, form_clas
     ]
 
 
+@pytest.mark.parametrize(
+    "title, errors",
+    [
+        pytest.param("savings", ["Šis pavadinimas rezervuotas."], id="savings"),
+        pytest.param("total", ["Šis pavadinimas rezervuotas."], id="total"),
+        pytest.param("date", ["Šis pavadinimas rezervuotas."], id="date"),
+        pytest.param("Savings", [], id="case_differs"),
+    ],
+)
+def test_expense_type_form_reserves_the_month_table_keys(main_user, title, errors):
+    form = ExpenseTypeForm(user=main_user, data={"title": title})
+
+    assert form.is_valid() == (not errors)
+
+    assert form.errors.get("title", []) == errors
+
+
 def test_expense_name_title_expanding_character(main_user):
     parent = ExpenseTypeFactory()
     form = ExpenseNameForm(

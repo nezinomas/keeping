@@ -2,6 +2,7 @@ import itertools as it
 from functools import cached_property
 
 from ....core.lib.date import current_day
+from ....core.lib.table_columns import SAVINGS, TOTAL
 from ....plans.lib.calc_day_sum import PlanCalculateDaySum
 from ....users.models import User
 from ...lib.day_spending import DaySpending
@@ -51,8 +52,8 @@ class MonthContextPresenter:
 
     @cached_property
     def totals(self) -> dict:
-        _exp = self.month_table.total_row.get("total", 0)
-        _sav = self.month_table.total_row.get("savings", 0)
+        _exp = self.month_table.total_row.get(TOTAL, 0)
+        _sav = self.month_table.total_row.get(SAVINGS, 0)
 
         return {
             "income": self.dto.incomes,

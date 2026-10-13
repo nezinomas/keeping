@@ -237,7 +237,10 @@ def mock_db_services(mocker):
 
     mocker.patch(f"{base_path}.IncomePlanModelService.summed_by_month", return_value=[])
     mocker.patch(
-        f"{base_path}.ExpensePlanModelService.summed_by_month", return_value=[]
+        f"{base_path}.ExpensePlanModelService.everyday_by_month", return_value=[]
+    )
+    mocker.patch(
+        f"{base_path}.ExpensePlanModelService.necessary_by_month", return_value=[]
     )
     mocker.patch(f"{base_path}.SavingPlanModelService.summed_by_month", return_value=[])
     mocker.patch(f"{base_path}.DayPlanModelService.summed_by_month", return_value=[])
