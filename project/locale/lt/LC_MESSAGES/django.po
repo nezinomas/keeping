@@ -988,6 +988,10 @@ msgstr ""
 msgid "Title must contain at least one Latin letter or digit."
 msgstr "Pavadinime turi būti bent viena lotyniška raidė arba skaitmuo."
 
+#: .\project\expenses\forms.py
+msgid "This title is reserved."
+msgstr "Šis pavadinimas rezervuotas."
+
 #: .\project\core\validators.py
 #, python-format
 msgid "Title cannot contain “%(characters)s”."

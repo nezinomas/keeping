@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from ..accounts.services.model_services import AccountModelService
+from ..core.lib import table_columns
 from ..core.lib.convert_price import PriceToCentsFormMixin
 from ..core.lib.date import set_date_with_user_year
 from ..core.lib.form_fields import CommaFloatField
@@ -222,6 +223,14 @@ class ExpenseTypeForm(forms.ModelForm):
 
         self.fields["title"].label = _("Title")
         self.fields["necessary"].label = _("Necessary")
+
+    def clean_title(self):
+        title = self.cleaned_data["title"]
+
+        if title in table_columns.RESERVED:
+            raise ValidationError(_("This title is reserved."))
+
+        return title
 
 
 class ExpenseNameForm(forms.ModelForm):

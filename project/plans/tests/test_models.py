@@ -13,8 +13,8 @@ from ..services.model_services import (
     DayPlanModelService,
     ExpensePlanModelService,
     IncomePlanModelService,
+    MonthTargets,
     NecessaryPlanModelService,
-    PlanAggregatorService,
     SavingPlanModelService,
 )
 from .factories import (
@@ -36,11 +36,21 @@ def mute_my_signals():
 
 
 # Common method
+def month_targets(user, type_titles):
+    return MonthTargets.for_month(
+        type_titles=type_titles,
+        expense_plans=ExpensePlanModelService(user).year(1999),
+        necessary_plans=NecessaryPlanModelService(user).year(1999),
+        saving_plans=SavingPlanModelService(user).year(1999),
+        month=2,
+    )
+
+
 def test_targets_fills_zeros_for_empty_plans(main_user):
     ExpenseTypeFactory(title="T1")
     ExpenseTypeFactory(title="T2")
 
-    actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
+    actual = month_targets(main_user, ["T1", "T2"])
 
     expect = {"T1": 0, "T2": 0, "savings": 0}
 
@@ -61,7 +71,7 @@ def test_targets_sums_correctly_and_ignores_other_months(main_user):
     ExpensePlanFactory(month=3, expense_type=t3, price=999)
     SavingPlanFactory(month=3, price=999)
 
-    actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
+    actual = month_targets(main_user, ["T1", "T2", "T3"])
 
     expect = {"T1": 150, "T2": 200, "T3": 0, "savings": 300}
 
@@ -78,24 +88,19 @@ def test_targets_no_savings(main_user):
     NecessaryPlanFactory(month=2, expense_type=t2, price=200)
     ExpensePlanFactory(month=3, expense_type=t3, price=999)
 
-    actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
+    actual = month_targets(main_user, ["T1", "T2", "T3"])
 
     expect = {"T1": 150, "T2": 200, "T3": 0, "savings": 0}
 
     assert actual == expect
 
 
-def test_targets_ignore_unknown_expense_types(main_user, mocker):
+def test_targets_ignore_unknown_expense_types(main_user):
     t1 = ExpenseTypeFactory(title="T1")
     ExpensePlanFactory(month=2, expense_type=t1, price=100)
     NecessaryPlanFactory(month=2, expense_type=t1, price=50)
 
-    mock_items = mocker.patch(
-        "project.plans.services.model_services.ExpenseTypeModelService.items"
-    )
-    mock_items.return_value.values_list.return_value = []
-
-    actual = PlanAggregatorService(main_user).get_monthly_plan_targets(1999, month=2)
+    actual = month_targets(main_user, [])
 
     expect = {"savings": 0}
     assert actual == expect
@@ -232,7 +237,7 @@ def test_expense_year(main_user, second_user):
     assert actual[1].price == 2
 
 
-def test_expense_summed_by_month_expenses_regular(main_user, second_user):
+def test_expense_everyday_by_month(main_user, second_user):
     t1 = ExpenseTypeFactory(title="AAA")
     t2 = ExpenseTypeFactory(title="ZZZ")
     t3 = ExpenseTypeFactory(title="XXX", necessary=True)
@@ -243,12 +248,12 @@ def test_expense_summed_by_month_expenses_regular(main_user, second_user):
     ExpensePlanFactory(year=1999, month=2, price=4, expense_type=t3)
     ExpensePlanFactory(year=1974, journal=second_user.journal)
 
-    actual = list(ExpensePlanModelService(main_user).summed_by_month(1999))
+    actual = list(ExpensePlanModelService(main_user).everyday_by_month(1999))
 
     assert actual == [{"month": 1, "amount": 1}, {"month": 2, "amount": 4}]
 
 
-def test_expense_summed_by_month_expenses_necessary(main_user, second_user):
+def test_expense_necessary_by_month(main_user, second_user):
     t1 = ExpenseTypeFactory(title="AAA", necessary=True)
     t2 = ExpenseTypeFactory(title="ZZZ", necessary=True)
     t3 = ExpenseTypeFactory(title="XXX")
@@ -259,11 +264,26 @@ def test_expense_summed_by_month_expenses_necessary(main_user, second_user):
     ExpensePlanFactory(year=1999, month=2, price=4, expense_type=t3)
     ExpensePlanFactory(year=1974, journal=second_user.journal)
 
-    actual = list(
-        ExpensePlanModelService(main_user).summed_by_month(1999, necessary=True)
-    )
+    actual = list(ExpensePlanModelService(main_user).necessary_by_month(1999))
 
     assert actual == [{"month": 1, "amount": 1}, {"month": 2, "amount": 4}]
+
+
+def test_expense_summed_by_month_sums_every_plan(main_user, second_user):
+    ExpensePlanFactory(
+        year=1999, month=2, price=2, expense_type=ExpenseTypeFactory(title="AAA")
+    )
+    ExpensePlanFactory(
+        year=1999,
+        month=2,
+        price=4,
+        expense_type=ExpenseTypeFactory(title="XXX", necessary=True),
+    )
+    ExpensePlanFactory(year=1974, journal=second_user.journal)
+
+    actual = list(ExpensePlanModelService(main_user).summed_by_month(1999))
+
+    assert actual == [{"month": 2, "amount": 6}]
 
 
 def test_expense_items(main_user, second_user):
@@ -612,13 +632,15 @@ def test_summed_by_month_joins_no_type_table(main_user, service, table):
     assert table not in sql
 
 
-@pytest.mark.parametrize("necessary", [False, True])
-def test_expense_summed_by_month_joins_the_type_it_filters_on(main_user, necessary):
-    sql = str(
-        ExpensePlanModelService(main_user)
-        .summed_by_month(1999, necessary=necessary)
-        .query
-    )
+@pytest.mark.parametrize(
+    "method",
+    [
+        ExpensePlanModelService.everyday_by_month,
+        ExpensePlanModelService.necessary_by_month,
+    ],
+)
+def test_expense_by_month_joins_the_type_it_filters_on(main_user, method):
+    sql = str(method(ExpensePlanModelService(main_user), 1999).query)
 
     assert "expenses_expensetype" in sql
 

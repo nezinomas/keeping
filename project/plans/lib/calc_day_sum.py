@@ -66,10 +66,8 @@ class PlanCollectData:
 
         return DataDto(
             incomes=IncomePlanModelService(self.user).summed_by_month(self.year),
-            expenses_regular=expenses_service.summed_by_month(self.year),
-            expenses_necessary=expenses_service.summed_by_month(
-                self.year, necessary=True
-            ),
+            expenses_regular=expenses_service.everyday_by_month(self.year),
+            expenses_necessary=expenses_service.necessary_by_month(self.year),
             savings=SavingPlanModelService(self.user).summed_by_month(self.year),
             per_day=DayPlanModelService(self.user).summed_by_month(self.year),
             necessary=NecessaryPlanModelService(self.user).summed_by_month(self.year),
