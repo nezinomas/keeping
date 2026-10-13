@@ -129,11 +129,18 @@ def test_saving_type_items_closed(main_user, user_year, expect):
     assert actual.count() == expect
 
 
-def test_saving_type_unique_for_journal(main_user):
-    SavingType.objects.create(title="T1", journal=main_user.journal)
+@pytest.mark.parametrize(
+    "first, second",
+    [
+        pytest.param("T1", "T1", id="title"),
+        pytest.param("Būstas", "Bustas", id="slug"),
+    ],
+)
+def test_saving_type_unique_for_journal(main_user, first, second):
+    SavingType.objects.create(title=first, journal=main_user.journal)
 
     with pytest.raises(IntegrityError):
-        SavingType.objects.create(title="T1", journal=main_user.journal)
+        SavingType.objects.create(title=second, journal=main_user.journal)
 
 
 def test_saving_type_unique_for_journals(main_user, second_user):
@@ -147,13 +154,6 @@ def test_saving_type_save_writes_slug(main_user):
     actual = SavingType.objects.create(title="Finbee", journal=main_user.journal)
 
     assert actual.slug == "finbee"
-
-
-def test_saving_type_slug_unique_for_journal(main_user):
-    SavingType.objects.create(title="Būstas", journal=main_user.journal)
-
-    with pytest.raises(IntegrityError):
-        SavingType.objects.create(title="Bustas", journal=main_user.journal)
 
 
 def test_saving_type_migration_fills_every_slug(main_user):

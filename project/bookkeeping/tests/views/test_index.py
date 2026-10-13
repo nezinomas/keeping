@@ -16,6 +16,8 @@ from ..helper import script_json
 
 pytestmark = pytest.mark.django_db
 
+INDEX_QUERY_CAP = 32
+
 
 def _add_items(first, last):
     for i in range(first, last):
@@ -28,7 +30,7 @@ def _add_items(first, last):
         LendFactory(name=f"Name {i}")
 
 
-def test_view_index_query_count_does_not_grow(client_logged):
+def test_view_index_queries_stay_under_the_cap_and_do_not_grow(client_logged):
     url = reverse("bookkeeping:index")
 
     def queries():
@@ -40,6 +42,7 @@ def test_view_index_query_count_does_not_grow(client_logged):
     six = queries()
 
     assert two == six
+    assert six <= INDEX_QUERY_CAP
 
 
 @pytest.fixture(name="index_content")
